@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_val.dart';
 import 'xdr_soroban_transaction_meta_ext.dart';
 
 class XdrSorobanTransactionMetaV2 {
+
   XdrSorobanTransactionMetaExt _ext;
   XdrSorobanTransactionMetaExt get ext => this._ext;
   set ext(XdrSorobanTransactionMetaExt value) => this._ext = value;
@@ -21,14 +23,8 @@ class XdrSorobanTransactionMetaV2 {
 
   XdrSorobanTransactionMetaV2(this._ext, this._returnValue);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSorobanTransactionMetaV2 encodedSorobanTransactionMetaV2,
-  ) {
-    XdrSorobanTransactionMetaExt.encode(
-      stream,
-      encodedSorobanTransactionMetaV2.ext,
-    );
+  static void encode(XdrDataOutputStream stream, XdrSorobanTransactionMetaV2 encodedSorobanTransactionMetaV2) {
+    XdrSorobanTransactionMetaExt.encode(stream, encodedSorobanTransactionMetaV2.ext);
     if (encodedSorobanTransactionMetaV2.returnValue != null) {
       stream.writeInt(1);
       XdrSCVal.encode(stream, encodedSorobanTransactionMetaV2.returnValue!);
@@ -38,9 +34,7 @@ class XdrSorobanTransactionMetaV2 {
   }
 
   static XdrSorobanTransactionMetaV2 decode(XdrDataInputStream stream) {
-    XdrSorobanTransactionMetaExt ext = XdrSorobanTransactionMetaExt.decode(
-      stream,
-    );
+    XdrSorobanTransactionMetaExt ext = XdrSorobanTransactionMetaExt.decode(stream);
     XdrSCVal? returnValue;
     int returnValuePresent = stream.readInt();
     if (returnValuePresent != 0) {
@@ -55,10 +49,28 @@ class XdrSorobanTransactionMetaV2 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSorobanTransactionMetaV2 fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrSorobanTransactionMetaV2 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanTransactionMetaV2.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _ext.toTxRep('$prefix.ext', lines);
+    if (_returnValue != null) {
+      lines.add('$prefix.returnValue._present: true');
+      _returnValue!.toTxRep('$prefix.returnValue', lines);
+    } else {
+      lines.add('$prefix.returnValue._present: false');
+    }
+  }
+
+  static XdrSorobanTransactionMetaV2 fromTxRep(Map<String, String> map, String prefix) {
+    XdrSorobanTransactionMetaExt ext = XdrSorobanTransactionMetaExt.fromTxRep(map, '$prefix.ext');
+    XdrSCVal? returnValue;
+    String? returnValuePresent = TxRepHelper.getValue(map, '$prefix.returnValue._present');
+    if (returnValuePresent != null && returnValuePresent == 'true') {
+      returnValue = XdrSCVal.fromTxRep(map, '$prefix.returnValue');
+    }
+    return XdrSorobanTransactionMetaV2(ext, returnValue);
   }
 }

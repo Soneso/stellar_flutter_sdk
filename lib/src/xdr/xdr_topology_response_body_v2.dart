@@ -6,56 +6,36 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_time_sliced_node_data.dart';
 import 'xdr_time_sliced_peer_data_list.dart';
 
 class XdrTopologyResponseBodyV2 {
+
   XdrTimeSlicedPeerDataList _inboundPeers;
   XdrTimeSlicedPeerDataList get inboundPeers => this._inboundPeers;
-  set inboundPeers(XdrTimeSlicedPeerDataList value) =>
-      this._inboundPeers = value;
+  set inboundPeers(XdrTimeSlicedPeerDataList value) => this._inboundPeers = value;
 
   XdrTimeSlicedPeerDataList _outboundPeers;
   XdrTimeSlicedPeerDataList get outboundPeers => this._outboundPeers;
-  set outboundPeers(XdrTimeSlicedPeerDataList value) =>
-      this._outboundPeers = value;
+  set outboundPeers(XdrTimeSlicedPeerDataList value) => this._outboundPeers = value;
 
   XdrTimeSlicedNodeData _nodeData;
   XdrTimeSlicedNodeData get nodeData => this._nodeData;
   set nodeData(XdrTimeSlicedNodeData value) => this._nodeData = value;
 
-  XdrTopologyResponseBodyV2(
-    this._inboundPeers,
-    this._outboundPeers,
-    this._nodeData,
-  );
+  XdrTopologyResponseBodyV2(this._inboundPeers, this._outboundPeers, this._nodeData);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTopologyResponseBodyV2 encodedTopologyResponseBodyV2,
-  ) {
-    XdrTimeSlicedPeerDataList.encode(
-      stream,
-      encodedTopologyResponseBodyV2.inboundPeers,
-    );
-    XdrTimeSlicedPeerDataList.encode(
-      stream,
-      encodedTopologyResponseBodyV2.outboundPeers,
-    );
-    XdrTimeSlicedNodeData.encode(
-      stream,
-      encodedTopologyResponseBodyV2.nodeData,
-    );
+  static void encode(XdrDataOutputStream stream, XdrTopologyResponseBodyV2 encodedTopologyResponseBodyV2) {
+    XdrTimeSlicedPeerDataList.encode(stream, encodedTopologyResponseBodyV2.inboundPeers);
+    XdrTimeSlicedPeerDataList.encode(stream, encodedTopologyResponseBodyV2.outboundPeers);
+    XdrTimeSlicedNodeData.encode(stream, encodedTopologyResponseBodyV2.nodeData);
   }
 
   static XdrTopologyResponseBodyV2 decode(XdrDataInputStream stream) {
-    XdrTimeSlicedPeerDataList inboundPeers = XdrTimeSlicedPeerDataList.decode(
-      stream,
-    );
-    XdrTimeSlicedPeerDataList outboundPeers = XdrTimeSlicedPeerDataList.decode(
-      stream,
-    );
+    XdrTimeSlicedPeerDataList inboundPeers = XdrTimeSlicedPeerDataList.decode(stream);
+    XdrTimeSlicedPeerDataList outboundPeers = XdrTimeSlicedPeerDataList.decode(stream);
     XdrTimeSlicedNodeData nodeData = XdrTimeSlicedNodeData.decode(stream);
     return XdrTopologyResponseBodyV2(inboundPeers, outboundPeers, nodeData);
   }
@@ -66,10 +46,21 @@ class XdrTopologyResponseBodyV2 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTopologyResponseBodyV2 fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrTopologyResponseBodyV2 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTopologyResponseBodyV2.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _inboundPeers.toTxRep('$prefix.inboundPeers', lines);
+    _outboundPeers.toTxRep('$prefix.outboundPeers', lines);
+    _nodeData.toTxRep('$prefix.nodeData', lines);
+  }
+
+  static XdrTopologyResponseBodyV2 fromTxRep(Map<String, String> map, String prefix) {
+    XdrTimeSlicedPeerDataList inboundPeers = XdrTimeSlicedPeerDataList.fromTxRep(map, '$prefix.inboundPeers');
+    XdrTimeSlicedPeerDataList outboundPeers = XdrTimeSlicedPeerDataList.fromTxRep(map, '$prefix.outboundPeers');
+    XdrTimeSlicedNodeData nodeData = XdrTimeSlicedNodeData.fromTxRep(map, '$prefix.nodeData');
+    return XdrTopologyResponseBodyV2(inboundPeers, outboundPeers, nodeData);
   }
 }

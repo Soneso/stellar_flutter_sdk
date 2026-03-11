@@ -799,6 +799,29 @@ void main() {
       expect(reconstructedXdr, equals(xdr));
     });
 
+    test('handles memo text with quotes and backslashes', () {
+      final paymentOp = PaymentOperationBuilder(
+        destinationKeyPair.accountId,
+        Asset.NATIVE,
+        "100.0"
+      ).build();
+
+      final transaction = TransactionBuilder(sourceAccount)
+        .addOperation(paymentOp)
+        .addMemo(Memo.text('Say "hi" \\ ok'))
+        .build();
+
+      transaction.sign(sourceKeyPair, testNetwork);
+
+      final xdr = transaction.toEnvelopeXdrBase64();
+      final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
+
+      expect(txRep, contains(r'Say \"hi\" \\ ok'));
+
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      expect(reconstructedXdr, equals(xdr));
+    });
+
     test('handles transaction with large amount', () {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,

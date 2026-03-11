@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_contract_event.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_val.dart';
 
 class XdrInvokeHostFunctionSuccessPreImage {
+
   XdrSCVal _returnValue;
   XdrSCVal get returnValue => this._returnValue;
   set returnValue(XdrSCVal value) => this._returnValue = value;
@@ -21,33 +23,19 @@ class XdrInvokeHostFunctionSuccessPreImage {
 
   XdrInvokeHostFunctionSuccessPreImage(this._returnValue, this._events);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrInvokeHostFunctionSuccessPreImage
-    encodedInvokeHostFunctionSuccessPreImage,
-  ) {
-    XdrSCVal.encode(
-      stream,
-      encodedInvokeHostFunctionSuccessPreImage.returnValue,
-    );
+  static void encode(XdrDataOutputStream stream, XdrInvokeHostFunctionSuccessPreImage encodedInvokeHostFunctionSuccessPreImage) {
+    XdrSCVal.encode(stream, encodedInvokeHostFunctionSuccessPreImage.returnValue);
     int eventssize = encodedInvokeHostFunctionSuccessPreImage.events.length;
     stream.writeInt(eventssize);
     for (int i = 0; i < eventssize; i++) {
-      XdrContractEvent.encode(
-        stream,
-        encodedInvokeHostFunctionSuccessPreImage.events[i],
-      );
+      XdrContractEvent.encode(stream, encodedInvokeHostFunctionSuccessPreImage.events[i]);
     }
   }
 
-  static XdrInvokeHostFunctionSuccessPreImage decode(
-    XdrDataInputStream stream,
-  ) {
+  static XdrInvokeHostFunctionSuccessPreImage decode(XdrDataInputStream stream) {
     XdrSCVal returnValue = XdrSCVal.decode(stream);
     int eventssize = stream.readInt();
-    List<XdrContractEvent> events = List<XdrContractEvent>.empty(
-      growable: true,
-    );
+    List<XdrContractEvent> events = List<XdrContractEvent>.empty(growable: true);
     for (int i = 0; i < eventssize; i++) {
       events.add(XdrContractEvent.decode(stream));
     }
@@ -60,12 +48,26 @@ class XdrInvokeHostFunctionSuccessPreImage {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrInvokeHostFunctionSuccessPreImage fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrInvokeHostFunctionSuccessPreImage fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrInvokeHostFunctionSuccessPreImage.decode(
-      XdrDataInputStream(bytes),
-    );
+    return XdrInvokeHostFunctionSuccessPreImage.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _returnValue.toTxRep('$prefix.returnValue', lines);
+    lines.add('$prefix.events.len: ${_events.length}');
+    for (int i = 0; i < _events.length; i++) {
+      _events[i].toTxRep('$prefix.events[$i]', lines);
+    }
+  }
+
+  static XdrInvokeHostFunctionSuccessPreImage fromTxRep(Map<String, String> map, String prefix) {
+    XdrSCVal returnValue = XdrSCVal.fromTxRep(map, '$prefix.returnValue');
+    int eventsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.events.len') ?? '0');
+    List<XdrContractEvent> events = [];
+    for (int i = 0; i < eventsLen; i++) {
+      events.add(XdrContractEvent.fromTxRep(map, '$prefix.events[$i]'));
+    }
+    return XdrInvokeHostFunctionSuccessPreImage(returnValue, events);
   }
 }

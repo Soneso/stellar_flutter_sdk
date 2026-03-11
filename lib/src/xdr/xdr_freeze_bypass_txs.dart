@@ -6,20 +6,19 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 
 class XdrFreezeBypassTxs {
+
   List<XdrHash> _txHashes;
   List<XdrHash> get txHashes => this._txHashes;
   set txHashes(List<XdrHash> value) => this._txHashes = value;
 
   XdrFreezeBypassTxs(this._txHashes);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrFreezeBypassTxs encodedFreezeBypassTxs,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrFreezeBypassTxs encodedFreezeBypassTxs) {
     int txHashessize = encodedFreezeBypassTxs.txHashes.length;
     stream.writeInt(txHashessize);
     for (int i = 0; i < txHashessize; i++) {
@@ -45,5 +44,21 @@ class XdrFreezeBypassTxs {
   static XdrFreezeBypassTxs fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFreezeBypassTxs.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.txHashes.len: ${_txHashes.length}');
+    for (int i = 0; i < _txHashes.length; i++) {
+      _txHashes[i].toTxRep('$prefix.txHashes[$i]', lines);
+    }
+  }
+
+  static XdrFreezeBypassTxs fromTxRep(Map<String, String> map, String prefix) {
+    int txHashesLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.txHashes.len') ?? '0');
+    List<XdrHash> txHashes = [];
+    for (int i = 0; i < txHashesLen; i++) {
+      txHashes.add(XdrHash.fromTxRep(map, '$prefix.txHashes[$i]'));
+    }
+    return XdrFreezeBypassTxs(txHashes);
   }
 }

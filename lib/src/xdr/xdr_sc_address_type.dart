@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSCAddressType {
@@ -17,21 +18,16 @@ class XdrSCAddressType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrSCAddressType && _value == other._value;
+      identical(this, other) || other is XdrSCAddressType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
   static const SC_ADDRESS_TYPE_ACCOUNT = const XdrSCAddressType._internal(0);
   static const SC_ADDRESS_TYPE_CONTRACT = const XdrSCAddressType._internal(1);
-  static const SC_ADDRESS_TYPE_MUXED_ACCOUNT = const XdrSCAddressType._internal(
-    2,
-  );
-  static const SC_ADDRESS_TYPE_CLAIMABLE_BALANCE =
-      const XdrSCAddressType._internal(3);
-  static const SC_ADDRESS_TYPE_LIQUIDITY_POOL =
-      const XdrSCAddressType._internal(4);
+  static const SC_ADDRESS_TYPE_MUXED_ACCOUNT = const XdrSCAddressType._internal(2);
+  static const SC_ADDRESS_TYPE_CLAIMABLE_BALANCE = const XdrSCAddressType._internal(3);
+  static const SC_ADDRESS_TYPE_LIQUIDITY_POOL = const XdrSCAddressType._internal(4);
 
   static XdrSCAddressType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -64,5 +60,42 @@ class XdrSCAddressType {
   static XdrSCAddressType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCAddressType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'SC_ADDRESS_TYPE_ACCOUNT';
+      case 1: return 'SC_ADDRESS_TYPE_CONTRACT';
+      case 2: return 'SC_ADDRESS_TYPE_MUXED_ACCOUNT';
+      case 3: return 'SC_ADDRESS_TYPE_CLAIMABLE_BALANCE';
+      case 4: return 'SC_ADDRESS_TYPE_LIQUIDITY_POOL';
+      default: return 'XdrSCAddressType#$_value';
+    }
+  }
+
+  static XdrSCAddressType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrSCAddressType fromTxRepName(String name) {
+    switch (name) {
+      case 'SC_ADDRESS_TYPE_ACCOUNT': return SC_ADDRESS_TYPE_ACCOUNT;
+      case 'SC_ADDRESS_TYPE_CONTRACT': return SC_ADDRESS_TYPE_CONTRACT;
+      case 'SC_ADDRESS_TYPE_MUXED_ACCOUNT': return SC_ADDRESS_TYPE_MUXED_ACCOUNT;
+      case 'SC_ADDRESS_TYPE_CLAIMABLE_BALANCE': return SC_ADDRESS_TYPE_CLAIMABLE_BALANCE;
+      case 'SC_ADDRESS_TYPE_LIQUIDITY_POOL': return SC_ADDRESS_TYPE_LIQUIDITY_POOL;
+      default:
+        if (name.startsWith('XdrSCAddressType#')) {
+          int? val = int.tryParse(name.substring('XdrSCAddressType#'.length));
+          if (val != null) return XdrSCAddressType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

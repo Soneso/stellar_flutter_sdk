@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrPaymentResultCode {
@@ -17,8 +18,7 @@ class XdrPaymentResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrPaymentResultCode && _value == other._value;
+      identical(this, other) || other is XdrPaymentResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -27,15 +27,10 @@ class XdrPaymentResultCode {
   static const PAYMENT_MALFORMED = const XdrPaymentResultCode._internal(-1);
   static const PAYMENT_UNDERFUNDED = const XdrPaymentResultCode._internal(-2);
   static const PAYMENT_SRC_NO_TRUST = const XdrPaymentResultCode._internal(-3);
-  static const PAYMENT_SRC_NOT_AUTHORIZED =
-      const XdrPaymentResultCode._internal(-4);
-  static const PAYMENT_NO_DESTINATION = const XdrPaymentResultCode._internal(
-    -5,
-  );
+  static const PAYMENT_SRC_NOT_AUTHORIZED = const XdrPaymentResultCode._internal(-4);
+  static const PAYMENT_NO_DESTINATION = const XdrPaymentResultCode._internal(-5);
   static const PAYMENT_NO_TRUST = const XdrPaymentResultCode._internal(-6);
-  static const PAYMENT_NOT_AUTHORIZED = const XdrPaymentResultCode._internal(
-    -7,
-  );
+  static const PAYMENT_NOT_AUTHORIZED = const XdrPaymentResultCode._internal(-7);
   static const PAYMENT_LINE_FULL = const XdrPaymentResultCode._internal(-8);
   static const PAYMENT_NO_ISSUER = const XdrPaymentResultCode._internal(-9);
 
@@ -80,5 +75,52 @@ class XdrPaymentResultCode {
   static XdrPaymentResultCode fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPaymentResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'PAYMENT_SUCCESS';
+      case -1: return 'PAYMENT_MALFORMED';
+      case -2: return 'PAYMENT_UNDERFUNDED';
+      case -3: return 'PAYMENT_SRC_NO_TRUST';
+      case -4: return 'PAYMENT_SRC_NOT_AUTHORIZED';
+      case -5: return 'PAYMENT_NO_DESTINATION';
+      case -6: return 'PAYMENT_NO_TRUST';
+      case -7: return 'PAYMENT_NOT_AUTHORIZED';
+      case -8: return 'PAYMENT_LINE_FULL';
+      case -9: return 'PAYMENT_NO_ISSUER';
+      default: return 'XdrPaymentResultCode#$_value';
+    }
+  }
+
+  static XdrPaymentResultCode fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrPaymentResultCode fromTxRepName(String name) {
+    switch (name) {
+      case 'PAYMENT_SUCCESS': return PAYMENT_SUCCESS;
+      case 'PAYMENT_MALFORMED': return PAYMENT_MALFORMED;
+      case 'PAYMENT_UNDERFUNDED': return PAYMENT_UNDERFUNDED;
+      case 'PAYMENT_SRC_NO_TRUST': return PAYMENT_SRC_NO_TRUST;
+      case 'PAYMENT_SRC_NOT_AUTHORIZED': return PAYMENT_SRC_NOT_AUTHORIZED;
+      case 'PAYMENT_NO_DESTINATION': return PAYMENT_NO_DESTINATION;
+      case 'PAYMENT_NO_TRUST': return PAYMENT_NO_TRUST;
+      case 'PAYMENT_NOT_AUTHORIZED': return PAYMENT_NOT_AUTHORIZED;
+      case 'PAYMENT_LINE_FULL': return PAYMENT_LINE_FULL;
+      case 'PAYMENT_NO_ISSUER': return PAYMENT_NO_ISSUER;
+      default:
+        if (name.startsWith('XdrPaymentResultCode#')) {
+          int? val = int.tryParse(name.substring('XdrPaymentResultCode#'.length));
+          if (val != null) return XdrPaymentResultCode._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

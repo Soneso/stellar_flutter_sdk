@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_fee_bump_transaction_ext.dart';
 import 'xdr_fee_bump_transaction_inner_tx.dart';
@@ -13,6 +14,7 @@ import 'xdr_int64.dart';
 import 'xdr_muxed_account.dart';
 
 class XdrFeeBumpTransaction {
+
   XdrMuxedAccount _feeSource;
   XdrMuxedAccount get feeSource => this._feeSource;
   set feeSource(XdrMuxedAccount value) => this._feeSource = value;
@@ -31,25 +33,17 @@ class XdrFeeBumpTransaction {
 
   XdrFeeBumpTransaction(this._feeSource, this._fee, this._innerTx, this._ext);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrFeeBumpTransaction encodedFeeBumpTransaction,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrFeeBumpTransaction encodedFeeBumpTransaction) {
     XdrMuxedAccount.encode(stream, encodedFeeBumpTransaction.feeSource);
     XdrInt64.encode(stream, encodedFeeBumpTransaction.fee);
-    XdrFeeBumpTransactionInnerTx.encode(
-      stream,
-      encodedFeeBumpTransaction.innerTx,
-    );
+    XdrFeeBumpTransactionInnerTx.encode(stream, encodedFeeBumpTransaction.innerTx);
     XdrFeeBumpTransactionExt.encode(stream, encodedFeeBumpTransaction.ext);
   }
 
   static XdrFeeBumpTransaction decode(XdrDataInputStream stream) {
     XdrMuxedAccount feeSource = XdrMuxedAccount.decode(stream);
     XdrInt64 fee = XdrInt64.decode(stream);
-    XdrFeeBumpTransactionInnerTx innerTx = XdrFeeBumpTransactionInnerTx.decode(
-      stream,
-    );
+    XdrFeeBumpTransactionInnerTx innerTx = XdrFeeBumpTransactionInnerTx.decode(stream);
     XdrFeeBumpTransactionExt ext = XdrFeeBumpTransactionExt.decode(stream);
     return XdrFeeBumpTransaction(feeSource, fee, innerTx, ext);
   }
@@ -60,10 +54,23 @@ class XdrFeeBumpTransaction {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrFeeBumpTransaction fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrFeeBumpTransaction fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFeeBumpTransaction.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.feeSource: ${TxRepHelper.formatMuxedAccount(_feeSource)}');
+    _fee.toTxRep('$prefix.fee', lines);
+    _innerTx.toTxRep('$prefix.innerTx', lines);
+    _ext.toTxRep('$prefix.ext', lines);
+  }
+
+  static XdrFeeBumpTransaction fromTxRep(Map<String, String> map, String prefix) {
+    XdrMuxedAccount feeSource = TxRepHelper.parseMuxedAccount(TxRepHelper.getValue(map, '$prefix.feeSource') ?? '');
+    XdrInt64 fee = XdrInt64.fromTxRep(map, '$prefix.fee');
+    XdrFeeBumpTransactionInnerTx innerTx = XdrFeeBumpTransactionInnerTx.fromTxRep(map, '$prefix.innerTx');
+    XdrFeeBumpTransactionExt ext = XdrFeeBumpTransactionExt.fromTxRep(map, '$prefix.ext');
+    return XdrFeeBumpTransaction(feeSource, fee, innerTx, ext);
   }
 }

@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_change_trust_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 
 class XdrChangeTrustOp {
+
   XdrChangeTrustAsset _line;
   XdrChangeTrustAsset get line => this._line;
   set line(XdrChangeTrustAsset value) => this._line = value;
@@ -21,10 +23,7 @@ class XdrChangeTrustOp {
 
   XdrChangeTrustOp(this._line, this._limit);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrChangeTrustOp encodedChangeTrustOp,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrChangeTrustOp encodedChangeTrustOp) {
     XdrChangeTrustAsset.encode(stream, encodedChangeTrustOp.line);
     XdrInt64.encode(stream, encodedChangeTrustOp.limit);
   }
@@ -44,5 +43,16 @@ class XdrChangeTrustOp {
   static XdrChangeTrustOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrChangeTrustOp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _line.toTxRep('$prefix.line', lines);
+    _limit.toTxRep('$prefix.limit', lines);
+  }
+
+  static XdrChangeTrustOp fromTxRep(Map<String, String> map, String prefix) {
+    XdrChangeTrustAsset line = XdrChangeTrustAsset.fromTxRep(map, '$prefix.line');
+    XdrInt64 limit = XdrInt64.fromTxRep(map, '$prefix.limit');
+    return XdrChangeTrustOp(line, limit);
   }
 }

@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_spec_function_input_v0.dart';
 import 'xdr_sc_spec_type_def.dart';
 
 class XdrSCSpecFunctionV0 {
+
   String _doc;
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
@@ -29,19 +31,13 @@ class XdrSCSpecFunctionV0 {
 
   XdrSCSpecFunctionV0(this._doc, this._name, this._inputs, this._outputs);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCSpecFunctionV0 encodedSCSpecFunctionV0,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCSpecFunctionV0 encodedSCSpecFunctionV0) {
     stream.writeString(encodedSCSpecFunctionV0.doc);
     stream.writeString(encodedSCSpecFunctionV0.name);
     int inputssize = encodedSCSpecFunctionV0.inputs.length;
     stream.writeInt(inputssize);
     for (int i = 0; i < inputssize; i++) {
-      XdrSCSpecFunctionInputV0.encode(
-        stream,
-        encodedSCSpecFunctionV0.inputs[i],
-      );
+      XdrSCSpecFunctionInputV0.encode(stream, encodedSCSpecFunctionV0.inputs[i]);
     }
     int outputssize = encodedSCSpecFunctionV0.outputs.length;
     stream.writeInt(outputssize);
@@ -54,15 +50,12 @@ class XdrSCSpecFunctionV0 {
     String doc = stream.readString();
     String name = stream.readString();
     int inputssize = stream.readInt();
-    List<XdrSCSpecFunctionInputV0> inputs =
-        List<XdrSCSpecFunctionInputV0>.empty(growable: true);
+    List<XdrSCSpecFunctionInputV0> inputs = List<XdrSCSpecFunctionInputV0>.empty(growable: true);
     for (int i = 0; i < inputssize; i++) {
       inputs.add(XdrSCSpecFunctionInputV0.decode(stream));
     }
     int outputssize = stream.readInt();
-    List<XdrSCSpecTypeDef> outputs = List<XdrSCSpecTypeDef>.empty(
-      growable: true,
-    );
+    List<XdrSCSpecTypeDef> outputs = List<XdrSCSpecTypeDef>.empty(growable: true);
     for (int i = 0; i < outputssize; i++) {
       outputs.add(XdrSCSpecTypeDef.decode(stream));
     }
@@ -78,5 +71,34 @@ class XdrSCSpecFunctionV0 {
   static XdrSCSpecFunctionV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecFunctionV0.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.doc: ${TxRepHelper.escapeString(_doc)}');
+    lines.add('$prefix.name: ${TxRepHelper.escapeString(_name)}');
+    lines.add('$prefix.inputs.len: ${_inputs.length}');
+    for (int i = 0; i < _inputs.length; i++) {
+      _inputs[i].toTxRep('$prefix.inputs[$i]', lines);
+    }
+    lines.add('$prefix.outputs.len: ${_outputs.length}');
+    for (int i = 0; i < _outputs.length; i++) {
+      _outputs[i].toTxRep('$prefix.outputs[$i]', lines);
+    }
+  }
+
+  static XdrSCSpecFunctionV0 fromTxRep(Map<String, String> map, String prefix) {
+    String doc = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.doc') ?? '');
+    String name = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.name') ?? '');
+    int inputsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.inputs.len') ?? '0');
+    List<XdrSCSpecFunctionInputV0> inputs = [];
+    for (int i = 0; i < inputsLen; i++) {
+      inputs.add(XdrSCSpecFunctionInputV0.fromTxRep(map, '$prefix.inputs[$i]'));
+    }
+    int outputsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.outputs.len') ?? '0');
+    List<XdrSCSpecTypeDef> outputs = [];
+    for (int i = 0; i < outputsLen; i++) {
+      outputs.add(XdrSCSpecTypeDef.fromTxRep(map, '$prefix.outputs[$i]'));
+    }
+    return XdrSCSpecFunctionV0(doc, name, inputs, outputs);
   }
 }

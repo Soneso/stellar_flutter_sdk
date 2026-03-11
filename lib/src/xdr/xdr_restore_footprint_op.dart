@@ -6,20 +6,19 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
 
 class XdrRestoreFootprintOp {
+
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
 
   XdrRestoreFootprintOp(this._ext);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrRestoreFootprintOp encodedRestoreFootprintOp,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrRestoreFootprintOp encodedRestoreFootprintOp) {
     XdrExtensionPoint.encode(stream, encodedRestoreFootprintOp.ext);
   }
 
@@ -34,10 +33,17 @@ class XdrRestoreFootprintOp {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrRestoreFootprintOp fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrRestoreFootprintOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrRestoreFootprintOp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _ext.toTxRep('$prefix.ext', lines);
+  }
+
+  static XdrRestoreFootprintOp fromTxRep(Map<String, String> map, String prefix) {
+    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
+    return XdrRestoreFootprintOp(ext);
   }
 }

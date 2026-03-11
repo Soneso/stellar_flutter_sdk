@@ -19,6 +19,11 @@ class XdrInt256Parts extends XdrInt256PartsBase {
     return XdrInt256Parts(b.hiHi, b.hiLo, b.loHi, b.loLo);
   }
 
+  static XdrInt256Parts fromTxRep(Map<String, String> map, String prefix) {
+    var b = XdrInt256PartsBase.fromTxRep(map, prefix);
+    return XdrInt256Parts(b.hiHi, b.hiLo, b.loHi, b.loLo);
+  }
+
   static XdrInt256Parts forHiHiHiLoLoHiLoLo(
     BigInt hiHi,
     BigInt hiLo,

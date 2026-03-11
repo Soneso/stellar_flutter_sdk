@@ -6,12 +6,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_scp_envelope.dart';
 import 'xdr_scp_quorum_set.dart';
 import 'xdr_stored_transaction_set.dart';
 
 class XdrPersistedSCPStateV0 {
+
   List<XdrSCPEnvelope> _scpEnvelopes;
   List<XdrSCPEnvelope> get scpEnvelopes => this._scpEnvelopes;
   set scpEnvelopes(List<XdrSCPEnvelope> value) => this._scpEnvelopes = value;
@@ -26,10 +28,7 @@ class XdrPersistedSCPStateV0 {
 
   XdrPersistedSCPStateV0(this._scpEnvelopes, this._quorumSets, this._txSets);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrPersistedSCPStateV0 encodedPersistedSCPStateV0,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrPersistedSCPStateV0 encodedPersistedSCPStateV0) {
     int scpEnvelopessize = encodedPersistedSCPStateV0.scpEnvelopes.length;
     stream.writeInt(scpEnvelopessize);
     for (int i = 0; i < scpEnvelopessize; i++) {
@@ -43,32 +42,23 @@ class XdrPersistedSCPStateV0 {
     int txSetssize = encodedPersistedSCPStateV0.txSets.length;
     stream.writeInt(txSetssize);
     for (int i = 0; i < txSetssize; i++) {
-      XdrStoredTransactionSet.encode(
-        stream,
-        encodedPersistedSCPStateV0.txSets[i],
-      );
+      XdrStoredTransactionSet.encode(stream, encodedPersistedSCPStateV0.txSets[i]);
     }
   }
 
   static XdrPersistedSCPStateV0 decode(XdrDataInputStream stream) {
     int scpEnvelopessize = stream.readInt();
-    List<XdrSCPEnvelope> scpEnvelopes = List<XdrSCPEnvelope>.empty(
-      growable: true,
-    );
+    List<XdrSCPEnvelope> scpEnvelopes = List<XdrSCPEnvelope>.empty(growable: true);
     for (int i = 0; i < scpEnvelopessize; i++) {
       scpEnvelopes.add(XdrSCPEnvelope.decode(stream));
     }
     int quorumSetssize = stream.readInt();
-    List<XdrSCPQuorumSet> quorumSets = List<XdrSCPQuorumSet>.empty(
-      growable: true,
-    );
+    List<XdrSCPQuorumSet> quorumSets = List<XdrSCPQuorumSet>.empty(growable: true);
     for (int i = 0; i < quorumSetssize; i++) {
       quorumSets.add(XdrSCPQuorumSet.decode(stream));
     }
     int txSetssize = stream.readInt();
-    List<XdrStoredTransactionSet> txSets = List<XdrStoredTransactionSet>.empty(
-      growable: true,
-    );
+    List<XdrStoredTransactionSet> txSets = List<XdrStoredTransactionSet>.empty(growable: true);
     for (int i = 0; i < txSetssize; i++) {
       txSets.add(XdrStoredTransactionSet.decode(stream));
     }
@@ -81,10 +71,42 @@ class XdrPersistedSCPStateV0 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrPersistedSCPStateV0 fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrPersistedSCPStateV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPersistedSCPStateV0.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.scpEnvelopes.len: ${_scpEnvelopes.length}');
+    for (int i = 0; i < _scpEnvelopes.length; i++) {
+      _scpEnvelopes[i].toTxRep('$prefix.scpEnvelopes[$i]', lines);
+    }
+    lines.add('$prefix.quorumSets.len: ${_quorumSets.length}');
+    for (int i = 0; i < _quorumSets.length; i++) {
+      _quorumSets[i].toTxRep('$prefix.quorumSets[$i]', lines);
+    }
+    lines.add('$prefix.txSets.len: ${_txSets.length}');
+    for (int i = 0; i < _txSets.length; i++) {
+      _txSets[i].toTxRep('$prefix.txSets[$i]', lines);
+    }
+  }
+
+  static XdrPersistedSCPStateV0 fromTxRep(Map<String, String> map, String prefix) {
+    int scpEnvelopesLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.scpEnvelopes.len') ?? '0');
+    List<XdrSCPEnvelope> scpEnvelopes = [];
+    for (int i = 0; i < scpEnvelopesLen; i++) {
+      scpEnvelopes.add(XdrSCPEnvelope.fromTxRep(map, '$prefix.scpEnvelopes[$i]'));
+    }
+    int quorumSetsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.quorumSets.len') ?? '0');
+    List<XdrSCPQuorumSet> quorumSets = [];
+    for (int i = 0; i < quorumSetsLen; i++) {
+      quorumSets.add(XdrSCPQuorumSet.fromTxRep(map, '$prefix.quorumSets[$i]'));
+    }
+    int txSetsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.txSets.len') ?? '0');
+    List<XdrStoredTransactionSet> txSets = [];
+    for (int i = 0; i < txSetsLen; i++) {
+      txSets.add(XdrStoredTransactionSet.fromTxRep(map, '$prefix.txSets[$i]'));
+    }
+    return XdrPersistedSCPStateV0(scpEnvelopes, quorumSets, txSets);
   }
 }

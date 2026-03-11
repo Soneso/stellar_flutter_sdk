@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_scp_history_entry_v0.dart';
 
@@ -27,10 +28,7 @@ class XdrSCPHistoryEntry {
 
   set v0(XdrSCPHistoryEntryV0? value) => this._v0 = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCPHistoryEntry encodedSCPHistoryEntry,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCPHistoryEntry encodedSCPHistoryEntry) {
     stream.writeInt(encodedSCPHistoryEntry.discriminant);
     switch (encodedSCPHistoryEntry.discriminant) {
       case 0:
@@ -43,9 +41,7 @@ class XdrSCPHistoryEntry {
 
   static XdrSCPHistoryEntry decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrSCPHistoryEntry decodedSCPHistoryEntry = XdrSCPHistoryEntry(
-      discriminant,
-    );
+    XdrSCPHistoryEntry decodedSCPHistoryEntry = XdrSCPHistoryEntry(discriminant);
     switch (decodedSCPHistoryEntry.discriminant) {
       case 0:
         decodedSCPHistoryEntry._v0 = XdrSCPHistoryEntryV0.decode(stream);
@@ -65,5 +61,29 @@ class XdrSCPHistoryEntry {
   static XdrSCPHistoryEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPHistoryEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        _v0!.toTxRep('$prefix.v0', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrSCPHistoryEntry fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrSCPHistoryEntry result = XdrSCPHistoryEntry(disc);
+    switch (result.discriminant) {
+      case 0:
+        result._v0 = XdrSCPHistoryEntryV0.fromTxRep(map, '$prefix.v0');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSCSpecEventParamLocationV0 {
@@ -17,16 +18,13 @@ class XdrSCSpecEventParamLocationV0 {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrSCSpecEventParamLocationV0 && _value == other._value;
+      identical(this, other) || other is XdrSCSpecEventParamLocationV0 && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const SC_SPEC_EVENT_PARAM_LOCATION_DATA =
-      const XdrSCSpecEventParamLocationV0._internal(0);
-  static const SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST =
-      const XdrSCSpecEventParamLocationV0._internal(1);
+  static const SC_SPEC_EVENT_PARAM_LOCATION_DATA = const XdrSCSpecEventParamLocationV0._internal(0);
+  static const SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST = const XdrSCSpecEventParamLocationV0._internal(1);
 
   static XdrSCSpecEventParamLocationV0 decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -40,10 +38,7 @@ class XdrSCSpecEventParamLocationV0 {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCSpecEventParamLocationV0 value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCSpecEventParamLocationV0 value) {
     stream.writeInt(value.value);
   }
 
@@ -53,10 +48,39 @@ class XdrSCSpecEventParamLocationV0 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSCSpecEventParamLocationV0 fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrSCSpecEventParamLocationV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecEventParamLocationV0.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'SC_SPEC_EVENT_PARAM_LOCATION_DATA';
+      case 1: return 'SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST';
+      default: return 'XdrSCSpecEventParamLocationV0#$_value';
+    }
+  }
+
+  static XdrSCSpecEventParamLocationV0 fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrSCSpecEventParamLocationV0 fromTxRepName(String name) {
+    switch (name) {
+      case 'SC_SPEC_EVENT_PARAM_LOCATION_DATA': return SC_SPEC_EVENT_PARAM_LOCATION_DATA;
+      case 'SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST': return SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST;
+      default:
+        if (name.startsWith('XdrSCSpecEventParamLocationV0#')) {
+          int? val = int.tryParse(name.substring('XdrSCSpecEventParamLocationV0#'.length));
+          if (val != null) return XdrSCSpecEventParamLocationV0._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

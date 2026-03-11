@@ -6,12 +6,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_scp_ballot.dart';
 import 'xdr_uint32.dart';
 
 class XdrSCPStatementConfirm {
+
   XdrSCPBallot _ballot;
   XdrSCPBallot get ballot => this._ballot;
   set ballot(XdrSCPBallot value) => this._ballot = value;
@@ -32,18 +34,9 @@ class XdrSCPStatementConfirm {
   XdrHash get quorumSetHash => this._quorumSetHash;
   set quorumSetHash(XdrHash value) => this._quorumSetHash = value;
 
-  XdrSCPStatementConfirm(
-    this._ballot,
-    this._nPrepared,
-    this._nCommit,
-    this._nH,
-    this._quorumSetHash,
-  );
+  XdrSCPStatementConfirm(this._ballot, this._nPrepared, this._nCommit, this._nH, this._quorumSetHash);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCPStatementConfirm encodedSCPStatementConfirm,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCPStatementConfirm encodedSCPStatementConfirm) {
     XdrSCPBallot.encode(stream, encodedSCPStatementConfirm.ballot);
     XdrUint32.encode(stream, encodedSCPStatementConfirm.nPrepared);
     XdrUint32.encode(stream, encodedSCPStatementConfirm.nCommit);
@@ -57,13 +50,7 @@ class XdrSCPStatementConfirm {
     XdrUint32 nCommit = XdrUint32.decode(stream);
     XdrUint32 nH = XdrUint32.decode(stream);
     XdrHash quorumSetHash = XdrHash.decode(stream);
-    return XdrSCPStatementConfirm(
-      ballot,
-      nPrepared,
-      nCommit,
-      nH,
-      quorumSetHash,
-    );
+    return XdrSCPStatementConfirm(ballot, nPrepared, nCommit, nH, quorumSetHash);
   }
 
   String toBase64EncodedXdrString() {
@@ -72,10 +59,25 @@ class XdrSCPStatementConfirm {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSCPStatementConfirm fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrSCPStatementConfirm fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPStatementConfirm.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _ballot.toTxRep('$prefix.ballot', lines);
+    _nPrepared.toTxRep('$prefix.nPrepared', lines);
+    _nCommit.toTxRep('$prefix.nCommit', lines);
+    _nH.toTxRep('$prefix.nH', lines);
+    _quorumSetHash.toTxRep('$prefix.quorumSetHash', lines);
+  }
+
+  static XdrSCPStatementConfirm fromTxRep(Map<String, String> map, String prefix) {
+    XdrSCPBallot ballot = XdrSCPBallot.fromTxRep(map, '$prefix.ballot');
+    XdrUint32 nPrepared = XdrUint32.fromTxRep(map, '$prefix.nPrepared');
+    XdrUint32 nCommit = XdrUint32.fromTxRep(map, '$prefix.nCommit');
+    XdrUint32 nH = XdrUint32.fromTxRep(map, '$prefix.nH');
+    XdrHash quorumSetHash = XdrHash.fromTxRep(map, '$prefix.quorumSetHash');
+    return XdrSCPStatementConfirm(ballot, nPrepared, nCommit, nH, quorumSetHash);
   }
 }

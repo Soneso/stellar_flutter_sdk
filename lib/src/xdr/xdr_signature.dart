@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSignature {
@@ -15,10 +16,7 @@ class XdrSignature {
   Uint8List get signature => this._signature;
   set signature(Uint8List value) => this._signature = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSignature encodedSignature,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSignature encodedSignature) {
     int signatureSize = encodedSignature.signature.length;
     stream.writeInt(signatureSize);
     stream.write(encodedSignature.signature);
@@ -38,5 +36,15 @@ class XdrSignature {
   static XdrSignature fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSignature.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${TxRepHelper.bytesToHex(_signature)}');
+  }
+
+  static XdrSignature fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return XdrSignature(TxRepHelper.hexToBytes(raw));
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_claimable_balance_entry_ext.dart';
 import 'xdr_claimable_balance_id.dart';
@@ -14,6 +15,7 @@ import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 
 class XdrClaimableBalanceEntry {
+
   XdrClaimableBalanceID _balanceID;
   XdrClaimableBalanceID get balanceID => this._balanceID;
   set balanceID(XdrClaimableBalanceID value) => this._balanceID = value;
@@ -34,22 +36,10 @@ class XdrClaimableBalanceEntry {
   XdrClaimableBalanceEntryExt get ext => this._ext;
   set ext(XdrClaimableBalanceEntryExt value) => this._ext = value;
 
-  XdrClaimableBalanceEntry(
-    this._balanceID,
-    this._claimants,
-    this._asset,
-    this._amount,
-    this._ext,
-  );
+  XdrClaimableBalanceEntry(this._balanceID, this._claimants, this._asset, this._amount, this._ext);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrClaimableBalanceEntry encodedClaimableBalanceEntry,
-  ) {
-    XdrClaimableBalanceID.encode(
-      stream,
-      encodedClaimableBalanceEntry.balanceID,
-    );
+  static void encode(XdrDataOutputStream stream, XdrClaimableBalanceEntry encodedClaimableBalanceEntry) {
+    XdrClaimableBalanceID.encode(stream, encodedClaimableBalanceEntry.balanceID);
     int claimantssize = encodedClaimableBalanceEntry.claimants.length;
     stream.writeInt(claimantssize);
     for (int i = 0; i < claimantssize; i++) {
@@ -57,10 +47,7 @@ class XdrClaimableBalanceEntry {
     }
     XdrAsset.encode(stream, encodedClaimableBalanceEntry.asset);
     XdrInt64.encode(stream, encodedClaimableBalanceEntry.amount);
-    XdrClaimableBalanceEntryExt.encode(
-      stream,
-      encodedClaimableBalanceEntry.ext,
-    );
+    XdrClaimableBalanceEntryExt.encode(stream, encodedClaimableBalanceEntry.ext);
   }
 
   static XdrClaimableBalanceEntry decode(XdrDataInputStream stream) {
@@ -72,9 +59,7 @@ class XdrClaimableBalanceEntry {
     }
     XdrAsset asset = XdrAsset.decode(stream);
     XdrInt64 amount = XdrInt64.decode(stream);
-    XdrClaimableBalanceEntryExt ext = XdrClaimableBalanceEntryExt.decode(
-      stream,
-    );
+    XdrClaimableBalanceEntryExt ext = XdrClaimableBalanceEntryExt.decode(stream);
     return XdrClaimableBalanceEntry(balanceID, claimants, asset, amount, ext);
   }
 
@@ -84,10 +69,32 @@ class XdrClaimableBalanceEntry {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrClaimableBalanceEntry fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrClaimableBalanceEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimableBalanceEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _balanceID.toTxRep('$prefix.balanceID', lines);
+    lines.add('$prefix.claimants.len: ${_claimants.length}');
+    for (int i = 0; i < _claimants.length; i++) {
+      _claimants[i].toTxRep('$prefix.claimants[$i]', lines);
+    }
+    lines.add('$prefix.asset: ${TxRepHelper.formatAsset(_asset)}');
+    _amount.toTxRep('$prefix.amount', lines);
+    _ext.toTxRep('$prefix.ext', lines);
+  }
+
+  static XdrClaimableBalanceEntry fromTxRep(Map<String, String> map, String prefix) {
+    XdrClaimableBalanceID balanceID = XdrClaimableBalanceID.fromTxRep(map, '$prefix.balanceID');
+    int claimantsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.claimants.len') ?? '0');
+    List<XdrClaimant> claimants = [];
+    for (int i = 0; i < claimantsLen; i++) {
+      claimants.add(XdrClaimant.fromTxRep(map, '$prefix.claimants[$i]'));
+    }
+    XdrAsset asset = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.asset') ?? '');
+    XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.amount');
+    XdrClaimableBalanceEntryExt ext = XdrClaimableBalanceEntryExt.fromTxRep(map, '$prefix.ext');
+    return XdrClaimableBalanceEntry(balanceID, claimants, asset, amount, ext);
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrLiquidityPoolType {
@@ -17,14 +18,12 @@ class XdrLiquidityPoolType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrLiquidityPoolType && _value == other._value;
+      identical(this, other) || other is XdrLiquidityPoolType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const LIQUIDITY_POOL_CONSTANT_PRODUCT =
-      const XdrLiquidityPoolType._internal(0);
+  static const LIQUIDITY_POOL_CONSTANT_PRODUCT = const XdrLiquidityPoolType._internal(0);
 
   static XdrLiquidityPoolType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -49,5 +48,34 @@ class XdrLiquidityPoolType {
   static XdrLiquidityPoolType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'LIQUIDITY_POOL_CONSTANT_PRODUCT';
+      default: return 'XdrLiquidityPoolType#$_value';
+    }
+  }
+
+  static XdrLiquidityPoolType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrLiquidityPoolType fromTxRepName(String name) {
+    switch (name) {
+      case 'LIQUIDITY_POOL_CONSTANT_PRODUCT': return LIQUIDITY_POOL_CONSTANT_PRODUCT;
+      default:
+        if (name.startsWith('XdrLiquidityPoolType#')) {
+          int? val = int.tryParse(name.substring('XdrLiquidityPoolType#'.length));
+          if (val != null) return XdrLiquidityPoolType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

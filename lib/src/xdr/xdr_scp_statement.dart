@@ -6,12 +6,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_node_id.dart';
 import 'xdr_scp_statement_pledges.dart';
 import 'xdr_uint64.dart';
 
 class XdrSCPStatement {
+
   XdrNodeID _nodeID;
   XdrNodeID get nodeID => this._nodeID;
   set nodeID(XdrNodeID value) => this._nodeID = value;
@@ -26,10 +28,7 @@ class XdrSCPStatement {
 
   XdrSCPStatement(this._nodeID, this._slotIndex, this._pledges);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCPStatement encodedSCPStatement,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCPStatement encodedSCPStatement) {
     XdrNodeID.encode(stream, encodedSCPStatement.nodeID);
     XdrUint64.encode(stream, encodedSCPStatement.slotIndex);
     XdrSCPStatementPledges.encode(stream, encodedSCPStatement.pledges);
@@ -51,5 +50,18 @@ class XdrSCPStatement {
   static XdrSCPStatement fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPStatement.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _nodeID.toTxRep('$prefix.nodeID', lines);
+    _slotIndex.toTxRep('$prefix.slotIndex', lines);
+    _pledges.toTxRep('$prefix.pledges', lines);
+  }
+
+  static XdrSCPStatement fromTxRep(Map<String, String> map, String prefix) {
+    XdrNodeID nodeID = XdrNodeID.fromTxRep(map, '$prefix.nodeID');
+    XdrUint64 slotIndex = XdrUint64.fromTxRep(map, '$prefix.slotIndex');
+    XdrSCPStatementPledges pledges = XdrSCPStatementPledges.fromTxRep(map, '$prefix.pledges');
+    return XdrSCPStatement(nodeID, slotIndex, pledges);
   }
 }

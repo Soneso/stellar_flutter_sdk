@@ -6,15 +6,16 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int32.dart';
 import 'xdr_trust_line_entry_extension_v2_ext.dart';
 
 class XdrTrustLineEntryExtensionV2 {
+
   XdrInt32 _liquidityPoolUseCount;
   XdrInt32 get liquidityPoolUseCount => this._liquidityPoolUseCount;
-  set liquidityPoolUseCount(XdrInt32 value) =>
-      this._liquidityPoolUseCount = value;
+  set liquidityPoolUseCount(XdrInt32 value) => this._liquidityPoolUseCount = value;
 
   XdrTrustLineEntryExtensionV2Ext _ext;
   XdrTrustLineEntryExtensionV2Ext get ext => this._ext;
@@ -22,24 +23,14 @@ class XdrTrustLineEntryExtensionV2 {
 
   XdrTrustLineEntryExtensionV2(this._liquidityPoolUseCount, this._ext);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTrustLineEntryExtensionV2 encodedTrustLineEntryExtensionV2,
-  ) {
-    XdrInt32.encode(
-      stream,
-      encodedTrustLineEntryExtensionV2.liquidityPoolUseCount,
-    );
-    XdrTrustLineEntryExtensionV2Ext.encode(
-      stream,
-      encodedTrustLineEntryExtensionV2.ext,
-    );
+  static void encode(XdrDataOutputStream stream, XdrTrustLineEntryExtensionV2 encodedTrustLineEntryExtensionV2) {
+    XdrInt32.encode(stream, encodedTrustLineEntryExtensionV2.liquidityPoolUseCount);
+    XdrTrustLineEntryExtensionV2Ext.encode(stream, encodedTrustLineEntryExtensionV2.ext);
   }
 
   static XdrTrustLineEntryExtensionV2 decode(XdrDataInputStream stream) {
     XdrInt32 liquidityPoolUseCount = XdrInt32.decode(stream);
-    XdrTrustLineEntryExtensionV2Ext ext =
-        XdrTrustLineEntryExtensionV2Ext.decode(stream);
+    XdrTrustLineEntryExtensionV2Ext ext = XdrTrustLineEntryExtensionV2Ext.decode(stream);
     return XdrTrustLineEntryExtensionV2(liquidityPoolUseCount, ext);
   }
 
@@ -49,10 +40,19 @@ class XdrTrustLineEntryExtensionV2 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTrustLineEntryExtensionV2 fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrTrustLineEntryExtensionV2 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTrustLineEntryExtensionV2.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _liquidityPoolUseCount.toTxRep('$prefix.liquidityPoolUseCount', lines);
+    _ext.toTxRep('$prefix.ext', lines);
+  }
+
+  static XdrTrustLineEntryExtensionV2 fromTxRep(Map<String, String> map, String prefix) {
+    XdrInt32 liquidityPoolUseCount = XdrInt32.fromTxRep(map, '$prefix.liquidityPoolUseCount');
+    XdrTrustLineEntryExtensionV2Ext ext = XdrTrustLineEntryExtensionV2Ext.fromTxRep(map, '$prefix.ext');
+    return XdrTrustLineEntryExtensionV2(liquidityPoolUseCount, ext);
   }
 }

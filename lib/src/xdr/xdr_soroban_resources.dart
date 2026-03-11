@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger_footprint.dart';
 import 'xdr_uint32.dart';
 
 class XdrSorobanResources {
+
   XdrLedgerFootprint _footprint;
   XdrLedgerFootprint get footprint => this._footprint;
   set footprint(XdrLedgerFootprint value) => this._footprint = value;
@@ -27,17 +29,9 @@ class XdrSorobanResources {
   XdrUint32 get writeBytes => this._writeBytes;
   set writeBytes(XdrUint32 value) => this._writeBytes = value;
 
-  XdrSorobanResources(
-    this._footprint,
-    this._instructions,
-    this._diskReadBytes,
-    this._writeBytes,
-  );
+  XdrSorobanResources(this._footprint, this._instructions, this._diskReadBytes, this._writeBytes);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSorobanResources encodedSorobanResources,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSorobanResources encodedSorobanResources) {
     XdrLedgerFootprint.encode(stream, encodedSorobanResources.footprint);
     XdrUint32.encode(stream, encodedSorobanResources.instructions);
     XdrUint32.encode(stream, encodedSorobanResources.diskReadBytes);
@@ -49,12 +43,7 @@ class XdrSorobanResources {
     XdrUint32 instructions = XdrUint32.decode(stream);
     XdrUint32 diskReadBytes = XdrUint32.decode(stream);
     XdrUint32 writeBytes = XdrUint32.decode(stream);
-    return XdrSorobanResources(
-      footprint,
-      instructions,
-      diskReadBytes,
-      writeBytes,
-    );
+    return XdrSorobanResources(footprint, instructions, diskReadBytes, writeBytes);
   }
 
   String toBase64EncodedXdrString() {
@@ -66,5 +55,20 @@ class XdrSorobanResources {
   static XdrSorobanResources fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanResources.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _footprint.toTxRep('$prefix.footprint', lines);
+    _instructions.toTxRep('$prefix.instructions', lines);
+    _diskReadBytes.toTxRep('$prefix.diskReadBytes', lines);
+    _writeBytes.toTxRep('$prefix.writeBytes', lines);
+  }
+
+  static XdrSorobanResources fromTxRep(Map<String, String> map, String prefix) {
+    XdrLedgerFootprint footprint = XdrLedgerFootprint.fromTxRep(map, '$prefix.footprint');
+    XdrUint32 instructions = XdrUint32.fromTxRep(map, '$prefix.instructions');
+    XdrUint32 diskReadBytes = XdrUint32.fromTxRep(map, '$prefix.diskReadBytes');
+    XdrUint32 writeBytes = XdrUint32.fromTxRep(map, '$prefix.writeBytes');
+    return XdrSorobanResources(footprint, instructions, diskReadBytes, writeBytes);
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_claim_claimable_balance_result_code.dart';
 import 'xdr_data_io.dart';
 
@@ -14,8 +15,7 @@ class XdrClaimClaimableBalanceResult {
 
   XdrClaimClaimableBalanceResultCode get discriminant => this._code;
 
-  set discriminant(XdrClaimClaimableBalanceResultCode value) =>
-      this._code = value;
+  set discriminant(XdrClaimClaimableBalanceResultCode value) => this._code = value;
 
   /// Alias for [discriminant], the original XDR field name.
   XdrClaimClaimableBalanceResultCode get code => this._code;
@@ -23,10 +23,7 @@ class XdrClaimClaimableBalanceResult {
 
   XdrClaimClaimableBalanceResult(this._code);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrClaimClaimableBalanceResult encodedClaimClaimableBalanceResult,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrClaimClaimableBalanceResult encodedClaimClaimableBalanceResult) {
     stream.writeInt(encodedClaimClaimableBalanceResult.discriminant.value);
     switch (encodedClaimClaimableBalanceResult.discriminant) {
       case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_SUCCESS:
@@ -37,10 +34,7 @@ class XdrClaimClaimableBalanceResult {
   }
 
   static XdrClaimClaimableBalanceResult decode(XdrDataInputStream stream) {
-    XdrClaimClaimableBalanceResult decodedClaimClaimableBalanceResult =
-        XdrClaimClaimableBalanceResult(
-          XdrClaimClaimableBalanceResultCode.decode(stream),
-        );
+    XdrClaimClaimableBalanceResult decodedClaimClaimableBalanceResult = XdrClaimClaimableBalanceResult(XdrClaimClaimableBalanceResultCode.decode(stream));
     switch (decodedClaimClaimableBalanceResult.discriminant) {
       case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_SUCCESS:
         break;
@@ -56,10 +50,44 @@ class XdrClaimClaimableBalanceResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrClaimClaimableBalanceResult fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrClaimClaimableBalanceResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimClaimableBalanceResult.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.code: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_SUCCESS:
+        break;
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST:
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM:
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_LINE_FULL:
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_NO_TRUST:
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED:
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrClaimClaimableBalanceResult fromTxRep(Map<String, String> map, String prefix) {
+    XdrClaimClaimableBalanceResultCode disc = XdrClaimClaimableBalanceResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+    XdrClaimClaimableBalanceResult result = XdrClaimClaimableBalanceResult(disc);
+    switch (result.discriminant) {
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_SUCCESS:
+        break;
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST:
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM:
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_LINE_FULL:
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_NO_TRUST:
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED:
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

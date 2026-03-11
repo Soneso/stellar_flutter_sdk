@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_asset_alpha_num12.dart';
 import 'xdr_asset_alpha_num4.dart';
 import 'xdr_asset_type.dart';
@@ -41,13 +42,9 @@ class XdrChangeTrustAssetBase {
 
   set alphaNum12(XdrAssetAlphaNum12? value) => this._alphaNum12 = value;
 
-  set liquidityPool(XdrLiquidityPoolParameters? value) =>
-      this._liquidityPool = value;
+  set liquidityPool(XdrLiquidityPoolParameters? value) => this._liquidityPool = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrChangeTrustAssetBase encodedChangeTrustAsset,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrChangeTrustAssetBase encodedChangeTrustAsset) {
     stream.writeInt(encodedChangeTrustAsset.discriminant.value);
     switch (encodedChangeTrustAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
@@ -59,10 +56,7 @@ class XdrChangeTrustAssetBase {
         XdrAssetAlphaNum12.encode(stream, encodedChangeTrustAsset._alphaNum12!);
         break;
       case XdrAssetType.ASSET_TYPE_POOL_SHARE:
-        XdrLiquidityPoolParameters.encode(
-          stream,
-          encodedChangeTrustAsset._liquidityPool!,
-        );
+        XdrLiquidityPoolParameters.encode(stream, encodedChangeTrustAsset._liquidityPool!);
         break;
       default:
         break;
@@ -102,10 +96,48 @@ class XdrChangeTrustAssetBase {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrChangeTrustAssetBase fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrChangeTrustAssetBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrChangeTrustAssetBase.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrAssetType.ASSET_TYPE_NATIVE:
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+        _alphaNum4!.toTxRep('$prefix.alphaNum4', lines);
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+        _alphaNum12!.toTxRep('$prefix.alphaNum12', lines);
+        break;
+      case XdrAssetType.ASSET_TYPE_POOL_SHARE:
+        _liquidityPool!.toTxRep('$prefix.liquidityPool', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrChangeTrustAssetBase fromTxRep(Map<String, String> map, String prefix) {
+    XdrAssetType disc = XdrAssetType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrChangeTrustAssetBase result = XdrChangeTrustAssetBase(disc);
+    switch (result.discriminant) {
+      case XdrAssetType.ASSET_TYPE_NATIVE:
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+        result._alphaNum4 = XdrAssetAlphaNum4.fromTxRep(map, '$prefix.alphaNum4');
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+        result._alphaNum12 = XdrAssetAlphaNum12.fromTxRep(map, '$prefix.alphaNum12');
+        break;
+      case XdrAssetType.ASSET_TYPE_POOL_SHARE:
+        result._liquidityPool = XdrLiquidityPoolParameters.fromTxRep(map, '$prefix.liquidityPool');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

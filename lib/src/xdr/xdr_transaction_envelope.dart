@@ -22,6 +22,18 @@ class XdrTransactionEnvelope extends XdrTransactionEnvelopeBase {
     );
   }
 
+  static XdrTransactionEnvelope fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    var b = XdrTransactionEnvelopeBase.fromTxRep(map, prefix);
+    var result = XdrTransactionEnvelope(b.discriminant);
+    result.v0 = b.v0;
+    result.v1 = b.v1;
+    result.feeBump = b.feeBump;
+    return result;
+  }
+
   /// Legacy name — delegates to [fromBase64EncodedXdrString].
   static XdrTransactionEnvelope fromEnvelopeXdrString(String envelope) {
     return fromBase64EncodedXdrString(envelope);

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrClaimableBalanceIDType {
@@ -17,14 +18,12 @@ class XdrClaimableBalanceIDType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrClaimableBalanceIDType && _value == other._value;
+      identical(this, other) || other is XdrClaimableBalanceIDType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const CLAIMABLE_BALANCE_ID_TYPE_V0 =
-      const XdrClaimableBalanceIDType._internal(0);
+  static const CLAIMABLE_BALANCE_ID_TYPE_V0 = const XdrClaimableBalanceIDType._internal(0);
 
   static XdrClaimableBalanceIDType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -36,10 +35,7 @@ class XdrClaimableBalanceIDType {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrClaimableBalanceIDType value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrClaimableBalanceIDType value) {
     stream.writeInt(value.value);
   }
 
@@ -49,10 +45,37 @@ class XdrClaimableBalanceIDType {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrClaimableBalanceIDType fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrClaimableBalanceIDType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimableBalanceIDType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'CLAIMABLE_BALANCE_ID_TYPE_V0';
+      default: return 'XdrClaimableBalanceIDType#$_value';
+    }
+  }
+
+  static XdrClaimableBalanceIDType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrClaimableBalanceIDType fromTxRepName(String name) {
+    switch (name) {
+      case 'CLAIMABLE_BALANCE_ID_TYPE_V0': return CLAIMABLE_BALANCE_ID_TYPE_V0;
+      default:
+        if (name.startsWith('XdrClaimableBalanceIDType#')) {
+          int? val = int.tryParse(name.substring('XdrClaimableBalanceIDType#'.length));
+          if (val != null) return XdrClaimableBalanceIDType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

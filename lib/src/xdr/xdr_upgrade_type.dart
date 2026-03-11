@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrUpgradeType {
@@ -15,10 +16,7 @@ class XdrUpgradeType {
   Uint8List get upgradeType => this._upgradeType;
   set upgradeType(Uint8List value) => this._upgradeType = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrUpgradeType encodedUpgradeType,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrUpgradeType encodedUpgradeType) {
     int upgradeTypeSize = encodedUpgradeType.upgradeType.length;
     stream.writeInt(upgradeTypeSize);
     stream.write(encodedUpgradeType.upgradeType);
@@ -38,5 +36,15 @@ class XdrUpgradeType {
   static XdrUpgradeType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrUpgradeType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${TxRepHelper.bytesToHex(_upgradeType)}');
+  }
+
+  static XdrUpgradeType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return XdrUpgradeType(TxRepHelper.hexToBytes(raw));
   }
 }

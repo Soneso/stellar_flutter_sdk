@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_create_contract_args.dart';
 import 'xdr_create_contract_args_v2.dart';
 import 'xdr_data_io.dart';
@@ -17,8 +18,7 @@ class XdrSorobanAuthorizedFunctionBase {
 
   XdrSorobanAuthorizedFunctionType get discriminant => this._type;
 
-  set discriminant(XdrSorobanAuthorizedFunctionType value) =>
-      this._type = value;
+  set discriminant(XdrSorobanAuthorizedFunctionType value) => this._type = value;
 
   /// Alias for [discriminant], the original XDR field name.
   XdrSorobanAuthorizedFunctionType get type => this._type;
@@ -34,45 +34,27 @@ class XdrSorobanAuthorizedFunctionBase {
 
   XdrCreateContractArgsV2? _createContractV2HostFn;
 
-  XdrCreateContractArgsV2? get createContractV2HostFn =>
-      this._createContractV2HostFn;
+  XdrCreateContractArgsV2? get createContractV2HostFn => this._createContractV2HostFn;
 
   XdrSorobanAuthorizedFunctionBase(this._type);
 
   set contractFn(XdrInvokeContractArgs? value) => this._contractFn = value;
 
-  set createContractHostFn(XdrCreateContractArgs? value) =>
-      this._createContractHostFn = value;
+  set createContractHostFn(XdrCreateContractArgs? value) => this._createContractHostFn = value;
 
-  set createContractV2HostFn(XdrCreateContractArgsV2? value) =>
-      this._createContractV2HostFn = value;
+  set createContractV2HostFn(XdrCreateContractArgsV2? value) => this._createContractV2HostFn = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSorobanAuthorizedFunctionBase encodedSorobanAuthorizedFunction,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSorobanAuthorizedFunctionBase encodedSorobanAuthorizedFunction) {
     stream.writeInt(encodedSorobanAuthorizedFunction.discriminant.value);
     switch (encodedSorobanAuthorizedFunction.discriminant) {
-      case XdrSorobanAuthorizedFunctionType
-          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
-        XdrInvokeContractArgs.encode(
-          stream,
-          encodedSorobanAuthorizedFunction._contractFn!,
-        );
+      case XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
+        XdrInvokeContractArgs.encode(stream, encodedSorobanAuthorizedFunction._contractFn!);
         break;
-      case XdrSorobanAuthorizedFunctionType
-          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
-        XdrCreateContractArgs.encode(
-          stream,
-          encodedSorobanAuthorizedFunction._createContractHostFn!,
-        );
+      case XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
+        XdrCreateContractArgs.encode(stream, encodedSorobanAuthorizedFunction._createContractHostFn!);
         break;
-      case XdrSorobanAuthorizedFunctionType
-          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
-        XdrCreateContractArgsV2.encode(
-          stream,
-          encodedSorobanAuthorizedFunction._createContractV2HostFn!,
-        );
+      case XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
+        XdrCreateContractArgsV2.encode(stream, encodedSorobanAuthorizedFunction._createContractV2HostFn!);
         break;
       default:
         break;
@@ -89,19 +71,14 @@ class XdrSorobanAuthorizedFunctionBase {
   ) {
     T decoded = constructor(XdrSorobanAuthorizedFunctionType.decode(stream));
     switch (decoded.discriminant) {
-      case XdrSorobanAuthorizedFunctionType
-          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
+      case XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
         decoded._contractFn = XdrInvokeContractArgs.decode(stream);
         break;
-      case XdrSorobanAuthorizedFunctionType
-          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
+      case XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
         decoded._createContractHostFn = XdrCreateContractArgs.decode(stream);
         break;
-      case XdrSorobanAuthorizedFunctionType
-          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
-        decoded._createContractV2HostFn = XdrCreateContractArgsV2.decode(
-          stream,
-        );
+      case XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
+        decoded._createContractV2HostFn = XdrCreateContractArgsV2.decode(stream);
         break;
       default:
         break;
@@ -115,10 +92,44 @@ class XdrSorobanAuthorizedFunctionBase {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSorobanAuthorizedFunctionBase fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrSorobanAuthorizedFunctionBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanAuthorizedFunctionBase.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
+        _contractFn!.toTxRep('$prefix.contractFn', lines);
+        break;
+      case XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
+        _createContractHostFn!.toTxRep('$prefix.createContractHostFn', lines);
+        break;
+      case XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
+        _createContractV2HostFn!.toTxRep('$prefix.createContractV2HostFn', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrSorobanAuthorizedFunctionBase fromTxRep(Map<String, String> map, String prefix) {
+    XdrSorobanAuthorizedFunctionType disc = XdrSorobanAuthorizedFunctionType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrSorobanAuthorizedFunctionBase result = XdrSorobanAuthorizedFunctionBase(disc);
+    switch (result.discriminant) {
+      case XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
+        result._contractFn = XdrInvokeContractArgs.fromTxRep(map, '$prefix.contractFn');
+        break;
+      case XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
+        result._createContractHostFn = XdrCreateContractArgs.fromTxRep(map, '$prefix.createContractHostFn');
+        break;
+      case XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
+        result._createContractV2HostFn = XdrCreateContractArgsV2.fromTxRep(map, '$prefix.createContractV2HostFn');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrTrustLineEntryExtensionV2Ext {
@@ -20,10 +21,7 @@ class XdrTrustLineEntryExtensionV2Ext {
 
   XdrTrustLineEntryExtensionV2Ext(this._v);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTrustLineEntryExtensionV2Ext encodedTrustLineEntryExtensionV2Ext,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrTrustLineEntryExtensionV2Ext encodedTrustLineEntryExtensionV2Ext) {
     stream.writeInt(encodedTrustLineEntryExtensionV2Ext.discriminant);
     switch (encodedTrustLineEntryExtensionV2Ext.discriminant) {
       case 0:
@@ -35,8 +33,7 @@ class XdrTrustLineEntryExtensionV2Ext {
 
   static XdrTrustLineEntryExtensionV2Ext decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrTrustLineEntryExtensionV2Ext decodedTrustLineEntryExtensionV2Ext =
-        XdrTrustLineEntryExtensionV2Ext(discriminant);
+    XdrTrustLineEntryExtensionV2Ext decodedTrustLineEntryExtensionV2Ext = XdrTrustLineEntryExtensionV2Ext(discriminant);
     switch (decodedTrustLineEntryExtensionV2Ext.discriminant) {
       case 0:
         break;
@@ -52,10 +49,30 @@ class XdrTrustLineEntryExtensionV2Ext {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTrustLineEntryExtensionV2Ext fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrTrustLineEntryExtensionV2Ext fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTrustLineEntryExtensionV2Ext.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrTrustLineEntryExtensionV2Ext fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrTrustLineEntryExtensionV2Ext result = XdrTrustLineEntryExtensionV2Ext(disc);
+    switch (result.discriminant) {
+      case 0:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrTransactionV0Ext {
@@ -20,10 +21,7 @@ class XdrTransactionV0Ext {
 
   XdrTransactionV0Ext(this._v);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTransactionV0Ext encodedTransactionV0Ext,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrTransactionV0Ext encodedTransactionV0Ext) {
     stream.writeInt(encodedTransactionV0Ext.discriminant);
     switch (encodedTransactionV0Ext.discriminant) {
       case 0:
@@ -35,9 +33,7 @@ class XdrTransactionV0Ext {
 
   static XdrTransactionV0Ext decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrTransactionV0Ext decodedTransactionV0Ext = XdrTransactionV0Ext(
-      discriminant,
-    );
+    XdrTransactionV0Ext decodedTransactionV0Ext = XdrTransactionV0Ext(discriminant);
     switch (decodedTransactionV0Ext.discriminant) {
       case 0:
         break;
@@ -56,5 +52,27 @@ class XdrTransactionV0Ext {
   static XdrTransactionV0Ext fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionV0Ext.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrTransactionV0Ext fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrTransactionV0Ext result = XdrTransactionV0Ext(disc);
+    switch (result.discriminant) {
+      case 0:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

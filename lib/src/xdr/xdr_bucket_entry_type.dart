@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrBucketEntryType {
@@ -17,8 +18,7 @@ class XdrBucketEntryType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrBucketEntryType && _value == other._value;
+      identical(this, other) || other is XdrBucketEntryType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -57,5 +57,40 @@ class XdrBucketEntryType {
   static XdrBucketEntryType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBucketEntryType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case -1: return 'METAENTRY';
+      case 0: return 'LIVEENTRY';
+      case 1: return 'DEADENTRY';
+      case 2: return 'INITENTRY';
+      default: return 'XdrBucketEntryType#$_value';
+    }
+  }
+
+  static XdrBucketEntryType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrBucketEntryType fromTxRepName(String name) {
+    switch (name) {
+      case 'METAENTRY': return METAENTRY;
+      case 'LIVEENTRY': return LIVEENTRY;
+      case 'DEADENTRY': return DEADENTRY;
+      case 'INITENTRY': return INITENTRY;
+      default:
+        if (name.startsWith('XdrBucketEntryType#')) {
+          int? val = int.tryParse(name.substring('XdrBucketEntryType#'.length));
+          if (val != null) return XdrBucketEntryType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

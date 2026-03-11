@@ -6,15 +6,16 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingContractBandwidthV0 {
+
   XdrUint32 _ledgerMaxTxsSizeBytes;
   XdrUint32 get ledgerMaxTxsSizeBytes => this._ledgerMaxTxsSizeBytes;
-  set ledgerMaxTxsSizeBytes(XdrUint32 value) =>
-      this._ledgerMaxTxsSizeBytes = value;
+  set ledgerMaxTxsSizeBytes(XdrUint32 value) => this._ledgerMaxTxsSizeBytes = value;
 
   XdrUint32 _txMaxSizeBytes;
   XdrUint32 get txMaxSizeBytes => this._txMaxSizeBytes;
@@ -24,39 +25,19 @@ class XdrConfigSettingContractBandwidthV0 {
   XdrInt64 get feeTxSize1KB => this._feeTxSize1KB;
   set feeTxSize1KB(XdrInt64 value) => this._feeTxSize1KB = value;
 
-  XdrConfigSettingContractBandwidthV0(
-    this._ledgerMaxTxsSizeBytes,
-    this._txMaxSizeBytes,
-    this._feeTxSize1KB,
-  );
+  XdrConfigSettingContractBandwidthV0(this._ledgerMaxTxsSizeBytes, this._txMaxSizeBytes, this._feeTxSize1KB);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrConfigSettingContractBandwidthV0 encodedConfigSettingContractBandwidthV0,
-  ) {
-    XdrUint32.encode(
-      stream,
-      encodedConfigSettingContractBandwidthV0.ledgerMaxTxsSizeBytes,
-    );
-    XdrUint32.encode(
-      stream,
-      encodedConfigSettingContractBandwidthV0.txMaxSizeBytes,
-    );
-    XdrInt64.encode(
-      stream,
-      encodedConfigSettingContractBandwidthV0.feeTxSize1KB,
-    );
+  static void encode(XdrDataOutputStream stream, XdrConfigSettingContractBandwidthV0 encodedConfigSettingContractBandwidthV0) {
+    XdrUint32.encode(stream, encodedConfigSettingContractBandwidthV0.ledgerMaxTxsSizeBytes);
+    XdrUint32.encode(stream, encodedConfigSettingContractBandwidthV0.txMaxSizeBytes);
+    XdrInt64.encode(stream, encodedConfigSettingContractBandwidthV0.feeTxSize1KB);
   }
 
   static XdrConfigSettingContractBandwidthV0 decode(XdrDataInputStream stream) {
     XdrUint32 ledgerMaxTxsSizeBytes = XdrUint32.decode(stream);
     XdrUint32 txMaxSizeBytes = XdrUint32.decode(stream);
     XdrInt64 feeTxSize1KB = XdrInt64.decode(stream);
-    return XdrConfigSettingContractBandwidthV0(
-      ledgerMaxTxsSizeBytes,
-      txMaxSizeBytes,
-      feeTxSize1KB,
-    );
+    return XdrConfigSettingContractBandwidthV0(ledgerMaxTxsSizeBytes, txMaxSizeBytes, feeTxSize1KB);
   }
 
   String toBase64EncodedXdrString() {
@@ -65,12 +46,21 @@ class XdrConfigSettingContractBandwidthV0 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrConfigSettingContractBandwidthV0 fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrConfigSettingContractBandwidthV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrConfigSettingContractBandwidthV0.decode(
-      XdrDataInputStream(bytes),
-    );
+    return XdrConfigSettingContractBandwidthV0.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _ledgerMaxTxsSizeBytes.toTxRep('$prefix.ledgerMaxTxsSizeBytes', lines);
+    _txMaxSizeBytes.toTxRep('$prefix.txMaxSizeBytes', lines);
+    _feeTxSize1KB.toTxRep('$prefix.feeTxSize1KB', lines);
+  }
+
+  static XdrConfigSettingContractBandwidthV0 fromTxRep(Map<String, String> map, String prefix) {
+    XdrUint32 ledgerMaxTxsSizeBytes = XdrUint32.fromTxRep(map, '$prefix.ledgerMaxTxsSizeBytes');
+    XdrUint32 txMaxSizeBytes = XdrUint32.fromTxRep(map, '$prefix.txMaxSizeBytes');
+    XdrInt64 feeTxSize1KB = XdrInt64.fromTxRep(map, '$prefix.feeTxSize1KB');
+    return XdrConfigSettingContractBandwidthV0(ledgerMaxTxsSizeBytes, txMaxSizeBytes, feeTxSize1KB);
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_bucket_entry_type.dart';
 import 'xdr_bucket_metadata.dart';
 import 'xdr_data_io.dart';
@@ -43,10 +44,7 @@ class XdrBucketEntry {
 
   set metaEntry(XdrBucketMetadata? value) => this._metaEntry = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrBucketEntry encodedBucketEntry,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrBucketEntry encodedBucketEntry) {
     stream.writeInt(encodedBucketEntry.discriminant.value);
     switch (encodedBucketEntry.discriminant) {
       case XdrBucketEntryType.LIVEENTRY:
@@ -65,9 +63,7 @@ class XdrBucketEntry {
   }
 
   static XdrBucketEntry decode(XdrDataInputStream stream) {
-    XdrBucketEntry decodedBucketEntry = XdrBucketEntry(
-      XdrBucketEntryType.decode(stream),
-    );
+    XdrBucketEntry decodedBucketEntry = XdrBucketEntry(XdrBucketEntryType.decode(stream));
     switch (decodedBucketEntry.discriminant) {
       case XdrBucketEntryType.LIVEENTRY:
       case XdrBucketEntryType.INITENTRY:
@@ -94,5 +90,43 @@ class XdrBucketEntry {
   static XdrBucketEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBucketEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrBucketEntryType.LIVEENTRY:
+      case XdrBucketEntryType.INITENTRY:
+        _liveEntry!.toTxRep('$prefix.liveEntry', lines);
+        break;
+      case XdrBucketEntryType.DEADENTRY:
+        _deadEntry!.toTxRep('$prefix.deadEntry', lines);
+        break;
+      case XdrBucketEntryType.METAENTRY:
+        _metaEntry!.toTxRep('$prefix.metaEntry', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrBucketEntry fromTxRep(Map<String, String> map, String prefix) {
+    XdrBucketEntryType disc = XdrBucketEntryType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrBucketEntry result = XdrBucketEntry(disc);
+    switch (result.discriminant) {
+      case XdrBucketEntryType.LIVEENTRY:
+      case XdrBucketEntryType.INITENTRY:
+        result._liveEntry = XdrLedgerEntry.fromTxRep(map, '$prefix.liveEntry');
+        break;
+      case XdrBucketEntryType.DEADENTRY:
+        result._deadEntry = XdrLedgerKey.fromTxRep(map, '$prefix.deadEntry');
+        break;
+      case XdrBucketEntryType.METAENTRY:
+        result._metaEntry = XdrBucketMetadata.fromTxRep(map, '$prefix.metaEntry');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrConfigSettingID {
@@ -17,55 +18,32 @@ class XdrConfigSettingID {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrConfigSettingID && _value == other._value;
+      identical(this, other) || other is XdrConfigSettingID && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES =
-      const XdrConfigSettingID._internal(0);
-  static const CONFIG_SETTING_CONTRACT_COMPUTE_V0 =
-      const XdrConfigSettingID._internal(1);
-  static const CONFIG_SETTING_CONTRACT_LEDGER_COST_V0 =
-      const XdrConfigSettingID._internal(2);
-  static const CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0 =
-      const XdrConfigSettingID._internal(3);
-  static const CONFIG_SETTING_CONTRACT_EVENTS_V0 =
-      const XdrConfigSettingID._internal(4);
-  static const CONFIG_SETTING_CONTRACT_BANDWIDTH_V0 =
-      const XdrConfigSettingID._internal(5);
-  static const CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS =
-      const XdrConfigSettingID._internal(6);
-  static const CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES =
-      const XdrConfigSettingID._internal(7);
-  static const CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES =
-      const XdrConfigSettingID._internal(8);
-  static const CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES =
-      const XdrConfigSettingID._internal(9);
-  static const CONFIG_SETTING_STATE_ARCHIVAL =
-      const XdrConfigSettingID._internal(10);
-  static const CONFIG_SETTING_CONTRACT_EXECUTION_LANES =
-      const XdrConfigSettingID._internal(11);
-  static const CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW =
-      const XdrConfigSettingID._internal(12);
-  static const CONFIG_SETTING_EVICTION_ITERATOR =
-      const XdrConfigSettingID._internal(13);
-  static const CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0 =
-      const XdrConfigSettingID._internal(14);
-  static const CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0 =
-      const XdrConfigSettingID._internal(15);
-  static const CONFIG_SETTING_SCP_TIMING = const XdrConfigSettingID._internal(
-    16,
-  );
-  static const CONFIG_SETTING_FROZEN_LEDGER_KEYS =
-      const XdrConfigSettingID._internal(17);
-  static const CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA =
-      const XdrConfigSettingID._internal(18);
-  static const CONFIG_SETTING_FREEZE_BYPASS_TXS =
-      const XdrConfigSettingID._internal(19);
-  static const CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA =
-      const XdrConfigSettingID._internal(20);
+  static const CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES = const XdrConfigSettingID._internal(0);
+  static const CONFIG_SETTING_CONTRACT_COMPUTE_V0 = const XdrConfigSettingID._internal(1);
+  static const CONFIG_SETTING_CONTRACT_LEDGER_COST_V0 = const XdrConfigSettingID._internal(2);
+  static const CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0 = const XdrConfigSettingID._internal(3);
+  static const CONFIG_SETTING_CONTRACT_EVENTS_V0 = const XdrConfigSettingID._internal(4);
+  static const CONFIG_SETTING_CONTRACT_BANDWIDTH_V0 = const XdrConfigSettingID._internal(5);
+  static const CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS = const XdrConfigSettingID._internal(6);
+  static const CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES = const XdrConfigSettingID._internal(7);
+  static const CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES = const XdrConfigSettingID._internal(8);
+  static const CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES = const XdrConfigSettingID._internal(9);
+  static const CONFIG_SETTING_STATE_ARCHIVAL = const XdrConfigSettingID._internal(10);
+  static const CONFIG_SETTING_CONTRACT_EXECUTION_LANES = const XdrConfigSettingID._internal(11);
+  static const CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW = const XdrConfigSettingID._internal(12);
+  static const CONFIG_SETTING_EVICTION_ITERATOR = const XdrConfigSettingID._internal(13);
+  static const CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0 = const XdrConfigSettingID._internal(14);
+  static const CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0 = const XdrConfigSettingID._internal(15);
+  static const CONFIG_SETTING_SCP_TIMING = const XdrConfigSettingID._internal(16);
+  static const CONFIG_SETTING_FROZEN_LEDGER_KEYS = const XdrConfigSettingID._internal(17);
+  static const CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA = const XdrConfigSettingID._internal(18);
+  static const CONFIG_SETTING_FREEZE_BYPASS_TXS = const XdrConfigSettingID._internal(19);
+  static const CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA = const XdrConfigSettingID._internal(20);
 
   static XdrConfigSettingID decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -130,5 +108,74 @@ class XdrConfigSettingID {
   static XdrConfigSettingID fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigSettingID.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES';
+      case 1: return 'CONFIG_SETTING_CONTRACT_COMPUTE_V0';
+      case 2: return 'CONFIG_SETTING_CONTRACT_LEDGER_COST_V0';
+      case 3: return 'CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0';
+      case 4: return 'CONFIG_SETTING_CONTRACT_EVENTS_V0';
+      case 5: return 'CONFIG_SETTING_CONTRACT_BANDWIDTH_V0';
+      case 6: return 'CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS';
+      case 7: return 'CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES';
+      case 8: return 'CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES';
+      case 9: return 'CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES';
+      case 10: return 'CONFIG_SETTING_STATE_ARCHIVAL';
+      case 11: return 'CONFIG_SETTING_CONTRACT_EXECUTION_LANES';
+      case 12: return 'CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW';
+      case 13: return 'CONFIG_SETTING_EVICTION_ITERATOR';
+      case 14: return 'CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0';
+      case 15: return 'CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0';
+      case 16: return 'CONFIG_SETTING_SCP_TIMING';
+      case 17: return 'CONFIG_SETTING_FROZEN_LEDGER_KEYS';
+      case 18: return 'CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA';
+      case 19: return 'CONFIG_SETTING_FREEZE_BYPASS_TXS';
+      case 20: return 'CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA';
+      default: return 'XdrConfigSettingID#$_value';
+    }
+  }
+
+  static XdrConfigSettingID fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrConfigSettingID fromTxRepName(String name) {
+    switch (name) {
+      case 'CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES': return CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES;
+      case 'CONFIG_SETTING_CONTRACT_COMPUTE_V0': return CONFIG_SETTING_CONTRACT_COMPUTE_V0;
+      case 'CONFIG_SETTING_CONTRACT_LEDGER_COST_V0': return CONFIG_SETTING_CONTRACT_LEDGER_COST_V0;
+      case 'CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0': return CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0;
+      case 'CONFIG_SETTING_CONTRACT_EVENTS_V0': return CONFIG_SETTING_CONTRACT_EVENTS_V0;
+      case 'CONFIG_SETTING_CONTRACT_BANDWIDTH_V0': return CONFIG_SETTING_CONTRACT_BANDWIDTH_V0;
+      case 'CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS': return CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS;
+      case 'CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES': return CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES;
+      case 'CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES': return CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES;
+      case 'CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES': return CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES;
+      case 'CONFIG_SETTING_STATE_ARCHIVAL': return CONFIG_SETTING_STATE_ARCHIVAL;
+      case 'CONFIG_SETTING_CONTRACT_EXECUTION_LANES': return CONFIG_SETTING_CONTRACT_EXECUTION_LANES;
+      case 'CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW': return CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW;
+      case 'CONFIG_SETTING_EVICTION_ITERATOR': return CONFIG_SETTING_EVICTION_ITERATOR;
+      case 'CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0': return CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0;
+      case 'CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0': return CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0;
+      case 'CONFIG_SETTING_SCP_TIMING': return CONFIG_SETTING_SCP_TIMING;
+      case 'CONFIG_SETTING_FROZEN_LEDGER_KEYS': return CONFIG_SETTING_FROZEN_LEDGER_KEYS;
+      case 'CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA': return CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA;
+      case 'CONFIG_SETTING_FREEZE_BYPASS_TXS': return CONFIG_SETTING_FREEZE_BYPASS_TXS;
+      case 'CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA': return CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA;
+      default:
+        if (name.startsWith('XdrConfigSettingID#')) {
+          int? val = int.tryParse(name.substring('XdrConfigSettingID#'.length));
+          if (val != null) return XdrConfigSettingID._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

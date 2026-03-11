@@ -6,14 +6,15 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_contract_event.dart';
 import 'xdr_data_io.dart';
 
 class XdrDiagnosticEvent {
+
   bool _inSuccessfulContractCall;
   bool get inSuccessfulContractCall => this._inSuccessfulContractCall;
-  set inSuccessfulContractCall(bool value) =>
-      this._inSuccessfulContractCall = value;
+  set inSuccessfulContractCall(bool value) => this._inSuccessfulContractCall = value;
 
   XdrContractEvent _event;
   XdrContractEvent get event => this._event;
@@ -21,10 +22,7 @@ class XdrDiagnosticEvent {
 
   XdrDiagnosticEvent(this._inSuccessfulContractCall, this._event);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrDiagnosticEvent encodedDiagnosticEvent,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrDiagnosticEvent encodedDiagnosticEvent) {
     stream.writeBoolean(encodedDiagnosticEvent.inSuccessfulContractCall);
     XdrContractEvent.encode(stream, encodedDiagnosticEvent.event);
   }
@@ -44,5 +42,16 @@ class XdrDiagnosticEvent {
   static XdrDiagnosticEvent fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrDiagnosticEvent.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.inSuccessfulContractCall: $_inSuccessfulContractCall');
+    _event.toTxRep('$prefix.event', lines);
+  }
+
+  static XdrDiagnosticEvent fromTxRep(Map<String, String> map, String prefix) {
+    bool inSuccessfulContractCall = (TxRepHelper.getValue(map, '$prefix.inSuccessfulContractCall') ?? 'false') == 'true';
+    XdrContractEvent event = XdrContractEvent.fromTxRep(map, '$prefix.event');
+    return XdrDiagnosticEvent(inSuccessfulContractCall, event);
   }
 }

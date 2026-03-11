@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_soroban_authorization_entry.dart';
 
@@ -13,30 +14,20 @@ class XdrSorobanAuthorizationEntries {
   XdrSorobanAuthorizationEntries(this._sorobanAuthorizationEntries);
 
   List<XdrSorobanAuthorizationEntry> _sorobanAuthorizationEntries;
-  List<XdrSorobanAuthorizationEntry> get sorobanAuthorizationEntries =>
-      this._sorobanAuthorizationEntries;
-  set sorobanAuthorizationEntries(List<XdrSorobanAuthorizationEntry> value) =>
-      this._sorobanAuthorizationEntries = value;
+  List<XdrSorobanAuthorizationEntry> get sorobanAuthorizationEntries => this._sorobanAuthorizationEntries;
+  set sorobanAuthorizationEntries(List<XdrSorobanAuthorizationEntry> value) => this._sorobanAuthorizationEntries = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSorobanAuthorizationEntries encodedSorobanAuthorizationEntries,
-  ) {
-    int size =
-        encodedSorobanAuthorizationEntries.sorobanAuthorizationEntries.length;
+  static void encode(XdrDataOutputStream stream, XdrSorobanAuthorizationEntries encodedSorobanAuthorizationEntries) {
+    int size = encodedSorobanAuthorizationEntries.sorobanAuthorizationEntries.length;
     stream.writeInt(size);
     for (int i = 0; i < size; i++) {
-      XdrSorobanAuthorizationEntry.encode(
-        stream,
-        encodedSorobanAuthorizationEntries.sorobanAuthorizationEntries[i],
-      );
+      XdrSorobanAuthorizationEntry.encode(stream, encodedSorobanAuthorizationEntries.sorobanAuthorizationEntries[i]);
     }
   }
 
   static XdrSorobanAuthorizationEntries decode(XdrDataInputStream stream) {
     int size = stream.readInt();
-    List<XdrSorobanAuthorizationEntry> items =
-        List<XdrSorobanAuthorizationEntry>.empty(growable: true);
+    List<XdrSorobanAuthorizationEntry> items = List<XdrSorobanAuthorizationEntry>.empty(growable: true);
     for (int i = 0; i < size; i++) {
       items.add(XdrSorobanAuthorizationEntry.decode(stream));
     }
@@ -49,10 +40,24 @@ class XdrSorobanAuthorizationEntries {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSorobanAuthorizationEntries fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrSorobanAuthorizationEntries fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanAuthorizationEntries.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.len: ${_sorobanAuthorizationEntries.length}');
+    for (int i = 0; i < _sorobanAuthorizationEntries.length; i++) {
+      _sorobanAuthorizationEntries[i].toTxRep('$prefix[$i]', lines);
+    }
+  }
+
+  static XdrSorobanAuthorizationEntries fromTxRep(Map<String, String> map, String prefix) {
+    int len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.len') ?? '0');
+    List<XdrSorobanAuthorizationEntry> items = [];
+    for (int i = 0; i < len; i++) {
+      items.add(XdrSorobanAuthorizationEntry.fromTxRep(map, '$prefix[$i]'));
+    }
+    return XdrSorobanAuthorizationEntries(items);
   }
 }

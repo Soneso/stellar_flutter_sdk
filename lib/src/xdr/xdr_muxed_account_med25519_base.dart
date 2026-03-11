@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint256.dart';
 import 'xdr_uint64.dart';
 
 class XdrMuxedAccountMed25519Base {
+
   XdrUint64 _id;
   XdrUint64 get id => this._id;
   set id(XdrUint64 value) => this._id = value;
@@ -21,10 +23,7 @@ class XdrMuxedAccountMed25519Base {
 
   XdrMuxedAccountMed25519Base(this._id, this._ed25519);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrMuxedAccountMed25519Base encodedMuxedAccountMed25519,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrMuxedAccountMed25519Base encodedMuxedAccountMed25519) {
     XdrUint64.encode(stream, encodedMuxedAccountMed25519.id);
     XdrUint256.encode(stream, encodedMuxedAccountMed25519.ed25519);
   }
@@ -41,10 +40,19 @@ class XdrMuxedAccountMed25519Base {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrMuxedAccountMed25519Base fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrMuxedAccountMed25519Base fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrMuxedAccountMed25519Base.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _id.toTxRep('$prefix.id', lines);
+    _ed25519.toTxRep('$prefix.ed25519', lines);
+  }
+
+  static XdrMuxedAccountMed25519Base fromTxRep(Map<String, String> map, String prefix) {
+    XdrUint64 id = XdrUint64.fromTxRep(map, '$prefix.id');
+    XdrUint256 ed25519 = XdrUint256.fromTxRep(map, '$prefix.ed25519');
+    return XdrMuxedAccountMed25519Base(id, ed25519);
   }
 }

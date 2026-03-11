@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
 import 'xdr_ledger_entry_changes.dart';
@@ -13,14 +14,14 @@ import 'xdr_operation_meta.dart';
 import 'xdr_soroban_transaction_meta.dart';
 
 class XdrTransactionMetaV3 {
+
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
 
   XdrLedgerEntryChanges _txChangesBefore;
   XdrLedgerEntryChanges get txChangesBefore => this._txChangesBefore;
-  set txChangesBefore(XdrLedgerEntryChanges value) =>
-      this._txChangesBefore = value;
+  set txChangesBefore(XdrLedgerEntryChanges value) => this._txChangesBefore = value;
 
   List<XdrOperationMeta> _operations;
   List<XdrOperationMeta> get operations => this._operations;
@@ -28,46 +29,26 @@ class XdrTransactionMetaV3 {
 
   XdrLedgerEntryChanges _txChangesAfter;
   XdrLedgerEntryChanges get txChangesAfter => this._txChangesAfter;
-  set txChangesAfter(XdrLedgerEntryChanges value) =>
-      this._txChangesAfter = value;
+  set txChangesAfter(XdrLedgerEntryChanges value) => this._txChangesAfter = value;
 
   XdrSorobanTransactionMeta? _sorobanMeta;
   XdrSorobanTransactionMeta? get sorobanMeta => this._sorobanMeta;
-  set sorobanMeta(XdrSorobanTransactionMeta? value) =>
-      this._sorobanMeta = value;
+  set sorobanMeta(XdrSorobanTransactionMeta? value) => this._sorobanMeta = value;
 
-  XdrTransactionMetaV3(
-    this._ext,
-    this._txChangesBefore,
-    this._operations,
-    this._txChangesAfter,
-    this._sorobanMeta,
-  );
+  XdrTransactionMetaV3(this._ext, this._txChangesBefore, this._operations, this._txChangesAfter, this._sorobanMeta);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTransactionMetaV3 encodedTransactionMetaV3,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrTransactionMetaV3 encodedTransactionMetaV3) {
     XdrExtensionPoint.encode(stream, encodedTransactionMetaV3.ext);
-    XdrLedgerEntryChanges.encode(
-      stream,
-      encodedTransactionMetaV3.txChangesBefore,
-    );
+    XdrLedgerEntryChanges.encode(stream, encodedTransactionMetaV3.txChangesBefore);
     int operationssize = encodedTransactionMetaV3.operations.length;
     stream.writeInt(operationssize);
     for (int i = 0; i < operationssize; i++) {
       XdrOperationMeta.encode(stream, encodedTransactionMetaV3.operations[i]);
     }
-    XdrLedgerEntryChanges.encode(
-      stream,
-      encodedTransactionMetaV3.txChangesAfter,
-    );
+    XdrLedgerEntryChanges.encode(stream, encodedTransactionMetaV3.txChangesAfter);
     if (encodedTransactionMetaV3.sorobanMeta != null) {
       stream.writeInt(1);
-      XdrSorobanTransactionMeta.encode(
-        stream,
-        encodedTransactionMetaV3.sorobanMeta!,
-      );
+      XdrSorobanTransactionMeta.encode(stream, encodedTransactionMetaV3.sorobanMeta!);
     } else {
       stream.writeInt(0);
     }
@@ -75,13 +56,9 @@ class XdrTransactionMetaV3 {
 
   static XdrTransactionMetaV3 decode(XdrDataInputStream stream) {
     XdrExtensionPoint ext = XdrExtensionPoint.decode(stream);
-    XdrLedgerEntryChanges txChangesBefore = XdrLedgerEntryChanges.decode(
-      stream,
-    );
+    XdrLedgerEntryChanges txChangesBefore = XdrLedgerEntryChanges.decode(stream);
     int operationssize = stream.readInt();
-    List<XdrOperationMeta> operations = List<XdrOperationMeta>.empty(
-      growable: true,
-    );
+    List<XdrOperationMeta> operations = List<XdrOperationMeta>.empty(growable: true);
     for (int i = 0; i < operationssize; i++) {
       operations.add(XdrOperationMeta.decode(stream));
     }
@@ -91,13 +68,7 @@ class XdrTransactionMetaV3 {
     if (sorobanMetaPresent != 0) {
       sorobanMeta = XdrSorobanTransactionMeta.decode(stream);
     }
-    return XdrTransactionMetaV3(
-      ext,
-      txChangesBefore,
-      operations,
-      txChangesAfter,
-      sorobanMeta,
-    );
+    return XdrTransactionMetaV3(ext, txChangesBefore, operations, txChangesAfter, sorobanMeta);
   }
 
   String toBase64EncodedXdrString() {
@@ -109,5 +80,38 @@ class XdrTransactionMetaV3 {
   static XdrTransactionMetaV3 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionMetaV3.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _ext.toTxRep('$prefix.ext', lines);
+    _txChangesBefore.toTxRep('$prefix.txChangesBefore', lines);
+    lines.add('$prefix.operations.len: ${_operations.length}');
+    for (int i = 0; i < _operations.length; i++) {
+      _operations[i].toTxRep('$prefix.operations[$i]', lines);
+    }
+    _txChangesAfter.toTxRep('$prefix.txChangesAfter', lines);
+    if (_sorobanMeta != null) {
+      lines.add('$prefix.sorobanMeta._present: true');
+      _sorobanMeta!.toTxRep('$prefix.sorobanMeta', lines);
+    } else {
+      lines.add('$prefix.sorobanMeta._present: false');
+    }
+  }
+
+  static XdrTransactionMetaV3 fromTxRep(Map<String, String> map, String prefix) {
+    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
+    XdrLedgerEntryChanges txChangesBefore = XdrLedgerEntryChanges.fromTxRep(map, '$prefix.txChangesBefore');
+    int operationsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.operations.len') ?? '0');
+    List<XdrOperationMeta> operations = [];
+    for (int i = 0; i < operationsLen; i++) {
+      operations.add(XdrOperationMeta.fromTxRep(map, '$prefix.operations[$i]'));
+    }
+    XdrLedgerEntryChanges txChangesAfter = XdrLedgerEntryChanges.fromTxRep(map, '$prefix.txChangesAfter');
+    XdrSorobanTransactionMeta? sorobanMeta;
+    String? sorobanMetaPresent = TxRepHelper.getValue(map, '$prefix.sorobanMeta._present');
+    if (sorobanMetaPresent != null && sorobanMetaPresent == 'true') {
+      sorobanMeta = XdrSorobanTransactionMeta.fromTxRep(map, '$prefix.sorobanMeta');
+    }
+    return XdrTransactionMetaV3(ext, txChangesBefore, operations, txChangesAfter, sorobanMeta);
   }
 }

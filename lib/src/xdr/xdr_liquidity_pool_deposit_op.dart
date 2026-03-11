@@ -6,12 +6,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_int64.dart';
 import 'xdr_price.dart';
 
 class XdrLiquidityPoolDepositOp {
+
   XdrHash _liquidityPoolID;
   XdrHash get liquidityPoolID => this._liquidityPoolID;
   set liquidityPoolID(XdrHash value) => this._liquidityPoolID = value;
@@ -32,18 +34,9 @@ class XdrLiquidityPoolDepositOp {
   XdrPrice get maxPrice => this._maxPrice;
   set maxPrice(XdrPrice value) => this._maxPrice = value;
 
-  XdrLiquidityPoolDepositOp(
-    this._liquidityPoolID,
-    this._maxAmountA,
-    this._maxAmountB,
-    this._minPrice,
-    this._maxPrice,
-  );
+  XdrLiquidityPoolDepositOp(this._liquidityPoolID, this._maxAmountA, this._maxAmountB, this._minPrice, this._maxPrice);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLiquidityPoolDepositOp encodedLiquidityPoolDepositOp,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolDepositOp encodedLiquidityPoolDepositOp) {
     XdrHash.encode(stream, encodedLiquidityPoolDepositOp.liquidityPoolID);
     XdrInt64.encode(stream, encodedLiquidityPoolDepositOp.maxAmountA);
     XdrInt64.encode(stream, encodedLiquidityPoolDepositOp.maxAmountB);
@@ -57,13 +50,7 @@ class XdrLiquidityPoolDepositOp {
     XdrInt64 maxAmountB = XdrInt64.decode(stream);
     XdrPrice minPrice = XdrPrice.decode(stream);
     XdrPrice maxPrice = XdrPrice.decode(stream);
-    return XdrLiquidityPoolDepositOp(
-      liquidityPoolID,
-      maxAmountA,
-      maxAmountB,
-      minPrice,
-      maxPrice,
-    );
+    return XdrLiquidityPoolDepositOp(liquidityPoolID, maxAmountA, maxAmountB, minPrice, maxPrice);
   }
 
   String toBase64EncodedXdrString() {
@@ -72,10 +59,25 @@ class XdrLiquidityPoolDepositOp {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLiquidityPoolDepositOp fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrLiquidityPoolDepositOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolDepositOp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _liquidityPoolID.toTxRep('$prefix.liquidityPoolID', lines);
+    _maxAmountA.toTxRep('$prefix.maxAmountA', lines);
+    _maxAmountB.toTxRep('$prefix.maxAmountB', lines);
+    _minPrice.toTxRep('$prefix.minPrice', lines);
+    _maxPrice.toTxRep('$prefix.maxPrice', lines);
+  }
+
+  static XdrLiquidityPoolDepositOp fromTxRep(Map<String, String> map, String prefix) {
+    XdrHash liquidityPoolID = XdrHash.fromTxRep(map, '$prefix.liquidityPoolID');
+    XdrInt64 maxAmountA = XdrInt64.fromTxRep(map, '$prefix.maxAmountA');
+    XdrInt64 maxAmountB = XdrInt64.fromTxRep(map, '$prefix.maxAmountB');
+    XdrPrice minPrice = XdrPrice.fromTxRep(map, '$prefix.minPrice');
+    XdrPrice maxPrice = XdrPrice.fromTxRep(map, '$prefix.maxPrice');
+    return XdrLiquidityPoolDepositOp(liquidityPoolID, maxAmountA, maxAmountB, minPrice, maxPrice);
   }
 }

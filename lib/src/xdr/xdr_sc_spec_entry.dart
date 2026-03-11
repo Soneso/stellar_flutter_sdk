@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_spec_entry_kind.dart';
 import 'xdr_sc_spec_event_v0.dart';
@@ -60,15 +61,11 @@ class XdrSCSpecEntry {
 
   set udtEnumV0(XdrSCSpecUDTEnumV0? value) => this._udtEnumV0 = value;
 
-  set udtErrorEnumV0(XdrSCSpecUDTErrorEnumV0? value) =>
-      this._udtErrorEnumV0 = value;
+  set udtErrorEnumV0(XdrSCSpecUDTErrorEnumV0? value) => this._udtErrorEnumV0 = value;
 
   set eventV0(XdrSCSpecEventV0? value) => this._eventV0 = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCSpecEntry encodedSCSpecEntry,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCSpecEntry encodedSCSpecEntry) {
     stream.writeInt(encodedSCSpecEntry.discriminant.value);
     switch (encodedSCSpecEntry.discriminant) {
       case XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0:
@@ -84,10 +81,7 @@ class XdrSCSpecEntry {
         XdrSCSpecUDTEnumV0.encode(stream, encodedSCSpecEntry._udtEnumV0!);
         break;
       case XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0:
-        XdrSCSpecUDTErrorEnumV0.encode(
-          stream,
-          encodedSCSpecEntry._udtErrorEnumV0!,
-        );
+        XdrSCSpecUDTErrorEnumV0.encode(stream, encodedSCSpecEntry._udtErrorEnumV0!);
         break;
       case XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0:
         XdrSCSpecEventV0.encode(stream, encodedSCSpecEntry._eventV0!);
@@ -98,9 +92,7 @@ class XdrSCSpecEntry {
   }
 
   static XdrSCSpecEntry decode(XdrDataInputStream stream) {
-    XdrSCSpecEntry decodedSCSpecEntry = XdrSCSpecEntry(
-      XdrSCSpecEntryKind.decode(stream),
-    );
+    XdrSCSpecEntry decodedSCSpecEntry = XdrSCSpecEntry(XdrSCSpecEntryKind.decode(stream));
     switch (decodedSCSpecEntry.discriminant) {
       case XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0:
         decodedSCSpecEntry._functionV0 = XdrSCSpecFunctionV0.decode(stream);
@@ -115,9 +107,7 @@ class XdrSCSpecEntry {
         decodedSCSpecEntry._udtEnumV0 = XdrSCSpecUDTEnumV0.decode(stream);
         break;
       case XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0:
-        decodedSCSpecEntry._udtErrorEnumV0 = XdrSCSpecUDTErrorEnumV0.decode(
-          stream,
-        );
+        decodedSCSpecEntry._udtErrorEnumV0 = XdrSCSpecUDTErrorEnumV0.decode(stream);
         break;
       case XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0:
         decodedSCSpecEntry._eventV0 = XdrSCSpecEventV0.decode(stream);
@@ -137,5 +127,59 @@ class XdrSCSpecEntry {
   static XdrSCSpecEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.kind: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0:
+        _functionV0!.toTxRep('$prefix.functionV0', lines);
+        break;
+      case XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0:
+        _udtStructV0!.toTxRep('$prefix.udtStructV0', lines);
+        break;
+      case XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0:
+        _udtUnionV0!.toTxRep('$prefix.udtUnionV0', lines);
+        break;
+      case XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0:
+        _udtEnumV0!.toTxRep('$prefix.udtEnumV0', lines);
+        break;
+      case XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0:
+        _udtErrorEnumV0!.toTxRep('$prefix.udtErrorEnumV0', lines);
+        break;
+      case XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0:
+        _eventV0!.toTxRep('$prefix.eventV0', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrSCSpecEntry fromTxRep(Map<String, String> map, String prefix) {
+    XdrSCSpecEntryKind disc = XdrSCSpecEntryKind.fromTxRepName(TxRepHelper.getValue(map, '$prefix.kind') ?? '');
+    XdrSCSpecEntry result = XdrSCSpecEntry(disc);
+    switch (result.discriminant) {
+      case XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0:
+        result._functionV0 = XdrSCSpecFunctionV0.fromTxRep(map, '$prefix.functionV0');
+        break;
+      case XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0:
+        result._udtStructV0 = XdrSCSpecUDTStructV0.fromTxRep(map, '$prefix.udtStructV0');
+        break;
+      case XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0:
+        result._udtUnionV0 = XdrSCSpecUDTUnionV0.fromTxRep(map, '$prefix.udtUnionV0');
+        break;
+      case XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0:
+        result._udtEnumV0 = XdrSCSpecUDTEnumV0.fromTxRep(map, '$prefix.udtEnumV0');
+        break;
+      case XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0:
+        result._udtErrorEnumV0 = XdrSCSpecUDTErrorEnumV0.fromTxRep(map, '$prefix.udtErrorEnumV0');
+        break;
+      case XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0:
+        result._eventV0 = XdrSCSpecEventV0.fromTxRep(map, '$prefix.eventV0');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

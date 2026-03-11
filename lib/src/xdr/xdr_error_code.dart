@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrErrorCode {
@@ -59,5 +60,42 @@ class XdrErrorCode {
   static XdrErrorCode fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrErrorCode.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'ERR_MISC';
+      case 1: return 'ERR_DATA';
+      case 2: return 'ERR_CONF';
+      case 3: return 'ERR_AUTH';
+      case 4: return 'ERR_LOAD';
+      default: return 'XdrErrorCode#$_value';
+    }
+  }
+
+  static XdrErrorCode fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrErrorCode fromTxRepName(String name) {
+    switch (name) {
+      case 'ERR_MISC': return ERR_MISC;
+      case 'ERR_DATA': return ERR_DATA;
+      case 'ERR_CONF': return ERR_CONF;
+      case 'ERR_AUTH': return ERR_AUTH;
+      case 'ERR_LOAD': return ERR_LOAD;
+      default:
+        if (name.startsWith('XdrErrorCode#')) {
+          int? val = int.tryParse(name.substring('XdrErrorCode#'.length));
+          if (val != null) return XdrErrorCode._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_claimable_balance_entry_ext_v1_ext.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrClaimableBalanceEntryExtV1 {
+
   XdrClaimableBalanceEntryExtV1Ext _ext;
   XdrClaimableBalanceEntryExtV1Ext get ext => this._ext;
   set ext(XdrClaimableBalanceEntryExtV1Ext value) => this._ext = value;
@@ -21,20 +23,13 @@ class XdrClaimableBalanceEntryExtV1 {
 
   XdrClaimableBalanceEntryExtV1(this._ext, this._flags);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrClaimableBalanceEntryExtV1 encodedClaimableBalanceEntryExtV1,
-  ) {
-    XdrClaimableBalanceEntryExtV1Ext.encode(
-      stream,
-      encodedClaimableBalanceEntryExtV1.ext,
-    );
+  static void encode(XdrDataOutputStream stream, XdrClaimableBalanceEntryExtV1 encodedClaimableBalanceEntryExtV1) {
+    XdrClaimableBalanceEntryExtV1Ext.encode(stream, encodedClaimableBalanceEntryExtV1.ext);
     XdrUint32.encode(stream, encodedClaimableBalanceEntryExtV1.flags);
   }
 
   static XdrClaimableBalanceEntryExtV1 decode(XdrDataInputStream stream) {
-    XdrClaimableBalanceEntryExtV1Ext ext =
-        XdrClaimableBalanceEntryExtV1Ext.decode(stream);
+    XdrClaimableBalanceEntryExtV1Ext ext = XdrClaimableBalanceEntryExtV1Ext.decode(stream);
     XdrUint32 flags = XdrUint32.decode(stream);
     return XdrClaimableBalanceEntryExtV1(ext, flags);
   }
@@ -45,10 +40,19 @@ class XdrClaimableBalanceEntryExtV1 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrClaimableBalanceEntryExtV1 fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrClaimableBalanceEntryExtV1 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimableBalanceEntryExtV1.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _ext.toTxRep('$prefix.ext', lines);
+    _flags.toTxRep('$prefix.flags', lines);
+  }
+
+  static XdrClaimableBalanceEntryExtV1 fromTxRep(Map<String, String> map, String prefix) {
+    XdrClaimableBalanceEntryExtV1Ext ext = XdrClaimableBalanceEntryExtV1Ext.fromTxRep(map, '$prefix.ext');
+    XdrUint32 flags = XdrUint32.fromTxRep(map, '$prefix.flags');
+    return XdrClaimableBalanceEntryExtV1(ext, flags);
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_authenticated_message_v0.dart';
 import 'xdr_data_io.dart';
 
@@ -27,17 +28,11 @@ class XdrAuthenticatedMessage {
 
   set v0(XdrAuthenticatedMessageV0? value) => this._v0 = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrAuthenticatedMessage encodedAuthenticatedMessage,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrAuthenticatedMessage encodedAuthenticatedMessage) {
     stream.writeInt(encodedAuthenticatedMessage.discriminant);
     switch (encodedAuthenticatedMessage.discriminant) {
       case 0:
-        XdrAuthenticatedMessageV0.encode(
-          stream,
-          encodedAuthenticatedMessage._v0!,
-        );
+        XdrAuthenticatedMessageV0.encode(stream, encodedAuthenticatedMessage._v0!);
         break;
       default:
         break;
@@ -46,13 +41,10 @@ class XdrAuthenticatedMessage {
 
   static XdrAuthenticatedMessage decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrAuthenticatedMessage decodedAuthenticatedMessage =
-        XdrAuthenticatedMessage(discriminant);
+    XdrAuthenticatedMessage decodedAuthenticatedMessage = XdrAuthenticatedMessage(discriminant);
     switch (decodedAuthenticatedMessage.discriminant) {
       case 0:
-        decodedAuthenticatedMessage._v0 = XdrAuthenticatedMessageV0.decode(
-          stream,
-        );
+        decodedAuthenticatedMessage._v0 = XdrAuthenticatedMessageV0.decode(stream);
         break;
       default:
         break;
@@ -66,10 +58,32 @@ class XdrAuthenticatedMessage {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrAuthenticatedMessage fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrAuthenticatedMessage fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAuthenticatedMessage.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        _v0!.toTxRep('$prefix.v0', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrAuthenticatedMessage fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrAuthenticatedMessage result = XdrAuthenticatedMessage(disc);
+    switch (result.discriminant) {
+      case 0:
+        result._v0 = XdrAuthenticatedMessageV0.fromTxRep(map, '$prefix.v0');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

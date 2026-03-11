@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
 import 'xdr_uint32.dart';
 
 class XdrContractCodeCostInputs {
+
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
@@ -55,24 +57,9 @@ class XdrContractCodeCostInputs {
   XdrUint32 get nDataSegmentBytes => this._nDataSegmentBytes;
   set nDataSegmentBytes(XdrUint32 value) => this._nDataSegmentBytes = value;
 
-  XdrContractCodeCostInputs(
-    this._ext,
-    this._nInstructions,
-    this._nFunctions,
-    this._nGlobals,
-    this._nTableEntries,
-    this._nTypes,
-    this._nDataSegments,
-    this._nElemSegments,
-    this._nImports,
-    this._nExports,
-    this._nDataSegmentBytes,
-  );
+  XdrContractCodeCostInputs(this._ext, this._nInstructions, this._nFunctions, this._nGlobals, this._nTableEntries, this._nTypes, this._nDataSegments, this._nElemSegments, this._nImports, this._nExports, this._nDataSegmentBytes);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrContractCodeCostInputs encodedContractCodeCostInputs,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrContractCodeCostInputs encodedContractCodeCostInputs) {
     XdrExtensionPoint.encode(stream, encodedContractCodeCostInputs.ext);
     XdrUint32.encode(stream, encodedContractCodeCostInputs.nInstructions);
     XdrUint32.encode(stream, encodedContractCodeCostInputs.nFunctions);
@@ -98,19 +85,7 @@ class XdrContractCodeCostInputs {
     XdrUint32 nImports = XdrUint32.decode(stream);
     XdrUint32 nExports = XdrUint32.decode(stream);
     XdrUint32 nDataSegmentBytes = XdrUint32.decode(stream);
-    return XdrContractCodeCostInputs(
-      ext,
-      nInstructions,
-      nFunctions,
-      nGlobals,
-      nTableEntries,
-      nTypes,
-      nDataSegments,
-      nElemSegments,
-      nImports,
-      nExports,
-      nDataSegmentBytes,
-    );
+    return XdrContractCodeCostInputs(ext, nInstructions, nFunctions, nGlobals, nTableEntries, nTypes, nDataSegments, nElemSegments, nImports, nExports, nDataSegmentBytes);
   }
 
   String toBase64EncodedXdrString() {
@@ -119,10 +94,37 @@ class XdrContractCodeCostInputs {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrContractCodeCostInputs fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrContractCodeCostInputs fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractCodeCostInputs.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _ext.toTxRep('$prefix.ext', lines);
+    _nInstructions.toTxRep('$prefix.nInstructions', lines);
+    _nFunctions.toTxRep('$prefix.nFunctions', lines);
+    _nGlobals.toTxRep('$prefix.nGlobals', lines);
+    _nTableEntries.toTxRep('$prefix.nTableEntries', lines);
+    _nTypes.toTxRep('$prefix.nTypes', lines);
+    _nDataSegments.toTxRep('$prefix.nDataSegments', lines);
+    _nElemSegments.toTxRep('$prefix.nElemSegments', lines);
+    _nImports.toTxRep('$prefix.nImports', lines);
+    _nExports.toTxRep('$prefix.nExports', lines);
+    _nDataSegmentBytes.toTxRep('$prefix.nDataSegmentBytes', lines);
+  }
+
+  static XdrContractCodeCostInputs fromTxRep(Map<String, String> map, String prefix) {
+    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
+    XdrUint32 nInstructions = XdrUint32.fromTxRep(map, '$prefix.nInstructions');
+    XdrUint32 nFunctions = XdrUint32.fromTxRep(map, '$prefix.nFunctions');
+    XdrUint32 nGlobals = XdrUint32.fromTxRep(map, '$prefix.nGlobals');
+    XdrUint32 nTableEntries = XdrUint32.fromTxRep(map, '$prefix.nTableEntries');
+    XdrUint32 nTypes = XdrUint32.fromTxRep(map, '$prefix.nTypes');
+    XdrUint32 nDataSegments = XdrUint32.fromTxRep(map, '$prefix.nDataSegments');
+    XdrUint32 nElemSegments = XdrUint32.fromTxRep(map, '$prefix.nElemSegments');
+    XdrUint32 nImports = XdrUint32.fromTxRep(map, '$prefix.nImports');
+    XdrUint32 nExports = XdrUint32.fromTxRep(map, '$prefix.nExports');
+    XdrUint32 nDataSegmentBytes = XdrUint32.fromTxRep(map, '$prefix.nDataSegmentBytes');
+    return XdrContractCodeCostInputs(ext, nInstructions, nFunctions, nGlobals, nTableEntries, nTypes, nDataSegments, nElemSegments, nImports, nExports, nDataSegmentBytes);
   }
 }

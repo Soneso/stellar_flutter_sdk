@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_asset_alpha_num12.dart';
 import 'xdr_asset_alpha_num4.dart';
 import 'xdr_asset_type.dart';
@@ -43,10 +44,7 @@ class XdrTrustlineAssetBase {
 
   set liquidityPoolID(XdrHash? value) => this._liquidityPoolID = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTrustlineAssetBase encodedTrustlineAsset,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrTrustlineAssetBase encodedTrustlineAsset) {
     stream.writeInt(encodedTrustlineAsset.discriminant.value);
     switch (encodedTrustlineAsset.discriminant) {
       case XdrAssetType.ASSET_TYPE_NATIVE:
@@ -98,10 +96,48 @@ class XdrTrustlineAssetBase {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTrustlineAssetBase fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrTrustlineAssetBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTrustlineAssetBase.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrAssetType.ASSET_TYPE_NATIVE:
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+        _alphaNum4!.toTxRep('$prefix.alphaNum4', lines);
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+        _alphaNum12!.toTxRep('$prefix.alphaNum12', lines);
+        break;
+      case XdrAssetType.ASSET_TYPE_POOL_SHARE:
+        _liquidityPoolID!.toTxRep('$prefix.liquidityPoolID', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrTrustlineAssetBase fromTxRep(Map<String, String> map, String prefix) {
+    XdrAssetType disc = XdrAssetType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrTrustlineAssetBase result = XdrTrustlineAssetBase(disc);
+    switch (result.discriminant) {
+      case XdrAssetType.ASSET_TYPE_NATIVE:
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+        result._alphaNum4 = XdrAssetAlphaNum4.fromTxRep(map, '$prefix.alphaNum4');
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+        result._alphaNum12 = XdrAssetAlphaNum12.fromTxRep(map, '$prefix.alphaNum12');
+        break;
+      case XdrAssetType.ASSET_TYPE_POOL_SHARE:
+        result._liquidityPoolID = XdrHash.fromTxRep(map, '$prefix.liquidityPoolID');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

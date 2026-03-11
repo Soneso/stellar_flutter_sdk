@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrAllowTrustResultCode {
@@ -17,26 +18,18 @@ class XdrAllowTrustResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrAllowTrustResultCode && _value == other._value;
+      identical(this, other) || other is XdrAllowTrustResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
   static const ALLOW_TRUST_SUCCESS = const XdrAllowTrustResultCode._internal(0);
-  static const ALLOW_TRUST_MALFORMED = const XdrAllowTrustResultCode._internal(
-    -1,
-  );
-  static const ALLOW_TRUST_NO_TRUST_LINE =
-      const XdrAllowTrustResultCode._internal(-2);
-  static const ALLOW_TRUST_TRUST_NOT_REQUIRED =
-      const XdrAllowTrustResultCode._internal(-3);
-  static const ALLOW_TRUST_CANT_REVOKE =
-      const XdrAllowTrustResultCode._internal(-4);
-  static const ALLOW_TRUST_SELF_NOT_ALLOWED =
-      const XdrAllowTrustResultCode._internal(-5);
-  static const ALLOW_TRUST_LOW_RESERVE =
-      const XdrAllowTrustResultCode._internal(-6);
+  static const ALLOW_TRUST_MALFORMED = const XdrAllowTrustResultCode._internal(-1);
+  static const ALLOW_TRUST_NO_TRUST_LINE = const XdrAllowTrustResultCode._internal(-2);
+  static const ALLOW_TRUST_TRUST_NOT_REQUIRED = const XdrAllowTrustResultCode._internal(-3);
+  static const ALLOW_TRUST_CANT_REVOKE = const XdrAllowTrustResultCode._internal(-4);
+  static const ALLOW_TRUST_SELF_NOT_ALLOWED = const XdrAllowTrustResultCode._internal(-5);
+  static const ALLOW_TRUST_LOW_RESERVE = const XdrAllowTrustResultCode._internal(-6);
 
   static XdrAllowTrustResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -60,10 +53,7 @@ class XdrAllowTrustResultCode {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrAllowTrustResultCode value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrAllowTrustResultCode value) {
     stream.writeInt(value.value);
   }
 
@@ -73,10 +63,49 @@ class XdrAllowTrustResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrAllowTrustResultCode fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrAllowTrustResultCode fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAllowTrustResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'ALLOW_TRUST_SUCCESS';
+      case -1: return 'ALLOW_TRUST_MALFORMED';
+      case -2: return 'ALLOW_TRUST_NO_TRUST_LINE';
+      case -3: return 'ALLOW_TRUST_TRUST_NOT_REQUIRED';
+      case -4: return 'ALLOW_TRUST_CANT_REVOKE';
+      case -5: return 'ALLOW_TRUST_SELF_NOT_ALLOWED';
+      case -6: return 'ALLOW_TRUST_LOW_RESERVE';
+      default: return 'XdrAllowTrustResultCode#$_value';
+    }
+  }
+
+  static XdrAllowTrustResultCode fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrAllowTrustResultCode fromTxRepName(String name) {
+    switch (name) {
+      case 'ALLOW_TRUST_SUCCESS': return ALLOW_TRUST_SUCCESS;
+      case 'ALLOW_TRUST_MALFORMED': return ALLOW_TRUST_MALFORMED;
+      case 'ALLOW_TRUST_NO_TRUST_LINE': return ALLOW_TRUST_NO_TRUST_LINE;
+      case 'ALLOW_TRUST_TRUST_NOT_REQUIRED': return ALLOW_TRUST_TRUST_NOT_REQUIRED;
+      case 'ALLOW_TRUST_CANT_REVOKE': return ALLOW_TRUST_CANT_REVOKE;
+      case 'ALLOW_TRUST_SELF_NOT_ALLOWED': return ALLOW_TRUST_SELF_NOT_ALLOWED;
+      case 'ALLOW_TRUST_LOW_RESERVE': return ALLOW_TRUST_LOW_RESERVE;
+      default:
+        if (name.startsWith('XdrAllowTrustResultCode#')) {
+          int? val = int.tryParse(name.substring('XdrAllowTrustResultCode#'.length));
+          if (val != null) return XdrAllowTrustResultCode._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

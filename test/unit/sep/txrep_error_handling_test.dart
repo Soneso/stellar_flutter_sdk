@@ -360,8 +360,9 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        // Missing extraSigners.len defaults to 0 (no extra signers).
+        var result = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+        expect(result, isNotEmpty);
       });
 
       test('Invalid extraSigners.len - not a number', () {

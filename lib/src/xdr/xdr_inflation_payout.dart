@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 
 class XdrInflationPayout {
+
   XdrAccountID _destination;
   XdrAccountID get destination => this._destination;
   set destination(XdrAccountID value) => this._destination = value;
@@ -21,10 +23,7 @@ class XdrInflationPayout {
 
   XdrInflationPayout(this._destination, this._amount);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrInflationPayout encodedInflationPayout,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrInflationPayout encodedInflationPayout) {
     XdrAccountID.encode(stream, encodedInflationPayout.destination);
     XdrInt64.encode(stream, encodedInflationPayout.amount);
   }
@@ -44,5 +43,16 @@ class XdrInflationPayout {
   static XdrInflationPayout fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInflationPayout.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.destination: ${TxRepHelper.formatAccountId(_destination)}');
+    _amount.toTxRep('$prefix.amount', lines);
+  }
+
+  static XdrInflationPayout fromTxRep(Map<String, String> map, String prefix) {
+    XdrAccountID destination = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.destination') ?? '');
+    XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.amount');
+    return XdrInflationPayout(destination, amount);
   }
 }

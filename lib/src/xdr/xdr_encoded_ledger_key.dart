@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrEncodedLedgerKey {
@@ -15,10 +16,7 @@ class XdrEncodedLedgerKey {
   Uint8List get encodedLedgerKey => this._encodedLedgerKey;
   set encodedLedgerKey(Uint8List value) => this._encodedLedgerKey = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrEncodedLedgerKey encodedEncodedLedgerKey,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrEncodedLedgerKey encodedEncodedLedgerKey) {
     int encodedLedgerKeySize = encodedEncodedLedgerKey.encodedLedgerKey.length;
     stream.writeInt(encodedLedgerKeySize);
     stream.write(encodedEncodedLedgerKey.encodedLedgerKey);
@@ -38,5 +36,15 @@ class XdrEncodedLedgerKey {
   static XdrEncodedLedgerKey fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrEncodedLedgerKey.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${TxRepHelper.bytesToHex(_encodedLedgerKey)}');
+  }
+
+  static XdrEncodedLedgerKey fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return XdrEncodedLedgerKey(TxRepHelper.hexToBytes(raw));
   }
 }

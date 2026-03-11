@@ -18,6 +18,11 @@ class XdrUInt128Parts extends XdrUInt128PartsBase {
     return XdrUInt128Parts(b.hi, b.lo);
   }
 
+  static XdrUInt128Parts fromTxRep(Map<String, String> map, String prefix) {
+    var b = XdrUInt128PartsBase.fromTxRep(map, prefix);
+    return XdrUInt128Parts(b.hi, b.lo);
+  }
+
   static XdrUInt128Parts forHiLo(BigInt hi, BigInt lo) {
     return XdrUInt128Parts(XdrUint64(hi), XdrUint64(lo));
   }

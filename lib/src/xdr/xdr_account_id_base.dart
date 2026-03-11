@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_public_key.dart';
 
@@ -16,10 +17,7 @@ class XdrAccountIDBase {
   XdrPublicKey get accountID => this._accountID;
   set accountID(XdrPublicKey value) => this._accountID = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrAccountIDBase encodedAccountID,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrAccountIDBase encodedAccountID) {
     XdrPublicKey.encode(stream, encodedAccountID.accountID);
   }
 
@@ -36,5 +34,15 @@ class XdrAccountIDBase {
   static XdrAccountIDBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountIDBase.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _accountID.toTxRep('$prefix', lines);
+  }
+
+  static XdrAccountIDBase fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return XdrAccountIDBase(XdrPublicKey.fromTxRep(map, prefix));
   }
 }

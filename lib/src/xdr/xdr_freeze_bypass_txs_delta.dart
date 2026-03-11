@@ -6,10 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 
 class XdrFreezeBypassTxsDelta {
+
   List<XdrHash> _addTxs;
   List<XdrHash> get addTxs => this._addTxs;
   set addTxs(List<XdrHash> value) => this._addTxs = value;
@@ -20,10 +22,7 @@ class XdrFreezeBypassTxsDelta {
 
   XdrFreezeBypassTxsDelta(this._addTxs, this._removeTxs);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrFreezeBypassTxsDelta encodedFreezeBypassTxsDelta,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrFreezeBypassTxsDelta encodedFreezeBypassTxsDelta) {
     int addTxssize = encodedFreezeBypassTxsDelta.addTxs.length;
     stream.writeInt(addTxssize);
     for (int i = 0; i < addTxssize; i++) {
@@ -56,10 +55,33 @@ class XdrFreezeBypassTxsDelta {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrFreezeBypassTxsDelta fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrFreezeBypassTxsDelta fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFreezeBypassTxsDelta.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.addTxs.len: ${_addTxs.length}');
+    for (int i = 0; i < _addTxs.length; i++) {
+      _addTxs[i].toTxRep('$prefix.addTxs[$i]', lines);
+    }
+    lines.add('$prefix.removeTxs.len: ${_removeTxs.length}');
+    for (int i = 0; i < _removeTxs.length; i++) {
+      _removeTxs[i].toTxRep('$prefix.removeTxs[$i]', lines);
+    }
+  }
+
+  static XdrFreezeBypassTxsDelta fromTxRep(Map<String, String> map, String prefix) {
+    int addTxsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.addTxs.len') ?? '0');
+    List<XdrHash> addTxs = [];
+    for (int i = 0; i < addTxsLen; i++) {
+      addTxs.add(XdrHash.fromTxRep(map, '$prefix.addTxs[$i]'));
+    }
+    int removeTxsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.removeTxs.len') ?? '0');
+    List<XdrHash> removeTxs = [];
+    for (int i = 0; i < removeTxsLen; i++) {
+      removeTxs.add(XdrHash.fromTxRep(map, '$prefix.removeTxs[$i]'));
+    }
+    return XdrFreezeBypassTxsDelta(addTxs, removeTxs);
   }
 }

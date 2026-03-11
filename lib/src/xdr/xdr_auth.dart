@@ -6,9 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrAuth {
+
   int _flags;
   int get flags => this._flags;
   set flags(int value) => this._flags = value;
@@ -33,5 +35,14 @@ class XdrAuth {
   static XdrAuth fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAuth.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.flags: $_flags');
+  }
+
+  static XdrAuth fromTxRep(Map<String, String> map, String prefix) {
+    int flags = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.flags') ?? '0');
+    return XdrAuth(flags);
   }
 }

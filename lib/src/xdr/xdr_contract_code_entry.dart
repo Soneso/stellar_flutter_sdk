@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_contract_code_entry_ext.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 
 class XdrContractCodeEntry {
+
   XdrContractCodeEntryExt _ext;
   XdrContractCodeEntryExt get ext => this._ext;
   set ext(XdrContractCodeEntryExt value) => this._ext = value;
@@ -25,10 +27,7 @@ class XdrContractCodeEntry {
 
   XdrContractCodeEntry(this._ext, this._hash, this._code);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrContractCodeEntry encodedContractCodeEntry,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrContractCodeEntry encodedContractCodeEntry) {
     XdrContractCodeEntryExt.encode(stream, encodedContractCodeEntry.ext);
     XdrHash.encode(stream, encodedContractCodeEntry.hash);
     int codesize = encodedContractCodeEntry.code.length;
@@ -53,5 +52,18 @@ class XdrContractCodeEntry {
   static XdrContractCodeEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractCodeEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _ext.toTxRep('$prefix.ext', lines);
+    _hash.toTxRep('$prefix.hash', lines);
+    lines.add('$prefix.code: ${TxRepHelper.bytesToHex(_code)}');
+  }
+
+  static XdrContractCodeEntry fromTxRep(Map<String, String> map, String prefix) {
+    XdrContractCodeEntryExt ext = XdrContractCodeEntryExt.fromTxRep(map, '$prefix.ext');
+    XdrHash hash = XdrHash.fromTxRep(map, '$prefix.hash');
+    Uint8List code = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+    return XdrContractCodeEntry(ext, hash, code);
   }
 }

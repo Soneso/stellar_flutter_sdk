@@ -6,20 +6,19 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrSCSpecTypeBytesN {
+
   XdrUint32 _n;
   XdrUint32 get n => this._n;
   set n(XdrUint32 value) => this._n = value;
 
   XdrSCSpecTypeBytesN(this._n);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCSpecTypeBytesN encodedSCSpecTypeBytesN,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCSpecTypeBytesN encodedSCSpecTypeBytesN) {
     XdrUint32.encode(stream, encodedSCSpecTypeBytesN.n);
   }
 
@@ -37,5 +36,14 @@ class XdrSCSpecTypeBytesN {
   static XdrSCSpecTypeBytesN fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecTypeBytesN.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _n.toTxRep('$prefix.n', lines);
+  }
+
+  static XdrSCSpecTypeBytesN fromTxRep(Map<String, String> map, String prefix) {
+    XdrUint32 n = XdrUint32.fromTxRep(map, '$prefix.n');
+    return XdrSCSpecTypeBytesN(n);
   }
 }

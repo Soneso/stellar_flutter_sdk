@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_signed_payload.dart';
 import 'xdr_signer_key_type.dart';
@@ -48,10 +49,7 @@ class XdrSignerKey {
 
   set signedPayload(XdrSignedPayload? value) => this._signedPayload = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSignerKey encodedSignerKey,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSignerKey encodedSignerKey) {
     stream.writeInt(encodedSignerKey.discriminant.value);
     switch (encodedSignerKey.discriminant) {
       case XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519:
@@ -72,9 +70,7 @@ class XdrSignerKey {
   }
 
   static XdrSignerKey decode(XdrDataInputStream stream) {
-    XdrSignerKey decodedSignerKey = XdrSignerKey(
-      XdrSignerKeyType.decode(stream),
-    );
+    XdrSignerKey decodedSignerKey = XdrSignerKey(XdrSignerKeyType.decode(stream));
     switch (decodedSignerKey.discriminant) {
       case XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519:
         decodedSignerKey._ed25519 = XdrUint256.decode(stream);
@@ -103,5 +99,47 @@ class XdrSignerKey {
   static XdrSignerKey fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSignerKey.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519:
+        _ed25519!.toTxRep('$prefix.ed25519', lines);
+        break;
+      case XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX:
+        _preAuthTx!.toTxRep('$prefix.preAuthTx', lines);
+        break;
+      case XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X:
+        _hashX!.toTxRep('$prefix.hashX', lines);
+        break;
+      case XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD:
+        _signedPayload!.toTxRep('$prefix.ed25519SignedPayload', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrSignerKey fromTxRep(Map<String, String> map, String prefix) {
+    XdrSignerKeyType disc = XdrSignerKeyType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrSignerKey result = XdrSignerKey(disc);
+    switch (result.discriminant) {
+      case XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519:
+        result._ed25519 = XdrUint256.fromTxRep(map, '$prefix.ed25519');
+        break;
+      case XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX:
+        result._preAuthTx = XdrUint256.fromTxRep(map, '$prefix.preAuthTx');
+        break;
+      case XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X:
+        result._hashX = XdrUint256.fromTxRep(map, '$prefix.hashX');
+        break;
+      case XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD:
+        result._signedPayload = XdrSignedPayload.fromTxRep(map, '$prefix.ed25519SignedPayload');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrMessageType {
@@ -17,8 +18,7 @@ class XdrMessageType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrMessageType && _value == other._value;
+      identical(this, other) || other is XdrMessageType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -42,10 +42,8 @@ class XdrMessageType {
   static const FLOOD_DEMAND = const XdrMessageType._internal(19);
   static const TIME_SLICED_SURVEY_REQUEST = const XdrMessageType._internal(21);
   static const TIME_SLICED_SURVEY_RESPONSE = const XdrMessageType._internal(22);
-  static const TIME_SLICED_SURVEY_START_COLLECTING =
-      const XdrMessageType._internal(23);
-  static const TIME_SLICED_SURVEY_STOP_COLLECTING =
-      const XdrMessageType._internal(24);
+  static const TIME_SLICED_SURVEY_START_COLLECTING = const XdrMessageType._internal(23);
+  static const TIME_SLICED_SURVEY_STOP_COLLECTING = const XdrMessageType._internal(24);
 
   static XdrMessageType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -110,5 +108,74 @@ class XdrMessageType {
   static XdrMessageType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrMessageType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'ERROR_MSG';
+      case 2: return 'AUTH';
+      case 3: return 'DONT_HAVE';
+      case 5: return 'PEERS';
+      case 6: return 'GET_TX_SET';
+      case 7: return 'TX_SET';
+      case 17: return 'GENERALIZED_TX_SET';
+      case 8: return 'TRANSACTION';
+      case 9: return 'GET_SCP_QUORUMSET';
+      case 10: return 'SCP_QUORUMSET';
+      case 11: return 'SCP_MESSAGE';
+      case 12: return 'GET_SCP_STATE';
+      case 13: return 'HELLO';
+      case 16: return 'SEND_MORE';
+      case 20: return 'SEND_MORE_EXTENDED';
+      case 18: return 'FLOOD_ADVERT';
+      case 19: return 'FLOOD_DEMAND';
+      case 21: return 'TIME_SLICED_SURVEY_REQUEST';
+      case 22: return 'TIME_SLICED_SURVEY_RESPONSE';
+      case 23: return 'TIME_SLICED_SURVEY_START_COLLECTING';
+      case 24: return 'TIME_SLICED_SURVEY_STOP_COLLECTING';
+      default: return 'XdrMessageType#$_value';
+    }
+  }
+
+  static XdrMessageType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrMessageType fromTxRepName(String name) {
+    switch (name) {
+      case 'ERROR_MSG': return ERROR_MSG;
+      case 'AUTH': return AUTH;
+      case 'DONT_HAVE': return DONT_HAVE;
+      case 'PEERS': return PEERS;
+      case 'GET_TX_SET': return GET_TX_SET;
+      case 'TX_SET': return TX_SET;
+      case 'GENERALIZED_TX_SET': return GENERALIZED_TX_SET;
+      case 'TRANSACTION': return TRANSACTION;
+      case 'GET_SCP_QUORUMSET': return GET_SCP_QUORUMSET;
+      case 'SCP_QUORUMSET': return SCP_QUORUMSET;
+      case 'SCP_MESSAGE': return SCP_MESSAGE;
+      case 'GET_SCP_STATE': return GET_SCP_STATE;
+      case 'HELLO': return HELLO;
+      case 'SEND_MORE': return SEND_MORE;
+      case 'SEND_MORE_EXTENDED': return SEND_MORE_EXTENDED;
+      case 'FLOOD_ADVERT': return FLOOD_ADVERT;
+      case 'FLOOD_DEMAND': return FLOOD_DEMAND;
+      case 'TIME_SLICED_SURVEY_REQUEST': return TIME_SLICED_SURVEY_REQUEST;
+      case 'TIME_SLICED_SURVEY_RESPONSE': return TIME_SLICED_SURVEY_RESPONSE;
+      case 'TIME_SLICED_SURVEY_START_COLLECTING': return TIME_SLICED_SURVEY_START_COLLECTING;
+      case 'TIME_SLICED_SURVEY_STOP_COLLECTING': return TIME_SLICED_SURVEY_STOP_COLLECTING;
+      default:
+        if (name.startsWith('XdrMessageType#')) {
+          int? val = int.tryParse(name.substring('XdrMessageType#'.length));
+          if (val != null) return XdrMessageType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

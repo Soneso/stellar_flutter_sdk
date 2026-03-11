@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_claim_atom.dart';
 import 'xdr_data_io.dart';
 import 'xdr_simple_payment_result.dart';
 
 class XdrPathPaymentResultSuccess {
+
   List<XdrClaimAtom> _offers;
   List<XdrClaimAtom> get offers => this._offers;
   set offers(List<XdrClaimAtom> value) => this._offers = value;
@@ -21,10 +23,7 @@ class XdrPathPaymentResultSuccess {
 
   XdrPathPaymentResultSuccess(this._offers, this._last);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrPathPaymentResultSuccess encodedPathPaymentResultSuccess,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrPathPaymentResultSuccess encodedPathPaymentResultSuccess) {
     int offerssize = encodedPathPaymentResultSuccess.offers.length;
     stream.writeInt(offerssize);
     for (int i = 0; i < offerssize; i++) {
@@ -49,10 +48,26 @@ class XdrPathPaymentResultSuccess {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrPathPaymentResultSuccess fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrPathPaymentResultSuccess fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPathPaymentResultSuccess.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.offers.len: ${_offers.length}');
+    for (int i = 0; i < _offers.length; i++) {
+      _offers[i].toTxRep('$prefix.offers[$i]', lines);
+    }
+    _last.toTxRep('$prefix.last', lines);
+  }
+
+  static XdrPathPaymentResultSuccess fromTxRep(Map<String, String> map, String prefix) {
+    int offersLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.offers.len') ?? '0');
+    List<XdrClaimAtom> offers = [];
+    for (int i = 0; i < offersLen; i++) {
+      offers.add(XdrClaimAtom.fromTxRep(map, '$prefix.offers[$i]'));
+    }
+    XdrSimplePaymentResult last = XdrSimplePaymentResult.fromTxRep(map, '$prefix.last');
+    return XdrPathPaymentResultSuccess(offers, last);
   }
 }

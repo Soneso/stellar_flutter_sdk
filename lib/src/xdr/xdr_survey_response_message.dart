@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_encrypted_body.dart';
 import 'xdr_node_id.dart';
@@ -13,6 +14,7 @@ import 'xdr_survey_message_command_type.dart';
 import 'xdr_uint32.dart';
 
 class XdrSurveyResponseMessage {
+
   XdrNodeID _surveyorPeerID;
   XdrNodeID get surveyorPeerID => this._surveyorPeerID;
   set surveyorPeerID(XdrNodeID value) => this._surveyorPeerID = value;
@@ -27,32 +29,19 @@ class XdrSurveyResponseMessage {
 
   XdrSurveyMessageCommandType _commandType;
   XdrSurveyMessageCommandType get commandType => this._commandType;
-  set commandType(XdrSurveyMessageCommandType value) =>
-      this._commandType = value;
+  set commandType(XdrSurveyMessageCommandType value) => this._commandType = value;
 
   XdrEncryptedBody _encryptedBody;
   XdrEncryptedBody get encryptedBody => this._encryptedBody;
   set encryptedBody(XdrEncryptedBody value) => this._encryptedBody = value;
 
-  XdrSurveyResponseMessage(
-    this._surveyorPeerID,
-    this._surveyedPeerID,
-    this._ledgerNum,
-    this._commandType,
-    this._encryptedBody,
-  );
+  XdrSurveyResponseMessage(this._surveyorPeerID, this._surveyedPeerID, this._ledgerNum, this._commandType, this._encryptedBody);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSurveyResponseMessage encodedSurveyResponseMessage,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSurveyResponseMessage encodedSurveyResponseMessage) {
     XdrNodeID.encode(stream, encodedSurveyResponseMessage.surveyorPeerID);
     XdrNodeID.encode(stream, encodedSurveyResponseMessage.surveyedPeerID);
     XdrUint32.encode(stream, encodedSurveyResponseMessage.ledgerNum);
-    XdrSurveyMessageCommandType.encode(
-      stream,
-      encodedSurveyResponseMessage.commandType,
-    );
+    XdrSurveyMessageCommandType.encode(stream, encodedSurveyResponseMessage.commandType);
     XdrEncryptedBody.encode(stream, encodedSurveyResponseMessage.encryptedBody);
   }
 
@@ -60,16 +49,9 @@ class XdrSurveyResponseMessage {
     XdrNodeID surveyorPeerID = XdrNodeID.decode(stream);
     XdrNodeID surveyedPeerID = XdrNodeID.decode(stream);
     XdrUint32 ledgerNum = XdrUint32.decode(stream);
-    XdrSurveyMessageCommandType commandType =
-        XdrSurveyMessageCommandType.decode(stream);
+    XdrSurveyMessageCommandType commandType = XdrSurveyMessageCommandType.decode(stream);
     XdrEncryptedBody encryptedBody = XdrEncryptedBody.decode(stream);
-    return XdrSurveyResponseMessage(
-      surveyorPeerID,
-      surveyedPeerID,
-      ledgerNum,
-      commandType,
-      encryptedBody,
-    );
+    return XdrSurveyResponseMessage(surveyorPeerID, surveyedPeerID, ledgerNum, commandType, encryptedBody);
   }
 
   String toBase64EncodedXdrString() {
@@ -78,10 +60,25 @@ class XdrSurveyResponseMessage {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSurveyResponseMessage fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrSurveyResponseMessage fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSurveyResponseMessage.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _surveyorPeerID.toTxRep('$prefix.surveyorPeerID', lines);
+    _surveyedPeerID.toTxRep('$prefix.surveyedPeerID', lines);
+    _ledgerNum.toTxRep('$prefix.ledgerNum', lines);
+    _commandType.toTxRep('$prefix.commandType', lines);
+    _encryptedBody.toTxRep('$prefix.encryptedBody', lines);
+  }
+
+  static XdrSurveyResponseMessage fromTxRep(Map<String, String> map, String prefix) {
+    XdrNodeID surveyorPeerID = XdrNodeID.fromTxRep(map, '$prefix.surveyorPeerID');
+    XdrNodeID surveyedPeerID = XdrNodeID.fromTxRep(map, '$prefix.surveyedPeerID');
+    XdrUint32 ledgerNum = XdrUint32.fromTxRep(map, '$prefix.ledgerNum');
+    XdrSurveyMessageCommandType commandType = XdrSurveyMessageCommandType.fromTxRep(map, '$prefix.commandType');
+    XdrEncryptedBody encryptedBody = XdrEncryptedBody.fromTxRep(map, '$prefix.encryptedBody');
+    return XdrSurveyResponseMessage(surveyorPeerID, surveyedPeerID, ledgerNum, commandType, encryptedBody);
   }
 }

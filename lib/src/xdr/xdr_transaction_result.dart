@@ -6,12 +6,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 import 'xdr_transaction_result_ext.dart';
 import 'xdr_transaction_result_result.dart';
 
 class XdrTransactionResult {
+
   XdrInt64 _feeCharged;
   XdrInt64 get feeCharged => this._feeCharged;
   set feeCharged(XdrInt64 value) => this._feeCharged = value;
@@ -26,10 +28,7 @@ class XdrTransactionResult {
 
   XdrTransactionResult(this._feeCharged, this._result, this._ext);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTransactionResult encodedTransactionResult,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrTransactionResult encodedTransactionResult) {
     XdrInt64.encode(stream, encodedTransactionResult.feeCharged);
     XdrTransactionResultResult.encode(stream, encodedTransactionResult.result);
     XdrTransactionResultExt.encode(stream, encodedTransactionResult.ext);
@@ -37,9 +36,7 @@ class XdrTransactionResult {
 
   static XdrTransactionResult decode(XdrDataInputStream stream) {
     XdrInt64 feeCharged = XdrInt64.decode(stream);
-    XdrTransactionResultResult result = XdrTransactionResultResult.decode(
-      stream,
-    );
+    XdrTransactionResultResult result = XdrTransactionResultResult.decode(stream);
     XdrTransactionResultExt ext = XdrTransactionResultExt.decode(stream);
     return XdrTransactionResult(feeCharged, result, ext);
   }
@@ -53,5 +50,18 @@ class XdrTransactionResult {
   static XdrTransactionResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionResult.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _feeCharged.toTxRep('$prefix.feeCharged', lines);
+    _result.toTxRep('$prefix.result', lines);
+    _ext.toTxRep('$prefix.ext', lines);
+  }
+
+  static XdrTransactionResult fromTxRep(Map<String, String> map, String prefix) {
+    XdrInt64 feeCharged = XdrInt64.fromTxRep(map, '$prefix.feeCharged');
+    XdrTransactionResultResult result = XdrTransactionResultResult.fromTxRep(map, '$prefix.result');
+    XdrTransactionResultExt ext = XdrTransactionResultExt.fromTxRep(map, '$prefix.ext');
+    return XdrTransactionResult(feeCharged, result, ext);
   }
 }

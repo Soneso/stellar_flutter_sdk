@@ -6,12 +6,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_binary_fuse_filter_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_short_hash_seed.dart';
 import 'xdr_uint32.dart';
 
 class XdrSerializedBinaryFuseFilter {
+
   XdrBinaryFuseFilterType _type;
   XdrBinaryFuseFilterType get type => this._type;
   set type(XdrBinaryFuseFilterType value) => this._type = value;
@@ -48,50 +50,18 @@ class XdrSerializedBinaryFuseFilter {
   Uint8List get fingerprints => this._fingerprints;
   set fingerprints(Uint8List value) => this._fingerprints = value;
 
-  XdrSerializedBinaryFuseFilter(
-    this._type,
-    this._inputHashSeed,
-    this._filterSeed,
-    this._segmentLength,
-    this._segementLengthMask,
-    this._segmentCount,
-    this._segmentCountLength,
-    this._fingerprintLength,
-    this._fingerprints,
-  );
+  XdrSerializedBinaryFuseFilter(this._type, this._inputHashSeed, this._filterSeed, this._segmentLength, this._segementLengthMask, this._segmentCount, this._segmentCountLength, this._fingerprintLength, this._fingerprints);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSerializedBinaryFuseFilter encodedSerializedBinaryFuseFilter,
-  ) {
-    XdrBinaryFuseFilterType.encode(
-      stream,
-      encodedSerializedBinaryFuseFilter.type,
-    );
-    XdrShortHashSeed.encode(
-      stream,
-      encodedSerializedBinaryFuseFilter.inputHashSeed,
-    );
-    XdrShortHashSeed.encode(
-      stream,
-      encodedSerializedBinaryFuseFilter.filterSeed,
-    );
+  static void encode(XdrDataOutputStream stream, XdrSerializedBinaryFuseFilter encodedSerializedBinaryFuseFilter) {
+    XdrBinaryFuseFilterType.encode(stream, encodedSerializedBinaryFuseFilter.type);
+    XdrShortHashSeed.encode(stream, encodedSerializedBinaryFuseFilter.inputHashSeed);
+    XdrShortHashSeed.encode(stream, encodedSerializedBinaryFuseFilter.filterSeed);
     XdrUint32.encode(stream, encodedSerializedBinaryFuseFilter.segmentLength);
-    XdrUint32.encode(
-      stream,
-      encodedSerializedBinaryFuseFilter.segementLengthMask,
-    );
+    XdrUint32.encode(stream, encodedSerializedBinaryFuseFilter.segementLengthMask);
     XdrUint32.encode(stream, encodedSerializedBinaryFuseFilter.segmentCount);
-    XdrUint32.encode(
-      stream,
-      encodedSerializedBinaryFuseFilter.segmentCountLength,
-    );
-    XdrUint32.encode(
-      stream,
-      encodedSerializedBinaryFuseFilter.fingerprintLength,
-    );
-    int fingerprintssize =
-        encodedSerializedBinaryFuseFilter.fingerprints.length;
+    XdrUint32.encode(stream, encodedSerializedBinaryFuseFilter.segmentCountLength);
+    XdrUint32.encode(stream, encodedSerializedBinaryFuseFilter.fingerprintLength);
+    int fingerprintssize = encodedSerializedBinaryFuseFilter.fingerprints.length;
     stream.writeInt(fingerprintssize);
     stream.write(encodedSerializedBinaryFuseFilter.fingerprints);
   }
@@ -107,17 +77,7 @@ class XdrSerializedBinaryFuseFilter {
     XdrUint32 fingerprintLength = XdrUint32.decode(stream);
     int fingerprintssize = stream.readInt();
     Uint8List fingerprints = stream.readBytes(fingerprintssize);
-    return XdrSerializedBinaryFuseFilter(
-      type,
-      inputHashSeed,
-      filterSeed,
-      segmentLength,
-      segementLengthMask,
-      segmentCount,
-      segmentCountLength,
-      fingerprintLength,
-      fingerprints,
-    );
+    return XdrSerializedBinaryFuseFilter(type, inputHashSeed, filterSeed, segmentLength, segementLengthMask, segmentCount, segmentCountLength, fingerprintLength, fingerprints);
   }
 
   String toBase64EncodedXdrString() {
@@ -126,10 +86,33 @@ class XdrSerializedBinaryFuseFilter {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSerializedBinaryFuseFilter fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrSerializedBinaryFuseFilter fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSerializedBinaryFuseFilter.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _type.toTxRep('$prefix.type', lines);
+    _inputHashSeed.toTxRep('$prefix.inputHashSeed', lines);
+    _filterSeed.toTxRep('$prefix.filterSeed', lines);
+    _segmentLength.toTxRep('$prefix.segmentLength', lines);
+    _segementLengthMask.toTxRep('$prefix.segementLengthMask', lines);
+    _segmentCount.toTxRep('$prefix.segmentCount', lines);
+    _segmentCountLength.toTxRep('$prefix.segmentCountLength', lines);
+    _fingerprintLength.toTxRep('$prefix.fingerprintLength', lines);
+    lines.add('$prefix.fingerprints: ${TxRepHelper.bytesToHex(_fingerprints)}');
+  }
+
+  static XdrSerializedBinaryFuseFilter fromTxRep(Map<String, String> map, String prefix) {
+    XdrBinaryFuseFilterType type = XdrBinaryFuseFilterType.fromTxRep(map, '$prefix.type');
+    XdrShortHashSeed inputHashSeed = XdrShortHashSeed.fromTxRep(map, '$prefix.inputHashSeed');
+    XdrShortHashSeed filterSeed = XdrShortHashSeed.fromTxRep(map, '$prefix.filterSeed');
+    XdrUint32 segmentLength = XdrUint32.fromTxRep(map, '$prefix.segmentLength');
+    XdrUint32 segementLengthMask = XdrUint32.fromTxRep(map, '$prefix.segementLengthMask');
+    XdrUint32 segmentCount = XdrUint32.fromTxRep(map, '$prefix.segmentCount');
+    XdrUint32 segmentCountLength = XdrUint32.fromTxRep(map, '$prefix.segmentCountLength');
+    XdrUint32 fingerprintLength = XdrUint32.fromTxRep(map, '$prefix.fingerprintLength');
+    Uint8List fingerprints = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '$prefix.fingerprints') ?? '');
+    return XdrSerializedBinaryFuseFilter(type, inputHashSeed, filterSeed, segmentLength, segementLengthMask, segmentCount, segmentCountLength, fingerprintLength, fingerprints);
   }
 }

@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_transaction_phase.dart';
 
 class XdrTransactionSetV1 {
+
   XdrHash _previousLedgerHash;
   XdrHash get previousLedgerHash => this._previousLedgerHash;
   set previousLedgerHash(XdrHash value) => this._previousLedgerHash = value;
@@ -21,10 +23,7 @@ class XdrTransactionSetV1 {
 
   XdrTransactionSetV1(this._previousLedgerHash, this._phases);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTransactionSetV1 encodedTransactionSetV1,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrTransactionSetV1 encodedTransactionSetV1) {
     XdrHash.encode(stream, encodedTransactionSetV1.previousLedgerHash);
     int phasessize = encodedTransactionSetV1.phases.length;
     stream.writeInt(phasessize);
@@ -36,9 +35,7 @@ class XdrTransactionSetV1 {
   static XdrTransactionSetV1 decode(XdrDataInputStream stream) {
     XdrHash previousLedgerHash = XdrHash.decode(stream);
     int phasessize = stream.readInt();
-    List<XdrTransactionPhase> phases = List<XdrTransactionPhase>.empty(
-      growable: true,
-    );
+    List<XdrTransactionPhase> phases = List<XdrTransactionPhase>.empty(growable: true);
     for (int i = 0; i < phasessize; i++) {
       phases.add(XdrTransactionPhase.decode(stream));
     }
@@ -54,5 +51,23 @@ class XdrTransactionSetV1 {
   static XdrTransactionSetV1 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionSetV1.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _previousLedgerHash.toTxRep('$prefix.previousLedgerHash', lines);
+    lines.add('$prefix.phases.len: ${_phases.length}');
+    for (int i = 0; i < _phases.length; i++) {
+      _phases[i].toTxRep('$prefix.phases[$i]', lines);
+    }
+  }
+
+  static XdrTransactionSetV1 fromTxRep(Map<String, String> map, String prefix) {
+    XdrHash previousLedgerHash = XdrHash.fromTxRep(map, '$prefix.previousLedgerHash');
+    int phasesLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.phases.len') ?? '0');
+    List<XdrTransactionPhase> phases = [];
+    for (int i = 0; i < phasesLen; i++) {
+      phases.add(XdrTransactionPhase.fromTxRep(map, '$prefix.phases[$i]'));
+    }
+    return XdrTransactionSetV1(previousLedgerHash, phases);
   }
 }

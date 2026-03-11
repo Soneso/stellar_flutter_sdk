@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_node_id.dart';
 import 'xdr_uint32.dart';
 
 class XdrTimeSlicedSurveyStopCollectingMessage {
+
   XdrNodeID _surveyorID;
   XdrNodeID get surveyorID => this._surveyorID;
   set surveyorID(XdrNodeID value) => this._surveyorID = value;
@@ -23,42 +25,19 @@ class XdrTimeSlicedSurveyStopCollectingMessage {
   XdrUint32 get ledgerNum => this._ledgerNum;
   set ledgerNum(XdrUint32 value) => this._ledgerNum = value;
 
-  XdrTimeSlicedSurveyStopCollectingMessage(
-    this._surveyorID,
-    this._nonce,
-    this._ledgerNum,
-  );
+  XdrTimeSlicedSurveyStopCollectingMessage(this._surveyorID, this._nonce, this._ledgerNum);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTimeSlicedSurveyStopCollectingMessage
-    encodedTimeSlicedSurveyStopCollectingMessage,
-  ) {
-    XdrNodeID.encode(
-      stream,
-      encodedTimeSlicedSurveyStopCollectingMessage.surveyorID,
-    );
-    XdrUint32.encode(
-      stream,
-      encodedTimeSlicedSurveyStopCollectingMessage.nonce,
-    );
-    XdrUint32.encode(
-      stream,
-      encodedTimeSlicedSurveyStopCollectingMessage.ledgerNum,
-    );
+  static void encode(XdrDataOutputStream stream, XdrTimeSlicedSurveyStopCollectingMessage encodedTimeSlicedSurveyStopCollectingMessage) {
+    XdrNodeID.encode(stream, encodedTimeSlicedSurveyStopCollectingMessage.surveyorID);
+    XdrUint32.encode(stream, encodedTimeSlicedSurveyStopCollectingMessage.nonce);
+    XdrUint32.encode(stream, encodedTimeSlicedSurveyStopCollectingMessage.ledgerNum);
   }
 
-  static XdrTimeSlicedSurveyStopCollectingMessage decode(
-    XdrDataInputStream stream,
-  ) {
+  static XdrTimeSlicedSurveyStopCollectingMessage decode(XdrDataInputStream stream) {
     XdrNodeID surveyorID = XdrNodeID.decode(stream);
     XdrUint32 nonce = XdrUint32.decode(stream);
     XdrUint32 ledgerNum = XdrUint32.decode(stream);
-    return XdrTimeSlicedSurveyStopCollectingMessage(
-      surveyorID,
-      nonce,
-      ledgerNum,
-    );
+    return XdrTimeSlicedSurveyStopCollectingMessage(surveyorID, nonce, ledgerNum);
   }
 
   String toBase64EncodedXdrString() {
@@ -67,12 +46,21 @@ class XdrTimeSlicedSurveyStopCollectingMessage {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTimeSlicedSurveyStopCollectingMessage fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrTimeSlicedSurveyStopCollectingMessage fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrTimeSlicedSurveyStopCollectingMessage.decode(
-      XdrDataInputStream(bytes),
-    );
+    return XdrTimeSlicedSurveyStopCollectingMessage.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _surveyorID.toTxRep('$prefix.surveyorID', lines);
+    _nonce.toTxRep('$prefix.nonce', lines);
+    _ledgerNum.toTxRep('$prefix.ledgerNum', lines);
+  }
+
+  static XdrTimeSlicedSurveyStopCollectingMessage fromTxRep(Map<String, String> map, String prefix) {
+    XdrNodeID surveyorID = XdrNodeID.fromTxRep(map, '$prefix.surveyorID');
+    XdrUint32 nonce = XdrUint32.fromTxRep(map, '$prefix.nonce');
+    XdrUint32 ledgerNum = XdrUint32.fromTxRep(map, '$prefix.ledgerNum');
+    return XdrTimeSlicedSurveyStopCollectingMessage(surveyorID, nonce, ledgerNum);
   }
 }

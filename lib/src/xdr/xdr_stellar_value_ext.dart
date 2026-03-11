@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger_close_value_signature.dart';
 import 'xdr_stellar_value_type.dart';
@@ -27,22 +28,15 @@ class XdrStellarValueExt {
 
   XdrStellarValueExt(this._v);
 
-  set lcValueSignature(XdrLedgerCloseValueSignature? value) =>
-      this._lcValueSignature = value;
+  set lcValueSignature(XdrLedgerCloseValueSignature? value) => this._lcValueSignature = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrStellarValueExt encodedStellarValueExt,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrStellarValueExt encodedStellarValueExt) {
     stream.writeInt(encodedStellarValueExt.discriminant.value);
     switch (encodedStellarValueExt.discriminant) {
       case XdrStellarValueType.STELLAR_VALUE_BASIC:
         break;
       case XdrStellarValueType.STELLAR_VALUE_SIGNED:
-        XdrLedgerCloseValueSignature.encode(
-          stream,
-          encodedStellarValueExt._lcValueSignature!,
-        );
+        XdrLedgerCloseValueSignature.encode(stream, encodedStellarValueExt._lcValueSignature!);
         break;
       default:
         break;
@@ -50,15 +44,12 @@ class XdrStellarValueExt {
   }
 
   static XdrStellarValueExt decode(XdrDataInputStream stream) {
-    XdrStellarValueExt decodedStellarValueExt = XdrStellarValueExt(
-      XdrStellarValueType.decode(stream),
-    );
+    XdrStellarValueExt decodedStellarValueExt = XdrStellarValueExt(XdrStellarValueType.decode(stream));
     switch (decodedStellarValueExt.discriminant) {
       case XdrStellarValueType.STELLAR_VALUE_BASIC:
         break;
       case XdrStellarValueType.STELLAR_VALUE_SIGNED:
-        decodedStellarValueExt._lcValueSignature =
-            XdrLedgerCloseValueSignature.decode(stream);
+        decodedStellarValueExt._lcValueSignature = XdrLedgerCloseValueSignature.decode(stream);
         break;
       default:
         break;
@@ -75,5 +66,33 @@ class XdrStellarValueExt {
   static XdrStellarValueExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrStellarValueExt.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrStellarValueType.STELLAR_VALUE_BASIC:
+        break;
+      case XdrStellarValueType.STELLAR_VALUE_SIGNED:
+        _lcValueSignature!.toTxRep('$prefix.lcValueSignature', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrStellarValueExt fromTxRep(Map<String, String> map, String prefix) {
+    XdrStellarValueType disc = XdrStellarValueType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.v') ?? '');
+    XdrStellarValueExt result = XdrStellarValueExt(disc);
+    switch (result.discriminant) {
+      case XdrStellarValueType.STELLAR_VALUE_BASIC:
+        break;
+      case XdrStellarValueType.STELLAR_VALUE_SIGNED:
+        result._lcValueSignature = XdrLedgerCloseValueSignature.fromTxRep(map, '$prefix.lcValueSignature');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

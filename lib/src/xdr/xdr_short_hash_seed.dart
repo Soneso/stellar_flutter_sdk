@@ -6,19 +6,18 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrShortHashSeed {
+
   Uint8List _seed;
   Uint8List get seed => this._seed;
   set seed(Uint8List value) => this._seed = value;
 
   XdrShortHashSeed(this._seed);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrShortHashSeed encodedShortHashSeed,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrShortHashSeed encodedShortHashSeed) {
     stream.write(encodedShortHashSeed.seed);
   }
 
@@ -36,5 +35,14 @@ class XdrShortHashSeed {
   static XdrShortHashSeed fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrShortHashSeed.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.seed: ${TxRepHelper.bytesToHex(_seed)}');
+  }
+
+  static XdrShortHashSeed fromTxRep(Map<String, String> map, String prefix) {
+    Uint8List seed = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '$prefix.seed') ?? '');
+    return XdrShortHashSeed(seed);
   }
 }

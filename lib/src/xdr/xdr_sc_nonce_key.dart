@@ -6,20 +6,19 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 
 class XdrSCNonceKey {
+
   XdrInt64 _nonce;
   XdrInt64 get nonce => this._nonce;
   set nonce(XdrInt64 value) => this._nonce = value;
 
   XdrSCNonceKey(this._nonce);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCNonceKey encodedSCNonceKey,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCNonceKey encodedSCNonceKey) {
     XdrInt64.encode(stream, encodedSCNonceKey.nonce);
   }
 
@@ -37,5 +36,14 @@ class XdrSCNonceKey {
   static XdrSCNonceKey fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCNonceKey.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _nonce.toTxRep('$prefix.nonce', lines);
+  }
+
+  static XdrSCNonceKey fromTxRep(Map<String, String> map, String prefix) {
+    XdrInt64 nonce = XdrInt64.fromTxRep(map, '$prefix.nonce');
+    return XdrSCNonceKey(nonce);
   }
 }

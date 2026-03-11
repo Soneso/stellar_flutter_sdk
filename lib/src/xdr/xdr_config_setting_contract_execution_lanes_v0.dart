@@ -6,30 +6,23 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingContractExecutionLanesV0 {
+
   XdrUint32 _ledgerMaxTxCount;
   XdrUint32 get ledgerMaxTxCount => this._ledgerMaxTxCount;
   set ledgerMaxTxCount(XdrUint32 value) => this._ledgerMaxTxCount = value;
 
   XdrConfigSettingContractExecutionLanesV0(this._ledgerMaxTxCount);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrConfigSettingContractExecutionLanesV0
-    encodedConfigSettingContractExecutionLanesV0,
-  ) {
-    XdrUint32.encode(
-      stream,
-      encodedConfigSettingContractExecutionLanesV0.ledgerMaxTxCount,
-    );
+  static void encode(XdrDataOutputStream stream, XdrConfigSettingContractExecutionLanesV0 encodedConfigSettingContractExecutionLanesV0) {
+    XdrUint32.encode(stream, encodedConfigSettingContractExecutionLanesV0.ledgerMaxTxCount);
   }
 
-  static XdrConfigSettingContractExecutionLanesV0 decode(
-    XdrDataInputStream stream,
-  ) {
+  static XdrConfigSettingContractExecutionLanesV0 decode(XdrDataInputStream stream) {
     XdrUint32 ledgerMaxTxCount = XdrUint32.decode(stream);
     return XdrConfigSettingContractExecutionLanesV0(ledgerMaxTxCount);
   }
@@ -40,12 +33,17 @@ class XdrConfigSettingContractExecutionLanesV0 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrConfigSettingContractExecutionLanesV0 fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrConfigSettingContractExecutionLanesV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrConfigSettingContractExecutionLanesV0.decode(
-      XdrDataInputStream(bytes),
-    );
+    return XdrConfigSettingContractExecutionLanesV0.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _ledgerMaxTxCount.toTxRep('$prefix.ledgerMaxTxCount', lines);
+  }
+
+  static XdrConfigSettingContractExecutionLanesV0 fromTxRep(Map<String, String> map, String prefix) {
+    XdrUint32 ledgerMaxTxCount = XdrUint32.fromTxRep(map, '$prefix.ledgerMaxTxCount');
+    return XdrConfigSettingContractExecutionLanesV0(ledgerMaxTxCount);
   }
 }

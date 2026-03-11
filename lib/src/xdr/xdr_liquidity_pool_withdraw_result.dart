@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_liquidity_pool_withdraw_result_code.dart';
 
@@ -14,8 +15,7 @@ class XdrLiquidityPoolWithdrawResult {
 
   XdrLiquidityPoolWithdrawResultCode get discriminant => this._code;
 
-  set discriminant(XdrLiquidityPoolWithdrawResultCode value) =>
-      this._code = value;
+  set discriminant(XdrLiquidityPoolWithdrawResultCode value) => this._code = value;
 
   /// Alias for [discriminant], the original XDR field name.
   XdrLiquidityPoolWithdrawResultCode get code => this._code;
@@ -23,10 +23,7 @@ class XdrLiquidityPoolWithdrawResult {
 
   XdrLiquidityPoolWithdrawResult(this._code);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLiquidityPoolWithdrawResult encodedLiquidityPoolWithdrawResult,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolWithdrawResult encodedLiquidityPoolWithdrawResult) {
     stream.writeInt(encodedLiquidityPoolWithdrawResult.discriminant.value);
     switch (encodedLiquidityPoolWithdrawResult.discriminant) {
       case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_SUCCESS:
@@ -37,10 +34,7 @@ class XdrLiquidityPoolWithdrawResult {
   }
 
   static XdrLiquidityPoolWithdrawResult decode(XdrDataInputStream stream) {
-    XdrLiquidityPoolWithdrawResult decodedLiquidityPoolWithdrawResult =
-        XdrLiquidityPoolWithdrawResult(
-          XdrLiquidityPoolWithdrawResultCode.decode(stream),
-        );
+    XdrLiquidityPoolWithdrawResult decodedLiquidityPoolWithdrawResult = XdrLiquidityPoolWithdrawResult(XdrLiquidityPoolWithdrawResultCode.decode(stream));
     switch (decodedLiquidityPoolWithdrawResult.discriminant) {
       case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_SUCCESS:
         break;
@@ -56,10 +50,44 @@ class XdrLiquidityPoolWithdrawResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLiquidityPoolWithdrawResult fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrLiquidityPoolWithdrawResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolWithdrawResult.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.code: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_SUCCESS:
+        break;
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_MALFORMED:
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_NO_TRUST:
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED:
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_LINE_FULL:
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM:
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrLiquidityPoolWithdrawResult fromTxRep(Map<String, String> map, String prefix) {
+    XdrLiquidityPoolWithdrawResultCode disc = XdrLiquidityPoolWithdrawResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+    XdrLiquidityPoolWithdrawResult result = XdrLiquidityPoolWithdrawResult(disc);
+    switch (result.discriminant) {
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_SUCCESS:
+        break;
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_MALFORMED:
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_NO_TRUST:
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED:
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_LINE_FULL:
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM:
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

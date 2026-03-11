@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_bucket_list_type.dart';
 import 'xdr_data_io.dart';
 
@@ -27,19 +28,13 @@ class XdrBucketMetadataExt {
 
   set bucketListType(XdrBucketListType? value) => this._bucketListType = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrBucketMetadataExt encodedBucketMetadataExt,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrBucketMetadataExt encodedBucketMetadataExt) {
     stream.writeInt(encodedBucketMetadataExt.discriminant);
     switch (encodedBucketMetadataExt.discriminant) {
       case 0:
         break;
       case 1:
-        XdrBucketListType.encode(
-          stream,
-          encodedBucketMetadataExt._bucketListType!,
-        );
+        XdrBucketListType.encode(stream, encodedBucketMetadataExt._bucketListType!);
         break;
       default:
         break;
@@ -48,16 +43,12 @@ class XdrBucketMetadataExt {
 
   static XdrBucketMetadataExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrBucketMetadataExt decodedBucketMetadataExt = XdrBucketMetadataExt(
-      discriminant,
-    );
+    XdrBucketMetadataExt decodedBucketMetadataExt = XdrBucketMetadataExt(discriminant);
     switch (decodedBucketMetadataExt.discriminant) {
       case 0:
         break;
       case 1:
-        decodedBucketMetadataExt._bucketListType = XdrBucketListType.decode(
-          stream,
-        );
+        decodedBucketMetadataExt._bucketListType = XdrBucketListType.decode(stream);
         break;
       default:
         break;
@@ -74,5 +65,33 @@ class XdrBucketMetadataExt {
   static XdrBucketMetadataExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBucketMetadataExt.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        break;
+      case 1:
+        _bucketListType!.toTxRep('$prefix.bucketListType', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrBucketMetadataExt fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrBucketMetadataExt result = XdrBucketMetadataExt(disc);
+    switch (result.discriminant) {
+      case 0:
+        break;
+      case 1:
+        result._bucketListType = XdrBucketListType.fromTxRep(map, '$prefix.bucketListType');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

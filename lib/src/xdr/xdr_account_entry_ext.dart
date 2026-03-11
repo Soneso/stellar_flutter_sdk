@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_account_entry_v1.dart';
 import 'xdr_data_io.dart';
 
@@ -27,10 +28,7 @@ class XdrAccountEntryExt {
 
   set v1(XdrAccountEntryV1? value) => this._v1 = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrAccountEntryExt encodedAccountEntryExt,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrAccountEntryExt encodedAccountEntryExt) {
     stream.writeInt(encodedAccountEntryExt.discriminant);
     switch (encodedAccountEntryExt.discriminant) {
       case 0:
@@ -45,9 +43,7 @@ class XdrAccountEntryExt {
 
   static XdrAccountEntryExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrAccountEntryExt decodedAccountEntryExt = XdrAccountEntryExt(
-      discriminant,
-    );
+    XdrAccountEntryExt decodedAccountEntryExt = XdrAccountEntryExt(discriminant);
     switch (decodedAccountEntryExt.discriminant) {
       case 0:
         break;
@@ -69,5 +65,33 @@ class XdrAccountEntryExt {
   static XdrAccountEntryExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountEntryExt.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        break;
+      case 1:
+        _v1!.toTxRep('$prefix.v1', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrAccountEntryExt fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrAccountEntryExt result = XdrAccountEntryExt(disc);
+    switch (result.discriminant) {
+      case 0:
+        break;
+      case 1:
+        result._v1 = XdrAccountEntryV1.fromTxRep(map, '$prefix.v1');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

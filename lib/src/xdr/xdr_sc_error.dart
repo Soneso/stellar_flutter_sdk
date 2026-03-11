@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_error_code.dart';
 import 'xdr_sc_error_type.dart';
@@ -90,5 +91,51 @@ class XdrSCError {
   static XdrSCError fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCError.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrSCErrorType.SCE_CONTRACT:
+        _contractCode!.toTxRep('$prefix.contractCode', lines);
+        break;
+      case XdrSCErrorType.SCE_WASM_VM:
+      case XdrSCErrorType.SCE_CONTEXT:
+      case XdrSCErrorType.SCE_STORAGE:
+      case XdrSCErrorType.SCE_OBJECT:
+      case XdrSCErrorType.SCE_CRYPTO:
+      case XdrSCErrorType.SCE_EVENTS:
+      case XdrSCErrorType.SCE_BUDGET:
+      case XdrSCErrorType.SCE_VALUE:
+      case XdrSCErrorType.SCE_AUTH:
+        _code!.toTxRep('$prefix.code', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrSCError fromTxRep(Map<String, String> map, String prefix) {
+    XdrSCErrorType disc = XdrSCErrorType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrSCError result = XdrSCError(disc);
+    switch (result.discriminant) {
+      case XdrSCErrorType.SCE_CONTRACT:
+        result._contractCode = XdrUint32.fromTxRep(map, '$prefix.contractCode');
+        break;
+      case XdrSCErrorType.SCE_WASM_VM:
+      case XdrSCErrorType.SCE_CONTEXT:
+      case XdrSCErrorType.SCE_STORAGE:
+      case XdrSCErrorType.SCE_OBJECT:
+      case XdrSCErrorType.SCE_CRYPTO:
+      case XdrSCErrorType.SCE_EVENTS:
+      case XdrSCErrorType.SCE_BUDGET:
+      case XdrSCErrorType.SCE_VALUE:
+      case XdrSCErrorType.SCE_AUTH:
+        result._code = XdrSCErrorCode.fromTxRep(map, '$prefix.code');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

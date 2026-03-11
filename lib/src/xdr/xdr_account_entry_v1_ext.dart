@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_account_entry_v2.dart';
 import 'xdr_data_io.dart';
 
@@ -27,10 +28,7 @@ class XdrAccountEntryV1Ext {
 
   set v2(XdrAccountEntryV2? value) => this._v2 = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrAccountEntryV1Ext encodedAccountEntryV1Ext,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrAccountEntryV1Ext encodedAccountEntryV1Ext) {
     stream.writeInt(encodedAccountEntryV1Ext.discriminant);
     switch (encodedAccountEntryV1Ext.discriminant) {
       case 0:
@@ -45,9 +43,7 @@ class XdrAccountEntryV1Ext {
 
   static XdrAccountEntryV1Ext decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrAccountEntryV1Ext decodedAccountEntryV1Ext = XdrAccountEntryV1Ext(
-      discriminant,
-    );
+    XdrAccountEntryV1Ext decodedAccountEntryV1Ext = XdrAccountEntryV1Ext(discriminant);
     switch (decodedAccountEntryV1Ext.discriminant) {
       case 0:
         break;
@@ -69,5 +65,33 @@ class XdrAccountEntryV1Ext {
   static XdrAccountEntryV1Ext fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountEntryV1Ext.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        break;
+      case 2:
+        _v2!.toTxRep('$prefix.v2', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrAccountEntryV1Ext fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrAccountEntryV1Ext result = XdrAccountEntryV1Ext(disc);
+    switch (result.discriminant) {
+      case 0:
+        break;
+      case 2:
+        result._v2 = XdrAccountEntryV2.fromTxRep(map, '$prefix.v2');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrTransactionResultExt {
@@ -20,10 +21,7 @@ class XdrTransactionResultExt {
 
   XdrTransactionResultExt(this._v);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTransactionResultExt encodedTransactionResultExt,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrTransactionResultExt encodedTransactionResultExt) {
     stream.writeInt(encodedTransactionResultExt.discriminant);
     switch (encodedTransactionResultExt.discriminant) {
       case 0:
@@ -35,8 +33,7 @@ class XdrTransactionResultExt {
 
   static XdrTransactionResultExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrTransactionResultExt decodedTransactionResultExt =
-        XdrTransactionResultExt(discriminant);
+    XdrTransactionResultExt decodedTransactionResultExt = XdrTransactionResultExt(discriminant);
     switch (decodedTransactionResultExt.discriminant) {
       case 0:
         break;
@@ -52,10 +49,30 @@ class XdrTransactionResultExt {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTransactionResultExt fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrTransactionResultExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionResultExt.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrTransactionResultExt fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrTransactionResultExt result = XdrTransactionResultExt(disc);
+    switch (result.discriminant) {
+      case 0:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

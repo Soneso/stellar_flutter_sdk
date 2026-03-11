@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_liquidity_pool_deposit_result_code.dart';
 
@@ -14,8 +15,7 @@ class XdrLiquidityPoolDepositResult {
 
   XdrLiquidityPoolDepositResultCode get discriminant => this._code;
 
-  set discriminant(XdrLiquidityPoolDepositResultCode value) =>
-      this._code = value;
+  set discriminant(XdrLiquidityPoolDepositResultCode value) => this._code = value;
 
   /// Alias for [discriminant], the original XDR field name.
   XdrLiquidityPoolDepositResultCode get code => this._code;
@@ -23,10 +23,7 @@ class XdrLiquidityPoolDepositResult {
 
   XdrLiquidityPoolDepositResult(this._code);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLiquidityPoolDepositResult encodedLiquidityPoolDepositResult,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolDepositResult encodedLiquidityPoolDepositResult) {
     stream.writeInt(encodedLiquidityPoolDepositResult.discriminant.value);
     switch (encodedLiquidityPoolDepositResult.discriminant) {
       case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_SUCCESS:
@@ -37,10 +34,7 @@ class XdrLiquidityPoolDepositResult {
   }
 
   static XdrLiquidityPoolDepositResult decode(XdrDataInputStream stream) {
-    XdrLiquidityPoolDepositResult decodedLiquidityPoolDepositResult =
-        XdrLiquidityPoolDepositResult(
-          XdrLiquidityPoolDepositResultCode.decode(stream),
-        );
+    XdrLiquidityPoolDepositResult decodedLiquidityPoolDepositResult = XdrLiquidityPoolDepositResult(XdrLiquidityPoolDepositResultCode.decode(stream));
     switch (decodedLiquidityPoolDepositResult.discriminant) {
       case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_SUCCESS:
         break;
@@ -56,10 +50,48 @@ class XdrLiquidityPoolDepositResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLiquidityPoolDepositResult fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrLiquidityPoolDepositResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolDepositResult.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.code: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_SUCCESS:
+        break;
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_MALFORMED:
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_NO_TRUST:
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED:
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED:
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_LINE_FULL:
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_BAD_PRICE:
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_POOL_FULL:
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_TRUSTLINE_FROZEN:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrLiquidityPoolDepositResult fromTxRep(Map<String, String> map, String prefix) {
+    XdrLiquidityPoolDepositResultCode disc = XdrLiquidityPoolDepositResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+    XdrLiquidityPoolDepositResult result = XdrLiquidityPoolDepositResult(disc);
+    switch (result.discriminant) {
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_SUCCESS:
+        break;
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_MALFORMED:
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_NO_TRUST:
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED:
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED:
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_LINE_FULL:
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_BAD_PRICE:
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_POOL_FULL:
+      case XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_TRUSTLINE_FROZEN:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

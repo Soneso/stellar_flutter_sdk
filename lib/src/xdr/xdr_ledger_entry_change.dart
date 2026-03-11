@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger_entry.dart';
 import 'xdr_ledger_entry_change_type.dart';
@@ -54,10 +55,7 @@ class XdrLedgerEntryChange {
 
   set restored(XdrLedgerEntry? value) => this._restored = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLedgerEntryChange encodedLedgerEntryChange,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLedgerEntryChange encodedLedgerEntryChange) {
     stream.writeInt(encodedLedgerEntryChange.discriminant.value);
     switch (encodedLedgerEntryChange.discriminant) {
       case XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED:
@@ -81,9 +79,7 @@ class XdrLedgerEntryChange {
   }
 
   static XdrLedgerEntryChange decode(XdrDataInputStream stream) {
-    XdrLedgerEntryChange decodedLedgerEntryChange = XdrLedgerEntryChange(
-      XdrLedgerEntryChangeType.decode(stream),
-    );
+    XdrLedgerEntryChange decodedLedgerEntryChange = XdrLedgerEntryChange(XdrLedgerEntryChangeType.decode(stream));
     switch (decodedLedgerEntryChange.discriminant) {
       case XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED:
         decodedLedgerEntryChange._created = XdrLedgerEntry.decode(stream);
@@ -115,5 +111,53 @@ class XdrLedgerEntryChange {
   static XdrLedgerEntryChange fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntryChange.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED:
+        _created!.toTxRep('$prefix.created', lines);
+        break;
+      case XdrLedgerEntryChangeType.LEDGER_ENTRY_UPDATED:
+        _updated!.toTxRep('$prefix.updated', lines);
+        break;
+      case XdrLedgerEntryChangeType.LEDGER_ENTRY_REMOVED:
+        _removed!.toTxRep('$prefix.removed', lines);
+        break;
+      case XdrLedgerEntryChangeType.LEDGER_ENTRY_STATE:
+        _state!.toTxRep('$prefix.state', lines);
+        break;
+      case XdrLedgerEntryChangeType.LEDGER_ENTRY_RESTORED:
+        _restored!.toTxRep('$prefix.restored', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrLedgerEntryChange fromTxRep(Map<String, String> map, String prefix) {
+    XdrLedgerEntryChangeType disc = XdrLedgerEntryChangeType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrLedgerEntryChange result = XdrLedgerEntryChange(disc);
+    switch (result.discriminant) {
+      case XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED:
+        result._created = XdrLedgerEntry.fromTxRep(map, '$prefix.created');
+        break;
+      case XdrLedgerEntryChangeType.LEDGER_ENTRY_UPDATED:
+        result._updated = XdrLedgerEntry.fromTxRep(map, '$prefix.updated');
+        break;
+      case XdrLedgerEntryChangeType.LEDGER_ENTRY_REMOVED:
+        result._removed = XdrLedgerKey.fromTxRep(map, '$prefix.removed');
+        break;
+      case XdrLedgerEntryChangeType.LEDGER_ENTRY_STATE:
+        result._state = XdrLedgerEntry.fromTxRep(map, '$prefix.state');
+        break;
+      case XdrLedgerEntryChangeType.LEDGER_ENTRY_RESTORED:
+        result._restored = XdrLedgerEntry.fromTxRep(map, '$prefix.restored');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

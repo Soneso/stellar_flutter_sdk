@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrContractCostType {
@@ -17,8 +18,7 @@ class XdrContractCostType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrContractCostType && _value == other._value;
+      identical(this, other) || other is XdrContractCostType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -39,9 +39,7 @@ class XdrContractCostType {
   static const InvokeVmFunction = const XdrContractCostType._internal(13);
   static const ComputeKeccak256Hash = const XdrContractCostType._internal(14);
   static const DecodeEcdsaCurve256Sig = const XdrContractCostType._internal(15);
-  static const RecoverEcdsaSecp256k1Key = const XdrContractCostType._internal(
-    16,
-  );
+  static const RecoverEcdsaSecp256k1Key = const XdrContractCostType._internal(16);
   static const Int256AddSub = const XdrContractCostType._internal(17);
   static const Int256Mul = const XdrContractCostType._internal(18);
   static const Int256Div = const XdrContractCostType._internal(19);
@@ -57,45 +55,27 @@ class XdrContractCostType {
   static const ParseWasmElemSegments = const XdrContractCostType._internal(29);
   static const ParseWasmImports = const XdrContractCostType._internal(30);
   static const ParseWasmExports = const XdrContractCostType._internal(31);
-  static const ParseWasmDataSegmentBytes = const XdrContractCostType._internal(
-    32,
-  );
-  static const InstantiateWasmInstructions =
-      const XdrContractCostType._internal(33);
-  static const InstantiateWasmFunctions = const XdrContractCostType._internal(
-    34,
-  );
+  static const ParseWasmDataSegmentBytes = const XdrContractCostType._internal(32);
+  static const InstantiateWasmInstructions = const XdrContractCostType._internal(33);
+  static const InstantiateWasmFunctions = const XdrContractCostType._internal(34);
   static const InstantiateWasmGlobals = const XdrContractCostType._internal(35);
-  static const InstantiateWasmTableEntries =
-      const XdrContractCostType._internal(36);
+  static const InstantiateWasmTableEntries = const XdrContractCostType._internal(36);
   static const InstantiateWasmTypes = const XdrContractCostType._internal(37);
-  static const InstantiateWasmDataSegments =
-      const XdrContractCostType._internal(38);
-  static const InstantiateWasmElemSegments =
-      const XdrContractCostType._internal(39);
+  static const InstantiateWasmDataSegments = const XdrContractCostType._internal(38);
+  static const InstantiateWasmElemSegments = const XdrContractCostType._internal(39);
   static const InstantiateWasmImports = const XdrContractCostType._internal(40);
   static const InstantiateWasmExports = const XdrContractCostType._internal(41);
-  static const InstantiateWasmDataSegmentBytes =
-      const XdrContractCostType._internal(42);
-  static const Sec1DecodePointUncompressed =
-      const XdrContractCostType._internal(43);
-  static const VerifyEcdsaSecp256r1Sig = const XdrContractCostType._internal(
-    44,
-  );
+  static const InstantiateWasmDataSegmentBytes = const XdrContractCostType._internal(42);
+  static const Sec1DecodePointUncompressed = const XdrContractCostType._internal(43);
+  static const VerifyEcdsaSecp256r1Sig = const XdrContractCostType._internal(44);
   static const Bls12381EncodeFp = const XdrContractCostType._internal(45);
   static const Bls12381DecodeFp = const XdrContractCostType._internal(46);
-  static const Bls12381G1CheckPointOnCurve =
-      const XdrContractCostType._internal(47);
-  static const Bls12381G1CheckPointInSubgroup =
-      const XdrContractCostType._internal(48);
-  static const Bls12381G2CheckPointOnCurve =
-      const XdrContractCostType._internal(49);
-  static const Bls12381G2CheckPointInSubgroup =
-      const XdrContractCostType._internal(50);
-  static const Bls12381G1ProjectiveToAffine =
-      const XdrContractCostType._internal(51);
-  static const Bls12381G2ProjectiveToAffine =
-      const XdrContractCostType._internal(52);
+  static const Bls12381G1CheckPointOnCurve = const XdrContractCostType._internal(47);
+  static const Bls12381G1CheckPointInSubgroup = const XdrContractCostType._internal(48);
+  static const Bls12381G2CheckPointOnCurve = const XdrContractCostType._internal(49);
+  static const Bls12381G2CheckPointInSubgroup = const XdrContractCostType._internal(50);
+  static const Bls12381G1ProjectiveToAffine = const XdrContractCostType._internal(51);
+  static const Bls12381G2ProjectiveToAffine = const XdrContractCostType._internal(52);
   static const Bls12381G1Add = const XdrContractCostType._internal(53);
   static const Bls12381G1Mul = const XdrContractCostType._internal(54);
   static const Bls12381G1Msm = const XdrContractCostType._internal(55);
@@ -115,17 +95,10 @@ class XdrContractCostType {
   static const Bls12381FrInv = const XdrContractCostType._internal(69);
   static const Bn254EncodeFp = const XdrContractCostType._internal(70);
   static const Bn254DecodeFp = const XdrContractCostType._internal(71);
-  static const Bn254G1CheckPointOnCurve = const XdrContractCostType._internal(
-    72,
-  );
-  static const Bn254G2CheckPointOnCurve = const XdrContractCostType._internal(
-    73,
-  );
-  static const Bn254G2CheckPointInSubgroup =
-      const XdrContractCostType._internal(74);
-  static const Bn254G1ProjectiveToAffine = const XdrContractCostType._internal(
-    75,
-  );
+  static const Bn254G1CheckPointOnCurve = const XdrContractCostType._internal(72);
+  static const Bn254G2CheckPointOnCurve = const XdrContractCostType._internal(73);
+  static const Bn254G2CheckPointInSubgroup = const XdrContractCostType._internal(74);
+  static const Bn254G1ProjectiveToAffine = const XdrContractCostType._internal(75);
   static const Bn254G1Add = const XdrContractCostType._internal(76);
   static const Bn254G1Mul = const XdrContractCostType._internal(77);
   static const Bn254Pairing = const XdrContractCostType._internal(78);
@@ -330,5 +303,204 @@ class XdrContractCostType {
   static XdrContractCostType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractCostType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'WasmInsnExec';
+      case 1: return 'MemAlloc';
+      case 2: return 'MemCpy';
+      case 3: return 'MemCmp';
+      case 4: return 'DispatchHostFunction';
+      case 5: return 'VisitObject';
+      case 6: return 'ValSer';
+      case 7: return 'ValDeser';
+      case 8: return 'ComputeSha256Hash';
+      case 9: return 'ComputeEd25519PubKey';
+      case 10: return 'VerifyEd25519Sig';
+      case 11: return 'VmInstantiation';
+      case 12: return 'VmCachedInstantiation';
+      case 13: return 'InvokeVmFunction';
+      case 14: return 'ComputeKeccak256Hash';
+      case 15: return 'DecodeEcdsaCurve256Sig';
+      case 16: return 'RecoverEcdsaSecp256k1Key';
+      case 17: return 'Int256AddSub';
+      case 18: return 'Int256Mul';
+      case 19: return 'Int256Div';
+      case 20: return 'Int256Pow';
+      case 21: return 'Int256Shift';
+      case 22: return 'ChaCha20DrawBytes';
+      case 23: return 'ParseWasmInstructions';
+      case 24: return 'ParseWasmFunctions';
+      case 25: return 'ParseWasmGlobals';
+      case 26: return 'ParseWasmTableEntries';
+      case 27: return 'ParseWasmTypes';
+      case 28: return 'ParseWasmDataSegments';
+      case 29: return 'ParseWasmElemSegments';
+      case 30: return 'ParseWasmImports';
+      case 31: return 'ParseWasmExports';
+      case 32: return 'ParseWasmDataSegmentBytes';
+      case 33: return 'InstantiateWasmInstructions';
+      case 34: return 'InstantiateWasmFunctions';
+      case 35: return 'InstantiateWasmGlobals';
+      case 36: return 'InstantiateWasmTableEntries';
+      case 37: return 'InstantiateWasmTypes';
+      case 38: return 'InstantiateWasmDataSegments';
+      case 39: return 'InstantiateWasmElemSegments';
+      case 40: return 'InstantiateWasmImports';
+      case 41: return 'InstantiateWasmExports';
+      case 42: return 'InstantiateWasmDataSegmentBytes';
+      case 43: return 'Sec1DecodePointUncompressed';
+      case 44: return 'VerifyEcdsaSecp256r1Sig';
+      case 45: return 'Bls12381EncodeFp';
+      case 46: return 'Bls12381DecodeFp';
+      case 47: return 'Bls12381G1CheckPointOnCurve';
+      case 48: return 'Bls12381G1CheckPointInSubgroup';
+      case 49: return 'Bls12381G2CheckPointOnCurve';
+      case 50: return 'Bls12381G2CheckPointInSubgroup';
+      case 51: return 'Bls12381G1ProjectiveToAffine';
+      case 52: return 'Bls12381G2ProjectiveToAffine';
+      case 53: return 'Bls12381G1Add';
+      case 54: return 'Bls12381G1Mul';
+      case 55: return 'Bls12381G1Msm';
+      case 56: return 'Bls12381MapFpToG1';
+      case 57: return 'Bls12381HashToG1';
+      case 58: return 'Bls12381G2Add';
+      case 59: return 'Bls12381G2Mul';
+      case 60: return 'Bls12381G2Msm';
+      case 61: return 'Bls12381MapFp2ToG2';
+      case 62: return 'Bls12381HashToG2';
+      case 63: return 'Bls12381Pairing';
+      case 64: return 'Bls12381FrFromU256';
+      case 65: return 'Bls12381FrToU256';
+      case 66: return 'Bls12381FrAddSub';
+      case 67: return 'Bls12381FrMul';
+      case 68: return 'Bls12381FrPow';
+      case 69: return 'Bls12381FrInv';
+      case 70: return 'Bn254EncodeFp';
+      case 71: return 'Bn254DecodeFp';
+      case 72: return 'Bn254G1CheckPointOnCurve';
+      case 73: return 'Bn254G2CheckPointOnCurve';
+      case 74: return 'Bn254G2CheckPointInSubgroup';
+      case 75: return 'Bn254G1ProjectiveToAffine';
+      case 76: return 'Bn254G1Add';
+      case 77: return 'Bn254G1Mul';
+      case 78: return 'Bn254Pairing';
+      case 79: return 'Bn254FrFromU256';
+      case 80: return 'Bn254FrToU256';
+      case 81: return 'Bn254FrAddSub';
+      case 82: return 'Bn254FrMul';
+      case 83: return 'Bn254FrPow';
+      case 84: return 'Bn254FrInv';
+      case 85: return 'Bn254G1Msm';
+      default: return 'XdrContractCostType#$_value';
+    }
+  }
+
+  static XdrContractCostType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrContractCostType fromTxRepName(String name) {
+    switch (name) {
+      case 'WasmInsnExec': return WasmInsnExec;
+      case 'MemAlloc': return MemAlloc;
+      case 'MemCpy': return MemCpy;
+      case 'MemCmp': return MemCmp;
+      case 'DispatchHostFunction': return DispatchHostFunction;
+      case 'VisitObject': return VisitObject;
+      case 'ValSer': return ValSer;
+      case 'ValDeser': return ValDeser;
+      case 'ComputeSha256Hash': return ComputeSha256Hash;
+      case 'ComputeEd25519PubKey': return ComputeEd25519PubKey;
+      case 'VerifyEd25519Sig': return VerifyEd25519Sig;
+      case 'VmInstantiation': return VmInstantiation;
+      case 'VmCachedInstantiation': return VmCachedInstantiation;
+      case 'InvokeVmFunction': return InvokeVmFunction;
+      case 'ComputeKeccak256Hash': return ComputeKeccak256Hash;
+      case 'DecodeEcdsaCurve256Sig': return DecodeEcdsaCurve256Sig;
+      case 'RecoverEcdsaSecp256k1Key': return RecoverEcdsaSecp256k1Key;
+      case 'Int256AddSub': return Int256AddSub;
+      case 'Int256Mul': return Int256Mul;
+      case 'Int256Div': return Int256Div;
+      case 'Int256Pow': return Int256Pow;
+      case 'Int256Shift': return Int256Shift;
+      case 'ChaCha20DrawBytes': return ChaCha20DrawBytes;
+      case 'ParseWasmInstructions': return ParseWasmInstructions;
+      case 'ParseWasmFunctions': return ParseWasmFunctions;
+      case 'ParseWasmGlobals': return ParseWasmGlobals;
+      case 'ParseWasmTableEntries': return ParseWasmTableEntries;
+      case 'ParseWasmTypes': return ParseWasmTypes;
+      case 'ParseWasmDataSegments': return ParseWasmDataSegments;
+      case 'ParseWasmElemSegments': return ParseWasmElemSegments;
+      case 'ParseWasmImports': return ParseWasmImports;
+      case 'ParseWasmExports': return ParseWasmExports;
+      case 'ParseWasmDataSegmentBytes': return ParseWasmDataSegmentBytes;
+      case 'InstantiateWasmInstructions': return InstantiateWasmInstructions;
+      case 'InstantiateWasmFunctions': return InstantiateWasmFunctions;
+      case 'InstantiateWasmGlobals': return InstantiateWasmGlobals;
+      case 'InstantiateWasmTableEntries': return InstantiateWasmTableEntries;
+      case 'InstantiateWasmTypes': return InstantiateWasmTypes;
+      case 'InstantiateWasmDataSegments': return InstantiateWasmDataSegments;
+      case 'InstantiateWasmElemSegments': return InstantiateWasmElemSegments;
+      case 'InstantiateWasmImports': return InstantiateWasmImports;
+      case 'InstantiateWasmExports': return InstantiateWasmExports;
+      case 'InstantiateWasmDataSegmentBytes': return InstantiateWasmDataSegmentBytes;
+      case 'Sec1DecodePointUncompressed': return Sec1DecodePointUncompressed;
+      case 'VerifyEcdsaSecp256r1Sig': return VerifyEcdsaSecp256r1Sig;
+      case 'Bls12381EncodeFp': return Bls12381EncodeFp;
+      case 'Bls12381DecodeFp': return Bls12381DecodeFp;
+      case 'Bls12381G1CheckPointOnCurve': return Bls12381G1CheckPointOnCurve;
+      case 'Bls12381G1CheckPointInSubgroup': return Bls12381G1CheckPointInSubgroup;
+      case 'Bls12381G2CheckPointOnCurve': return Bls12381G2CheckPointOnCurve;
+      case 'Bls12381G2CheckPointInSubgroup': return Bls12381G2CheckPointInSubgroup;
+      case 'Bls12381G1ProjectiveToAffine': return Bls12381G1ProjectiveToAffine;
+      case 'Bls12381G2ProjectiveToAffine': return Bls12381G2ProjectiveToAffine;
+      case 'Bls12381G1Add': return Bls12381G1Add;
+      case 'Bls12381G1Mul': return Bls12381G1Mul;
+      case 'Bls12381G1Msm': return Bls12381G1Msm;
+      case 'Bls12381MapFpToG1': return Bls12381MapFpToG1;
+      case 'Bls12381HashToG1': return Bls12381HashToG1;
+      case 'Bls12381G2Add': return Bls12381G2Add;
+      case 'Bls12381G2Mul': return Bls12381G2Mul;
+      case 'Bls12381G2Msm': return Bls12381G2Msm;
+      case 'Bls12381MapFp2ToG2': return Bls12381MapFp2ToG2;
+      case 'Bls12381HashToG2': return Bls12381HashToG2;
+      case 'Bls12381Pairing': return Bls12381Pairing;
+      case 'Bls12381FrFromU256': return Bls12381FrFromU256;
+      case 'Bls12381FrToU256': return Bls12381FrToU256;
+      case 'Bls12381FrAddSub': return Bls12381FrAddSub;
+      case 'Bls12381FrMul': return Bls12381FrMul;
+      case 'Bls12381FrPow': return Bls12381FrPow;
+      case 'Bls12381FrInv': return Bls12381FrInv;
+      case 'Bn254EncodeFp': return Bn254EncodeFp;
+      case 'Bn254DecodeFp': return Bn254DecodeFp;
+      case 'Bn254G1CheckPointOnCurve': return Bn254G1CheckPointOnCurve;
+      case 'Bn254G2CheckPointOnCurve': return Bn254G2CheckPointOnCurve;
+      case 'Bn254G2CheckPointInSubgroup': return Bn254G2CheckPointInSubgroup;
+      case 'Bn254G1ProjectiveToAffine': return Bn254G1ProjectiveToAffine;
+      case 'Bn254G1Add': return Bn254G1Add;
+      case 'Bn254G1Mul': return Bn254G1Mul;
+      case 'Bn254Pairing': return Bn254Pairing;
+      case 'Bn254FrFromU256': return Bn254FrFromU256;
+      case 'Bn254FrToU256': return Bn254FrToU256;
+      case 'Bn254FrAddSub': return Bn254FrAddSub;
+      case 'Bn254FrMul': return Bn254FrMul;
+      case 'Bn254FrPow': return Bn254FrPow;
+      case 'Bn254FrInv': return Bn254FrInv;
+      case 'Bn254G1Msm': return Bn254G1Msm;
+      default:
+        if (name.startsWith('XdrContractCostType#')) {
+          int? val = int.tryParse(name.substring('XdrContractCostType#'.length));
+          if (val != null) return XdrContractCostType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

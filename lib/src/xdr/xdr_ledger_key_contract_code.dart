@@ -6,20 +6,19 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 
 class XdrLedgerKeyContractCode {
+
   XdrHash _hash;
   XdrHash get hash => this._hash;
   set hash(XdrHash value) => this._hash = value;
 
   XdrLedgerKeyContractCode(this._hash);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLedgerKeyContractCode encodedLedgerKeyContractCode,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLedgerKeyContractCode encodedLedgerKeyContractCode) {
     XdrHash.encode(stream, encodedLedgerKeyContractCode.hash);
   }
 
@@ -34,10 +33,17 @@ class XdrLedgerKeyContractCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLedgerKeyContractCode fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrLedgerKeyContractCode fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerKeyContractCode.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _hash.toTxRep('$prefix.hash', lines);
+  }
+
+  static XdrLedgerKeyContractCode fromTxRep(Map<String, String> map, String prefix) {
+    XdrHash hash = XdrHash.fromTxRep(map, '$prefix.hash');
+    return XdrLedgerKeyContractCode(hash);
   }
 }

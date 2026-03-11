@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_peer_address_ip.dart';
 import 'xdr_uint32.dart';
 
 class XdrPeerAddress {
+
   XdrPeerAddressIp _ip;
   XdrPeerAddressIp get ip => this._ip;
   set ip(XdrPeerAddressIp value) => this._ip = value;
@@ -25,10 +27,7 @@ class XdrPeerAddress {
 
   XdrPeerAddress(this._ip, this._port, this._numFailures);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrPeerAddress encodedPeerAddress,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrPeerAddress encodedPeerAddress) {
     XdrPeerAddressIp.encode(stream, encodedPeerAddress.ip);
     XdrUint32.encode(stream, encodedPeerAddress.port);
     XdrUint32.encode(stream, encodedPeerAddress.numFailures);
@@ -50,5 +49,18 @@ class XdrPeerAddress {
   static XdrPeerAddress fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPeerAddress.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _ip.toTxRep('$prefix.ip', lines);
+    _port.toTxRep('$prefix.port', lines);
+    _numFailures.toTxRep('$prefix.numFailures', lines);
+  }
+
+  static XdrPeerAddress fromTxRep(Map<String, String> map, String prefix) {
+    XdrPeerAddressIp ip = XdrPeerAddressIp.fromTxRep(map, '$prefix.ip');
+    XdrUint32 port = XdrUint32.fromTxRep(map, '$prefix.port');
+    XdrUint32 numFailures = XdrUint32.fromTxRep(map, '$prefix.numFailures');
+    return XdrPeerAddress(ip, port, numFailures);
   }
 }

@@ -6,12 +6,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
 import 'xdr_uint32.dart';
 import 'xdr_uint64.dart';
 
 class XdrAccountEntryV3 {
+
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
@@ -26,10 +28,7 @@ class XdrAccountEntryV3 {
 
   XdrAccountEntryV3(this._ext, this._seqLedger, this._seqTime);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrAccountEntryV3 encodedAccountEntryV3,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrAccountEntryV3 encodedAccountEntryV3) {
     XdrExtensionPoint.encode(stream, encodedAccountEntryV3.ext);
     XdrUint32.encode(stream, encodedAccountEntryV3.seqLedger);
     XdrUint64.encode(stream, encodedAccountEntryV3.seqTime);
@@ -51,5 +50,18 @@ class XdrAccountEntryV3 {
   static XdrAccountEntryV3 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountEntryV3.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _ext.toTxRep('$prefix.ext', lines);
+    _seqLedger.toTxRep('$prefix.seqLedger', lines);
+    _seqTime.toTxRep('$prefix.seqTime', lines);
+  }
+
+  static XdrAccountEntryV3 fromTxRep(Map<String, String> map, String prefix) {
+    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
+    XdrUint32 seqLedger = XdrUint32.fromTxRep(map, '$prefix.seqLedger');
+    XdrUint64 seqTime = XdrUint64.fromTxRep(map, '$prefix.seqTime');
+    return XdrAccountEntryV3(ext, seqLedger, seqTime);
   }
 }

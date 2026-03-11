@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_path_payment_result_success.dart';
@@ -16,8 +17,7 @@ class XdrPathPaymentStrictReceiveResult {
 
   XdrPathPaymentStrictReceiveResultCode get discriminant => this._code;
 
-  set discriminant(XdrPathPaymentStrictReceiveResultCode value) =>
-      this._code = value;
+  set discriminant(XdrPathPaymentStrictReceiveResultCode value) => this._code = value;
 
   /// Alias for [discriminant], the original XDR field name.
   XdrPathPaymentStrictReceiveResultCode get code => this._code;
@@ -37,25 +37,14 @@ class XdrPathPaymentStrictReceiveResult {
 
   set noIssuer(XdrAsset? value) => this._noIssuer = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrPathPaymentStrictReceiveResult encodedPathPaymentStrictReceiveResult,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrPathPaymentStrictReceiveResult encodedPathPaymentStrictReceiveResult) {
     stream.writeInt(encodedPathPaymentStrictReceiveResult.discriminant.value);
     switch (encodedPathPaymentStrictReceiveResult.discriminant) {
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_SUCCESS:
-        XdrPathPaymentResultSuccess.encode(
-          stream,
-          encodedPathPaymentStrictReceiveResult._success!,
-        );
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_SUCCESS:
+        XdrPathPaymentResultSuccess.encode(stream, encodedPathPaymentStrictReceiveResult._success!);
         break;
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER:
-        XdrAsset.encode(
-          stream,
-          encodedPathPaymentStrictReceiveResult._noIssuer!,
-        );
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER:
+        XdrAsset.encode(stream, encodedPathPaymentStrictReceiveResult._noIssuer!);
         break;
       default:
         break;
@@ -63,21 +52,13 @@ class XdrPathPaymentStrictReceiveResult {
   }
 
   static XdrPathPaymentStrictReceiveResult decode(XdrDataInputStream stream) {
-    XdrPathPaymentStrictReceiveResult decodedPathPaymentStrictReceiveResult =
-        XdrPathPaymentStrictReceiveResult(
-          XdrPathPaymentStrictReceiveResultCode.decode(stream),
-        );
+    XdrPathPaymentStrictReceiveResult decodedPathPaymentStrictReceiveResult = XdrPathPaymentStrictReceiveResult(XdrPathPaymentStrictReceiveResultCode.decode(stream));
     switch (decodedPathPaymentStrictReceiveResult.discriminant) {
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_SUCCESS:
-        decodedPathPaymentStrictReceiveResult._success =
-            XdrPathPaymentResultSuccess.decode(stream);
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_SUCCESS:
+        decodedPathPaymentStrictReceiveResult._success = XdrPathPaymentResultSuccess.decode(stream);
         break;
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER:
-        decodedPathPaymentStrictReceiveResult._noIssuer = XdrAsset.decode(
-          stream,
-        );
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER:
+        decodedPathPaymentStrictReceiveResult._noIssuer = XdrAsset.decode(stream);
         break;
       default:
         break;
@@ -91,10 +72,64 @@ class XdrPathPaymentStrictReceiveResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrPathPaymentStrictReceiveResult fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrPathPaymentStrictReceiveResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPathPaymentStrictReceiveResult.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.code: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_SUCCESS:
+        _success!.toTxRep('$prefix.success', lines);
+        break;
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_MALFORMED:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL:
+        break;
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER:
+        lines.add('$prefix.noIssuer: ${TxRepHelper.formatAsset(_noIssuer!)}');
+        break;
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrPathPaymentStrictReceiveResult fromTxRep(Map<String, String> map, String prefix) {
+    XdrPathPaymentStrictReceiveResultCode disc = XdrPathPaymentStrictReceiveResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+    XdrPathPaymentStrictReceiveResult result = XdrPathPaymentStrictReceiveResult(disc);
+    switch (result.discriminant) {
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_SUCCESS:
+        result._success = XdrPathPaymentResultSuccess.fromTxRep(map, '$prefix.success');
+        break;
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_MALFORMED:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL:
+        break;
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER:
+        result._noIssuer = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.noIssuer') ?? '');
+        break;
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF:
+      case XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

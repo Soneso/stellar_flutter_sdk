@@ -6,24 +6,20 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_claimable_balance_id.dart';
 import 'xdr_data_io.dart';
 
 class XdrClaimClaimableBalanceOp {
+
   XdrClaimableBalanceID _balanceID;
   XdrClaimableBalanceID get balanceID => this._balanceID;
   set balanceID(XdrClaimableBalanceID value) => this._balanceID = value;
 
   XdrClaimClaimableBalanceOp(this._balanceID);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrClaimClaimableBalanceOp encodedClaimClaimableBalanceOp,
-  ) {
-    XdrClaimableBalanceID.encode(
-      stream,
-      encodedClaimClaimableBalanceOp.balanceID,
-    );
+  static void encode(XdrDataOutputStream stream, XdrClaimClaimableBalanceOp encodedClaimClaimableBalanceOp) {
+    XdrClaimableBalanceID.encode(stream, encodedClaimClaimableBalanceOp.balanceID);
   }
 
   static XdrClaimClaimableBalanceOp decode(XdrDataInputStream stream) {
@@ -37,10 +33,17 @@ class XdrClaimClaimableBalanceOp {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrClaimClaimableBalanceOp fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrClaimClaimableBalanceOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimClaimableBalanceOp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _balanceID.toTxRep('$prefix.balanceID', lines);
+  }
+
+  static XdrClaimClaimableBalanceOp fromTxRep(Map<String, String> map, String prefix) {
+    XdrClaimableBalanceID balanceID = XdrClaimableBalanceID.fromTxRep(map, '$prefix.balanceID');
+    return XdrClaimClaimableBalanceOp(balanceID);
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_operation_result_code.dart';
 import 'xdr_operation_result_tr.dart';
@@ -29,10 +30,7 @@ class XdrOperationResult {
 
   set tr(XdrOperationResultTr? value) => this._tr = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrOperationResult encodedOperationResult,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrOperationResult encodedOperationResult) {
     stream.writeInt(encodedOperationResult.discriminant.value);
     switch (encodedOperationResult.discriminant) {
       case XdrOperationResultCode.opINNER:
@@ -44,9 +42,7 @@ class XdrOperationResult {
   }
 
   static XdrOperationResult decode(XdrDataInputStream stream) {
-    XdrOperationResult decodedOperationResult = XdrOperationResult(
-      XdrOperationResultCode.decode(stream),
-    );
+    XdrOperationResult decodedOperationResult = XdrOperationResult(XdrOperationResultCode.decode(stream));
     switch (decodedOperationResult.discriminant) {
       case XdrOperationResultCode.opINNER:
         decodedOperationResult._tr = XdrOperationResultTr.decode(stream);
@@ -66,5 +62,43 @@ class XdrOperationResult {
   static XdrOperationResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrOperationResult.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.code: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrOperationResultCode.opINNER:
+        _tr!.toTxRep('$prefix.tr', lines);
+        break;
+      case XdrOperationResultCode.opBAD_AUTH:
+      case XdrOperationResultCode.opNO_ACCOUNT:
+      case XdrOperationResultCode.opNOT_SUPPORTED:
+      case XdrOperationResultCode.opTOO_MANY_SUBENTRIES:
+      case XdrOperationResultCode.opEXCEEDED_WORK_LIMIT:
+      case XdrOperationResultCode.opTOO_MANY_SPONSORING:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrOperationResult fromTxRep(Map<String, String> map, String prefix) {
+    XdrOperationResultCode disc = XdrOperationResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+    XdrOperationResult result = XdrOperationResult(disc);
+    switch (result.discriminant) {
+      case XdrOperationResultCode.opINNER:
+        result._tr = XdrOperationResultTr.fromTxRep(map, '$prefix.tr');
+        break;
+      case XdrOperationResultCode.opBAD_AUTH:
+      case XdrOperationResultCode.opNO_ACCOUNT:
+      case XdrOperationResultCode.opNOT_SUPPORTED:
+      case XdrOperationResultCode.opTOO_MANY_SUBENTRIES:
+      case XdrOperationResultCode.opEXCEEDED_WORK_LIMIT:
+      case XdrOperationResultCode.opTOO_MANY_SPONSORING:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

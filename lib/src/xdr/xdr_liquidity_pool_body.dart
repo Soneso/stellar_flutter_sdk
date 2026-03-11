@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_liquidity_pool_entry_constant_product.dart';
 import 'xdr_liquidity_pool_type.dart';
@@ -23,25 +24,17 @@ class XdrLiquidityPoolBody {
 
   XdrLiquidityPoolEntryConstantProduct? _constantProduct;
 
-  XdrLiquidityPoolEntryConstantProduct? get constantProduct =>
-      this._constantProduct;
+  XdrLiquidityPoolEntryConstantProduct? get constantProduct => this._constantProduct;
 
   XdrLiquidityPoolBody(this._type);
 
-  set constantProduct(XdrLiquidityPoolEntryConstantProduct? value) =>
-      this._constantProduct = value;
+  set constantProduct(XdrLiquidityPoolEntryConstantProduct? value) => this._constantProduct = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLiquidityPoolBody encodedLiquidityPoolBody,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolBody encodedLiquidityPoolBody) {
     stream.writeInt(encodedLiquidityPoolBody.discriminant.value);
     switch (encodedLiquidityPoolBody.discriminant) {
       case XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT:
-        XdrLiquidityPoolEntryConstantProduct.encode(
-          stream,
-          encodedLiquidityPoolBody._constantProduct!,
-        );
+        XdrLiquidityPoolEntryConstantProduct.encode(stream, encodedLiquidityPoolBody._constantProduct!);
         break;
       default:
         break;
@@ -49,13 +42,10 @@ class XdrLiquidityPoolBody {
   }
 
   static XdrLiquidityPoolBody decode(XdrDataInputStream stream) {
-    XdrLiquidityPoolBody decodedLiquidityPoolBody = XdrLiquidityPoolBody(
-      XdrLiquidityPoolType.decode(stream),
-    );
+    XdrLiquidityPoolBody decodedLiquidityPoolBody = XdrLiquidityPoolBody(XdrLiquidityPoolType.decode(stream));
     switch (decodedLiquidityPoolBody.discriminant) {
       case XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT:
-        decodedLiquidityPoolBody._constantProduct =
-            XdrLiquidityPoolEntryConstantProduct.decode(stream);
+        decodedLiquidityPoolBody._constantProduct = XdrLiquidityPoolEntryConstantProduct.decode(stream);
         break;
       default:
         break;
@@ -72,5 +62,29 @@ class XdrLiquidityPoolBody {
   static XdrLiquidityPoolBody fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolBody.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT:
+        _constantProduct!.toTxRep('$prefix.constantProduct', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrLiquidityPoolBody fromTxRep(Map<String, String> map, String prefix) {
+    XdrLiquidityPoolType disc = XdrLiquidityPoolType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrLiquidityPoolBody result = XdrLiquidityPoolBody(disc);
+    switch (result.discriminant) {
+      case XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT:
+        result._constantProduct = XdrLiquidityPoolEntryConstantProduct.fromTxRep(map, '$prefix.constantProduct');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

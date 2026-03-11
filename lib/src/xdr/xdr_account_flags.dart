@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrAccountFlags {
@@ -17,8 +18,7 @@ class XdrAccountFlags {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrAccountFlags && _value == other._value;
+      identical(this, other) || other is XdrAccountFlags && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -57,5 +57,40 @@ class XdrAccountFlags {
   static XdrAccountFlags fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountFlags.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 1: return 'AUTH_REQUIRED_FLAG';
+      case 2: return 'AUTH_REVOCABLE_FLAG';
+      case 4: return 'AUTH_IMMUTABLE_FLAG';
+      case 8: return 'AUTH_CLAWBACK_ENABLED_FLAG';
+      default: return 'XdrAccountFlags#$_value';
+    }
+  }
+
+  static XdrAccountFlags fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrAccountFlags fromTxRepName(String name) {
+    switch (name) {
+      case 'AUTH_REQUIRED_FLAG': return AUTH_REQUIRED_FLAG;
+      case 'AUTH_REVOCABLE_FLAG': return AUTH_REVOCABLE_FLAG;
+      case 'AUTH_IMMUTABLE_FLAG': return AUTH_IMMUTABLE_FLAG;
+      case 'AUTH_CLAWBACK_ENABLED_FLAG': return AUTH_CLAWBACK_ENABLED_FLAG;
+      default:
+        if (name.startsWith('XdrAccountFlags#')) {
+          int? val = int.tryParse(name.substring('XdrAccountFlags#'.length));
+          if (val != null) return XdrAccountFlags._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

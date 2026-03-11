@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger_entry_type.dart';
 import 'xdr_ledger_key_account.dart';
@@ -80,27 +81,19 @@ class XdrLedgerKeyBase {
 
   set data(XdrLedgerKeyData? value) => this._data = value;
 
-  set claimableBalance(XdrLedgerKeyClaimableBalance? value) =>
-      this._claimableBalance = value;
+  set claimableBalance(XdrLedgerKeyClaimableBalance? value) => this._claimableBalance = value;
 
-  set liquidityPool(XdrLedgerKeyLiquidityPool? value) =>
-      this._liquidityPool = value;
+  set liquidityPool(XdrLedgerKeyLiquidityPool? value) => this._liquidityPool = value;
 
-  set contractData(XdrLedgerKeyContractData? value) =>
-      this._contractData = value;
+  set contractData(XdrLedgerKeyContractData? value) => this._contractData = value;
 
-  set contractCode(XdrLedgerKeyContractCode? value) =>
-      this._contractCode = value;
+  set contractCode(XdrLedgerKeyContractCode? value) => this._contractCode = value;
 
-  set configSetting(XdrLedgerKeyConfigSetting? value) =>
-      this._configSetting = value;
+  set configSetting(XdrLedgerKeyConfigSetting? value) => this._configSetting = value;
 
   set ttl(XdrLedgerKeyTTL? value) => this._ttl = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLedgerKeyBase encodedLedgerKey,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLedgerKeyBase encodedLedgerKey) {
     stream.writeInt(encodedLedgerKey.discriminant.value);
     switch (encodedLedgerKey.discriminant) {
       case XdrLedgerEntryType.ACCOUNT:
@@ -116,34 +109,19 @@ class XdrLedgerKeyBase {
         XdrLedgerKeyData.encode(stream, encodedLedgerKey._data!);
         break;
       case XdrLedgerEntryType.CLAIMABLE_BALANCE:
-        XdrLedgerKeyClaimableBalance.encode(
-          stream,
-          encodedLedgerKey._claimableBalance!,
-        );
+        XdrLedgerKeyClaimableBalance.encode(stream, encodedLedgerKey._claimableBalance!);
         break;
       case XdrLedgerEntryType.LIQUIDITY_POOL:
-        XdrLedgerKeyLiquidityPool.encode(
-          stream,
-          encodedLedgerKey._liquidityPool!,
-        );
+        XdrLedgerKeyLiquidityPool.encode(stream, encodedLedgerKey._liquidityPool!);
         break;
       case XdrLedgerEntryType.CONTRACT_DATA:
-        XdrLedgerKeyContractData.encode(
-          stream,
-          encodedLedgerKey._contractData!,
-        );
+        XdrLedgerKeyContractData.encode(stream, encodedLedgerKey._contractData!);
         break;
       case XdrLedgerEntryType.CONTRACT_CODE:
-        XdrLedgerKeyContractCode.encode(
-          stream,
-          encodedLedgerKey._contractCode!,
-        );
+        XdrLedgerKeyContractCode.encode(stream, encodedLedgerKey._contractCode!);
         break;
       case XdrLedgerEntryType.CONFIG_SETTING:
-        XdrLedgerKeyConfigSetting.encode(
-          stream,
-          encodedLedgerKey._configSetting!,
-        );
+        XdrLedgerKeyConfigSetting.encode(stream, encodedLedgerKey._configSetting!);
         break;
       case XdrLedgerEntryType.TTL:
         XdrLedgerKeyTTL.encode(stream, encodedLedgerKey._ttl!);
@@ -208,5 +186,83 @@ class XdrLedgerKeyBase {
   static XdrLedgerKeyBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerKeyBase.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrLedgerEntryType.ACCOUNT:
+        _account!.toTxRep('$prefix.account', lines);
+        break;
+      case XdrLedgerEntryType.TRUSTLINE:
+        _trustLine!.toTxRep('$prefix.trustLine', lines);
+        break;
+      case XdrLedgerEntryType.OFFER:
+        _offer!.toTxRep('$prefix.offer', lines);
+        break;
+      case XdrLedgerEntryType.DATA:
+        _data!.toTxRep('$prefix.data', lines);
+        break;
+      case XdrLedgerEntryType.CLAIMABLE_BALANCE:
+        _claimableBalance!.toTxRep('$prefix.claimableBalance', lines);
+        break;
+      case XdrLedgerEntryType.LIQUIDITY_POOL:
+        _liquidityPool!.toTxRep('$prefix.liquidityPool', lines);
+        break;
+      case XdrLedgerEntryType.CONTRACT_DATA:
+        _contractData!.toTxRep('$prefix.contractData', lines);
+        break;
+      case XdrLedgerEntryType.CONTRACT_CODE:
+        _contractCode!.toTxRep('$prefix.contractCode', lines);
+        break;
+      case XdrLedgerEntryType.CONFIG_SETTING:
+        _configSetting!.toTxRep('$prefix.configSetting', lines);
+        break;
+      case XdrLedgerEntryType.TTL:
+        _ttl!.toTxRep('$prefix.ttl', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrLedgerKeyBase fromTxRep(Map<String, String> map, String prefix) {
+    XdrLedgerEntryType disc = XdrLedgerEntryType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrLedgerKeyBase result = XdrLedgerKeyBase(disc);
+    switch (result.discriminant) {
+      case XdrLedgerEntryType.ACCOUNT:
+        result._account = XdrLedgerKeyAccount.fromTxRep(map, '$prefix.account');
+        break;
+      case XdrLedgerEntryType.TRUSTLINE:
+        result._trustLine = XdrLedgerKeyTrustLine.fromTxRep(map, '$prefix.trustLine');
+        break;
+      case XdrLedgerEntryType.OFFER:
+        result._offer = XdrLedgerKeyOffer.fromTxRep(map, '$prefix.offer');
+        break;
+      case XdrLedgerEntryType.DATA:
+        result._data = XdrLedgerKeyData.fromTxRep(map, '$prefix.data');
+        break;
+      case XdrLedgerEntryType.CLAIMABLE_BALANCE:
+        result._claimableBalance = XdrLedgerKeyClaimableBalance.fromTxRep(map, '$prefix.claimableBalance');
+        break;
+      case XdrLedgerEntryType.LIQUIDITY_POOL:
+        result._liquidityPool = XdrLedgerKeyLiquidityPool.fromTxRep(map, '$prefix.liquidityPool');
+        break;
+      case XdrLedgerEntryType.CONTRACT_DATA:
+        result._contractData = XdrLedgerKeyContractData.fromTxRep(map, '$prefix.contractData');
+        break;
+      case XdrLedgerEntryType.CONTRACT_CODE:
+        result._contractCode = XdrLedgerKeyContractCode.fromTxRep(map, '$prefix.contractCode');
+        break;
+      case XdrLedgerEntryType.CONFIG_SETTING:
+        result._configSetting = XdrLedgerKeyConfigSetting.fromTxRep(map, '$prefix.configSetting');
+        break;
+      case XdrLedgerEntryType.TTL:
+        result._ttl = XdrLedgerKeyTTL.fromTxRep(map, '$prefix.ttl');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

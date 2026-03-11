@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrLiquidityPoolDepositResultCode {
@@ -17,30 +18,20 @@ class XdrLiquidityPoolDepositResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrLiquidityPoolDepositResultCode && _value == other._value;
+      identical(this, other) || other is XdrLiquidityPoolDepositResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const LIQUIDITY_POOL_DEPOSIT_SUCCESS =
-      const XdrLiquidityPoolDepositResultCode._internal(0);
-  static const LIQUIDITY_POOL_DEPOSIT_MALFORMED =
-      const XdrLiquidityPoolDepositResultCode._internal(-1);
-  static const LIQUIDITY_POOL_DEPOSIT_NO_TRUST =
-      const XdrLiquidityPoolDepositResultCode._internal(-2);
-  static const LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED =
-      const XdrLiquidityPoolDepositResultCode._internal(-3);
-  static const LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED =
-      const XdrLiquidityPoolDepositResultCode._internal(-4);
-  static const LIQUIDITY_POOL_DEPOSIT_LINE_FULL =
-      const XdrLiquidityPoolDepositResultCode._internal(-5);
-  static const LIQUIDITY_POOL_DEPOSIT_BAD_PRICE =
-      const XdrLiquidityPoolDepositResultCode._internal(-6);
-  static const LIQUIDITY_POOL_DEPOSIT_POOL_FULL =
-      const XdrLiquidityPoolDepositResultCode._internal(-7);
-  static const LIQUIDITY_POOL_DEPOSIT_TRUSTLINE_FROZEN =
-      const XdrLiquidityPoolDepositResultCode._internal(-8);
+  static const LIQUIDITY_POOL_DEPOSIT_SUCCESS = const XdrLiquidityPoolDepositResultCode._internal(0);
+  static const LIQUIDITY_POOL_DEPOSIT_MALFORMED = const XdrLiquidityPoolDepositResultCode._internal(-1);
+  static const LIQUIDITY_POOL_DEPOSIT_NO_TRUST = const XdrLiquidityPoolDepositResultCode._internal(-2);
+  static const LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED = const XdrLiquidityPoolDepositResultCode._internal(-3);
+  static const LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED = const XdrLiquidityPoolDepositResultCode._internal(-4);
+  static const LIQUIDITY_POOL_DEPOSIT_LINE_FULL = const XdrLiquidityPoolDepositResultCode._internal(-5);
+  static const LIQUIDITY_POOL_DEPOSIT_BAD_PRICE = const XdrLiquidityPoolDepositResultCode._internal(-6);
+  static const LIQUIDITY_POOL_DEPOSIT_POOL_FULL = const XdrLiquidityPoolDepositResultCode._internal(-7);
+  static const LIQUIDITY_POOL_DEPOSIT_TRUSTLINE_FROZEN = const XdrLiquidityPoolDepositResultCode._internal(-8);
 
   static XdrLiquidityPoolDepositResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -68,10 +59,7 @@ class XdrLiquidityPoolDepositResultCode {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLiquidityPoolDepositResultCode value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolDepositResultCode value) {
     stream.writeInt(value.value);
   }
 
@@ -81,10 +69,53 @@ class XdrLiquidityPoolDepositResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLiquidityPoolDepositResultCode fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrLiquidityPoolDepositResultCode fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolDepositResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'LIQUIDITY_POOL_DEPOSIT_SUCCESS';
+      case -1: return 'LIQUIDITY_POOL_DEPOSIT_MALFORMED';
+      case -2: return 'LIQUIDITY_POOL_DEPOSIT_NO_TRUST';
+      case -3: return 'LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED';
+      case -4: return 'LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED';
+      case -5: return 'LIQUIDITY_POOL_DEPOSIT_LINE_FULL';
+      case -6: return 'LIQUIDITY_POOL_DEPOSIT_BAD_PRICE';
+      case -7: return 'LIQUIDITY_POOL_DEPOSIT_POOL_FULL';
+      case -8: return 'LIQUIDITY_POOL_DEPOSIT_TRUSTLINE_FROZEN';
+      default: return 'XdrLiquidityPoolDepositResultCode#$_value';
+    }
+  }
+
+  static XdrLiquidityPoolDepositResultCode fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrLiquidityPoolDepositResultCode fromTxRepName(String name) {
+    switch (name) {
+      case 'LIQUIDITY_POOL_DEPOSIT_SUCCESS': return LIQUIDITY_POOL_DEPOSIT_SUCCESS;
+      case 'LIQUIDITY_POOL_DEPOSIT_MALFORMED': return LIQUIDITY_POOL_DEPOSIT_MALFORMED;
+      case 'LIQUIDITY_POOL_DEPOSIT_NO_TRUST': return LIQUIDITY_POOL_DEPOSIT_NO_TRUST;
+      case 'LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED': return LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED;
+      case 'LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED': return LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED;
+      case 'LIQUIDITY_POOL_DEPOSIT_LINE_FULL': return LIQUIDITY_POOL_DEPOSIT_LINE_FULL;
+      case 'LIQUIDITY_POOL_DEPOSIT_BAD_PRICE': return LIQUIDITY_POOL_DEPOSIT_BAD_PRICE;
+      case 'LIQUIDITY_POOL_DEPOSIT_POOL_FULL': return LIQUIDITY_POOL_DEPOSIT_POOL_FULL;
+      case 'LIQUIDITY_POOL_DEPOSIT_TRUSTLINE_FROZEN': return LIQUIDITY_POOL_DEPOSIT_TRUSTLINE_FROZEN;
+      default:
+        if (name.startsWith('XdrLiquidityPoolDepositResultCode#')) {
+          int? val = int.tryParse(name.substring('XdrLiquidityPoolDepositResultCode#'.length));
+          if (val != null) return XdrLiquidityPoolDepositResultCode._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

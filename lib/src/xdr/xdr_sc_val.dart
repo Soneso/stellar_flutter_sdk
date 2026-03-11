@@ -38,6 +38,32 @@ class XdrSCVal extends XdrSCValBase {
     return XdrSCValBase.decodeAs(stream, XdrSCVal.new);
   }
 
+  static XdrSCVal fromTxRep(Map<String, String> map, String prefix) {
+    var b = XdrSCValBase.fromTxRep(map, prefix);
+    var result = XdrSCVal(b.discriminant);
+    result.b = b.b;
+    result.error = b.error;
+    result.u32 = b.u32;
+    result.i32 = b.i32;
+    result.u64 = b.u64;
+    result.i64 = b.i64;
+    result.timepoint = b.timepoint;
+    result.duration = b.duration;
+    result.u128 = b.u128;
+    result.i128 = b.i128;
+    result.u256 = b.u256;
+    result.i256 = b.i256;
+    result.bytes = b.bytes;
+    result.str = b.str;
+    result.sym = b.sym;
+    result.vec = b.vec;
+    result.map = b.map;
+    result.address = b.address;
+    result.instance = b.instance;
+    result.nonce_key = b.nonce_key;
+    return result;
+  }
+
   static XdrSCVal forBool(bool value) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_BOOL);
     val.b = value;

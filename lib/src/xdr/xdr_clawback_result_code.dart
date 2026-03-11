@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrClawbackResultCode {
@@ -17,16 +18,14 @@ class XdrClawbackResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrClawbackResultCode && _value == other._value;
+      identical(this, other) || other is XdrClawbackResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
   static const CLAWBACK_SUCCESS = const XdrClawbackResultCode._internal(0);
   static const CLAWBACK_MALFORMED = const XdrClawbackResultCode._internal(-1);
-  static const CLAWBACK_NOT_CLAWBACK_ENABLED =
-      const XdrClawbackResultCode._internal(-2);
+  static const CLAWBACK_NOT_CLAWBACK_ENABLED = const XdrClawbackResultCode._internal(-2);
   static const CLAWBACK_NO_TRUST = const XdrClawbackResultCode._internal(-3);
   static const CLAWBACK_UNDERFUNDED = const XdrClawbackResultCode._internal(-4);
 
@@ -58,10 +57,45 @@ class XdrClawbackResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrClawbackResultCode fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrClawbackResultCode fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClawbackResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'CLAWBACK_SUCCESS';
+      case -1: return 'CLAWBACK_MALFORMED';
+      case -2: return 'CLAWBACK_NOT_CLAWBACK_ENABLED';
+      case -3: return 'CLAWBACK_NO_TRUST';
+      case -4: return 'CLAWBACK_UNDERFUNDED';
+      default: return 'XdrClawbackResultCode#$_value';
+    }
+  }
+
+  static XdrClawbackResultCode fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrClawbackResultCode fromTxRepName(String name) {
+    switch (name) {
+      case 'CLAWBACK_SUCCESS': return CLAWBACK_SUCCESS;
+      case 'CLAWBACK_MALFORMED': return CLAWBACK_MALFORMED;
+      case 'CLAWBACK_NOT_CLAWBACK_ENABLED': return CLAWBACK_NOT_CLAWBACK_ENABLED;
+      case 'CLAWBACK_NO_TRUST': return CLAWBACK_NO_TRUST;
+      case 'CLAWBACK_UNDERFUNDED': return CLAWBACK_UNDERFUNDED;
+      default:
+        if (name.startsWith('XdrClawbackResultCode#')) {
+          int? val = int.tryParse(name.substring('XdrClawbackResultCode#'.length));
+          if (val != null) return XdrClawbackResultCode._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

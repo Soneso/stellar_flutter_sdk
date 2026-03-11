@@ -6,10 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 
 class XdrLiabilities {
+
   XdrInt64 _buying;
   XdrInt64 get buying => this._buying;
   set buying(XdrInt64 value) => this._buying = value;
@@ -20,10 +22,7 @@ class XdrLiabilities {
 
   XdrLiabilities(this._buying, this._selling);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLiabilities encodedLiabilities,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLiabilities encodedLiabilities) {
     XdrInt64.encode(stream, encodedLiabilities.buying);
     XdrInt64.encode(stream, encodedLiabilities.selling);
   }
@@ -43,5 +42,16 @@ class XdrLiabilities {
   static XdrLiabilities fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiabilities.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _buying.toTxRep('$prefix.buying', lines);
+    _selling.toTxRep('$prefix.selling', lines);
+  }
+
+  static XdrLiabilities fromTxRep(Map<String, String> map, String prefix) {
+    XdrInt64 buying = XdrInt64.fromTxRep(map, '$prefix.buying');
+    XdrInt64 selling = XdrInt64.fromTxRep(map, '$prefix.selling');
+    return XdrLiabilities(buying, selling);
   }
 }

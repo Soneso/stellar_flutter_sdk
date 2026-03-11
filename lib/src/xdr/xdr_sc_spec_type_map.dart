@@ -6,10 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_spec_type_def.dart';
 
 class XdrSCSpecTypeMap {
+
   XdrSCSpecTypeDef _keyType;
   XdrSCSpecTypeDef get keyType => this._keyType;
   set keyType(XdrSCSpecTypeDef value) => this._keyType = value;
@@ -20,10 +22,7 @@ class XdrSCSpecTypeMap {
 
   XdrSCSpecTypeMap(this._keyType, this._valueType);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCSpecTypeMap encodedSCSpecTypeMap,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCSpecTypeMap encodedSCSpecTypeMap) {
     XdrSCSpecTypeDef.encode(stream, encodedSCSpecTypeMap.keyType);
     XdrSCSpecTypeDef.encode(stream, encodedSCSpecTypeMap.valueType);
   }
@@ -43,5 +42,16 @@ class XdrSCSpecTypeMap {
   static XdrSCSpecTypeMap fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecTypeMap.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _keyType.toTxRep('$prefix.keyType', lines);
+    _valueType.toTxRep('$prefix.valueType', lines);
+  }
+
+  static XdrSCSpecTypeMap fromTxRep(Map<String, String> map, String prefix) {
+    XdrSCSpecTypeDef keyType = XdrSCSpecTypeDef.fromTxRep(map, '$prefix.keyType');
+    XdrSCSpecTypeDef valueType = XdrSCSpecTypeDef.fromTxRep(map, '$prefix.valueType');
+    return XdrSCSpecTypeMap(keyType, valueType);
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_payment_result_code.dart';
 
@@ -22,10 +23,7 @@ class XdrPaymentResult {
 
   XdrPaymentResult(this._code);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrPaymentResult encodedPaymentResult,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrPaymentResult encodedPaymentResult) {
     stream.writeInt(encodedPaymentResult.discriminant.value);
     switch (encodedPaymentResult.discriminant) {
       case XdrPaymentResultCode.PAYMENT_SUCCESS:
@@ -36,9 +34,7 @@ class XdrPaymentResult {
   }
 
   static XdrPaymentResult decode(XdrDataInputStream stream) {
-    XdrPaymentResult decodedPaymentResult = XdrPaymentResult(
-      XdrPaymentResultCode.decode(stream),
-    );
+    XdrPaymentResult decodedPaymentResult = XdrPaymentResult(XdrPaymentResultCode.decode(stream));
     switch (decodedPaymentResult.discriminant) {
       case XdrPaymentResultCode.PAYMENT_SUCCESS:
         break;
@@ -57,5 +53,47 @@ class XdrPaymentResult {
   static XdrPaymentResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPaymentResult.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.code: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrPaymentResultCode.PAYMENT_SUCCESS:
+        break;
+      case XdrPaymentResultCode.PAYMENT_MALFORMED:
+      case XdrPaymentResultCode.PAYMENT_UNDERFUNDED:
+      case XdrPaymentResultCode.PAYMENT_SRC_NO_TRUST:
+      case XdrPaymentResultCode.PAYMENT_SRC_NOT_AUTHORIZED:
+      case XdrPaymentResultCode.PAYMENT_NO_DESTINATION:
+      case XdrPaymentResultCode.PAYMENT_NO_TRUST:
+      case XdrPaymentResultCode.PAYMENT_NOT_AUTHORIZED:
+      case XdrPaymentResultCode.PAYMENT_LINE_FULL:
+      case XdrPaymentResultCode.PAYMENT_NO_ISSUER:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrPaymentResult fromTxRep(Map<String, String> map, String prefix) {
+    XdrPaymentResultCode disc = XdrPaymentResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+    XdrPaymentResult result = XdrPaymentResult(disc);
+    switch (result.discriminant) {
+      case XdrPaymentResultCode.PAYMENT_SUCCESS:
+        break;
+      case XdrPaymentResultCode.PAYMENT_MALFORMED:
+      case XdrPaymentResultCode.PAYMENT_UNDERFUNDED:
+      case XdrPaymentResultCode.PAYMENT_SRC_NO_TRUST:
+      case XdrPaymentResultCode.PAYMENT_SRC_NOT_AUTHORIZED:
+      case XdrPaymentResultCode.PAYMENT_NO_DESTINATION:
+      case XdrPaymentResultCode.PAYMENT_NO_TRUST:
+      case XdrPaymentResultCode.PAYMENT_NOT_AUTHORIZED:
+      case XdrPaymentResultCode.PAYMENT_LINE_FULL:
+      case XdrPaymentResultCode.PAYMENT_NO_ISSUER:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

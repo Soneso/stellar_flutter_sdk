@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrEncryptedBody {
@@ -15,10 +16,7 @@ class XdrEncryptedBody {
   Uint8List get encryptedBody => this._encryptedBody;
   set encryptedBody(Uint8List value) => this._encryptedBody = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrEncryptedBody encodedEncryptedBody,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrEncryptedBody encodedEncryptedBody) {
     int encryptedBodySize = encodedEncryptedBody.encryptedBody.length;
     stream.writeInt(encryptedBodySize);
     stream.write(encodedEncryptedBody.encryptedBody);
@@ -38,5 +36,15 @@ class XdrEncryptedBody {
   static XdrEncryptedBody fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrEncryptedBody.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${TxRepHelper.bytesToHex(_encryptedBody)}');
+  }
+
+  static XdrEncryptedBody fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return XdrEncryptedBody(TxRepHelper.hexToBytes(raw));
   }
 }

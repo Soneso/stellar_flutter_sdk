@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
 import 'xdr_uint32.dart';
 
 class XdrExtendFootprintTTLOp {
+
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
@@ -21,10 +23,7 @@ class XdrExtendFootprintTTLOp {
 
   XdrExtendFootprintTTLOp(this._ext, this._extendTo);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrExtendFootprintTTLOp encodedExtendFootprintTTLOp,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrExtendFootprintTTLOp encodedExtendFootprintTTLOp) {
     XdrExtensionPoint.encode(stream, encodedExtendFootprintTTLOp.ext);
     XdrUint32.encode(stream, encodedExtendFootprintTTLOp.extendTo);
   }
@@ -41,10 +40,19 @@ class XdrExtendFootprintTTLOp {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrExtendFootprintTTLOp fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrExtendFootprintTTLOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrExtendFootprintTTLOp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _ext.toTxRep('$prefix.ext', lines);
+    _extendTo.toTxRep('$prefix.extendTo', lines);
+  }
+
+  static XdrExtendFootprintTTLOp fromTxRep(Map<String, String> map, String prefix) {
+    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
+    XdrUint32 extendTo = XdrUint32.fromTxRep(map, '$prefix.extendTo');
+    return XdrExtendFootprintTTLOp(ext, extendTo);
   }
 }

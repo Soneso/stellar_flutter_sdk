@@ -6,19 +6,18 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSCSpecTypeUDT {
+
   String _name;
   String get name => this._name;
   set name(String value) => this._name = value;
 
   XdrSCSpecTypeUDT(this._name);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCSpecTypeUDT encodedSCSpecTypeUDT,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCSpecTypeUDT encodedSCSpecTypeUDT) {
     stream.writeString(encodedSCSpecTypeUDT.name);
   }
 
@@ -36,5 +35,14 @@ class XdrSCSpecTypeUDT {
   static XdrSCSpecTypeUDT fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecTypeUDT.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.name: ${TxRepHelper.escapeString(_name)}');
+  }
+
+  static XdrSCSpecTypeUDT fromTxRep(Map<String, String> map, String prefix) {
+    String name = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.name') ?? '');
+    return XdrSCSpecTypeUDT(name);
   }
 }

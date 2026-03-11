@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrClaimantType {
@@ -17,8 +18,7 @@ class XdrClaimantType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrClaimantType && _value == other._value;
+      identical(this, other) || other is XdrClaimantType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -48,5 +48,34 @@ class XdrClaimantType {
   static XdrClaimantType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimantType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'CLAIMANT_TYPE_V0';
+      default: return 'XdrClaimantType#$_value';
+    }
+  }
+
+  static XdrClaimantType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrClaimantType fromTxRepName(String name) {
+    switch (name) {
+      case 'CLAIMANT_TYPE_V0': return CLAIMANT_TYPE_V0;
+      default:
+        if (name.startsWith('XdrClaimantType#')) {
+          int? val = int.tryParse(name.substring('XdrClaimantType#'.length));
+          if (val != null) return XdrClaimantType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

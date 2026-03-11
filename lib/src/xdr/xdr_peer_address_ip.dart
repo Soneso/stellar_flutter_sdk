@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ip_addr_type.dart';
 
@@ -34,10 +35,7 @@ class XdrPeerAddressIp {
 
   set ipv6(Uint8List? value) => this._ipv6 = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrPeerAddressIp encodedPeerAddressIp,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrPeerAddressIp encodedPeerAddressIp) {
     stream.writeInt(encodedPeerAddressIp.discriminant.value);
     switch (encodedPeerAddressIp.discriminant) {
       case XdrIPAddrType.IPv4:
@@ -52,9 +50,7 @@ class XdrPeerAddressIp {
   }
 
   static XdrPeerAddressIp decode(XdrDataInputStream stream) {
-    XdrPeerAddressIp decodedPeerAddressIp = XdrPeerAddressIp(
-      XdrIPAddrType.decode(stream),
-    );
+    XdrPeerAddressIp decodedPeerAddressIp = XdrPeerAddressIp(XdrIPAddrType.decode(stream));
     switch (decodedPeerAddressIp.discriminant) {
       case XdrIPAddrType.IPv4:
         int ipv4size = 4;
@@ -79,5 +75,35 @@ class XdrPeerAddressIp {
   static XdrPeerAddressIp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPeerAddressIp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrIPAddrType.IPv4:
+        lines.add('$prefix.ipv4: ${TxRepHelper.bytesToHex(_ipv4!)}');
+        break;
+      case XdrIPAddrType.IPv6:
+        lines.add('$prefix.ipv6: ${TxRepHelper.bytesToHex(_ipv6!)}');
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrPeerAddressIp fromTxRep(Map<String, String> map, String prefix) {
+    XdrIPAddrType disc = XdrIPAddrType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrPeerAddressIp result = XdrPeerAddressIp(disc);
+    switch (result.discriminant) {
+      case XdrIPAddrType.IPv4:
+        result._ipv4 = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '$prefix.ipv4') ?? '');
+        break;
+      case XdrIPAddrType.IPv6:
+        result._ipv6 = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '$prefix.ipv6') ?? '');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

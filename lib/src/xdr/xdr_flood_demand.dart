@@ -6,20 +6,19 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_tx_demand_vector.dart';
 
 class XdrFloodDemand {
+
   XdrTxDemandVector _txHashes;
   XdrTxDemandVector get txHashes => this._txHashes;
   set txHashes(XdrTxDemandVector value) => this._txHashes = value;
 
   XdrFloodDemand(this._txHashes);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrFloodDemand encodedFloodDemand,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrFloodDemand encodedFloodDemand) {
     XdrTxDemandVector.encode(stream, encodedFloodDemand.txHashes);
   }
 
@@ -37,5 +36,14 @@ class XdrFloodDemand {
   static XdrFloodDemand fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFloodDemand.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _txHashes.toTxRep('$prefix.txHashes', lines);
+  }
+
+  static XdrFloodDemand fromTxRep(Map<String, String> map, String prefix) {
+    XdrTxDemandVector txHashes = XdrTxDemandVector.fromTxRep(map, '$prefix.txHashes');
+    return XdrFloodDemand(txHashes);
   }
 }

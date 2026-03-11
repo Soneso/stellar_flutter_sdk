@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrChangeTrustResultCode {
@@ -17,31 +18,20 @@ class XdrChangeTrustResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrChangeTrustResultCode && _value == other._value;
+      identical(this, other) || other is XdrChangeTrustResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const CHANGE_TRUST_SUCCESS = const XdrChangeTrustResultCode._internal(
-    0,
-  );
-  static const CHANGE_TRUST_MALFORMED =
-      const XdrChangeTrustResultCode._internal(-1);
-  static const CHANGE_TRUST_NO_ISSUER =
-      const XdrChangeTrustResultCode._internal(-2);
-  static const CHANGE_TRUST_INVALID_LIMIT =
-      const XdrChangeTrustResultCode._internal(-3);
-  static const CHANGE_TRUST_LOW_RESERVE =
-      const XdrChangeTrustResultCode._internal(-4);
-  static const CHANGE_TRUST_SELF_NOT_ALLOWED =
-      const XdrChangeTrustResultCode._internal(-5);
-  static const CHANGE_TRUST_TRUST_LINE_MISSING =
-      const XdrChangeTrustResultCode._internal(-6);
-  static const CHANGE_TRUST_CANNOT_DELETE =
-      const XdrChangeTrustResultCode._internal(-7);
-  static const CHANGE_TRUST_NOT_AUTH_MAINTAIN_LIABILITIES =
-      const XdrChangeTrustResultCode._internal(-8);
+  static const CHANGE_TRUST_SUCCESS = const XdrChangeTrustResultCode._internal(0);
+  static const CHANGE_TRUST_MALFORMED = const XdrChangeTrustResultCode._internal(-1);
+  static const CHANGE_TRUST_NO_ISSUER = const XdrChangeTrustResultCode._internal(-2);
+  static const CHANGE_TRUST_INVALID_LIMIT = const XdrChangeTrustResultCode._internal(-3);
+  static const CHANGE_TRUST_LOW_RESERVE = const XdrChangeTrustResultCode._internal(-4);
+  static const CHANGE_TRUST_SELF_NOT_ALLOWED = const XdrChangeTrustResultCode._internal(-5);
+  static const CHANGE_TRUST_TRUST_LINE_MISSING = const XdrChangeTrustResultCode._internal(-6);
+  static const CHANGE_TRUST_CANNOT_DELETE = const XdrChangeTrustResultCode._internal(-7);
+  static const CHANGE_TRUST_NOT_AUTH_MAINTAIN_LIABILITIES = const XdrChangeTrustResultCode._internal(-8);
 
   static XdrChangeTrustResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -69,10 +59,7 @@ class XdrChangeTrustResultCode {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrChangeTrustResultCode value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrChangeTrustResultCode value) {
     stream.writeInt(value.value);
   }
 
@@ -82,10 +69,53 @@ class XdrChangeTrustResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrChangeTrustResultCode fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrChangeTrustResultCode fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrChangeTrustResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'CHANGE_TRUST_SUCCESS';
+      case -1: return 'CHANGE_TRUST_MALFORMED';
+      case -2: return 'CHANGE_TRUST_NO_ISSUER';
+      case -3: return 'CHANGE_TRUST_INVALID_LIMIT';
+      case -4: return 'CHANGE_TRUST_LOW_RESERVE';
+      case -5: return 'CHANGE_TRUST_SELF_NOT_ALLOWED';
+      case -6: return 'CHANGE_TRUST_TRUST_LINE_MISSING';
+      case -7: return 'CHANGE_TRUST_CANNOT_DELETE';
+      case -8: return 'CHANGE_TRUST_NOT_AUTH_MAINTAIN_LIABILITIES';
+      default: return 'XdrChangeTrustResultCode#$_value';
+    }
+  }
+
+  static XdrChangeTrustResultCode fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrChangeTrustResultCode fromTxRepName(String name) {
+    switch (name) {
+      case 'CHANGE_TRUST_SUCCESS': return CHANGE_TRUST_SUCCESS;
+      case 'CHANGE_TRUST_MALFORMED': return CHANGE_TRUST_MALFORMED;
+      case 'CHANGE_TRUST_NO_ISSUER': return CHANGE_TRUST_NO_ISSUER;
+      case 'CHANGE_TRUST_INVALID_LIMIT': return CHANGE_TRUST_INVALID_LIMIT;
+      case 'CHANGE_TRUST_LOW_RESERVE': return CHANGE_TRUST_LOW_RESERVE;
+      case 'CHANGE_TRUST_SELF_NOT_ALLOWED': return CHANGE_TRUST_SELF_NOT_ALLOWED;
+      case 'CHANGE_TRUST_TRUST_LINE_MISSING': return CHANGE_TRUST_TRUST_LINE_MISSING;
+      case 'CHANGE_TRUST_CANNOT_DELETE': return CHANGE_TRUST_CANNOT_DELETE;
+      case 'CHANGE_TRUST_NOT_AUTH_MAINTAIN_LIABILITIES': return CHANGE_TRUST_NOT_AUTH_MAINTAIN_LIABILITIES;
+      default:
+        if (name.startsWith('XdrChangeTrustResultCode#')) {
+          int? val = int.tryParse(name.substring('XdrChangeTrustResultCode#'.length));
+          if (val != null) return XdrChangeTrustResultCode._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

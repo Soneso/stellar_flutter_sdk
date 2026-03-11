@@ -6,67 +6,53 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_signature.dart';
 import 'xdr_time_sliced_survey_start_collecting_message.dart';
 
 class XdrSignedTimeSlicedSurveyStartCollectingMessage {
+
   XdrSignature _signature;
   XdrSignature get signature => this._signature;
   set signature(XdrSignature value) => this._signature = value;
 
   XdrTimeSlicedSurveyStartCollectingMessage _startCollecting;
-  XdrTimeSlicedSurveyStartCollectingMessage get startCollecting =>
-      this._startCollecting;
-  set startCollecting(XdrTimeSlicedSurveyStartCollectingMessage value) =>
-      this._startCollecting = value;
+  XdrTimeSlicedSurveyStartCollectingMessage get startCollecting => this._startCollecting;
+  set startCollecting(XdrTimeSlicedSurveyStartCollectingMessage value) => this._startCollecting = value;
 
-  XdrSignedTimeSlicedSurveyStartCollectingMessage(
-    this._signature,
-    this._startCollecting,
-  );
+  XdrSignedTimeSlicedSurveyStartCollectingMessage(this._signature, this._startCollecting);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSignedTimeSlicedSurveyStartCollectingMessage
-    encodedSignedTimeSlicedSurveyStartCollectingMessage,
-  ) {
-    XdrSignature.encode(
-      stream,
-      encodedSignedTimeSlicedSurveyStartCollectingMessage.signature,
-    );
-    XdrTimeSlicedSurveyStartCollectingMessage.encode(
-      stream,
-      encodedSignedTimeSlicedSurveyStartCollectingMessage.startCollecting,
-    );
+  static void encode(XdrDataOutputStream stream, XdrSignedTimeSlicedSurveyStartCollectingMessage encodedSignedTimeSlicedSurveyStartCollectingMessage) {
+    XdrSignature.encode(stream, encodedSignedTimeSlicedSurveyStartCollectingMessage.signature);
+    XdrTimeSlicedSurveyStartCollectingMessage.encode(stream, encodedSignedTimeSlicedSurveyStartCollectingMessage.startCollecting);
   }
 
-  static XdrSignedTimeSlicedSurveyStartCollectingMessage decode(
-    XdrDataInputStream stream,
-  ) {
+  static XdrSignedTimeSlicedSurveyStartCollectingMessage decode(XdrDataInputStream stream) {
     XdrSignature signature = XdrSignature.decode(stream);
-    XdrTimeSlicedSurveyStartCollectingMessage startCollecting =
-        XdrTimeSlicedSurveyStartCollectingMessage.decode(stream);
-    return XdrSignedTimeSlicedSurveyStartCollectingMessage(
-      signature,
-      startCollecting,
-    );
+    XdrTimeSlicedSurveyStartCollectingMessage startCollecting = XdrTimeSlicedSurveyStartCollectingMessage.decode(stream);
+    return XdrSignedTimeSlicedSurveyStartCollectingMessage(signature, startCollecting);
   }
 
   String toBase64EncodedXdrString() {
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
-    XdrSignedTimeSlicedSurveyStartCollectingMessage.encode(
-      xdrOutputStream,
-      this,
-    );
+    XdrSignedTimeSlicedSurveyStartCollectingMessage.encode(xdrOutputStream, this);
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSignedTimeSlicedSurveyStartCollectingMessage
-  fromBase64EncodedXdrString(String base64Encoded) {
+  static XdrSignedTimeSlicedSurveyStartCollectingMessage fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrSignedTimeSlicedSurveyStartCollectingMessage.decode(
-      XdrDataInputStream(bytes),
-    );
+    return XdrSignedTimeSlicedSurveyStartCollectingMessage.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _signature.toTxRep('$prefix.signature', lines);
+    _startCollecting.toTxRep('$prefix.startCollecting', lines);
+  }
+
+  static XdrSignedTimeSlicedSurveyStartCollectingMessage fromTxRep(Map<String, String> map, String prefix) {
+    XdrSignature signature = XdrSignature.fromTxRep(map, '$prefix.signature');
+    XdrTimeSlicedSurveyStartCollectingMessage startCollecting = XdrTimeSlicedSurveyStartCollectingMessage.fromTxRep(map, '$prefix.startCollecting');
+    return XdrSignedTimeSlicedSurveyStartCollectingMessage(signature, startCollecting);
   }
 }

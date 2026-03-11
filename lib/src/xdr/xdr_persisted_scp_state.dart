@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_persisted_scp_state_v0.dart';
 import 'xdr_persisted_scp_state_v1.dart';
@@ -34,10 +35,7 @@ class XdrPersistedSCPState {
 
   set v1(XdrPersistedSCPStateV1? value) => this._v1 = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrPersistedSCPState encodedPersistedSCPState,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrPersistedSCPState encodedPersistedSCPState) {
     stream.writeInt(encodedPersistedSCPState.discriminant);
     switch (encodedPersistedSCPState.discriminant) {
       case 0:
@@ -53,9 +51,7 @@ class XdrPersistedSCPState {
 
   static XdrPersistedSCPState decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrPersistedSCPState decodedPersistedSCPState = XdrPersistedSCPState(
-      discriminant,
-    );
+    XdrPersistedSCPState decodedPersistedSCPState = XdrPersistedSCPState(discriminant);
     switch (decodedPersistedSCPState.discriminant) {
       case 0:
         decodedPersistedSCPState._v0 = XdrPersistedSCPStateV0.decode(stream);
@@ -78,5 +74,35 @@ class XdrPersistedSCPState {
   static XdrPersistedSCPState fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPersistedSCPState.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        _v0!.toTxRep('$prefix.v0', lines);
+        break;
+      case 1:
+        _v1!.toTxRep('$prefix.v1', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrPersistedSCPState fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrPersistedSCPState result = XdrPersistedSCPState(disc);
+    switch (result.discriminant) {
+      case 0:
+        result._v0 = XdrPersistedSCPStateV0.fromTxRep(map, '$prefix.v0');
+        break;
+      case 1:
+        result._v1 = XdrPersistedSCPStateV1.fromTxRep(map, '$prefix.v1');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

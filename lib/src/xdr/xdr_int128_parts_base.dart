@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 import 'xdr_uint64.dart';
 
 class XdrInt128PartsBase {
+
   XdrInt64 _hi;
   XdrInt64 get hi => this._hi;
   set hi(XdrInt64 value) => this._hi = value;
@@ -21,10 +23,7 @@ class XdrInt128PartsBase {
 
   XdrInt128PartsBase(this._hi, this._lo);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrInt128PartsBase encodedInt128Parts,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrInt128PartsBase encodedInt128Parts) {
     XdrInt64.encode(stream, encodedInt128Parts.hi);
     XdrUint64.encode(stream, encodedInt128Parts.lo);
   }
@@ -44,5 +43,16 @@ class XdrInt128PartsBase {
   static XdrInt128PartsBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInt128PartsBase.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _hi.toTxRep('$prefix.hi', lines);
+    _lo.toTxRep('$prefix.lo', lines);
+  }
+
+  static XdrInt128PartsBase fromTxRep(Map<String, String> map, String prefix) {
+    XdrInt64 hi = XdrInt64.fromTxRep(map, '$prefix.hi');
+    XdrUint64 lo = XdrUint64.fromTxRep(map, '$prefix.lo');
+    return XdrInt128PartsBase(hi, lo);
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_claimant_type.dart';
 import 'xdr_claimant_v0.dart';
 import 'xdr_data_io.dart';
@@ -61,5 +62,29 @@ class XdrClaimant {
   static XdrClaimant fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimant.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrClaimantType.CLAIMANT_TYPE_V0:
+        _v0!.toTxRep('$prefix.v0', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrClaimant fromTxRep(Map<String, String> map, String prefix) {
+    XdrClaimantType disc = XdrClaimantType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrClaimant result = XdrClaimant(disc);
+    switch (result.discriminant) {
+      case XdrClaimantType.CLAIMANT_TYPE_V0:
+        result._v0 = XdrClaimantV0.fromTxRep(map, '$prefix.v0');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

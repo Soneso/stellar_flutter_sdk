@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_account_entry_ext.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
@@ -17,6 +18,7 @@ import 'xdr_thresholds.dart';
 import 'xdr_uint32.dart';
 
 class XdrAccountEntry {
+
   XdrAccountID _accountID;
   XdrAccountID get accountID => this._accountID;
   set accountID(XdrAccountID value) => this._accountID = value;
@@ -57,23 +59,9 @@ class XdrAccountEntry {
   XdrAccountEntryExt get ext => this._ext;
   set ext(XdrAccountEntryExt value) => this._ext = value;
 
-  XdrAccountEntry(
-    this._accountID,
-    this._balance,
-    this._seqNum,
-    this._numSubEntries,
-    this._inflationDest,
-    this._flags,
-    this._homeDomain,
-    this._thresholds,
-    this._signers,
-    this._ext,
-  );
+  XdrAccountEntry(this._accountID, this._balance, this._seqNum, this._numSubEntries, this._inflationDest, this._flags, this._homeDomain, this._thresholds, this._signers, this._ext);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrAccountEntry encodedAccountEntry,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrAccountEntry encodedAccountEntry) {
     XdrAccountID.encode(stream, encodedAccountEntry.accountID);
     XdrInt64.encode(stream, encodedAccountEntry.balance);
     XdrSequenceNumber.encode(stream, encodedAccountEntry.seqNum);
@@ -114,18 +102,7 @@ class XdrAccountEntry {
       signers.add(XdrSigner.decode(stream));
     }
     XdrAccountEntryExt ext = XdrAccountEntryExt.decode(stream);
-    return XdrAccountEntry(
-      accountID,
-      balance,
-      seqNum,
-      numSubEntries,
-      inflationDest,
-      flags,
-      homeDomain,
-      thresholds,
-      signers,
-      ext,
-    );
+    return XdrAccountEntry(accountID, balance, seqNum, numSubEntries, inflationDest, flags, homeDomain, thresholds, signers, ext);
   }
 
   String toBase64EncodedXdrString() {
@@ -137,5 +114,48 @@ class XdrAccountEntry {
   static XdrAccountEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.accountID: ${TxRepHelper.formatAccountId(_accountID)}');
+    _balance.toTxRep('$prefix.balance', lines);
+    _seqNum.toTxRep('$prefix.seqNum', lines);
+    _numSubEntries.toTxRep('$prefix.numSubEntries', lines);
+    if (_inflationDest != null) {
+      lines.add('$prefix.inflationDest._present: true');
+      lines.add('$prefix.inflationDest: ${TxRepHelper.formatAccountId(_inflationDest!)}');
+    } else {
+      lines.add('$prefix.inflationDest._present: false');
+    }
+    _flags.toTxRep('$prefix.flags', lines);
+    _homeDomain.toTxRep('$prefix.homeDomain', lines);
+    _thresholds.toTxRep('$prefix.thresholds', lines);
+    lines.add('$prefix.signers.len: ${_signers.length}');
+    for (int i = 0; i < _signers.length; i++) {
+      _signers[i].toTxRep('$prefix.signers[$i]', lines);
+    }
+    _ext.toTxRep('$prefix.ext', lines);
+  }
+
+  static XdrAccountEntry fromTxRep(Map<String, String> map, String prefix) {
+    XdrAccountID accountID = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.accountID') ?? '');
+    XdrInt64 balance = XdrInt64.fromTxRep(map, '$prefix.balance');
+    XdrSequenceNumber seqNum = XdrSequenceNumber.fromTxRep(map, '$prefix.seqNum');
+    XdrUint32 numSubEntries = XdrUint32.fromTxRep(map, '$prefix.numSubEntries');
+    XdrAccountID? inflationDest;
+    String? inflationDestPresent = TxRepHelper.getValue(map, '$prefix.inflationDest._present');
+    if (inflationDestPresent != null && inflationDestPresent == 'true') {
+      inflationDest = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.inflationDest') ?? '');
+    }
+    XdrUint32 flags = XdrUint32.fromTxRep(map, '$prefix.flags');
+    XdrString32 homeDomain = XdrString32.fromTxRep(map, '$prefix.homeDomain');
+    XdrThresholds thresholds = XdrThresholds.fromTxRep(map, '$prefix.thresholds');
+    int signersLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.signers.len') ?? '0');
+    List<XdrSigner> signers = [];
+    for (int i = 0; i < signersLen; i++) {
+      signers.add(XdrSigner.fromTxRep(map, '$prefix.signers[$i]'));
+    }
+    XdrAccountEntryExt ext = XdrAccountEntryExt.fromTxRep(map, '$prefix.ext');
+    return XdrAccountEntry(accountID, balance, seqNum, numSubEntries, inflationDest, flags, homeDomain, thresholds, signers, ext);
   }
 }

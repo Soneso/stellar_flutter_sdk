@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_set_trust_line_flags_result_code.dart';
 
@@ -22,10 +23,7 @@ class XdrSetTrustLineFlagsResult {
 
   XdrSetTrustLineFlagsResult(this._code);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSetTrustLineFlagsResult encodedSetTrustLineFlagsResult,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSetTrustLineFlagsResult encodedSetTrustLineFlagsResult) {
     stream.writeInt(encodedSetTrustLineFlagsResult.discriminant.value);
     switch (encodedSetTrustLineFlagsResult.discriminant) {
       case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_SUCCESS:
@@ -36,10 +34,7 @@ class XdrSetTrustLineFlagsResult {
   }
 
   static XdrSetTrustLineFlagsResult decode(XdrDataInputStream stream) {
-    XdrSetTrustLineFlagsResult decodedSetTrustLineFlagsResult =
-        XdrSetTrustLineFlagsResult(
-          XdrSetTrustLineFlagsResultCode.decode(stream),
-        );
+    XdrSetTrustLineFlagsResult decodedSetTrustLineFlagsResult = XdrSetTrustLineFlagsResult(XdrSetTrustLineFlagsResultCode.decode(stream));
     switch (decodedSetTrustLineFlagsResult.discriminant) {
       case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_SUCCESS:
         break;
@@ -55,10 +50,42 @@ class XdrSetTrustLineFlagsResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSetTrustLineFlagsResult fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrSetTrustLineFlagsResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSetTrustLineFlagsResult.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.code: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_SUCCESS:
+        break;
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_MALFORMED:
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_NO_TRUST_LINE:
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_CANT_REVOKE:
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_INVALID_STATE:
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_LOW_RESERVE:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrSetTrustLineFlagsResult fromTxRep(Map<String, String> map, String prefix) {
+    XdrSetTrustLineFlagsResultCode disc = XdrSetTrustLineFlagsResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+    XdrSetTrustLineFlagsResult result = XdrSetTrustLineFlagsResult(disc);
+    switch (result.discriminant) {
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_SUCCESS:
+        break;
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_MALFORMED:
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_NO_TRUST_LINE:
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_CANT_REVOKE:
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_INVALID_STATE:
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_LOW_RESERVE:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

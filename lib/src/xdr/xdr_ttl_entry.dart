@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_uint32.dart';
 
 class XdrTTLEntry {
+
   XdrHash _keyHash;
   XdrHash get keyHash => this._keyHash;
   set keyHash(XdrHash value) => this._keyHash = value;
@@ -41,5 +43,16 @@ class XdrTTLEntry {
   static XdrTTLEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTTLEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _keyHash.toTxRep('$prefix.keyHash', lines);
+    _liveUntilLedgerSeq.toTxRep('$prefix.liveUntilLedgerSeq', lines);
+  }
+
+  static XdrTTLEntry fromTxRep(Map<String, String> map, String prefix) {
+    XdrHash keyHash = XdrHash.fromTxRep(map, '$prefix.keyHash');
+    XdrUint32 liveUntilLedgerSeq = XdrUint32.fromTxRep(map, '$prefix.liveUntilLedgerSeq');
+    return XdrTTLEntry(keyHash, liveUntilLedgerSeq);
   }
 }

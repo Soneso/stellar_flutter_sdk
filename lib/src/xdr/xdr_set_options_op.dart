@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
 import 'xdr_signer.dart';
@@ -13,6 +14,7 @@ import 'xdr_string32.dart';
 import 'xdr_uint32.dart';
 
 class XdrSetOptionsOp {
+
   XdrAccountID? _inflationDest;
   XdrAccountID? get inflationDest => this._inflationDest;
   set inflationDest(XdrAccountID? value) => this._inflationDest = value;
@@ -49,22 +51,9 @@ class XdrSetOptionsOp {
   XdrSigner? get signer => this._signer;
   set signer(XdrSigner? value) => this._signer = value;
 
-  XdrSetOptionsOp(
-    this._inflationDest,
-    this._clearFlags,
-    this._setFlags,
-    this._masterWeight,
-    this._lowThreshold,
-    this._medThreshold,
-    this._highThreshold,
-    this._homeDomain,
-    this._signer,
-  );
+  XdrSetOptionsOp(this._inflationDest, this._clearFlags, this._setFlags, this._masterWeight, this._lowThreshold, this._medThreshold, this._highThreshold, this._homeDomain, this._signer);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSetOptionsOp encodedSetOptionsOp,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSetOptionsOp encodedSetOptionsOp) {
     if (encodedSetOptionsOp.inflationDest != null) {
       stream.writeInt(1);
       XdrAccountID.encode(stream, encodedSetOptionsOp.inflationDest!);
@@ -167,17 +156,7 @@ class XdrSetOptionsOp {
     if (signerPresent != 0) {
       signer = XdrSigner.decode(stream);
     }
-    return XdrSetOptionsOp(
-      inflationDest,
-      clearFlags,
-      setFlags,
-      masterWeight,
-      lowThreshold,
-      medThreshold,
-      highThreshold,
-      homeDomain,
-      signer,
-    );
+    return XdrSetOptionsOp(inflationDest, clearFlags, setFlags, masterWeight, lowThreshold, medThreshold, highThreshold, homeDomain, signer);
   }
 
   String toBase64EncodedXdrString() {
@@ -189,5 +168,111 @@ class XdrSetOptionsOp {
   static XdrSetOptionsOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSetOptionsOp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    if (_inflationDest != null) {
+      lines.add('$prefix.inflationDest._present: true');
+      lines.add('$prefix.inflationDest: ${TxRepHelper.formatAccountId(_inflationDest!)}');
+    } else {
+      lines.add('$prefix.inflationDest._present: false');
+    }
+    if (_clearFlags != null) {
+      lines.add('$prefix.clearFlags._present: true');
+      _clearFlags!.toTxRep('$prefix.clearFlags', lines);
+    } else {
+      lines.add('$prefix.clearFlags._present: false');
+    }
+    if (_setFlags != null) {
+      lines.add('$prefix.setFlags._present: true');
+      _setFlags!.toTxRep('$prefix.setFlags', lines);
+    } else {
+      lines.add('$prefix.setFlags._present: false');
+    }
+    if (_masterWeight != null) {
+      lines.add('$prefix.masterWeight._present: true');
+      _masterWeight!.toTxRep('$prefix.masterWeight', lines);
+    } else {
+      lines.add('$prefix.masterWeight._present: false');
+    }
+    if (_lowThreshold != null) {
+      lines.add('$prefix.lowThreshold._present: true');
+      _lowThreshold!.toTxRep('$prefix.lowThreshold', lines);
+    } else {
+      lines.add('$prefix.lowThreshold._present: false');
+    }
+    if (_medThreshold != null) {
+      lines.add('$prefix.medThreshold._present: true');
+      _medThreshold!.toTxRep('$prefix.medThreshold', lines);
+    } else {
+      lines.add('$prefix.medThreshold._present: false');
+    }
+    if (_highThreshold != null) {
+      lines.add('$prefix.highThreshold._present: true');
+      _highThreshold!.toTxRep('$prefix.highThreshold', lines);
+    } else {
+      lines.add('$prefix.highThreshold._present: false');
+    }
+    if (_homeDomain != null) {
+      lines.add('$prefix.homeDomain._present: true');
+      _homeDomain!.toTxRep('$prefix.homeDomain', lines);
+    } else {
+      lines.add('$prefix.homeDomain._present: false');
+    }
+    if (_signer != null) {
+      lines.add('$prefix.signer._present: true');
+      _signer!.toTxRep('$prefix.signer', lines);
+    } else {
+      lines.add('$prefix.signer._present: false');
+    }
+  }
+
+  static XdrSetOptionsOp fromTxRep(Map<String, String> map, String prefix) {
+    XdrAccountID? inflationDest;
+    String? inflationDestPresent = TxRepHelper.getValue(map, '$prefix.inflationDest._present');
+    if (inflationDestPresent != null && inflationDestPresent == 'true') {
+      inflationDest = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.inflationDest') ?? '');
+    }
+    XdrUint32? clearFlags;
+    String? clearFlagsPresent = TxRepHelper.getValue(map, '$prefix.clearFlags._present');
+    if (clearFlagsPresent != null && clearFlagsPresent == 'true') {
+      clearFlags = XdrUint32.fromTxRep(map, '$prefix.clearFlags');
+    }
+    XdrUint32? setFlags;
+    String? setFlagsPresent = TxRepHelper.getValue(map, '$prefix.setFlags._present');
+    if (setFlagsPresent != null && setFlagsPresent == 'true') {
+      setFlags = XdrUint32.fromTxRep(map, '$prefix.setFlags');
+    }
+    XdrUint32? masterWeight;
+    String? masterWeightPresent = TxRepHelper.getValue(map, '$prefix.masterWeight._present');
+    if (masterWeightPresent != null && masterWeightPresent == 'true') {
+      masterWeight = XdrUint32.fromTxRep(map, '$prefix.masterWeight');
+    }
+    XdrUint32? lowThreshold;
+    String? lowThresholdPresent = TxRepHelper.getValue(map, '$prefix.lowThreshold._present');
+    if (lowThresholdPresent != null && lowThresholdPresent == 'true') {
+      lowThreshold = XdrUint32.fromTxRep(map, '$prefix.lowThreshold');
+    }
+    XdrUint32? medThreshold;
+    String? medThresholdPresent = TxRepHelper.getValue(map, '$prefix.medThreshold._present');
+    if (medThresholdPresent != null && medThresholdPresent == 'true') {
+      medThreshold = XdrUint32.fromTxRep(map, '$prefix.medThreshold');
+    }
+    XdrUint32? highThreshold;
+    String? highThresholdPresent = TxRepHelper.getValue(map, '$prefix.highThreshold._present');
+    if (highThresholdPresent != null && highThresholdPresent == 'true') {
+      highThreshold = XdrUint32.fromTxRep(map, '$prefix.highThreshold');
+    }
+    XdrString32? homeDomain;
+    String? homeDomainPresent = TxRepHelper.getValue(map, '$prefix.homeDomain._present');
+    if (homeDomainPresent != null && homeDomainPresent == 'true') {
+      homeDomain = XdrString32.fromTxRep(map, '$prefix.homeDomain');
+    }
+    XdrSigner? signer;
+    String? signerPresent = TxRepHelper.getValue(map, '$prefix.signer._present');
+    if (signerPresent != null && signerPresent == 'true') {
+      signer = XdrSigner.fromTxRep(map, '$prefix.signer');
+    }
+    return XdrSetOptionsOp(inflationDest, clearFlags, setFlags, masterWeight, lowThreshold, medThreshold, highThreshold, homeDomain, signer);
   }
 }

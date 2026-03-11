@@ -6,10 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_spec_type_def.dart';
 
 class XdrSCSpecUDTUnionCaseTupleV0 {
+
   String _doc;
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
@@ -24,10 +26,7 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
 
   XdrSCSpecUDTUnionCaseTupleV0(this._doc, this._name, this._type);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCSpecUDTUnionCaseTupleV0 encodedSCSpecUDTUnionCaseTupleV0,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCSpecUDTUnionCaseTupleV0 encodedSCSpecUDTUnionCaseTupleV0) {
     stream.writeString(encodedSCSpecUDTUnionCaseTupleV0.doc);
     stream.writeString(encodedSCSpecUDTUnionCaseTupleV0.name);
     int typesize = encodedSCSpecUDTUnionCaseTupleV0.type.length;
@@ -54,10 +53,28 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSCSpecUDTUnionCaseTupleV0 fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrSCSpecUDTUnionCaseTupleV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecUDTUnionCaseTupleV0.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.doc: ${TxRepHelper.escapeString(_doc)}');
+    lines.add('$prefix.name: ${TxRepHelper.escapeString(_name)}');
+    lines.add('$prefix.type.len: ${_type.length}');
+    for (int i = 0; i < _type.length; i++) {
+      _type[i].toTxRep('$prefix.type[$i]', lines);
+    }
+  }
+
+  static XdrSCSpecUDTUnionCaseTupleV0 fromTxRep(Map<String, String> map, String prefix) {
+    String doc = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.doc') ?? '');
+    String name = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.name') ?? '');
+    int typeLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.type.len') ?? '0');
+    List<XdrSCSpecTypeDef> type = [];
+    for (int i = 0; i < typeLen; i++) {
+      type.add(XdrSCSpecTypeDef.fromTxRep(map, '$prefix.type[$i]'));
+    }
+    return XdrSCSpecUDTUnionCaseTupleV0(doc, name, type);
   }
 }

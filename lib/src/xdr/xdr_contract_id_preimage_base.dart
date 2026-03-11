@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_contract_id_preimage_from_address.dart';
 import 'xdr_contract_id_preimage_type.dart';
@@ -32,22 +33,15 @@ class XdrContractIDPreimageBase {
 
   XdrContractIDPreimageBase(this._type);
 
-  set fromAddress(XdrContractIDPreimageFromAddress? value) =>
-      this._fromAddress = value;
+  set fromAddress(XdrContractIDPreimageFromAddress? value) => this._fromAddress = value;
 
   set fromAsset(XdrAsset? value) => this._fromAsset = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrContractIDPreimageBase encodedContractIDPreimage,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrContractIDPreimageBase encodedContractIDPreimage) {
     stream.writeInt(encodedContractIDPreimage.discriminant.value);
     switch (encodedContractIDPreimage.discriminant) {
       case XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS:
-        XdrContractIDPreimageFromAddress.encode(
-          stream,
-          encodedContractIDPreimage._fromAddress!,
-        );
+        XdrContractIDPreimageFromAddress.encode(stream, encodedContractIDPreimage._fromAddress!);
         break;
       case XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET:
         XdrAsset.encode(stream, encodedContractIDPreimage._fromAsset!);
@@ -85,10 +79,38 @@ class XdrContractIDPreimageBase {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrContractIDPreimageBase fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrContractIDPreimageBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractIDPreimageBase.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS:
+        _fromAddress!.toTxRep('$prefix.fromAddress', lines);
+        break;
+      case XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET:
+        lines.add('$prefix.fromAsset: ${TxRepHelper.formatAsset(_fromAsset!)}');
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrContractIDPreimageBase fromTxRep(Map<String, String> map, String prefix) {
+    XdrContractIDPreimageType disc = XdrContractIDPreimageType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrContractIDPreimageBase result = XdrContractIDPreimageBase(disc);
+    switch (result.discriminant) {
+      case XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS:
+        result._fromAddress = XdrContractIDPreimageFromAddress.fromTxRep(map, '$prefix.fromAddress');
+        break;
+      case XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET:
+        result._fromAsset = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.fromAsset') ?? '');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

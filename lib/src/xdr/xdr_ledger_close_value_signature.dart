@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_node_id.dart';
 import 'xdr_signature.dart';
 
 class XdrLedgerCloseValueSignature {
+
   XdrNodeID _nodeID;
   XdrNodeID get nodeID => this._nodeID;
   set nodeID(XdrNodeID value) => this._nodeID = value;
@@ -21,10 +23,7 @@ class XdrLedgerCloseValueSignature {
 
   XdrLedgerCloseValueSignature(this._nodeID, this._signature);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLedgerCloseValueSignature encodedLedgerCloseValueSignature,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLedgerCloseValueSignature encodedLedgerCloseValueSignature) {
     XdrNodeID.encode(stream, encodedLedgerCloseValueSignature.nodeID);
     XdrSignature.encode(stream, encodedLedgerCloseValueSignature.signature);
   }
@@ -41,10 +40,19 @@ class XdrLedgerCloseValueSignature {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLedgerCloseValueSignature fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrLedgerCloseValueSignature fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerCloseValueSignature.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _nodeID.toTxRep('$prefix.nodeID', lines);
+    _signature.toTxRep('$prefix.signature', lines);
+  }
+
+  static XdrLedgerCloseValueSignature fromTxRep(Map<String, String> map, String prefix) {
+    XdrNodeID nodeID = XdrNodeID.fromTxRep(map, '$prefix.nodeID');
+    XdrSignature signature = XdrSignature.fromTxRep(map, '$prefix.signature');
+    return XdrLedgerCloseValueSignature(nodeID, signature);
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_clawback_result_code.dart';
 import 'xdr_data_io.dart';
 
@@ -22,10 +23,7 @@ class XdrClawbackResult {
 
   XdrClawbackResult(this._code);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrClawbackResult encodedClawbackResult,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrClawbackResult encodedClawbackResult) {
     stream.writeInt(encodedClawbackResult.discriminant.value);
     switch (encodedClawbackResult.discriminant) {
       case XdrClawbackResultCode.CLAWBACK_SUCCESS:
@@ -36,9 +34,7 @@ class XdrClawbackResult {
   }
 
   static XdrClawbackResult decode(XdrDataInputStream stream) {
-    XdrClawbackResult decodedClawbackResult = XdrClawbackResult(
-      XdrClawbackResultCode.decode(stream),
-    );
+    XdrClawbackResult decodedClawbackResult = XdrClawbackResult(XdrClawbackResultCode.decode(stream));
     switch (decodedClawbackResult.discriminant) {
       case XdrClawbackResultCode.CLAWBACK_SUCCESS:
         break;
@@ -57,5 +53,37 @@ class XdrClawbackResult {
   static XdrClawbackResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClawbackResult.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.code: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrClawbackResultCode.CLAWBACK_SUCCESS:
+        break;
+      case XdrClawbackResultCode.CLAWBACK_MALFORMED:
+      case XdrClawbackResultCode.CLAWBACK_NOT_CLAWBACK_ENABLED:
+      case XdrClawbackResultCode.CLAWBACK_NO_TRUST:
+      case XdrClawbackResultCode.CLAWBACK_UNDERFUNDED:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrClawbackResult fromTxRep(Map<String, String> map, String prefix) {
+    XdrClawbackResultCode disc = XdrClawbackResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+    XdrClawbackResult result = XdrClawbackResult(disc);
+    switch (result.discriminant) {
+      case XdrClawbackResultCode.CLAWBACK_SUCCESS:
+        break;
+      case XdrClawbackResultCode.CLAWBACK_MALFORMED:
+      case XdrClawbackResultCode.CLAWBACK_NOT_CLAWBACK_ENABLED:
+      case XdrClawbackResultCode.CLAWBACK_NO_TRUST:
+      case XdrClawbackResultCode.CLAWBACK_UNDERFUNDED:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

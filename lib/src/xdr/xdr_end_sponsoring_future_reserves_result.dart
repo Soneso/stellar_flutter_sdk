@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_end_sponsoring_future_reserves_result_code.dart';
 
@@ -14,50 +15,32 @@ class XdrEndSponsoringFutureReservesResult {
 
   XdrEndSponsoringFutureReservesResultCode get discriminant => this._code;
 
-  set discriminant(XdrEndSponsoringFutureReservesResultCode value) =>
-      this._code = value;
+  set discriminant(XdrEndSponsoringFutureReservesResultCode value) => this._code = value;
 
   /// Alias for [discriminant], the original XDR field name.
   XdrEndSponsoringFutureReservesResultCode get code => this._code;
-  set code(XdrEndSponsoringFutureReservesResultCode value) =>
-      this._code = value;
+  set code(XdrEndSponsoringFutureReservesResultCode value) => this._code = value;
 
   XdrEndSponsoringFutureReservesResult(this._code);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrEndSponsoringFutureReservesResult
-    encodedEndSponsoringFutureReservesResult,
-  ) {
-    stream.writeInt(
-      encodedEndSponsoringFutureReservesResult.discriminant.value,
-    );
+  static void encode(XdrDataOutputStream stream, XdrEndSponsoringFutureReservesResult encodedEndSponsoringFutureReservesResult) {
+    stream.writeInt(encodedEndSponsoringFutureReservesResult.discriminant.value);
     switch (encodedEndSponsoringFutureReservesResult.discriminant) {
-      case XdrEndSponsoringFutureReservesResultCode
-          .END_SPONSORING_FUTURE_RESERVES_SUCCESS:
+      case XdrEndSponsoringFutureReservesResultCode.END_SPONSORING_FUTURE_RESERVES_SUCCESS:
         break;
-      case XdrEndSponsoringFutureReservesResultCode
-          .END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED:
+      case XdrEndSponsoringFutureReservesResultCode.END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED:
         break;
       default:
         break;
     }
   }
 
-  static XdrEndSponsoringFutureReservesResult decode(
-    XdrDataInputStream stream,
-  ) {
-    XdrEndSponsoringFutureReservesResult
-    decodedEndSponsoringFutureReservesResult =
-        XdrEndSponsoringFutureReservesResult(
-          XdrEndSponsoringFutureReservesResultCode.decode(stream),
-        );
+  static XdrEndSponsoringFutureReservesResult decode(XdrDataInputStream stream) {
+    XdrEndSponsoringFutureReservesResult decodedEndSponsoringFutureReservesResult = XdrEndSponsoringFutureReservesResult(XdrEndSponsoringFutureReservesResultCode.decode(stream));
     switch (decodedEndSponsoringFutureReservesResult.discriminant) {
-      case XdrEndSponsoringFutureReservesResultCode
-          .END_SPONSORING_FUTURE_RESERVES_SUCCESS:
+      case XdrEndSponsoringFutureReservesResultCode.END_SPONSORING_FUTURE_RESERVES_SUCCESS:
         break;
-      case XdrEndSponsoringFutureReservesResultCode
-          .END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED:
+      case XdrEndSponsoringFutureReservesResultCode.END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED:
         break;
       default:
         break;
@@ -71,12 +54,34 @@ class XdrEndSponsoringFutureReservesResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrEndSponsoringFutureReservesResult fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrEndSponsoringFutureReservesResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrEndSponsoringFutureReservesResult.decode(
-      XdrDataInputStream(bytes),
-    );
+    return XdrEndSponsoringFutureReservesResult.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.code: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrEndSponsoringFutureReservesResultCode.END_SPONSORING_FUTURE_RESERVES_SUCCESS:
+        break;
+      case XdrEndSponsoringFutureReservesResultCode.END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrEndSponsoringFutureReservesResult fromTxRep(Map<String, String> map, String prefix) {
+    XdrEndSponsoringFutureReservesResultCode disc = XdrEndSponsoringFutureReservesResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+    XdrEndSponsoringFutureReservesResult result = XdrEndSponsoringFutureReservesResult(disc);
+    switch (result.discriminant) {
+      case XdrEndSponsoringFutureReservesResultCode.END_SPONSORING_FUTURE_RESERVES_SUCCESS:
+        break;
+      case XdrEndSponsoringFutureReservesResultCode.END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

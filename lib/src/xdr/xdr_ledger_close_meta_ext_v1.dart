@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
 import 'xdr_int64.dart';
 
 class XdrLedgerCloseMetaExtV1 {
+
   XdrExtensionPoint _ext;
   XdrExtensionPoint get ext => this._ext;
   set ext(XdrExtensionPoint value) => this._ext = value;
@@ -21,10 +23,7 @@ class XdrLedgerCloseMetaExtV1 {
 
   XdrLedgerCloseMetaExtV1(this._ext, this._sorobanFeeWrite1KB);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLedgerCloseMetaExtV1 encodedLedgerCloseMetaExtV1,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLedgerCloseMetaExtV1 encodedLedgerCloseMetaExtV1) {
     XdrExtensionPoint.encode(stream, encodedLedgerCloseMetaExtV1.ext);
     XdrInt64.encode(stream, encodedLedgerCloseMetaExtV1.sorobanFeeWrite1KB);
   }
@@ -41,10 +40,19 @@ class XdrLedgerCloseMetaExtV1 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLedgerCloseMetaExtV1 fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrLedgerCloseMetaExtV1 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerCloseMetaExtV1.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _ext.toTxRep('$prefix.ext', lines);
+    _sorobanFeeWrite1KB.toTxRep('$prefix.sorobanFeeWrite1KB', lines);
+  }
+
+  static XdrLedgerCloseMetaExtV1 fromTxRep(Map<String, String> map, String prefix) {
+    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
+    XdrInt64 sorobanFeeWrite1KB = XdrInt64.fromTxRep(map, '$prefix.sorobanFeeWrite1KB');
+    return XdrLedgerCloseMetaExtV1(ext, sorobanFeeWrite1KB);
   }
 }

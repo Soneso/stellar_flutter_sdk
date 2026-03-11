@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSorobanAuthorizedFunctionType {
@@ -17,18 +18,14 @@ class XdrSorobanAuthorizedFunctionType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrSorobanAuthorizedFunctionType && _value == other._value;
+      identical(this, other) || other is XdrSorobanAuthorizedFunctionType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN =
-      const XdrSorobanAuthorizedFunctionType._internal(0);
-  static const SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN =
-      const XdrSorobanAuthorizedFunctionType._internal(1);
-  static const SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN =
-      const XdrSorobanAuthorizedFunctionType._internal(2);
+  static const SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN = const XdrSorobanAuthorizedFunctionType._internal(0);
+  static const SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN = const XdrSorobanAuthorizedFunctionType._internal(1);
+  static const SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN = const XdrSorobanAuthorizedFunctionType._internal(2);
 
   static XdrSorobanAuthorizedFunctionType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -44,10 +41,7 @@ class XdrSorobanAuthorizedFunctionType {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSorobanAuthorizedFunctionType value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSorobanAuthorizedFunctionType value) {
     stream.writeInt(value.value);
   }
 
@@ -57,10 +51,41 @@ class XdrSorobanAuthorizedFunctionType {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSorobanAuthorizedFunctionType fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrSorobanAuthorizedFunctionType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanAuthorizedFunctionType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN';
+      case 1: return 'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN';
+      case 2: return 'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN';
+      default: return 'XdrSorobanAuthorizedFunctionType#$_value';
+    }
+  }
+
+  static XdrSorobanAuthorizedFunctionType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrSorobanAuthorizedFunctionType fromTxRepName(String name) {
+    switch (name) {
+      case 'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN': return SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN;
+      case 'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN': return SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN;
+      case 'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN': return SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN;
+      default:
+        if (name.startsWith('XdrSorobanAuthorizedFunctionType#')) {
+          int? val = int.tryParse(name.substring('XdrSorobanAuthorizedFunctionType#'.length));
+          if (val != null) return XdrSorobanAuthorizedFunctionType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

@@ -6,12 +6,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_int64.dart';
 
 class XdrClaimLiquidityAtom {
+
   XdrHash _liquidityPoolID;
   XdrHash get liquidityPoolID => this._liquidityPoolID;
   set liquidityPoolID(XdrHash value) => this._liquidityPoolID = value;
@@ -32,18 +34,9 @@ class XdrClaimLiquidityAtom {
   XdrInt64 get amountBought => this._amountBought;
   set amountBought(XdrInt64 value) => this._amountBought = value;
 
-  XdrClaimLiquidityAtom(
-    this._liquidityPoolID,
-    this._assetSold,
-    this._amountSold,
-    this._assetBought,
-    this._amountBought,
-  );
+  XdrClaimLiquidityAtom(this._liquidityPoolID, this._assetSold, this._amountSold, this._assetBought, this._amountBought);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrClaimLiquidityAtom encodedClaimLiquidityAtom,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrClaimLiquidityAtom encodedClaimLiquidityAtom) {
     XdrHash.encode(stream, encodedClaimLiquidityAtom.liquidityPoolID);
     XdrAsset.encode(stream, encodedClaimLiquidityAtom.assetSold);
     XdrInt64.encode(stream, encodedClaimLiquidityAtom.amountSold);
@@ -57,13 +50,7 @@ class XdrClaimLiquidityAtom {
     XdrInt64 amountSold = XdrInt64.decode(stream);
     XdrAsset assetBought = XdrAsset.decode(stream);
     XdrInt64 amountBought = XdrInt64.decode(stream);
-    return XdrClaimLiquidityAtom(
-      liquidityPoolID,
-      assetSold,
-      amountSold,
-      assetBought,
-      amountBought,
-    );
+    return XdrClaimLiquidityAtom(liquidityPoolID, assetSold, amountSold, assetBought, amountBought);
   }
 
   String toBase64EncodedXdrString() {
@@ -72,10 +59,25 @@ class XdrClaimLiquidityAtom {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrClaimLiquidityAtom fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrClaimLiquidityAtom fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimLiquidityAtom.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _liquidityPoolID.toTxRep('$prefix.liquidityPoolID', lines);
+    lines.add('$prefix.assetSold: ${TxRepHelper.formatAsset(_assetSold)}');
+    _amountSold.toTxRep('$prefix.amountSold', lines);
+    lines.add('$prefix.assetBought: ${TxRepHelper.formatAsset(_assetBought)}');
+    _amountBought.toTxRep('$prefix.amountBought', lines);
+  }
+
+  static XdrClaimLiquidityAtom fromTxRep(Map<String, String> map, String prefix) {
+    XdrHash liquidityPoolID = XdrHash.fromTxRep(map, '$prefix.liquidityPoolID');
+    XdrAsset assetSold = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.assetSold') ?? '');
+    XdrInt64 amountSold = XdrInt64.fromTxRep(map, '$prefix.amountSold');
+    XdrAsset assetBought = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.assetBought') ?? '');
+    XdrInt64 amountBought = XdrInt64.fromTxRep(map, '$prefix.amountBought');
+    return XdrClaimLiquidityAtom(liquidityPoolID, assetSold, amountSold, assetBought, amountBought);
   }
 }

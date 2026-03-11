@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger_header_extension_v1_ext.dart';
 import 'xdr_uint32.dart';
 
 class XdrLedgerHeaderExtensionV1 {
+
   XdrUint32 _flags;
   XdrUint32 get flags => this._flags;
   set flags(XdrUint32 value) => this._flags = value;
@@ -21,22 +23,14 @@ class XdrLedgerHeaderExtensionV1 {
 
   XdrLedgerHeaderExtensionV1(this._flags, this._ext);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLedgerHeaderExtensionV1 encodedLedgerHeaderExtensionV1,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLedgerHeaderExtensionV1 encodedLedgerHeaderExtensionV1) {
     XdrUint32.encode(stream, encodedLedgerHeaderExtensionV1.flags);
-    XdrLedgerHeaderExtensionV1Ext.encode(
-      stream,
-      encodedLedgerHeaderExtensionV1.ext,
-    );
+    XdrLedgerHeaderExtensionV1Ext.encode(stream, encodedLedgerHeaderExtensionV1.ext);
   }
 
   static XdrLedgerHeaderExtensionV1 decode(XdrDataInputStream stream) {
     XdrUint32 flags = XdrUint32.decode(stream);
-    XdrLedgerHeaderExtensionV1Ext ext = XdrLedgerHeaderExtensionV1Ext.decode(
-      stream,
-    );
+    XdrLedgerHeaderExtensionV1Ext ext = XdrLedgerHeaderExtensionV1Ext.decode(stream);
     return XdrLedgerHeaderExtensionV1(flags, ext);
   }
 
@@ -46,10 +40,19 @@ class XdrLedgerHeaderExtensionV1 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLedgerHeaderExtensionV1 fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrLedgerHeaderExtensionV1 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerHeaderExtensionV1.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _flags.toTxRep('$prefix.flags', lines);
+    _ext.toTxRep('$prefix.ext', lines);
+  }
+
+  static XdrLedgerHeaderExtensionV1 fromTxRep(Map<String, String> map, String prefix) {
+    XdrUint32 flags = XdrUint32.fromTxRep(map, '$prefix.flags');
+    XdrLedgerHeaderExtensionV1Ext ext = XdrLedgerHeaderExtensionV1Ext.fromTxRep(map, '$prefix.ext');
+    return XdrLedgerHeaderExtensionV1(flags, ext);
   }
 }

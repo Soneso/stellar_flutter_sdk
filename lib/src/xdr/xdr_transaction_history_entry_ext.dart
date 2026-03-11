@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_generalized_transaction_set.dart';
 
@@ -25,22 +26,15 @@ class XdrTransactionHistoryEntryExt {
 
   XdrTransactionHistoryEntryExt(this._v);
 
-  set generalizedTxSet(XdrGeneralizedTransactionSet? value) =>
-      this._generalizedTxSet = value;
+  set generalizedTxSet(XdrGeneralizedTransactionSet? value) => this._generalizedTxSet = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTransactionHistoryEntryExt encodedTransactionHistoryEntryExt,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrTransactionHistoryEntryExt encodedTransactionHistoryEntryExt) {
     stream.writeInt(encodedTransactionHistoryEntryExt.discriminant);
     switch (encodedTransactionHistoryEntryExt.discriminant) {
       case 0:
         break;
       case 1:
-        XdrGeneralizedTransactionSet.encode(
-          stream,
-          encodedTransactionHistoryEntryExt._generalizedTxSet!,
-        );
+        XdrGeneralizedTransactionSet.encode(stream, encodedTransactionHistoryEntryExt._generalizedTxSet!);
         break;
       default:
         break;
@@ -49,14 +43,12 @@ class XdrTransactionHistoryEntryExt {
 
   static XdrTransactionHistoryEntryExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrTransactionHistoryEntryExt decodedTransactionHistoryEntryExt =
-        XdrTransactionHistoryEntryExt(discriminant);
+    XdrTransactionHistoryEntryExt decodedTransactionHistoryEntryExt = XdrTransactionHistoryEntryExt(discriminant);
     switch (decodedTransactionHistoryEntryExt.discriminant) {
       case 0:
         break;
       case 1:
-        decodedTransactionHistoryEntryExt._generalizedTxSet =
-            XdrGeneralizedTransactionSet.decode(stream);
+        decodedTransactionHistoryEntryExt._generalizedTxSet = XdrGeneralizedTransactionSet.decode(stream);
         break;
       default:
         break;
@@ -70,10 +62,36 @@ class XdrTransactionHistoryEntryExt {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTransactionHistoryEntryExt fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrTransactionHistoryEntryExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionHistoryEntryExt.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        break;
+      case 1:
+        _generalizedTxSet!.toTxRep('$prefix.generalizedTxSet', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrTransactionHistoryEntryExt fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrTransactionHistoryEntryExt result = XdrTransactionHistoryEntryExt(disc);
+    switch (result.discriminant) {
+      case 0:
+        break;
+      case 1:
+        result._generalizedTxSet = XdrGeneralizedTransactionSet.fromTxRep(map, '$prefix.generalizedTxSet');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

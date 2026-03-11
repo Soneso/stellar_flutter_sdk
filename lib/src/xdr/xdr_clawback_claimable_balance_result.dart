@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_clawback_claimable_balance_result_code.dart';
 import 'xdr_data_io.dart';
 
@@ -14,8 +15,7 @@ class XdrClawbackClaimableBalanceResult {
 
   XdrClawbackClaimableBalanceResultCode get discriminant => this._code;
 
-  set discriminant(XdrClawbackClaimableBalanceResultCode value) =>
-      this._code = value;
+  set discriminant(XdrClawbackClaimableBalanceResultCode value) => this._code = value;
 
   /// Alias for [discriminant], the original XDR field name.
   XdrClawbackClaimableBalanceResultCode get code => this._code;
@@ -23,14 +23,10 @@ class XdrClawbackClaimableBalanceResult {
 
   XdrClawbackClaimableBalanceResult(this._code);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrClawbackClaimableBalanceResult encodedClawbackClaimableBalanceResult,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrClawbackClaimableBalanceResult encodedClawbackClaimableBalanceResult) {
     stream.writeInt(encodedClawbackClaimableBalanceResult.discriminant.value);
     switch (encodedClawbackClaimableBalanceResult.discriminant) {
-      case XdrClawbackClaimableBalanceResultCode
-          .CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
+      case XdrClawbackClaimableBalanceResultCode.CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
         break;
       default:
         break;
@@ -38,13 +34,9 @@ class XdrClawbackClaimableBalanceResult {
   }
 
   static XdrClawbackClaimableBalanceResult decode(XdrDataInputStream stream) {
-    XdrClawbackClaimableBalanceResult decodedClawbackClaimableBalanceResult =
-        XdrClawbackClaimableBalanceResult(
-          XdrClawbackClaimableBalanceResultCode.decode(stream),
-        );
+    XdrClawbackClaimableBalanceResult decodedClawbackClaimableBalanceResult = XdrClawbackClaimableBalanceResult(XdrClawbackClaimableBalanceResultCode.decode(stream));
     switch (decodedClawbackClaimableBalanceResult.discriminant) {
-      case XdrClawbackClaimableBalanceResultCode
-          .CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
+      case XdrClawbackClaimableBalanceResultCode.CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
         break;
       default:
         break;
@@ -58,10 +50,38 @@ class XdrClawbackClaimableBalanceResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrClawbackClaimableBalanceResult fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrClawbackClaimableBalanceResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClawbackClaimableBalanceResult.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.code: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrClawbackClaimableBalanceResultCode.CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
+        break;
+      case XdrClawbackClaimableBalanceResultCode.CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST:
+      case XdrClawbackClaimableBalanceResultCode.CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER:
+      case XdrClawbackClaimableBalanceResultCode.CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrClawbackClaimableBalanceResult fromTxRep(Map<String, String> map, String prefix) {
+    XdrClawbackClaimableBalanceResultCode disc = XdrClawbackClaimableBalanceResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+    XdrClawbackClaimableBalanceResult result = XdrClawbackClaimableBalanceResult(disc);
+    switch (result.discriminant) {
+      case XdrClawbackClaimableBalanceResultCode.CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
+        break;
+      case XdrClawbackClaimableBalanceResultCode.CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST:
+      case XdrClawbackClaimableBalanceResultCode.CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER:
+      case XdrClawbackClaimableBalanceResultCode.CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

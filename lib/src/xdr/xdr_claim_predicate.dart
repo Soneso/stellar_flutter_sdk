@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_claim_predicate_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
@@ -43,11 +44,9 @@ class XdrClaimPredicate {
 
   XdrClaimPredicate(this._type);
 
-  set andPredicates(List<XdrClaimPredicate>? value) =>
-      this._andPredicates = value;
+  set andPredicates(List<XdrClaimPredicate>? value) => this._andPredicates = value;
 
-  set orPredicates(List<XdrClaimPredicate>? value) =>
-      this._orPredicates = value;
+  set orPredicates(List<XdrClaimPredicate>? value) => this._orPredicates = value;
 
   set notPredicate(XdrClaimPredicate? value) => this._notPredicate = value;
 
@@ -55,10 +54,7 @@ class XdrClaimPredicate {
 
   set relBefore(XdrInt64? value) => this._relBefore = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrClaimPredicate encodedClaimPredicate,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrClaimPredicate encodedClaimPredicate) {
     stream.writeInt(encodedClaimPredicate.discriminant.value);
     switch (encodedClaimPredicate.discriminant) {
       case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
@@ -67,20 +63,14 @@ class XdrClaimPredicate {
         int andPredicatessize = encodedClaimPredicate._andPredicates!.length;
         stream.writeInt(andPredicatessize);
         for (int i = 0; i < andPredicatessize; i++) {
-          XdrClaimPredicate.encode(
-            stream,
-            encodedClaimPredicate._andPredicates![i],
-          );
+          XdrClaimPredicate.encode(stream, encodedClaimPredicate._andPredicates![i]);
         }
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
         int orPredicatessize = encodedClaimPredicate._orPredicates!.length;
         stream.writeInt(orPredicatessize);
         for (int i = 0; i < orPredicatessize; i++) {
-          XdrClaimPredicate.encode(
-            stream,
-            encodedClaimPredicate._orPredicates![i],
-          );
+          XdrClaimPredicate.encode(stream, encodedClaimPredicate._orPredicates![i]);
         }
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
@@ -88,10 +78,7 @@ class XdrClaimPredicate {
           stream.writeInt(0);
         } else {
           stream.writeInt(1);
-          XdrClaimPredicate.encode(
-            stream,
-            encodedClaimPredicate._notPredicate!,
-          );
+          XdrClaimPredicate.encode(stream, encodedClaimPredicate._notPredicate!);
         }
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
@@ -106,40 +93,28 @@ class XdrClaimPredicate {
   }
 
   static XdrClaimPredicate decode(XdrDataInputStream stream) {
-    XdrClaimPredicate decodedClaimPredicate = XdrClaimPredicate(
-      XdrClaimPredicateType.decode(stream),
-    );
+    XdrClaimPredicate decodedClaimPredicate = XdrClaimPredicate(XdrClaimPredicateType.decode(stream));
     switch (decodedClaimPredicate.discriminant) {
       case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_AND:
         int andPredicatessize = stream.readInt();
-        decodedClaimPredicate._andPredicates = List<XdrClaimPredicate>.empty(
-          growable: true,
-        );
+        decodedClaimPredicate._andPredicates = List<XdrClaimPredicate>.empty(growable: true);
         for (int i = 0; i < andPredicatessize; i++) {
-          decodedClaimPredicate._andPredicates!.add(
-            XdrClaimPredicate.decode(stream),
-          );
+          decodedClaimPredicate._andPredicates!.add(XdrClaimPredicate.decode(stream));
         }
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
         int orPredicatessize = stream.readInt();
-        decodedClaimPredicate._orPredicates = List<XdrClaimPredicate>.empty(
-          growable: true,
-        );
+        decodedClaimPredicate._orPredicates = List<XdrClaimPredicate>.empty(growable: true);
         for (int i = 0; i < orPredicatessize; i++) {
-          decodedClaimPredicate._orPredicates!.add(
-            XdrClaimPredicate.decode(stream),
-          );
+          decodedClaimPredicate._orPredicates!.add(XdrClaimPredicate.decode(stream));
         }
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
         int notPredicatePresent = stream.readInt();
         if (notPredicatePresent != 0) {
-          decodedClaimPredicate._notPredicate = XdrClaimPredicate.decode(
-            stream,
-          );
+          decodedClaimPredicate._notPredicate = XdrClaimPredicate.decode(stream);
         }
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
@@ -163,5 +138,79 @@ class XdrClaimPredicate {
   static XdrClaimPredicate fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimPredicate.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_AND:
+        lines.add('$prefix.andPredicates.len: ${_andPredicates!.length}');
+        for (int i = 0; i < _andPredicates!.length; i++) {
+          _andPredicates![i].toTxRep('$prefix.andPredicates[$i]', lines);
+        }
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
+        lines.add('$prefix.orPredicates.len: ${_orPredicates!.length}');
+        for (int i = 0; i < _orPredicates!.length; i++) {
+          _orPredicates![i].toTxRep('$prefix.orPredicates[$i]', lines);
+        }
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
+        if (_notPredicate != null) {
+          lines.add('$prefix.notPredicate._present: true');
+          _notPredicate!.toTxRep('$prefix.notPredicate', lines);
+        } else {
+          lines.add('$prefix.notPredicate._present: false');
+        }
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
+        _absBefore!.toTxRep('$prefix.absBefore', lines);
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME:
+        _relBefore!.toTxRep('$prefix.relBefore', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrClaimPredicate fromTxRep(Map<String, String> map, String prefix) {
+    XdrClaimPredicateType disc = XdrClaimPredicateType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrClaimPredicate result = XdrClaimPredicate(disc);
+    switch (result.discriminant) {
+      case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_AND:
+        int andPredicatesLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.andPredicates.len') ?? '0');
+        result._andPredicates = [];
+        for (int i = 0; i < andPredicatesLen; i++) {
+          result._andPredicates!.add(XdrClaimPredicate.fromTxRep(map, '$prefix.andPredicates[$i]'));
+        }
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
+        int orPredicatesLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.orPredicates.len') ?? '0');
+        result._orPredicates = [];
+        for (int i = 0; i < orPredicatesLen; i++) {
+          result._orPredicates!.add(XdrClaimPredicate.fromTxRep(map, '$prefix.orPredicates[$i]'));
+        }
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
+        String? notPredicatePresent = TxRepHelper.getValue(map, '$prefix.notPredicate._present');
+        if (notPredicatePresent != null && notPredicatePresent == 'true') {
+          result._notPredicate = XdrClaimPredicate.fromTxRep(map, '$prefix.notPredicate');
+        }
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
+        result._absBefore = XdrInt64.fromTxRep(map, '$prefix.absBefore');
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME:
+        result._relBefore = XdrInt64.fromTxRep(map, '$prefix.relBefore');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_asset_type.dart';
 import 'xdr_change_trust_asset_base.dart';
@@ -16,6 +17,30 @@ class XdrChangeTrustAsset extends XdrChangeTrustAssetBase {
 
   static XdrChangeTrustAsset decode(XdrDataInputStream stream) {
     return XdrChangeTrustAssetBase.decodeAs(stream, XdrChangeTrustAsset.new);
+  }
+
+  @override
+  void toTxRep(String prefix, List<String> lines) {
+    if (discriminant == XdrAssetType.ASSET_TYPE_POOL_SHARE) {
+      super.toTxRep(prefix, lines);
+    } else {
+      lines.add('$prefix: ${TxRepHelper.formatChangeTrustAsset(this)}');
+    }
+  }
+
+  static XdrChangeTrustAsset fromTxRep(Map<String, String> map, String prefix) {
+    // Check for compact format (single value at prefix).
+    String? compactValue = TxRepHelper.getValue(map, prefix);
+    if (compactValue != null) {
+      return TxRepHelper.parseChangeTrustAsset(compactValue);
+    }
+    // Fall back to expanded format (pool share).
+    var b = XdrChangeTrustAssetBase.fromTxRep(map, prefix);
+    var result = XdrChangeTrustAsset(b.discriminant);
+    result.alphaNum4 = b.alphaNum4;
+    result.alphaNum12 = b.alphaNum12;
+    result.liquidityPool = b.liquidityPool;
+    return result;
   }
 
   static XdrChangeTrustAsset fromXdrAsset(XdrAsset asset) {

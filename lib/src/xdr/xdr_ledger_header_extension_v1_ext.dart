@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrLedgerHeaderExtensionV1Ext {
@@ -20,10 +21,7 @@ class XdrLedgerHeaderExtensionV1Ext {
 
   XdrLedgerHeaderExtensionV1Ext(this._v);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLedgerHeaderExtensionV1Ext encodedLedgerHeaderExtensionV1Ext,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLedgerHeaderExtensionV1Ext encodedLedgerHeaderExtensionV1Ext) {
     stream.writeInt(encodedLedgerHeaderExtensionV1Ext.discriminant);
     switch (encodedLedgerHeaderExtensionV1Ext.discriminant) {
       case 0:
@@ -35,8 +33,7 @@ class XdrLedgerHeaderExtensionV1Ext {
 
   static XdrLedgerHeaderExtensionV1Ext decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrLedgerHeaderExtensionV1Ext decodedLedgerHeaderExtensionV1Ext =
-        XdrLedgerHeaderExtensionV1Ext(discriminant);
+    XdrLedgerHeaderExtensionV1Ext decodedLedgerHeaderExtensionV1Ext = XdrLedgerHeaderExtensionV1Ext(discriminant);
     switch (decodedLedgerHeaderExtensionV1Ext.discriminant) {
       case 0:
         break;
@@ -52,10 +49,30 @@ class XdrLedgerHeaderExtensionV1Ext {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLedgerHeaderExtensionV1Ext fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrLedgerHeaderExtensionV1Ext fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerHeaderExtensionV1Ext.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrLedgerHeaderExtensionV1Ext fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrLedgerHeaderExtensionV1Ext result = XdrLedgerHeaderExtensionV1Ext(disc);
+    switch (result.discriminant) {
+      case 0:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

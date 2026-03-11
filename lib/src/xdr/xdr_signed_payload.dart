@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_data_value.dart';
 import 'xdr_uint256.dart';
 
 class XdrSignedPayload {
+
   XdrUint256 _ed25519;
   XdrUint256 get ed25519 => this._ed25519;
   set ed25519(XdrUint256 value) => this._ed25519 = value;
@@ -21,10 +23,7 @@ class XdrSignedPayload {
 
   XdrSignedPayload(this._ed25519, this._payload);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSignedPayload encodedSignedPayload,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSignedPayload encodedSignedPayload) {
     XdrUint256.encode(stream, encodedSignedPayload.ed25519);
     XdrDataValue.encode(stream, encodedSignedPayload.payload);
   }
@@ -44,5 +43,16 @@ class XdrSignedPayload {
   static XdrSignedPayload fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSignedPayload.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _ed25519.toTxRep('$prefix.ed25519', lines);
+    _payload.toTxRep('$prefix.payload', lines);
+  }
+
+  static XdrSignedPayload fromTxRep(Map<String, String> map, String prefix) {
+    XdrUint256 ed25519 = XdrUint256.fromTxRep(map, '$prefix.ed25519');
+    XdrDataValue payload = XdrDataValue.fromTxRep(map, '$prefix.payload');
+    return XdrSignedPayload(ed25519, payload);
   }
 }

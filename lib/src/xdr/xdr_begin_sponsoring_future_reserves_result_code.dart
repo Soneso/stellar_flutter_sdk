@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrBeginSponsoringFutureReservesResultCode {
@@ -17,25 +18,17 @@ class XdrBeginSponsoringFutureReservesResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrBeginSponsoringFutureReservesResultCode &&
-          _value == other._value;
+      identical(this, other) || other is XdrBeginSponsoringFutureReservesResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS =
-      const XdrBeginSponsoringFutureReservesResultCode._internal(0);
-  static const BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED =
-      const XdrBeginSponsoringFutureReservesResultCode._internal(-1);
-  static const BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED =
-      const XdrBeginSponsoringFutureReservesResultCode._internal(-2);
-  static const BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE =
-      const XdrBeginSponsoringFutureReservesResultCode._internal(-3);
+  static const BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS = const XdrBeginSponsoringFutureReservesResultCode._internal(0);
+  static const BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED = const XdrBeginSponsoringFutureReservesResultCode._internal(-1);
+  static const BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED = const XdrBeginSponsoringFutureReservesResultCode._internal(-2);
+  static const BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE = const XdrBeginSponsoringFutureReservesResultCode._internal(-3);
 
-  static XdrBeginSponsoringFutureReservesResultCode decode(
-    XdrDataInputStream stream,
-  ) {
+  static XdrBeginSponsoringFutureReservesResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
     switch (value) {
       case 0:
@@ -51,10 +44,7 @@ class XdrBeginSponsoringFutureReservesResultCode {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrBeginSponsoringFutureReservesResultCode value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrBeginSponsoringFutureReservesResultCode value) {
     stream.writeInt(value.value);
   }
 
@@ -64,12 +54,43 @@ class XdrBeginSponsoringFutureReservesResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrBeginSponsoringFutureReservesResultCode fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrBeginSponsoringFutureReservesResultCode fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
-    return XdrBeginSponsoringFutureReservesResultCode.decode(
-      XdrDataInputStream(bytes),
-    );
+    return XdrBeginSponsoringFutureReservesResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS';
+      case -1: return 'BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED';
+      case -2: return 'BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED';
+      case -3: return 'BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE';
+      default: return 'XdrBeginSponsoringFutureReservesResultCode#$_value';
+    }
+  }
+
+  static XdrBeginSponsoringFutureReservesResultCode fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrBeginSponsoringFutureReservesResultCode fromTxRepName(String name) {
+    switch (name) {
+      case 'BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS': return BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS;
+      case 'BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED': return BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED;
+      case 'BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED': return BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED;
+      case 'BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE': return BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE;
+      default:
+        if (name.startsWith('XdrBeginSponsoringFutureReservesResultCode#')) {
+          int? val = int.tryParse(name.substring('XdrBeginSponsoringFutureReservesResultCode#'.length));
+          if (val != null) return XdrBeginSponsoringFutureReservesResultCode._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

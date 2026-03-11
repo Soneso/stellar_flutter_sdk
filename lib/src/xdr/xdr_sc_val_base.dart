@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int128_parts.dart';
 import 'xdr_int256_parts.dart';
@@ -348,5 +349,181 @@ class XdrSCValBase {
   static XdrSCValBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCValBase.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrSCValType.SCV_BOOL:
+        lines.add('$prefix.b: $_b!');
+        break;
+      case XdrSCValType.SCV_VOID:
+        break;
+      case XdrSCValType.SCV_ERROR:
+        _error!.toTxRep('$prefix.error', lines);
+        break;
+      case XdrSCValType.SCV_U32:
+        _u32!.toTxRep('$prefix.u32', lines);
+        break;
+      case XdrSCValType.SCV_I32:
+        _i32!.toTxRep('$prefix.i32', lines);
+        break;
+      case XdrSCValType.SCV_U64:
+        _u64!.toTxRep('$prefix.u64', lines);
+        break;
+      case XdrSCValType.SCV_I64:
+        _i64!.toTxRep('$prefix.i64', lines);
+        break;
+      case XdrSCValType.SCV_TIMEPOINT:
+        _timepoint!.toTxRep('$prefix.timepoint', lines);
+        break;
+      case XdrSCValType.SCV_DURATION:
+        _duration!.toTxRep('$prefix.duration', lines);
+        break;
+      case XdrSCValType.SCV_U128:
+        _u128!.toTxRep('$prefix.u128', lines);
+        break;
+      case XdrSCValType.SCV_I128:
+        _i128!.toTxRep('$prefix.i128', lines);
+        break;
+      case XdrSCValType.SCV_U256:
+        _u256!.toTxRep('$prefix.u256', lines);
+        break;
+      case XdrSCValType.SCV_I256:
+        _i256!.toTxRep('$prefix.i256', lines);
+        break;
+      case XdrSCValType.SCV_BYTES:
+        _bytes!.toTxRep('$prefix.bytes', lines);
+        break;
+      case XdrSCValType.SCV_STRING:
+        lines.add('$prefix.str: ${TxRepHelper.escapeString(_str!)}');
+        break;
+      case XdrSCValType.SCV_SYMBOL:
+        lines.add('$prefix.sym: ${TxRepHelper.escapeString(_sym!)}');
+        break;
+      case XdrSCValType.SCV_VEC:
+        if (_vec != null) {
+          lines.add('$prefix.vec._present: true');
+          lines.add('$prefix.vec.len: ${_vec!.length}');
+          for (int i = 0; i < _vec!.length; i++) {
+            _vec![i].toTxRep('$prefix.vec[$i]', lines);
+          }
+        } else {
+          lines.add('$prefix.vec._present: false');
+        }
+        break;
+      case XdrSCValType.SCV_MAP:
+        if (_map != null) {
+          lines.add('$prefix.map._present: true');
+          lines.add('$prefix.map.len: ${_map!.length}');
+          for (int i = 0; i < _map!.length; i++) {
+            _map![i].toTxRep('$prefix.map[$i]', lines);
+          }
+        } else {
+          lines.add('$prefix.map._present: false');
+        }
+        break;
+      case XdrSCValType.SCV_ADDRESS:
+        _address!.toTxRep('$prefix.address', lines);
+        break;
+      case XdrSCValType.SCV_CONTRACT_INSTANCE:
+        _instance!.toTxRep('$prefix.instance', lines);
+        break;
+      case XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE:
+        break;
+      case XdrSCValType.SCV_LEDGER_KEY_NONCE:
+        _nonce_key!.toTxRep('$prefix.nonce_key', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrSCValBase fromTxRep(Map<String, String> map, String prefix) {
+    XdrSCValType disc = XdrSCValType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrSCValBase result = XdrSCValBase(disc);
+    switch (result.discriminant) {
+      case XdrSCValType.SCV_BOOL:
+        result._b = (TxRepHelper.getValue(map, '$prefix.b') ?? 'false') == 'true';
+        break;
+      case XdrSCValType.SCV_VOID:
+        break;
+      case XdrSCValType.SCV_ERROR:
+        result._error = XdrSCError.fromTxRep(map, '$prefix.error');
+        break;
+      case XdrSCValType.SCV_U32:
+        result._u32 = XdrUint32.fromTxRep(map, '$prefix.u32');
+        break;
+      case XdrSCValType.SCV_I32:
+        result._i32 = XdrInt32.fromTxRep(map, '$prefix.i32');
+        break;
+      case XdrSCValType.SCV_U64:
+        result._u64 = XdrUint64.fromTxRep(map, '$prefix.u64');
+        break;
+      case XdrSCValType.SCV_I64:
+        result._i64 = XdrInt64.fromTxRep(map, '$prefix.i64');
+        break;
+      case XdrSCValType.SCV_TIMEPOINT:
+        result._timepoint = XdrUint64.fromTxRep(map, '$prefix.timepoint');
+        break;
+      case XdrSCValType.SCV_DURATION:
+        result._duration = XdrUint64.fromTxRep(map, '$prefix.duration');
+        break;
+      case XdrSCValType.SCV_U128:
+        result._u128 = XdrUInt128Parts.fromTxRep(map, '$prefix.u128');
+        break;
+      case XdrSCValType.SCV_I128:
+        result._i128 = XdrInt128Parts.fromTxRep(map, '$prefix.i128');
+        break;
+      case XdrSCValType.SCV_U256:
+        result._u256 = XdrUInt256Parts.fromTxRep(map, '$prefix.u256');
+        break;
+      case XdrSCValType.SCV_I256:
+        result._i256 = XdrInt256Parts.fromTxRep(map, '$prefix.i256');
+        break;
+      case XdrSCValType.SCV_BYTES:
+        result._bytes = XdrSCBytes.fromTxRep(map, '$prefix.bytes');
+        break;
+      case XdrSCValType.SCV_STRING:
+        result._str = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.str') ?? '');
+        break;
+      case XdrSCValType.SCV_SYMBOL:
+        result._sym = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.sym') ?? '');
+        break;
+      case XdrSCValType.SCV_VEC:
+        String? vecPresent = TxRepHelper.getValue(map, '$prefix.vec._present');
+        if (vecPresent != null && vecPresent == 'true') {
+          int vecLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.vec.len') ?? '0');
+          result._vec = [];
+          for (int i = 0; i < vecLen; i++) {
+            result._vec!.add(XdrSCVal.fromTxRep(map, '$prefix.vec[$i]'));
+          }
+        }
+        break;
+      case XdrSCValType.SCV_MAP:
+        String? mapPresent = TxRepHelper.getValue(map, '$prefix.map._present');
+        if (mapPresent != null && mapPresent == 'true') {
+          int mapLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.map.len') ?? '0');
+          result._map = [];
+          for (int i = 0; i < mapLen; i++) {
+            result._map!.add(XdrSCMapEntry.fromTxRep(map, '$prefix.map[$i]'));
+          }
+        }
+        break;
+      case XdrSCValType.SCV_ADDRESS:
+        result._address = XdrSCAddress.fromTxRep(map, '$prefix.address');
+        break;
+      case XdrSCValType.SCV_CONTRACT_INSTANCE:
+        result._instance = XdrSCContractInstance.fromTxRep(map, '$prefix.instance');
+        break;
+      case XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE:
+        break;
+      case XdrSCValType.SCV_LEDGER_KEY_NONCE:
+        result._nonce_key = XdrSCNonceKey.fromTxRep(map, '$prefix.nonce_key');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

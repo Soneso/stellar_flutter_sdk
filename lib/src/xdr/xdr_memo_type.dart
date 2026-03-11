@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrMemoType {
@@ -59,5 +60,42 @@ class XdrMemoType {
   static XdrMemoType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrMemoType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'MEMO_NONE';
+      case 1: return 'MEMO_TEXT';
+      case 2: return 'MEMO_ID';
+      case 3: return 'MEMO_HASH';
+      case 4: return 'MEMO_RETURN';
+      default: return 'XdrMemoType#$_value';
+    }
+  }
+
+  static XdrMemoType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrMemoType fromTxRepName(String name) {
+    switch (name) {
+      case 'MEMO_NONE': return MEMO_NONE;
+      case 'MEMO_TEXT': return MEMO_TEXT;
+      case 'MEMO_ID': return MEMO_ID;
+      case 'MEMO_HASH': return MEMO_HASH;
+      case 'MEMO_RETURN': return MEMO_RETURN;
+      default:
+        if (name.startsWith('XdrMemoType#')) {
+          int? val = int.tryParse(name.substring('XdrMemoType#'.length));
+          if (val != null) return XdrMemoType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

@@ -6,19 +6,18 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrHmacSha256Key {
+
   Uint8List _key;
   Uint8List get key => this._key;
   set key(Uint8List value) => this._key = value;
 
   XdrHmacSha256Key(this._key);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrHmacSha256Key encodedHmacSha256Key,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrHmacSha256Key encodedHmacSha256Key) {
     stream.write(encodedHmacSha256Key.key);
   }
 
@@ -36,5 +35,14 @@ class XdrHmacSha256Key {
   static XdrHmacSha256Key fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHmacSha256Key.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.key: ${TxRepHelper.bytesToHex(_key)}');
+  }
+
+  static XdrHmacSha256Key fromTxRep(Map<String, String> map, String prefix) {
+    Uint8List key = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '$prefix.key') ?? '');
+    return XdrHmacSha256Key(key);
   }
 }

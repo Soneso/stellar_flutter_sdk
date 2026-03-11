@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_contract_executable_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
@@ -29,10 +30,7 @@ class XdrContractExecutableBase {
 
   set wasmHash(XdrHash? value) => this._wasmHash = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrContractExecutableBase encodedContractExecutable,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrContractExecutableBase encodedContractExecutable) {
     stream.writeInt(encodedContractExecutable.discriminant.value);
     switch (encodedContractExecutable.discriminant) {
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM:
@@ -72,10 +70,36 @@ class XdrContractExecutableBase {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrContractExecutableBase fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrContractExecutableBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractExecutableBase.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM:
+        _wasmHash!.toTxRep('$prefix.wasm_hash', lines);
+        break;
+      case XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrContractExecutableBase fromTxRep(Map<String, String> map, String prefix) {
+    XdrContractExecutableType disc = XdrContractExecutableType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrContractExecutableBase result = XdrContractExecutableBase(disc);
+    switch (result.discriminant) {
+      case XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM:
+        result._wasmHash = XdrHash.fromTxRep(map, '$prefix.wasm_hash');
+        break;
+      case XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

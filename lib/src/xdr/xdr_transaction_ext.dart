@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_soroban_transaction_data.dart';
 
@@ -25,22 +26,15 @@ class XdrTransactionExt {
 
   XdrTransactionExt(this._v);
 
-  set sorobanData(XdrSorobanTransactionData? value) =>
-      this._sorobanData = value;
+  set sorobanData(XdrSorobanTransactionData? value) => this._sorobanData = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTransactionExt encodedTransactionExt,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrTransactionExt encodedTransactionExt) {
     stream.writeInt(encodedTransactionExt.discriminant);
     switch (encodedTransactionExt.discriminant) {
       case 0:
         break;
       case 1:
-        XdrSorobanTransactionData.encode(
-          stream,
-          encodedTransactionExt._sorobanData!,
-        );
+        XdrSorobanTransactionData.encode(stream, encodedTransactionExt._sorobanData!);
         break;
       default:
         break;
@@ -54,9 +48,7 @@ class XdrTransactionExt {
       case 0:
         break;
       case 1:
-        decodedTransactionExt._sorobanData = XdrSorobanTransactionData.decode(
-          stream,
-        );
+        decodedTransactionExt._sorobanData = XdrSorobanTransactionData.decode(stream);
         break;
       default:
         break;
@@ -73,5 +65,33 @@ class XdrTransactionExt {
   static XdrTransactionExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionExt.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        break;
+      case 1:
+        _sorobanData!.toTxRep('$prefix.sorobanData', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrTransactionExt fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrTransactionExt result = XdrTransactionExt(disc);
+    switch (result.discriminant) {
+      case 0:
+        break;
+      case 1:
+        result._sorobanData = XdrSorobanTransactionData.fromTxRep(map, '$prefix.sorobanData');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

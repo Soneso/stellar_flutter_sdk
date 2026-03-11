@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrExtendFootprintTTLResultCode {
@@ -17,20 +18,15 @@ class XdrExtendFootprintTTLResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrExtendFootprintTTLResultCode && _value == other._value;
+      identical(this, other) || other is XdrExtendFootprintTTLResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const EXTEND_FOOTPRINT_TTL_SUCCESS =
-      const XdrExtendFootprintTTLResultCode._internal(0);
-  static const EXTEND_FOOTPRINT_TTL_MALFORMED =
-      const XdrExtendFootprintTTLResultCode._internal(-1);
-  static const EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED =
-      const XdrExtendFootprintTTLResultCode._internal(-2);
-  static const EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE =
-      const XdrExtendFootprintTTLResultCode._internal(-3);
+  static const EXTEND_FOOTPRINT_TTL_SUCCESS = const XdrExtendFootprintTTLResultCode._internal(0);
+  static const EXTEND_FOOTPRINT_TTL_MALFORMED = const XdrExtendFootprintTTLResultCode._internal(-1);
+  static const EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED = const XdrExtendFootprintTTLResultCode._internal(-2);
+  static const EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE = const XdrExtendFootprintTTLResultCode._internal(-3);
 
   static XdrExtendFootprintTTLResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -48,10 +44,7 @@ class XdrExtendFootprintTTLResultCode {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrExtendFootprintTTLResultCode value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrExtendFootprintTTLResultCode value) {
     stream.writeInt(value.value);
   }
 
@@ -61,10 +54,43 @@ class XdrExtendFootprintTTLResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrExtendFootprintTTLResultCode fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrExtendFootprintTTLResultCode fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrExtendFootprintTTLResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'EXTEND_FOOTPRINT_TTL_SUCCESS';
+      case -1: return 'EXTEND_FOOTPRINT_TTL_MALFORMED';
+      case -2: return 'EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED';
+      case -3: return 'EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE';
+      default: return 'XdrExtendFootprintTTLResultCode#$_value';
+    }
+  }
+
+  static XdrExtendFootprintTTLResultCode fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrExtendFootprintTTLResultCode fromTxRepName(String name) {
+    switch (name) {
+      case 'EXTEND_FOOTPRINT_TTL_SUCCESS': return EXTEND_FOOTPRINT_TTL_SUCCESS;
+      case 'EXTEND_FOOTPRINT_TTL_MALFORMED': return EXTEND_FOOTPRINT_TTL_MALFORMED;
+      case 'EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED': return EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED;
+      case 'EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE': return EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE;
+      default:
+        if (name.startsWith('XdrExtendFootprintTTLResultCode#')) {
+          int? val = int.tryParse(name.substring('XdrExtendFootprintTTLResultCode#'.length));
+          if (val != null) return XdrExtendFootprintTTLResultCode._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

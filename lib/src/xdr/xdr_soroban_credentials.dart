@@ -21,6 +21,16 @@ class XdrSorobanCredentials extends XdrSorobanCredentialsBase {
     );
   }
 
+  static XdrSorobanCredentials fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    var b = XdrSorobanCredentialsBase.fromTxRep(map, prefix);
+    var result = XdrSorobanCredentials(b.discriminant);
+    result.address = b.address;
+    return result;
+  }
+
   static XdrSorobanCredentials forSourceAccount() {
     return XdrSorobanCredentials(
       XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT,

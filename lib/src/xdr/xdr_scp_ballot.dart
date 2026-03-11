@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 import 'xdr_value.dart';
 
 class XdrSCPBallot {
+
   XdrUint32 _counter;
   XdrUint32 get counter => this._counter;
   set counter(XdrUint32 value) => this._counter = value;
@@ -21,10 +23,7 @@ class XdrSCPBallot {
 
   XdrSCPBallot(this._counter, this._value);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCPBallot encodedSCPBallot,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCPBallot encodedSCPBallot) {
     XdrUint32.encode(stream, encodedSCPBallot.counter);
     XdrValue.encode(stream, encodedSCPBallot.value);
   }
@@ -44,5 +43,16 @@ class XdrSCPBallot {
   static XdrSCPBallot fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPBallot.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _counter.toTxRep('$prefix.counter', lines);
+    _value.toTxRep('$prefix.value', lines);
+  }
+
+  static XdrSCPBallot fromTxRep(Map<String, String> map, String prefix) {
+    XdrUint32 counter = XdrUint32.fromTxRep(map, '$prefix.counter');
+    XdrValue value = XdrValue.fromTxRep(map, '$prefix.value');
+    return XdrSCPBallot(counter, value);
   }
 }

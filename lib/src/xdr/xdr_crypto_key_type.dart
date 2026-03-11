@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrCryptoKeyType {
@@ -17,8 +18,7 @@ class XdrCryptoKeyType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrCryptoKeyType && _value == other._value;
+      identical(this, other) || other is XdrCryptoKeyType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -26,8 +26,7 @@ class XdrCryptoKeyType {
   static const KEY_TYPE_ED25519 = const XdrCryptoKeyType._internal(0);
   static const KEY_TYPE_PRE_AUTH_TX = const XdrCryptoKeyType._internal(1);
   static const KEY_TYPE_HASH_X = const XdrCryptoKeyType._internal(2);
-  static const KEY_TYPE_ED25519_SIGNED_PAYLOAD =
-      const XdrCryptoKeyType._internal(3);
+  static const KEY_TYPE_ED25519_SIGNED_PAYLOAD = const XdrCryptoKeyType._internal(3);
   static const KEY_TYPE_MUXED_ED25519 = const XdrCryptoKeyType._internal(256);
 
   static XdrCryptoKeyType decode(XdrDataInputStream stream) {
@@ -61,5 +60,42 @@ class XdrCryptoKeyType {
   static XdrCryptoKeyType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCryptoKeyType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'KEY_TYPE_ED25519';
+      case 1: return 'KEY_TYPE_PRE_AUTH_TX';
+      case 2: return 'KEY_TYPE_HASH_X';
+      case 3: return 'KEY_TYPE_ED25519_SIGNED_PAYLOAD';
+      case 256: return 'KEY_TYPE_MUXED_ED25519';
+      default: return 'XdrCryptoKeyType#$_value';
+    }
+  }
+
+  static XdrCryptoKeyType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrCryptoKeyType fromTxRepName(String name) {
+    switch (name) {
+      case 'KEY_TYPE_ED25519': return KEY_TYPE_ED25519;
+      case 'KEY_TYPE_PRE_AUTH_TX': return KEY_TYPE_PRE_AUTH_TX;
+      case 'KEY_TYPE_HASH_X': return KEY_TYPE_HASH_X;
+      case 'KEY_TYPE_ED25519_SIGNED_PAYLOAD': return KEY_TYPE_ED25519_SIGNED_PAYLOAD;
+      case 'KEY_TYPE_MUXED_ED25519': return KEY_TYPE_MUXED_ED25519;
+      default:
+        if (name.startsWith('XdrCryptoKeyType#')) {
+          int? val = int.tryParse(name.substring('XdrCryptoKeyType#'.length));
+          if (val != null) return XdrCryptoKeyType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

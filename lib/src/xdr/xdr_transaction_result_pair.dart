@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_transaction_result.dart';
 
 class XdrTransactionResultPair {
+
   XdrHash _transactionHash;
   XdrHash get transactionHash => this._transactionHash;
   set transactionHash(XdrHash value) => this._transactionHash = value;
@@ -21,10 +23,7 @@ class XdrTransactionResultPair {
 
   XdrTransactionResultPair(this._transactionHash, this._result);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTransactionResultPair encodedTransactionResultPair,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrTransactionResultPair encodedTransactionResultPair) {
     XdrHash.encode(stream, encodedTransactionResultPair.transactionHash);
     XdrTransactionResult.encode(stream, encodedTransactionResultPair.result);
   }
@@ -41,10 +40,19 @@ class XdrTransactionResultPair {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTransactionResultPair fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrTransactionResultPair fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionResultPair.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _transactionHash.toTxRep('$prefix.transactionHash', lines);
+    _result.toTxRep('$prefix.result', lines);
+  }
+
+  static XdrTransactionResultPair fromTxRep(Map<String, String> map, String prefix) {
+    XdrHash transactionHash = XdrHash.fromTxRep(map, '$prefix.transactionHash');
+    XdrTransactionResult result = XdrTransactionResult.fromTxRep(map, '$prefix.result');
+    return XdrTransactionResultPair(transactionHash, result);
   }
 }

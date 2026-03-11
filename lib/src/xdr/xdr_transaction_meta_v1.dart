@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger_entry_changes.dart';
 import 'xdr_operation_meta.dart';
 
 class XdrTransactionMetaV1 {
+
   XdrLedgerEntryChanges _txChanges;
   XdrLedgerEntryChanges get txChanges => this._txChanges;
   set txChanges(XdrLedgerEntryChanges value) => this._txChanges = value;
@@ -21,10 +23,7 @@ class XdrTransactionMetaV1 {
 
   XdrTransactionMetaV1(this._txChanges, this._operations);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTransactionMetaV1 encodedTransactionMetaV1,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrTransactionMetaV1 encodedTransactionMetaV1) {
     XdrLedgerEntryChanges.encode(stream, encodedTransactionMetaV1.txChanges);
     int operationssize = encodedTransactionMetaV1.operations.length;
     stream.writeInt(operationssize);
@@ -36,9 +35,7 @@ class XdrTransactionMetaV1 {
   static XdrTransactionMetaV1 decode(XdrDataInputStream stream) {
     XdrLedgerEntryChanges txChanges = XdrLedgerEntryChanges.decode(stream);
     int operationssize = stream.readInt();
-    List<XdrOperationMeta> operations = List<XdrOperationMeta>.empty(
-      growable: true,
-    );
+    List<XdrOperationMeta> operations = List<XdrOperationMeta>.empty(growable: true);
     for (int i = 0; i < operationssize; i++) {
       operations.add(XdrOperationMeta.decode(stream));
     }
@@ -54,5 +51,23 @@ class XdrTransactionMetaV1 {
   static XdrTransactionMetaV1 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionMetaV1.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _txChanges.toTxRep('$prefix.txChanges', lines);
+    lines.add('$prefix.operations.len: ${_operations.length}');
+    for (int i = 0; i < _operations.length; i++) {
+      _operations[i].toTxRep('$prefix.operations[$i]', lines);
+    }
+  }
+
+  static XdrTransactionMetaV1 fromTxRep(Map<String, String> map, String prefix) {
+    XdrLedgerEntryChanges txChanges = XdrLedgerEntryChanges.fromTxRep(map, '$prefix.txChanges');
+    int operationsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.operations.len') ?? '0');
+    List<XdrOperationMeta> operations = [];
+    for (int i = 0; i < operationsLen; i++) {
+      operations.add(XdrOperationMeta.fromTxRep(map, '$prefix.operations[$i]'));
+    }
+    return XdrTransactionMetaV1(txChanges, operations);
   }
 }

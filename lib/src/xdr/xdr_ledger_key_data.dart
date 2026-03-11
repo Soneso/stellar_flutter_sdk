@@ -19,6 +19,11 @@ class XdrLedgerKeyData extends XdrLedgerKeyDataBase {
     return XdrLedgerKeyData(b.accountID, b.dataName);
   }
 
+  static XdrLedgerKeyData fromTxRep(Map<String, String> map, String prefix) {
+    var b = XdrLedgerKeyDataBase.fromTxRep(map, prefix);
+    return XdrLedgerKeyData(b.accountID, b.dataName);
+  }
+
   static XdrLedgerKeyData forDataName(String accountId, String dataName) {
     return XdrLedgerKeyData(
       XdrAccountID.forAccountId(accountId),

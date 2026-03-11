@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_public_key_type.dart';
 import 'xdr_uint256.dart';
@@ -29,10 +30,7 @@ class XdrPublicKeyBase {
 
   set ed25519(XdrUint256? value) => this._ed25519 = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrPublicKeyBase encodedPublicKey,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrPublicKeyBase encodedPublicKey) {
     stream.writeInt(encodedPublicKey.discriminant.value);
     switch (encodedPublicKey.discriminant) {
       case XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519:
@@ -71,5 +69,29 @@ class XdrPublicKeyBase {
   static XdrPublicKeyBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPublicKeyBase.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519:
+        _ed25519!.toTxRep('$prefix.ed25519', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrPublicKeyBase fromTxRep(Map<String, String> map, String prefix) {
+    XdrPublicKeyType disc = XdrPublicKeyType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrPublicKeyBase result = XdrPublicKeyBase(disc);
+    switch (result.discriminant) {
+      case XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519:
+        result._ed25519 = XdrUint256.fromTxRep(map, '$prefix.ed25519');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

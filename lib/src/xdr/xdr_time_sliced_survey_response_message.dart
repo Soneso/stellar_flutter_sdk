@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_survey_response_message.dart';
 import 'xdr_uint32.dart';
 
 class XdrTimeSlicedSurveyResponseMessage {
+
   XdrSurveyResponseMessage _response;
   XdrSurveyResponseMessage get response => this._response;
   set response(XdrSurveyResponseMessage value) => this._response = value;
@@ -21,14 +23,8 @@ class XdrTimeSlicedSurveyResponseMessage {
 
   XdrTimeSlicedSurveyResponseMessage(this._response, this._nonce);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTimeSlicedSurveyResponseMessage encodedTimeSlicedSurveyResponseMessage,
-  ) {
-    XdrSurveyResponseMessage.encode(
-      stream,
-      encodedTimeSlicedSurveyResponseMessage.response,
-    );
+  static void encode(XdrDataOutputStream stream, XdrTimeSlicedSurveyResponseMessage encodedTimeSlicedSurveyResponseMessage) {
+    XdrSurveyResponseMessage.encode(stream, encodedTimeSlicedSurveyResponseMessage.response);
     XdrUint32.encode(stream, encodedTimeSlicedSurveyResponseMessage.nonce);
   }
 
@@ -44,10 +40,19 @@ class XdrTimeSlicedSurveyResponseMessage {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrTimeSlicedSurveyResponseMessage fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrTimeSlicedSurveyResponseMessage fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTimeSlicedSurveyResponseMessage.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _response.toTxRep('$prefix.response', lines);
+    _nonce.toTxRep('$prefix.nonce', lines);
+  }
+
+  static XdrTimeSlicedSurveyResponseMessage fromTxRep(Map<String, String> map, String prefix) {
+    XdrSurveyResponseMessage response = XdrSurveyResponseMessage.fromTxRep(map, '$prefix.response');
+    XdrUint32 nonce = XdrUint32.fromTxRep(map, '$prefix.nonce');
+    return XdrTimeSlicedSurveyResponseMessage(response, nonce);
   }
 }

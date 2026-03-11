@@ -6,10 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int32.dart';
 
 class XdrPrice {
+
   XdrInt32 _n;
   XdrInt32 get n => this._n;
   set n(XdrInt32 value) => this._n = value;
@@ -40,5 +42,16 @@ class XdrPrice {
   static XdrPrice fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPrice.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _n.toTxRep('$prefix.n', lines);
+    _d.toTxRep('$prefix.d', lines);
+  }
+
+  static XdrPrice fromTxRep(Map<String, String> map, String prefix) {
+    XdrInt32 n = XdrInt32.fromTxRep(map, '$prefix.n');
+    XdrInt32 d = XdrInt32.fromTxRep(map, '$prefix.d');
+    return XdrPrice(n, d);
   }
 }

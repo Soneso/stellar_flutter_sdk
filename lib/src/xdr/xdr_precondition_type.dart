@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrPreconditionType {
@@ -17,8 +18,7 @@ class XdrPreconditionType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrPreconditionType && _value == other._value;
+      identical(this, other) || other is XdrPreconditionType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -54,5 +54,38 @@ class XdrPreconditionType {
   static XdrPreconditionType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPreconditionType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'PRECOND_NONE';
+      case 1: return 'PRECOND_TIME';
+      case 2: return 'PRECOND_V2';
+      default: return 'XdrPreconditionType#$_value';
+    }
+  }
+
+  static XdrPreconditionType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrPreconditionType fromTxRepName(String name) {
+    switch (name) {
+      case 'PRECOND_NONE': return PRECOND_NONE;
+      case 'PRECOND_TIME': return PRECOND_TIME;
+      case 'PRECOND_V2': return PRECOND_V2;
+      default:
+        if (name.startsWith('XdrPreconditionType#')) {
+          int? val = int.tryParse(name.substring('XdrPreconditionType#'.length));
+          if (val != null) return XdrPreconditionType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

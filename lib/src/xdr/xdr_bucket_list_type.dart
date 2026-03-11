@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrBucketListType {
@@ -17,8 +18,7 @@ class XdrBucketListType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrBucketListType && _value == other._value;
+      identical(this, other) || other is XdrBucketListType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -51,5 +51,36 @@ class XdrBucketListType {
   static XdrBucketListType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBucketListType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'LIVE';
+      case 1: return 'HOT_ARCHIVE';
+      default: return 'XdrBucketListType#$_value';
+    }
+  }
+
+  static XdrBucketListType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrBucketListType fromTxRepName(String name) {
+    switch (name) {
+      case 'LIVE': return LIVE;
+      case 'HOT_ARCHIVE': return HOT_ARCHIVE;
+      default:
+        if (name.startsWith('XdrBucketListType#')) {
+          int? val = int.tryParse(name.substring('XdrBucketListType#'.length));
+          if (val != null) return XdrBucketListType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

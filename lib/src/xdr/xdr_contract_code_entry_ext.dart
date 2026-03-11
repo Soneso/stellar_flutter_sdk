@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_contract_code_entry_v1.dart';
 import 'xdr_data_io.dart';
 
@@ -27,10 +28,7 @@ class XdrContractCodeEntryExt {
 
   set v1(XdrContractCodeEntryV1? value) => this._v1 = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrContractCodeEntryExt encodedContractCodeEntryExt,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrContractCodeEntryExt encodedContractCodeEntryExt) {
     stream.writeInt(encodedContractCodeEntryExt.discriminant);
     switch (encodedContractCodeEntryExt.discriminant) {
       case 0:
@@ -45,8 +43,7 @@ class XdrContractCodeEntryExt {
 
   static XdrContractCodeEntryExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrContractCodeEntryExt decodedContractCodeEntryExt =
-        XdrContractCodeEntryExt(discriminant);
+    XdrContractCodeEntryExt decodedContractCodeEntryExt = XdrContractCodeEntryExt(discriminant);
     switch (decodedContractCodeEntryExt.discriminant) {
       case 0:
         break;
@@ -65,10 +62,36 @@ class XdrContractCodeEntryExt {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrContractCodeEntryExt fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrContractCodeEntryExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractCodeEntryExt.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        break;
+      case 1:
+        _v1!.toTxRep('$prefix.v1', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrContractCodeEntryExt fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrContractCodeEntryExt result = XdrContractCodeEntryExt(disc);
+    switch (result.discriminant) {
+      case 0:
+        break;
+      case 1:
+        result._v1 = XdrContractCodeEntryV1.fromTxRep(map, '$prefix.v1');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

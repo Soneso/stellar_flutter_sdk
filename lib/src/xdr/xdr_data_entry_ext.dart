@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrDataEntryExt {
@@ -20,10 +21,7 @@ class XdrDataEntryExt {
 
   XdrDataEntryExt(this._v);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrDataEntryExt encodedDataEntryExt,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrDataEntryExt encodedDataEntryExt) {
     stream.writeInt(encodedDataEntryExt.discriminant);
     switch (encodedDataEntryExt.discriminant) {
       case 0:
@@ -54,5 +52,27 @@ class XdrDataEntryExt {
   static XdrDataEntryExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrDataEntryExt.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrDataEntryExt fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrDataEntryExt result = XdrDataEntryExt(disc);
+    switch (result.discriminant) {
+      case 0:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

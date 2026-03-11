@@ -6,12 +6,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_scp_ballot.dart';
 import 'xdr_uint32.dart';
 
 class XdrSCPStatementExternalize {
+
   XdrSCPBallot _commit;
   XdrSCPBallot get commit => this._commit;
   set commit(XdrSCPBallot value) => this._commit = value;
@@ -26,10 +28,7 @@ class XdrSCPStatementExternalize {
 
   XdrSCPStatementExternalize(this._commit, this._nH, this._commitQuorumSetHash);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCPStatementExternalize encodedSCPStatementExternalize,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCPStatementExternalize encodedSCPStatementExternalize) {
     XdrSCPBallot.encode(stream, encodedSCPStatementExternalize.commit);
     XdrUint32.encode(stream, encodedSCPStatementExternalize.nH);
     XdrHash.encode(stream, encodedSCPStatementExternalize.commitQuorumSetHash);
@@ -48,10 +47,21 @@ class XdrSCPStatementExternalize {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSCPStatementExternalize fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrSCPStatementExternalize fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPStatementExternalize.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _commit.toTxRep('$prefix.commit', lines);
+    _nH.toTxRep('$prefix.nH', lines);
+    _commitQuorumSetHash.toTxRep('$prefix.commitQuorumSetHash', lines);
+  }
+
+  static XdrSCPStatementExternalize fromTxRep(Map<String, String> map, String prefix) {
+    XdrSCPBallot commit = XdrSCPBallot.fromTxRep(map, '$prefix.commit');
+    XdrUint32 nH = XdrUint32.fromTxRep(map, '$prefix.nH');
+    XdrHash commitQuorumSetHash = XdrHash.fromTxRep(map, '$prefix.commitQuorumSetHash');
+    return XdrSCPStatementExternalize(commit, nH, commitQuorumSetHash);
   }
 }

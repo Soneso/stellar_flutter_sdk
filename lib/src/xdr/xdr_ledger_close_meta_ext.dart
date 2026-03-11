@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger_close_meta_ext_v1.dart';
 
@@ -27,10 +28,7 @@ class XdrLedgerCloseMetaExt {
 
   set v1(XdrLedgerCloseMetaExtV1? value) => this._v1 = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLedgerCloseMetaExt encodedLedgerCloseMetaExt,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLedgerCloseMetaExt encodedLedgerCloseMetaExt) {
     stream.writeInt(encodedLedgerCloseMetaExt.discriminant);
     switch (encodedLedgerCloseMetaExt.discriminant) {
       case 0:
@@ -45,9 +43,7 @@ class XdrLedgerCloseMetaExt {
 
   static XdrLedgerCloseMetaExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrLedgerCloseMetaExt decodedLedgerCloseMetaExt = XdrLedgerCloseMetaExt(
-      discriminant,
-    );
+    XdrLedgerCloseMetaExt decodedLedgerCloseMetaExt = XdrLedgerCloseMetaExt(discriminant);
     switch (decodedLedgerCloseMetaExt.discriminant) {
       case 0:
         break;
@@ -66,10 +62,36 @@ class XdrLedgerCloseMetaExt {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLedgerCloseMetaExt fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrLedgerCloseMetaExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerCloseMetaExt.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        break;
+      case 1:
+        _v1!.toTxRep('$prefix.v1', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrLedgerCloseMetaExt fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrLedgerCloseMetaExt result = XdrLedgerCloseMetaExt(disc);
+    switch (result.discriminant) {
+      case 0:
+        break;
+      case 1:
+        result._v1 = XdrLedgerCloseMetaExtV1.fromTxRep(map, '$prefix.v1');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

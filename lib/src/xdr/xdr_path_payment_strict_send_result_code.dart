@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrPathPaymentStrictSendResultCode {
@@ -17,38 +18,24 @@ class XdrPathPaymentStrictSendResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrPathPaymentStrictSendResultCode && _value == other._value;
+      identical(this, other) || other is XdrPathPaymentStrictSendResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const PATH_PAYMENT_STRICT_SEND_SUCCESS =
-      const XdrPathPaymentStrictSendResultCode._internal(0);
-  static const PATH_PAYMENT_STRICT_SEND_MALFORMED =
-      const XdrPathPaymentStrictSendResultCode._internal(-1);
-  static const PATH_PAYMENT_STRICT_SEND_UNDERFUNDED =
-      const XdrPathPaymentStrictSendResultCode._internal(-2);
-  static const PATH_PAYMENT_STRICT_SEND_SRC_NO_TRUST =
-      const XdrPathPaymentStrictSendResultCode._internal(-3);
-  static const PATH_PAYMENT_STRICT_SEND_SRC_NOT_AUTHORIZED =
-      const XdrPathPaymentStrictSendResultCode._internal(-4);
-  static const PATH_PAYMENT_STRICT_SEND_NO_DESTINATION =
-      const XdrPathPaymentStrictSendResultCode._internal(-5);
-  static const PATH_PAYMENT_STRICT_SEND_NO_TRUST =
-      const XdrPathPaymentStrictSendResultCode._internal(-6);
-  static const PATH_PAYMENT_STRICT_SEND_NOT_AUTHORIZED =
-      const XdrPathPaymentStrictSendResultCode._internal(-7);
-  static const PATH_PAYMENT_STRICT_SEND_LINE_FULL =
-      const XdrPathPaymentStrictSendResultCode._internal(-8);
-  static const PATH_PAYMENT_STRICT_SEND_NO_ISSUER =
-      const XdrPathPaymentStrictSendResultCode._internal(-9);
-  static const PATH_PAYMENT_STRICT_SEND_TOO_FEW_OFFERS =
-      const XdrPathPaymentStrictSendResultCode._internal(-10);
-  static const PATH_PAYMENT_STRICT_SEND_OFFER_CROSS_SELF =
-      const XdrPathPaymentStrictSendResultCode._internal(-11);
-  static const PATH_PAYMENT_STRICT_SEND_UNDER_DESTMIN =
-      const XdrPathPaymentStrictSendResultCode._internal(-12);
+  static const PATH_PAYMENT_STRICT_SEND_SUCCESS = const XdrPathPaymentStrictSendResultCode._internal(0);
+  static const PATH_PAYMENT_STRICT_SEND_MALFORMED = const XdrPathPaymentStrictSendResultCode._internal(-1);
+  static const PATH_PAYMENT_STRICT_SEND_UNDERFUNDED = const XdrPathPaymentStrictSendResultCode._internal(-2);
+  static const PATH_PAYMENT_STRICT_SEND_SRC_NO_TRUST = const XdrPathPaymentStrictSendResultCode._internal(-3);
+  static const PATH_PAYMENT_STRICT_SEND_SRC_NOT_AUTHORIZED = const XdrPathPaymentStrictSendResultCode._internal(-4);
+  static const PATH_PAYMENT_STRICT_SEND_NO_DESTINATION = const XdrPathPaymentStrictSendResultCode._internal(-5);
+  static const PATH_PAYMENT_STRICT_SEND_NO_TRUST = const XdrPathPaymentStrictSendResultCode._internal(-6);
+  static const PATH_PAYMENT_STRICT_SEND_NOT_AUTHORIZED = const XdrPathPaymentStrictSendResultCode._internal(-7);
+  static const PATH_PAYMENT_STRICT_SEND_LINE_FULL = const XdrPathPaymentStrictSendResultCode._internal(-8);
+  static const PATH_PAYMENT_STRICT_SEND_NO_ISSUER = const XdrPathPaymentStrictSendResultCode._internal(-9);
+  static const PATH_PAYMENT_STRICT_SEND_TOO_FEW_OFFERS = const XdrPathPaymentStrictSendResultCode._internal(-10);
+  static const PATH_PAYMENT_STRICT_SEND_OFFER_CROSS_SELF = const XdrPathPaymentStrictSendResultCode._internal(-11);
+  static const PATH_PAYMENT_STRICT_SEND_UNDER_DESTMIN = const XdrPathPaymentStrictSendResultCode._internal(-12);
 
   static XdrPathPaymentStrictSendResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -84,10 +71,7 @@ class XdrPathPaymentStrictSendResultCode {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrPathPaymentStrictSendResultCode value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrPathPaymentStrictSendResultCode value) {
     stream.writeInt(value.value);
   }
 
@@ -97,10 +81,61 @@ class XdrPathPaymentStrictSendResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrPathPaymentStrictSendResultCode fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrPathPaymentStrictSendResultCode fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPathPaymentStrictSendResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'PATH_PAYMENT_STRICT_SEND_SUCCESS';
+      case -1: return 'PATH_PAYMENT_STRICT_SEND_MALFORMED';
+      case -2: return 'PATH_PAYMENT_STRICT_SEND_UNDERFUNDED';
+      case -3: return 'PATH_PAYMENT_STRICT_SEND_SRC_NO_TRUST';
+      case -4: return 'PATH_PAYMENT_STRICT_SEND_SRC_NOT_AUTHORIZED';
+      case -5: return 'PATH_PAYMENT_STRICT_SEND_NO_DESTINATION';
+      case -6: return 'PATH_PAYMENT_STRICT_SEND_NO_TRUST';
+      case -7: return 'PATH_PAYMENT_STRICT_SEND_NOT_AUTHORIZED';
+      case -8: return 'PATH_PAYMENT_STRICT_SEND_LINE_FULL';
+      case -9: return 'PATH_PAYMENT_STRICT_SEND_NO_ISSUER';
+      case -10: return 'PATH_PAYMENT_STRICT_SEND_TOO_FEW_OFFERS';
+      case -11: return 'PATH_PAYMENT_STRICT_SEND_OFFER_CROSS_SELF';
+      case -12: return 'PATH_PAYMENT_STRICT_SEND_UNDER_DESTMIN';
+      default: return 'XdrPathPaymentStrictSendResultCode#$_value';
+    }
+  }
+
+  static XdrPathPaymentStrictSendResultCode fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrPathPaymentStrictSendResultCode fromTxRepName(String name) {
+    switch (name) {
+      case 'PATH_PAYMENT_STRICT_SEND_SUCCESS': return PATH_PAYMENT_STRICT_SEND_SUCCESS;
+      case 'PATH_PAYMENT_STRICT_SEND_MALFORMED': return PATH_PAYMENT_STRICT_SEND_MALFORMED;
+      case 'PATH_PAYMENT_STRICT_SEND_UNDERFUNDED': return PATH_PAYMENT_STRICT_SEND_UNDERFUNDED;
+      case 'PATH_PAYMENT_STRICT_SEND_SRC_NO_TRUST': return PATH_PAYMENT_STRICT_SEND_SRC_NO_TRUST;
+      case 'PATH_PAYMENT_STRICT_SEND_SRC_NOT_AUTHORIZED': return PATH_PAYMENT_STRICT_SEND_SRC_NOT_AUTHORIZED;
+      case 'PATH_PAYMENT_STRICT_SEND_NO_DESTINATION': return PATH_PAYMENT_STRICT_SEND_NO_DESTINATION;
+      case 'PATH_PAYMENT_STRICT_SEND_NO_TRUST': return PATH_PAYMENT_STRICT_SEND_NO_TRUST;
+      case 'PATH_PAYMENT_STRICT_SEND_NOT_AUTHORIZED': return PATH_PAYMENT_STRICT_SEND_NOT_AUTHORIZED;
+      case 'PATH_PAYMENT_STRICT_SEND_LINE_FULL': return PATH_PAYMENT_STRICT_SEND_LINE_FULL;
+      case 'PATH_PAYMENT_STRICT_SEND_NO_ISSUER': return PATH_PAYMENT_STRICT_SEND_NO_ISSUER;
+      case 'PATH_PAYMENT_STRICT_SEND_TOO_FEW_OFFERS': return PATH_PAYMENT_STRICT_SEND_TOO_FEW_OFFERS;
+      case 'PATH_PAYMENT_STRICT_SEND_OFFER_CROSS_SELF': return PATH_PAYMENT_STRICT_SEND_OFFER_CROSS_SELF;
+      case 'PATH_PAYMENT_STRICT_SEND_UNDER_DESTMIN': return PATH_PAYMENT_STRICT_SEND_UNDER_DESTMIN;
+      default:
+        if (name.startsWith('XdrPathPaymentStrictSendResultCode#')) {
+          int? val = int.tryParse(name.substring('XdrPathPaymentStrictSendResultCode#'.length));
+          if (val != null) return XdrPathPaymentStrictSendResultCode._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

@@ -6,10 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_spec_udt_enum_case_v0.dart';
 
 class XdrSCSpecUDTEnumV0 {
+
   String _doc;
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
@@ -28,10 +30,7 @@ class XdrSCSpecUDTEnumV0 {
 
   XdrSCSpecUDTEnumV0(this._doc, this._lib, this._name, this._cases);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCSpecUDTEnumV0 encodedSCSpecUDTEnumV0,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCSpecUDTEnumV0 encodedSCSpecUDTEnumV0) {
     stream.writeString(encodedSCSpecUDTEnumV0.doc);
     stream.writeString(encodedSCSpecUDTEnumV0.lib);
     stream.writeString(encodedSCSpecUDTEnumV0.name);
@@ -47,9 +46,7 @@ class XdrSCSpecUDTEnumV0 {
     String lib = stream.readString();
     String name = stream.readString();
     int casessize = stream.readInt();
-    List<XdrSCSpecUDTEnumCaseV0> cases = List<XdrSCSpecUDTEnumCaseV0>.empty(
-      growable: true,
-    );
+    List<XdrSCSpecUDTEnumCaseV0> cases = List<XdrSCSpecUDTEnumCaseV0>.empty(growable: true);
     for (int i = 0; i < casessize; i++) {
       cases.add(XdrSCSpecUDTEnumCaseV0.decode(stream));
     }
@@ -65,5 +62,27 @@ class XdrSCSpecUDTEnumV0 {
   static XdrSCSpecUDTEnumV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecUDTEnumV0.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.doc: ${TxRepHelper.escapeString(_doc)}');
+    lines.add('$prefix.lib: ${TxRepHelper.escapeString(_lib)}');
+    lines.add('$prefix.name: ${TxRepHelper.escapeString(_name)}');
+    lines.add('$prefix.cases.len: ${_cases.length}');
+    for (int i = 0; i < _cases.length; i++) {
+      _cases[i].toTxRep('$prefix.cases[$i]', lines);
+    }
+  }
+
+  static XdrSCSpecUDTEnumV0 fromTxRep(Map<String, String> map, String prefix) {
+    String doc = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.doc') ?? '');
+    String lib = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.lib') ?? '');
+    String name = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.name') ?? '');
+    int casesLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.cases.len') ?? '0');
+    List<XdrSCSpecUDTEnumCaseV0> cases = [];
+    for (int i = 0; i < casesLen; i++) {
+      cases.add(XdrSCSpecUDTEnumCaseV0.fromTxRep(map, '$prefix.cases[$i]'));
+    }
+    return XdrSCSpecUDTEnumV0(doc, lib, name, cases);
   }
 }

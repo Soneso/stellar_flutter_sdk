@@ -6,10 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_spec_udt_struct_field_v0.dart';
 
 class XdrSCSpecUDTStructV0 {
+
   String _doc;
   String get doc => this._doc;
   set doc(String value) => this._doc = value;
@@ -28,20 +30,14 @@ class XdrSCSpecUDTStructV0 {
 
   XdrSCSpecUDTStructV0(this._doc, this._lib, this._name, this._fields);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCSpecUDTStructV0 encodedSCSpecUDTStructV0,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCSpecUDTStructV0 encodedSCSpecUDTStructV0) {
     stream.writeString(encodedSCSpecUDTStructV0.doc);
     stream.writeString(encodedSCSpecUDTStructV0.lib);
     stream.writeString(encodedSCSpecUDTStructV0.name);
     int fieldssize = encodedSCSpecUDTStructV0.fields.length;
     stream.writeInt(fieldssize);
     for (int i = 0; i < fieldssize; i++) {
-      XdrSCSpecUDTStructFieldV0.encode(
-        stream,
-        encodedSCSpecUDTStructV0.fields[i],
-      );
+      XdrSCSpecUDTStructFieldV0.encode(stream, encodedSCSpecUDTStructV0.fields[i]);
     }
   }
 
@@ -50,8 +46,7 @@ class XdrSCSpecUDTStructV0 {
     String lib = stream.readString();
     String name = stream.readString();
     int fieldssize = stream.readInt();
-    List<XdrSCSpecUDTStructFieldV0> fields =
-        List<XdrSCSpecUDTStructFieldV0>.empty(growable: true);
+    List<XdrSCSpecUDTStructFieldV0> fields = List<XdrSCSpecUDTStructFieldV0>.empty(growable: true);
     for (int i = 0; i < fieldssize; i++) {
       fields.add(XdrSCSpecUDTStructFieldV0.decode(stream));
     }
@@ -67,5 +62,27 @@ class XdrSCSpecUDTStructV0 {
   static XdrSCSpecUDTStructV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecUDTStructV0.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.doc: ${TxRepHelper.escapeString(_doc)}');
+    lines.add('$prefix.lib: ${TxRepHelper.escapeString(_lib)}');
+    lines.add('$prefix.name: ${TxRepHelper.escapeString(_name)}');
+    lines.add('$prefix.fields.len: ${_fields.length}');
+    for (int i = 0; i < _fields.length; i++) {
+      _fields[i].toTxRep('$prefix.fields[$i]', lines);
+    }
+  }
+
+  static XdrSCSpecUDTStructV0 fromTxRep(Map<String, String> map, String prefix) {
+    String doc = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.doc') ?? '');
+    String lib = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.lib') ?? '');
+    String name = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.name') ?? '');
+    int fieldsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.fields.len') ?? '0');
+    List<XdrSCSpecUDTStructFieldV0> fields = [];
+    for (int i = 0; i < fieldsLen; i++) {
+      fields.add(XdrSCSpecUDTStructFieldV0.fromTxRep(map, '$prefix.fields[$i]'));
+    }
+    return XdrSCSpecUDTStructV0(doc, lib, name, fields);
   }
 }

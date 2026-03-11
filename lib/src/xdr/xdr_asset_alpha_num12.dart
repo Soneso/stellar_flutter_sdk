@@ -6,10 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
 
 class XdrAssetAlphaNum12 {
+
   Uint8List _assetCode;
   Uint8List get assetCode => this._assetCode;
   set assetCode(Uint8List value) => this._assetCode = value;
@@ -20,10 +22,7 @@ class XdrAssetAlphaNum12 {
 
   XdrAssetAlphaNum12(this._assetCode, this._issuer);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrAssetAlphaNum12 encodedAssetAlphaNum12,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrAssetAlphaNum12 encodedAssetAlphaNum12) {
     stream.write(encodedAssetAlphaNum12.assetCode);
     XdrAccountID.encode(stream, encodedAssetAlphaNum12.issuer);
   }
@@ -43,5 +42,16 @@ class XdrAssetAlphaNum12 {
   static XdrAssetAlphaNum12 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAssetAlphaNum12.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.assetCode: ${TxRepHelper.bytesToHex(_assetCode)}');
+    lines.add('$prefix.issuer: ${TxRepHelper.formatAccountId(_issuer)}');
+  }
+
+  static XdrAssetAlphaNum12 fromTxRep(Map<String, String> map, String prefix) {
+    Uint8List assetCode = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '$prefix.assetCode') ?? '');
+    XdrAccountID issuer = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.issuer') ?? '');
+    return XdrAssetAlphaNum12(assetCode, issuer);
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_soroban_resources_ext_v0.dart';
 
@@ -27,19 +28,13 @@ class XdrSorobanTransactionDataExt {
 
   set resourceExt(XdrSorobanResourcesExtV0? value) => this._resourceExt = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSorobanTransactionDataExt encodedSorobanTransactionDataExt,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSorobanTransactionDataExt encodedSorobanTransactionDataExt) {
     stream.writeInt(encodedSorobanTransactionDataExt.discriminant);
     switch (encodedSorobanTransactionDataExt.discriminant) {
       case 0:
         break;
       case 1:
-        XdrSorobanResourcesExtV0.encode(
-          stream,
-          encodedSorobanTransactionDataExt._resourceExt!,
-        );
+        XdrSorobanResourcesExtV0.encode(stream, encodedSorobanTransactionDataExt._resourceExt!);
         break;
       default:
         break;
@@ -48,14 +43,12 @@ class XdrSorobanTransactionDataExt {
 
   static XdrSorobanTransactionDataExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrSorobanTransactionDataExt decodedSorobanTransactionDataExt =
-        XdrSorobanTransactionDataExt(discriminant);
+    XdrSorobanTransactionDataExt decodedSorobanTransactionDataExt = XdrSorobanTransactionDataExt(discriminant);
     switch (decodedSorobanTransactionDataExt.discriminant) {
       case 0:
         break;
       case 1:
-        decodedSorobanTransactionDataExt._resourceExt =
-            XdrSorobanResourcesExtV0.decode(stream);
+        decodedSorobanTransactionDataExt._resourceExt = XdrSorobanResourcesExtV0.decode(stream);
         break;
       default:
         break;
@@ -69,10 +62,36 @@ class XdrSorobanTransactionDataExt {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSorobanTransactionDataExt fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrSorobanTransactionDataExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanTransactionDataExt.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        break;
+      case 1:
+        _resourceExt!.toTxRep('$prefix.resourceExt', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrSorobanTransactionDataExt fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrSorobanTransactionDataExt result = XdrSorobanTransactionDataExt(disc);
+    switch (result.discriminant) {
+      case 0:
+        break;
+      case 1:
+        result._resourceExt = XdrSorobanResourcesExtV0.fromTxRep(map, '$prefix.resourceExt');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

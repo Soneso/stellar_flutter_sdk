@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_meta_kind.dart';
 import 'xdr_sc_meta_v0.dart';
@@ -29,10 +30,7 @@ class XdrSCMetaEntry {
 
   set v0(XdrSCMetaV0? value) => this._v0 = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCMetaEntry encodedSCMetaEntry,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCMetaEntry encodedSCMetaEntry) {
     stream.writeInt(encodedSCMetaEntry.discriminant.value);
     switch (encodedSCMetaEntry.discriminant) {
       case XdrSCMetaKind.SC_META_V0:
@@ -44,9 +42,7 @@ class XdrSCMetaEntry {
   }
 
   static XdrSCMetaEntry decode(XdrDataInputStream stream) {
-    XdrSCMetaEntry decodedSCMetaEntry = XdrSCMetaEntry(
-      XdrSCMetaKind.decode(stream),
-    );
+    XdrSCMetaEntry decodedSCMetaEntry = XdrSCMetaEntry(XdrSCMetaKind.decode(stream));
     switch (decodedSCMetaEntry.discriminant) {
       case XdrSCMetaKind.SC_META_V0:
         decodedSCMetaEntry._v0 = XdrSCMetaV0.decode(stream);
@@ -66,5 +62,29 @@ class XdrSCMetaEntry {
   static XdrSCMetaEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCMetaEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.kind: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrSCMetaKind.SC_META_V0:
+        _v0!.toTxRep('$prefix.v0', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrSCMetaEntry fromTxRep(Map<String, String> map, String prefix) {
+    XdrSCMetaKind disc = XdrSCMetaKind.fromTxRepName(TxRepHelper.getValue(map, '$prefix.kind') ?? '');
+    XdrSCMetaEntry result = XdrSCMetaEntry(disc);
+    switch (result.discriminant) {
+      case XdrSCMetaKind.SC_META_V0:
+        result._v0 = XdrSCMetaV0.fromTxRep(map, '$prefix.v0');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

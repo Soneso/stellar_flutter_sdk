@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_allow_trust_op.dart';
 import 'xdr_begin_sponsoring_future_reserves_op.dart';
 import 'xdr_bump_sequence_op.dart';
@@ -55,8 +56,7 @@ class XdrOperationBody {
 
   XdrPathPaymentStrictReceiveOp? _pathPaymentStrictReceiveOp;
 
-  XdrPathPaymentStrictReceiveOp? get pathPaymentStrictReceiveOp =>
-      this._pathPaymentStrictReceiveOp;
+  XdrPathPaymentStrictReceiveOp? get pathPaymentStrictReceiveOp => this._pathPaymentStrictReceiveOp;
 
   XdrManageSellOfferOp? _manageSellOfferOp;
 
@@ -64,8 +64,7 @@ class XdrOperationBody {
 
   XdrCreatePassiveSellOfferOp? _createPassiveSellOfferOp;
 
-  XdrCreatePassiveSellOfferOp? get createPassiveSellOfferOp =>
-      this._createPassiveSellOfferOp;
+  XdrCreatePassiveSellOfferOp? get createPassiveSellOfferOp => this._createPassiveSellOfferOp;
 
   XdrSetOptionsOp? _setOptionsOp;
 
@@ -97,23 +96,19 @@ class XdrOperationBody {
 
   XdrPathPaymentStrictSendOp? _pathPaymentStrictSendOp;
 
-  XdrPathPaymentStrictSendOp? get pathPaymentStrictSendOp =>
-      this._pathPaymentStrictSendOp;
+  XdrPathPaymentStrictSendOp? get pathPaymentStrictSendOp => this._pathPaymentStrictSendOp;
 
   XdrCreateClaimableBalanceOp? _createClaimableBalanceOp;
 
-  XdrCreateClaimableBalanceOp? get createClaimableBalanceOp =>
-      this._createClaimableBalanceOp;
+  XdrCreateClaimableBalanceOp? get createClaimableBalanceOp => this._createClaimableBalanceOp;
 
   XdrClaimClaimableBalanceOp? _claimClaimableBalanceOp;
 
-  XdrClaimClaimableBalanceOp? get claimClaimableBalanceOp =>
-      this._claimClaimableBalanceOp;
+  XdrClaimClaimableBalanceOp? get claimClaimableBalanceOp => this._claimClaimableBalanceOp;
 
   XdrBeginSponsoringFutureReservesOp? _beginSponsoringFutureReservesOp;
 
-  XdrBeginSponsoringFutureReservesOp? get beginSponsoringFutureReservesOp =>
-      this._beginSponsoringFutureReservesOp;
+  XdrBeginSponsoringFutureReservesOp? get beginSponsoringFutureReservesOp => this._beginSponsoringFutureReservesOp;
 
   XdrRevokeSponsorshipOp? _revokeSponsorshipOp;
 
@@ -125,8 +120,7 @@ class XdrOperationBody {
 
   XdrClawbackClaimableBalanceOp? _clawbackClaimableBalanceOp;
 
-  XdrClawbackClaimableBalanceOp? get clawbackClaimableBalanceOp =>
-      this._clawbackClaimableBalanceOp;
+  XdrClawbackClaimableBalanceOp? get clawbackClaimableBalanceOp => this._clawbackClaimableBalanceOp;
 
   XdrSetTrustLineFlagsOp? _setTrustLineFlagsOp;
 
@@ -134,23 +128,19 @@ class XdrOperationBody {
 
   XdrLiquidityPoolDepositOp? _liquidityPoolDepositOp;
 
-  XdrLiquidityPoolDepositOp? get liquidityPoolDepositOp =>
-      this._liquidityPoolDepositOp;
+  XdrLiquidityPoolDepositOp? get liquidityPoolDepositOp => this._liquidityPoolDepositOp;
 
   XdrLiquidityPoolWithdrawOp? _liquidityPoolWithdrawOp;
 
-  XdrLiquidityPoolWithdrawOp? get liquidityPoolWithdrawOp =>
-      this._liquidityPoolWithdrawOp;
+  XdrLiquidityPoolWithdrawOp? get liquidityPoolWithdrawOp => this._liquidityPoolWithdrawOp;
 
   XdrInvokeHostFunctionOp? _invokeHostFunctionOp;
 
-  XdrInvokeHostFunctionOp? get invokeHostFunctionOp =>
-      this._invokeHostFunctionOp;
+  XdrInvokeHostFunctionOp? get invokeHostFunctionOp => this._invokeHostFunctionOp;
 
   XdrExtendFootprintTTLOp? _extendFootprintTTLOp;
 
-  XdrExtendFootprintTTLOp? get extendFootprintTTLOp =>
-      this._extendFootprintTTLOp;
+  XdrExtendFootprintTTLOp? get extendFootprintTTLOp => this._extendFootprintTTLOp;
 
   XdrRestoreFootprintOp? _restoreFootprintOp;
 
@@ -158,19 +148,15 @@ class XdrOperationBody {
 
   XdrOperationBody(this._type);
 
-  set createAccountOp(XdrCreateAccountOp? value) =>
-      this._createAccountOp = value;
+  set createAccountOp(XdrCreateAccountOp? value) => this._createAccountOp = value;
 
   set paymentOp(XdrPaymentOp? value) => this._paymentOp = value;
 
-  set pathPaymentStrictReceiveOp(XdrPathPaymentStrictReceiveOp? value) =>
-      this._pathPaymentStrictReceiveOp = value;
+  set pathPaymentStrictReceiveOp(XdrPathPaymentStrictReceiveOp? value) => this._pathPaymentStrictReceiveOp = value;
 
-  set manageSellOfferOp(XdrManageSellOfferOp? value) =>
-      this._manageSellOfferOp = value;
+  set manageSellOfferOp(XdrManageSellOfferOp? value) => this._manageSellOfferOp = value;
 
-  set createPassiveSellOfferOp(XdrCreatePassiveSellOfferOp? value) =>
-      this._createPassiveSellOfferOp = value;
+  set createPassiveSellOfferOp(XdrCreatePassiveSellOfferOp? value) => this._createPassiveSellOfferOp = value;
 
   set setOptionsOp(XdrSetOptionsOp? value) => this._setOptionsOp = value;
 
@@ -184,80 +170,51 @@ class XdrOperationBody {
 
   set bumpSequenceOp(XdrBumpSequenceOp? value) => this._bumpSequenceOp = value;
 
-  set manageBuyOfferOp(XdrManageBuyOfferOp? value) =>
-      this._manageBuyOfferOp = value;
+  set manageBuyOfferOp(XdrManageBuyOfferOp? value) => this._manageBuyOfferOp = value;
 
-  set pathPaymentStrictSendOp(XdrPathPaymentStrictSendOp? value) =>
-      this._pathPaymentStrictSendOp = value;
+  set pathPaymentStrictSendOp(XdrPathPaymentStrictSendOp? value) => this._pathPaymentStrictSendOp = value;
 
-  set createClaimableBalanceOp(XdrCreateClaimableBalanceOp? value) =>
-      this._createClaimableBalanceOp = value;
+  set createClaimableBalanceOp(XdrCreateClaimableBalanceOp? value) => this._createClaimableBalanceOp = value;
 
-  set claimClaimableBalanceOp(XdrClaimClaimableBalanceOp? value) =>
-      this._claimClaimableBalanceOp = value;
+  set claimClaimableBalanceOp(XdrClaimClaimableBalanceOp? value) => this._claimClaimableBalanceOp = value;
 
-  set beginSponsoringFutureReservesOp(
-    XdrBeginSponsoringFutureReservesOp? value,
-  ) => this._beginSponsoringFutureReservesOp = value;
+  set beginSponsoringFutureReservesOp(XdrBeginSponsoringFutureReservesOp? value) => this._beginSponsoringFutureReservesOp = value;
 
-  set revokeSponsorshipOp(XdrRevokeSponsorshipOp? value) =>
-      this._revokeSponsorshipOp = value;
+  set revokeSponsorshipOp(XdrRevokeSponsorshipOp? value) => this._revokeSponsorshipOp = value;
 
   set clawbackOp(XdrClawbackOp? value) => this._clawbackOp = value;
 
-  set clawbackClaimableBalanceOp(XdrClawbackClaimableBalanceOp? value) =>
-      this._clawbackClaimableBalanceOp = value;
+  set clawbackClaimableBalanceOp(XdrClawbackClaimableBalanceOp? value) => this._clawbackClaimableBalanceOp = value;
 
-  set setTrustLineFlagsOp(XdrSetTrustLineFlagsOp? value) =>
-      this._setTrustLineFlagsOp = value;
+  set setTrustLineFlagsOp(XdrSetTrustLineFlagsOp? value) => this._setTrustLineFlagsOp = value;
 
-  set liquidityPoolDepositOp(XdrLiquidityPoolDepositOp? value) =>
-      this._liquidityPoolDepositOp = value;
+  set liquidityPoolDepositOp(XdrLiquidityPoolDepositOp? value) => this._liquidityPoolDepositOp = value;
 
-  set liquidityPoolWithdrawOp(XdrLiquidityPoolWithdrawOp? value) =>
-      this._liquidityPoolWithdrawOp = value;
+  set liquidityPoolWithdrawOp(XdrLiquidityPoolWithdrawOp? value) => this._liquidityPoolWithdrawOp = value;
 
-  set invokeHostFunctionOp(XdrInvokeHostFunctionOp? value) =>
-      this._invokeHostFunctionOp = value;
+  set invokeHostFunctionOp(XdrInvokeHostFunctionOp? value) => this._invokeHostFunctionOp = value;
 
-  set extendFootprintTTLOp(XdrExtendFootprintTTLOp? value) =>
-      this._extendFootprintTTLOp = value;
+  set extendFootprintTTLOp(XdrExtendFootprintTTLOp? value) => this._extendFootprintTTLOp = value;
 
-  set restoreFootprintOp(XdrRestoreFootprintOp? value) =>
-      this._restoreFootprintOp = value;
+  set restoreFootprintOp(XdrRestoreFootprintOp? value) => this._restoreFootprintOp = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrOperationBody encodedOperationBody,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrOperationBody encodedOperationBody) {
     stream.writeInt(encodedOperationBody.discriminant.value);
     switch (encodedOperationBody.discriminant) {
       case XdrOperationType.CREATE_ACCOUNT:
-        XdrCreateAccountOp.encode(
-          stream,
-          encodedOperationBody._createAccountOp!,
-        );
+        XdrCreateAccountOp.encode(stream, encodedOperationBody._createAccountOp!);
         break;
       case XdrOperationType.PAYMENT:
         XdrPaymentOp.encode(stream, encodedOperationBody._paymentOp!);
         break;
       case XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE:
-        XdrPathPaymentStrictReceiveOp.encode(
-          stream,
-          encodedOperationBody._pathPaymentStrictReceiveOp!,
-        );
+        XdrPathPaymentStrictReceiveOp.encode(stream, encodedOperationBody._pathPaymentStrictReceiveOp!);
         break;
       case XdrOperationType.MANAGE_SELL_OFFER:
-        XdrManageSellOfferOp.encode(
-          stream,
-          encodedOperationBody._manageSellOfferOp!,
-        );
+        XdrManageSellOfferOp.encode(stream, encodedOperationBody._manageSellOfferOp!);
         break;
       case XdrOperationType.CREATE_PASSIVE_SELL_OFFER:
-        XdrCreatePassiveSellOfferOp.encode(
-          stream,
-          encodedOperationBody._createPassiveSellOfferOp!,
-        );
+        XdrCreatePassiveSellOfferOp.encode(stream, encodedOperationBody._createPassiveSellOfferOp!);
         break;
       case XdrOperationType.SET_OPTIONS:
         XdrSetOptionsOp.encode(stream, encodedOperationBody._setOptionsOp!);
@@ -280,87 +237,48 @@ class XdrOperationBody {
         XdrBumpSequenceOp.encode(stream, encodedOperationBody._bumpSequenceOp!);
         break;
       case XdrOperationType.MANAGE_BUY_OFFER:
-        XdrManageBuyOfferOp.encode(
-          stream,
-          encodedOperationBody._manageBuyOfferOp!,
-        );
+        XdrManageBuyOfferOp.encode(stream, encodedOperationBody._manageBuyOfferOp!);
         break;
       case XdrOperationType.PATH_PAYMENT_STRICT_SEND:
-        XdrPathPaymentStrictSendOp.encode(
-          stream,
-          encodedOperationBody._pathPaymentStrictSendOp!,
-        );
+        XdrPathPaymentStrictSendOp.encode(stream, encodedOperationBody._pathPaymentStrictSendOp!);
         break;
       case XdrOperationType.CREATE_CLAIMABLE_BALANCE:
-        XdrCreateClaimableBalanceOp.encode(
-          stream,
-          encodedOperationBody._createClaimableBalanceOp!,
-        );
+        XdrCreateClaimableBalanceOp.encode(stream, encodedOperationBody._createClaimableBalanceOp!);
         break;
       case XdrOperationType.CLAIM_CLAIMABLE_BALANCE:
-        XdrClaimClaimableBalanceOp.encode(
-          stream,
-          encodedOperationBody._claimClaimableBalanceOp!,
-        );
+        XdrClaimClaimableBalanceOp.encode(stream, encodedOperationBody._claimClaimableBalanceOp!);
         break;
       case XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES:
-        XdrBeginSponsoringFutureReservesOp.encode(
-          stream,
-          encodedOperationBody._beginSponsoringFutureReservesOp!,
-        );
+        XdrBeginSponsoringFutureReservesOp.encode(stream, encodedOperationBody._beginSponsoringFutureReservesOp!);
         break;
       case XdrOperationType.END_SPONSORING_FUTURE_RESERVES:
         break;
       case XdrOperationType.REVOKE_SPONSORSHIP:
-        XdrRevokeSponsorshipOp.encode(
-          stream,
-          encodedOperationBody._revokeSponsorshipOp!,
-        );
+        XdrRevokeSponsorshipOp.encode(stream, encodedOperationBody._revokeSponsorshipOp!);
         break;
       case XdrOperationType.CLAWBACK:
         XdrClawbackOp.encode(stream, encodedOperationBody._clawbackOp!);
         break;
       case XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE:
-        XdrClawbackClaimableBalanceOp.encode(
-          stream,
-          encodedOperationBody._clawbackClaimableBalanceOp!,
-        );
+        XdrClawbackClaimableBalanceOp.encode(stream, encodedOperationBody._clawbackClaimableBalanceOp!);
         break;
       case XdrOperationType.SET_TRUST_LINE_FLAGS:
-        XdrSetTrustLineFlagsOp.encode(
-          stream,
-          encodedOperationBody._setTrustLineFlagsOp!,
-        );
+        XdrSetTrustLineFlagsOp.encode(stream, encodedOperationBody._setTrustLineFlagsOp!);
         break;
       case XdrOperationType.LIQUIDITY_POOL_DEPOSIT:
-        XdrLiquidityPoolDepositOp.encode(
-          stream,
-          encodedOperationBody._liquidityPoolDepositOp!,
-        );
+        XdrLiquidityPoolDepositOp.encode(stream, encodedOperationBody._liquidityPoolDepositOp!);
         break;
       case XdrOperationType.LIQUIDITY_POOL_WITHDRAW:
-        XdrLiquidityPoolWithdrawOp.encode(
-          stream,
-          encodedOperationBody._liquidityPoolWithdrawOp!,
-        );
+        XdrLiquidityPoolWithdrawOp.encode(stream, encodedOperationBody._liquidityPoolWithdrawOp!);
         break;
       case XdrOperationType.INVOKE_HOST_FUNCTION:
-        XdrInvokeHostFunctionOp.encode(
-          stream,
-          encodedOperationBody._invokeHostFunctionOp!,
-        );
+        XdrInvokeHostFunctionOp.encode(stream, encodedOperationBody._invokeHostFunctionOp!);
         break;
       case XdrOperationType.EXTEND_FOOTPRINT_TTL:
-        XdrExtendFootprintTTLOp.encode(
-          stream,
-          encodedOperationBody._extendFootprintTTLOp!,
-        );
+        XdrExtendFootprintTTLOp.encode(stream, encodedOperationBody._extendFootprintTTLOp!);
         break;
       case XdrOperationType.RESTORE_FOOTPRINT:
-        XdrRestoreFootprintOp.encode(
-          stream,
-          encodedOperationBody._restoreFootprintOp!,
-        );
+        XdrRestoreFootprintOp.encode(stream, encodedOperationBody._restoreFootprintOp!);
         break;
       default:
         break;
@@ -368,30 +286,22 @@ class XdrOperationBody {
   }
 
   static XdrOperationBody decode(XdrDataInputStream stream) {
-    XdrOperationBody decodedOperationBody = XdrOperationBody(
-      XdrOperationType.decode(stream),
-    );
+    XdrOperationBody decodedOperationBody = XdrOperationBody(XdrOperationType.decode(stream));
     switch (decodedOperationBody.discriminant) {
       case XdrOperationType.CREATE_ACCOUNT:
-        decodedOperationBody._createAccountOp = XdrCreateAccountOp.decode(
-          stream,
-        );
+        decodedOperationBody._createAccountOp = XdrCreateAccountOp.decode(stream);
         break;
       case XdrOperationType.PAYMENT:
         decodedOperationBody._paymentOp = XdrPaymentOp.decode(stream);
         break;
       case XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE:
-        decodedOperationBody._pathPaymentStrictReceiveOp =
-            XdrPathPaymentStrictReceiveOp.decode(stream);
+        decodedOperationBody._pathPaymentStrictReceiveOp = XdrPathPaymentStrictReceiveOp.decode(stream);
         break;
       case XdrOperationType.MANAGE_SELL_OFFER:
-        decodedOperationBody._manageSellOfferOp = XdrManageSellOfferOp.decode(
-          stream,
-        );
+        decodedOperationBody._manageSellOfferOp = XdrManageSellOfferOp.decode(stream);
         break;
       case XdrOperationType.CREATE_PASSIVE_SELL_OFFER:
-        decodedOperationBody._createPassiveSellOfferOp =
-            XdrCreatePassiveSellOfferOp.decode(stream);
+        decodedOperationBody._createPassiveSellOfferOp = XdrCreatePassiveSellOfferOp.decode(stream);
         break;
       case XdrOperationType.SET_OPTIONS:
         decodedOperationBody._setOptionsOp = XdrSetOptionsOp.decode(stream);
@@ -414,63 +324,48 @@ class XdrOperationBody {
         decodedOperationBody._bumpSequenceOp = XdrBumpSequenceOp.decode(stream);
         break;
       case XdrOperationType.MANAGE_BUY_OFFER:
-        decodedOperationBody._manageBuyOfferOp = XdrManageBuyOfferOp.decode(
-          stream,
-        );
+        decodedOperationBody._manageBuyOfferOp = XdrManageBuyOfferOp.decode(stream);
         break;
       case XdrOperationType.PATH_PAYMENT_STRICT_SEND:
-        decodedOperationBody._pathPaymentStrictSendOp =
-            XdrPathPaymentStrictSendOp.decode(stream);
+        decodedOperationBody._pathPaymentStrictSendOp = XdrPathPaymentStrictSendOp.decode(stream);
         break;
       case XdrOperationType.CREATE_CLAIMABLE_BALANCE:
-        decodedOperationBody._createClaimableBalanceOp =
-            XdrCreateClaimableBalanceOp.decode(stream);
+        decodedOperationBody._createClaimableBalanceOp = XdrCreateClaimableBalanceOp.decode(stream);
         break;
       case XdrOperationType.CLAIM_CLAIMABLE_BALANCE:
-        decodedOperationBody._claimClaimableBalanceOp =
-            XdrClaimClaimableBalanceOp.decode(stream);
+        decodedOperationBody._claimClaimableBalanceOp = XdrClaimClaimableBalanceOp.decode(stream);
         break;
       case XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES:
-        decodedOperationBody._beginSponsoringFutureReservesOp =
-            XdrBeginSponsoringFutureReservesOp.decode(stream);
+        decodedOperationBody._beginSponsoringFutureReservesOp = XdrBeginSponsoringFutureReservesOp.decode(stream);
         break;
       case XdrOperationType.END_SPONSORING_FUTURE_RESERVES:
         break;
       case XdrOperationType.REVOKE_SPONSORSHIP:
-        decodedOperationBody._revokeSponsorshipOp =
-            XdrRevokeSponsorshipOp.decode(stream);
+        decodedOperationBody._revokeSponsorshipOp = XdrRevokeSponsorshipOp.decode(stream);
         break;
       case XdrOperationType.CLAWBACK:
         decodedOperationBody._clawbackOp = XdrClawbackOp.decode(stream);
         break;
       case XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE:
-        decodedOperationBody._clawbackClaimableBalanceOp =
-            XdrClawbackClaimableBalanceOp.decode(stream);
+        decodedOperationBody._clawbackClaimableBalanceOp = XdrClawbackClaimableBalanceOp.decode(stream);
         break;
       case XdrOperationType.SET_TRUST_LINE_FLAGS:
-        decodedOperationBody._setTrustLineFlagsOp =
-            XdrSetTrustLineFlagsOp.decode(stream);
+        decodedOperationBody._setTrustLineFlagsOp = XdrSetTrustLineFlagsOp.decode(stream);
         break;
       case XdrOperationType.LIQUIDITY_POOL_DEPOSIT:
-        decodedOperationBody._liquidityPoolDepositOp =
-            XdrLiquidityPoolDepositOp.decode(stream);
+        decodedOperationBody._liquidityPoolDepositOp = XdrLiquidityPoolDepositOp.decode(stream);
         break;
       case XdrOperationType.LIQUIDITY_POOL_WITHDRAW:
-        decodedOperationBody._liquidityPoolWithdrawOp =
-            XdrLiquidityPoolWithdrawOp.decode(stream);
+        decodedOperationBody._liquidityPoolWithdrawOp = XdrLiquidityPoolWithdrawOp.decode(stream);
         break;
       case XdrOperationType.INVOKE_HOST_FUNCTION:
-        decodedOperationBody._invokeHostFunctionOp =
-            XdrInvokeHostFunctionOp.decode(stream);
+        decodedOperationBody._invokeHostFunctionOp = XdrInvokeHostFunctionOp.decode(stream);
         break;
       case XdrOperationType.EXTEND_FOOTPRINT_TTL:
-        decodedOperationBody._extendFootprintTTLOp =
-            XdrExtendFootprintTTLOp.decode(stream);
+        decodedOperationBody._extendFootprintTTLOp = XdrExtendFootprintTTLOp.decode(stream);
         break;
       case XdrOperationType.RESTORE_FOOTPRINT:
-        decodedOperationBody._restoreFootprintOp = XdrRestoreFootprintOp.decode(
-          stream,
-        );
+        decodedOperationBody._restoreFootprintOp = XdrRestoreFootprintOp.decode(stream);
         break;
       default:
         break;
@@ -487,5 +382,181 @@ class XdrOperationBody {
   static XdrOperationBody fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrOperationBody.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrOperationType.CREATE_ACCOUNT:
+        _createAccountOp!.toTxRep('$prefix.createAccountOp', lines);
+        break;
+      case XdrOperationType.PAYMENT:
+        _paymentOp!.toTxRep('$prefix.paymentOp', lines);
+        break;
+      case XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE:
+        _pathPaymentStrictReceiveOp!.toTxRep('$prefix.pathPaymentStrictReceiveOp', lines);
+        break;
+      case XdrOperationType.MANAGE_SELL_OFFER:
+        _manageSellOfferOp!.toTxRep('$prefix.manageSellOfferOp', lines);
+        break;
+      case XdrOperationType.CREATE_PASSIVE_SELL_OFFER:
+        _createPassiveSellOfferOp!.toTxRep('$prefix.createPassiveSellOfferOp', lines);
+        break;
+      case XdrOperationType.SET_OPTIONS:
+        _setOptionsOp!.toTxRep('$prefix.setOptionsOp', lines);
+        break;
+      case XdrOperationType.CHANGE_TRUST:
+        _changeTrustOp!.toTxRep('$prefix.changeTrustOp', lines);
+        break;
+      case XdrOperationType.ALLOW_TRUST:
+        _allowTrustOp!.toTxRep('$prefix.allowTrustOp', lines);
+        break;
+      case XdrOperationType.ACCOUNT_MERGE:
+        lines.add('$prefix.destination: ${TxRepHelper.formatMuxedAccount(_destination!)}');
+        break;
+      case XdrOperationType.INFLATION:
+        break;
+      case XdrOperationType.MANAGE_DATA:
+        _manageDataOp!.toTxRep('$prefix.manageDataOp', lines);
+        break;
+      case XdrOperationType.BUMP_SEQUENCE:
+        _bumpSequenceOp!.toTxRep('$prefix.bumpSequenceOp', lines);
+        break;
+      case XdrOperationType.MANAGE_BUY_OFFER:
+        _manageBuyOfferOp!.toTxRep('$prefix.manageBuyOfferOp', lines);
+        break;
+      case XdrOperationType.PATH_PAYMENT_STRICT_SEND:
+        _pathPaymentStrictSendOp!.toTxRep('$prefix.pathPaymentStrictSendOp', lines);
+        break;
+      case XdrOperationType.CREATE_CLAIMABLE_BALANCE:
+        _createClaimableBalanceOp!.toTxRep('$prefix.createClaimableBalanceOp', lines);
+        break;
+      case XdrOperationType.CLAIM_CLAIMABLE_BALANCE:
+        _claimClaimableBalanceOp!.toTxRep('$prefix.claimClaimableBalanceOp', lines);
+        break;
+      case XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES:
+        _beginSponsoringFutureReservesOp!.toTxRep('$prefix.beginSponsoringFutureReservesOp', lines);
+        break;
+      case XdrOperationType.END_SPONSORING_FUTURE_RESERVES:
+        break;
+      case XdrOperationType.REVOKE_SPONSORSHIP:
+        _revokeSponsorshipOp!.toTxRep('$prefix.revokeSponsorshipOp', lines);
+        break;
+      case XdrOperationType.CLAWBACK:
+        _clawbackOp!.toTxRep('$prefix.clawbackOp', lines);
+        break;
+      case XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE:
+        _clawbackClaimableBalanceOp!.toTxRep('$prefix.clawbackClaimableBalanceOp', lines);
+        break;
+      case XdrOperationType.SET_TRUST_LINE_FLAGS:
+        _setTrustLineFlagsOp!.toTxRep('$prefix.setTrustLineFlagsOp', lines);
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_DEPOSIT:
+        _liquidityPoolDepositOp!.toTxRep('$prefix.liquidityPoolDepositOp', lines);
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_WITHDRAW:
+        _liquidityPoolWithdrawOp!.toTxRep('$prefix.liquidityPoolWithdrawOp', lines);
+        break;
+      case XdrOperationType.INVOKE_HOST_FUNCTION:
+        _invokeHostFunctionOp!.toTxRep('$prefix.invokeHostFunctionOp', lines);
+        break;
+      case XdrOperationType.EXTEND_FOOTPRINT_TTL:
+        _extendFootprintTTLOp!.toTxRep('$prefix.extendFootprintTTLOp', lines);
+        break;
+      case XdrOperationType.RESTORE_FOOTPRINT:
+        _restoreFootprintOp!.toTxRep('$prefix.restoreFootprintOp', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrOperationBody fromTxRep(Map<String, String> map, String prefix) {
+    XdrOperationType disc = XdrOperationType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrOperationBody result = XdrOperationBody(disc);
+    switch (result.discriminant) {
+      case XdrOperationType.CREATE_ACCOUNT:
+        result._createAccountOp = XdrCreateAccountOp.fromTxRep(map, '$prefix.createAccountOp');
+        break;
+      case XdrOperationType.PAYMENT:
+        result._paymentOp = XdrPaymentOp.fromTxRep(map, '$prefix.paymentOp');
+        break;
+      case XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE:
+        result._pathPaymentStrictReceiveOp = XdrPathPaymentStrictReceiveOp.fromTxRep(map, '$prefix.pathPaymentStrictReceiveOp');
+        break;
+      case XdrOperationType.MANAGE_SELL_OFFER:
+        result._manageSellOfferOp = XdrManageSellOfferOp.fromTxRep(map, '$prefix.manageSellOfferOp');
+        break;
+      case XdrOperationType.CREATE_PASSIVE_SELL_OFFER:
+        result._createPassiveSellOfferOp = XdrCreatePassiveSellOfferOp.fromTxRep(map, '$prefix.createPassiveSellOfferOp');
+        break;
+      case XdrOperationType.SET_OPTIONS:
+        result._setOptionsOp = XdrSetOptionsOp.fromTxRep(map, '$prefix.setOptionsOp');
+        break;
+      case XdrOperationType.CHANGE_TRUST:
+        result._changeTrustOp = XdrChangeTrustOp.fromTxRep(map, '$prefix.changeTrustOp');
+        break;
+      case XdrOperationType.ALLOW_TRUST:
+        result._allowTrustOp = XdrAllowTrustOp.fromTxRep(map, '$prefix.allowTrustOp');
+        break;
+      case XdrOperationType.ACCOUNT_MERGE:
+        result._destination = TxRepHelper.parseMuxedAccount(TxRepHelper.getValue(map, '$prefix.destination') ?? '');
+        break;
+      case XdrOperationType.INFLATION:
+        break;
+      case XdrOperationType.MANAGE_DATA:
+        result._manageDataOp = XdrManageDataOp.fromTxRep(map, '$prefix.manageDataOp');
+        break;
+      case XdrOperationType.BUMP_SEQUENCE:
+        result._bumpSequenceOp = XdrBumpSequenceOp.fromTxRep(map, '$prefix.bumpSequenceOp');
+        break;
+      case XdrOperationType.MANAGE_BUY_OFFER:
+        result._manageBuyOfferOp = XdrManageBuyOfferOp.fromTxRep(map, '$prefix.manageBuyOfferOp');
+        break;
+      case XdrOperationType.PATH_PAYMENT_STRICT_SEND:
+        result._pathPaymentStrictSendOp = XdrPathPaymentStrictSendOp.fromTxRep(map, '$prefix.pathPaymentStrictSendOp');
+        break;
+      case XdrOperationType.CREATE_CLAIMABLE_BALANCE:
+        result._createClaimableBalanceOp = XdrCreateClaimableBalanceOp.fromTxRep(map, '$prefix.createClaimableBalanceOp');
+        break;
+      case XdrOperationType.CLAIM_CLAIMABLE_BALANCE:
+        result._claimClaimableBalanceOp = XdrClaimClaimableBalanceOp.fromTxRep(map, '$prefix.claimClaimableBalanceOp');
+        break;
+      case XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES:
+        result._beginSponsoringFutureReservesOp = XdrBeginSponsoringFutureReservesOp.fromTxRep(map, '$prefix.beginSponsoringFutureReservesOp');
+        break;
+      case XdrOperationType.END_SPONSORING_FUTURE_RESERVES:
+        break;
+      case XdrOperationType.REVOKE_SPONSORSHIP:
+        result._revokeSponsorshipOp = XdrRevokeSponsorshipOp.fromTxRep(map, '$prefix.revokeSponsorshipOp');
+        break;
+      case XdrOperationType.CLAWBACK:
+        result._clawbackOp = XdrClawbackOp.fromTxRep(map, '$prefix.clawbackOp');
+        break;
+      case XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE:
+        result._clawbackClaimableBalanceOp = XdrClawbackClaimableBalanceOp.fromTxRep(map, '$prefix.clawbackClaimableBalanceOp');
+        break;
+      case XdrOperationType.SET_TRUST_LINE_FLAGS:
+        result._setTrustLineFlagsOp = XdrSetTrustLineFlagsOp.fromTxRep(map, '$prefix.setTrustLineFlagsOp');
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_DEPOSIT:
+        result._liquidityPoolDepositOp = XdrLiquidityPoolDepositOp.fromTxRep(map, '$prefix.liquidityPoolDepositOp');
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_WITHDRAW:
+        result._liquidityPoolWithdrawOp = XdrLiquidityPoolWithdrawOp.fromTxRep(map, '$prefix.liquidityPoolWithdrawOp');
+        break;
+      case XdrOperationType.INVOKE_HOST_FUNCTION:
+        result._invokeHostFunctionOp = XdrInvokeHostFunctionOp.fromTxRep(map, '$prefix.invokeHostFunctionOp');
+        break;
+      case XdrOperationType.EXTEND_FOOTPRINT_TTL:
+        result._extendFootprintTTLOp = XdrExtendFootprintTTLOp.fromTxRep(map, '$prefix.extendFootprintTTLOp');
+        break;
+      case XdrOperationType.RESTORE_FOOTPRINT:
+        result._restoreFootprintOp = XdrRestoreFootprintOp.fromTxRep(map, '$prefix.restoreFootprintOp');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

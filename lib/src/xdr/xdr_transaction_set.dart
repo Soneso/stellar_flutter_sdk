@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_transaction_envelope.dart';
 
 class XdrTransactionSet {
+
   XdrHash _previousLedgerHash;
   XdrHash get previousLedgerHash => this._previousLedgerHash;
   set previousLedgerHash(XdrHash value) => this._previousLedgerHash = value;
@@ -21,10 +23,7 @@ class XdrTransactionSet {
 
   XdrTransactionSet(this._previousLedgerHash, this._txs);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrTransactionSet encodedTransactionSet,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrTransactionSet encodedTransactionSet) {
     XdrHash.encode(stream, encodedTransactionSet.previousLedgerHash);
     int txssize = encodedTransactionSet.txs.length;
     stream.writeInt(txssize);
@@ -36,9 +35,7 @@ class XdrTransactionSet {
   static XdrTransactionSet decode(XdrDataInputStream stream) {
     XdrHash previousLedgerHash = XdrHash.decode(stream);
     int txssize = stream.readInt();
-    List<XdrTransactionEnvelope> txs = List<XdrTransactionEnvelope>.empty(
-      growable: true,
-    );
+    List<XdrTransactionEnvelope> txs = List<XdrTransactionEnvelope>.empty(growable: true);
     for (int i = 0; i < txssize; i++) {
       txs.add(XdrTransactionEnvelope.decode(stream));
     }
@@ -54,5 +51,23 @@ class XdrTransactionSet {
   static XdrTransactionSet fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionSet.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _previousLedgerHash.toTxRep('$prefix.previousLedgerHash', lines);
+    lines.add('$prefix.txs.len: ${_txs.length}');
+    for (int i = 0; i < _txs.length; i++) {
+      _txs[i].toTxRep('$prefix.txs[$i]', lines);
+    }
+  }
+
+  static XdrTransactionSet fromTxRep(Map<String, String> map, String prefix) {
+    XdrHash previousLedgerHash = XdrHash.fromTxRep(map, '$prefix.previousLedgerHash');
+    int txsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.txs.len') ?? '0');
+    List<XdrTransactionEnvelope> txs = [];
+    for (int i = 0; i < txsLen; i++) {
+      txs.add(XdrTransactionEnvelope.fromTxRep(map, '$prefix.txs[$i]'));
+    }
+    return XdrTransactionSet(previousLedgerHash, txs);
   }
 }

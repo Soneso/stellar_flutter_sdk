@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSCEnvMetaKind {
@@ -17,14 +18,12 @@ class XdrSCEnvMetaKind {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrSCEnvMetaKind && _value == other._value;
+      identical(this, other) || other is XdrSCEnvMetaKind && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const SC_ENV_META_KIND_INTERFACE_VERSION =
-      const XdrSCEnvMetaKind._internal(0);
+  static const SC_ENV_META_KIND_INTERFACE_VERSION = const XdrSCEnvMetaKind._internal(0);
 
   static XdrSCEnvMetaKind decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -49,5 +48,34 @@ class XdrSCEnvMetaKind {
   static XdrSCEnvMetaKind fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCEnvMetaKind.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'SC_ENV_META_KIND_INTERFACE_VERSION';
+      default: return 'XdrSCEnvMetaKind#$_value';
+    }
+  }
+
+  static XdrSCEnvMetaKind fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrSCEnvMetaKind fromTxRepName(String name) {
+    switch (name) {
+      case 'SC_ENV_META_KIND_INTERFACE_VERSION': return SC_ENV_META_KIND_INTERFACE_VERSION;
+      default:
+        if (name.startsWith('XdrSCEnvMetaKind#')) {
+          int? val = int.tryParse(name.substring('XdrSCEnvMetaKind#'.length));
+          if (val != null) return XdrSCEnvMetaKind._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

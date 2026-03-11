@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
 import 'xdr_signer_key.dart';
 
 class XdrRevokeSponsorshipSigner {
+
   XdrAccountID _accountId;
   XdrAccountID get accountId => this._accountId;
   set accountId(XdrAccountID value) => this._accountId = value;
@@ -21,10 +23,7 @@ class XdrRevokeSponsorshipSigner {
 
   XdrRevokeSponsorshipSigner(this._accountId, this._signerKey);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrRevokeSponsorshipSigner encodedRevokeSponsorshipSigner,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrRevokeSponsorshipSigner encodedRevokeSponsorshipSigner) {
     XdrAccountID.encode(stream, encodedRevokeSponsorshipSigner.accountId);
     XdrSignerKey.encode(stream, encodedRevokeSponsorshipSigner.signerKey);
   }
@@ -41,10 +40,19 @@ class XdrRevokeSponsorshipSigner {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrRevokeSponsorshipSigner fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrRevokeSponsorshipSigner fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrRevokeSponsorshipSigner.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.accountID: ${TxRepHelper.formatAccountId(_accountId)}');
+    lines.add('$prefix.signerKey: ${TxRepHelper.formatSignerKey(_signerKey)}');
+  }
+
+  static XdrRevokeSponsorshipSigner fromTxRep(Map<String, String> map, String prefix) {
+    XdrAccountID accountId = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.accountID') ?? '');
+    XdrSignerKey signerKey = TxRepHelper.parseSignerKey(TxRepHelper.getValue(map, '$prefix.signerKey') ?? '');
+    return XdrRevokeSponsorshipSigner(accountId, signerKey);
   }
 }

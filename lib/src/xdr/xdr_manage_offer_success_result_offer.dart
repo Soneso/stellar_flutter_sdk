@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_manage_offer_effect.dart';
 import 'xdr_offer_entry.dart';
@@ -29,18 +30,12 @@ class XdrManageOfferSuccessResultOffer {
 
   set offer(XdrOfferEntry? value) => this._offer = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrManageOfferSuccessResultOffer encodedManageOfferSuccessResultOffer,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrManageOfferSuccessResultOffer encodedManageOfferSuccessResultOffer) {
     stream.writeInt(encodedManageOfferSuccessResultOffer.discriminant.value);
     switch (encodedManageOfferSuccessResultOffer.discriminant) {
       case XdrManageOfferEffect.MANAGE_OFFER_CREATED:
       case XdrManageOfferEffect.MANAGE_OFFER_UPDATED:
-        XdrOfferEntry.encode(
-          stream,
-          encodedManageOfferSuccessResultOffer._offer!,
-        );
+        XdrOfferEntry.encode(stream, encodedManageOfferSuccessResultOffer._offer!);
         break;
       case XdrManageOfferEffect.MANAGE_OFFER_DELETED:
         break;
@@ -50,14 +45,11 @@ class XdrManageOfferSuccessResultOffer {
   }
 
   static XdrManageOfferSuccessResultOffer decode(XdrDataInputStream stream) {
-    XdrManageOfferSuccessResultOffer decodedManageOfferSuccessResultOffer =
-        XdrManageOfferSuccessResultOffer(XdrManageOfferEffect.decode(stream));
+    XdrManageOfferSuccessResultOffer decodedManageOfferSuccessResultOffer = XdrManageOfferSuccessResultOffer(XdrManageOfferEffect.decode(stream));
     switch (decodedManageOfferSuccessResultOffer.discriminant) {
       case XdrManageOfferEffect.MANAGE_OFFER_CREATED:
       case XdrManageOfferEffect.MANAGE_OFFER_UPDATED:
-        decodedManageOfferSuccessResultOffer._offer = XdrOfferEntry.decode(
-          stream,
-        );
+        decodedManageOfferSuccessResultOffer._offer = XdrOfferEntry.decode(stream);
         break;
       case XdrManageOfferEffect.MANAGE_OFFER_DELETED:
         break;
@@ -73,10 +65,38 @@ class XdrManageOfferSuccessResultOffer {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrManageOfferSuccessResultOffer fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrManageOfferSuccessResultOffer fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrManageOfferSuccessResultOffer.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.effect: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrManageOfferEffect.MANAGE_OFFER_CREATED:
+      case XdrManageOfferEffect.MANAGE_OFFER_UPDATED:
+        _offer!.toTxRep('$prefix.offer', lines);
+        break;
+      case XdrManageOfferEffect.MANAGE_OFFER_DELETED:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrManageOfferSuccessResultOffer fromTxRep(Map<String, String> map, String prefix) {
+    XdrManageOfferEffect disc = XdrManageOfferEffect.fromTxRepName(TxRepHelper.getValue(map, '$prefix.effect') ?? '');
+    XdrManageOfferSuccessResultOffer result = XdrManageOfferSuccessResultOffer(disc);
+    switch (result.discriminant) {
+      case XdrManageOfferEffect.MANAGE_OFFER_CREATED:
+      case XdrManageOfferEffect.MANAGE_OFFER_UPDATED:
+        result._offer = XdrOfferEntry.fromTxRep(map, '$prefix.offer');
+        break;
+      case XdrManageOfferEffect.MANAGE_OFFER_DELETED:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

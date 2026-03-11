@@ -6,10 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrSendMoreExtended {
+
   XdrUint32 _numMessages;
   XdrUint32 get numMessages => this._numMessages;
   set numMessages(XdrUint32 value) => this._numMessages = value;
@@ -20,10 +22,7 @@ class XdrSendMoreExtended {
 
   XdrSendMoreExtended(this._numMessages, this._numBytes);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSendMoreExtended encodedSendMoreExtended,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSendMoreExtended encodedSendMoreExtended) {
     XdrUint32.encode(stream, encodedSendMoreExtended.numMessages);
     XdrUint32.encode(stream, encodedSendMoreExtended.numBytes);
   }
@@ -43,5 +42,16 @@ class XdrSendMoreExtended {
   static XdrSendMoreExtended fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSendMoreExtended.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _numMessages.toTxRep('$prefix.numMessages', lines);
+    _numBytes.toTxRep('$prefix.numBytes', lines);
+  }
+
+  static XdrSendMoreExtended fromTxRep(Map<String, String> map, String prefix) {
+    XdrUint32 numMessages = XdrUint32.fromTxRep(map, '$prefix.numMessages');
+    XdrUint32 numBytes = XdrUint32.fromTxRep(map, '$prefix.numBytes');
+    return XdrSendMoreExtended(numMessages, numBytes);
   }
 }

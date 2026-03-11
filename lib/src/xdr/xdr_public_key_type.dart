@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrPublicKeyType {
@@ -17,8 +18,7 @@ class XdrPublicKeyType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrPublicKeyType && _value == other._value;
+      identical(this, other) || other is XdrPublicKeyType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -48,5 +48,34 @@ class XdrPublicKeyType {
   static XdrPublicKeyType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPublicKeyType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'PUBLIC_KEY_TYPE_ED25519';
+      default: return 'XdrPublicKeyType#$_value';
+    }
+  }
+
+  static XdrPublicKeyType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrPublicKeyType fromTxRepName(String name) {
+    switch (name) {
+      case 'PUBLIC_KEY_TYPE_ED25519': return PUBLIC_KEY_TYPE_ED25519;
+      default:
+        if (name.startsWith('XdrPublicKeyType#')) {
+          int? val = int.tryParse(name.substring('XdrPublicKeyType#'.length));
+          if (val != null) return XdrPublicKeyType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

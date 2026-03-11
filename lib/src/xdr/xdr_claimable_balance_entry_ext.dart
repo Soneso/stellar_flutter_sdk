@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_claimable_balance_entry_ext_v1.dart';
 import 'xdr_data_io.dart';
 
@@ -27,19 +28,13 @@ class XdrClaimableBalanceEntryExt {
 
   set v1(XdrClaimableBalanceEntryExtV1? value) => this._v1 = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrClaimableBalanceEntryExt encodedClaimableBalanceEntryExt,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrClaimableBalanceEntryExt encodedClaimableBalanceEntryExt) {
     stream.writeInt(encodedClaimableBalanceEntryExt.discriminant);
     switch (encodedClaimableBalanceEntryExt.discriminant) {
       case 0:
         break;
       case 1:
-        XdrClaimableBalanceEntryExtV1.encode(
-          stream,
-          encodedClaimableBalanceEntryExt._v1!,
-        );
+        XdrClaimableBalanceEntryExtV1.encode(stream, encodedClaimableBalanceEntryExt._v1!);
         break;
       default:
         break;
@@ -48,14 +43,12 @@ class XdrClaimableBalanceEntryExt {
 
   static XdrClaimableBalanceEntryExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrClaimableBalanceEntryExt decodedClaimableBalanceEntryExt =
-        XdrClaimableBalanceEntryExt(discriminant);
+    XdrClaimableBalanceEntryExt decodedClaimableBalanceEntryExt = XdrClaimableBalanceEntryExt(discriminant);
     switch (decodedClaimableBalanceEntryExt.discriminant) {
       case 0:
         break;
       case 1:
-        decodedClaimableBalanceEntryExt._v1 =
-            XdrClaimableBalanceEntryExtV1.decode(stream);
+        decodedClaimableBalanceEntryExt._v1 = XdrClaimableBalanceEntryExtV1.decode(stream);
         break;
       default:
         break;
@@ -69,10 +62,36 @@ class XdrClaimableBalanceEntryExt {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrClaimableBalanceEntryExt fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrClaimableBalanceEntryExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimableBalanceEntryExt.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        break;
+      case 1:
+        _v1!.toTxRep('$prefix.v1', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrClaimableBalanceEntryExt fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrClaimableBalanceEntryExt result = XdrClaimableBalanceEntryExt(disc);
+    switch (result.discriminant) {
+      case 0:
+        break;
+      case 1:
+        result._v1 = XdrClaimableBalanceEntryExtV1.fromTxRep(map, '$prefix.v1');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

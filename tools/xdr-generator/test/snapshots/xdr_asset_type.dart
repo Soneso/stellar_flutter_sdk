@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrAssetType {
@@ -56,5 +57,40 @@ class XdrAssetType {
   static XdrAssetType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAssetType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'ASSET_TYPE_NATIVE';
+      case 1: return 'ASSET_TYPE_CREDIT_ALPHANUM4';
+      case 2: return 'ASSET_TYPE_CREDIT_ALPHANUM12';
+      case 3: return 'ASSET_TYPE_POOL_SHARE';
+      default: return 'XdrAssetType#$_value';
+    }
+  }
+
+  static XdrAssetType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrAssetType fromTxRepName(String name) {
+    switch (name) {
+      case 'ASSET_TYPE_NATIVE': return ASSET_TYPE_NATIVE;
+      case 'ASSET_TYPE_CREDIT_ALPHANUM4': return ASSET_TYPE_CREDIT_ALPHANUM4;
+      case 'ASSET_TYPE_CREDIT_ALPHANUM12': return ASSET_TYPE_CREDIT_ALPHANUM12;
+      case 'ASSET_TYPE_POOL_SHARE': return ASSET_TYPE_POOL_SHARE;
+      default:
+        if (name.startsWith('XdrAssetType#')) {
+          int? val = int.tryParse(name.substring('XdrAssetType#'.length));
+          if (val != null) return XdrAssetType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

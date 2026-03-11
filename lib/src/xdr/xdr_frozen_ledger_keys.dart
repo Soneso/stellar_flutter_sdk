@@ -6,20 +6,19 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_encoded_ledger_key.dart';
 
 class XdrFrozenLedgerKeys {
+
   List<XdrEncodedLedgerKey> _keys;
   List<XdrEncodedLedgerKey> get keys => this._keys;
   set keys(List<XdrEncodedLedgerKey> value) => this._keys = value;
 
   XdrFrozenLedgerKeys(this._keys);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrFrozenLedgerKeys encodedFrozenLedgerKeys,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrFrozenLedgerKeys encodedFrozenLedgerKeys) {
     int keyssize = encodedFrozenLedgerKeys.keys.length;
     stream.writeInt(keyssize);
     for (int i = 0; i < keyssize; i++) {
@@ -29,9 +28,7 @@ class XdrFrozenLedgerKeys {
 
   static XdrFrozenLedgerKeys decode(XdrDataInputStream stream) {
     int keyssize = stream.readInt();
-    List<XdrEncodedLedgerKey> keys = List<XdrEncodedLedgerKey>.empty(
-      growable: true,
-    );
+    List<XdrEncodedLedgerKey> keys = List<XdrEncodedLedgerKey>.empty(growable: true);
     for (int i = 0; i < keyssize; i++) {
       keys.add(XdrEncodedLedgerKey.decode(stream));
     }
@@ -47,5 +44,21 @@ class XdrFrozenLedgerKeys {
   static XdrFrozenLedgerKeys fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFrozenLedgerKeys.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.keys.len: ${_keys.length}');
+    for (int i = 0; i < _keys.length; i++) {
+      _keys[i].toTxRep('$prefix.keys[$i]', lines);
+    }
+  }
+
+  static XdrFrozenLedgerKeys fromTxRep(Map<String, String> map, String prefix) {
+    int keysLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.keys.len') ?? '0');
+    List<XdrEncodedLedgerKey> keys = [];
+    for (int i = 0; i < keysLen; i++) {
+      keys.add(XdrEncodedLedgerKey.fromTxRep(map, '$prefix.keys[$i]'));
+    }
+    return XdrFrozenLedgerKeys(keys);
   }
 }

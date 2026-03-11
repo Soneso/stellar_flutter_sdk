@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSequenceNumber {
@@ -15,10 +16,7 @@ class XdrSequenceNumber {
   BigInt get sequenceNumber => this._sequenceNumber;
   set sequenceNumber(BigInt value) => this._sequenceNumber = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSequenceNumber encodedSequenceNumber,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSequenceNumber encodedSequenceNumber) {
     stream.writeBigInt64(encodedSequenceNumber.sequenceNumber);
   }
 
@@ -35,5 +33,15 @@ class XdrSequenceNumber {
   static XdrSequenceNumber fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSequenceNumber.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: $_sequenceNumber');
+  }
+
+  static XdrSequenceNumber fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return XdrSequenceNumber(TxRepHelper.parseBigInt(raw));
   }
 }

@@ -6,35 +6,29 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_config_setting_entry.dart';
 import 'xdr_data_io.dart';
 
 class XdrConfigUpgradeSet {
+
   List<XdrConfigSettingEntry> _updatedEntry;
   List<XdrConfigSettingEntry> get updatedEntry => this._updatedEntry;
-  set updatedEntry(List<XdrConfigSettingEntry> value) =>
-      this._updatedEntry = value;
+  set updatedEntry(List<XdrConfigSettingEntry> value) => this._updatedEntry = value;
 
   XdrConfigUpgradeSet(this._updatedEntry);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrConfigUpgradeSet encodedConfigUpgradeSet,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrConfigUpgradeSet encodedConfigUpgradeSet) {
     int updatedEntrysize = encodedConfigUpgradeSet.updatedEntry.length;
     stream.writeInt(updatedEntrysize);
     for (int i = 0; i < updatedEntrysize; i++) {
-      XdrConfigSettingEntry.encode(
-        stream,
-        encodedConfigUpgradeSet.updatedEntry[i],
-      );
+      XdrConfigSettingEntry.encode(stream, encodedConfigUpgradeSet.updatedEntry[i]);
     }
   }
 
   static XdrConfigUpgradeSet decode(XdrDataInputStream stream) {
     int updatedEntrysize = stream.readInt();
-    List<XdrConfigSettingEntry> updatedEntry =
-        List<XdrConfigSettingEntry>.empty(growable: true);
+    List<XdrConfigSettingEntry> updatedEntry = List<XdrConfigSettingEntry>.empty(growable: true);
     for (int i = 0; i < updatedEntrysize; i++) {
       updatedEntry.add(XdrConfigSettingEntry.decode(stream));
     }
@@ -50,5 +44,21 @@ class XdrConfigUpgradeSet {
   static XdrConfigUpgradeSet fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigUpgradeSet.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.updatedEntry.len: ${_updatedEntry.length}');
+    for (int i = 0; i < _updatedEntry.length; i++) {
+      _updatedEntry[i].toTxRep('$prefix.updatedEntry[$i]', lines);
+    }
+  }
+
+  static XdrConfigUpgradeSet fromTxRep(Map<String, String> map, String prefix) {
+    int updatedEntryLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.updatedEntry.len') ?? '0');
+    List<XdrConfigSettingEntry> updatedEntry = [];
+    for (int i = 0; i < updatedEntryLen; i++) {
+      updatedEntry.add(XdrConfigSettingEntry.fromTxRep(map, '$prefix.updatedEntry[$i]'));
+    }
+    return XdrConfigUpgradeSet(updatedEntry);
   }
 }

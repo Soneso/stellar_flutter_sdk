@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_bump_sequence_result_code.dart';
 import 'xdr_data_io.dart';
 
@@ -22,10 +23,7 @@ class XdrBumpSequenceResult {
 
   XdrBumpSequenceResult(this._code);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrBumpSequenceResult encodedBumpSequenceResult,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrBumpSequenceResult encodedBumpSequenceResult) {
     stream.writeInt(encodedBumpSequenceResult.discriminant.value);
     switch (encodedBumpSequenceResult.discriminant) {
       case XdrBumpSequenceResultCode.BUMP_SEQUENCE_SUCCESS:
@@ -38,9 +36,7 @@ class XdrBumpSequenceResult {
   }
 
   static XdrBumpSequenceResult decode(XdrDataInputStream stream) {
-    XdrBumpSequenceResult decodedBumpSequenceResult = XdrBumpSequenceResult(
-      XdrBumpSequenceResultCode.decode(stream),
-    );
+    XdrBumpSequenceResult decodedBumpSequenceResult = XdrBumpSequenceResult(XdrBumpSequenceResultCode.decode(stream));
     switch (decodedBumpSequenceResult.discriminant) {
       case XdrBumpSequenceResultCode.BUMP_SEQUENCE_SUCCESS:
         break;
@@ -58,10 +54,34 @@ class XdrBumpSequenceResult {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrBumpSequenceResult fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrBumpSequenceResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBumpSequenceResult.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.code: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrBumpSequenceResultCode.BUMP_SEQUENCE_SUCCESS:
+        break;
+      case XdrBumpSequenceResultCode.BUMP_SEQUENCE_BAD_SEQ:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrBumpSequenceResult fromTxRep(Map<String, String> map, String prefix) {
+    XdrBumpSequenceResultCode disc = XdrBumpSequenceResultCode.fromTxRepName(TxRepHelper.getValue(map, '$prefix.code') ?? '');
+    XdrBumpSequenceResult result = XdrBumpSequenceResult(disc);
+    switch (result.discriminant) {
+      case XdrBumpSequenceResultCode.BUMP_SEQUENCE_SUCCESS:
+        break;
+      case XdrBumpSequenceResultCode.BUMP_SEQUENCE_BAD_SEQ:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

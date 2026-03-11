@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_message_type.dart';
 import 'xdr_uint256.dart';
 
 class XdrDontHave {
+
   XdrMessageType _type;
   XdrMessageType get type => this._type;
   set type(XdrMessageType value) => this._type = value;
@@ -41,5 +43,16 @@ class XdrDontHave {
   static XdrDontHave fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrDontHave.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _type.toTxRep('$prefix.type', lines);
+    _reqHash.toTxRep('$prefix.reqHash', lines);
+  }
+
+  static XdrDontHave fromTxRep(Map<String, String> map, String prefix) {
+    XdrMessageType type = XdrMessageType.fromTxRep(map, '$prefix.type');
+    XdrUint256 reqHash = XdrUint256.fromTxRep(map, '$prefix.reqHash');
+    return XdrDontHave(type, reqHash);
   }
 }

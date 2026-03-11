@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint64.dart';
 
@@ -41,5 +42,16 @@ class XdrTimeBounds {
   static XdrTimeBounds fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTimeBounds.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _minTime.toTxRep('$prefix.minTime', lines);
+    _maxTime.toTxRep('$prefix.maxTime', lines);
+  }
+
+  static XdrTimeBounds fromTxRep(Map<String, String> map, String prefix) {
+    XdrUint64 minTime = XdrUint64.fromTxRep(map, '$prefix.minTime');
+    XdrUint64 maxTime = XdrUint64.fromTxRep(map, '$prefix.maxTime');
+    return XdrTimeBounds(minTime, maxTime);
   }
 }

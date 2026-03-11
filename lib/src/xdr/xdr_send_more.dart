@@ -6,10 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrSendMore {
+
   XdrUint32 _numMessages;
   XdrUint32 get numMessages => this._numMessages;
   set numMessages(XdrUint32 value) => this._numMessages = value;
@@ -34,5 +36,14 @@ class XdrSendMore {
   static XdrSendMore fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSendMore.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _numMessages.toTxRep('$prefix.numMessages', lines);
+  }
+
+  static XdrSendMore fromTxRep(Map<String, String> map, String prefix) {
+    XdrUint32 numMessages = XdrUint32.fromTxRep(map, '$prefix.numMessages');
+    return XdrSendMore(numMessages);
   }
 }

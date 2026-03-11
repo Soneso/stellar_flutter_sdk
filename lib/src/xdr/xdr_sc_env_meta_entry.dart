@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_env_meta_entry_interface_version.dart';
 import 'xdr_sc_env_meta_kind.dart';
@@ -23,25 +24,17 @@ class XdrSCEnvMetaEntry {
 
   XdrSCEnvMetaEntryInterfaceVersion? _interfaceVersion;
 
-  XdrSCEnvMetaEntryInterfaceVersion? get interfaceVersion =>
-      this._interfaceVersion;
+  XdrSCEnvMetaEntryInterfaceVersion? get interfaceVersion => this._interfaceVersion;
 
   XdrSCEnvMetaEntry(this._kind);
 
-  set interfaceVersion(XdrSCEnvMetaEntryInterfaceVersion? value) =>
-      this._interfaceVersion = value;
+  set interfaceVersion(XdrSCEnvMetaEntryInterfaceVersion? value) => this._interfaceVersion = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCEnvMetaEntry encodedSCEnvMetaEntry,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCEnvMetaEntry encodedSCEnvMetaEntry) {
     stream.writeInt(encodedSCEnvMetaEntry.discriminant.value);
     switch (encodedSCEnvMetaEntry.discriminant) {
       case XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION:
-        XdrSCEnvMetaEntryInterfaceVersion.encode(
-          stream,
-          encodedSCEnvMetaEntry._interfaceVersion!,
-        );
+        XdrSCEnvMetaEntryInterfaceVersion.encode(stream, encodedSCEnvMetaEntry._interfaceVersion!);
         break;
       default:
         break;
@@ -49,13 +42,10 @@ class XdrSCEnvMetaEntry {
   }
 
   static XdrSCEnvMetaEntry decode(XdrDataInputStream stream) {
-    XdrSCEnvMetaEntry decodedSCEnvMetaEntry = XdrSCEnvMetaEntry(
-      XdrSCEnvMetaKind.decode(stream),
-    );
+    XdrSCEnvMetaEntry decodedSCEnvMetaEntry = XdrSCEnvMetaEntry(XdrSCEnvMetaKind.decode(stream));
     switch (decodedSCEnvMetaEntry.discriminant) {
       case XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION:
-        decodedSCEnvMetaEntry._interfaceVersion =
-            XdrSCEnvMetaEntryInterfaceVersion.decode(stream);
+        decodedSCEnvMetaEntry._interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion.decode(stream);
         break;
       default:
         break;
@@ -72,5 +62,29 @@ class XdrSCEnvMetaEntry {
   static XdrSCEnvMetaEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCEnvMetaEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.kind: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION:
+        _interfaceVersion!.toTxRep('$prefix.interfaceVersion', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrSCEnvMetaEntry fromTxRep(Map<String, String> map, String prefix) {
+    XdrSCEnvMetaKind disc = XdrSCEnvMetaKind.fromTxRepName(TxRepHelper.getValue(map, '$prefix.kind') ?? '');
+    XdrSCEnvMetaEntry result = XdrSCEnvMetaEntry(disc);
+    switch (result.discriminant) {
+      case XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION:
+        result._interfaceVersion = XdrSCEnvMetaEntryInterfaceVersion.fromTxRep(map, '$prefix.interfaceVersion');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

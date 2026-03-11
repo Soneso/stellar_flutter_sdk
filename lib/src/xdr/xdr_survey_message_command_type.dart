@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSurveyMessageCommandType {
@@ -17,14 +18,12 @@ class XdrSurveyMessageCommandType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrSurveyMessageCommandType && _value == other._value;
+      identical(this, other) || other is XdrSurveyMessageCommandType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const TIME_SLICED_SURVEY_TOPOLOGY =
-      const XdrSurveyMessageCommandType._internal(1);
+  static const TIME_SLICED_SURVEY_TOPOLOGY = const XdrSurveyMessageCommandType._internal(1);
 
   static XdrSurveyMessageCommandType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -36,10 +35,7 @@ class XdrSurveyMessageCommandType {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSurveyMessageCommandType value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSurveyMessageCommandType value) {
     stream.writeInt(value.value);
   }
 
@@ -49,10 +45,37 @@ class XdrSurveyMessageCommandType {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSurveyMessageCommandType fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrSurveyMessageCommandType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSurveyMessageCommandType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 1: return 'TIME_SLICED_SURVEY_TOPOLOGY';
+      default: return 'XdrSurveyMessageCommandType#$_value';
+    }
+  }
+
+  static XdrSurveyMessageCommandType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrSurveyMessageCommandType fromTxRepName(String name) {
+    switch (name) {
+      case 'TIME_SLICED_SURVEY_TOPOLOGY': return TIME_SLICED_SURVEY_TOPOLOGY;
+      default:
+        if (name.startsWith('XdrSurveyMessageCommandType#')) {
+          int? val = int.tryParse(name.substring('XdrSurveyMessageCommandType#'.length));
+          if (val != null) return XdrSurveyMessageCommandType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

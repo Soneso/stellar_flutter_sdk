@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_entry_ext.dart';
 import 'xdr_data_io.dart';
@@ -56,5 +57,20 @@ class XdrDataEntry {
   static XdrDataEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrDataEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.accountID: ${TxRepHelper.formatAccountId(_accountID)}');
+    _dataName.toTxRep('$prefix.dataName', lines);
+    _dataValue.toTxRep('$prefix.dataValue', lines);
+    _ext.toTxRep('$prefix.ext', lines);
+  }
+
+  static XdrDataEntry fromTxRep(Map<String, String> map, String prefix) {
+    XdrAccountID accountID = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.accountID') ?? '');
+    XdrString64 dataName = XdrString64.fromTxRep(map, '$prefix.dataName');
+    XdrDataValue dataValue = XdrDataValue.fromTxRep(map, '$prefix.dataValue');
+    XdrDataEntryExt ext = XdrDataEntryExt.fromTxRep(map, '$prefix.ext');
+    return XdrDataEntry(accountID, dataName, dataValue, ext);
   }
 }

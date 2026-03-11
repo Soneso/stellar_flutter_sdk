@@ -6,40 +6,31 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_soroban_authorized_invocation.dart';
 import 'xdr_soroban_credentials.dart';
 
 class XdrSorobanAuthorizationEntry {
+
   XdrSorobanCredentials _credentials;
   XdrSorobanCredentials get credentials => this._credentials;
   set credentials(XdrSorobanCredentials value) => this._credentials = value;
 
   XdrSorobanAuthorizedInvocation _rootInvocation;
   XdrSorobanAuthorizedInvocation get rootInvocation => this._rootInvocation;
-  set rootInvocation(XdrSorobanAuthorizedInvocation value) =>
-      this._rootInvocation = value;
+  set rootInvocation(XdrSorobanAuthorizedInvocation value) => this._rootInvocation = value;
 
   XdrSorobanAuthorizationEntry(this._credentials, this._rootInvocation);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSorobanAuthorizationEntry encodedSorobanAuthorizationEntry,
-  ) {
-    XdrSorobanCredentials.encode(
-      stream,
-      encodedSorobanAuthorizationEntry.credentials,
-    );
-    XdrSorobanAuthorizedInvocation.encode(
-      stream,
-      encodedSorobanAuthorizationEntry.rootInvocation,
-    );
+  static void encode(XdrDataOutputStream stream, XdrSorobanAuthorizationEntry encodedSorobanAuthorizationEntry) {
+    XdrSorobanCredentials.encode(stream, encodedSorobanAuthorizationEntry.credentials);
+    XdrSorobanAuthorizedInvocation.encode(stream, encodedSorobanAuthorizationEntry.rootInvocation);
   }
 
   static XdrSorobanAuthorizationEntry decode(XdrDataInputStream stream) {
     XdrSorobanCredentials credentials = XdrSorobanCredentials.decode(stream);
-    XdrSorobanAuthorizedInvocation rootInvocation =
-        XdrSorobanAuthorizedInvocation.decode(stream);
+    XdrSorobanAuthorizedInvocation rootInvocation = XdrSorobanAuthorizedInvocation.decode(stream);
     return XdrSorobanAuthorizationEntry(credentials, rootInvocation);
   }
 
@@ -49,10 +40,19 @@ class XdrSorobanAuthorizationEntry {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSorobanAuthorizationEntry fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrSorobanAuthorizationEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanAuthorizationEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _credentials.toTxRep('$prefix.credentials', lines);
+    _rootInvocation.toTxRep('$prefix.rootInvocation', lines);
+  }
+
+  static XdrSorobanAuthorizationEntry fromTxRep(Map<String, String> map, String prefix) {
+    XdrSorobanCredentials credentials = XdrSorobanCredentials.fromTxRep(map, '$prefix.credentials');
+    XdrSorobanAuthorizedInvocation rootInvocation = XdrSorobanAuthorizedInvocation.fromTxRep(map, '$prefix.rootInvocation');
+    return XdrSorobanAuthorizationEntry(credentials, rootInvocation);
   }
 }

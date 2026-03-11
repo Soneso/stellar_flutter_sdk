@@ -6,48 +6,35 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_soroban_authorized_function.dart';
 
 class XdrSorobanAuthorizedInvocation {
+
   XdrSorobanAuthorizedFunction _function;
   XdrSorobanAuthorizedFunction get function => this._function;
   set function(XdrSorobanAuthorizedFunction value) => this._function = value;
 
   List<XdrSorobanAuthorizedInvocation> _subInvocations;
-  List<XdrSorobanAuthorizedInvocation> get subInvocations =>
-      this._subInvocations;
-  set subInvocations(List<XdrSorobanAuthorizedInvocation> value) =>
-      this._subInvocations = value;
+  List<XdrSorobanAuthorizedInvocation> get subInvocations => this._subInvocations;
+  set subInvocations(List<XdrSorobanAuthorizedInvocation> value) => this._subInvocations = value;
 
   XdrSorobanAuthorizedInvocation(this._function, this._subInvocations);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSorobanAuthorizedInvocation encodedSorobanAuthorizedInvocation,
-  ) {
-    XdrSorobanAuthorizedFunction.encode(
-      stream,
-      encodedSorobanAuthorizedInvocation.function,
-    );
-    int subInvocationssize =
-        encodedSorobanAuthorizedInvocation.subInvocations.length;
+  static void encode(XdrDataOutputStream stream, XdrSorobanAuthorizedInvocation encodedSorobanAuthorizedInvocation) {
+    XdrSorobanAuthorizedFunction.encode(stream, encodedSorobanAuthorizedInvocation.function);
+    int subInvocationssize = encodedSorobanAuthorizedInvocation.subInvocations.length;
     stream.writeInt(subInvocationssize);
     for (int i = 0; i < subInvocationssize; i++) {
-      XdrSorobanAuthorizedInvocation.encode(
-        stream,
-        encodedSorobanAuthorizedInvocation.subInvocations[i],
-      );
+      XdrSorobanAuthorizedInvocation.encode(stream, encodedSorobanAuthorizedInvocation.subInvocations[i]);
     }
   }
 
   static XdrSorobanAuthorizedInvocation decode(XdrDataInputStream stream) {
-    XdrSorobanAuthorizedFunction function = XdrSorobanAuthorizedFunction.decode(
-      stream,
-    );
+    XdrSorobanAuthorizedFunction function = XdrSorobanAuthorizedFunction.decode(stream);
     int subInvocationssize = stream.readInt();
-    List<XdrSorobanAuthorizedInvocation> subInvocations =
-        List<XdrSorobanAuthorizedInvocation>.empty(growable: true);
+    List<XdrSorobanAuthorizedInvocation> subInvocations = List<XdrSorobanAuthorizedInvocation>.empty(growable: true);
     for (int i = 0; i < subInvocationssize; i++) {
       subInvocations.add(XdrSorobanAuthorizedInvocation.decode(stream));
     }
@@ -60,10 +47,26 @@ class XdrSorobanAuthorizedInvocation {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSorobanAuthorizedInvocation fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrSorobanAuthorizedInvocation fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanAuthorizedInvocation.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _function.toTxRep('$prefix.function', lines);
+    lines.add('$prefix.subInvocations.len: ${_subInvocations.length}');
+    for (int i = 0; i < _subInvocations.length; i++) {
+      _subInvocations[i].toTxRep('$prefix.subInvocations[$i]', lines);
+    }
+  }
+
+  static XdrSorobanAuthorizedInvocation fromTxRep(Map<String, String> map, String prefix) {
+    XdrSorobanAuthorizedFunction function = XdrSorobanAuthorizedFunction.fromTxRep(map, '$prefix.function');
+    int subInvocationsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.subInvocations.len') ?? '0');
+    List<XdrSorobanAuthorizedInvocation> subInvocations = [];
+    for (int i = 0; i < subInvocationsLen; i++) {
+      subInvocations.add(XdrSorobanAuthorizedInvocation.fromTxRep(map, '$prefix.subInvocations[$i]'));
+    }
+    return XdrSorobanAuthorizedInvocation(function, subInvocations);
   }
 }

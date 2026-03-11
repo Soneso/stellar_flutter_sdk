@@ -6,20 +6,19 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 
 class XdrLedgerKeyTTL {
+
   XdrHash _keyHash;
   XdrHash get keyHash => this._keyHash;
   set keyHash(XdrHash value) => this._keyHash = value;
 
   XdrLedgerKeyTTL(this._keyHash);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLedgerKeyTTL encodedLedgerKeyTTL,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLedgerKeyTTL encodedLedgerKeyTTL) {
     XdrHash.encode(stream, encodedLedgerKeyTTL.keyHash);
   }
 
@@ -37,5 +36,14 @@ class XdrLedgerKeyTTL {
   static XdrLedgerKeyTTL fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerKeyTTL.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _keyHash.toTxRep('$prefix.keyHash', lines);
+  }
+
+  static XdrLedgerKeyTTL fromTxRep(Map<String, String> map, String prefix) {
+    XdrHash keyHash = XdrHash.fromTxRep(map, '$prefix.keyHash');
+    return XdrLedgerKeyTTL(keyHash);
   }
 }

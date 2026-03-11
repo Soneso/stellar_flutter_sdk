@@ -6,12 +6,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 import 'xdr_muxed_account.dart';
 
 class XdrPathPaymentStrictReceiveOp {
+
   XdrAsset _sendAsset;
   XdrAsset get sendAsset => this._sendAsset;
   set sendAsset(XdrAsset value) => this._sendAsset = value;
@@ -36,25 +38,12 @@ class XdrPathPaymentStrictReceiveOp {
   List<XdrAsset> get path => this._path;
   set path(List<XdrAsset> value) => this._path = value;
 
-  XdrPathPaymentStrictReceiveOp(
-    this._sendAsset,
-    this._sendMax,
-    this._destination,
-    this._destAsset,
-    this._destAmount,
-    this._path,
-  );
+  XdrPathPaymentStrictReceiveOp(this._sendAsset, this._sendMax, this._destination, this._destAsset, this._destAmount, this._path);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrPathPaymentStrictReceiveOp encodedPathPaymentStrictReceiveOp,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrPathPaymentStrictReceiveOp encodedPathPaymentStrictReceiveOp) {
     XdrAsset.encode(stream, encodedPathPaymentStrictReceiveOp.sendAsset);
     XdrInt64.encode(stream, encodedPathPaymentStrictReceiveOp.sendMax);
-    XdrMuxedAccount.encode(
-      stream,
-      encodedPathPaymentStrictReceiveOp.destination,
-    );
+    XdrMuxedAccount.encode(stream, encodedPathPaymentStrictReceiveOp.destination);
     XdrAsset.encode(stream, encodedPathPaymentStrictReceiveOp.destAsset);
     XdrInt64.encode(stream, encodedPathPaymentStrictReceiveOp.destAmount);
     int pathsize = encodedPathPaymentStrictReceiveOp.path.length;
@@ -75,14 +64,7 @@ class XdrPathPaymentStrictReceiveOp {
     for (int i = 0; i < pathsize; i++) {
       path.add(XdrAsset.decode(stream));
     }
-    return XdrPathPaymentStrictReceiveOp(
-      sendAsset,
-      sendMax,
-      destination,
-      destAsset,
-      destAmount,
-      path,
-    );
+    return XdrPathPaymentStrictReceiveOp(sendAsset, sendMax, destination, destAsset, destAmount, path);
   }
 
   String toBase64EncodedXdrString() {
@@ -91,10 +73,34 @@ class XdrPathPaymentStrictReceiveOp {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrPathPaymentStrictReceiveOp fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrPathPaymentStrictReceiveOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPathPaymentStrictReceiveOp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.sendAsset: ${TxRepHelper.formatAsset(_sendAsset)}');
+    _sendMax.toTxRep('$prefix.sendMax', lines);
+    lines.add('$prefix.destination: ${TxRepHelper.formatMuxedAccount(_destination)}');
+    lines.add('$prefix.destAsset: ${TxRepHelper.formatAsset(_destAsset)}');
+    _destAmount.toTxRep('$prefix.destAmount', lines);
+    lines.add('$prefix.path.len: ${_path.length}');
+    for (int i = 0; i < _path.length; i++) {
+      lines.add('$prefix.path[$i]: ${TxRepHelper.formatAsset(_path[i])}');
+    }
+  }
+
+  static XdrPathPaymentStrictReceiveOp fromTxRep(Map<String, String> map, String prefix) {
+    XdrAsset sendAsset = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.sendAsset') ?? '');
+    XdrInt64 sendMax = XdrInt64.fromTxRep(map, '$prefix.sendMax');
+    XdrMuxedAccount destination = TxRepHelper.parseMuxedAccount(TxRepHelper.getValue(map, '$prefix.destination') ?? '');
+    XdrAsset destAsset = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.destAsset') ?? '');
+    XdrInt64 destAmount = XdrInt64.fromTxRep(map, '$prefix.destAmount');
+    int pathLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.path.len') ?? '0');
+    List<XdrAsset> path = [];
+    for (int i = 0; i < pathLen; i++) {
+      path.add(TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.path[$i]') ?? ''));
+    }
+    return XdrPathPaymentStrictReceiveOp(sendAsset, sendMax, destination, destAsset, destAmount, path);
   }
 }

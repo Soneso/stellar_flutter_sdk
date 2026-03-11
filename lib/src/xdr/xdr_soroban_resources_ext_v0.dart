@@ -6,37 +6,29 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
 class XdrSorobanResourcesExtV0 {
+
   List<XdrUint32> _archivedSorobanEntries;
   List<XdrUint32> get archivedSorobanEntries => this._archivedSorobanEntries;
-  set archivedSorobanEntries(List<XdrUint32> value) =>
-      this._archivedSorobanEntries = value;
+  set archivedSorobanEntries(List<XdrUint32> value) => this._archivedSorobanEntries = value;
 
   XdrSorobanResourcesExtV0(this._archivedSorobanEntries);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSorobanResourcesExtV0 encodedSorobanResourcesExtV0,
-  ) {
-    int archivedSorobanEntriessize =
-        encodedSorobanResourcesExtV0.archivedSorobanEntries.length;
+  static void encode(XdrDataOutputStream stream, XdrSorobanResourcesExtV0 encodedSorobanResourcesExtV0) {
+    int archivedSorobanEntriessize = encodedSorobanResourcesExtV0.archivedSorobanEntries.length;
     stream.writeInt(archivedSorobanEntriessize);
     for (int i = 0; i < archivedSorobanEntriessize; i++) {
-      XdrUint32.encode(
-        stream,
-        encodedSorobanResourcesExtV0.archivedSorobanEntries[i],
-      );
+      XdrUint32.encode(stream, encodedSorobanResourcesExtV0.archivedSorobanEntries[i]);
     }
   }
 
   static XdrSorobanResourcesExtV0 decode(XdrDataInputStream stream) {
     int archivedSorobanEntriessize = stream.readInt();
-    List<XdrUint32> archivedSorobanEntries = List<XdrUint32>.empty(
-      growable: true,
-    );
+    List<XdrUint32> archivedSorobanEntries = List<XdrUint32>.empty(growable: true);
     for (int i = 0; i < archivedSorobanEntriessize; i++) {
       archivedSorobanEntries.add(XdrUint32.decode(stream));
     }
@@ -49,10 +41,24 @@ class XdrSorobanResourcesExtV0 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSorobanResourcesExtV0 fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrSorobanResourcesExtV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanResourcesExtV0.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.archivedSorobanEntries.len: ${_archivedSorobanEntries.length}');
+    for (int i = 0; i < _archivedSorobanEntries.length; i++) {
+      _archivedSorobanEntries[i].toTxRep('$prefix.archivedSorobanEntries[$i]', lines);
+    }
+  }
+
+  static XdrSorobanResourcesExtV0 fromTxRep(Map<String, String> map, String prefix) {
+    int archivedSorobanEntriesLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.archivedSorobanEntries.len') ?? '0');
+    List<XdrUint32> archivedSorobanEntries = [];
+    for (int i = 0; i < archivedSorobanEntriesLen; i++) {
+      archivedSorobanEntries.add(XdrUint32.fromTxRep(map, '$prefix.archivedSorobanEntries[$i]'));
+    }
+    return XdrSorobanResourcesExtV0(archivedSorobanEntries);
   }
 }

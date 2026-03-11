@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrLedgerEntryV1Ext {
@@ -20,10 +21,7 @@ class XdrLedgerEntryV1Ext {
 
   XdrLedgerEntryV1Ext(this._v);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLedgerEntryV1Ext encodedLedgerEntryV1Ext,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLedgerEntryV1Ext encodedLedgerEntryV1Ext) {
     stream.writeInt(encodedLedgerEntryV1Ext.discriminant);
     switch (encodedLedgerEntryV1Ext.discriminant) {
       case 0:
@@ -35,9 +33,7 @@ class XdrLedgerEntryV1Ext {
 
   static XdrLedgerEntryV1Ext decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrLedgerEntryV1Ext decodedLedgerEntryV1Ext = XdrLedgerEntryV1Ext(
-      discriminant,
-    );
+    XdrLedgerEntryV1Ext decodedLedgerEntryV1Ext = XdrLedgerEntryV1Ext(discriminant);
     switch (decodedLedgerEntryV1Ext.discriminant) {
       case 0:
         break;
@@ -56,5 +52,27 @@ class XdrLedgerEntryV1Ext {
   static XdrLedgerEntryV1Ext fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntryV1Ext.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrLedgerEntryV1Ext fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrLedgerEntryV1Ext result = XdrLedgerEntryV1Ext(disc);
+    switch (result.discriminant) {
+      case 0:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

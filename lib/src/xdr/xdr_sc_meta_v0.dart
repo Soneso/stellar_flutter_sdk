@@ -6,9 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSCMetaV0 {
+
   String _key;
   String get key => this._key;
   set key(String value) => this._key = value;
@@ -39,5 +41,16 @@ class XdrSCMetaV0 {
   static XdrSCMetaV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCMetaV0.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.key: ${TxRepHelper.escapeString(_key)}');
+    lines.add('$prefix.val: ${TxRepHelper.escapeString(_val)}');
+  }
+
+  static XdrSCMetaV0 fromTxRep(Map<String, String> map, String prefix) {
+    String key = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.key') ?? '');
+    String val = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '$prefix.val') ?? '');
+    return XdrSCMetaV0(key, val);
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrManageOfferEffect {
@@ -17,8 +18,7 @@ class XdrManageOfferEffect {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrManageOfferEffect && _value == other._value;
+      identical(this, other) || other is XdrManageOfferEffect && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -54,5 +54,38 @@ class XdrManageOfferEffect {
   static XdrManageOfferEffect fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrManageOfferEffect.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'MANAGE_OFFER_CREATED';
+      case 1: return 'MANAGE_OFFER_UPDATED';
+      case 2: return 'MANAGE_OFFER_DELETED';
+      default: return 'XdrManageOfferEffect#$_value';
+    }
+  }
+
+  static XdrManageOfferEffect fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrManageOfferEffect fromTxRepName(String name) {
+    switch (name) {
+      case 'MANAGE_OFFER_CREATED': return MANAGE_OFFER_CREATED;
+      case 'MANAGE_OFFER_UPDATED': return MANAGE_OFFER_UPDATED;
+      case 'MANAGE_OFFER_DELETED': return MANAGE_OFFER_DELETED;
+      default:
+        if (name.startsWith('XdrManageOfferEffect#')) {
+          int? val = int.tryParse(name.substring('XdrManageOfferEffect#'.length));
+          if (val != null) return XdrManageOfferEffect._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

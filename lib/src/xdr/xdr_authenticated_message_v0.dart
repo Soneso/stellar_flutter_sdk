@@ -6,12 +6,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hmac_sha256_mac.dart';
 import 'xdr_stellar_message.dart';
 import 'xdr_uint64.dart';
 
 class XdrAuthenticatedMessageV0 {
+
   XdrUint64 _sequence;
   XdrUint64 get sequence => this._sequence;
   set sequence(XdrUint64 value) => this._sequence = value;
@@ -26,10 +28,7 @@ class XdrAuthenticatedMessageV0 {
 
   XdrAuthenticatedMessageV0(this._sequence, this._message, this._mac);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrAuthenticatedMessageV0 encodedAuthenticatedMessageV0,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrAuthenticatedMessageV0 encodedAuthenticatedMessageV0) {
     XdrUint64.encode(stream, encodedAuthenticatedMessageV0.sequence);
     XdrStellarMessage.encode(stream, encodedAuthenticatedMessageV0.message);
     XdrHmacSha256Mac.encode(stream, encodedAuthenticatedMessageV0.mac);
@@ -48,10 +47,21 @@ class XdrAuthenticatedMessageV0 {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrAuthenticatedMessageV0 fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrAuthenticatedMessageV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAuthenticatedMessageV0.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _sequence.toTxRep('$prefix.sequence', lines);
+    _message.toTxRep('$prefix.message', lines);
+    _mac.toTxRep('$prefix.mac', lines);
+  }
+
+  static XdrAuthenticatedMessageV0 fromTxRep(Map<String, String> map, String prefix) {
+    XdrUint64 sequence = XdrUint64.fromTxRep(map, '$prefix.sequence');
+    XdrStellarMessage message = XdrStellarMessage.fromTxRep(map, '$prefix.message');
+    XdrHmacSha256Mac mac = XdrHmacSha256Mac.fromTxRep(map, '$prefix.mac');
+    return XdrAuthenticatedMessageV0(sequence, message, mac);
   }
 }

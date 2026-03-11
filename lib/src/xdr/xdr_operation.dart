@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_muxed_account.dart';
 import 'xdr_operation_body.dart';
 
 class XdrOperation {
+
   XdrMuxedAccount? _sourceAccount;
   XdrMuxedAccount? get sourceAccount => this._sourceAccount;
   set sourceAccount(XdrMuxedAccount? value) => this._sourceAccount = value;
@@ -21,10 +23,7 @@ class XdrOperation {
 
   XdrOperation(this._sourceAccount, this._body);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrOperation encodedOperation,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrOperation encodedOperation) {
     if (encodedOperation.sourceAccount != null) {
       stream.writeInt(1);
       XdrMuxedAccount.encode(stream, encodedOperation.sourceAccount!);
@@ -53,5 +52,25 @@ class XdrOperation {
   static XdrOperation fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrOperation.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    if (_sourceAccount != null) {
+      lines.add('$prefix.sourceAccount._present: true');
+      lines.add('$prefix.sourceAccount: ${TxRepHelper.formatMuxedAccount(_sourceAccount!)}');
+    } else {
+      lines.add('$prefix.sourceAccount._present: false');
+    }
+    _body.toTxRep('$prefix.body', lines);
+  }
+
+  static XdrOperation fromTxRep(Map<String, String> map, String prefix) {
+    XdrMuxedAccount? sourceAccount;
+    String? sourceAccountPresent = TxRepHelper.getValue(map, '$prefix.sourceAccount._present');
+    if (sourceAccountPresent != null && sourceAccountPresent == 'true') {
+      sourceAccount = TxRepHelper.parseMuxedAccount(TxRepHelper.getValue(map, '$prefix.sourceAccount') ?? '');
+    }
+    XdrOperationBody body = XdrOperationBody.fromTxRep(map, '$prefix.body');
+    return XdrOperation(sourceAccount, body);
   }
 }

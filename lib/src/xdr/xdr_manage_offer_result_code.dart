@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrManageOfferResultCode {
@@ -17,38 +18,24 @@ class XdrManageOfferResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrManageOfferResultCode && _value == other._value;
+      identical(this, other) || other is XdrManageOfferResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const MANAGE_SELL_OFFER_SUCCESS =
-      const XdrManageOfferResultCode._internal(0);
-  static const MANAGE_SELL_OFFER_MALFORMED =
-      const XdrManageOfferResultCode._internal(-1);
-  static const MANAGE_SELL_OFFER_SELL_NO_TRUST =
-      const XdrManageOfferResultCode._internal(-2);
-  static const MANAGE_SELL_OFFER_BUY_NO_TRUST =
-      const XdrManageOfferResultCode._internal(-3);
-  static const MANAGE_SELL_OFFER_SELL_NOT_AUTHORIZED =
-      const XdrManageOfferResultCode._internal(-4);
-  static const MANAGE_SELL_OFFER_BUY_NOT_AUTHORIZED =
-      const XdrManageOfferResultCode._internal(-5);
-  static const MANAGE_SELL_OFFER_LINE_FULL =
-      const XdrManageOfferResultCode._internal(-6);
-  static const MANAGE_SELL_OFFER_UNDERFUNDED =
-      const XdrManageOfferResultCode._internal(-7);
-  static const MANAGE_SELL_OFFER_CROSS_SELF =
-      const XdrManageOfferResultCode._internal(-8);
-  static const MANAGE_SELL_OFFER_SELL_NO_ISSUER =
-      const XdrManageOfferResultCode._internal(-9);
-  static const MANAGE_SELL_OFFER_BUY_NO_ISSUER =
-      const XdrManageOfferResultCode._internal(-10);
-  static const MANAGE_SELL_OFFER_NOT_FOUND =
-      const XdrManageOfferResultCode._internal(-11);
-  static const MANAGE_SELL_OFFER_LOW_RESERVE =
-      const XdrManageOfferResultCode._internal(-12);
+  static const MANAGE_SELL_OFFER_SUCCESS = const XdrManageOfferResultCode._internal(0);
+  static const MANAGE_SELL_OFFER_MALFORMED = const XdrManageOfferResultCode._internal(-1);
+  static const MANAGE_SELL_OFFER_SELL_NO_TRUST = const XdrManageOfferResultCode._internal(-2);
+  static const MANAGE_SELL_OFFER_BUY_NO_TRUST = const XdrManageOfferResultCode._internal(-3);
+  static const MANAGE_SELL_OFFER_SELL_NOT_AUTHORIZED = const XdrManageOfferResultCode._internal(-4);
+  static const MANAGE_SELL_OFFER_BUY_NOT_AUTHORIZED = const XdrManageOfferResultCode._internal(-5);
+  static const MANAGE_SELL_OFFER_LINE_FULL = const XdrManageOfferResultCode._internal(-6);
+  static const MANAGE_SELL_OFFER_UNDERFUNDED = const XdrManageOfferResultCode._internal(-7);
+  static const MANAGE_SELL_OFFER_CROSS_SELF = const XdrManageOfferResultCode._internal(-8);
+  static const MANAGE_SELL_OFFER_SELL_NO_ISSUER = const XdrManageOfferResultCode._internal(-9);
+  static const MANAGE_SELL_OFFER_BUY_NO_ISSUER = const XdrManageOfferResultCode._internal(-10);
+  static const MANAGE_SELL_OFFER_NOT_FOUND = const XdrManageOfferResultCode._internal(-11);
+  static const MANAGE_SELL_OFFER_LOW_RESERVE = const XdrManageOfferResultCode._internal(-12);
 
   static XdrManageOfferResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -84,10 +71,7 @@ class XdrManageOfferResultCode {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrManageOfferResultCode value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrManageOfferResultCode value) {
     stream.writeInt(value.value);
   }
 
@@ -97,10 +81,61 @@ class XdrManageOfferResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrManageOfferResultCode fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrManageOfferResultCode fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrManageOfferResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'MANAGE_SELL_OFFER_SUCCESS';
+      case -1: return 'MANAGE_SELL_OFFER_MALFORMED';
+      case -2: return 'MANAGE_SELL_OFFER_SELL_NO_TRUST';
+      case -3: return 'MANAGE_SELL_OFFER_BUY_NO_TRUST';
+      case -4: return 'MANAGE_SELL_OFFER_SELL_NOT_AUTHORIZED';
+      case -5: return 'MANAGE_SELL_OFFER_BUY_NOT_AUTHORIZED';
+      case -6: return 'MANAGE_SELL_OFFER_LINE_FULL';
+      case -7: return 'MANAGE_SELL_OFFER_UNDERFUNDED';
+      case -8: return 'MANAGE_SELL_OFFER_CROSS_SELF';
+      case -9: return 'MANAGE_SELL_OFFER_SELL_NO_ISSUER';
+      case -10: return 'MANAGE_SELL_OFFER_BUY_NO_ISSUER';
+      case -11: return 'MANAGE_SELL_OFFER_NOT_FOUND';
+      case -12: return 'MANAGE_SELL_OFFER_LOW_RESERVE';
+      default: return 'XdrManageOfferResultCode#$_value';
+    }
+  }
+
+  static XdrManageOfferResultCode fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrManageOfferResultCode fromTxRepName(String name) {
+    switch (name) {
+      case 'MANAGE_SELL_OFFER_SUCCESS': return MANAGE_SELL_OFFER_SUCCESS;
+      case 'MANAGE_SELL_OFFER_MALFORMED': return MANAGE_SELL_OFFER_MALFORMED;
+      case 'MANAGE_SELL_OFFER_SELL_NO_TRUST': return MANAGE_SELL_OFFER_SELL_NO_TRUST;
+      case 'MANAGE_SELL_OFFER_BUY_NO_TRUST': return MANAGE_SELL_OFFER_BUY_NO_TRUST;
+      case 'MANAGE_SELL_OFFER_SELL_NOT_AUTHORIZED': return MANAGE_SELL_OFFER_SELL_NOT_AUTHORIZED;
+      case 'MANAGE_SELL_OFFER_BUY_NOT_AUTHORIZED': return MANAGE_SELL_OFFER_BUY_NOT_AUTHORIZED;
+      case 'MANAGE_SELL_OFFER_LINE_FULL': return MANAGE_SELL_OFFER_LINE_FULL;
+      case 'MANAGE_SELL_OFFER_UNDERFUNDED': return MANAGE_SELL_OFFER_UNDERFUNDED;
+      case 'MANAGE_SELL_OFFER_CROSS_SELF': return MANAGE_SELL_OFFER_CROSS_SELF;
+      case 'MANAGE_SELL_OFFER_SELL_NO_ISSUER': return MANAGE_SELL_OFFER_SELL_NO_ISSUER;
+      case 'MANAGE_SELL_OFFER_BUY_NO_ISSUER': return MANAGE_SELL_OFFER_BUY_NO_ISSUER;
+      case 'MANAGE_SELL_OFFER_NOT_FOUND': return MANAGE_SELL_OFFER_NOT_FOUND;
+      case 'MANAGE_SELL_OFFER_LOW_RESERVE': return MANAGE_SELL_OFFER_LOW_RESERVE;
+      default:
+        if (name.startsWith('XdrManageOfferResultCode#')) {
+          int? val = int.tryParse(name.substring('XdrManageOfferResultCode#'.length));
+          if (val != null) return XdrManageOfferResultCode._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

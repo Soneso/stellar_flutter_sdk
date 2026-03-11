@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrOfferEntryFlags {
@@ -17,8 +18,7 @@ class XdrOfferEntryFlags {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrOfferEntryFlags && _value == other._value;
+      identical(this, other) || other is XdrOfferEntryFlags && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -48,5 +48,34 @@ class XdrOfferEntryFlags {
   static XdrOfferEntryFlags fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrOfferEntryFlags.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 1: return 'PASSIVE_FLAG';
+      default: return 'XdrOfferEntryFlags#$_value';
+    }
+  }
+
+  static XdrOfferEntryFlags fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrOfferEntryFlags fromTxRepName(String name) {
+    switch (name) {
+      case 'PASSIVE_FLAG': return PASSIVE_FLAG;
+      default:
+        if (name.startsWith('XdrOfferEntryFlags#')) {
+          int? val = int.tryParse(name.substring('XdrOfferEntryFlags#'.length));
+          if (val != null) return XdrOfferEntryFlags._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

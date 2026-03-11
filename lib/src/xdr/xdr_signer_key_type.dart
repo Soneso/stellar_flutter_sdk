@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSignerKeyType {
@@ -17,19 +18,15 @@ class XdrSignerKeyType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrSignerKeyType && _value == other._value;
+      identical(this, other) || other is XdrSignerKeyType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
   static const SIGNER_KEY_TYPE_ED25519 = const XdrSignerKeyType._internal(0);
-  static const SIGNER_KEY_TYPE_PRE_AUTH_TX = const XdrSignerKeyType._internal(
-    1,
-  );
+  static const SIGNER_KEY_TYPE_PRE_AUTH_TX = const XdrSignerKeyType._internal(1);
   static const SIGNER_KEY_TYPE_HASH_X = const XdrSignerKeyType._internal(2);
-  static const SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD =
-      const XdrSignerKeyType._internal(3);
+  static const SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD = const XdrSignerKeyType._internal(3);
 
   static XdrSignerKeyType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -60,5 +57,40 @@ class XdrSignerKeyType {
   static XdrSignerKeyType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSignerKeyType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'SIGNER_KEY_TYPE_ED25519';
+      case 1: return 'SIGNER_KEY_TYPE_PRE_AUTH_TX';
+      case 2: return 'SIGNER_KEY_TYPE_HASH_X';
+      case 3: return 'SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD';
+      default: return 'XdrSignerKeyType#$_value';
+    }
+  }
+
+  static XdrSignerKeyType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrSignerKeyType fromTxRepName(String name) {
+    switch (name) {
+      case 'SIGNER_KEY_TYPE_ED25519': return SIGNER_KEY_TYPE_ED25519;
+      case 'SIGNER_KEY_TYPE_PRE_AUTH_TX': return SIGNER_KEY_TYPE_PRE_AUTH_TX;
+      case 'SIGNER_KEY_TYPE_HASH_X': return SIGNER_KEY_TYPE_HASH_X;
+      case 'SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD': return SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD;
+      default:
+        if (name.startsWith('XdrSignerKeyType#')) {
+          int? val = int.tryParse(name.substring('XdrSignerKeyType#'.length));
+          if (val != null) return XdrSignerKeyType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

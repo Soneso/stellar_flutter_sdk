@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_claimable_balance_id_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
@@ -29,10 +30,7 @@ class XdrClaimableBalanceIDBase {
 
   set v0(XdrHash? value) => this._v0 = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrClaimableBalanceIDBase encodedClaimableBalanceID,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrClaimableBalanceIDBase encodedClaimableBalanceID) {
     stream.writeInt(encodedClaimableBalanceID.discriminant.value);
     switch (encodedClaimableBalanceID.discriminant) {
       case XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0:
@@ -68,10 +66,32 @@ class XdrClaimableBalanceIDBase {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrClaimableBalanceIDBase fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrClaimableBalanceIDBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimableBalanceIDBase.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0:
+        _v0!.toTxRep('$prefix.v0', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrClaimableBalanceIDBase fromTxRep(Map<String, String> map, String prefix) {
+    XdrClaimableBalanceIDType disc = XdrClaimableBalanceIDType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrClaimableBalanceIDBase result = XdrClaimableBalanceIDBase(disc);
+    switch (result.discriminant) {
+      case XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0:
+        result._v0 = XdrHash.fromTxRep(map, '$prefix.v0');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

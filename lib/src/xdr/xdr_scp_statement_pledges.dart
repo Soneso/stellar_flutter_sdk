@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_scp_nomination.dart';
 import 'xdr_scp_statement_confirm.dart';
@@ -46,34 +47,21 @@ class XdrSCPStatementPledges {
 
   set confirm(XdrSCPStatementConfirm? value) => this._confirm = value;
 
-  set externalize(XdrSCPStatementExternalize? value) =>
-      this._externalize = value;
+  set externalize(XdrSCPStatementExternalize? value) => this._externalize = value;
 
   set nominate(XdrSCPNomination? value) => this._nominate = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCPStatementPledges encodedSCPStatementPledges,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCPStatementPledges encodedSCPStatementPledges) {
     stream.writeInt(encodedSCPStatementPledges.discriminant.value);
     switch (encodedSCPStatementPledges.discriminant) {
       case XdrSCPStatementType.SCP_ST_PREPARE:
-        XdrSCPStatementPrepare.encode(
-          stream,
-          encodedSCPStatementPledges._prepare!,
-        );
+        XdrSCPStatementPrepare.encode(stream, encodedSCPStatementPledges._prepare!);
         break;
       case XdrSCPStatementType.SCP_ST_CONFIRM:
-        XdrSCPStatementConfirm.encode(
-          stream,
-          encodedSCPStatementPledges._confirm!,
-        );
+        XdrSCPStatementConfirm.encode(stream, encodedSCPStatementPledges._confirm!);
         break;
       case XdrSCPStatementType.SCP_ST_EXTERNALIZE:
-        XdrSCPStatementExternalize.encode(
-          stream,
-          encodedSCPStatementPledges._externalize!,
-        );
+        XdrSCPStatementExternalize.encode(stream, encodedSCPStatementPledges._externalize!);
         break;
       case XdrSCPStatementType.SCP_ST_NOMINATE:
         XdrSCPNomination.encode(stream, encodedSCPStatementPledges._nominate!);
@@ -84,23 +72,16 @@ class XdrSCPStatementPledges {
   }
 
   static XdrSCPStatementPledges decode(XdrDataInputStream stream) {
-    XdrSCPStatementPledges decodedSCPStatementPledges = XdrSCPStatementPledges(
-      XdrSCPStatementType.decode(stream),
-    );
+    XdrSCPStatementPledges decodedSCPStatementPledges = XdrSCPStatementPledges(XdrSCPStatementType.decode(stream));
     switch (decodedSCPStatementPledges.discriminant) {
       case XdrSCPStatementType.SCP_ST_PREPARE:
-        decodedSCPStatementPledges._prepare = XdrSCPStatementPrepare.decode(
-          stream,
-        );
+        decodedSCPStatementPledges._prepare = XdrSCPStatementPrepare.decode(stream);
         break;
       case XdrSCPStatementType.SCP_ST_CONFIRM:
-        decodedSCPStatementPledges._confirm = XdrSCPStatementConfirm.decode(
-          stream,
-        );
+        decodedSCPStatementPledges._confirm = XdrSCPStatementConfirm.decode(stream);
         break;
       case XdrSCPStatementType.SCP_ST_EXTERNALIZE:
-        decodedSCPStatementPledges._externalize =
-            XdrSCPStatementExternalize.decode(stream);
+        decodedSCPStatementPledges._externalize = XdrSCPStatementExternalize.decode(stream);
         break;
       case XdrSCPStatementType.SCP_ST_NOMINATE:
         decodedSCPStatementPledges._nominate = XdrSCPNomination.decode(stream);
@@ -117,10 +98,50 @@ class XdrSCPStatementPledges {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrSCPStatementPledges fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrSCPStatementPledges fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPStatementPledges.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrSCPStatementType.SCP_ST_PREPARE:
+        _prepare!.toTxRep('$prefix.prepare', lines);
+        break;
+      case XdrSCPStatementType.SCP_ST_CONFIRM:
+        _confirm!.toTxRep('$prefix.confirm', lines);
+        break;
+      case XdrSCPStatementType.SCP_ST_EXTERNALIZE:
+        _externalize!.toTxRep('$prefix.externalize', lines);
+        break;
+      case XdrSCPStatementType.SCP_ST_NOMINATE:
+        _nominate!.toTxRep('$prefix.nominate', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrSCPStatementPledges fromTxRep(Map<String, String> map, String prefix) {
+    XdrSCPStatementType disc = XdrSCPStatementType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrSCPStatementPledges result = XdrSCPStatementPledges(disc);
+    switch (result.discriminant) {
+      case XdrSCPStatementType.SCP_ST_PREPARE:
+        result._prepare = XdrSCPStatementPrepare.fromTxRep(map, '$prefix.prepare');
+        break;
+      case XdrSCPStatementType.SCP_ST_CONFIRM:
+        result._confirm = XdrSCPStatementConfirm.fromTxRep(map, '$prefix.confirm');
+        break;
+      case XdrSCPStatementType.SCP_ST_EXTERNALIZE:
+        result._externalize = XdrSCPStatementExternalize.fromTxRep(map, '$prefix.externalize');
+        break;
+      case XdrSCPStatementType.SCP_ST_NOMINATE:
+        result._nominate = XdrSCPNomination.fromTxRep(map, '$prefix.nominate');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

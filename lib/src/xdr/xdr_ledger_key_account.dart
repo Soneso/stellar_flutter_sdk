@@ -6,20 +6,19 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
 
 class XdrLedgerKeyAccount {
+
   XdrAccountID _accountID;
   XdrAccountID get accountID => this._accountID;
   set accountID(XdrAccountID value) => this._accountID = value;
 
   XdrLedgerKeyAccount(this._accountID);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLedgerKeyAccount encodedLedgerKeyAccount,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLedgerKeyAccount encodedLedgerKeyAccount) {
     XdrAccountID.encode(stream, encodedLedgerKeyAccount.accountID);
   }
 
@@ -37,5 +36,14 @@ class XdrLedgerKeyAccount {
   static XdrLedgerKeyAccount fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerKeyAccount.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.accountID: ${TxRepHelper.formatAccountId(_accountID)}');
+  }
+
+  static XdrLedgerKeyAccount fromTxRep(Map<String, String> map, String prefix) {
+    XdrAccountID accountID = TxRepHelper.parseAccountId(TxRepHelper.getValue(map, '$prefix.accountID') ?? '');
+    return XdrLedgerKeyAccount(accountID);
   }
 }

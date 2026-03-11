@@ -514,8 +514,9 @@ tx.operations.len: 1
 tx.operations[0].sourceAccount._present: false
 tx.operations[0].body.type: CREATE_CLAIMABLE_BALANCE
 tx.operations[0].body.createClaimableBalanceOp.asset: XLM
-tx.operations[0].body.createClaimableBalanceOp.amount: 100.0000000
+tx.operations[0].body.createClaimableBalanceOp.amount: 1000000000
 tx.operations[0].body.createClaimableBalanceOp.claimants.len: 1
+tx.operations[0].body.createClaimableBalanceOp.claimants[0].type: CLAIMANT_TYPE_V0
 tx.operations[0].body.createClaimableBalanceOp.claimants[0].v0.destination: $destinationAccountId
 tx.operations[0].body.createClaimableBalanceOp.claimants[0].v0.predicate.type: CLAIM_PREDICATE_NOT
 tx.operations[0].body.createClaimableBalanceOp.claimants[0].v0.predicate.notPredicate._present: true
@@ -543,8 +544,9 @@ tx.operations.len: 1
 tx.operations[0].sourceAccount._present: false
 tx.operations[0].body.type: CREATE_CLAIMABLE_BALANCE
 tx.operations[0].body.createClaimableBalanceOp.asset: XLM
-tx.operations[0].body.createClaimableBalanceOp.amount: 100.0000000
+tx.operations[0].body.createClaimableBalanceOp.amount: 1000000000
 tx.operations[0].body.createClaimableBalanceOp.claimants.len: 1
+tx.operations[0].body.createClaimableBalanceOp.claimants[0].type: CLAIMANT_TYPE_V0
 tx.operations[0].body.createClaimableBalanceOp.claimants[0].v0.destination: $destinationAccountId
 tx.operations[0].body.createClaimableBalanceOp.claimants[0].v0.predicate.type: CLAIM_PREDICATE_UNCONDITIONAL
 tx.ext.v: 0

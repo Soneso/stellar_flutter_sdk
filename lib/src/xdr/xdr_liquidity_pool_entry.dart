@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_liquidity_pool_body.dart';
 
 class XdrLiquidityPoolEntry {
+
   XdrHash _liquidityPoolID;
   XdrHash get liquidityPoolID => this._liquidityPoolID;
   set liquidityPoolID(XdrHash value) => this._liquidityPoolID = value;
@@ -21,10 +23,7 @@ class XdrLiquidityPoolEntry {
 
   XdrLiquidityPoolEntry(this._liquidityPoolID, this._body);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLiquidityPoolEntry encodedLiquidityPoolEntry,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolEntry encodedLiquidityPoolEntry) {
     XdrHash.encode(stream, encodedLiquidityPoolEntry.liquidityPoolID);
     XdrLiquidityPoolBody.encode(stream, encodedLiquidityPoolEntry.body);
   }
@@ -41,10 +40,19 @@ class XdrLiquidityPoolEntry {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLiquidityPoolEntry fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrLiquidityPoolEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _liquidityPoolID.toTxRep('$prefix.liquidityPoolID', lines);
+    _body.toTxRep('$prefix.body', lines);
+  }
+
+  static XdrLiquidityPoolEntry fromTxRep(Map<String, String> map, String prefix) {
+    XdrHash liquidityPoolID = XdrHash.fromTxRep(map, '$prefix.liquidityPoolID');
+    XdrLiquidityPoolBody body = XdrLiquidityPoolBody.fromTxRep(map, '$prefix.body');
+    return XdrLiquidityPoolEntry(liquidityPoolID, body);
   }
 }

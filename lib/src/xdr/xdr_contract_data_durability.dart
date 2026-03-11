@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrContractDataDurability {
@@ -17,8 +18,7 @@ class XdrContractDataDurability {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrContractDataDurability && _value == other._value;
+      identical(this, other) || other is XdrContractDataDurability && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -38,10 +38,7 @@ class XdrContractDataDurability {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrContractDataDurability value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrContractDataDurability value) {
     stream.writeInt(value.value);
   }
 
@@ -51,10 +48,39 @@ class XdrContractDataDurability {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrContractDataDurability fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrContractDataDurability fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractDataDurability.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'TEMPORARY';
+      case 1: return 'PERSISTENT';
+      default: return 'XdrContractDataDurability#$_value';
+    }
+  }
+
+  static XdrContractDataDurability fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrContractDataDurability fromTxRepName(String name) {
+    switch (name) {
+      case 'TEMPORARY': return TEMPORARY;
+      case 'PERSISTENT': return PERSISTENT;
+      default:
+        if (name.startsWith('XdrContractDataDurability#')) {
+          int? val = int.tryParse(name.substring('XdrContractDataDurability#'.length));
+          if (val != null) return XdrContractDataDurability._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

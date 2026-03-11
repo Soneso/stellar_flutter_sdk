@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrRestoreFootprintResultCode {
@@ -17,20 +18,15 @@ class XdrRestoreFootprintResultCode {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrRestoreFootprintResultCode && _value == other._value;
+      identical(this, other) || other is XdrRestoreFootprintResultCode && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const RESTORE_FOOTPRINT_SUCCESS =
-      const XdrRestoreFootprintResultCode._internal(0);
-  static const RESTORE_FOOTPRINT_MALFORMED =
-      const XdrRestoreFootprintResultCode._internal(-1);
-  static const RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED =
-      const XdrRestoreFootprintResultCode._internal(-2);
-  static const RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE =
-      const XdrRestoreFootprintResultCode._internal(-3);
+  static const RESTORE_FOOTPRINT_SUCCESS = const XdrRestoreFootprintResultCode._internal(0);
+  static const RESTORE_FOOTPRINT_MALFORMED = const XdrRestoreFootprintResultCode._internal(-1);
+  static const RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED = const XdrRestoreFootprintResultCode._internal(-2);
+  static const RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE = const XdrRestoreFootprintResultCode._internal(-3);
 
   static XdrRestoreFootprintResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -48,10 +44,7 @@ class XdrRestoreFootprintResultCode {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrRestoreFootprintResultCode value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrRestoreFootprintResultCode value) {
     stream.writeInt(value.value);
   }
 
@@ -61,10 +54,43 @@ class XdrRestoreFootprintResultCode {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrRestoreFootprintResultCode fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrRestoreFootprintResultCode fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrRestoreFootprintResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'RESTORE_FOOTPRINT_SUCCESS';
+      case -1: return 'RESTORE_FOOTPRINT_MALFORMED';
+      case -2: return 'RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED';
+      case -3: return 'RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE';
+      default: return 'XdrRestoreFootprintResultCode#$_value';
+    }
+  }
+
+  static XdrRestoreFootprintResultCode fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrRestoreFootprintResultCode fromTxRepName(String name) {
+    switch (name) {
+      case 'RESTORE_FOOTPRINT_SUCCESS': return RESTORE_FOOTPRINT_SUCCESS;
+      case 'RESTORE_FOOTPRINT_MALFORMED': return RESTORE_FOOTPRINT_MALFORMED;
+      case 'RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED': return RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED;
+      case 'RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE': return RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE;
+      default:
+        if (name.startsWith('XdrRestoreFootprintResultCode#')) {
+          int? val = int.tryParse(name.substring('XdrRestoreFootprintResultCode#'.length));
+          if (val != null) return XdrRestoreFootprintResultCode._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

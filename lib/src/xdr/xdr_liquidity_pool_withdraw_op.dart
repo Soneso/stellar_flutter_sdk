@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_int64.dart';
 
 class XdrLiquidityPoolWithdrawOp {
+
   XdrHash _liquidityPoolID;
   XdrHash get liquidityPoolID => this._liquidityPoolID;
   set liquidityPoolID(XdrHash value) => this._liquidityPoolID = value;
@@ -27,17 +29,9 @@ class XdrLiquidityPoolWithdrawOp {
   XdrInt64 get minAmountB => this._minAmountB;
   set minAmountB(XdrInt64 value) => this._minAmountB = value;
 
-  XdrLiquidityPoolWithdrawOp(
-    this._liquidityPoolID,
-    this._amount,
-    this._minAmountA,
-    this._minAmountB,
-  );
+  XdrLiquidityPoolWithdrawOp(this._liquidityPoolID, this._amount, this._minAmountA, this._minAmountB);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrLiquidityPoolWithdrawOp encodedLiquidityPoolWithdrawOp,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrLiquidityPoolWithdrawOp encodedLiquidityPoolWithdrawOp) {
     XdrHash.encode(stream, encodedLiquidityPoolWithdrawOp.liquidityPoolID);
     XdrInt64.encode(stream, encodedLiquidityPoolWithdrawOp.amount);
     XdrInt64.encode(stream, encodedLiquidityPoolWithdrawOp.minAmountA);
@@ -49,12 +43,7 @@ class XdrLiquidityPoolWithdrawOp {
     XdrInt64 amount = XdrInt64.decode(stream);
     XdrInt64 minAmountA = XdrInt64.decode(stream);
     XdrInt64 minAmountB = XdrInt64.decode(stream);
-    return XdrLiquidityPoolWithdrawOp(
-      liquidityPoolID,
-      amount,
-      minAmountA,
-      minAmountB,
-    );
+    return XdrLiquidityPoolWithdrawOp(liquidityPoolID, amount, minAmountA, minAmountB);
   }
 
   String toBase64EncodedXdrString() {
@@ -63,10 +52,23 @@ class XdrLiquidityPoolWithdrawOp {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrLiquidityPoolWithdrawOp fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrLiquidityPoolWithdrawOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolWithdrawOp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _liquidityPoolID.toTxRep('$prefix.liquidityPoolID', lines);
+    _amount.toTxRep('$prefix.amount', lines);
+    _minAmountA.toTxRep('$prefix.minAmountA', lines);
+    _minAmountB.toTxRep('$prefix.minAmountB', lines);
+  }
+
+  static XdrLiquidityPoolWithdrawOp fromTxRep(Map<String, String> map, String prefix) {
+    XdrHash liquidityPoolID = XdrHash.fromTxRep(map, '$prefix.liquidityPoolID');
+    XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.amount');
+    XdrInt64 minAmountA = XdrInt64.fromTxRep(map, '$prefix.minAmountA');
+    XdrInt64 minAmountB = XdrInt64.fromTxRep(map, '$prefix.minAmountB');
+    return XdrLiquidityPoolWithdrawOp(liquidityPoolID, amount, minAmountA, minAmountB);
   }
 }

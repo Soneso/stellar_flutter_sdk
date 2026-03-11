@@ -6,10 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_val.dart';
 
 class XdrSCMapEntry {
+
   XdrSCVal _key;
   XdrSCVal get key => this._key;
   set key(XdrSCVal value) => this._key = value;
@@ -20,10 +22,7 @@ class XdrSCMapEntry {
 
   XdrSCMapEntry(this._key, this._val);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCMapEntry encodedSCMapEntry,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCMapEntry encodedSCMapEntry) {
     XdrSCVal.encode(stream, encodedSCMapEntry.key);
     XdrSCVal.encode(stream, encodedSCMapEntry.val);
   }
@@ -43,5 +42,16 @@ class XdrSCMapEntry {
   static XdrSCMapEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCMapEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _key.toTxRep('$prefix.key', lines);
+    _val.toTxRep('$prefix.val', lines);
+  }
+
+  static XdrSCMapEntry fromTxRep(Map<String, String> map, String prefix) {
+    XdrSCVal key = XdrSCVal.fromTxRep(map, '$prefix.key');
+    XdrSCVal val = XdrSCVal.fromTxRep(map, '$prefix.val');
+    return XdrSCMapEntry(key, val);
   }
 }

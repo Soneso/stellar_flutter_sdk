@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrContractExecutableType {
@@ -17,16 +18,13 @@ class XdrContractExecutableType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrContractExecutableType && _value == other._value;
+      identical(this, other) || other is XdrContractExecutableType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
 
-  static const CONTRACT_EXECUTABLE_WASM =
-      const XdrContractExecutableType._internal(0);
-  static const CONTRACT_EXECUTABLE_STELLAR_ASSET =
-      const XdrContractExecutableType._internal(1);
+  static const CONTRACT_EXECUTABLE_WASM = const XdrContractExecutableType._internal(0);
+  static const CONTRACT_EXECUTABLE_STELLAR_ASSET = const XdrContractExecutableType._internal(1);
 
   static XdrContractExecutableType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -40,10 +38,7 @@ class XdrContractExecutableType {
     }
   }
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrContractExecutableType value,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrContractExecutableType value) {
     stream.writeInt(value.value);
   }
 
@@ -53,10 +48,39 @@ class XdrContractExecutableType {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrContractExecutableType fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrContractExecutableType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractExecutableType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'CONTRACT_EXECUTABLE_WASM';
+      case 1: return 'CONTRACT_EXECUTABLE_STELLAR_ASSET';
+      default: return 'XdrContractExecutableType#$_value';
+    }
+  }
+
+  static XdrContractExecutableType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrContractExecutableType fromTxRepName(String name) {
+    switch (name) {
+      case 'CONTRACT_EXECUTABLE_WASM': return CONTRACT_EXECUTABLE_WASM;
+      case 'CONTRACT_EXECUTABLE_STELLAR_ASSET': return CONTRACT_EXECUTABLE_STELLAR_ASSET;
+      default:
+        if (name.startsWith('XdrContractExecutableType#')) {
+          int? val = int.tryParse(name.substring('XdrContractExecutableType#'.length));
+          if (val != null) return XdrContractExecutableType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

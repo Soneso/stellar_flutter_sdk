@@ -28,6 +28,13 @@ class XdrPublicKey extends XdrPublicKeyBase {
     return XdrPublicKeyBase.decodeAs(stream, XdrPublicKey.new);
   }
 
+  static XdrPublicKey fromTxRep(Map<String, String> map, String prefix) {
+    var b = XdrPublicKeyBase.fromTxRep(map, prefix);
+    var result = XdrPublicKey(b.discriminant);
+    result.ed25519 = b.ed25519;
+    return result;
+  }
+
   static XdrPublicKey forAccountId(String accountId) {
     var keyPair = KeyPair.fromAccountId(accountId);
     var pk = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);

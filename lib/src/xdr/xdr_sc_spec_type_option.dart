@@ -6,20 +6,19 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_spec_type_def.dart';
 
 class XdrSCSpecTypeOption {
+
   XdrSCSpecTypeDef _valueType;
   XdrSCSpecTypeDef get valueType => this._valueType;
   set valueType(XdrSCSpecTypeDef value) => this._valueType = value;
 
   XdrSCSpecTypeOption(this._valueType);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrSCSpecTypeOption encodedSCSpecTypeOption,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrSCSpecTypeOption encodedSCSpecTypeOption) {
     XdrSCSpecTypeDef.encode(stream, encodedSCSpecTypeOption.valueType);
   }
 
@@ -37,5 +36,14 @@ class XdrSCSpecTypeOption {
   static XdrSCSpecTypeOption fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecTypeOption.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _valueType.toTxRep('$prefix.valueType', lines);
+  }
+
+  static XdrSCSpecTypeOption fromTxRep(Map<String, String> map, String prefix) {
+    XdrSCSpecTypeDef valueType = XdrSCSpecTypeDef.fromTxRep(map, '$prefix.valueType');
+    return XdrSCSpecTypeOption(valueType);
   }
 }

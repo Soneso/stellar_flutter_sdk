@@ -6,12 +6,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_claimant.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 
 class XdrCreateClaimableBalanceOp {
+
   XdrAsset _asset;
   XdrAsset get asset => this._asset;
   set asset(XdrAsset value) => this._asset = value;
@@ -26,10 +28,7 @@ class XdrCreateClaimableBalanceOp {
 
   XdrCreateClaimableBalanceOp(this._asset, this._amount, this._claimants);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrCreateClaimableBalanceOp encodedCreateClaimableBalanceOp,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrCreateClaimableBalanceOp encodedCreateClaimableBalanceOp) {
     XdrAsset.encode(stream, encodedCreateClaimableBalanceOp.asset);
     XdrInt64.encode(stream, encodedCreateClaimableBalanceOp.amount);
     int claimantssize = encodedCreateClaimableBalanceOp.claimants.length;
@@ -56,10 +55,28 @@ class XdrCreateClaimableBalanceOp {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrCreateClaimableBalanceOp fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrCreateClaimableBalanceOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCreateClaimableBalanceOp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.asset: ${TxRepHelper.formatAsset(_asset)}');
+    _amount.toTxRep('$prefix.amount', lines);
+    lines.add('$prefix.claimants.len: ${_claimants.length}');
+    for (int i = 0; i < _claimants.length; i++) {
+      _claimants[i].toTxRep('$prefix.claimants[$i]', lines);
+    }
+  }
+
+  static XdrCreateClaimableBalanceOp fromTxRep(Map<String, String> map, String prefix) {
+    XdrAsset asset = TxRepHelper.parseAsset(TxRepHelper.getValue(map, '$prefix.asset') ?? '');
+    XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.amount');
+    int claimantsLen = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.claimants.len') ?? '0');
+    List<XdrClaimant> claimants = [];
+    for (int i = 0; i < claimantsLen; i++) {
+      claimants.add(XdrClaimant.fromTxRep(map, '$prefix.claimants[$i]'));
+    }
+    return XdrCreateClaimableBalanceOp(asset, amount, claimants);
   }
 }

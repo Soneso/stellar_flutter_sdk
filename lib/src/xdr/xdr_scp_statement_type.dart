@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSCPStatementType {
@@ -17,8 +18,7 @@ class XdrSCPStatementType {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is XdrSCPStatementType && _value == other._value;
+      identical(this, other) || other is XdrSCPStatementType && _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -57,5 +57,40 @@ class XdrSCPStatementType {
   static XdrSCPStatementType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPStatementType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0: return 'SCP_ST_PREPARE';
+      case 1: return 'SCP_ST_CONFIRM';
+      case 2: return 'SCP_ST_EXTERNALIZE';
+      case 3: return 'SCP_ST_NOMINATE';
+      default: return 'XdrSCPStatementType#$_value';
+    }
+  }
+
+  static XdrSCPStatementType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrSCPStatementType fromTxRepName(String name) {
+    switch (name) {
+      case 'SCP_ST_PREPARE': return SCP_ST_PREPARE;
+      case 'SCP_ST_CONFIRM': return SCP_ST_CONFIRM;
+      case 'SCP_ST_EXTERNALIZE': return SCP_ST_EXTERNALIZE;
+      case 'SCP_ST_NOMINATE': return SCP_ST_NOMINATE;
+      default:
+        if (name.startsWith('XdrSCPStatementType#')) {
+          int? val = int.tryParse(name.substring('XdrSCPStatementType#'.length));
+          if (val != null) return XdrSCPStatementType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

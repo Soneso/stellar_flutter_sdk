@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrInnerTransactionResultExt {
@@ -20,10 +21,7 @@ class XdrInnerTransactionResultExt {
 
   XdrInnerTransactionResultExt(this._v);
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrInnerTransactionResultExt encodedInnerTransactionResultExt,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrInnerTransactionResultExt encodedInnerTransactionResultExt) {
     stream.writeInt(encodedInnerTransactionResultExt.discriminant);
     switch (encodedInnerTransactionResultExt.discriminant) {
       case 0:
@@ -35,8 +33,7 @@ class XdrInnerTransactionResultExt {
 
   static XdrInnerTransactionResultExt decode(XdrDataInputStream stream) {
     int discriminant = stream.readInt();
-    XdrInnerTransactionResultExt decodedInnerTransactionResultExt =
-        XdrInnerTransactionResultExt(discriminant);
+    XdrInnerTransactionResultExt decodedInnerTransactionResultExt = XdrInnerTransactionResultExt(discriminant);
     switch (decodedInnerTransactionResultExt.discriminant) {
       case 0:
         break;
@@ -52,10 +49,30 @@ class XdrInnerTransactionResultExt {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  static XdrInnerTransactionResultExt fromBase64EncodedXdrString(
-    String base64Encoded,
-  ) {
+  static XdrInnerTransactionResultExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInnerTransactionResultExt.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.v: $discriminant');
+    switch (discriminant) {
+      case 0:
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrInnerTransactionResultExt fromTxRep(Map<String, String> map, String prefix) {
+    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '$prefix.v') ?? '0');
+    XdrInnerTransactionResultExt result = XdrInnerTransactionResultExt(disc);
+    switch (result.discriminant) {
+      case 0:
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

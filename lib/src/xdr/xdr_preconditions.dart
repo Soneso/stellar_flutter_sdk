@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_precondition_type.dart';
 import 'xdr_preconditions_v2.dart';
@@ -36,10 +37,7 @@ class XdrPreconditions {
 
   set v2(XdrPreconditionsV2? value) => this._v2 = value;
 
-  static void encode(
-    XdrDataOutputStream stream,
-    XdrPreconditions encodedPreconditions,
-  ) {
+  static void encode(XdrDataOutputStream stream, XdrPreconditions encodedPreconditions) {
     stream.writeInt(encodedPreconditions.discriminant.value);
     switch (encodedPreconditions.discriminant) {
       case XdrPreconditionType.PRECOND_NONE:
@@ -56,9 +54,7 @@ class XdrPreconditions {
   }
 
   static XdrPreconditions decode(XdrDataInputStream stream) {
-    XdrPreconditions decodedPreconditions = XdrPreconditions(
-      XdrPreconditionType.decode(stream),
-    );
+    XdrPreconditions decodedPreconditions = XdrPreconditions(XdrPreconditionType.decode(stream));
     switch (decodedPreconditions.discriminant) {
       case XdrPreconditionType.PRECOND_NONE:
         break;
@@ -83,5 +79,39 @@ class XdrPreconditions {
   static XdrPreconditions fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPreconditions.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrPreconditionType.PRECOND_NONE:
+        break;
+      case XdrPreconditionType.PRECOND_TIME:
+        _timeBounds!.toTxRep('$prefix.timeBounds', lines);
+        break;
+      case XdrPreconditionType.PRECOND_V2:
+        _v2!.toTxRep('$prefix.v2', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrPreconditions fromTxRep(Map<String, String> map, String prefix) {
+    XdrPreconditionType disc = XdrPreconditionType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrPreconditions result = XdrPreconditions(disc);
+    switch (result.discriminant) {
+      case XdrPreconditionType.PRECOND_NONE:
+        break;
+      case XdrPreconditionType.PRECOND_TIME:
+        result._timeBounds = XdrTimeBounds.fromTxRep(map, '$prefix.timeBounds');
+        break;
+      case XdrPreconditionType.PRECOND_V2:
+        result._v2 = XdrPreconditionsV2.fromTxRep(map, '$prefix.v2');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }
