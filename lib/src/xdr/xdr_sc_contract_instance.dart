@@ -97,7 +97,7 @@ class XdrSCContractInstance {
       );
       storage = [];
       for (int i = 0; i < storageLen; i++) {
-        storage!.add(XdrSCMapEntry.fromTxRep(map, '$prefix.storage[$i]'));
+        storage.add(XdrSCMapEntry.fromTxRep(map, '$prefix.storage[$i]'));
       }
     }
     return XdrSCContractInstance(executable, storage);

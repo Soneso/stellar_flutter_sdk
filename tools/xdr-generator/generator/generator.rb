@@ -1819,7 +1819,7 @@ class Generator < Xdrgen::Generators::Base
             out.puts "      int #{dart_name}Len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}.len') ?? '0');"
             out.puts "      #{dart_name} = [];"
             out.puts "      for (int i = 0; i < #{dart_name}Len; i++) {"
-            out.puts "        #{dart_name}!.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_name}[$i]")});"
+            out.puts "        #{dart_name}.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_name}[$i]")});"
             out.puts "      }"
           else
             out.puts "      #{dart_name} = #{txrep_from_expr(inner_type, "map", "$prefix.#{xdr_name}")};"
