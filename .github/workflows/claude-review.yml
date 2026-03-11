@@ -1,0 +1,52 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Run on PR events, or on @claude mentions from org members/collaborators only
+    if: >
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'issue_comment' &&
+       contains(github.event.comment.body, '@claude') &&
+       github.event.issue.pull_request &&
+       (github.event.comment.author_association == 'OWNER' ||
+        github.event.comment.author_association == 'MEMBER' ||
+        github.event.comment.author_association == 'COLLABORATOR')) ||
+      (github.event_name == 'pull_request_review_comment' &&
+       contains(github.event.comment.body, '@claude') &&
+       (github.event.comment.author_association == 'OWNER' ||
+        github.event.comment.author_association == 'MEMBER' ||
+        github.event.comment.author_association == 'COLLABORATOR'))
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review this pull request for:
+            - Correctness and potential bugs
+            - Security issues (OWASP top 10, injection, XSS, etc.)
+            - Breaking changes in public APIs
+            - Test coverage for new or changed functionality
+
+            This is a Stellar blockchain SDK written in Dart/Flutter.
+            Focus on substantive issues. Do not comment on style, formatting, or minor nitpicks.
+          claude_args: "--model claude-sonnet-4-6 --max-turns 5"
+          trigger_phrase: "@claude"
