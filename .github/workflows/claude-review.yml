@@ -19,15 +19,15 @@ jobs:
   review:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Only respond to @claude mentions from the repo owner on PRs
+    # Only respond to @claude mentions from allowed users on PRs
     if: >
       (github.event_name == 'issue_comment' &&
        contains(github.event.comment.body, '@claude') &&
        github.event.issue.pull_request &&
-       github.event.comment.author_association == 'OWNER') ||
+       contains(fromJSON(vars.CLAUDE_ALLOWED_USERS), github.event.comment.user.login)) ||
       (github.event_name == 'pull_request_review_comment' &&
        contains(github.event.comment.body, '@claude') &&
-       github.event.comment.author_association == 'OWNER')
+       contains(fromJSON(vars.CLAUDE_ALLOWED_USERS), github.event.comment.user.login))
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
