@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger_entry_change.dart';
 
@@ -54,26 +53,5 @@ class XdrLedgerEntryChanges {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntryChanges.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.len: ${_ledgerEntryChanges.length}');
-    for (int i = 0; i < _ledgerEntryChanges.length; i++) {
-      _ledgerEntryChanges[i].toTxRep('$prefix[$i]', lines);
-    }
-  }
-
-  static XdrLedgerEntryChanges fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    int len = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.len') ?? '0',
-    );
-    List<XdrLedgerEntryChange> items = [];
-    for (int i = 0; i < len; i++) {
-      items.add(XdrLedgerEntryChange.fromTxRep(map, '$prefix[$i]'));
-    }
-    return XdrLedgerEntryChanges(items);
   }
 }

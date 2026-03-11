@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrClaimClaimableBalanceResultCode {
@@ -79,67 +78,5 @@ class XdrClaimClaimableBalanceResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimClaimableBalanceResultCode.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'CLAIM_CLAIMABLE_BALANCE_SUCCESS';
-      case -1:
-        return 'CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST';
-      case -2:
-        return 'CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM';
-      case -3:
-        return 'CLAIM_CLAIMABLE_BALANCE_LINE_FULL';
-      case -4:
-        return 'CLAIM_CLAIMABLE_BALANCE_NO_TRUST';
-      case -5:
-        return 'CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED';
-      case -6:
-        return 'CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN';
-      default:
-        return 'XdrClaimClaimableBalanceResultCode#$_value';
-    }
-  }
-
-  static XdrClaimClaimableBalanceResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrClaimClaimableBalanceResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'CLAIM_CLAIMABLE_BALANCE_SUCCESS':
-        return CLAIM_CLAIMABLE_BALANCE_SUCCESS;
-      case 'CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST':
-        return CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST;
-      case 'CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM':
-        return CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM;
-      case 'CLAIM_CLAIMABLE_BALANCE_LINE_FULL':
-        return CLAIM_CLAIMABLE_BALANCE_LINE_FULL;
-      case 'CLAIM_CLAIMABLE_BALANCE_NO_TRUST':
-        return CLAIM_CLAIMABLE_BALANCE_NO_TRUST;
-      case 'CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED':
-        return CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED;
-      case 'CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN':
-        return CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN;
-      default:
-        if (name.startsWith('XdrClaimClaimableBalanceResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrClaimClaimableBalanceResultCode#'.length),
-          );
-          if (val != null)
-            return XdrClaimClaimableBalanceResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

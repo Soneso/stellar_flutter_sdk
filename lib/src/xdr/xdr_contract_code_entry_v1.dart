@@ -52,21 +52,4 @@ class XdrContractCodeEntryV1 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractCodeEntryV1.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ext.toTxRep('$prefix.ext', lines);
-    _costInputs.toTxRep('$prefix.costInputs', lines);
-  }
-
-  static XdrContractCodeEntryV1 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
-    XdrContractCodeCostInputs costInputs = XdrContractCodeCostInputs.fromTxRep(
-      map,
-      '$prefix.costInputs',
-    );
-    return XdrContractCodeEntryV1(ext, costInputs);
-  }
 }

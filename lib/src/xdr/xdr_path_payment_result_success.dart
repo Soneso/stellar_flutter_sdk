@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_claim_atom.dart';
 import 'xdr_data_io.dart';
 import 'xdr_simple_payment_result.dart';
@@ -55,31 +54,5 @@ class XdrPathPaymentResultSuccess {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPathPaymentResultSuccess.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.offers.len: ${_offers.length}');
-    for (int i = 0; i < _offers.length; i++) {
-      _offers[i].toTxRep('$prefix.offers[$i]', lines);
-    }
-    _last.toTxRep('$prefix.last', lines);
-  }
-
-  static XdrPathPaymentResultSuccess fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    int offersLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.offers.len') ?? '0',
-    );
-    List<XdrClaimAtom> offers = [];
-    for (int i = 0; i < offersLen; i++) {
-      offers.add(XdrClaimAtom.fromTxRep(map, '$prefix.offers[$i]'));
-    }
-    XdrSimplePaymentResult last = XdrSimplePaymentResult.fromTxRep(
-      map,
-      '$prefix.last',
-    );
-    return XdrPathPaymentResultSuccess(offers, last);
   }
 }

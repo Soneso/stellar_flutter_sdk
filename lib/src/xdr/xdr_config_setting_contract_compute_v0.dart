@@ -84,39 +84,4 @@ class XdrConfigSettingContractComputeV0 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigSettingContractComputeV0.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ledgerMaxInstructions.toTxRep('$prefix.ledgerMaxInstructions', lines);
-    _txMaxInstructions.toTxRep('$prefix.txMaxInstructions', lines);
-    _feeRatePerInstructionsIncrement.toTxRep(
-      '$prefix.feeRatePerInstructionsIncrement',
-      lines,
-    );
-    _txMemoryLimit.toTxRep('$prefix.txMemoryLimit', lines);
-  }
-
-  static XdrConfigSettingContractComputeV0 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrInt64 ledgerMaxInstructions = XdrInt64.fromTxRep(
-      map,
-      '$prefix.ledgerMaxInstructions',
-    );
-    XdrInt64 txMaxInstructions = XdrInt64.fromTxRep(
-      map,
-      '$prefix.txMaxInstructions',
-    );
-    XdrInt64 feeRatePerInstructionsIncrement = XdrInt64.fromTxRep(
-      map,
-      '$prefix.feeRatePerInstructionsIncrement',
-    );
-    XdrUint32 txMemoryLimit = XdrUint32.fromTxRep(map, '$prefix.txMemoryLimit');
-    return XdrConfigSettingContractComputeV0(
-      ledgerMaxInstructions,
-      txMaxInstructions,
-      feeRatePerInstructionsIncrement,
-      txMemoryLimit,
-    );
-  }
 }

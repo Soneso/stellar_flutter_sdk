@@ -48,19 +48,4 @@ class XdrConfigSettingContractHistoricalDataV0 {
       XdrDataInputStream(bytes),
     );
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _feeHistorical1KB.toTxRep('$prefix.feeHistorical1KB', lines);
-  }
-
-  static XdrConfigSettingContractHistoricalDataV0 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrInt64 feeHistorical1KB = XdrInt64.fromTxRep(
-      map,
-      '$prefix.feeHistorical1KB',
-    );
-    return XdrConfigSettingContractHistoricalDataV0(feeHistorical1KB);
-  }
 }

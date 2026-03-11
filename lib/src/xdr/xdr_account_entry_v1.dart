@@ -45,21 +45,4 @@ class XdrAccountEntryV1 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountEntryV1.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _liabilities.toTxRep('$prefix.liabilities', lines);
-    _ext.toTxRep('$prefix.ext', lines);
-  }
-
-  static XdrAccountEntryV1 fromTxRep(Map<String, String> map, String prefix) {
-    XdrLiabilities liabilities = XdrLiabilities.fromTxRep(
-      map,
-      '$prefix.liabilities',
-    );
-    XdrAccountEntryV1Ext ext = XdrAccountEntryV1Ext.fromTxRep(
-      map,
-      '$prefix.ext',
-    );
-    return XdrAccountEntryV1(liabilities, ext);
-  }
 }

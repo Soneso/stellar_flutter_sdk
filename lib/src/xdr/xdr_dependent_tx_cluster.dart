@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_transaction_envelope.dart';
 
@@ -55,26 +54,5 @@ class XdrDependentTxCluster {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrDependentTxCluster.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.len: ${_dependentTxCluster.length}');
-    for (int i = 0; i < _dependentTxCluster.length; i++) {
-      _dependentTxCluster[i].toTxRep('$prefix[$i]', lines);
-    }
-  }
-
-  static XdrDependentTxCluster fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    int len = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.len') ?? '0',
-    );
-    List<XdrTransactionEnvelope> items = [];
-    for (int i = 0; i < len; i++) {
-      items.add(XdrTransactionEnvelope.fromTxRep(map, '$prefix[$i]'));
-    }
-    return XdrDependentTxCluster(items);
   }
 }

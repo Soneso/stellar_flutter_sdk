@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrExtendFootprintTTLResultCode {
@@ -67,55 +66,5 @@ class XdrExtendFootprintTTLResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrExtendFootprintTTLResultCode.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'EXTEND_FOOTPRINT_TTL_SUCCESS';
-      case -1:
-        return 'EXTEND_FOOTPRINT_TTL_MALFORMED';
-      case -2:
-        return 'EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED';
-      case -3:
-        return 'EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE';
-      default:
-        return 'XdrExtendFootprintTTLResultCode#$_value';
-    }
-  }
-
-  static XdrExtendFootprintTTLResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrExtendFootprintTTLResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'EXTEND_FOOTPRINT_TTL_SUCCESS':
-        return EXTEND_FOOTPRINT_TTL_SUCCESS;
-      case 'EXTEND_FOOTPRINT_TTL_MALFORMED':
-        return EXTEND_FOOTPRINT_TTL_MALFORMED;
-      case 'EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED':
-        return EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED;
-      case 'EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE':
-        return EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE;
-      default:
-        if (name.startsWith('XdrExtendFootprintTTLResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrExtendFootprintTTLResultCode#'.length),
-          );
-          if (val != null)
-            return XdrExtendFootprintTTLResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

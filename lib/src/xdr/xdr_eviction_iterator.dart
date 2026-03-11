@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 import 'xdr_uint64.dart';
@@ -55,26 +54,5 @@ class XdrEvictionIterator {
   static XdrEvictionIterator fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrEvictionIterator.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _bucketListLevel.toTxRep('$prefix.bucketListLevel', lines);
-    lines.add('$prefix.isCurrBucket: $_isCurrBucket');
-    _bucketFileOffset.toTxRep('$prefix.bucketFileOffset', lines);
-  }
-
-  static XdrEvictionIterator fromTxRep(Map<String, String> map, String prefix) {
-    XdrUint32 bucketListLevel = XdrUint32.fromTxRep(
-      map,
-      '$prefix.bucketListLevel',
-    );
-    bool isCurrBucket =
-        (TxRepHelper.getValue(map, '$prefix.isCurrBucket') ?? 'false') ==
-        'true';
-    XdrUint64 bucketFileOffset = XdrUint64.fromTxRep(
-      map,
-      '$prefix.bucketFileOffset',
-    );
-    return XdrEvictionIterator(bucketListLevel, isCurrBucket, bucketFileOffset);
   }
 }

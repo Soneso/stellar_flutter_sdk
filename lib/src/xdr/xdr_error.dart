@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_error_code.dart';
 
@@ -41,18 +40,5 @@ class XdrError {
   static XdrError fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrError.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _code.toTxRep('$prefix.code', lines);
-    lines.add('$prefix.msg: ${TxRepHelper.escapeString(_msg)}');
-  }
-
-  static XdrError fromTxRep(Map<String, String> map, String prefix) {
-    XdrErrorCode code = XdrErrorCode.fromTxRep(map, '$prefix.code');
-    String msg = TxRepHelper.unescapeString(
-      TxRepHelper.getValue(map, '$prefix.msg') ?? '',
-    );
-    return XdrError(code, msg);
   }
 }

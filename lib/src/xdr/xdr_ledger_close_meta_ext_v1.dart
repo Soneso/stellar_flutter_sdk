@@ -47,21 +47,4 @@ class XdrLedgerCloseMetaExtV1 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerCloseMetaExtV1.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ext.toTxRep('$prefix.ext', lines);
-    _sorobanFeeWrite1KB.toTxRep('$prefix.sorobanFeeWrite1KB', lines);
-  }
-
-  static XdrLedgerCloseMetaExtV1 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
-    XdrInt64 sorobanFeeWrite1KB = XdrInt64.fromTxRep(
-      map,
-      '$prefix.sorobanFeeWrite1KB',
-    );
-    return XdrLedgerCloseMetaExtV1(ext, sorobanFeeWrite1KB);
-  }
 }

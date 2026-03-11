@@ -69,25 +69,4 @@ class XdrSignedTimeSlicedSurveyStartCollectingMessage {
       XdrDataInputStream(bytes),
     );
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _signature.toTxRep('$prefix.signature', lines);
-    _startCollecting.toTxRep('$prefix.startCollecting', lines);
-  }
-
-  static XdrSignedTimeSlicedSurveyStartCollectingMessage fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrSignature signature = XdrSignature.fromTxRep(map, '$prefix.signature');
-    XdrTimeSlicedSurveyStartCollectingMessage startCollecting =
-        XdrTimeSlicedSurveyStartCollectingMessage.fromTxRep(
-          map,
-          '$prefix.startCollecting',
-        );
-    return XdrSignedTimeSlicedSurveyStartCollectingMessage(
-      signature,
-      startCollecting,
-    );
-  }
 }

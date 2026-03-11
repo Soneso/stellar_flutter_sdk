@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_inflation_payout.dart';
 import 'xdr_inflation_result_code.dart';
@@ -86,46 +85,5 @@ class XdrInflationResult {
   static XdrInflationResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInflationResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.code: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrInflationResultCode.INFLATION_SUCCESS:
-        lines.add('$prefix.payouts.len: ${_payouts!.length}');
-        for (int i = 0; i < _payouts!.length; i++) {
-          _payouts![i].toTxRep('$prefix.payouts[$i]', lines);
-        }
-        break;
-      case XdrInflationResultCode.INFLATION_NOT_TIME:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrInflationResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrInflationResultCode disc = XdrInflationResultCode.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.code') ?? '',
-    );
-    XdrInflationResult result = XdrInflationResult(disc);
-    switch (result.discriminant) {
-      case XdrInflationResultCode.INFLATION_SUCCESS:
-        int payoutsLen = TxRepHelper.parseInt(
-          TxRepHelper.getValue(map, '$prefix.payouts.len') ?? '0',
-        );
-        result._payouts = [];
-        for (int i = 0; i < payoutsLen; i++) {
-          result._payouts!.add(
-            XdrInflationPayout.fromTxRep(map, '$prefix.payouts[$i]'),
-          );
-        }
-        break;
-      case XdrInflationResultCode.INFLATION_NOT_TIME:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

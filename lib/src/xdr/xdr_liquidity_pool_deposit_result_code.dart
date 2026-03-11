@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrLiquidityPoolDepositResultCode {
@@ -87,75 +86,5 @@ class XdrLiquidityPoolDepositResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolDepositResultCode.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'LIQUIDITY_POOL_DEPOSIT_SUCCESS';
-      case -1:
-        return 'LIQUIDITY_POOL_DEPOSIT_MALFORMED';
-      case -2:
-        return 'LIQUIDITY_POOL_DEPOSIT_NO_TRUST';
-      case -3:
-        return 'LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED';
-      case -4:
-        return 'LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED';
-      case -5:
-        return 'LIQUIDITY_POOL_DEPOSIT_LINE_FULL';
-      case -6:
-        return 'LIQUIDITY_POOL_DEPOSIT_BAD_PRICE';
-      case -7:
-        return 'LIQUIDITY_POOL_DEPOSIT_POOL_FULL';
-      case -8:
-        return 'LIQUIDITY_POOL_DEPOSIT_TRUSTLINE_FROZEN';
-      default:
-        return 'XdrLiquidityPoolDepositResultCode#$_value';
-    }
-  }
-
-  static XdrLiquidityPoolDepositResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrLiquidityPoolDepositResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'LIQUIDITY_POOL_DEPOSIT_SUCCESS':
-        return LIQUIDITY_POOL_DEPOSIT_SUCCESS;
-      case 'LIQUIDITY_POOL_DEPOSIT_MALFORMED':
-        return LIQUIDITY_POOL_DEPOSIT_MALFORMED;
-      case 'LIQUIDITY_POOL_DEPOSIT_NO_TRUST':
-        return LIQUIDITY_POOL_DEPOSIT_NO_TRUST;
-      case 'LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED':
-        return LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED;
-      case 'LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED':
-        return LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED;
-      case 'LIQUIDITY_POOL_DEPOSIT_LINE_FULL':
-        return LIQUIDITY_POOL_DEPOSIT_LINE_FULL;
-      case 'LIQUIDITY_POOL_DEPOSIT_BAD_PRICE':
-        return LIQUIDITY_POOL_DEPOSIT_BAD_PRICE;
-      case 'LIQUIDITY_POOL_DEPOSIT_POOL_FULL':
-        return LIQUIDITY_POOL_DEPOSIT_POOL_FULL;
-      case 'LIQUIDITY_POOL_DEPOSIT_TRUSTLINE_FROZEN':
-        return LIQUIDITY_POOL_DEPOSIT_TRUSTLINE_FROZEN;
-      default:
-        if (name.startsWith('XdrLiquidityPoolDepositResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrLiquidityPoolDepositResultCode#'.length),
-          );
-          if (val != null)
-            return XdrLiquidityPoolDepositResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

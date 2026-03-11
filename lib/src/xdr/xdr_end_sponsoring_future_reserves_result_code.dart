@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrEndSponsoringFutureReservesResultCode {
@@ -64,47 +63,5 @@ class XdrEndSponsoringFutureReservesResultCode {
     return XdrEndSponsoringFutureReservesResultCode.decode(
       XdrDataInputStream(bytes),
     );
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'END_SPONSORING_FUTURE_RESERVES_SUCCESS';
-      case -1:
-        return 'END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED';
-      default:
-        return 'XdrEndSponsoringFutureReservesResultCode#$_value';
-    }
-  }
-
-  static XdrEndSponsoringFutureReservesResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrEndSponsoringFutureReservesResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'END_SPONSORING_FUTURE_RESERVES_SUCCESS':
-        return END_SPONSORING_FUTURE_RESERVES_SUCCESS;
-      case 'END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED':
-        return END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED;
-      default:
-        if (name.startsWith('XdrEndSponsoringFutureReservesResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrEndSponsoringFutureReservesResultCode#'.length),
-          );
-          if (val != null)
-            return XdrEndSponsoringFutureReservesResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

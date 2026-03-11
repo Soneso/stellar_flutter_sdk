@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrCurve25519Secret {
@@ -37,16 +36,5 @@ class XdrCurve25519Secret {
   static XdrCurve25519Secret fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCurve25519Secret.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.key: ${TxRepHelper.bytesToHex(_key)}');
-  }
-
-  static XdrCurve25519Secret fromTxRep(Map<String, String> map, String prefix) {
-    Uint8List key = TxRepHelper.hexToBytes(
-      TxRepHelper.getValue(map, '$prefix.key') ?? '',
-    );
-    return XdrCurve25519Secret(key);
   }
 }

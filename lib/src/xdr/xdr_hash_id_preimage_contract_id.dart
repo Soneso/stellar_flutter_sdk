@@ -53,21 +53,4 @@ class XdrHashIDPreimageContractID {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHashIDPreimageContractID.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _networkID.toTxRep('$prefix.networkID', lines);
-    _contractIDPreimage.toTxRep('$prefix.contractIDPreimage', lines);
-  }
-
-  static XdrHashIDPreimageContractID fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrHash networkID = XdrHash.fromTxRep(map, '$prefix.networkID');
-    XdrContractIDPreimage contractIDPreimage = XdrContractIDPreimage.fromTxRep(
-      map,
-      '$prefix.contractIDPreimage',
-    );
-    return XdrHashIDPreimageContractID(networkID, contractIDPreimage);
-  }
 }

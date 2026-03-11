@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_generalized_transaction_set.dart';
 import 'xdr_ledger_close_meta_ext.dart';
@@ -179,105 +178,5 @@ class XdrLedgerCloseMetaV1 {
   static XdrLedgerCloseMetaV1 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerCloseMetaV1.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ext.toTxRep('$prefix.ext', lines);
-    _ledgerHeader.toTxRep('$prefix.ledgerHeader', lines);
-    _txSet.toTxRep('$prefix.txSet', lines);
-    lines.add('$prefix.txProcessing.len: ${_txProcessing.length}');
-    for (int i = 0; i < _txProcessing.length; i++) {
-      _txProcessing[i].toTxRep('$prefix.txProcessing[$i]', lines);
-    }
-    lines.add('$prefix.upgradesProcessing.len: ${_upgradesProcessing.length}');
-    for (int i = 0; i < _upgradesProcessing.length; i++) {
-      _upgradesProcessing[i].toTxRep('$prefix.upgradesProcessing[$i]', lines);
-    }
-    lines.add('$prefix.scpInfo.len: ${_scpInfo.length}');
-    for (int i = 0; i < _scpInfo.length; i++) {
-      _scpInfo[i].toTxRep('$prefix.scpInfo[$i]', lines);
-    }
-    _totalByteSizeOfLiveSorobanState.toTxRep(
-      '$prefix.totalByteSizeOfLiveSorobanState',
-      lines,
-    );
-    lines.add('$prefix.evictedKeys.len: ${_evictedKeys.length}');
-    for (int i = 0; i < _evictedKeys.length; i++) {
-      _evictedKeys[i].toTxRep('$prefix.evictedKeys[$i]', lines);
-    }
-    lines.add('$prefix.unused.len: ${_unused.length}');
-    for (int i = 0; i < _unused.length; i++) {
-      _unused[i].toTxRep('$prefix.unused[$i]', lines);
-    }
-  }
-
-  static XdrLedgerCloseMetaV1 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrLedgerCloseMetaExt ext = XdrLedgerCloseMetaExt.fromTxRep(
-      map,
-      '$prefix.ext',
-    );
-    XdrLedgerHeaderHistoryEntry ledgerHeader =
-        XdrLedgerHeaderHistoryEntry.fromTxRep(map, '$prefix.ledgerHeader');
-    XdrGeneralizedTransactionSet txSet = XdrGeneralizedTransactionSet.fromTxRep(
-      map,
-      '$prefix.txSet',
-    );
-    int txProcessingLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.txProcessing.len') ?? '0',
-    );
-    List<XdrTransactionResultMeta> txProcessing = [];
-    for (int i = 0; i < txProcessingLen; i++) {
-      txProcessing.add(
-        XdrTransactionResultMeta.fromTxRep(map, '$prefix.txProcessing[$i]'),
-      );
-    }
-    int upgradesProcessingLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.upgradesProcessing.len') ?? '0',
-    );
-    List<XdrUpgradeEntryMeta> upgradesProcessing = [];
-    for (int i = 0; i < upgradesProcessingLen; i++) {
-      upgradesProcessing.add(
-        XdrUpgradeEntryMeta.fromTxRep(map, '$prefix.upgradesProcessing[$i]'),
-      );
-    }
-    int scpInfoLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.scpInfo.len') ?? '0',
-    );
-    List<XdrSCPHistoryEntry> scpInfo = [];
-    for (int i = 0; i < scpInfoLen; i++) {
-      scpInfo.add(XdrSCPHistoryEntry.fromTxRep(map, '$prefix.scpInfo[$i]'));
-    }
-    XdrUint64 totalByteSizeOfLiveSorobanState = XdrUint64.fromTxRep(
-      map,
-      '$prefix.totalByteSizeOfLiveSorobanState',
-    );
-    int evictedKeysLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.evictedKeys.len') ?? '0',
-    );
-    List<XdrLedgerKey> evictedKeys = [];
-    for (int i = 0; i < evictedKeysLen; i++) {
-      evictedKeys.add(XdrLedgerKey.fromTxRep(map, '$prefix.evictedKeys[$i]'));
-    }
-    int unusedLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.unused.len') ?? '0',
-    );
-    List<XdrLedgerEntry> unused = [];
-    for (int i = 0; i < unusedLen; i++) {
-      unused.add(XdrLedgerEntry.fromTxRep(map, '$prefix.unused[$i]'));
-    }
-    return XdrLedgerCloseMetaV1(
-      ext,
-      ledgerHeader,
-      txSet,
-      txProcessing,
-      upgradesProcessing,
-      scpInfo,
-      totalByteSizeOfLiveSorobanState,
-      evictedKeys,
-      unused,
-    );
   }
 }

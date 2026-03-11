@@ -50,21 +50,4 @@ class XdrTimeSlicedSurveyResponseMessage {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTimeSlicedSurveyResponseMessage.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _response.toTxRep('$prefix.response', lines);
-    _nonce.toTxRep('$prefix.nonce', lines);
-  }
-
-  static XdrTimeSlicedSurveyResponseMessage fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrSurveyResponseMessage response = XdrSurveyResponseMessage.fromTxRep(
-      map,
-      '$prefix.response',
-    );
-    XdrUint32 nonce = XdrUint32.fromTxRep(map, '$prefix.nonce');
-    return XdrTimeSlicedSurveyResponseMessage(response, nonce);
-  }
 }

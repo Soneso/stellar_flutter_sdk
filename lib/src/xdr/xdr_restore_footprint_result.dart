@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_restore_footprint_result_code.dart';
 
@@ -59,45 +58,5 @@ class XdrRestoreFootprintResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrRestoreFootprintResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.code: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
-        break;
-      case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_MALFORMED:
-      case XdrRestoreFootprintResultCode
-          .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
-      case XdrRestoreFootprintResultCode
-          .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrRestoreFootprintResult fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrRestoreFootprintResultCode disc =
-        XdrRestoreFootprintResultCode.fromTxRepName(
-          TxRepHelper.getValue(map, '$prefix.code') ?? '',
-        );
-    XdrRestoreFootprintResult result = XdrRestoreFootprintResult(disc);
-    switch (result.discriminant) {
-      case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS:
-        break;
-      case XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_MALFORMED:
-      case XdrRestoreFootprintResultCode
-          .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED:
-      case XdrRestoreFootprintResultCode
-          .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

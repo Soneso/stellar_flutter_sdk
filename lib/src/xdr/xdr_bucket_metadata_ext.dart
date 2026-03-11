@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_bucket_list_type.dart';
 import 'xdr_data_io.dart';
 
@@ -75,41 +74,5 @@ class XdrBucketMetadataExt {
   static XdrBucketMetadataExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBucketMetadataExt.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.v: $discriminant');
-    switch (discriminant) {
-      case 0:
-        break;
-      case 1:
-        _bucketListType!.toTxRep('$prefix.bucketListType', lines);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrBucketMetadataExt fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    int disc = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
-    );
-    XdrBucketMetadataExt result = XdrBucketMetadataExt(disc);
-    switch (result.discriminant) {
-      case 0:
-        break;
-      case 1:
-        result._bucketListType = XdrBucketListType.fromTxRep(
-          map,
-          '$prefix.bucketListType',
-        );
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

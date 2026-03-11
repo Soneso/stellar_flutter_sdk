@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrLedgerEntryChangeType {
@@ -74,58 +73,5 @@ class XdrLedgerEntryChangeType {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntryChangeType.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'LEDGER_ENTRY_CREATED';
-      case 1:
-        return 'LEDGER_ENTRY_UPDATED';
-      case 2:
-        return 'LEDGER_ENTRY_REMOVED';
-      case 3:
-        return 'LEDGER_ENTRY_STATE';
-      case 4:
-        return 'LEDGER_ENTRY_RESTORED';
-      default:
-        return 'XdrLedgerEntryChangeType#$_value';
-    }
-  }
-
-  static XdrLedgerEntryChangeType fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrLedgerEntryChangeType fromTxRepName(String name) {
-    switch (name) {
-      case 'LEDGER_ENTRY_CREATED':
-        return LEDGER_ENTRY_CREATED;
-      case 'LEDGER_ENTRY_UPDATED':
-        return LEDGER_ENTRY_UPDATED;
-      case 'LEDGER_ENTRY_REMOVED':
-        return LEDGER_ENTRY_REMOVED;
-      case 'LEDGER_ENTRY_STATE':
-        return LEDGER_ENTRY_STATE;
-      case 'LEDGER_ENTRY_RESTORED':
-        return LEDGER_ENTRY_RESTORED;
-      default:
-        if (name.startsWith('XdrLedgerEntryChangeType#')) {
-          int? val = int.tryParse(
-            name.substring('XdrLedgerEntryChangeType#'.length),
-          );
-          if (val != null) return XdrLedgerEntryChangeType._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

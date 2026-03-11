@@ -48,19 +48,4 @@ class XdrConfigSettingContractExecutionLanesV0 {
       XdrDataInputStream(bytes),
     );
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ledgerMaxTxCount.toTxRep('$prefix.ledgerMaxTxCount', lines);
-  }
-
-  static XdrConfigSettingContractExecutionLanesV0 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrUint32 ledgerMaxTxCount = XdrUint32.fromTxRep(
-      map,
-      '$prefix.ledgerMaxTxCount',
-    );
-    return XdrConfigSettingContractExecutionLanesV0(ledgerMaxTxCount);
-  }
 }

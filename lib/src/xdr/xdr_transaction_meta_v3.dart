@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
 import 'xdr_ledger_entry_changes.dart';
@@ -110,61 +109,5 @@ class XdrTransactionMetaV3 {
   static XdrTransactionMetaV3 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionMetaV3.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ext.toTxRep('$prefix.ext', lines);
-    _txChangesBefore.toTxRep('$prefix.txChangesBefore', lines);
-    lines.add('$prefix.operations.len: ${_operations.length}');
-    for (int i = 0; i < _operations.length; i++) {
-      _operations[i].toTxRep('$prefix.operations[$i]', lines);
-    }
-    _txChangesAfter.toTxRep('$prefix.txChangesAfter', lines);
-    if (_sorobanMeta != null) {
-      lines.add('$prefix.sorobanMeta._present: true');
-      _sorobanMeta!.toTxRep('$prefix.sorobanMeta', lines);
-    } else {
-      lines.add('$prefix.sorobanMeta._present: false');
-    }
-  }
-
-  static XdrTransactionMetaV3 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
-    XdrLedgerEntryChanges txChangesBefore = XdrLedgerEntryChanges.fromTxRep(
-      map,
-      '$prefix.txChangesBefore',
-    );
-    int operationsLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.operations.len') ?? '0',
-    );
-    List<XdrOperationMeta> operations = [];
-    for (int i = 0; i < operationsLen; i++) {
-      operations.add(XdrOperationMeta.fromTxRep(map, '$prefix.operations[$i]'));
-    }
-    XdrLedgerEntryChanges txChangesAfter = XdrLedgerEntryChanges.fromTxRep(
-      map,
-      '$prefix.txChangesAfter',
-    );
-    XdrSorobanTransactionMeta? sorobanMeta;
-    String? sorobanMetaPresent = TxRepHelper.getValue(
-      map,
-      '$prefix.sorobanMeta._present',
-    );
-    if (sorobanMetaPresent != null && sorobanMetaPresent == 'true') {
-      sorobanMeta = XdrSorobanTransactionMeta.fromTxRep(
-        map,
-        '$prefix.sorobanMeta',
-      );
-    }
-    return XdrTransactionMetaV3(
-      ext,
-      txChangesBefore,
-      operations,
-      txChangesAfter,
-      sorobanMeta,
-    );
   }
 }

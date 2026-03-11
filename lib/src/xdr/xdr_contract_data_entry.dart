@@ -76,27 +76,4 @@ class XdrContractDataEntry {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractDataEntry.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ext.toTxRep('$prefix.ext', lines);
-    _contract.toTxRep('$prefix.contract', lines);
-    _key.toTxRep('$prefix.key', lines);
-    _durability.toTxRep('$prefix.durability', lines);
-    _val.toTxRep('$prefix.val', lines);
-  }
-
-  static XdrContractDataEntry fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
-    XdrSCAddress contract = XdrSCAddress.fromTxRep(map, '$prefix.contract');
-    XdrSCVal key = XdrSCVal.fromTxRep(map, '$prefix.key');
-    XdrContractDataDurability durability = XdrContractDataDurability.fromTxRep(
-      map,
-      '$prefix.durability',
-    );
-    XdrSCVal val = XdrSCVal.fromTxRep(map, '$prefix.val');
-    return XdrContractDataEntry(ext, contract, key, durability, val);
-  }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrOperationResultCode {
@@ -75,66 +74,5 @@ class XdrOperationResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrOperationResultCode.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'opINNER';
-      case -1:
-        return 'opBAD_AUTH';
-      case -2:
-        return 'opNO_ACCOUNT';
-      case -3:
-        return 'opNOT_SUPPORTED';
-      case -4:
-        return 'opTOO_MANY_SUBENTRIES';
-      case -5:
-        return 'opEXCEEDED_WORK_LIMIT';
-      case -6:
-        return 'opTOO_MANY_SPONSORING';
-      default:
-        return 'XdrOperationResultCode#$_value';
-    }
-  }
-
-  static XdrOperationResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrOperationResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'opINNER':
-        return opINNER;
-      case 'opBAD_AUTH':
-        return opBAD_AUTH;
-      case 'opNO_ACCOUNT':
-        return opNO_ACCOUNT;
-      case 'opNOT_SUPPORTED':
-        return opNOT_SUPPORTED;
-      case 'opTOO_MANY_SUBENTRIES':
-        return opTOO_MANY_SUBENTRIES;
-      case 'opEXCEEDED_WORK_LIMIT':
-        return opEXCEEDED_WORK_LIMIT;
-      case 'opTOO_MANY_SPONSORING':
-        return opTOO_MANY_SPONSORING;
-      default:
-        if (name.startsWith('XdrOperationResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrOperationResultCode#'.length),
-          );
-          if (val != null) return XdrOperationResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

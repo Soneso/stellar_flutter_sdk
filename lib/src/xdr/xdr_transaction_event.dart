@@ -45,18 +45,4 @@ class XdrTransactionEvent {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionEvent.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _stage.toTxRep('$prefix.stage', lines);
-    _event.toTxRep('$prefix.event', lines);
-  }
-
-  static XdrTransactionEvent fromTxRep(Map<String, String> map, String prefix) {
-    XdrTransactionEventStage stage = XdrTransactionEventStage.fromTxRep(
-      map,
-      '$prefix.stage',
-    );
-    XdrContractEvent event = XdrContractEvent.fromTxRep(map, '$prefix.event');
-    return XdrTransactionEvent(stage, event);
-  }
 }

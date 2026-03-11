@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 import 'xdr_transaction_envelope.dart';
@@ -77,40 +76,5 @@ class XdrTxSetComponentTxsMaybeDiscountedFee {
     return XdrTxSetComponentTxsMaybeDiscountedFee.decode(
       XdrDataInputStream(bytes),
     );
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    if (_baseFee != null) {
-      lines.add('$prefix.baseFee._present: true');
-      _baseFee!.toTxRep('$prefix.baseFee', lines);
-    } else {
-      lines.add('$prefix.baseFee._present: false');
-    }
-    lines.add('$prefix.txs.len: ${_txs.length}');
-    for (int i = 0; i < _txs.length; i++) {
-      _txs[i].toTxRep('$prefix.txs[$i]', lines);
-    }
-  }
-
-  static XdrTxSetComponentTxsMaybeDiscountedFee fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrInt64? baseFee;
-    String? baseFeePresent = TxRepHelper.getValue(
-      map,
-      '$prefix.baseFee._present',
-    );
-    if (baseFeePresent != null && baseFeePresent == 'true') {
-      baseFee = XdrInt64.fromTxRep(map, '$prefix.baseFee');
-    }
-    int txsLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.txs.len') ?? '0',
-    );
-    List<XdrTransactionEnvelope> txs = [];
-    for (int i = 0; i < txsLen; i++) {
-      txs.add(XdrTransactionEnvelope.fromTxRep(map, '$prefix.txs[$i]'));
-    }
-    return XdrTxSetComponentTxsMaybeDiscountedFee(baseFee, txs);
   }
 }

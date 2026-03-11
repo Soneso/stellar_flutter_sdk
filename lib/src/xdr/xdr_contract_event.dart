@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_contract_event_body.dart';
 import 'xdr_contract_event_type.dart';
 import 'xdr_data_io.dart';
@@ -68,38 +67,5 @@ class XdrContractEvent {
   static XdrContractEvent fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractEvent.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ext.toTxRep('$prefix.ext', lines);
-    if (_hash != null) {
-      lines.add('$prefix.contractID._present: true');
-      _hash!.toTxRep('$prefix.contractID', lines);
-    } else {
-      lines.add('$prefix.contractID._present: false');
-    }
-    _type.toTxRep('$prefix.type', lines);
-    _body.toTxRep('$prefix.body', lines);
-  }
-
-  static XdrContractEvent fromTxRep(Map<String, String> map, String prefix) {
-    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
-    XdrHash? hash;
-    String? hashPresent = TxRepHelper.getValue(
-      map,
-      '$prefix.contractID._present',
-    );
-    if (hashPresent != null && hashPresent == 'true') {
-      hash = XdrHash.fromTxRep(map, '$prefix.contractID');
-    }
-    XdrContractEventType type = XdrContractEventType.fromTxRep(
-      map,
-      '$prefix.type',
-    );
-    XdrContractEventBody body = XdrContractEventBody.fromTxRep(
-      map,
-      '$prefix.body',
-    );
-    return XdrContractEvent(ext, hash, type, body);
   }
 }

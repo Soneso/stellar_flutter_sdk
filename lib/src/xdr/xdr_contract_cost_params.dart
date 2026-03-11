@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_contract_cost_param_entry.dart';
 import 'xdr_data_io.dart';
 
@@ -54,26 +53,5 @@ class XdrContractCostParams {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractCostParams.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.len: ${_contractCostParams.length}');
-    for (int i = 0; i < _contractCostParams.length; i++) {
-      _contractCostParams[i].toTxRep('$prefix[$i]', lines);
-    }
-  }
-
-  static XdrContractCostParams fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    int len = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.len') ?? '0',
-    );
-    List<XdrContractCostParamEntry> items = [];
-    for (int i = 0; i < len; i++) {
-      items.add(XdrContractCostParamEntry.fromTxRep(map, '$prefix[$i]'));
-    }
-    return XdrContractCostParams(items);
   }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_account_entry_v2_ext.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
@@ -80,45 +79,5 @@ class XdrAccountEntryV2 {
   static XdrAccountEntryV2 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountEntryV2.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _numSponsored.toTxRep('$prefix.numSponsored', lines);
-    _numSponsoring.toTxRep('$prefix.numSponsoring', lines);
-    lines.add(
-      '$prefix.signerSponsoringIDs.len: ${_signerSponsoringIDs.length}',
-    );
-    for (int i = 0; i < _signerSponsoringIDs.length; i++) {
-      lines.add(
-        '$prefix.signerSponsoringIDs[$i]: ${TxRepHelper.formatAccountId(_signerSponsoringIDs[i])}',
-      );
-    }
-    _ext.toTxRep('$prefix.ext', lines);
-  }
-
-  static XdrAccountEntryV2 fromTxRep(Map<String, String> map, String prefix) {
-    XdrUint32 numSponsored = XdrUint32.fromTxRep(map, '$prefix.numSponsored');
-    XdrUint32 numSponsoring = XdrUint32.fromTxRep(map, '$prefix.numSponsoring');
-    int signerSponsoringIDsLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.signerSponsoringIDs.len') ?? '0',
-    );
-    List<XdrAccountID> signerSponsoringIDs = [];
-    for (int i = 0; i < signerSponsoringIDsLen; i++) {
-      signerSponsoringIDs.add(
-        TxRepHelper.parseAccountId(
-          TxRepHelper.getValue(map, '$prefix.signerSponsoringIDs[$i]') ?? '',
-        ),
-      );
-    }
-    XdrAccountEntryV2Ext ext = XdrAccountEntryV2Ext.fromTxRep(
-      map,
-      '$prefix.ext',
-    );
-    return XdrAccountEntryV2(
-      numSponsored,
-      numSponsoring,
-      signerSponsoringIDs,
-      ext,
-    );
   }
 }

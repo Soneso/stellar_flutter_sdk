@@ -44,15 +44,4 @@ class XdrSendMoreExtended {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSendMoreExtended.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _numMessages.toTxRep('$prefix.numMessages', lines);
-    _numBytes.toTxRep('$prefix.numBytes', lines);
-  }
-
-  static XdrSendMoreExtended fromTxRep(Map<String, String> map, String prefix) {
-    XdrUint32 numMessages = XdrUint32.fromTxRep(map, '$prefix.numMessages');
-    XdrUint32 numBytes = XdrUint32.fromTxRep(map, '$prefix.numBytes');
-    return XdrSendMoreExtended(numMessages, numBytes);
-  }
 }

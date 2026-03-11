@@ -52,17 +52,4 @@ class XdrAccountEntryV3 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountEntryV3.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ext.toTxRep('$prefix.ext', lines);
-    _seqLedger.toTxRep('$prefix.seqLedger', lines);
-    _seqTime.toTxRep('$prefix.seqTime', lines);
-  }
-
-  static XdrAccountEntryV3 fromTxRep(Map<String, String> map, String prefix) {
-    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
-    XdrUint32 seqLedger = XdrUint32.fromTxRep(map, '$prefix.seqLedger');
-    XdrUint64 seqTime = XdrUint64.fromTxRep(map, '$prefix.seqTime');
-    return XdrAccountEntryV3(ext, seqLedger, seqTime);
-  }
 }

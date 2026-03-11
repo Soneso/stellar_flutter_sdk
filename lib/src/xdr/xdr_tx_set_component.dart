@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_tx_set_component_txs_maybe_discounted_fee.dart';
 import 'xdr_tx_set_component_type.dart';
@@ -73,35 +72,5 @@ class XdrTxSetComponent {
   static XdrTxSetComponent fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTxSetComponent.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.type: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrTxSetComponentType.TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE:
-        _txsMaybeDiscountedFee!.toTxRep('$prefix.txsMaybeDiscountedFee', lines);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrTxSetComponent fromTxRep(Map<String, String> map, String prefix) {
-    XdrTxSetComponentType disc = XdrTxSetComponentType.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.type') ?? '',
-    );
-    XdrTxSetComponent result = XdrTxSetComponent(disc);
-    switch (result.discriminant) {
-      case XdrTxSetComponentType.TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE:
-        result._txsMaybeDiscountedFee =
-            XdrTxSetComponentTxsMaybeDiscountedFee.fromTxRep(
-              map,
-              '$prefix.txsMaybeDiscountedFee',
-            );
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_dependent_tx_cluster.dart';
 
@@ -55,26 +54,5 @@ class XdrParallelTxExecutionStage {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrParallelTxExecutionStage.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.len: ${_parallelTxExecutionStage.length}');
-    for (int i = 0; i < _parallelTxExecutionStage.length; i++) {
-      _parallelTxExecutionStage[i].toTxRep('$prefix[$i]', lines);
-    }
-  }
-
-  static XdrParallelTxExecutionStage fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    int len = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.len') ?? '0',
-    );
-    List<XdrDependentTxCluster> items = [];
-    for (int i = 0; i < len; i++) {
-      items.add(XdrDependentTxCluster.fromTxRep(map, '$prefix[$i]'));
-    }
-    return XdrParallelTxExecutionStage(items);
   }
 }

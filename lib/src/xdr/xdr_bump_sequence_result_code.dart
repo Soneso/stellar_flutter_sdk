@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrBumpSequenceResultCode {
@@ -59,46 +58,5 @@ class XdrBumpSequenceResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBumpSequenceResultCode.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'BUMP_SEQUENCE_SUCCESS';
-      case -1:
-        return 'BUMP_SEQUENCE_BAD_SEQ';
-      default:
-        return 'XdrBumpSequenceResultCode#$_value';
-    }
-  }
-
-  static XdrBumpSequenceResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrBumpSequenceResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'BUMP_SEQUENCE_SUCCESS':
-        return BUMP_SEQUENCE_SUCCESS;
-      case 'BUMP_SEQUENCE_BAD_SEQ':
-        return BUMP_SEQUENCE_BAD_SEQ;
-      default:
-        if (name.startsWith('XdrBumpSequenceResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrBumpSequenceResultCode#'.length),
-          );
-          if (val != null) return XdrBumpSequenceResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

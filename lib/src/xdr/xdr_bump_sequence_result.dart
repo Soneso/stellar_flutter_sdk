@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_bump_sequence_result_code.dart';
 import 'xdr_data_io.dart';
 
@@ -64,36 +63,5 @@ class XdrBumpSequenceResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBumpSequenceResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.code: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrBumpSequenceResultCode.BUMP_SEQUENCE_SUCCESS:
-        break;
-      case XdrBumpSequenceResultCode.BUMP_SEQUENCE_BAD_SEQ:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrBumpSequenceResult fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrBumpSequenceResultCode disc = XdrBumpSequenceResultCode.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.code') ?? '',
-    );
-    XdrBumpSequenceResult result = XdrBumpSequenceResult(disc);
-    switch (result.discriminant) {
-      case XdrBumpSequenceResultCode.BUMP_SEQUENCE_SUCCESS:
-        break;
-      case XdrBumpSequenceResultCode.BUMP_SEQUENCE_BAD_SEQ:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

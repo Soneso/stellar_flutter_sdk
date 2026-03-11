@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
@@ -52,25 +51,5 @@ class XdrSCSpecUDTEnumCaseV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecUDTEnumCaseV0.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.doc: ${TxRepHelper.escapeString(_doc)}');
-    lines.add('$prefix.name: ${TxRepHelper.escapeString(_name)}');
-    _value.toTxRep('$prefix.value', lines);
-  }
-
-  static XdrSCSpecUDTEnumCaseV0 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String doc = TxRepHelper.unescapeString(
-      TxRepHelper.getValue(map, '$prefix.doc') ?? '',
-    );
-    String name = TxRepHelper.unescapeString(
-      TxRepHelper.getValue(map, '$prefix.name') ?? '',
-    );
-    XdrUint32 value = XdrUint32.fromTxRep(map, '$prefix.value');
-    return XdrSCSpecUDTEnumCaseV0(doc, name, value);
   }
 }

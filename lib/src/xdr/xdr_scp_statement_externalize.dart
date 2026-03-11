@@ -54,23 +54,4 @@ class XdrSCPStatementExternalize {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPStatementExternalize.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _commit.toTxRep('$prefix.commit', lines);
-    _nH.toTxRep('$prefix.nH', lines);
-    _commitQuorumSetHash.toTxRep('$prefix.commitQuorumSetHash', lines);
-  }
-
-  static XdrSCPStatementExternalize fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrSCPBallot commit = XdrSCPBallot.fromTxRep(map, '$prefix.commit');
-    XdrUint32 nH = XdrUint32.fromTxRep(map, '$prefix.nH');
-    XdrHash commitQuorumSetHash = XdrHash.fromTxRep(
-      map,
-      '$prefix.commitQuorumSetHash',
-    );
-    return XdrSCPStatementExternalize(commit, nH, commitQuorumSetHash);
-  }
 }

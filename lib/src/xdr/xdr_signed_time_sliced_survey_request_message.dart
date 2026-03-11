@@ -62,22 +62,4 @@ class XdrSignedTimeSlicedSurveyRequestMessage {
       XdrDataInputStream(bytes),
     );
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _requestSignature.toTxRep('$prefix.requestSignature', lines);
-    _request.toTxRep('$prefix.request', lines);
-  }
-
-  static XdrSignedTimeSlicedSurveyRequestMessage fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrSignature requestSignature = XdrSignature.fromTxRep(
-      map,
-      '$prefix.requestSignature',
-    );
-    XdrTimeSlicedSurveyRequestMessage request =
-        XdrTimeSlicedSurveyRequestMessage.fromTxRep(map, '$prefix.request');
-    return XdrSignedTimeSlicedSurveyRequestMessage(requestSignature, request);
-  }
 }

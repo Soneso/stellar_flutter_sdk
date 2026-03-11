@@ -51,19 +51,4 @@ class XdrClaimableBalanceEntryExtV1 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimableBalanceEntryExtV1.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ext.toTxRep('$prefix.ext', lines);
-    _flags.toTxRep('$prefix.flags', lines);
-  }
-
-  static XdrClaimableBalanceEntryExtV1 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrClaimableBalanceEntryExtV1Ext ext =
-        XdrClaimableBalanceEntryExtV1Ext.fromTxRep(map, '$prefix.ext');
-    XdrUint32 flags = XdrUint32.fromTxRep(map, '$prefix.flags');
-    return XdrClaimableBalanceEntryExtV1(ext, flags);
-  }
 }

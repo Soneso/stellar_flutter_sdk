@@ -53,24 +53,4 @@ class XdrConfigSettingContractParallelComputeV0 {
       XdrDataInputStream(bytes),
     );
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ledgerMaxDependentTxClusters.toTxRep(
-      '$prefix.ledgerMaxDependentTxClusters',
-      lines,
-    );
-  }
-
-  static XdrConfigSettingContractParallelComputeV0 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrUint32 ledgerMaxDependentTxClusters = XdrUint32.fromTxRep(
-      map,
-      '$prefix.ledgerMaxDependentTxClusters',
-    );
-    return XdrConfigSettingContractParallelComputeV0(
-      ledgerMaxDependentTxClusters,
-    );
-  }
 }

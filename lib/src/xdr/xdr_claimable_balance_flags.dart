@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrClaimableBalanceFlags {
@@ -55,42 +54,5 @@ class XdrClaimableBalanceFlags {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimableBalanceFlags.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 1:
-        return 'CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG';
-      default:
-        return 'XdrClaimableBalanceFlags#$_value';
-    }
-  }
-
-  static XdrClaimableBalanceFlags fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrClaimableBalanceFlags fromTxRepName(String name) {
-    switch (name) {
-      case 'CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG':
-        return CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG;
-      default:
-        if (name.startsWith('XdrClaimableBalanceFlags#')) {
-          int? val = int.tryParse(
-            name.substring('XdrClaimableBalanceFlags#'.length),
-          );
-          if (val != null) return XdrClaimableBalanceFlags._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

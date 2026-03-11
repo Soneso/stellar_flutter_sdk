@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrContractEventType {
@@ -55,50 +54,5 @@ class XdrContractEventType {
   static XdrContractEventType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractEventType.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'SYSTEM';
-      case 1:
-        return 'CONTRACT';
-      case 2:
-        return 'DIAGNOSTIC';
-      default:
-        return 'XdrContractEventType#$_value';
-    }
-  }
-
-  static XdrContractEventType fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrContractEventType fromTxRepName(String name) {
-    switch (name) {
-      case 'SYSTEM':
-        return SYSTEM;
-      case 'CONTRACT':
-        return CONTRACT;
-      case 'DIAGNOSTIC':
-        return DIAGNOSTIC;
-      default:
-        if (name.startsWith('XdrContractEventType#')) {
-          int? val = int.tryParse(
-            name.substring('XdrContractEventType#'.length),
-          );
-          if (val != null) return XdrContractEventType._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

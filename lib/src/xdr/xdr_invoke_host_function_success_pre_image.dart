@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_contract_event.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_val.dart';
@@ -68,28 +67,5 @@ class XdrInvokeHostFunctionSuccessPreImage {
     return XdrInvokeHostFunctionSuccessPreImage.decode(
       XdrDataInputStream(bytes),
     );
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _returnValue.toTxRep('$prefix.returnValue', lines);
-    lines.add('$prefix.events.len: ${_events.length}');
-    for (int i = 0; i < _events.length; i++) {
-      _events[i].toTxRep('$prefix.events[$i]', lines);
-    }
-  }
-
-  static XdrInvokeHostFunctionSuccessPreImage fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrSCVal returnValue = XdrSCVal.fromTxRep(map, '$prefix.returnValue');
-    int eventsLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.events.len') ?? '0',
-    );
-    List<XdrContractEvent> events = [];
-    for (int i = 0; i < eventsLen; i++) {
-      events.add(XdrContractEvent.fromTxRep(map, '$prefix.events[$i]'));
-    }
-    return XdrInvokeHostFunctionSuccessPreImage(returnValue, events);
   }
 }

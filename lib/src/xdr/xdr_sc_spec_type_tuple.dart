@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_spec_type_def.dart';
 
@@ -48,23 +47,5 @@ class XdrSCSpecTypeTuple {
   static XdrSCSpecTypeTuple fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecTypeTuple.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.valueTypes.len: ${_valueTypes.length}');
-    for (int i = 0; i < _valueTypes.length; i++) {
-      _valueTypes[i].toTxRep('$prefix.valueTypes[$i]', lines);
-    }
-  }
-
-  static XdrSCSpecTypeTuple fromTxRep(Map<String, String> map, String prefix) {
-    int valueTypesLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.valueTypes.len') ?? '0',
-    );
-    List<XdrSCSpecTypeDef> valueTypes = [];
-    for (int i = 0; i < valueTypesLen; i++) {
-      valueTypes.add(XdrSCSpecTypeDef.fromTxRep(map, '$prefix.valueTypes[$i]'));
-    }
-    return XdrSCSpecTypeTuple(valueTypes);
   }
 }

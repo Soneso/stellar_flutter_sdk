@@ -47,21 +47,4 @@ class XdrTimeSlicedPeerData {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTimeSlicedPeerData.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _peerStats.toTxRep('$prefix.peerStats', lines);
-    _averageLatencyMs.toTxRep('$prefix.averageLatencyMs', lines);
-  }
-
-  static XdrTimeSlicedPeerData fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrPeerStats peerStats = XdrPeerStats.fromTxRep(map, '$prefix.peerStats');
-    XdrUint32 averageLatencyMs = XdrUint32.fromTxRep(
-      map,
-      '$prefix.averageLatencyMs',
-    );
-    return XdrTimeSlicedPeerData(peerStats, averageLatencyMs);
-  }
 }

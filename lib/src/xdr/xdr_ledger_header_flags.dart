@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrLedgerHeaderFlags {
@@ -58,50 +57,5 @@ class XdrLedgerHeaderFlags {
   static XdrLedgerHeaderFlags fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerHeaderFlags.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 1:
-        return 'DISABLE_LIQUIDITY_POOL_TRADING_FLAG';
-      case 2:
-        return 'DISABLE_LIQUIDITY_POOL_DEPOSIT_FLAG';
-      case 4:
-        return 'DISABLE_LIQUIDITY_POOL_WITHDRAWAL_FLAG';
-      default:
-        return 'XdrLedgerHeaderFlags#$_value';
-    }
-  }
-
-  static XdrLedgerHeaderFlags fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrLedgerHeaderFlags fromTxRepName(String name) {
-    switch (name) {
-      case 'DISABLE_LIQUIDITY_POOL_TRADING_FLAG':
-        return DISABLE_LIQUIDITY_POOL_TRADING_FLAG;
-      case 'DISABLE_LIQUIDITY_POOL_DEPOSIT_FLAG':
-        return DISABLE_LIQUIDITY_POOL_DEPOSIT_FLAG;
-      case 'DISABLE_LIQUIDITY_POOL_WITHDRAWAL_FLAG':
-        return DISABLE_LIQUIDITY_POOL_WITHDRAWAL_FLAG;
-      default:
-        if (name.startsWith('XdrLedgerHeaderFlags#')) {
-          int? val = int.tryParse(
-            name.substring('XdrLedgerHeaderFlags#'.length),
-          );
-          if (val != null) return XdrLedgerHeaderFlags._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

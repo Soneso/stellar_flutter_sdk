@@ -47,18 +47,4 @@ class XdrLedgerCloseValueSignature {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerCloseValueSignature.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _nodeID.toTxRep('$prefix.nodeID', lines);
-    _signature.toTxRep('$prefix.signature', lines);
-  }
-
-  static XdrLedgerCloseValueSignature fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrNodeID nodeID = XdrNodeID.fromTxRep(map, '$prefix.nodeID');
-    XdrSignature signature = XdrSignature.fromTxRep(map, '$prefix.signature');
-    return XdrLedgerCloseValueSignature(nodeID, signature);
-  }
 }

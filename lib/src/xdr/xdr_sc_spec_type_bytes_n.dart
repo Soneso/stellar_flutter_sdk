@@ -38,13 +38,4 @@ class XdrSCSpecTypeBytesN {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecTypeBytesN.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _n.toTxRep('$prefix.n', lines);
-  }
-
-  static XdrSCSpecTypeBytesN fromTxRep(Map<String, String> map, String prefix) {
-    XdrUint32 n = XdrUint32.fromTxRep(map, '$prefix.n');
-    return XdrSCSpecTypeBytesN(n);
-  }
 }

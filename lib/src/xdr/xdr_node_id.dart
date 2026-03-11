@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_public_key.dart';
 
@@ -34,15 +33,5 @@ class XdrNodeID {
   static XdrNodeID fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrNodeID.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _nodeID.toTxRep('$prefix', lines);
-  }
-
-  static XdrNodeID fromTxRep(Map<String, String> map, String prefix) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return XdrNodeID(XdrPublicKey.fromTxRep(map, prefix));
   }
 }

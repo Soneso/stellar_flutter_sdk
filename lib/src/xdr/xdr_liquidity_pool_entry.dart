@@ -47,21 +47,4 @@ class XdrLiquidityPoolEntry {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolEntry.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _liquidityPoolID.toTxRep('$prefix.liquidityPoolID', lines);
-    _body.toTxRep('$prefix.body', lines);
-  }
-
-  static XdrLiquidityPoolEntry fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrHash liquidityPoolID = XdrHash.fromTxRep(map, '$prefix.liquidityPoolID');
-    XdrLiquidityPoolBody body = XdrLiquidityPoolBody.fromTxRep(
-      map,
-      '$prefix.body',
-    );
-    return XdrLiquidityPoolEntry(liquidityPoolID, body);
-  }
 }

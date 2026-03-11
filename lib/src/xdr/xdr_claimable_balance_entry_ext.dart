@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_claimable_balance_entry_ext_v1.dart';
 import 'xdr_data_io.dart';
 
@@ -75,38 +74,5 @@ class XdrClaimableBalanceEntryExt {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimableBalanceEntryExt.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.v: $discriminant');
-    switch (discriminant) {
-      case 0:
-        break;
-      case 1:
-        _v1!.toTxRep('$prefix.v1', lines);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrClaimableBalanceEntryExt fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    int disc = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
-    );
-    XdrClaimableBalanceEntryExt result = XdrClaimableBalanceEntryExt(disc);
-    switch (result.discriminant) {
-      case 0:
-        break;
-      case 1:
-        result._v1 = XdrClaimableBalanceEntryExtV1.fromTxRep(map, '$prefix.v1');
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

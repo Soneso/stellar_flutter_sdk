@@ -11,6 +11,7 @@ require 'xdrgen'
 require_relative 'name_overrides'
 require_relative 'field_overrides'
 require_relative 'type_overrides'
+require_relative 'txrep_types'
 
 # Types that have compact TxRep representations handled by TxRepHelper.
 # When a field's resolved Dart type is listed here, TxRep emission calls the
@@ -105,13 +106,14 @@ class Generator < Xdrgen::Generators::Base
 
     # Build the toString display name (strip Xdr prefix)
     display_name = dart_name.sub(/\AXdr/, '')
+    gen_txrep = should_generate_txrep?(dart_name)
     txrep_ctx = { kind: :enum, enum_defn: enum_defn }
 
     out.puts COPYRIGHT_HEADER
     out.puts "import 'dart:convert';"
     out.puts "import 'dart:typed_data';"
     out.puts ""
-    out.puts "import 'txrep_helper.dart';" if needs_txrep_helper?(txrep_ctx)
+    out.puts "import 'txrep_helper.dart';" if gen_txrep && needs_txrep_helper?(txrep_ctx)
     out.puts "import 'xdr_data_io.dart';"
     out.puts ""
     out.puts "class #{dart_name} {"
@@ -157,7 +159,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  }"
 
     render_base64_methods(out, dart_name)
-    render_txrep_methods(out, dart_name, { kind: :enum, enum_defn: enum_defn })
+    render_txrep_methods(out, dart_name, { kind: :enum, enum_defn: enum_defn }) if gen_txrep
 
     out.puts "}"
     out.close
@@ -218,8 +220,9 @@ class Generator < Xdrgen::Generators::Base
     end
 
     # Collect imports
+    gen_txrep = should_generate_txrep?(struct_name)
     txrep_ctx = { kind: :struct, fields: fields }
-    imports = collect_imports(struct_name, fields, needs_txrep: needs_txrep_helper?(txrep_ctx))
+    imports = collect_imports(struct_name, fields, needs_txrep: gen_txrep && needs_txrep_helper?(txrep_ctx))
 
     out.puts COPYRIGHT_HEADER
     imports.each { |imp| imp.empty? ? out.puts("") : out.puts("import '#{imp}';") }
@@ -251,7 +254,7 @@ class Generator < Xdrgen::Generators::Base
     render_struct_decode(out, class_name, fields)
 
     render_base64_methods(out, class_name)
-    render_txrep_methods(out, class_name, { kind: :struct, fields: fields })
+    render_txrep_methods(out, class_name, { kind: :struct, fields: fields }) if gen_txrep
 
     out.puts "}"
     out.close
@@ -309,11 +312,12 @@ class Generator < Xdrgen::Generators::Base
 
     disc_info = resolve_discriminant_info(union)
     arms = build_union_arms(union, union_name, disc_info)
+    gen_txrep = should_generate_txrep?(union_name)
     txrep_ctx = { kind: :union, disc_info: disc_info, arms: arms }
 
     # Collect imports
     imports = collect_union_imports(actual_class_name, disc_info, arms, is_base, union_name,
-                                    needs_txrep: needs_txrep_helper?(txrep_ctx))
+                                    needs_txrep: gen_txrep && needs_txrep_helper?(txrep_ctx))
 
     out.puts COPYRIGHT_HEADER
     imports.each { |imp| imp.empty? ? out.puts("") : out.puts("import '#{imp}';") }
@@ -388,7 +392,7 @@ class Generator < Xdrgen::Generators::Base
     end
 
     render_base64_methods(out, actual_class_name)
-    render_txrep_methods(out, actual_class_name, { kind: :union, disc_info: disc_info, arms: arms })
+    render_txrep_methods(out, actual_class_name, { kind: :union, disc_info: disc_info, arms: arms }) if gen_txrep
 
     out.puts "}"
     out.close
@@ -584,9 +588,10 @@ class Generator < Xdrgen::Generators::Base
       decode_expr = -> { "#{override_type}.decode(stream)" }
     end
 
+    gen_txrep = should_generate_txrep?(dart_name)
     txrep_ctx = { kind: :simple_typedef, dart_type: dart_type, field_name: field_name }
     base_imports = Set.new(import_lines) + ["dart:convert", "dart:typed_data"]
-    base_imports.add("txrep_helper.dart") if needs_txrep_helper?(txrep_ctx)
+    base_imports.add("txrep_helper.dart") if gen_txrep && needs_txrep_helper?(txrep_ctx)
     out.puts COPYRIGHT_HEADER
     all_imports = sort_imports(base_imports)
     all_imports.each { |imp| imp.empty? ? out.puts("") : out.puts("import '#{imp}';") }
@@ -610,7 +615,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  }"
 
     render_base64_methods(out, class_name)
-    render_txrep_methods(out, class_name, { kind: :simple_typedef, dart_type: dart_type, field_name: field_name })
+    render_txrep_methods(out, class_name, { kind: :simple_typedef, dart_type: dart_type, field_name: field_name }) if gen_txrep
 
     out.puts "}"
     out.close
@@ -623,13 +628,14 @@ class Generator < Xdrgen::Generators::Base
 
     field_name = underscore_field(dart_name)
     param = encode_param_name(dart_name)
+    gen_txrep = should_generate_txrep?(dart_name)
     txrep_ctx = { kind: :fixed_opaque_typedef }
 
     out.puts COPYRIGHT_HEADER
     out.puts "import 'dart:convert';"
     out.puts "import 'dart:typed_data';"
     out.puts ""
-    out.puts "import 'txrep_helper.dart';" if needs_txrep_helper?(txrep_ctx)
+    out.puts "import 'txrep_helper.dart';" if gen_txrep && needs_txrep_helper?(txrep_ctx)
     out.puts "import 'xdr_data_io.dart';"
     out.puts ""
     out.puts "class #{dart_name} {"
@@ -649,7 +655,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  }"
 
     render_base64_methods(out, dart_name)
-    render_txrep_methods(out, dart_name, { kind: :fixed_opaque_typedef })
+    render_txrep_methods(out, dart_name, { kind: :fixed_opaque_typedef }) if gen_txrep
 
     out.puts "}"
     out.close
@@ -661,13 +667,14 @@ class Generator < Xdrgen::Generators::Base
 
     field_name = underscore_field(dart_name)
     param = encode_param_name(dart_name)
+    gen_txrep = should_generate_txrep?(dart_name)
     txrep_ctx = { kind: :variable_opaque_typedef }
 
     out.puts COPYRIGHT_HEADER
     out.puts "import 'dart:convert';"
     out.puts "import 'dart:typed_data';"
     out.puts ""
-    out.puts "import 'txrep_helper.dart';" if needs_txrep_helper?(txrep_ctx)
+    out.puts "import 'txrep_helper.dart';" if gen_txrep && needs_txrep_helper?(txrep_ctx)
     out.puts "import 'xdr_data_io.dart';"
     out.puts ""
     out.puts "class #{dart_name} {"
@@ -689,7 +696,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  }"
 
     render_base64_methods(out, dart_name)
-    render_txrep_methods(out, dart_name, { kind: :variable_opaque_typedef })
+    render_txrep_methods(out, dart_name, { kind: :variable_opaque_typedef }) if gen_txrep
 
     out.puts "}"
     out.close
@@ -701,13 +708,14 @@ class Generator < Xdrgen::Generators::Base
 
     field_name = underscore_field(dart_name)
     param = encode_param_name(dart_name)
+    gen_txrep = should_generate_txrep?(dart_name)
     txrep_ctx = { kind: :string_typedef }
 
     out.puts COPYRIGHT_HEADER
     out.puts "import 'dart:convert';"
     out.puts "import 'dart:typed_data';"
     out.puts ""
-    out.puts "import 'txrep_helper.dart';" if needs_txrep_helper?(txrep_ctx)
+    out.puts "import 'txrep_helper.dart';" if gen_txrep && needs_txrep_helper?(txrep_ctx)
     out.puts "import 'xdr_data_io.dart';"
     out.puts ""
     out.puts "class #{dart_name} {"
@@ -726,7 +734,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  }"
 
     render_base64_methods(out, dart_name)
-    render_txrep_methods(out, dart_name, { kind: :string_typedef })
+    render_txrep_methods(out, dart_name, { kind: :string_typedef }) if gen_txrep
 
     out.puts "}"
     out.close
@@ -741,6 +749,7 @@ class Generator < Xdrgen::Generators::Base
 
     field_name = underscore_field(dart_name)
     param = encode_param_name(class_name)
+    gen_txrep = should_generate_txrep?(dart_name)
     txrep_ctx = {
       kind: :array_typedef,
       element_type: element_type,
@@ -751,7 +760,7 @@ class Generator < Xdrgen::Generators::Base
     imports = Set.new(collect_type_imports(element_type))
     imports.add("dart:convert")
     imports.add("dart:typed_data")
-    imports.add("txrep_helper.dart") if needs_txrep_helper?(txrep_ctx)
+    imports.add("txrep_helper.dart") if gen_txrep && needs_txrep_helper?(txrep_ctx)
     imports.add("xdr_data_io.dart")
     imports = sort_imports(imports)
 
@@ -796,7 +805,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  }"
 
     render_base64_methods(out, class_name)
-    render_txrep_methods(out, class_name, txrep_ctx)
+    render_txrep_methods(out, class_name, txrep_ctx) if gen_txrep
 
     out.puts "}"
     out.close
@@ -1595,6 +1604,13 @@ class Generator < Xdrgen::Generators::Base
     end
   end
 
+  # Returns true when TxRep methods should be generated for the given Dart type name.
+  # Uses the original XDR-derived name (without any "Base" suffix added for
+  # BASE_WRAPPER_TYPES) so that the lookup works uniformly across all renderers.
+  def should_generate_txrep?(dart_name)
+    TXREP_TYPES.include?(dart_name)
+  end
+
   def needs_txrep_helper?(type_context)
     case type_context[:kind]
     when :enum
@@ -1602,7 +1618,9 @@ class Generator < Xdrgen::Generators::Base
     when :union
       true  # fromTxRep always calls TxRepHelper.getValue for discriminant
     when :simple_typedef
-      true  # fromTxRep always calls TxRepHelper.getValue
+      # Primitive inner types use TxRepHelper.getValue + parse; named XDR types delegate directly
+      raise "dart_type missing for simple_typedef in needs_txrep_helper?" unless type_context[:dart_type]
+      txrep_type_needs_helper?(type_context[:dart_type])
     when :fixed_opaque_typedef
       true  # bytesToHex / hexToBytes
     when :variable_opaque_typedef
@@ -2018,19 +2036,22 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  }"
     out.puts ""
     out.puts "  static #{class_name} fromTxRep(Map<String, String> map, String prefix) {"
-    out.puts "    String? raw = TxRepHelper.getValue(map, prefix);"
-    out.puts "    if (raw == null) throw Exception('missing \$prefix');"
-    case dart_type
-    when "int"
-      out.puts "    return #{class_name}(TxRepHelper.parseInt(raw));"
-    when "BigInt"
-      out.puts "    return #{class_name}(TxRepHelper.parseBigInt(raw));"
-    when "bool"
-      out.puts "    return #{class_name}(raw == 'true');"
-    when "double"
-      out.puts "    return #{class_name}(double.parse(raw));"
+    if %w[int BigInt bool double].include?(dart_type)
+      # Primitive inner type — read a single value at prefix
+      out.puts "    String? raw = TxRepHelper.getValue(map, prefix);"
+      out.puts "    if (raw == null) throw Exception('missing \$prefix');"
+      case dart_type
+      when "int"
+        out.puts "    return #{class_name}(TxRepHelper.parseInt(raw));"
+      when "BigInt"
+        out.puts "    return #{class_name}(TxRepHelper.parseBigInt(raw));"
+      when "bool"
+        out.puts "    return #{class_name}(raw == 'true');"
+      when "double"
+        out.puts "    return #{class_name}(double.parse(raw));"
+      end
     else
-      # Named XDR type — delegate to that type's fromTxRep
+      # Named XDR type — delegate directly (no getValue; the inner type reads its own keys)
       out.puts "    return #{class_name}(#{dart_type}.fromTxRep(map, prefix));"
     end
     out.puts "  }"

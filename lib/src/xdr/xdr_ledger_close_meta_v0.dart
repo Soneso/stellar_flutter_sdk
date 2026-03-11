@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger_header_history_entry.dart';
 import 'xdr_scp_history_entry.dart';
@@ -120,63 +119,5 @@ class XdrLedgerCloseMetaV0 {
   static XdrLedgerCloseMetaV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerCloseMetaV0.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ledgerHeader.toTxRep('$prefix.ledgerHeader', lines);
-    _txSet.toTxRep('$prefix.txSet', lines);
-    lines.add('$prefix.txProcessing.len: ${_txProcessing.length}');
-    for (int i = 0; i < _txProcessing.length; i++) {
-      _txProcessing[i].toTxRep('$prefix.txProcessing[$i]', lines);
-    }
-    lines.add('$prefix.upgradesProcessing.len: ${_upgradesProcessing.length}');
-    for (int i = 0; i < _upgradesProcessing.length; i++) {
-      _upgradesProcessing[i].toTxRep('$prefix.upgradesProcessing[$i]', lines);
-    }
-    lines.add('$prefix.scpInfo.len: ${_scpInfo.length}');
-    for (int i = 0; i < _scpInfo.length; i++) {
-      _scpInfo[i].toTxRep('$prefix.scpInfo[$i]', lines);
-    }
-  }
-
-  static XdrLedgerCloseMetaV0 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrLedgerHeaderHistoryEntry ledgerHeader =
-        XdrLedgerHeaderHistoryEntry.fromTxRep(map, '$prefix.ledgerHeader');
-    XdrTransactionSet txSet = XdrTransactionSet.fromTxRep(map, '$prefix.txSet');
-    int txProcessingLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.txProcessing.len') ?? '0',
-    );
-    List<XdrTransactionResultMeta> txProcessing = [];
-    for (int i = 0; i < txProcessingLen; i++) {
-      txProcessing.add(
-        XdrTransactionResultMeta.fromTxRep(map, '$prefix.txProcessing[$i]'),
-      );
-    }
-    int upgradesProcessingLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.upgradesProcessing.len') ?? '0',
-    );
-    List<XdrUpgradeEntryMeta> upgradesProcessing = [];
-    for (int i = 0; i < upgradesProcessingLen; i++) {
-      upgradesProcessing.add(
-        XdrUpgradeEntryMeta.fromTxRep(map, '$prefix.upgradesProcessing[$i]'),
-      );
-    }
-    int scpInfoLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.scpInfo.len') ?? '0',
-    );
-    List<XdrSCPHistoryEntry> scpInfo = [];
-    for (int i = 0; i < scpInfoLen; i++) {
-      scpInfo.add(XdrSCPHistoryEntry.fromTxRep(map, '$prefix.scpInfo[$i]'));
-    }
-    return XdrLedgerCloseMetaV0(
-      ledgerHeader,
-      txSet,
-      txProcessing,
-      upgradesProcessing,
-      scpInfo,
-    );
   }
 }

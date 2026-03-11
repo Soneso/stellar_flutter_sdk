@@ -42,15 +42,4 @@ class XdrDontHave {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrDontHave.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _type.toTxRep('$prefix.type', lines);
-    _reqHash.toTxRep('$prefix.reqHash', lines);
-  }
-
-  static XdrDontHave fromTxRep(Map<String, String> map, String prefix) {
-    XdrMessageType type = XdrMessageType.fromTxRep(map, '$prefix.type');
-    XdrUint256 reqHash = XdrUint256.fromTxRep(map, '$prefix.reqHash');
-    return XdrDontHave(type, reqHash);
-  }
 }

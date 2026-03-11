@@ -4,6 +4,7 @@
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'xdr_test_helpers.dart';
 
 void main() {
   group('XDR contract generated tests', () {
@@ -821,6 +822,204 @@ void main() {
         XdrSCMapEntry.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
       });
+
+    test('XdrSCValType TxRep roundtrip', () {
+      var original = XdrSCValType.SCV_BOOL;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSCValType.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrSCValType');
+    });
+
+    test('XdrSCErrorType TxRep roundtrip', () {
+      var original = XdrSCErrorType.SCE_CONTRACT;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSCErrorType.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrSCErrorType');
+    });
+
+    test('XdrSCErrorCode TxRep roundtrip', () {
+      var original = XdrSCErrorCode.SCEC_ARITH_DOMAIN;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSCErrorCode.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrSCErrorCode');
+    });
+
+    test('XdrSCError TxRep roundtrip', () {
+      var original = (XdrSCError(XdrSCErrorType.SCE_CONTRACT)..contractCode = XdrUint32(42));
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSCError.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrSCError');
+    });
+
+    test('XdrUInt128Parts TxRep roundtrip', () {
+      var original = XdrUInt128Parts(XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)));
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrUInt128Parts.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrUInt128Parts');
+    });
+
+    test('XdrInt128Parts TxRep roundtrip', () {
+      var original = XdrInt128Parts(XdrInt64(BigInt.from(654321)), XdrUint64(BigInt.from(123456)));
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrInt128Parts.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrInt128Parts');
+    });
+
+    test('XdrUInt256Parts TxRep roundtrip', () {
+      var original = XdrUInt256Parts(XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)));
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrUInt256Parts.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrUInt256Parts');
+    });
+
+    test('XdrInt256Parts TxRep roundtrip', () {
+      var original = XdrInt256Parts(XdrInt64(BigInt.from(654321)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)), XdrUint64(BigInt.from(123456)));
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrInt256Parts.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrInt256Parts');
+    });
+
+    test('XdrContractExecutableType TxRep roundtrip', () {
+      var original = XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrContractExecutableType.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrContractExecutableType');
+    });
+
+    test('XdrContractExecutable TxRep roundtrip', () {
+      var original = XdrContractExecutable(XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET);
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrContractExecutable.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrContractExecutable');
+    });
+
+    test('XdrSCAddressType TxRep roundtrip', () {
+      var original = XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSCAddressType.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrSCAddressType');
+    });
+
+    test('XdrMuxedAccountMed25519 TxRep roundtrip', () {
+      var original = XdrMuxedAccountMed25519(XdrUint64(BigInt.from(123456)), XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrMuxedAccountMed25519.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrMuxedAccountMed25519');
+    });
+
+    test('XdrSCAddress TxRep roundtrip', () {
+      var original = (XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = (XdrAccountID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))));
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSCAddress.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrSCAddress');
+    });
+
+    test('XdrSCBytes TxRep roundtrip', () {
+      var original = XdrSCBytes(Uint8List.fromList([1, 2, 3]));
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSCBytes.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrSCBytes');
+    });
+
+    test('XdrSCNonceKey TxRep roundtrip', () {
+      var original = XdrSCNonceKey(XdrInt64(BigInt.from(654321)));
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSCNonceKey.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrSCNonceKey');
+    });
+
+    test('XdrSCContractInstance TxRep roundtrip', () {
+      var original = XdrSCContractInstance(XdrContractExecutable(XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET), null);
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSCContractInstance.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrSCContractInstance');
+    });
+
+    test('XdrSCVal TxRep roundtrip', () {
+      var original = XdrSCVal(XdrSCValType.SCV_VOID);
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSCVal.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrSCVal');
+    });
+
+    test('XdrSCMapEntry TxRep roundtrip', () {
+      var original = XdrSCMapEntry(XdrSCVal(XdrSCValType.SCV_VOID), XdrSCVal(XdrSCValType.SCV_VOID));
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSCMapEntry.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrSCMapEntry');
+    });
 
   });
 }

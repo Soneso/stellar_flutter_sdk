@@ -68,29 +68,4 @@ class XdrTransactionResultMeta {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionResultMeta.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _result.toTxRep('$prefix.result', lines);
-    _feeProcessing.toTxRep('$prefix.feeProcessing', lines);
-    _txApplyProcessing.toTxRep('$prefix.txApplyProcessing', lines);
-  }
-
-  static XdrTransactionResultMeta fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrTransactionResultPair result = XdrTransactionResultPair.fromTxRep(
-      map,
-      '$prefix.result',
-    );
-    XdrLedgerEntryChanges feeProcessing = XdrLedgerEntryChanges.fromTxRep(
-      map,
-      '$prefix.feeProcessing',
-    );
-    XdrTransactionMeta txApplyProcessing = XdrTransactionMeta.fromTxRep(
-      map,
-      '$prefix.txApplyProcessing',
-    );
-    return XdrTransactionResultMeta(result, feeProcessing, txApplyProcessing);
-  }
 }

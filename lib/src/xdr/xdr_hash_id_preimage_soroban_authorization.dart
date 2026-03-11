@@ -85,34 +85,4 @@ class XdrHashIDPreimageSorobanAuthorization {
       XdrDataInputStream(bytes),
     );
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _networkID.toTxRep('$prefix.networkID', lines);
-    _nonce.toTxRep('$prefix.nonce', lines);
-    _signatureExpirationLedger.toTxRep(
-      '$prefix.signatureExpirationLedger',
-      lines,
-    );
-    _invocation.toTxRep('$prefix.invocation', lines);
-  }
-
-  static XdrHashIDPreimageSorobanAuthorization fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrHash networkID = XdrHash.fromTxRep(map, '$prefix.networkID');
-    XdrInt64 nonce = XdrInt64.fromTxRep(map, '$prefix.nonce');
-    XdrUint32 signatureExpirationLedger = XdrUint32.fromTxRep(
-      map,
-      '$prefix.signatureExpirationLedger',
-    );
-    XdrSorobanAuthorizedInvocation invocation =
-        XdrSorobanAuthorizedInvocation.fromTxRep(map, '$prefix.invocation');
-    return XdrHashIDPreimageSorobanAuthorization(
-      networkID,
-      nonce,
-      signatureExpirationLedger,
-      invocation,
-    );
-  }
 }

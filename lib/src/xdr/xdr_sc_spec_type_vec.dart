@@ -38,16 +38,4 @@ class XdrSCSpecTypeVec {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecTypeVec.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _elementType.toTxRep('$prefix.elementType', lines);
-  }
-
-  static XdrSCSpecTypeVec fromTxRep(Map<String, String> map, String prefix) {
-    XdrSCSpecTypeDef elementType = XdrSCSpecTypeDef.fromTxRep(
-      map,
-      '$prefix.elementType',
-    );
-    return XdrSCSpecTypeVec(elementType);
-  }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_transaction_result_pair.dart';
 
@@ -52,28 +51,5 @@ class XdrTransactionResultSet {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionResultSet.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.results.len: ${_results.length}');
-    for (int i = 0; i < _results.length; i++) {
-      _results[i].toTxRep('$prefix.results[$i]', lines);
-    }
-  }
-
-  static XdrTransactionResultSet fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    int resultsLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.results.len') ?? '0',
-    );
-    List<XdrTransactionResultPair> results = [];
-    for (int i = 0; i < resultsLen; i++) {
-      results.add(
-        XdrTransactionResultPair.fromTxRep(map, '$prefix.results[$i]'),
-      );
-    }
-    return XdrTransactionResultSet(results);
   }
 }

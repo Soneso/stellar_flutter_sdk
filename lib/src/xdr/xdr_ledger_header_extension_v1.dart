@@ -52,21 +52,4 @@ class XdrLedgerHeaderExtensionV1 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerHeaderExtensionV1.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _flags.toTxRep('$prefix.flags', lines);
-    _ext.toTxRep('$prefix.ext', lines);
-  }
-
-  static XdrLedgerHeaderExtensionV1 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrUint32 flags = XdrUint32.fromTxRep(map, '$prefix.flags');
-    XdrLedgerHeaderExtensionV1Ext ext = XdrLedgerHeaderExtensionV1Ext.fromTxRep(
-      map,
-      '$prefix.ext',
-    );
-    return XdrLedgerHeaderExtensionV1(flags, ext);
-  }
 }

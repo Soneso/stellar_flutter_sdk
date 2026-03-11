@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_liquidity_pool_withdraw_result_code.dart';
 
@@ -62,55 +61,5 @@ class XdrLiquidityPoolWithdrawResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolWithdrawResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.code: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_SUCCESS:
-        break;
-      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_MALFORMED:
-      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_NO_TRUST:
-      case XdrLiquidityPoolWithdrawResultCode
-          .LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED:
-      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_LINE_FULL:
-      case XdrLiquidityPoolWithdrawResultCode
-          .LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM:
-      case XdrLiquidityPoolWithdrawResultCode
-          .LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrLiquidityPoolWithdrawResult fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrLiquidityPoolWithdrawResultCode disc =
-        XdrLiquidityPoolWithdrawResultCode.fromTxRepName(
-          TxRepHelper.getValue(map, '$prefix.code') ?? '',
-        );
-    XdrLiquidityPoolWithdrawResult result = XdrLiquidityPoolWithdrawResult(
-      disc,
-    );
-    switch (result.discriminant) {
-      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_SUCCESS:
-        break;
-      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_MALFORMED:
-      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_NO_TRUST:
-      case XdrLiquidityPoolWithdrawResultCode
-          .LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED:
-      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_LINE_FULL:
-      case XdrLiquidityPoolWithdrawResultCode
-          .LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM:
-      case XdrLiquidityPoolWithdrawResultCode
-          .LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

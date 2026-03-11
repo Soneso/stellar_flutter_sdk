@@ -38,16 +38,4 @@ class XdrFloodDemand {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFloodDemand.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _txHashes.toTxRep('$prefix.txHashes', lines);
-  }
-
-  static XdrFloodDemand fromTxRep(Map<String, String> map, String prefix) {
-    XdrTxDemandVector txHashes = XdrTxDemandVector.fromTxRep(
-      map,
-      '$prefix.txHashes',
-    );
-    return XdrFloodDemand(txHashes);
-  }
 }

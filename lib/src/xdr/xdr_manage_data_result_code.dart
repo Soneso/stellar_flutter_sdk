@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrManageDataResultCode {
@@ -70,58 +69,5 @@ class XdrManageDataResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrManageDataResultCode.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'MANAGE_DATA_SUCCESS';
-      case -1:
-        return 'MANAGE_DATA_NOT_SUPPORTED_YET';
-      case -2:
-        return 'MANAGE_DATA_NAME_NOT_FOUND';
-      case -3:
-        return 'MANAGE_DATA_LOW_RESERVE';
-      case -4:
-        return 'MANAGE_DATA_INVALID_NAME';
-      default:
-        return 'XdrManageDataResultCode#$_value';
-    }
-  }
-
-  static XdrManageDataResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrManageDataResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'MANAGE_DATA_SUCCESS':
-        return MANAGE_DATA_SUCCESS;
-      case 'MANAGE_DATA_NOT_SUPPORTED_YET':
-        return MANAGE_DATA_NOT_SUPPORTED_YET;
-      case 'MANAGE_DATA_NAME_NOT_FOUND':
-        return MANAGE_DATA_NAME_NOT_FOUND;
-      case 'MANAGE_DATA_LOW_RESERVE':
-        return MANAGE_DATA_LOW_RESERVE;
-      case 'MANAGE_DATA_INVALID_NAME':
-        return MANAGE_DATA_INVALID_NAME;
-      default:
-        if (name.startsWith('XdrManageDataResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrManageDataResultCode#'.length),
-          );
-          if (val != null) return XdrManageDataResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

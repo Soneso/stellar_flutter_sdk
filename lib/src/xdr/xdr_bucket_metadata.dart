@@ -45,18 +45,4 @@ class XdrBucketMetadata {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBucketMetadata.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ledgerVersion.toTxRep('$prefix.ledgerVersion', lines);
-    _ext.toTxRep('$prefix.ext', lines);
-  }
-
-  static XdrBucketMetadata fromTxRep(Map<String, String> map, String prefix) {
-    XdrUint32 ledgerVersion = XdrUint32.fromTxRep(map, '$prefix.ledgerVersion');
-    XdrBucketMetadataExt ext = XdrBucketMetadataExt.fromTxRep(
-      map,
-      '$prefix.ext',
-    );
-    return XdrBucketMetadata(ledgerVersion, ext);
-  }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_encoded_ledger_key.dart';
 
@@ -74,41 +73,5 @@ class XdrFrozenLedgerKeysDelta {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFrozenLedgerKeysDelta.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.keysToFreeze.len: ${_keysToFreeze.length}');
-    for (int i = 0; i < _keysToFreeze.length; i++) {
-      _keysToFreeze[i].toTxRep('$prefix.keysToFreeze[$i]', lines);
-    }
-    lines.add('$prefix.keysToUnfreeze.len: ${_keysToUnfreeze.length}');
-    for (int i = 0; i < _keysToUnfreeze.length; i++) {
-      _keysToUnfreeze[i].toTxRep('$prefix.keysToUnfreeze[$i]', lines);
-    }
-  }
-
-  static XdrFrozenLedgerKeysDelta fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    int keysToFreezeLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.keysToFreeze.len') ?? '0',
-    );
-    List<XdrEncodedLedgerKey> keysToFreeze = [];
-    for (int i = 0; i < keysToFreezeLen; i++) {
-      keysToFreeze.add(
-        XdrEncodedLedgerKey.fromTxRep(map, '$prefix.keysToFreeze[$i]'),
-      );
-    }
-    int keysToUnfreezeLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.keysToUnfreeze.len') ?? '0',
-    );
-    List<XdrEncodedLedgerKey> keysToUnfreeze = [];
-    for (int i = 0; i < keysToUnfreezeLen; i++) {
-      keysToUnfreeze.add(
-        XdrEncodedLedgerKey.fromTxRep(map, '$prefix.keysToUnfreeze[$i]'),
-      );
-    }
-    return XdrFrozenLedgerKeysDelta(keysToFreeze, keysToUnfreeze);
   }
 }

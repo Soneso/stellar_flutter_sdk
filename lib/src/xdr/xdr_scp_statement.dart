@@ -52,20 +52,4 @@ class XdrSCPStatement {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPStatement.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _nodeID.toTxRep('$prefix.nodeID', lines);
-    _slotIndex.toTxRep('$prefix.slotIndex', lines);
-    _pledges.toTxRep('$prefix.pledges', lines);
-  }
-
-  static XdrSCPStatement fromTxRep(Map<String, String> map, String prefix) {
-    XdrNodeID nodeID = XdrNodeID.fromTxRep(map, '$prefix.nodeID');
-    XdrUint64 slotIndex = XdrUint64.fromTxRep(map, '$prefix.slotIndex');
-    XdrSCPStatementPledges pledges = XdrSCPStatementPledges.fromTxRep(
-      map,
-      '$prefix.pledges',
-    );
-    return XdrSCPStatement(nodeID, slotIndex, pledges);
-  }
 }

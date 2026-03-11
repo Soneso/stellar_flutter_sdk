@@ -55,22 +55,4 @@ class XdrTrustLineEntryExtensionV2 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTrustLineEntryExtensionV2.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _liquidityPoolUseCount.toTxRep('$prefix.liquidityPoolUseCount', lines);
-    _ext.toTxRep('$prefix.ext', lines);
-  }
-
-  static XdrTrustLineEntryExtensionV2 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrInt32 liquidityPoolUseCount = XdrInt32.fromTxRep(
-      map,
-      '$prefix.liquidityPoolUseCount',
-    );
-    XdrTrustLineEntryExtensionV2Ext ext =
-        XdrTrustLineEntryExtensionV2Ext.fromTxRep(map, '$prefix.ext');
-    return XdrTrustLineEntryExtensionV2(liquidityPoolUseCount, ext);
-  }
 }

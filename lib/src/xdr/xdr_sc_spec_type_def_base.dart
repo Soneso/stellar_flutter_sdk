@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_spec_type.dart';
 import 'xdr_sc_spec_type_bytes_n.dart';
@@ -150,110 +149,5 @@ class XdrSCSpecTypeDefBase {
   static XdrSCSpecTypeDefBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecTypeDefBase.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.type: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrSCSpecType.SC_SPEC_TYPE_VAL:
-      case XdrSCSpecType.SC_SPEC_TYPE_BOOL:
-      case XdrSCSpecType.SC_SPEC_TYPE_VOID:
-      case XdrSCSpecType.SC_SPEC_TYPE_ERROR:
-      case XdrSCSpecType.SC_SPEC_TYPE_U32:
-      case XdrSCSpecType.SC_SPEC_TYPE_I32:
-      case XdrSCSpecType.SC_SPEC_TYPE_U64:
-      case XdrSCSpecType.SC_SPEC_TYPE_I64:
-      case XdrSCSpecType.SC_SPEC_TYPE_TIMEPOINT:
-      case XdrSCSpecType.SC_SPEC_TYPE_DURATION:
-      case XdrSCSpecType.SC_SPEC_TYPE_U128:
-      case XdrSCSpecType.SC_SPEC_TYPE_I128:
-      case XdrSCSpecType.SC_SPEC_TYPE_U256:
-      case XdrSCSpecType.SC_SPEC_TYPE_I256:
-      case XdrSCSpecType.SC_SPEC_TYPE_BYTES:
-      case XdrSCSpecType.SC_SPEC_TYPE_STRING:
-      case XdrSCSpecType.SC_SPEC_TYPE_SYMBOL:
-      case XdrSCSpecType.SC_SPEC_TYPE_ADDRESS:
-      case XdrSCSpecType.SC_SPEC_TYPE_MUXED_ADDRESS:
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_OPTION:
-        _option!.toTxRep('$prefix.option', lines);
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_RESULT:
-        _result!.toTxRep('$prefix.result', lines);
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_VEC:
-        _vec!.toTxRep('$prefix.vec', lines);
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_MAP:
-        _map!.toTxRep('$prefix.map', lines);
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_TUPLE:
-        _tuple!.toTxRep('$prefix.tuple', lines);
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_BYTES_N:
-        _bytesN!.toTxRep('$prefix.bytesN', lines);
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_UDT:
-        _udt!.toTxRep('$prefix.udt', lines);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrSCSpecTypeDefBase fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrSCSpecType disc = XdrSCSpecType.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.type') ?? '',
-    );
-    XdrSCSpecTypeDefBase result = XdrSCSpecTypeDefBase(disc);
-    switch (result.discriminant) {
-      case XdrSCSpecType.SC_SPEC_TYPE_VAL:
-      case XdrSCSpecType.SC_SPEC_TYPE_BOOL:
-      case XdrSCSpecType.SC_SPEC_TYPE_VOID:
-      case XdrSCSpecType.SC_SPEC_TYPE_ERROR:
-      case XdrSCSpecType.SC_SPEC_TYPE_U32:
-      case XdrSCSpecType.SC_SPEC_TYPE_I32:
-      case XdrSCSpecType.SC_SPEC_TYPE_U64:
-      case XdrSCSpecType.SC_SPEC_TYPE_I64:
-      case XdrSCSpecType.SC_SPEC_TYPE_TIMEPOINT:
-      case XdrSCSpecType.SC_SPEC_TYPE_DURATION:
-      case XdrSCSpecType.SC_SPEC_TYPE_U128:
-      case XdrSCSpecType.SC_SPEC_TYPE_I128:
-      case XdrSCSpecType.SC_SPEC_TYPE_U256:
-      case XdrSCSpecType.SC_SPEC_TYPE_I256:
-      case XdrSCSpecType.SC_SPEC_TYPE_BYTES:
-      case XdrSCSpecType.SC_SPEC_TYPE_STRING:
-      case XdrSCSpecType.SC_SPEC_TYPE_SYMBOL:
-      case XdrSCSpecType.SC_SPEC_TYPE_ADDRESS:
-      case XdrSCSpecType.SC_SPEC_TYPE_MUXED_ADDRESS:
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_OPTION:
-        result._option = XdrSCSpecTypeOption.fromTxRep(map, '$prefix.option');
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_RESULT:
-        result._result = XdrSCSpecTypeResult.fromTxRep(map, '$prefix.result');
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_VEC:
-        result._vec = XdrSCSpecTypeVec.fromTxRep(map, '$prefix.vec');
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_MAP:
-        result._map = XdrSCSpecTypeMap.fromTxRep(map, '$prefix.map');
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_TUPLE:
-        result._tuple = XdrSCSpecTypeTuple.fromTxRep(map, '$prefix.tuple');
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_BYTES_N:
-        result._bytesN = XdrSCSpecTypeBytesN.fromTxRep(map, '$prefix.bytesN');
-        break;
-      case XdrSCSpecType.SC_SPEC_TYPE_UDT:
-        result._udt = XdrSCSpecTypeUDT.fromTxRep(map, '$prefix.udt');
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

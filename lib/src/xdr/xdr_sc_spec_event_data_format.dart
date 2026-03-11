@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSCSpecEventDataFormat {
@@ -63,50 +62,5 @@ class XdrSCSpecEventDataFormat {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecEventDataFormat.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE';
-      case 1:
-        return 'SC_SPEC_EVENT_DATA_FORMAT_VEC';
-      case 2:
-        return 'SC_SPEC_EVENT_DATA_FORMAT_MAP';
-      default:
-        return 'XdrSCSpecEventDataFormat#$_value';
-    }
-  }
-
-  static XdrSCSpecEventDataFormat fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrSCSpecEventDataFormat fromTxRepName(String name) {
-    switch (name) {
-      case 'SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE':
-        return SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE;
-      case 'SC_SPEC_EVENT_DATA_FORMAT_VEC':
-        return SC_SPEC_EVENT_DATA_FORMAT_VEC;
-      case 'SC_SPEC_EVENT_DATA_FORMAT_MAP':
-        return SC_SPEC_EVENT_DATA_FORMAT_MAP;
-      default:
-        if (name.startsWith('XdrSCSpecEventDataFormat#')) {
-          int? val = int.tryParse(
-            name.substring('XdrSCSpecEventDataFormat#'.length),
-          );
-          if (val != null) return XdrSCSpecEventDataFormat._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrLiquidityPoolWithdrawResultCode {
@@ -79,67 +78,5 @@ class XdrLiquidityPoolWithdrawResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolWithdrawResultCode.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'LIQUIDITY_POOL_WITHDRAW_SUCCESS';
-      case -1:
-        return 'LIQUIDITY_POOL_WITHDRAW_MALFORMED';
-      case -2:
-        return 'LIQUIDITY_POOL_WITHDRAW_NO_TRUST';
-      case -3:
-        return 'LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED';
-      case -4:
-        return 'LIQUIDITY_POOL_WITHDRAW_LINE_FULL';
-      case -5:
-        return 'LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM';
-      case -6:
-        return 'LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN';
-      default:
-        return 'XdrLiquidityPoolWithdrawResultCode#$_value';
-    }
-  }
-
-  static XdrLiquidityPoolWithdrawResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrLiquidityPoolWithdrawResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'LIQUIDITY_POOL_WITHDRAW_SUCCESS':
-        return LIQUIDITY_POOL_WITHDRAW_SUCCESS;
-      case 'LIQUIDITY_POOL_WITHDRAW_MALFORMED':
-        return LIQUIDITY_POOL_WITHDRAW_MALFORMED;
-      case 'LIQUIDITY_POOL_WITHDRAW_NO_TRUST':
-        return LIQUIDITY_POOL_WITHDRAW_NO_TRUST;
-      case 'LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED':
-        return LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED;
-      case 'LIQUIDITY_POOL_WITHDRAW_LINE_FULL':
-        return LIQUIDITY_POOL_WITHDRAW_LINE_FULL;
-      case 'LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM':
-        return LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM;
-      case 'LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN':
-        return LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN;
-      default:
-        if (name.startsWith('XdrLiquidityPoolWithdrawResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrLiquidityPoolWithdrawResultCode#'.length),
-          );
-          if (val != null)
-            return XdrLiquidityPoolWithdrawResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

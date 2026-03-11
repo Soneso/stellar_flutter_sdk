@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_stellar_value_ext.dart';
@@ -67,29 +66,5 @@ class XdrStellarValue {
   static XdrStellarValue fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrStellarValue.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _txSetHash.toTxRep('$prefix.txSetHash', lines);
-    _closeTime.toTxRep('$prefix.closeTime', lines);
-    lines.add('$prefix.upgrades.len: ${_upgrades.length}');
-    for (int i = 0; i < _upgrades.length; i++) {
-      _upgrades[i].toTxRep('$prefix.upgrades[$i]', lines);
-    }
-    _ext.toTxRep('$prefix.ext', lines);
-  }
-
-  static XdrStellarValue fromTxRep(Map<String, String> map, String prefix) {
-    XdrHash txSetHash = XdrHash.fromTxRep(map, '$prefix.txSetHash');
-    XdrUint64 closeTime = XdrUint64.fromTxRep(map, '$prefix.closeTime');
-    int upgradesLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.upgrades.len') ?? '0',
-    );
-    List<XdrUpgradeType> upgrades = [];
-    for (int i = 0; i < upgradesLen; i++) {
-      upgrades.add(XdrUpgradeType.fromTxRep(map, '$prefix.upgrades[$i]'));
-    }
-    XdrStellarValueExt ext = XdrStellarValueExt.fromTxRep(map, '$prefix.ext');
-    return XdrStellarValue(txSetHash, closeTime, upgrades, ext);
   }
 }

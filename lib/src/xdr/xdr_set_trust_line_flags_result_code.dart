@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSetTrustLineFlagsResultCode {
@@ -75,62 +74,5 @@ class XdrSetTrustLineFlagsResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSetTrustLineFlagsResultCode.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'SET_TRUST_LINE_FLAGS_SUCCESS';
-      case -1:
-        return 'SET_TRUST_LINE_FLAGS_MALFORMED';
-      case -2:
-        return 'SET_TRUST_LINE_FLAGS_NO_TRUST_LINE';
-      case -3:
-        return 'SET_TRUST_LINE_FLAGS_CANT_REVOKE';
-      case -4:
-        return 'SET_TRUST_LINE_FLAGS_INVALID_STATE';
-      case -5:
-        return 'SET_TRUST_LINE_FLAGS_LOW_RESERVE';
-      default:
-        return 'XdrSetTrustLineFlagsResultCode#$_value';
-    }
-  }
-
-  static XdrSetTrustLineFlagsResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrSetTrustLineFlagsResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'SET_TRUST_LINE_FLAGS_SUCCESS':
-        return SET_TRUST_LINE_FLAGS_SUCCESS;
-      case 'SET_TRUST_LINE_FLAGS_MALFORMED':
-        return SET_TRUST_LINE_FLAGS_MALFORMED;
-      case 'SET_TRUST_LINE_FLAGS_NO_TRUST_LINE':
-        return SET_TRUST_LINE_FLAGS_NO_TRUST_LINE;
-      case 'SET_TRUST_LINE_FLAGS_CANT_REVOKE':
-        return SET_TRUST_LINE_FLAGS_CANT_REVOKE;
-      case 'SET_TRUST_LINE_FLAGS_INVALID_STATE':
-        return SET_TRUST_LINE_FLAGS_INVALID_STATE;
-      case 'SET_TRUST_LINE_FLAGS_LOW_RESERVE':
-        return SET_TRUST_LINE_FLAGS_LOW_RESERVE;
-      default:
-        if (name.startsWith('XdrSetTrustLineFlagsResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrSetTrustLineFlagsResultCode#'.length),
-          );
-          if (val != null) return XdrSetTrustLineFlagsResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

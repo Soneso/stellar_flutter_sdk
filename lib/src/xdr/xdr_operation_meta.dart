@@ -38,16 +38,4 @@ class XdrOperationMeta {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrOperationMeta.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _changes.toTxRep('$prefix.changes', lines);
-  }
-
-  static XdrOperationMeta fromTxRep(Map<String, String> map, String prefix) {
-    XdrLedgerEntryChanges changes = XdrLedgerEntryChanges.fromTxRep(
-      map,
-      '$prefix.changes',
-    );
-    return XdrOperationMeta(changes);
-  }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_change_trust_result_code.dart';
 import 'xdr_data_io.dart';
 
@@ -58,50 +57,5 @@ class XdrChangeTrustResult {
   static XdrChangeTrustResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrChangeTrustResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.code: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrChangeTrustResultCode.CHANGE_TRUST_SUCCESS:
-        break;
-      case XdrChangeTrustResultCode.CHANGE_TRUST_MALFORMED:
-      case XdrChangeTrustResultCode.CHANGE_TRUST_NO_ISSUER:
-      case XdrChangeTrustResultCode.CHANGE_TRUST_INVALID_LIMIT:
-      case XdrChangeTrustResultCode.CHANGE_TRUST_LOW_RESERVE:
-      case XdrChangeTrustResultCode.CHANGE_TRUST_SELF_NOT_ALLOWED:
-      case XdrChangeTrustResultCode.CHANGE_TRUST_TRUST_LINE_MISSING:
-      case XdrChangeTrustResultCode.CHANGE_TRUST_CANNOT_DELETE:
-      case XdrChangeTrustResultCode.CHANGE_TRUST_NOT_AUTH_MAINTAIN_LIABILITIES:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrChangeTrustResult fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrChangeTrustResultCode disc = XdrChangeTrustResultCode.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.code') ?? '',
-    );
-    XdrChangeTrustResult result = XdrChangeTrustResult(disc);
-    switch (result.discriminant) {
-      case XdrChangeTrustResultCode.CHANGE_TRUST_SUCCESS:
-        break;
-      case XdrChangeTrustResultCode.CHANGE_TRUST_MALFORMED:
-      case XdrChangeTrustResultCode.CHANGE_TRUST_NO_ISSUER:
-      case XdrChangeTrustResultCode.CHANGE_TRUST_INVALID_LIMIT:
-      case XdrChangeTrustResultCode.CHANGE_TRUST_LOW_RESERVE:
-      case XdrChangeTrustResultCode.CHANGE_TRUST_SELF_NOT_ALLOWED:
-      case XdrChangeTrustResultCode.CHANGE_TRUST_TRUST_LINE_MISSING:
-      case XdrChangeTrustResultCode.CHANGE_TRUST_CANNOT_DELETE:
-      case XdrChangeTrustResultCode.CHANGE_TRUST_NOT_AUTH_MAINTAIN_LIABILITIES:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

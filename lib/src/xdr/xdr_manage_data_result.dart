@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_manage_data_result_code.dart';
 
@@ -58,39 +57,5 @@ class XdrManageDataResult {
   static XdrManageDataResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrManageDataResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.code: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrManageDataResultCode.MANAGE_DATA_SUCCESS:
-        break;
-      case XdrManageDataResultCode.MANAGE_DATA_NOT_SUPPORTED_YET:
-      case XdrManageDataResultCode.MANAGE_DATA_NAME_NOT_FOUND:
-      case XdrManageDataResultCode.MANAGE_DATA_LOW_RESERVE:
-      case XdrManageDataResultCode.MANAGE_DATA_INVALID_NAME:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrManageDataResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrManageDataResultCode disc = XdrManageDataResultCode.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.code') ?? '',
-    );
-    XdrManageDataResult result = XdrManageDataResult(disc);
-    switch (result.discriminant) {
-      case XdrManageDataResultCode.MANAGE_DATA_SUCCESS:
-        break;
-      case XdrManageDataResultCode.MANAGE_DATA_NOT_SUPPORTED_YET:
-      case XdrManageDataResultCode.MANAGE_DATA_NAME_NOT_FOUND:
-      case XdrManageDataResultCode.MANAGE_DATA_LOW_RESERVE:
-      case XdrManageDataResultCode.MANAGE_DATA_INVALID_NAME:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_value.dart';
@@ -67,36 +66,5 @@ class XdrSCPNomination {
   static XdrSCPNomination fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPNomination.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _quorumSetHash.toTxRep('$prefix.quorumSetHash', lines);
-    lines.add('$prefix.votes.len: ${_votes.length}');
-    for (int i = 0; i < _votes.length; i++) {
-      _votes[i].toTxRep('$prefix.votes[$i]', lines);
-    }
-    lines.add('$prefix.accepted.len: ${_accepted.length}');
-    for (int i = 0; i < _accepted.length; i++) {
-      _accepted[i].toTxRep('$prefix.accepted[$i]', lines);
-    }
-  }
-
-  static XdrSCPNomination fromTxRep(Map<String, String> map, String prefix) {
-    XdrHash quorumSetHash = XdrHash.fromTxRep(map, '$prefix.quorumSetHash');
-    int votesLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.votes.len') ?? '0',
-    );
-    List<XdrValue> votes = [];
-    for (int i = 0; i < votesLen; i++) {
-      votes.add(XdrValue.fromTxRep(map, '$prefix.votes[$i]'));
-    }
-    int acceptedLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.accepted.len') ?? '0',
-    );
-    List<XdrValue> accepted = [];
-    for (int i = 0; i < acceptedLen; i++) {
-      accepted.add(XdrValue.fromTxRep(map, '$prefix.accepted[$i]'));
-    }
-    return XdrSCPNomination(quorumSetHash, votes, accepted);
   }
 }

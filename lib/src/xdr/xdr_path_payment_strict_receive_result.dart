@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_path_payment_result_success.dart';
@@ -97,99 +96,5 @@ class XdrPathPaymentStrictReceiveResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPathPaymentStrictReceiveResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.code: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_SUCCESS:
-        _success!.toTxRep('$prefix.success', lines);
-        break;
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_MALFORMED:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL:
-        break;
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER:
-        lines.add('$prefix.noIssuer: ${TxRepHelper.formatAsset(_noIssuer!)}');
-        break;
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrPathPaymentStrictReceiveResult fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrPathPaymentStrictReceiveResultCode disc =
-        XdrPathPaymentStrictReceiveResultCode.fromTxRepName(
-          TxRepHelper.getValue(map, '$prefix.code') ?? '',
-        );
-    XdrPathPaymentStrictReceiveResult result =
-        XdrPathPaymentStrictReceiveResult(disc);
-    switch (result.discriminant) {
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_SUCCESS:
-        result._success = XdrPathPaymentResultSuccess.fromTxRep(
-          map,
-          '$prefix.success',
-        );
-        break;
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_MALFORMED:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL:
-        break;
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER:
-        result._noIssuer = TxRepHelper.parseAsset(
-          TxRepHelper.getValue(map, '$prefix.noIssuer') ?? '',
-        );
-        break;
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF:
-      case XdrPathPaymentStrictReceiveResultCode
-          .PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

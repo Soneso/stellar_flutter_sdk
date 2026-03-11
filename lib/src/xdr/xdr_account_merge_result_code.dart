@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrAccountMergeResultCode {
@@ -83,70 +82,5 @@ class XdrAccountMergeResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountMergeResultCode.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'ACCOUNT_MERGE_SUCCESS';
-      case -1:
-        return 'ACCOUNT_MERGE_MALFORMED';
-      case -2:
-        return 'ACCOUNT_MERGE_NO_ACCOUNT';
-      case -3:
-        return 'ACCOUNT_MERGE_IMMUTABLE_SET';
-      case -4:
-        return 'ACCOUNT_MERGE_HAS_SUB_ENTRIES';
-      case -5:
-        return 'ACCOUNT_MERGE_SEQNUM_TOO_FAR';
-      case -6:
-        return 'ACCOUNT_MERGE_DEST_FULL';
-      case -7:
-        return 'ACCOUNT_MERGE_IS_SPONSOR';
-      default:
-        return 'XdrAccountMergeResultCode#$_value';
-    }
-  }
-
-  static XdrAccountMergeResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrAccountMergeResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'ACCOUNT_MERGE_SUCCESS':
-        return ACCOUNT_MERGE_SUCCESS;
-      case 'ACCOUNT_MERGE_MALFORMED':
-        return ACCOUNT_MERGE_MALFORMED;
-      case 'ACCOUNT_MERGE_NO_ACCOUNT':
-        return ACCOUNT_MERGE_NO_ACCOUNT;
-      case 'ACCOUNT_MERGE_IMMUTABLE_SET':
-        return ACCOUNT_MERGE_IMMUTABLE_SET;
-      case 'ACCOUNT_MERGE_HAS_SUB_ENTRIES':
-        return ACCOUNT_MERGE_HAS_SUB_ENTRIES;
-      case 'ACCOUNT_MERGE_SEQNUM_TOO_FAR':
-        return ACCOUNT_MERGE_SEQNUM_TOO_FAR;
-      case 'ACCOUNT_MERGE_DEST_FULL':
-        return ACCOUNT_MERGE_DEST_FULL;
-      case 'ACCOUNT_MERGE_IS_SPONSOR':
-        return ACCOUNT_MERGE_IS_SPONSOR;
-      default:
-        if (name.startsWith('XdrAccountMergeResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrAccountMergeResultCode#'.length),
-          );
-          if (val != null) return XdrAccountMergeResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

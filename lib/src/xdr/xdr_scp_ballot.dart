@@ -45,15 +45,4 @@ class XdrSCPBallot {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPBallot.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _counter.toTxRep('$prefix.counter', lines);
-    _value.toTxRep('$prefix.value', lines);
-  }
-
-  static XdrSCPBallot fromTxRep(Map<String, String> map, String prefix) {
-    XdrUint32 counter = XdrUint32.fromTxRep(map, '$prefix.counter');
-    XdrValue value = XdrValue.fromTxRep(map, '$prefix.value');
-    return XdrSCPBallot(counter, value);
-  }
 }

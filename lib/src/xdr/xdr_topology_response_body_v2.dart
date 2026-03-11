@@ -72,25 +72,4 @@ class XdrTopologyResponseBodyV2 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTopologyResponseBodyV2.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _inboundPeers.toTxRep('$prefix.inboundPeers', lines);
-    _outboundPeers.toTxRep('$prefix.outboundPeers', lines);
-    _nodeData.toTxRep('$prefix.nodeData', lines);
-  }
-
-  static XdrTopologyResponseBodyV2 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrTimeSlicedPeerDataList inboundPeers =
-        XdrTimeSlicedPeerDataList.fromTxRep(map, '$prefix.inboundPeers');
-    XdrTimeSlicedPeerDataList outboundPeers =
-        XdrTimeSlicedPeerDataList.fromTxRep(map, '$prefix.outboundPeers');
-    XdrTimeSlicedNodeData nodeData = XdrTimeSlicedNodeData.fromTxRep(
-      map,
-      '$prefix.nodeData',
-    );
-    return XdrTopologyResponseBodyV2(inboundPeers, outboundPeers, nodeData);
-  }
 }

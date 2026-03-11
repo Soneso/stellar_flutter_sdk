@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_clawback_claimable_balance_result_code.dart';
 import 'xdr_data_io.dart';
 
@@ -64,50 +63,5 @@ class XdrClawbackClaimableBalanceResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClawbackClaimableBalanceResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.code: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrClawbackClaimableBalanceResultCode
-          .CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
-        break;
-      case XdrClawbackClaimableBalanceResultCode
-          .CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST:
-      case XdrClawbackClaimableBalanceResultCode
-          .CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER:
-      case XdrClawbackClaimableBalanceResultCode
-          .CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrClawbackClaimableBalanceResult fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrClawbackClaimableBalanceResultCode disc =
-        XdrClawbackClaimableBalanceResultCode.fromTxRepName(
-          TxRepHelper.getValue(map, '$prefix.code') ?? '',
-        );
-    XdrClawbackClaimableBalanceResult result =
-        XdrClawbackClaimableBalanceResult(disc);
-    switch (result.discriminant) {
-      case XdrClawbackClaimableBalanceResultCode
-          .CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
-        break;
-      case XdrClawbackClaimableBalanceResultCode
-          .CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST:
-      case XdrClawbackClaimableBalanceResultCode
-          .CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER:
-      case XdrClawbackClaimableBalanceResultCode
-          .CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

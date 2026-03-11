@@ -54,23 +54,4 @@ class XdrAuthenticatedMessageV0 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAuthenticatedMessageV0.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _sequence.toTxRep('$prefix.sequence', lines);
-    _message.toTxRep('$prefix.message', lines);
-    _mac.toTxRep('$prefix.mac', lines);
-  }
-
-  static XdrAuthenticatedMessageV0 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrUint64 sequence = XdrUint64.fromTxRep(map, '$prefix.sequence');
-    XdrStellarMessage message = XdrStellarMessage.fromTxRep(
-      map,
-      '$prefix.message',
-    );
-    XdrHmacSha256Mac mac = XdrHmacSha256Mac.fromTxRep(map, '$prefix.mac');
-    return XdrAuthenticatedMessageV0(sequence, message, mac);
-  }
 }

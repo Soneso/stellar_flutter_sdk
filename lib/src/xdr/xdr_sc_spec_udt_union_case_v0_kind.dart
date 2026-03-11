@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSCSpecUDTUnionCaseV0Kind {
@@ -59,46 +58,5 @@ class XdrSCSpecUDTUnionCaseV0Kind {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecUDTUnionCaseV0Kind.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'SC_SPEC_UDT_UNION_CASE_VOID_V0';
-      case 1:
-        return 'SC_SPEC_UDT_UNION_CASE_TUPLE_V0';
-      default:
-        return 'XdrSCSpecUDTUnionCaseV0Kind#$_value';
-    }
-  }
-
-  static XdrSCSpecUDTUnionCaseV0Kind fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrSCSpecUDTUnionCaseV0Kind fromTxRepName(String name) {
-    switch (name) {
-      case 'SC_SPEC_UDT_UNION_CASE_VOID_V0':
-        return SC_SPEC_UDT_UNION_CASE_VOID_V0;
-      case 'SC_SPEC_UDT_UNION_CASE_TUPLE_V0':
-        return SC_SPEC_UDT_UNION_CASE_TUPLE_V0;
-      default:
-        if (name.startsWith('XdrSCSpecUDTUnionCaseV0Kind#')) {
-          int? val = int.tryParse(
-            name.substring('XdrSCSpecUDTUnionCaseV0Kind#'.length),
-          );
-          if (val != null) return XdrSCSpecUDTUnionCaseV0Kind._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

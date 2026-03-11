@@ -79,39 +79,4 @@ class XdrSorobanTransactionMetaExtV1 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanTransactionMetaExtV1.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ext.toTxRep('$prefix.ext', lines);
-    _totalNonRefundableResourceFeeCharged.toTxRep(
-      '$prefix.totalNonRefundableResourceFeeCharged',
-      lines,
-    );
-    _totalRefundableResourceFeeCharged.toTxRep(
-      '$prefix.totalRefundableResourceFeeCharged',
-      lines,
-    );
-    _rentFeeCharged.toTxRep('$prefix.rentFeeCharged', lines);
-  }
-
-  static XdrSorobanTransactionMetaExtV1 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
-    XdrInt64 totalNonRefundableResourceFeeCharged = XdrInt64.fromTxRep(
-      map,
-      '$prefix.totalNonRefundableResourceFeeCharged',
-    );
-    XdrInt64 totalRefundableResourceFeeCharged = XdrInt64.fromTxRep(
-      map,
-      '$prefix.totalRefundableResourceFeeCharged',
-    );
-    XdrInt64 rentFeeCharged = XdrInt64.fromTxRep(map, '$prefix.rentFeeCharged');
-    return XdrSorobanTransactionMetaExtV1(
-      ext,
-      totalNonRefundableResourceFeeCharged,
-      totalRefundableResourceFeeCharged,
-      rentFeeCharged,
-    );
-  }
 }

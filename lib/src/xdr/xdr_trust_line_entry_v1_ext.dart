@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_trust_line_entry_extension_v2.dart';
 
@@ -77,38 +76,5 @@ class XdrTrustLineEntryV1Ext {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTrustLineEntryV1Ext.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.v: $discriminant');
-    switch (discriminant) {
-      case 0:
-        break;
-      case 2:
-        _v2!.toTxRep('$prefix.v2', lines);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrTrustLineEntryV1Ext fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    int disc = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
-    );
-    XdrTrustLineEntryV1Ext result = XdrTrustLineEntryV1Ext(disc);
-    switch (result.discriminant) {
-      case 0:
-        break;
-      case 2:
-        result._v2 = XdrTrustLineEntryExtensionV2.fromTxRep(map, '$prefix.v2');
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

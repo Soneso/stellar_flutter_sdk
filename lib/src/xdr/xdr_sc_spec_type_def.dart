@@ -24,19 +24,6 @@ class XdrSCSpecTypeDef extends XdrSCSpecTypeDefBase {
     return XdrSCSpecTypeDefBase.decodeAs(stream, XdrSCSpecTypeDef.new);
   }
 
-  static XdrSCSpecTypeDef fromTxRep(Map<String, String> map, String prefix) {
-    var b = XdrSCSpecTypeDefBase.fromTxRep(map, prefix);
-    var result = XdrSCSpecTypeDef(b.discriminant);
-    result.option = b.option;
-    result.result = b.result;
-    result.vec = b.vec;
-    result.map = b.map;
-    result.tuple = b.tuple;
-    result.bytesN = b.bytesN;
-    result.udt = b.udt;
-    return result;
-  }
-
   static XdrSCSpecTypeDef forVal() {
     return XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL);
   }

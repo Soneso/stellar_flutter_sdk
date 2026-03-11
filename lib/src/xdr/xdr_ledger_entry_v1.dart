@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger_entry_v1_ext.dart';
@@ -54,32 +53,5 @@ class XdrLedgerEntryV1 {
   static XdrLedgerEntryV1 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntryV1.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    if (_sponsoringID != null) {
-      lines.add('$prefix.sponsoringID._present: true');
-      lines.add(
-        '$prefix.sponsoringID: ${TxRepHelper.formatAccountId(_sponsoringID!)}',
-      );
-    } else {
-      lines.add('$prefix.sponsoringID._present: false');
-    }
-    _ext.toTxRep('$prefix.ext', lines);
-  }
-
-  static XdrLedgerEntryV1 fromTxRep(Map<String, String> map, String prefix) {
-    XdrAccountID? sponsoringID;
-    String? sponsoringIDPresent = TxRepHelper.getValue(
-      map,
-      '$prefix.sponsoringID._present',
-    );
-    if (sponsoringIDPresent != null && sponsoringIDPresent == 'true') {
-      sponsoringID = TxRepHelper.parseAccountId(
-        TxRepHelper.getValue(map, '$prefix.sponsoringID') ?? '',
-      );
-    }
-    XdrLedgerEntryV1Ext ext = XdrLedgerEntryV1Ext.fromTxRep(map, '$prefix.ext');
-    return XdrLedgerEntryV1(sponsoringID, ext);
   }
 }

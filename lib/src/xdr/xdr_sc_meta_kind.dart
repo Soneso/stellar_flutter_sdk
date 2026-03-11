@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSCMetaKind {
@@ -49,37 +48,5 @@ class XdrSCMetaKind {
   static XdrSCMetaKind fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCMetaKind.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'SC_META_V0';
-      default:
-        return 'XdrSCMetaKind#$_value';
-    }
-  }
-
-  static XdrSCMetaKind fromTxRep(Map<String, String> map, String prefix) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrSCMetaKind fromTxRepName(String name) {
-    switch (name) {
-      case 'SC_META_V0':
-        return SC_META_V0;
-      default:
-        if (name.startsWith('XdrSCMetaKind#')) {
-          int? val = int.tryParse(name.substring('XdrSCMetaKind#'.length));
-          if (val != null) return XdrSCMetaKind._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

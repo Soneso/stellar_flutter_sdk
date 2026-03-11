@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_public_key.dart';
 
@@ -44,8 +43,6 @@ class XdrAccountIDBase {
   }
 
   static XdrAccountIDBase fromTxRep(Map<String, String> map, String prefix) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
     return XdrAccountIDBase(XdrPublicKey.fromTxRep(map, prefix));
   }
 }

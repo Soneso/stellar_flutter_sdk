@@ -57,26 +57,4 @@ class XdrStoredDebugTransactionSet {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrStoredDebugTransactionSet.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _txSet.toTxRep('$prefix.txSet', lines);
-    _ledgerSeq.toTxRep('$prefix.ledgerSeq', lines);
-    _scpValue.toTxRep('$prefix.scpValue', lines);
-  }
-
-  static XdrStoredDebugTransactionSet fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrStoredTransactionSet txSet = XdrStoredTransactionSet.fromTxRep(
-      map,
-      '$prefix.txSet',
-    );
-    XdrUint32 ledgerSeq = XdrUint32.fromTxRep(map, '$prefix.ledgerSeq');
-    XdrStellarValue scpValue = XdrStellarValue.fromTxRep(
-      map,
-      '$prefix.scpValue',
-    );
-    return XdrStoredDebugTransactionSet(txSet, ledgerSeq, scpValue);
-  }
 }

@@ -44,18 +44,4 @@ class XdrSCSpecTypeResult {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecTypeResult.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _okType.toTxRep('$prefix.okType', lines);
-    _errorType.toTxRep('$prefix.errorType', lines);
-  }
-
-  static XdrSCSpecTypeResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrSCSpecTypeDef okType = XdrSCSpecTypeDef.fromTxRep(map, '$prefix.okType');
-    XdrSCSpecTypeDef errorType = XdrSCSpecTypeDef.fromTxRep(
-      map,
-      '$prefix.errorType',
-    );
-    return XdrSCSpecTypeResult(okType, errorType);
-  }
 }

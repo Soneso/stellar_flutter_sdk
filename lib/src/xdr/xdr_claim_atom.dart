@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_claim_atom_type.dart';
 import 'xdr_claim_liquidity_atom.dart';
 import 'xdr_claim_offer_atom.dart';
@@ -94,49 +93,5 @@ class XdrClaimAtom {
   static XdrClaimAtom fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimAtom.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.type: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrClaimAtomType.CLAIM_ATOM_TYPE_V0:
-        _v0!.toTxRep('$prefix.v0', lines);
-        break;
-      case XdrClaimAtomType.CLAIM_ATOM_TYPE_ORDER_BOOK:
-        _orderBook!.toTxRep('$prefix.orderBook', lines);
-        break;
-      case XdrClaimAtomType.CLAIM_ATOM_TYPE_LIQUIDITY_POOL:
-        _liquidityPool!.toTxRep('$prefix.liquidityPool', lines);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrClaimAtom fromTxRep(Map<String, String> map, String prefix) {
-    XdrClaimAtomType disc = XdrClaimAtomType.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.type') ?? '',
-    );
-    XdrClaimAtom result = XdrClaimAtom(disc);
-    switch (result.discriminant) {
-      case XdrClaimAtomType.CLAIM_ATOM_TYPE_V0:
-        result._v0 = XdrClaimOfferAtomV0.fromTxRep(map, '$prefix.v0');
-        break;
-      case XdrClaimAtomType.CLAIM_ATOM_TYPE_ORDER_BOOK:
-        result._orderBook = XdrClaimOfferAtom.fromTxRep(
-          map,
-          '$prefix.orderBook',
-        );
-        break;
-      case XdrClaimAtomType.CLAIM_ATOM_TYPE_LIQUIDITY_POOL:
-        result._liquidityPool = XdrClaimLiquidityAtom.fromTxRep(
-          map,
-          '$prefix.liquidityPool',
-        );
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

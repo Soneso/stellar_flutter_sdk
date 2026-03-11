@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_public_key.dart';
 
@@ -43,18 +42,5 @@ class XdrSponsorshipDescriptor {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSponsorshipDescriptor.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _sponsorshipDescriptor.toTxRep('$prefix', lines);
-  }
-
-  static XdrSponsorshipDescriptor fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return XdrSponsorshipDescriptor(XdrPublicKey.fromTxRep(map, prefix));
   }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrTransactionResultCode {
@@ -125,118 +124,5 @@ class XdrTransactionResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionResultCode.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 1:
-        return 'txFEE_BUMP_INNER_SUCCESS';
-      case 0:
-        return 'txSUCCESS';
-      case -1:
-        return 'txFAILED';
-      case -2:
-        return 'txTOO_EARLY';
-      case -3:
-        return 'txTOO_LATE';
-      case -4:
-        return 'txMISSING_OPERATION';
-      case -5:
-        return 'txBAD_SEQ';
-      case -6:
-        return 'txBAD_AUTH';
-      case -7:
-        return 'txINSUFFICIENT_BALANCE';
-      case -8:
-        return 'txNO_ACCOUNT';
-      case -9:
-        return 'txINSUFFICIENT_FEE';
-      case -10:
-        return 'txBAD_AUTH_EXTRA';
-      case -11:
-        return 'txINTERNAL_ERROR';
-      case -12:
-        return 'txNOT_SUPPORTED';
-      case -13:
-        return 'txFEE_BUMP_INNER_FAILED';
-      case -14:
-        return 'txBAD_SPONSORSHIP';
-      case -15:
-        return 'txBAD_MIN_SEQ_AGE_OR_GAP';
-      case -16:
-        return 'txMALFORMED';
-      case -17:
-        return 'txSOROBAN_INVALID';
-      case -18:
-        return 'txFROZEN_KEY_ACCESSED';
-      default:
-        return 'XdrTransactionResultCode#$_value';
-    }
-  }
-
-  static XdrTransactionResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrTransactionResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'txFEE_BUMP_INNER_SUCCESS':
-        return txFEE_BUMP_INNER_SUCCESS;
-      case 'txSUCCESS':
-        return txSUCCESS;
-      case 'txFAILED':
-        return txFAILED;
-      case 'txTOO_EARLY':
-        return txTOO_EARLY;
-      case 'txTOO_LATE':
-        return txTOO_LATE;
-      case 'txMISSING_OPERATION':
-        return txMISSING_OPERATION;
-      case 'txBAD_SEQ':
-        return txBAD_SEQ;
-      case 'txBAD_AUTH':
-        return txBAD_AUTH;
-      case 'txINSUFFICIENT_BALANCE':
-        return txINSUFFICIENT_BALANCE;
-      case 'txNO_ACCOUNT':
-        return txNO_ACCOUNT;
-      case 'txINSUFFICIENT_FEE':
-        return txINSUFFICIENT_FEE;
-      case 'txBAD_AUTH_EXTRA':
-        return txBAD_AUTH_EXTRA;
-      case 'txINTERNAL_ERROR':
-        return txINTERNAL_ERROR;
-      case 'txNOT_SUPPORTED':
-        return txNOT_SUPPORTED;
-      case 'txFEE_BUMP_INNER_FAILED':
-        return txFEE_BUMP_INNER_FAILED;
-      case 'txBAD_SPONSORSHIP':
-        return txBAD_SPONSORSHIP;
-      case 'txBAD_MIN_SEQ_AGE_OR_GAP':
-        return txBAD_MIN_SEQ_AGE_OR_GAP;
-      case 'txMALFORMED':
-        return txMALFORMED;
-      case 'txSOROBAN_INVALID':
-        return txSOROBAN_INVALID;
-      case 'txFROZEN_KEY_ACCESSED':
-        return txFROZEN_KEY_ACCESSED;
-      default:
-        if (name.startsWith('XdrTransactionResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrTransactionResultCode#'.length),
-          );
-          if (val != null) return XdrTransactionResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

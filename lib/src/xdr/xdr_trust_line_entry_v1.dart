@@ -45,21 +45,4 @@ class XdrTrustLineEntryV1 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTrustLineEntryV1.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _liabilities.toTxRep('$prefix.liabilities', lines);
-    _ext.toTxRep('$prefix.ext', lines);
-  }
-
-  static XdrTrustLineEntryV1 fromTxRep(Map<String, String> map, String prefix) {
-    XdrLiabilities liabilities = XdrLiabilities.fromTxRep(
-      map,
-      '$prefix.liabilities',
-    );
-    XdrTrustLineEntryV1Ext ext = XdrTrustLineEntryV1Ext.fromTxRep(
-      map,
-      '$prefix.ext',
-    );
-    return XdrTrustLineEntryV1(liabilities, ext);
-  }
 }

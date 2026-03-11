@@ -62,30 +62,4 @@ class XdrConfigSettingContractEventsV0 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigSettingContractEventsV0.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _txMaxContractEventsSizeBytes.toTxRep(
-      '$prefix.txMaxContractEventsSizeBytes',
-      lines,
-    );
-    _feeContractEvents1KB.toTxRep('$prefix.feeContractEvents1KB', lines);
-  }
-
-  static XdrConfigSettingContractEventsV0 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrUint32 txMaxContractEventsSizeBytes = XdrUint32.fromTxRep(
-      map,
-      '$prefix.txMaxContractEventsSizeBytes',
-    );
-    XdrInt64 feeContractEvents1KB = XdrInt64.fromTxRep(
-      map,
-      '$prefix.feeContractEvents1KB',
-    );
-    return XdrConfigSettingContractEventsV0(
-      txMaxContractEventsSizeBytes,
-      feeContractEvents1KB,
-    );
-  }
 }

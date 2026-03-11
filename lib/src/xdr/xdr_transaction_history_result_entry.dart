@@ -67,24 +67,4 @@ class XdrTransactionHistoryResultEntry {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionHistoryResultEntry.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ledgerSeq.toTxRep('$prefix.ledgerSeq', lines);
-    _txResultSet.toTxRep('$prefix.txResultSet', lines);
-    _ext.toTxRep('$prefix.ext', lines);
-  }
-
-  static XdrTransactionHistoryResultEntry fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrUint32 ledgerSeq = XdrUint32.fromTxRep(map, '$prefix.ledgerSeq');
-    XdrTransactionResultSet txResultSet = XdrTransactionResultSet.fromTxRep(
-      map,
-      '$prefix.txResultSet',
-    );
-    XdrTransactionHistoryResultEntryExt ext =
-        XdrTransactionHistoryResultEntryExt.fromTxRep(map, '$prefix.ext');
-    return XdrTransactionHistoryResultEntry(ledgerSeq, txResultSet, ext);
-  }
 }

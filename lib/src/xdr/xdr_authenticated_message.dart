@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_authenticated_message_v0.dart';
 import 'xdr_data_io.dart';
 
@@ -72,34 +71,5 @@ class XdrAuthenticatedMessage {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAuthenticatedMessage.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.v: $discriminant');
-    switch (discriminant) {
-      case 0:
-        _v0!.toTxRep('$prefix.v0', lines);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrAuthenticatedMessage fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    int disc = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
-    );
-    XdrAuthenticatedMessage result = XdrAuthenticatedMessage(disc);
-    switch (result.discriminant) {
-      case 0:
-        result._v0 = XdrAuthenticatedMessageV0.fromTxRep(map, '$prefix.v0');
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

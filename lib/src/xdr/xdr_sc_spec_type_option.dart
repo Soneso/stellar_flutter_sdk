@@ -38,16 +38,4 @@ class XdrSCSpecTypeOption {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecTypeOption.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _valueType.toTxRep('$prefix.valueType', lines);
-  }
-
-  static XdrSCSpecTypeOption fromTxRep(Map<String, String> map, String prefix) {
-    XdrSCSpecTypeDef valueType = XdrSCSpecTypeDef.fromTxRep(
-      map,
-      '$prefix.valueType',
-    );
-    return XdrSCSpecTypeOption(valueType);
-  }
 }

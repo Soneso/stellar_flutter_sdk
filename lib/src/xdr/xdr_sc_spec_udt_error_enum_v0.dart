@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_spec_udt_error_enum_case_v0.dart';
 
@@ -70,40 +69,5 @@ class XdrSCSpecUDTErrorEnumV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecUDTErrorEnumV0.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.doc: ${TxRepHelper.escapeString(_doc)}');
-    lines.add('$prefix.lib: ${TxRepHelper.escapeString(_lib)}');
-    lines.add('$prefix.name: ${TxRepHelper.escapeString(_name)}');
-    lines.add('$prefix.cases.len: ${_cases.length}');
-    for (int i = 0; i < _cases.length; i++) {
-      _cases[i].toTxRep('$prefix.cases[$i]', lines);
-    }
-  }
-
-  static XdrSCSpecUDTErrorEnumV0 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String doc = TxRepHelper.unescapeString(
-      TxRepHelper.getValue(map, '$prefix.doc') ?? '',
-    );
-    String lib = TxRepHelper.unescapeString(
-      TxRepHelper.getValue(map, '$prefix.lib') ?? '',
-    );
-    String name = TxRepHelper.unescapeString(
-      TxRepHelper.getValue(map, '$prefix.name') ?? '',
-    );
-    int casesLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.cases.len') ?? '0',
-    );
-    List<XdrSCSpecUDTErrorEnumCaseV0> cases = [];
-    for (int i = 0; i < casesLen; i++) {
-      cases.add(
-        XdrSCSpecUDTErrorEnumCaseV0.fromTxRep(map, '$prefix.cases[$i]'),
-      );
-    }
-    return XdrSCSpecUDTErrorEnumV0(doc, lib, name, cases);
   }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_manage_offer_effect.dart';
 import 'xdr_offer_entry.dart';
@@ -79,42 +78,5 @@ class XdrManageOfferSuccessResultOffer {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrManageOfferSuccessResultOffer.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.effect: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrManageOfferEffect.MANAGE_OFFER_CREATED:
-      case XdrManageOfferEffect.MANAGE_OFFER_UPDATED:
-        _offer!.toTxRep('$prefix.offer', lines);
-        break;
-      case XdrManageOfferEffect.MANAGE_OFFER_DELETED:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrManageOfferSuccessResultOffer fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrManageOfferEffect disc = XdrManageOfferEffect.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.effect') ?? '',
-    );
-    XdrManageOfferSuccessResultOffer result = XdrManageOfferSuccessResultOffer(
-      disc,
-    );
-    switch (result.discriminant) {
-      case XdrManageOfferEffect.MANAGE_OFFER_CREATED:
-      case XdrManageOfferEffect.MANAGE_OFFER_UPDATED:
-        result._offer = XdrOfferEntry.fromTxRep(map, '$prefix.offer');
-        break;
-      case XdrManageOfferEffect.MANAGE_OFFER_DELETED:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSetOptionsResultCode {
@@ -96,82 +95,5 @@ class XdrSetOptionsResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSetOptionsResultCode.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'SET_OPTIONS_SUCCESS';
-      case -1:
-        return 'SET_OPTIONS_LOW_RESERVE';
-      case -2:
-        return 'SET_OPTIONS_TOO_MANY_SIGNERS';
-      case -3:
-        return 'SET_OPTIONS_BAD_FLAGS';
-      case -4:
-        return 'SET_OPTIONS_INVALID_INFLATION';
-      case -5:
-        return 'SET_OPTIONS_CANT_CHANGE';
-      case -6:
-        return 'SET_OPTIONS_UNKNOWN_FLAG';
-      case -7:
-        return 'SET_OPTIONS_THRESHOLD_OUT_OF_RANGE';
-      case -8:
-        return 'SET_OPTIONS_BAD_SIGNER';
-      case -9:
-        return 'SET_OPTIONS_INVALID_HOME_DOMAIN';
-      case -10:
-        return 'SET_OPTIONS_AUTH_REVOCABLE_REQUIRED';
-      default:
-        return 'XdrSetOptionsResultCode#$_value';
-    }
-  }
-
-  static XdrSetOptionsResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrSetOptionsResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'SET_OPTIONS_SUCCESS':
-        return SET_OPTIONS_SUCCESS;
-      case 'SET_OPTIONS_LOW_RESERVE':
-        return SET_OPTIONS_LOW_RESERVE;
-      case 'SET_OPTIONS_TOO_MANY_SIGNERS':
-        return SET_OPTIONS_TOO_MANY_SIGNERS;
-      case 'SET_OPTIONS_BAD_FLAGS':
-        return SET_OPTIONS_BAD_FLAGS;
-      case 'SET_OPTIONS_INVALID_INFLATION':
-        return SET_OPTIONS_INVALID_INFLATION;
-      case 'SET_OPTIONS_CANT_CHANGE':
-        return SET_OPTIONS_CANT_CHANGE;
-      case 'SET_OPTIONS_UNKNOWN_FLAG':
-        return SET_OPTIONS_UNKNOWN_FLAG;
-      case 'SET_OPTIONS_THRESHOLD_OUT_OF_RANGE':
-        return SET_OPTIONS_THRESHOLD_OUT_OF_RANGE;
-      case 'SET_OPTIONS_BAD_SIGNER':
-        return SET_OPTIONS_BAD_SIGNER;
-      case 'SET_OPTIONS_INVALID_HOME_DOMAIN':
-        return SET_OPTIONS_INVALID_HOME_DOMAIN;
-      case 'SET_OPTIONS_AUTH_REVOCABLE_REQUIRED':
-        return SET_OPTIONS_AUTH_REVOCABLE_REQUIRED;
-      default:
-        if (name.startsWith('XdrSetOptionsResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrSetOptionsResultCode#'.length),
-          );
-          if (val != null) return XdrSetOptionsResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

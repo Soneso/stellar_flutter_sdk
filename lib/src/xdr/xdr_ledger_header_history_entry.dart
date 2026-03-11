@@ -59,21 +59,4 @@ class XdrLedgerHeaderHistoryEntry {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerHeaderHistoryEntry.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _hash.toTxRep('$prefix.hash', lines);
-    _header.toTxRep('$prefix.header', lines);
-    _ext.toTxRep('$prefix.ext', lines);
-  }
-
-  static XdrLedgerHeaderHistoryEntry fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrHash hash = XdrHash.fromTxRep(map, '$prefix.hash');
-    XdrLedgerHeader header = XdrLedgerHeader.fromTxRep(map, '$prefix.header');
-    XdrLedgerHeaderHistoryEntryExt ext =
-        XdrLedgerHeaderHistoryEntryExt.fromTxRep(map, '$prefix.ext');
-    return XdrLedgerHeaderHistoryEntry(hash, header, ext);
-  }
 }

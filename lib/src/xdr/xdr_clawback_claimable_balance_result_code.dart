@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrClawbackClaimableBalanceResultCode {
@@ -71,55 +70,5 @@ class XdrClawbackClaimableBalanceResultCode {
     return XdrClawbackClaimableBalanceResultCode.decode(
       XdrDataInputStream(bytes),
     );
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'CLAWBACK_CLAIMABLE_BALANCE_SUCCESS';
-      case -1:
-        return 'CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST';
-      case -2:
-        return 'CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER';
-      case -3:
-        return 'CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED';
-      default:
-        return 'XdrClawbackClaimableBalanceResultCode#$_value';
-    }
-  }
-
-  static XdrClawbackClaimableBalanceResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrClawbackClaimableBalanceResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'CLAWBACK_CLAIMABLE_BALANCE_SUCCESS':
-        return CLAWBACK_CLAIMABLE_BALANCE_SUCCESS;
-      case 'CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST':
-        return CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST;
-      case 'CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER':
-        return CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER;
-      case 'CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED':
-        return CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED;
-      default:
-        if (name.startsWith('XdrClawbackClaimableBalanceResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrClawbackClaimableBalanceResultCode#'.length),
-          );
-          if (val != null)
-            return XdrClawbackClaimableBalanceResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

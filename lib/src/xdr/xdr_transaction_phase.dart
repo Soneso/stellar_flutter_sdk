@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_parallel_txs_component.dart';
 import 'xdr_tx_set_component.dart';
@@ -101,51 +100,5 @@ class XdrTransactionPhase {
   static XdrTransactionPhase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionPhase.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.v: $discriminant');
-    switch (discriminant) {
-      case 0:
-        lines.add('$prefix.v0Components.len: ${_v0Components!.length}');
-        for (int i = 0; i < _v0Components!.length; i++) {
-          _v0Components![i].toTxRep('$prefix.v0Components[$i]', lines);
-        }
-        break;
-      case 1:
-        _parallelTxsComponent!.toTxRep('$prefix.parallelTxsComponent', lines);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrTransactionPhase fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
-    );
-    XdrTransactionPhase result = XdrTransactionPhase(disc);
-    switch (result.discriminant) {
-      case 0:
-        int v0ComponentsLen = TxRepHelper.parseInt(
-          TxRepHelper.getValue(map, '$prefix.v0Components.len') ?? '0',
-        );
-        result._v0Components = [];
-        for (int i = 0; i < v0ComponentsLen; i++) {
-          result._v0Components!.add(
-            XdrTxSetComponent.fromTxRep(map, '$prefix.v0Components[$i]'),
-          );
-        }
-        break;
-      case 1:
-        result._parallelTxsComponent = XdrParallelTxsComponent.fromTxRep(
-          map,
-          '$prefix.parallelTxsComponent',
-        );
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_set_options_result_code.dart';
 
@@ -58,51 +57,5 @@ class XdrSetOptionsResult {
   static XdrSetOptionsResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSetOptionsResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.code: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrSetOptionsResultCode.SET_OPTIONS_SUCCESS:
-        break;
-      case XdrSetOptionsResultCode.SET_OPTIONS_LOW_RESERVE:
-      case XdrSetOptionsResultCode.SET_OPTIONS_TOO_MANY_SIGNERS:
-      case XdrSetOptionsResultCode.SET_OPTIONS_BAD_FLAGS:
-      case XdrSetOptionsResultCode.SET_OPTIONS_INVALID_INFLATION:
-      case XdrSetOptionsResultCode.SET_OPTIONS_CANT_CHANGE:
-      case XdrSetOptionsResultCode.SET_OPTIONS_UNKNOWN_FLAG:
-      case XdrSetOptionsResultCode.SET_OPTIONS_THRESHOLD_OUT_OF_RANGE:
-      case XdrSetOptionsResultCode.SET_OPTIONS_BAD_SIGNER:
-      case XdrSetOptionsResultCode.SET_OPTIONS_INVALID_HOME_DOMAIN:
-      case XdrSetOptionsResultCode.SET_OPTIONS_AUTH_REVOCABLE_REQUIRED:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrSetOptionsResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrSetOptionsResultCode disc = XdrSetOptionsResultCode.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.code') ?? '',
-    );
-    XdrSetOptionsResult result = XdrSetOptionsResult(disc);
-    switch (result.discriminant) {
-      case XdrSetOptionsResultCode.SET_OPTIONS_SUCCESS:
-        break;
-      case XdrSetOptionsResultCode.SET_OPTIONS_LOW_RESERVE:
-      case XdrSetOptionsResultCode.SET_OPTIONS_TOO_MANY_SIGNERS:
-      case XdrSetOptionsResultCode.SET_OPTIONS_BAD_FLAGS:
-      case XdrSetOptionsResultCode.SET_OPTIONS_INVALID_INFLATION:
-      case XdrSetOptionsResultCode.SET_OPTIONS_CANT_CHANGE:
-      case XdrSetOptionsResultCode.SET_OPTIONS_UNKNOWN_FLAG:
-      case XdrSetOptionsResultCode.SET_OPTIONS_THRESHOLD_OUT_OF_RANGE:
-      case XdrSetOptionsResultCode.SET_OPTIONS_BAD_SIGNER:
-      case XdrSetOptionsResultCode.SET_OPTIONS_INVALID_HOME_DOMAIN:
-      case XdrSetOptionsResultCode.SET_OPTIONS_AUTH_REVOCABLE_REQUIRED:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

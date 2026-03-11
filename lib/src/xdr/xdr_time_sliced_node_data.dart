@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
@@ -132,80 +131,5 @@ class XdrTimeSlicedNodeData {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTimeSlicedNodeData.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _addedAuthenticatedPeers.toTxRep('$prefix.addedAuthenticatedPeers', lines);
-    _droppedAuthenticatedPeers.toTxRep(
-      '$prefix.droppedAuthenticatedPeers',
-      lines,
-    );
-    _totalInboundPeerCount.toTxRep('$prefix.totalInboundPeerCount', lines);
-    _totalOutboundPeerCount.toTxRep('$prefix.totalOutboundPeerCount', lines);
-    _p75SCPFirstToSelfLatencyMs.toTxRep(
-      '$prefix.p75SCPFirstToSelfLatencyMs',
-      lines,
-    );
-    _p75SCPSelfToOtherLatencyMs.toTxRep(
-      '$prefix.p75SCPSelfToOtherLatencyMs',
-      lines,
-    );
-    _lostSyncCount.toTxRep('$prefix.lostSyncCount', lines);
-    lines.add('$prefix.isValidator: $_isValidator');
-    _maxInboundPeerCount.toTxRep('$prefix.maxInboundPeerCount', lines);
-    _maxOutboundPeerCount.toTxRep('$prefix.maxOutboundPeerCount', lines);
-  }
-
-  static XdrTimeSlicedNodeData fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrUint32 addedAuthenticatedPeers = XdrUint32.fromTxRep(
-      map,
-      '$prefix.addedAuthenticatedPeers',
-    );
-    XdrUint32 droppedAuthenticatedPeers = XdrUint32.fromTxRep(
-      map,
-      '$prefix.droppedAuthenticatedPeers',
-    );
-    XdrUint32 totalInboundPeerCount = XdrUint32.fromTxRep(
-      map,
-      '$prefix.totalInboundPeerCount',
-    );
-    XdrUint32 totalOutboundPeerCount = XdrUint32.fromTxRep(
-      map,
-      '$prefix.totalOutboundPeerCount',
-    );
-    XdrUint32 p75SCPFirstToSelfLatencyMs = XdrUint32.fromTxRep(
-      map,
-      '$prefix.p75SCPFirstToSelfLatencyMs',
-    );
-    XdrUint32 p75SCPSelfToOtherLatencyMs = XdrUint32.fromTxRep(
-      map,
-      '$prefix.p75SCPSelfToOtherLatencyMs',
-    );
-    XdrUint32 lostSyncCount = XdrUint32.fromTxRep(map, '$prefix.lostSyncCount');
-    bool isValidator =
-        (TxRepHelper.getValue(map, '$prefix.isValidator') ?? 'false') == 'true';
-    XdrUint32 maxInboundPeerCount = XdrUint32.fromTxRep(
-      map,
-      '$prefix.maxInboundPeerCount',
-    );
-    XdrUint32 maxOutboundPeerCount = XdrUint32.fromTxRep(
-      map,
-      '$prefix.maxOutboundPeerCount',
-    );
-    return XdrTimeSlicedNodeData(
-      addedAuthenticatedPeers,
-      droppedAuthenticatedPeers,
-      totalInboundPeerCount,
-      totalOutboundPeerCount,
-      p75SCPFirstToSelfLatencyMs,
-      p75SCPSelfToOtherLatencyMs,
-      lostSyncCount,
-      isValidator,
-      maxInboundPeerCount,
-      maxOutboundPeerCount,
-    );
   }
 }

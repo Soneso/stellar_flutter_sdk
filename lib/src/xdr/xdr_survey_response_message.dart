@@ -84,40 +84,4 @@ class XdrSurveyResponseMessage {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSurveyResponseMessage.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _surveyorPeerID.toTxRep('$prefix.surveyorPeerID', lines);
-    _surveyedPeerID.toTxRep('$prefix.surveyedPeerID', lines);
-    _ledgerNum.toTxRep('$prefix.ledgerNum', lines);
-    _commandType.toTxRep('$prefix.commandType', lines);
-    _encryptedBody.toTxRep('$prefix.encryptedBody', lines);
-  }
-
-  static XdrSurveyResponseMessage fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrNodeID surveyorPeerID = XdrNodeID.fromTxRep(
-      map,
-      '$prefix.surveyorPeerID',
-    );
-    XdrNodeID surveyedPeerID = XdrNodeID.fromTxRep(
-      map,
-      '$prefix.surveyedPeerID',
-    );
-    XdrUint32 ledgerNum = XdrUint32.fromTxRep(map, '$prefix.ledgerNum');
-    XdrSurveyMessageCommandType commandType =
-        XdrSurveyMessageCommandType.fromTxRep(map, '$prefix.commandType');
-    XdrEncryptedBody encryptedBody = XdrEncryptedBody.fromTxRep(
-      map,
-      '$prefix.encryptedBody',
-    );
-    return XdrSurveyResponseMessage(
-      surveyorPeerID,
-      surveyedPeerID,
-      ledgerNum,
-      commandType,
-      encryptedBody,
-    );
-  }
 }

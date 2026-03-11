@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_spec_udt_union_case_tuple_v0.dart';
 import 'xdr_sc_spec_udt_union_case_v0_kind.dart';
@@ -89,47 +88,5 @@ class XdrSCSpecUDTUnionCaseV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecUDTUnionCaseV0.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.kind: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_VOID_V0:
-        _voidCase!.toTxRep('$prefix.voidCase', lines);
-        break;
-      case XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_TUPLE_V0:
-        _tupleCase!.toTxRep('$prefix.tupleCase', lines);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrSCSpecUDTUnionCaseV0 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrSCSpecUDTUnionCaseV0Kind disc =
-        XdrSCSpecUDTUnionCaseV0Kind.fromTxRepName(
-          TxRepHelper.getValue(map, '$prefix.kind') ?? '',
-        );
-    XdrSCSpecUDTUnionCaseV0 result = XdrSCSpecUDTUnionCaseV0(disc);
-    switch (result.discriminant) {
-      case XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_VOID_V0:
-        result._voidCase = XdrSCSpecUDTUnionCaseVoidV0.fromTxRep(
-          map,
-          '$prefix.voidCase',
-        );
-        break;
-      case XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_TUPLE_V0:
-        result._tupleCase = XdrSCSpecUDTUnionCaseTupleV0.fromTxRep(
-          map,
-          '$prefix.tupleCase',
-        );
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_auth_cert.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
@@ -107,50 +106,5 @@ class XdrHello {
   static XdrHello fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHello.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ledgerVersion.toTxRep('$prefix.ledgerVersion', lines);
-    _overlayVersion.toTxRep('$prefix.overlayVersion', lines);
-    _overlayMinVersion.toTxRep('$prefix.overlayMinVersion', lines);
-    _networkID.toTxRep('$prefix.networkID', lines);
-    lines.add('$prefix.versionStr: ${TxRepHelper.escapeString(_versionStr)}');
-    lines.add('$prefix.listeningPort: $_listeningPort');
-    _peerID.toTxRep('$prefix.peerID', lines);
-    _cert.toTxRep('$prefix.cert', lines);
-    _nonce.toTxRep('$prefix.nonce', lines);
-  }
-
-  static XdrHello fromTxRep(Map<String, String> map, String prefix) {
-    XdrUint32 ledgerVersion = XdrUint32.fromTxRep(map, '$prefix.ledgerVersion');
-    XdrUint32 overlayVersion = XdrUint32.fromTxRep(
-      map,
-      '$prefix.overlayVersion',
-    );
-    XdrUint32 overlayMinVersion = XdrUint32.fromTxRep(
-      map,
-      '$prefix.overlayMinVersion',
-    );
-    XdrHash networkID = XdrHash.fromTxRep(map, '$prefix.networkID');
-    String versionStr = TxRepHelper.unescapeString(
-      TxRepHelper.getValue(map, '$prefix.versionStr') ?? '',
-    );
-    int listeningPort = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.listeningPort') ?? '0',
-    );
-    XdrNodeID peerID = XdrNodeID.fromTxRep(map, '$prefix.peerID');
-    XdrAuthCert cert = XdrAuthCert.fromTxRep(map, '$prefix.cert');
-    XdrUint256 nonce = XdrUint256.fromTxRep(map, '$prefix.nonce');
-    return XdrHello(
-      ledgerVersion,
-      overlayVersion,
-      overlayMinVersion,
-      networkID,
-      versionStr,
-      listeningPort,
-      peerID,
-      cert,
-      nonce,
-    );
   }
 }

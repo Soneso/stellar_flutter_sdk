@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
@@ -78,35 +77,5 @@ class XdrClaimLiquidityAtom {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimLiquidityAtom.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _liquidityPoolID.toTxRep('$prefix.liquidityPoolID', lines);
-    lines.add('$prefix.assetSold: ${TxRepHelper.formatAsset(_assetSold)}');
-    _amountSold.toTxRep('$prefix.amountSold', lines);
-    lines.add('$prefix.assetBought: ${TxRepHelper.formatAsset(_assetBought)}');
-    _amountBought.toTxRep('$prefix.amountBought', lines);
-  }
-
-  static XdrClaimLiquidityAtom fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrHash liquidityPoolID = XdrHash.fromTxRep(map, '$prefix.liquidityPoolID');
-    XdrAsset assetSold = TxRepHelper.parseAsset(
-      TxRepHelper.getValue(map, '$prefix.assetSold') ?? '',
-    );
-    XdrInt64 amountSold = XdrInt64.fromTxRep(map, '$prefix.amountSold');
-    XdrAsset assetBought = TxRepHelper.parseAsset(
-      TxRepHelper.getValue(map, '$prefix.assetBought') ?? '',
-    );
-    XdrInt64 amountBought = XdrInt64.fromTxRep(map, '$prefix.amountBought');
-    return XdrClaimLiquidityAtom(
-      liquidityPoolID,
-      assetSold,
-      amountSold,
-      assetBought,
-      amountBought,
-    );
   }
 }

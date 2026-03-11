@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_allow_trust_result_code.dart';
 import 'xdr_data_io.dart';
 
@@ -58,43 +57,5 @@ class XdrAllowTrustResult {
   static XdrAllowTrustResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAllowTrustResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.code: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrAllowTrustResultCode.ALLOW_TRUST_SUCCESS:
-        break;
-      case XdrAllowTrustResultCode.ALLOW_TRUST_MALFORMED:
-      case XdrAllowTrustResultCode.ALLOW_TRUST_NO_TRUST_LINE:
-      case XdrAllowTrustResultCode.ALLOW_TRUST_TRUST_NOT_REQUIRED:
-      case XdrAllowTrustResultCode.ALLOW_TRUST_CANT_REVOKE:
-      case XdrAllowTrustResultCode.ALLOW_TRUST_SELF_NOT_ALLOWED:
-      case XdrAllowTrustResultCode.ALLOW_TRUST_LOW_RESERVE:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrAllowTrustResult fromTxRep(Map<String, String> map, String prefix) {
-    XdrAllowTrustResultCode disc = XdrAllowTrustResultCode.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.code') ?? '',
-    );
-    XdrAllowTrustResult result = XdrAllowTrustResult(disc);
-    switch (result.discriminant) {
-      case XdrAllowTrustResultCode.ALLOW_TRUST_SUCCESS:
-        break;
-      case XdrAllowTrustResultCode.ALLOW_TRUST_MALFORMED:
-      case XdrAllowTrustResultCode.ALLOW_TRUST_NO_TRUST_LINE:
-      case XdrAllowTrustResultCode.ALLOW_TRUST_TRUST_NOT_REQUIRED:
-      case XdrAllowTrustResultCode.ALLOW_TRUST_CANT_REVOKE:
-      case XdrAllowTrustResultCode.ALLOW_TRUST_SELF_NOT_ALLOWED:
-      case XdrAllowTrustResultCode.ALLOW_TRUST_LOW_RESERVE:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

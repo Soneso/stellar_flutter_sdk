@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrRevokeSponsorshipResultCode {
@@ -75,62 +74,5 @@ class XdrRevokeSponsorshipResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrRevokeSponsorshipResultCode.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'REVOKE_SPONSORSHIP_SUCCESS';
-      case -1:
-        return 'REVOKE_SPONSORSHIP_DOES_NOT_EXIST';
-      case -2:
-        return 'REVOKE_SPONSORSHIP_NOT_SPONSOR';
-      case -3:
-        return 'REVOKE_SPONSORSHIP_LOW_RESERVE';
-      case -4:
-        return 'REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE';
-      case -5:
-        return 'REVOKE_SPONSORSHIP_MALFORMED';
-      default:
-        return 'XdrRevokeSponsorshipResultCode#$_value';
-    }
-  }
-
-  static XdrRevokeSponsorshipResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrRevokeSponsorshipResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'REVOKE_SPONSORSHIP_SUCCESS':
-        return REVOKE_SPONSORSHIP_SUCCESS;
-      case 'REVOKE_SPONSORSHIP_DOES_NOT_EXIST':
-        return REVOKE_SPONSORSHIP_DOES_NOT_EXIST;
-      case 'REVOKE_SPONSORSHIP_NOT_SPONSOR':
-        return REVOKE_SPONSORSHIP_NOT_SPONSOR;
-      case 'REVOKE_SPONSORSHIP_LOW_RESERVE':
-        return REVOKE_SPONSORSHIP_LOW_RESERVE;
-      case 'REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE':
-        return REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE;
-      case 'REVOKE_SPONSORSHIP_MALFORMED':
-        return REVOKE_SPONSORSHIP_MALFORMED;
-      default:
-        if (name.startsWith('XdrRevokeSponsorshipResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrRevokeSponsorshipResultCode#'.length),
-          );
-          if (val != null) return XdrRevokeSponsorshipResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_survey_message_response_type.dart';
 import 'xdr_topology_response_body_v2.dart';
@@ -75,41 +74,5 @@ class XdrSurveyResponseBody {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSurveyResponseBody.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.type: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrSurveyMessageResponseType.SURVEY_TOPOLOGY_RESPONSE_V2:
-        _topologyResponseBodyV2!.toTxRep(
-          '$prefix.topologyResponseBodyV2',
-          lines,
-        );
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrSurveyResponseBody fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrSurveyMessageResponseType disc =
-        XdrSurveyMessageResponseType.fromTxRepName(
-          TxRepHelper.getValue(map, '$prefix.type') ?? '',
-        );
-    XdrSurveyResponseBody result = XdrSurveyResponseBody(disc);
-    switch (result.discriminant) {
-      case XdrSurveyMessageResponseType.SURVEY_TOPOLOGY_RESPONSE_V2:
-        result._topologyResponseBodyV2 = XdrTopologyResponseBodyV2.fromTxRep(
-          map,
-          '$prefix.topologyResponseBodyV2',
-        );
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

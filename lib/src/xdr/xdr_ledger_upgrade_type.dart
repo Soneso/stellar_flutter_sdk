@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrLedgerUpgradeType {
@@ -72,66 +71,5 @@ class XdrLedgerUpgradeType {
   static XdrLedgerUpgradeType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerUpgradeType.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 1:
-        return 'LEDGER_UPGRADE_VERSION';
-      case 2:
-        return 'LEDGER_UPGRADE_BASE_FEE';
-      case 3:
-        return 'LEDGER_UPGRADE_MAX_TX_SET_SIZE';
-      case 4:
-        return 'LEDGER_UPGRADE_BASE_RESERVE';
-      case 5:
-        return 'LEDGER_UPGRADE_FLAGS';
-      case 6:
-        return 'LEDGER_UPGRADE_CONFIG';
-      case 7:
-        return 'LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE';
-      default:
-        return 'XdrLedgerUpgradeType#$_value';
-    }
-  }
-
-  static XdrLedgerUpgradeType fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrLedgerUpgradeType fromTxRepName(String name) {
-    switch (name) {
-      case 'LEDGER_UPGRADE_VERSION':
-        return LEDGER_UPGRADE_VERSION;
-      case 'LEDGER_UPGRADE_BASE_FEE':
-        return LEDGER_UPGRADE_BASE_FEE;
-      case 'LEDGER_UPGRADE_MAX_TX_SET_SIZE':
-        return LEDGER_UPGRADE_MAX_TX_SET_SIZE;
-      case 'LEDGER_UPGRADE_BASE_RESERVE':
-        return LEDGER_UPGRADE_BASE_RESERVE;
-      case 'LEDGER_UPGRADE_FLAGS':
-        return LEDGER_UPGRADE_FLAGS;
-      case 'LEDGER_UPGRADE_CONFIG':
-        return LEDGER_UPGRADE_CONFIG;
-      case 'LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE':
-        return LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE;
-      default:
-        if (name.startsWith('XdrLedgerUpgradeType#')) {
-          int? val = int.tryParse(
-            name.substring('XdrLedgerUpgradeType#'.length),
-          );
-          if (val != null) return XdrLedgerUpgradeType._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

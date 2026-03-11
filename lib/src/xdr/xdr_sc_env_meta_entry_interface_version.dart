@@ -46,18 +46,4 @@ class XdrSCEnvMetaEntryInterfaceVersion {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCEnvMetaEntryInterfaceVersion.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _protocol.toTxRep('$prefix.protocol', lines);
-    _preRelease.toTxRep('$prefix.preRelease', lines);
-  }
-
-  static XdrSCEnvMetaEntryInterfaceVersion fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrUint32 protocol = XdrUint32.fromTxRep(map, '$prefix.protocol');
-    XdrUint32 preRelease = XdrUint32.fromTxRep(map, '$prefix.preRelease');
-    return XdrSCEnvMetaEntryInterfaceVersion(protocol, preRelease);
-  }
 }

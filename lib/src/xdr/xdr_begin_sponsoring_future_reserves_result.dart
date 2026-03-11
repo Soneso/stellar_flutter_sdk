@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_begin_sponsoring_future_reserves_result_code.dart';
 import 'xdr_data_io.dart';
 
@@ -73,50 +72,5 @@ class XdrBeginSponsoringFutureReservesResult {
     return XdrBeginSponsoringFutureReservesResult.decode(
       XdrDataInputStream(bytes),
     );
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.code: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrBeginSponsoringFutureReservesResultCode
-          .BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
-        break;
-      case XdrBeginSponsoringFutureReservesResultCode
-          .BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED:
-      case XdrBeginSponsoringFutureReservesResultCode
-          .BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED:
-      case XdrBeginSponsoringFutureReservesResultCode
-          .BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrBeginSponsoringFutureReservesResult fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrBeginSponsoringFutureReservesResultCode disc =
-        XdrBeginSponsoringFutureReservesResultCode.fromTxRepName(
-          TxRepHelper.getValue(map, '$prefix.code') ?? '',
-        );
-    XdrBeginSponsoringFutureReservesResult result =
-        XdrBeginSponsoringFutureReservesResult(disc);
-    switch (result.discriminant) {
-      case XdrBeginSponsoringFutureReservesResultCode
-          .BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
-        break;
-      case XdrBeginSponsoringFutureReservesResultCode
-          .BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED:
-      case XdrBeginSponsoringFutureReservesResultCode
-          .BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED:
-      case XdrBeginSponsoringFutureReservesResultCode
-          .BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_extend_footprint_ttl_result_code.dart';
 
@@ -61,45 +60,5 @@ class XdrExtendFootprintTTLResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrExtendFootprintTTLResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.code: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_SUCCESS:
-        break;
-      case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_MALFORMED:
-      case XdrExtendFootprintTTLResultCode
-          .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED:
-      case XdrExtendFootprintTTLResultCode
-          .EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrExtendFootprintTTLResult fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrExtendFootprintTTLResultCode disc =
-        XdrExtendFootprintTTLResultCode.fromTxRepName(
-          TxRepHelper.getValue(map, '$prefix.code') ?? '',
-        );
-    XdrExtendFootprintTTLResult result = XdrExtendFootprintTTLResult(disc);
-    switch (result.discriminant) {
-      case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_SUCCESS:
-        break;
-      case XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_MALFORMED:
-      case XdrExtendFootprintTTLResultCode
-          .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED:
-      case XdrExtendFootprintTTLResultCode
-          .EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

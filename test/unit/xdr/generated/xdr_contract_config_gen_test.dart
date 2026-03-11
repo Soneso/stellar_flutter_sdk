@@ -4,6 +4,7 @@
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+import 'xdr_test_helpers.dart';
 
 void main() {
   group('XDR contract_config generated tests', () {
@@ -821,6 +822,17 @@ void main() {
           // Verify arm field is not null
           expect(base64Decoded.freezeBypassTxsDelta, isNotNull);
       });
+
+    test('XdrConfigSettingID TxRep roundtrip', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID');
+    });
 
   });
 }

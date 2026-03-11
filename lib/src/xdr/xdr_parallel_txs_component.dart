@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
 import 'xdr_parallel_tx_execution_stage.dart';
@@ -71,45 +70,5 @@ class XdrParallelTxsComponent {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrParallelTxsComponent.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    if (_baseFee != null) {
-      lines.add('$prefix.baseFee._present: true');
-      _baseFee!.toTxRep('$prefix.baseFee', lines);
-    } else {
-      lines.add('$prefix.baseFee._present: false');
-    }
-    lines.add('$prefix.executionStages.len: ${_executionStages.length}');
-    for (int i = 0; i < _executionStages.length; i++) {
-      _executionStages[i].toTxRep('$prefix.executionStages[$i]', lines);
-    }
-  }
-
-  static XdrParallelTxsComponent fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrInt64? baseFee;
-    String? baseFeePresent = TxRepHelper.getValue(
-      map,
-      '$prefix.baseFee._present',
-    );
-    if (baseFeePresent != null && baseFeePresent == 'true') {
-      baseFee = XdrInt64.fromTxRep(map, '$prefix.baseFee');
-    }
-    int executionStagesLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.executionStages.len') ?? '0',
-    );
-    List<XdrParallelTxExecutionStage> executionStages = [];
-    for (int i = 0; i < executionStagesLen; i++) {
-      executionStages.add(
-        XdrParallelTxExecutionStage.fromTxRep(
-          map,
-          '$prefix.executionStages[$i]',
-        ),
-      );
-    }
-    return XdrParallelTxsComponent(baseFee, executionStages);
   }
 }

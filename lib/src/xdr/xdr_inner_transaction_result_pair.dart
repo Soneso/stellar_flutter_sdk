@@ -50,21 +50,4 @@ class XdrInnerTransactionResultPair {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInnerTransactionResultPair.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _transactionHash.toTxRep('$prefix.transactionHash', lines);
-    _result.toTxRep('$prefix.result', lines);
-  }
-
-  static XdrInnerTransactionResultPair fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrHash transactionHash = XdrHash.fromTxRep(map, '$prefix.transactionHash');
-    XdrInnerTransactionResult result = XdrInnerTransactionResult.fromTxRep(
-      map,
-      '$prefix.result',
-    );
-    return XdrInnerTransactionResultPair(transactionHash, result);
-  }
 }

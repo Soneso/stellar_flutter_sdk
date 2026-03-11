@@ -44,15 +44,4 @@ class XdrLiabilities {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiabilities.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _buying.toTxRep('$prefix.buying', lines);
-    _selling.toTxRep('$prefix.selling', lines);
-  }
-
-  static XdrLiabilities fromTxRep(Map<String, String> map, String prefix) {
-    XdrInt64 buying = XdrInt64.fromTxRep(map, '$prefix.buying');
-    XdrInt64 selling = XdrInt64.fromTxRep(map, '$prefix.selling');
-    return XdrLiabilities(buying, selling);
-  }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_account_merge_result_code.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
@@ -75,53 +74,5 @@ class XdrAccountMergeResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountMergeResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.code: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrAccountMergeResultCode.ACCOUNT_MERGE_SUCCESS:
-        _sourceAccountBalance!.toTxRep('$prefix.sourceAccountBalance', lines);
-        break;
-      case XdrAccountMergeResultCode.ACCOUNT_MERGE_MALFORMED:
-      case XdrAccountMergeResultCode.ACCOUNT_MERGE_NO_ACCOUNT:
-      case XdrAccountMergeResultCode.ACCOUNT_MERGE_IMMUTABLE_SET:
-      case XdrAccountMergeResultCode.ACCOUNT_MERGE_HAS_SUB_ENTRIES:
-      case XdrAccountMergeResultCode.ACCOUNT_MERGE_SEQNUM_TOO_FAR:
-      case XdrAccountMergeResultCode.ACCOUNT_MERGE_DEST_FULL:
-      case XdrAccountMergeResultCode.ACCOUNT_MERGE_IS_SPONSOR:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrAccountMergeResult fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrAccountMergeResultCode disc = XdrAccountMergeResultCode.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.code') ?? '',
-    );
-    XdrAccountMergeResult result = XdrAccountMergeResult(disc);
-    switch (result.discriminant) {
-      case XdrAccountMergeResultCode.ACCOUNT_MERGE_SUCCESS:
-        result._sourceAccountBalance = XdrInt64.fromTxRep(
-          map,
-          '$prefix.sourceAccountBalance',
-        );
-        break;
-      case XdrAccountMergeResultCode.ACCOUNT_MERGE_MALFORMED:
-      case XdrAccountMergeResultCode.ACCOUNT_MERGE_NO_ACCOUNT:
-      case XdrAccountMergeResultCode.ACCOUNT_MERGE_IMMUTABLE_SET:
-      case XdrAccountMergeResultCode.ACCOUNT_MERGE_HAS_SUB_ENTRIES:
-      case XdrAccountMergeResultCode.ACCOUNT_MERGE_SEQNUM_TOO_FAR:
-      case XdrAccountMergeResultCode.ACCOUNT_MERGE_DEST_FULL:
-      case XdrAccountMergeResultCode.ACCOUNT_MERGE_IS_SPONSOR:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

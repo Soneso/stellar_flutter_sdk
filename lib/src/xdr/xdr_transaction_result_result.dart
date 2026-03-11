@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_inner_transaction_result_pair.dart';
 import 'xdr_operation_result.dart';
@@ -104,92 +103,5 @@ class XdrTransactionResultResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionResultResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.code: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrTransactionResultCode.txFEE_BUMP_INNER_SUCCESS:
-      case XdrTransactionResultCode.txFEE_BUMP_INNER_FAILED:
-        _innerResultPair!.toTxRep('$prefix.innerResultPair', lines);
-        break;
-      case XdrTransactionResultCode.txSUCCESS:
-      case XdrTransactionResultCode.txFAILED:
-        lines.add('$prefix.results.len: ${_results!.length}');
-        for (int i = 0; i < _results!.length; i++) {
-          _results![i].toTxRep('$prefix.results[$i]', lines);
-        }
-        break;
-      case XdrTransactionResultCode.txTOO_EARLY:
-      case XdrTransactionResultCode.txTOO_LATE:
-      case XdrTransactionResultCode.txMISSING_OPERATION:
-      case XdrTransactionResultCode.txBAD_SEQ:
-      case XdrTransactionResultCode.txBAD_AUTH:
-      case XdrTransactionResultCode.txINSUFFICIENT_BALANCE:
-      case XdrTransactionResultCode.txNO_ACCOUNT:
-      case XdrTransactionResultCode.txINSUFFICIENT_FEE:
-      case XdrTransactionResultCode.txBAD_AUTH_EXTRA:
-      case XdrTransactionResultCode.txINTERNAL_ERROR:
-      case XdrTransactionResultCode.txNOT_SUPPORTED:
-      case XdrTransactionResultCode.txBAD_SPONSORSHIP:
-      case XdrTransactionResultCode.txBAD_MIN_SEQ_AGE_OR_GAP:
-      case XdrTransactionResultCode.txMALFORMED:
-      case XdrTransactionResultCode.txSOROBAN_INVALID:
-      case XdrTransactionResultCode.txFROZEN_KEY_ACCESSED:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrTransactionResultResult fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrTransactionResultCode disc = XdrTransactionResultCode.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.code') ?? '',
-    );
-    XdrTransactionResultResult result = XdrTransactionResultResult(disc);
-    switch (result.discriminant) {
-      case XdrTransactionResultCode.txFEE_BUMP_INNER_SUCCESS:
-      case XdrTransactionResultCode.txFEE_BUMP_INNER_FAILED:
-        result._innerResultPair = XdrInnerTransactionResultPair.fromTxRep(
-          map,
-          '$prefix.innerResultPair',
-        );
-        break;
-      case XdrTransactionResultCode.txSUCCESS:
-      case XdrTransactionResultCode.txFAILED:
-        int resultsLen = TxRepHelper.parseInt(
-          TxRepHelper.getValue(map, '$prefix.results.len') ?? '0',
-        );
-        result._results = [];
-        for (int i = 0; i < resultsLen; i++) {
-          result._results!.add(
-            XdrOperationResult.fromTxRep(map, '$prefix.results[$i]'),
-          );
-        }
-        break;
-      case XdrTransactionResultCode.txTOO_EARLY:
-      case XdrTransactionResultCode.txTOO_LATE:
-      case XdrTransactionResultCode.txMISSING_OPERATION:
-      case XdrTransactionResultCode.txBAD_SEQ:
-      case XdrTransactionResultCode.txBAD_AUTH:
-      case XdrTransactionResultCode.txINSUFFICIENT_BALANCE:
-      case XdrTransactionResultCode.txNO_ACCOUNT:
-      case XdrTransactionResultCode.txINSUFFICIENT_FEE:
-      case XdrTransactionResultCode.txBAD_AUTH_EXTRA:
-      case XdrTransactionResultCode.txINTERNAL_ERROR:
-      case XdrTransactionResultCode.txNOT_SUPPORTED:
-      case XdrTransactionResultCode.txBAD_SPONSORSHIP:
-      case XdrTransactionResultCode.txBAD_MIN_SEQ_AGE_OR_GAP:
-      case XdrTransactionResultCode.txMALFORMED:
-      case XdrTransactionResultCode.txSOROBAN_INVALID:
-      case XdrTransactionResultCode.txFROZEN_KEY_ACCESSED:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

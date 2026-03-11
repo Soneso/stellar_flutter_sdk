@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_liquidity_pool_entry_constant_product.dart';
 import 'xdr_liquidity_pool_type.dart';
@@ -73,38 +72,5 @@ class XdrLiquidityPoolBody {
   static XdrLiquidityPoolBody fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolBody.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.type: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT:
-        _constantProduct!.toTxRep('$prefix.constantProduct', lines);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrLiquidityPoolBody fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrLiquidityPoolType disc = XdrLiquidityPoolType.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.type') ?? '',
-    );
-    XdrLiquidityPoolBody result = XdrLiquidityPoolBody(disc);
-    switch (result.discriminant) {
-      case XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT:
-        result._constantProduct =
-            XdrLiquidityPoolEntryConstantProduct.fromTxRep(
-              map,
-              '$prefix.constantProduct',
-            );
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

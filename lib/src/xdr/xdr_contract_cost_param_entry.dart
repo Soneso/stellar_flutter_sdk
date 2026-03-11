@@ -53,20 +53,4 @@ class XdrContractCostParamEntry {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractCostParamEntry.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ext.toTxRep('$prefix.ext', lines);
-    _constTerm.toTxRep('$prefix.constTerm', lines);
-    _linearTerm.toTxRep('$prefix.linearTerm', lines);
-  }
-
-  static XdrContractCostParamEntry fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
-    XdrInt64 constTerm = XdrInt64.fromTxRep(map, '$prefix.constTerm');
-    XdrInt64 linearTerm = XdrInt64.fromTxRep(map, '$prefix.linearTerm');
-    return XdrContractCostParamEntry(ext, constTerm, linearTerm);
-  }
 }

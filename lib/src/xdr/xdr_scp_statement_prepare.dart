@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_scp_ballot.dart';
@@ -104,58 +103,5 @@ class XdrSCPStatementPrepare {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPStatementPrepare.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _quorumSetHash.toTxRep('$prefix.quorumSetHash', lines);
-    _ballot.toTxRep('$prefix.ballot', lines);
-    if (_prepared != null) {
-      lines.add('$prefix.prepared._present: true');
-      _prepared!.toTxRep('$prefix.prepared', lines);
-    } else {
-      lines.add('$prefix.prepared._present: false');
-    }
-    if (_preparedPrime != null) {
-      lines.add('$prefix.preparedPrime._present: true');
-      _preparedPrime!.toTxRep('$prefix.preparedPrime', lines);
-    } else {
-      lines.add('$prefix.preparedPrime._present: false');
-    }
-    _nC.toTxRep('$prefix.nC', lines);
-    _nH.toTxRep('$prefix.nH', lines);
-  }
-
-  static XdrSCPStatementPrepare fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrHash quorumSetHash = XdrHash.fromTxRep(map, '$prefix.quorumSetHash');
-    XdrSCPBallot ballot = XdrSCPBallot.fromTxRep(map, '$prefix.ballot');
-    XdrSCPBallot? prepared;
-    String? preparedPresent = TxRepHelper.getValue(
-      map,
-      '$prefix.prepared._present',
-    );
-    if (preparedPresent != null && preparedPresent == 'true') {
-      prepared = XdrSCPBallot.fromTxRep(map, '$prefix.prepared');
-    }
-    XdrSCPBallot? preparedPrime;
-    String? preparedPrimePresent = TxRepHelper.getValue(
-      map,
-      '$prefix.preparedPrime._present',
-    );
-    if (preparedPrimePresent != null && preparedPrimePresent == 'true') {
-      preparedPrime = XdrSCPBallot.fromTxRep(map, '$prefix.preparedPrime');
-    }
-    XdrUint32 nC = XdrUint32.fromTxRep(map, '$prefix.nC');
-    XdrUint32 nH = XdrUint32.fromTxRep(map, '$prefix.nH');
-    return XdrSCPStatementPrepare(
-      quorumSetHash,
-      ballot,
-      prepared,
-      preparedPrime,
-      nC,
-      nH,
-    );
   }
 }

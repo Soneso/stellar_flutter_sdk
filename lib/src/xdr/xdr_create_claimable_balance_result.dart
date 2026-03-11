@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_claimable_balance_id.dart';
 import 'xdr_create_claimable_balance_result_code.dart';
 import 'xdr_data_io.dart';
@@ -75,62 +74,5 @@ class XdrCreateClaimableBalanceResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCreateClaimableBalanceResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.code: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_SUCCESS:
-        _balanceID!.toTxRep('$prefix.balanceID', lines);
-        break;
-      case XdrCreateClaimableBalanceResultCode
-          .CREATE_CLAIMABLE_BALANCE_MALFORMED:
-      case XdrCreateClaimableBalanceResultCode
-          .CREATE_CLAIMABLE_BALANCE_LOW_RESERVE:
-      case XdrCreateClaimableBalanceResultCode
-          .CREATE_CLAIMABLE_BALANCE_NO_TRUST:
-      case XdrCreateClaimableBalanceResultCode
-          .CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED:
-      case XdrCreateClaimableBalanceResultCode
-          .CREATE_CLAIMABLE_BALANCE_UNDERFUNDED:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrCreateClaimableBalanceResult fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrCreateClaimableBalanceResultCode disc =
-        XdrCreateClaimableBalanceResultCode.fromTxRepName(
-          TxRepHelper.getValue(map, '$prefix.code') ?? '',
-        );
-    XdrCreateClaimableBalanceResult result = XdrCreateClaimableBalanceResult(
-      disc,
-    );
-    switch (result.discriminant) {
-      case XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_SUCCESS:
-        result._balanceID = XdrClaimableBalanceID.fromTxRep(
-          map,
-          '$prefix.balanceID',
-        );
-        break;
-      case XdrCreateClaimableBalanceResultCode
-          .CREATE_CLAIMABLE_BALANCE_MALFORMED:
-      case XdrCreateClaimableBalanceResultCode
-          .CREATE_CLAIMABLE_BALANCE_LOW_RESERVE:
-      case XdrCreateClaimableBalanceResultCode
-          .CREATE_CLAIMABLE_BALANCE_NO_TRUST:
-      case XdrCreateClaimableBalanceResultCode
-          .CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED:
-      case XdrCreateClaimableBalanceResultCode
-          .CREATE_CLAIMABLE_BALANCE_UNDERFUNDED:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

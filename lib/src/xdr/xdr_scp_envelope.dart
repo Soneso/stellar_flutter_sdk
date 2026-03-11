@@ -45,18 +45,4 @@ class XdrSCPEnvelope {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPEnvelope.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _statement.toTxRep('$prefix.statement', lines);
-    _signature.toTxRep('$prefix.signature', lines);
-  }
-
-  static XdrSCPEnvelope fromTxRep(Map<String, String> map, String prefix) {
-    XdrSCPStatement statement = XdrSCPStatement.fromTxRep(
-      map,
-      '$prefix.statement',
-    );
-    XdrSignature signature = XdrSignature.fromTxRep(map, '$prefix.signature');
-    return XdrSCPEnvelope(statement, signature);
-  }
 }

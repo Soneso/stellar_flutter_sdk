@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrHotArchiveBucketEntryType {
@@ -64,50 +63,5 @@ class XdrHotArchiveBucketEntryType {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHotArchiveBucketEntryType.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case -1:
-        return 'HOT_ARCHIVE_METAENTRY';
-      case 0:
-        return 'HOT_ARCHIVE_ARCHIVED';
-      case 1:
-        return 'HOT_ARCHIVE_LIVE';
-      default:
-        return 'XdrHotArchiveBucketEntryType#$_value';
-    }
-  }
-
-  static XdrHotArchiveBucketEntryType fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrHotArchiveBucketEntryType fromTxRepName(String name) {
-    switch (name) {
-      case 'HOT_ARCHIVE_METAENTRY':
-        return HOT_ARCHIVE_METAENTRY;
-      case 'HOT_ARCHIVE_ARCHIVED':
-        return HOT_ARCHIVE_ARCHIVED;
-      case 'HOT_ARCHIVE_LIVE':
-        return HOT_ARCHIVE_LIVE;
-      default:
-        if (name.startsWith('XdrHotArchiveBucketEntryType#')) {
-          int? val = int.tryParse(
-            name.substring('XdrHotArchiveBucketEntryType#'.length),
-          );
-          if (val != null) return XdrHotArchiveBucketEntryType._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

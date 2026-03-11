@@ -49,20 +49,4 @@ class XdrAuthCert {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAuthCert.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _pubkey.toTxRep('$prefix.pubkey', lines);
-    _expiration.toTxRep('$prefix.expiration', lines);
-    _sig.toTxRep('$prefix.sig', lines);
-  }
-
-  static XdrAuthCert fromTxRep(Map<String, String> map, String prefix) {
-    XdrCurve25519Public pubkey = XdrCurve25519Public.fromTxRep(
-      map,
-      '$prefix.pubkey',
-    );
-    XdrUint64 expiration = XdrUint64.fromTxRep(map, '$prefix.expiration');
-    XdrSignature sig = XdrSignature.fromTxRep(map, '$prefix.sig');
-    return XdrAuthCert(pubkey, expiration, sig);
-  }
 }

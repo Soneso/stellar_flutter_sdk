@@ -54,22 +54,4 @@ class XdrTransactionSignaturePayload {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionSignaturePayload.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _networkId.toTxRep('$prefix.networkId', lines);
-    _taggedTransaction.toTxRep('$prefix.taggedTransaction', lines);
-  }
-
-  static XdrTransactionSignaturePayload fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrHash networkId = XdrHash.fromTxRep(map, '$prefix.networkId');
-    XdrTransactionSignaturePayloadTaggedTransaction taggedTransaction =
-        XdrTransactionSignaturePayloadTaggedTransaction.fromTxRep(
-          map,
-          '$prefix.taggedTransaction',
-        );
-    return XdrTransactionSignaturePayload(networkId, taggedTransaction);
-  }
 }

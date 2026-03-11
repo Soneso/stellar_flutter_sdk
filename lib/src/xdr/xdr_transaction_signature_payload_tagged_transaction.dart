@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_envelope_type.dart';
 import 'xdr_fee_bump_transaction.dart';
@@ -101,44 +100,5 @@ class XdrTransactionSignaturePayloadTaggedTransaction {
     return XdrTransactionSignaturePayloadTaggedTransaction.decode(
       XdrDataInputStream(bytes),
     );
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.type: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrEnvelopeType.ENVELOPE_TYPE_TX:
-        _tx!.toTxRep('$prefix.tx', lines);
-        break;
-      case XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
-        _feeBump!.toTxRep('$prefix.feeBump', lines);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrTransactionSignaturePayloadTaggedTransaction fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrEnvelopeType disc = XdrEnvelopeType.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.type') ?? '',
-    );
-    XdrTransactionSignaturePayloadTaggedTransaction result =
-        XdrTransactionSignaturePayloadTaggedTransaction(disc);
-    switch (result.discriminant) {
-      case XdrEnvelopeType.ENVELOPE_TYPE_TX:
-        result._tx = XdrTransaction.fromTxRep(map, '$prefix.tx');
-        break;
-      case XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
-        result._feeBump = XdrFeeBumpTransaction.fromTxRep(
-          map,
-          '$prefix.feeBump',
-        );
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

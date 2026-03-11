@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_contract_event.dart';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
@@ -62,30 +61,5 @@ class XdrOperationMetaV2 {
   static XdrOperationMetaV2 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrOperationMetaV2.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ext.toTxRep('$prefix.ext', lines);
-    _changes.toTxRep('$prefix.changes', lines);
-    lines.add('$prefix.events.len: ${_events.length}');
-    for (int i = 0; i < _events.length; i++) {
-      _events[i].toTxRep('$prefix.events[$i]', lines);
-    }
-  }
-
-  static XdrOperationMetaV2 fromTxRep(Map<String, String> map, String prefix) {
-    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
-    XdrLedgerEntryChanges changes = XdrLedgerEntryChanges.fromTxRep(
-      map,
-      '$prefix.changes',
-    );
-    int eventsLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.events.len') ?? '0',
-    );
-    List<XdrContractEvent> events = [];
-    for (int i = 0; i < eventsLen; i++) {
-      events.add(XdrContractEvent.fromTxRep(map, '$prefix.events[$i]'));
-    }
-    return XdrOperationMetaV2(ext, changes, events);
   }
 }

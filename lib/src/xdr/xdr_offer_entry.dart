@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
@@ -104,43 +103,5 @@ class XdrOfferEntry {
   static XdrOfferEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrOfferEntry.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.sellerID: ${TxRepHelper.formatAccountId(_sellerID)}');
-    _offerID.toTxRep('$prefix.offerID', lines);
-    lines.add('$prefix.selling: ${TxRepHelper.formatAsset(_selling)}');
-    lines.add('$prefix.buying: ${TxRepHelper.formatAsset(_buying)}');
-    _amount.toTxRep('$prefix.amount', lines);
-    _price.toTxRep('$prefix.price', lines);
-    _flags.toTxRep('$prefix.flags', lines);
-    _ext.toTxRep('$prefix.ext', lines);
-  }
-
-  static XdrOfferEntry fromTxRep(Map<String, String> map, String prefix) {
-    XdrAccountID sellerID = TxRepHelper.parseAccountId(
-      TxRepHelper.getValue(map, '$prefix.sellerID') ?? '',
-    );
-    XdrUint64 offerID = XdrUint64.fromTxRep(map, '$prefix.offerID');
-    XdrAsset selling = TxRepHelper.parseAsset(
-      TxRepHelper.getValue(map, '$prefix.selling') ?? '',
-    );
-    XdrAsset buying = TxRepHelper.parseAsset(
-      TxRepHelper.getValue(map, '$prefix.buying') ?? '',
-    );
-    XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.amount');
-    XdrPrice price = XdrPrice.fromTxRep(map, '$prefix.price');
-    XdrUint32 flags = XdrUint32.fromTxRep(map, '$prefix.flags');
-    XdrOfferEntryExt ext = XdrOfferEntryExt.fromTxRep(map, '$prefix.ext');
-    return XdrOfferEntry(
-      sellerID,
-      offerID,
-      selling,
-      buying,
-      amount,
-      price,
-      flags,
-      ext,
-    );
   }
 }

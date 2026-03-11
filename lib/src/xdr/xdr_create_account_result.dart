@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_create_account_result_code.dart';
 import 'xdr_data_io.dart';
 
@@ -60,42 +59,5 @@ class XdrCreateAccountResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCreateAccountResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.code: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrCreateAccountResultCode.CREATE_ACCOUNT_SUCCESS:
-        break;
-      case XdrCreateAccountResultCode.CREATE_ACCOUNT_MALFORMED:
-      case XdrCreateAccountResultCode.CREATE_ACCOUNT_UNDERFUNDED:
-      case XdrCreateAccountResultCode.CREATE_ACCOUNT_LOW_RESERVE:
-      case XdrCreateAccountResultCode.CREATE_ACCOUNT_ALREADY_EXIST:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrCreateAccountResult fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrCreateAccountResultCode disc = XdrCreateAccountResultCode.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.code') ?? '',
-    );
-    XdrCreateAccountResult result = XdrCreateAccountResult(disc);
-    switch (result.discriminant) {
-      case XdrCreateAccountResultCode.CREATE_ACCOUNT_SUCCESS:
-        break;
-      case XdrCreateAccountResultCode.CREATE_ACCOUNT_MALFORMED:
-      case XdrCreateAccountResultCode.CREATE_ACCOUNT_UNDERFUNDED:
-      case XdrCreateAccountResultCode.CREATE_ACCOUNT_LOW_RESERVE:
-      case XdrCreateAccountResultCode.CREATE_ACCOUNT_ALREADY_EXIST:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

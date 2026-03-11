@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrInvokeHostFunctionResultCode {
@@ -75,63 +74,5 @@ class XdrInvokeHostFunctionResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInvokeHostFunctionResultCode.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'INVOKE_HOST_FUNCTION_SUCCESS';
-      case -1:
-        return 'INVOKE_HOST_FUNCTION_MALFORMED';
-      case -2:
-        return 'INVOKE_HOST_FUNCTION_TRAPPED';
-      case -3:
-        return 'INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED';
-      case -4:
-        return 'INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED';
-      case -5:
-        return 'INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE';
-      default:
-        return 'XdrInvokeHostFunctionResultCode#$_value';
-    }
-  }
-
-  static XdrInvokeHostFunctionResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrInvokeHostFunctionResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'INVOKE_HOST_FUNCTION_SUCCESS':
-        return INVOKE_HOST_FUNCTION_SUCCESS;
-      case 'INVOKE_HOST_FUNCTION_MALFORMED':
-        return INVOKE_HOST_FUNCTION_MALFORMED;
-      case 'INVOKE_HOST_FUNCTION_TRAPPED':
-        return INVOKE_HOST_FUNCTION_TRAPPED;
-      case 'INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED':
-        return INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED;
-      case 'INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED':
-        return INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED;
-      case 'INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE':
-        return INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE;
-      default:
-        if (name.startsWith('XdrInvokeHostFunctionResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrInvokeHostFunctionResultCode#'.length),
-          );
-          if (val != null)
-            return XdrInvokeHostFunctionResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

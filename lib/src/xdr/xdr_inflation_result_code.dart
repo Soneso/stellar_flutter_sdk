@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrInflationResultCode {
@@ -54,46 +53,5 @@ class XdrInflationResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInflationResultCode.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'INFLATION_SUCCESS';
-      case -1:
-        return 'INFLATION_NOT_TIME';
-      default:
-        return 'XdrInflationResultCode#$_value';
-    }
-  }
-
-  static XdrInflationResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrInflationResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'INFLATION_SUCCESS':
-        return INFLATION_SUCCESS;
-      case 'INFLATION_NOT_TIME':
-        return INFLATION_NOT_TIME;
-      default:
-        if (name.startsWith('XdrInflationResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrInflationResultCode#'.length),
-          );
-          if (val != null) return XdrInflationResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

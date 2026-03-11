@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_generalized_transaction_set.dart';
 import 'xdr_transaction_set.dart';
@@ -85,43 +84,5 @@ class XdrStoredTransactionSet {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrStoredTransactionSet.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.v: $discriminant');
-    switch (discriminant) {
-      case 0:
-        _txSet!.toTxRep('$prefix.txSet', lines);
-        break;
-      case 1:
-        _generalizedTxSet!.toTxRep('$prefix.generalizedTxSet', lines);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrStoredTransactionSet fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    int disc = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
-    );
-    XdrStoredTransactionSet result = XdrStoredTransactionSet(disc);
-    switch (result.discriminant) {
-      case 0:
-        result._txSet = XdrTransactionSet.fromTxRep(map, '$prefix.txSet');
-        break;
-      case 1:
-        result._generalizedTxSet = XdrGeneralizedTransactionSet.fromTxRep(
-          map,
-          '$prefix.generalizedTxSet',
-        );
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

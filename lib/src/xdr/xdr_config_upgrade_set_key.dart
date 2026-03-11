@@ -46,18 +46,4 @@ class XdrConfigUpgradeSetKey {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigUpgradeSetKey.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _contractID.toTxRep('$prefix.contractID', lines);
-    _contentHash.toTxRep('$prefix.contentHash', lines);
-  }
-
-  static XdrConfigUpgradeSetKey fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrHash contractID = XdrHash.fromTxRep(map, '$prefix.contractID');
-    XdrHash contentHash = XdrHash.fromTxRep(map, '$prefix.contentHash');
-    return XdrConfigUpgradeSetKey(contractID, contentHash);
-  }
 }

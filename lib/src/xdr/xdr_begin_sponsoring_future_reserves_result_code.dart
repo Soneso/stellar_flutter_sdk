@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrBeginSponsoringFutureReservesResultCode {
@@ -72,57 +71,5 @@ class XdrBeginSponsoringFutureReservesResultCode {
     return XdrBeginSponsoringFutureReservesResultCode.decode(
       XdrDataInputStream(bytes),
     );
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS';
-      case -1:
-        return 'BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED';
-      case -2:
-        return 'BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED';
-      case -3:
-        return 'BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE';
-      default:
-        return 'XdrBeginSponsoringFutureReservesResultCode#$_value';
-    }
-  }
-
-  static XdrBeginSponsoringFutureReservesResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrBeginSponsoringFutureReservesResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS':
-        return BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS;
-      case 'BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED':
-        return BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED;
-      case 'BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED':
-        return BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED;
-      case 'BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE':
-        return BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE;
-      default:
-        if (name.startsWith('XdrBeginSponsoringFutureReservesResultCode#')) {
-          int? val = int.tryParse(
-            name.substring(
-              'XdrBeginSponsoringFutureReservesResultCode#'.length,
-            ),
-          );
-          if (val != null)
-            return XdrBeginSponsoringFutureReservesResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

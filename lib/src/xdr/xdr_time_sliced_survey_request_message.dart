@@ -78,36 +78,4 @@ class XdrTimeSlicedSurveyRequestMessage {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTimeSlicedSurveyRequestMessage.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _request.toTxRep('$prefix.request', lines);
-    _nonce.toTxRep('$prefix.nonce', lines);
-    _inboundPeersIndex.toTxRep('$prefix.inboundPeersIndex', lines);
-    _outboundPeersIndex.toTxRep('$prefix.outboundPeersIndex', lines);
-  }
-
-  static XdrTimeSlicedSurveyRequestMessage fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrSurveyRequestMessage request = XdrSurveyRequestMessage.fromTxRep(
-      map,
-      '$prefix.request',
-    );
-    XdrUint32 nonce = XdrUint32.fromTxRep(map, '$prefix.nonce');
-    XdrUint32 inboundPeersIndex = XdrUint32.fromTxRep(
-      map,
-      '$prefix.inboundPeersIndex',
-    );
-    XdrUint32 outboundPeersIndex = XdrUint32.fromTxRep(
-      map,
-      '$prefix.outboundPeersIndex',
-    );
-    return XdrTimeSlicedSurveyRequestMessage(
-      request,
-      nonce,
-      inboundPeersIndex,
-      outboundPeersIndex,
-    );
-  }
 }

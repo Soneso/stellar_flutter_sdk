@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
@@ -54,27 +53,5 @@ class XdrSimplePaymentResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSimplePaymentResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add(
-      '$prefix.destination: ${TxRepHelper.formatMuxedAccount(_destination)}',
-    );
-    lines.add('$prefix.asset: ${TxRepHelper.formatAsset(_asset)}');
-    _amount.toTxRep('$prefix.amount', lines);
-  }
-
-  static XdrSimplePaymentResult fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrMuxedAccount destination = TxRepHelper.parseMuxedAccount(
-      TxRepHelper.getValue(map, '$prefix.destination') ?? '',
-    );
-    XdrAsset asset = TxRepHelper.parseAsset(
-      TxRepHelper.getValue(map, '$prefix.asset') ?? '',
-    );
-    XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.amount');
-    return XdrSimplePaymentResult(destination, asset, amount);
   }
 }

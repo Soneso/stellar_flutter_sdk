@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrBinaryFuseFilterType {
@@ -63,50 +62,5 @@ class XdrBinaryFuseFilterType {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBinaryFuseFilterType.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'BINARY_FUSE_FILTER_8_BIT';
-      case 1:
-        return 'BINARY_FUSE_FILTER_16_BIT';
-      case 2:
-        return 'BINARY_FUSE_FILTER_32_BIT';
-      default:
-        return 'XdrBinaryFuseFilterType#$_value';
-    }
-  }
-
-  static XdrBinaryFuseFilterType fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrBinaryFuseFilterType fromTxRepName(String name) {
-    switch (name) {
-      case 'BINARY_FUSE_FILTER_8_BIT':
-        return BINARY_FUSE_FILTER_8_BIT;
-      case 'BINARY_FUSE_FILTER_16_BIT':
-        return BINARY_FUSE_FILTER_16_BIT;
-      case 'BINARY_FUSE_FILTER_32_BIT':
-        return BINARY_FUSE_FILTER_32_BIT;
-      default:
-        if (name.startsWith('XdrBinaryFuseFilterType#')) {
-          int? val = int.tryParse(
-            name.substring('XdrBinaryFuseFilterType#'.length),
-          );
-          if (val != null) return XdrBinaryFuseFilterType._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

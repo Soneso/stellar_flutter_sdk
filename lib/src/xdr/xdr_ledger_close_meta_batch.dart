@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger_close_meta.dart';
 import 'xdr_uint32.dart';
@@ -76,36 +75,5 @@ class XdrLedgerCloseMetaBatch {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerCloseMetaBatch.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _startSequence.toTxRep('$prefix.startSequence', lines);
-    _endSequence.toTxRep('$prefix.endSequence', lines);
-    lines.add('$prefix.ledgerCloseMetas.len: ${_ledgerCloseMetas.length}');
-    for (int i = 0; i < _ledgerCloseMetas.length; i++) {
-      _ledgerCloseMetas[i].toTxRep('$prefix.ledgerCloseMetas[$i]', lines);
-    }
-  }
-
-  static XdrLedgerCloseMetaBatch fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrUint32 startSequence = XdrUint32.fromTxRep(map, '$prefix.startSequence');
-    XdrUint32 endSequence = XdrUint32.fromTxRep(map, '$prefix.endSequence');
-    int ledgerCloseMetasLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.ledgerCloseMetas.len') ?? '0',
-    );
-    List<XdrLedgerCloseMeta> ledgerCloseMetas = [];
-    for (int i = 0; i < ledgerCloseMetasLen; i++) {
-      ledgerCloseMetas.add(
-        XdrLedgerCloseMeta.fromTxRep(map, '$prefix.ledgerCloseMetas[$i]'),
-      );
-    }
-    return XdrLedgerCloseMetaBatch(
-      startSequence,
-      endSequence,
-      ledgerCloseMetas,
-    );
   }
 }

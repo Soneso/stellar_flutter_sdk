@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrTxSetComponentType {
@@ -52,42 +51,5 @@ class XdrTxSetComponentType {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTxSetComponentType.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE';
-      default:
-        return 'XdrTxSetComponentType#$_value';
-    }
-  }
-
-  static XdrTxSetComponentType fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrTxSetComponentType fromTxRepName(String name) {
-    switch (name) {
-      case 'TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE':
-        return TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE;
-      default:
-        if (name.startsWith('XdrTxSetComponentType#')) {
-          int? val = int.tryParse(
-            name.substring('XdrTxSetComponentType#'.length),
-          );
-          if (val != null) return XdrTxSetComponentType._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

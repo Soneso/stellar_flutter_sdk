@@ -94,43 +94,4 @@ class XdrLiquidityPoolEntryConstantProduct {
       XdrDataInputStream(bytes),
     );
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _params.toTxRep('$prefix.params', lines);
-    _reserveA.toTxRep('$prefix.reserveA', lines);
-    _reserveB.toTxRep('$prefix.reserveB', lines);
-    _totalPoolShares.toTxRep('$prefix.totalPoolShares', lines);
-    _poolSharesTrustLineCount.toTxRep(
-      '$prefix.poolSharesTrustLineCount',
-      lines,
-    );
-  }
-
-  static XdrLiquidityPoolEntryConstantProduct fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrLiquidityPoolConstantProductParameters params =
-        XdrLiquidityPoolConstantProductParameters.fromTxRep(
-          map,
-          '$prefix.params',
-        );
-    XdrInt64 reserveA = XdrInt64.fromTxRep(map, '$prefix.reserveA');
-    XdrInt64 reserveB = XdrInt64.fromTxRep(map, '$prefix.reserveB');
-    XdrInt64 totalPoolShares = XdrInt64.fromTxRep(
-      map,
-      '$prefix.totalPoolShares',
-    );
-    XdrInt64 poolSharesTrustLineCount = XdrInt64.fromTxRep(
-      map,
-      '$prefix.poolSharesTrustLineCount',
-    );
-    return XdrLiquidityPoolEntryConstantProduct(
-      params,
-      reserveA,
-      reserveB,
-      totalPoolShares,
-      poolSharesTrustLineCount,
-    );
-  }
 }

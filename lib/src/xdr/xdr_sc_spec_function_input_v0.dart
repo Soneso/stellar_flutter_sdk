@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_spec_type_def.dart';
 
@@ -52,25 +51,5 @@ class XdrSCSpecFunctionInputV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecFunctionInputV0.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.doc: ${TxRepHelper.escapeString(_doc)}');
-    lines.add('$prefix.name: ${TxRepHelper.escapeString(_name)}');
-    _type.toTxRep('$prefix.type', lines);
-  }
-
-  static XdrSCSpecFunctionInputV0 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String doc = TxRepHelper.unescapeString(
-      TxRepHelper.getValue(map, '$prefix.doc') ?? '',
-    );
-    String name = TxRepHelper.unescapeString(
-      TxRepHelper.getValue(map, '$prefix.name') ?? '',
-    );
-    XdrSCSpecTypeDef type = XdrSCSpecTypeDef.fromTxRep(map, '$prefix.type');
-    return XdrSCSpecFunctionInputV0(doc, name, type);
   }
 }

@@ -35,13 +35,4 @@ class XdrSendMore {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSendMore.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _numMessages.toTxRep('$prefix.numMessages', lines);
-  }
-
-  static XdrSendMore fromTxRep(Map<String, String> map, String prefix) {
-    XdrUint32 numMessages = XdrUint32.fromTxRep(map, '$prefix.numMessages');
-    return XdrSendMore(numMessages);
-  }
 }

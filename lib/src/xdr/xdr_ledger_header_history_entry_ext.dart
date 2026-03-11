@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrLedgerHeaderHistoryEntryExt {
@@ -58,34 +57,5 @@ class XdrLedgerHeaderHistoryEntryExt {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerHeaderHistoryEntryExt.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.v: $discriminant');
-    switch (discriminant) {
-      case 0:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrLedgerHeaderHistoryEntryExt fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    int disc = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
-    );
-    XdrLedgerHeaderHistoryEntryExt result = XdrLedgerHeaderHistoryEntryExt(
-      disc,
-    );
-    switch (result.discriminant) {
-      case 0:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

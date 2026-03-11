@@ -65,24 +65,4 @@ class XdrConfigSettingContractLedgerCostExtV0 {
       XdrDataInputStream(bytes),
     );
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _txMaxFootprintEntries.toTxRep('$prefix.txMaxFootprintEntries', lines);
-    _feeWrite1KB.toTxRep('$prefix.feeWrite1KB', lines);
-  }
-
-  static XdrConfigSettingContractLedgerCostExtV0 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrUint32 txMaxFootprintEntries = XdrUint32.fromTxRep(
-      map,
-      '$prefix.txMaxFootprintEntries',
-    );
-    XdrInt64 feeWrite1KB = XdrInt64.fromTxRep(map, '$prefix.feeWrite1KB');
-    return XdrConfigSettingContractLedgerCostExtV0(
-      txMaxFootprintEntries,
-      feeWrite1KB,
-    );
-  }
 }

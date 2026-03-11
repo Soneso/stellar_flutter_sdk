@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_binary_fuse_filter_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_short_hash_seed.dart';
@@ -132,63 +131,5 @@ class XdrSerializedBinaryFuseFilter {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSerializedBinaryFuseFilter.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _type.toTxRep('$prefix.type', lines);
-    _inputHashSeed.toTxRep('$prefix.inputHashSeed', lines);
-    _filterSeed.toTxRep('$prefix.filterSeed', lines);
-    _segmentLength.toTxRep('$prefix.segmentLength', lines);
-    _segementLengthMask.toTxRep('$prefix.segementLengthMask', lines);
-    _segmentCount.toTxRep('$prefix.segmentCount', lines);
-    _segmentCountLength.toTxRep('$prefix.segmentCountLength', lines);
-    _fingerprintLength.toTxRep('$prefix.fingerprintLength', lines);
-    lines.add('$prefix.fingerprints: ${TxRepHelper.bytesToHex(_fingerprints)}');
-  }
-
-  static XdrSerializedBinaryFuseFilter fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrBinaryFuseFilterType type = XdrBinaryFuseFilterType.fromTxRep(
-      map,
-      '$prefix.type',
-    );
-    XdrShortHashSeed inputHashSeed = XdrShortHashSeed.fromTxRep(
-      map,
-      '$prefix.inputHashSeed',
-    );
-    XdrShortHashSeed filterSeed = XdrShortHashSeed.fromTxRep(
-      map,
-      '$prefix.filterSeed',
-    );
-    XdrUint32 segmentLength = XdrUint32.fromTxRep(map, '$prefix.segmentLength');
-    XdrUint32 segementLengthMask = XdrUint32.fromTxRep(
-      map,
-      '$prefix.segementLengthMask',
-    );
-    XdrUint32 segmentCount = XdrUint32.fromTxRep(map, '$prefix.segmentCount');
-    XdrUint32 segmentCountLength = XdrUint32.fromTxRep(
-      map,
-      '$prefix.segmentCountLength',
-    );
-    XdrUint32 fingerprintLength = XdrUint32.fromTxRep(
-      map,
-      '$prefix.fingerprintLength',
-    );
-    Uint8List fingerprints = TxRepHelper.hexToBytes(
-      TxRepHelper.getValue(map, '$prefix.fingerprints') ?? '',
-    );
-    return XdrSerializedBinaryFuseFilter(
-      type,
-      inputHashSeed,
-      filterSeed,
-      segmentLength,
-      segementLengthMask,
-      segmentCount,
-      segmentCountLength,
-      fingerprintLength,
-      fingerprints,
-    );
   }
 }

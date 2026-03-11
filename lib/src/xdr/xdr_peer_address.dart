@@ -51,17 +51,4 @@ class XdrPeerAddress {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPeerAddress.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ip.toTxRep('$prefix.ip', lines);
-    _port.toTxRep('$prefix.port', lines);
-    _numFailures.toTxRep('$prefix.numFailures', lines);
-  }
-
-  static XdrPeerAddress fromTxRep(Map<String, String> map, String prefix) {
-    XdrPeerAddressIp ip = XdrPeerAddressIp.fromTxRep(map, '$prefix.ip');
-    XdrUint32 port = XdrUint32.fromTxRep(map, '$prefix.port');
-    XdrUint32 numFailures = XdrUint32.fromTxRep(map, '$prefix.numFailures');
-    return XdrPeerAddress(ip, port, numFailures);
-  }
 }

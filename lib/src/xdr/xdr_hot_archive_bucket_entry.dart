@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_bucket_metadata.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hot_archive_bucket_entry_type.dart';
@@ -104,53 +103,5 @@ class XdrHotArchiveBucketEntry {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHotArchiveBucketEntry.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.type: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_ARCHIVED:
-        _archivedEntry!.toTxRep('$prefix.archivedEntry', lines);
-        break;
-      case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_LIVE:
-        _key!.toTxRep('$prefix.key', lines);
-        break;
-      case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_METAENTRY:
-        _metaEntry!.toTxRep('$prefix.metaEntry', lines);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrHotArchiveBucketEntry fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrHotArchiveBucketEntryType disc =
-        XdrHotArchiveBucketEntryType.fromTxRepName(
-          TxRepHelper.getValue(map, '$prefix.type') ?? '',
-        );
-    XdrHotArchiveBucketEntry result = XdrHotArchiveBucketEntry(disc);
-    switch (result.discriminant) {
-      case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_ARCHIVED:
-        result._archivedEntry = XdrLedgerEntry.fromTxRep(
-          map,
-          '$prefix.archivedEntry',
-        );
-        break;
-      case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_LIVE:
-        result._key = XdrLedgerKey.fromTxRep(map, '$prefix.key');
-        break;
-      case XdrHotArchiveBucketEntryType.HOT_ARCHIVE_METAENTRY:
-        result._metaEntry = XdrBucketMetadata.fromTxRep(
-          map,
-          '$prefix.metaEntry',
-        );
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

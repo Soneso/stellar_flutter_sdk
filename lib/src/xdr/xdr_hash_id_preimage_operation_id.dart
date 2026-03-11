@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sequence_number.dart';
@@ -54,28 +53,5 @@ class XdrHashIDPreimageOperationID {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHashIDPreimageOperationID.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add(
-      '$prefix.sourceAccount: ${TxRepHelper.formatAccountId(_sourceAccount)}',
-    );
-    _seqNum.toTxRep('$prefix.seqNum', lines);
-    _opNum.toTxRep('$prefix.opNum', lines);
-  }
-
-  static XdrHashIDPreimageOperationID fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrAccountID sourceAccount = TxRepHelper.parseAccountId(
-      TxRepHelper.getValue(map, '$prefix.sourceAccount') ?? '',
-    );
-    XdrSequenceNumber seqNum = XdrSequenceNumber.fromTxRep(
-      map,
-      '$prefix.seqNum',
-    );
-    XdrUint32 opNum = XdrUint32.fromTxRep(map, '$prefix.opNum');
-    return XdrHashIDPreimageOperationID(sourceAccount, seqNum, opNum);
   }
 }

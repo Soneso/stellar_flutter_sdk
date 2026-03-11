@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_account_entry.dart';
 import 'xdr_claimable_balance_entry.dart';
 import 'xdr_config_setting_entry.dart';
@@ -211,103 +210,5 @@ class XdrLedgerEntryData {
   static XdrLedgerEntryData fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntryData.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.type: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrLedgerEntryType.ACCOUNT:
-        _account!.toTxRep('$prefix.account', lines);
-        break;
-      case XdrLedgerEntryType.TRUSTLINE:
-        _trustLine!.toTxRep('$prefix.trustLine', lines);
-        break;
-      case XdrLedgerEntryType.OFFER:
-        _offer!.toTxRep('$prefix.offer', lines);
-        break;
-      case XdrLedgerEntryType.DATA:
-        _data!.toTxRep('$prefix.data', lines);
-        break;
-      case XdrLedgerEntryType.CLAIMABLE_BALANCE:
-        _claimableBalance!.toTxRep('$prefix.claimableBalance', lines);
-        break;
-      case XdrLedgerEntryType.LIQUIDITY_POOL:
-        _liquidityPool!.toTxRep('$prefix.liquidityPool', lines);
-        break;
-      case XdrLedgerEntryType.CONTRACT_DATA:
-        _contractData!.toTxRep('$prefix.contractData', lines);
-        break;
-      case XdrLedgerEntryType.CONTRACT_CODE:
-        _contractCode!.toTxRep('$prefix.contractCode', lines);
-        break;
-      case XdrLedgerEntryType.CONFIG_SETTING:
-        _configSetting!.toTxRep('$prefix.configSetting', lines);
-        break;
-      case XdrLedgerEntryType.TTL:
-        _ttl!.toTxRep('$prefix.ttl', lines);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrLedgerEntryData fromTxRep(Map<String, String> map, String prefix) {
-    XdrLedgerEntryType disc = XdrLedgerEntryType.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.type') ?? '',
-    );
-    XdrLedgerEntryData result = XdrLedgerEntryData(disc);
-    switch (result.discriminant) {
-      case XdrLedgerEntryType.ACCOUNT:
-        result._account = XdrAccountEntry.fromTxRep(map, '$prefix.account');
-        break;
-      case XdrLedgerEntryType.TRUSTLINE:
-        result._trustLine = XdrTrustLineEntry.fromTxRep(
-          map,
-          '$prefix.trustLine',
-        );
-        break;
-      case XdrLedgerEntryType.OFFER:
-        result._offer = XdrOfferEntry.fromTxRep(map, '$prefix.offer');
-        break;
-      case XdrLedgerEntryType.DATA:
-        result._data = XdrDataEntry.fromTxRep(map, '$prefix.data');
-        break;
-      case XdrLedgerEntryType.CLAIMABLE_BALANCE:
-        result._claimableBalance = XdrClaimableBalanceEntry.fromTxRep(
-          map,
-          '$prefix.claimableBalance',
-        );
-        break;
-      case XdrLedgerEntryType.LIQUIDITY_POOL:
-        result._liquidityPool = XdrLiquidityPoolEntry.fromTxRep(
-          map,
-          '$prefix.liquidityPool',
-        );
-        break;
-      case XdrLedgerEntryType.CONTRACT_DATA:
-        result._contractData = XdrContractDataEntry.fromTxRep(
-          map,
-          '$prefix.contractData',
-        );
-        break;
-      case XdrLedgerEntryType.CONTRACT_CODE:
-        result._contractCode = XdrContractCodeEntry.fromTxRep(
-          map,
-          '$prefix.contractCode',
-        );
-        break;
-      case XdrLedgerEntryType.CONFIG_SETTING:
-        result._configSetting = XdrConfigSettingEntry.fromTxRep(
-          map,
-          '$prefix.configSetting',
-        );
-        break;
-      case XdrLedgerEntryType.TTL:
-        result._ttl = XdrTTLEntry.fromTxRep(map, '$prefix.ttl');
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

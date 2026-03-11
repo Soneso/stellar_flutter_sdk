@@ -38,16 +38,4 @@ class XdrFloodAdvert {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFloodAdvert.decode(XdrDataInputStream(bytes));
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _txHashes.toTxRep('$prefix.txHashes', lines);
-  }
-
-  static XdrFloodAdvert fromTxRep(Map<String, String> map, String prefix) {
-    XdrTxAdvertVector txHashes = XdrTxAdvertVector.fromTxRep(
-      map,
-      '$prefix.txHashes',
-    );
-    return XdrFloodAdvert(txHashes);
-  }
 }

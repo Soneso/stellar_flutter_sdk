@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrTrustLineFlags {
@@ -57,45 +56,5 @@ class XdrTrustLineFlags {
   static XdrTrustLineFlags fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTrustLineFlags.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 1:
-        return 'AUTHORIZED_FLAG';
-      case 2:
-        return 'AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG';
-      case 4:
-        return 'TRUSTLINE_CLAWBACK_ENABLED_FLAG';
-      default:
-        return 'XdrTrustLineFlags#$_value';
-    }
-  }
-
-  static XdrTrustLineFlags fromTxRep(Map<String, String> map, String prefix) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrTrustLineFlags fromTxRepName(String name) {
-    switch (name) {
-      case 'AUTHORIZED_FLAG':
-        return AUTHORIZED_FLAG;
-      case 'AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG':
-        return AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG;
-      case 'TRUSTLINE_CLAWBACK_ENABLED_FLAG':
-        return TRUSTLINE_CLAWBACK_ENABLED_FLAG;
-      default:
-        if (name.startsWith('XdrTrustLineFlags#')) {
-          int? val = int.tryParse(name.substring('XdrTrustLineFlags#'.length));
-          if (val != null) return XdrTrustLineFlags._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

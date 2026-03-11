@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_node_id.dart';
 import 'xdr_uint32.dart';
@@ -69,36 +68,5 @@ class XdrSCPQuorumSet {
   static XdrSCPQuorumSet fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPQuorumSet.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _threshold.toTxRep('$prefix.threshold', lines);
-    lines.add('$prefix.validators.len: ${_validators.length}');
-    for (int i = 0; i < _validators.length; i++) {
-      _validators[i].toTxRep('$prefix.validators[$i]', lines);
-    }
-    lines.add('$prefix.innerSets.len: ${_innerSets.length}');
-    for (int i = 0; i < _innerSets.length; i++) {
-      _innerSets[i].toTxRep('$prefix.innerSets[$i]', lines);
-    }
-  }
-
-  static XdrSCPQuorumSet fromTxRep(Map<String, String> map, String prefix) {
-    XdrUint32 threshold = XdrUint32.fromTxRep(map, '$prefix.threshold');
-    int validatorsLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.validators.len') ?? '0',
-    );
-    List<XdrNodeID> validators = [];
-    for (int i = 0; i < validatorsLen; i++) {
-      validators.add(XdrNodeID.fromTxRep(map, '$prefix.validators[$i]'));
-    }
-    int innerSetsLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.innerSets.len') ?? '0',
-    );
-    List<XdrSCPQuorumSet> innerSets = [];
-    for (int i = 0; i < innerSetsLen; i++) {
-      innerSets.add(XdrSCPQuorumSet.fromTxRep(map, '$prefix.innerSets[$i]'));
-    }
-    return XdrSCPQuorumSet(threshold, validators, innerSets);
   }
 }

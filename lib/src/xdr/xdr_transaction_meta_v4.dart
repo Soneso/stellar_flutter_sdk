@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_diagnostic_event.dart';
 import 'xdr_extension_point.dart';
@@ -152,89 +151,5 @@ class XdrTransactionMetaV4 {
   static XdrTransactionMetaV4 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionMetaV4.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ext.toTxRep('$prefix.ext', lines);
-    _txChangesBefore.toTxRep('$prefix.txChangesBefore', lines);
-    lines.add('$prefix.operations.len: ${_operations.length}');
-    for (int i = 0; i < _operations.length; i++) {
-      _operations[i].toTxRep('$prefix.operations[$i]', lines);
-    }
-    _txChangesAfter.toTxRep('$prefix.txChangesAfter', lines);
-    if (_sorobanMeta != null) {
-      lines.add('$prefix.sorobanMeta._present: true');
-      _sorobanMeta!.toTxRep('$prefix.sorobanMeta', lines);
-    } else {
-      lines.add('$prefix.sorobanMeta._present: false');
-    }
-    lines.add('$prefix.events.len: ${_events.length}');
-    for (int i = 0; i < _events.length; i++) {
-      _events[i].toTxRep('$prefix.events[$i]', lines);
-    }
-    lines.add('$prefix.diagnosticEvents.len: ${_diagnosticEvents.length}');
-    for (int i = 0; i < _diagnosticEvents.length; i++) {
-      _diagnosticEvents[i].toTxRep('$prefix.diagnosticEvents[$i]', lines);
-    }
-  }
-
-  static XdrTransactionMetaV4 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
-    XdrLedgerEntryChanges txChangesBefore = XdrLedgerEntryChanges.fromTxRep(
-      map,
-      '$prefix.txChangesBefore',
-    );
-    int operationsLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.operations.len') ?? '0',
-    );
-    List<XdrOperationMetaV2> operations = [];
-    for (int i = 0; i < operationsLen; i++) {
-      operations.add(
-        XdrOperationMetaV2.fromTxRep(map, '$prefix.operations[$i]'),
-      );
-    }
-    XdrLedgerEntryChanges txChangesAfter = XdrLedgerEntryChanges.fromTxRep(
-      map,
-      '$prefix.txChangesAfter',
-    );
-    XdrSorobanTransactionMetaV2? sorobanMeta;
-    String? sorobanMetaPresent = TxRepHelper.getValue(
-      map,
-      '$prefix.sorobanMeta._present',
-    );
-    if (sorobanMetaPresent != null && sorobanMetaPresent == 'true') {
-      sorobanMeta = XdrSorobanTransactionMetaV2.fromTxRep(
-        map,
-        '$prefix.sorobanMeta',
-      );
-    }
-    int eventsLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.events.len') ?? '0',
-    );
-    List<XdrTransactionEvent> events = [];
-    for (int i = 0; i < eventsLen; i++) {
-      events.add(XdrTransactionEvent.fromTxRep(map, '$prefix.events[$i]'));
-    }
-    int diagnosticEventsLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.diagnosticEvents.len') ?? '0',
-    );
-    List<XdrDiagnosticEvent> diagnosticEvents = [];
-    for (int i = 0; i < diagnosticEventsLen; i++) {
-      diagnosticEvents.add(
-        XdrDiagnosticEvent.fromTxRep(map, '$prefix.diagnosticEvents[$i]'),
-      );
-    }
-    return XdrTransactionMetaV4(
-      ext,
-      txChangesBefore,
-      operations,
-      txChangesAfter,
-      sorobanMeta,
-      events,
-      diagnosticEvents,
-    );
   }
 }

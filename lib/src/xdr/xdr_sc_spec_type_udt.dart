@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSCSpecTypeUDT {
@@ -37,16 +36,5 @@ class XdrSCSpecTypeUDT {
   static XdrSCSpecTypeUDT fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecTypeUDT.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.name: ${TxRepHelper.escapeString(_name)}');
-  }
-
-  static XdrSCSpecTypeUDT fromTxRep(Map<String, String> map, String prefix) {
-    String name = TxRepHelper.unescapeString(
-      TxRepHelper.getValue(map, '$prefix.name') ?? '',
-    );
-    return XdrSCSpecTypeUDT(name);
   }
 }

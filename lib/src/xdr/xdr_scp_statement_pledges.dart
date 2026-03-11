@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_scp_nomination.dart';
 import 'xdr_scp_statement_confirm.dart';
@@ -123,61 +122,5 @@ class XdrSCPStatementPledges {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPStatementPledges.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.type: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrSCPStatementType.SCP_ST_PREPARE:
-        _prepare!.toTxRep('$prefix.prepare', lines);
-        break;
-      case XdrSCPStatementType.SCP_ST_CONFIRM:
-        _confirm!.toTxRep('$prefix.confirm', lines);
-        break;
-      case XdrSCPStatementType.SCP_ST_EXTERNALIZE:
-        _externalize!.toTxRep('$prefix.externalize', lines);
-        break;
-      case XdrSCPStatementType.SCP_ST_NOMINATE:
-        _nominate!.toTxRep('$prefix.nominate', lines);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrSCPStatementPledges fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrSCPStatementType disc = XdrSCPStatementType.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.type') ?? '',
-    );
-    XdrSCPStatementPledges result = XdrSCPStatementPledges(disc);
-    switch (result.discriminant) {
-      case XdrSCPStatementType.SCP_ST_PREPARE:
-        result._prepare = XdrSCPStatementPrepare.fromTxRep(
-          map,
-          '$prefix.prepare',
-        );
-        break;
-      case XdrSCPStatementType.SCP_ST_CONFIRM:
-        result._confirm = XdrSCPStatementConfirm.fromTxRep(
-          map,
-          '$prefix.confirm',
-        );
-        break;
-      case XdrSCPStatementType.SCP_ST_EXTERNALIZE:
-        result._externalize = XdrSCPStatementExternalize.fromTxRep(
-          map,
-          '$prefix.externalize',
-        );
-        break;
-      case XdrSCPStatementType.SCP_ST_NOMINATE:
-        result._nominate = XdrSCPNomination.fromTxRep(map, '$prefix.nominate');
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

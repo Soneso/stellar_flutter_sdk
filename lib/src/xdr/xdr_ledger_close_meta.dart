@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger_close_meta_v0.dart';
 import 'xdr_ledger_close_meta_v1.dart';
@@ -92,43 +91,5 @@ class XdrLedgerCloseMeta {
   static XdrLedgerCloseMeta fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerCloseMeta.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.v: $discriminant');
-    switch (discriminant) {
-      case 0:
-        _v0!.toTxRep('$prefix.v0', lines);
-        break;
-      case 1:
-        _v1!.toTxRep('$prefix.v1', lines);
-        break;
-      case 2:
-        _v2!.toTxRep('$prefix.v2', lines);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrLedgerCloseMeta fromTxRep(Map<String, String> map, String prefix) {
-    int disc = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.v') ?? '0',
-    );
-    XdrLedgerCloseMeta result = XdrLedgerCloseMeta(disc);
-    switch (result.discriminant) {
-      case 0:
-        result._v0 = XdrLedgerCloseMetaV0.fromTxRep(map, '$prefix.v0');
-        break;
-      case 1:
-        result._v1 = XdrLedgerCloseMetaV1.fromTxRep(map, '$prefix.v1');
-        break;
-      case 2:
-        result._v2 = XdrLedgerCloseMetaV2.fromTxRep(map, '$prefix.v2');
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

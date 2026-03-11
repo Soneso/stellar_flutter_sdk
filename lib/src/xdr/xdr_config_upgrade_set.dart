@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_config_setting_entry.dart';
 import 'xdr_data_io.dart';
 
@@ -51,25 +50,5 @@ class XdrConfigUpgradeSet {
   static XdrConfigUpgradeSet fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigUpgradeSet.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.updatedEntry.len: ${_updatedEntry.length}');
-    for (int i = 0; i < _updatedEntry.length; i++) {
-      _updatedEntry[i].toTxRep('$prefix.updatedEntry[$i]', lines);
-    }
-  }
-
-  static XdrConfigUpgradeSet fromTxRep(Map<String, String> map, String prefix) {
-    int updatedEntryLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.updatedEntry.len') ?? '0',
-    );
-    List<XdrConfigSettingEntry> updatedEntry = [];
-    for (int i = 0; i < updatedEntryLen; i++) {
-      updatedEntry.add(
-        XdrConfigSettingEntry.fromTxRep(map, '$prefix.updatedEntry[$i]'),
-      );
-    }
-    return XdrConfigUpgradeSet(updatedEntry);
   }
 }

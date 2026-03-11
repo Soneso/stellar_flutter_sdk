@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_val.dart';
 
@@ -52,25 +51,5 @@ class XdrContractEventV0 {
   static XdrContractEventV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractEventV0.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.topics.len: ${_topics.length}');
-    for (int i = 0; i < _topics.length; i++) {
-      _topics[i].toTxRep('$prefix.topics[$i]', lines);
-    }
-    _data.toTxRep('$prefix.data', lines);
-  }
-
-  static XdrContractEventV0 fromTxRep(Map<String, String> map, String prefix) {
-    int topicsLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.topics.len') ?? '0',
-    );
-    List<XdrSCVal> topics = [];
-    for (int i = 0; i < topicsLen; i++) {
-      topics.add(XdrSCVal.fromTxRep(map, '$prefix.topics[$i]'));
-    }
-    XdrSCVal data = XdrSCVal.fromTxRep(map, '$prefix.data');
-    return XdrContractEventV0(topics, data);
   }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_node_id.dart';
 import 'xdr_uint64.dart';
@@ -163,96 +162,5 @@ class XdrPeerStats {
   static XdrPeerStats fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPeerStats.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _id.toTxRep('$prefix.id', lines);
-    lines.add('$prefix.versionStr: ${TxRepHelper.escapeString(_versionStr)}');
-    _messagesRead.toTxRep('$prefix.messagesRead', lines);
-    _messagesWritten.toTxRep('$prefix.messagesWritten', lines);
-    _bytesRead.toTxRep('$prefix.bytesRead', lines);
-    _bytesWritten.toTxRep('$prefix.bytesWritten', lines);
-    _secondsConnected.toTxRep('$prefix.secondsConnected', lines);
-    _uniqueFloodBytesRecv.toTxRep('$prefix.uniqueFloodBytesRecv', lines);
-    _duplicateFloodBytesRecv.toTxRep('$prefix.duplicateFloodBytesRecv', lines);
-    _uniqueFetchBytesRecv.toTxRep('$prefix.uniqueFetchBytesRecv', lines);
-    _duplicateFetchBytesRecv.toTxRep('$prefix.duplicateFetchBytesRecv', lines);
-    _uniqueFloodMessageRecv.toTxRep('$prefix.uniqueFloodMessageRecv', lines);
-    _duplicateFloodMessageRecv.toTxRep(
-      '$prefix.duplicateFloodMessageRecv',
-      lines,
-    );
-    _uniqueFetchMessageRecv.toTxRep('$prefix.uniqueFetchMessageRecv', lines);
-    _duplicateFetchMessageRecv.toTxRep(
-      '$prefix.duplicateFetchMessageRecv',
-      lines,
-    );
-  }
-
-  static XdrPeerStats fromTxRep(Map<String, String> map, String prefix) {
-    XdrNodeID id = XdrNodeID.fromTxRep(map, '$prefix.id');
-    String versionStr = TxRepHelper.unescapeString(
-      TxRepHelper.getValue(map, '$prefix.versionStr') ?? '',
-    );
-    XdrUint64 messagesRead = XdrUint64.fromTxRep(map, '$prefix.messagesRead');
-    XdrUint64 messagesWritten = XdrUint64.fromTxRep(
-      map,
-      '$prefix.messagesWritten',
-    );
-    XdrUint64 bytesRead = XdrUint64.fromTxRep(map, '$prefix.bytesRead');
-    XdrUint64 bytesWritten = XdrUint64.fromTxRep(map, '$prefix.bytesWritten');
-    XdrUint64 secondsConnected = XdrUint64.fromTxRep(
-      map,
-      '$prefix.secondsConnected',
-    );
-    XdrUint64 uniqueFloodBytesRecv = XdrUint64.fromTxRep(
-      map,
-      '$prefix.uniqueFloodBytesRecv',
-    );
-    XdrUint64 duplicateFloodBytesRecv = XdrUint64.fromTxRep(
-      map,
-      '$prefix.duplicateFloodBytesRecv',
-    );
-    XdrUint64 uniqueFetchBytesRecv = XdrUint64.fromTxRep(
-      map,
-      '$prefix.uniqueFetchBytesRecv',
-    );
-    XdrUint64 duplicateFetchBytesRecv = XdrUint64.fromTxRep(
-      map,
-      '$prefix.duplicateFetchBytesRecv',
-    );
-    XdrUint64 uniqueFloodMessageRecv = XdrUint64.fromTxRep(
-      map,
-      '$prefix.uniqueFloodMessageRecv',
-    );
-    XdrUint64 duplicateFloodMessageRecv = XdrUint64.fromTxRep(
-      map,
-      '$prefix.duplicateFloodMessageRecv',
-    );
-    XdrUint64 uniqueFetchMessageRecv = XdrUint64.fromTxRep(
-      map,
-      '$prefix.uniqueFetchMessageRecv',
-    );
-    XdrUint64 duplicateFetchMessageRecv = XdrUint64.fromTxRep(
-      map,
-      '$prefix.duplicateFetchMessageRecv',
-    );
-    return XdrPeerStats(
-      id,
-      versionStr,
-      messagesRead,
-      messagesWritten,
-      bytesRead,
-      bytesWritten,
-      secondsConnected,
-      uniqueFloodBytesRecv,
-      duplicateFloodBytesRecv,
-      uniqueFetchBytesRecv,
-      duplicateFetchBytesRecv,
-      uniqueFloodMessageRecv,
-      duplicateFloodMessageRecv,
-      uniqueFetchMessageRecv,
-      duplicateFetchMessageRecv,
-    );
   }
 }

@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrHmacSha256Mac {
@@ -37,16 +36,5 @@ class XdrHmacSha256Mac {
   static XdrHmacSha256Mac fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHmacSha256Mac.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.mac: ${TxRepHelper.bytesToHex(_mac)}');
-  }
-
-  static XdrHmacSha256Mac fromTxRep(Map<String, String> map, String prefix) {
-    Uint8List mac = TxRepHelper.hexToBytes(
-      TxRepHelper.getValue(map, '$prefix.mac') ?? '',
-    );
-    return XdrHmacSha256Mac(mac);
   }
 }

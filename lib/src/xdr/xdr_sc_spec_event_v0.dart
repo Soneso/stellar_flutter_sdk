@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_spec_event_data_format.dart';
 import 'xdr_sc_spec_event_param_v0.dart';
@@ -96,57 +95,5 @@ class XdrSCSpecEventV0 {
   static XdrSCSpecEventV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecEventV0.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.doc: ${TxRepHelper.escapeString(_doc)}');
-    lines.add('$prefix.lib: ${TxRepHelper.escapeString(_lib)}');
-    lines.add('$prefix.name: ${TxRepHelper.escapeString(_name)}');
-    lines.add('$prefix.prefixTopics.len: ${_prefixTopics.length}');
-    for (int i = 0; i < _prefixTopics.length; i++) {
-      lines.add(
-        '$prefix.prefixTopics[$i]: ${TxRepHelper.escapeString(_prefixTopics[i])}',
-      );
-    }
-    lines.add('$prefix.params.len: ${_params.length}');
-    for (int i = 0; i < _params.length; i++) {
-      _params[i].toTxRep('$prefix.params[$i]', lines);
-    }
-    _dataFormat.toTxRep('$prefix.dataFormat', lines);
-  }
-
-  static XdrSCSpecEventV0 fromTxRep(Map<String, String> map, String prefix) {
-    String doc = TxRepHelper.unescapeString(
-      TxRepHelper.getValue(map, '$prefix.doc') ?? '',
-    );
-    String lib = TxRepHelper.unescapeString(
-      TxRepHelper.getValue(map, '$prefix.lib') ?? '',
-    );
-    String name = TxRepHelper.unescapeString(
-      TxRepHelper.getValue(map, '$prefix.name') ?? '',
-    );
-    int prefixTopicsLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.prefixTopics.len') ?? '0',
-    );
-    List<String> prefixTopics = [];
-    for (int i = 0; i < prefixTopicsLen; i++) {
-      prefixTopics.add(
-        TxRepHelper.unescapeString(
-          TxRepHelper.getValue(map, '$prefix.prefixTopics[$i]') ?? '',
-        ),
-      );
-    }
-    int paramsLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.params.len') ?? '0',
-    );
-    List<XdrSCSpecEventParamV0> params = [];
-    for (int i = 0; i < paramsLen; i++) {
-      params.add(XdrSCSpecEventParamV0.fromTxRep(map, '$prefix.params[$i]'));
-    }
-    XdrSCSpecEventDataFormat dataFormat = XdrSCSpecEventDataFormat.fromTxRep(
-      map,
-      '$prefix.dataFormat',
-    );
-    return XdrSCSpecEventV0(doc, lib, name, prefixTopics, params, dataFormat);
   }
 }

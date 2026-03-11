@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrAllowTrustResultCode {
@@ -79,66 +78,5 @@ class XdrAllowTrustResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAllowTrustResultCode.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'ALLOW_TRUST_SUCCESS';
-      case -1:
-        return 'ALLOW_TRUST_MALFORMED';
-      case -2:
-        return 'ALLOW_TRUST_NO_TRUST_LINE';
-      case -3:
-        return 'ALLOW_TRUST_TRUST_NOT_REQUIRED';
-      case -4:
-        return 'ALLOW_TRUST_CANT_REVOKE';
-      case -5:
-        return 'ALLOW_TRUST_SELF_NOT_ALLOWED';
-      case -6:
-        return 'ALLOW_TRUST_LOW_RESERVE';
-      default:
-        return 'XdrAllowTrustResultCode#$_value';
-    }
-  }
-
-  static XdrAllowTrustResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrAllowTrustResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'ALLOW_TRUST_SUCCESS':
-        return ALLOW_TRUST_SUCCESS;
-      case 'ALLOW_TRUST_MALFORMED':
-        return ALLOW_TRUST_MALFORMED;
-      case 'ALLOW_TRUST_NO_TRUST_LINE':
-        return ALLOW_TRUST_NO_TRUST_LINE;
-      case 'ALLOW_TRUST_TRUST_NOT_REQUIRED':
-        return ALLOW_TRUST_TRUST_NOT_REQUIRED;
-      case 'ALLOW_TRUST_CANT_REVOKE':
-        return ALLOW_TRUST_CANT_REVOKE;
-      case 'ALLOW_TRUST_SELF_NOT_ALLOWED':
-        return ALLOW_TRUST_SELF_NOT_ALLOWED;
-      case 'ALLOW_TRUST_LOW_RESERVE':
-        return ALLOW_TRUST_LOW_RESERVE;
-      default:
-        if (name.startsWith('XdrAllowTrustResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrAllowTrustResultCode#'.length),
-          );
-          if (val != null) return XdrAllowTrustResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

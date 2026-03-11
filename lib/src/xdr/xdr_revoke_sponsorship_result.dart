@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_revoke_sponsorship_result_code.dart';
 
@@ -61,45 +60,5 @@ class XdrRevokeSponsorshipResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrRevokeSponsorshipResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.code: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_SUCCESS:
-        break;
-      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_DOES_NOT_EXIST:
-      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_NOT_SPONSOR:
-      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_LOW_RESERVE:
-      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE:
-      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_MALFORMED:
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrRevokeSponsorshipResult fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrRevokeSponsorshipResultCode disc =
-        XdrRevokeSponsorshipResultCode.fromTxRepName(
-          TxRepHelper.getValue(map, '$prefix.code') ?? '',
-        );
-    XdrRevokeSponsorshipResult result = XdrRevokeSponsorshipResult(disc);
-    switch (result.discriminant) {
-      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_SUCCESS:
-        break;
-      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_DOES_NOT_EXIST:
-      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_NOT_SPONSOR:
-      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_LOW_RESERVE:
-      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE:
-      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_MALFORMED:
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

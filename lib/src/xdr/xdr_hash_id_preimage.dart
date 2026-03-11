@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_envelope_type.dart';
 import 'xdr_hash_id_preimage_contract_id.dart';
@@ -128,62 +127,5 @@ class XdrHashIDPreimage {
   static XdrHashIDPreimage fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHashIDPreimage.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.type: ${discriminant.enumName()}');
-    switch (discriminant) {
-      case XdrEnvelopeType.ENVELOPE_TYPE_OP_ID:
-        _operationID!.toTxRep('$prefix.operationID', lines);
-        break;
-      case XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID:
-        _revokeID!.toTxRep('$prefix.revokeID', lines);
-        break;
-      case XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_ID:
-        _contractID!.toTxRep('$prefix.contractID', lines);
-        break;
-      case XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION:
-        _sorobanAuthorization!.toTxRep('$prefix.sorobanAuthorization', lines);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static XdrHashIDPreimage fromTxRep(Map<String, String> map, String prefix) {
-    XdrEnvelopeType disc = XdrEnvelopeType.fromTxRepName(
-      TxRepHelper.getValue(map, '$prefix.type') ?? '',
-    );
-    XdrHashIDPreimage result = XdrHashIDPreimage(disc);
-    switch (result.discriminant) {
-      case XdrEnvelopeType.ENVELOPE_TYPE_OP_ID:
-        result._operationID = XdrHashIDPreimageOperationID.fromTxRep(
-          map,
-          '$prefix.operationID',
-        );
-        break;
-      case XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID:
-        result._revokeID = XdrHashIDPreimageRevokeID.fromTxRep(
-          map,
-          '$prefix.revokeID',
-        );
-        break;
-      case XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_ID:
-        result._contractID = XdrHashIDPreimageContractID.fromTxRep(
-          map,
-          '$prefix.contractID',
-        );
-        break;
-      case XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION:
-        result._sorobanAuthorization =
-            XdrHashIDPreimageSorobanAuthorization.fromTxRep(
-              map,
-              '$prefix.sorobanAuthorization',
-            );
-        break;
-      default:
-        break;
-    }
-    return result;
   }
 }

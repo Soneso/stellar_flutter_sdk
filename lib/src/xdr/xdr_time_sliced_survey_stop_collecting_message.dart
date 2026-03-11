@@ -75,24 +75,4 @@ class XdrTimeSlicedSurveyStopCollectingMessage {
       XdrDataInputStream(bytes),
     );
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _surveyorID.toTxRep('$prefix.surveyorID', lines);
-    _nonce.toTxRep('$prefix.nonce', lines);
-    _ledgerNum.toTxRep('$prefix.ledgerNum', lines);
-  }
-
-  static XdrTimeSlicedSurveyStopCollectingMessage fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrNodeID surveyorID = XdrNodeID.fromTxRep(map, '$prefix.surveyorID');
-    XdrUint32 nonce = XdrUint32.fromTxRep(map, '$prefix.nonce');
-    XdrUint32 ledgerNum = XdrUint32.fromTxRep(map, '$prefix.ledgerNum');
-    return XdrTimeSlicedSurveyStopCollectingMessage(
-      surveyorID,
-      nonce,
-      ledgerNum,
-    );
-  }
 }

@@ -73,30 +73,4 @@ class XdrConfigSettingContractBandwidthV0 {
       XdrDataInputStream(bytes),
     );
   }
-
-  void toTxRep(String prefix, List<String> lines) {
-    _ledgerMaxTxsSizeBytes.toTxRep('$prefix.ledgerMaxTxsSizeBytes', lines);
-    _txMaxSizeBytes.toTxRep('$prefix.txMaxSizeBytes', lines);
-    _feeTxSize1KB.toTxRep('$prefix.feeTxSize1KB', lines);
-  }
-
-  static XdrConfigSettingContractBandwidthV0 fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    XdrUint32 ledgerMaxTxsSizeBytes = XdrUint32.fromTxRep(
-      map,
-      '$prefix.ledgerMaxTxsSizeBytes',
-    );
-    XdrUint32 txMaxSizeBytes = XdrUint32.fromTxRep(
-      map,
-      '$prefix.txMaxSizeBytes',
-    );
-    XdrInt64 feeTxSize1KB = XdrInt64.fromTxRep(map, '$prefix.feeTxSize1KB');
-    return XdrConfigSettingContractBandwidthV0(
-      ledgerMaxTxsSizeBytes,
-      txMaxSizeBytes,
-      feeTxSize1KB,
-    );
-  }
 }

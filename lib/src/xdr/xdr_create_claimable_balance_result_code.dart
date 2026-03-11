@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrCreateClaimableBalanceResultCode {
@@ -77,63 +76,5 @@ class XdrCreateClaimableBalanceResultCode {
     return XdrCreateClaimableBalanceResultCode.decode(
       XdrDataInputStream(bytes),
     );
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: ${enumName()}');
-  }
-
-  String enumName() {
-    switch (_value) {
-      case 0:
-        return 'CREATE_CLAIMABLE_BALANCE_SUCCESS';
-      case -1:
-        return 'CREATE_CLAIMABLE_BALANCE_MALFORMED';
-      case -2:
-        return 'CREATE_CLAIMABLE_BALANCE_LOW_RESERVE';
-      case -3:
-        return 'CREATE_CLAIMABLE_BALANCE_NO_TRUST';
-      case -4:
-        return 'CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED';
-      case -5:
-        return 'CREATE_CLAIMABLE_BALANCE_UNDERFUNDED';
-      default:
-        return 'XdrCreateClaimableBalanceResultCode#$_value';
-    }
-  }
-
-  static XdrCreateClaimableBalanceResultCode fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    String? raw = TxRepHelper.getValue(map, prefix);
-    if (raw == null) throw Exception('missing $prefix');
-    return fromTxRepName(raw);
-  }
-
-  static XdrCreateClaimableBalanceResultCode fromTxRepName(String name) {
-    switch (name) {
-      case 'CREATE_CLAIMABLE_BALANCE_SUCCESS':
-        return CREATE_CLAIMABLE_BALANCE_SUCCESS;
-      case 'CREATE_CLAIMABLE_BALANCE_MALFORMED':
-        return CREATE_CLAIMABLE_BALANCE_MALFORMED;
-      case 'CREATE_CLAIMABLE_BALANCE_LOW_RESERVE':
-        return CREATE_CLAIMABLE_BALANCE_LOW_RESERVE;
-      case 'CREATE_CLAIMABLE_BALANCE_NO_TRUST':
-        return CREATE_CLAIMABLE_BALANCE_NO_TRUST;
-      case 'CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED':
-        return CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED;
-      case 'CREATE_CLAIMABLE_BALANCE_UNDERFUNDED':
-        return CREATE_CLAIMABLE_BALANCE_UNDERFUNDED;
-      default:
-        if (name.startsWith('XdrCreateClaimableBalanceResultCode#')) {
-          int? val = int.tryParse(
-            name.substring('XdrCreateClaimableBalanceResultCode#'.length),
-          );
-          if (val != null)
-            return XdrCreateClaimableBalanceResultCode._internal(val);
-        }
-        throw Exception('Unknown enum value: $name');
-    }
   }
 }

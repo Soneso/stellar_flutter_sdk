@@ -6,7 +6,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'txrep_helper.dart';
 import 'xdr_claim_atom.dart';
 import 'xdr_data_io.dart';
 import 'xdr_manage_offer_success_result_offer.dart';
@@ -63,31 +62,5 @@ class XdrManageOfferSuccessResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrManageOfferSuccessResult.decode(XdrDataInputStream(bytes));
-  }
-
-  void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix.offersClaimed.len: ${_offersClaimed.length}');
-    for (int i = 0; i < _offersClaimed.length; i++) {
-      _offersClaimed[i].toTxRep('$prefix.offersClaimed[$i]', lines);
-    }
-    _offer.toTxRep('$prefix.offer', lines);
-  }
-
-  static XdrManageOfferSuccessResult fromTxRep(
-    Map<String, String> map,
-    String prefix,
-  ) {
-    int offersClaimedLen = TxRepHelper.parseInt(
-      TxRepHelper.getValue(map, '$prefix.offersClaimed.len') ?? '0',
-    );
-    List<XdrClaimAtom> offersClaimed = [];
-    for (int i = 0; i < offersClaimedLen; i++) {
-      offersClaimed.add(
-        XdrClaimAtom.fromTxRep(map, '$prefix.offersClaimed[$i]'),
-      );
-    }
-    XdrManageOfferSuccessResultOffer offer =
-        XdrManageOfferSuccessResultOffer.fromTxRep(map, '$prefix.offer');
-    return XdrManageOfferSuccessResult(offersClaimed, offer);
   }
 }
