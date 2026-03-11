@@ -49,5 +49,6 @@ jobs:
 
             This is a Stellar blockchain SDK written in Dart/Flutter.
             Focus on substantive issues. Do not comment on style, formatting, or minor nitpicks.
-          claude_args: "--model claude-sonnet-4-6 --max-turns 15"
+            Files in lib/src/xdr/ and test/unit/xdr/generated/ are auto-generated — skip reading them individually and focus your review on hand-written code changes.
+          claude_args: "--model claude-sonnet-4-6 --max-turns 30"
           trigger_phrase: "@claude"
