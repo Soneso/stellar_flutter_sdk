@@ -1,8 +1,6 @@
 name: Claude Code Review
 
 on:
-  pull_request:
-    types: [opened, synchronize]
   issue_comment:
     types: [created]
   pull_request_review_comment:
@@ -18,9 +16,8 @@ jobs:
   review:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Run on PR events, or on @claude mentions from org members/collaborators only
+    # Only respond to @claude mentions from org members/collaborators on PRs
     if: >
-      github.event_name == 'pull_request' ||
       (github.event_name == 'issue_comment' &&
        contains(github.event.comment.body, '@claude') &&
        github.event.issue.pull_request &&
