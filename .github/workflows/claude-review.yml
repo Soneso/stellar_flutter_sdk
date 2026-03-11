@@ -9,26 +9,25 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  issues: write
   id-token: write
+
+concurrency:
+  group: claude-review-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   review:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Only respond to @claude mentions from org members/collaborators on PRs
+    # Only respond to @claude mentions from the repo owner on PRs
     if: >
       (github.event_name == 'issue_comment' &&
        contains(github.event.comment.body, '@claude') &&
        github.event.issue.pull_request &&
-       (github.event.comment.author_association == 'OWNER' ||
-        github.event.comment.author_association == 'MEMBER' ||
-        github.event.comment.author_association == 'COLLABORATOR')) ||
+       github.event.comment.author_association == 'OWNER') ||
       (github.event_name == 'pull_request_review_comment' &&
        contains(github.event.comment.body, '@claude') &&
-       (github.event.comment.author_association == 'OWNER' ||
-        github.event.comment.author_association == 'MEMBER' ||
-        github.event.comment.author_association == 'COLLABORATOR'))
+       github.event.comment.author_association == 'OWNER')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -37,15 +36,6 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          prompt: |
-            Review this pull request for:
-            - Correctness and potential bugs
-            - Security issues (OWASP top 10, injection, XSS, etc.)
-            - Breaking changes in public APIs
-            - Test coverage for new or changed functionality
-
-            This is a Stellar blockchain SDK written in Dart/Flutter.
-            Focus on substantive issues. Do not comment on style, formatting, or minor nitpicks.
-            Files in lib/src/xdr/ and test/unit/xdr/generated/ are auto-generated — skip reading them individually and focus your review on hand-written code changes.
-          claude_args: "--model claude-sonnet-4-6 --max-turns 30"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_args: "--model claude-sonnet-4-6 --max-turns 30 --allowed-tools Read Grep Glob"
           trigger_phrase: "@claude"
