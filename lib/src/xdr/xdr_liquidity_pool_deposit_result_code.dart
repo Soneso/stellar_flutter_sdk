@@ -39,6 +39,8 @@ class XdrLiquidityPoolDepositResultCode {
       const XdrLiquidityPoolDepositResultCode._internal(-6);
   static const LIQUIDITY_POOL_DEPOSIT_POOL_FULL =
       const XdrLiquidityPoolDepositResultCode._internal(-7);
+  static const LIQUIDITY_POOL_DEPOSIT_TRUSTLINE_FROZEN =
+      const XdrLiquidityPoolDepositResultCode._internal(-8);
 
   static XdrLiquidityPoolDepositResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -59,6 +61,8 @@ class XdrLiquidityPoolDepositResultCode {
         return LIQUIDITY_POOL_DEPOSIT_BAD_PRICE;
       case -7:
         return LIQUIDITY_POOL_DEPOSIT_POOL_FULL;
+      case -8:
+        return LIQUIDITY_POOL_DEPOSIT_TRUSTLINE_FROZEN;
       default:
         throw Exception("Unknown enum value: $value");
     }

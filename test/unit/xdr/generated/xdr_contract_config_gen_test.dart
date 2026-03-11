@@ -7,6 +7,19 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
   group('XDR contract_config generated tests', () {
+      test('XdrEncodedLedgerKey typedef roundtrip', () {
+        var original = XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3, 4]));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrEncodedLedgerKey.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrEncodedLedgerKey.decode(input);
+          expect(decoded.encodedLedgerKey, equals(original.encodedLedgerKey));
+        var base64Decoded = XdrEncodedLedgerKey.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+          expect(base64Decoded.encodedLedgerKey, equals(original.encodedLedgerKey));
+      });
+
       test('XdrConfigSettingContractExecutionLanesV0 struct roundtrip', () {
         var original = XdrConfigSettingContractExecutionLanesV0(XdrUint32(42));
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -225,6 +238,22 @@ void main() {
             XdrContractCostType.Bls12381FrMul,
             XdrContractCostType.Bls12381FrPow,
             XdrContractCostType.Bls12381FrInv,
+            XdrContractCostType.Bn254EncodeFp,
+            XdrContractCostType.Bn254DecodeFp,
+            XdrContractCostType.Bn254G1CheckPointOnCurve,
+            XdrContractCostType.Bn254G2CheckPointOnCurve,
+            XdrContractCostType.Bn254G2CheckPointInSubgroup,
+            XdrContractCostType.Bn254G1ProjectiveToAffine,
+            XdrContractCostType.Bn254G1Add,
+            XdrContractCostType.Bn254G1Mul,
+            XdrContractCostType.Bn254Pairing,
+            XdrContractCostType.Bn254FrFromU256,
+            XdrContractCostType.Bn254FrToU256,
+            XdrContractCostType.Bn254FrAddSub,
+            XdrContractCostType.Bn254FrMul,
+            XdrContractCostType.Bn254FrPow,
+            XdrContractCostType.Bn254FrInv,
+            XdrContractCostType.Bn254G1Msm,
       ];
       for (var member in members) {
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -325,6 +354,50 @@ void main() {
           expect(base64Decoded.ballotTimeoutIncrementMilliseconds.uint32, equals(original.ballotTimeoutIncrementMilliseconds.uint32));
       });
 
+      test('XdrFrozenLedgerKeys struct roundtrip', () {
+        var original = XdrFrozenLedgerKeys([XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3]))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrFrozenLedgerKeys.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        XdrFrozenLedgerKeys.decode(input);
+        XdrFrozenLedgerKeys.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+      });
+
+      test('XdrFrozenLedgerKeysDelta struct roundtrip', () {
+        var original = XdrFrozenLedgerKeysDelta([XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3]))], [XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3]))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrFrozenLedgerKeysDelta.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        XdrFrozenLedgerKeysDelta.decode(input);
+        XdrFrozenLedgerKeysDelta.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+      });
+
+      test('XdrFreezeBypassTxs struct roundtrip', () {
+        var original = XdrFreezeBypassTxs([XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrFreezeBypassTxs.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        XdrFreezeBypassTxs.decode(input);
+        XdrFreezeBypassTxs.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+      });
+
+      test('XdrFreezeBypassTxsDelta struct roundtrip', () {
+        var original = XdrFreezeBypassTxsDelta([XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))], [XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrFreezeBypassTxsDelta.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        XdrFreezeBypassTxsDelta.decode(input);
+        XdrFreezeBypassTxsDelta.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+      });
+
       test('XdrContractCostParams typedef roundtrip', () {
         var original = XdrContractCostParams([XdrContractCostParamEntry(XdrExtensionPoint(0), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)))]);
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -357,6 +430,10 @@ void main() {
             XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0,
             XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0,
             XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING,
+            XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS,
+            XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA,
+            XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS,
+            XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA,
       ];
       for (var member in members) {
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -671,6 +748,78 @@ void main() {
         expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(base64Decoded.contractSCPTiming, isNotNull);
+      });
+
+      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS arm roundtrip', () {
+        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS);
+        original.frozenLedgerKeys = XdrFrozenLedgerKeys([XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3]))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrConfigSettingEntry.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrConfigSettingEntry.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.frozenLedgerKeys, isNotNull);
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.frozenLedgerKeys, isNotNull);
+      });
+
+      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA arm roundtrip', () {
+        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA);
+        original.frozenLedgerKeysDelta = XdrFrozenLedgerKeysDelta([XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3]))], [XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3]))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrConfigSettingEntry.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrConfigSettingEntry.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.frozenLedgerKeysDelta, isNotNull);
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.frozenLedgerKeysDelta, isNotNull);
+      });
+
+      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS arm roundtrip', () {
+        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS);
+        original.freezeBypassTxs = XdrFreezeBypassTxs([XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrConfigSettingEntry.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrConfigSettingEntry.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.freezeBypassTxs, isNotNull);
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.freezeBypassTxs, isNotNull);
+      });
+
+      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA arm roundtrip', () {
+        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA);
+        original.freezeBypassTxsDelta = XdrFreezeBypassTxsDelta([XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))], [XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrConfigSettingEntry.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrConfigSettingEntry.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.freezeBypassTxsDelta, isNotNull);
+        var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.freezeBypassTxsDelta, isNotNull);
       });
 
   });

@@ -11,7 +11,7 @@ XDRS = xdr/Stellar-SCP.x xdr/Stellar-ledger-entries.x xdr/Stellar-ledger.x \
        xdr/Stellar-internal.x xdr/Stellar-contract-config-setting.x \
        xdr/Stellar-exporter.x
 
-XDR_COMMIT = 4b7a2ef7931ab2ca2499be68d849f38190b443ca
+XDR_COMMIT = cff714a5ebaaaf2dac343b3546c2df73f0b7a36e
 RUBY_IMAGE = ruby:3.4
 
 # Use CURDIR (always set by GNU Make) instead of PWD for portability

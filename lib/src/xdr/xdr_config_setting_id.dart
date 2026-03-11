@@ -58,6 +58,14 @@ class XdrConfigSettingID {
   static const CONFIG_SETTING_SCP_TIMING = const XdrConfigSettingID._internal(
     16,
   );
+  static const CONFIG_SETTING_FROZEN_LEDGER_KEYS =
+      const XdrConfigSettingID._internal(17);
+  static const CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA =
+      const XdrConfigSettingID._internal(18);
+  static const CONFIG_SETTING_FREEZE_BYPASS_TXS =
+      const XdrConfigSettingID._internal(19);
+  static const CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA =
+      const XdrConfigSettingID._internal(20);
 
   static XdrConfigSettingID decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -96,6 +104,14 @@ class XdrConfigSettingID {
         return CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0;
       case 16:
         return CONFIG_SETTING_SCP_TIMING;
+      case 17:
+        return CONFIG_SETTING_FROZEN_LEDGER_KEYS;
+      case 18:
+        return CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA;
+      case 19:
+        return CONFIG_SETTING_FREEZE_BYPASS_TXS;
+      case 20:
+        return CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA;
       default:
         throw Exception("Unknown enum value: $value");
     }

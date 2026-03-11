@@ -35,6 +35,8 @@ class XdrLiquidityPoolWithdrawResultCode {
       const XdrLiquidityPoolWithdrawResultCode._internal(-4);
   static const LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM =
       const XdrLiquidityPoolWithdrawResultCode._internal(-5);
+  static const LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN =
+      const XdrLiquidityPoolWithdrawResultCode._internal(-6);
 
   static XdrLiquidityPoolWithdrawResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -51,6 +53,8 @@ class XdrLiquidityPoolWithdrawResultCode {
         return LIQUIDITY_POOL_WITHDRAW_LINE_FULL;
       case -5:
         return LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM;
+      case -6:
+        return LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN;
       default:
         throw Exception("Unknown enum value: $value");
     }
