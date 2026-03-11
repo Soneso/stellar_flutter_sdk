@@ -19,6 +19,10 @@ import 'xdr_config_setting_scp_timing.dart';
 import 'xdr_contract_cost_params.dart';
 import 'xdr_data_io.dart';
 import 'xdr_eviction_iterator.dart';
+import 'xdr_freeze_bypass_txs.dart';
+import 'xdr_freeze_bypass_txs_delta.dart';
+import 'xdr_frozen_ledger_keys.dart';
+import 'xdr_frozen_ledger_keys_delta.dart';
 import 'xdr_state_archival_settings.dart';
 import 'xdr_uint32.dart';
 import 'xdr_uint64.dart';
@@ -114,6 +118,24 @@ class XdrConfigSettingEntry {
 
   XdrConfigSettingSCPTiming? get contractSCPTiming => this._contractSCPTiming;
 
+  XdrFrozenLedgerKeys? _frozenLedgerKeys;
+
+  XdrFrozenLedgerKeys? get frozenLedgerKeys => this._frozenLedgerKeys;
+
+  XdrFrozenLedgerKeysDelta? _frozenLedgerKeysDelta;
+
+  XdrFrozenLedgerKeysDelta? get frozenLedgerKeysDelta =>
+      this._frozenLedgerKeysDelta;
+
+  XdrFreezeBypassTxs? _freezeBypassTxs;
+
+  XdrFreezeBypassTxs? get freezeBypassTxs => this._freezeBypassTxs;
+
+  XdrFreezeBypassTxsDelta? _freezeBypassTxsDelta;
+
+  XdrFreezeBypassTxsDelta? get freezeBypassTxsDelta =>
+      this._freezeBypassTxsDelta;
+
   XdrConfigSettingEntry(this._configSettingID);
 
   set contractMaxSizeBytes(XdrUint32? value) =>
@@ -167,6 +189,18 @@ class XdrConfigSettingEntry {
 
   set contractSCPTiming(XdrConfigSettingSCPTiming? value) =>
       this._contractSCPTiming = value;
+
+  set frozenLedgerKeys(XdrFrozenLedgerKeys? value) =>
+      this._frozenLedgerKeys = value;
+
+  set frozenLedgerKeysDelta(XdrFrozenLedgerKeysDelta? value) =>
+      this._frozenLedgerKeysDelta = value;
+
+  set freezeBypassTxs(XdrFreezeBypassTxs? value) =>
+      this._freezeBypassTxs = value;
+
+  set freezeBypassTxsDelta(XdrFreezeBypassTxsDelta? value) =>
+      this._freezeBypassTxsDelta = value;
 
   static void encode(
     XdrDataOutputStream stream,
@@ -282,6 +316,30 @@ class XdrConfigSettingEntry {
           encodedConfigSettingEntry._contractSCPTiming!,
         );
         break;
+      case XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS:
+        XdrFrozenLedgerKeys.encode(
+          stream,
+          encodedConfigSettingEntry._frozenLedgerKeys!,
+        );
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA:
+        XdrFrozenLedgerKeysDelta.encode(
+          stream,
+          encodedConfigSettingEntry._frozenLedgerKeysDelta!,
+        );
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS:
+        XdrFreezeBypassTxs.encode(
+          stream,
+          encodedConfigSettingEntry._freezeBypassTxs!,
+        );
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA:
+        XdrFreezeBypassTxsDelta.encode(
+          stream,
+          encodedConfigSettingEntry._freezeBypassTxsDelta!,
+        );
+        break;
       default:
         break;
     }
@@ -368,6 +426,23 @@ class XdrConfigSettingEntry {
       case XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING:
         decodedConfigSettingEntry._contractSCPTiming =
             XdrConfigSettingSCPTiming.decode(stream);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS:
+        decodedConfigSettingEntry._frozenLedgerKeys =
+            XdrFrozenLedgerKeys.decode(stream);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA:
+        decodedConfigSettingEntry._frozenLedgerKeysDelta =
+            XdrFrozenLedgerKeysDelta.decode(stream);
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS:
+        decodedConfigSettingEntry._freezeBypassTxs = XdrFreezeBypassTxs.decode(
+          stream,
+        );
+        break;
+      case XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA:
+        decodedConfigSettingEntry._freezeBypassTxsDelta =
+            XdrFreezeBypassTxsDelta.decode(stream);
         break;
       default:
         break;

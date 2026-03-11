@@ -758,6 +758,14 @@ class TxRep {
         return XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0;
       case 'CONFIG_SETTING_SCP_TIMING':
         return XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING;
+      case 'CONFIG_SETTING_FROZEN_LEDGER_KEYS':
+        return XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS;
+      case 'CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA':
+        return XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA;
+      case 'CONFIG_SETTING_FREEZE_BYPASS_TXS':
+        return XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS;
+      case 'CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA':
+        return XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA;
       default:
         throw throw Exception('unknown value for $key');
     }

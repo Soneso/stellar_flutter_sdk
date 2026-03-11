@@ -3071,6 +3071,7 @@ void main() {
             XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_LINE_FULL,
             XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_NO_TRUST,
             XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED,
+            XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN,
       ];
       for (var member in members) {
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -3414,6 +3415,7 @@ void main() {
             XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_LINE_FULL,
             XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_BAD_PRICE,
             XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_POOL_FULL,
+            XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_TRUSTLINE_FROZEN,
       ];
       for (var member in members) {
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -3464,6 +3466,7 @@ void main() {
             XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED,
             XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_LINE_FULL,
             XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM,
+            XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN,
       ];
       for (var member in members) {
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -4218,6 +4221,7 @@ void main() {
             XdrTransactionResultCode.txBAD_MIN_SEQ_AGE_OR_GAP,
             XdrTransactionResultCode.txMALFORMED,
             XdrTransactionResultCode.txSOROBAN_INVALID,
+            XdrTransactionResultCode.txFROZEN_KEY_ACCESSED,
       ];
       for (var member in members) {
         XdrDataOutputStream output = XdrDataOutputStream();

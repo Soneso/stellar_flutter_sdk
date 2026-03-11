@@ -35,6 +35,8 @@ class XdrClaimClaimableBalanceResultCode {
       const XdrClaimClaimableBalanceResultCode._internal(-4);
   static const CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED =
       const XdrClaimClaimableBalanceResultCode._internal(-5);
+  static const CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN =
+      const XdrClaimClaimableBalanceResultCode._internal(-6);
 
   static XdrClaimClaimableBalanceResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -51,6 +53,8 @@ class XdrClaimClaimableBalanceResultCode {
         return CLAIM_CLAIMABLE_BALANCE_NO_TRUST;
       case -5:
         return CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED;
+      case -6:
+        return CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN;
       default:
         throw Exception("Unknown enum value: $value");
     }

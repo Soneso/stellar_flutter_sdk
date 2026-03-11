@@ -54,6 +54,9 @@ class XdrTransactionResultCode {
   static const txSOROBAN_INVALID = const XdrTransactionResultCode._internal(
     -17,
   );
+  static const txFROZEN_KEY_ACCESSED = const XdrTransactionResultCode._internal(
+    -18,
+  );
 
   static XdrTransactionResultCode decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -96,6 +99,8 @@ class XdrTransactionResultCode {
         return txMALFORMED;
       case -17:
         return txSOROBAN_INVALID;
+      case -18:
+        return txFROZEN_KEY_ACCESSED;
       default:
         throw Exception("Unknown enum value: $value");
     }

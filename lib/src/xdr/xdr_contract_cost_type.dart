@@ -113,6 +113,29 @@ class XdrContractCostType {
   static const Bls12381FrMul = const XdrContractCostType._internal(67);
   static const Bls12381FrPow = const XdrContractCostType._internal(68);
   static const Bls12381FrInv = const XdrContractCostType._internal(69);
+  static const Bn254EncodeFp = const XdrContractCostType._internal(70);
+  static const Bn254DecodeFp = const XdrContractCostType._internal(71);
+  static const Bn254G1CheckPointOnCurve = const XdrContractCostType._internal(
+    72,
+  );
+  static const Bn254G2CheckPointOnCurve = const XdrContractCostType._internal(
+    73,
+  );
+  static const Bn254G2CheckPointInSubgroup =
+      const XdrContractCostType._internal(74);
+  static const Bn254G1ProjectiveToAffine = const XdrContractCostType._internal(
+    75,
+  );
+  static const Bn254G1Add = const XdrContractCostType._internal(76);
+  static const Bn254G1Mul = const XdrContractCostType._internal(77);
+  static const Bn254Pairing = const XdrContractCostType._internal(78);
+  static const Bn254FrFromU256 = const XdrContractCostType._internal(79);
+  static const Bn254FrToU256 = const XdrContractCostType._internal(80);
+  static const Bn254FrAddSub = const XdrContractCostType._internal(81);
+  static const Bn254FrMul = const XdrContractCostType._internal(82);
+  static const Bn254FrPow = const XdrContractCostType._internal(83);
+  static const Bn254FrInv = const XdrContractCostType._internal(84);
+  static const Bn254G1Msm = const XdrContractCostType._internal(85);
 
   static XdrContractCostType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -257,6 +280,38 @@ class XdrContractCostType {
         return Bls12381FrPow;
       case 69:
         return Bls12381FrInv;
+      case 70:
+        return Bn254EncodeFp;
+      case 71:
+        return Bn254DecodeFp;
+      case 72:
+        return Bn254G1CheckPointOnCurve;
+      case 73:
+        return Bn254G2CheckPointOnCurve;
+      case 74:
+        return Bn254G2CheckPointInSubgroup;
+      case 75:
+        return Bn254G1ProjectiveToAffine;
+      case 76:
+        return Bn254G1Add;
+      case 77:
+        return Bn254G1Mul;
+      case 78:
+        return Bn254Pairing;
+      case 79:
+        return Bn254FrFromU256;
+      case 80:
+        return Bn254FrToU256;
+      case 81:
+        return Bn254FrAddSub;
+      case 82:
+        return Bn254FrMul;
+      case 83:
+        return Bn254FrPow;
+      case 84:
+        return Bn254FrInv;
+      case 85:
+        return Bn254G1Msm;
       default:
         throw Exception("Unknown enum value: $value");
     }
