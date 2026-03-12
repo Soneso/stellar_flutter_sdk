@@ -56,7 +56,7 @@ class XdrAllowTrustOp {
   void toTxRep(String prefix, List<String> lines) {
     lines.add('$prefix.trustor: ${TxRepHelper.formatAccountId(_trustor)}');
     lines.add('$prefix.asset: ${TxRepHelper.formatAllowTrustAsset(_asset)}');
-    lines.add('$prefix.authorize: $_authorize');
+    lines.add('$prefix.authorize: ${_authorize}');
   }
 
   static XdrAllowTrustOp fromTxRep(Map<String, String> map, String prefix) {

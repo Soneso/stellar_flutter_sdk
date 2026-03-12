@@ -36,7 +36,7 @@ class XdrInt64 {
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: $_int64');
+    lines.add('$prefix: ${_int64}');
   }
 
   static XdrInt64 fromTxRep(Map<String, String> map, String prefix) {

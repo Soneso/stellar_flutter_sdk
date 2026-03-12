@@ -39,7 +39,7 @@ class XdrSequenceNumber {
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: $_sequenceNumber');
+    lines.add('$prefix: ${_sequenceNumber}');
   }
 
   static XdrSequenceNumber fromTxRep(Map<String, String> map, String prefix) {

@@ -36,7 +36,7 @@ class XdrInt32 {
   }
 
   void toTxRep(String prefix, List<String> lines) {
-    lines.add('$prefix: $_int32');
+    lines.add('$prefix: ${_int32}');
   }
 
   static XdrInt32 fromTxRep(Map<String, String> map, String prefix) {

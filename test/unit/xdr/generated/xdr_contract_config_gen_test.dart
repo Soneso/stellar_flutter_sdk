@@ -823,7 +823,7 @@ void main() {
           expect(base64Decoded.freezeBypassTxsDelta, isNotNull);
       });
 
-    test('XdrConfigSettingID TxRep roundtrip', () {
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES', () {
       var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES;
       List<String> lines = [];
       original.toTxRep('tx', lines);
@@ -831,7 +831,227 @@ void main() {
       var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
       expect(reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID');
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_COMPUTE_V0', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_COMPUTE_V0');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_LEDGER_COST_V0', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_LEDGER_COST_V0');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_EVENTS_V0', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_EVENTS_V0');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_BANDWIDTH_V0', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_BANDWIDTH_V0');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_STATE_ARCHIVAL', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_STATE_ARCHIVAL');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_EXECUTION_LANES', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_EXECUTION_LANES');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_EVICTION_ITERATOR', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_EVICTION_ITERATOR');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_SCP_TIMING', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_SCP_TIMING');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_FROZEN_LEDGER_KEYS', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_FROZEN_LEDGER_KEYS');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_FREEZE_BYPASS_TXS', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_FREEZE_BYPASS_TXS');
+    });
+
+    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA', () {
+      var original = XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA');
     });
 
   });

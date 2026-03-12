@@ -2164,13 +2164,13 @@ class Generator < Xdrgen::Generators::Base
 
     case base_type
     when "int"
-      out.puts "#{indent}lines.add('#{prefix_expr}: \$#{accessor}');"
+      out.puts "#{indent}lines.add('#{prefix_expr}: \${#{accessor}}');"
     when "BigInt"
-      out.puts "#{indent}lines.add('#{prefix_expr}: \$#{accessor}');"
+      out.puts "#{indent}lines.add('#{prefix_expr}: \${#{accessor}}');"
     when "bool"
-      out.puts "#{indent}lines.add('#{prefix_expr}: \$#{accessor}');"
+      out.puts "#{indent}lines.add('#{prefix_expr}: \${#{accessor}}');"
     when "double"
-      out.puts "#{indent}lines.add('#{prefix_expr}: \$#{accessor}');"
+      out.puts "#{indent}lines.add('#{prefix_expr}: \${#{accessor}}');"
     when "String"
       out.puts "#{indent}lines.add('#{prefix_expr}: \${TxRepHelper.escapeString(#{accessor})}');"
     when "Uint8List"

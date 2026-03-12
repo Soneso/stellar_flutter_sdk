@@ -355,7 +355,7 @@ class XdrSCValBase {
     lines.add('$prefix.type: ${discriminant.enumName()}');
     switch (discriminant) {
       case XdrSCValType.SCV_BOOL:
-        lines.add('$prefix.b: $_b!');
+        lines.add('$prefix.b: ${_b!}');
         break;
       case XdrSCValType.SCV_VOID:
         break;
