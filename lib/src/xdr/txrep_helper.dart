@@ -450,15 +450,16 @@ class TxRepHelper {
     if (value.length == 64 && !value.contains(':')) {
       try {
         Uint8List hash = Util.hexToBytes(value);
-        if (hash.length == 32) {
-          XdrTrustlineAsset result = XdrTrustlineAsset(
-            XdrAssetType.ASSET_TYPE_POOL_SHARE,
-          );
-          result.liquidityPoolID = XdrHash(hash);
-          return result;
-        }
+        XdrTrustlineAsset result = XdrTrustlineAsset(
+          XdrAssetType.ASSET_TYPE_POOL_SHARE,
+        );
+        result.liquidityPoolID = XdrHash(hash);
+        return result;
       } catch (_) {
-        // Fall through to CODE:ISSUER parsing.
+        throw Exception(
+          'invalid trustline asset: expected 64-char hex pool ID but '
+          'got invalid hex: $value',
+        );
       }
     }
 

@@ -144,8 +144,22 @@ class TxRep {
     Map<String, String> map = TxRepHelper.parse(txRep);
 
     String? typeStr = TxRepHelper.getValue(map, 'type');
+    if (typeStr != 'ENVELOPE_TYPE_TX' && typeStr != 'ENVELOPE_TYPE_TX_FEE_BUMP') {
+      throw Exception('unsupported or missing TxRep type: $typeStr');
+    }
     bool isFeeBump = typeStr == 'ENVELOPE_TYPE_TX_FEE_BUMP';
     String prefix = isFeeBump ? 'feeBump.tx.innerTx.tx' : 'tx';
+
+    // Validate inner transaction type for fee bump envelopes.
+    if (isFeeBump) {
+      String? innerType =
+          TxRepHelper.getValue(map, 'feeBump.tx.innerTx.type');
+      if (innerType != null && innerType != 'ENVELOPE_TYPE_TX') {
+        throw Exception(
+          'unexpected feeBump.tx.innerTx.type: $innerType',
+        );
+      }
+    }
 
     // Parse inner transaction.
     XdrTransaction tx = _decodeTransaction(map, prefix);
@@ -219,7 +233,7 @@ class TxRep {
         break;
       case XdrMemoType.MEMO_TEXT:
         // Use JSON encoding for compatibility with the legacy format.
-        lines.add('$prefix.text: ${JsonEncoder().convert(memo.text)}');
+        lines.add('$prefix.text: ${jsonEncode(memo.text)}');
         break;
       case XdrMemoType.MEMO_ID:
         memo.id!.toTxRep('$prefix.id', lines);
@@ -341,10 +355,10 @@ class TxRep {
     } else if (memoTypeStr == 'MEMO_TEXT') {
       String? textStr = TxRepHelper.getValue(map, '$prefix.text');
       if (textStr == null) throw Exception('missing $prefix.text');
-      // Decode JSON-encoded string (reverses JsonEncoder().convert() in encode).
+      // Decode JSON-encoded string (reverses jsonEncode() in encode).
       String text;
       if (textStr.startsWith('"') && textStr.endsWith('"')) {
-        text = json.decode(textStr) as String;
+        text = jsonDecode(textStr) as String;
       } else {
         text = textStr;
       }
@@ -369,6 +383,8 @@ class TxRep {
   }
 
   /// Decode signatures from the TxRep map.
+  /// Returns an empty list if the signatures section is missing (unsigned
+  /// transactions are valid per SEP-0011).
   static List<XdrDecoratedSignature> _decodeSignatures(
     Map<String, String> map,
     String prefix,
