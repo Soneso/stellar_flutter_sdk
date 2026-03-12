@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_create_contract_args.dart';
 import 'xdr_create_contract_args_v2.dart';
 import 'xdr_data_io.dart';
@@ -122,5 +123,58 @@ class XdrHostFunctionBase {
   static XdrHostFunctionBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHostFunctionBase.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
+        _invokeContract!.toTxRep('$prefix.invokeContract', lines);
+        break;
+      case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT:
+        _createContract!.toTxRep('$prefix.createContract', lines);
+        break;
+      case XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
+        _wasm!.toTxRep('$prefix.wasm', lines);
+        break;
+      case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
+        _createContractV2!.toTxRep('$prefix.createContractV2', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrHostFunctionBase fromTxRep(Map<String, String> map, String prefix) {
+    XdrHostFunctionType disc = XdrHostFunctionType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
+    XdrHostFunctionBase result = XdrHostFunctionBase(disc);
+    switch (result.discriminant) {
+      case XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT:
+        result._invokeContract = XdrInvokeContractArgs.fromTxRep(
+          map,
+          '$prefix.invokeContract',
+        );
+        break;
+      case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT:
+        result._createContract = XdrCreateContractArgs.fromTxRep(
+          map,
+          '$prefix.createContract',
+        );
+        break;
+      case XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM:
+        result._wasm = XdrDataValue.fromTxRep(map, '$prefix.wasm');
+        break;
+      case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
+        result._createContractV2 = XdrCreateContractArgsV2.fromTxRep(
+          map,
+          '$prefix.createContractV2',
+        );
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

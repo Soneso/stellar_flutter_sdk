@@ -38,4 +38,16 @@ class XdrBumpSequenceOp {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBumpSequenceOp.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _bumpTo.toTxRep('$prefix.bumpTo', lines);
+  }
+
+  static XdrBumpSequenceOp fromTxRep(Map<String, String> map, String prefix) {
+    XdrSequenceNumber bumpTo = XdrSequenceNumber.fromTxRep(
+      map,
+      '$prefix.bumpTo',
+    );
+    return XdrBumpSequenceOp(bumpTo);
+  }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
@@ -44,5 +45,23 @@ class XdrCreateAccountOp {
   static XdrCreateAccountOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCreateAccountOp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add(
+      '$prefix.destination: ${TxRepHelper.formatAccountId(_destination)}',
+    );
+    _startingBalance.toTxRep('$prefix.startingBalance', lines);
+  }
+
+  static XdrCreateAccountOp fromTxRep(Map<String, String> map, String prefix) {
+    XdrAccountID destination = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.destination') ?? '',
+    );
+    XdrInt64 startingBalance = XdrInt64.fromTxRep(
+      map,
+      '$prefix.startingBalance',
+    );
+    return XdrCreateAccountOp(destination, startingBalance);
   }
 }

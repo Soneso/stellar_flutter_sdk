@@ -25,6 +25,16 @@ class XdrClaimableBalanceID extends XdrClaimableBalanceIDBase {
     );
   }
 
+  static XdrClaimableBalanceID fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    var b = XdrClaimableBalanceIDBase.fromTxRep(map, prefix);
+    var result = XdrClaimableBalanceID(b.discriminant);
+    result.v0 = b.v0;
+    return result;
+  }
+
   static XdrClaimableBalanceID forId(String claimableBalanceId) {
     XdrClaimableBalanceID bId = XdrClaimableBalanceID(
       XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0,

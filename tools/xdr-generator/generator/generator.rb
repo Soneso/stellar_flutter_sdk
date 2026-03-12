@@ -11,6 +11,18 @@ require 'xdrgen'
 require_relative 'name_overrides'
 require_relative 'field_overrides'
 require_relative 'type_overrides'
+require_relative 'txrep_types'
+
+# Types that have compact TxRep representations handled by TxRepHelper.
+# When a field's resolved Dart type is listed here, TxRep emission calls the
+# corresponding helper method instead of delegating to the type's own toTxRep/fromTxRep.
+TXREP_COMPACT_TYPES = {
+  'XdrAccountID'          => { format: 'TxRepHelper.formatAccountId',       parse: 'TxRepHelper.parseAccountId' },
+  'XdrAllowTrustOpAsset'  => { format: 'TxRepHelper.formatAllowTrustAsset', parse: 'TxRepHelper.parseAllowTrustAsset' },
+  'XdrAsset'              => { format: 'TxRepHelper.formatAsset',           parse: 'TxRepHelper.parseAsset' },
+  'XdrMuxedAccount'       => { format: 'TxRepHelper.formatMuxedAccount',    parse: 'TxRepHelper.parseMuxedAccount' },
+  'XdrSignerKey'    => { format: 'TxRepHelper.formatSignerKey',     parse: 'TxRepHelper.parseSignerKey' },
+}.freeze
 
 AST = Xdrgen::AST
 
@@ -94,11 +106,14 @@ class Generator < Xdrgen::Generators::Base
 
     # Build the toString display name (strip Xdr prefix)
     display_name = dart_name.sub(/\AXdr/, '')
+    gen_txrep = should_generate_txrep?(dart_name)
+    txrep_ctx = { kind: :enum, enum_defn: enum_defn }
 
     out.puts COPYRIGHT_HEADER
     out.puts "import 'dart:convert';"
     out.puts "import 'dart:typed_data';"
     out.puts ""
+    out.puts "import 'txrep_helper.dart';" if gen_txrep && needs_txrep_helper?(txrep_ctx)
     out.puts "import 'xdr_data_io.dart';"
     out.puts ""
     out.puts "class #{dart_name} {"
@@ -144,6 +159,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  }"
 
     render_base64_methods(out, dart_name)
+    render_txrep_methods(out, dart_name, { kind: :enum, enum_defn: enum_defn }) if gen_txrep
 
     out.puts "}"
     out.close
@@ -204,7 +220,9 @@ class Generator < Xdrgen::Generators::Base
     end
 
     # Collect imports
-    imports = collect_imports(struct_name, fields)
+    gen_txrep = should_generate_txrep?(struct_name)
+    txrep_ctx = { kind: :struct, fields: fields }
+    imports = collect_imports(struct_name, fields, needs_txrep: gen_txrep && needs_txrep_helper?(txrep_ctx))
 
     out.puts COPYRIGHT_HEADER
     imports.each { |imp| imp.empty? ? out.puts("") : out.puts("import '#{imp}';") }
@@ -236,6 +254,7 @@ class Generator < Xdrgen::Generators::Base
     render_struct_decode(out, class_name, fields)
 
     render_base64_methods(out, class_name)
+    render_txrep_methods(out, class_name, { kind: :struct, fields: fields }) if gen_txrep
 
     out.puts "}"
     out.close
@@ -293,9 +312,12 @@ class Generator < Xdrgen::Generators::Base
 
     disc_info = resolve_discriminant_info(union)
     arms = build_union_arms(union, union_name, disc_info)
+    gen_txrep = should_generate_txrep?(union_name)
+    txrep_ctx = { kind: :union, disc_info: disc_info, arms: arms }
 
     # Collect imports
-    imports = collect_union_imports(actual_class_name, disc_info, arms, is_base, union_name)
+    imports = collect_union_imports(actual_class_name, disc_info, arms, is_base, union_name,
+                                    needs_txrep: gen_txrep && needs_txrep_helper?(txrep_ctx))
 
     out.puts COPYRIGHT_HEADER
     imports.each { |imp| imp.empty? ? out.puts("") : out.puts("import '#{imp}';") }
@@ -370,6 +392,7 @@ class Generator < Xdrgen::Generators::Base
     end
 
     render_base64_methods(out, actual_class_name)
+    render_txrep_methods(out, actual_class_name, { kind: :union, disc_info: disc_info, arms: arms }) if gen_txrep
 
     out.puts "}"
     out.close
@@ -565,8 +588,12 @@ class Generator < Xdrgen::Generators::Base
       decode_expr = -> { "#{override_type}.decode(stream)" }
     end
 
+    gen_txrep = should_generate_txrep?(dart_name)
+    txrep_ctx = { kind: :simple_typedef, dart_type: dart_type, field_name: field_name }
+    base_imports = Set.new(import_lines) + ["dart:convert", "dart:typed_data"]
+    base_imports.add("txrep_helper.dart") if gen_txrep && needs_txrep_helper?(txrep_ctx)
     out.puts COPYRIGHT_HEADER
-    all_imports = sort_imports(Set.new(import_lines) + ["dart:convert", "dart:typed_data"])
+    all_imports = sort_imports(base_imports)
     all_imports.each { |imp| imp.empty? ? out.puts("") : out.puts("import '#{imp}';") }
     out.puts "" unless all_imports.empty?
 
@@ -588,6 +615,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  }"
 
     render_base64_methods(out, class_name)
+    render_txrep_methods(out, class_name, { kind: :simple_typedef, dart_type: dart_type, field_name: field_name }) if gen_txrep
 
     out.puts "}"
     out.close
@@ -600,11 +628,14 @@ class Generator < Xdrgen::Generators::Base
 
     field_name = underscore_field(dart_name)
     param = encode_param_name(dart_name)
+    gen_txrep = should_generate_txrep?(dart_name)
+    txrep_ctx = { kind: :fixed_opaque_typedef }
 
     out.puts COPYRIGHT_HEADER
     out.puts "import 'dart:convert';"
     out.puts "import 'dart:typed_data';"
     out.puts ""
+    out.puts "import 'txrep_helper.dart';" if gen_txrep && needs_txrep_helper?(txrep_ctx)
     out.puts "import 'xdr_data_io.dart';"
     out.puts ""
     out.puts "class #{dart_name} {"
@@ -624,6 +655,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  }"
 
     render_base64_methods(out, dart_name)
+    render_txrep_methods(out, dart_name, { kind: :fixed_opaque_typedef }) if gen_txrep
 
     out.puts "}"
     out.close
@@ -635,11 +667,14 @@ class Generator < Xdrgen::Generators::Base
 
     field_name = underscore_field(dart_name)
     param = encode_param_name(dart_name)
+    gen_txrep = should_generate_txrep?(dart_name)
+    txrep_ctx = { kind: :variable_opaque_typedef }
 
     out.puts COPYRIGHT_HEADER
     out.puts "import 'dart:convert';"
     out.puts "import 'dart:typed_data';"
     out.puts ""
+    out.puts "import 'txrep_helper.dart';" if gen_txrep && needs_txrep_helper?(txrep_ctx)
     out.puts "import 'xdr_data_io.dart';"
     out.puts ""
     out.puts "class #{dart_name} {"
@@ -661,6 +696,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  }"
 
     render_base64_methods(out, dart_name)
+    render_txrep_methods(out, dart_name, { kind: :variable_opaque_typedef }) if gen_txrep
 
     out.puts "}"
     out.close
@@ -672,11 +708,14 @@ class Generator < Xdrgen::Generators::Base
 
     field_name = underscore_field(dart_name)
     param = encode_param_name(dart_name)
+    gen_txrep = should_generate_txrep?(dart_name)
+    txrep_ctx = { kind: :string_typedef }
 
     out.puts COPYRIGHT_HEADER
     out.puts "import 'dart:convert';"
     out.puts "import 'dart:typed_data';"
     out.puts ""
+    out.puts "import 'txrep_helper.dart';" if gen_txrep && needs_txrep_helper?(txrep_ctx)
     out.puts "import 'xdr_data_io.dart';"
     out.puts ""
     out.puts "class #{dart_name} {"
@@ -695,6 +734,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  }"
 
     render_base64_methods(out, dart_name)
+    render_txrep_methods(out, dart_name, { kind: :string_typedef }) if gen_txrep
 
     out.puts "}"
     out.close
@@ -709,10 +749,18 @@ class Generator < Xdrgen::Generators::Base
 
     field_name = underscore_field(dart_name)
     param = encode_param_name(class_name)
+    gen_txrep = should_generate_txrep?(dart_name)
+    txrep_ctx = {
+      kind: :array_typedef,
+      element_type: element_type,
+      fixed: decl.fixed?,
+      size: decl.fixed? ? resolve_size(decl) : nil,
+    }
 
     imports = Set.new(collect_type_imports(element_type))
     imports.add("dart:convert")
     imports.add("dart:typed_data")
+    imports.add("txrep_helper.dart") if gen_txrep && needs_txrep_helper?(txrep_ctx)
     imports.add("xdr_data_io.dart")
     imports = sort_imports(imports)
 
@@ -757,6 +805,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  }"
 
     render_base64_methods(out, class_name)
+    render_txrep_methods(out, class_name, txrep_ctx) if gen_txrep
 
     out.puts "}"
     out.close
@@ -1030,6 +1079,7 @@ class Generator < Xdrgen::Generators::Base
           is_default: false,
         }
       else
+        xdr_arm_field_name = arm.name.to_s
         field_name = resolve_field_name(union_name, arm.name)
         next if seen_fields.include?(field_name)
         seen_fields.add(field_name)
@@ -1041,6 +1091,7 @@ class Generator < Xdrgen::Generators::Base
           case_labels: labels,
           void: false,
           field_name: field_name,
+          xdr_field_name: xdr_arm_field_name,
           dart_type: arm_info[:dart_type],
           encode_style: arm_info[:encode_style],
           decode_style: arm_info[:decode_style],
@@ -1062,12 +1113,14 @@ class Generator < Xdrgen::Generators::Base
           is_default: true,
         }
       else
+        xdr_arm_field_name = da.name.to_s
         field_name = resolve_field_name(union_name, da.name)
         arm_info = resolve_dart_arm_info(da, union_name)
         arms << {
           case_labels: ["default"],
           void: false,
           field_name: field_name,
+          xdr_field_name: xdr_arm_field_name,
           dart_type: arm_info[:dart_type],
           encode_style: arm_info[:encode_style],
           decode_style: arm_info[:decode_style],
@@ -1383,11 +1436,12 @@ class Generator < Xdrgen::Generators::Base
   # Import collection
   # ---------------------------------------------------------------------------
 
-  def collect_imports(struct_name, fields)
+  def collect_imports(struct_name, fields, needs_txrep: true)
     imports = Set.new
     imports.add("dart:convert")
     imports.add("dart:typed_data")
     imports.add("xdr_data_io.dart")
+    imports.add("txrep_helper.dart") if needs_txrep
 
     fields.each do |f|
       type_str = f[:type].gsub(/\?$/, '')  # strip nullable
@@ -1405,11 +1459,12 @@ class Generator < Xdrgen::Generators::Base
     sort_imports(imports)
   end
 
-  def collect_union_imports(class_name, disc_info, arms, is_base, union_name)
+  def collect_union_imports(class_name, disc_info, arms, is_base, union_name, needs_txrep: true)
     imports = Set.new
     imports.add("dart:convert")
     imports.add("dart:typed_data")
     imports.add("xdr_data_io.dart")
+    imports.add("txrep_helper.dart") if needs_txrep
 
     if disc_info[:kind] == :enum
       add_type_imports(imports, disc_info[:dart_name])
@@ -1486,6 +1541,679 @@ class Generator < Xdrgen::Generators::Base
     out.puts "    Uint8List bytes = base64Decode(base64Encoded);"
     out.puts "    return #{class_name}.decode(XdrDataInputStream(bytes));"
     out.puts "  }"
+  end
+
+  # ---------------------------------------------------------------------------
+  # TxRepHelper import predicate
+  # Returns true when the generated toTxRep/fromTxRep methods for this type
+  # will contain a direct call to a TxRepHelper.* static method.
+  #
+  # Enums:        always (fromTxRep calls TxRepHelper.getValue)
+  # Unions:       always (fromTxRep calls TxRepHelper.getValue for discriminant)
+  # Simple typedef: always (fromTxRep calls TxRepHelper.getValue)
+  # Fixed/variable opaque typedef: always (hex methods)
+  # String typedef: always (escapeString/unescapeString)
+  # Array typedef (variable): always (TxRepHelper.parseInt for .len)
+  # Array typedef (fixed):    only when element type needs it
+  # Structs:      only when at least one field uses TxRepHelper directly
+  #               (opaque, optional, type_overridden, array/.len, compact types,
+  #                String, Uint8List, primitive int/BigInt/bool/double from-expr)
+  # ---------------------------------------------------------------------------
+
+  # Returns true if txrep_from_expr / txrep_to_line for dart_type calls TxRepHelper.
+  def txrep_type_needs_helper?(dart_type)
+    base = dart_type.sub(/\?\z/, '')
+    return true if TXREP_COMPACT_TYPES.key?(base)
+    return true if %w[int BigInt bool double String Uint8List].include?(base)
+    return true if base =~ /\AList</
+    # Named XDR type delegates to Type.fromTxRep / toTxRep — no helper needed.
+    false
+  end
+
+  # Returns true when the generated TxRep methods for a struct field call TxRepHelper.
+  def struct_field_needs_txrep_helper?(field)
+    decl   = field[:decl]
+    member = field[:member]
+    type_str = field[:type]
+    is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
+
+    # Optional fields always emit _present via TxRepHelper.getValue
+    return true if is_optional
+
+    # type_overridden: check if the overridden type itself needs TxRepHelper
+    if field[:type_overridden]
+      inner_type = type_str.sub(/\?\z/, '')
+      return txrep_type_needs_helper?(inner_type)
+    end
+
+    case decl
+    when AST::Declarations::Opaque
+      return true  # bytesToHex / hexToBytes
+    when AST::Declarations::Array
+      # Variable arrays use TxRepHelper.parseInt; fixed arrays do not (for named element)
+      element_type = dart_type_for_typespec(decl.type)
+      return true unless decl.fixed?
+      return txrep_type_needs_helper?(element_type)
+    else
+      # Check fixed_opaque_size (hex methods)
+      return true if field[:fixed_opaque_size]
+      # Check List<> inline
+      return true if type_str =~ /\AList</
+      # Scalar field: check if the type itself calls TxRepHelper
+      return txrep_type_needs_helper?(type_str)
+    end
+  end
+
+  # Returns true when TxRep methods should be generated for the given Dart type name.
+  # Uses the original XDR-derived name (without any "Base" suffix added for
+  # BASE_WRAPPER_TYPES) so that the lookup works uniformly across all renderers.
+  def should_generate_txrep?(dart_name)
+    TXREP_TYPES.include?(dart_name)
+  end
+
+  def needs_txrep_helper?(type_context)
+    case type_context[:kind]
+    when :enum
+      true  # fromTxRep always calls TxRepHelper.getValue
+    when :union
+      true  # fromTxRep always calls TxRepHelper.getValue for discriminant
+    when :simple_typedef
+      # Primitive inner types use TxRepHelper.getValue + parse; named XDR types delegate directly
+      raise "dart_type missing for simple_typedef in needs_txrep_helper?" unless type_context[:dart_type]
+      txrep_type_needs_helper?(type_context[:dart_type])
+    when :fixed_opaque_typedef
+      true  # bytesToHex / hexToBytes
+    when :variable_opaque_typedef
+      true  # bytesToHex / hexToBytes
+    when :string_typedef
+      true  # escapeString / unescapeString
+    when :array_typedef
+      if type_context[:fixed]
+        # Fixed array: only when element type calls TxRepHelper
+        txrep_type_needs_helper?(type_context[:element_type])
+      else
+        true  # TxRepHelper.parseInt for .len
+      end
+    when :struct
+      type_context[:fields].any? { |f| struct_field_needs_txrep_helper?(f) }
+    else
+      false
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # TxRep method dispatcher
+  # Called from render_enum, render_struct, render_union, and all typedef renders.
+  # The type_context hash is keyed by render type and carries needed info.
+  # ---------------------------------------------------------------------------
+
+  def render_txrep_methods(out, class_name, type_context)
+    case type_context[:kind]
+    when :enum
+      render_enum_txrep_methods(out, class_name, type_context[:enum_defn])
+    when :struct
+      render_struct_txrep_methods(out, class_name, type_context[:fields])
+    when :union
+      render_union_txrep_methods(out, class_name, type_context[:disc_info], type_context[:arms])
+    when :simple_typedef
+      render_simple_typedef_txrep_methods(out, class_name, type_context[:dart_type], type_context[:field_name])
+    when :fixed_opaque_typedef
+      render_fixed_opaque_typedef_txrep_methods(out, class_name)
+    when :variable_opaque_typedef
+      render_variable_opaque_typedef_txrep_methods(out, class_name)
+    when :string_typedef
+      render_string_typedef_txrep_methods(out, class_name)
+    when :array_typedef
+      render_array_typedef_txrep_methods(out, class_name, type_context[:element_type], type_context[:fixed], type_context[:size])
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Enum TxRep: toTxRep / enumName / fromTxRep / fromTxRepName
+  # ---------------------------------------------------------------------------
+
+  def render_enum_txrep_methods(out, class_name, enum_defn)
+    out.puts ""
+    out.puts "  void toTxRep(String prefix, List<String> lines) {"
+    out.puts "    lines.add('\$prefix: \${enumName()}');"
+    out.puts "  }"
+    out.puts ""
+    out.puts "  String enumName() {"
+    out.puts "    switch (_value) {"
+    enum_defn.members.each do |m|
+      out.puts "      case #{m.value}: return '#{m.name}';"
+    end
+    out.puts "      default: return '#{class_name}#\$_value';"
+    out.puts "    }"
+    out.puts "  }"
+    out.puts ""
+    out.puts "  static #{class_name} fromTxRep(Map<String, String> map, String prefix) {"
+    out.puts "    String? raw = TxRepHelper.getValue(map, prefix);"
+    out.puts "    if (raw == null) throw Exception('missing \$prefix');"
+    out.puts "    return fromTxRepName(raw);"
+    out.puts "  }"
+    out.puts ""
+    out.puts "  static #{class_name} fromTxRepName(String name) {"
+    out.puts "    switch (name) {"
+    enum_defn.members.each do |m|
+      out.puts "      case '#{m.name}': return #{m.name};"
+    end
+    out.puts "      default:"
+    out.puts "        if (name.startsWith('#{class_name}#')) {"
+    out.puts "          int? val = int.tryParse(name.substring('#{class_name}#'.length));"
+    out.puts "          if (val != null) return #{class_name}._internal(val);"
+    out.puts "        }"
+    out.puts "        throw Exception('Unknown enum value: \$name');"
+    out.puts "    }"
+    out.puts "  }"
+  end
+
+  # ---------------------------------------------------------------------------
+  # Struct TxRep: toTxRep / fromTxRep
+  # ---------------------------------------------------------------------------
+
+  def render_struct_txrep_methods(out, class_name, fields)
+    out.puts ""
+    out.puts "  void toTxRep(String prefix, List<String> lines) {"
+    fields.each do |f|
+      xdr_name = f[:member].name.to_s
+      dart_name = f[:name]
+      type_str  = f[:type]
+      decl      = f[:decl]
+      member    = f[:member]
+      is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
+
+      if f[:type_overridden]
+        # type_overridden fields: use the overridden type for dispatch
+        inner_type = type_str.sub(/\?\z/, '')
+        if is_optional
+          out.puts "    if (_#{dart_name} != null) {"
+          out.puts "      lines.add('\$prefix.#{xdr_name}._present: true');"
+          txrep_to_line(out, "_#{dart_name}!", inner_type, "$prefix.#{xdr_name}", "      ")
+          out.puts "    } else {"
+          out.puts "      lines.add('\$prefix.#{xdr_name}._present: false');"
+          out.puts "    }"
+        else
+          txrep_to_line(out, "_#{dart_name}", inner_type, "$prefix.#{xdr_name}", "    ")
+        end
+        next
+      end
+
+      case decl
+      when AST::Declarations::Array
+        element_type = dart_type_for_typespec(decl.type)
+        if decl.fixed?
+          size = resolve_size(decl)
+          out.puts "    for (int i = 0; i < #{size}; i++) {"
+          txrep_to_line(out, "_#{dart_name}[i]", element_type, "$prefix.#{xdr_name}[$i]", "      ")
+          out.puts "    }"
+        else
+          out.puts "    lines.add('\$prefix.#{xdr_name}.len: \${_#{dart_name}.length}');"
+          out.puts "    for (int i = 0; i < _#{dart_name}.length; i++) {"
+          txrep_to_line(out, "_#{dart_name}[i]", element_type, "$prefix.#{xdr_name}[$i]", "      ")
+          out.puts "    }"
+        end
+      when AST::Declarations::Opaque
+        # Always Uint8List (fixed or variable)
+        out.puts "    lines.add('\$prefix.#{xdr_name}: \${TxRepHelper.bytesToHex(_#{dart_name})}');"
+      else
+        if is_optional
+          inner_type = type_str.sub(/\?\z/, '')
+          out.puts "    if (_#{dart_name} != null) {"
+          out.puts "      lines.add('\$prefix.#{xdr_name}._present: true');"
+          txrep_to_line(out, "_#{dart_name}!", inner_type, "$prefix.#{xdr_name}", "      ")
+          out.puts "    } else {"
+          out.puts "      lines.add('\$prefix.#{xdr_name}._present: false');"
+          out.puts "    }"
+        else
+          if f[:fixed_opaque_size]
+            out.puts "    lines.add('\$prefix.#{xdr_name}: \${TxRepHelper.bytesToHex(_#{dart_name})}');"
+          elsif type_str =~ /\AList<(.+)>\z/
+            elem = $1
+            out.puts "    lines.add('\$prefix.#{xdr_name}.len: \${_#{dart_name}.length}');"
+            out.puts "    for (int i = 0; i < _#{dart_name}.length; i++) {"
+            txrep_to_line(out, "_#{dart_name}[i]", elem, "$prefix.#{xdr_name}[$i]", "      ")
+            out.puts "    }"
+          else
+            txrep_to_line(out, "_#{dart_name}", type_str, "$prefix.#{xdr_name}", "    ")
+          end
+        end
+      end
+    end
+    out.puts "  }"
+
+    out.puts ""
+    out.puts "  static #{class_name} fromTxRep(Map<String, String> map, String prefix) {"
+    fields.each do |f|
+      xdr_name = f[:member].name.to_s
+      dart_name = f[:name]
+      type_str  = f[:type]
+      decl      = f[:decl]
+      member    = f[:member]
+      is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
+
+      if f[:type_overridden]
+        inner_type = type_str.sub(/\?\z/, '')
+        if is_optional
+          out.puts "    #{inner_type}? #{dart_name};"
+          out.puts "    String? #{dart_name}Present = TxRepHelper.getValue(map, '\$prefix.#{xdr_name}._present');"
+          out.puts "    if (#{dart_name}Present != null && #{dart_name}Present == 'true') {"
+          out.puts "      #{dart_name} = #{txrep_from_expr(inner_type, "map", "$prefix.#{xdr_name}")};"
+          out.puts "    }"
+        else
+          out.puts "    #{type_str} #{dart_name} = #{txrep_from_expr(type_str, "map", "$prefix.#{xdr_name}")};"
+        end
+        next
+      end
+
+      case decl
+      when AST::Declarations::Array
+        element_type = dart_type_for_typespec(decl.type)
+        if decl.fixed?
+          size = resolve_size(decl)
+          out.puts "    List<#{element_type}> #{dart_name} = [];"
+          out.puts "    for (int i = 0; i < #{size}; i++) {"
+          out.puts "      #{dart_name}.add(#{txrep_from_expr(element_type, "map", "$prefix.#{xdr_name}[$i]")});"
+          out.puts "    }"
+        else
+          out.puts "    int #{dart_name}Len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}.len') ?? '0');"
+          out.puts "    List<#{element_type}> #{dart_name} = [];"
+          out.puts "    for (int i = 0; i < #{dart_name}Len; i++) {"
+          out.puts "      #{dart_name}.add(#{txrep_from_expr(element_type, "map", "$prefix.#{xdr_name}[$i]")});"
+          out.puts "    }"
+        end
+      when AST::Declarations::Opaque
+        out.puts "    Uint8List #{dart_name} = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}') ?? '');"
+      else
+        if is_optional
+          inner_type = type_str.sub(/\?\z/, '')
+          out.puts "    #{inner_type}? #{dart_name};"
+          out.puts "    String? #{dart_name}Present = TxRepHelper.getValue(map, '\$prefix.#{xdr_name}._present');"
+          out.puts "    if (#{dart_name}Present != null && #{dart_name}Present == 'true') {"
+          if f[:fixed_opaque_size]
+            out.puts "      #{dart_name} = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}') ?? '');"
+          elsif inner_type =~ /\AList<(.+)>\z/
+            elem = $1
+            out.puts "      int #{dart_name}Len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}.len') ?? '0');"
+            out.puts "      #{dart_name} = [];"
+            out.puts "      for (int i = 0; i < #{dart_name}Len; i++) {"
+            out.puts "        #{dart_name}.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_name}[$i]")});"
+            out.puts "      }"
+          else
+            out.puts "      #{dart_name} = #{txrep_from_expr(inner_type, "map", "$prefix.#{xdr_name}")};"
+          end
+          out.puts "    }"
+        else
+          if f[:fixed_opaque_size]
+            out.puts "    Uint8List #{dart_name} = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}') ?? '');"
+          elsif type_str =~ /\AList<(.+)>\z/
+            elem = $1
+            out.puts "    int #{dart_name}Len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '\$prefix.#{xdr_name}.len') ?? '0');"
+            out.puts "    #{type_str} #{dart_name} = [];"
+            out.puts "    for (int i = 0; i < #{dart_name}Len; i++) {"
+            out.puts "      #{dart_name}.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_name}[$i]")});"
+            out.puts "    }"
+          else
+            out.puts "    #{type_str} #{dart_name} = #{txrep_from_expr(type_str, "map", "$prefix.#{xdr_name}")};"
+          end
+        end
+      end
+    end
+    args = fields.map { |f| f[:name] }.join(", ")
+    out.puts "    return #{class_name}(#{args});"
+    out.puts "  }"
+  end
+
+  # ---------------------------------------------------------------------------
+  # Union TxRep: toTxRep / fromTxRep
+  # ---------------------------------------------------------------------------
+
+  def render_union_txrep_methods(out, class_name, disc_info, arms)
+    df = disc_info[:field_name]  # XDR discriminant field name (e.g., "type", "v", "code")
+
+    out.puts ""
+    out.puts "  void toTxRep(String prefix, List<String> lines) {"
+    if disc_info[:kind] == :int
+      out.puts "    lines.add('\$prefix.#{df}: \$discriminant');"
+    else
+      out.puts "    lines.add('\$prefix.#{df}: \${discriminant.enumName()}');"
+    end
+    out.puts "    switch (discriminant) {"
+
+    has_default = arms.any? { |a| a[:is_default] }
+
+    arms.each do |arm|
+      arm[:case_labels].each { |label| out.puts "      case #{label}:" }
+      if arm[:void]
+        out.puts "        break;"
+      else
+        field = arm[:field_name]
+        xdr_field = arm[:xdr_field_name] || field
+        dart_type = arm[:dart_type]
+        style = arm[:encode_style]
+        render_txrep_arm_to(out, field, xdr_field, dart_type, style, arm)
+        out.puts "        break;"
+      end
+    end
+
+    unless has_default
+      out.puts "      default:"
+      out.puts "        break;"
+    end
+
+    out.puts "    }"
+    out.puts "  }"
+
+    out.puts ""
+    out.puts "  static #{class_name} fromTxRep(Map<String, String> map, String prefix) {"
+    if disc_info[:kind] == :int
+      out.puts "    int disc = TxRepHelper.parseInt(TxRepHelper.getValue(map, '\$prefix.#{df}') ?? '0');"
+      out.puts "    #{class_name} result = #{class_name}(disc);"
+    else
+      disc_type = disc_info[:dart_name]
+      out.puts "    #{disc_type} disc = #{disc_type}.fromTxRepName(TxRepHelper.getValue(map, '\$prefix.#{df}') ?? '');"
+      out.puts "    #{class_name} result = #{class_name}(disc);"
+    end
+    out.puts "    switch (result.discriminant) {"
+
+    arms.each do |arm|
+      arm[:case_labels].each { |label| out.puts "      case #{label}:" }
+      if arm[:void]
+        out.puts "        break;"
+      else
+        field = arm[:field_name]
+        xdr_field = arm[:xdr_field_name] || field
+        dart_type = arm[:dart_type]
+        style = arm[:encode_style]
+        render_txrep_arm_from(out, field, xdr_field, dart_type, style, arm)
+        out.puts "        break;"
+      end
+    end
+
+    unless has_default
+      out.puts "      default:"
+      out.puts "        break;"
+    end
+
+    out.puts "    }"
+    out.puts "    return result;"
+    out.puts "  }"
+  end
+
+  # Emit the toTxRep lines for one non-void union arm.
+  def render_txrep_arm_to(out, field, xdr_field, dart_type, style, arm)
+    accessor = "_#{field}!"
+    case style
+    when :string
+      out.puts "        lines.add('\$prefix.#{xdr_field}: \${TxRepHelper.escapeString(#{accessor})}');"
+    when :opaque_var
+      # XdrDataValue is variable opaque
+      out.puts "        lines.add('\$prefix.#{xdr_field}: \${TxRepHelper.bytesToHex(#{accessor}.dataValue)}');"
+    when :opaque_fixed
+      out.puts "        lines.add('\$prefix.#{xdr_field}: \${TxRepHelper.bytesToHex(#{accessor})}');"
+    when :array
+      element_type = arm[:element_type]
+      out.puts "        lines.add('\$prefix.#{xdr_field}.len: \${#{accessor}.length}');"
+      out.puts "        for (int i = 0; i < #{accessor}.length; i++) {"
+      txrep_to_line(out, "#{accessor}[i]", element_type, "$prefix.#{xdr_field}[$i]", "          ")
+      out.puts "        }"
+    when :optional
+      inner_type = arm[:inner_type]
+      raw_accessor = "_#{field}"
+      out.puts "        if (#{raw_accessor} != null) {"
+      out.puts "          lines.add('\$prefix.#{xdr_field}._present: true');"
+      txrep_to_line(out, "#{raw_accessor}!", inner_type, "$prefix.#{xdr_field}", "          ")
+      out.puts "        } else {"
+      out.puts "          lines.add('\$prefix.#{xdr_field}._present: false');"
+      out.puts "        }"
+    when :simple
+      if dart_type =~ /\AList<(.+)>\z/
+        elem = $1
+        out.puts "        lines.add('\$prefix.#{xdr_field}.len: \${#{accessor}.length}');"
+        out.puts "        for (int i = 0; i < #{accessor}.length; i++) {"
+        txrep_to_line(out, "#{accessor}[i]", elem, "$prefix.#{xdr_field}[$i]", "          ")
+        out.puts "        }"
+      else
+        txrep_to_line(out, accessor, dart_type, "$prefix.#{xdr_field}", "        ")
+      end
+    end
+  end
+
+  # Emit the fromTxRep assignment for one non-void union arm.
+  def render_txrep_arm_from(out, field, xdr_field, dart_type, style, arm)
+    case style
+    when :string
+      out.puts "        result._#{field} = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}') ?? '');"
+    when :opaque_var
+      out.puts "        result._#{field} = XdrDataValue(TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}') ?? ''));"
+    when :opaque_fixed
+      out.puts "        result._#{field} = TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}') ?? '');"
+    when :array
+      element_type = arm[:element_type]
+      out.puts "        int #{field}Len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}.len') ?? '0');"
+      out.puts "        result._#{field} = [];"
+      out.puts "        for (int i = 0; i < #{field}Len; i++) {"
+      out.puts "          result._#{field}!.add(#{txrep_from_expr(element_type, "map", "$prefix.#{xdr_field}[$i]")});"
+      out.puts "        }"
+    when :optional
+      inner_type = arm[:inner_type]
+      out.puts "        String? #{field}Present = TxRepHelper.getValue(map, '\$prefix.#{xdr_field}._present');"
+      out.puts "        if (#{field}Present != null && #{field}Present == 'true') {"
+      if inner_type =~ /\AList<(.+)>\z/
+        elem = $1
+        out.puts "          int #{field}Len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}.len') ?? '0');"
+        out.puts "          result._#{field} = [];"
+        out.puts "          for (int i = 0; i < #{field}Len; i++) {"
+        out.puts "            result._#{field}!.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_field}[$i]")});"
+        out.puts "          }"
+      else
+        out.puts "          result._#{field} = #{txrep_from_expr(inner_type, "map", "$prefix.#{xdr_field}")};"
+      end
+      out.puts "        }"
+    when :simple
+      if dart_type =~ /\AList<(.+)>\z/
+        elem = $1
+        out.puts "        int #{field}Len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}.len') ?? '0');"
+        out.puts "        result._#{field} = [];"
+        out.puts "        for (int i = 0; i < #{field}Len; i++) {"
+        out.puts "          result._#{field}!.add(#{txrep_from_expr(elem, "map", "$prefix.#{xdr_field}[$i]")});"
+        out.puts "        }"
+      else
+        out.puts "        result._#{field} = #{txrep_from_expr(dart_type, "map", "$prefix.#{xdr_field}")};"
+      end
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Simple typedef TxRep: wraps int, BigInt, bool, or a named type
+  # ---------------------------------------------------------------------------
+
+  def render_simple_typedef_txrep_methods(out, class_name, dart_type, field_name = nil)
+    field_name ||= underscore_field(class_name)
+    out.puts ""
+    out.puts "  void toTxRep(String prefix, List<String> lines) {"
+    txrep_to_line(out, "_#{field_name}", dart_type, "$prefix", "    ")
+    out.puts "  }"
+    out.puts ""
+    out.puts "  static #{class_name} fromTxRep(Map<String, String> map, String prefix) {"
+    if %w[int BigInt bool double].include?(dart_type)
+      # Primitive inner type — read a single value at prefix
+      out.puts "    String? raw = TxRepHelper.getValue(map, prefix);"
+      out.puts "    if (raw == null) throw Exception('missing \$prefix');"
+      case dart_type
+      when "int"
+        out.puts "    return #{class_name}(TxRepHelper.parseInt(raw));"
+      when "BigInt"
+        out.puts "    return #{class_name}(TxRepHelper.parseBigInt(raw));"
+      when "bool"
+        out.puts "    return #{class_name}(raw == 'true');"
+      when "double"
+        out.puts "    return #{class_name}(double.parse(raw));"
+      end
+    else
+      # Named XDR type — delegate directly (no getValue; the inner type reads its own keys)
+      out.puts "    return #{class_name}(#{dart_type}.fromTxRep(map, prefix));"
+    end
+    out.puts "  }"
+  end
+
+  # ---------------------------------------------------------------------------
+  # Fixed opaque typedef TxRep (e.g., XdrHash)
+  # ---------------------------------------------------------------------------
+
+  def render_fixed_opaque_typedef_txrep_methods(out, class_name)
+    field_name = underscore_field(class_name)
+    out.puts ""
+    out.puts "  void toTxRep(String prefix, List<String> lines) {"
+    out.puts "    lines.add('\$prefix: \${TxRepHelper.bytesToHex(_#{field_name})}');"
+    out.puts "  }"
+    out.puts ""
+    out.puts "  static #{class_name} fromTxRep(Map<String, String> map, String prefix) {"
+    out.puts "    String? raw = TxRepHelper.getValue(map, prefix);"
+    out.puts "    if (raw == null) throw Exception('missing \$prefix');"
+    out.puts "    return #{class_name}(TxRepHelper.hexToBytes(raw));"
+    out.puts "  }"
+  end
+
+  # ---------------------------------------------------------------------------
+  # Variable opaque typedef TxRep (e.g., XdrDataValue)
+  # ---------------------------------------------------------------------------
+
+  def render_variable_opaque_typedef_txrep_methods(out, class_name)
+    field_name = underscore_field(class_name)
+    out.puts ""
+    out.puts "  void toTxRep(String prefix, List<String> lines) {"
+    out.puts "    lines.add('\$prefix: \${TxRepHelper.bytesToHex(_#{field_name})}');"
+    out.puts "  }"
+    out.puts ""
+    out.puts "  static #{class_name} fromTxRep(Map<String, String> map, String prefix) {"
+    out.puts "    String? raw = TxRepHelper.getValue(map, prefix);"
+    out.puts "    if (raw == null) throw Exception('missing \$prefix');"
+    out.puts "    return #{class_name}(TxRepHelper.hexToBytes(raw));"
+    out.puts "  }"
+  end
+
+  # ---------------------------------------------------------------------------
+  # String typedef TxRep (e.g., XdrString32)
+  # ---------------------------------------------------------------------------
+
+  def render_string_typedef_txrep_methods(out, class_name)
+    field_name = underscore_field(class_name)
+    out.puts ""
+    out.puts "  void toTxRep(String prefix, List<String> lines) {"
+    out.puts "    lines.add('\$prefix: \${TxRepHelper.escapeString(_#{field_name})}');"
+    out.puts "  }"
+    out.puts ""
+    out.puts "  static #{class_name} fromTxRep(Map<String, String> map, String prefix) {"
+    out.puts "    String? raw = TxRepHelper.getValue(map, prefix);"
+    out.puts "    if (raw == null) throw Exception('missing \$prefix');"
+    out.puts "    return #{class_name}(TxRepHelper.unescapeString(raw));"
+    out.puts "  }"
+  end
+
+  # ---------------------------------------------------------------------------
+  # Array typedef TxRep (e.g., XdrContractCostParams)
+  # ---------------------------------------------------------------------------
+
+  def render_array_typedef_txrep_methods(out, class_name, element_type, is_fixed, size)
+    field_name = underscore_field(class_name)
+    out.puts ""
+    out.puts "  void toTxRep(String prefix, List<String> lines) {"
+    unless is_fixed
+      out.puts "    lines.add('\$prefix.len: \${_#{field_name}.length}');"
+    end
+    out.puts "    for (int i = 0; i < _#{field_name}.length; i++) {"
+    txrep_to_line(out, "_#{field_name}[i]", element_type, "$prefix[$i]", "      ")
+    out.puts "    }"
+    out.puts "  }"
+    out.puts ""
+    out.puts "  static #{class_name} fromTxRep(Map<String, String> map, String prefix) {"
+    if is_fixed
+      out.puts "    List<#{element_type}> items = [];"
+      out.puts "    for (int i = 0; i < #{size}; i++) {"
+      out.puts "      items.add(#{txrep_from_expr(element_type, "map", "$prefix[$i]")});"
+      out.puts "    }"
+    else
+      out.puts "    int len = TxRepHelper.parseInt(TxRepHelper.getValue(map, '\$prefix.len') ?? '0');"
+      out.puts "    List<#{element_type}> items = [];"
+      out.puts "    for (int i = 0; i < len; i++) {"
+      out.puts "      items.add(#{txrep_from_expr(element_type, "map", "$prefix[$i]")});"
+      out.puts "    }"
+    end
+    out.puts "    return #{class_name}(items);"
+    out.puts "  }"
+  end
+
+  # ---------------------------------------------------------------------------
+  # TxRep primitive helpers
+  # ---------------------------------------------------------------------------
+
+  # Emit a single lines.add() call for toTxRep.
+  # out: output stream, accessor: Dart expression, dart_type: resolved type string,
+  # prefix_expr: the TxRep key (may contain Dart interpolation like $prefix.field),
+  # indent: leading whitespace string.
+  def txrep_to_line(out, accessor, dart_type, prefix_expr, indent)
+    # Strip nullable
+    base_type = dart_type.sub(/\?\z/, '')
+
+    if TXREP_COMPACT_TYPES.key?(base_type)
+      fmt = TXREP_COMPACT_TYPES[base_type][:format]
+      out.puts "#{indent}lines.add('#{prefix_expr}: \${#{fmt}(#{accessor})}');"
+      return
+    end
+
+    case base_type
+    when "int"
+      out.puts "#{indent}lines.add('#{prefix_expr}: \${#{accessor}}');"
+    when "BigInt"
+      out.puts "#{indent}lines.add('#{prefix_expr}: \${#{accessor}}');"
+    when "bool"
+      out.puts "#{indent}lines.add('#{prefix_expr}: \${#{accessor}}');"
+    when "double"
+      out.puts "#{indent}lines.add('#{prefix_expr}: \${#{accessor}}');"
+    when "String"
+      out.puts "#{indent}lines.add('#{prefix_expr}: \${TxRepHelper.escapeString(#{accessor})}');"
+    when "Uint8List"
+      out.puts "#{indent}lines.add('#{prefix_expr}: \${TxRepHelper.bytesToHex(#{accessor})}');"
+    else
+      if base_type =~ /\AList<(.+)>\z/
+        elem = $1
+        out.puts "#{indent}lines.add('#{prefix_expr}.len: \${#{accessor}.length}');"
+        out.puts "#{indent}for (int i = 0; i < #{accessor}.length; i++) {"
+        txrep_to_line(out, "#{accessor}[i]", elem, "#{prefix_expr}[$i]", "#{indent}  ")
+        out.puts "#{indent}}"
+      else
+        # Named XDR type — delegate to its toTxRep method
+        out.puts "#{indent}#{accessor}.toTxRep('#{prefix_expr}', lines);"
+      end
+    end
+  end
+
+  # Return a Dart expression for fromTxRep of the given type.
+  def txrep_from_expr(dart_type, map_var, prefix_expr)
+    base_type = dart_type.sub(/\?\z/, '')
+
+    if TXREP_COMPACT_TYPES.key?(base_type)
+      parse = TXREP_COMPACT_TYPES[base_type][:parse]
+      return "#{parse}(TxRepHelper.getValue(#{map_var}, '#{prefix_expr}') ?? '')"
+    end
+
+    case base_type
+    when "int"
+      "TxRepHelper.parseInt(TxRepHelper.getValue(#{map_var}, '#{prefix_expr}') ?? '0')"
+    when "BigInt"
+      "TxRepHelper.parseBigInt(TxRepHelper.getValue(#{map_var}, '#{prefix_expr}') ?? '0')"
+    when "bool"
+      "(TxRepHelper.getValue(#{map_var}, '#{prefix_expr}') ?? 'false') == 'true'"
+    when "double"
+      "double.parse(TxRepHelper.getValue(#{map_var}, '#{prefix_expr}') ?? '0')"
+    when "String"
+      "TxRepHelper.unescapeString(TxRepHelper.getValue(#{map_var}, '#{prefix_expr}') ?? '')"
+    when "Uint8List"
+      "TxRepHelper.hexToBytes(TxRepHelper.getValue(#{map_var}, '#{prefix_expr}') ?? '')"
+    else
+      "#{base_type}.fromTxRep(#{map_var}, '#{prefix_expr}')"
+    end
   end
 
   # Generate a parameter name for encode methods

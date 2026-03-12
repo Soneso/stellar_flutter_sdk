@@ -18,6 +18,7 @@ require 'xdrgen'
 require 'set'
 require 'fileutils'
 require_relative '../generator/generator'
+require_relative '../generator/txrep_types'
 
 AST = Xdrgen::AST unless defined?(AST)
 
@@ -65,6 +66,15 @@ class TestGenerator
       tests = generate_tests_for_type(dart_name, info)
       next if tests.empty?
       @test_groups[info[:source_file]] += tests
+    end
+
+    # Third pass: generate TxRep roundtrip tests for TXREP_TYPES
+    @type_registry.each do |dart_name, info|
+      next unless dart_file_exists?(dart_name)
+      next unless TXREP_TYPES.include?(dart_name)
+      txrep_test = generate_txrep_test(dart_name, info)
+      next unless txrep_test
+      @test_groups[info[:source_file]].concat(txrep_test)
     end
 
     # Write helper file
@@ -870,6 +880,20 @@ class TestGenerator
     when "XdrTransactionEnvelope"
       # TransactionEnvelope is complex - skip for now
       nil
+    when "XdrTransaction"
+      "XdrTransaction((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42), XdrSequenceNumber(BigInt.from(100)), XdrPreconditions(XdrPreconditionType.PRECOND_NONE), XdrMemo(XdrMemoType.MEMO_NONE), [], XdrTransactionExt(0))"
+    when "XdrTransactionExt"
+      "XdrTransactionExt(0)"
+    when "XdrTransactionV1Envelope"
+      "XdrTransactionV1Envelope(XdrTransaction((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42), XdrSequenceNumber(BigInt.from(100)), XdrPreconditions(XdrPreconditionType.PRECOND_NONE), XdrMemo(XdrMemoType.MEMO_NONE), [], XdrTransactionExt(0)), [XdrDecoratedSignature(XdrSignatureHint(Uint8List.fromList(List<int>.filled(4, 0xAB))), XdrSignature(Uint8List.fromList([1, 2, 3])))])"
+    when "XdrFeeBumpTransactionInnerTx"
+      "(XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX)..v1 = XdrTransactionV1Envelope(XdrTransaction((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42), XdrSequenceNumber(BigInt.from(100)), XdrPreconditions(XdrPreconditionType.PRECOND_NONE), XdrMemo(XdrMemoType.MEMO_NONE), [], XdrTransactionExt(0)), [XdrDecoratedSignature(XdrSignatureHint(Uint8List.fromList(List<int>.filled(4, 0xAB))), XdrSignature(Uint8List.fromList([1, 2, 3])))]))"
+    when "XdrFeeBumpTransactionExt"
+      "XdrFeeBumpTransactionExt(0)"
+    when "XdrFeeBumpTransaction"
+      "XdrFeeBumpTransaction((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrInt64(BigInt.from(1000)), (XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX)..v1 = XdrTransactionV1Envelope(XdrTransaction((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42), XdrSequenceNumber(BigInt.from(100)), XdrPreconditions(XdrPreconditionType.PRECOND_NONE), XdrMemo(XdrMemoType.MEMO_NONE), [], XdrTransactionExt(0)), [XdrDecoratedSignature(XdrSignatureHint(Uint8List.fromList(List<int>.filled(4, 0xAB))), XdrSignature(Uint8List.fromList([1, 2, 3])))])), XdrFeeBumpTransactionExt(0))"
+    when "XdrFeeBumpTransactionEnvelope"
+      "XdrFeeBumpTransactionEnvelope(XdrFeeBumpTransaction((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrInt64(BigInt.from(1000)), (XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX)..v1 = XdrTransactionV1Envelope(XdrTransaction((XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrUint32(42), XdrSequenceNumber(BigInt.from(100)), XdrPreconditions(XdrPreconditionType.PRECOND_NONE), XdrMemo(XdrMemoType.MEMO_NONE), [], XdrTransactionExt(0)), [XdrDecoratedSignature(XdrSignatureHint(Uint8List.fromList(List<int>.filled(4, 0xAB))), XdrSignature(Uint8List.fromList([1, 2, 3])))])), XdrFeeBumpTransactionExt(0)), [XdrDecoratedSignature(XdrSignatureHint(Uint8List.fromList(List<int>.filled(4, 0xAB))), XdrSignature(Uint8List.fromList([1, 2, 3])))])"
     when "XdrGeneralizedTransactionSet"
       "(XdrGeneralizedTransactionSet(1)..v1TxSet = XdrTransactionSetV1(XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))), []))"
     when "XdrLedgerEntryData"
@@ -1160,6 +1184,124 @@ class TestGenerator
   end
 
   # ---------------------------------------------------------------------------
+  # TxRep Roundtrip Tests
+  # ---------------------------------------------------------------------------
+
+  # Returns an array of test code strings (one per enum member / union arm).
+  def generate_txrep_test(dart_name, info)
+    is_base = BASE_WRAPPER_TYPES.include?(dart_name)
+    class_name = is_base ? "#{dart_name}Base" : dart_name
+
+    # Determine fromTxRep class for BASE_WRAPPER_TYPES
+    if is_base
+      wrapper_path = dart_file_path(dart_name).sub(/_base\.dart\z/, '.dart')
+      wrapper_has_from_txrep = File.exist?(wrapper_path) && File.read(wrapper_path).include?("fromTxRep")
+      from_txrep_class = wrapper_has_from_txrep ? dart_name : class_name
+    else
+      from_txrep_class = class_name
+    end
+
+    case info[:kind]
+    when :enum
+      generate_enum_txrep_tests(dart_name, class_name, from_txrep_class, info[:defn])
+    when :union
+      generate_union_txrep_tests(dart_name, class_name, from_txrep_class, info[:defn])
+    when :struct
+      value_expr = generate_struct_value(dart_name, info[:defn], 0)
+      return nil unless value_expr
+      [txrep_roundtrip_test(dart_name, class_name, from_txrep_class, value_expr)]
+    when :typedef
+      value_expr = generate_typedef_value(dart_name, info[:defn], 0)
+      return nil unless value_expr
+      [txrep_roundtrip_test(dart_name, class_name, from_txrep_class, value_expr)]
+    else
+      nil
+    end
+  rescue => e
+    $stderr.puts "WARNING: Failed to generate TxRep test for #{dart_name}: #{e.message}"
+    nil
+  end
+
+  # Generate a single TxRep roundtrip test.
+  def txrep_roundtrip_test(dart_name, class_name, from_txrep_class, value_expr, suffix = "")
+    <<~DART
+      test('#{dart_name} TxRep roundtrip#{suffix}', () {
+        var original = #{value_expr};
+
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = #{from_txrep_class}.fromTxRep(map, 'tx');
+
+        expect(reconstructed.toBase64EncodedXdrString(),
+            equals(original.toBase64EncodedXdrString()),
+            reason: 'TxRep roundtrip failed for #{dart_name}#{suffix}');
+      });
+    DART
+  end
+
+  # Generate TxRep tests for all enum members (exercises every toTxRepName/fromTxRepName branch).
+  def generate_enum_txrep_tests(dart_name, class_name, from_txrep_class, enum_defn)
+    tests = []
+    enum_defn.members.each do |m|
+      value_expr = "#{class_name}.#{m.name}"
+      tests << txrep_roundtrip_test(dart_name, class_name, from_txrep_class, value_expr, " #{m.name}")
+    end
+    tests.empty? ? nil : tests
+  end
+
+  # Generate TxRep tests for each union arm (exercises every arm's TxRep code path).
+  def generate_union_txrep_tests(dart_name, class_name, from_txrep_class, union_defn)
+    disc_info = @gen.resolve_discriminant_info(union_defn)
+    arms = @gen.build_union_arms(union_defn, dart_name, disc_info)
+    dart_content = File.read(dart_file_path(dart_name)) rescue ""
+
+    tests = []
+    arms.each do |arm|
+      next if arm[:is_default]
+      label = arm[:case_labels].first
+      next unless label
+      next if label == "default"
+
+      disc_value = if disc_info[:kind] == :int
+                     detect_disc_uses_wrapper(dart_name) ? "XdrUint32(#{label})" : label
+                   else
+                     label
+                   end
+
+      if arm[:void]
+        value_expr = "#{class_name}(#{disc_value})"
+      else
+        next unless arm[:field_name]
+        unless dart_content.include?("set #{arm[:field_name]}") || dart_content.include?("#{arm[:field_name]} =")
+          next
+        end
+
+        arm_value = if arm[:fixed_size] && arm[:dart_type] == "Uint8List"
+                      "Uint8List.fromList(List<int>.filled(#{arm[:fixed_size]}, 0xAB))"
+                    else
+                      test_value_expr(arm[:dart_type], 0)
+                    end
+        next unless arm_value
+        arm_val = arm_value.include?("..") && !arm_value.start_with?("(") ? "(#{arm_value})" : arm_value
+        value_expr = "(#{class_name}(#{disc_value})..#{arm[:field_name]} = #{arm_val})"
+      end
+
+      tests << txrep_roundtrip_test(dart_name, class_name, from_txrep_class, value_expr, " #{label}")
+    end
+
+    # If no arm tests generated, fall back to single test with first constructible value
+    if tests.empty?
+      value_expr = generate_union_value(dart_name, union_defn, 0)
+      return nil unless value_expr
+      return [txrep_roundtrip_test(dart_name, class_name, from_txrep_class, value_expr)]
+    end
+
+    tests
+  end
+
+  # ---------------------------------------------------------------------------
   # File Writing
   # ---------------------------------------------------------------------------
 
@@ -1178,6 +1320,20 @@ class TestGenerator
           XdrDataOutputStream output = XdrDataOutputStream();
           encode(output, value);
           return Uint8List.fromList(output.bytes);
+        }
+
+        /// Parse TxRep lines into a key-value map.
+        /// Throws if any line doesn't contain the ': ' delimiter.
+        Map<String, String> parseTxRepLines(List<String> lines) {
+          Map<String, String> map = {};
+          for (var line in lines) {
+            int idx = line.indexOf(': ');
+            if (idx < 0) {
+              throw FormatException('Malformed TxRep line (missing ": " delimiter): $line');
+            }
+            map[line.substring(0, idx)] = line.substring(idx + 2);
+          }
+          return map;
         }
       DART
     end
@@ -1206,6 +1362,7 @@ class TestGenerator
     filename = "xdr_#{clean_name}_gen_test.dart"
     path = File.join(@output_dir, filename)
 
+    has_txrep = tests.any? { |t| t.include?("parseTxRepLines") }
     File.open(path, "w") do |f|
       f.puts <<~DART
         // AUTO-GENERATED - DO NOT EDIT
@@ -1214,6 +1371,7 @@ class TestGenerator
         import 'dart:typed_data';
         import 'package:flutter_test/flutter_test.dart';
         import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+        #{"import 'xdr_test_helpers.dart';" if has_txrep}
 
         void main() {
           group('XDR #{clean_name} generated tests', () {

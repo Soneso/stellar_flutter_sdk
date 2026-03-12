@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrUint32 {
@@ -32,5 +33,15 @@ class XdrUint32 {
   static XdrUint32 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrUint32.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${_uint32}');
+  }
+
+  static XdrUint32 fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return XdrUint32(TxRepHelper.parseInt(raw));
   }
 }

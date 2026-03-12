@@ -18,6 +18,11 @@ class XdrAccountID extends XdrAccountIDBase {
     return XdrAccountID(b.accountID);
   }
 
+  static XdrAccountID fromTxRep(Map<String, String> map, String prefix) {
+    var b = XdrAccountIDBase.fromTxRep(map, prefix);
+    return XdrAccountID(b.accountID);
+  }
+
   static XdrAccountID forAccountId(String accountId) {
     return XdrAccountID(XdrPublicKey.forAccountId(accountId));
   }

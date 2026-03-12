@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrRevokeSponsorshipType {
@@ -58,5 +59,46 @@ class XdrRevokeSponsorshipType {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrRevokeSponsorshipType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0:
+        return 'REVOKE_SPONSORSHIP_LEDGER_ENTRY';
+      case 1:
+        return 'REVOKE_SPONSORSHIP_SIGNER';
+      default:
+        return 'XdrRevokeSponsorshipType#$_value';
+    }
+  }
+
+  static XdrRevokeSponsorshipType fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrRevokeSponsorshipType fromTxRepName(String name) {
+    switch (name) {
+      case 'REVOKE_SPONSORSHIP_LEDGER_ENTRY':
+        return REVOKE_SPONSORSHIP_LEDGER_ENTRY;
+      case 'REVOKE_SPONSORSHIP_SIGNER':
+        return REVOKE_SPONSORSHIP_SIGNER;
+      default:
+        if (name.startsWith('XdrRevokeSponsorshipType#')) {
+          int? val = int.tryParse(
+            name.substring('XdrRevokeSponsorshipType#'.length),
+          );
+          if (val != null) return XdrRevokeSponsorshipType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

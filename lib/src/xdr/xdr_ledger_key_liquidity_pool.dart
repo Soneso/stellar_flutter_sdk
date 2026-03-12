@@ -40,4 +40,16 @@ class XdrLedgerKeyLiquidityPool {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerKeyLiquidityPool.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _liquidityPoolID.toTxRep('$prefix.liquidityPoolID', lines);
+  }
+
+  static XdrLedgerKeyLiquidityPool fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrHash liquidityPoolID = XdrHash.fromTxRep(map, '$prefix.liquidityPoolID');
+    return XdrLedgerKeyLiquidityPool(liquidityPoolID);
+  }
 }

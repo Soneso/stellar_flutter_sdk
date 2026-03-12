@@ -38,4 +38,13 @@ class XdrLedgerKeyTTL {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerKeyTTL.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _keyHash.toTxRep('$prefix.keyHash', lines);
+  }
+
+  static XdrLedgerKeyTTL fromTxRep(Map<String, String> map, String prefix) {
+    XdrHash keyHash = XdrHash.fromTxRep(map, '$prefix.keyHash');
+    return XdrLedgerKeyTTL(keyHash);
+  }
 }

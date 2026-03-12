@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_claim_predicate.dart';
 import 'xdr_data_io.dart';
@@ -44,5 +45,23 @@ class XdrClaimantV0 {
   static XdrClaimantV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimantV0.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add(
+      '$prefix.destination: ${TxRepHelper.formatAccountId(_destination)}',
+    );
+    _predicate.toTxRep('$prefix.predicate', lines);
+  }
+
+  static XdrClaimantV0 fromTxRep(Map<String, String> map, String prefix) {
+    XdrAccountID destination = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.destination') ?? '',
+    );
+    XdrClaimPredicate predicate = XdrClaimPredicate.fromTxRep(
+      map,
+      '$prefix.predicate',
+    );
+    return XdrClaimantV0(destination, predicate);
   }
 }

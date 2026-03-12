@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_contract_executable.dart';
 import 'xdr_contract_id_preimage.dart';
 import 'xdr_data_io.dart';
@@ -79,5 +80,42 @@ class XdrCreateContractArgsV2 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCreateContractArgsV2.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _contractIDPreimage.toTxRep('$prefix.contractIDPreimage', lines);
+    _executable.toTxRep('$prefix.executable', lines);
+    lines.add('$prefix.constructorArgs.len: ${_constructorArgs.length}');
+    for (int i = 0; i < _constructorArgs.length; i++) {
+      _constructorArgs[i].toTxRep('$prefix.constructorArgs[$i]', lines);
+    }
+  }
+
+  static XdrCreateContractArgsV2 fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrContractIDPreimage contractIDPreimage = XdrContractIDPreimage.fromTxRep(
+      map,
+      '$prefix.contractIDPreimage',
+    );
+    XdrContractExecutable executable = XdrContractExecutable.fromTxRep(
+      map,
+      '$prefix.executable',
+    );
+    int constructorArgsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.constructorArgs.len') ?? '0',
+    );
+    List<XdrSCVal> constructorArgs = [];
+    for (int i = 0; i < constructorArgsLen; i++) {
+      constructorArgs.add(
+        XdrSCVal.fromTxRep(map, '$prefix.constructorArgs[$i]'),
+      );
+    }
+    return XdrCreateContractArgsV2(
+      contractIDPreimage,
+      executable,
+      constructorArgs,
+    );
   }
 }

@@ -59,4 +59,26 @@ class XdrSorobanTransactionData {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanTransactionData.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _ext.toTxRep('$prefix.ext', lines);
+    _resources.toTxRep('$prefix.resources', lines);
+    _resourceFee.toTxRep('$prefix.resourceFee', lines);
+  }
+
+  static XdrSorobanTransactionData fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrSorobanTransactionDataExt ext = XdrSorobanTransactionDataExt.fromTxRep(
+      map,
+      '$prefix.ext',
+    );
+    XdrSorobanResources resources = XdrSorobanResources.fromTxRep(
+      map,
+      '$prefix.resources',
+    );
+    XdrInt64 resourceFee = XdrInt64.fromTxRep(map, '$prefix.resourceFee');
+    return XdrSorobanTransactionData(ext, resources, resourceFee);
+  }
 }

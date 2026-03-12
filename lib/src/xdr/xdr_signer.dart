@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_signer_key.dart';
 import 'xdr_uint32.dart';
@@ -41,5 +42,18 @@ class XdrSigner {
   static XdrSigner fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSigner.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.key: ${TxRepHelper.formatSignerKey(_key)}');
+    _weight.toTxRep('$prefix.weight', lines);
+  }
+
+  static XdrSigner fromTxRep(Map<String, String> map, String prefix) {
+    XdrSignerKey key = TxRepHelper.parseSignerKey(
+      TxRepHelper.getValue(map, '$prefix.key') ?? '',
+    );
+    XdrUint32 weight = XdrUint32.fromTxRep(map, '$prefix.weight');
+    return XdrSigner(key, weight);
   }
 }

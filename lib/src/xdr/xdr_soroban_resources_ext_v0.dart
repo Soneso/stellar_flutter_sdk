@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint32.dart';
 
@@ -54,5 +55,33 @@ class XdrSorobanResourcesExtV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanResourcesExtV0.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add(
+      '$prefix.archivedSorobanEntries.len: ${_archivedSorobanEntries.length}',
+    );
+    for (int i = 0; i < _archivedSorobanEntries.length; i++) {
+      _archivedSorobanEntries[i].toTxRep(
+        '$prefix.archivedSorobanEntries[$i]',
+        lines,
+      );
+    }
+  }
+
+  static XdrSorobanResourcesExtV0 fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    int archivedSorobanEntriesLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.archivedSorobanEntries.len') ?? '0',
+    );
+    List<XdrUint32> archivedSorobanEntries = [];
+    for (int i = 0; i < archivedSorobanEntriesLen; i++) {
+      archivedSorobanEntries.add(
+        XdrUint32.fromTxRep(map, '$prefix.archivedSorobanEntries[$i]'),
+      );
+    }
+    return XdrSorobanResourcesExtV0(archivedSorobanEntries);
   }
 }

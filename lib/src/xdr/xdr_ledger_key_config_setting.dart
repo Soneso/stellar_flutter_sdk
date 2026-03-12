@@ -44,4 +44,19 @@ class XdrLedgerKeyConfigSetting {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerKeyConfigSetting.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _configSettingID.toTxRep('$prefix.configSettingID', lines);
+  }
+
+  static XdrLedgerKeyConfigSetting fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrConfigSettingID configSettingID = XdrConfigSettingID.fromTxRep(
+      map,
+      '$prefix.configSettingID',
+    );
+    return XdrLedgerKeyConfigSetting(configSettingID);
+  }
 }

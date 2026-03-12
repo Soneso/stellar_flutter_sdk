@@ -53,4 +53,24 @@ class XdrCreateContractArgs {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCreateContractArgs.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _contractIDPreimage.toTxRep('$prefix.contractIDPreimage', lines);
+    _executable.toTxRep('$prefix.executable', lines);
+  }
+
+  static XdrCreateContractArgs fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrContractIDPreimage contractIDPreimage = XdrContractIDPreimage.fromTxRep(
+      map,
+      '$prefix.contractIDPreimage',
+    );
+    XdrContractExecutable executable = XdrContractExecutable.fromTxRep(
+      map,
+      '$prefix.executable',
+    );
+    return XdrCreateContractArgs(contractIDPreimage, executable);
+  }
 }

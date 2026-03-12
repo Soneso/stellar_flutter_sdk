@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_ledger_key.dart';
 
@@ -59,5 +60,34 @@ class XdrLedgerFootprint {
   static XdrLedgerFootprint fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerFootprint.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.readOnly.len: ${_readOnly.length}');
+    for (int i = 0; i < _readOnly.length; i++) {
+      _readOnly[i].toTxRep('$prefix.readOnly[$i]', lines);
+    }
+    lines.add('$prefix.readWrite.len: ${_readWrite.length}');
+    for (int i = 0; i < _readWrite.length; i++) {
+      _readWrite[i].toTxRep('$prefix.readWrite[$i]', lines);
+    }
+  }
+
+  static XdrLedgerFootprint fromTxRep(Map<String, String> map, String prefix) {
+    int readOnlyLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.readOnly.len') ?? '0',
+    );
+    List<XdrLedgerKey> readOnly = [];
+    for (int i = 0; i < readOnlyLen; i++) {
+      readOnly.add(XdrLedgerKey.fromTxRep(map, '$prefix.readOnly[$i]'));
+    }
+    int readWriteLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.readWrite.len') ?? '0',
+    );
+    List<XdrLedgerKey> readWrite = [];
+    for (int i = 0; i < readWriteLen; i++) {
+      readWrite.add(XdrLedgerKey.fromTxRep(map, '$prefix.readWrite[$i]'));
+    }
+    return XdrLedgerFootprint(readOnly, readWrite);
   }
 }

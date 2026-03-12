@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_soroban_address_credentials.dart';
 import 'xdr_soroban_credentials_type.dart';
@@ -80,5 +81,41 @@ class XdrSorobanCredentialsBase {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanCredentialsBase.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT:
+        break;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
+        _address!.toTxRep('$prefix.address', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrSorobanCredentialsBase fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrSorobanCredentialsType disc = XdrSorobanCredentialsType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
+    XdrSorobanCredentialsBase result = XdrSorobanCredentialsBase(disc);
+    switch (result.discriminant) {
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT:
+        break;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
+        result._address = XdrSorobanAddressCredentials.fromTxRep(
+          map,
+          '$prefix.address',
+        );
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

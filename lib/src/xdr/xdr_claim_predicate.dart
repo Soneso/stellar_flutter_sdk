@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_claim_predicate_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
@@ -163,5 +164,95 @@ class XdrClaimPredicate {
   static XdrClaimPredicate fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimPredicate.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_AND:
+        lines.add('$prefix.andPredicates.len: ${_andPredicates!.length}');
+        for (int i = 0; i < _andPredicates!.length; i++) {
+          _andPredicates![i].toTxRep('$prefix.andPredicates[$i]', lines);
+        }
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
+        lines.add('$prefix.orPredicates.len: ${_orPredicates!.length}');
+        for (int i = 0; i < _orPredicates!.length; i++) {
+          _orPredicates![i].toTxRep('$prefix.orPredicates[$i]', lines);
+        }
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
+        if (_notPredicate != null) {
+          lines.add('$prefix.notPredicate._present: true');
+          _notPredicate!.toTxRep('$prefix.notPredicate', lines);
+        } else {
+          lines.add('$prefix.notPredicate._present: false');
+        }
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
+        _absBefore!.toTxRep('$prefix.absBefore', lines);
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME:
+        _relBefore!.toTxRep('$prefix.relBefore', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrClaimPredicate fromTxRep(Map<String, String> map, String prefix) {
+    XdrClaimPredicateType disc = XdrClaimPredicateType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
+    XdrClaimPredicate result = XdrClaimPredicate(disc);
+    switch (result.discriminant) {
+      case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_AND:
+        int andPredicatesLen = TxRepHelper.parseInt(
+          TxRepHelper.getValue(map, '$prefix.andPredicates.len') ?? '0',
+        );
+        result._andPredicates = [];
+        for (int i = 0; i < andPredicatesLen; i++) {
+          result._andPredicates!.add(
+            XdrClaimPredicate.fromTxRep(map, '$prefix.andPredicates[$i]'),
+          );
+        }
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
+        int orPredicatesLen = TxRepHelper.parseInt(
+          TxRepHelper.getValue(map, '$prefix.orPredicates.len') ?? '0',
+        );
+        result._orPredicates = [];
+        for (int i = 0; i < orPredicatesLen; i++) {
+          result._orPredicates!.add(
+            XdrClaimPredicate.fromTxRep(map, '$prefix.orPredicates[$i]'),
+          );
+        }
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_NOT:
+        String? notPredicatePresent = TxRepHelper.getValue(
+          map,
+          '$prefix.notPredicate._present',
+        );
+        if (notPredicatePresent != null && notPredicatePresent == 'true') {
+          result._notPredicate = XdrClaimPredicate.fromTxRep(
+            map,
+            '$prefix.notPredicate',
+          );
+        }
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME:
+        result._absBefore = XdrInt64.fromTxRep(map, '$prefix.absBefore');
+        break;
+      case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME:
+        result._relBefore = XdrInt64.fromTxRep(map, '$prefix.relBefore');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

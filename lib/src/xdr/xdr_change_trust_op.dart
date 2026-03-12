@@ -45,4 +45,18 @@ class XdrChangeTrustOp {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrChangeTrustOp.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _line.toTxRep('$prefix.line', lines);
+    _limit.toTxRep('$prefix.limit', lines);
+  }
+
+  static XdrChangeTrustOp fromTxRep(Map<String, String> map, String prefix) {
+    XdrChangeTrustAsset line = XdrChangeTrustAsset.fromTxRep(
+      map,
+      '$prefix.line',
+    );
+    XdrInt64 limit = XdrInt64.fromTxRep(map, '$prefix.limit');
+    return XdrChangeTrustOp(line, limit);
+  }
 }

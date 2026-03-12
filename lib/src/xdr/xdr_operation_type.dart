@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrOperationType {
@@ -132,5 +133,141 @@ class XdrOperationType {
   static XdrOperationType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrOperationType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0:
+        return 'CREATE_ACCOUNT';
+      case 1:
+        return 'PAYMENT';
+      case 2:
+        return 'PATH_PAYMENT_STRICT_RECEIVE';
+      case 3:
+        return 'MANAGE_SELL_OFFER';
+      case 4:
+        return 'CREATE_PASSIVE_SELL_OFFER';
+      case 5:
+        return 'SET_OPTIONS';
+      case 6:
+        return 'CHANGE_TRUST';
+      case 7:
+        return 'ALLOW_TRUST';
+      case 8:
+        return 'ACCOUNT_MERGE';
+      case 9:
+        return 'INFLATION';
+      case 10:
+        return 'MANAGE_DATA';
+      case 11:
+        return 'BUMP_SEQUENCE';
+      case 12:
+        return 'MANAGE_BUY_OFFER';
+      case 13:
+        return 'PATH_PAYMENT_STRICT_SEND';
+      case 14:
+        return 'CREATE_CLAIMABLE_BALANCE';
+      case 15:
+        return 'CLAIM_CLAIMABLE_BALANCE';
+      case 16:
+        return 'BEGIN_SPONSORING_FUTURE_RESERVES';
+      case 17:
+        return 'END_SPONSORING_FUTURE_RESERVES';
+      case 18:
+        return 'REVOKE_SPONSORSHIP';
+      case 19:
+        return 'CLAWBACK';
+      case 20:
+        return 'CLAWBACK_CLAIMABLE_BALANCE';
+      case 21:
+        return 'SET_TRUST_LINE_FLAGS';
+      case 22:
+        return 'LIQUIDITY_POOL_DEPOSIT';
+      case 23:
+        return 'LIQUIDITY_POOL_WITHDRAW';
+      case 24:
+        return 'INVOKE_HOST_FUNCTION';
+      case 25:
+        return 'EXTEND_FOOTPRINT_TTL';
+      case 26:
+        return 'RESTORE_FOOTPRINT';
+      default:
+        return 'XdrOperationType#$_value';
+    }
+  }
+
+  static XdrOperationType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrOperationType fromTxRepName(String name) {
+    switch (name) {
+      case 'CREATE_ACCOUNT':
+        return CREATE_ACCOUNT;
+      case 'PAYMENT':
+        return PAYMENT;
+      case 'PATH_PAYMENT_STRICT_RECEIVE':
+        return PATH_PAYMENT_STRICT_RECEIVE;
+      case 'MANAGE_SELL_OFFER':
+        return MANAGE_SELL_OFFER;
+      case 'CREATE_PASSIVE_SELL_OFFER':
+        return CREATE_PASSIVE_SELL_OFFER;
+      case 'SET_OPTIONS':
+        return SET_OPTIONS;
+      case 'CHANGE_TRUST':
+        return CHANGE_TRUST;
+      case 'ALLOW_TRUST':
+        return ALLOW_TRUST;
+      case 'ACCOUNT_MERGE':
+        return ACCOUNT_MERGE;
+      case 'INFLATION':
+        return INFLATION;
+      case 'MANAGE_DATA':
+        return MANAGE_DATA;
+      case 'BUMP_SEQUENCE':
+        return BUMP_SEQUENCE;
+      case 'MANAGE_BUY_OFFER':
+        return MANAGE_BUY_OFFER;
+      case 'PATH_PAYMENT_STRICT_SEND':
+        return PATH_PAYMENT_STRICT_SEND;
+      case 'CREATE_CLAIMABLE_BALANCE':
+        return CREATE_CLAIMABLE_BALANCE;
+      case 'CLAIM_CLAIMABLE_BALANCE':
+        return CLAIM_CLAIMABLE_BALANCE;
+      case 'BEGIN_SPONSORING_FUTURE_RESERVES':
+        return BEGIN_SPONSORING_FUTURE_RESERVES;
+      case 'END_SPONSORING_FUTURE_RESERVES':
+        return END_SPONSORING_FUTURE_RESERVES;
+      case 'REVOKE_SPONSORSHIP':
+        return REVOKE_SPONSORSHIP;
+      case 'CLAWBACK':
+        return CLAWBACK;
+      case 'CLAWBACK_CLAIMABLE_BALANCE':
+        return CLAWBACK_CLAIMABLE_BALANCE;
+      case 'SET_TRUST_LINE_FLAGS':
+        return SET_TRUST_LINE_FLAGS;
+      case 'LIQUIDITY_POOL_DEPOSIT':
+        return LIQUIDITY_POOL_DEPOSIT;
+      case 'LIQUIDITY_POOL_WITHDRAW':
+        return LIQUIDITY_POOL_WITHDRAW;
+      case 'INVOKE_HOST_FUNCTION':
+        return INVOKE_HOST_FUNCTION;
+      case 'EXTEND_FOOTPRINT_TTL':
+        return EXTEND_FOOTPRINT_TTL;
+      case 'RESTORE_FOOTPRINT':
+        return RESTORE_FOOTPRINT;
+      default:
+        if (name.startsWith('XdrOperationType#')) {
+          int? val = int.tryParse(name.substring('XdrOperationType#'.length));
+          if (val != null) return XdrOperationType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

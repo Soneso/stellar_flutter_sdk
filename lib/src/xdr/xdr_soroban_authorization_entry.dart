@@ -55,4 +55,22 @@ class XdrSorobanAuthorizationEntry {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanAuthorizationEntry.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _credentials.toTxRep('$prefix.credentials', lines);
+    _rootInvocation.toTxRep('$prefix.rootInvocation', lines);
+  }
+
+  static XdrSorobanAuthorizationEntry fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrSorobanCredentials credentials = XdrSorobanCredentials.fromTxRep(
+      map,
+      '$prefix.credentials',
+    );
+    XdrSorobanAuthorizedInvocation rootInvocation =
+        XdrSorobanAuthorizedInvocation.fromTxRep(map, '$prefix.rootInvocation');
+    return XdrSorobanAuthorizationEntry(credentials, rootInvocation);
+  }
 }

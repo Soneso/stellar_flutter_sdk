@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
 import 'xdr_trustline_asset.dart';
@@ -46,5 +47,21 @@ class XdrLedgerKeyTrustLine {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerKeyTrustLine.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.accountID: ${TxRepHelper.formatAccountId(_accountID)}');
+    _asset.toTxRep('$prefix.asset', lines);
+  }
+
+  static XdrLedgerKeyTrustLine fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrAccountID accountID = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.accountID') ?? '',
+    );
+    XdrTrustlineAsset asset = XdrTrustlineAsset.fromTxRep(map, '$prefix.asset');
+    return XdrLedgerKeyTrustLine(accountID, asset);
   }
 }

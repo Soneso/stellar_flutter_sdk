@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_soroban_authorized_function.dart';
 
@@ -65,5 +66,34 @@ class XdrSorobanAuthorizedInvocation {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanAuthorizedInvocation.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _function.toTxRep('$prefix.function', lines);
+    lines.add('$prefix.subInvocations.len: ${_subInvocations.length}');
+    for (int i = 0; i < _subInvocations.length; i++) {
+      _subInvocations[i].toTxRep('$prefix.subInvocations[$i]', lines);
+    }
+  }
+
+  static XdrSorobanAuthorizedInvocation fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrSorobanAuthorizedFunction function =
+        XdrSorobanAuthorizedFunction.fromTxRep(map, '$prefix.function');
+    int subInvocationsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.subInvocations.len') ?? '0',
+    );
+    List<XdrSorobanAuthorizedInvocation> subInvocations = [];
+    for (int i = 0; i < subInvocationsLen; i++) {
+      subInvocations.add(
+        XdrSorobanAuthorizedInvocation.fromTxRep(
+          map,
+          '$prefix.subInvocations[$i]',
+        ),
+      );
+    }
+    return XdrSorobanAuthorizedInvocation(function, subInvocations);
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_memo_type.dart';
@@ -102,5 +103,55 @@ class XdrMemo {
   static XdrMemo fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrMemo.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrMemoType.MEMO_NONE:
+        break;
+      case XdrMemoType.MEMO_TEXT:
+        lines.add('$prefix.text: ${TxRepHelper.escapeString(_text!)}');
+        break;
+      case XdrMemoType.MEMO_ID:
+        _id!.toTxRep('$prefix.id', lines);
+        break;
+      case XdrMemoType.MEMO_HASH:
+        _hash!.toTxRep('$prefix.hash', lines);
+        break;
+      case XdrMemoType.MEMO_RETURN:
+        _retHash!.toTxRep('$prefix.retHash', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrMemo fromTxRep(Map<String, String> map, String prefix) {
+    XdrMemoType disc = XdrMemoType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
+    XdrMemo result = XdrMemo(disc);
+    switch (result.discriminant) {
+      case XdrMemoType.MEMO_NONE:
+        break;
+      case XdrMemoType.MEMO_TEXT:
+        result._text = TxRepHelper.unescapeString(
+          TxRepHelper.getValue(map, '$prefix.text') ?? '',
+        );
+        break;
+      case XdrMemoType.MEMO_ID:
+        result._id = XdrUint64.fromTxRep(map, '$prefix.id');
+        break;
+      case XdrMemoType.MEMO_HASH:
+        result._hash = XdrHash.fromTxRep(map, '$prefix.hash');
+        break;
+      case XdrMemoType.MEMO_RETURN:
+        result._retHash = XdrHash.fromTxRep(map, '$prefix.retHash');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
 import 'xdr_uint64.dart';
@@ -46,5 +47,21 @@ class XdrLedgerKeyOfferBase {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerKeyOfferBase.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.sellerID: ${TxRepHelper.formatAccountId(_sellerID)}');
+    _offerID.toTxRep('$prefix.offerID', lines);
+  }
+
+  static XdrLedgerKeyOfferBase fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrAccountID sellerID = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.sellerID') ?? '',
+    );
+    XdrUint64 offerID = XdrUint64.fromTxRep(map, '$prefix.offerID');
+    return XdrLedgerKeyOfferBase(sellerID, offerID);
   }
 }

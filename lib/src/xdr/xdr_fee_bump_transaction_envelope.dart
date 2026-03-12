@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_decorated_signature.dart';
 import 'xdr_fee_bump_transaction.dart';
@@ -59,5 +60,33 @@ class XdrFeeBumpTransactionEnvelope {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFeeBumpTransactionEnvelope.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _tx.toTxRep('$prefix.tx', lines);
+    lines.add('$prefix.signatures.len: ${_signatures.length}');
+    for (int i = 0; i < _signatures.length; i++) {
+      _signatures[i].toTxRep('$prefix.signatures[$i]', lines);
+    }
+  }
+
+  static XdrFeeBumpTransactionEnvelope fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrFeeBumpTransaction tx = XdrFeeBumpTransaction.fromTxRep(
+      map,
+      '$prefix.tx',
+    );
+    int signaturesLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.signatures.len') ?? '0',
+    );
+    List<XdrDecoratedSignature> signatures = [];
+    for (int i = 0; i < signaturesLen; i++) {
+      signatures.add(
+        XdrDecoratedSignature.fromTxRep(map, '$prefix.signatures[$i]'),
+      );
+    }
+    return XdrFeeBumpTransactionEnvelope(tx, signatures);
   }
 }

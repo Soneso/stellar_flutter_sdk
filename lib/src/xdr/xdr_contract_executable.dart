@@ -23,6 +23,16 @@ class XdrContractExecutable extends XdrContractExecutableBase {
     );
   }
 
+  static XdrContractExecutable fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    var b = XdrContractExecutableBase.fromTxRep(map, prefix);
+    var result = XdrContractExecutable(b.discriminant);
+    result.wasmHash = b.wasmHash;
+    return result;
+  }
+
   static XdrContractExecutable forWasm(Uint8List wasmHash) {
     var result = XdrContractExecutable(
       XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,

@@ -23,6 +23,14 @@ class XdrMuxedAccountMed25519 extends XdrMuxedAccountMed25519Base {
     return XdrMuxedAccountMed25519(b.id, b.ed25519);
   }
 
+  static XdrMuxedAccountMed25519 fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    var b = XdrMuxedAccountMed25519Base.fromTxRep(map, prefix);
+    return XdrMuxedAccountMed25519(b.id, b.ed25519);
+  }
+
   static void encodeInverted(
     XdrDataOutputStream stream,
     XdrMuxedAccountMed25519 muxedAccountMed25519Entry,
@@ -38,7 +46,7 @@ class XdrMuxedAccountMed25519 extends XdrMuxedAccountMed25519Base {
   }
 
   String get accountId {
-    XdrDataOutputStream xdrOutputStream = new XdrDataOutputStream();
+    XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
     XdrMuxedAccountMed25519.encodeInverted(xdrOutputStream, this);
     Uint8List bytes = Uint8List.fromList(xdrOutputStream.bytes);
     return StrKey.encodeStellarMuxedAccountId(bytes);

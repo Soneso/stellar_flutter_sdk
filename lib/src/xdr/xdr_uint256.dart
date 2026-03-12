@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrUint256 {
@@ -33,5 +34,15 @@ class XdrUint256 {
   static XdrUint256 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrUint256.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${TxRepHelper.bytesToHex(_uint256)}');
+  }
+
+  static XdrUint256 fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return XdrUint256(TxRepHelper.hexToBytes(raw));
   }
 }

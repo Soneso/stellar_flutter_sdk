@@ -34,6 +34,16 @@ class XdrHostFunction extends XdrHostFunctionBase {
     return XdrHostFunctionBase.decodeAs(stream, XdrHostFunction.new);
   }
 
+  static XdrHostFunction fromTxRep(Map<String, String> map, String prefix) {
+    var b = XdrHostFunctionBase.fromTxRep(map, prefix);
+    var result = XdrHostFunction(b.discriminant);
+    result.invokeContract = b.invokeContract;
+    result.createContract = b.createContract;
+    result.wasm = b.wasm;
+    result.createContractV2 = b.createContractV2;
+    return result;
+  }
+
   static XdrHostFunction forUploadContractWasm(Uint8List contractCode) {
     XdrHostFunction result = XdrHostFunction(
       XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM,

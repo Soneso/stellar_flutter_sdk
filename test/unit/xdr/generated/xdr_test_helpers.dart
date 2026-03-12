@@ -10,3 +10,17 @@ Uint8List xdrEncode<T>(T value, void Function(XdrDataOutputStream, T) encode) {
   encode(output, value);
   return Uint8List.fromList(output.bytes);
 }
+
+/// Parse TxRep lines into a key-value map.
+/// Throws if any line doesn't contain the ': ' delimiter.
+Map<String, String> parseTxRepLines(List<String> lines) {
+  Map<String, String> map = {};
+  for (var line in lines) {
+    int idx = line.indexOf(': ');
+    if (idx < 0) {
+      throw FormatException('Malformed TxRep line (missing ": " delimiter): $line');
+    }
+    map[line.substring(0, idx)] = line.substring(idx + 2);
+  }
+  return map;
+}

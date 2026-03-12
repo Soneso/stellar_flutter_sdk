@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSCErrorType {
@@ -75,5 +76,73 @@ class XdrSCErrorType {
   static XdrSCErrorType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCErrorType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0:
+        return 'SCE_CONTRACT';
+      case 1:
+        return 'SCE_WASM_VM';
+      case 2:
+        return 'SCE_CONTEXT';
+      case 3:
+        return 'SCE_STORAGE';
+      case 4:
+        return 'SCE_OBJECT';
+      case 5:
+        return 'SCE_CRYPTO';
+      case 6:
+        return 'SCE_EVENTS';
+      case 7:
+        return 'SCE_BUDGET';
+      case 8:
+        return 'SCE_VALUE';
+      case 9:
+        return 'SCE_AUTH';
+      default:
+        return 'XdrSCErrorType#$_value';
+    }
+  }
+
+  static XdrSCErrorType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrSCErrorType fromTxRepName(String name) {
+    switch (name) {
+      case 'SCE_CONTRACT':
+        return SCE_CONTRACT;
+      case 'SCE_WASM_VM':
+        return SCE_WASM_VM;
+      case 'SCE_CONTEXT':
+        return SCE_CONTEXT;
+      case 'SCE_STORAGE':
+        return SCE_STORAGE;
+      case 'SCE_OBJECT':
+        return SCE_OBJECT;
+      case 'SCE_CRYPTO':
+        return SCE_CRYPTO;
+      case 'SCE_EVENTS':
+        return SCE_EVENTS;
+      case 'SCE_BUDGET':
+        return SCE_BUDGET;
+      case 'SCE_VALUE':
+        return SCE_VALUE;
+      case 'SCE_AUTH':
+        return SCE_AUTH;
+      default:
+        if (name.startsWith('XdrSCErrorType#')) {
+          int? val = int.tryParse(name.substring('XdrSCErrorType#'.length));
+          if (val != null) return XdrSCErrorType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

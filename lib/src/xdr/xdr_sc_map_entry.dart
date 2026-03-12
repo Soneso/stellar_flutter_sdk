@@ -44,4 +44,15 @@ class XdrSCMapEntry {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCMapEntry.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _key.toTxRep('$prefix.key', lines);
+    _val.toTxRep('$prefix.val', lines);
+  }
+
+  static XdrSCMapEntry fromTxRep(Map<String, String> map, String prefix) {
+    XdrSCVal key = XdrSCVal.fromTxRep(map, '$prefix.key');
+    XdrSCVal val = XdrSCVal.fromTxRep(map, '$prefix.val');
+    return XdrSCMapEntry(key, val);
+  }
 }

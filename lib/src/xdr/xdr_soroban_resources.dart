@@ -67,4 +67,27 @@ class XdrSorobanResources {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanResources.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _footprint.toTxRep('$prefix.footprint', lines);
+    _instructions.toTxRep('$prefix.instructions', lines);
+    _diskReadBytes.toTxRep('$prefix.diskReadBytes', lines);
+    _writeBytes.toTxRep('$prefix.writeBytes', lines);
+  }
+
+  static XdrSorobanResources fromTxRep(Map<String, String> map, String prefix) {
+    XdrLedgerFootprint footprint = XdrLedgerFootprint.fromTxRep(
+      map,
+      '$prefix.footprint',
+    );
+    XdrUint32 instructions = XdrUint32.fromTxRep(map, '$prefix.instructions');
+    XdrUint32 diskReadBytes = XdrUint32.fromTxRep(map, '$prefix.diskReadBytes');
+    XdrUint32 writeBytes = XdrUint32.fromTxRep(map, '$prefix.writeBytes');
+    return XdrSorobanResources(
+      footprint,
+      instructions,
+      diskReadBytes,
+      writeBytes,
+    );
+  }
 }

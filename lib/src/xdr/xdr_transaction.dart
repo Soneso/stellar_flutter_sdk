@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_memo.dart';
 import 'xdr_muxed_account.dart';
@@ -103,5 +104,50 @@ class XdrTransaction {
   static XdrTransaction fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransaction.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add(
+      '$prefix.sourceAccount: ${TxRepHelper.formatMuxedAccount(_sourceAccount)}',
+    );
+    _fee.toTxRep('$prefix.fee', lines);
+    _seqNum.toTxRep('$prefix.seqNum', lines);
+    _cond.toTxRep('$prefix.cond', lines);
+    _memo.toTxRep('$prefix.memo', lines);
+    lines.add('$prefix.operations.len: ${_operations.length}');
+    for (int i = 0; i < _operations.length; i++) {
+      _operations[i].toTxRep('$prefix.operations[$i]', lines);
+    }
+    _ext.toTxRep('$prefix.ext', lines);
+  }
+
+  static XdrTransaction fromTxRep(Map<String, String> map, String prefix) {
+    XdrMuxedAccount sourceAccount = TxRepHelper.parseMuxedAccount(
+      TxRepHelper.getValue(map, '$prefix.sourceAccount') ?? '',
+    );
+    XdrUint32 fee = XdrUint32.fromTxRep(map, '$prefix.fee');
+    XdrSequenceNumber seqNum = XdrSequenceNumber.fromTxRep(
+      map,
+      '$prefix.seqNum',
+    );
+    XdrPreconditions cond = XdrPreconditions.fromTxRep(map, '$prefix.cond');
+    XdrMemo memo = XdrMemo.fromTxRep(map, '$prefix.memo');
+    int operationsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.operations.len') ?? '0',
+    );
+    List<XdrOperation> operations = [];
+    for (int i = 0; i < operationsLen; i++) {
+      operations.add(XdrOperation.fromTxRep(map, '$prefix.operations[$i]'));
+    }
+    XdrTransactionExt ext = XdrTransactionExt.fromTxRep(map, '$prefix.ext');
+    return XdrTransaction(
+      sourceAccount,
+      fee,
+      seqNum,
+      cond,
+      memo,
+      operations,
+      ext,
+    );
   }
 }

@@ -47,4 +47,18 @@ class XdrMuxedAccountMed25519Base {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrMuxedAccountMed25519Base.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _id.toTxRep('$prefix.id', lines);
+    _ed25519.toTxRep('$prefix.ed25519', lines);
+  }
+
+  static XdrMuxedAccountMed25519Base fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrUint64 id = XdrUint64.fromTxRep(map, '$prefix.id');
+    XdrUint256 ed25519 = XdrUint256.fromTxRep(map, '$prefix.ed25519');
+    return XdrMuxedAccountMed25519Base(id, ed25519);
+  }
 }

@@ -56,4 +56,19 @@ class XdrUInt256PartsBase {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrUInt256PartsBase.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _hiHi.toTxRep('$prefix.hi_hi', lines);
+    _hiLo.toTxRep('$prefix.hi_lo', lines);
+    _loHi.toTxRep('$prefix.lo_hi', lines);
+    _loLo.toTxRep('$prefix.lo_lo', lines);
+  }
+
+  static XdrUInt256PartsBase fromTxRep(Map<String, String> map, String prefix) {
+    XdrUint64 hiHi = XdrUint64.fromTxRep(map, '$prefix.hi_hi');
+    XdrUint64 hiLo = XdrUint64.fromTxRep(map, '$prefix.hi_lo');
+    XdrUint64 loHi = XdrUint64.fromTxRep(map, '$prefix.lo_hi');
+    XdrUint64 loLo = XdrUint64.fromTxRep(map, '$prefix.lo_lo');
+    return XdrUInt256PartsBase(hiHi, hiLo, loHi, loLo);
+  }
 }

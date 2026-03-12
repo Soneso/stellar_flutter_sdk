@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
@@ -64,5 +65,27 @@ class XdrSetTrustLineFlagsOp {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSetTrustLineFlagsOp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.trustor: ${TxRepHelper.formatAccountId(_accountID)}');
+    lines.add('$prefix.asset: ${TxRepHelper.formatAsset(_asset)}');
+    _clearFlags.toTxRep('$prefix.clearFlags', lines);
+    _setFlags.toTxRep('$prefix.setFlags', lines);
+  }
+
+  static XdrSetTrustLineFlagsOp fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrAccountID accountID = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.trustor') ?? '',
+    );
+    XdrAsset asset = TxRepHelper.parseAsset(
+      TxRepHelper.getValue(map, '$prefix.asset') ?? '',
+    );
+    XdrUint32 clearFlags = XdrUint32.fromTxRep(map, '$prefix.clearFlags');
+    XdrUint32 setFlags = XdrUint32.fromTxRep(map, '$prefix.setFlags');
+    return XdrSetTrustLineFlagsOp(accountID, asset, clearFlags, setFlags);
   }
 }

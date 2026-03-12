@@ -40,4 +40,16 @@ class XdrLedgerKeyContractCode {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerKeyContractCode.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _hash.toTxRep('$prefix.hash', lines);
+  }
+
+  static XdrLedgerKeyContractCode fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrHash hash = XdrHash.fromTxRep(map, '$prefix.hash');
+    return XdrLedgerKeyContractCode(hash);
+  }
 }

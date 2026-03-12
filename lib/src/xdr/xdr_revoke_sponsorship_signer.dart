@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
 import 'xdr_signer_key.dart';
@@ -46,5 +47,23 @@ class XdrRevokeSponsorshipSigner {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrRevokeSponsorshipSigner.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.accountID: ${TxRepHelper.formatAccountId(_accountId)}');
+    lines.add('$prefix.signerKey: ${TxRepHelper.formatSignerKey(_signerKey)}');
+  }
+
+  static XdrRevokeSponsorshipSigner fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrAccountID accountId = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.accountID') ?? '',
+    );
+    XdrSignerKey signerKey = TxRepHelper.parseSignerKey(
+      TxRepHelper.getValue(map, '$prefix.signerKey') ?? '',
+    );
+    return XdrRevokeSponsorshipSigner(accountId, signerKey);
   }
 }

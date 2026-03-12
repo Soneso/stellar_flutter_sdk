@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSCErrorCode {
@@ -75,5 +76,73 @@ class XdrSCErrorCode {
   static XdrSCErrorCode fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCErrorCode.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0:
+        return 'SCEC_ARITH_DOMAIN';
+      case 1:
+        return 'SCEC_INDEX_BOUNDS';
+      case 2:
+        return 'SCEC_INVALID_INPUT';
+      case 3:
+        return 'SCEC_MISSING_VALUE';
+      case 4:
+        return 'SCEC_EXISTING_VALUE';
+      case 5:
+        return 'SCEC_EXCEEDED_LIMIT';
+      case 6:
+        return 'SCEC_INVALID_ACTION';
+      case 7:
+        return 'SCEC_INTERNAL_ERROR';
+      case 8:
+        return 'SCEC_UNEXPECTED_TYPE';
+      case 9:
+        return 'SCEC_UNEXPECTED_SIZE';
+      default:
+        return 'XdrSCErrorCode#$_value';
+    }
+  }
+
+  static XdrSCErrorCode fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrSCErrorCode fromTxRepName(String name) {
+    switch (name) {
+      case 'SCEC_ARITH_DOMAIN':
+        return SCEC_ARITH_DOMAIN;
+      case 'SCEC_INDEX_BOUNDS':
+        return SCEC_INDEX_BOUNDS;
+      case 'SCEC_INVALID_INPUT':
+        return SCEC_INVALID_INPUT;
+      case 'SCEC_MISSING_VALUE':
+        return SCEC_MISSING_VALUE;
+      case 'SCEC_EXISTING_VALUE':
+        return SCEC_EXISTING_VALUE;
+      case 'SCEC_EXCEEDED_LIMIT':
+        return SCEC_EXCEEDED_LIMIT;
+      case 'SCEC_INVALID_ACTION':
+        return SCEC_INVALID_ACTION;
+      case 'SCEC_INTERNAL_ERROR':
+        return SCEC_INTERNAL_ERROR;
+      case 'SCEC_UNEXPECTED_TYPE':
+        return SCEC_UNEXPECTED_TYPE;
+      case 'SCEC_UNEXPECTED_SIZE':
+        return SCEC_UNEXPECTED_SIZE;
+      default:
+        if (name.startsWith('XdrSCErrorCode#')) {
+          int? val = int.tryParse(name.substring('XdrSCErrorCode#'.length));
+          if (val != null) return XdrSCErrorCode._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

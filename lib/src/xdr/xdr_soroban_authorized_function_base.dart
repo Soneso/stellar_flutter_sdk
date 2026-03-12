@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_create_contract_args.dart';
 import 'xdr_create_contract_args_v2.dart';
 import 'xdr_data_io.dart';
@@ -120,5 +121,67 @@ class XdrSorobanAuthorizedFunctionBase {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanAuthorizedFunctionBase.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrSorobanAuthorizedFunctionType
+          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
+        _contractFn!.toTxRep('$prefix.contractFn', lines);
+        break;
+      case XdrSorobanAuthorizedFunctionType
+          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
+        _createContractHostFn!.toTxRep('$prefix.createContractHostFn', lines);
+        break;
+      case XdrSorobanAuthorizedFunctionType
+          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
+        _createContractV2HostFn!.toTxRep(
+          '$prefix.createContractV2HostFn',
+          lines,
+        );
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrSorobanAuthorizedFunctionBase fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrSorobanAuthorizedFunctionType disc =
+        XdrSorobanAuthorizedFunctionType.fromTxRepName(
+          TxRepHelper.getValue(map, '$prefix.type') ?? '',
+        );
+    XdrSorobanAuthorizedFunctionBase result = XdrSorobanAuthorizedFunctionBase(
+      disc,
+    );
+    switch (result.discriminant) {
+      case XdrSorobanAuthorizedFunctionType
+          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
+        result._contractFn = XdrInvokeContractArgs.fromTxRep(
+          map,
+          '$prefix.contractFn',
+        );
+        break;
+      case XdrSorobanAuthorizedFunctionType
+          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
+        result._createContractHostFn = XdrCreateContractArgs.fromTxRep(
+          map,
+          '$prefix.createContractHostFn',
+        );
+        break;
+      case XdrSorobanAuthorizedFunctionType
+          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
+        result._createContractV2HostFn = XdrCreateContractArgsV2.fromTxRep(
+          map,
+          '$prefix.createContractV2HostFn',
+        );
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

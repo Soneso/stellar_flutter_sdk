@@ -44,4 +44,15 @@ class XdrUInt128PartsBase {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrUInt128PartsBase.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _hi.toTxRep('$prefix.hi', lines);
+    _lo.toTxRep('$prefix.lo', lines);
+  }
+
+  static XdrUInt128PartsBase fromTxRep(Map<String, String> map, String prefix) {
+    XdrUint64 hi = XdrUint64.fromTxRep(map, '$prefix.hi');
+    XdrUint64 lo = XdrUint64.fromTxRep(map, '$prefix.lo');
+    return XdrUInt128PartsBase(hi, lo);
+  }
 }

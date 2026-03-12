@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrHostFunctionType {
@@ -61,5 +62,51 @@ class XdrHostFunctionType {
   static XdrHostFunctionType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHostFunctionType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0:
+        return 'HOST_FUNCTION_TYPE_INVOKE_CONTRACT';
+      case 1:
+        return 'HOST_FUNCTION_TYPE_CREATE_CONTRACT';
+      case 2:
+        return 'HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM';
+      case 3:
+        return 'HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2';
+      default:
+        return 'XdrHostFunctionType#$_value';
+    }
+  }
+
+  static XdrHostFunctionType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrHostFunctionType fromTxRepName(String name) {
+    switch (name) {
+      case 'HOST_FUNCTION_TYPE_INVOKE_CONTRACT':
+        return HOST_FUNCTION_TYPE_INVOKE_CONTRACT;
+      case 'HOST_FUNCTION_TYPE_CREATE_CONTRACT':
+        return HOST_FUNCTION_TYPE_CREATE_CONTRACT;
+      case 'HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM':
+        return HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM;
+      case 'HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2':
+        return HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2;
+      default:
+        if (name.startsWith('XdrHostFunctionType#')) {
+          int? val = int.tryParse(
+            name.substring('XdrHostFunctionType#'.length),
+          );
+          if (val != null) return XdrHostFunctionType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

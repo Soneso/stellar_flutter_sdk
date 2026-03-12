@@ -47,4 +47,18 @@ class XdrExtendFootprintTTLOp {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrExtendFootprintTTLOp.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _ext.toTxRep('$prefix.ext', lines);
+    _extendTo.toTxRep('$prefix.extendTo', lines);
+  }
+
+  static XdrExtendFootprintTTLOp fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
+    XdrUint32 extendTo = XdrUint32.fromTxRep(map, '$prefix.extendTo');
+    return XdrExtendFootprintTTLOp(ext, extendTo);
+  }
 }

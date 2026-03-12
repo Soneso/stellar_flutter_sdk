@@ -78,4 +78,30 @@ class XdrLiquidityPoolDepositOp {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolDepositOp.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _liquidityPoolID.toTxRep('$prefix.liquidityPoolID', lines);
+    _maxAmountA.toTxRep('$prefix.maxAmountA', lines);
+    _maxAmountB.toTxRep('$prefix.maxAmountB', lines);
+    _minPrice.toTxRep('$prefix.minPrice', lines);
+    _maxPrice.toTxRep('$prefix.maxPrice', lines);
+  }
+
+  static XdrLiquidityPoolDepositOp fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrHash liquidityPoolID = XdrHash.fromTxRep(map, '$prefix.liquidityPoolID');
+    XdrInt64 maxAmountA = XdrInt64.fromTxRep(map, '$prefix.maxAmountA');
+    XdrInt64 maxAmountB = XdrInt64.fromTxRep(map, '$prefix.maxAmountB');
+    XdrPrice minPrice = XdrPrice.fromTxRep(map, '$prefix.minPrice');
+    XdrPrice maxPrice = XdrPrice.fromTxRep(map, '$prefix.maxPrice');
+    return XdrLiquidityPoolDepositOp(
+      liquidityPoolID,
+      maxAmountA,
+      maxAmountB,
+      minPrice,
+      maxPrice,
+    );
+  }
 }

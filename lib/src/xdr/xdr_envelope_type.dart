@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrEnvelopeType {
@@ -77,5 +78,73 @@ class XdrEnvelopeType {
   static XdrEnvelopeType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrEnvelopeType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0:
+        return 'ENVELOPE_TYPE_TX_V0';
+      case 1:
+        return 'ENVELOPE_TYPE_SCP';
+      case 2:
+        return 'ENVELOPE_TYPE_TX';
+      case 3:
+        return 'ENVELOPE_TYPE_AUTH';
+      case 4:
+        return 'ENVELOPE_TYPE_SCPVALUE';
+      case 5:
+        return 'ENVELOPE_TYPE_TX_FEE_BUMP';
+      case 6:
+        return 'ENVELOPE_TYPE_OP_ID';
+      case 7:
+        return 'ENVELOPE_TYPE_POOL_REVOKE_OP_ID';
+      case 8:
+        return 'ENVELOPE_TYPE_CONTRACT_ID';
+      case 9:
+        return 'ENVELOPE_TYPE_SOROBAN_AUTHORIZATION';
+      default:
+        return 'XdrEnvelopeType#$_value';
+    }
+  }
+
+  static XdrEnvelopeType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrEnvelopeType fromTxRepName(String name) {
+    switch (name) {
+      case 'ENVELOPE_TYPE_TX_V0':
+        return ENVELOPE_TYPE_TX_V0;
+      case 'ENVELOPE_TYPE_SCP':
+        return ENVELOPE_TYPE_SCP;
+      case 'ENVELOPE_TYPE_TX':
+        return ENVELOPE_TYPE_TX;
+      case 'ENVELOPE_TYPE_AUTH':
+        return ENVELOPE_TYPE_AUTH;
+      case 'ENVELOPE_TYPE_SCPVALUE':
+        return ENVELOPE_TYPE_SCPVALUE;
+      case 'ENVELOPE_TYPE_TX_FEE_BUMP':
+        return ENVELOPE_TYPE_TX_FEE_BUMP;
+      case 'ENVELOPE_TYPE_OP_ID':
+        return ENVELOPE_TYPE_OP_ID;
+      case 'ENVELOPE_TYPE_POOL_REVOKE_OP_ID':
+        return ENVELOPE_TYPE_POOL_REVOKE_OP_ID;
+      case 'ENVELOPE_TYPE_CONTRACT_ID':
+        return ENVELOPE_TYPE_CONTRACT_ID;
+      case 'ENVELOPE_TYPE_SOROBAN_AUTHORIZATION':
+        return ENVELOPE_TYPE_SOROBAN_AUTHORIZATION;
+      default:
+        if (name.startsWith('XdrEnvelopeType#')) {
+          int? val = int.tryParse(name.substring('XdrEnvelopeType#'.length));
+          if (val != null) return XdrEnvelopeType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrContractExecutableType {
@@ -58,5 +59,46 @@ class XdrContractExecutableType {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractExecutableType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0:
+        return 'CONTRACT_EXECUTABLE_WASM';
+      case 1:
+        return 'CONTRACT_EXECUTABLE_STELLAR_ASSET';
+      default:
+        return 'XdrContractExecutableType#$_value';
+    }
+  }
+
+  static XdrContractExecutableType fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrContractExecutableType fromTxRepName(String name) {
+    switch (name) {
+      case 'CONTRACT_EXECUTABLE_WASM':
+        return CONTRACT_EXECUTABLE_WASM;
+      case 'CONTRACT_EXECUTABLE_STELLAR_ASSET':
+        return CONTRACT_EXECUTABLE_STELLAR_ASSET;
+      default:
+        if (name.startsWith('XdrContractExecutableType#')) {
+          int? val = int.tryParse(
+            name.substring('XdrContractExecutableType#'.length),
+          );
+          if (val != null) return XdrContractExecutableType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

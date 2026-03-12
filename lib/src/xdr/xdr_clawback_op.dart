@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
@@ -51,5 +52,22 @@ class XdrClawbackOp {
   static XdrClawbackOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClawbackOp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.asset: ${TxRepHelper.formatAsset(_asset)}');
+    lines.add('$prefix.from: ${TxRepHelper.formatMuxedAccount(_from)}');
+    _amount.toTxRep('$prefix.amount', lines);
+  }
+
+  static XdrClawbackOp fromTxRep(Map<String, String> map, String prefix) {
+    XdrAsset asset = TxRepHelper.parseAsset(
+      TxRepHelper.getValue(map, '$prefix.asset') ?? '',
+    );
+    XdrMuxedAccount from = TxRepHelper.parseMuxedAccount(
+      TxRepHelper.getValue(map, '$prefix.from') ?? '',
+    );
+    XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.amount');
+    return XdrClawbackOp(asset, from, amount);
   }
 }

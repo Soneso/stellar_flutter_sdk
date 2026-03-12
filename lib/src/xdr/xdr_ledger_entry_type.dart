@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrLedgerEntryType {
@@ -75,5 +76,73 @@ class XdrLedgerEntryType {
   static XdrLedgerEntryType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntryType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0:
+        return 'ACCOUNT';
+      case 1:
+        return 'TRUSTLINE';
+      case 2:
+        return 'OFFER';
+      case 3:
+        return 'DATA';
+      case 4:
+        return 'CLAIMABLE_BALANCE';
+      case 5:
+        return 'LIQUIDITY_POOL';
+      case 6:
+        return 'CONTRACT_DATA';
+      case 7:
+        return 'CONTRACT_CODE';
+      case 8:
+        return 'CONFIG_SETTING';
+      case 9:
+        return 'TTL';
+      default:
+        return 'XdrLedgerEntryType#$_value';
+    }
+  }
+
+  static XdrLedgerEntryType fromTxRep(Map<String, String> map, String prefix) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrLedgerEntryType fromTxRepName(String name) {
+    switch (name) {
+      case 'ACCOUNT':
+        return ACCOUNT;
+      case 'TRUSTLINE':
+        return TRUSTLINE;
+      case 'OFFER':
+        return OFFER;
+      case 'DATA':
+        return DATA;
+      case 'CLAIMABLE_BALANCE':
+        return CLAIMABLE_BALANCE;
+      case 'LIQUIDITY_POOL':
+        return LIQUIDITY_POOL;
+      case 'CONTRACT_DATA':
+        return CONTRACT_DATA;
+      case 'CONTRACT_CODE':
+        return CONTRACT_CODE;
+      case 'CONFIG_SETTING':
+        return CONFIG_SETTING;
+      case 'TTL':
+        return TTL;
+      default:
+        if (name.startsWith('XdrLedgerEntryType#')) {
+          int? val = int.tryParse(name.substring('XdrLedgerEntryType#'.length));
+          if (val != null) return XdrLedgerEntryType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

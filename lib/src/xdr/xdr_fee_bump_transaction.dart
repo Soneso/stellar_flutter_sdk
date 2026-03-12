@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_fee_bump_transaction_ext.dart';
 import 'xdr_fee_bump_transaction_inner_tx.dart';
@@ -65,5 +66,31 @@ class XdrFeeBumpTransaction {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFeeBumpTransaction.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add(
+      '$prefix.feeSource: ${TxRepHelper.formatMuxedAccount(_feeSource)}',
+    );
+    _fee.toTxRep('$prefix.fee', lines);
+    _innerTx.toTxRep('$prefix.innerTx', lines);
+    _ext.toTxRep('$prefix.ext', lines);
+  }
+
+  static XdrFeeBumpTransaction fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrMuxedAccount feeSource = TxRepHelper.parseMuxedAccount(
+      TxRepHelper.getValue(map, '$prefix.feeSource') ?? '',
+    );
+    XdrInt64 fee = XdrInt64.fromTxRep(map, '$prefix.fee');
+    XdrFeeBumpTransactionInnerTx innerTx =
+        XdrFeeBumpTransactionInnerTx.fromTxRep(map, '$prefix.innerTx');
+    XdrFeeBumpTransactionExt ext = XdrFeeBumpTransactionExt.fromTxRep(
+      map,
+      '$prefix.ext',
+    );
+    return XdrFeeBumpTransaction(feeSource, fee, innerTx, ext);
   }
 }

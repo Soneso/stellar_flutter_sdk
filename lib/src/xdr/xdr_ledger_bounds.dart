@@ -44,4 +44,15 @@ class XdrLedgerBounds {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerBounds.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _minLedger.toTxRep('$prefix.minLedger', lines);
+    _maxLedger.toTxRep('$prefix.maxLedger', lines);
+  }
+
+  static XdrLedgerBounds fromTxRep(Map<String, String> map, String prefix) {
+    XdrUint32 minLedger = XdrUint32.fromTxRep(map, '$prefix.minLedger');
+    XdrUint32 maxLedger = XdrUint32.fromTxRep(map, '$prefix.maxLedger');
+    return XdrLedgerBounds(minLedger, maxLedger);
+  }
 }

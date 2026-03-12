@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrSorobanAuthorizedFunctionType {
@@ -62,5 +63,51 @@ class XdrSorobanAuthorizedFunctionType {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanAuthorizedFunctionType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0:
+        return 'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN';
+      case 1:
+        return 'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN';
+      case 2:
+        return 'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN';
+      default:
+        return 'XdrSorobanAuthorizedFunctionType#$_value';
+    }
+  }
+
+  static XdrSorobanAuthorizedFunctionType fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrSorobanAuthorizedFunctionType fromTxRepName(String name) {
+    switch (name) {
+      case 'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN':
+        return SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN;
+      case 'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN':
+        return SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN;
+      case 'SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN':
+        return SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN;
+      default:
+        if (name.startsWith('XdrSorobanAuthorizedFunctionType#')) {
+          int? val = int.tryParse(
+            name.substring('XdrSorobanAuthorizedFunctionType#'.length),
+          );
+          if (val != null)
+            return XdrSorobanAuthorizedFunctionType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

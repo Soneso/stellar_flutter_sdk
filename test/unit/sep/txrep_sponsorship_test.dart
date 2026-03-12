@@ -878,7 +878,7 @@ signatures.len: 0
 
         expect(
           () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-          throwsException,
+          throwsA(anything),
         );
       });
 

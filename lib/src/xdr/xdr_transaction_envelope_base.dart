@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_envelope_type.dart';
 import 'xdr_fee_bump_transaction_envelope.dart';
@@ -108,5 +109,49 @@ class XdrTransactionEnvelopeBase {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionEnvelopeBase.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrEnvelopeType.ENVELOPE_TYPE_TX_V0:
+        _v0!.toTxRep('$prefix.v0', lines);
+        break;
+      case XdrEnvelopeType.ENVELOPE_TYPE_TX:
+        _v1!.toTxRep('$prefix.v1', lines);
+        break;
+      case XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
+        _feeBump!.toTxRep('$prefix.feeBump', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrTransactionEnvelopeBase fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrEnvelopeType disc = XdrEnvelopeType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
+    XdrTransactionEnvelopeBase result = XdrTransactionEnvelopeBase(disc);
+    switch (result.discriminant) {
+      case XdrEnvelopeType.ENVELOPE_TYPE_TX_V0:
+        result._v0 = XdrTransactionV0Envelope.fromTxRep(map, '$prefix.v0');
+        break;
+      case XdrEnvelopeType.ENVELOPE_TYPE_TX:
+        result._v1 = XdrTransactionV1Envelope.fromTxRep(map, '$prefix.v1');
+        break;
+      case XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP:
+        result._feeBump = XdrFeeBumpTransactionEnvelope.fromTxRep(
+          map,
+          '$prefix.feeBump',
+        );
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

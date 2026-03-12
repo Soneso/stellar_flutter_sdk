@@ -53,6 +53,17 @@ class XdrContractIDPreimage extends XdrContractIDPreimageBase {
     );
   }
 
+  static XdrContractIDPreimage fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    var b = XdrContractIDPreimageBase.fromTxRep(map, prefix);
+    var result = XdrContractIDPreimage(b.discriminant);
+    result.fromAddress = b.fromAddress;
+    result.fromAsset = b.fromAsset;
+    return result;
+  }
+
   static XdrContractIDPreimage forAddress(
     XdrSCAddress address,
     Uint8List uInt256Salt,

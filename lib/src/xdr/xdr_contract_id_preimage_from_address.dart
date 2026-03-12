@@ -47,4 +47,18 @@ class XdrContractIDPreimageFromAddress {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractIDPreimageFromAddress.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _address.toTxRep('$prefix.address', lines);
+    _salt.toTxRep('$prefix.salt', lines);
+  }
+
+  static XdrContractIDPreimageFromAddress fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrSCAddress address = XdrSCAddress.fromTxRep(map, '$prefix.address');
+    XdrUint256 salt = XdrUint256.fromTxRep(map, '$prefix.salt');
+    return XdrContractIDPreimageFromAddress(address, salt);
+  }
 }

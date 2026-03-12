@@ -59,4 +59,23 @@ class XdrLedgerKeyContractData {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerKeyContractData.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _contract.toTxRep('$prefix.contract', lines);
+    _key.toTxRep('$prefix.key', lines);
+    _durability.toTxRep('$prefix.durability', lines);
+  }
+
+  static XdrLedgerKeyContractData fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrSCAddress contract = XdrSCAddress.fromTxRep(map, '$prefix.contract');
+    XdrSCVal key = XdrSCVal.fromTxRep(map, '$prefix.key');
+    XdrContractDataDurability durability = XdrContractDataDurability.fromTxRep(
+      map,
+      '$prefix.durability',
+    );
+    return XdrLedgerKeyContractData(contract, key, durability);
+  }
 }

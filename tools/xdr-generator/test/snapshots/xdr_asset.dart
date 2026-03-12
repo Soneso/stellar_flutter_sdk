@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_asset_alpha_num12.dart';
 import 'xdr_asset_alpha_num4.dart';
 import 'xdr_asset_type.dart';
@@ -78,5 +79,39 @@ class XdrAsset {
   static XdrAsset fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAsset.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrAssetType.ASSET_TYPE_NATIVE:
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+        _alphaNum4!.toTxRep('$prefix.alphaNum4', lines);
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+        _alphaNum12!.toTxRep('$prefix.alphaNum12', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrAsset fromTxRep(Map<String, String> map, String prefix) {
+    XdrAssetType disc = XdrAssetType.fromTxRepName(TxRepHelper.getValue(map, '$prefix.type') ?? '');
+    XdrAsset result = XdrAsset(disc);
+    switch (result.discriminant) {
+      case XdrAssetType.ASSET_TYPE_NATIVE:
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+        result._alphaNum4 = XdrAssetAlphaNum4.fromTxRep(map, '$prefix.alphaNum4');
+        break;
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+        result._alphaNum12 = XdrAssetAlphaNum12.fromTxRep(map, '$prefix.alphaNum12');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

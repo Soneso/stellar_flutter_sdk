@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_claimant.dart';
 import 'xdr_data_io.dart';
@@ -61,5 +62,32 @@ class XdrCreateClaimableBalanceOp {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCreateClaimableBalanceOp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.asset: ${TxRepHelper.formatAsset(_asset)}');
+    _amount.toTxRep('$prefix.amount', lines);
+    lines.add('$prefix.claimants.len: ${_claimants.length}');
+    for (int i = 0; i < _claimants.length; i++) {
+      _claimants[i].toTxRep('$prefix.claimants[$i]', lines);
+    }
+  }
+
+  static XdrCreateClaimableBalanceOp fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrAsset asset = TxRepHelper.parseAsset(
+      TxRepHelper.getValue(map, '$prefix.asset') ?? '',
+    );
+    XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.amount');
+    int claimantsLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.claimants.len') ?? '0',
+    );
+    List<XdrClaimant> claimants = [];
+    for (int i = 0; i < claimantsLen; i++) {
+      claimants.add(XdrClaimant.fromTxRep(map, '$prefix.claimants[$i]'));
+    }
+    return XdrCreateClaimableBalanceOp(asset, amount, claimants);
   }
 }

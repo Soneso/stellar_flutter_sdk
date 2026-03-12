@@ -26,6 +26,18 @@ class XdrSorobanAuthorizedFunction extends XdrSorobanAuthorizedFunctionBase {
     );
   }
 
+  static XdrSorobanAuthorizedFunction fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    var b = XdrSorobanAuthorizedFunctionBase.fromTxRep(map, prefix);
+    var result = XdrSorobanAuthorizedFunction(b.discriminant);
+    result.contractFn = b.contractFn;
+    result.createContractHostFn = b.createContractHostFn;
+    result.createContractV2HostFn = b.createContractV2HostFn;
+    return result;
+  }
+
   static XdrSorobanAuthorizedFunction forInvokeContractArgs(
     XdrInvokeContractArgs args,
   ) {

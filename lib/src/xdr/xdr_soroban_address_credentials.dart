@@ -75,4 +75,33 @@ class XdrSorobanAddressCredentials {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanAddressCredentials.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _address.toTxRep('$prefix.address', lines);
+    _nonce.toTxRep('$prefix.nonce', lines);
+    _signatureExpirationLedger.toTxRep(
+      '$prefix.signatureExpirationLedger',
+      lines,
+    );
+    _signature.toTxRep('$prefix.signature', lines);
+  }
+
+  static XdrSorobanAddressCredentials fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrSCAddress address = XdrSCAddress.fromTxRep(map, '$prefix.address');
+    XdrInt64 nonce = XdrInt64.fromTxRep(map, '$prefix.nonce');
+    XdrUint32 signatureExpirationLedger = XdrUint32.fromTxRep(
+      map,
+      '$prefix.signatureExpirationLedger',
+    );
+    XdrSCVal signature = XdrSCVal.fromTxRep(map, '$prefix.signature');
+    return XdrSorobanAddressCredentials(
+      address,
+      nonce,
+      signatureExpirationLedger,
+      signature,
+    );
+  }
 }

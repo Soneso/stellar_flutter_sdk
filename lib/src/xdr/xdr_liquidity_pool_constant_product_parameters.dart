@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int32.dart';
@@ -67,5 +68,25 @@ class XdrLiquidityPoolConstantProductParameters {
     return XdrLiquidityPoolConstantProductParameters.decode(
       XdrDataInputStream(bytes),
     );
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.assetA: ${TxRepHelper.formatAsset(_assetA)}');
+    lines.add('$prefix.assetB: ${TxRepHelper.formatAsset(_assetB)}');
+    _fee.toTxRep('$prefix.fee', lines);
+  }
+
+  static XdrLiquidityPoolConstantProductParameters fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrAsset assetA = TxRepHelper.parseAsset(
+      TxRepHelper.getValue(map, '$prefix.assetA') ?? '',
+    );
+    XdrAsset assetB = TxRepHelper.parseAsset(
+      TxRepHelper.getValue(map, '$prefix.assetB') ?? '',
+    );
+    XdrInt32 fee = XdrInt32.fromTxRep(map, '$prefix.fee');
+    return XdrLiquidityPoolConstantProductParameters(assetA, assetB, fee);
   }
 }

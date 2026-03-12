@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 
 class XdrContractIDPreimageType {
@@ -58,5 +59,46 @@ class XdrContractIDPreimageType {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractIDPreimageType.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix: ${enumName()}');
+  }
+
+  String enumName() {
+    switch (_value) {
+      case 0:
+        return 'CONTRACT_ID_PREIMAGE_FROM_ADDRESS';
+      case 1:
+        return 'CONTRACT_ID_PREIMAGE_FROM_ASSET';
+      default:
+        return 'XdrContractIDPreimageType#$_value';
+    }
+  }
+
+  static XdrContractIDPreimageType fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    String? raw = TxRepHelper.getValue(map, prefix);
+    if (raw == null) throw Exception('missing $prefix');
+    return fromTxRepName(raw);
+  }
+
+  static XdrContractIDPreimageType fromTxRepName(String name) {
+    switch (name) {
+      case 'CONTRACT_ID_PREIMAGE_FROM_ADDRESS':
+        return CONTRACT_ID_PREIMAGE_FROM_ADDRESS;
+      case 'CONTRACT_ID_PREIMAGE_FROM_ASSET':
+        return CONTRACT_ID_PREIMAGE_FROM_ASSET;
+      default:
+        if (name.startsWith('XdrContractIDPreimageType#')) {
+          int? val = int.tryParse(
+            name.substring('XdrContractIDPreimageType#'.length),
+          );
+          if (val != null) return XdrContractIDPreimageType._internal(val);
+        }
+        throw Exception('Unknown enum value: $name');
+    }
   }
 }

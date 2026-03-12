@@ -40,4 +40,16 @@ class XdrRestoreFootprintOp {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrRestoreFootprintOp.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _ext.toTxRep('$prefix.ext', lines);
+  }
+
+  static XdrRestoreFootprintOp fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
+    return XdrRestoreFootprintOp(ext);
+  }
 }

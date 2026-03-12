@@ -42,4 +42,15 @@ class XdrPrice {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPrice.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _n.toTxRep('$prefix.n', lines);
+    _d.toTxRep('$prefix.d', lines);
+  }
+
+  static XdrPrice fromTxRep(Map<String, String> map, String prefix) {
+    XdrInt32 n = XdrInt32.fromTxRep(map, '$prefix.n');
+    XdrInt32 d = XdrInt32.fromTxRep(map, '$prefix.d');
+    return XdrPrice(n, d);
+  }
 }

@@ -37,4 +37,12 @@ class XdrAccountIDBase {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountIDBase.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _accountID.toTxRep('$prefix', lines);
+  }
+
+  static XdrAccountIDBase fromTxRep(Map<String, String> map, String prefix) {
+    return XdrAccountIDBase(XdrPublicKey.fromTxRep(map, prefix));
+  }
 }

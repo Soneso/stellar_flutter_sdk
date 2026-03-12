@@ -38,4 +38,13 @@ class XdrSCNonceKey {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCNonceKey.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _nonce.toTxRep('$prefix.nonce', lines);
+  }
+
+  static XdrSCNonceKey fromTxRep(Map<String, String> map, String prefix) {
+    XdrInt64 nonce = XdrInt64.fromTxRep(map, '$prefix.nonce');
+    return XdrSCNonceKey(nonce);
+  }
 }

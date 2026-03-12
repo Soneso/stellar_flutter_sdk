@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_data_value.dart';
 import 'xdr_string64.dart';
@@ -53,5 +54,28 @@ class XdrManageDataOp {
   static XdrManageDataOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrManageDataOp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _dataName.toTxRep('$prefix.dataName', lines);
+    if (_dataValue != null) {
+      lines.add('$prefix.dataValue._present: true');
+      _dataValue!.toTxRep('$prefix.dataValue', lines);
+    } else {
+      lines.add('$prefix.dataValue._present: false');
+    }
+  }
+
+  static XdrManageDataOp fromTxRep(Map<String, String> map, String prefix) {
+    XdrString64 dataName = XdrString64.fromTxRep(map, '$prefix.dataName');
+    XdrDataValue? dataValue;
+    String? dataValuePresent = TxRepHelper.getValue(
+      map,
+      '$prefix.dataValue._present',
+    );
+    if (dataValuePresent != null && dataValuePresent == 'true') {
+      dataValue = XdrDataValue.fromTxRep(map, '$prefix.dataValue');
+    }
+    return XdrManageDataOp(dataName, dataValue);
   }
 }

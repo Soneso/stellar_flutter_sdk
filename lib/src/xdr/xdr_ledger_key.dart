@@ -73,6 +73,22 @@ class XdrLedgerKey extends XdrLedgerKeyBase {
     return XdrLedgerKeyBase.decodeAs(stream, XdrLedgerKey.new);
   }
 
+  static XdrLedgerKey fromTxRep(Map<String, String> map, String prefix) {
+    var b = XdrLedgerKeyBase.fromTxRep(map, prefix);
+    var result = XdrLedgerKey(b.discriminant);
+    result.account = b.account;
+    result.trustLine = b.trustLine;
+    result.offer = b.offer;
+    result.data = b.data;
+    result.claimableBalance = b.claimableBalance;
+    result.liquidityPool = b.liquidityPool;
+    result.contractData = b.contractData;
+    result.contractCode = b.contractCode;
+    result.configSetting = b.configSetting;
+    result.ttl = b.ttl;
+    return result;
+  }
+
   String? getAccountAccountId() {
     if (account != null) {
       return KeyPair.fromXdrPublicKey(account!.accountID.accountID).accountId;

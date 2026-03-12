@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_envelope_type.dart';
 import 'xdr_transaction_v1_envelope.dart';
@@ -72,5 +73,34 @@ class XdrFeeBumpTransactionInnerTx {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFeeBumpTransactionInnerTx.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrEnvelopeType.ENVELOPE_TYPE_TX:
+        _v1!.toTxRep('$prefix.v1', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrFeeBumpTransactionInnerTx fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrEnvelopeType disc = XdrEnvelopeType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
+    XdrFeeBumpTransactionInnerTx result = XdrFeeBumpTransactionInnerTx(disc);
+    switch (result.discriminant) {
+      case XdrEnvelopeType.ENVELOPE_TYPE_TX:
+        result._v1 = XdrTransactionV1Envelope.fromTxRep(map, '$prefix.v1');
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

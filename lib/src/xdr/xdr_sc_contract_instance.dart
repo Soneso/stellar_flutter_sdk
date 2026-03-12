@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_contract_executable.dart';
 import 'xdr_data_io.dart';
 import 'xdr_sc_map_entry.dart';
@@ -62,5 +63,43 @@ class XdrSCContractInstance {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCContractInstance.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _executable.toTxRep('$prefix.executable', lines);
+    if (_storage != null) {
+      lines.add('$prefix.storage._present: true');
+      lines.add('$prefix.storage.len: ${_storage!.length}');
+      for (int i = 0; i < _storage!.length; i++) {
+        _storage![i].toTxRep('$prefix.storage[$i]', lines);
+      }
+    } else {
+      lines.add('$prefix.storage._present: false');
+    }
+  }
+
+  static XdrSCContractInstance fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrContractExecutable executable = XdrContractExecutable.fromTxRep(
+      map,
+      '$prefix.executable',
+    );
+    List<XdrSCMapEntry>? storage;
+    String? storagePresent = TxRepHelper.getValue(
+      map,
+      '$prefix.storage._present',
+    );
+    if (storagePresent != null && storagePresent == 'true') {
+      int storageLen = TxRepHelper.parseInt(
+        TxRepHelper.getValue(map, '$prefix.storage.len') ?? '0',
+      );
+      storage = [];
+      for (int i = 0; i < storageLen; i++) {
+        storage.add(XdrSCMapEntry.fromTxRep(map, '$prefix.storage[$i]'));
+      }
+    }
+    return XdrSCContractInstance(executable, storage);
   }
 }

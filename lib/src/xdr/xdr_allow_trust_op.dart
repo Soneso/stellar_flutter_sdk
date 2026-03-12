@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_allow_trust_op_asset.dart';
 import 'xdr_data_io.dart';
@@ -50,5 +51,24 @@ class XdrAllowTrustOp {
   static XdrAllowTrustOp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAllowTrustOp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.trustor: ${TxRepHelper.formatAccountId(_trustor)}');
+    lines.add('$prefix.asset: ${TxRepHelper.formatAllowTrustAsset(_asset)}');
+    lines.add('$prefix.authorize: ${_authorize}');
+  }
+
+  static XdrAllowTrustOp fromTxRep(Map<String, String> map, String prefix) {
+    XdrAccountID trustor = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.trustor') ?? '',
+    );
+    XdrAllowTrustOpAsset asset = TxRepHelper.parseAllowTrustAsset(
+      TxRepHelper.getValue(map, '$prefix.asset') ?? '',
+    );
+    int authorize = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.authorize') ?? '0',
+    );
+    return XdrAllowTrustOp(trustor, asset, authorize);
   }
 }

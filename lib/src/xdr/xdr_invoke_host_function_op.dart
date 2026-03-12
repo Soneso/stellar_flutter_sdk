@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_host_function.dart';
 import 'xdr_soroban_authorization_entry.dart';
@@ -58,5 +59,31 @@ class XdrInvokeHostFunctionOp {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInvokeHostFunctionOp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _function.toTxRep('$prefix.hostFunction', lines);
+    lines.add('$prefix.auth.len: ${_auth.length}');
+    for (int i = 0; i < _auth.length; i++) {
+      _auth[i].toTxRep('$prefix.auth[$i]', lines);
+    }
+  }
+
+  static XdrInvokeHostFunctionOp fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrHostFunction function = XdrHostFunction.fromTxRep(
+      map,
+      '$prefix.hostFunction',
+    );
+    int authLen = TxRepHelper.parseInt(
+      TxRepHelper.getValue(map, '$prefix.auth.len') ?? '0',
+    );
+    List<XdrSorobanAuthorizationEntry> auth = [];
+    for (int i = 0; i < authLen; i++) {
+      auth.add(XdrSorobanAuthorizationEntry.fromTxRep(map, '$prefix.auth[$i]'));
+    }
+    return XdrInvokeHostFunctionOp(function, auth);
   }
 }

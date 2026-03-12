@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
 
@@ -42,5 +43,21 @@ class XdrBeginSponsoringFutureReservesOp {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBeginSponsoringFutureReservesOp.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add(
+      '$prefix.sponsoredID: ${TxRepHelper.formatAccountId(_sponsoredID)}',
+    );
+  }
+
+  static XdrBeginSponsoringFutureReservesOp fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrAccountID sponsoredID = TxRepHelper.parseAccountId(
+      TxRepHelper.getValue(map, '$prefix.sponsoredID') ?? '',
+    );
+    return XdrBeginSponsoringFutureReservesOp(sponsoredID);
   }
 }

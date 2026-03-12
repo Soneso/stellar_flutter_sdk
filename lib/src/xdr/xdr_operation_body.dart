@@ -6,6 +6,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'txrep_helper.dart';
 import 'xdr_allow_trust_op.dart';
 import 'xdr_begin_sponsoring_future_reserves_op.dart';
 import 'xdr_bump_sequence_op.dart';
@@ -487,5 +488,285 @@ class XdrOperationBody {
   static XdrOperationBody fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrOperationBody.decode(XdrDataInputStream(bytes));
+  }
+
+  void toTxRep(String prefix, List<String> lines) {
+    lines.add('$prefix.type: ${discriminant.enumName()}');
+    switch (discriminant) {
+      case XdrOperationType.CREATE_ACCOUNT:
+        _createAccountOp!.toTxRep('$prefix.createAccountOp', lines);
+        break;
+      case XdrOperationType.PAYMENT:
+        _paymentOp!.toTxRep('$prefix.paymentOp', lines);
+        break;
+      case XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE:
+        _pathPaymentStrictReceiveOp!.toTxRep(
+          '$prefix.pathPaymentStrictReceiveOp',
+          lines,
+        );
+        break;
+      case XdrOperationType.MANAGE_SELL_OFFER:
+        _manageSellOfferOp!.toTxRep('$prefix.manageSellOfferOp', lines);
+        break;
+      case XdrOperationType.CREATE_PASSIVE_SELL_OFFER:
+        _createPassiveSellOfferOp!.toTxRep(
+          '$prefix.createPassiveSellOfferOp',
+          lines,
+        );
+        break;
+      case XdrOperationType.SET_OPTIONS:
+        _setOptionsOp!.toTxRep('$prefix.setOptionsOp', lines);
+        break;
+      case XdrOperationType.CHANGE_TRUST:
+        _changeTrustOp!.toTxRep('$prefix.changeTrustOp', lines);
+        break;
+      case XdrOperationType.ALLOW_TRUST:
+        _allowTrustOp!.toTxRep('$prefix.allowTrustOp', lines);
+        break;
+      case XdrOperationType.ACCOUNT_MERGE:
+        lines.add(
+          '$prefix.destination: ${TxRepHelper.formatMuxedAccount(_destination!)}',
+        );
+        break;
+      case XdrOperationType.INFLATION:
+        break;
+      case XdrOperationType.MANAGE_DATA:
+        _manageDataOp!.toTxRep('$prefix.manageDataOp', lines);
+        break;
+      case XdrOperationType.BUMP_SEQUENCE:
+        _bumpSequenceOp!.toTxRep('$prefix.bumpSequenceOp', lines);
+        break;
+      case XdrOperationType.MANAGE_BUY_OFFER:
+        _manageBuyOfferOp!.toTxRep('$prefix.manageBuyOfferOp', lines);
+        break;
+      case XdrOperationType.PATH_PAYMENT_STRICT_SEND:
+        _pathPaymentStrictSendOp!.toTxRep(
+          '$prefix.pathPaymentStrictSendOp',
+          lines,
+        );
+        break;
+      case XdrOperationType.CREATE_CLAIMABLE_BALANCE:
+        _createClaimableBalanceOp!.toTxRep(
+          '$prefix.createClaimableBalanceOp',
+          lines,
+        );
+        break;
+      case XdrOperationType.CLAIM_CLAIMABLE_BALANCE:
+        _claimClaimableBalanceOp!.toTxRep(
+          '$prefix.claimClaimableBalanceOp',
+          lines,
+        );
+        break;
+      case XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES:
+        _beginSponsoringFutureReservesOp!.toTxRep(
+          '$prefix.beginSponsoringFutureReservesOp',
+          lines,
+        );
+        break;
+      case XdrOperationType.END_SPONSORING_FUTURE_RESERVES:
+        break;
+      case XdrOperationType.REVOKE_SPONSORSHIP:
+        _revokeSponsorshipOp!.toTxRep('$prefix.revokeSponsorshipOp', lines);
+        break;
+      case XdrOperationType.CLAWBACK:
+        _clawbackOp!.toTxRep('$prefix.clawbackOp', lines);
+        break;
+      case XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE:
+        _clawbackClaimableBalanceOp!.toTxRep(
+          '$prefix.clawbackClaimableBalanceOp',
+          lines,
+        );
+        break;
+      case XdrOperationType.SET_TRUST_LINE_FLAGS:
+        _setTrustLineFlagsOp!.toTxRep('$prefix.setTrustLineFlagsOp', lines);
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_DEPOSIT:
+        _liquidityPoolDepositOp!.toTxRep(
+          '$prefix.liquidityPoolDepositOp',
+          lines,
+        );
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_WITHDRAW:
+        _liquidityPoolWithdrawOp!.toTxRep(
+          '$prefix.liquidityPoolWithdrawOp',
+          lines,
+        );
+        break;
+      case XdrOperationType.INVOKE_HOST_FUNCTION:
+        _invokeHostFunctionOp!.toTxRep('$prefix.invokeHostFunctionOp', lines);
+        break;
+      case XdrOperationType.EXTEND_FOOTPRINT_TTL:
+        _extendFootprintTTLOp!.toTxRep('$prefix.extendFootprintTTLOp', lines);
+        break;
+      case XdrOperationType.RESTORE_FOOTPRINT:
+        _restoreFootprintOp!.toTxRep('$prefix.restoreFootprintOp', lines);
+        break;
+      default:
+        break;
+    }
+  }
+
+  static XdrOperationBody fromTxRep(Map<String, String> map, String prefix) {
+    XdrOperationType disc = XdrOperationType.fromTxRepName(
+      TxRepHelper.getValue(map, '$prefix.type') ?? '',
+    );
+    XdrOperationBody result = XdrOperationBody(disc);
+    switch (result.discriminant) {
+      case XdrOperationType.CREATE_ACCOUNT:
+        result._createAccountOp = XdrCreateAccountOp.fromTxRep(
+          map,
+          '$prefix.createAccountOp',
+        );
+        break;
+      case XdrOperationType.PAYMENT:
+        result._paymentOp = XdrPaymentOp.fromTxRep(map, '$prefix.paymentOp');
+        break;
+      case XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE:
+        result._pathPaymentStrictReceiveOp =
+            XdrPathPaymentStrictReceiveOp.fromTxRep(
+              map,
+              '$prefix.pathPaymentStrictReceiveOp',
+            );
+        break;
+      case XdrOperationType.MANAGE_SELL_OFFER:
+        result._manageSellOfferOp = XdrManageSellOfferOp.fromTxRep(
+          map,
+          '$prefix.manageSellOfferOp',
+        );
+        break;
+      case XdrOperationType.CREATE_PASSIVE_SELL_OFFER:
+        result._createPassiveSellOfferOp =
+            XdrCreatePassiveSellOfferOp.fromTxRep(
+              map,
+              '$prefix.createPassiveSellOfferOp',
+            );
+        break;
+      case XdrOperationType.SET_OPTIONS:
+        result._setOptionsOp = XdrSetOptionsOp.fromTxRep(
+          map,
+          '$prefix.setOptionsOp',
+        );
+        break;
+      case XdrOperationType.CHANGE_TRUST:
+        result._changeTrustOp = XdrChangeTrustOp.fromTxRep(
+          map,
+          '$prefix.changeTrustOp',
+        );
+        break;
+      case XdrOperationType.ALLOW_TRUST:
+        result._allowTrustOp = XdrAllowTrustOp.fromTxRep(
+          map,
+          '$prefix.allowTrustOp',
+        );
+        break;
+      case XdrOperationType.ACCOUNT_MERGE:
+        result._destination = TxRepHelper.parseMuxedAccount(
+          TxRepHelper.getValue(map, '$prefix.destination') ?? '',
+        );
+        break;
+      case XdrOperationType.INFLATION:
+        break;
+      case XdrOperationType.MANAGE_DATA:
+        result._manageDataOp = XdrManageDataOp.fromTxRep(
+          map,
+          '$prefix.manageDataOp',
+        );
+        break;
+      case XdrOperationType.BUMP_SEQUENCE:
+        result._bumpSequenceOp = XdrBumpSequenceOp.fromTxRep(
+          map,
+          '$prefix.bumpSequenceOp',
+        );
+        break;
+      case XdrOperationType.MANAGE_BUY_OFFER:
+        result._manageBuyOfferOp = XdrManageBuyOfferOp.fromTxRep(
+          map,
+          '$prefix.manageBuyOfferOp',
+        );
+        break;
+      case XdrOperationType.PATH_PAYMENT_STRICT_SEND:
+        result._pathPaymentStrictSendOp = XdrPathPaymentStrictSendOp.fromTxRep(
+          map,
+          '$prefix.pathPaymentStrictSendOp',
+        );
+        break;
+      case XdrOperationType.CREATE_CLAIMABLE_BALANCE:
+        result._createClaimableBalanceOp =
+            XdrCreateClaimableBalanceOp.fromTxRep(
+              map,
+              '$prefix.createClaimableBalanceOp',
+            );
+        break;
+      case XdrOperationType.CLAIM_CLAIMABLE_BALANCE:
+        result._claimClaimableBalanceOp = XdrClaimClaimableBalanceOp.fromTxRep(
+          map,
+          '$prefix.claimClaimableBalanceOp',
+        );
+        break;
+      case XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES:
+        result._beginSponsoringFutureReservesOp =
+            XdrBeginSponsoringFutureReservesOp.fromTxRep(
+              map,
+              '$prefix.beginSponsoringFutureReservesOp',
+            );
+        break;
+      case XdrOperationType.END_SPONSORING_FUTURE_RESERVES:
+        break;
+      case XdrOperationType.REVOKE_SPONSORSHIP:
+        result._revokeSponsorshipOp = XdrRevokeSponsorshipOp.fromTxRep(
+          map,
+          '$prefix.revokeSponsorshipOp',
+        );
+        break;
+      case XdrOperationType.CLAWBACK:
+        result._clawbackOp = XdrClawbackOp.fromTxRep(map, '$prefix.clawbackOp');
+        break;
+      case XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE:
+        result._clawbackClaimableBalanceOp =
+            XdrClawbackClaimableBalanceOp.fromTxRep(
+              map,
+              '$prefix.clawbackClaimableBalanceOp',
+            );
+        break;
+      case XdrOperationType.SET_TRUST_LINE_FLAGS:
+        result._setTrustLineFlagsOp = XdrSetTrustLineFlagsOp.fromTxRep(
+          map,
+          '$prefix.setTrustLineFlagsOp',
+        );
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_DEPOSIT:
+        result._liquidityPoolDepositOp = XdrLiquidityPoolDepositOp.fromTxRep(
+          map,
+          '$prefix.liquidityPoolDepositOp',
+        );
+        break;
+      case XdrOperationType.LIQUIDITY_POOL_WITHDRAW:
+        result._liquidityPoolWithdrawOp = XdrLiquidityPoolWithdrawOp.fromTxRep(
+          map,
+          '$prefix.liquidityPoolWithdrawOp',
+        );
+        break;
+      case XdrOperationType.INVOKE_HOST_FUNCTION:
+        result._invokeHostFunctionOp = XdrInvokeHostFunctionOp.fromTxRep(
+          map,
+          '$prefix.invokeHostFunctionOp',
+        );
+        break;
+      case XdrOperationType.EXTEND_FOOTPRINT_TTL:
+        result._extendFootprintTTLOp = XdrExtendFootprintTTLOp.fromTxRep(
+          map,
+          '$prefix.extendFootprintTTLOp',
+        );
+        break;
+      case XdrOperationType.RESTORE_FOOTPRINT:
+        result._restoreFootprintOp = XdrRestoreFootprintOp.fromTxRep(
+          map,
+          '$prefix.restoreFootprintOp',
+        );
+        break;
+      default:
+        break;
+    }
+    return result;
   }
 }

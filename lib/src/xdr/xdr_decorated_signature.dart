@@ -47,4 +47,18 @@ class XdrDecoratedSignature {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrDecoratedSignature.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _hint.toTxRep('$prefix.hint', lines);
+    _signature.toTxRep('$prefix.signature', lines);
+  }
+
+  static XdrDecoratedSignature fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrSignatureHint hint = XdrSignatureHint.fromTxRep(map, '$prefix.hint');
+    XdrSignature signature = XdrSignature.fromTxRep(map, '$prefix.signature');
+    return XdrDecoratedSignature(hint, signature);
+  }
 }

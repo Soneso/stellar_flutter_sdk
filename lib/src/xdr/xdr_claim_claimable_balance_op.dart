@@ -43,4 +43,19 @@ class XdrClaimClaimableBalanceOp {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimClaimableBalanceOp.decode(XdrDataInputStream(bytes));
   }
+
+  void toTxRep(String prefix, List<String> lines) {
+    _balanceID.toTxRep('$prefix.balanceID', lines);
+  }
+
+  static XdrClaimClaimableBalanceOp fromTxRep(
+    Map<String, String> map,
+    String prefix,
+  ) {
+    XdrClaimableBalanceID balanceID = XdrClaimableBalanceID.fromTxRep(
+      map,
+      '$prefix.balanceID',
+    );
+    return XdrClaimClaimableBalanceOp(balanceID);
+  }
 }

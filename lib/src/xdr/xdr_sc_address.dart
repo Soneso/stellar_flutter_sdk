@@ -26,6 +26,17 @@ class XdrSCAddress extends XdrSCAddressBase {
     return XdrSCAddressBase.decodeAs(stream, XdrSCAddress.new);
   }
 
+  static XdrSCAddress fromTxRep(Map<String, String> map, String prefix) {
+    var b = XdrSCAddressBase.fromTxRep(map, prefix);
+    var result = XdrSCAddress(b.discriminant);
+    result.accountId = b.accountId;
+    result.contractId = b.contractId;
+    result.muxedAccount = b.muxedAccount;
+    result.claimableBalanceId = b.claimableBalanceId;
+    result.liquidityPoolId = b.liquidityPoolId;
+    return result;
+  }
+
   static XdrSCAddress forAccountId(String accountId) {
     if (accountId.startsWith("G")) {
       XdrSCAddress result = XdrSCAddress(

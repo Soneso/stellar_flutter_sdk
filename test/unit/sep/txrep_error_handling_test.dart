@@ -75,6 +75,26 @@ feeBump.signatures.len: 0
         expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
             throwsException);
       });
+      test('Unsupported feeBump.tx.ext.v', () {
+        final txRep = '''
+type: ENVELOPE_TYPE_TX_FEE_BUMP
+feeBump.tx.feeSource: $sourceAccountId
+feeBump.tx.fee: 200
+feeBump.tx.innerTx.type: ENVELOPE_TYPE_TX
+feeBump.tx.innerTx.tx.sourceAccount: $sourceAccountId
+feeBump.tx.innerTx.tx.fee: 100
+feeBump.tx.innerTx.tx.seqNum: 100
+feeBump.tx.innerTx.tx.cond.type: PRECOND_NONE
+feeBump.tx.innerTx.tx.memo.type: MEMO_NONE
+feeBump.tx.innerTx.tx.operations.len: 0
+feeBump.tx.innerTx.tx.ext.v: 0
+feeBump.tx.innerTx.signatures.len: 0
+feeBump.tx.ext.v: 1
+feeBump.signatures.len: 0
+''';
+        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+            throwsException);
+      });
     });
 
     group('Transaction Fee Error Cases', () {
@@ -360,8 +380,9 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        // Missing extraSigners.len defaults to 0 (no extra signers).
+        var result = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+        expect(result, isNotEmpty);
       });
 
       test('Invalid extraSigners.len - not a number', () {

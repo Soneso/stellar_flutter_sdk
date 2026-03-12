@@ -19,6 +19,11 @@ class XdrLedgerKeyOffer extends XdrLedgerKeyOfferBase {
     return XdrLedgerKeyOffer(b.sellerID, b.offerID);
   }
 
+  static XdrLedgerKeyOffer fromTxRep(Map<String, String> map, String prefix) {
+    var b = XdrLedgerKeyOfferBase.fromTxRep(map, prefix);
+    return XdrLedgerKeyOffer(b.sellerID, b.offerID);
+  }
+
   static XdrLedgerKeyOffer forOfferId(String sellerAccountId, int offerId) {
     return XdrLedgerKeyOffer(
       XdrAccountID.forAccountId(sellerAccountId),
