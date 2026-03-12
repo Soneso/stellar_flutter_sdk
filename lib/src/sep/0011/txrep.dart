@@ -88,10 +88,9 @@ class TxRep {
     lines.add('type: $type');
 
     if (isFeeBump) {
-      String feeSource =
-          TxRepHelper.formatMuxedAccount(feeBumpEnv!.tx.feeSource);
-      lines.add('feeBump.tx.feeSource: $feeSource');
-      lines.add('feeBump.tx.fee: ${feeBumpEnv.tx.fee.int64}');
+      final fb = feeBumpEnv!;
+      lines.add('feeBump.tx.feeSource: ${TxRepHelper.formatMuxedAccount(fb.tx.feeSource)}');
+      lines.add('feeBump.tx.fee: ${fb.tx.fee.int64}');
       lines.add('feeBump.tx.innerTx.type: ENVELOPE_TYPE_TX');
     }
 
@@ -105,7 +104,9 @@ class TxRep {
     // Preconditions — delegate to generated code.
     tx.cond.toTxRep('$prefix.cond', lines);
 
-    // Memo — handle manually to avoid double-quoting bug in generated code.
+    // Memo — handle manually because the facade uses jsonEncode/jsonDecode
+    // for legacy format compatibility, while generated code uses
+    // TxRepHelper.escapeString which emits \xNN hex escapes.
     _encodeMemo(tx.memo, lines, '$prefix.memo');
 
     // Operations.
@@ -128,8 +129,9 @@ class TxRep {
 
     // Fee bump outer envelope.
     if (isFeeBump) {
+      final fb = feeBumpEnv!;
       lines.add('feeBump.tx.ext.v: 0');
-      _encodeSignatures(feeBumpEnv!.signatures, lines, 'feeBump.');
+      _encodeSignatures(fb.signatures, lines, 'feeBump.');
     }
 
     return lines.join('\n');
