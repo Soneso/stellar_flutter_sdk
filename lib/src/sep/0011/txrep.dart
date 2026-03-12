@@ -196,6 +196,10 @@ class TxRep {
           XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX);
       innerTx.v1 = innerEnv;
 
+      String? fbExtV = TxRepHelper.getValue(map, 'feeBump.tx.ext.v');
+      if (fbExtV != null && fbExtV != '0') {
+        throw Exception('unsupported feeBump.tx.ext.v: $fbExtV');
+      }
       XdrFeeBumpTransactionExt fbExt = XdrFeeBumpTransactionExt(0);
       XdrFeeBumpTransaction fbTx =
           XdrFeeBumpTransaction(feeSource, fee, innerTx, fbExt);

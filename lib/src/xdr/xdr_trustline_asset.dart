@@ -29,12 +29,15 @@ class XdrTrustlineAsset extends XdrTrustlineAssetBase {
   }
 
   static XdrTrustlineAsset fromTxRep(Map<String, String> map, String prefix) {
-    // Check for compact format (single value at prefix).
+    // Compact format: native, CODE:ISSUER, or 64-char hex pool ID.
+    // This path is not produced by this library's encoder (which always
+    // uses expanded format for pool shares) but supports externally
+    // authored TxRep.
     String? compactValue = TxRepHelper.getValue(map, prefix);
     if (compactValue != null) {
       return TxRepHelper.parseTrustlineAsset(compactValue);
     }
-    // Fall back to expanded format (pool share).
+    // Expanded format (pool share written by this library's encoder).
     var b = XdrTrustlineAssetBase.fromTxRep(map, prefix);
     var result = XdrTrustlineAsset(b.discriminant);
     result.alphaNum4 = b.alphaNum4;
