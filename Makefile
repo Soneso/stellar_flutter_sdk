@@ -11,7 +11,7 @@ XDRS = xdr/Stellar-SCP.x xdr/Stellar-ledger-entries.x xdr/Stellar-ledger.x \
        xdr/Stellar-internal.x xdr/Stellar-contract-config-setting.x \
        xdr/Stellar-exporter.x
 
-XDR_COMMIT = cff714a5ebaaaf2dac343b3546c2df73f0b7a36e
+XDR_COMMIT = 61657d9fa39755d8a30f3ba8e9b9117e7f92df9d
 RUBY_IMAGE = ruby:3.4
 
 # Use CURDIR (always set by GNU Make) instead of PWD for portability
@@ -41,7 +41,7 @@ xdr-clean-generated: ## Remove only generated Dart files (preserves hand-maintai
 xdr-clean-all: xdr-clean-generated ## Remove generated files AND downloaded .x definitions
 	rm -f xdr/*.x
 
-xdr-update: xdr-clean-generated xdr-generate ## Clean generated files and regenerate
+xdr-update: xdr-clean-all xdr-generate ## Re-download .x files and regenerate Dart XDR classes
 
 xdr-generator-test: ## Run snapshot tests via Docker
 	docker run --rm -v $(CURDIR):/wd -w /wd $(RUBY_IMAGE) /bin/bash -c '\
