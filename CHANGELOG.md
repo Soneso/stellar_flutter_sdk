@@ -1,3 +1,21 @@
+## [3.0.5] - 28.Mar.2026.
+- Rewrite SEP-0011 TxRep to use generated XDR-based toTxRep/fromTxRep methods
+- Improve TxRep input validation and test coverage
+- Fix TxRep bool interpolation bug
+- Restrict TxRep generation to transaction-reachable types
+- Update XDR definitions to upstream stellar-xdr cff714a (Protocol 26)
+- Update XDR definitions to upstream stellar-xdr 61657d9
+- Fix xdr-update Makefile target to re-download .x files when XDR_COMMIT changes
+- Fix CI issue template to reference the correct update procedure
+- Update Horizon compatibility matrix for Horizon v25.1.0
+- Update RPC compatibility matrix for RPC v25.1.1
+- Add workflow to auto-detect upstream XDR definition changes
+- Add Claude Code automated PR review workflow
+- Pin all GitHub Actions to commit SHAs to prevent tag reassignment attacks
+- Add least-privilege permissions to all workflows
+- Add Dependabot config for monthly GitHub Actions update checks
+- Skip web-incompatible mock server test on Chrome platform
+
 ## [3.0.4] - 10.Mar.2026.
 - Fix published package referencing test/wasm/ asset directory that was excluded via .pubignore
 

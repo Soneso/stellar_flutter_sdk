@@ -885,6 +885,9 @@ void main() {
       });
 
       test('needsNonInvokerSigningBy returns empty list for non-InvokeHostFunction op', () async {
+        // Skip on web: uses HttpServer.bind which is unsupported in browser
+        if (identical(0, 0.0)) return; // dart2js identity check for web platform
+
         final keyPair = KeyPair.random();
 
         // Build a valid XDR ledger entry for the mock account response
