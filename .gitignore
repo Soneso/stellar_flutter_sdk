@@ -83,6 +83,7 @@ package_config.json
 
 # Claude Code
 .claude/
+plans/
 
 # iOS Flutter ephemeral files
 **/ios/Flutter/ephemeral/
