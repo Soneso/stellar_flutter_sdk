@@ -730,6 +730,289 @@ void main() {
       expect(reconstructedXdr, equals(xdr));
     });
 
+    test('MEMO_TEXT missing text field throws', () {
+      final paymentOp = PaymentOperationBuilder(
+        destinationKeyPair.accountId,
+        Asset.NATIVE,
+        "100.0",
+      ).build();
+
+      final transaction = TransactionBuilder(sourceAccount)
+        .addOperation(paymentOp)
+        .addMemo(Memo.text('hello'))
+        .build();
+
+      transaction.sign(sourceKeyPair, testNetwork);
+
+      final txRep = TxRep.fromTransactionEnvelopeXdrBase64(
+        transaction.toEnvelopeXdrBase64(),
+      );
+      // Drop the tx.memo.text line entirely.
+      final broken = txRep
+          .split('\n')
+          .where((l) => !l.startsWith('tx.memo.text:'))
+          .join('\n');
+
+      expect(
+        () => TxRep.transactionEnvelopeXdrBase64FromTxRep(broken),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('missing tx.memo.text'),
+          ),
+        ),
+      );
+    });
+
+    test('MEMO_TEXT malformed legacy \\uNNNN sequence throws', () {
+      final paymentOp = PaymentOperationBuilder(
+        destinationKeyPair.accountId,
+        Asset.NATIVE,
+        "100.0",
+      ).build();
+
+      final transaction = TransactionBuilder(sourceAccount)
+        .addOperation(paymentOp)
+        .addMemo(Memo.text('hello'))
+        .build();
+
+      transaction.sign(sourceKeyPair, testNetwork);
+
+      final txRep = TxRep.fromTransactionEnvelopeXdrBase64(
+        transaction.toEnvelopeXdrBase64(),
+      );
+      // Contains a valid-looking \u0041 (trips the legacy-unicode heuristic)
+      // followed by an invalid JSON escape \z, so jsonDecode throws and the
+      // facade rewraps the FormatException.
+      final broken = txRep.replaceFirst(
+        'tx.memo.text: "hello"',
+        r'tx.memo.text: "\u0041\z"',
+      );
+
+      expect(
+        () => TxRep.transactionEnvelopeXdrBase64FromTxRep(broken),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('invalid tx.memo.text (legacy'),
+          ),
+        ),
+      );
+    });
+
+    test('MEMO_TEXT malformed \\xNN UTF-8 sequence throws', () {
+      final paymentOp = PaymentOperationBuilder(
+        destinationKeyPair.accountId,
+        Asset.NATIVE,
+        "100.0",
+      ).build();
+
+      final transaction = TransactionBuilder(sourceAccount)
+        .addOperation(paymentOp)
+        .addMemo(Memo.text('hello'))
+        .build();
+
+      transaction.sign(sourceKeyPair, testNetwork);
+
+      final txRep = TxRep.fromTransactionEnvelopeXdrBase64(
+        transaction.toEnvelopeXdrBase64(),
+      );
+      // A lone 0xC3 is an incomplete UTF-8 sequence (0xC3 is a 2-byte
+      // lead byte); decoding must throw FormatException which the facade
+      // rewraps as a TxRep-style Exception.
+      final broken = txRep.replaceFirst(
+        'tx.memo.text: "hello"',
+        r'tx.memo.text: "\xc3"',
+      );
+
+      expect(
+        () => TxRep.transactionEnvelopeXdrBase64FromTxRep(broken),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('invalid tx.memo.text'),
+          ),
+        ),
+      );
+    });
+
+    test('encodes V0 envelope without time bounds', () {
+      // Build a V0 transaction envelope directly (legacy format).
+      final sourceBytes = StrKey.decodeStellarAccountId(sourceKeyPair.accountId);
+      final v0tx = XdrTransactionV0(
+        XdrUint256(sourceBytes),
+        XdrUint32(100),
+        XdrSequenceNumber(BigInt.from(1)),
+        null, // no time bounds → exercises PRECOND_NONE branch
+        XdrMemo(XdrMemoType.MEMO_NONE),
+        [],
+        XdrTransactionV0Ext(0),
+      );
+      final envelope =
+          XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0)
+            ..v0 = XdrTransactionV0Envelope(v0tx, []);
+
+      final txRep =
+          TxRep.fromTransactionEnvelopeXdrBase64(envelope.toBase64EncodedXdrString());
+
+      expect(txRep, contains('type: ENVELOPE_TYPE_TX'));
+      expect(txRep, contains('tx.sourceAccount: ${sourceKeyPair.accountId}'));
+      expect(txRep, contains('tx.cond.type: PRECOND_NONE'));
+    });
+
+    test('encodes V0 envelope with time bounds', () {
+      final sourceBytes = StrKey.decodeStellarAccountId(sourceKeyPair.accountId);
+      final tb = XdrTimeBounds(
+        XdrUint64(BigInt.from(1000)),
+        XdrUint64(BigInt.from(2000)),
+      );
+      final v0tx = XdrTransactionV0(
+        XdrUint256(sourceBytes),
+        XdrUint32(100),
+        XdrSequenceNumber(BigInt.from(1)),
+        tb, // time bounds present → exercises PRECOND_TIME branch
+        XdrMemo(XdrMemoType.MEMO_NONE),
+        [],
+        XdrTransactionV0Ext(0),
+      );
+      final envelope =
+          XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0)
+            ..v0 = XdrTransactionV0Envelope(v0tx, []);
+
+      final txRep =
+          TxRep.fromTransactionEnvelopeXdrBase64(envelope.toBase64EncodedXdrString());
+
+      expect(txRep, contains('tx.cond.type: PRECOND_TIME'));
+      expect(txRep, contains('tx.cond.timeBounds.minTime: 1000'));
+      expect(txRep, contains('tx.cond.timeBounds.maxTime: 2000'));
+    });
+
+    test('decodes legacy tx.timeBounds._present format', () {
+      // Hand-written TxRep using the legacy tx.timeBounds._present: true
+      // shape instead of tx.cond.
+      final txRep = [
+        'type: ENVELOPE_TYPE_TX',
+        'tx.sourceAccount: ${sourceKeyPair.accountId}',
+        'tx.fee: 100',
+        'tx.seqNum: 1',
+        'tx.timeBounds._present: true',
+        'tx.timeBounds.minTime: 1000',
+        'tx.timeBounds.maxTime: 2000',
+        'tx.memo.type: MEMO_NONE',
+        'tx.operations.len: 0',
+        'tx.ext.v: 0',
+        'signatures.len: 0',
+      ].join('\n');
+
+      final reconstructed = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final envelope = XdrTransactionEnvelope.fromEnvelopeXdrString(
+        reconstructed,
+      );
+      expect(
+        envelope.v1!.tx.cond.discriminant,
+        equals(XdrPreconditionType.PRECOND_TIME),
+      );
+      expect(
+        envelope.v1!.tx.cond.timeBounds!.minTime.uint64,
+        equals(BigInt.from(1000)),
+      );
+      expect(
+        envelope.v1!.tx.cond.timeBounds!.maxTime.uint64,
+        equals(BigInt.from(2000)),
+      );
+    });
+
+    test('decode throws on missing type header', () {
+      final txRep = [
+        'tx.sourceAccount: ${sourceKeyPair.accountId}',
+        'tx.fee: 100',
+      ].join('\n');
+
+      expect(
+        () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('unsupported or missing TxRep type'),
+          ),
+        ),
+      );
+    });
+
+    test('decode throws on fee-bump inner type mismatch', () {
+      // Build a real fee-bump TxRep by round-tripping a fee-bump envelope,
+      // then flip the inner type to something unexpected.
+      final paymentOp = PaymentOperationBuilder(
+        destinationKeyPair.accountId,
+        Asset.NATIVE,
+        "100.0",
+      ).build();
+      final inner = TransactionBuilder(sourceAccount)
+        .addOperation(paymentOp)
+        .build();
+      inner.sign(sourceKeyPair, testNetwork);
+
+      final feeBump = FeeBumpTransactionBuilder(inner)
+        .setBaseFee(200)
+        .setFeeAccount(sourceKeyPair.accountId)
+        .build();
+      feeBump.sign(sourceKeyPair, testNetwork);
+
+      final txRep = TxRep.fromTransactionEnvelopeXdrBase64(
+        feeBump.toEnvelopeXdrBase64(),
+      );
+      final broken = txRep.replaceFirst(
+        'feeBump.tx.innerTx.type: ENVELOPE_TYPE_TX',
+        'feeBump.tx.innerTx.type: ENVELOPE_TYPE_TX_V0',
+      );
+
+      expect(
+        () => TxRep.transactionEnvelopeXdrBase64FromTxRep(broken),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('unexpected feeBump.tx.innerTx.type'),
+          ),
+        ),
+      );
+    });
+
+    test('decode throws on unknown memo type', () {
+      final paymentOp = PaymentOperationBuilder(
+        destinationKeyPair.accountId,
+        Asset.NATIVE,
+        "100.0",
+      ).build();
+      final transaction = TransactionBuilder(sourceAccount)
+        .addOperation(paymentOp)
+        .build();
+      transaction.sign(sourceKeyPair, testNetwork);
+
+      final txRep = TxRep.fromTransactionEnvelopeXdrBase64(
+        transaction.toEnvelopeXdrBase64(),
+      );
+      final broken = txRep.replaceFirst(
+        'tx.memo.type: MEMO_NONE',
+        'tx.memo.type: MEMO_BOGUS',
+      );
+
+      expect(
+        () => TxRep.transactionEnvelopeXdrBase64FromTxRep(broken),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('unknown memo type: MEMO_BOGUS'),
+          ),
+        ),
+      );
+    });
+
     test('round-trip: transaction with MEMO_ID', () {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
