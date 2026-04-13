@@ -147,6 +147,14 @@ void main() {
       expect(TxRepHelper.escapeString('a\nb'), r'"a\nb"');
     });
 
+    test('escapes carriage return as \\r', () {
+      expect(TxRepHelper.escapeString('a\rb'), r'"a\rb"');
+    });
+
+    test('escapes tab as \\t', () {
+      expect(TxRepHelper.escapeString('a\tb'), r'"a\tb"');
+    });
+
     test('escapes non-ASCII bytes as \\xNN', () {
       // \u00FF (ÿ) is 0xC3 0xBF in UTF-8
       var result = TxRepHelper.escapeString('\u00FF');
@@ -177,6 +185,14 @@ void main() {
 
     test('unescapes newline', () {
       expect(TxRepHelper.unescapeString(r'"a\nb"'), 'a\nb');
+    });
+
+    test('unescapes carriage return', () {
+      expect(TxRepHelper.unescapeString(r'"a\rb"'), 'a\rb');
+    });
+
+    test('unescapes tab', () {
+      expect(TxRepHelper.unescapeString(r'"a\tb"'), 'a\tb');
     });
 
     test('unescapes hex sequences', () {

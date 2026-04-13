@@ -127,8 +127,9 @@ class TxRepHelper {
 
   /// Escape a string for TxRep double-quoted format.
   ///
-  /// Escapes `"`, `\`, represents `\n` as `\\n`, and encodes non-ASCII bytes
-  /// (outside 0x20–0x7e) as `\\xNN`.
+  /// Escapes `"`, `\`, represents `\n`, `\r`, `\t` as their C-style short
+  /// escapes, and encodes any other non-printable or non-ASCII bytes as
+  /// `\xNN` per UTF-8 byte. Matches the stc reference and the iOS/PHP SDKs.
   static String escapeString(String s) {
     StringBuffer buf = StringBuffer();
     buf.write('"');
@@ -142,6 +143,12 @@ class TxRepHelper {
       } else if (rune == 0x0A) {
         // newline
         buf.write(r'\n');
+      } else if (rune == 0x0D) {
+        // carriage return
+        buf.write(r'\r');
+      } else if (rune == 0x09) {
+        // tab
+        buf.write(r'\t');
       } else if (rune >= 0x20 && rune <= 0x7E) {
         buf.writeCharCode(rune);
       } else {
@@ -159,8 +166,8 @@ class TxRepHelper {
 
   /// Unescape a TxRep string value.
   ///
-  /// Handles `\"`, `\\`, `\n`, and `\xNN` escape sequences. If the input is
-  /// enclosed in double quotes, they are stripped.
+  /// Handles `\"`, `\\`, `\n`, `\r`, `\t`, and `\xNN` escape sequences. If the
+  /// input is enclosed in double quotes, they are stripped.
   static String unescapeString(String s) {
     String input = s;
     if (input.startsWith('"') && input.endsWith('"') && input.length >= 2) {
@@ -192,6 +199,14 @@ class TxRepHelper {
         } else if (next == 'n') {
           flushPendingBytes();
           buf.write('\n');
+          i += 2;
+        } else if (next == 'r') {
+          flushPendingBytes();
+          buf.write('\r');
+          i += 2;
+        } else if (next == 't') {
+          flushPendingBytes();
+          buf.write('\t');
           i += 2;
         } else if (next == 'x' && i + 3 < input.length) {
           String hexStr = input.substring(i + 2, i + 4);
