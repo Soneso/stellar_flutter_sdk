@@ -104,9 +104,8 @@ class TxRep {
     // Preconditions — delegate to generated code.
     tx.cond.toTxRep('$prefix.cond', lines);
 
-    // Memo — handle manually because the facade uses jsonEncode/jsonDecode
-    // for legacy format compatibility, while generated code uses
-    // TxRepHelper.escapeString which emits \xNN hex escapes.
+    // Memo — handle manually so the decode side can accept both the SEP-0011
+    // \xNN format and legacy \uNNNN JSON escapes from older SDK versions.
     _encodeMemo(tx.memo, lines, '$prefix.memo');
 
     // Operations.
@@ -238,8 +237,7 @@ class TxRep {
       case XdrMemoType.MEMO_NONE:
         break;
       case XdrMemoType.MEMO_TEXT:
-        // Use JSON encoding for compatibility with the legacy format.
-        lines.add('$prefix.text: ${jsonEncode(memo.text)}');
+        lines.add('$prefix.text: ${TxRepHelper.escapeString(memo.text!)}');
         break;
       case XdrMemoType.MEMO_ID:
         memo.id!.toTxRep('$prefix.id', lines);
@@ -361,10 +359,33 @@ class TxRep {
     } else if (memoTypeStr == 'MEMO_TEXT') {
       String? textStr = TxRepHelper.getValue(map, '$prefix.text');
       if (textStr == null) throw Exception('missing $prefix.text');
-      // Decode JSON-encoded string (reverses jsonEncode() in encode).
+      // Per SEP-0011, MEMO_TEXT uses C-style \xNN UTF-8 byte escapes.
+      // For backwards compatibility, also accept legacy \uNNNN JSON escapes
+      // produced by older versions of this SDK.
       String text;
-      if (textStr.startsWith('"') && textStr.endsWith('"')) {
-        text = jsonDecode(textStr) as String;
+      if (textStr.startsWith('"') &&
+          textStr.endsWith('"') &&
+          textStr.length >= 2) {
+        // Detect an unescaped \uNNNN sequence: a \u preceded by an even
+        // number of backslashes (zero or more pairs). An odd count means the
+        // preceding backslash escapes the \u, which is literal text and
+        // should be handled by the SEP-0011 unescaper.
+        final legacyUnicode = RegExp(r'(?<!\\)(?:\\\\)*\\u[0-9a-fA-F]{4}');
+        if (legacyUnicode.hasMatch(textStr)) {
+          try {
+            text = jsonDecode(textStr) as String;
+          } on FormatException catch (e) {
+            throw Exception(
+              'invalid $prefix.text (legacy \\uNNNN form): ${e.message}',
+            );
+          }
+        } else {
+          try {
+            text = TxRepHelper.unescapeString(textStr);
+          } on FormatException catch (e) {
+            throw Exception('invalid $prefix.text: ${e.message}');
+          }
+        }
       } else {
         text = textStr;
       }

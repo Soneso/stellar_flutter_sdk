@@ -589,6 +589,147 @@ void main() {
       expect(reconstructedXdr, equals(xdr));
     });
 
+    test('MEMO_TEXT with non-ASCII uses SEP-0011 \\xNN UTF-8 byte escaping', () {
+      final paymentOp = PaymentOperationBuilder(
+        destinationKeyPair.accountId,
+        Asset.NATIVE,
+        "100.0"
+      ).build();
+
+      final transaction = TransactionBuilder(sourceAccount)
+        .addOperation(paymentOp)
+        .addMemo(Memo.text("café"))
+        .build();
+
+      transaction.sign(sourceKeyPair, testNetwork);
+
+      final xdr = transaction.toEnvelopeXdrBase64();
+      final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
+
+      // Per SEP-0011, U+00E9 (é) is encoded as its UTF-8 bytes 0xC3 0xA9
+      // using \xNN escapes, not as the JSON \u00e9 form.
+      expect(txRep, contains(r'tx.memo.text: "caf\xc3\xa9"'));
+      expect(txRep, isNot(contains(r'\u00e9')));
+
+      // And it must round-trip back to the original XDR.
+      final reconstructedXdr =
+          TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      expect(reconstructedXdr, equals(xdr));
+    });
+
+    test('MEMO_TEXT decode accepts legacy \\uNNNN JSON escapes', () {
+      // Build a reference envelope using the new \xNN encoding, then
+      // rewrite the memo line to use the legacy \u00e9 form that older
+      // versions of this SDK produced. Decoding must still succeed and
+      // yield the same XDR.
+      final paymentOp = PaymentOperationBuilder(
+        destinationKeyPair.accountId,
+        Asset.NATIVE,
+        "100.0"
+      ).build();
+
+      final transaction = TransactionBuilder(sourceAccount)
+        .addOperation(paymentOp)
+        .addMemo(Memo.text("café"))
+        .build();
+
+      transaction.sign(sourceKeyPair, testNetwork);
+
+      final xdr = transaction.toEnvelopeXdrBase64();
+      final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
+      final legacyTxRep = txRep.replaceFirst(
+        r'tx.memo.text: "caf\xc3\xa9"',
+        r'tx.memo.text: "caf\u00e9"',
+      );
+      expect(legacyTxRep, isNot(equals(txRep)));
+
+      final reconstructedXdr =
+          TxRep.transactionEnvelopeXdrBase64FromTxRep(legacyTxRep);
+      expect(reconstructedXdr, equals(xdr));
+    });
+
+    // Helper: build a signed envelope carrying the given memo text and
+    // assert that TxRep encode/decode round-trips back to the same XDR.
+    String memoTextRoundTrip(String memoText) {
+      final paymentOp = PaymentOperationBuilder(
+        destinationKeyPair.accountId,
+        Asset.NATIVE,
+        "100.0",
+      ).build();
+
+      final transaction = TransactionBuilder(sourceAccount)
+        .addOperation(paymentOp)
+        .addMemo(Memo.text(memoText))
+        .build();
+
+      transaction.sign(sourceKeyPair, testNetwork);
+
+      final xdr = transaction.toEnvelopeXdrBase64();
+      final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
+      final reconstructedXdr =
+          TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      expect(reconstructedXdr, equals(xdr));
+      return txRep;
+    }
+
+    test('MEMO_TEXT with newline uses \\n short escape', () {
+      final txRep = memoTextRoundTrip('line1\nline2');
+      expect(txRep, contains(r'tx.memo.text: "line1\nline2"'));
+    });
+
+    test('MEMO_TEXT with 4-byte UTF-8 (emoji) encodes as four \\xNN bytes', () {
+      // U+1F680 ROCKET = F0 9F 9A 80
+      final txRep = memoTextRoundTrip('go \u{1F680}');
+      expect(txRep, contains(r'tx.memo.text: "go \xf0\x9f\x9a\x80"'));
+    });
+
+    test('MEMO_TEXT empty string round-trips', () {
+      final txRep = memoTextRoundTrip('');
+      expect(txRep, contains('tx.memo.text: ""'));
+    });
+
+    test('MEMO_TEXT containing literal backslash-u is not misrouted', () {
+      // The text contains the literal 2-char sequence \u (backslash + u).
+      // After SEP-0011 escaping the backslash doubles, so the encoded form
+      // contains \\u — the legacy-detection regex must NOT treat that as a
+      // \uNNNN escape, and decode must preserve the original text.
+      final txRep = memoTextRoundTrip(r'lit \user');
+      expect(txRep, contains(r'tx.memo.text: "lit \\user"'));
+    });
+
+    test('MEMO_TEXT at 28-byte UTF-8 boundary with multibyte chars', () {
+      // 14 x 'é' = 28 UTF-8 bytes (2 bytes each), the Stellar memo text limit.
+      final txRep = memoTextRoundTrip('é' * 14);
+      expect(txRep, contains(r'\xc3\xa9' * 14));
+    });
+
+    test('MEMO_TEXT legacy decode preserves embedded quote escapes', () {
+      final paymentOp = PaymentOperationBuilder(
+        destinationKeyPair.accountId,
+        Asset.NATIVE,
+        "100.0",
+      ).build();
+
+      final transaction = TransactionBuilder(sourceAccount)
+        .addOperation(paymentOp)
+        .addMemo(Memo.text('café "x"'))
+        .build();
+
+      transaction.sign(sourceKeyPair, testNetwork);
+
+      final xdr = transaction.toEnvelopeXdrBase64();
+      // Legacy form (older SDK output): JSON \uNNNN escapes plus \" for quotes.
+      final legacyTxRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr)
+          .replaceFirst(
+            r'tx.memo.text: "caf\xc3\xa9 \"x\""',
+            r'tx.memo.text: "caf\u00e9 \"x\""',
+          );
+
+      final reconstructedXdr =
+          TxRep.transactionEnvelopeXdrBase64FromTxRep(legacyTxRep);
+      expect(reconstructedXdr, equals(xdr));
+    });
+
     test('round-trip: transaction with MEMO_ID', () {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
