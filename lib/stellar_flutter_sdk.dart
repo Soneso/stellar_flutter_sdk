@@ -182,3 +182,9 @@ export 'src/soroban/soroban_auth.dart';
 export 'src/soroban/soroban_contract_parser.dart';
 export 'src/soroban/soroban_passkey.dart';
 export 'src/soroban/contract_spec.dart';
+
+/// Smart Accounts
+export 'src/smartaccount/core/smart_account_constants.dart';
+export 'src/smartaccount/core/smart_account_errors.dart';
+export 'src/smartaccount/core/smart_account_types.dart';
+export 'src/smartaccount/oz/oz_constants.dart';
