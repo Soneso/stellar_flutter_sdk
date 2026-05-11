@@ -13,7 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/core/web_authn_cbor_parser.dart';
 
 // ===========================================================================
-// CBOR builder helpers (mirror KMP test fixtures)
+// CBOR builder helpers
 // ===========================================================================
 
 /// Encodes a CBOR text string (major type 3).

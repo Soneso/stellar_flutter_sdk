@@ -35,25 +35,25 @@ Uint8List _makeEd25519Pubkey() {
 }
 
 void main() {
-  group('DelegatedSigner', () {
+  group('OZDelegatedSigner', () {
     test('test_delegated_signer_accepts_valid_g_address', () {
-      final signer = DelegatedSigner(kValidGAddress);
+      final signer = OZDelegatedSigner(kValidGAddress);
       expect(signer.address, kValidGAddress);
     });
 
     test('test_delegated_signer_accepts_valid_c_address', () {
-      final signer = DelegatedSigner(kValidContractId);
+      final signer = OZDelegatedSigner(kValidContractId);
       expect(signer.address, kValidContractId);
     });
 
     test('test_delegated_signer_rejects_invalid_address_throws_invalid_address',
         () {
-      expect(() => DelegatedSigner('not-an-address'),
+      expect(() => OZDelegatedSigner('not-an-address'),
           throwsA(isA<InvalidAddress>()));
     });
 
     test('test_delegated_signer_to_scval_returns_vec_symbol_address', () {
-      final signer = DelegatedSigner(kValidGAddress);
+      final signer = OZDelegatedSigner(kValidGAddress);
       final value = signer.toScVal();
       expect(value, isA<XdrSCVal>());
       expect(value.discriminant, XdrSCValType.SCV_VEC);
@@ -66,25 +66,25 @@ void main() {
     });
 
     test('test_delegated_signer_unique_key_format_delegated_colon_address', () {
-      final signer = DelegatedSigner(kValidGAddress);
+      final signer = OZDelegatedSigner(kValidGAddress);
       expect(signer.uniqueKey, 'delegated:$kValidGAddress');
     });
 
     test('delegated signer for contract address encodes contract address', () {
-      final signer = DelegatedSigner(kValidContractId);
+      final signer = OZDelegatedSigner(kValidContractId);
       final vec = signer.toScVal().vec!;
       expect(vec.length, 2);
       expect(vec[1].discriminant, XdrSCValType.SCV_ADDRESS);
     });
   });
 
-  group('ExternalSigner.webAuthn', () {
+  group('OZExternalSigner.webAuthn', () {
     test(
         'test_external_signer_webauthn_accepts_valid_65_byte_uncompressed_pubkey_with_credential_id',
         () {
       final pubkey = _makeSecp256r1Pubkey();
       final credentialId = Uint8List.fromList(<int>[1, 2, 3, 4, 5, 6, 7, 8]);
-      final signer = ExternalSigner.webAuthn(
+      final signer = OZExternalSigner.webAuthn(
         verifierAddress: kValidContractId,
         publicKey: pubkey,
         credentialId: credentialId,
@@ -101,7 +101,7 @@ void main() {
       final pubkey = Uint8List(64);
       pubkey[0] = 0x04;
       expect(
-        () => ExternalSigner.webAuthn(
+        () => OZExternalSigner.webAuthn(
           verifierAddress: kValidContractId,
           publicKey: pubkey,
           credentialId: Uint8List.fromList(<int>[1, 2, 3]),
@@ -115,7 +115,7 @@ void main() {
         () {
       final pubkey = _makeSecp256r1Pubkey(firstByte: 0x02);
       expect(
-        () => ExternalSigner.webAuthn(
+        () => OZExternalSigner.webAuthn(
           verifierAddress: kValidContractId,
           publicKey: pubkey,
           credentialId: Uint8List.fromList(<int>[1, 2, 3]),
@@ -129,7 +129,7 @@ void main() {
         () {
       final pubkey = _makeSecp256r1Pubkey(firstByte: 0x03);
       expect(
-        () => ExternalSigner.webAuthn(
+        () => OZExternalSigner.webAuthn(
           verifierAddress: kValidContractId,
           publicKey: pubkey,
           credentialId: Uint8List.fromList(<int>[1, 2, 3]),
@@ -143,7 +143,7 @@ void main() {
         () {
       final pubkey = _makeSecp256r1Pubkey();
       expect(
-        () => ExternalSigner.webAuthn(
+        () => OZExternalSigner.webAuthn(
           verifierAddress: kValidContractId,
           publicKey: pubkey,
           credentialId: Uint8List(0),
@@ -153,10 +153,10 @@ void main() {
     });
   });
 
-  group('ExternalSigner.ed25519', () {
+  group('OZExternalSigner.ed25519', () {
     test('test_external_signer_ed25519_accepts_valid_32_byte_pubkey', () {
       final pubkey = _makeEd25519Pubkey();
-      final signer = ExternalSigner.ed25519(
+      final signer = OZExternalSigner.ed25519(
         verifierAddress: kValidContractId,
         publicKey: pubkey,
       );
@@ -169,7 +169,7 @@ void main() {
         () {
       final pubkey = Uint8List(31);
       expect(
-        () => ExternalSigner.ed25519(
+        () => OZExternalSigner.ed25519(
           verifierAddress: kValidContractId,
           publicKey: pubkey,
         ),
@@ -178,12 +178,12 @@ void main() {
     });
   });
 
-  group('ExternalSigner generic constructor and validation', () {
+  group('OZExternalSigner generic constructor and validation', () {
     test(
         'test_external_signer_rejects_non_contract_verifier_address_throws_invalid_address',
         () {
       expect(
-        () => ExternalSigner(
+        () => OZExternalSigner(
           kValidGAddress,
           Uint8List.fromList(<int>[1, 2, 3]),
         ),
@@ -194,13 +194,13 @@ void main() {
     test('test_external_signer_rejects_empty_key_data_throws_invalid_input',
         () {
       expect(
-        () => ExternalSigner(kValidContractId, Uint8List(0)),
+        () => OZExternalSigner(kValidContractId, Uint8List(0)),
         throwsA(isA<InvalidInput>()),
       );
     });
 
     test('test_external_signer_to_scval_returns_vec_symbol_address_bytes', () {
-      final signer = ExternalSigner(
+      final signer = OZExternalSigner(
         kValidContractId,
         Uint8List.fromList(<int>[1, 2, 3, 4]),
       );
@@ -218,7 +218,7 @@ void main() {
     test(
         'test_external_signer_unique_key_format_external_colon_verifier_colon_keyhex',
         () {
-      final signer = ExternalSigner(
+      final signer = OZExternalSigner(
         kValidContractId,
         Uint8List.fromList(<int>[0xAB, 0xCD]),
       );
@@ -227,14 +227,14 @@ void main() {
     });
   });
 
-  group('ExternalSigner equality and hashing', () {
+  group('OZExternalSigner equality and hashing', () {
     test('test_external_signer_equals_constant_time_for_keydata', () {
       final pubkey = _makeEd25519Pubkey();
-      final a = ExternalSigner.ed25519(
+      final a = OZExternalSigner.ed25519(
         verifierAddress: kValidContractId,
         publicKey: pubkey,
       );
-      final b = ExternalSigner.ed25519(
+      final b = OZExternalSigner.ed25519(
         verifierAddress: kValidContractId,
         publicKey: Uint8List.fromList(pubkey),
       );
@@ -242,7 +242,7 @@ void main() {
       expect(identical(a, b), isFalse);
 
       // Different verifier addresses fail equality.
-      final c = ExternalSigner.ed25519(
+      final c = OZExternalSigner.ed25519(
         verifierAddress: kValidContractIdAlt,
         publicKey: pubkey,
       );
@@ -251,7 +251,7 @@ void main() {
       // Different keyData fails equality.
       final pubkeyAlt = _makeEd25519Pubkey();
       pubkeyAlt[0] ^= 0xFF;
-      final d = ExternalSigner.ed25519(
+      final d = OZExternalSigner.ed25519(
         verifierAddress: kValidContractId,
         publicKey: pubkeyAlt,
       );
@@ -260,11 +260,11 @@ void main() {
 
     test('test_external_signer_hashcode_uses_content_hash_of_keydata', () {
       final pubkey = _makeEd25519Pubkey();
-      final a = ExternalSigner.ed25519(
+      final a = OZExternalSigner.ed25519(
         verifierAddress: kValidContractId,
         publicKey: pubkey,
       );
-      final b = ExternalSigner.ed25519(
+      final b = OZExternalSigner.ed25519(
         verifierAddress: kValidContractId,
         publicKey: Uint8List.fromList(pubkey),
       );
@@ -275,7 +275,7 @@ void main() {
       // high probability — assert it is not equal here.
       final pubkeyAlt = _makeEd25519Pubkey();
       pubkeyAlt[0] ^= 0xFF;
-      final c = ExternalSigner.ed25519(
+      final c = OZExternalSigner.ed25519(
         verifierAddress: kValidContractId,
         publicKey: pubkeyAlt,
       );
@@ -283,14 +283,14 @@ void main() {
     });
   });
 
-  group('DelegatedSigner equality and hashing', () {
+  group('OZDelegatedSigner equality and hashing', () {
     test('logical equality across different instances', () {
-      final a = DelegatedSigner(kValidGAddress);
-      final b = DelegatedSigner(kValidGAddress);
+      final a = OZDelegatedSigner(kValidGAddress);
+      final b = OZDelegatedSigner(kValidGAddress);
       expect(a, equals(b));
       expect(a.hashCode, b.hashCode);
       // Different address → not equal.
-      final c = DelegatedSigner(kValidContractId);
+      final c = OZDelegatedSigner(kValidContractId);
       expect(a == c, isFalse);
       // Identical reference is equal.
       expect(identical(a, a), isTrue);

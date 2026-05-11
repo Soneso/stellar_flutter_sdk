@@ -183,10 +183,17 @@ export 'src/soroban/soroban_contract_parser.dart';
 export 'src/soroban/soroban_passkey.dart';
 export 'src/soroban/contract_spec.dart';
 
-/// Smart Accounts
+/// Smart Accounts — core
 export 'src/smartaccount/core/allow_credential.dart';
 export 'src/smartaccount/core/smart_account_constants.dart';
 export 'src/smartaccount/core/smart_account_errors.dart';
-export 'src/smartaccount/core/smart_account_types.dart';
+export 'src/smartaccount/core/smart_account_utils.dart';
 export 'src/smartaccount/core/web_authn_provider.dart';
+
+/// Smart Accounts — OZ
 export 'src/smartaccount/oz/oz_constants.dart';
+export 'src/smartaccount/oz/oz_smart_account_auth.dart';
+export 'src/smartaccount/oz/oz_smart_account_auth_payload.dart';
+export 'src/smartaccount/oz/oz_smart_account_builders.dart';
+export 'src/smartaccount/oz/oz_smart_account_signatures.dart';
+export 'src/smartaccount/oz/oz_smart_account_types.dart';

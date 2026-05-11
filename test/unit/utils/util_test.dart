@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stellar_flutter_sdk/src/util.dart';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
   group('Util Tests', () {
@@ -374,6 +374,78 @@ void main() {
       });
     });
   });
+
+    group('stroopsPerXlm, ledgersPerHour, ledgersPerDay constants', () {
+      test('stroopsPerXlm equals 10000000', () {
+        expect(Util.stroopsPerXlm, 10000000);
+      });
+
+      test('ledgersPerHour equals 720', () {
+        expect(Util.ledgersPerHour, 720);
+      });
+
+      test('ledgersPerDay equals 17280', () {
+        expect(Util.ledgersPerDay, 17280);
+      });
+
+      test('ledgersPerDay equals 24 times ledgersPerHour', () {
+        expect(Util.ledgersPerDay, Util.ledgersPerHour * 24);
+      });
+    });
+
+    group('constantTimeEquals', () {
+      test('equal arrays returns true', () {
+        final a = Uint8List.fromList([1, 2, 3, 4, 5]);
+        final b = Uint8List.fromList([1, 2, 3, 4, 5]);
+        expect(Util.constantTimeEquals(a, b), isTrue);
+      });
+
+      test('unequal arrays returns false', () {
+        final a = Uint8List.fromList([1, 2, 3, 4, 5]);
+        final b = Uint8List.fromList([1, 2, 3, 4, 6]);
+        expect(Util.constantTimeEquals(a, b), isFalse);
+      });
+
+      test('different lengths returns false', () {
+        final a = Uint8List.fromList([1, 2, 3]);
+        final b = Uint8List.fromList([1, 2, 3, 4]);
+        expect(Util.constantTimeEquals(a, b), isFalse);
+      });
+
+      test('empty arrays returns true', () {
+        expect(Util.constantTimeEquals(Uint8List(0), Uint8List(0)), isTrue);
+      });
+
+      test('single-byte mismatch returns false', () {
+        final a = Uint8List.fromList([0xFF]);
+        final b = Uint8List.fromList([0xFE]);
+        expect(Util.constantTimeEquals(a, b), isFalse);
+      });
+    });
+
+    group('stroopsToI128ScVal', () {
+      test('small positive value produces SCV_I128', () {
+        final scVal = Util.stroopsToI128ScVal(BigInt.from(10000000));
+        expect(scVal.discriminant, XdrSCValType.SCV_I128);
+        expect(scVal.i128, isNotNull);
+      });
+
+      test('zero produces SCV_I128', () {
+        final scVal = Util.stroopsToI128ScVal(BigInt.zero);
+        expect(scVal.discriminant, XdrSCValType.SCV_I128);
+      });
+
+      test('max I128 value is accepted', () {
+        final maxI128 = (BigInt.one << 127) - BigInt.one;
+        final scVal = Util.stroopsToI128ScVal(maxI128);
+        expect(scVal.discriminant, XdrSCValType.SCV_I128);
+      });
+
+      test('value exceeding I128 max throws ArgumentError', () {
+        final tooBig = BigInt.one << 127;
+        expect(() => Util.stroopsToI128ScVal(tooBig), throwsArgumentError);
+      });
+    });
 
   group('Base32', () {
     group('encode', () {

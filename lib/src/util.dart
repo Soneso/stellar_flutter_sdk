@@ -473,6 +473,32 @@ class Util {
     return String.fromCharCodes(bytes!).split('\x00')[0];
   }
 
+  /// Constant-time byte array comparison.
+  ///
+  /// Always inspects every byte regardless of where the first mismatch
+  /// occurs, preventing an attacker from inferring how many leading bytes
+  /// match by measuring comparison time. Returns `false` immediately when
+  /// the lengths differ; the length check does not involve secret-data and
+  /// does not leak content information.
+  ///
+  /// Use this when comparing keys, signatures, MACs, or any secret-derived
+  /// byte sequences where a timing side-channel would be a security concern.
+  ///
+  /// Parameters:
+  /// - [a] First byte array.
+  /// - [b] Second byte array.
+  ///
+  /// Returns: `true` if both arrays are equal in length and content,
+  /// `false` otherwise.
+  static bool constantTimeEquals(Uint8List a, Uint8List b) {
+    if (a.length != b.length) return false;
+    var diff = 0;
+    for (var i = 0; i < a.length; i++) {
+      diff |= a[i] ^ b[i];
+    }
+    return diff == 0;
+  }
+
   /// Converts a hex string ID to an XDR hash object.
   ///
   /// Takes a hexadecimal string [strId] and converts it to an XdrHash
@@ -577,6 +603,17 @@ class Util {
     return Uri.parse(completeUrl);
   }
 
+  /// Number of stroops in one XLM (1 XLM = 10,000,000 stroops).
+  static const int stroopsPerXlm = 10000000;
+
+  /// Average number of ledgers closed per hour on the Stellar network
+  /// (approximately five seconds per ledger).
+  static const int ledgersPerHour = 720;
+
+  /// Average number of ledgers closed per day on the Stellar network
+  /// (approximately five seconds per ledger).
+  static const int ledgersPerDay = 17280;
+
   /// Converts a decimal amount string to XDR Int64 format.
   ///
   /// Stellar uses 7 decimal places of precision for amounts, storing them
@@ -601,7 +638,7 @@ class Util {
   /// - [fromXdrInt64Amount] for converting back to decimal format
   static BigInt toXdrInt64Amount(String value) {
     List<String> two = value.split(".");
-    BigInt amount = BigInt.parse(two[0]) * BigInt.from(10000000);
+    BigInt amount = BigInt.parse(two[0]) * BigInt.from(stroopsPerXlm);
 
     if (two.length == 2) {
       int pos = 0;
@@ -654,6 +691,37 @@ class Util {
       amountString = point + amountString;
     }
     return removeTailZero(amountString);
+  }
+
+  /// Converts a stroop amount to a Soroban I128 [XdrSCVal].
+  ///
+  /// Encodes [stroops] into a 128-bit signed integer SCVal suitable for
+  /// use in Soroban contract invocations that accept I128 parameters.
+  ///
+  /// Parameters:
+  /// - [stroops] The stroop value to encode. Must be within the signed
+  ///   128-bit integer range (-(2^127) to 2^127 - 1).
+  ///
+  /// Returns: [XdrSCVal] with discriminant [XdrSCValType.SCV_I128].
+  ///
+  /// Throws:
+  /// - [ArgumentError] when [stroops] is outside the I128 range.
+  ///
+  /// Example:
+  /// ```dart
+  /// XdrSCVal val = Util.stroopsToI128ScVal(BigInt.from(10000000));
+  /// ```
+  static XdrSCVal stroopsToI128ScVal(BigInt stroops) {
+    final maxI128 = (BigInt.one << 127) - BigInt.one;
+    final minI128 = -(BigInt.one << 127);
+    if (stroops < minI128 || stroops > maxI128) {
+      throw ArgumentError.value(
+        stroops,
+        'stroops',
+        'value is outside the I128 range',
+      );
+    }
+    return XdrSCVal.forI128BigInt(stroops);
   }
 
 }

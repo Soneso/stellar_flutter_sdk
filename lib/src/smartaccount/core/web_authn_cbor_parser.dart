@@ -501,10 +501,9 @@ class WebAuthnCborParser {
       dataStart = offset + 3;
     } else if (additionalInfo == 26) {
       if (offset + 4 >= data.length) return null;
-      // Replicate the 32-bit signed-overflow guard: if the high bit of the
-      // 4-byte length would set Kotlin's Int sign bit, reject. Dart ints are
-      // 64-bit on native and 53-bit on web, so we recompute the unsigned
-      // value and compare against 0x7FFFFFFF.
+      // Cap the 4-byte length at 0x7FFFFFFF: a value with the high bit set would
+      // declare a >2 GiB byte string, far beyond any legitimate WebAuthn payload
+      // size and almost certainly malformed or hostile input. Reject defensively.
       final raw = ((data[offset + 1] & 0xFF) << 24) |
           ((data[offset + 2] & 0xFF) << 16) |
           ((data[offset + 3] & 0xFF) << 8) |

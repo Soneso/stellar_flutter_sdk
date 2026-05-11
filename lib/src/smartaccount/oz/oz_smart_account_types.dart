@@ -8,17 +8,18 @@ import '../../key_pair.dart';
 import '../../soroban/soroban_auth.dart';
 import '../../util.dart';
 import '../../xdr/xdr.dart';
-import 'smart_account_constants.dart';
-import 'smart_account_errors.dart';
+import '../core/smart_account_constants.dart';
+import '../core/smart_account_errors.dart';
 
-/// Represents a signer that can authorise smart-account transactions.
+/// Represents a signer that can authorise OpenZeppelin Smart Account
+/// transactions.
 ///
-/// Smart-account signers define who can authorise transactions on a smart
-/// account. Two concrete forms exist:
+/// OpenZeppelin Smart Account signers define who can authorise transactions
+/// on a smart account. Two concrete forms exist:
 ///
-/// - [DelegatedSigner]: a Soroban address (G or C) using the built-in
+/// - [OZDelegatedSigner]: a Soroban address (G or C) using the built-in
 ///   `require_auth` verification mechanism.
-/// - [ExternalSigner]: a verifier contract plus public-key bytes that
+/// - [OZExternalSigner]: a verifier contract plus public-key bytes that
 ///   delegate signature validation to a Soroban contract — used to support
 ///   non-native schemes such as WebAuthn (secp256r1) and Ed25519.
 ///
@@ -26,10 +27,10 @@ import 'smart_account_errors.dart';
 ///
 /// ```dart
 /// // Create a delegated signer
-/// final delegated = DelegatedSigner('GA7QYNF7SOWQ...');
+/// final delegated = OZDelegatedSigner('GA7QYNF7SOWQ...');
 ///
 /// // Create a WebAuthn signer
-/// final webauthn = ExternalSigner.webAuthn(
+/// final webauthn = OZExternalSigner.webAuthn(
 ///   verifierAddress: 'CBCD...',
 ///   publicKey: publicKeyData,
 ///   credentialId: credentialIdData,
@@ -38,9 +39,9 @@ import 'smart_account_errors.dart';
 /// // Convert to on-chain representation
 /// final scVal = delegated.toScVal();
 /// ```
-sealed class SmartAccountSigner {
-  /// Constructor for the sealed `SmartAccountSigner` hierarchy.
-  const SmartAccountSigner();
+sealed class OZSmartAccountSigner {
+  /// Constructor for the sealed `OZSmartAccountSigner` hierarchy.
+  const OZSmartAccountSigner();
 
   /// Converts this signer to its `ScVal` representation for contract calls.
   ///
@@ -62,25 +63,25 @@ sealed class SmartAccountSigner {
 ///
 /// Delegated signers are Stellar accounts (G-address) or smart contracts
 /// (C-address) that use the native Soroban authorization mechanism. The
-/// smart-account contract calls `require_auth_for_args()` on the address to
-/// verify authorisation.
+/// OpenZeppelin Smart Account contract calls `require_auth_for_args()` on the
+/// address to verify authorisation.
 ///
 /// Example:
 ///
 /// ```dart
 /// // Account signer
-/// final account = DelegatedSigner('GA7QYNF7SOWQ...');
+/// final account = OZDelegatedSigner('GA7QYNF7SOWQ...');
 ///
 /// // Contract signer
-/// final contract = DelegatedSigner('CBCD1234...');
+/// final contract = OZDelegatedSigner('CBCD1234...');
 /// ```
-final class DelegatedSigner extends SmartAccountSigner {
+final class OZDelegatedSigner extends OZSmartAccountSigner {
   /// Constructs a delegated signer for the given Stellar [address].
   ///
   /// The [address] must be either a valid Stellar account ID (G-address) or a
   /// valid contract ID (C-address). Throws an [InvalidAddress] exception
   /// otherwise.
-  DelegatedSigner(this.address) {
+  OZDelegatedSigner(this.address) {
     if (!StrKey.isValidStellarAccountId(address) &&
         !StrKey.isValidContractId(address)) {
       throw ValidationException.invalidAddress(
@@ -112,7 +113,7 @@ final class DelegatedSigner extends SmartAccountSigner {
     } catch (e) {
       throw ValidationException.invalidInput(
         'address',
-        'Failed to convert DelegatedSigner to ScVal: $e',
+        'Failed to convert OZDelegatedSigner to ScVal: $e',
         cause: e,
       );
     }
@@ -127,7 +128,7 @@ final class DelegatedSigner extends SmartAccountSigner {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is DelegatedSigner && other.address == address;
+    return other is OZDelegatedSigner && other.address == address;
   }
 
   @override
@@ -150,19 +151,19 @@ final class DelegatedSigner extends SmartAccountSigner {
 ///
 /// ```dart
 /// // WebAuthn signer
-/// final webAuthn = ExternalSigner.webAuthn(
+/// final webAuthn = OZExternalSigner.webAuthn(
 ///   verifierAddress: 'CBCD1234...',
 ///   publicKey: secp256r1PublicKey,
 ///   credentialId: webAuthnCredentialId,
 /// );
 ///
 /// // Ed25519 signer
-/// final ed = ExternalSigner.ed25519(
+/// final ed = OZExternalSigner.ed25519(
 ///   verifierAddress: 'CDEF5678...',
 ///   publicKey: ed25519PublicKey,
 /// );
 /// ```
-final class ExternalSigner extends SmartAccountSigner {
+final class OZExternalSigner extends OZSmartAccountSigner {
   /// Constructs an external signer for the given [verifierAddress] and
   /// [keyData].
   ///
@@ -170,7 +171,7 @@ final class ExternalSigner extends SmartAccountSigner {
   /// [keyData] must be non-empty. Throws an [InvalidAddress] exception when
   /// the verifier address is invalid, or an [InvalidInput] exception when the
   /// key data is empty.
-  ExternalSigner(this.verifierAddress, Uint8List keyData)
+  OZExternalSigner(this.verifierAddress, Uint8List keyData)
       : keyData = Uint8List.fromList(keyData) {
     if (!StrKey.isValidContractId(verifierAddress)) {
       throw ValidationException.invalidAddress(
@@ -203,7 +204,7 @@ final class ExternalSigner extends SmartAccountSigner {
   /// [SmartAccountConstants.secp256r1PublicKeySize] bytes, does not start
   /// with [SmartAccountConstants.uncompressedPubkeyPrefix], or if
   /// [credentialId] is empty.
-  static ExternalSigner webAuthn({
+  static OZExternalSigner webAuthn({
     required String verifierAddress,
     required Uint8List publicKey,
     required Uint8List credentialId,
@@ -235,7 +236,7 @@ final class ExternalSigner extends SmartAccountSigner {
       ..setRange(0, publicKey.length, publicKey)
       ..setRange(publicKey.length, publicKey.length + credentialId.length,
           credentialId);
-    return ExternalSigner(verifierAddress, keyData);
+    return OZExternalSigner(verifierAddress, keyData);
   }
 
   /// Creates an Ed25519 external signer.
@@ -245,7 +246,7 @@ final class ExternalSigner extends SmartAccountSigner {
   ///
   /// Throws an [InvalidInput] exception if [publicKey] is not exactly
   /// [SmartAccountConstants.ed25519PublicKeySize] bytes.
-  static ExternalSigner ed25519({
+  static OZExternalSigner ed25519({
     required String verifierAddress,
     required Uint8List publicKey,
   }) {
@@ -257,7 +258,7 @@ final class ExternalSigner extends SmartAccountSigner {
             'got: ${publicKey.length}',
       );
     }
-    return ExternalSigner(verifierAddress, publicKey);
+    return OZExternalSigner(verifierAddress, publicKey);
   }
 
   /// Converts the external signer to its on-chain representation.
@@ -278,7 +279,7 @@ final class ExternalSigner extends SmartAccountSigner {
     } catch (e) {
       throw ValidationException.invalidInput(
         'verifierAddress',
-        'Failed to convert ExternalSigner to ScVal: $e',
+        'Failed to convert OZExternalSigner to ScVal: $e',
         cause: e,
       );
     }
@@ -298,7 +299,7 @@ final class ExternalSigner extends SmartAccountSigner {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! ExternalSigner) return false;
+    if (other is! OZExternalSigner) return false;
     final addressMatch = verifierAddress == other.verifierAddress;
     final keyMatch = _constantTimeEquals(keyData, other.keyData);
     // Bitwise AND avoids early-exit short-circuiting that would otherwise

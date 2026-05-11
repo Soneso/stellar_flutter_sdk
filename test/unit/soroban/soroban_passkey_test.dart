@@ -3,24 +3,115 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-void main() {
-  // Helper function to generate valid contract ID
-  String generateValidContractId() {
-    final bytes = Uint8List(32);
-    for (int i = 0; i < 32; i++) {
-      bytes[i] = (i * 7 + 3) % 256; // Deterministic test data
+// secp256r1 generator point G coordinates (FIPS 186-4 / SEC 2).
+// These are on the curve by definition and are used as valid test inputs.
+final _gxBytes = Uint8List.fromList([
+  0x6b, 0x17, 0xd1, 0xf2, 0xe1, 0x2c, 0x42, 0x47,
+  0xf8, 0xbc, 0xe6, 0xe5, 0x63, 0xa4, 0x40, 0xf2,
+  0x77, 0x03, 0x7d, 0x81, 0x2d, 0xeb, 0x33, 0xa0,
+  0xf4, 0xa1, 0x39, 0x45, 0xd8, 0x98, 0xc2, 0x96,
+]);
+final _gyBytes = Uint8List.fromList([
+  0x4f, 0xe3, 0x42, 0xe2, 0xfe, 0x1a, 0x7f, 0x9b,
+  0x8e, 0xe7, 0xeb, 0x4a, 0x7c, 0x0f, 0x9e, 0x16,
+  0x2b, 0xce, 0x33, 0x57, 0x6b, 0x31, 0x5e, 0xce,
+  0xcb, 0xb6, 0x40, 0x68, 0x37, 0xbf, 0x51, 0xf5,
+]);
+
+// 65-byte uncompressed secp256r1 generator point G (0x04 || Gx || Gy).
+Uint8List _generatorPubkey() {
+  final out = Uint8List(65);
+  out[0] = 0x04;
+  out.setRange(1, 33, _gxBytes);
+  out.setRange(33, 65, _gyBytes);
+  return out;
+}
+
+// Builds a COSE ES256 key blob for use in authenticatorData or attestationObject.
+// Layout: [0xA5,0x01,0x02,0x03,0x26,0x20,0x01,0x21,0x58,0x20] || x(32) || [0x22,0x58,0x20] || y(32)
+Uint8List _buildCoseKey(Uint8List x, Uint8List y) {
+  return Uint8List.fromList([
+    0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
+    ...x,
+    0x22, 0x58, 0x20,
+    ...y,
+  ]);
+}
+
+// Builds a minimal authenticatorData blob with the AT flag set and an embedded
+// COSE ES256 key. Credential ID length defaults to 16 bytes of zeros.
+Uint8List _buildAuthData({
+  required Uint8List x,
+  required Uint8List y,
+  int credentialIdLength = 16,
+}) {
+  final coseKey = _buildCoseKey(x, y);
+  return Uint8List.fromList([
+    ...List<int>.filled(32, 0xAA), // rpIdHash (32 bytes)
+    0x45, // flags: UP | UV | AT
+    0x00, 0x00, 0x00, 0x01, // signCount
+    ...List<int>.filled(16, 0x00), // aaguid
+    (credentialIdLength >> 8) & 0xFF,
+    credentialIdLength & 0xFF, // credentialIdLength (big-endian)
+    ...List<int>.filled(credentialIdLength, 0x00), // credentialId
+    ...coseKey,
+  ]);
+}
+
+// Builds a synthetic attestation object blob that contains the COSE ES256 key
+// after a short garbage prefix.
+Uint8List _buildAttestationObject({required Uint8List x, required Uint8List y}) {
+  final coseKey = _buildCoseKey(x, y);
+  return Uint8List.fromList([
+    0x99, 0x88, // garbage prefix
+    ...coseKey,
+    0x00, 0x00, 0x00, 0x00, 0x00, // suffix
+  ]);
+}
+
+// Helper function to generate valid contract ID
+String generateValidContractId() {
+  final bytes = Uint8List(32);
+  for (int i = 0; i < 32; i++) {
+    bytes[i] = (i * 7 + 3) % 256; // Deterministic test data
+  }
+  return StrKey.encodeContractId(bytes);
+}
+
+// Encodes (r, s) as a DER SEQUENCE for use with compactSignature tests.
+// The encoder prepends 0x00 when the high bit of a component is set (positive
+// integer convention), exactly as real authenticators produce.
+Uint8List _encodeDerSignature(Uint8List r, Uint8List s) {
+  Uint8List derInt(Uint8List raw) {
+    // Strip leading zeros, keeping at least one byte.
+    var stripped = raw;
+    while (stripped.length > 1 && stripped[0] == 0x00) {
+      stripped = stripped.sublist(1);
     }
-    return StrKey.encodeContractId(bytes);
+    // Prepend 0x00 if high bit set (positive integer).
+    if (stripped[0] & 0x80 != 0) {
+      final out = Uint8List(stripped.length + 1);
+      out.setRange(1, out.length, stripped);
+      return out;
+    }
+    return stripped;
   }
 
+  final rb = derInt(r);
+  final sb = derInt(s);
+  final body = <int>[
+    0x02, rb.length, ...rb,
+    0x02, sb.length, ...sb,
+  ];
+  return Uint8List.fromList([0x30, body.length, ...body]);
+}
+
+void main() {
   group('PasskeyUtils - getPublicKey', () {
     test('extract public key from attestation response with publicKey field', () {
-      // Uncompressed secp256r1 public key (0x04 + 32 bytes X + 32 bytes Y)
-      final publicKeyBytes = Uint8List.fromList([
-        0x04,
-        ...List.filled(32, 0xAA), // X coordinate
-        ...List.filled(32, 0xBB), // Y coordinate
-      ]);
+      // secp256r1 generator point G in uncompressed SEC1 form (0x04 || Gx || Gy).
+      // On-curve by definition; real authenticators produce keys in this format.
+      final publicKeyBytes = _generatorPubkey();
       final publicKeyBase64 = base64Url.encode(publicKeyBytes);
 
       final response = AuthenticatorAttestationResponse(
@@ -35,42 +126,10 @@ void main() {
     });
 
     test('extract public key from authenticatorData', () {
-      // Create authenticator data with embedded public key
-      // Format: 37 bytes (RP ID hash) + 1 byte (flags) + 4 bytes (sign count) +
-      //         16 bytes (AAGUID) + 2 bytes (credentialIdLength) + credentialId + COSE key
-      final rpIdHash = Uint8List(32);
-      final flags = Uint8List.fromList([0x45]); // UP, UV, AT flags
-      final signCount = Uint8List.fromList([0, 0, 0, 1]);
-      final aaguid = Uint8List(16);
-
-      final credentialIdLength = 16;
-      final credentialIdLengthBytes = Uint8List.fromList([
-        (credentialIdLength >> 8) & 0xFF,
-        credentialIdLength & 0xFF,
-      ]);
-      final credentialId = Uint8List(credentialIdLength);
-
-      // COSE key structure (simplified)
-      // Starting at offset 55 (37 + 1 + 4 + 16 - 3) relative to credential end
-      final xCoord = Uint8List.fromList(List.filled(32, 0xCC));
-      final yCoord = Uint8List.fromList(List.filled(32, 0xDD));
-      final coseKey = Uint8List.fromList([
-        ...Uint8List(10), // Padding/COSE structure bytes
-        ...xCoord,
-        ...Uint8List(3), // Separator bytes
-        ...yCoord,
-      ]);
-
-      final authData = Uint8List.fromList([
-        ...rpIdHash,
-        ...flags,
-        ...signCount,
-        ...aaguid,
-        ...credentialIdLengthBytes,
-        ...credentialId,
-        ...coseKey,
-      ]);
-
+      // Builds authenticatorData with the COSE ES256 key for generator point G.
+      // The structure follows the WebAuthn spec: rpIdHash || flags || signCount ||
+      // aaguid || credentialIdLen || credentialId || COSE key.
+      final authData = _buildAuthData(x: _gxBytes, y: _gyBytes);
       final authDataBase64 = base64Url.encode(authData);
 
       final response = AuthenticatorAttestationResponse(
@@ -85,23 +144,11 @@ void main() {
     });
 
     test('extract public key from attestationObject', () {
-      // Create attestation object with COSE key
-      final publicKeyPrefix = Uint8List.fromList([
-        0xa5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
-      ]);
-      final xCoord = Uint8List.fromList(List.filled(32, 0xEE));
-      final separator = Uint8List.fromList([0x22, 0x58, 0x20]);
-      final yCoord = Uint8List.fromList(List.filled(32, 0xFF));
-
-      final attestationObject = Uint8List.fromList([
-        ...Uint8List(10), // Prefix bytes
-        ...publicKeyPrefix,
-        ...xCoord,
-        ...separator,
-        ...yCoord,
-        ...Uint8List(5), // Suffix bytes
-      ]);
-
+      // Synthetic attestation object with COSE ES256 key using generator point G.
+      final attestationObject = _buildAttestationObject(
+        x: _gxBytes,
+        y: _gyBytes,
+      );
       final attestationObjectBase64 = base64Url.encode(attestationObject);
 
       final response = AuthenticatorAttestationResponse(
@@ -123,9 +170,9 @@ void main() {
       expect(extractedKey, isNull);
     });
 
-    test('returns invalid public key when format is wrong but provided', () {
-      // Invalid: not starting with 0x04 or wrong length
-      // Implementation will return the invalid key if no other sources available
+    test('returns null when publicKey field is malformed', () {
+      // 64-byte blob without the 0x04 prefix is not a valid uncompressed key.
+      // The rigorous validator rejects it; getPublicKey returns null.
       final invalidKey = Uint8List.fromList(List.filled(64, 0xAA));
       final response = AuthenticatorAttestationResponse(
         publicKey: base64Url.encode(invalidKey),
@@ -133,9 +180,8 @@ void main() {
 
       final extractedKey = PasskeyUtils.getPublicKey(response);
 
-      // Returns the invalid key since no fallback sources are available
-      expect(extractedKey, isNotNull);
-      expect(extractedKey!.length, equals(64));
+      // Off-curve / malformed input: extraction fails, returns null.
+      expect(extractedKey, isNull);
     });
   });
 
@@ -258,32 +304,22 @@ void main() {
 
   group('PasskeyUtils - compactSignature', () {
     test('convert DER signature to compact format', () {
-      // Create a simple DER signature
-      // DER format: 0x30 [total-length] 0x02 [r-length] [r-bytes] 0x02 [s-length] [s-bytes]
+      // r and s well below the secp256r1 curve order (n starts with 0xFF...).
+      // Values 0x11×32 and 0x22×32 are tiny compared to n — no low-S flip needed.
       final r = Uint8List.fromList(List.filled(32, 0x11));
       final s = Uint8List.fromList(List.filled(32, 0x22));
 
-      final derSignature = Uint8List.fromList([
-        0x30, // SEQUENCE tag
-        0x44, // Total length (2 + 32 + 2 + 32)
-        0x02, // INTEGER tag for r
-        0x20, // Length of r (32 bytes)
-        ...r,
-        0x02, // INTEGER tag for s
-        0x20, // Length of s (32 bytes)
-        ...s,
-      ]);
-
-      final compactSig = PasskeyUtils.compactSignature(derSignature);
+      final compactSig = PasskeyUtils.compactSignature(_encodeDerSignature(r, s));
 
       expect(compactSig, isNotNull);
       expect(compactSig.length, equals(64));
     });
 
     test('ensure s value is in low-S form', () {
-      // Create DER signature with high-s value
+      // r = 0x33×32, within curve order.
+      // highS = n - 1, which is the largest valid s and triggers low-S normalisation.
       final r = Uint8List.fromList(List.filled(32, 0x33));
-      // High-s value (greater than n/2)
+      // n - 1 (secp256r1 curve order minus one): triggers the s > n/2 branch.
       final highS = Uint8List.fromList([
         0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -291,22 +327,11 @@ void main() {
         0xF3, 0xB9, 0xCA, 0xC2, 0xFC, 0x63, 0x25, 0x50,
       ]);
 
-      final derSignature = Uint8List.fromList([
-        0x30, // SEQUENCE tag
-        0x44, // Total length
-        0x02, // INTEGER tag for r
-        0x20, // Length of r
-        ...r,
-        0x02, // INTEGER tag for s
-        0x20, // Length of s
-        ...highS,
-      ]);
-
-      final compactSig = PasskeyUtils.compactSignature(derSignature);
+      final compactSig = PasskeyUtils.compactSignature(_encodeDerSignature(r, highS));
 
       expect(compactSig.length, equals(64));
 
-      // Verify s is normalized (converted from high-s to low-s)
+      // Verify s is normalised to low-S form.
       final sBytes = compactSig.sublist(32);
       final sBigInt = BigInt.parse('0x${Util.bytesToHex(sBytes)}');
       final n = BigInt.parse('0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551');
@@ -316,7 +341,9 @@ void main() {
     });
 
     test('compact signature with padded r and s values', () {
-      // r and s with leading zeros (need padding to 32 bytes)
+      // r has its leading byte at 0x00 in the 32-byte representation (the effective
+      // value starts at the second byte). DER encodes this without the leading zero.
+      // s is a fully populated 32-byte value well below the curve order.
       final r = Uint8List.fromList([
         0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
         0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF,
@@ -330,18 +357,7 @@ void main() {
         0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x00, 0x11,
       ]);
 
-      final derSignature = Uint8List.fromList([
-        0x30,
-        0x44,
-        0x02,
-        0x20,
-        ...r,
-        0x02,
-        0x20,
-        ...s,
-      ]);
-
-      final compactSig = PasskeyUtils.compactSignature(derSignature);
+      final compactSig = PasskeyUtils.compactSignature(_encodeDerSignature(r, s));
 
       expect(compactSig.length, equals(64));
       // Verify each component is exactly 32 bytes
@@ -352,28 +368,21 @@ void main() {
     });
 
     test('handles DER signature with varying lengths', () {
-      // DER with 33-byte r (includes leading 0x00 for positive number)
+      // r has the high bit set (0x80 prefix), so DER encoding prepends a 0x00
+      // byte, producing a 33-byte r component in the DER blob. The normaliser
+      // must strip that padding and produce a 32-byte compact output.
+      // 0x80... values are well below the curve order (n starts with 0xFF...),
+      // so this is a valid secp256r1 r value.
       final r = Uint8List.fromList([
-        0x00, // Padding byte
-        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        0x80, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+        0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF,
+        0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+        0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF,
       ]);
+      // s is small and well within the curve order — no low-S flip.
       final s = Uint8List.fromList(List.filled(32, 0x44));
 
-      final derSignature = Uint8List.fromList([
-        0x30,
-        0x45, // Total length (2 + 33 + 2 + 32)
-        0x02,
-        0x21, // r length is 33
-        ...r,
-        0x02,
-        0x20,
-        ...s,
-      ]);
-
-      final compactSig = PasskeyUtils.compactSignature(derSignature);
+      final compactSig = PasskeyUtils.compactSignature(_encodeDerSignature(r, s));
 
       expect(compactSig.length, equals(64));
     });
