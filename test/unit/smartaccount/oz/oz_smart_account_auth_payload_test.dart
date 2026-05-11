@@ -758,4 +758,37 @@ void main() {
       );
     });
   });
+
+  // Cross-SDK byte-identity golden vector (AuthPayload codec).
+  //
+  // Pins the byte-level XDR encoding of the OZ AuthPayload outer named-struct
+  // map plus inner signer-map sort. Uses deterministic strkey constants
+  // (rather than randomly-generated KeyPairs) so the encoded bytes are
+  // reproducible across SDKs. The expected hex is byte-identical to the
+  // matching fixture in the sibling SDK and must be updated in lockstep.
+  group('phase4 cross-SDK AuthPayload codec golden vector', () {
+    test(
+        'phase4_goldenVector5_authPayloadWithTwoDelegatedSigners_matchesFixture',
+        () {
+      final signerA = OZDelegatedSigner(kValidGAddress);
+      final signerB = OZDelegatedSigner(kValidContractId);
+      final payload = OZSmartAccountAuthPayload(
+        signers: <OZSmartAccountSigner, Uint8List>{
+          signerA: Uint8List.fromList(const <int>[0xAA, 0xBB]),
+          signerB: Uint8List.fromList(const <int>[0xCC, 0xDD]),
+        },
+        contextRuleIds: const <int>[7, 11],
+      );
+
+      final scVal = OZSmartAccountAuthPayloadCodec.write(payload);
+      final stream = XdrDataOutputStream();
+      XdrSCVal.encode(stream, scVal);
+      final encoded = Uint8List.fromList(stream.bytes);
+      final actualHex = Util.bytesToHex(encoded).toLowerCase();
+      const expectedHex =
+          '0000001100000001000000020000000f00000010636f6e746578745f72756c655f6964730000001000000001000000020000000300000007000000030000000b0000000f000000077369676e657273000000001100000001000000020000001000000001000000020000000f0000000944656c656761746564000000000000120000000000000000e8a61a861e60af60f80773e06346e5c72cbe59dcadda37608d58ef42511d9fdc0000000d00000002aabb00000000001000000001000000020000000f0000000944656c6567617465640000000000001200000001c58b2bfbc4f054e7324f6bf20cad3e026e41bbad1a6d20c3d7d4918ded1654110000000d00000002ccdd0000';
+      expect(actualHex, expectedHex,
+          reason: 'Golden vector 5 mismatch — actual: $actualHex');
+    });
+  });
 }

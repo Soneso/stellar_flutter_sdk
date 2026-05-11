@@ -583,4 +583,30 @@ void main() {
       }
     });
   });
+
+  // Cross-SDK byte-identity golden vector (WebAuthnSignature).
+  //
+  // Pins the byte-level XDR encoding of `OZWebAuthnSignature.toScVal()`. The
+  // fixture inputs (37 bytes 0xAA, 16 bytes 0xBB, 64 bytes 0xCC) are chosen
+  // so any drift in field name (`client_data` vs `client_data_json`),
+  // alphabetical key ordering, or value-bytes encoding produces a different
+  // hex output and breaks the cross-SDK test in lockstep.
+  group('phase4 cross-SDK WebAuthnSignature golden vector', () {
+    test('phase4_goldenVector6_webAuthnSignatureWireShape_matchesFixture', () {
+      final signature = OZWebAuthnSignature(
+        authenticatorData: Uint8List.fromList(List<int>.filled(37, 0xAA)),
+        clientData: Uint8List.fromList(List<int>.filled(16, 0xBB)),
+        signature: Uint8List.fromList(List<int>.filled(64, 0xCC)),
+      );
+      final scVal = signature.toScVal();
+      final stream = XdrDataOutputStream();
+      XdrSCVal.encode(stream, scVal);
+      final encoded = Uint8List.fromList(stream.bytes);
+      final actualHex = Util.bytesToHex(encoded).toLowerCase();
+      const expectedHex =
+          '0000001100000001000000030000000f0000001261757468656e74696361746f725f6461746100000000000d00000025aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa0000000000000f0000000b636c69656e745f64617461000000000d00000010bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb0000000f000000097369676e61747572650000000000000d00000040cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
+      expect(actualHex, expectedHex,
+          reason: 'Golden vector 6 mismatch — actual: $actualHex');
+    });
+  });
 }

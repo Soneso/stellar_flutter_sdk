@@ -689,4 +689,101 @@ void main() {
       expect(h1, isNot(h2));
     });
   });
+
+  // Cross-SDK byte-identity golden vectors (auth-digest).
+  //
+  // These tests pin the byte-level output of the OZ auth-digest formula so a
+  // wire-format regression in this SDK or in a sibling SDK fails immediately
+  // rather than silently shipping divergent encodings. The expected hex
+  // strings are byte-identical across SDKs and must be updated in lockstep.
+  group('phase4 cross-SDK auth-digest golden vectors', () {
+    Uint8List sha256OfUtf8(String s) =>
+        Uint8List.fromList(crypto.sha256.convert(utf8.encode(s)).bytes);
+
+    test('phase4_goldenVector1_emptyRulesMinimalPayload_authDigest_matchesFixture',
+        () async {
+      final signaturePayload = sha256OfUtf8('test1');
+      final digest = await OZSmartAccountAuth.buildAuthDigest(
+        signaturePayload,
+        const <int>[],
+      );
+      final actualHex = Util.bytesToHex(digest).toLowerCase();
+      const expectedHex =
+          '78946b8d3c459fd2e9d6d786a49c0c37d3d37d2baff912ed4be618dd6a8712bd';
+      expect(actualHex, expectedHex,
+          reason: 'Golden vector 1 mismatch — actual: $actualHex');
+    });
+
+    test('phase4_goldenVector2_singleContextRule_authDigest_matchesFixture',
+        () async {
+      final signaturePayload = sha256OfUtf8('test2');
+      final digest = await OZSmartAccountAuth.buildAuthDigest(
+        signaturePayload,
+        const <int>[42],
+      );
+      final actualHex = Util.bytesToHex(digest).toLowerCase();
+      const expectedHex =
+          '7f8310bb95276dd3c34ed9f3cd0a1bca75fea31643758738ba91a3894922a627';
+      expect(actualHex, expectedHex,
+          reason: 'Golden vector 2 mismatch — actual: $actualHex');
+    });
+
+    test('phase4_goldenVector3_unsortedContextRules_authDigest_matchesFixture',
+        () async {
+      // contextRuleIds must be bound in INSERTION order, not sorted. The
+      // Vec encoding [3, 1, 2] must NOT silently become [1, 2, 3] — a sort
+      // would weaken the digest's binding semantics.
+      final signaturePayload = sha256OfUtf8('test3');
+      final digest = await OZSmartAccountAuth.buildAuthDigest(
+        signaturePayload,
+        const <int>[3, 1, 2],
+      );
+      final actualHex = Util.bytesToHex(digest).toLowerCase();
+      const expectedHex =
+          '574421ac5094e4b6de31938a52a3c641f61b8504c92c3ee40fc94810f8f9d752';
+      expect(actualHex, expectedHex,
+          reason: 'Golden vector 3 mismatch — actual: $actualHex');
+
+      // Cross-check: the same payload with [1, 2, 3] must produce a
+      // different digest, proving the codec preserves insertion order.
+      final sortedDigest = await OZSmartAccountAuth.buildAuthDigest(
+        signaturePayload,
+        const <int>[1, 2, 3],
+      );
+      expect(digest, isNot(sortedDigest),
+          reason:
+              'Insertion-ordered and sorted contextRuleIds must produce different digests');
+    });
+
+    test('phase4_goldenVector4_longSignaturePayload_authDigest_matchesFixture',
+        () async {
+      // 256-byte deterministic signaturePayload built from 8 sha256 chunks
+      // exercising the multi-block hashing path.
+      final builder = BytesBuilder();
+      for (final tag in const [
+        'test4-a',
+        'test4-b',
+        'test4-c',
+        'test4-d',
+        'test4-e',
+        'test4-f',
+        'test4-g',
+        'test4-h',
+      ]) {
+        builder.add(sha256OfUtf8(tag));
+      }
+      final signaturePayload = Uint8List.fromList(builder.toBytes());
+      expect(signaturePayload.length, 256);
+
+      final digest = await OZSmartAccountAuth.buildAuthDigest(
+        signaturePayload,
+        const <int>[100, 200],
+      );
+      final actualHex = Util.bytesToHex(digest).toLowerCase();
+      const expectedHex =
+          '3f1b91ae753b805962516838fab26cc1933e01c8750290a852256ab0cba338d9';
+      expect(actualHex, expectedHex,
+          reason: 'Golden vector 4 mismatch — actual: $actualHex');
+    });
+  });
 }
