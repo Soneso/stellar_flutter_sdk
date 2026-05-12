@@ -196,6 +196,8 @@ export 'src/smartaccount/oz/oz_constants.dart';
 export 'src/smartaccount/oz/oz_smart_account_auth.dart';
 export 'src/smartaccount/oz/oz_smart_account_auth_payload.dart';
 export 'src/smartaccount/oz/oz_smart_account_builders.dart';
+export 'src/smartaccount/oz/oz_indexer_client.dart';
+export 'src/smartaccount/oz/oz_relayer_client.dart';
 export 'src/smartaccount/oz/oz_smart_account_config.dart';
 export 'src/smartaccount/oz/oz_smart_account_events.dart';
 export 'src/smartaccount/oz/oz_smart_account_signatures.dart';

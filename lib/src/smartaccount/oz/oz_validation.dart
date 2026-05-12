@@ -20,24 +20,41 @@ void requireContractAddress(String address, {required String fieldName}) {
   }
 }
 
-/// Returns `true` when [url] is a development localhost URL of the form
-/// `http://localhost`, `http://localhost:<port>`, or `http://localhost/<path>`.
+/// Returns `true` when [url] is a development localhost URL safe for use as
+/// an OZ service endpoint.
 ///
-/// Returns `false` for any other input, including HTTPS schemes and hostnames
-/// that merely begin with `localhost` such as `http://localhost.evil.com`.
+/// The URL is parsed via [Uri.tryParse] and the resolved host must equal
+/// `localhost`, `127.0.0.1`, or `::1` (the IPv6 loopback, which [Uri] strips
+/// of its surrounding brackets). Only the `http` scheme is accepted.
+///
+/// URLs that smuggle a different host through userinfo (for example
+/// `http://localhost:8080@evil.com/`, where RFC 3986 parses `localhost:8080`
+/// as userinfo and `evil.com` as the host) are rejected by the host check.
+/// Any URL that carries userinfo at all is also rejected outright so a
+/// parser disagreement between this check and the HTTP client cannot let
+/// an attacker-controlled host through.
+///
+/// Returns `false` for any malformed input, non-HTTP scheme, or non-loopback
+/// host.
 bool isLocalhostUrl(String url) {
-  const prefix = 'http://localhost';
-  if (!url.startsWith(prefix)) {
+  final uri = Uri.tryParse(url);
+  if (uri == null) {
     return false;
   }
-  // why: a bare startsWith check would accept `http://localhost.evil.com`.
-  // Accept only the empty suffix or a suffix starting with `:` (port) or `/`
-  // (path) so the boundary character following `localhost` is constrained.
-  if (url.length == prefix.length) {
-    return true;
+  if (uri.scheme.toLowerCase() != 'http') {
+    return false;
   }
-  final boundary = url.codeUnitAt(prefix.length);
-  return boundary == 0x3A || boundary == 0x2F;
+  final host = uri.host.toLowerCase();
+  if (host != 'localhost' && host != '127.0.0.1' && host != '::1') {
+    return false;
+  }
+  // Even with a loopback host, the presence of userinfo signals a
+  // host-confusion attack attempt — reject it outright rather than risk a
+  // parser disagreement between this check and the HTTP client below.
+  if (uri.userInfo.isNotEmpty) {
+    return false;
+  }
+  return true;
 }
 
 /// Validates that [address] is a Stellar account ID (G-address) or a Stellar

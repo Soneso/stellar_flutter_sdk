@@ -49,4 +49,29 @@ class OZConstants {
   /// SDK name sent in client-identification headers. Identifies this SDK to
   /// the OpenZeppelin indexer and relayer services.
   static const String clientName = 'flutter-stellar-sdk';
+
+  /// Maximum size in bytes of an indexer HTTP response body. Responses
+  /// larger than this are rejected to protect the host process from
+  /// memory-exhaustion by a hostile or misbehaving server. The cap is
+  /// generous enough to fit any realistic contract-details payload (1 MiB).
+  static const int maxIndexerResponseBytes = 1 * 1024 * 1024;
+
+  /// Maximum size in bytes of a relayer HTTP response body. The relayer
+  /// only ever returns a short JSON envelope so a tighter cap is
+  /// appropriate (256 KiB).
+  static const int maxRelayerResponseBytes = 256 * 1024;
+
+  /// Maximum connect-timeout enforced on indexer requests, in milliseconds.
+  ///
+  /// Connect timeouts are capped independently of the overall request
+  /// timeout so a long polling default cannot translate into a
+  /// pathologically long TCP/TLS handshake wait.
+  static const int maxIndexerConnectTimeoutMs = 10000;
+
+  /// Maximum connect-timeout enforced on relayer requests, in milliseconds.
+  ///
+  /// Connect timeouts are capped independently of the overall request
+  /// timeout so a long submission default cannot translate into a
+  /// pathologically long TCP/TLS handshake wait.
+  static const int maxRelayerConnectTimeoutMs = 30000;
 }

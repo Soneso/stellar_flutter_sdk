@@ -10,6 +10,7 @@ import '../../util.dart';
 import '../core/smart_account_errors.dart';
 import '../core/web_authn_provider.dart';
 import 'oz_constants.dart';
+import 'oz_indexer_client.dart';
 import 'oz_storage_adapter.dart';
 
 /// Configuration for OpenZeppelin Smart Account operations.
@@ -294,7 +295,7 @@ class OZSmartAccountConfig {
   /// well-known default URL for the network's passphrase is returned, or
   /// `null` when no default exists.
   String? effectiveIndexerUrl() {
-    return indexerUrl ?? _defaultIndexerUrl(networkPassphrase);
+    return indexerUrl ?? OZIndexerClient.getDefaultUrl(networkPassphrase);
   }
 
   /// Returns a copy of this configuration with the given fields replaced.
@@ -541,12 +542,3 @@ class OZSmartAccountConfigBuilder {
   }
 }
 
-const Map<String, String> _defaultIndexerUrls = {
-  'Test SDF Network ; September 2015':
-      'https://smart-account-indexer.sdf-ecosystem.workers.dev',
-  'Public Global Stellar Network ; September 2015':
-      'https://smart-account-indexer-mainnet.sdf-ecosystem.workers.dev',
-};
-
-String? _defaultIndexerUrl(String networkPassphrase) =>
-    _defaultIndexerUrls[networkPassphrase];

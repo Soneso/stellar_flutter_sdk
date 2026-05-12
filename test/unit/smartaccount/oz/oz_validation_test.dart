@@ -100,5 +100,27 @@ void main() {
       expect(isLocalhostUrl('http://example.com'), isFalse,
           reason: 'non-localhost host should be rejected');
     });
+
+    test('testIsLocalhostUrl_userinfoBypass_rejected', () {
+      expect(isLocalhostUrl('http://localhost:8080@evil.com/'), isFalse,
+          reason:
+              'userinfo-smuggled host (localhost:8080 as userinfo) must be rejected');
+      expect(isLocalhostUrl('http://localhost@evil.com'), isFalse,
+          reason: 'userinfo-smuggled host (localhost as userinfo) must be rejected');
+      expect(isLocalhostUrl('http://localhost:1@evil.com/'), isFalse,
+          reason:
+              'userinfo-smuggled host (localhost:1 as userinfo) must be rejected');
+    });
+
+    test('testIsLocalhostUrl_loopbackHosts_accepted', () {
+      expect(isLocalhostUrl('http://127.0.0.1'), isTrue,
+          reason: 'IPv4 loopback should be accepted');
+      expect(isLocalhostUrl('http://127.0.0.1:8080'), isTrue,
+          reason: 'IPv4 loopback with port should be accepted');
+      expect(isLocalhostUrl('http://[::1]'), isTrue,
+          reason: 'IPv6 loopback should be accepted');
+      expect(isLocalhostUrl('http://[::1]:8080'), isTrue,
+          reason: 'IPv6 loopback with port should be accepted');
+    });
   });
 }

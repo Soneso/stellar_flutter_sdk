@@ -332,6 +332,19 @@ void main() {
       expect(url, isNotNull);
     });
 
+    test('testEffectiveIndexerUrl_unknownNetworkReturnsNull', () {
+      final config = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: 'Unknown Network ; January 2099',
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+      );
+      expect(config.effectiveIndexerUrl(), isNull,
+          reason:
+              'No explicit indexerUrl + no default for the passphrase must '
+              'resolve to null');
+    });
+
     test('testGetDeployer_defaultDeployerIsDeterministic', () async {
       final config = _validConfig();
 
