@@ -224,7 +224,10 @@ class OZCredentialManager
   /// The broad catch is intentional: transient RPC failures are reported
   /// as "not deployed" rather than surfacing a thrown exception that
   /// callers cannot recover from. The trade-off is a false negative on
-  /// RPC outages.
+  /// RPC outages. Swallowed exceptions are emitted as
+  /// [SmartAccountEventCredentialSyncFailed] so consumers can observe
+  /// transient failures without losing the documented stable-return
+  /// contract.
   ///
   /// Throws [CredentialNotFound] when the credential does not exist in
   /// storage and [StorageReadFailed] when the read itself fails.
@@ -258,12 +261,22 @@ class OZCredentialManager
         return true;
       }
       return false;
-    } on Exception {
+    } on Exception catch (e, stackTrace) {
       // why: narrowed from a bare `catch` so programmer errors
       // (StateError, ArgumentError, …) still propagate. Transient RPC
       // failures and storage-deletion failures remain absorbed and
       // reported as "not deployed" so callers can render a stable UI
-      // without exception handling.
+      // without exception handling. The swallowed exception is surfaced
+      // through the kit's event emitter so consumers can observe
+      // failures (logging, metrics, retry decisions) without losing the
+      // stable boolean return contract.
+      _kit.events.emit(
+        SmartAccountEventCredentialSyncFailed(
+          credentialId: credentialId,
+          error: e,
+          stackTrace: stackTrace,
+        ),
+      );
       return false;
     }
   }

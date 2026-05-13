@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
@@ -15,6 +14,7 @@ import '../core/smart_account_constants.dart';
 import '../core/smart_account_errors.dart';
 import '../core/web_authn_provider.dart';
 import 'oz_internal_pipeline_interfaces.dart';
+import 'oz_secure_nonce.dart';
 import 'oz_selected_signer.dart';
 import 'oz_smart_account_builders.dart';
 import 'oz_smart_account_events.dart';
@@ -99,14 +99,11 @@ class OZSignerManager {
 
   /// Generates 32 cryptographically secure random bytes used as a
   /// WebAuthn challenge or user-id.
-  static Uint8List _randomBytes32() {
-    final secure = Random.secure();
-    final bytes = Uint8List(32);
-    for (var i = 0; i < bytes.length; i++) {
-      bytes[i] = secure.nextInt(256);
-    }
-    return bytes;
-  }
+  ///
+  /// Routes through the shared [OZSecureNonce] helper so every CSPRNG
+  /// site in the OZ stack draws from the same cached `Random.secure()`
+  /// source rather than constructing a fresh secure RNG per call.
+  static Uint8List _randomBytes32() => OZSecureNonce.bytes(32);
 
   /// Registers a new WebAuthn passkey and adds it as a signer to a
   /// context rule.

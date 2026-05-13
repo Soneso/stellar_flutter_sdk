@@ -283,7 +283,7 @@ void main() {
       // shortly add as a keypair signer.
       final keypair = KeyPair.random();
       final address = keypair.accountId;
-      storage.data['external_wallets'] = jsonEncode([
+      storage.data['oz_smart_account.connected_wallets'] = jsonEncode([
         <String, dynamic>{
           'address': address,
           'walletId': 'freighter',
@@ -298,9 +298,9 @@ void main() {
       expect(got, equals(address));
       // Storage entry must be removed; the only entry was deleted, so
       // the storage key is removed entirely.
-      expect(storage.data.containsKey('external_wallets'), isFalse);
+      expect(storage.data.containsKey('oz_smart_account.connected_wallets'), isFalse);
       // removeItem must have been called at least once for cleanup.
-      expect(storage.removeCalls, contains('external_wallets'));
+      expect(storage.removeCalls, contains('oz_smart_account.connected_wallets'));
     });
 
     test('concurrent addFromSecret calls are serialised via mutex',
@@ -366,8 +366,8 @@ void main() {
 
       final result = await manager.addFromWallet();
       expect(result, equals(wallet));
-      expect(storage.data.containsKey('external_wallets'), isTrue);
-      final json = jsonDecode(storage.data['external_wallets']!) as List;
+      expect(storage.data.containsKey('oz_smart_account.connected_wallets'), isTrue);
+      final json = jsonDecode(storage.data['oz_smart_account.connected_wallets']!) as List;
       expect(json, hasLength(1));
       expect((json[0] as Map)['address'], equals(_validG1));
       expect((json[0] as Map)['walletId'], equals('freighter'));
@@ -777,7 +777,7 @@ void main() {
       final adapter = RecordingWalletAdapter();
       final storage = TestWalletStorage();
       // Pre-seed storage so removeAll has something to clear.
-      storage.data['external_wallets'] =
+      storage.data['oz_smart_account.connected_wallets'] =
           '[{"address":"$_validG1","walletId":"w","walletName":"W","connectedAt":1}]';
 
       final manager = _createManager(
@@ -787,8 +787,8 @@ void main() {
 
       await manager.removeAll();
 
-      expect(storage.data.containsKey('external_wallets'), isFalse);
-      expect(storage.removeCalls, contains('external_wallets'));
+      expect(storage.data.containsKey('oz_smart_account.connected_wallets'), isFalse);
+      expect(storage.removeCalls, contains('oz_smart_account.connected_wallets'));
     });
   });
 
@@ -800,7 +800,7 @@ void main() {
         're-reading storage (D-128)', () async {
       final adapter = RecordingWalletAdapter();
       final storage = TestWalletStorage();
-      storage.data['external_wallets'] = jsonEncode([
+      storage.data['oz_smart_account.connected_wallets'] = jsonEncode([
         <String, dynamic>{
           'address': _validG1,
           'walletId': 'freighter',
@@ -843,7 +843,7 @@ void main() {
         () async {
       final adapter = RecordingWalletAdapter();
       final storage = TestWalletStorage();
-      storage.data['external_wallets'] = jsonEncode([
+      storage.data['oz_smart_account.connected_wallets'] = jsonEncode([
         <String, dynamic>{
           'address': _validG1,
           'walletId': 'gone',
@@ -862,13 +862,13 @@ void main() {
       final restored = await manager.restoreConnections();
       expect(restored, isEmpty);
       // Stale entry must be removed.
-      expect(storage.data.containsKey('external_wallets'), isFalse);
+      expect(storage.data.containsKey('oz_smart_account.connected_wallets'), isFalse);
     });
 
     test('reconnect succeeds: returned wallet appears in result', () async {
       final adapter = RecordingWalletAdapter();
       final storage = TestWalletStorage();
-      storage.data['external_wallets'] = jsonEncode([
+      storage.data['oz_smart_account.connected_wallets'] = jsonEncode([
         <String, dynamic>{
           'address': _validG1,
           'walletId': 'freighter',
@@ -900,7 +900,7 @@ void main() {
         () async {
       final adapter = RecordingWalletAdapter();
       final storage = TestWalletStorage();
-      storage.data['external_wallets'] = jsonEncode([
+      storage.data['oz_smart_account.connected_wallets'] = jsonEncode([
         <String, dynamic>{
           'address': _validG1,
           'walletId': 'freighter',
@@ -943,7 +943,7 @@ void main() {
       final storage = TestWalletStorage();
       // Pre-seed with an entry, then remove it via the manager: the
       // resulting state must clear the storage key entirely.
-      storage.data['external_wallets'] = jsonEncode([
+      storage.data['oz_smart_account.connected_wallets'] = jsonEncode([
         <String, dynamic>{
           'address': _validG1,
           'walletId': 'w',
@@ -960,7 +960,7 @@ void main() {
 
       // After removal, key is dropped (so "empty list" is represented as
       // an absent storage entry).
-      expect(storage.data['external_wallets'], isNull);
+      expect(storage.data['oz_smart_account.connected_wallets'], isNull);
     });
 
     test('serialise multiple connections preserves correct order',
@@ -989,7 +989,7 @@ void main() {
       await manager.addFromWallet();
       await manager.addFromWallet();
 
-      final raw = storage.data['external_wallets']!;
+      final raw = storage.data['oz_smart_account.connected_wallets']!;
       final list = jsonDecode(raw) as List;
       expect(list.length, equals(2));
       expect((list[0] as Map)['walletId'], equals('a'));
@@ -1001,7 +1001,7 @@ void main() {
         'with the stored walletIds in order', () async {
       final adapter = RecordingWalletAdapter();
       final storage = TestWalletStorage();
-      storage.data['external_wallets'] = jsonEncode([
+      storage.data['oz_smart_account.connected_wallets'] = jsonEncode([
         <String, dynamic>{
           'address': _validG1,
           'walletId': 'first',
@@ -1045,7 +1045,7 @@ void main() {
       final adapter = RecordingWalletAdapter();
       final storage = TestWalletStorage();
       // Plain garbage in storage; restoreConnections must return empty.
-      storage.data['external_wallets'] = 'not really json {';
+      storage.data['oz_smart_account.connected_wallets'] = 'not really json {';
 
       final manager = _createManager(
         walletAdapter: adapter,
@@ -1062,7 +1062,7 @@ void main() {
         () async {
       final adapter = RecordingWalletAdapter();
       final storage = TestWalletStorage();
-      storage.data['external_wallets'] = jsonEncode([
+      storage.data['oz_smart_account.connected_wallets'] = jsonEncode([
         <String, dynamic>{
           'address': _validG1,
           'walletId': 'only',
@@ -1078,8 +1078,8 @@ void main() {
 
       await manager.remove(_validG1);
 
-      expect(storage.data.containsKey('external_wallets'), isFalse);
-      expect(storage.removeCalls, contains('external_wallets'));
+      expect(storage.data.containsKey('oz_smart_account.connected_wallets'), isFalse);
+      expect(storage.removeCalls, contains('oz_smart_account.connected_wallets'));
     });
   });
 }

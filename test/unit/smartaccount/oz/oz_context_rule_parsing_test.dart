@@ -647,6 +647,43 @@ void main() {
         expect(e.message.contains('External'), isTrue);
       }
     });
+
+    test('externalSignerVerifierIsAccount_throwsValidationException', () {
+      // The OZ contract ABI requires the External signer's verifier to be a
+      // contract C-address. A G-address in this slot must surface as a
+      // validation error rather than silently constructing a broken signer.
+      final manager = _manager(_buildKit());
+      final bad = XdrSCVal.forVec(<XdrSCVal>[
+        XdrSCVal.forSymbol('External'),
+        XdrSCVal.forAddress(
+          Address.forAccountId(_validAccountAddress).toXdr(),
+        ),
+        XdrSCVal.forBytes(_secp256r1Key()),
+      ]);
+      final ruleMap = _buildFullRuleMap(
+        signers: <XdrSCVal>[bad],
+        signerIds: <int>[1],
+      );
+
+      try {
+        manager.parseContextRule(ruleMap);
+        fail('Expected ValidationException');
+      } on ValidationException catch (e) {
+        expect(
+          e.message.toLowerCase().contains('contract'),
+          isTrue,
+          reason:
+              'Exception should mention the contract-address requirement, '
+              'got: ${e.message}',
+        );
+        expect(
+          e.message.contains(_validAccountAddress),
+          isTrue,
+          reason: 'Exception should include the offending address, '
+              'got: ${e.message}',
+        );
+      }
+    });
   });
 
   // ==========================================================================

@@ -182,6 +182,58 @@ final class SmartAccountEventSessionExpired extends SmartAccountEvent {
   int get hashCode => Object.hash(contractId, credentialId);
 }
 
+/// Emitted when a credential sync against on-chain state swallows a
+/// non-fatal exception.
+///
+/// `OZCredentialManager.sync` is a best-effort discovery probe: a transient
+/// RPC failure, a deletion failure on the storage adapter, or any other
+/// `Exception` raised while reading on-chain state is reported as
+/// "credential not deployed" rather than thrown back to the caller. This
+/// event surfaces those swallowed exceptions to consumer code that wants
+/// to log them, retry the sync, or warn the user that the deployment
+/// state may be stale.
+///
+/// Programmer errors (subclasses of `Error` such as `StateError`,
+/// `ArgumentError`, `RangeError`) are NOT routed through this event; they
+/// continue to propagate so caller bugs surface as test failures rather
+/// than silent debug events.
+final class SmartAccountEventCredentialSyncFailed extends SmartAccountEvent {
+  /// Constructs a credential-sync-failed event for the given [credentialId]
+  /// and the swallowed [error]. [stackTrace] is `null` when the originating
+  /// call site did not capture one.
+  const SmartAccountEventCredentialSyncFailed({
+    required this.credentialId,
+    required this.error,
+    this.stackTrace,
+  });
+
+  /// The Base64URL-encoded credential ID whose sync probe failed.
+  final String credentialId;
+
+  /// The swallowed exception. Always an `Exception` subclass; programmer
+  /// errors are not routed here.
+  final Object error;
+
+  /// Optional stack trace captured at the throw site; `null` when not
+  /// available.
+  final StackTrace? stackTrace;
+
+  @override
+  String get eventTypeName => 'CredentialSyncFailed';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is SmartAccountEventCredentialSyncFailed &&
+        other.credentialId == credentialId &&
+        other.error == error &&
+        other.stackTrace == stackTrace;
+  }
+
+  @override
+  int get hashCode => Object.hash(credentialId, error, stackTrace);
+}
+
 /// Emitted when a transaction is signed.
 ///
 /// This event is fired after successfully collecting all required signatures
@@ -498,6 +550,9 @@ class SmartAccountEventEmitter {
     }
     if (E == SmartAccountEventCredentialDeleted) {
       return 'CredentialDeleted';
+    }
+    if (E == SmartAccountEventCredentialSyncFailed) {
+      return 'CredentialSyncFailed';
     }
     if (E == SmartAccountEventSessionExpired) {
       return 'SessionExpired';

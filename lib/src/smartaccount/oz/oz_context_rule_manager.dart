@@ -6,6 +6,7 @@ import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 
+import '../../key_pair.dart';
 import '../../soroban/soroban_auth.dart';
 import '../../xdr/xdr.dart';
 import '../core/smart_account_errors.dart';
@@ -460,8 +461,13 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
             'Expected Bytes for External signer keyData',
           );
         }
+        // why: the OZ contract ABI requires the External signer's
+        // verifier to be a contract address (C-address). A G-address in
+        // this slot indicates a malformed or tampered on-chain rule;
+        // surface it as a validation error rather than silently
+        // constructing a broken signer that will fail later at sign time.
         return OZExternalSigner(
-          OZAddressStrKey.fromXdrOrEmpty(verifierAddressXdr),
+          _requireContractAddressFromXdr(verifierAddressXdr),
           Uint8List.fromList(keyDataBytes.sCBytes),
         );
       default:
@@ -528,6 +534,32 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
       );
     }
     return u32.uint32;
+  }
+
+  /// Strict variant of [OZAddressStrKey.fromXdrOrEmpty] that requires the
+  /// decoded address to be a Stellar contract C-address. Used for slots
+  /// where the OZ contract ABI mandates a contract reference (currently
+  /// only the External signer's verifier).
+  ///
+  /// Throws [ValidationException.invalidInput] when [scVal] is empty,
+  /// undecodable, or decodes to a non-contract address (G-address,
+  /// muxed account, etc.).
+  String _requireContractAddressFromXdr(XdrSCAddress scVal) {
+    final decoded = OZAddressStrKey.fromXdr(scVal);
+    if (decoded == null || decoded.isEmpty) {
+      throw ValidationException.invalidInput(
+        'verifierAddress',
+        'External signer verifier address is missing or undecodable',
+      );
+    }
+    if (!StrKey.isValidContractId(decoded)) {
+      throw ValidationException.invalidInput(
+        'verifierAddress',
+        'External signer verifier must be a contract address (C...), '
+            'got: $decoded',
+      );
+    }
+    return decoded;
   }
 
   // -------------------------------------------------------------------------

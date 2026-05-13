@@ -138,7 +138,7 @@ class _InMemoryWalletConnectionStorage extends WalletConnectionStorage {
 }
 
 /// Storage key for persisted wallet connections.
-const String _walletStorageKey = 'external_wallets';
+const String _walletStorageKey = 'oz_smart_account.connected_wallets';
 
 /// Manager for external (non-passkey) signers used in multi-signature
 /// smart-account operations.
@@ -558,6 +558,19 @@ class OZExternalSignerManager {
     String preimageXdrBase64,
     String address,
   ) async {
+    // why: a [KeyPair] constructed via [KeyPair.fromAccountId] /
+    // [KeyPair.fromPublicKey] holds only the public key and silently
+    // returns an unusable signature when asked to sign. Detect that
+    // shape upfront via [KeyPair.canSign] and surface a clear error
+    // before reaching the underlying Ed25519 primitive — `addFromSecret`
+    // is supposed to be the only entry point that registers a keypair
+    // signer, so this guard is defence-in-depth against future code
+    // paths or external mutation that bypass it.
+    if (!keypair.canSign()) {
+      throw TransactionException.signingFailed(
+        'Keypair for $address is public-only and cannot sign',
+      );
+    }
     // why: `crypto.sha256.convert` cannot throw (the input is a plain
     // byte list and the algorithm is pure), so the only operations that
     // can fail are the base64 decode and the keypair sign. Wrapping

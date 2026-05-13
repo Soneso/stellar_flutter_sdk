@@ -361,6 +361,36 @@ void main() {
       expect(event.credential.credentialId, 'new-cred');
       expect(event.credential.nickname, 'Test Key');
     });
+
+    test('testCredentialSyncFailedEvent_carriesCredentialIdAndError', () {
+      final error = Exception('rpc unreachable');
+      final stack = StackTrace.current;
+      final event = SmartAccountEventCredentialSyncFailed(
+        credentialId: 'cred-xyz',
+        error: error,
+        stackTrace: stack,
+      );
+      expect(event.credentialId, 'cred-xyz');
+      expect(event.error, same(error));
+      expect(event.stackTrace, same(stack));
+      expect(event.eventTypeName, 'CredentialSyncFailed');
+    });
+
+    test('testCredentialSyncFailedEvent_typedListenerReceivesEvent', () {
+      final emitter = SmartAccountEventEmitter();
+      final received = <SmartAccountEventCredentialSyncFailed>[];
+      emitter.on<SmartAccountEventCredentialSyncFailed>(received.add);
+
+      final event = SmartAccountEventCredentialSyncFailed(
+        credentialId: 'cred-1',
+        error: Exception('boom'),
+      );
+      emitter.emit(event);
+
+      expect(received, hasLength(1));
+      expect(received.single.credentialId, 'cred-1');
+      expect(emitter.listenerCount('CredentialSyncFailed'), 1);
+    });
   });
 
   group('once', () {

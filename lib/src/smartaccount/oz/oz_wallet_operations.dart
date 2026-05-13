@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart' as dio;
@@ -25,6 +24,7 @@ import '../core/smart_account_utils.dart';
 import '../core/web_authn_provider.dart';
 import 'oz_internal_pipeline_interfaces.dart';
 import 'oz_relayer_client.dart';
+import 'oz_secure_nonce.dart';
 import 'oz_smart_account_events.dart';
 import 'oz_smart_account_signatures.dart';
 import 'oz_smart_account_types.dart';
@@ -408,7 +408,6 @@ class OZWalletOperations {
   OZWalletOperations(this._kit);
 
   final OZSmartAccountWalletKitInterface _kit;
-  static final Random _secureRandom = Random.secure();
 
   OZWalletCredentialManagerInterface get _credentialManager =>
       _kit.credentialManager;
@@ -1784,13 +1783,12 @@ class OZWalletOperations {
   // Private: byte helpers
   // ---------------------------------------------------------------------------
 
-  Uint8List _secureRandomBytes(int length) {
-    final out = Uint8List(length);
-    for (var i = 0; i < length; i++) {
-      out[i] = _secureRandom.nextInt(256);
-    }
-    return out;
-  }
+  /// Routes through [OZSecureNonce.bytes] so every CSPRNG site in the
+  /// OZ stack draws from the same cached `Random.secure()` source. Kept
+  /// as a thin alias rather than inlined at the call sites for callsite
+  /// readability and to give a single edit point if the entropy source
+  /// ever needs to change.
+  Uint8List _secureRandomBytes(int length) => OZSecureNonce.bytes(length);
 
   String _base64UrlEncode(Uint8List bytes) {
     var encoded = base64Url.encode(bytes);

@@ -361,4 +361,112 @@ void main() {
       expect(h.txOps.submitCalls, isEmpty);
     });
   });
+
+  // ==========================================================================
+  // Cross-SDK parity: iOS `OZSignerManagerTests` not-connected gates.
+  //
+  // The companion file `oz_manager_selected_signers_test.dart` covers each
+  // signer-manager method in its multi-signer (`selectedSigners`-non-empty)
+  // form against a disconnected kit. The single-signer branch — the path the
+  // iOS tests exercise — is asserted here so both submission paths are
+  // pinned to the same `WalletNotConnected` failure mode no matter which
+  // overload the caller hit.
+  //
+  // iOS counterparts:
+  // - `test_addPasskey_notConnected_throws`
+  // - `test_addDelegated_notConnected_throws`
+  // - `test_addEd25519_notConnected_throws`
+  // - `test_removeSigner_byId_notConnected_throws`
+  // ==========================================================================
+
+  group('OZSignerManager not-connected gates (single-signer path)', () {
+    test('addPasskey_notConnected_throwsWalletNotConnected', () async {
+      // Build a deliberately disconnected harness: skip `setConnected`.
+      final kit = FakePipelineKit();
+      final txOps = MockOZTransactionOperations(kit);
+      kit.setTransactionOperations(txOps);
+      final mgr = OZSignerManager(kit);
+
+      final pk = Uint8List(65);
+      pk[0] = 0x04;
+      await expectLater(
+        () => mgr.addPasskey(
+          contextRuleId: 0,
+          publicKey: pk,
+          credentialId: Uint8List.fromList(<int>[1, 2, 3]),
+        ),
+        throwsA(isA<WalletNotConnected>()),
+      );
+      expect(txOps.submitCalls, isEmpty);
+    });
+
+    test('addDelegated_notConnected_throwsWalletNotConnected', () async {
+      final kit = FakePipelineKit();
+      final txOps = MockOZTransactionOperations(kit);
+      kit.setTransactionOperations(txOps);
+      final mgr = OZSignerManager(kit);
+
+      await expectLater(
+        () => mgr.addDelegated(
+          contextRuleId: 0,
+          address: _accountAddressA,
+        ),
+        throwsA(isA<WalletNotConnected>()),
+      );
+      expect(txOps.submitCalls, isEmpty);
+    });
+
+    test('addEd25519_notConnected_throwsWalletNotConnected', () async {
+      final kit = FakePipelineKit();
+      final txOps = MockOZTransactionOperations(kit);
+      kit.setTransactionOperations(txOps);
+      final mgr = OZSignerManager(kit);
+
+      await expectLater(
+        () => mgr.addEd25519(
+          contextRuleId: 0,
+          verifierAddress: _verifierContract,
+          publicKey: Uint8List(32),
+        ),
+        throwsA(isA<WalletNotConnected>()),
+      );
+      expect(txOps.submitCalls, isEmpty);
+    });
+
+    test('removeSigner_byId_notConnected_throwsWalletNotConnected', () async {
+      final kit = FakePipelineKit();
+      final txOps = MockOZTransactionOperations(kit);
+      kit.setTransactionOperations(txOps);
+      final mgr = OZSignerManager(kit);
+
+      await expectLater(
+        () => mgr.removeSigner(contextRuleId: 0, signerId: 1),
+        throwsA(isA<WalletNotConnected>()),
+      );
+      expect(txOps.submitCalls, isEmpty);
+    });
+
+    test(
+        'addNewPasskeySigner_notConnected_throwsWalletNotConnectedBeforeWebAuthn',
+        () async {
+      // why: addNewPasskeySigner is the end-to-end registration entry
+      // point that is not directly mirrored in iOS but uses the same
+      // requireConnected gate. Pinning it here keeps the gate in place
+      // even if the kit-side implementation is later refactored to do
+      // its WebAuthn ceremony before the connection check.
+      final kit = FakePipelineKit();
+      final txOps = MockOZTransactionOperations(kit);
+      kit.setTransactionOperations(txOps);
+      final mgr = OZSignerManager(kit);
+
+      await expectLater(
+        () => mgr.addNewPasskeySigner(
+          contextRuleId: 0,
+          userName: 'test-user',
+        ),
+        throwsA(isA<WalletNotConnected>()),
+      );
+      expect(txOps.submitCalls, isEmpty);
+    });
+  });
 }

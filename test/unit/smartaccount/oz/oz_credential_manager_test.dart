@@ -433,4 +433,71 @@ void main() {
       );
     });
   });
+
+  group('OZCredentialManager.sync swallowed-exception event emission', () {
+    test(
+        'sync emits SmartAccountEventCredentialSyncFailed when getContractData throws Exception',
+        () async {
+      // why: F-CQ-Flu-6 contract — narrowed catch in `sync` keeps the
+      // stable boolean return contract for transient RPC failures while
+      // surfacing the swallowed exception through the kit's event
+      // emitter so consumers can observe it (logging, metrics, retry).
+      final mock = MockSorobanServer();
+      mock.getContractDataResponses
+          .add(Exception('connection reset by peer'));
+
+      final ctx = _newKitWithManager(sorobanServer: mock);
+
+      await ctx.manager.createPendingCredential(
+        credentialId: 'sync-cred',
+        publicKey: _testPublicKey(),
+        contractId: _contractA,
+      );
+
+      final received = <SmartAccountEventCredentialSyncFailed>[];
+      ctx.kit.events.on<SmartAccountEventCredentialSyncFailed>(received.add);
+
+      final isDeployed = await ctx.manager.sync('sync-cred');
+      expect(isDeployed, isFalse);
+
+      expect(received, hasLength(1));
+      expect(received.single.credentialId, 'sync-cred');
+      expect(received.single.error, isA<Exception>());
+      expect(
+        received.single.error.toString(),
+        contains('connection reset by peer'),
+      );
+    });
+
+    test(
+        'sync does NOT emit when getContractData returns null (contract simply absent)',
+        () async {
+      // why: a `null` ledger entry means "no contract on-chain" — the
+      // expected outcome for a pending deploy. No exception is thrown,
+      // so no event is emitted; only the boolean return communicates
+      // the result.
+      final mock = MockSorobanServer();
+      mock.getContractDataResponses.add(<Object?>[null].first);
+
+      final ctx = _newKitWithManager(sorobanServer: mock);
+
+      await ctx.manager.createPendingCredential(
+        credentialId: 'sync-cred-absent',
+        publicKey: _testPublicKey(),
+        contractId: _contractA,
+      );
+
+      final received = <SmartAccountEventCredentialSyncFailed>[];
+      ctx.kit.events.on<SmartAccountEventCredentialSyncFailed>(received.add);
+
+      final isDeployed = await ctx.manager.sync('sync-cred-absent');
+      expect(isDeployed, isFalse);
+
+      expect(
+        received,
+        isEmpty,
+        reason: 'a null contract-data response is not an exception path',
+      );
+    });
+  });
 }
