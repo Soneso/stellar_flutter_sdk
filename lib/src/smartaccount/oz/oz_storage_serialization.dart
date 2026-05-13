@@ -16,8 +16,9 @@ import 'oz_storage_adapter.dart';
 /// stored as its enum-name string so the encoded form remains stable as
 /// the enum evolves.
 ///
-/// Internal to the smart-account storage layer; not exported from the SDK
-/// barrel. Persistent adapters import this file via its relative path.
+/// Internal to the smart-account storage layer; not re-exposed via the
+/// SDK barrel. Persistent adapters import this file directly through
+/// its relative path.
 class SerializableCredential {
   /// Constructs a serialisable credential record. Defaults match the
   /// corresponding [StoredCredential] defaults so consumers can omit
@@ -131,8 +132,8 @@ class SerializableCredential {
 
 /// JSON-serialisable representation of [StoredSession].
 ///
-/// Internal to the smart-account storage layer; not exported from the SDK
-/// barrel.
+/// Internal to the smart-account storage layer; not re-exposed via the
+/// SDK barrel.
 class SerializableSession {
   /// Constructs a serialisable session record.
   const SerializableSession({

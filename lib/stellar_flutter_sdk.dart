@@ -193,6 +193,13 @@ export 'src/smartaccount/core/web_authn_provider.dart';
 /// Smart Accounts — OZ
 export 'src/smartaccount/oz/oz_builders.dart';
 export 'src/smartaccount/oz/oz_constants.dart';
+export 'src/smartaccount/oz/oz_context_rule_manager.dart';
+export 'src/smartaccount/oz/oz_credential_manager.dart';
+export 'src/smartaccount/oz/oz_external_signer_manager.dart';
+export 'src/smartaccount/oz/oz_multi_signer_manager.dart';
+export 'src/smartaccount/oz/oz_policy_manager.dart';
+export 'src/smartaccount/oz/oz_selected_signer.dart';
+export 'src/smartaccount/oz/oz_signer_manager.dart';
 export 'src/smartaccount/oz/oz_smart_account_auth.dart';
 export 'src/smartaccount/oz/oz_smart_account_auth_payload.dart';
 export 'src/smartaccount/oz/oz_smart_account_builders.dart';

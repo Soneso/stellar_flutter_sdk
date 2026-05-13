@@ -9,8 +9,10 @@ import 'package:meta/meta.dart';
 import '../../key_pair.dart';
 import '../../soroban/soroban_server.dart';
 import '../../xdr/xdr.dart';
+import 'oz_builders.dart';
 import 'oz_indexer_client.dart';
 import 'oz_relayer_client.dart';
+import 'oz_selected_signer.dart';
 import 'oz_smart_account_config.dart';
 import 'oz_smart_account_events.dart';
 import 'oz_smart_account_types.dart';
@@ -68,6 +70,43 @@ abstract class OZContextRuleManagerInterface {
   /// context rule, used to discover external-signer key data when local
   /// storage does not have the credential.
   Future<List<XdrSCVal>> getAllContextRules();
+
+  /// Returns the raw on-chain `ScVal` representation of a single rule
+  /// identified by [id]. Sibling managers (signer manager, policy manager)
+  /// use this together with [parseContextRule] to translate a value-form
+  /// signer or policy lookup into the on-chain numeric ID before issuing
+  /// the matching `remove_signer` / `remove_policy` invocation.
+  Future<XdrSCVal> getContextRule(int id);
+
+  /// Parses a raw context-rule `ScVal` into a [ParsedContextRule]
+  /// instance. Exposed via the interface (rather than a class-level
+  /// method) so the sibling managers can drive the parser through the
+  /// kit's `contextRuleManager` accessor.
+  ParsedContextRule parseContextRule(XdrSCVal scVal);
+}
+
+/// Internal abstraction over the multi-signer manager the
+/// state-changing managers route through when the caller supplies a
+/// non-empty `selectedSigners` list.
+///
+/// Sibling managers (signer, policy, context-rule) call
+/// [submitWithMultipleSigners] through this interface so they avoid
+/// the circular import between the concrete `OZMultiSignerManager` and
+/// the kit interface that exposes it. The interface declares only the
+/// surface the routing helpers need; the multi-signer manager retains
+/// its richer typed API for direct consumer use.
+@internal
+abstract class OZMultiSignerManagerInterface {
+  /// Submits [hostFunction] under the [selectedSigners] list, returning
+  /// the same [TransactionResult] the concrete manager would yield. The
+  /// optional [forceMethod] mirrors the named parameter on the concrete
+  /// implementation and forces submission via RPC or relayer respectively
+  /// instead of letting the SDK pick automatically.
+  Future<TransactionResult> submitWithMultipleSigners({
+    required XdrHostFunction hostFunction,
+    required List<SelectedSigner> selectedSigners,
+    SubmissionMethod? forceMethod,
+  });
 }
 
 /// Connected-wallet state. Carries the Base64URL credential ID and the
@@ -144,6 +183,27 @@ abstract class OZSmartAccountKitInterface {
     required String credentialId,
     required String contractId,
   });
+
+  /// The currently connected smart-account contract address, or `null`
+  /// when no wallet is connected. Distinct from [requireConnected]: the
+  /// throwing path is for state-changing flows that cannot proceed
+  /// unconnected; this nullable accessor supports query methods that
+  /// gracefully degrade to an empty result when no wallet is bound to
+  /// the kit.
+  String? get contractId;
+
+  /// The external wallet adapter currently configured on the kit, or
+  /// `null` when no adapter is set. Consumed by the multi-signer
+  /// pipeline for delegated wallet signers.
+  ExternalWalletAdapter? get externalWallet;
+
+  /// The multi-signer manager handle exposed through the kit
+  /// interface. Typed as [Object] to avoid a circular import between
+  /// the pipeline interfaces and the concrete manager classes; cast to
+  /// the concrete `OZMultiSignerManager` (or to
+  /// [OZMultiSignerManagerInterface] for pipeline-internal use) when
+  /// the call site needs the typed surface.
+  Object get multiSignerManager;
 }
 
 /// Internal abstraction over the credential-store mutations the wallet

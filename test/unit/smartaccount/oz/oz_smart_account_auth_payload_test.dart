@@ -766,9 +766,9 @@ void main() {
   // (rather than randomly-generated KeyPairs) so the encoded bytes are
   // reproducible across SDKs. The expected hex is byte-identical to the
   // matching fixture in the sibling SDK and must be updated in lockstep.
-  group('phase4 cross-SDK AuthPayload codec golden vector', () {
+  group('cross-SDK AuthPayload codec golden vector', () {
     test(
-        'phase4_goldenVector5_authPayloadWithTwoDelegatedSigners_matchesFixture',
+        'goldenVector5_authPayloadWithTwoDelegatedSigners_matchesFixture',
         () {
       final signerA = OZDelegatedSigner(kValidGAddress);
       final signerB = OZDelegatedSigner(kValidContractId);

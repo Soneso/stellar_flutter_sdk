@@ -672,6 +672,14 @@ abstract class ExternalWalletAdapter {
   /// The SDK handles auth-entry construction and signature framing — the
   /// wallet only produces the raw Ed25519 signature.
   ///
+  /// Contract: the returned signature MUST verify against the wallet's
+  /// public key as `verify(signature, sha256(preimageBytes))`. Adapters
+  /// that omit the SHA-256 step, sign a different payload, or return a
+  /// non-canonical encoding produce a signature that the Soroban host
+  /// rejects at submission time. That rejection surfaces in the SDK as
+  /// `TransactionException.simulationFailed` during the post-sign
+  /// re-simulation, not as a direct error from this method.
+  ///
   /// Throws [TransactionSigningFailed] if signing fails or is rejected.
   Future<SignAuthEntryResult> signAuthEntry(
     String preimageXdr, {

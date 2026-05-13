@@ -591,8 +591,8 @@ void main() {
   // so any drift in field name (`client_data` vs `client_data_json`),
   // alphabetical key ordering, or value-bytes encoding produces a different
   // hex output and breaks the cross-SDK test in lockstep.
-  group('phase4 cross-SDK WebAuthnSignature golden vector', () {
-    test('phase4_goldenVector6_webAuthnSignatureWireShape_matchesFixture', () {
+  group('cross-SDK WebAuthnSignature golden vector', () {
+    test('goldenVector6_webAuthnSignatureWireShape_matchesFixture', () {
       final signature = OZWebAuthnSignature(
         authenticatorData: Uint8List.fromList(List<int>.filled(37, 0xAA)),
         clientData: Uint8List.fromList(List<int>.filled(16, 0xBB)),

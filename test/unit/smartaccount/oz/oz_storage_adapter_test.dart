@@ -938,7 +938,7 @@ void main() {
     });
   });
 
-  group('SessionManager - Phase 5a in-scope cases', () {
+  group('SessionManager - in-scope cases', () {
     const contractId = 'CBCD1234AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 
     test('testStoredSession_expiresAtZero_isExpired', () {
@@ -1121,7 +1121,7 @@ void main() {
       expect(config.sessionExpiryMs, oneDayMs);
     });
 
-    // Group D: Phase 5a above-KMP-floor mandate.
+    // Group D: cross-SDK above-floor concurrency mandate.
     test('test_concurrent_writes_10_parallel_no_partial_state', () async {
       const iterations = 100;
       for (var run = 0; run < iterations; run++) {
@@ -1170,20 +1170,20 @@ void main() {
     });
   });
 
-  group('SessionManager - deferred to Phase 7/8', () {
+  group('SessionManager - deferred to credential and kit layers', () {
     test('testKitDisconnect_clearsSession', () {},
-        skip: 'Phase 5a defers; depends on Phase 8 OZSmartAccountKit');
+        skip: 'depends on OZSmartAccountKit lifecycle layer');
     test('testSessionIndependentFromCredentials', () {},
-        skip: 'Phase 5a defers; depends on Phase 7 OZCredentialManager');
+        skip: 'depends on OZCredentialManager');
     test('testClearSessionDoesNotAffectCredentials', () {},
-        skip: 'Phase 5a defers; depends on Phase 7 OZCredentialManager');
+        skip: 'depends on OZCredentialManager');
     test('testKitIsConnected_initiallyFalse', () {},
-        skip: 'Phase 5a defers; depends on Phase 8 OZSmartAccountKit');
+        skip: 'depends on OZSmartAccountKit lifecycle layer');
     test('testKitIsConnected_afterSetConnectedState', () {},
-        skip: 'Phase 5a defers; depends on Phase 8 OZSmartAccountKit');
+        skip: 'depends on OZSmartAccountKit lifecycle layer');
     test('testKitIsConnected_afterDisconnect', () {},
-        skip: 'Phase 5a defers; depends on Phase 8 OZSmartAccountKit');
+        skip: 'depends on OZSmartAccountKit lifecycle layer');
     test('testKitRequireConnected_throwsWhenNotConnected', () {},
-        skip: 'Phase 5a defers; depends on Phase 8 OZSmartAccountKit');
+        skip: 'depends on OZSmartAccountKit lifecycle layer');
   });
 }

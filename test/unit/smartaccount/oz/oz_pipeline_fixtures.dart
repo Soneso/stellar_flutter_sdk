@@ -28,7 +28,9 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart'
         OZSmartAccountConfig,
         OZIndexerClient,
         OZRelayerClient,
-        OZSmartAccountSigner;
+        OZSmartAccountSigner,
+        ExternalWalletAdapter,
+        ParsedContextRule;
 
 /// Test fixture: a fake transaction-operations kit that supplies just enough
 /// surface to drive pipeline-level test cases without opening real network
@@ -46,6 +48,8 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
     OZContextRuleManagerInterface? contextRuleManager,
     StorageAdapter? storage,
     OZTransactionOperations? transactionOperations,
+    Object? multiSignerManager,
+    ExternalWalletAdapter? externalWallet,
   })  : _config = config ??
             OZSmartAccountConfig(
               rpcUrl: 'https://soroban-testnet.stellar.org',
@@ -63,7 +67,9 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
         _contextRuleManager =
             contextRuleManager ?? StubContextRuleManager(),
         _storage = storage ?? InMemoryStorageAdapter(),
-        _events = SmartAccountEventEmitter() {
+        _events = SmartAccountEventEmitter(),
+        _injectedMultiSignerManager = multiSignerManager,
+        _externalWallet = externalWallet {
     _transactionOperations =
         transactionOperations ?? OZTransactionOperations(this);
   }
@@ -78,6 +84,30 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
   StorageAdapter _storage;
   final SmartAccountEventEmitter _events;
   late OZTransactionOperations _transactionOperations;
+  Object? _injectedMultiSignerManager;
+  ExternalWalletAdapter? _externalWallet;
+
+  /// Test-only setter for the injected multi-signer manager. Lets tests
+  /// rebind the kit's `multiSignerManager` accessor after construction
+  /// (useful when the manager itself depends on the constructed kit).
+  void setMultiSignerManager(Object manager) {
+    _injectedMultiSignerManager = manager;
+  }
+
+  /// Test-only setter for the external wallet adapter exposed via the
+  /// kit interface, mirroring `setMultiSignerManager` above.
+  void setExternalWallet(ExternalWalletAdapter? adapter) {
+    _externalWallet = adapter;
+  }
+
+  /// Test-only setter for the transaction operations exposed via the
+  /// `OZSmartAccountWalletKitInterface` accessor. The state-changing
+  /// manager tests inject [MockOZTransactionOperations] after
+  /// construction so the per-test mock is bound to the real kit
+  /// reference.
+  void setTransactionOperations(OZTransactionOperations operations) {
+    _transactionOperations = operations;
+  }
 
   String? _connectedCredentialId;
   String? _connectedContractId;
@@ -169,6 +199,23 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
 
   @override
   OZTransactionOperations get transactionOperations => _transactionOperations;
+
+  @override
+  String? get contractId => _connectedContractId;
+
+  @override
+  ExternalWalletAdapter? get externalWallet => _externalWallet;
+
+  @override
+  Object get multiSignerManager {
+    final injected = _injectedMultiSignerManager;
+    if (injected != null) return injected;
+    throw UnsupportedError(
+      'FakePipelineKit does not provide a multi-signer manager by '
+      'default; tests that exercise multi-signer routing should '
+      'inject one via the constructor or `setMultiSignerManager`.',
+    );
+  }
 }
 
 /// Stub credential manager exposed for tests that need to inject stored
@@ -268,6 +315,17 @@ class StubContextRuleManager implements OZContextRuleManagerInterface {
   List<XdrSCVal> allRules = const <XdrSCVal>[];
   List<int> resolved = const <int>[];
 
+  /// Per-rule-id lookup table consumed by [getContextRule]. When unset,
+  /// [getContextRule] throws to mirror the contract's "rule not found"
+  /// behaviour.
+  Map<int, XdrSCVal> contextRulesById = const <int, XdrSCVal>{};
+
+  /// Pre-set table consumed by [parseContextRule]. When unset, the
+  /// stub throws to surface accidental parser invocations during
+  /// pipeline tests.
+  Map<XdrSCVal, ParsedContextRule> parsedContextRules =
+      const <XdrSCVal, ParsedContextRule>{};
+
   @override
   Future<List<Object>> listContextRules() async => rules;
 
@@ -281,7 +339,32 @@ class StubContextRuleManager implements OZContextRuleManagerInterface {
   }
 
   @override
-  Future<List<XdrSCVal>> getAllContextRules() async => allRules;
+  Future<List<XdrSCVal>> getAllContextRules({int? maxScanId}) async => allRules;
+
+  @override
+  Future<XdrSCVal> getContextRule(int id) async {
+    final scVal = contextRulesById[id];
+    if (scVal == null) {
+      throw StateError(
+        'StubContextRuleManager.getContextRule called with id=$id but '
+        'no entry was set in contextRulesById.',
+      );
+    }
+    return scVal;
+  }
+
+  @override
+  ParsedContextRule parseContextRule(XdrSCVal scVal) {
+    final rule = parsedContextRules[scVal];
+    if (rule == null) {
+      throw StateError(
+        'StubContextRuleManager.parseContextRule called for an '
+        'unregistered ScVal; populate parsedContextRules in the test '
+        'fixture.',
+      );
+    }
+    return rule;
+  }
 }
 
 /// Test-only credential manager exposure for tests that need stub-level

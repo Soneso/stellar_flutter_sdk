@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart' as dio;
@@ -25,6 +24,7 @@ import '../core/smart_account_utils.dart';
 import 'oz_constants.dart';
 import 'oz_internal_pipeline_interfaces.dart';
 import 'oz_relayer_client.dart';
+import 'oz_secure_nonce.dart';
 import 'oz_smart_account_auth.dart';
 import 'oz_smart_account_events.dart';
 import 'oz_smart_account_signatures.dart';
@@ -1332,22 +1332,10 @@ class OZTransactionOperations {
   /// Soroban address-credentials nonce field, which the contract uses to
   /// prevent replay.
   ///
-  /// Implemented via [BigInt] so the full 64 bits of randomness flow
-  /// through unchanged on every platform Dart targets. On the JS target a
-  /// native `int` is a double, so a naive bit-shift accumulator would
-  /// truncate to 53 bits of entropy; the [BigInt] path keeps the SDK's
-  /// behaviour identical on VM and web.
-  XdrInt64 _generateNonce() {
-    final random = Random.secure();
-    var n = BigInt.zero;
-    for (var i = 0; i < 8; i++) {
-      n = (n << 8) | BigInt.from(random.nextInt(256));
-    }
-    final twoTo63 = BigInt.one << 63;
-    final twoTo64 = BigInt.one << 64;
-    final signed = n >= twoTo63 ? n - twoTo64 : n;
-    return XdrInt64(signed);
-  }
+  /// Delegates to [OZSecureNonce.generate] so the multi-signer manager
+  /// and this single-signer pipeline draw nonces from the exact same
+  /// generator; see [OZSecureNonce] for the implementation rationale.
+  XdrInt64 _generateNonce() => OZSecureNonce.generate();
 
   /// Throws a [TransactionException] when [cancelToken] has been
   /// cancelled. Called between long-running awaits in the pipeline so
