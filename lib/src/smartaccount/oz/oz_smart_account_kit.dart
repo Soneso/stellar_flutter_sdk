@@ -1,0 +1,574 @@
+// Copyright 2026 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'dart:async';
+
+import 'package:meta/meta.dart';
+
+import '../../key_pair.dart';
+import '../../soroban/soroban_server.dart';
+import '../core/smart_account_errors.dart';
+import 'oz_constants.dart';
+import 'oz_context_rule_manager.dart';
+import 'oz_credential_manager.dart';
+import 'oz_external_signer_manager.dart';
+import 'oz_indexer_client.dart';
+import 'oz_internal_pipeline_interfaces.dart';
+import 'oz_multi_signer_manager.dart';
+import 'oz_policy_manager.dart';
+import 'oz_relayer_client.dart';
+import 'oz_signer_manager.dart';
+import 'oz_smart_account_config.dart';
+import 'oz_smart_account_events.dart';
+import 'oz_storage_adapter.dart';
+import 'oz_transaction_operations.dart';
+import 'oz_wallet_operations.dart';
+
+/// Top-level orchestrator for OpenZeppelin smart-account operations on
+/// Stellar / Soroban.
+///
+/// [OZSmartAccountKit] is the primary entry point for creating and managing
+/// smart-account wallets backed by WebAuthn passkeys. It owns the lifetime
+/// of the underlying [SorobanServer], optional [OZIndexerClient] and
+/// [OZRelayerClient] HTTP clients, and instantiates the eight manager
+/// objects that expose the smart-account feature set:
+///
+/// - [walletOperations] — create / connect / disconnect wallet lifecycle.
+/// - [transactionOperations] — host-function build, sign, and submit.
+/// - [signerManager] — passkey / delegated / ed25519 signer management.
+/// - [policyManager] — installable signature policies.
+/// - [contextRuleManager] — context rules linking signers + policies.
+/// - [credentialManager] — local credential persistence and lifecycle.
+/// - [multiSignerManager] — multi-signer authorisation flow.
+/// - [externalSignerManager] — wallet / keypair signers external to the kit
+///   (`null` here; consumers construct [OZExternalSignerManager] directly
+///   when external signers are in use).
+///
+/// Construction is via the static [create] factory so the configuration
+/// invariants are validated once by [OZSmartAccountConfig] before the kit
+/// allocates any resources. The constructor itself is library-private.
+///
+/// Thread safety: Dart runs each isolate on a single thread, so reads of
+/// the kit's scalar state fields (`_credentialId`, `_contractId`,
+/// `_closed`) are sequentially consistent within the isolate. Writes that
+/// interleave with an `await` are serialised through [_withLock] so that
+/// `disconnect()`, `setConnectedState()`, and `close()` cannot race against
+/// each other. The kit is safe for concurrent access on the main isolate;
+/// do not call across isolates without explicit handoff.
+///
+/// Garbage collection: Dart's tracing garbage collector reclaims unreachable
+/// object graphs even when they contain reference cycles, so the implicit
+/// kit-to-manager cycle (kit owns managers via `late final` fields; each
+/// manager holds a reference back to the kit for callbacks) does not
+/// require manual reference clearing. After [close] returns and the
+/// consumer releases its last reference, the entire graph becomes
+/// collectable. The managers are declared `late final` so they cannot be
+/// reassigned to `null` even if it were desirable.
+///
+/// Safe for concurrent access on Dart's main isolate; do not call across
+/// isolates without explicit handoff. Configuration, the shared
+/// [SorobanServer], the optional HTTP clients, the [events] emitter, every
+/// manager property, and the connection-state getters all share this same
+/// concurrency contract.
+///
+/// Example:
+/// ```dart
+/// final config = OZSmartAccountConfig(
+///   rpcUrl: 'https://soroban-testnet.stellar.org',
+///   networkPassphrase: Network.TESTNET.networkPassphrase,
+///   accountWasmHash: '...',
+///   webauthnVerifierAddress: 'C...',
+///   relayerUrl: 'https://relayer.example.com',
+/// );
+/// final kit = OZSmartAccountKit.create(config: config);
+/// try {
+///   final wallet = await kit.walletOperations.createWallet(userName: 'me');
+///   // use kit.signerManager / kit.policyManager / ...
+/// } finally {
+///   await kit.close();
+/// }
+/// ```
+class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
+  /// Library-private constructor. Use [create] to obtain a kit instance.
+  ///
+  /// Direct invocation from outside this library is suppressed by the
+  /// underscore-prefixed constructor name; the public surface is the
+  /// static [create] factory which ensures every transitive resource
+  /// (HTTP clients, storage adapter, event emitter) is wired together
+  /// consistently.
+  OZSmartAccountKit._({
+    required this.config,
+    required StorageAdapter storage,
+    required this.relayerClient,
+    required this.indexerClient,
+    required ExternalWalletAdapter? externalWallet,
+    required this.sorobanServer,
+  })  : _storage = storage,
+        _externalWallet = externalWallet;
+
+  /// Test-only constructor that accepts pre-built HTTP clients so
+  /// lifecycle assertions can substitute recording mocks for the
+  /// production [OZIndexerClient] and [OZRelayerClient]. Production
+  /// consumers use [create]; this constructor is invisible outside
+  /// `package:stellar_flutter_sdk` test code.
+  ///
+  /// This constructor bypasses the resource-wiring performed by [create]
+  /// (most notably the conditional construction of the indexer / relayer
+  /// HTTP clients from the supplied configuration) so the caller takes
+  /// full responsibility for passing every dependency the kit needs.
+  /// Configuration is taken as-is from the caller — there is no re-derivation
+  /// of [OZSmartAccountConfig.effectiveIndexerUrl] or other configuration
+  /// inputs against the supplied clients.
+  @visibleForTesting
+  OZSmartAccountKit.forTesting({
+    required OZSmartAccountConfig config,
+    required StorageAdapter storage,
+    required OZRelayerClient? relayerClient,
+    required OZIndexerClient? indexerClient,
+    required ExternalWalletAdapter? externalWallet,
+    required SorobanServer sorobanServer,
+  }) : this._(
+          config: config,
+          storage: storage,
+          relayerClient: relayerClient,
+          indexerClient: indexerClient,
+          externalWallet: externalWallet,
+          sorobanServer: sorobanServer,
+        );
+
+  // ---------------------------------------------------------------------
+  // Configuration and held resources
+  // ---------------------------------------------------------------------
+
+  /// The configuration that defines network endpoints, contract
+  /// addresses, and operational parameters in effect on this kit.
+  @override
+  final OZSmartAccountConfig config;
+
+  /// Optional fee-sponsored relayer client. `null` when
+  /// [OZSmartAccountConfig.relayerUrl] is unset on [config].
+  @override
+  final OZRelayerClient? relayerClient;
+
+  /// Optional credential-to-contract indexer client. `null` when the
+  /// configuration has no explicit [OZSmartAccountConfig.indexerUrl] and
+  /// no network-default URL exists for the configured passphrase.
+  @override
+  final OZIndexerClient? indexerClient;
+
+  /// Shared [SorobanServer] used by every manager for RPC simulation,
+  /// submission, and on-chain lookups. Released by [close].
+  @override
+  final SorobanServer sorobanServer;
+
+  /// Storage adapter held privately and surfaced through [getStorage].
+  /// Lifetime is bound to the kit; the adapter is supplied by [config].
+  final StorageAdapter _storage;
+
+  /// Captured external-wallet adapter that mirrors
+  /// [OZSmartAccountConfig.externalWallet]; exposed through
+  /// [externalWallet]. Captured at construction time so the kit's view
+  /// stays stable for the lifetime of the instance.
+  final ExternalWalletAdapter? _externalWallet;
+
+  // ---------------------------------------------------------------------
+  // Event emitter
+  // ---------------------------------------------------------------------
+
+  /// Event emitter shared by every manager. Subscribers receive
+  /// lifecycle notifications (wallet connected / disconnected, credential
+  /// created / deleted, transaction signed / submitted, etc.).
+  @override
+  final SmartAccountEventEmitter events = SmartAccountEventEmitter();
+
+  // ---------------------------------------------------------------------
+  // Managers (lazy, identity-preserving)
+  // ---------------------------------------------------------------------
+
+  /// Wallet-lifecycle operations (create, connect, disconnect, deploy).
+  /// The same instance is returned across every access for the lifetime
+  /// of the kit.
+  late final OZWalletOperations walletOperations = OZWalletOperations(this);
+
+  /// Transaction-pipeline operations (host function build, simulate,
+  /// sign, submit, fund). The same instance is returned across every
+  /// access for the lifetime of the kit.
+  @override
+  late final OZTransactionOperations transactionOperations =
+      OZTransactionOperations(this);
+
+  /// Signer manager. The same instance is returned across every access
+  /// for the lifetime of the kit.
+  late final OZSignerManager signerManager = OZSignerManager(this);
+
+  /// Context-rule manager. The same instance is returned across every
+  /// access for the lifetime of the kit.
+  @override
+  late final OZContextRuleManager contextRuleManager =
+      OZContextRuleManager(this);
+
+  /// Policy manager. The same instance is returned across every access
+  /// for the lifetime of the kit.
+  late final OZPolicyManager policyManager = OZPolicyManager(this);
+
+  /// Credential manager. Implements the wallet-extended credential
+  /// interface so [OZWalletOperations] can create and lifecycle pending
+  /// credentials. The same instance is returned across every access for
+  /// the lifetime of the kit.
+  @override
+  late final OZCredentialManager credentialManager = OZCredentialManager(this);
+
+  /// Multi-signer manager. The same instance is returned across every
+  /// access for the lifetime of the kit.
+  @override
+  late final OZMultiSignerManager multiSignerManager =
+      OZMultiSignerManager(this);
+
+  /// External-signer manager handle. The kit does not auto-instantiate
+  /// an [OZExternalSignerManager]; consumers that need external signers
+  /// construct one directly with the desired network passphrase, wallet
+  /// adapter, and connection-storage layer. Returns `null`.
+  OZExternalSignerManager? get externalSignerManager => null;
+
+  // ---------------------------------------------------------------------
+  // Connection state
+  // ---------------------------------------------------------------------
+
+  /// Connected credential ID. Mutated through [_withLock] so the change
+  /// cannot interleave against a concurrent [disconnect] or [close].
+  String? _credentialId;
+
+  /// Connected smart-account contract address. Mutated through
+  /// [_withLock] so the change cannot interleave against a concurrent
+  /// [disconnect] or [close].
+  String? _contractId;
+
+  /// Whether [close] has run. Idempotency guard for repeated [close]
+  /// invocations and a sentinel that [disconnect] honours after teardown.
+  /// The transition from `false` to `true` is performed inside [_withLock]
+  /// so any concurrent caller observing `_closed == false` before the
+  /// lock-acquire will re-check after acquiring the lock and abort
+  /// cleanly when the kit is being torn down.
+  bool _closed = false;
+
+  /// Cached deployer keypair returned from [getDeployer].
+  ///
+  /// IMPORTANT INVARIANT: this cache is intentionally NOT synchronised.
+  /// Concurrent first-callers may each invoke
+  /// [OZSmartAccountConfig.effectiveDeployer] in parallel; the derivation
+  /// is deterministic so each call yields a keypair with the identical
+  /// account ID. The race window is bounded to "until the first call
+  /// completes"; after that, every subsequent caller sees the cached
+  /// reference. The redundant derivation is harmless aside from a tiny
+  /// extra cost on cold-cache concurrent fan-out; routing through
+  /// [_withLock] would serialise every [getDeployer] call against the
+  /// connection-state lock for negligible benefit and is therefore
+  /// avoided.
+  KeyPair? _cachedDeployer;
+
+  /// FIFO async-lock tail. Mutations against [_credentialId],
+  /// [_contractId], and [_closed] that interleave with `await` go through
+  /// [_withLock] so the pre-await read and the post-await write cannot
+  /// be interleaved by a sibling caller.
+  Future<void> _tail = Future<void>.value();
+
+  /// Whether a wallet is currently connected.
+  ///
+  /// Returns `true` when both the credential ID and contract ID are
+  /// non-null. Reflects in-memory state only; after an app restart a
+  /// previously-saved session must be restored via
+  /// [OZWalletOperations.connectWallet] before [isConnected] reads as
+  /// `true` again.
+  bool get isConnected => _credentialId != null && _contractId != null;
+
+  /// Connected credential ID, or `null` when no wallet is connected.
+  ///
+  /// The credential ID is Base64URL-encoded without padding, matching
+  /// the WebAuthn specification.
+  String? get credentialId => _credentialId;
+
+  /// Connected smart-account contract address (C-address), or `null`
+  /// when no wallet is connected.
+  @override
+  String? get contractId => _contractId;
+
+  /// External-wallet adapter exposed through the kit's interface.
+  ///
+  /// Returns the value captured from [config] at construction time so
+  /// the multi-signer pipeline observes a stable adapter reference.
+  @override
+  ExternalWalletAdapter? get externalWallet => _externalWallet;
+
+  // ---------------------------------------------------------------------
+  // Connection management
+  // ---------------------------------------------------------------------
+
+  /// Updates the connected state to the supplied [credentialId] /
+  /// [contractId] pair.
+  ///
+  /// Called by [walletOperations] after wallet creation and after a
+  /// successful connect or reconnect. The write is routed through
+  /// [_withLock] so it cannot interleave against a concurrent
+  /// [disconnect] or [close]. Both scalar field writes are performed
+  /// inside the same lock acquisition so observers always see a
+  /// coherent (`credentialId`, `contractId`) pair.
+  @override
+  Future<void> setConnectedState({
+    required String credentialId,
+    required String contractId,
+  }) async {
+    await _withLock<void>(() {
+      _credentialId = credentialId;
+      _contractId = contractId;
+    });
+  }
+
+  /// Returns the currently connected credential ID + contract ID pair
+  /// as an [OZConnectedState], or throws [WalletNotConnected] when no
+  /// wallet is connected.
+  ///
+  /// Used by every state-changing operation as the precondition gate.
+  /// Distinct from [contractId]: the throwing path is for flows that
+  /// cannot proceed unconnected; the nullable [contractId] getter
+  /// supports query methods that gracefully degrade to an empty result
+  /// when no wallet is bound to the kit.
+  ///
+  /// The paired read of [_credentialId] and [_contractId] is performed
+  /// inside [_withLock] so it cannot observe a torn snapshot mid-update
+  /// from [setConnectedState] / [disconnect].
+  @override
+  Future<OZConnectedState> requireConnected() async {
+    return _withLock<OZConnectedState>(() {
+      final cId = _credentialId;
+      final ctId = _contractId;
+      if (cId == null || ctId == null) {
+        throw WalletException.notConnected(
+          details:
+              'No wallet connected. Call createWallet() or connectWallet() first.',
+        );
+      }
+      return OZConnectedState(credentialId: cId, contractId: ctId);
+    });
+  }
+
+  /// Disconnects the currently-connected wallet.
+  ///
+  /// Clears the in-memory connection state, removes the persisted
+  /// session via [StorageAdapter.clearSession], and emits a
+  /// [SmartAccountEventWalletDisconnected] event when a wallet was
+  /// connected at the time of the call. The stored credential entries
+  /// remain in storage and can be reconnected later via
+  /// [OZWalletOperations.connectWallet].
+  ///
+  /// Safe to call when no wallet is connected; the call is a no-op aside
+  /// from the storage-clear request. After [close] has run this method
+  /// returns without touching the kit's resources. The close-state check
+  /// is repeated inside [_withLock] so a caller that observed
+  /// `_closed == false` before queueing but reaches the front of the
+  /// lock queue after [close] has flipped the flag still aborts cleanly
+  /// instead of mutating a torn-down kit.
+  Future<void> disconnect() async {
+    if (_closed) {
+      return;
+    }
+    final String? capturedContractId = await _withLock<String?>(() {
+      if (_closed) {
+        return null;
+      }
+      final current = _contractId;
+      _credentialId = null;
+      _contractId = null;
+      return current;
+    });
+
+    // why: storage I/O runs outside the lock so a slow adapter cannot
+    // starve concurrent state reads on the kit. Errors propagate up to
+    // the caller — clearing the session is best-effort but observable.
+    await _storage.clearSession();
+
+    if (capturedContractId != null) {
+      events.emit(
+        SmartAccountEventWalletDisconnected(contractId: capturedContractId),
+      );
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Resource management
+  // ---------------------------------------------------------------------
+
+  /// Releases every held HTTP-client resource and removes every
+  /// registered event listener.
+  ///
+  /// Closes the shared [sorobanServer] transport first, then the optional
+  /// [indexerClient] and [relayerClient] HTTP clients, and finally tears
+  /// down the kit's [events] subscriptions. The Soroban RPC client is
+  /// released first because every manager funnels through it; the
+  /// auxiliary HTTP clients are torn down afterwards. Idempotent — a
+  /// second invocation is a no-op. Storage and the connection state are
+  /// not touched; call [disconnect] first when ending an active session.
+  ///
+  /// The kit is not usable for new operations after [close] returns. The
+  /// `_closed` flag is set inside [_withLock] so concurrent callers of
+  /// [setConnectedState] / [disconnect] that re-check `_closed` after
+  /// acquiring the lock observe the closed state and abort cleanly
+  /// instead of mutating a torn-down kit.
+  ///
+  /// No manual manager-reference release step is required. The managers
+  /// are held via `late final` fields that cannot be reassigned; Dart's
+  /// tracing garbage collector handles the kit-to-manager reference
+  /// cycle once the consumer drops its last strong reference. See the
+  /// class-level dartdoc for the full GC rationale.
+  Future<void> close() async {
+    await _withLock<void>(() async {
+      if (_closed) {
+        return;
+      }
+      _closed = true;
+      // why: the Soroban RPC transport is released first because every
+      // manager pipes through it, after which the auxiliary HTTP clients
+      // can be safely torn down. The listener teardown runs inside the
+      // same critical section so a concurrent disconnect either fires
+      // its event before the listeners disappear or aborts via the
+      // re-checked `_closed` flag.
+      sorobanServer.close();
+      await indexerClient?.close();
+      await relayerClient?.close();
+      events.removeAllListeners();
+    });
+  }
+
+  // ---------------------------------------------------------------------
+  // Internal helpers
+  // ---------------------------------------------------------------------
+
+  /// Returns the deployer keypair, resolving to the deterministic
+  /// default when [OZSmartAccountConfig.deployerKeypair] is unset.
+  ///
+  /// The first call resolves the deployer via
+  /// [OZSmartAccountConfig.effectiveDeployer] and caches the result.
+  /// Subsequent calls return the cached keypair. The cache is not
+  /// synchronised; concurrent first-callers may each call
+  /// [OZSmartAccountConfig.effectiveDeployer] but the derivation is
+  /// deterministic so the redundant work is functionally idempotent.
+  @override
+  Future<KeyPair> getDeployer() async {
+    final cached = _cachedDeployer;
+    if (cached != null) {
+      return cached;
+    }
+    final deployer = await config.effectiveDeployer();
+    _cachedDeployer = deployer;
+    return deployer;
+  }
+
+  /// Returns the storage adapter currently in use by the kit.
+  ///
+  /// Operations modules reach storage through this accessor so the kit
+  /// remains the single owner of the adapter reference.
+  @override
+  StorageAdapter getStorage() => _storage;
+
+  /// Serialises an async [body] against the kit's state-mutation tail.
+  ///
+  /// The lock is a Future-chain FIFO: each invocation chains its work
+  /// onto the previous tail. When the chain's current tail completes,
+  /// the cleanup step resets [_tail] back to a fresh resolved future so
+  /// newly arriving callers do not transitively hold onto every prior
+  /// completion. Memory usage is bounded by `O(in-flight count)`: while
+  /// N invocations are queued the chain holds N completion futures; once
+  /// each resolves it is detached, and after the entire chain drains
+  /// the tail collapses to a single completed future. The pattern
+  /// matches the async-lock convention used by [OZExternalSignerManager].
+  ///
+  /// Errors raised inside [body] propagate to the returned future and
+  /// the caller observes them through the await/catch path. The cleanup
+  /// step runs regardless of success or failure — it is performed
+  /// inside the same `then`-attached body so it shares the caller's
+  /// error handler and does not spawn an orphan future that could
+  /// surface as an unhandled-future error in the zone.
+  Future<T> _withLock<T>(FutureOr<T> Function() body) {
+    final completer = Completer<T>();
+    final previous = _tail;
+    late final Future<void> next;
+    next = previous.then((_) async {
+      try {
+        final value = await body();
+        completer.complete(value);
+      } catch (e, st) {
+        completer.completeError(e, st);
+      } finally {
+        // why: collapse the tail only when no later caller has chained
+        // onto this slot yet. Performed inside the same `then` body so
+        // we do not register a second observer of `completer.future`
+        // (which would otherwise leak the error as an unhandled async
+        // error when the body throws).
+        if (identical(_tail, next)) {
+          _tail = Future<void>.value();
+        }
+      }
+    });
+    _tail = next;
+    return completer.future;
+  }
+
+  // ---------------------------------------------------------------------
+  // Static factory
+  // ---------------------------------------------------------------------
+
+  /// Creates a new [OZSmartAccountKit] instance.
+  ///
+  /// Construction is total — every required input has already been
+  /// validated by the [OZSmartAccountConfig] constructor so this factory
+  /// performs no additional invariant checks. Side effects:
+  ///
+  /// - Constructs a [SorobanServer] bound to [OZSmartAccountConfig.rpcUrl].
+  /// - Constructs an [OZRelayerClient] when [OZSmartAccountConfig.relayerUrl]
+  ///   is non-null, using
+  ///   [OZConstants.defaultRelayerTimeoutMs] as its request timeout.
+  /// - Constructs an [OZIndexerClient] when
+  ///   [OZSmartAccountConfig.effectiveIndexerUrl] resolves to a non-null
+  ///   URL (either an explicit override on [config] or the well-known
+  ///   default for the configured network), using
+  ///   [OZConstants.defaultIndexerTimeoutMs] as its request timeout.
+  ///
+  /// The factory does not perform any network requests. Wallet sessions
+  /// stored from a previous run can be restored via
+  /// [OZWalletOperations.connectWallet].
+  ///
+  /// Example:
+  /// ```dart
+  /// final kit = OZSmartAccountKit.create(config: myConfig);
+  /// ```
+  static OZSmartAccountKit create({required OZSmartAccountConfig config}) {
+    final relayerUrl = config.relayerUrl;
+    final OZRelayerClient? relayerClient = relayerUrl == null
+        ? null
+        : OZRelayerClient(
+            relayerUrl,
+            timeout: const Duration(
+              milliseconds: OZConstants.defaultRelayerTimeoutMs,
+            ),
+          );
+
+    final indexerUrl = config.effectiveIndexerUrl();
+    final OZIndexerClient? indexerClient = indexerUrl == null
+        ? null
+        : OZIndexerClient(
+            indexerUrl,
+            timeout: const Duration(
+              milliseconds: OZConstants.defaultIndexerTimeoutMs,
+            ),
+          );
+
+    return OZSmartAccountKit._(
+      config: config,
+      storage: config.storage,
+      relayerClient: relayerClient,
+      indexerClient: indexerClient,
+      externalWallet: config.externalWallet,
+      sorobanServer: SorobanServer(config.rpcUrl),
+    );
+  }
+}

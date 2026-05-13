@@ -232,7 +232,7 @@ class OZTransactionOperations {
   }) async {
     _checkCancellation(cancelToken);
 
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
 
     requireStellarAddress(recipient, fieldName: 'recipient');
 
@@ -307,7 +307,7 @@ class OZTransactionOperations {
   }) async {
     _checkCancellation(cancelToken);
 
-    _kit.requireConnected();
+    await _kit.requireConnected();
 
     requireContractAddress(target, fieldName: 'target');
 
@@ -354,7 +354,7 @@ class OZTransactionOperations {
   }) async {
     _checkCancellation(cancelToken);
 
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
 
     requireContractAddress(target, fieldName: 'target');
 
@@ -430,7 +430,7 @@ class OZTransactionOperations {
   }) async {
     _checkCancellation(cancelToken);
 
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
     final credentialId = connected.credentialId;
     final contractId = connected.contractId;
 
@@ -828,7 +828,7 @@ class OZTransactionOperations {
   }) async {
     _checkCancellation(cancelToken);
 
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
 
     requireContractAddress(nativeTokenContract, fieldName: 'nativeTokenContract');
 

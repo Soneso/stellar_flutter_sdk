@@ -775,7 +775,10 @@ void main() {
       final ambig = result! as OZConnectWalletAmbiguous;
       expect(ambig.candidates, containsAll(<String>[_contractA, _contractB]));
       // Kit must NOT be in connected state when Ambiguous is returned.
-      expect(kit.requireConnected, throwsA(isA<WalletNotConnected>()));
+      await expectLater(
+        () => kit.requireConnected(),
+        throwsA(isA<WalletNotConnected>()),
+      );
     });
   });
 

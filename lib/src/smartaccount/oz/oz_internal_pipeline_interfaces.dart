@@ -176,10 +176,18 @@ abstract class OZSmartAccountKitInterface {
 
   /// Returns the active connected state, throwing [WalletNotConnected] when
   /// no wallet is connected.
-  OZConnectedState requireConnected();
+  ///
+  /// Implementations route the paired read of credential ID + contract ID
+  /// through their state-mutation lock so callers always observe a coherent
+  /// snapshot relative to [setConnectedState] / `disconnect` / `close`.
+  Future<OZConnectedState> requireConnected();
 
   /// Sets the kit's connected state to the supplied credential and contract.
-  void setConnectedState({
+  ///
+  /// Implementations route both scalar field writes through their
+  /// state-mutation lock so concurrent [requireConnected] / `disconnect` /
+  /// `close` calls observe a coherent (credentialId, contractId) pair.
+  Future<void> setConnectedState({
     required String credentialId,
     required String contractId,
   });

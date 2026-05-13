@@ -631,24 +631,27 @@ void main() {
   // Kit connected-state lifecycle
   // -------------------------------------------------------------------------
   group('kit connected-state lifecycle', () {
-    test('testKit_initialState_notConnected', () {
+    test('testKit_initialState_notConnected', () async {
       final kit = FakePipelineKit();
-      expect(kit.requireConnected, throwsA(isA<WalletNotConnected>()));
+      await expectLater(
+        () => kit.requireConnected(),
+        throwsA(isA<WalletNotConnected>()),
+      );
     });
 
-    test('testKit_afterSetConnectedState', () {
-      final kit = FakePipelineKit()
-        ..setConnectedState(credentialId: 'cred', contractId: _contractA);
-      final state = kit.requireConnected();
+    test('testKit_afterSetConnectedState', () async {
+      final kit = FakePipelineKit();
+      await kit.setConnectedState(credentialId: 'cred', contractId: _contractA);
+      final state = await kit.requireConnected();
       expect(state.credentialId, equals('cred'));
       expect(state.contractId, equals(_contractA));
     });
 
-    test('testKit_setConnectedState_overwritesPrevious', () {
-      final kit = FakePipelineKit()
-        ..setConnectedState(credentialId: 'cred1', contractId: _contractA)
-        ..setConnectedState(credentialId: 'cred2', contractId: _contractA);
-      expect(kit.requireConnected().credentialId, equals('cred2'));
+    test('testKit_setConnectedState_overwritesPrevious', () async {
+      final kit = FakePipelineKit();
+      await kit.setConnectedState(credentialId: 'cred1', contractId: _contractA);
+      await kit.setConnectedState(credentialId: 'cred2', contractId: _contractA);
+      expect((await kit.requireConnected()).credentialId, equals('cred2'));
     });
   });
 
@@ -661,27 +664,33 @@ void main() {
   // connected-state transitions reachable directly from the operations
   // layer.
   group('requireConnected behavior', () {
-    test('testRequireConnected_whenNotConnected_throwsNotConnected', () {
+    test('testRequireConnected_whenNotConnected_throwsNotConnected', () async {
       final kit = FakePipelineKit();
-      expect(kit.requireConnected, throwsA(isA<WalletNotConnected>()));
+      await expectLater(
+        () => kit.requireConnected(),
+        throwsA(isA<WalletNotConnected>()),
+      );
     });
 
-    test('testRequireConnected_whenConnected_returnsPair', () {
-      final kit = FakePipelineKit()
-        ..setConnectedState(credentialId: 'cred', contractId: _contractA);
-      final state = kit.requireConnected();
+    test('testRequireConnected_whenConnected_returnsPair', () async {
+      final kit = FakePipelineKit();
+      await kit.setConnectedState(credentialId: 'cred', contractId: _contractA);
+      final state = await kit.requireConnected();
       expect(state.credentialId, equals('cred'));
       expect(state.contractId, equals(_contractA));
     });
 
-    test('testRequireConnected_afterDisconnect_throwsNotConnected', () {
+    test('testRequireConnected_afterDisconnect_throwsNotConnected', () async {
       // No disconnect on OZWalletOperations; emulate by replacing fixture.
-      final kit = FakePipelineKit()
-        ..setConnectedState(credentialId: 'cred', contractId: _contractA);
+      final kit = FakePipelineKit();
+      await kit.setConnectedState(credentialId: 'cred', contractId: _contractA);
       // Reconstruct fresh kit to simulate disconnect state.
       final fresh = FakePipelineKit();
-      expect(kit.requireConnected().credentialId, equals('cred'));
-      expect(fresh.requireConnected, throwsA(isA<WalletNotConnected>()));
+      expect((await kit.requireConnected()).credentialId, equals('cred'));
+      await expectLater(
+        () => fresh.requireConnected(),
+        throwsA(isA<WalletNotConnected>()),
+      );
     });
   });
 
@@ -690,30 +699,39 @@ void main() {
   // -------------------------------------------------------------------------
   group('disconnect state lifecycle', () {
     test('testDisconnect_afterConnectedState_clearsState', () async {
-      final kit = FakePipelineKit()
-        ..setConnectedState(credentialId: 'cred', contractId: _contractA);
-      expect(kit.requireConnected().credentialId, equals('cred'));
+      final kit = FakePipelineKit();
+      await kit.setConnectedState(credentialId: 'cred', contractId: _contractA);
+      expect((await kit.requireConnected()).credentialId, equals('cred'));
       await kit.disconnect();
-      expect(kit.requireConnected, throwsA(isA<WalletNotConnected>()));
+      await expectLater(
+        () => kit.requireConnected(),
+        throwsA(isA<WalletNotConnected>()),
+      );
     });
 
     test('testDisconnect_whenNotConnected_doesNotThrow', () async {
       final kit = FakePipelineKit();
       await kit.disconnect();
-      expect(kit.requireConnected, throwsA(isA<WalletNotConnected>()));
+      await expectLater(
+        () => kit.requireConnected(),
+        throwsA(isA<WalletNotConnected>()),
+      );
     });
 
     test('testDisconnect_doubleDisconnect_doesNotThrow', () async {
-      final kit = FakePipelineKit()
-        ..setConnectedState(credentialId: 'cred', contractId: _contractA);
+      final kit = FakePipelineKit();
+      await kit.setConnectedState(credentialId: 'cred', contractId: _contractA);
       await kit.disconnect();
       await kit.disconnect();
-      expect(kit.requireConnected, throwsA(isA<WalletNotConnected>()));
+      await expectLater(
+        () => kit.requireConnected(),
+        throwsA(isA<WalletNotConnected>()),
+      );
     });
 
     test('testDisconnect_emitsEvent_whenConnected', () async {
-      final kit = FakePipelineKit()
-        ..setConnectedState(credentialId: 'cred', contractId: _contractA);
+      final kit = FakePipelineKit();
+      await kit.setConnectedState(credentialId: 'cred', contractId: _contractA);
       final captured = <SmartAccountEvent>[];
       kit.events.addListener(captured.add);
       await kit.disconnect();
@@ -735,8 +753,8 @@ void main() {
     });
 
     test('testDisconnect_clearsSession', () async {
-      final kit = FakePipelineKit()
-        ..setConnectedState(credentialId: 'cred', contractId: _contractA);
+      final kit = FakePipelineKit();
+      await kit.setConnectedState(credentialId: 'cred', contractId: _contractA);
       final storage = kit.getStorage();
       await storage.saveSession(
         StoredSession(

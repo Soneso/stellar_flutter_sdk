@@ -542,7 +542,7 @@ class OZWalletOperations {
 
     _kit.events.emit(SmartAccountEventCredentialCreated(credential: credential));
 
-    _kit.setConnectedState(
+    await _kit.setConnectedState(
       credentialId: credentialIdBase64url,
       contractId: contractId,
     );
@@ -816,7 +816,7 @@ class OZWalletOperations {
       // Non-critical — credential is transitional once connected.
     }
 
-    _kit.setConnectedState(
+    await _kit.setConnectedState(
       credentialId: credentialIdBase64url,
       contractId: finalContractId,
     );
@@ -1042,7 +1042,7 @@ class OZWalletOperations {
       );
     }
 
-    _kit.setConnectedState(
+    await _kit.setConnectedState(
       credentialId: credentialId,
       contractId: contractId,
     );

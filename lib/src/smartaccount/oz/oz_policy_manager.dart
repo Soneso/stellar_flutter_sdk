@@ -322,7 +322,7 @@ class OZPolicyManager {
     List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
     SubmissionMethod? forceMethod,
   }) async {
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
 
     final hostFunction = _buildRemovePolicyFunction(
       contractId: connected.contractId,
@@ -393,7 +393,7 @@ class OZPolicyManager {
     List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
     SubmissionMethod? forceMethod,
   }) async {
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
     requireContractAddress(policyAddress, fieldName: 'policyAddress');
 
     final hostFunction = _buildAddPolicyFunction(

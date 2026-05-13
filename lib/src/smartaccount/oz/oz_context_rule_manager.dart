@@ -71,7 +71,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
     SubmissionMethod? forceMethod,
   }) async {
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
 
     if (name.isEmpty) {
       throw ValidationException.invalidInput(
@@ -163,7 +163,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// response into a [ParsedContextRule].
   @override
   Future<XdrSCVal> getContextRule(int id) async {
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
 
     final hostFunction = XdrHostFunction.forInvokingContractWithArgs(
       XdrInvokeContractArgs(
@@ -181,7 +181,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// Returns the count of currently active context rules on the
   /// connected smart account.
   Future<int> getContextRulesCount() async {
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
 
     final hostFunction = XdrHostFunction.forInvokingContractWithArgs(
       XdrInvokeContractArgs(
@@ -573,7 +573,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
     SubmissionMethod? forceMethod,
   }) async {
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
 
     if (name.isEmpty) {
       throw ValidationException.invalidInput(
@@ -601,7 +601,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
     SubmissionMethod? forceMethod,
   }) async {
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
 
     final XdrSCVal validUntilScVal = validUntil != null
         ? XdrSCVal.forU32(validUntil)
@@ -624,7 +624,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
     SubmissionMethod? forceMethod,
   }) async {
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
 
     final hostFunction = XdrHostFunction.forInvokingContractWithArgs(
       XdrInvokeContractArgs(

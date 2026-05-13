@@ -1081,6 +1081,24 @@ class SorobanServer {
     throw StateError('pollTransaction terminated without a response');
   }
 
+  /// Releases the underlying HTTP transport held by this server.
+  ///
+  /// Closes the internal Dio HTTP client so its connection pool and any
+  /// associated keep-alive sockets are torn down. After calling close, this
+  /// SorobanServer instance must not be used for further RPC calls; any
+  /// subsequent request will throw because the transport is shut down.
+  ///
+  /// Idempotent: calling close more than once is safe; the underlying Dio
+  /// client tolerates repeated close invocations.
+  ///
+  /// The forceful close flag is intentionally left at the Dio default
+  /// (`force: false`) so any in-flight requests are allowed to complete
+  /// before sockets are released. Callers that need a hard tear-down should
+  /// cancel in-flight work first via their own cancellation token.
+  void close() {
+    _dio.close(force: false);
+  }
+
   /// Retrieves contract events emitted within a specified ledger range.
   ///
   /// Events are emitted by smart contracts during execution and provide a way to track

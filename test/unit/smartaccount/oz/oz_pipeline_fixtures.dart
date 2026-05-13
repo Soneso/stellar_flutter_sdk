@@ -179,7 +179,7 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
   StorageAdapter getStorage() => _storage;
 
   @override
-  OZConnectedState requireConnected() {
+  Future<OZConnectedState> requireConnected() async {
     final cid = _connectedCredentialId;
     final ctr = _connectedContractId;
     if (cid == null || ctr == null) {
@@ -189,10 +189,10 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
   }
 
   @override
-  void setConnectedState({
+  Future<void> setConnectedState({
     required String credentialId,
     required String contractId,
-  }) {
+  }) async {
     _connectedCredentialId = credentialId;
     _connectedContractId = contractId;
   }

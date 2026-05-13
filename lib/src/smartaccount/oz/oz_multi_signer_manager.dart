@@ -84,7 +84,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     SubmissionMethod? forceMethod,
     ResolveContextRuleIds? resolveContextRuleIds,
   }) async {
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
 
     requireStellarAddress(recipient, fieldName: 'recipient');
 
@@ -131,7 +131,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     SubmissionMethod? forceMethod,
     ResolveContextRuleIds? resolveContextRuleIds,
   }) async {
-    _kit.requireConnected();
+    await _kit.requireConnected();
     _validateContractCallArgs(target, targetFn, selectedSigners);
 
     final hostFunction = XdrHostFunction.forInvokingContractWithArgs(
@@ -165,7 +165,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     SubmissionMethod? forceMethod,
     ResolveContextRuleIds? resolveContextRuleIds,
   }) async {
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
     _validateContractCallArgs(target, targetFn, selectedSigners);
 
     final functionArgs = <XdrSCVal>[
@@ -210,7 +210,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     SubmissionMethod? forceMethod,
     ResolveContextRuleIds? resolveContextRuleIds,
   }) async {
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
 
     final walletSigners =
         selectedSigners.whereType<SelectedSignerWallet>().toList(

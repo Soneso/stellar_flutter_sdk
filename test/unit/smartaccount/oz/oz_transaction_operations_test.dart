@@ -618,24 +618,27 @@ void main() {
   });
 
   group('above-floor: connected-state lifecycle', () {
-    test('requireConnected_whenNotConnected_throws', () {
+    test('requireConnected_whenNotConnected_throws', () async {
       final kit = FakePipelineKit();
-      expect(kit.requireConnected, throwsA(isA<WalletNotConnected>()));
+      await expectLater(
+        () => kit.requireConnected(),
+        throwsA(isA<WalletNotConnected>()),
+      );
     });
 
-    test('requireConnected_afterSet_returnsState', () {
+    test('requireConnected_afterSet_returnsState', () async {
       final kit = FakePipelineKit()
         ..setConnected(credentialId: 'cred', contractId: _contractA);
-      final state = kit.requireConnected();
+      final state = await kit.requireConnected();
       expect(state.credentialId, equals('cred'));
       expect(state.contractId, equals(_contractA));
     });
 
-    test('setConnected_overwritesPrevious', () {
+    test('setConnected_overwritesPrevious', () async {
       final kit = FakePipelineKit()
         ..setConnected(credentialId: 'cred1', contractId: _contractA)
         ..setConnected(credentialId: 'cred2', contractId: _contractA);
-      final state = kit.requireConnected();
+      final state = await kit.requireConnected();
       expect(state.credentialId, equals('cred2'));
     });
   });

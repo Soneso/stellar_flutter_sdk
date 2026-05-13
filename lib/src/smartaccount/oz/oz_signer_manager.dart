@@ -131,7 +131,7 @@ class OZSignerManager {
     List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
     SubmissionMethod? forceMethod,
   }) async {
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
 
     final webauthnProvider = _kit.config.webauthnProvider;
     if (webauthnProvider == null) {
@@ -208,7 +208,7 @@ class OZSignerManager {
     List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
     SubmissionMethod? forceMethod,
   }) async {
-    _kit.requireConnected();
+    await _kit.requireConnected();
 
     if (publicKey.length != SmartAccountConstants.secp256r1PublicKeySize) {
       throw ValidationException.invalidInput(
@@ -257,7 +257,7 @@ class OZSignerManager {
     List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
     SubmissionMethod? forceMethod,
   }) async {
-    _kit.requireConnected();
+    await _kit.requireConnected();
 
     final signer = OZDelegatedSigner(address);
 
@@ -280,7 +280,7 @@ class OZSignerManager {
     List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
     SubmissionMethod? forceMethod,
   }) async {
-    _kit.requireConnected();
+    await _kit.requireConnected();
 
     final signer = OZExternalSigner.ed25519(
       verifierAddress: verifierAddress,
@@ -310,7 +310,7 @@ class OZSignerManager {
     List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
     SubmissionMethod? forceMethod,
   }) async {
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
 
     final functionArgs = <XdrSCVal>[
       XdrSCVal.forU32(contextRuleId),
@@ -394,7 +394,7 @@ class OZSignerManager {
     required List<SelectedSigner> selectedSigners,
     required SubmissionMethod? forceMethod,
   }) async {
-    final connected = _kit.requireConnected();
+    final connected = await _kit.requireConnected();
 
     final signerScVal = signer.toScVal();
 
