@@ -203,3 +203,5 @@ export 'src/smartaccount/oz/oz_smart_account_events.dart';
 export 'src/smartaccount/oz/oz_smart_account_signatures.dart';
 export 'src/smartaccount/oz/oz_smart_account_types.dart';
 export 'src/smartaccount/oz/oz_storage_adapter.dart';
+export 'src/smartaccount/oz/oz_transaction_operations.dart';
+export 'src/smartaccount/oz/oz_wallet_operations.dart';
