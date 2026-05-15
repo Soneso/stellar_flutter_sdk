@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart' as crypto;
+import 'package:meta/meta.dart';
 
 import '../../key_pair.dart';
 import '../../xdr/xdr.dart';
@@ -49,6 +50,7 @@ abstract class SmartAccountUtils {
   ///
   /// Throws [InvalidInput] when the DER structure is malformed or the
   /// `r`/`s` values violate the secp256r1 constraints.
+  @internal
   static List<BigInt> parseDerSignature(Uint8List derSignature) {
     if (derSignature.length < 8 || derSignature[0] != 0x30) {
       throw ValidationException.invalidInput(
@@ -314,6 +316,7 @@ abstract class SmartAccountUtils {
   /// is too short, when the `AT` flag is not set, or when the COSE prefix
   /// does not match. Throws [InvalidInput] when the `Y` marker is
   /// malformed or when the extracted point is not on the secp256r1 curve.
+  @internal
   static Uint8List? extractPublicKeyFromAuthenticatorData(
     Uint8List authenticatorData,
   ) {
@@ -395,6 +398,7 @@ abstract class SmartAccountUtils {
   /// is insufficient data after the prefix, when the `Y` marker does not
   /// match `[0x22, 0x58, 0x20]`, or when the extracted point is not on
   /// the secp256r1 curve.
+  @internal
   static Uint8List extractPublicKeyFromAttestationObject(
     Uint8List attestationObject,
   ) {
@@ -577,6 +581,7 @@ abstract class SmartAccountUtils {
   /// The method is exposed at library scope so tests can exercise it
   /// directly; consumers of the public API typically use
   /// [extractPublicKeyFromRegistration] instead.
+  @internal
   static int findSubarray(Uint8List array, Uint8List subarray) {
     if (subarray.isEmpty || array.length < subarray.length) {
       return -1;

@@ -87,7 +87,7 @@ void main() {
       expect(SmartAccountErrorCode.indexerTimeout.code, 10002);
     });
 
-    test('test_smart_account_error_code_all_28_kmp_values_match_table', () {
+    test('test_smart_account_error_code_all_28_codes_match_authoritative_table', () {
       expect(_codeTable.length, 28);
       _codeTable.forEach((code, expected) {
         expect(code.code, expected, reason: 'Mismatch for $code');

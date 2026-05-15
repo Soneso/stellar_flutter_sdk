@@ -16,8 +16,7 @@ import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_storage_adapter.dart'
 void main() {
   group('BrowserWebAuthnProvider stub', () {
     test('test_browser_webauthn_provider_stub_construction_does_not_throw', () {
-      // why: KMP `JsWebAuthnGuardTest` rule — construction never throws,
-      // input validation occurs at invocation time.
+      // Construction must not throw; input validation occurs at invocation time.
       expect(
         () => BrowserWebAuthnProvider(
           rpId: 'example.com',

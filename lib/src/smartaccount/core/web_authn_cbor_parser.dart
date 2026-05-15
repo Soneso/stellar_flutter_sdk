@@ -5,6 +5,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:meta/meta.dart';
+
 /// Parsed authenticator flags from WebAuthn authenticator data.
 ///
 /// `deviceType` is `"singleDevice"` if the credential is device-bound or
@@ -81,6 +83,7 @@ class AuthenticatorFlags {
 /// passed in by the caller and never mutate them. Calls are isolate-safe
 /// and may be invoked concurrently from any isolate without external
 /// synchronisation.
+@internal
 class WebAuthnCborParser {
   /// Disabled constructor. The class exposes only static methods and constants.
   WebAuthnCborParser._();
