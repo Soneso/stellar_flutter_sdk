@@ -36,14 +36,14 @@ import '../oz_storage_serialization.dart';
 /// Storage key scheme:
 /// - Credentials: `{prefix}cred_{credentialId}` (credentialId is the
 ///   raw WebAuthn base64URL-safe identifier)
-/// - Credential index: `{prefix}cred_index`
+/// - Credential index: `{prefix}credential_index`
 /// - Session: `{prefix}session_current`
 class LocalStorageAdapter implements StorageAdapter {
   /// Default key prefix for localStorage entries.
   static const String defaultKeyPrefix = 'stellar_sa_';
 
   static const String _credKeyPrefix = 'cred_';
-  static const String _credIndexKey = 'cred_index';
+  static const String _credIndexKey = 'credential_index';
   static const String _sessionKey = 'session_current';
 
   /// Prefix prepended to every localStorage key written by this adapter.

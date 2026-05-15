@@ -528,7 +528,7 @@ void main() {
       await adapter.save(_credential(credentialId: 'good'));
       // Inject corruption directly into the underlying storage by
       // adding a garbage entry that the index references.
-      storage.setItem('stellar_sa_cred_index',
+      storage.setItem('stellar_sa_credential_index',
           jsonEncode(<String>['good', 'bad']));
       // Insert a fake credential entry whose JSON is not a valid object.
       const corruptKey = 'stellar_sa_cred_bad';

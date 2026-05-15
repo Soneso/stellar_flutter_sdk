@@ -415,5 +415,129 @@ void main() {
     test('testOZConstants_defaultTimeoutSeconds', () {
       expect(OZConstants.defaultTimeoutSeconds, 30);
     });
+
+    test('testSignatureExpirationLedgers_zeroThrows', () {
+      expect(
+        () => OZSmartAccountConfig(
+          rpcUrl: _validRpcUrl,
+          networkPassphrase: _validPassphrase,
+          accountWasmHash: _validWasmHash,
+          webauthnVerifierAddress: _validVerifier,
+          signatureExpirationLedgers: 0,
+        ),
+        throwsA(isA<InvalidConfig>().having(
+          (e) => e.toString(),
+          'message',
+          contains('signatureExpirationLedgers must be in [1, 535680]'),
+        )),
+      );
+    });
+
+    test('testSignatureExpirationLedgers_negativeThrows', () {
+      expect(
+        () => OZSmartAccountConfig(
+          rpcUrl: _validRpcUrl,
+          networkPassphrase: _validPassphrase,
+          accountWasmHash: _validWasmHash,
+          webauthnVerifierAddress: _validVerifier,
+          signatureExpirationLedgers: -1,
+        ),
+        throwsA(isA<InvalidConfig>().having(
+          (e) => e.toString(),
+          'message',
+          contains('signatureExpirationLedgers must be in [1, 535680]'),
+        )),
+      );
+    });
+
+    test('testSignatureExpirationLedgers_aboveProtocolCapThrows', () {
+      expect(
+        () => OZSmartAccountConfig(
+          rpcUrl: _validRpcUrl,
+          networkPassphrase: _validPassphrase,
+          accountWasmHash: _validWasmHash,
+          webauthnVerifierAddress: _validVerifier,
+          signatureExpirationLedgers: 535681,
+        ),
+        throwsA(isA<InvalidConfig>().having(
+          (e) => e.toString(),
+          'message',
+          contains('signatureExpirationLedgers must be in [1, 535680]'),
+        )),
+      );
+    });
+
+    test('testSignatureExpirationLedgers_atProtocolCapAccepted', () {
+      final config = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        signatureExpirationLedgers: 535680,
+      );
+      expect(config.signatureExpirationLedgers, equals(535680));
+    });
+
+    test('testTimeoutInSeconds_zeroThrows', () {
+      expect(
+        () => OZSmartAccountConfig(
+          rpcUrl: _validRpcUrl,
+          networkPassphrase: _validPassphrase,
+          accountWasmHash: _validWasmHash,
+          webauthnVerifierAddress: _validVerifier,
+          timeoutInSeconds: 0,
+        ),
+        throwsA(isA<InvalidConfig>().having(
+          (e) => e.toString(),
+          'message',
+          contains('timeoutInSeconds must be in [1, 600]'),
+        )),
+      );
+    });
+
+    test('testTimeoutInSeconds_negativeThrows', () {
+      expect(
+        () => OZSmartAccountConfig(
+          rpcUrl: _validRpcUrl,
+          networkPassphrase: _validPassphrase,
+          accountWasmHash: _validWasmHash,
+          webauthnVerifierAddress: _validVerifier,
+          timeoutInSeconds: -5,
+        ),
+        throwsA(isA<InvalidConfig>().having(
+          (e) => e.toString(),
+          'message',
+          contains('timeoutInSeconds must be in [1, 600]'),
+        )),
+      );
+    });
+
+    test('testTimeoutInSeconds_aboveCapThrows', () {
+      expect(
+        () => OZSmartAccountConfig(
+          rpcUrl: _validRpcUrl,
+          networkPassphrase: _validPassphrase,
+          accountWasmHash: _validWasmHash,
+          webauthnVerifierAddress: _validVerifier,
+          timeoutInSeconds: 601,
+        ),
+        throwsA(isA<InvalidConfig>().having(
+          (e) => e.toString(),
+          'message',
+          contains('timeoutInSeconds must be in [1, 600]'),
+        )),
+      );
+    });
+
+    test('testTimeoutInSeconds_atCapAccepted', () {
+      final config = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        timeoutInSeconds: 600,
+      );
+      expect(config.timeoutInSeconds, equals(600));
+    });
   });
 }

@@ -646,7 +646,7 @@ class WebAuthnCborParser {
 
   /// Internal recursive worker for [skipCborValue] that enforces a depth cap.
   static int? _skipCborValueWithDepth(Uint8List data, int offset, int depth) {
-    if (depth > _maxCborDepth) return null;
+    if (depth >= _maxCborDepth) return null;
     if (offset >= data.length) return null;
 
     final firstByte = data[offset] & 0xFF;

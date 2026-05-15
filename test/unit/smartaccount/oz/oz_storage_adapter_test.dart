@@ -1170,20 +1170,310 @@ void main() {
     });
   });
 
-  group('SessionManager - deferred to credential and kit layers', () {
-    test('testKitDisconnect_clearsSession', () {},
-        skip: 'depends on OZSmartAccountKit lifecycle layer');
-    test('testSessionIndependentFromCredentials', () {},
-        skip: 'depends on OZCredentialManager');
-    test('testClearSessionDoesNotAffectCredentials', () {},
-        skip: 'depends on OZCredentialManager');
-    test('testKitIsConnected_initiallyFalse', () {},
-        skip: 'depends on OZSmartAccountKit lifecycle layer');
-    test('testKitIsConnected_afterSetConnectedState', () {},
-        skip: 'depends on OZSmartAccountKit lifecycle layer');
-    test('testKitIsConnected_afterDisconnect', () {},
-        skip: 'depends on OZSmartAccountKit lifecycle layer');
-    test('testKitRequireConnected_throwsWhenNotConnected', () {},
-        skip: 'depends on OZSmartAccountKit lifecycle layer');
+  group('SessionManager - kit and storage lifecycle integration', () {
+    // why: every kit-level test below builds the real `OZSmartAccountKit`
+    // through `_makeKit(storage:)` so the assertions exercise the production
+    // wiring (lock-protected state, eager-init managers, storage delegation)
+    // rather than a mock seam.
+
+    const String _validRpcUrl = 'https://soroban-testnet.stellar.org';
+    const String _validVerifier =
+        'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM';
+    const String _validWasmHash =
+        'a000000000000000000000000000000000000000000000000000000000000000';
+    const String _kitContractId =
+        'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK';
+
+    OZSmartAccountKit _makeKit({StorageAdapter? storage}) {
+      final resolvedStorage = storage ?? InMemoryStorageAdapter();
+      final config = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: 'Test SDF Network ; September 2015',
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        storage: resolvedStorage,
+      );
+      return OZSmartAccountKit.create(config: config);
+    }
+
+    /// Disconnect must remove the persisted [StoredSession] from storage even
+    /// when the in-memory connection state has already been pre-seeded with a
+    /// matching credential / contract pair. Asserts the storage-side effect
+    /// in isolation: after `kit.disconnect()` the storage adapter's
+    /// `getSession()` returns `null`.
+    test('testKitDisconnect_clearsSession', () async {
+      final storage = InMemoryStorageAdapter();
+      final kit = _makeKit(storage: storage);
+
+      const session = StoredSession(
+        credentialId: 'session-cred',
+        contractId: _kitContractId,
+        connectedAt: 1700000000000,
+        // why: a max-int expiry guarantees the session has not auto-cleared
+        // through the storage's expiry check before disconnect runs.
+        expiresAt: 9223372036854775807,
+      );
+      await storage.saveSession(session);
+
+      await kit.setConnectedState(
+        credentialId: 'session-cred',
+        contractId: _kitContractId,
+      );
+
+      // Sanity check: the session is durable up to the disconnect call.
+      final preDisconnect = await storage.getSession();
+      expect(preDisconnect, isNotNull,
+          reason: 'Session must be present before disconnect');
+
+      await kit.disconnect();
+
+      final postDisconnect = await storage.getSession();
+      expect(postDisconnect, isNull,
+          reason: 'Disconnect must remove the stored session');
+    });
+
+    /// Stored credentials and the active session live in independent storage
+    /// slots. Saving / clearing one must not modify the other. Asserts the
+    /// orthogonality contract that the OZ smart account relies on for
+    /// credential persistence across disconnect/reconnect cycles.
+    test('testSessionIndependentFromCredentials', () async {
+      final storage = InMemoryStorageAdapter();
+      // why: instantiating the kit eagerly initialises every manager and
+      // wires storage through the production code path; the kit handle is
+      // unused after construction because the assertions target storage.
+      _makeKit(storage: storage);
+
+      final credential = StoredCredential(
+        credentialId: 'cred-shared',
+        publicKey: _testPublicKey(seed: 1),
+        contractId: _kitContractId,
+        deploymentStatus: CredentialDeploymentStatus.pending,
+        createdAt: 1700000000000,
+        nickname: 'primary',
+        isPrimary: true,
+      );
+      await storage.save(credential);
+
+      const session = StoredSession(
+        credentialId: 'cred-shared',
+        contractId: _kitContractId,
+        connectedAt: 1700000000000,
+        expiresAt: 9223372036854775807,
+      );
+      await storage.saveSession(session);
+
+      // Clearing the session must not delete the credential.
+      await storage.clearSession();
+      final credentialAfterSessionClear = await storage.get('cred-shared');
+      expect(credentialAfterSessionClear, isNotNull,
+          reason: 'Credential must survive session clear');
+      expect(credentialAfterSessionClear!.contractId, equals(_kitContractId));
+      expect(await storage.getSession(), isNull);
+
+      // Re-save the session, then delete the credential.
+      await storage.saveSession(session);
+      await storage.delete('cred-shared');
+      final sessionAfterCredentialDelete = await storage.getSession();
+      expect(sessionAfterCredentialDelete, isNotNull,
+          reason: 'Session must survive credential delete');
+      expect(sessionAfterCredentialDelete!.credentialId, equals('cred-shared'));
+      expect(await storage.get('cred-shared'), isNull);
+    });
+
+    /// Kit-level disconnect clears the persisted session but leaves every
+    /// stored credential untouched. The credentials remain available for
+    /// `OZWalletOperations.connectWallet()` to reconnect against.
+    test('testClearSessionDoesNotAffectCredentials', () async {
+      final storage = InMemoryStorageAdapter();
+      final kit = _makeKit(storage: storage);
+
+      final primaryCredential = StoredCredential(
+        credentialId: 'cred-primary',
+        publicKey: _testPublicKey(seed: 1),
+        contractId: _kitContractId,
+        deploymentStatus: CredentialDeploymentStatus.pending,
+        createdAt: 1700000000000,
+        nickname: 'primary',
+        isPrimary: true,
+      );
+      final secondaryCredential = StoredCredential(
+        credentialId: 'cred-secondary',
+        publicKey: _testPublicKey(seed: 2),
+        contractId: _kitContractId,
+        deploymentStatus: CredentialDeploymentStatus.failed,
+        createdAt: 1700000000001,
+        nickname: 'secondary',
+      );
+      await storage.save(primaryCredential);
+      await storage.save(secondaryCredential);
+
+      const session = StoredSession(
+        credentialId: 'cred-primary',
+        contractId: _kitContractId,
+        connectedAt: 1700000000000,
+        expiresAt: 9223372036854775807,
+      );
+      await storage.saveSession(session);
+
+      await kit.setConnectedState(
+        credentialId: 'cred-primary',
+        contractId: _kitContractId,
+      );
+      expect(kit.isConnected, isTrue);
+
+      await kit.disconnect();
+
+      // Session is gone.
+      expect(await storage.getSession(), isNull);
+      // Both credentials are still present and structurally intact.
+      final allCredentials = await storage.getAll();
+      expect(allCredentials.length, equals(2));
+      final primaryAfter = await storage.get('cred-primary');
+      final secondaryAfter = await storage.get('cred-secondary');
+      expect(primaryAfter, isNotNull);
+      expect(secondaryAfter, isNotNull);
+      expect(primaryAfter!.deploymentStatus,
+          equals(CredentialDeploymentStatus.pending));
+      expect(primaryAfter.isPrimary, isTrue);
+      expect(secondaryAfter!.deploymentStatus,
+          equals(CredentialDeploymentStatus.failed));
+      expect(secondaryAfter.contractId, equals(_kitContractId));
+    });
+
+    /// A freshly-constructed kit has no in-memory connection state. Asserts
+    /// the public state accessors all reflect the disconnected baseline,
+    /// which is the precondition every consumer relies on before invoking
+    /// `connectWallet()` or `createWallet()`.
+    test('testKitIsConnected_initiallyFalse', () async {
+      final kit = _makeKit();
+
+      expect(kit.isConnected, isFalse,
+          reason: 'Fresh kit must not report a connection');
+      expect(kit.credentialId, isNull,
+          reason: 'Fresh kit must expose null credentialId');
+      expect(kit.contractId, isNull,
+          reason: 'Fresh kit must expose null contractId');
+      await expectLater(
+        () => kit.requireConnected(),
+        throwsA(isA<WalletNotConnected>()),
+      );
+    });
+
+    /// `setConnectedState` is the single source of truth for the kit's
+    /// in-memory connection state. Asserts every public accessor
+    /// (`isConnected`, `credentialId`, `contractId`, `requireConnected`) is
+    /// updated consistently after a single write, and that subsequent writes
+    /// overwrite without any residual state from the prior connection.
+    test('testKitIsConnected_afterSetConnectedState', () async {
+      final kit = _makeKit();
+
+      const initialCredential = 'cred-initial';
+      const initialContract = _kitContractId;
+      await kit.setConnectedState(
+        credentialId: initialCredential,
+        contractId: initialContract,
+      );
+
+      expect(kit.isConnected, isTrue);
+      expect(kit.credentialId, equals(initialCredential));
+      expect(kit.contractId, equals(initialContract));
+      final initialSnapshot = await kit.requireConnected();
+      expect(initialSnapshot.credentialId, equals(initialCredential));
+      expect(initialSnapshot.contractId, equals(initialContract));
+
+      // Overwriting connection state must replace both fields atomically.
+      const overwriteCredential = 'cred-overwrite';
+      const overwriteContract =
+          'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK';
+      await kit.setConnectedState(
+        credentialId: overwriteCredential,
+        contractId: overwriteContract,
+      );
+
+      expect(kit.isConnected, isTrue);
+      expect(kit.credentialId, equals(overwriteCredential));
+      expect(kit.contractId, equals(overwriteContract));
+      final overwriteSnapshot = await kit.requireConnected();
+      expect(overwriteSnapshot.credentialId, equals(overwriteCredential));
+      expect(overwriteSnapshot.contractId, equals(overwriteContract));
+    });
+
+    /// Disconnect when no wallet is connected must be a no-op: it does not
+    /// throw, it does not flip `isConnected` (already false), and it must
+    /// not emit a `walletDisconnected` event because no contract id is
+    /// available to populate the payload. Asserts the documented "safe to
+    /// call even when no wallet is connected" contract on the disconnect
+    /// path, distinct from the connected-disconnect coverage in
+    /// `oz_smart_account_kit_test.dart`.
+    test('testKitIsConnected_afterDisconnect', () async {
+      final storage = InMemoryStorageAdapter();
+      final kit = _makeKit(storage: storage);
+
+      expect(kit.isConnected, isFalse);
+
+      var disconnectedFired = 0;
+      kit.events.on<SmartAccountEventWalletDisconnected>(
+        (_) => disconnectedFired++,
+      );
+
+      // Calling disconnect with no prior connection must succeed silently.
+      await kit.disconnect();
+
+      expect(kit.isConnected, isFalse);
+      expect(kit.credentialId, isNull);
+      expect(kit.contractId, isNull);
+      expect(await storage.getSession(), isNull);
+      expect(disconnectedFired, equals(0),
+          reason:
+              'Disconnect from idle state must not emit walletDisconnected');
+
+      // A second disconnect from the same idle baseline is also a no-op.
+      await kit.disconnect();
+      expect(disconnectedFired, equals(0));
+    });
+
+    /// `requireConnected` throws [WalletNotConnected] whenever the kit's
+    /// in-memory state has no credential / contract pair. The message must
+    /// be the kit-level guidance pointing the caller at `createWallet()` /
+    /// `connectWallet()`. Also asserts the post-disconnect transition
+    /// produces the same error type, distinct from the initial-state
+    /// coverage in `oz_smart_account_kit_test.dart`.
+    test('testKitRequireConnected_throwsWhenNotConnected', () async {
+      final kit = _makeKit();
+
+      // Initial state — never connected.
+      try {
+        await kit.requireConnected();
+        fail('requireConnected must throw when no wallet is connected');
+      } on WalletNotConnected catch (e) {
+        expect(
+          e.message,
+          equals(
+            'No wallet connected. Call createWallet() or connectWallet() first.',
+          ),
+        );
+      }
+
+      // After a connect/disconnect round trip the same error must surface.
+      await kit.setConnectedState(
+        credentialId: 'cred',
+        contractId: _kitContractId,
+      );
+      final connectedSnapshot = await kit.requireConnected();
+      expect(connectedSnapshot.contractId, equals(_kitContractId));
+
+      await kit.disconnect();
+      try {
+        await kit.requireConnected();
+        fail('requireConnected must throw after disconnect');
+      } on WalletNotConnected catch (e) {
+        expect(
+          e.message,
+          equals(
+            'No wallet connected. Call createWallet() or connectWallet() first.',
+          ),
+        );
+      }
+    });
   });
 }

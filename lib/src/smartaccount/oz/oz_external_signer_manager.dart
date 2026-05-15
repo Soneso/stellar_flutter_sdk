@@ -94,8 +94,9 @@ abstract class WalletConnectionStorage {
 /// In-memory implementation of [WalletConnectionStorage] used as the
 /// default fallback when no storage adapter is supplied. Data is not
 /// retained across app launches.
-class _InMemoryWalletConnectionStorage extends WalletConnectionStorage {
-  _InMemoryWalletConnectionStorage();
+class InMemoryWalletConnectionStorage extends WalletConnectionStorage {
+  /// Constructs an empty in-memory wallet connection storage.
+  InMemoryWalletConnectionStorage();
 
   final Map<String, String> _data = <String, String>{};
   Future<void> _tail = Future<void>.value();
@@ -685,7 +686,7 @@ class OZExternalSignerManager {
 /// Returns a default in-memory wallet connection storage implementation
 /// suitable as a fallback when no platform-backed adapter is supplied.
 WalletConnectionStorage createInMemoryWalletConnectionStorage() =>
-    _InMemoryWalletConnectionStorage();
+    InMemoryWalletConnectionStorage();
 
 /// Internal serialised wallet connection record. JSON encoding is
 /// hand-rolled against `dart:convert` to avoid taking a runtime
