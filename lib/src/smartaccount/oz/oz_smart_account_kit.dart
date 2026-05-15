@@ -25,7 +25,7 @@ import 'oz_storage_adapter.dart';
 import 'oz_transaction_operations.dart';
 import 'oz_wallet_operations.dart';
 
-/// Top-level orchestrator for OpenZeppelin smart-account operations on
+/// Top-level entry point for OpenZeppelin smart-account operations on
 /// Stellar / Soroban.
 ///
 /// [OZSmartAccountKit] is the primary entry point for creating and managing

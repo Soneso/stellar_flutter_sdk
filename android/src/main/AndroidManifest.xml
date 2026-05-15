@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Stellar Flutter SDK Android plugin manifest.
+
+  Merged into the consumer app manifest by Flutter's manifest merger.
+  Consumers do not modify this file; it is authoritative for the plugin's
+  required permissions and queries.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      Required by Android 11+ (API 30+) so the Credential Manager can resolve
+      the system credential-provider service. Without this <queries> block,
+      passkey registration silently fails on devices without a built-in
+      provider that handles the WebAuthn flow.
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.service.credentials.CredentialProviderService" />
+        </intent>
+    </queries>
+
+</manifest>

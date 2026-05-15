@@ -28,7 +28,17 @@ dependencies:
   http_parser: ^4.0.2
   dio: ^5.9.0
   archive: ^3.6.1
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.soneso.stellar_flutter_sdk
+        pluginClass: StellarFlutterSdkPlugin
+      ios:
+        pluginClass: StellarFlutterSdkPlugin

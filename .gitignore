@@ -88,6 +88,10 @@ plans/
 # iOS Flutter ephemeral files
 **/ios/Flutter/ephemeral/
 
+# Swift Package Manager build artifacts (plugin SwiftPM package + consumer apps)
+**/ios/**/.build/
+**/ios/**/.swiftpm/
+
 # XDR generator vendor (Ruby bundle) and xdrgen output byproducts
 tools/xdr-generator/vendor/
 tools/xdr-generator/stellar/
