@@ -266,9 +266,10 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       );
     }
 
-    if (simulation.error != null) {
+    final initialError = _simulationErrorMessage(simulation);
+    if (initialError != null) {
       throw TransactionException.simulationFailed(
-        'Simulation error: ${simulation.error}',
+        'Simulation error: $initialError',
       );
     }
 
@@ -551,9 +552,10 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       );
     }
 
-    if (reSimulation.error != null) {
+    final reSimError = _simulationErrorMessage(reSimulation);
+    if (reSimError != null) {
       throw TransactionException.simulationFailed(
-        'Re-simulation error: ${reSimulation.error}',
+        'Re-simulation error: $reSimError',
       );
     }
 
@@ -570,6 +572,35 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   // -------------------------------------------------------------------------
   // Private helpers
   // -------------------------------------------------------------------------
+
+  /// Reads the simulation-result error message, falling back to the JSON-RPC
+  /// transport error when the result itself is absent.
+  ///
+  /// `SimulateTransactionResponse` carries two distinct error fields:
+  ///
+  /// - `resultError`: the simulation's own error string, populated when the
+  ///   RPC call succeeded at the transport level but the contract execution
+  ///   inside the simulation returned an error. With debug-enabled RPC
+  ///   servers this string contains the full host-error text and the
+  ///   diagnostic event log.
+  /// - `error`: the JSON-RPC transport error, populated only when the RPC
+  ///   request itself failed (network, parse, generic JSON-RPC error).
+  ///
+  /// Checking only `error` would miss the simulation-result error and let the
+  /// caller proceed to submission with a transaction whose signed auth
+  /// entries do not pass enforcement.
+  String? _simulationErrorMessage(SimulateTransactionResponse simulation) {
+    final resultError = simulation.resultError;
+    if (resultError != null && resultError.isNotEmpty) {
+      return resultError;
+    }
+    final rpcError = simulation.error;
+    final rpcMessage = rpcError?.message;
+    if (rpcMessage != null && rpcMessage.isNotEmpty) {
+      return rpcMessage;
+    }
+    return null;
+  }
 
   void _validateContractCallArgs(
     String target,
