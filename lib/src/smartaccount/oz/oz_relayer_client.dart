@@ -423,10 +423,15 @@ class OZRelayerClient {
       );
     }
 
-    final rawErrorMessage = _readString(responseJson['error']) ??
+    final errorMessage = _readString(responseJson['error']) ??
         _readString(responseJson['message']) ??
         'Relayer request failed with status $status';
-    final errorMessage = truncateBody(rawErrorMessage);
+    // why: the relayer's `error` field is a server-curated string intended
+    // for direct display, often containing a transaction simulation error
+    // followed by a multi-line diagnostic event log. The overall body is
+    // already bounded by `maxRelayerResponseBytes`; truncating the parsed
+    // error a second time would drop the event log without preserving the
+    // most actionable trailing context.
     final errorCode = _extractErrorCode(responseJson);
     final Object? details =
         responseJson.containsKey('data') ? responseJson['data'] : responseJson;

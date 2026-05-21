@@ -801,9 +801,13 @@ void main() {
       }
     });
 
-    test('testSend_errorMessageIsTruncated', () async {
-      // A hostile relayer returns a multi-KiB error string; the
-      // truncation guard caps it to 200 chars + ellipsis.
+    test('testSend_errorMessageIsSurfacedVerbatim', () async {
+      // The relayer formats its `error` field for direct display, often
+      // including a transaction simulation error followed by a multi-line
+      // diagnostic event log. The body-level size cap
+      // (`maxRelayerResponseBytes`) bounds the overall payload; the parsed
+      // `error` field must pass through whole so the event log reaches the
+      // caller.
       final longMessage = 'E' * 5000;
       final body = '{"success": false, "error": "$longMessage"}';
       final adapter = MockDioAdapter.response(
@@ -817,12 +821,7 @@ void main() {
           <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
         );
         expect(response.success, isFalse);
-        expect(response.error, isNotNull);
-        expect(response.error!.length <= 203, isTrue,
-            reason:
-                'Relayer error message must be truncated to at most 200 '
-                'characters plus a 3-character ellipsis');
-        expect(response.error!.endsWith('...'), isTrue);
+        expect(response.error, longMessage);
       } finally {
         await relayer.close();
       }
