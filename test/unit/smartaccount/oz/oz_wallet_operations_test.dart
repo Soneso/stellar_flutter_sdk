@@ -2,6 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -891,6 +892,184 @@ void main() {
       expect(cleared.contractId, isNull);
       expect(cleared.fresh, isTrue); // preserved
       expect(cleared.prompt, isTrue); // preserved
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Base64URL credential-id normalisation at entry points
+  //
+  // Every downstream surface that exposes the credentialId to consumers —
+  // the connected-state field, emitted events, saved sessions, the
+  // allow-list storage-key lookup — keys on the unpadded RFC 4648 §5 form
+  // produced by the WebAuthn cascade. Callers may legitimately pass a
+  // padded value from external sources; the public entry points strip the
+  // padding once so the canonical form propagates uniformly.
+  // -------------------------------------------------------------------------
+  group('credentialId normalisation: connectWallet (explicit contractId)', () {
+    // The padded form of `_credentialId`. Base64URL would emit two `=` chars
+    // for this 19-byte payload; the unpadded form is what storage keys on
+    // and what the connect path produces.
+    const String _paddedCredentialId = '$_credentialId==';
+
+    SmartAccountEventWalletConnected? _connectedEvent(
+      List<SmartAccountEvent> captured,
+    ) {
+      for (final e in captured) {
+        if (e is SmartAccountEventWalletConnected) return e;
+      }
+      return null;
+    }
+
+    Future<({FakePipelineKit kit, List<SmartAccountEvent> captured})> _runConnect(
+      String suppliedCredentialId,
+    ) async {
+      final soroban = MockSorobanServer();
+      // End-of-cascade verify in `_finalizeConnect` consults `getContractData`
+      // exactly once for the explicit-contractId path; a non-null entry signals
+      // the contract is live.
+      soroban.getContractDataResponses.add(LedgerEntry('', '', 0, null, null));
+      final kit = FakePipelineKit(
+        config: _configWithoutProvider(),
+        sorobanServer: soroban,
+      );
+      final captured = <SmartAccountEvent>[];
+      kit.events.addListener(captured.add);
+
+      final ops = OZWalletOperations(kit);
+      final result = await ops.connectWallet(
+        options: ConnectWalletOptions(
+          credentialId: suppliedCredentialId,
+          contractId: _contractA,
+        ),
+      );
+      expect(result, isA<OZConnectWalletConnected>());
+      return (kit: kit, captured: captured);
+    }
+
+    test(
+        'testConnectWallet_paddedCredentialId_connectedStateIsUnpadded',
+        () async {
+      final outcome = await _runConnect(_paddedCredentialId);
+      final state = await outcome.kit.requireConnected();
+      expect(state.credentialId, equals(_credentialId));
+      expect(state.contractId, equals(_contractA));
+    });
+
+    test(
+        'testConnectWallet_paddedCredentialId_walletConnectedEventIsUnpadded',
+        () async {
+      final outcome = await _runConnect(_paddedCredentialId);
+      final evt = _connectedEvent(outcome.captured);
+      expect(evt, isNotNull);
+      expect(evt!.credentialId, equals(_credentialId));
+      expect(evt.contractId, equals(_contractA));
+    });
+
+    test(
+        'testConnectWallet_paddedCredentialId_savedSessionIsUnpadded',
+        () async {
+      final outcome = await _runConnect(_paddedCredentialId);
+      final session = await outcome.kit.getStorage().getSession();
+      expect(session, isNotNull);
+      expect(session!.credentialId, equals(_credentialId));
+      expect(session.contractId, equals(_contractA));
+    });
+
+    test(
+        'testConnectWallet_unpaddedCredentialId_propagatesUnpaddedUnchanged',
+        () async {
+      // Baseline: the canonical unpadded form already matches everywhere.
+      // This test guards against an accidental double-strip or substring
+      // off-by-one in the normalisation helper.
+      final outcome = await _runConnect(_credentialId);
+      final state = await outcome.kit.requireConnected();
+      expect(state.credentialId, equals(_credentialId));
+      final evt = _connectedEvent(outcome.captured);
+      expect(evt, isNotNull);
+      expect(evt!.credentialId, equals(_credentialId));
+      final session = await outcome.kit.getStorage().getSession();
+      expect(session, isNotNull);
+      expect(session!.credentialId, equals(_credentialId));
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Base64URL credential-id normalisation: authenticatePasskey allow-list
+  //
+  // The allow-list construction loads transport hints from storage by
+  // credential-id key. Storage entries are written under the unpadded form;
+  // a padded caller input must hit the same entry instead of silently
+  // missing and degrading to "no transports hint".
+  // -------------------------------------------------------------------------
+  group('credentialId normalisation: authenticatePasskey allow-list', () {
+    const String _paddedCredentialId = '$_credentialId==';
+
+    test(
+        'testAuthenticatePasskey_paddedAllowListId_loadsTransportsFromUnpaddedStorageKey',
+        () async {
+      final webauthn = RecordingWebAuthnProvider();
+      // Well-formed DER signature: 0x30 SEQUENCE, length 0x44, 0x02 INTEGER
+      // r (32 bytes), 0x02 INTEGER s (32 bytes). The signature normaliser
+      // in the smart-account utils requires syntactically valid DER.
+      final derSignature = Uint8List.fromList(<int>[
+        0x30, 0x44,
+        0x02, 0x20,
+        ..._bytes(32, 1),
+        0x02, 0x20,
+        ..._bytes(32, 2),
+      ]);
+      webauthn.authenticateResponses.add(
+        WebAuthnAuthenticationResult(
+          credentialId: base64Url.decode(base64Url.normalize(_credentialId)),
+          authenticatorData: _bytes(37),
+          clientDataJSON: Uint8List.fromList(
+            '{"type":"webauthn.get"}'.codeUnits,
+          ),
+          signature: derSignature,
+        ),
+      );
+
+      final storage = InMemoryStorageAdapter();
+      await storage.save(
+        StoredCredential(
+          credentialId: _credentialId,
+          publicKey: _bytes(65),
+          contractId: _contractA,
+          transports: const <String>['internal', 'hybrid'],
+        ),
+      );
+
+      final kit = FakePipelineKit(
+        config: OZSmartAccountConfig(
+          rpcUrl: 'https://soroban-testnet.stellar.org',
+          networkPassphrase: Network.TESTNET.networkPassphrase,
+          accountWasmHash: '0' * 64,
+          webauthnVerifierAddress: _contractA,
+          webauthnProvider: webauthn,
+        ),
+        storage: storage,
+      );
+      final ops = OZWalletOperations(kit);
+
+      final result = await ops.authenticatePasskey(
+        credentialIds: <String>[_paddedCredentialId],
+      );
+
+      // Result-side: the returned credentialId is always unpadded because
+      // it is encoded from raw bytes via the connect-side encoder.
+      expect(result.credentialId, equals(_credentialId));
+
+      // Allow-list side: the WebAuthn provider received the transport
+      // hints loaded from the unpadded storage key. A storage miss would
+      // surface here as `null` transports.
+      expect(webauthn.authenticateCalls, hasLength(1));
+      final call = webauthn.authenticateCalls.single;
+      expect(call.allowCredentials, isNotNull);
+      expect(call.allowCredentials!, hasLength(1));
+      expect(
+        call.allowCredentials!.single.transports,
+        equals(<String>['internal', 'hybrid']),
+      );
     });
   });
 }

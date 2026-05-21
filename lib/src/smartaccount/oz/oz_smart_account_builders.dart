@@ -122,11 +122,23 @@ abstract class OZSmartAccountBuilders {
   }
 
   /// Returns the WebAuthn signer credential ID as a Base64URL-encoded
-  /// string, or `null` for non-WebAuthn signers.
+  /// string without trailing `=` padding, or `null` for non-WebAuthn signers.
+  ///
+  /// Padding is stripped so the value matches the canonical unpadded form
+  /// produced by the connect path and recommended by RFC 4648 §5 for URL-
+  /// safe Base64 of WebAuthn credential IDs.
   static String? getCredentialIdStringFromSigner(OZSmartAccountSigner signer) {
     final credentialId = getCredentialIdFromSigner(signer);
     if (credentialId == null) return null;
-    return base64Url.encode(credentialId);
+    return _stripBase64UrlPadding(base64Url.encode(credentialId));
+  }
+
+  static String _stripBase64UrlPadding(String encoded) {
+    var s = encoded;
+    while (s.isNotEmpty && s.endsWith('=')) {
+      s = s.substring(0, s.length - 1);
+    }
+    return s;
   }
 
   /// Returns `true` when [signer] is an [OZDelegatedSigner].
@@ -179,13 +191,17 @@ abstract class OZSmartAccountBuilders {
 
   /// Returns `true` when [signer] is a WebAuthn signer whose credential
   /// ID, encoded as Base64URL, equals [credentialId].
+  ///
+  /// The comparison ignores trailing `=` padding on either side so callers
+  /// can pass a credential ID in either the padded or unpadded Base64URL
+  /// form interchangeably.
   static bool signerMatchesCredentialId(
     OZSmartAccountSigner signer,
     String credentialId,
   ) {
     final signerCredId = getCredentialIdStringFromSigner(signer);
     if (signerCredId == null) return false;
-    return signerCredId == credentialId;
+    return signerCredId == _stripBase64UrlPadding(credentialId);
   }
 
   /// Returns `true` when [signer] is an [OZDelegatedSigner] whose address

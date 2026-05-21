@@ -879,8 +879,12 @@ class OZWalletOperations {
     List<AllowCredential>? allowCredentials;
     if (credentialIds != null) {
       allowCredentials = <AllowCredential>[];
-      for (final credIdStr in credentialIds) {
+      for (final rawCredIdStr in credentialIds) {
         _checkCancellation(cancelToken);
+        // why: storage entries are keyed under the unpadded Base64URL form
+        // produced by the connect path. Normalise here so a padded caller
+        // input still hits the matching storage entry for transport hints.
+        final credIdStr = _stripBase64UrlPadding(rawCredIdStr);
         final idBytes = _base64UrlDecode(credIdStr);
         StoredCredential? stored;
         try {
@@ -1012,6 +1016,13 @@ class OZWalletOperations {
       );
     }
 
+    // why: every downstream surface (credential storage lookup, deploy
+    // submission progress events, connected-state field, emitted events,
+    // saved session) keys on the unpadded Base64URL form. Normalise the
+    // caller-supplied id once here so a padded input does not leak through
+    // to consumers comparing the string directly.
+    credentialId = _stripBase64UrlPadding(credentialId);
+
     _checkCancellation(cancelToken);
 
     final credential = await _credentialManager.getCredential(credentialId);
@@ -1136,6 +1147,14 @@ class OZWalletOperations {
         'contractId',
         'contractId option requires credentialId to be provided',
       );
+    }
+
+    // why: every downstream surface (storage lookups, connected-state field,
+    // emitted events, saved session) keys on the unpadded Base64URL form.
+    // Normalise the caller-supplied id once here so a padded input does not
+    // leak through to consumers comparing the string directly.
+    if (credentialId != null) {
+      credentialId = _stripBase64UrlPadding(credentialId);
     }
 
     String? finalContractId = contractId;
@@ -1819,6 +1838,21 @@ class OZWalletOperations {
 // ---------------------------------------------------------------------------
 // File-private helpers
 // ---------------------------------------------------------------------------
+
+/// Strips trailing `=` padding from a Base64URL-encoded string.
+///
+/// The connect path encodes credential IDs without padding (RFC 4648 §5
+/// recommends the unpadded form for URL-safe Base64). Callers may pass
+/// padded values from external sources; normalising here keeps storage
+/// lookups, connected-state fields, emitted events, and saved sessions
+/// on a single canonical form.
+String _stripBase64UrlPadding(String encoded) {
+  var s = encoded;
+  while (s.isNotEmpty && s.endsWith('=')) {
+    s = s.substring(0, s.length - 1);
+  }
+  return s;
+}
 
 int _byteListContentHash(Uint8List bytes) {
   var hash = 1;

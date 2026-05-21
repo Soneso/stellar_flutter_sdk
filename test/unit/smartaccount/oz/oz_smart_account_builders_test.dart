@@ -314,6 +314,26 @@ void main() {
           OZSmartAccountBuilders.signerMatchesCredentialId(signer, ''),
           isFalse);
     });
+
+    test(
+        'testSignerMatchesCredentialId_acceptsPaddedAndUnpaddedBase64UrlInputs',
+        () {
+      // A 1-byte credential ID is the shortest input that produces a
+      // padded Base64URL string ("AQ==" padded vs "AQ" unpadded). The
+      // matcher must treat both forms as equivalent so callers using
+      // either convention interoperate.
+      final signer = OZSmartAccountBuilders.createWebAuthnSigner(
+        webauthnVerifierAddress: kValidContractId,
+        publicKey: _secp256r1Pub(),
+        credentialId: Uint8List.fromList([0x01]),
+      );
+      expect(
+          OZSmartAccountBuilders.signerMatchesCredentialId(signer, 'AQ=='),
+          isTrue);
+      expect(
+          OZSmartAccountBuilders.signerMatchesCredentialId(signer, 'AQ'),
+          isTrue);
+    });
   });
 
   group('signerMatchesAddress', () {
@@ -496,6 +516,23 @@ void main() {
       expect(
           OZSmartAccountBuilders.signerMatchesCredentialId(s, encoded!),
           isTrue);
+    });
+
+    test(
+        'testGetCredentialIdStringFromSigner_webAuthnSigner_outputHasNoBase64Padding',
+        () {
+      // A 1-byte credential ID encodes to a Base64URL string with two
+      // padding characters; the helper must strip them so the output
+      // matches the canonical unpadded form.
+      final s = OZSmartAccountBuilders.createWebAuthnSigner(
+        webauthnVerifierAddress: kValidContractId,
+        publicKey: _secp256r1Pub(),
+        credentialId: Uint8List.fromList([0x01]),
+      );
+      final encoded =
+          OZSmartAccountBuilders.getCredentialIdStringFromSigner(s);
+      expect(encoded, isNotNull);
+      expect(encoded!.endsWith('='), isFalse);
     });
   });
 
