@@ -51,7 +51,7 @@ class OZCredentialLookupResponse {
           .map((e) =>
               OZIndexedContractSummary.fromJson(e as Map<String, dynamic>))
           .toList(growable: false),
-      count: (json['count'] as num).toInt(),
+      count: _asInt(json['count'], 'count'),
     );
   }
 
@@ -108,7 +108,7 @@ class OZAddressLookupResponse {
           .map((e) =>
               OZIndexedContractSummary.fromJson(e as Map<String, dynamic>))
           .toList(growable: false),
-      count: (json['count'] as num).toInt(),
+      count: _asInt(json['count'], 'count'),
     );
   }
 
@@ -235,14 +235,18 @@ class OZIndexedContractSummary {
     final rawIds = json['context_rule_ids'] as List<dynamic>? ?? const [];
     return OZIndexedContractSummary(
       contractId: json['contract_id'] as String,
-      contextRuleCount: (json['context_rule_count'] as num).toInt(),
-      externalSignerCount: (json['external_signer_count'] as num).toInt(),
-      delegatedSignerCount: (json['delegated_signer_count'] as num).toInt(),
-      nativeSignerCount: (json['native_signer_count'] as num).toInt(),
-      firstSeenLedger: (json['first_seen_ledger'] as num).toInt(),
-      lastSeenLedger: (json['last_seen_ledger'] as num).toInt(),
-      contextRuleIds:
-          rawIds.map((e) => (e as num).toInt()).toList(growable: false),
+      contextRuleCount: _asInt(json['context_rule_count'], 'context_rule_count'),
+      externalSignerCount:
+          _asInt(json['external_signer_count'], 'external_signer_count'),
+      delegatedSignerCount:
+          _asInt(json['delegated_signer_count'], 'delegated_signer_count'),
+      nativeSignerCount:
+          _asInt(json['native_signer_count'], 'native_signer_count'),
+      firstSeenLedger: _asInt(json['first_seen_ledger'], 'first_seen_ledger'),
+      lastSeenLedger: _asInt(json['last_seen_ledger'], 'last_seen_ledger'),
+      contextRuleIds: rawIds
+          .map((e) => _asInt(e, 'context_rule_ids[]'))
+          .toList(growable: false),
     );
   }
 
@@ -309,7 +313,7 @@ class OZIndexedContextRule {
     final rawSigners = json['signers'] as List<dynamic>? ?? const [];
     final rawPolicies = json['policies'] as List<dynamic>? ?? const [];
     return OZIndexedContextRule(
-      contextRuleId: (json['context_rule_id'] as num).toInt(),
+      contextRuleId: _asInt(json['context_rule_id'], 'context_rule_id'),
       signers: rawSigners
           .map((e) => OZIndexedSigner.fromJson(e as Map<String, dynamic>))
           .toList(growable: false),
@@ -523,11 +527,12 @@ class OZIndexerStats {
   factory OZIndexerStats.fromJson(Map<String, dynamic> json) {
     final rawTypes = json['eventTypes'] as List<dynamic>? ?? const [];
     return OZIndexerStats(
-      totalEvents: (json['total_events'] as num).toInt(),
-      uniqueContracts: (json['unique_contracts'] as num).toInt(),
-      uniqueCredentials: (json['unique_credentials'] as num).toInt(),
-      firstLedger: (json['first_ledger'] as num).toInt(),
-      lastLedger: (json['last_ledger'] as num).toInt(),
+      totalEvents: _asInt(json['total_events'], 'total_events'),
+      uniqueContracts: _asInt(json['unique_contracts'], 'unique_contracts'),
+      uniqueCredentials:
+          _asInt(json['unique_credentials'], 'unique_credentials'),
+      firstLedger: _asInt(json['first_ledger'], 'first_ledger'),
+      lastLedger: _asInt(json['last_ledger'], 'last_ledger'),
       eventTypes: rawTypes
           .map((e) => OZEventTypeCount.fromJson(e as Map<String, dynamic>))
           .toList(growable: false),
@@ -581,7 +586,7 @@ class OZEventTypeCount {
   factory OZEventTypeCount.fromJson(Map<String, dynamic> json) {
     return OZEventTypeCount(
       eventType: json['event_type'] as String,
-      count: (json['count'] as num).toInt(),
+      count: _asInt(json['count'], 'count'),
     );
   }
 
@@ -629,6 +634,26 @@ class OZIndexerHealthCheckResponse {
 }
 
 const String _healthStatusOk = 'ok';
+
+/// Coerces a JSON numeric field that may arrive as either a JSON number or a
+/// JSON string-encoded number.
+///
+/// The production indexer service serialises numeric columns (counts, ledger
+/// sequence numbers, event totals) as JSON strings to preserve full precision
+/// for values that exceed JavaScript's safe-integer range. Test fixtures in
+/// this repository use plain JSON numbers, so unit tests still pass; this
+/// helper bridges the two representations at every parse site.
+int _asInt(Object? value, String field) {
+  if (value is num) return value.toInt();
+  if (value is String) {
+    final parsed = int.tryParse(value);
+    if (parsed != null) return parsed;
+  }
+  throw FormatException(
+    'Indexer field "$field" expected a number or numeric string; '
+    'got ${value?.runtimeType}: $value',
+  );
+}
 
 const Map<String, String> _defaultIndexerUrls = <String, String>{
   'Test SDF Network ; September 2015':

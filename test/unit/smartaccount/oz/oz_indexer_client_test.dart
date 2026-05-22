@@ -182,6 +182,48 @@ void main() {
       }
     });
 
+    test('testLookupByCredentialId_acceptsStringEncodedNumericFields',
+        () async {
+      // The production indexer service serialises numeric columns (counts,
+      // ledger numbers) as JSON strings to preserve precision; the SDK must
+      // accept them alongside JSON numbers.
+      const body = '''
+{
+    "credentialId": "aabbccdd",
+    "contracts": [
+        {
+            "contract_id": "CA2LVQXQLGPWHV2QO5ENVAGWM2TYICRMWXW4UXBPVKV26WLKU2V3UTH5",
+            "context_rule_count": "2",
+            "external_signer_count": "1",
+            "delegated_signer_count": "1",
+            "native_signer_count": "0",
+            "first_seen_ledger": "100000",
+            "last_seen_ledger": "200000",
+            "context_rule_ids": ["0", "1"]
+        }
+    ],
+    "count": "1"
+}
+''';
+      final adapter = MockDioAdapter.json(body);
+      final indexer = _client(adapter);
+      try {
+        final result = await indexer.lookupByCredentialId('qrvM3Q');
+        expect(result.count, 1);
+        expect(result.contracts.length, 1);
+        final summary = result.contracts[0];
+        expect(summary.contextRuleCount, 2);
+        expect(summary.externalSignerCount, 1);
+        expect(summary.delegatedSignerCount, 1);
+        expect(summary.nativeSignerCount, 0);
+        expect(summary.firstSeenLedger, 100000);
+        expect(summary.lastSeenLedger, 200000);
+        expect(summary.contextRuleIds, [0, 1]);
+      } finally {
+        await indexer.close();
+      }
+    });
+
     test('testLookupByCredentialId_verifiesUrlPath', () async {
       final body = '''
 {
