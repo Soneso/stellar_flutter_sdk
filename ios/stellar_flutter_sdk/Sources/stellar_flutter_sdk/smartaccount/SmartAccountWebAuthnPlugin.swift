@@ -134,10 +134,13 @@ import UIKit
             name: userName,
             userID: userId
         )
-        request.userVerificationPreference = .required
-        if #available(iOS 17.4, macOS 14.4, *) {
-            request.attestationPreference = .direct
-        }
+        // userVerificationPreference and attestationPreference are intentionally
+        // left at their system defaults on registration. The on-chain OZ WebAuthn
+        // verifier inspects the UV bit only at signature verification time, so
+        // forcing .required here is unnecessary. Requesting .direct attestation
+        // is also unnecessary (no attestation-statement verification happens in
+        // the SDK) and would break iOS Simulator registration, which cannot
+        // produce attestation statements.
 
         performAuthorizationRequest(
             request: request,
