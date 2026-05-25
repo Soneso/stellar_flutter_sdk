@@ -160,6 +160,14 @@ Soroban documentation covers:
 5. **Contract Bindings** (generated type-safe clients)
 6. **Advanced Topics** (manual transaction building, events)
 
+### Multi-Class Namespace Reference Documentation
+
+Some SDK namespaces span enough public classes that DartDoc alone does not give consumers a single discoverable surface. The `smart-accounts/` directory is the current example: an 8-manager kit with its own configuration, error hierarchy, event stream, builder helpers, and per-platform providers.
+
+For namespaces of this shape, a dedicated `api-reference.md` is permitted alongside the conceptual docs. The reference file complements DartDoc rather than replacing it: it groups related symbols, surfaces their relationships, and shows worked end-to-end examples that DartDoc's per-symbol pages cannot. Principle 5 (Conciseness Over Completeness) still applies — link to DartDoc for symbol-level docs (parameter doc-comments, type aliases, source files) and keep the reference file focused on the multi-symbol patterns a consumer needs to wire the namespace together.
+
+Conceptual material (overview, architecture, lifecycle, key concepts) belongs in `README.md` and `onboarding.md`. Per-platform setup (entitlements, association files, hosting) belongs in `webauthn-*.md` (or analogous setup pages for other namespaces).
+
 ### Example File Standards
 
 Each example file should:
@@ -343,6 +351,13 @@ documentation/
 ├── getting-started.md          # Fundamentals: installation, keys, accounts
 ├── sdk-usage.md                # All SDK features organized by use case
 ├── soroban.md                  # Soroban smart contract development
+├── smart-accounts/             # OpenZeppelin smart account namespace
+│   ├── README.md              # Overview, architecture, quick start
+│   ├── onboarding.md          # Concepts: signers, context rules, policies, deployer, relayer, verifier, indexer
+│   ├── api-reference.md       # Public symbol reference for the smart-account namespace
+│   ├── webauthn-ios.md        # iOS WebAuthn setup (Associated Domains + AASA)
+│   ├── webauthn-android.md    # Android WebAuthn setup (Digital Asset Links)
+│   └── webauthn-web.md        # Web WebAuthn setup (RP ID, HTTPS, CSP)
 ├── sep/
 │   ├── README.md              # SEP overview and selection guide
 │   ├── sep-01.md              # stellar.toml configuration
