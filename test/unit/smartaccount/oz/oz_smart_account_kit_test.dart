@@ -12,10 +12,6 @@ import 'mock_oz_indexer_client.dart';
 import 'mock_oz_relayer_client.dart';
 import 'recording_soroban_server.dart';
 
-// ---------------------------------------------------------------------------
-// Test data
-// ---------------------------------------------------------------------------
-
 // why: a 127.0.0.1:1 placeholder keeps the RPC URL strictly local so a
 // stray request from an over-eager test cannot reach a public testnet
 // endpoint by accident, while still satisfying the config's non-empty
@@ -40,9 +36,7 @@ const String _validContractId =
     'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK';
 const String _credentialIdB64 = 'aGVsbG8tc21hcnQtYWNjb3VudA';
 
-/// Builds a valid configuration with optional overrides. The defaults
-/// match the well-formed inputs accepted by every other unit test in
-/// this package.
+/// Builds a valid [OZSmartAccountConfig] with optional overrides.
 OZSmartAccountConfig _validConfig({
   String? indexerUrl,
   String? relayerUrl,
@@ -63,8 +57,7 @@ OZSmartAccountConfig _validConfig({
   );
 }
 
-/// Builds a kit using the `@visibleForTesting` constructor so lifecycle
-/// tests can substitute recording mocks for the HTTP clients.
+/// Builds a kit via the `@visibleForTesting` constructor with recording mocks.
 OZSmartAccountKit _kitWithMockClients({
   MockOZIndexerClient? indexerClient,
   MockOZRelayerClient? relayerClient,
@@ -86,8 +79,7 @@ OZSmartAccountKit _kitWithMockClients({
   );
 }
 
-/// In-memory storage adapter wrapper that records every
-/// [clearSession] call so lifecycle tests can assert ordering.
+/// Wraps [InMemoryStorageAdapter] and counts [clearSession] calls.
 class _RecordingStorage extends InMemoryStorageAdapter {
   int clearSessionCalls = 0;
 
@@ -98,10 +90,7 @@ class _RecordingStorage extends InMemoryStorageAdapter {
   }
 }
 
-/// Stub external-wallet adapter used to exercise the
-/// [OZSmartAccountKit.externalWallet] accessor without invoking any
-/// real wallet provider. Every operational method raises so accidental
-/// invocation surfaces as a test failure.
+/// Stub [ExternalWalletAdapter] for accessor tests. Every operational method raises so accidental invocation surfaces as a test failure.
 class _StubExternalWallet extends ExternalWalletAdapter {
   @override
   Future<ConnectedWallet?> connect() async => null;
@@ -126,10 +115,6 @@ class _StubExternalWallet extends ExternalWalletAdapter {
 }
 
 void main() {
-  // =======================================================================
-  // kit-initialization tests
-  // =======================================================================
-
   group('factory and initialization', () {
     test('factory_returnsKitForValidConfig', () {
       final config = _validConfig();
@@ -277,10 +262,6 @@ void main() {
     });
   });
 
-  // =======================================================================
-  // close lifecycle
-  // =======================================================================
-
   group('close lifecycle', () {
     test('close_onFreshKit_doesNotThrow', () async {
       final kit = OZSmartAccountKit.create(config: _validConfig());
@@ -312,9 +293,7 @@ void main() {
       await kit.close();
 
       // why: the kit must release the shared Soroban RPC transport on
-      // close so connection-pool sockets do not leak across kit
-      // lifetimes. Asserting the close was invoked exactly once locks
-      // down the lifecycle contract.
+      // close so connection-pool sockets do not leak across kit lifetimes.
       expect(mockServer.closeCalls, equals(1));
     });
 
@@ -333,7 +312,6 @@ void main() {
 
       // why: the Soroban RPC transport is released before any auxiliary
       // HTTP client so dependents observe a clean shutdown order.
-      // Asserting the exact sequence locks down the contract.
       expect(order, equals(<String>['soroban', 'indexer', 'relayer']));
     });
 
@@ -347,10 +325,8 @@ void main() {
     });
 
     test('close_withoutIndexerClient_doesNotThrow', () async {
-      // why: the synthetic passphrase used by _validConfig has no
-      // network-default indexer URL, so the kit accepts a null
-      // [indexerClient] cleanly. This asserts close still tears down
-      // every other resource without raising.
+      // why: the synthetic passphrase has no network-default indexer URL,
+      // so close must still tear down every other resource without raising.
       final kit = OZSmartAccountKit.create(config: _validConfig());
       expect(kit.indexerClient, isNull);
 
@@ -389,10 +365,6 @@ void main() {
       expect(disconnectedFired, equals(0));
     });
   });
-
-  // =======================================================================
-  // disconnect + requireConnected
-  // =======================================================================
 
   group('disconnect and requireConnected', () {
     test('disconnect_emitsWalletDisconnected_andClearsState', () async {
@@ -463,10 +435,6 @@ void main() {
     });
   });
 
-  // =======================================================================
-  // default deployer caching
-  // =======================================================================
-
   group('default deployer', () {
     test('getDeployer_withCustomKeypair_returnsThatKeypair', () async {
       final custom = KeyPair.random();
@@ -501,10 +469,6 @@ void main() {
       expect(identical(first, second), isTrue);
     });
   });
-
-  // =======================================================================
-  // above-floor coverage (state transitions, identity, resource release)
-  // =======================================================================
 
   group('above-floor coverage', () {
     test('stateTransitions_disconnectedToConnectedToDisconnected', () async {
@@ -625,10 +589,6 @@ void main() {
     });
   });
 
-  // =======================================================================
-  // event-system tests directly invoking kit
-  // =======================================================================
-
   group('kit event subscription', () {
     test('typeSafeSubscription_receivesDisconnectEvent', () async {
       final kit = OZSmartAccountKit.create(config: _validConfig());
@@ -683,10 +643,6 @@ void main() {
     });
   });
 
-  // =======================================================================
-  // Concurrency stress
-  // =======================================================================
-
   group('concurrency stress', () {
     test(
         'parallel_disconnectAndSetConnectedState_completeWithoutDeadlockUnder30s',
@@ -715,11 +671,8 @@ void main() {
         () async {
       final kit = OZSmartAccountKit.create(config: _validConfig());
 
-      // why: simulate the multi-signer fanout shape — 10 concurrent
-      // requireConnected reads under a connected state. The kit
-      // serialises every read through the state lock so the futures
-      // resolve in FIFO order; the assertion confirms the read path
-      // does not deadlock the write path.
+      // why: 10 concurrent requireConnected reads through the state lock;
+      // confirms the read path does not deadlock the write path.
       await kit.setConnectedState(
         credentialId: _credentialIdB64,
         contractId: _validContractId,
@@ -752,11 +705,8 @@ void main() {
         (_) => disconnectedFired++,
       );
 
-      // why: kick off disconnect and close concurrently. The disconnect
-      // may observe `_closed == false` at the top-level guard but reach
-      // the front of the lock queue after close has flipped the flag.
-      // The re-check inside the lock body must abort the disconnect
-      // cleanly, leaving no WalletDisconnected event emitted.
+      // why: concurrent disconnect+close — the re-check inside the lock
+      // body must abort disconnect cleanly with no WalletDisconnected event.
       final disconnectFuture = kit.disconnect();
       final closeFuture = kit.close();
 
@@ -768,10 +718,6 @@ void main() {
       expect(disconnectedFired, lessThanOrEqualTo(1));
     });
   });
-
-  // =======================================================================
-  // Memory-leak / deallocation wiring
-  // =======================================================================
 
   group('memory and deallocation', () {
     test('multipleOpenCloseCycles_recordExactCloseCallCount', () async {
@@ -803,14 +749,9 @@ void main() {
     test(
       'weakReferenceWiring_isAvailableOnVm',
       () async {
-        // why: this is a WIRING test only. Dart's GC is non-deterministic
-        // and observing a `null` target through a [WeakReference] is not
-        // a guarantee within a single test run. We assert that the
-        // WeakReference machinery resolves on the VM (it is unavailable
-        // on the browser) and that the kit can be created, used, and
-        // closed without leaking strong references owned by this test.
-        // A full leak check requires platform-specific GC instrumentation
-        // outside the unit-test harness.
+        // why: WIRING test only — Dart's GC is non-deterministic so we do
+        // not assert on weakKit.target; a full leak check needs platform GC
+        // instrumentation outside the unit-test harness.
         WeakReference<OZSmartAccountKit>? weakKit;
 
         Future<void> innerScope() async {
@@ -848,14 +789,7 @@ void main() {
   });
 }
 
-// ---------------------------------------------------------------------------
-// Order-recording test doubles
-// ---------------------------------------------------------------------------
-
-/// Records the close-call order across the kit's HTTP transports so the
-/// `close_orderingFiresSorobanFirst` test can assert the documented teardown
-/// sequence.
-
+/// Records close-call order across HTTP transports for teardown-sequence assertions.
 class _OrderedRecordingSorobanServer extends RecordingSorobanServer {
   _OrderedRecordingSorobanServer(this._order, this._label);
 

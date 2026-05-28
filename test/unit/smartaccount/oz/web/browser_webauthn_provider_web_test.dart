@@ -20,10 +20,6 @@ import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_constants.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/oz/web/browser_webauthn_provider_web.dart';
 import 'package:web/web.dart' as web;
 
-// ---------------------------------------------------------------------------
-// Helpers for synthesising WebAuthn ceremony return values
-// ---------------------------------------------------------------------------
-
 JSObject _domException(String name, String message) {
   final obj = JSObject();
   obj.setProperty('name'.toJS, name.toJS);

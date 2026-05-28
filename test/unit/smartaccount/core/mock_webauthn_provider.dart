@@ -19,8 +19,6 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 /// [authenticationResult], [registrationException], or
 /// [authenticationException] to change the behaviour.
 class MockWebAuthnProvider extends WebAuthnProvider {
-  /// Constructs a [MockWebAuthnProvider] with all configuration fields
-  /// initialised to their defaults.
   MockWebAuthnProvider();
 
   // ----- Configuration -----
@@ -51,29 +49,12 @@ class MockWebAuthnProvider extends WebAuthnProvider {
   Uint8List? _lastAuthenticateChallenge;
   List<AllowCredential>? _lastAuthenticateAllowCredentials;
 
-  /// Number of times [register] has been called.
   int get registerCallCount => _registerCallCount;
-
-  /// Number of times [authenticate] has been called.
   int get authenticateCallCount => _authenticateCallCount;
-
-  /// The most recent challenge passed to [register], or `null` if never
-  /// called.
   Uint8List? get lastRegisterChallenge => _lastRegisterChallenge;
-
-  /// The most recent userId passed to [register], or `null` if never called.
   Uint8List? get lastRegisterUserId => _lastRegisterUserId;
-
-  /// The most recent userName passed to [register], or `null` if never
-  /// called.
   String? get lastRegisterUserName => _lastRegisterUserName;
-
-  /// The most recent challenge passed to [authenticate], or `null` if never
-  /// called.
   Uint8List? get lastAuthenticateChallenge => _lastAuthenticateChallenge;
-
-  /// The most recent `allowCredentials` passed to [authenticate], or `null`
-  /// if never called or if the caller passed `null`.
   List<AllowCredential>? get lastAuthenticateAllowCredentials =>
       _lastAuthenticateAllowCredentials;
 

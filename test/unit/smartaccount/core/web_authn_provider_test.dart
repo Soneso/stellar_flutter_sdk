@@ -14,11 +14,7 @@ import 'package:stellar_flutter_sdk/src/smartaccount/core/web_authn_cbor_parser.
 
 import 'mock_webauthn_provider.dart';
 
-// ===========================================================================
-// Test constants — known secp256r1 generator-point coordinates (SEC 2)
-// ===========================================================================
-
-/// secp256r1 generator point G X coordinate.
+// Test constants — secp256r1 generator-point G coordinates (SEC 2).
 final Uint8List _testXCoordinate = Uint8List.fromList(const [
   0x6B, 0x17, 0xD1, 0xF2, 0xE1, 0x2C, 0x42, 0x47,
   0xF8, 0xBC, 0xE6, 0xE5, 0x63, 0xA4, 0x40, 0xF2,
@@ -26,7 +22,6 @@ final Uint8List _testXCoordinate = Uint8List.fromList(const [
   0xF4, 0xA1, 0x39, 0x45, 0xD8, 0x98, 0xC2, 0x96,
 ]);
 
-/// secp256r1 generator point G Y coordinate.
 final Uint8List _testYCoordinate = Uint8List.fromList(const [
   0x4F, 0xE3, 0x42, 0xE2, 0xFE, 0x1A, 0x7F, 0x9B,
   0x8E, 0xE7, 0xEB, 0x4A, 0x7C, 0x0F, 0x9E, 0x16,
@@ -34,7 +29,6 @@ final Uint8List _testYCoordinate = Uint8List.fromList(const [
   0xCB, 0xB6, 0x40, 0x68, 0x37, 0xBF, 0x51, 0xF5,
 ]);
 
-/// Expected uncompressed public key: `0x04 || X || Y` (65 bytes).
 Uint8List _expectedPublicKey() {
   final key = Uint8List(65);
   key[0] = 0x04;
@@ -43,7 +37,6 @@ Uint8List _expectedPublicKey() {
   return key;
 }
 
-/// Builds a minimal COSE ES256 key with the test X/Y coordinates.
 Uint8List _buildCoseKey() {
   final prefix = Uint8List.fromList(const [
     0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
@@ -57,15 +50,12 @@ Uint8List _buildCoseKey() {
   return builder.toBytes();
 }
 
-/// Builds a minimal attestation object containing a COSE key.
 Uint8List _buildAttestationObject() {
   return _buildCoseKey();
 }
 
-/// Builds the smallest legal authenticator-data buffer (37 bytes:
-/// 32-byte rpIdHash + 1-byte flags + 4-byte signCount). Used by the
-/// flag-derivation tests, which exercise [WebAuthnCborParser.parseAuthenticatorFlags]
-/// directly and do not need an attested-credential-data tail.
+/// Builds the smallest legal authenticator-data buffer:
+/// 32-byte rpIdHash + 1-byte flags + 4-byte signCount (37 bytes total).
 Uint8List _buildMinimalAuthenticatorData(int flagsByte) {
   final buf = Uint8List(37);
   for (var i = 0; i < 32; i++) {
@@ -76,9 +66,8 @@ Uint8List _buildMinimalAuthenticatorData(int flagsByte) {
   return buf;
 }
 
-/// Builds a minimal authenticator data structure with attested credential
-/// data: 32-byte rpIdHash + 1-byte flags + 4-byte signCount + 16-byte aaguid
-/// + 2-byte credentialIdLen + N-byte credentialId + COSE key.
+/// Builds authenticator data with attested credential data:
+/// rpIdHash(32) + flags(1) + signCount(4) + aaguid(16) + credLen(2) + cred(N) + COSE key.
 Uint8List _buildAuthenticatorData({
   int flags = 0x41, // UP + AT flags set
   int credentialIdLength = 16,
@@ -111,11 +100,8 @@ Uint8List _buildAuthenticatorData({
 }
 
 void main() {
-  // =========================================================================
-  // Authenticator-data flag-bit derivation tests
-  // =========================================================================
   group('AuthenticatorDataFlags (raw bit derivation)', () {
-    test('test_authenticator_data_flags_user_present', () {
+    test('test_authenticator_data_flags_be_clear_yields_singleDevice', () {
       // Flags = 0x01 (UP only). With BE=0 the device is single-device, with
       // BS=0 the credential is not backed up.
       final authData = _buildMinimalAuthenticatorData(0x01);
@@ -123,15 +109,6 @@ void main() {
       expect(flags.deviceType, equals(WebAuthnCborParser.deviceTypeSingle),
           reason: 'BE bit clear should yield singleDevice');
       expect(flags.backedUp, isFalse, reason: 'BS bit clear should yield false');
-    });
-
-    test('test_authenticator_data_flags_user_verified', () {
-      // Flags = 0x05 (UP|UV). The production parser ignores UP/UV; only BE
-      // and BS drive its output. Both clear here.
-      final authData = _buildMinimalAuthenticatorData(0x05);
-      final flags = WebAuthnCborParser.parseAuthenticatorFlags(authData);
-      expect(flags.deviceType, equals(WebAuthnCborParser.deviceTypeSingle));
-      expect(flags.backedUp, isFalse);
     });
 
     test('test_authenticator_data_flags_backup_eligible_single_device', () {
@@ -214,9 +191,6 @@ void main() {
     });
   });
 
-  // =========================================================================
-  // WebAuthnRegistrationResult equality tests
-  // =========================================================================
   group('WebAuthnRegistrationResult', () {
     test('test_webauthn_registration_result_equality', () {
       final credId = Uint8List(16);
@@ -289,9 +263,6 @@ void main() {
     });
   });
 
-  // =========================================================================
-  // WebAuthnAuthenticationResult equality tests
-  // =========================================================================
   group('WebAuthnAuthenticationResult', () {
     test('test_webauthn_authentication_result_equality', () {
       final credId = Uint8List(16);
@@ -351,9 +322,6 @@ void main() {
     });
   });
 
-  // =========================================================================
-  // WebAuthnProvider interface contract via MockWebAuthnProvider
-  // =========================================================================
   group('WebAuthnProvider interface (via MockWebAuthnProvider)', () {
     test(
         'test_mock_provider_register_returns_default_result_when_unconfigured',

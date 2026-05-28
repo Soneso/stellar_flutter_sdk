@@ -31,9 +31,6 @@ OZSmartAccountSigner _delegated(String address) =>
     OZDelegatedSigner(address);
 
 void main() {
-  // =======================================================================
-  // addContextRule validation
-  // =======================================================================
 
   group('addContextRule validation', () {
     test('addContextRule_emptyName_throws', () async {
@@ -118,10 +115,6 @@ void main() {
       expect(h.txOps.submitCalls, isEmpty);
     });
   });
-
-  // =======================================================================
-  // Additional manager-CRUD coverage worth shipping
-  // =======================================================================
 
   group('OZContextRuleManager CRUD shape', () {
     test('addContextRule with default type encodes a Default Vec arg',

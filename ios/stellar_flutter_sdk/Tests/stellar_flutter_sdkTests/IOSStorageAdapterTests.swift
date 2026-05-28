@@ -4,26 +4,8 @@
 //
 //  Copyright (c) 2026 Soneso. All rights reserved.
 //
-//  Tests for `IOSStorageAdapter`. Exercise the full method-channel
-//  surface against the device Keychain, asserting the behaviour
-//  documented on the adapter:
-//
-//  - `get` and `getAll` treat corrupted entries as absent.
-//  - `update` surfaces `STORAGE_READ_FAILED` when the existing entry
-//    cannot be decoded.
-//  - `delete` and `clearSession` are idempotent (no-op on missing).
-//  - Sessions auto-clear when their `expiresAt` timestamp has passed.
-//  - Saving the same `credentialId` twice does not duplicate the
-//    credential index entry.
-//
-//  All tests use UUID-suffixed credential IDs so the suite can run
-//  against the device Keychain without cross-test pollution.
-//  `tearDown()` removes every credential the test created and clears
-//  the session entry to leave the Keychain in a clean state.
-//
-//  Run procedure: same as `SmartAccountWebAuthnPluginTests` — link via
-//  the example app's `RunnerTests` target so the `Flutter` framework
-//  resolves at link time.
+//  Run procedure: link via the example app's `RunnerTests` target so the
+//  `Flutter` framework resolves at link time.
 //
 
 import Flutter
@@ -133,9 +115,10 @@ final class IOSStorageAdapterTests: XCTestCase {
 
     private func sampleSession(expiresAt: Int64) -> [String: Any?] {
         return [
-            "sessionId": "sess_\(UUID().uuidString)",
+            "credentialId": "cred_\(UUID().uuidString)",
+            "contractId": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+            "connectedAt": NSNumber(value: Int64(Date().timeIntervalSince1970 * 1000.0)),
             "expiresAt": NSNumber(value: expiresAt),
-            "data": "payload",
         ]
     }
 
@@ -260,8 +243,8 @@ final class IOSStorageAdapterTests: XCTestCase {
 
         let result = invoke(method: "storage.getSession", arguments: nil) as? [String: Any?]
         XCTAssertNotNil(result, "Expected session map, got: \(String(describing: result))")
-        XCTAssertEqual(result?["sessionId"] as? String, session["sessionId"] as? String)
-        XCTAssertEqual(result?["data"] as? String, "payload")
+        XCTAssertEqual(result?["credentialId"] as? String, session["credentialId"] as? String)
+        XCTAssertEqual(result?["contractId"] as? String, session["contractId"] as? String)
     }
 
     func test_get_session_returns_nil_when_expired() {

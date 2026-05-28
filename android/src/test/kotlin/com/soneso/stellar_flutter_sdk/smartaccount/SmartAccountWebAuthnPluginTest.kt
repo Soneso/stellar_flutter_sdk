@@ -1,9 +1,4 @@
-//
-//  SmartAccountWebAuthnPluginTest.kt
-//  stellar_flutter_sdk
-//
-//  Copyright (c) 2026 Soneso. All rights reserved.
-//
+// Copyright (c) 2026 Soneso. All rights reserved.
 
 package com.soneso.stellar_flutter_sdk.smartaccount
 

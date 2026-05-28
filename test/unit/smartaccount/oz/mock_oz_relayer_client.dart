@@ -7,18 +7,8 @@ import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_relayer_client.dart';
 
 import 'noop_http_adapter.dart';
 
-/// Recording mock of [OZRelayerClient] used by lifecycle tests to assert
-/// that the kit closes its relayer client exactly once per `close()`
-/// invocation.
-///
-/// The mock extends the production class through the
-/// [OZRelayerClient.withDio] test-only constructor so a [NoopHttpAdapter]
-/// keeps every request offline. Every call to [close] is recorded in
-/// [closeCalls] so tests can assert the kit's resource-teardown contract.
+/// Recording mock of [OZRelayerClient] used by lifecycle tests to assert close() invocations.
 class MockOZRelayerClient extends OZRelayerClient {
-  /// Constructs a recording mock backed by a no-op HTTP adapter wired with
-  /// a relayer-shaped response body so any production deserialiser paths
-  /// the test exercises remain functional.
   MockOZRelayerClient()
       : super.withDio(
           'https://relayer.test',
@@ -29,9 +19,6 @@ class MockOZRelayerClient extends OZRelayerClient {
             ),
         );
 
-  /// Captured `close()` call count. Increments on every invocation,
-  /// including idempotent repeats — the base class itself is idempotent
-  /// at the HTTP layer.
   int closeCalls = 0;
 
   @override

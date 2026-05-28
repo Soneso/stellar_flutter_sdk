@@ -9,8 +9,6 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
   group('AllowCredential', () {
-    // ----- Construction -----
-
     test('test_allow_credential_construction_with_id_only', () {
       final id = Uint8List.fromList(const [0x01, 0x02, 0x03]);
       final credential = AllowCredential(id: id);
@@ -36,8 +34,6 @@ void main() {
       expect(credential.id, equals(id));
       expect(credential.transports, isNull);
     });
-
-    // ----- equals / contentEquals -----
 
     test('test_allow_credential_equals_same_byte_content', () {
       final id1 = Uint8List.fromList(const [0xDE, 0xAD, 0xBE, 0xEF]);
@@ -120,8 +116,6 @@ void main() {
       expect(credential == credential, isTrue);
     });
 
-    // ----- hashCode -----
-
     test('test_allow_credential_hashcode_consistency', () {
       final id1 = Uint8List.fromList(const [0x11, 0x22, 0x33]);
       final id2 = Uint8List.fromList(const [0x11, 0x22, 0x33]);
@@ -159,8 +153,6 @@ void main() {
       expect(withNull.hashCode, isNot(equals(withValue.hashCode)));
     });
 
-    // ----- fromId factory -----
-
     test('test_allow_credential_from_id_creates_credential_with_null_transports',
         () {
       final id = Uint8List.fromList(const [0xAB, 0xCD]);
@@ -178,8 +170,6 @@ void main() {
 
       expect(direct, equals(fromFactory));
     });
-
-    // ----- fromIds factory -----
 
     test('test_allow_credential_from_ids_creates_list_with_all_null_transports',
         () {
@@ -213,8 +203,6 @@ void main() {
       expect(credentials[0].transports, isNull);
     });
 
-    // ----- transports values -----
-
     test('test_allow_credential_common_transport_values_preserved', () {
       final id = Uint8List.fromList(const [0x01]);
       const transports = ['internal', 'hybrid', 'usb', 'ble', 'nfc'];
@@ -238,8 +226,6 @@ void main() {
       expect(credential.transports![1], equals('usb'));
       expect(credential.transports![2], equals('internal'));
     });
-
-    // ----- ByteArray reference semantics -----
 
     test('test_allow_credential_id_stored_by_reference_not_copied', () {
       // Dart Uint8List is a typed list with reference semantics: mutating the

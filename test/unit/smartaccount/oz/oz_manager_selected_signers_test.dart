@@ -24,11 +24,7 @@ const String _thirdAccountAddress =
 const String _verifierA =
     'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK';
 
-/// Stub context-rule manager whose read paths always throw
-/// [WalletNotConnected]. Used by overloads (`removeSignerBySigner`,
-/// `removePolicyByAddress`) that fetch the rule before reaching their
-/// own `requireConnected()` check; the throw mirrors what a real
-/// disconnected kit would surface from the not-connected RPC path.
+/// Stub context-rule manager whose read paths always throw [WalletNotConnected].
 class _NotConnectedRuleManager implements OZContextRuleManagerInterface {
   @override
   Future<List<Object>> listContextRules() async {
@@ -92,9 +88,6 @@ List<SelectedSigner> _multiSigners() => <SelectedSigner>[
     ];
 
 void main() {
-  // =======================================================================
-  // OZSignerManager.addDelegated — selectedSigners
-  // =======================================================================
 
   group('OZSignerManager.addDelegated selectedSigners', () {
     test('testAddDelegated_notConnected_withSelectedSigners_throwsNotConnected',
@@ -127,10 +120,6 @@ void main() {
       );
     });
   });
-
-  // =======================================================================
-  // OZSignerManager.addEd25519 — selectedSigners
-  // =======================================================================
 
   group('OZSignerManager.addEd25519 selectedSigners', () {
     test('testAddEd25519_notConnected_withSelectedSigners_throwsNotConnected',
@@ -165,10 +154,6 @@ void main() {
     });
   });
 
-  // =======================================================================
-  // OZSignerManager.addPasskey — selectedSigners
-  // =======================================================================
-
   group('OZSignerManager.addPasskey selectedSigners', () {
     test('testAddPasskey_notConnected_withSelectedSigners_throwsNotConnected',
         () async {
@@ -200,10 +185,6 @@ void main() {
       );
     });
   });
-
-  // =======================================================================
-  // OZSignerManager.removeSigner — selectedSigners
-  // =======================================================================
 
   group('OZSignerManager.removeSigner selectedSigners', () {
     test('testRemoveSigner_notConnected_withSelectedSigners_throwsNotConnected',
@@ -240,10 +221,6 @@ void main() {
     });
   });
 
-  // =======================================================================
-  // OZPolicyManager.addPolicy — selectedSigners
-  // =======================================================================
-
   group('OZPolicyManager.addPolicy selectedSigners', () {
     test('testAddPolicy_notConnected_withSelectedSigners_throwsNotConnected',
         () async {
@@ -275,10 +252,6 @@ void main() {
       );
     });
   });
-
-  // =======================================================================
-  // OZPolicyManager.removePolicy — selectedSigners
-  // =======================================================================
 
   group('OZPolicyManager.removePolicy selectedSigners', () {
     test('testRemovePolicy_notConnected_withSelectedSigners_throwsNotConnected',
@@ -314,10 +287,6 @@ void main() {
     });
   });
 
-  // =======================================================================
-  // OZContextRuleManager.updateName — selectedSigners
-  // =======================================================================
-
   group('OZContextRuleManager.updateName selectedSigners', () {
     test('testUpdateName_notConnected_withSelectedSigners_throwsNotConnected',
         () async {
@@ -348,10 +317,6 @@ void main() {
     });
   });
 
-  // =======================================================================
-  // OZContextRuleManager.updateValidUntil — selectedSigners
-  // =======================================================================
-
   group('OZContextRuleManager.updateValidUntil selectedSigners', () {
     test(
         'testUpdateValidUntil_notConnected_withSelectedSigners_throwsNotConnected',
@@ -368,10 +333,6 @@ void main() {
       );
     });
   });
-
-  // =======================================================================
-  // OZSignerManager.addNewPasskeySigner — selectedSigners
-  // =======================================================================
 
   group('OZSignerManager.addNewPasskeySigner selectedSigners', () {
     test(
@@ -458,10 +419,6 @@ void main() {
     });
   });
 
-  // =======================================================================
-  // OZContextRuleManager.addContextRule — selectedSigners
-  // =======================================================================
-
   group('OZContextRuleManager.addContextRule selectedSigners', () {
     test('testAddContextRule_withSelectedSigners_notConnected', () async {
       final kit = _disconnectedKit();
@@ -491,10 +448,6 @@ void main() {
     });
   });
 
-  // =======================================================================
-  // OZContextRuleManager.removeContextRule — selectedSigners
-  // =======================================================================
-
   group('OZContextRuleManager.removeContextRule selectedSigners', () {
     test('testRemoveContextRule_withSelectedSigners_notConnected', () async {
       final kit = _disconnectedKit();
@@ -514,10 +467,6 @@ void main() {
       );
     });
   });
-
-  // =======================================================================
-  // forceMethod parameter — accepted by manager methods
-  // =======================================================================
 
   group('forceMethod parameter', () {
     test('testAddDelegated_withForceMethod_notConnected', () async {
@@ -621,10 +570,6 @@ void main() {
       );
     });
   });
-
-  // =======================================================================
-  // multi-signer fanout: 3-signer mix
-  // =======================================================================
 
   group('multi-signer fanout', () {
     /// Builds a ready-to-use harness wiring a kit with the
@@ -872,10 +817,6 @@ void main() {
     });
   });
 }
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 /// Builds a 97-byte passkey keyData buffer (uncompressed secp256r1 pubkey
 /// concatenated with a credential ID stub) suitable for satisfying the

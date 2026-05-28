@@ -7,25 +7,14 @@ import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_indexer_client.dart';
 
 import 'noop_http_adapter.dart';
 
-/// Recording mock of [OZIndexerClient] used by lifecycle tests to assert
-/// that the kit closes its indexer client exactly once per `close()`
-/// invocation.
-///
-/// The mock extends the production class through the
-/// [OZIndexerClient.withDio] test-only constructor so a [NoopHttpAdapter]
-/// keeps every request offline. Every call to [close] is recorded in
-/// [closeCalls] so tests can assert the kit's resource-teardown contract.
+/// Recording mock of [OZIndexerClient] used by lifecycle tests to assert close() is invoked exactly once per close() invocation.
 class MockOZIndexerClient extends OZIndexerClient {
-  /// Constructs a recording mock backed by a no-op HTTP adapter.
   MockOZIndexerClient()
       : super.withDio(
           'https://indexer.test',
           dio.Dio()..httpClientAdapter = NoopHttpAdapter(),
         );
 
-  /// Captured `close()` call count. Increments on every invocation,
-  /// including idempotent repeats — the base class itself is idempotent
-  /// at the HTTP layer.
   int closeCalls = 0;
 
   @override

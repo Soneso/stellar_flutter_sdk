@@ -389,7 +389,7 @@ OZContextRuleManagerInterface stubContextRuleManager() =>
     StubContextRuleManager();
 
 // ---------------------------------------------------------------------------
-// Mock SorobanServer infrastructure for the Group C pipeline tests.
+// Mock SorobanServer infrastructure for the pipeline tests.
 // ---------------------------------------------------------------------------
 
 /// A [SorobanServer] subclass that throws [UnsupportedError] on every
@@ -453,7 +453,7 @@ class _NullSorobanServer extends SorobanServer {
       _unsupported();
 }
 
-/// A scriptable [SorobanServer] subclass used by Group C pipeline tests.
+/// A scriptable [SorobanServer] subclass used by pipeline tests.
 ///
 /// Tests populate the [simulateResponses], [sendResponses], and
 /// [getTransactionResponses] queues with the canned responses each call

@@ -69,9 +69,8 @@ void main() {
 // ---------------------------------------------------------------------------
 
 /// Derives the signing [KeyPair] from the `signerInfo.secretKeyHex` field of
-/// a fixture row. Each row carries its own 32-byte raw seed encoded as hex so
-/// the test is fully self-contained and future-proof for fixtures that use
-/// different seeds across rows.
+/// a fixture row. Each row carries its own 32-byte raw seed encoded as hex;
+/// this lets a row use a different seed without coupling tests via a shared constant.
 KeyPair _keypairFromRow(Map<String, dynamic> row) {
   final signerInfo = row['signerInfo'] as Map<String, dynamic>;
   final secretKeyHex = signerInfo['secretKeyHex'] as String;
@@ -204,23 +203,23 @@ Future<void> _assertRow(
     preimageB64,
     equals(expectedPreimageB64),
     reason: 'Row $rowIndex: authPreimageXdrBase64 mismatch.\n'
-        '  Flutter : $preimageB64\n'
-        '  Fixture : $expectedPreimageB64',
+        '  Actual   : $preimageB64\n'
+        '  Expected : $expectedPreimageB64',
   );
 
   expect(
     authDigestHex,
     equals(expectedDigestHex),
     reason: 'Row $rowIndex: authDigestSha256Hex mismatch.\n'
-        '  Flutter : $authDigestHex\n'
-        '  Fixture : $expectedDigestHex',
+        '  Actual   : $authDigestHex\n'
+        '  Expected : $expectedDigestHex',
   );
 
   expect(
     payloadB64,
     equals(expectedPayloadB64),
     reason: 'Row $rowIndex: authPayloadSignatureScvalXdrBase64 mismatch.\n'
-        '  Flutter : $payloadB64\n'
-        '  Fixture : $expectedPayloadB64',
+        '  Actual   : $payloadB64\n'
+        '  Expected : $expectedPayloadB64',
   );
 }

@@ -19,62 +19,33 @@ import 'package:stellar_flutter_sdk/src/xdr/xdr.dart';
 /// those managers is overridden to record the call and return a canned
 /// [TransactionResult] without touching the network.
 class MockOZMultiSignerManager extends OZMultiSignerManager {
-  /// Constructs the mock against the supplied [kit]. The kit is held only
-  /// to satisfy the production base class; no kit member is reached
-  /// because every public method is overridden.
   MockOZMultiSignerManager(OZSmartAccountWalletKitInterface kit) : super(kit);
 
-  // ---------------------------------------------------------------------
-  // Canned outcomes
-  // ---------------------------------------------------------------------
-
-  /// Default [TransactionResult] returned from [submitWithMultipleSigners].
   TransactionResult submitWithMultipleSignersDefault =
       const TransactionResult(success: true, hash: 'mock-multi-signer-hash');
 
-  /// Default [TransactionResult] returned from [multiSignerTransfer].
   TransactionResult multiSignerTransferDefault =
       const TransactionResult(success: true, hash: 'mock-multi-transfer-hash');
 
-  /// Default [TransactionResult] returned from [multiSignerContractCall].
   TransactionResult multiSignerContractCallDefault = const TransactionResult(
     success: true,
     hash: 'mock-multi-contract-call-hash',
   );
 
-  /// Default [TransactionResult] returned from [multiSignerExecuteAndSubmit].
   TransactionResult multiSignerExecuteAndSubmitDefault =
       const TransactionResult(success: true, hash: 'mock-multi-execute-hash');
 
-  /// Optional override applied per [submitWithMultipleSigners] call;
-  /// when non-null and returning non-null the result supersedes
-  /// [submitWithMultipleSignersDefault].
   TransactionResult? Function(SubmitWithMultipleSignersInvocation invocation)?
       submitWithMultipleSignersOverride;
 
-  // ---------------------------------------------------------------------
-  // Captured calls
-  // ---------------------------------------------------------------------
-
-  /// Every captured [submitWithMultipleSigners] invocation in call order.
   final List<SubmitWithMultipleSignersInvocation>
       submitWithMultipleSignersCalls = <SubmitWithMultipleSignersInvocation>[];
-
-  /// Every captured [multiSignerTransfer] invocation in call order.
   final List<MultiSignerTransferInvocation> multiSignerTransferCalls =
       <MultiSignerTransferInvocation>[];
-
-  /// Every captured [multiSignerContractCall] invocation in call order.
   final List<MultiSignerContractCallInvocation> multiSignerContractCallCalls =
       <MultiSignerContractCallInvocation>[];
-
-  /// Every captured [multiSignerExecuteAndSubmit] invocation in call order.
   final List<MultiSignerExecuteInvocation> multiSignerExecuteAndSubmitCalls =
       <MultiSignerExecuteInvocation>[];
-
-  // ---------------------------------------------------------------------
-  // Public API overrides
-  // ---------------------------------------------------------------------
 
   @override
   Future<TransactionResult> submitWithMultipleSigners({
@@ -155,10 +126,8 @@ class MockOZMultiSignerManager extends OZMultiSignerManager {
   }
 }
 
-/// Captured arguments of a
-/// [MockOZMultiSignerManager.submitWithMultipleSigners] call.
+/// Captured invocation record for [submitWithMultipleSigners].
 class SubmitWithMultipleSignersInvocation {
-  /// Constructs an immutable invocation record.
   const SubmitWithMultipleSignersInvocation({
     required this.hostFunction,
     required this.selectedSigners,
@@ -166,22 +135,14 @@ class SubmitWithMultipleSignersInvocation {
     required this.resolveContextRuleIds,
   });
 
-  /// Host function passed to the call.
   final XdrHostFunction hostFunction;
-
-  /// Selected signers supplied by the caller.
   final List<SelectedSigner> selectedSigners;
-
-  /// Optional submission-method override.
   final SubmissionMethod? forceMethod;
-
-  /// Optional per-entry context-rule-id resolver.
   final ResolveContextRuleIds? resolveContextRuleIds;
 }
 
-/// Captured arguments of a [MockOZMultiSignerManager.multiSignerTransfer] call.
+/// Captured invocation record for [multiSignerTransfer].
 class MultiSignerTransferInvocation {
-  /// Constructs an immutable transfer-invocation record.
   const MultiSignerTransferInvocation({
     required this.tokenContract,
     required this.recipient,
@@ -191,29 +152,16 @@ class MultiSignerTransferInvocation {
     required this.resolveContextRuleIds,
   });
 
-  /// Token contract address (C-address).
   final String tokenContract;
-
-  /// Recipient address (G or C).
   final String recipient;
-
-  /// Decimal amount string.
   final String amount;
-
-  /// Selected signers participating in the multi-signature.
   final List<SelectedSigner> selectedSigners;
-
-  /// Optional submission-method override.
   final SubmissionMethod? forceMethod;
-
-  /// Optional per-entry context-rule-id resolver.
   final ResolveContextRuleIds? resolveContextRuleIds;
 }
 
-/// Captured arguments of a
-/// [MockOZMultiSignerManager.multiSignerContractCall] call.
+/// Captured invocation record for [multiSignerContractCall].
 class MultiSignerContractCallInvocation {
-  /// Constructs an immutable contract-call invocation record.
   const MultiSignerContractCallInvocation({
     required this.target,
     required this.targetFn,
@@ -223,29 +171,16 @@ class MultiSignerContractCallInvocation {
     required this.resolveContextRuleIds,
   });
 
-  /// Target contract address (C-address).
   final String target;
-
-  /// Function name on the target contract.
   final String targetFn;
-
-  /// Pre-encoded function arguments.
   final List<XdrSCVal> targetArgs;
-
-  /// Selected signers participating in the multi-signature.
   final List<SelectedSigner> selectedSigners;
-
-  /// Optional submission-method override.
   final SubmissionMethod? forceMethod;
-
-  /// Optional per-entry context-rule-id resolver.
   final ResolveContextRuleIds? resolveContextRuleIds;
 }
 
-/// Captured arguments of a
-/// [MockOZMultiSignerManager.multiSignerExecuteAndSubmit] call.
+/// Captured invocation record for [multiSignerExecuteAndSubmit].
 class MultiSignerExecuteInvocation {
-  /// Constructs an immutable executeAndSubmit invocation record.
   const MultiSignerExecuteInvocation({
     required this.target,
     required this.targetFn,
@@ -255,21 +190,10 @@ class MultiSignerExecuteInvocation {
     required this.resolveContextRuleIds,
   });
 
-  /// Target contract address (C-address).
   final String target;
-
-  /// Function name on the target contract.
   final String targetFn;
-
-  /// Pre-encoded function arguments.
   final List<XdrSCVal> targetArgs;
-
-  /// Selected signers participating in the multi-signature.
   final List<SelectedSigner> selectedSigners;
-
-  /// Optional submission-method override.
   final SubmissionMethod? forceMethod;
-
-  /// Optional per-entry context-rule-id resolver.
   final ResolveContextRuleIds? resolveContextRuleIds;
 }

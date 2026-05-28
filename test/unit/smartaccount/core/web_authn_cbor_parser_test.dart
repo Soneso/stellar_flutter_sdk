@@ -1037,7 +1037,7 @@ void main() {
   });
 
   // =========================================================================
-  // §9.4 minimum-bar additions (plan-pinned cases)
+  // CBOR decoding: uints, negative ints, byte strings, arrays, maps, fuzz
   // =========================================================================
   group('CBOR minimum-bar additions', () {
     test('test_cbor_decode_uint_small', () {
@@ -1151,7 +1151,7 @@ void main() {
     });
 
     test('test_cbor_fuzz_10000_seeded_rng_no_panic', () {
-      // Plan-pinned seed for deterministic reproduction across CI runs.
+      // Fixed seed for deterministic reproduction across CI runs.
       const int seed = 0xDEADBEEF;
       final rng = math.Random(seed);
       const int iterations = 10000;

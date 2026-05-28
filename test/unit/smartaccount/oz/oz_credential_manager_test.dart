@@ -9,8 +9,6 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 import 'oz_pipeline_fixtures.dart';
 
-/// Returns a deterministic 65-byte secp256r1 uncompressed public key
-/// (`0x04` prefix + 64 bytes derived from the index).
 Uint8List _testPublicKey() {
   final out = Uint8List(SmartAccountConstants.secp256r1PublicKeySize);
   out[0] = SmartAccountConstants.uncompressedPubkeyPrefix;
@@ -25,8 +23,6 @@ const String _contractA =
 const String _contractB =
     'CADQOBYHA4DQOBYHA4DQOBYHA4DQOBYHA4DQOBYHA4DQOBYHA4DQP5KR';
 
-/// Builds a fresh [FakePipelineKit] paired with a real [OZCredentialManager]
-/// bound to it.
 ({FakePipelineKit kit, OZCredentialManager manager}) _newKitWithManager({
   SorobanServer? sorobanServer,
 }) {

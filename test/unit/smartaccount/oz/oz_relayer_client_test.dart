@@ -951,13 +951,13 @@ void main() {
         final versionHeader = headers[OZConstants.clientVersionHeader] ??
             headers[OZConstants.clientVersionHeader.toLowerCase()];
         expect(nameHeader, isNotNull,
-            reason: 'OZ-Client-Name header must be present on every request');
+            reason: 'X-Client-Name header must be present on every request');
         expect(nameHeader!.first.isNotEmpty, isTrue,
-            reason: 'OZ-Client-Name header value must be non-empty');
+            reason: 'X-Client-Name header value must be non-empty');
         expect(versionHeader, isNotNull,
-            reason: 'OZ-Client-Version header must be present on every request');
+            reason: 'X-Client-Version header must be present on every request');
         expect(versionHeader!.first.isNotEmpty, isTrue,
-            reason: 'OZ-Client-Version header value must be non-empty');
+            reason: 'X-Client-Version header value must be non-empty');
       } finally {
         await relayer.close();
       }

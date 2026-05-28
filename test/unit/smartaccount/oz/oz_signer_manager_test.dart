@@ -257,7 +257,6 @@ void main() {
       expect(args[1].u32?.uint32, 13);
     });
 
-    // Cross-SDK parity: iOS `OZSignerManagerTests.test_addPasskey_wrongSizePublicKey_throws`.
     test('addPasskey rejects a public key whose length is not 65 bytes',
         () async {
       final h = _buildHarness();
@@ -285,7 +284,6 @@ void main() {
       );
     });
 
-    // Cross-SDK parity: iOS `OZSignerManagerTests.test_addEd25519_wrongSizePublicKey_throws`.
     test('addEd25519 rejects a public key whose length is not 32 bytes',
         () async {
       final h = _buildHarness();
@@ -308,7 +306,6 @@ void main() {
       );
     });
 
-    // Cross-SDK parity: iOS `OZSignerManagerTests.test_addDelegated_invalidAddress_throws`.
     test('addDelegated rejects an obviously invalid address', () async {
       final h = _buildHarness();
       final mgr = OZSignerManager(h.kit);
@@ -319,15 +316,10 @@ void main() {
     });
   });
 
-  // ==========================================================================
-  // Cross-SDK parity: iOS
-  // `OZSignerManagerTests.test_removeSignerBySigner_misalignedSignerIds_throwsValidation`.
-  //
   // When the parsed context rule has a `signerIds` list shorter than its
   // `signers` list, attempting to look up the matching id by signer
   // value must surface as a [InvalidInput] rather than a generic
   // RangeError.
-  // ==========================================================================
 
   group('removeSignerBySigner misaligned signerIds', () {
     test('signerIdsShorterThanSigners_throwsValidation', () async {
@@ -362,22 +354,11 @@ void main() {
     });
   });
 
-  // ==========================================================================
-  // Cross-SDK parity: iOS `OZSignerManagerTests` not-connected gates.
-  //
   // The companion file `oz_manager_selected_signers_test.dart` covers each
   // signer-manager method in its multi-signer (`selectedSigners`-non-empty)
-  // form against a disconnected kit. The single-signer branch — the path the
-  // iOS tests exercise — is asserted here so both submission paths are
-  // pinned to the same `WalletNotConnected` failure mode no matter which
-  // overload the caller hit.
-  //
-  // iOS counterparts:
-  // - `test_addPasskey_notConnected_throws`
-  // - `test_addDelegated_notConnected_throws`
-  // - `test_addEd25519_notConnected_throws`
-  // - `test_removeSigner_byId_notConnected_throws`
-  // ==========================================================================
+  // form against a disconnected kit. The single-signer branch is asserted
+  // here so both submission paths are pinned to the same `WalletNotConnected`
+  // failure mode no matter which overload the caller hit.
 
   group('OZSignerManager not-connected gates (single-signer path)', () {
     test('addPasskey_notConnected_throwsWalletNotConnected', () async {
@@ -450,8 +431,7 @@ void main() {
         'addNewPasskeySigner_notConnected_throwsWalletNotConnectedBeforeWebAuthn',
         () async {
       // why: addNewPasskeySigner is the end-to-end registration entry
-      // point that is not directly mirrored in iOS but uses the same
-      // requireConnected gate. Pinning it here keeps the gate in place
+      // point. Pinning the requireConnected gate here keeps it in place
       // even if the kit-side implementation is later refactored to do
       // its WebAuthn ceremony before the connection check.
       final kit = FakePipelineKit();

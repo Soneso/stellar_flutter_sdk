@@ -9,9 +9,7 @@ import 'package:crypto/crypto.dart' as crypto;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-// ---------------------------------------------------------------------------
-// Test fixtures: stub external wallet adapter and storage
-// ---------------------------------------------------------------------------
+// Test fixtures
 
 const String _testNetworkPassphrase = 'Test SDF Network ; September 2015';
 
@@ -20,13 +18,10 @@ const String _validG1 =
 const String _validG2 =
     'GBVRV25F7XA5I2L3ILSA6XW3OCWLKGGLG4OP2EHKTWC5IHQ3EV26FQLS';
 
-/// In-memory, additive-only storage used for unit tests. Mirrors the
-/// production `WalletConnectionStorage` interface but keeps a public map
-/// so tests may inject and inspect raw JSON directly.
+/// In-memory [WalletConnectionStorage] with a public map for direct JSON inspection.
 class TestWalletStorage extends WalletConnectionStorage {
   final Map<String, String> data = <String, String>{};
 
-  /// Records every invocation key for assertions about call ordering.
   final List<String> getCalls = <String>[];
   final List<String> setCalls = <String>[];
   final List<String> removeCalls = <String>[];
@@ -50,46 +45,33 @@ class TestWalletStorage extends WalletConnectionStorage {
   }
 }
 
-/// Recording wallet adapter usable in tests. Tests script the
-/// `connectResponses`/`reconnectResponses` queues and inspect
-/// `connectCalls`/`reconnectCalls`/`disconnectCount`/`disconnectByAddressCalls`
-/// to assert on the manager's interaction with the adapter.
+/// Recording [ExternalWalletAdapter]. FIFO queues: pop the next pre-configured
+/// outcome per call (value or throwable); exhausted queues return null/default.
+/// Inspect *Calls fields and *Count fields to assert interaction with the manager.
 class RecordingWalletAdapter extends ExternalWalletAdapter {
   RecordingWalletAdapter();
 
-  /// Queue of `connect()` outcomes. Each entry is either a
-  /// `ConnectedWallet?` value (returned as-is) or an `Exception`/`Error`
-  /// (re-thrown). When exhausted the call returns `null`.
   final List<Object?> connectResponses = <Object?>[];
   int connectCallCount = 0;
 
-  /// Queue of `reconnect(walletId)` outcomes keyed by FIFO order. Each
-  /// entry follows the same value-or-throwable convention as
-  /// `connectResponses`. When exhausted reconnect returns `null`.
   final List<Object?> reconnectResponses = <Object?>[];
   final List<String> reconnectCalls = <String>[];
 
-  /// Queue of `signAuthEntry()` outcomes consumed in order.
   final List<Object> signAuthEntryResponses = <Object>[];
   final List<({String preimageXdr, SignAuthEntryOptions? options})>
       signAuthEntryCalls =
       <({String preimageXdr, SignAuthEntryOptions? options})>[];
 
-  /// In-memory wallet table consulted by `canSignFor`,
-  /// `getConnectedWallets`, and `getWalletForAddress`.
   final List<ConnectedWallet> connected = <ConnectedWallet>[];
 
-  /// Counter for `disconnect()` calls.
   int disconnectCount = 0;
 
-  /// Capture every `disconnectByAddress(address)` call.
   final List<String> disconnectByAddressCalls = <String>[];
 
-  /// When `true`, `disconnect()` raises a [StateError].
   bool throwOnDisconnect = false;
 
-  /// When `true`, `canSignFor` raises a [StateError]. Used to verify the
-  /// manager is defensive against adapter exceptions.
+  /// When `true`, `canSignFor` raises a [StateError]; verifies the manager is
+  /// defensive against adapter exceptions.
   bool throwOnCanSignFor = false;
 
   @override
@@ -224,9 +206,6 @@ OZExternalSignerManager _createManager({
 }
 
 void main() {
-  // -------------------------------------------------------------------------
-  // addFromSecret
-  // -------------------------------------------------------------------------
   group('addFromSecret', () {
     test('valid secret returns derived G-address', () async {
       final manager = _createManager();
@@ -369,10 +348,6 @@ void main() {
       }
     });
   });
-
-  // -------------------------------------------------------------------------
-  // addFromWallet
-  // -------------------------------------------------------------------------
   group('addFromWallet', () {
     test('no adapter throws MissingConfig', () async {
       final manager = _createManager();
@@ -438,10 +413,6 @@ void main() {
       expect(all.any((s) => s.address == _validG1), isTrue);
     });
   });
-
-  // -------------------------------------------------------------------------
-  // canSignFor
-  // -------------------------------------------------------------------------
   group('canSignFor', () {
     test('keypair exists returns true', () async {
       final manager = _createManager();
@@ -498,10 +469,6 @@ void main() {
       expect(info!.type, equals(ExternalSignerType.keypair));
     });
   });
-
-  // -------------------------------------------------------------------------
-  // signAuthEntry
-  // -------------------------------------------------------------------------
   group('signAuthEntry', () {
     test('keypair signs SHA-256 of preimage with Ed25519',
         () async {
@@ -654,10 +621,6 @@ void main() {
       expect(result.signerAddress, equals(address));
     });
   });
-
-  // -------------------------------------------------------------------------
-  // getAll / get / hasSigners
-  // -------------------------------------------------------------------------
   group('getAll / get / hasSigners', () {
     test('getAll returns keypair signers first, then wallets',
         () async {
@@ -752,10 +715,6 @@ void main() {
       expect(await manager2.hasSigners(), isTrue);
     });
   });
-
-  // -------------------------------------------------------------------------
-  // remove / removeAll
-  // -------------------------------------------------------------------------
   group('remove / removeAll', () {
     test('remove clears keypair entry and asks adapter to disconnect by '
         'address', () async {
@@ -833,10 +792,6 @@ void main() {
       expect(storage.removeCalls, contains('oz_smart_account.connected_wallets'));
     });
   });
-
-  // -------------------------------------------------------------------------
-  // restoreConnections
-  // -------------------------------------------------------------------------
   group('restoreConnections', () {
     test('idempotent: second call returns adapter snapshot without '
         're-reading storage', () async {
@@ -975,10 +930,6 @@ void main() {
       expect(results[0], isNotEmpty);
     });
   });
-
-  // -------------------------------------------------------------------------
-  // JSON storage
-  // -------------------------------------------------------------------------
   group('JSON storage', () {
     test('serialise empty list yields valid JSON array', () async {
       final adapter = RecordingWalletAdapter();
@@ -1124,10 +1075,6 @@ void main() {
       expect(storage.removeCalls, contains('oz_smart_account.connected_wallets'));
     });
   });
-
-  // -------------------------------------------------------------------------
-  // addEd25519FromRawKey
-  // -------------------------------------------------------------------------
   group('addEd25519FromRawKey', () {
     test(
         'test_addEd25519FromRawKey_validBytes_storesKeypairAndReturnsPublicKey',
@@ -1212,10 +1159,6 @@ void main() {
       );
     });
   });
-
-  // -------------------------------------------------------------------------
-  // canSignEd25519For
-  // -------------------------------------------------------------------------
   group('canSignEd25519For', () {
     test('test_canSignEd25519For_registered_returnsTrue', () {
       final manager = _createManager();
@@ -1247,10 +1190,6 @@ void main() {
       );
     });
   });
-
-  // -------------------------------------------------------------------------
-  // signEd25519AuthDigest
-  // -------------------------------------------------------------------------
   group('signEd25519AuthDigest', () {
     test(
         'test_signEd25519AuthDigest_registered_returnsValidSignature',
@@ -1297,10 +1236,6 @@ void main() {
       );
     });
   });
-
-  // -------------------------------------------------------------------------
-  // removeEd25519
-  // -------------------------------------------------------------------------
   group('removeEd25519', () {
     test('test_removeEd25519_clearsRegistration', () {
       final manager = _createManager();
@@ -1332,10 +1267,6 @@ void main() {
       );
     });
   });
-
-  // -------------------------------------------------------------------------
-  // Ed25519 adapter precedence
-  // -------------------------------------------------------------------------
   group('Ed25519 adapter precedence', () {
     test(
         'test_ed25519Adapter_takesPrecedenceForCanSignForTrue',
@@ -1404,10 +1335,6 @@ void main() {
       expect(verifier.verify(authDigest, signature), isTrue);
     });
   });
-
-  // -------------------------------------------------------------------------
-  // removeAll clears Ed25519 registrations
-  // -------------------------------------------------------------------------
   group('removeAll clears Ed25519 registrations', () {
     test(
         'test_removeAll_clearsEd25519RegistrationsAlongsideWalletSigners',

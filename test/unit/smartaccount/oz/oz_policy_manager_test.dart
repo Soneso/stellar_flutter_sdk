@@ -25,7 +25,7 @@ const String _validG1 =
     'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
 /// Recording transaction operations double. Captures every `submit()`
-/// call so Group B tests can assert on routing arguments without driving
+/// call so tests can assert on routing arguments without driving
 /// the full Soroban RPC pipeline.
 class RecordingTransactionOperations extends OZTransactionOperations {
   RecordingTransactionOperations(super.kit);
@@ -72,7 +72,7 @@ class RecordingTransactionOperations extends OZTransactionOperations {
 }
 
 /// Recording multi-signer manager double. Captures every
-/// `submitWithMultipleSigners()` call so Group B can assert on routing
+/// `submitWithMultipleSigners()` call so tests can assert on routing
 /// arguments when `selectedSigners` is non-empty.
 class RecordingMultiSignerManager extends OZMultiSignerManager {
   RecordingMultiSignerManager(super.kit);
@@ -181,10 +181,7 @@ String _contractIdHex(String cAddress) =>
     Util.bytesToHex(StrKey.decodeContractId(cAddress)).toLowerCase();
 
 void main() {
-  // -------------------------------------------------------------------------
-  // B.1 addSimpleThreshold (6 cases)
-  // -------------------------------------------------------------------------
-  group('B.1 addSimpleThreshold', () {
+  group('addSimpleThreshold', () {
     test('zero threshold throws ValidationException', () async {
       final h = _buildKit();
       await expectLater(
@@ -277,10 +274,7 @@ void main() {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // B.2 addWeightedThreshold (7 cases)
-  // -------------------------------------------------------------------------
-  group('B.2 addWeightedThreshold', () {
+  group('addWeightedThreshold', () {
     test('empty signerWeights throws ValidationException', () async {
       final h = _buildKit();
       await expectLater(
@@ -415,10 +409,7 @@ void main() {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // B.3 addSpendingLimit (6 cases)
-  // -------------------------------------------------------------------------
-  group('B.3 addSpendingLimit', () {
+  group('addSpendingLimit', () {
     test('zero amount string throws (Util.toXdrInt64Amount rejects)',
         () async {
       final h = _buildKit();
@@ -518,10 +509,7 @@ void main() {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // B.4 addPolicy generic (5 cases)
-  // -------------------------------------------------------------------------
-  group('B.4 addPolicy', () {
+  group('addPolicy', () {
     test('invalid policy address throws InvalidAddress', () async {
       final h = _buildKit();
       await expectLater(
@@ -591,10 +579,7 @@ void main() {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // B.5 removePolicy by ID (5 cases)
-  // -------------------------------------------------------------------------
-  group('B.5 removePolicy by ID', () {
+  group('removePolicy by ID', () {
     test('not connected throws WalletNotConnected', () async {
       final ruleManager = StubContextRuleManager();
       final kit = _RoutingKit(contextRuleManager: ruleManager);
@@ -661,10 +646,7 @@ void main() {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // B.6 removePolicy by address (6 cases) — uses removePolicyByAddress
-  // -------------------------------------------------------------------------
-  group('B.6 removePolicyByAddress', () {
+  group('removePolicyByAddress', () {
     /// Pre-populates the stub context-rule manager so [removePolicyByAddress]
     /// resolves the supplied [policies] list (positionally aligned with
     /// [policyIds]).
@@ -804,15 +786,11 @@ void main() {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // B.7 sortMapByKeyXdr & scValToXdrBytes (5 cases)
-  //
   // The byte-equivalence assertions for the policy-install ScVal map shape
   // live in `oz_policy_install_params_test.dart`. The cases below cover the
   // sort/encode surface from the policy-manager side so the coverage is
   // self-contained and readable.
-  // -------------------------------------------------------------------------
-  group('B.7 sortMapByKeyXdr / scValToXdrBytes', () {
+  group('sortMapByKeyXdr / scValToXdrBytes', () {
     test('sortMapByKeyXdr: empty input returns empty list', () {
       final sorted =
           OZPolicyManager.sortMapByKeyXdr(const <XdrSCMapEntry>[]);

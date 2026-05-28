@@ -4,25 +4,8 @@
 //
 //  Copyright (c) 2026 Soneso. All rights reserved.
 //
-//  Tests for the argument-validation paths and the publicly observable
-//  behaviour of `SmartAccountWebAuthnPlugin`. These tests exercise the
-//  Flutter method-channel handler with synthetic `FlutterMethodCall`
-//  inputs and verify the resulting `FlutterError` codes match the wire
-//  contract documented on the plugin class.
-//
-//  The tests deliberately stop short of invoking
-//  `ASAuthorizationController.performRequests()`, which would require a
-//  real authenticator and an interactive system passkey sheet. The
-//  argument-validation surface, the unsupported-OS branch, and the
-//  dispatch surface are all reachable without driving the
-//  AuthenticationServices runtime.
-//
-//  Run procedure:
-//    These tests link against the `Flutter` framework, so `swift test`
-//    from the SwiftPM package directory will not resolve the import.
-//    Run them via `xcodebuild test` against the example app's
-//    `RunnerTests` target, which is configured with the framework
-//    search paths Flutter injects at build time.
+//  Run procedure: run via `xcodebuild test` against the example app's
+//  `RunnerTests` target; `swift test` cannot resolve the `Flutter` framework.
 //
 
 import Flutter

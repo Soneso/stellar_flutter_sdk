@@ -22,78 +22,40 @@ import 'package:stellar_flutter_sdk/src/xdr/xdr.dart';
 /// the public `*Default` fields and inspect captured calls through the
 /// matching `*Calls` lists.
 class MockOZTransactionOperations extends OZTransactionOperations {
-  /// Constructs the mock against the supplied [kit]. The kit reference
-  /// is held only so the production base class is satisfied; none of
-  /// its members are reached because every public method is overridden.
   MockOZTransactionOperations(OZSmartAccountKitInterface kit) : super(kit);
 
-  // ---------------------------------------------------------------------
-  // Canned outcomes
-  // ---------------------------------------------------------------------
-
-  /// Default [TransactionResult] returned from [submit]. Tests override
-  /// the value to express success / failure / specific hash and ledger.
   TransactionResult submitDefault =
       const TransactionResult(success: true, hash: 'mock-submit-hash');
 
-  /// Default [TransactionResult] returned from [transfer].
   TransactionResult transferDefault =
       const TransactionResult(success: true, hash: 'mock-transfer-hash');
 
-  /// Default [TransactionResult] returned from [contractCall].
   TransactionResult contractCallDefault =
       const TransactionResult(success: true, hash: 'mock-contract-call-hash');
 
-  /// Default [TransactionResult] returned from [executeAndSubmit].
   TransactionResult executeAndSubmitDefault =
       const TransactionResult(success: true, hash: 'mock-execute-hash');
 
-  /// Default funded amount returned from [fundWallet].
   String fundWalletDefault = '100.0000000';
 
-  /// Default [XdrSCVal] returned from [simulateAndExtractResult]. Defaults to
-  /// `XdrSCVal.forVoid()` so call sites that only need to assert the call
-  /// happened do not need to wire a richer fixture.
+  /// Defaults to `XdrSCVal.forVoid()` so call sites that only need to assert
+  /// the call happened do not need to wire a richer fixture.
   XdrSCVal simulateAndExtractResultDefault = XdrSCVal.forVoid();
 
-  /// Optional override applied per [submit] call, evaluated against the
-  /// captured invocation. When non-null and returning non-null the
-  /// returned [TransactionResult] supersedes [submitDefault].
   TransactionResult? Function(SubmitInvocation invocation)? submitOverride;
 
-  /// Per-call [simulateAndExtractResult] override. When non-null and
-  /// returning non-null the result supersedes [simulateAndExtractResultDefault].
   XdrSCVal? Function(XdrHostFunction hostFunction)?
       simulateAndExtractResultOverride;
 
-  // ---------------------------------------------------------------------
-  // Captured calls
-  // ---------------------------------------------------------------------
-
-  /// Every captured [submit] invocation in call order.
   final List<SubmitInvocation> submitCalls = <SubmitInvocation>[];
-
-  /// Every captured [transfer] invocation in call order.
   final List<TransferInvocation> transferCalls = <TransferInvocation>[];
-
-  /// Every captured [contractCall] invocation in call order.
   final List<ContractCallInvocation> contractCallCalls =
       <ContractCallInvocation>[];
-
-  /// Every captured [executeAndSubmit] invocation in call order.
   final List<ExecuteAndSubmitInvocation> executeAndSubmitCalls =
       <ExecuteAndSubmitInvocation>[];
-
-  /// Every captured [fundWallet] invocation in call order.
   final List<FundWalletInvocation> fundWalletCalls = <FundWalletInvocation>[];
-
-  /// Every captured [simulateAndExtractResult] invocation in call order.
   final List<XdrHostFunction> simulateAndExtractResultCalls =
       <XdrHostFunction>[];
-
-  // ---------------------------------------------------------------------
-  // Public API overrides
-  // ---------------------------------------------------------------------
 
   @override
   Future<TransactionResult> submit({
@@ -195,9 +157,8 @@ class MockOZTransactionOperations extends OZTransactionOperations {
   }
 }
 
-/// Captured arguments of a [MockOZTransactionOperations.submit] call.
+/// Captured invocation record for [submit].
 class SubmitInvocation {
-  /// Constructs an immutable submit-invocation record.
   const SubmitInvocation({
     required this.hostFunction,
     required this.auth,
@@ -206,25 +167,15 @@ class SubmitInvocation {
     required this.cancelToken,
   });
 
-  /// Host function passed to the call.
   final XdrHostFunction hostFunction;
-
-  /// Authorisation entries supplied by the caller.
   final List<XdrSorobanAuthorizationEntry> auth;
-
-  /// Optional submission-method override.
   final SubmissionMethod? forceMethod;
-
-  /// Optional per-entry context-rule-id resolver.
   final ResolveContextRuleIds? resolveContextRuleIds;
-
-  /// Optional cancellation token.
   final dio.CancelToken? cancelToken;
 }
 
-/// Captured arguments of a [MockOZTransactionOperations.transfer] call.
+/// Captured invocation record for [transfer].
 class TransferInvocation {
-  /// Constructs an immutable transfer-invocation record.
   const TransferInvocation({
     required this.tokenContract,
     required this.recipient,
@@ -233,25 +184,15 @@ class TransferInvocation {
     required this.cancelToken,
   });
 
-  /// Token contract address (C-address).
   final String tokenContract;
-
-  /// Recipient address (G or C).
   final String recipient;
-
-  /// Decimal amount string.
   final String amount;
-
-  /// Optional submission-method override.
   final SubmissionMethod? forceMethod;
-
-  /// Optional cancellation token.
   final dio.CancelToken? cancelToken;
 }
 
-/// Captured arguments of a [MockOZTransactionOperations.contractCall] call.
+/// Captured invocation record for [contractCall].
 class ContractCallInvocation {
-  /// Constructs an immutable contract-call invocation record.
   const ContractCallInvocation({
     required this.target,
     required this.targetFn,
@@ -261,28 +202,16 @@ class ContractCallInvocation {
     required this.cancelToken,
   });
 
-  /// Target contract address (C-address).
   final String target;
-
-  /// Function name on the target contract.
   final String targetFn;
-
-  /// Pre-encoded function arguments.
   final List<XdrSCVal> targetArgs;
-
-  /// Optional submission-method override.
   final SubmissionMethod? forceMethod;
-
-  /// Optional per-entry context-rule-id resolver.
   final ResolveContextRuleIds? resolveContextRuleIds;
-
-  /// Optional cancellation token.
   final dio.CancelToken? cancelToken;
 }
 
-/// Captured arguments of a [MockOZTransactionOperations.executeAndSubmit] call.
+/// Captured invocation record for [executeAndSubmit].
 class ExecuteAndSubmitInvocation {
-  /// Constructs an immutable executeAndSubmit-invocation record.
   const ExecuteAndSubmitInvocation({
     required this.target,
     required this.targetFn,
@@ -292,40 +221,23 @@ class ExecuteAndSubmitInvocation {
     required this.cancelToken,
   });
 
-  /// Target contract address (C-address).
   final String target;
-
-  /// Function name on the target contract.
   final String targetFn;
-
-  /// Pre-encoded function arguments.
   final List<XdrSCVal> targetArgs;
-
-  /// Optional submission-method override.
   final SubmissionMethod? forceMethod;
-
-  /// Optional per-entry context-rule-id resolver.
   final ResolveContextRuleIds? resolveContextRuleIds;
-
-  /// Optional cancellation token.
   final dio.CancelToken? cancelToken;
 }
 
-/// Captured arguments of a [MockOZTransactionOperations.fundWallet] call.
+/// Captured invocation record for [fundWallet].
 class FundWalletInvocation {
-  /// Constructs an immutable fundWallet-invocation record.
   const FundWalletInvocation({
     required this.nativeTokenContract,
     required this.forceMethod,
     required this.cancelToken,
   });
 
-  /// Native-token contract used for the on-chain transfer.
   final String nativeTokenContract;
-
-  /// Optional submission-method override.
   final SubmissionMethod? forceMethod;
-
-  /// Optional cancellation token.
   final dio.CancelToken? cancelToken;
 }

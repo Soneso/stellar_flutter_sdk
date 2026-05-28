@@ -52,8 +52,8 @@ void main() {
       expect(OZConstants.clientName, 'flutter-stellar-sdk');
     });
 
-    test('test_OZConstants_exposes_exactly_11_public_constants', () {
-      // Inventory check: the eleven values below must all be present and
+    test('test_OZConstants_exposes_exactly_15_public_constants', () {
+      // Inventory check: the fifteen values below must all be present and
       // surfacing the correct constants. If a new constant is added or one is
       // removed/renamed, this list will fall out of date and force review.
       final values = <Object>[
@@ -68,8 +68,12 @@ void main() {
         OZConstants.clientNameHeader,
         OZConstants.clientVersionHeader,
         OZConstants.clientName,
+        OZConstants.maxIndexerResponseBytes,
+        OZConstants.maxRelayerResponseBytes,
+        OZConstants.maxIndexerConnectTimeoutMs,
+        OZConstants.maxRelayerConnectTimeoutMs,
       ];
-      expect(values.length, 11);
+      expect(values.length, 15);
       expect(values, everyElement(isNotNull));
     });
   });

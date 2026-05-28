@@ -19,14 +19,8 @@ import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_storage_adapter.dart'
 import 'package:stellar_flutter_sdk/src/smartaccount/oz/web/indexed_db_storage_adapter_web.dart';
 import 'package:web/web.dart' as web;
 
-// ---------------------------------------------------------------------------
-// Fake IndexedDB implementation
-// ---------------------------------------------------------------------------
-//
-// A minimal in-memory IndexedDB substitute that satisfies the surface area
-// the adapter touches: open/deleteDatabase, IDBDatabase.transaction +
-// objectStoreNames + close, IDBObjectStore.put/get/getAll/delete/clear +
-// index, IDBIndex.getAll, IDBRequest.onsuccess/onerror.
+// Minimal in-memory IndexedDB substitute covering the surface area the adapter
+// touches (open, put/get/getAll/delete/clear, index, request callbacks).
 
 class _FakeStore {
   final List<JSObject> records = <JSObject>[];
@@ -362,10 +356,6 @@ JSObject _domStringList(List<String> values) {
   );
   return obj;
 }
-
-// ---------------------------------------------------------------------------
-// Test fixtures
-// ---------------------------------------------------------------------------
 
 StoredCredential _credential({
   String credentialId = 'cred-1',

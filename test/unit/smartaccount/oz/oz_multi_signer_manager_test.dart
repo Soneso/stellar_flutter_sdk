@@ -12,10 +12,6 @@ import 'mock_oz_multi_signer_manager.dart';
 import 'mock_oz_transaction_operations.dart';
 import 'oz_pipeline_fixtures.dart';
 
-// ---------------------------------------------------------------------------
-// Test fixtures
-// ---------------------------------------------------------------------------
-
 /// A well-formed Stellar contract address used as the connected smart-account
 /// contractId.
 const String _validContractId =
@@ -55,9 +51,6 @@ OZMultiSignerManager _manager(FakePipelineKit kit) => OZMultiSignerManager(kit);
 SelectedSignerPasskey _passkeyStub() => const SelectedSignerPasskey();
 
 void main() {
-  // ==========================================================================
-  // multiSignerExecuteAndSubmit — not-connected guard
-  // ==========================================================================
 
   group('multiSignerExecuteAndSubmit not-connected', () {
     test('notConnected_throwsWalletNotConnected', () async {
@@ -72,10 +65,6 @@ void main() {
       );
     });
   });
-
-  // ==========================================================================
-  // multiSignerExecuteAndSubmit — target address validation
-  // ==========================================================================
 
   group('multiSignerExecuteAndSubmit target validation', () {
     test('targetIsGAddress_throwsInvalidAddress', () async {
@@ -115,10 +104,6 @@ void main() {
     });
   });
 
-  // ==========================================================================
-  // multiSignerExecuteAndSubmit — function name validation
-  // ==========================================================================
-
   group('multiSignerExecuteAndSubmit function name validation', () {
     test('targetFnIsBlank_throwsInvalidInput', () async {
       final manager = _manager(_buildConnectedKit());
@@ -152,10 +137,6 @@ void main() {
     });
   });
 
-  // ==========================================================================
-  // multiSignerExecuteAndSubmit — selectedSigners validation
-  // ==========================================================================
-
   group('multiSignerExecuteAndSubmit signers validation', () {
     test('emptySigners_throwsInvalidInput', () async {
       final manager = _manager(_buildConnectedKit());
@@ -176,10 +157,6 @@ void main() {
       }
     });
   });
-
-  // ==========================================================================
-  // multiSignerTransfer — not-connected guard
-  // ==========================================================================
 
   group('multiSignerTransfer not-connected', () {
     test('notConnected_throwsWalletNotConnected', () async {
@@ -234,10 +211,6 @@ void main() {
       );
     });
   });
-
-  // ==========================================================================
-  // multiSignerTransfer — recipient validation
-  // ==========================================================================
 
   group('multiSignerTransfer recipient validation', () {
     test('recipientInvalid_throwsInvalidAddress', () async {
@@ -367,10 +340,6 @@ void main() {
     });
   });
 
-  // ==========================================================================
-  // multiSignerExecuteAndSubmit — forceMethod parameter acceptance
-  // ==========================================================================
-
   group('multiSignerExecuteAndSubmit forceMethod parameter', () {
     test('forceMethodNullDefault_signatureCompiles', () async {
       final manager = _manager(_buildKit());
@@ -398,10 +367,6 @@ void main() {
       );
     });
   });
-
-  // ==========================================================================
-  // SelectedSigner sealed-class construction and equality
-  // ==========================================================================
 
   group('SelectedSigner sealed class', () {
     test('passkey_defaultFieldsAreNull', () {
@@ -622,10 +587,6 @@ void main() {
     });
   });
 
-  // ==========================================================================
-  // SelectedSignerEd25519 — enum-shape and equality
-  // ==========================================================================
-
   group('SelectedSignerEd25519 construction and equality', () {
     test('test_selectedSignerEd25519_constructionAndEquality', () {
       final pk = Uint8List.fromList(List<int>.generate(32, (i) => i & 0xFF));
@@ -682,10 +643,6 @@ void main() {
       expect(a.hashCode, isNot(equals(c.hashCode)));
     });
   });
-
-  // ==========================================================================
-  // validateSignerSet — Ed25519 validation
-  // ==========================================================================
 
   group('validateSignerSet Ed25519', () {
     test(
@@ -1121,10 +1078,6 @@ void main() {
     });
   });
 }
-
-// ---------------------------------------------------------------------------
-// Local helpers (multi-signer manager test file only)
-// ---------------------------------------------------------------------------
 
 const String _testNetworkPassphrase = 'Test SDF Network ; September 2015';
 const String _verifierA =

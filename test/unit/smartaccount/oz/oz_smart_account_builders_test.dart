@@ -46,9 +46,6 @@ Uint8List _credentialId({int seed = 0xA0, int length = 16}) {
 }
 
 void main() {
-  // ==========================================================================
-  // Signer builder functions
-  // ==========================================================================
 
   group('signer key and dedup', () {
     test('testGetSignerKey_delegatedSigner_returnsUniqueKeyWithDelegatedPrefix',
@@ -568,10 +565,6 @@ void main() {
       );
     });
   });
-
-  // ==========================================================================
-  // Policy parameter builders
-  // ==========================================================================
 
   group('OZSmartAccountBuilders — createThresholdParams', () {
     test('testCreateThresholdParams_thresholdZero_throwsInvalidInput', () {

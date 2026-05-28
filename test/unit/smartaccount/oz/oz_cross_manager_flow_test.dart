@@ -265,7 +265,7 @@ void main() {
   // =======================================================================
 
   group('manager behaviour probes', () {
-    test('crossSDK_addPasskey_singleSigner_relayer_buildsIdenticalHostFunction',
+    test('addPasskey_singleSigner_relayer_buildsIdenticalHostFunction',
         () async {
       // Probe: the host function emitted by addPasskey on the
       // single-signer path with a relayer-forced submission method
@@ -304,7 +304,7 @@ void main() {
       expect(h.txOps.submitCalls[0].forceMethod, SubmissionMethod.relayer);
     });
 
-    test('crossSDK_addContextRule_validatesPolicyAddressBeforeBuilding',
+    test('addContextRule_validatesPolicyAddressBeforeBuilding',
         () async {
       // Probe: the policy-address validator runs BEFORE the host
       // function is built. Surface this by asserting that a malformed
@@ -327,12 +327,12 @@ void main() {
     });
 
     test(
-        'crossSDK_resolveContextRuleIdsForEntry_threeTierAlgorithm_identicalArbitration',
+        'resolveContextRuleIdsForEntry_threeTierAlgorithm_identicalArbitration',
         () {
       // Probe: the 3-tier arbitration. Three rules — exact match,
       // signer-subset match (no policies), selected-subset match —
       // exercise tiers 1, 2, and 3 in turn. The Dart resolver returns
-      // the unique winner per tier; the iOS resolver must do the same.
+      // the unique winner per tier.
       final mgr = OZContextRuleManager(FakePipelineKit());
       final signerA = OZDelegatedSigner(_accountAddressA);
       final signerB = OZDelegatedSigner(_accountAddressB);

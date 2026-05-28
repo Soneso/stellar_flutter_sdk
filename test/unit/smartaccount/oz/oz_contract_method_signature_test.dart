@@ -10,20 +10,6 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'mock_oz_transaction_operations.dart';
 import 'oz_pipeline_fixtures.dart';
 
-/// Verifies that every smart-account contract invocation built by the
-/// OZ managers carries the correct method name (as a Soroban Symbol
-/// on the on-chain layer, but a plain Dart string on the
-/// `XdrInvokeContractArgs.functionName` accessor), the correct
-/// argument count, and the correct argument types in the correct order.
-///
-/// Source of truth: the OpenZeppelin Smart Account contract ABI XDR.
-///
-/// The tests reach a real manager pinned to a connected kit whose
-/// `OZTransactionOperations` is replaced by [MockOZTransactionOperations].
-/// Each call captures the produced `XdrHostFunction` so the test can
-/// assert against the encoded shape without round-tripping through a
-/// Soroban server.
-
 const String _validContractId =
     'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM';
 const String _validAccountAddress =
@@ -813,16 +799,6 @@ void main() {
       expect(txOps.executeAndSubmitCalls.length, 1);
       expect(txOps.executeAndSubmitCalls.first.target, _verifierContract);
       expect(txOps.executeAndSubmitCalls.first.targetFn, 'noop');
-    });
-
-    test('"upgrade" function is documented as ABI-reserved but unused', () {
-      // The `upgrade` ABI function is part of the OpenZeppelin Smart
-      // Account spec for upgradeable contracts. The Flutter SDK does
-      // not currently surface it as a public API. This test documents
-      // the omission explicitly so a future implementation knows where
-      // to wire it in.
-      const upgrade = 'upgrade';
-      expect(upgrade, 'upgrade');
     });
   });
 }

@@ -9,10 +9,6 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 import 'oz_pipeline_fixtures.dart';
 
-// ---------------------------------------------------------------------------
-// Test fixtures
-// ---------------------------------------------------------------------------
-
 const String _validContractAddress =
     'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM';
 const String _validContractAddress2 =
@@ -20,8 +16,6 @@ const String _validContractAddress2 =
 const String _validAccountAddress =
     'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ';
 
-/// Generates a unique valid C-address by encoding a deterministic 32-byte
-/// payload via the in-SDK [StrKey.encodeContractId] helper.
 String _generateContractAddress(int seed) {
   final bytes = Uint8List(32);
   for (var i = 0; i < 32; i++) {
@@ -30,12 +24,9 @@ String _generateContractAddress(int seed) {
   return StrKey.encodeContractId(bytes);
 }
 
-/// Builds a fresh [FakePipelineKit] without a connected wallet; the context
-/// rule manager parser tests do not require a connected state.
 FakePipelineKit _buildKit() => FakePipelineKit();
 
-/// Builds a fresh [FakePipelineKit] pre-connected so [addContextRule]
-/// validation paths past [requireConnected] can be reached.
+/// Pre-connected kit; lets validation paths past [requireConnected] be reached.
 FakePipelineKit _buildConnectedKit() => FakePipelineKit()
   ..setConnected(
     credentialId: 'test-credential-id',
@@ -44,9 +35,7 @@ FakePipelineKit _buildConnectedKit() => FakePipelineKit()
 
 OZContextRuleManager _manager(FakePipelineKit kit) => OZContextRuleManager(kit);
 
-/// Builds an `XdrSCVal` Map from a list of (Symbol-key, value) entries,
-/// matching the on-chain encoding shape produced by Soroban for named
-/// structs.
+/// Builds an `XdrSCVal` Map from (Symbol-key, value) entries.
 XdrSCVal _buildMapScVal(List<MapEntry<String, XdrSCVal>> entries) {
   return XdrSCVal.forMap(<XdrSCMapEntry>[
     for (final e in entries)
@@ -54,13 +43,11 @@ XdrSCVal _buildMapScVal(List<MapEntry<String, XdrSCVal>> entries) {
   ]);
 }
 
-/// Builds an Address-typed `XdrSCVal` from a contract C-address.
 XdrSCVal _addressScVal(String contractAddress) {
   return XdrSCVal.forAddress(Address.forContractId(contractAddress).toXdr());
 }
 
-/// Builds the `Vec([Symbol("Delegated"), Address])` shape used to encode a
-/// delegated signer on-chain.
+/// Encodes `Vec([Symbol("Delegated"), Address])` for a delegated signer.
 XdrSCVal _delegatedSignerScVal(String address) {
   final XdrSCAddress scAddress = StrKey.isValidContractId(address)
       ? Address.forContractId(address).toXdr()
@@ -71,8 +58,7 @@ XdrSCVal _delegatedSignerScVal(String address) {
   ]);
 }
 
-/// Builds the `Vec([Symbol("External"), Address, Bytes])` shape used to
-/// encode an external signer on-chain.
+/// Encodes `Vec([Symbol("External"), Address, Bytes])` for an external signer.
 XdrSCVal _externalSignerScVal(String verifierAddress, Uint8List keyData) {
   return XdrSCVal.forVec(<XdrSCVal>[
     XdrSCVal.forSymbol('External'),
@@ -98,8 +84,7 @@ XdrSCVal _createContractContextTypeScVal(Uint8List wasmHash) {
   ]);
 }
 
-/// Builds a complete, valid context-rule Map `XdrSCVal` with all eight
-/// fields populated.
+/// Builds a complete valid context-rule Map `XdrSCVal` with all eight fields.
 XdrSCVal _buildFullRuleMap({
   int id = 1,
   String name = 'TestRule',
@@ -132,8 +117,6 @@ XdrSCVal _buildFullRuleMap({
   ]);
 }
 
-/// Returns a 65-byte uncompressed secp256r1-shaped public key suitable for
-/// External signer fixtures. The byte content is deterministic.
 Uint8List _secp256r1Key() {
   final key = Uint8List(65);
   key[0] = 0x04; // uncompressed prefix
@@ -144,9 +127,6 @@ Uint8List _secp256r1Key() {
 }
 
 void main() {
-  // ==========================================================================
-  // parseContextRule — Valid rules
-  // ==========================================================================
 
   group('parseContextRule valid rules', () {
     test('validRuleWithAllFields', () {
@@ -300,10 +280,6 @@ void main() {
     });
   });
 
-  // ==========================================================================
-  // parseContextRule — Missing required fields
-  // ==========================================================================
-
   group('parseContextRule missing required fields', () {
     test('missingId_throwsValidationException', () {
       final manager = _manager(_buildKit());
@@ -365,10 +341,6 @@ void main() {
       }
     });
   });
-
-  // ==========================================================================
-  // parseContextRule — Invalid field types
-  // ==========================================================================
 
   group('parseContextRule invalid field types', () {
     test('idNotU32_throwsValidationException', () {
@@ -471,10 +443,6 @@ void main() {
     });
   });
 
-  // ==========================================================================
-  // parseContextRule — Non-Map input
-  // ==========================================================================
-
   group('parseContextRule non-Map input', () {
     test('nonMapInput_throwsValidationException', () {
       final manager = _manager(_buildKit());
@@ -506,10 +474,6 @@ void main() {
       );
     });
   });
-
-  // ==========================================================================
-  // parseContextRule — Context-type edge cases
-  // ==========================================================================
 
   group('parseContextRule context-type edge cases', () {
     test('emptyContextTypeVec_throwsValidationException', () {
@@ -573,10 +537,6 @@ void main() {
       }
     });
   });
-
-  // ==========================================================================
-  // parseContextRule — Signer parsing edge cases
-  // ==========================================================================
 
   group('parseContextRule signer parsing edge cases', () {
     test('unknownSignerDiscriminant_throwsValidationException', () {
@@ -686,10 +646,6 @@ void main() {
     });
   });
 
-  // ==========================================================================
-  // ContextRuleType.toScVal
-  // ==========================================================================
-
   group('ContextRuleType toScVal', () {
     test('defaultToScVal', () {
       final scVal = const ContextRuleTypeDefault().toScVal();
@@ -741,10 +697,6 @@ void main() {
     });
   });
 
-  // ==========================================================================
-  // ContextRuleType equality and hashCode
-  // ==========================================================================
-
   group('ContextRuleType equality', () {
     test('defaultEquality', () {
       const a = ContextRuleTypeDefault();
@@ -770,10 +722,6 @@ void main() {
       expect(a.hashCode, b.hashCode);
     });
   });
-
-  // ==========================================================================
-  // ParsedContextRule data class
-  // ==========================================================================
 
   group('ParsedContextRule data class', () {
     test('constructionAndFieldAccess', () {
@@ -835,10 +783,6 @@ void main() {
       expect(a.hashCode, b.hashCode);
     });
   });
-
-  // ==========================================================================
-  // addContextRule — Input validation (without network)
-  // ==========================================================================
 
   group('addContextRule input validation', () {
     test('notConnected_throwsWalletNotConnected', () async {
@@ -992,10 +936,6 @@ void main() {
     });
   });
 
-  // ==========================================================================
-  // parseContextRule — Round-trip: toScVal then parse back
-  // ==========================================================================
-
   group('parseContextRule round-trip', () {
     test('defaultContextType', () {
       final manager = _manager(_buildKit());
@@ -1035,10 +975,6 @@ void main() {
     });
   });
 
-  // ==========================================================================
-  // parseContextRule — Multiple policies parsing
-  // ==========================================================================
-
   group('parseContextRule multiple policies', () {
     test('multiplePolicies', () {
       final manager = _manager(_buildKit());
@@ -1058,10 +994,6 @@ void main() {
       expect(result.policyIds[1], 20);
     });
   });
-
-  // ==========================================================================
-  // parseContextRule — Fields looked up by key name, not position
-  // ==========================================================================
 
   group('parseContextRule field-name lookup', () {
     test('fieldsInNonAlphabeticalOrder', () {
@@ -1083,10 +1015,6 @@ void main() {
       expect(result.contextType, isA<ContextRuleTypeDefault>());
     });
   });
-
-  // ==========================================================================
-  // parseContextRule — Non-Symbol keys silently skipped
-  // ==========================================================================
 
   group('parseContextRule non-symbol keys skipped', () {
     test('nonSymbolKeysIgnored', () {
@@ -1111,10 +1039,6 @@ void main() {
       expect(result.name, 'WithExtra');
     });
   });
-
-  // ==========================================================================
-  // parseContextRule — Policy parsing errors
-  // ==========================================================================
 
   group('parseContextRule policy parsing errors', () {
     test('policiesEntryNotAddress_throwsValidationException', () {
@@ -1175,10 +1099,6 @@ void main() {
     });
   });
 
-  // ==========================================================================
-  // parseContextRule — Signer entry not a Vec
-  // ==========================================================================
-
   group('parseContextRule signer not a Vec', () {
     test('signerEntryNotVec_throwsValidationException', () {
       final manager = _manager(_buildKit());
@@ -1202,10 +1122,6 @@ void main() {
       }
     });
   });
-
-  // ==========================================================================
-  // parseContextRule — Context-type discriminant not a Symbol
-  // ==========================================================================
 
   group('parseContextRule discriminant not a Symbol', () {
     test('contextTypeDiscriminantNotSymbol_throwsValidationException', () {
@@ -1429,14 +1345,15 @@ void main() {
       expect(ids, <int>[51]);
     });
 
-    test('ruleSignersSubsetSelected_withPolicies_skipsTier2', () {
+    test('ruleSignersSubsetSelected_withPolicies_tier1FiresOnExactMatchRule', () {
       final manager = _manager(_buildKit());
       final s1 = OZDelegatedSigner(_validAccountAddress);
       final s2 = OZDelegatedSigner(
         'GBVRV25F7XA5I2L3ILSA6XW3OCWLKGGLG4OP2EHKTWC5IHQ3EV26FQLS',
       );
-      // Both candidates have policies; Tier 2 must skip them. Tier 3
-      // (selected subset of rule) accepts only rule 62.
+      // Tier 1 picks rule 61 because its signer set is bidirectionally equal
+      // to selected; rule 62 fails Tier 1 (size mismatch) and Tier 2
+      // (policies present).
       final ruleA = buildRule(
         id: 61,
         contextType: const ContextRuleTypeDefault(),
@@ -1455,8 +1372,8 @@ void main() {
         <OZSmartAccountSigner>[s1],
         <ParsedContextRule>[ruleA, ruleB],
       );
-      // Selected [s1] is subset of rule 62; rule 61 also contains s1 but
-      // signers.length == selected.length so Tier 1 picks rule 61.
+      // Rule 61: signers [s1], size 1 == selected size 1 -> Tier 1 match.
+      // Rule 62: signers [s1, s2], size 2 != selected size 1 -> Tier 1 miss.
       expect(ids, <int>[61]);
     });
   });

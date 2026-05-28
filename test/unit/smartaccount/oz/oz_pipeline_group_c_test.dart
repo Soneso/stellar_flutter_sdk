@@ -247,10 +247,7 @@ Future<
 // ---------------------------------------------------------------------------
 
 void main() {
-  // -------------------------------------------------------------------------
-  // C.1 — Auth-entry-signing pipeline
-  // -------------------------------------------------------------------------
-  group('C.1 auth-entry signing pipeline', () {
+  group('auth-entry signing pipeline', () {
     test('submit_signsAuthEntryForOurContract_writesAuthPayloadMap', () async {
       final h = await _harness();
       // Initial simulate returns one matching auth entry.
@@ -421,10 +418,7 @@ void main() {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // C.2 — WebAuthn re-simulation step
-  // -------------------------------------------------------------------------
-  group('C.2 re-simulation step', () {
+  group('re-simulation step', () {
     test('submit_reSimulatesAfterSigning_consumesNewResourceFees', () async {
       final h = await _harness();
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
@@ -526,10 +520,7 @@ void main() {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // C.3 — connectWallet cascade
-  // -------------------------------------------------------------------------
-  group('C.3 connectWallet cascade', () {
+  group('connectWallet cascade', () {
     test('connectWallet_storageHit_pendingCredential_setsContractId',
         () async {
       // Stage A storage hit, deployment_status = pending. Cascade short-
@@ -782,10 +773,7 @@ void main() {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // C.4 — fundWallet conversion
-  // -------------------------------------------------------------------------
-  group('C.4 fundWallet conversion', () {
+  group('fundWallet conversion', () {
     test('fundWallet_invalidNativeTokenContract_throwsInvalidAddress',
         () async {
       // Standalone validation exercise; covers the validation surface that
@@ -813,10 +801,7 @@ void main() {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // C.5 — relayer vs RPC submission paths
-  // -------------------------------------------------------------------------
-  group('C.5 relayer-vs-RPC', () {
+  group('relayer-vs-RPC', () {
     test('submit_relayerConfigured_defaultsToRelayer_mode1', () async {
       final relayerHarness = buildRelayerHarness(
         responseBody:
@@ -936,10 +921,7 @@ void main() {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // C.6 — §9.1 failure modes
-  // -------------------------------------------------------------------------
-  group('C.6 failure modes', () {
+  group('failure modes', () {
     test('submit_rpcTimeout_throwsTransactionTimeout', () async {
       final h = await _harness();
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
@@ -1146,10 +1128,7 @@ void main() {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // C.7 — Deploy path
-  // -------------------------------------------------------------------------
-  group('C.7 deploy', () {
+  group('deploy', () {
     test('deployPendingCredential_autoSubmitFalse_returnsXdrOnly', () async {
       final credentials = StubCredentialManager();
       credentials.inject(StoredCredential(
@@ -1299,10 +1278,8 @@ void main() {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // C.8 — Cross-SDK behaviour probe
-  // -------------------------------------------------------------------------
-  group('C.8 wire-shape probe', () {
+  // Wire-shape probe
+  group('wire-shape probe', () {
     test('transfer_relayerSinglePath_sendsExpectedRequestShape', () async {
       final relayerHarness = buildRelayerHarness();
       final h = await _harness(relayer: relayerHarness.client);

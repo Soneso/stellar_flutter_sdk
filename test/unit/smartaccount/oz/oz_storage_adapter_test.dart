@@ -1121,7 +1121,6 @@ void main() {
       expect(config.sessionExpiryMs, oneDayMs);
     });
 
-    // Above-floor concurrency.
     test('test_concurrent_writes_10_parallel_no_partial_state', () async {
       const iterations = 100;
       for (var run = 0; run < iterations; run++) {
@@ -1171,11 +1170,6 @@ void main() {
   });
 
   group('SessionManager - kit and storage lifecycle integration', () {
-    // why: every kit-level test below builds the real `OZSmartAccountKit`
-    // through `_makeKit(storage:)` so the assertions exercise the production
-    // wiring (lock-protected state, eager-init managers, storage delegation)
-    // rather than a mock seam.
-
     const String _validRpcUrl = 'https://soroban-testnet.stellar.org';
     const String _validVerifier =
         'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM';
@@ -1196,11 +1190,6 @@ void main() {
       return OZSmartAccountKit.create(config: config);
     }
 
-    /// Disconnect must remove the persisted [StoredSession] from storage even
-    /// when the in-memory connection state has already been pre-seeded with a
-    /// matching credential / contract pair. Asserts the storage-side effect
-    /// in isolation: after `kit.disconnect()` the storage adapter's
-    /// `getSession()` returns `null`.
     test('testKitDisconnect_clearsSession', () async {
       final storage = InMemoryStorageAdapter();
       final kit = _makeKit(storage: storage);
@@ -1232,10 +1221,6 @@ void main() {
           reason: 'Disconnect must remove the stored session');
     });
 
-    /// Stored credentials and the active session live in independent storage
-    /// slots. Saving / clearing one must not modify the other. Asserts the
-    /// orthogonality contract that the OZ smart account relies on for
-    /// credential persistence across disconnect/reconnect cycles.
     test('testSessionIndependentFromCredentials', () async {
       final storage = InMemoryStorageAdapter();
       // why: instantiating the kit eagerly initialises every manager and
@@ -1280,9 +1265,6 @@ void main() {
       expect(await storage.get('cred-shared'), isNull);
     });
 
-    /// Kit-level disconnect clears the persisted session but leaves every
-    /// stored credential untouched. The credentials remain available for
-    /// `OZWalletOperations.connectWallet()` to reconnect against.
     test('testClearSessionDoesNotAffectCredentials', () async {
       final storage = InMemoryStorageAdapter();
       final kit = _makeKit(storage: storage);
@@ -1340,10 +1322,6 @@ void main() {
       expect(secondaryAfter.contractId, equals(_kitContractId));
     });
 
-    /// A freshly-constructed kit has no in-memory connection state. Asserts
-    /// the public state accessors all reflect the disconnected baseline,
-    /// which is the precondition every consumer relies on before invoking
-    /// `connectWallet()` or `createWallet()`.
     test('testKitIsConnected_initiallyFalse', () async {
       final kit = _makeKit();
 
@@ -1359,11 +1337,6 @@ void main() {
       );
     });
 
-    /// `setConnectedState` is the single source of truth for the kit's
-    /// in-memory connection state. Asserts every public accessor
-    /// (`isConnected`, `credentialId`, `contractId`, `requireConnected`) is
-    /// updated consistently after a single write, and that subsequent writes
-    /// overwrite without any residual state from the prior connection.
     test('testKitIsConnected_afterSetConnectedState', () async {
       final kit = _makeKit();
 
@@ -1398,13 +1371,6 @@ void main() {
       expect(overwriteSnapshot.contractId, equals(overwriteContract));
     });
 
-    /// Disconnect when no wallet is connected must be a no-op: it does not
-    /// throw, it does not flip `isConnected` (already false), and it must
-    /// not emit a `walletDisconnected` event because no contract id is
-    /// available to populate the payload. Asserts the documented "safe to
-    /// call even when no wallet is connected" contract on the disconnect
-    /// path, distinct from the connected-disconnect coverage in
-    /// `oz_smart_account_kit_test.dart`.
     test('testKitIsConnected_afterDisconnect', () async {
       final storage = InMemoryStorageAdapter();
       final kit = _makeKit(storage: storage);
@@ -1432,12 +1398,6 @@ void main() {
       expect(disconnectedFired, equals(0));
     });
 
-    /// `requireConnected` throws [WalletNotConnected] whenever the kit's
-    /// in-memory state has no credential / contract pair. The message must
-    /// be the kit-level guidance pointing the caller at `createWallet()` /
-    /// `connectWallet()`. Also asserts the post-disconnect transition
-    /// produces the same error type, distinct from the initial-state
-    /// coverage in `oz_smart_account_kit_test.dart`.
     test('testKitRequireConnected_throwsWhenNotConnected', () async {
       final kit = _makeKit();
 

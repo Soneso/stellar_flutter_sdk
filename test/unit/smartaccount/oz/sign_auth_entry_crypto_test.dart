@@ -56,9 +56,8 @@ OZWebAuthnSignature _webauthn([int seed = 0]) => OZWebAuthnSignature(
     );
 
 void main() {
-  test('testSignAuthEntry_differentKeyPairDoesNotVerify', () async {
-    // Two different signers signing the same entry produce two distinct
-    // entries in the AuthPayload signers map.
+  test('testSignAuthEntry_differentSignersProduceDistinctSerialisedEntries', () async {
+    // Two different signers signing the same entry produce two distinct serialised entries.
     final entry = _buildEntry();
     final out1 = await OZSmartAccountAuth.signAuthEntry(
       entry: entry,
