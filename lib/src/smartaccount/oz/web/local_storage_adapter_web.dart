@@ -355,7 +355,7 @@ class LocalStorageAdapter implements StorageAdapter {
   }
 
   // ---------------------------------------------------------------------------
-  // Environment guard (Guard 1 from the security checklist)
+  // Environment guard
   // ---------------------------------------------------------------------------
 
   web.Storage _requireLocalStorage() {

@@ -133,7 +133,7 @@ class PasskeyUtils {
   /// - [factoryContractId] Contract ID of the factory that will deploy the account
   /// - [network] Network where contracts will be deployed
   ///
-  /// Returns: Hex-encoded contract ID (C... when encoded with StrKey)
+  /// Returns: C-address strkey of the derived contract.
   ///
   /// Example:
   /// ```dart
@@ -147,7 +147,7 @@ class PasskeyUtils {
   /// );
   ///
   /// // Contract will be deployed at this address
-  /// print('Contract ID: ${StrKey.encodeContractIdHex(contractId)}');
+  /// print('Contract ID: $contractId');
   /// ```
   static String deriveContractId(
       {required Uint8List contractSalt,

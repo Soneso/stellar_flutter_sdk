@@ -69,9 +69,7 @@ class AndroidStorageAdapter(
     context: Context
 ) : MethodChannel.MethodCallHandler {
 
-    // ========================================================================
     // State
-    // ========================================================================
 
     private val mutex = Mutex()
     private val supervisorJob: Job = SupervisorJob()
@@ -105,9 +103,7 @@ class AndroidStorageAdapter(
         scope.cancel()
     }
 
-    // ========================================================================
     // Method-channel dispatch
-    // ========================================================================
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         scope.launch {
@@ -136,9 +132,7 @@ class AndroidStorageAdapter(
         }
     }
 
-    // ========================================================================
     // Credential operations
-    // ========================================================================
 
     private suspend fun handleSave(call: MethodCall, result: MethodChannel.Result) {
         val map = mapArgument(call, "credential")
@@ -385,9 +379,7 @@ class AndroidStorageAdapter(
         }
     }
 
-    // ========================================================================
     // Session operations
-    // ========================================================================
 
     private suspend fun handleSaveSession(
         call: MethodCall,
@@ -478,9 +470,7 @@ class AndroidStorageAdapter(
         }
     }
 
-    // ========================================================================
     // Helpers
-    // ========================================================================
 
     private fun collectAllCredentials(): List<Map<String, Any?>> {
         val all = mutableListOf<Map<String, Any?>>()

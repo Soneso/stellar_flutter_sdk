@@ -183,14 +183,14 @@ export 'src/soroban/soroban_contract_parser.dart';
 export 'src/soroban/soroban_passkey.dart';
 export 'src/soroban/contract_spec.dart';
 
-/// Smart Accounts — core
+// Smart Accounts — core
 export 'src/smartaccount/core/allow_credential.dart';
 export 'src/smartaccount/core/smart_account_constants.dart';
 export 'src/smartaccount/core/smart_account_errors.dart';
 export 'src/smartaccount/core/smart_account_utils.dart';
 export 'src/smartaccount/core/web_authn_provider.dart';
 
-/// Smart Accounts — OZ
+// Smart Accounts — OZ
 export 'src/smartaccount/oz/oz_builders.dart';
 export 'src/smartaccount/oz/oz_constants.dart';
 export 'src/smartaccount/oz/oz_context_rule_manager.dart';
@@ -214,11 +214,11 @@ export 'src/smartaccount/oz/oz_storage_adapter.dart';
 export 'src/smartaccount/oz/oz_transaction_operations.dart';
 export 'src/smartaccount/oz/oz_wallet_operations.dart';
 
-/// Smart Accounts — platform bridges
+// Smart Accounts — platform bridges
 export 'src/smartaccount/oz/platform_storage_adapter.dart';
 export 'src/smartaccount/oz/platform_webauthn_provider.dart';
 
-/// Smart Accounts — web platform facades
+// Smart Accounts — web platform facades
 export 'src/smartaccount/oz/browser_webauthn_provider.dart';
 export 'src/smartaccount/oz/indexed_db_storage_adapter.dart';
 export 'src/smartaccount/oz/local_storage_adapter.dart';

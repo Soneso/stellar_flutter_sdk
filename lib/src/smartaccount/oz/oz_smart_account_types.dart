@@ -41,7 +41,6 @@ import '../core/smart_account_utils.dart';
 /// final scVal = delegated.toScVal();
 /// ```
 sealed class OZSmartAccountSigner {
-  /// Constructor for the sealed `OZSmartAccountSigner` hierarchy.
   const OZSmartAccountSigner();
 
   /// Converts this signer to its `ScVal` representation for contract calls.
@@ -294,17 +293,13 @@ final class OZExternalSigner extends OZSmartAccountSigner {
   String get uniqueKey =>
       'external:$verifierAddress:${Util.bytesToHex(keyData).toLowerCase()}';
 
-  /// Equality operator using a constant-time comparison on [keyData] to
-  /// prevent timing side-channel attacks. Two external signers are equal when
-  /// they share the same [verifierAddress] and byte-identical [keyData].
+  /// Byte-content equality across [verifierAddress] and [keyData].
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! OZExternalSigner) return false;
     final addressMatch = verifierAddress == other.verifierAddress;
     final keyMatch = _constantTimeEquals(keyData, other.keyData);
-    // Bitwise AND avoids early-exit short-circuiting that would otherwise
-    // leak timing information about which check failed.
     return (addressMatch ? 1 : 0) & (keyMatch ? 1 : 0) == 1;
   }
 

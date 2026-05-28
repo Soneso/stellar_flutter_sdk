@@ -407,7 +407,7 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
   }
 
   // ---------------------------------------------------------------------------
-  // Environment guard (Guard 1 from the security checklist)
+  // Environment guard
   // ---------------------------------------------------------------------------
 
   web.CredentialsContainer? _resolveCredentials() {

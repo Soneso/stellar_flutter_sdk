@@ -15,9 +15,7 @@ import '../core/smart_account_errors.dart';
 import '../core/smart_account_utils.dart';
 import 'oz_storage_adapter.dart';
 
-// ============================================================================
 // OZExternalEd25519SignerAdapter
-// ============================================================================
 
 /// Adapter for out-of-process Ed25519 signing sources.
 ///
@@ -74,9 +72,7 @@ abstract class OZExternalEd25519SignerAdapter {
   Future<Uint8List> signAuthDigest(Uint8List authDigest, Uint8List publicKey);
 }
 
-// ============================================================================
 // Ed25519 storage key
-// ============================================================================
 
 /// Composite key for the Ed25519 signer registry.
 ///
@@ -105,9 +101,7 @@ class _Ed25519SignerKey {
   int get hashCode => SmartAccountUtils.hashBytes(verifierAddress.hashCode, publicKey);
 }
 
-// ============================================================================
 // ExternalSignerType / ExternalSignerInfo / WalletConnectionStorage
-// ============================================================================
 
 /// The type of an external signer managed by [OZExternalSignerManager].
 enum ExternalSignerType {
@@ -201,11 +195,7 @@ class InMemoryWalletConnectionStorage extends WalletConnectionStorage {
   Future<T> _withLock<T>(FutureOr<T> Function() body) {
     final completer = Completer<T>();
     final previous = _tail;
-    // why: chain each new operation onto the most recent tail. Once the
-    // operation completes we reset `_tail` to a fresh resolved future
-    // so the implicit reference chain through `previous` collapses and
-    // earlier futures become eligible for GC. Without the reset the
-    // chain grows unbounded for the lifetime of the storage instance.
+    // Lock-tail collapse — see _withLock in OZSmartAccountKit for the full rationale.
     final next = previous.then((_) async {
       try {
         completer.complete(await body());
@@ -238,8 +228,6 @@ class InMemoryWalletConnectionStorage extends WalletConnectionStorage {
 /// Storage key for persisted wallet connections.
 const String _walletStorageKey = 'oz_smart_account.connected_wallets';
 
-/// Number of characters taken from a contract address when constructing a
-/// truncated log prefix (e.g. `CBFOO7AB...`).
 /// Manager for external (non-passkey) signers used in multi-signature
 /// smart-account operations.
 ///
@@ -301,9 +289,7 @@ class OZExternalSignerManager {
   /// connections are not restored across app launches.
   final WalletConnectionStorage? walletConnectionStorage;
 
-  // -------------------------------------------------------------------------
   // Internal state
-  // -------------------------------------------------------------------------
 
   final Map<String, KeyPair> _keypairSigners = <String, KeyPair>{};
 
@@ -329,11 +315,7 @@ class OZExternalSignerManager {
   Future<T> _withLock<T>(FutureOr<T> Function() body) {
     final completer = Completer<T>();
     final previous = _tail;
-    // why: chain each new operation onto the most recent tail, then
-    // reset `_tail` to a fresh resolved future once the operation
-    // completes so the implicit reference chain collapses and earlier
-    // futures become eligible for GC. Without the reset the chain
-    // grows unbounded for the lifetime of the manager.
+    // Lock-tail collapse — see _withLock in OZSmartAccountKit for the full rationale.
     final next = previous.then((_) async {
       try {
         completer.complete(await body());
@@ -354,9 +336,7 @@ class OZExternalSignerManager {
   /// (`addFromWallet`, `restoreConnections`) require this to be `true`.
   bool get hasWalletAdapter => walletAdapter != null;
 
-  // -------------------------------------------------------------------------
   // Add signers
-  // -------------------------------------------------------------------------
 
   /// Adds an Ed25519 keypair signer derived from [secretKey].
   ///
@@ -428,9 +408,7 @@ class OZExternalSignerManager {
     return wallet;
   }
 
-  // -------------------------------------------------------------------------
   // Query signers
-  // -------------------------------------------------------------------------
 
   /// Returns `true` when any managed signer (keypair or wallet) can sign
   /// for [address]. Keypair signers are checked first.
@@ -529,9 +507,7 @@ class OZExternalSignerManager {
     return walletCount > 0;
   }
 
-  // -------------------------------------------------------------------------
   // Sign auth entry
-  // -------------------------------------------------------------------------
 
   /// Signs an authorisation-entry preimage for the supplied [address].
   ///
@@ -581,9 +557,7 @@ class OZExternalSignerManager {
     throw SignerException.notFound(address);
   }
 
-  // -------------------------------------------------------------------------
   // Remove signers
-  // -------------------------------------------------------------------------
 
   /// Removes the signer registered for [address].
   ///
@@ -617,9 +591,7 @@ class OZExternalSignerManager {
     await walletConnectionStorage?.removeItem(_walletStorageKey);
   }
 
-  // -------------------------------------------------------------------------
   // Ed25519 methods
-  // -------------------------------------------------------------------------
 
   /// Registers the optional Ed25519 adapter consulted by the multi-signer
   /// pipeline. Pass `null` to clear.
@@ -789,9 +761,7 @@ class OZExternalSignerManager {
     _ed25519Signers.remove(storeKey);
   }
 
-  // -------------------------------------------------------------------------
   // Wallet connection persistence
-  // -------------------------------------------------------------------------
 
   /// Restores previously connected wallets from [walletConnectionStorage].
   ///
@@ -837,9 +807,7 @@ class OZExternalSignerManager {
     return restored;
   }
 
-  // -------------------------------------------------------------------------
   // Private signing helpers
-  // -------------------------------------------------------------------------
 
   Future<SignAuthEntryResult> _signWithKeypair(
     KeyPair keypair,
@@ -871,9 +839,7 @@ class OZExternalSignerManager {
     }
   }
 
-  // -------------------------------------------------------------------------
   // Private storage helpers
-  // -------------------------------------------------------------------------
 
   Future<List<_StoredWalletConnection>> _getStoredWallets() async {
     final storage = walletConnectionStorage;

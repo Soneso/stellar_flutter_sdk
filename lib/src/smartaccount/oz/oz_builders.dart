@@ -25,7 +25,6 @@ import 'oz_validation.dart';
 /// - [ContextRuleTypeCreateContract]: matches contract deployments using a
 ///   specific WASM hash.
 sealed class ContextRuleType {
-  /// Constructor for the sealed `ContextRuleType` hierarchy.
   const ContextRuleType();
 
   /// Converts this rule type to its on-chain `ScVal` representation.
@@ -217,8 +216,6 @@ class ParsedContextRule {
 /// [OZSmartAccountBuilders] to keep core builder utilities free of
 /// OZ-specific context-rule types.
 class OZBuilders {
-  /// Private constructor prevents instantiation; the class is used as a
-  /// namespace for static methods.
   OZBuilders._();
 
   /// Creates a [ContextRuleTypeDefault] rule.

@@ -683,8 +683,8 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
 
     if (ed25519Signers.isEmpty) return currentEntry;
 
-    // validateSignerSet guarantees externalSignerManager is non-null whenever
-    // Ed25519 signers are present.
+    // _validateEd25519Signers guarantees externalSignerManager is non-null
+    // whenever Ed25519 signers are present.
     final extManager = _kit.externalSignerManager!;
 
     for (final selectedSigner in ed25519Signers) {

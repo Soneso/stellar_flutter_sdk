@@ -28,33 +28,18 @@ import 'oz_smart_account_types.dart';
 /// - Spending limit policy: restricts how much can be transferred within a
 ///   given period.
 ///
-/// All entry points are pure static functions over their arguments; safe to
-/// call concurrently from any isolate.
+/// All entry points are pure static functions over their arguments.
 abstract class OZSmartAccountBuilders {
-  /// Private constructor prevents instantiation; the class is used as a
-  /// namespace for static methods.
   OZSmartAccountBuilders._();
 
-  // ==========================================================================
   // Signer builders
-  // ==========================================================================
 
-  /// Creates a delegated signer for a native Stellar account.
-  ///
-  /// Delegated signers use Stellar's native `require_auth()` mechanism;
-  /// no external verifier contract is needed. Throws [InvalidAddress] when
-  /// the [publicKey] strkey form is invalid.
+  /// Factory alias for `OZDelegatedSigner(publicKey)`.
   static OZDelegatedSigner createDelegatedSigner(String publicKey) {
     return OZDelegatedSigner(publicKey);
   }
 
-  /// Creates an external signer that delegates verification to a custom
-  /// contract.
-  ///
-  /// Used for WebAuthn passkeys, Ed25519 with custom logic, and other
-  /// non-native schemes. Throws [InvalidAddress] when the [verifierAddress]
-  /// is not a valid contract address, and [InvalidInput] when [keyData]
-  /// is empty.
+  /// Factory alias for `OZExternalSigner(verifierAddress, keyData)`.
   static OZExternalSigner createExternalSigner(
     String verifierAddress,
     Uint8List keyData,
@@ -62,13 +47,7 @@ abstract class OZSmartAccountBuilders {
     return OZExternalSigner(verifierAddress, keyData);
   }
 
-  /// Creates a WebAuthn passkey signer.
-  ///
-  /// Convenience wrapper around [createExternalSigner] that handles the
-  /// `keyData` format for WebAuthn (`publicKey || credentialId`). Throws
-  /// [InvalidAddress] when [webauthnVerifierAddress] is invalid, and
-  /// [InvalidInput] when [publicKey] is the wrong size or shape, or when
-  /// [credentialId] is empty.
+  /// Factory alias for `OZExternalSigner.webAuthn(...)`.
   static OZExternalSigner createWebAuthnSigner({
     required String webauthnVerifierAddress,
     required Uint8List publicKey,
@@ -81,12 +60,7 @@ abstract class OZSmartAccountBuilders {
     );
   }
 
-  /// Creates an Ed25519 signer that delegates verification to a custom
-  /// contract.
-  ///
-  /// The key data is the 32-byte Ed25519 public key. Throws
-  /// [InvalidAddress] when [ed25519VerifierAddress] is invalid, and
-  /// [InvalidInput] when [publicKey] is not exactly 32 bytes.
+  /// Factory alias for `OZExternalSigner.ed25519(...)`.
   static OZExternalSigner createEd25519Signer({
     required String ed25519VerifierAddress,
     required Uint8List publicKey,
@@ -97,9 +71,7 @@ abstract class OZSmartAccountBuilders {
     );
   }
 
-  // ==========================================================================
   // Signer inspection utilities
-  // ==========================================================================
 
   /// Extracts the credential ID from a WebAuthn signer's key data.
   ///
@@ -141,12 +113,10 @@ abstract class OZSmartAccountBuilders {
     return s;
   }
 
-  /// Returns `true` when [signer] is an [OZDelegatedSigner].
   static bool isDelegatedSigner(OZSmartAccountSigner signer) {
     return signer is OZDelegatedSigner;
   }
 
-  /// Returns `true` when [signer] is an [OZExternalSigner].
   static bool isExternalSigner(OZSmartAccountSigner signer) {
     return signer is OZExternalSigner;
   }
@@ -170,9 +140,7 @@ abstract class OZSmartAccountBuilders {
     return 'External Verifier';
   }
 
-  // ==========================================================================
   // Signer matching
-  // ==========================================================================
 
   /// Returns `true` when [signer] is a WebAuthn signer whose credential ID
   /// matches the given raw [credentialId] bytes.
@@ -214,9 +182,7 @@ abstract class OZSmartAccountBuilders {
     return signer.address == address;
   }
 
-  // ==========================================================================
   // Signer comparison and deduplication
-  // ==========================================================================
 
   /// Compares two signers by type and field values.
   ///
@@ -237,8 +203,6 @@ abstract class OZSmartAccountBuilders {
     return false;
   }
 
-  /// Returns the unique-key string for [signer], suitable for `Map`/`Set`
-  /// operations. Equivalent to `signer.uniqueKey`.
   static String getSignerKey(OZSmartAccountSigner signer) {
     return signer.uniqueKey;
   }
@@ -258,9 +222,7 @@ abstract class OZSmartAccountBuilders {
     return signerMap.values.toList(growable: false);
   }
 
-  // ==========================================================================
   // Policy parameter builders
-  // ==========================================================================
 
   /// Creates simple threshold policy parameters requiring at least
   /// [threshold] signers.
@@ -362,17 +324,12 @@ abstract class OZSmartAccountBuilders {
   }
 }
 
-// ============================================================================
 // Policy parameter data classes
-// ============================================================================
 
 /// Parameters for a simple threshold policy in the OpenZeppelin Smart Account.
 ///
 /// Authorisation succeeds when at least [threshold] signers on the
 /// context rule provide valid signatures.
-///
-/// Instances are immutable value objects and may be safely shared across
-/// Dart isolates.
 class OZSimpleThresholdParams {
   /// Constructs simple threshold parameters with the given [threshold].
   const OZSimpleThresholdParams({required this.threshold});
@@ -412,9 +369,6 @@ class OZWeightedThresholdParams {
 /// [OZSmartAccountBuilders.createSpendingLimitParams], which validates
 /// inputs and converts the spending limit from a decimal XLM string to
 /// stroops.
-///
-/// Instances are immutable value objects and may be safely shared across
-/// Dart isolates.
 class OZSpendingLimitParams {
   /// Internal constructor invoked by
   /// [OZSmartAccountBuilders.createSpendingLimitParams] after the spending

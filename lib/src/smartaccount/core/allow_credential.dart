@@ -5,41 +5,14 @@
 import 'dart:typed_data';
 
 /// A credential descriptor pairing a credential ID with optional transport
-/// hints.
-///
-/// Used in [WebAuthnProvider.authenticate](web_authn_provider.dart) to
-/// constrain which passkeys the authenticator offers and to indicate how the
-/// client can reach the authenticator (`internal`, `hybrid`, `usb`, `ble`,
-/// `nfc`). Including transport hints enables cross-device authentication
-/// flows such as QR-code scanning.
+/// hints (`internal`, `hybrid`, `usb`, `ble`, `nfc`).
 ///
 /// When [transports] is `null`, the authenticator uses its default transport
-/// selection. Unknown transport strings are passed through without
-/// validation; the browser or platform ignores values it does not recognise.
-///
-/// Equality is byte-content-based on [id] (so two instances with separately
-/// allocated arrays of identical bytes compare equal) and value-equal on the
-/// [transports] list. The [id] field is stored by reference; callers that
-/// want isolation must copy the array themselves.
-///
-/// Instances are immutable and isolate-safe: every field is `final` and the
-/// class exposes no mutating operations. Sharing instances across isolates
-/// is supported without external synchronisation, provided callers do not
-/// mutate the byte array or transports list they passed into the
-/// constructor.
-///
-/// Example:
-/// ```dart
-/// final credential = AllowCredential(
-///   id: Uint8List.fromList(rawCredentialId),
-///   transports: const ['internal', 'hybrid'],
-/// );
-/// ```
+/// selection. Equality is byte-content-based on [id]; [id] is stored by
+/// reference.
 class AllowCredential {
-  /// The raw credential ID bytes.
-  ///
-  /// Stored by reference; mutating the original array will be reflected in
-  /// this field.
+  /// The raw credential ID bytes. Stored by reference; mutating the original
+  /// array will be reflected here.
   final Uint8List id;
 
   /// Optional list of transport hints (e.g. `internal`, `hybrid`, `usb`,
@@ -75,12 +48,7 @@ class AllowCredential {
     return Object.hash(_byteListHash(id), transportsHash);
   }
 
-  /// Compares two byte lists for equality without short-circuiting on the
-  /// first differing byte.
-  ///
-  /// Length difference returns `false` immediately (length is not protected
-  /// by this comparison). Past the length check, every byte position is
-  /// compared so the timing does not depend on which position differs.
+  /// Byte-content equality over [a] and [b].
   static bool _byteListEquals(Uint8List a, Uint8List b) {
     if (a.length != b.length) return false;
     var acc = 0;

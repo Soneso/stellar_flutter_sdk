@@ -7,15 +7,13 @@
 /// These constants describe public-key sizes and the uncompressed-point prefix
 /// byte used by the elliptic-curve schemes that Smart Account signers support.
 class SmartAccountConstants {
-  /// Private constructor prevents instantiation; this class exposes only static constants.
   SmartAccountConstants._();
 
   /// Size in bytes of an Ed25519 public key (RFC 8032).
   static const int ed25519PublicKeySize = 32;
 
   /// Size in bytes of an Ed25519 secret seed (deterministic key material from
-  /// which the keypair is derived). Required by
-  /// [OZExternalSignerManager.addEd25519FromRawKey].
+  /// which the keypair is derived).
   static const int ed25519SecretSeedSize = 32;
 
   /// Size in bytes of a raw Ed25519 signature (the on-wire `BytesN<64>` payload

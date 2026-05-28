@@ -34,13 +34,9 @@ import 'oz_smart_account_signatures.dart';
 /// mutates its input entry — it clones via XDR round-trip and returns a new
 /// entry.
 abstract class OZSmartAccountAuth {
-  /// Private constructor prevents instantiation; the class is used as a
-  /// namespace for static methods.
   OZSmartAccountAuth._();
 
-  // ==========================================================================
   // Payload hash building
-  // ==========================================================================
 
   /// Computes the auth digest that binds context rule IDs to the signature
   /// payload.
@@ -142,9 +138,7 @@ abstract class OZSmartAccountAuth {
     );
   }
 
-  // ==========================================================================
   // Entry signing
-  // ==========================================================================
 
   /// Attaches a pre-computed [signature] to an authorisation entry.
   ///
@@ -260,9 +254,7 @@ abstract class OZSmartAccountAuth {
     );
   }
 
-  // ==========================================================================
   // Signature map manipulation
-  // ==========================================================================
 
   /// Adds a raw key/value entry to the auth entry's signature map.
   ///
@@ -338,9 +330,7 @@ abstract class OZSmartAccountAuth {
     );
   }
 
-  // ==========================================================================
   // Helper functions
-  // ==========================================================================
 
   /// Hashes a Soroban authorisation preimage.
   ///

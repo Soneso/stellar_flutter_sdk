@@ -9,9 +9,7 @@ import Flutter
 import Foundation
 import Security
 
-// ============================================================================
 // IOSStorageAdapter
-// ============================================================================
 
 /// Method-channel handler for the Dart `PlatformStorageAdapter` bridge on
 /// iOS and macOS.
@@ -47,9 +45,7 @@ import Security
 ///   without a known prior state.
 @objc public final class IOSStorageAdapter: NSObject {
 
-    // ========================================================================
     // Constants
-    // ========================================================================
 
     /// Default `kSecAttrService` value used for every Keychain query.
     public static let defaultServiceName: String = "com.soneso.stellar.smartaccount"
@@ -58,9 +54,7 @@ import Security
     private static let credentialIndexKey: String = "credential_index"
     private static let sessionKey: String = "session_current"
 
-    // ========================================================================
     // State
-    // ========================================================================
 
     private let serviceName: String
     private let queue: DispatchQueue
@@ -79,9 +73,7 @@ import Security
         self.decoder = JSONDecoder()
     }
 
-    // ========================================================================
     // Method-channel dispatch
-    // ========================================================================
 
     public func handle(call: FlutterMethodCall, result: @escaping FlutterResult) {
         // Dispatch to a serial queue so concurrent calls observe a strict
@@ -127,9 +119,7 @@ import Security
         }
     }
 
-    // ========================================================================
     // Credential operations
-    // ========================================================================
 
     private func handleSave(
         arguments: [String: Any?]?,
@@ -366,9 +356,7 @@ import Security
         }
     }
 
-    // ========================================================================
     // Session operations
-    // ========================================================================
 
     private func handleSaveSession(
         arguments: [String: Any?]?,
@@ -429,9 +417,7 @@ import Security
         }
     }
 
-    // ========================================================================
     // Index helpers
-    // ========================================================================
 
     private func readIndex() throws -> CredentialIndex {
         guard let bytes = try keychainRead(account: Self.credentialIndexKey) else {
@@ -452,9 +438,7 @@ import Security
         try keychainUpsert(account: Self.credentialIndexKey, data: bytes)
     }
 
-    // ========================================================================
     // Keychain primitives
-    // ========================================================================
 
     private func keychainUpsert(account: String, data: Data) throws {
         let baseQuery: [CFString: Any] = [
@@ -526,9 +510,7 @@ import Security
         )
     }
 
-    // ========================================================================
     // JSON helpers
-    // ========================================================================
 
     private func encodeJsonMap(_ map: [String: Any?]) throws -> Data {
         let nonNullMap = map.compactMapValues { $0 }
@@ -564,9 +546,7 @@ import Security
         return nil
     }
 
-    // ========================================================================
     // FlutterError factories
-    // ========================================================================
 
     private func readError(key: String, reason: String) -> FlutterError {
         FlutterError(
@@ -593,9 +573,7 @@ import Security
     }
 }
 
-// ============================================================================
 // CredentialIndex
-// ============================================================================
 
 /// JSON-encoded list of credential IDs maintained alongside the
 /// per-credential Keychain entries to support `getAll` / `getByContract`
@@ -604,9 +582,7 @@ private struct CredentialIndex: Codable {
     let ids: [String]
 }
 
-// ============================================================================
 // StorageError
-// ============================================================================
 
 private enum StorageError: Error {
     case read(key: String, reason: String)

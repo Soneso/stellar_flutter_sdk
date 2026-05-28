@@ -108,23 +108,15 @@ class OZSignerManager {
   /// Registers a new WebAuthn passkey and adds it as a signer to a
   /// context rule.
   ///
-  /// Flow:
+  /// Triggers the platform WebAuthn registration ceremony, persists the
+  /// credential locally, and adds the passkey signer on-chain via
+  /// [addPasskey].
   ///
-  /// 1. Validate that a wallet is connected and a WebAuthn provider is
-  ///    configured.
-  /// 2. Generate 32-byte random challenge and user-id values.
-  /// 3. Trigger the platform WebAuthn registration ceremony (biometric
-  ///    prompt).
-  /// 4. Base64URL-encode the credential ID for storage.
-  /// 5. Persist the credential locally as pending.
-  /// 6. Emit a [SmartAccountEventCredentialCreated] event.
-  /// 7. Add the passkey signer on-chain via [addPasskey].
-  ///
-  /// Throws [WebAuthnNotSupported] when no WebAuthn provider is
-  /// configured, [WalletNotConnected] when no wallet is connected,
-  /// [WebAuthnRegistrationFailed] when the registration ceremony fails
-  /// or is cancelled, and [SmartAccountException] for downstream
-  /// storage or on-chain failures.
+  /// Throws [WebAuthnNotSupported] when no WebAuthn provider is configured,
+  /// [WalletNotConnected] when no wallet is connected,
+  /// [WebAuthnRegistrationFailed] when the registration ceremony fails or
+  /// is cancelled, and [SmartAccountException] for downstream storage or
+  /// on-chain failures.
   Future<AddPasskeySignerResult> addNewPasskeySigner({
     required int contextRuleId,
     required String userName,
@@ -335,10 +327,8 @@ class OZSignerManager {
   /// matching signer index by [OZSmartAccountBuilders.signersEqual],
   /// and delegates to the ID-based [removeSigner] overload.
   ///
-  /// Renamed from `removeSigner` (the ID-based form) because Dart does
-  /// not support overload-by-parameter-type. The `BySigner` suffix
-  /// mirrors the existing Flutter SDK convention for type-disambiguated
-  /// overloads.
+  /// Dart does not support overload-by-parameter-type; the `BySigner`
+  /// suffix distinguishes this from the ID-based [removeSigner] overload.
   ///
   /// Throws [InvalidInput] when the signer is not found on the rule or
   /// when the parsed `signerIds` list is shorter than `signers`.

@@ -49,18 +49,6 @@ const String _codeNotFound = 'CREDENTIAL_NOT_FOUND';
 ///   corrupt, because the read-modify-write sequence cannot proceed safely
 ///   without a known prior state. Callers that want lossy semantics should
 ///   delete the corrupt entry and `save` a replacement.
-///
-/// ### Sample usage
-///
-/// ```dart
-/// final storage = PlatformStorageAdapter();
-/// final config = OZSmartAccountConfig.builder(
-///   network: Network.testnet,
-///   sorobanRpcUrl: 'https://soroban-testnet.stellar.org',
-/// )
-///     .storage(storage)
-///     .build();
-/// ```
 class PlatformStorageAdapter implements StorageAdapter {
   /// Constructs a platform storage adapter.
   ///
@@ -74,9 +62,7 @@ class PlatformStorageAdapter implements StorageAdapter {
 
   final MethodChannel _channel;
 
-  // ==========================================================================
   // StorageAdapter — Credential operations
-  // ==========================================================================
 
   @override
   Future<void> save(StoredCredential credential) async {
@@ -176,9 +162,7 @@ class PlatformStorageAdapter implements StorageAdapter {
     }
   }
 
-  // ==========================================================================
   // StorageAdapter — Session operations
-  // ==========================================================================
 
   @override
   Future<void> saveSession(StoredSession session) async {
@@ -215,9 +199,7 @@ class PlatformStorageAdapter implements StorageAdapter {
     }
   }
 
-  // ==========================================================================
   // Marshaling helpers
-  // ==========================================================================
 
   StoredCredential _decodeCredential(Map<Object?, Object?> raw) {
     final json = _stringKeyedMap(raw);

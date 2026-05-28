@@ -10,9 +10,7 @@ import Flutter
 import Foundation
 import UIKit
 
-// ============================================================================
 // SmartAccountWebAuthnPlugin
-// ============================================================================
 
 /// Method-channel handler that wraps Apple's `AuthenticationServices`
 /// `ASAuthorizationController` for WebAuthn passkey registration and
@@ -41,12 +39,10 @@ import UIKit
 /// Association file at
 /// `https://example.com/.well-known/apple-app-site-association`. Without
 /// that linkage, registration fails on-device with a system error that is
-/// surfaced as `WEBAUTHN_REGISTRATION_FAILED` (code 1004).
+/// surfaced as `WEBAUTHN_REGISTRATION_FAILED` (code 4001).
 @objc public final class SmartAccountWebAuthnPlugin: NSObject {
 
-    // ========================================================================
     // State
-    // ========================================================================
 
     /// Strong reference to the active authorization delegate.
     ///
@@ -70,9 +66,7 @@ import UIKit
         super.init()
     }
 
-    // ========================================================================
     // Method-channel dispatch
-    // ========================================================================
 
     public func handle(call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
@@ -85,9 +79,7 @@ import UIKit
         }
     }
 
-    // ========================================================================
     // register
-    // ========================================================================
 
     private func handleRegister(call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard #available(iOS 16.0, macOS 13.0, *) else {
@@ -208,9 +200,7 @@ import UIKit
         result(resultMap)
     }
 
-    // ========================================================================
     // authenticate
-    // ========================================================================
 
     private func handleAuthenticate(call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard #available(iOS 16.0, macOS 13.0, *) else {
@@ -301,9 +291,7 @@ import UIKit
         result(resultMap)
     }
 
-    // ========================================================================
     // Authorization-controller bridge
-    // ========================================================================
 
     @available(iOS 16.0, macOS 13.0, *)
     private func performAuthorizationRequest(
@@ -452,9 +440,7 @@ import UIKit
             : authenticationError(message: message)
     }
 
-    // ========================================================================
     // Argument helpers
-    // ========================================================================
 
     private func bytes(_ value: Any?) -> Data? {
         if let typed = value as? FlutterStandardTypedData {
@@ -472,9 +458,7 @@ import UIKit
         return nil
     }
 
-    // ========================================================================
     // FlutterError factories
-    // ========================================================================
 
     private func registrationError(message: String) -> FlutterError {
         FlutterError(code: "WEBAUTHN_REGISTRATION_FAILED", message: message, details: nil)
@@ -493,9 +477,7 @@ import UIKit
     }
 }
 
-// ============================================================================
 // AuthorizationDelegate
-// ============================================================================
 
 /// Internal delegate that bridges `ASAuthorizationController`'s callback
 /// API to closure-based success / error continuations.
@@ -528,9 +510,7 @@ private final class AuthorizationDelegate: NSObject, ASAuthorizationControllerDe
     }
 }
 
-// ============================================================================
 // AuthorizationPresentationProvider
-// ============================================================================
 
 /// Presentation-anchor provider used so the system can display the passkey
 /// sheet over the foreground window. On iOS this returns the active
@@ -569,9 +549,7 @@ private final class AuthorizationPresentationProvider: NSObject,
     }
 }
 
-// ============================================================================
 // WebAuthnAttestationParser
-// ============================================================================
 
 /// Self-contained parser for WebAuthn attestation objects and authenticator
 /// data. Handles only the slices required by Apple's

@@ -27,13 +27,9 @@ import 'smart_account_errors.dart';
 /// All entry points are pure static functions over their arguments; safe to
 /// call concurrently from any isolate.
 abstract class SmartAccountUtils {
-  /// Private constructor prevents instantiation; the class is used as a
-  /// namespace for static methods.
   SmartAccountUtils._();
 
-  // ==========================================================================
   // Signature normalisation
-  // ==========================================================================
 
   /// Parses a DER-encoded secp256r1 signature and returns its `(r, s)`
   /// components as [BigInt] values.
@@ -207,9 +203,7 @@ abstract class SmartAccountUtils {
     return result;
   }
 
-  // ==========================================================================
   // Public key extraction
-  // ==========================================================================
 
   /// Extracts the secp256r1 public key from a WebAuthn registration
   /// response using multiple fallback strategies.
@@ -458,9 +452,7 @@ abstract class SmartAccountUtils {
     return publicKey;
   }
 
-  // ==========================================================================
   // Contract salt and address derivation
-  // ==========================================================================
 
   /// Computes the contract salt from a WebAuthn credential ID.
   ///
@@ -570,9 +562,7 @@ abstract class SmartAccountUtils {
     }
   }
 
-  // ==========================================================================
   // Hash helpers
-  // ==========================================================================
 
   /// Mixes the bytes of [data] into [seed] using a 31× polynomial accumulator
   /// and returns the resulting hash code value.
@@ -610,9 +600,7 @@ abstract class SmartAccountUtils {
         : address;
   }
 
-  // ==========================================================================
   // Internal helpers
-  // ==========================================================================
 
   /// Finds the first occurrence of [subarray] within [array] using a
   /// sliding-window scan; returns `-1` when not found, when [subarray] is
@@ -640,9 +628,7 @@ abstract class SmartAccountUtils {
     return -1;
   }
 
-  // --------------------------------------------------------------------------
   // Private helpers and curve constants
-  // --------------------------------------------------------------------------
 
   /// secp256r1 curve order `n`.
   static final BigInt _curveOrder = BigInt.parse(

@@ -16,16 +16,11 @@ import 'package:meta/meta.dart';
 /// `backedUp` is `true` if the credential is currently backed up or synced
 /// to a cloud provider, `false` if not, and `null` when the flags byte
 /// cannot be read.
-///
-/// Instances are immutable and isolate-safe: every field is `final` and the
-/// class exposes no mutating operations. Sharing instances across isolates
-/// is supported without external synchronisation.
 class AuthenticatorFlags {
   /// Device-binding indicator derived from the BE (Backup Eligibility) flag.
   ///
-  /// One of [WebAuthnCborParser.deviceTypeSingle] or
-  /// [WebAuthnCborParser.deviceTypeMulti], or `null` when the flags byte
-  /// cannot be read.
+  /// Returns `"singleDevice"` or `"multiDevice"`, or `null` when the flags
+  /// byte cannot be read.
   final String? deviceType;
 
   /// Whether the credential is currently backed up (BS flag set).
@@ -78,19 +73,11 @@ class AuthenticatorFlags {
 /// This class is library-private: it is not exported from
 /// `package:stellar_flutter_sdk/stellar_flutter_sdk.dart`. Instantiation is
 /// disabled; all entry points are static.
-///
-/// All methods are pure and stateless: they read only the byte arrays
-/// passed in by the caller and never mutate them. Calls are isolate-safe
-/// and may be invoked concurrently from any isolate without external
-/// synchronisation.
 @internal
 class WebAuthnCborParser {
-  /// Disabled constructor. The class exposes only static methods and constants.
   WebAuthnCborParser._();
 
-  // ===========================================================================
-  // Named constants for all magic numbers
-  // ===========================================================================
+  // Named constants
 
   /// Minimum length of valid authenticator data (rpIdHash + flags + signCount).
   static const int authDataMinLength = 37;
@@ -153,9 +140,7 @@ class WebAuthnCborParser {
     0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
   ]);
 
-  // ===========================================================================
-  // 1. Attestation object parsing
-  // ===========================================================================
+  // Attestation object parsing
 
   /// Extracts the raw authenticator data from a CBOR-encoded WebAuthn
   /// attestation object.
@@ -170,8 +155,8 @@ class WebAuthnCborParser {
   /// ```
   ///
   /// This method performs a full CBOR map iteration to locate the `"authData"`
-  /// key and return its byte string value. Iteration is more robust than
-  /// pattern matching because it correctly handles variable-length values in
+  /// key and return its byte string value. Iteration handles variable-length
+  /// values correctly, unlike pattern matching, which breaks on variable-length
   /// preceding map entries (such as non-empty attestation statements).
   ///
   /// - [attestationObject] Raw CBOR-encoded attestation object bytes.
@@ -229,9 +214,7 @@ class WebAuthnCborParser {
     return null;
   }
 
-  // ===========================================================================
-  // 2. COSE key extraction
-  // ===========================================================================
+  // COSE key extraction
 
   /// Extracts the uncompressed secp256r1 public key from a CBOR-encoded COSE
   /// key.
@@ -375,9 +358,7 @@ class WebAuthnCborParser {
     return _buildUncompressedKey(x, y);
   }
 
-  // ===========================================================================
-  // 3. SPKI key extraction
-  // ===========================================================================
+  // SPKI key extraction
 
   /// Extracts an uncompressed secp256r1 public key from SubjectPublicKeyInfo
   /// (SPKI) bytes.
@@ -419,9 +400,7 @@ class WebAuthnCborParser {
     );
   }
 
-  // ===========================================================================
-  // 4. Authenticator flags parsing
-  // ===========================================================================
+  // Authenticator flags parsing
 
   /// Parses the flags byte from raw authenticator data and extracts device
   /// type and backup state.
@@ -460,9 +439,7 @@ class WebAuthnCborParser {
     return AuthenticatorFlags(deviceType: deviceType, backedUp: backedUp);
   }
 
-  // ===========================================================================
-  // 5. Low-level CBOR helpers (accessible for testing)
-  // ===========================================================================
+  // Low-level CBOR helpers (accessible for testing)
 
   /// Reads a CBOR byte string (major type 2) at the given offset.
   ///
@@ -742,9 +719,7 @@ class WebAuthnCborParser {
     return null;
   }
 
-  // ===========================================================================
   // Private helpers
-  // ===========================================================================
 
   /// Constructs an uncompressed secp256r1 public key byte array from X and Y
   /// coordinates.

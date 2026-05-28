@@ -45,26 +45,6 @@ import 'oz_storage_adapter.dart';
 ///     .build();
 /// ```
 ///
-/// | Field                       | Required | Default                |
-/// |-----------------------------|----------|------------------------|
-/// | rpcUrl                      | Yes      | -                      |
-/// | networkPassphrase           | Yes      | -                      |
-/// | accountWasmHash             | Yes      | -                      |
-/// | webauthnVerifierAddress     | Yes      | -                      |
-/// | deployerKeypair             | No       | Deterministic deployer |
-/// | rpId                        | No       | Browser default        |
-/// | rpName                      | No       | "Smart Account"        |
-/// | sessionExpiryMs             | No       | 604800000 (7 days)     |
-/// | signatureExpirationLedgers  | No       | 720 (~1 hour)          |
-/// | timeoutInSeconds            | No       | 30                     |
-/// | relayerUrl                  | No       | null                   |
-/// | indexerUrl                  | No       | null                   |
-/// | webauthnProvider            | No       | null                   |
-/// | storage                     | No       | InMemoryStorageAdapter |
-/// | externalWallet              | No       | null                   |
-/// | externalSignerManager       | No       | null                   |
-/// | maxContextRuleScanId        | No       | 50                     |
-///
 /// Throws [ConfigurationException] if required parameters are blank or
 /// invalid (e.g. `accountWasmHash` is not a 64-character hex string, or
 /// `webauthnVerifierAddress` is not a valid C-address).
@@ -197,8 +177,9 @@ class OZSmartAccountConfig {
   /// (about one hour at five seconds per ledger).
   final int signatureExpirationLedgers;
 
-  /// Default timeout for operations in seconds. Used for network requests
-  /// and transaction submission. Default: 30.
+  /// Reserved configuration field for future use. Currently no pipeline code
+  /// reads this value; polling and transaction-submission timeouts are
+  /// determined by internal defaults. Default: 30.
   final int timeoutInSeconds;
 
   /// Optional relayer endpoint URL for fee sponsoring.
@@ -254,19 +235,19 @@ class OZSmartAccountConfig {
   ///
   /// Derives an Ed25519 keypair from
   /// `SHA-256("openzeppelin-smart-account-kit")`. The seed string is fixed
-  /// across every Smart Account Kit implementation so the resulting
-  /// account ID is reproducible and recognisable on-chain. The deployer
-  /// only pays deployment fees and does not control user wallets.
-  /// Suitable for testing and simple deployments; production apps typically
-  /// use a custom deployer for attribution and traceability.
+  /// by the contract spec so the resulting account ID is reproducible and
+  /// recognisable on-chain. The deployer only pays deployment fees and does
+  /// not control user wallets. Suitable for testing and simple deployments;
+  /// production apps typically use a custom deployer for attribution and
+  /// traceability.
   ///
   /// Throws [ConfigurationException] if seed generation fails.
   static Future<KeyPair> createDefaultDeployer() async {
     try {
-      // why: this exact byte string is shared with every Smart Account Kit
-      // implementation. Changing it produces a different deployer keypair and
-      // therefore different smart-account contract IDs for every existing
-      // wallet derived against the previous default.
+      // why: this exact UTF-8 byte sequence is the protocol-defined constant
+      // for the default deployer seed. Every wallet deployed via the default
+      // deployer has a contract address that depends on it; changing this
+      // string would orphan all previously deployed wallets.
       const seedString = 'openzeppelin-smart-account-kit';
       final seedBytes = Uint8List.fromList(utf8.encode(seedString));
       final seedHash = Util.hash(seedBytes);
@@ -279,25 +260,8 @@ class OZSmartAccountConfig {
     }
   }
 
-  /// Creates a [Builder] for constructing an [OZSmartAccountConfig] with a
-  /// fluent API.
-  ///
-  /// Example:
-  ///
-  /// ```dart
-  /// final config = OZSmartAccountConfig.builder(
-  ///   rpcUrl: 'https://soroban-testnet.stellar.org',
-  ///   networkPassphrase: 'Test SDF Network ; September 2015',
-  ///   accountWasmHash: 'abc123...',
-  ///   webauthnVerifierAddress: 'CBCD1234...',
-  /// )
-  ///     .rpName('My Wallet')
-  ///     .sessionExpiryMs(86400000)
-  ///     .relayerUrl('https://relayer.example.com')
-  ///     .storage(myPersistentStorage)
-  ///     .externalWallet(freighterAdapter)
-  ///     .build();
-  /// ```
+  /// Returns a [OZSmartAccountConfigBuilder] for fluent construction. See the
+  /// class-level doc for a usage example.
   static OZSmartAccountConfigBuilder builder({
     required String rpcUrl,
     required String networkPassphrase,

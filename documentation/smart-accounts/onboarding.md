@@ -434,9 +434,9 @@ the Ed25519 seed to generate a deterministic keypair. Because the
 deployer has no privileges after deployment, its publicly derivable key
 is not a security concern; it only matters for address derivation and
 signing the deployment transaction. This default is suitable for
-testing and simple deployments. Other compatible smart-account SDKs
-derive the same default keypair from the same seed string, so all
-compatible SDKs produce identical results from the same inputs.
+testing and simple deployments. The seed string is fixed by the contract
+spec, so the same deployer keypair and contract addresses are produced
+deterministically from the same inputs every time.
 Production wallet applications typically use a custom deployer (via
 `deployerKeypair` in the config) for attribution and traceability,
 since the deployer's public key is visible on-chain.

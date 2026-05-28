@@ -508,7 +508,7 @@ bad input.
 | `rpName` | `String` | `'Smart Account'` | Display name shown during WebAuthn ceremonies. Documentation field; the WebAuthn provider receives its own `rpName` at construction. |
 | `sessionExpiryMs` | `int` | `604800000` (7 days) | Session duration in milliseconds. Sessions enable silent reconnection. |
 | `signatureExpirationLedgers` | `int` | `Util.ledgersPerHour` (`720`, ~1 hour) | Authorization-entry expiration in ledgers (~5 s per ledger). Capped to `[1, 535_680]` (~31 days). |
-| `timeoutInSeconds` | `int` | `30` | Default transaction-level timeout (`timeBounds`). Capped to `[1, 600]`. |
+| `timeoutInSeconds` | `int` | `30` | Reserved for future use. No pipeline code currently reads this value; polling and transaction-submission timeouts are determined by internal defaults. Capped to `[1, 600]`. |
 | `relayerUrl` | `String?` | `null` | Relayer endpoint for fee-sponsored transactions. When set, the kit allocates `OZRelayerClient` with a 6-minute request timeout. |
 | `indexerUrl` | `String?` | network default | Indexer endpoint for credential-to-contract lookup. When `null`, the kit uses `OZIndexerClient.getDefaultUrl(networkPassphrase)` if one exists. |
 | `webauthnProvider` | `WebAuthnProvider?` | `null` | Platform-specific WebAuthn implementation. Required for `createWallet`, `connectWallet(prompt: true)`, `authenticatePasskey`, and any passkey-signing flow. |
@@ -651,9 +651,9 @@ final deployer = await OZSmartAccountConfig.createDefaultDeployer();
 
 The default deployer's secret seed is publicly derivable. It is intended
 to be used either with a relayer that sponsors transaction fees, or
-funded externally before deployment. Other smart-account SDKs derive the
-same default keypair from the same seed string, so wallets produced with
-the default deployer share a single deterministic address space.
+funded externally before deployment. The seed string is fixed by the
+contract spec, so the default deployer keypair is always the same and
+wallets deployed through it share a single deterministic address space.
 
 ### Custom deployers
 

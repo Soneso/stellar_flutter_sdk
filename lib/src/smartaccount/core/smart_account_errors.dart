@@ -30,103 +30,74 @@ enum SmartAccountErrorCode {
   /// A wallet with the same identifier already exists.
   walletAlreadyExists(2002),
 
-  /// The requested wallet could not be found.
   walletNotFound(2003),
 
-  /// The requested credential could not be found.
   credentialNotFound(3001),
 
   /// A credential with the same identifier already exists.
   credentialAlreadyExists(3002),
 
-  /// The credential is invalid or malformed.
   credentialInvalid(3003),
 
-  /// Credential deployment failed.
   credentialDeploymentFailed(3004),
 
-  /// WebAuthn registration failed.
   webauthnRegistrationFailed(4001),
 
-  /// WebAuthn authentication failed.
   webauthnAuthenticationFailed(4002),
 
-  /// WebAuthn is not supported on the current platform.
   webauthnNotSupported(4003),
 
-  /// The user cancelled the WebAuthn operation.
   webauthnCancelled(4004),
 
-  /// Transaction simulation failed.
   transactionSimulationFailed(5001),
 
-  /// Transaction signing failed.
   transactionSigningFailed(5002),
 
-  /// Transaction submission failed.
   transactionSubmissionFailed(5003),
 
   /// Transaction did not reach a final state within the allotted time.
   transactionTimeout(5004),
 
-  /// The requested signer could not be found.
   signerNotFound(6001),
 
-  /// The signer is invalid or malformed.
   signerInvalid(6002),
 
   /// The supplied address is not a valid Stellar address.
   invalidAddress(7001),
 
-  /// The supplied amount is not valid.
   invalidAmount(7002),
 
-  /// The supplied input is not valid.
   invalidInput(7003),
 
-  /// Reading from the storage backend failed.
   storageReadFailed(8001),
 
-  /// Writing to the storage backend failed.
   storageWriteFailed(8002),
 
-  /// Session has expired.
   sessionExpired(9001),
 
-  /// Session is invalid or malformed.
   sessionInvalid(9002),
 
-  /// The indexer request failed.
   indexerRequestFailed(10001),
 
-  /// The indexer request timed out.
   indexerTimeout(10002);
 
-  /// Constructs an enum constant with its numeric error code.
   const SmartAccountErrorCode(this.code);
 
-  /// Numeric error code suitable for cross-SDK comparison and diagnostics.
+  /// Numeric error code suitable for programmatic comparison and diagnostics.
   final int code;
 }
 
 /// Base sealed class for Smart Account exceptions.
 ///
-/// `SmartAccountException` provides typed error information for every failure
-/// surface inside the Smart Account Kit: a machine-readable
-/// [SmartAccountErrorCode], a descriptive [message], and an optional
-/// underlying [cause] preserved from the originating exception.
-///
-/// Consumers should catch [SmartAccountException] for general handling, and
-/// switch on concrete subtypes when fine-grained recovery is required:
+/// Catch [SmartAccountException] for general handling; switch on concrete
+/// subtypes when fine-grained recovery is required:
 ///
 /// ```dart
 /// try {
-///   final wallet = await smartAccountKit.createWallet(name: 'My Wallet');
-///   print('Wallet created: ${wallet.address}');
-/// } on WebAuthnCancelled {
-///   print('User cancelled authentication');
-/// } on CredentialDeploymentFailed catch (e) {
-///   print('Failed to deploy contract: ${e.message}');
+///   final result = await kit.walletOperations.createWallet(userName: 'My Wallet');
+///   print('Wallet created: ${result.contractId}');
+/// } on WebAuthnException catch (e) {
+///   // ... handle WebAuthn-specific errors
 /// } on SmartAccountException catch (e) {
 ///   print('Error ${e.code.code}: ${e.message}');
 /// }
@@ -267,8 +238,6 @@ sealed class SmartAccountException implements Exception {
 
 /// Configuration-related errors (1xxx range).
 sealed class ConfigurationException extends SmartAccountException {
-  /// Constructs a configuration exception with the given [code], [message],
-  /// and optional [cause].
   const ConfigurationException(super.code, super.message, [super.cause]);
 
   /// Creates an invalid configuration error using the standard message format
@@ -284,24 +253,18 @@ sealed class ConfigurationException extends SmartAccountException {
 
 /// Configuration is structurally invalid.
 final class InvalidConfig extends ConfigurationException {
-  /// Constructs an invalid-configuration exception with the given [message]
-  /// and optional [cause].
   const InvalidConfig(String message, [Object? cause])
       : super(SmartAccountErrorCode.invalidConfig, message, cause);
 }
 
 /// A required configuration parameter is missing.
 final class MissingConfig extends ConfigurationException {
-  /// Constructs a missing-configuration exception with the given [message]
-  /// and optional [cause].
   const MissingConfig(String message, [Object? cause])
       : super(SmartAccountErrorCode.missingConfig, message, cause);
 }
 
 /// Wallet state-related errors (2xxx range).
 sealed class WalletException extends SmartAccountException {
-  /// Constructs a wallet-state exception with the given [code], [message],
-  /// and optional [cause].
   const WalletException(super.code, super.message, [super.cause]);
 
   /// Creates a wallet-not-connected error. When [details] is omitted the
@@ -326,8 +289,6 @@ sealed class WalletException extends SmartAccountException {
 
 /// Operation requires a connected wallet, but none is connected.
 final class WalletNotConnected extends WalletException {
-  /// Constructs a wallet-not-connected exception. The [message] defaults to
-  /// `"Wallet is not connected"`.
   const WalletNotConnected({
     String message = 'Wallet is not connected',
     Object? cause,
@@ -336,24 +297,18 @@ final class WalletNotConnected extends WalletException {
 
 /// A wallet with the same identifier already exists.
 final class WalletAlreadyExists extends WalletException {
-  /// Constructs a wallet-already-exists exception with the given [message]
-  /// and optional [cause].
   const WalletAlreadyExists(String message, [Object? cause])
       : super(SmartAccountErrorCode.walletAlreadyExists, message, cause);
 }
 
 /// The requested wallet could not be found.
 final class WalletNotFound extends WalletException {
-  /// Constructs a wallet-not-found exception with the given [message]
-  /// and optional [cause].
   const WalletNotFound(String message, [Object? cause])
       : super(SmartAccountErrorCode.walletNotFound, message, cause);
 }
 
 /// Credential-related errors (3xxx range).
 sealed class CredentialException extends SmartAccountException {
-  /// Constructs a credential exception with the given [code], [message],
-  /// and optional [cause].
   const CredentialException(super.code, super.message, [super.cause]);
 
   /// Creates a credential-not-found error using the message format
@@ -382,40 +337,30 @@ sealed class CredentialException extends SmartAccountException {
 
 /// The requested credential could not be found.
 final class CredentialNotFound extends CredentialException {
-  /// Constructs a credential-not-found exception with the given [message]
-  /// and optional [cause].
   const CredentialNotFound(String message, [Object? cause])
       : super(SmartAccountErrorCode.credentialNotFound, message, cause);
 }
 
 /// A credential with the same identifier already exists.
 final class CredentialAlreadyExists extends CredentialException {
-  /// Constructs a credential-already-exists exception with the given [message]
-  /// and optional [cause].
   const CredentialAlreadyExists(String message, [Object? cause])
       : super(SmartAccountErrorCode.credentialAlreadyExists, message, cause);
 }
 
 /// The credential is invalid or malformed.
 final class CredentialInvalid extends CredentialException {
-  /// Constructs an invalid-credential exception with the given [message]
-  /// and optional [cause].
   const CredentialInvalid(String message, [Object? cause])
       : super(SmartAccountErrorCode.credentialInvalid, message, cause);
 }
 
 /// Credential deployment failed.
 final class CredentialDeploymentFailed extends CredentialException {
-  /// Constructs a credential-deployment-failed exception with the given
-  /// [message] and optional [cause].
   const CredentialDeploymentFailed(String message, [Object? cause])
       : super(SmartAccountErrorCode.credentialDeploymentFailed, message, cause);
 }
 
 /// WebAuthn-related errors (4xxx range).
 sealed class WebAuthnException extends SmartAccountException {
-  /// Constructs a WebAuthn exception with the given [code], [message],
-  /// and optional [cause].
   const WebAuthnException(super.code, super.message, [super.cause]);
 
   /// Creates a WebAuthn registration-failed error using the message format
@@ -448,16 +393,12 @@ sealed class WebAuthnException extends SmartAccountException {
 
 /// WebAuthn registration failed.
 final class WebAuthnRegistrationFailed extends WebAuthnException {
-  /// Constructs a registration-failed exception with the given [message]
-  /// and optional [cause].
   const WebAuthnRegistrationFailed(String message, [Object? cause])
       : super(SmartAccountErrorCode.webauthnRegistrationFailed, message, cause);
 }
 
 /// WebAuthn authentication failed.
 final class WebAuthnAuthenticationFailed extends WebAuthnException {
-  /// Constructs an authentication-failed exception with the given [message]
-  /// and optional [cause].
   const WebAuthnAuthenticationFailed(String message, [Object? cause])
       : super(SmartAccountErrorCode.webauthnAuthenticationFailed, message,
             cause);
@@ -465,8 +406,6 @@ final class WebAuthnAuthenticationFailed extends WebAuthnException {
 
 /// WebAuthn is not supported on the current platform.
 final class WebAuthnNotSupported extends WebAuthnException {
-  /// Constructs a not-supported exception. The [message] defaults to
-  /// `"WebAuthn is not supported on this platform"`.
   const WebAuthnNotSupported({
     String message = 'WebAuthn is not supported on this platform',
     Object? cause,
@@ -475,8 +414,6 @@ final class WebAuthnNotSupported extends WebAuthnException {
 
 /// The user cancelled the WebAuthn operation.
 final class WebAuthnCancelled extends WebAuthnException {
-  /// Constructs a cancelled exception. The [message] defaults to
-  /// `"User cancelled WebAuthn operation"`.
   const WebAuthnCancelled({
     String message = 'User cancelled WebAuthn operation',
     Object? cause,
@@ -485,8 +422,6 @@ final class WebAuthnCancelled extends WebAuthnException {
 
 /// Transaction-related errors (5xxx range).
 sealed class TransactionException extends SmartAccountException {
-  /// Constructs a transaction exception with the given [code], [message],
-  /// and optional [cause].
   const TransactionException(super.code, super.message, [super.cause]);
 
   /// Creates a transaction-simulation-failed error using the message format
@@ -520,8 +455,6 @@ sealed class TransactionException extends SmartAccountException {
 
 /// Transaction simulation failed.
 final class TransactionSimulationFailed extends TransactionException {
-  /// Constructs a simulation-failed exception with the given [message]
-  /// and optional [cause].
   const TransactionSimulationFailed(String message, [Object? cause])
       : super(SmartAccountErrorCode.transactionSimulationFailed, message,
             cause);
@@ -529,16 +462,12 @@ final class TransactionSimulationFailed extends TransactionException {
 
 /// Transaction signing failed.
 final class TransactionSigningFailed extends TransactionException {
-  /// Constructs a signing-failed exception with the given [message]
-  /// and optional [cause].
   const TransactionSigningFailed(String message, [Object? cause])
       : super(SmartAccountErrorCode.transactionSigningFailed, message, cause);
 }
 
 /// Transaction submission failed.
 final class TransactionSubmissionFailed extends TransactionException {
-  /// Constructs a submission-failed exception with the given [message]
-  /// and optional [cause].
   const TransactionSubmissionFailed(String message, [Object? cause])
       : super(SmartAccountErrorCode.transactionSubmissionFailed, message,
             cause);
@@ -546,8 +475,6 @@ final class TransactionSubmissionFailed extends TransactionException {
 
 /// Transaction did not reach a final state within the allotted time.
 final class TransactionTimeout extends TransactionException {
-  /// Constructs a transaction-timeout exception. The [message] defaults to
-  /// `"Transaction timed out"`.
   const TransactionTimeout({
     String message = 'Transaction timed out',
     Object? cause,
@@ -556,8 +483,6 @@ final class TransactionTimeout extends TransactionException {
 
 /// Signer-related errors (6xxx range).
 sealed class SignerException extends SmartAccountException {
-  /// Constructs a signer exception with the given [code], [message],
-  /// and optional [cause].
   const SignerException(super.code, super.message, [super.cause]);
 
   /// Creates a signer-not-found error using the message format
@@ -573,24 +498,18 @@ sealed class SignerException extends SmartAccountException {
 
 /// The requested signer could not be found.
 final class SignerNotFound extends SignerException {
-  /// Constructs a signer-not-found exception with the given [message]
-  /// and optional [cause].
   const SignerNotFound(String message, [Object? cause])
       : super(SmartAccountErrorCode.signerNotFound, message, cause);
 }
 
 /// The signer is invalid or malformed.
 final class SignerInvalid extends SignerException {
-  /// Constructs an invalid-signer exception with the given [message]
-  /// and optional [cause].
   const SignerInvalid(String message, [Object? cause])
       : super(SmartAccountErrorCode.signerInvalid, message, cause);
 }
 
 /// Validation-related errors (7xxx range).
 sealed class ValidationException extends SmartAccountException {
-  /// Constructs a validation exception with the given [code], [message],
-  /// and optional [cause].
   const ValidationException(super.code, super.message, [super.cause]);
 
   /// Creates an invalid-address error using the message format
@@ -616,32 +535,24 @@ sealed class ValidationException extends SmartAccountException {
 
 /// The supplied address is not a valid Stellar address.
 final class InvalidAddress extends ValidationException {
-  /// Constructs an invalid-address exception with the given [message]
-  /// and optional [cause].
   const InvalidAddress(String message, [Object? cause])
       : super(SmartAccountErrorCode.invalidAddress, message, cause);
 }
 
 /// The supplied amount is not valid.
 final class InvalidAmount extends ValidationException {
-  /// Constructs an invalid-amount exception with the given [message]
-  /// and optional [cause].
   const InvalidAmount(String message, [Object? cause])
       : super(SmartAccountErrorCode.invalidAmount, message, cause);
 }
 
 /// The supplied input is not valid.
 final class InvalidInput extends ValidationException {
-  /// Constructs an invalid-input exception with the given [message]
-  /// and optional [cause].
   const InvalidInput(String message, [Object? cause])
       : super(SmartAccountErrorCode.invalidInput, message, cause);
 }
 
 /// Storage-related errors (8xxx range).
 sealed class StorageException extends SmartAccountException {
-  /// Constructs a storage exception with the given [code], [message],
-  /// and optional [cause].
   const StorageException(super.code, super.message, [super.cause]);
 
   /// Creates a storage-read-failed error using the message format
@@ -657,24 +568,18 @@ sealed class StorageException extends SmartAccountException {
 
 /// Reading from the storage backend failed.
 final class StorageReadFailed extends StorageException {
-  /// Constructs a storage-read-failed exception with the given [message]
-  /// and optional [cause].
   const StorageReadFailed(String message, [Object? cause])
       : super(SmartAccountErrorCode.storageReadFailed, message, cause);
 }
 
 /// Writing to the storage backend failed.
 final class StorageWriteFailed extends StorageException {
-  /// Constructs a storage-write-failed exception with the given [message]
-  /// and optional [cause].
   const StorageWriteFailed(String message, [Object? cause])
       : super(SmartAccountErrorCode.storageWriteFailed, message, cause);
 }
 
 /// Session-related errors (9xxx range).
 sealed class SessionException extends SmartAccountException {
-  /// Constructs a session exception with the given [code], [message],
-  /// and optional [cause].
   const SessionException(super.code, super.message, [super.cause]);
 
   /// Creates a session-expired error. When [sessionId] is provided the
@@ -696,8 +601,6 @@ sealed class SessionException extends SmartAccountException {
 
 /// Session has expired.
 final class SessionExpired extends SessionException {
-  /// Constructs a session-expired exception. The [message] defaults to
-  /// `"Session has expired"`.
   const SessionExpired({
     String message = 'Session has expired',
     Object? cause,
@@ -706,16 +609,12 @@ final class SessionExpired extends SessionException {
 
 /// Session is invalid or malformed.
 final class SessionInvalid extends SessionException {
-  /// Constructs a session-invalid exception with the given [message]
-  /// and optional [cause].
   const SessionInvalid(String message, [Object? cause])
       : super(SmartAccountErrorCode.sessionInvalid, message, cause);
 }
 
 /// Indexer-related errors (10xxx range).
 sealed class IndexerException extends SmartAccountException {
-  /// Constructs an indexer exception with the given [code], [message],
-  /// and optional [cause].
   const IndexerException(super.code, super.message, [super.cause]);
 
   /// Creates an indexer request-failed error using the message format
@@ -731,16 +630,12 @@ sealed class IndexerException extends SmartAccountException {
 
 /// The indexer request failed (network error or non-success HTTP status).
 final class IndexerRequestFailed extends IndexerException {
-  /// Constructs an indexer request-failed exception with the given [message]
-  /// and optional [cause].
   const IndexerRequestFailed(String message, [Object? cause])
       : super(SmartAccountErrorCode.indexerRequestFailed, message, cause);
 }
 
 /// The indexer request timed out.
 final class IndexerTimeout extends IndexerException {
-  /// Constructs an indexer timeout exception with the given [message]
-  /// and optional [cause].
   const IndexerTimeout(String message, [Object? cause])
       : super(SmartAccountErrorCode.indexerTimeout, message, cause);
 }
@@ -752,8 +647,6 @@ final class IndexerTimeout extends IndexerException {
 /// results. The numeric range is `3xxx` (credential errors), aligned with the
 /// contract's own `Error` enum.
 class ContractErrorCodes {
-  /// Private constructor prevents instantiation; this class exposes only
-  /// static constants.
   ContractErrorCodes._();
 
   /// Integer arithmetic overflow occurred in the contract.

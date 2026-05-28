@@ -20,25 +20,15 @@ import 'oz_smart_account_types.dart';
 import 'oz_storage_adapter.dart';
 import 'oz_transaction_operations.dart';
 
-// ---------------------------------------------------------------------------
-// Internal interfaces shared by the operations classes.
-//
-// This file is intentionally NOT re-exported by the public barrel
-// `lib/stellar_flutter_sdk.dart`. It is imported privately from
-// `oz_transaction_operations.dart` and `oz_wallet_operations.dart`, and
-// reachable from test code via deep `src/` imports. Production consumers
-// of the SDK never need these symbols — they are pipeline-internal
-// abstractions used only to support test doubles and inversion of
-// dependencies between the operations layer and the kit layer.
-// ---------------------------------------------------------------------------
+// Internal interfaces shared by the operations classes. Not re-exported by
+// the public barrel; imported privately by the operations layer and accessible
+// to test code via deep `src/` imports. Each interface intentionally exposes
+// only the methods the transaction pipeline calls; tests can satisfy any of
+// them with a minimal stub.
 
 /// Internal abstraction over the credential store the transaction pipeline
 /// reaches through. Concrete implementations are supplied by the wallet
-/// lifecycle layer; this interface keeps the transaction operations
-/// independent of any one credential-management implementation.
-///
-/// The contract intentionally exposes only the methods the transaction
-/// pipeline calls; tests can satisfy it with a minimal stub.
+/// lifecycle layer.
 @internal
 abstract class OZCredentialManagerInterface {
   /// Looks up a stored credential by its Base64URL-encoded ID, returning
@@ -141,9 +131,6 @@ class OZConnectedState {
 /// owning kit to satisfy. Concrete implementations are supplied by the
 /// smart-account kit layer; this interface keeps the operations classes
 /// independent of any one kit implementation and supports test doubles.
-///
-/// The contract intentionally exposes only the surface the operations call;
-/// tests can satisfy it with a minimal stub.
 @internal
 abstract class OZSmartAccountKitInterface {
   /// The configuration in effect on this kit.
@@ -248,7 +235,8 @@ abstract class OZWalletCredentialManagerInterface
   /// Marks the credential as the primary credential for its contract.
   Future<void> setPrimary(String credentialId);
 
-  /// Deletes a credential from local storage, no-oping when no entry exists.
+  /// Deletes a credential from local storage. Throws
+  /// `CredentialException.notFound` when the credential id does not exist.
   Future<void> deleteCredential({required String credentialId});
 }
 

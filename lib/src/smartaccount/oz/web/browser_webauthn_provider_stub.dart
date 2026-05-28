@@ -41,8 +41,7 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
 
   Never _unsupported() => throw UnsupportedError(
         'BrowserWebAuthnProvider is only available on Flutter web. '
-        'On non-web targets use AppleWebAuthnProvider (iOS / macOS) or '
-        'PlatformWebAuthnProvider (Android).',
+        'On non-web targets use PlatformWebAuthnProvider (iOS, macOS, and Android).',
       );
 
   @override

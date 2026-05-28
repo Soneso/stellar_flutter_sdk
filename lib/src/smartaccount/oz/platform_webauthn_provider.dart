@@ -27,57 +27,22 @@ const String _codeRegistrationFailed = 'WEBAUTHN_REGISTRATION_FAILED';
 const String _codeAuthenticationFailed = 'WEBAUTHN_AUTHENTICATION_FAILED';
 const String _codeNotSupported = 'WEBAUTHN_NOT_SUPPORTED';
 
-/// `WebAuthnProvider` implementation that dispatches to the native
-/// platform's WebAuthn plugin via a Flutter method channel.
+/// `WebAuthnProvider` implementation that dispatches to the native platform's
+/// WebAuthn plugin via a Flutter method channel.
 ///
 /// On Android the underlying implementation uses the AndroidX Credential
-/// Manager API (API 28+); on iOS and macOS the implementation uses Apple's
-/// `AuthenticationServices` framework (iOS 16+ / macOS 13+). The Dart bridge
-/// is a thin marshaling layer: it serialises the call arguments to a
-/// `Map<String, Object?>`, invokes the platform method, and translates
-/// returned values and `PlatformException`s back into the SDK's typed
-/// [WebAuthnRegistrationResult] / [WebAuthnAuthenticationResult] /
-/// [WebAuthnException] surface.
+/// Manager API; on iOS and macOS it uses Apple's `AuthenticationServices`
+/// framework. The Dart bridge serialises call arguments, invokes the platform
+/// method, and translates results and `PlatformException`s back into the SDK's
+/// typed result and exception surface.
 ///
-/// ### Usage
+/// Instances MUST be invoked from the root isolate; background isolates do not
+/// have a foreground activity/window and calls from them fail with
+/// [WebAuthnRegistrationFailed] or [WebAuthnAuthenticationFailed].
 ///
-/// ```dart
-/// final provider = PlatformWebAuthnProvider(
-///   rpId: 'example.com',
-///   rpName: 'My Stellar Wallet',
-/// );
-/// final config = OZSmartAccountConfig.builder(
-///   network: Network.testnet,
-///   sorobanRpcUrl: 'https://soroban-testnet.stellar.org',
-/// )
-///     .webauthnProvider(provider)
-///     .build();
-/// ```
-///
-/// ### Platform requirements
-///
-/// **Android:** consumers must host a Digital Asset Links file at
-/// `https://<rpId>/.well-known/assetlinks.json` that links the relying-party
-/// domain to the consumer app's signing certificate. Without this link,
-/// passkey registration on Android 11+ fails with a
-/// `WebAuthnRegistrationFailed` error. A sample template is documented in
-/// the SDK README under "Android: Digital Asset Links".
-///
-/// **iOS / macOS:** consumers must declare the relying-party domain in their
-/// app's `.entitlements` file under
-/// `com.apple.developer.associated-domains` with a `webcredentials:<rpId>`
-/// entry, and the matching Apple App Site Association file must be served at
-/// `https://<rpId>/.well-known/apple-app-site-association`.
-///
-/// ### Isolate safety
-///
-/// Method-channel calls are dispatched on the platform thread. Concrete
-/// platform implementations display system UI (passkey prompts) anchored to
-/// the foreground activity (Android) or the key window (iOS / macOS), so
-/// instances of this class MUST be invoked from the root isolate. Background
-/// isolates do not have a foreground activity / window and any call from
-/// such an isolate fails with [WebAuthnRegistrationFailed] or
-/// [WebAuthnAuthenticationFailed].
+/// For entitlement and associated-domain setup see
+/// `documentation/smart-accounts/webauthn-ios.md` and
+/// `documentation/smart-accounts/webauthn-android.md`.
 class PlatformWebAuthnProvider implements WebAuthnProvider {
   /// Constructs a platform WebAuthn provider for the given relying party.
   ///

@@ -26,8 +26,6 @@ const DeepCollectionEquality _detailsEquality = DeepCollectionEquality();
 /// the constant name so it can be compared directly with a server-emitted
 /// error-code field.
 class OZRelayerErrorCodes {
-  /// Private constructor prevents instantiation; this class exposes only
-  /// static constants.
   OZRelayerErrorCodes._();
 
   /// Request rejected due to invalid parameters.
@@ -88,10 +86,8 @@ class OZRelayerResponse {
 
   /// Error message if the request failed.
   ///
-  /// Truncated to at most 200 characters (with an ellipsis suffix) when the
-  /// relayer returns an oversized message. The cap prevents a hostile
-  /// relayer from forcing arbitrarily large strings into [OZRelayerResponse]
-  /// instances.
+  /// The `error` string is not further truncated; the entire response body is
+  /// bounded by `maxRelayerResponseBytes`.
   final String? error;
 
   /// Error code if the request failed (see [OZRelayerErrorCodes]).

@@ -8,8 +8,6 @@
 /// These constants tune timeouts, identification headers, and on-chain
 /// contract limits used by the OpenZeppelin smart-account managers.
 class OZConstants {
-  /// Private constructor prevents instantiation; this class exposes only
-  /// static constants.
   OZConstants._();
 
   /// Default session expiry in milliseconds (7 days).

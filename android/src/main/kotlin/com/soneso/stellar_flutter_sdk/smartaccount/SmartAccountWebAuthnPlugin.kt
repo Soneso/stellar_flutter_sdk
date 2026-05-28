@@ -92,9 +92,7 @@ class SmartAccountWebAuthnPlugin(
     private val applicationContext: Context
 ) : MethodChannel.MethodCallHandler {
 
-    // ========================================================================
     // State
-    // ========================================================================
 
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -117,9 +115,7 @@ class SmartAccountWebAuthnPlugin(
      */
     private var credentialManager: CredentialManager? = null
 
-    // ========================================================================
     // Lifecycle hooks invoked by the parent plugin
-    // ========================================================================
 
     fun attachActivity(activity: Activity) {
         activityRef = WeakReference(activity)
@@ -135,9 +131,7 @@ class SmartAccountWebAuthnPlugin(
         credentialManager = null
     }
 
-    // ========================================================================
     // Method-channel dispatch
-    // ========================================================================
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
@@ -147,9 +141,7 @@ class SmartAccountWebAuthnPlugin(
         }
     }
 
-    // ========================================================================
     // register
-    // ========================================================================
 
     private fun handleRegister(call: MethodCall, result: MethodChannel.Result) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
@@ -264,9 +256,7 @@ class SmartAccountWebAuthnPlugin(
         }
     }
 
-    // ========================================================================
     // authenticate
-    // ========================================================================
 
     private fun handleAuthenticate(call: MethodCall, result: MethodChannel.Result) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
@@ -374,9 +364,7 @@ class SmartAccountWebAuthnPlugin(
         }
     }
 
-    // ========================================================================
     // JSON request building
-    // ========================================================================
 
     private fun buildRegistrationRequestJson(
         rpId: String,
@@ -475,9 +463,7 @@ class SmartAccountWebAuthnPlugin(
         return jsonObject.toString()
     }
 
-    // ========================================================================
     // Response parsing
-    // ========================================================================
 
     private fun parseRegistrationResponse(
         response: CreatePublicKeyCredentialResponse
@@ -647,9 +633,7 @@ class SmartAccountWebAuthnPlugin(
         return arr.map { it.jsonPrimitive.content }
     }
 
-    // ========================================================================
     // Helpers
-    // ========================================================================
 
     private fun ensureCredentialManager(context: Context): CredentialManager {
         val current = credentialManager

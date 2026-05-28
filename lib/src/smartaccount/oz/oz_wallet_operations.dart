@@ -30,9 +30,7 @@ import 'oz_smart_account_signatures.dart';
 import 'oz_smart_account_types.dart';
 import 'oz_storage_adapter.dart';
 
-// ---------------------------------------------------------------------------
 // Public result types
-// ---------------------------------------------------------------------------
 
 /// Result of a wallet creation operation.
 ///
@@ -378,9 +376,7 @@ class ConnectWalletOptions {
   int get hashCode => Object.hash(credentialId, contractId, fresh, prompt);
 }
 
-// ---------------------------------------------------------------------------
 // OZWalletOperations
-// ---------------------------------------------------------------------------
 
 /// Operations for creating, connecting to, and deploying OpenZeppelin smart
 /// account wallets.
@@ -412,38 +408,20 @@ class OZWalletOperations {
   OZWalletCredentialManagerInterface get _credentialManager =>
       _kit.credentialManager;
 
-  // ---------------------------------------------------------------------------
   // Public API: create wallet
-  // ---------------------------------------------------------------------------
 
-  /// Creates a new smart account wallet with WebAuthn passkey
-  /// authentication.
+  /// Creates a new smart account wallet with WebAuthn passkey authentication.
   ///
-  /// Generates a WebAuthn credential, derives the deterministic smart
-  /// account contract address, and optionally deploys the contract to the
-  /// network.
+  /// Registers a WebAuthn credential, derives the deterministic contract
+  /// address, optionally deploys and funds the contract, then returns a
+  /// [CreateWalletResult] containing the signed deploy transaction and the
+  /// new contract address.
   ///
-  /// Flow:
+  /// [autoFund] requires [autoSubmit] to be `true` and a non-null
+  /// [nativeTokenContract]; funding uses Friendbot and is testnet-only.
   ///
-  /// 1. Require a WebAuthn provider and validate auto-fund preconditions.
-  /// 2. Generate random challenge and user ID; call WebAuthn registration.
-  /// 3. Extract and normalise the secp256r1 public key.
-  /// 4. Derive the deterministic contract address from the credential ID.
-  /// 5. Persist the credential as pending and emit a `CredentialCreated`
-  ///    event.
-  /// 6. Set the kit's connected state, emit `WalletConnected`, save session.
-  /// 7. Build and sign the deploy transaction (always — regardless of
-  ///    `autoSubmit` so callers can submit it externally).
-  /// 8. If `autoSubmit`, submit the deploy transaction. If `autoFund`,
-  ///    fund the wallet via Friendbot after a short wait.
-  /// 9. Return [CreateWalletResult].
-  ///
-  /// Auto-fund requires `autoSubmit = true`, `nativeTokenContract != null`,
-  /// and testnet (Friendbot is testnet-only). The relayer may be used for
-  /// fee sponsoring when configured. The optional [cancelToken] can be
-  /// cancelled to abort an in-flight request; cancellation surfaces as a
-  /// [TransactionException] from any network step that observes the
-  /// cancellation between awaits.
+  /// The optional [cancelToken] can be cancelled to abort an in-flight
+  /// network request; cancellation surfaces as a [TransactionException].
   Future<CreateWalletResult> createWallet({
     String userName = 'Smart Account User',
     bool autoSubmit = false,
@@ -634,37 +612,22 @@ class OZWalletOperations {
     );
   }
 
-  // ---------------------------------------------------------------------------
   // Public API: connect wallet
-  // ---------------------------------------------------------------------------
 
   /// Connects to an existing smart account wallet.
   ///
-  /// Returns a [OZConnectWalletResult] on success, or `null` when no valid
+  /// Returns an [OZConnectWalletResult] on success, or `null` when no valid
   /// session exists and neither [ConnectWalletOptions.prompt] nor
   /// [ConnectWalletOptions.fresh] is set.
   ///
-  /// Connection flow:
-  ///
-  /// 1. If [ConnectWalletOptions.credentialId] or [ConnectWalletOptions.contractId]
-  ///    is supplied, connect directly via the credentials cascade
-  ///    (storage → derivation → indexer).
-  /// 2. If [ConnectWalletOptions.fresh] is true, skip session and trigger
-  ///    WebAuthn authentication.
-  /// 3. Otherwise check storage for a valid (non-expired) session and
-  ///    reconnect on hit. On `WalletNotFound` (contract not on-chain),
-  ///    clear the stale session and fall through. Other RPC errors
-  ///    propagate; the saved session is preserved so the user can retry.
-  /// 4. If no valid session and [ConnectWalletOptions.prompt] is false,
-  ///    return `null`.
-  /// 5. Trigger WebAuthn authentication, run the cascade.
-  /// 6. Resolve via Storage → Derivation → Indexer. Multi-candidate
-  ///    indexer results return [OZConnectWalletAmbiguous] without setting
-  ///    connection state.
+  /// Resolution order: stored session → credential/contract hint →
+  /// WebAuthn authentication → credential cascade (storage → derivation →
+  /// indexer). When the indexer returns multiple candidates,
+  /// [OZConnectWalletAmbiguous] is returned without setting connection state.
   ///
   /// The optional [cancelToken] can be cancelled to abort an in-flight
-  /// request; cancellation surfaces from any network step that observes
-  /// the cancellation between awaits.
+  /// network request; cancellation surfaces from any network step that
+  /// observes the cancellation between awaits.
   Future<OZConnectWalletResult?> connectWallet({
     ConnectWalletOptions options = const ConnectWalletOptions(),
     dio.CancelToken? cancelToken,
@@ -838,9 +801,7 @@ class OZWalletOperations {
     );
   }
 
-  // ---------------------------------------------------------------------------
   // Public API: authenticate passkey
-  // ---------------------------------------------------------------------------
 
   /// Authenticates with a passkey without connecting to a wallet.
   ///
@@ -989,9 +950,7 @@ class OZWalletOperations {
     );
   }
 
-  // ---------------------------------------------------------------------------
   // Public API: deploy pending credential
-  // ---------------------------------------------------------------------------
 
   /// Deploys a wallet from a previously-created pending credential.
   ///
@@ -1133,9 +1092,7 @@ class OZWalletOperations {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Private: connect-with-credentials (the cascade implementation).
-  // ---------------------------------------------------------------------------
+  // Private: connect-with-credentials (the cascade implementation)
 
   Future<OZConnectWalletResult> _connectWithCredentials({
     String? credentialId,
@@ -1228,9 +1185,7 @@ class OZWalletOperations {
     );
   }
 
-  // ---------------------------------------------------------------------------
   // Private: cascade-stage helpers
-  // ---------------------------------------------------------------------------
 
   /// Returns the stored credential under [credentialId] or `null` when
   /// storage misses or raises. Swallows storage exceptions because storage
@@ -1329,9 +1284,7 @@ class OZWalletOperations {
     );
   }
 
-  // ---------------------------------------------------------------------------
   // Private: verify contract on-chain
-  // ---------------------------------------------------------------------------
 
   /// Returns the subset of [candidateContractIds] whose contracts can be
   /// confirmed to exist on-chain via [_verifyContractExists].
@@ -1396,9 +1349,7 @@ class OZWalletOperations {
     }
   }
 
-  // ---------------------------------------------------------------------------
   // Private: session persistence
-  // ---------------------------------------------------------------------------
 
   Future<void> _saveSession({
     required String credentialId,
@@ -1414,9 +1365,7 @@ class OZWalletOperations {
     await _kit.getStorage().saveSession(session);
   }
 
-  // ---------------------------------------------------------------------------
   // Private: build deploy transaction
-  // ---------------------------------------------------------------------------
 
   /// Builds, simulates, assembles, and signs the deploy transaction.
   ///
@@ -1575,9 +1524,7 @@ class OZWalletOperations {
     return transaction;
   }
 
-  // ---------------------------------------------------------------------------
   // Private: submit deploy transaction
-  // ---------------------------------------------------------------------------
 
   /// Submits a pre-built and pre-signed deploy transaction via relayer or
   /// direct RPC. Marks the credential as failed on submission errors and
@@ -1748,9 +1695,7 @@ class OZWalletOperations {
     return transactionHash;
   }
 
-  // ---------------------------------------------------------------------------
-  // Private: submission-method resolution for deploy transactions.
-  // ---------------------------------------------------------------------------
+  // Private: submission-method resolution for deploy transactions
 
   SubmissionMethod _resolveDeploySubmissionMethod(SubmissionMethod? forceMethod) {
     if (forceMethod != null) return forceMethod;
@@ -1759,9 +1704,7 @@ class OZWalletOperations {
         : SubmissionMethod.rpc;
   }
 
-  // ---------------------------------------------------------------------------
   // Private: cancellation plumbing
-  // ---------------------------------------------------------------------------
 
   /// Throws a [TransactionException] when [cancelToken] has been
   /// cancelled. Called between long-running awaits in the wallet
@@ -1798,9 +1741,7 @@ class OZWalletOperations {
     _checkCancellation(cancelToken);
   }
 
-  // ---------------------------------------------------------------------------
   // Private: byte helpers
-  // ---------------------------------------------------------------------------
 
   /// Routes through [OZSecureNonce.bytes] so every CSPRNG site in the
   /// OZ stack draws from the same cached `Random.secure()` source. Kept
@@ -1835,9 +1776,7 @@ class OZWalletOperations {
   }
 }
 
-// ---------------------------------------------------------------------------
 // File-private helpers
-// ---------------------------------------------------------------------------
 
 /// Strips trailing `=` padding from a Base64URL-encoded string.
 ///
@@ -1871,9 +1810,7 @@ bool _stringListEquals(List<String> a, List<String> b) {
   return true;
 }
 
-// ---------------------------------------------------------------------------
-// File-private sealed types for the cascade-stage helpers.
-// ---------------------------------------------------------------------------
+// File-private sealed types for the cascade-stage helpers
 
 /// Outcome of the indexer-resolution stage. Either a single verified
 /// candidate contractId or a list of candidates that all verified.

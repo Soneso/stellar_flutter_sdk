@@ -189,9 +189,7 @@ class OZTransactionOperations {
 
   final OZSmartAccountKitInterface _kit;
 
-  // ---------------------------------------------------------------------------
   // Public API: token transfer
-  // ---------------------------------------------------------------------------
 
   /// Transfers tokens from the connected smart account to a recipient.
   ///
@@ -273,9 +271,7 @@ class OZTransactionOperations {
     );
   }
 
-  // ---------------------------------------------------------------------------
   // Public API: direct contract call
-  // ---------------------------------------------------------------------------
 
   /// Invokes an arbitrary function on an external contract directly from the
   /// smart account.
@@ -331,9 +327,7 @@ class OZTransactionOperations {
     );
   }
 
-  // ---------------------------------------------------------------------------
   // Public API: smart-account-mediated execute call
-  // ---------------------------------------------------------------------------
 
   /// Executes an arbitrary contract call through the smart account's
   /// `execute(target, target_fn, target_args)` entry point.
@@ -384,43 +378,24 @@ class OZTransactionOperations {
     );
   }
 
-  // ---------------------------------------------------------------------------
   // Public API: low-level submit
-  // ---------------------------------------------------------------------------
 
   /// Submits a host function with the full Soroban authorization flow.
   ///
-  /// Performs the complete transaction lifecycle:
+  /// Requires a connected wallet. Simulates the transaction, collects auth
+  /// entries, drives a WebAuthn ceremony for each entry that matches the
+  /// smart account contract, re-simulates with real signatures to obtain
+  /// accurate resource fees, then submits and polls for on-chain
+  /// confirmation.
   ///
-  /// 1. Require a connected wallet (credential ID + contract ID).
-  /// 2. Build and simulate the transaction to discover required auth
-  ///    entries.
-  /// 3. For each auth entry matching the smart account contract, compute
-  ///    the auth-payload hash, resolve context rule IDs, derive the
-  ///    auth digest, authenticate with WebAuthn, and attach the resulting
-  ///    signature.
-  /// 4. Rebuild the transaction with the signed entries and re-simulate to
-  ///    obtain accurate resource fees (real WebAuthn signatures are larger
-  ///    than the placeholders the initial simulation returns).
-  /// 5. Assemble the final transaction with the new soroban data and
-  ///    resource fees, sign it with the deployer keypair when required, and
-  ///    submit via relayer or RPC.
-  /// 6. Poll for on-chain confirmation.
-  ///
-  /// The transaction is signed by the deployer keypair when no relayer is
-  /// configured (direct RPC submission) or when source-account auth entries
-  /// are present (relayer Mode 2). It is NOT signed when using relayer
-  /// Mode 1 (no source-account auth), which allows the relayer to wrap the
-  /// host function with its own channel account.
-  ///
-  /// IMPORTANT: WebAuthn interaction is required for each auth entry that
-  /// matches the connected smart account contract.
+  /// The deployer keypair signs the transaction for direct RPC submissions
+  /// and for relayer Mode 2 (source-account auth present). It is not used
+  /// for relayer Mode 1, which lets the relayer supply its own channel
+  /// account.
   ///
   /// The optional [cancelToken] can be cancelled to abort an in-flight
-  /// request. Cancellation is observed between awaits and at every network
-  /// step; on cancellation the method throws a [TransactionException]
-  /// surfacing the underlying [dio.DioException] of type
-  /// [dio.DioExceptionType.cancel].
+  /// network request; on cancellation the method throws a
+  /// [TransactionException] wrapping a [dio.DioExceptionType.cancel].
   Future<TransactionResult> submit({
     required XdrHostFunction hostFunction,
     required List<XdrSorobanAuthorizationEntry> auth,
@@ -507,9 +482,7 @@ class OZTransactionOperations {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Internal: simulation helpers extracted from `submit`.
-  // ---------------------------------------------------------------------------
+  // Internal: simulation helpers extracted from `submit`
 
   /// Performs the initial simulation against the unsigned transaction.
   ///
@@ -717,9 +690,7 @@ class OZTransactionOperations {
     return signed;
   }
 
-  // ---------------------------------------------------------------------------
-  // Internal: multi-signer submission (consumed by the multi-signer manager).
-  // ---------------------------------------------------------------------------
+  // Internal: multi-signer submission (consumed by the multi-signer manager)
 
   /// Submits a multi-signer transaction by reusing the same submission
   /// branch as [submit] but skipping the WebAuthn signing pass.
@@ -750,9 +721,7 @@ class OZTransactionOperations {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Internal: simulation result extraction (consumed by contract-rule reads).
-  // ---------------------------------------------------------------------------
+  // Internal: simulation result extraction (consumed by contract-rule reads)
 
   /// Simulates a host function and returns its return-value `ScVal`.
   ///
@@ -801,9 +770,7 @@ class OZTransactionOperations {
     return result;
   }
 
-  // ---------------------------------------------------------------------------
   // Public API: testnet funding
-  // ---------------------------------------------------------------------------
 
   /// Funds the connected smart-account wallet on testnet via Friendbot.
   ///
@@ -1015,9 +982,7 @@ class OZTransactionOperations {
     _checkCancellation(cancelToken);
   }
 
-  // ---------------------------------------------------------------------------
   // Private helpers
-  // ---------------------------------------------------------------------------
 
   /// Converts source-account auth entries to address credentials and signs
   /// them with the temporary keypair. Address-credentialed entries are

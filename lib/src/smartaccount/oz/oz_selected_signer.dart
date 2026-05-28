@@ -10,7 +10,6 @@ import 'dart:typed_data';
 /// no implicit connected passkey: to include the connected passkey,
 /// supply a [SelectedSignerPasskey] entry referencing it.
 sealed class SelectedSigner {
-  /// Constructor for the sealed `SelectedSigner` hierarchy.
   const SelectedSigner();
 }
 

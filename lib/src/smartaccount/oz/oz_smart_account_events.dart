@@ -25,7 +25,6 @@ import 'oz_storage_adapter.dart';
 /// });
 /// ```
 sealed class SmartAccountEvent {
-  /// Constructor for the sealed `SmartAccountEvent` hierarchy.
   const SmartAccountEvent();
 
   /// The string identifier used by [SmartAccountEventEmitter] when keying
@@ -44,17 +43,12 @@ sealed class SmartAccountEvent {
 /// This event is fired when connecting to an existing wallet, either through
 /// automatic session restoration or an explicit wallet connection call.
 final class SmartAccountEventWalletConnected extends SmartAccountEvent {
-  /// Constructs a wallet-connected event for the given [contractId] and
-  /// [credentialId].
   const SmartAccountEventWalletConnected({
     required this.contractId,
     required this.credentialId,
   });
 
-  /// The smart account contract address (C-address).
   final String contractId;
-
-  /// The Base64URL-encoded credential ID.
   final String credentialId;
 
   @override
@@ -77,10 +71,8 @@ final class SmartAccountEventWalletConnected extends SmartAccountEvent {
 /// This event is fired when `disconnect()` is called. The session is cleared,
 /// but stored credentials remain for future reconnection.
 final class SmartAccountEventWalletDisconnected extends SmartAccountEvent {
-  /// Constructs a wallet-disconnected event for the given [contractId].
   const SmartAccountEventWalletDisconnected({required this.contractId});
 
-  /// The smart account contract address that was disconnected.
   final String contractId;
 
   @override
@@ -103,10 +95,8 @@ final class SmartAccountEventWalletDisconnected extends SmartAccountEvent {
 /// during initial wallet setup or when adding a new signer to an existing
 /// wallet. Note that the wallet may not be deployed yet.
 final class SmartAccountEventCredentialCreated extends SmartAccountEvent {
-  /// Constructs a credential-created event carrying the given [credential].
   const SmartAccountEventCredentialCreated({required this.credential});
 
-  /// The stored credential data.
   final StoredCredential credential;
 
   @override
@@ -126,13 +116,11 @@ final class SmartAccountEventCredentialCreated extends SmartAccountEvent {
 /// Emitted when a credential is deleted from storage.
 ///
 /// This event is fired when a credential is removed via the credential
-/// management API. If the credential was connected, the wallet is
-/// automatically disconnected first.
+/// management API. Deleting a connected credential does not clear the
+/// kit's connection state; call `disconnect()` first if that is required.
 final class SmartAccountEventCredentialDeleted extends SmartAccountEvent {
-  /// Constructs a credential-deleted event for the given [credentialId].
   const SmartAccountEventCredentialDeleted({required this.credentialId});
 
-  /// The Base64URL-encoded credential ID.
   final String credentialId;
 
   @override
@@ -154,17 +142,12 @@ final class SmartAccountEventCredentialDeleted extends SmartAccountEvent {
 /// This event is fired when attempting to restore a session that has expired.
 /// The application should prompt the user to reconnect.
 final class SmartAccountEventSessionExpired extends SmartAccountEvent {
-  /// Constructs a session-expired event for the given [contractId] and
-  /// [credentialId].
   const SmartAccountEventSessionExpired({
     required this.contractId,
     required this.credentialId,
   });
 
-  /// The smart account contract address.
   final String contractId;
-
-  /// The Base64URL-encoded credential ID.
   final String credentialId;
 
   @override
@@ -198,9 +181,6 @@ final class SmartAccountEventSessionExpired extends SmartAccountEvent {
 /// continue to propagate so caller bugs surface as test failures rather
 /// than silent debug events.
 final class SmartAccountEventCredentialSyncFailed extends SmartAccountEvent {
-  /// Constructs a credential-sync-failed event for the given [credentialId]
-  /// and the swallowed [error]. [stackTrace] is `null` when the originating
-  /// call site did not capture one.
   const SmartAccountEventCredentialSyncFailed({
     required this.credentialId,
     required this.error,
@@ -239,18 +219,14 @@ final class SmartAccountEventCredentialSyncFailed extends SmartAccountEvent {
 /// This event is fired after successfully collecting all required signatures
 /// for a transaction, before submission to the network.
 final class SmartAccountEventTransactionSigned extends SmartAccountEvent {
-  /// Constructs a transaction-signed event for the given [contractId] and
-  /// optional [credentialId].
   const SmartAccountEventTransactionSigned({
     required this.contractId,
     required this.credentialId,
   });
 
-  /// The smart account contract address.
   final String contractId;
 
-  /// The credential ID used for signing, or `null` when only external signers
-  /// were involved.
+  /// `null` when only external signers were involved.
   final String? credentialId;
 
   @override
@@ -275,18 +251,15 @@ final class SmartAccountEventTransactionSigned extends SmartAccountEvent {
 /// was successfully sent to the network node, not whether it was included in
 /// a ledger.
 final class SmartAccountEventTransactionSubmitted extends SmartAccountEvent {
-  /// Constructs a transaction-submitted event for the given [hash] and the
-  /// network-submission [success] flag.
   const SmartAccountEventTransactionSubmitted({
     required this.hash,
     required this.success,
   });
 
-  /// The transaction hash.
   final String hash;
 
-  /// `true` when the transaction was successfully sent to the network node;
-  /// `false` when submission failed.
+  /// `true` when the transaction was sent to the network node; `false` when
+  /// submission failed. Does not indicate ledger inclusion.
   final bool success;
 
   @override
@@ -324,16 +297,8 @@ typedef SmartAccountEventErrorHandler = void Function(
 
 /// Event emitter for Smart Account lifecycle events.
 ///
-/// This class manages event subscriptions and dispatches events to all
-/// registered listeners. It is thread-safe under Dart's single-isolate model
-/// and provides error isolation:
-///
-/// - Multiple listeners per event type.
-/// - Error isolation (one failing listener does not affect others).
-/// - Optional error handler for debugging listener failures.
-/// - [addListener] for callers that prefer a single global subscription.
-/// - [on] / [once] for type-specific subscriptions returning unsubscribe
-///   closures.
+/// Supports global ([addListener]) and typed ([on] / [once]) subscriptions.
+/// Error isolation: a failing listener does not affect other listeners.
 ///
 /// Example:
 ///
@@ -357,7 +322,6 @@ typedef SmartAccountEventErrorHandler = void Function(
 /// unsubscribe();
 /// ```
 class SmartAccountEventEmitter {
-  /// Constructs a `SmartAccountEventEmitter` with no registered listeners.
   SmartAccountEventEmitter();
 
   // why: Single-isolate concurrency model — all state mutation runs on Dart's

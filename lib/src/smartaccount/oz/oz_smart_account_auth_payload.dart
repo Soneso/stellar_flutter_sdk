@@ -62,8 +62,6 @@ class OZSmartAccountAuthPayload {
 /// All entry points are pure static functions over their arguments; safe to
 /// call concurrently from any isolate.
 abstract class OZSmartAccountAuthPayloadCodec {
-  /// Private constructor prevents instantiation; the class is used as a
-  /// namespace for static methods.
   OZSmartAccountAuthPayloadCodec._();
 
   /// Reads an [OZSmartAccountAuthPayload] from its [XdrSCVal] representation.

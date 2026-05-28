@@ -24,9 +24,6 @@ import '../core/smart_account_utils.dart';
 /// Each signature type can be converted to a Soroban [XdrSCVal] map that
 /// the OpenZeppelin Smart Account contract can verify.
 ///
-/// Instances are immutable value types and may be safely shared across Dart
-/// isolates; concrete subtypes preserve this guarantee.
-///
 /// Example:
 ///
 /// ```dart
@@ -103,8 +100,7 @@ sealed class OZSmartAccountSignature {
 ///
 /// The map field name is `client_data`, not `client_data_json`.
 ///
-/// Instances are immutable value types and may be safely shared across Dart
-/// isolates. The byte fields are defensively copied at construction.
+/// Byte fields are defensively copied at construction.
 final class OZWebAuthnSignature extends OZSmartAccountSignature {
   /// Constructs an [OZWebAuthnSignature].
   ///
@@ -175,12 +171,7 @@ final class OZWebAuthnSignature extends OZSmartAccountSignature {
   Uint8List toAuthPayloadBytes() =>
       OZSmartAccountSignature._encodeScValToBytes(toScVal(), 'WebAuthn');
 
-  /// Constant-time equality.
-  ///
-  /// Each byte field is compared using [Util.constantTimeEquals]
-  /// and the three boolean results are combined with bitwise `and` (rather
-  /// than the short-circuit `&&` operator) so that a difference in one
-  /// field cannot leak through the timing of the boolean reduction.
+  /// Byte-content equality across all fields.
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -216,10 +207,8 @@ final class OZWebAuthnSignature extends OZSmartAccountSignature {
 /// and is NOT transmitted in the auth payload.
 ///
 /// The [publicKey] field is retained on the struct for local Ed25519
-/// signature verification before submission.
-///
-/// Instances are immutable value types and may be safely shared across Dart
-/// isolates. The byte fields are defensively copied at construction.
+/// signature verification before submission. Byte fields are defensively
+/// copied at construction.
 final class OZEd25519Signature extends OZSmartAccountSignature {
   /// Constructs an [OZEd25519Signature].
   ///
@@ -281,11 +270,7 @@ final class OZEd25519Signature extends OZSmartAccountSignature {
     return signature;
   }
 
-  /// Constant-time equality.
-  ///
-  /// Both byte fields are compared using
-  /// [Util.constantTimeEquals]; the boolean results are
-  /// combined with bitwise `and` to avoid early-exit timing leaks.
+  /// Byte-content equality across all fields.
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -314,8 +299,6 @@ final class OZEd25519Signature extends OZSmartAccountSignature {
 ///
 /// The class is a singleton; obtain the canonical value via
 /// [OZPolicySignature.instance].
-///
-/// The canonical instance may be shared across any number of isolates.
 final class OZPolicySignature extends OZSmartAccountSignature {
   const OZPolicySignature._();
 

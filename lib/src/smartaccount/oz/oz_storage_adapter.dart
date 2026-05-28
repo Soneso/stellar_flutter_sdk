@@ -29,9 +29,7 @@ enum CredentialDeploymentStatus {
 /// account. Tracks the credential's deployment status, contract address,
 /// and usage history.
 ///
-/// Equality compares the [publicKey] byte array in constant time so that
-/// credential lookups cannot leak partial-key match information through
-/// timing differences.
+/// Equality is byte-content based.
 class StoredCredential {
   /// Constructs a stored credential. [credentialId] and [publicKey] are
   /// required; all metadata fields default to safe non-set values.
@@ -298,32 +296,17 @@ class StoredCredentialUpdate {
     this.backedUp,
   });
 
-  /// New deployment status, or `null` to leave unchanged.
   final CredentialDeploymentStatus? deploymentStatus;
-
-  /// New deployment error message, or `null` to leave unchanged.
   final String? deploymentError;
-
-  /// New contract ID, or `null` to leave unchanged.
   final String? contractId;
-
-  /// New last-used timestamp, or `null` to leave unchanged.
   final int? lastUsedAt;
-
-  /// New nickname, or `null` to leave unchanged.
   final String? nickname;
-
-  /// New primary flag, or `null` to leave unchanged.
   final bool? isPrimary;
-
-  /// New authenticator transport hints, or `null` to leave unchanged.
   final List<String>? transports;
 
-  /// New device type (`singleDevice` or `multiDevice`), or `null` to leave
-  /// unchanged.
+  /// `singleDevice` or `multiDevice`; `null` means no change.
   final String? deviceType;
 
-  /// New backed-up flag, or `null` to leave unchanged.
   final bool? backedUp;
 }
 
@@ -337,60 +320,41 @@ class StoredCredentialUpdate {
 /// The default implementation is [InMemoryStorageAdapter] (memory only).
 /// Platform-specific implementations can provide persistent storage.
 abstract class StorageAdapter {
-  /// Saves a credential using upsert semantics. If a credential with the
-  /// same ID already exists it is overwritten.
-  ///
   /// Throws [StorageWriteFailed] if persistence fails.
   Future<void> save(StoredCredential credential);
 
-  /// Retrieves a credential by its ID. Returns `null` if not found.
-  ///
-  /// Throws [StorageReadFailed] if reading fails.
+  /// Returns `null` if not found. Throws [StorageReadFailed] if reading fails.
   Future<StoredCredential?> get(String credentialId);
 
-  /// Retrieves all credentials whose [StoredCredential.contractId] equals
-  /// [contractId]. Returns an empty list when no credentials match.
+  /// Returns an empty list when no credentials match.
   ///
   /// Throws [StorageReadFailed] if reading fails.
   Future<List<StoredCredential>> getByContract(String contractId);
 
-  /// Retrieves all stored credentials.
-  ///
   /// Throws [StorageReadFailed] if reading fails.
   Future<List<StoredCredential>> getAll();
 
-  /// Deletes a credential by its ID. Silently no-ops if no credential with
-  /// the given ID exists.
+  /// Silently no-ops if no credential with [credentialId] exists.
   ///
   /// Throws [StorageWriteFailed] if deletion fails.
   Future<void> delete(String credentialId);
 
-  /// Applies a partial [updates] specification to the credential with the
-  /// given [credentialId]. Only non-null fields in [updates] are applied.
-  ///
-  /// Throws [CredentialNotFound] if no credential with [credentialId]
-  /// exists. Throws [StorageWriteFailed] if persistence fails.
+  /// Throws [CredentialNotFound] if no credential with [credentialId] exists.
+  /// Throws [StorageWriteFailed] if persistence fails.
   Future<void> update(String credentialId, StoredCredentialUpdate updates);
 
-  /// Clears all credentials from storage.
-  ///
   /// Throws [StorageWriteFailed] if clearing fails.
   Future<void> clear();
 
-  /// Saves a session, overwriting any previously-saved session.
-  ///
   /// Throws [StorageWriteFailed] if saving fails.
   Future<void> saveSession(StoredSession session);
 
-  /// Retrieves the current session. Returns `null` when no session exists
-  /// or when the saved session has already expired; an expired session is
-  /// auto-cleared so callers always observe "valid session or none".
-  ///
-  /// Throws [StorageReadFailed] if reading fails.
+  /// Returns `null` when no session exists or when the saved session has
+  /// already expired; an expired session is auto-cleared so callers always
+  /// observe "valid session or none". Throws [StorageReadFailed] if reading
+  /// fails.
   Future<StoredSession?> getSession();
 
-  /// Clears the current session.
-  ///
   /// Throws [StorageWriteFailed] if clearing fails.
   Future<void> clearSession();
 }
@@ -414,7 +378,6 @@ abstract class StorageAdapter {
 /// Apple platforms or an EncryptedSharedPreferences-backed implementation on
 /// Android) via [OZSmartAccountConfig.storage].
 class InMemoryStorageAdapter implements StorageAdapter {
-  /// Constructs an empty in-memory storage adapter.
   InMemoryStorageAdapter();
 
   final Map<String, StoredCredential> _credentials = {};

@@ -10,38 +10,17 @@ import 'smart_account_errors.dart';
 /// WebAuthn authentication result from a passkey ceremony.
 ///
 /// Contains the complete attestation data required to verify biometric or
-/// security-key authentication.
-///
-/// Equality is byte-content based on every field. Comparison is
-/// length-prefixed (length difference returns `false`) and constant-time
-/// across the byte content of every field. The four per-field byte
-/// comparisons are all evaluated before the boolean results are combined to
-/// avoid early-exit timing leaks at the boolean-combination layer.
-///
-/// Instances are immutable and isolate-safe: every field is `final` and the
-/// underlying byte arrays are not mutated by any method on this class.
-/// Sharing instances across isolates is supported without external
-/// synchronisation, provided callers do not mutate the byte arrays they
-/// passed into the constructor.
+/// security-key authentication. Equality is byte-content based on every field.
 class WebAuthnAuthenticationResult {
-  /// The WebAuthn credential identifier (raw bytes).
   final Uint8List credentialId;
-
-  /// Raw authenticator data from the WebAuthn ceremony.
   final Uint8List authenticatorData;
-
-  /// Client data JSON from the WebAuthn ceremony (raw UTF-8 bytes).
   final Uint8List clientDataJSON;
 
-  /// ECDSA signature in DER format.
-  ///
-  /// Callers normalise this to 64-byte compact `r || s` form via the
-  /// signature-normalisation helper before submitting on-chain; the field
-  /// itself stores the unmodified DER bytes returned by the platform
-  /// authenticator.
+  /// ECDSA signature in DER format. Callers normalise this to 64-byte compact
+  /// `r || s` form before submitting on-chain; the field stores the unmodified
+  /// DER bytes returned by the platform authenticator.
   final Uint8List signature;
 
-  /// Constructs a [WebAuthnAuthenticationResult] with all fields required.
   const WebAuthnAuthenticationResult({
     required this.credentialId,
     required this.authenticatorData,
@@ -74,28 +53,8 @@ class WebAuthnAuthenticationResult {
 ///
 /// Contains the public key and credential information needed to deploy a
 /// smart-account contract, plus optional metadata about the authenticator
-/// and passkey characteristics.
-///
-/// **Primary path:** providers populate [publicKey] directly with the
-/// 65-byte uncompressed secp256r1 key (`0x04` prefix || X || Y). Most
-/// platform WebAuthn APIs expose the public key via `getPublicKey()` or an
-/// equivalent method.
-///
-/// **Fallback path:** if the provider cannot extract the public key
-/// directly, it can pass the raw bytes returned by the WebAuthn API in
-/// [publicKey] and supply [attestationObject]. Callers may then run a
-/// 3-strategy extraction (direct validation → authenticator-data parsing →
-/// attestation-object pattern matching) shipped separately by the smart
-/// account utilities.
-///
-/// Equality is byte-content based on the three required byte fields and
-/// value-equal on the optional metadata fields.
-///
-/// Instances are immutable and isolate-safe: every field is `final` and the
-/// class exposes no mutating operations. Sharing instances across isolates
-/// is supported without external synchronisation, provided callers do not
-/// mutate the byte arrays or transports list they passed into the
-/// constructor.
+/// and passkey characteristics. Equality is byte-content based on the three
+/// required byte fields and value-equal on the optional metadata fields.
 class WebAuthnRegistrationResult {
   /// The WebAuthn credential identifier (raw bytes).
   final Uint8List credentialId;
@@ -182,37 +141,10 @@ class WebAuthnRegistrationResult {
 /// implementation; this interface is the contract those implementations
 /// satisfy.
 ///
-/// Implementations are expected to be safe to invoke from any isolate.
-/// Concrete implementations performing native platform calls (for example
-/// Apple `AuthenticationServices`, Android Credential Manager, or browser
-/// WebAuthn APIs) typically must run on the platform's UI thread; such
-/// implementations SHOULD declare any isolate-affinity restrictions in
-/// their own dartdoc.
-///
-/// Example:
-/// ```dart
-/// class MyWebAuthnProvider implements WebAuthnProvider {
-///   @override
-///   Future<WebAuthnRegistrationResult> register({
-///     required Uint8List challenge,
-///     required Uint8List userId,
-///     required String userName,
-///   }) async {
-///     // platform-specific credential creation
-///   }
-///
-///   @override
-///   Future<WebAuthnAuthenticationResult> authenticate({
-///     required Uint8List challenge,
-///     List<AllowCredential>? allowCredentials,
-///   }) async {
-///     // platform-specific credential assertion
-///   }
-/// }
-/// ```
+/// Concrete implementations performing native platform calls typically must
+/// run on the platform's UI thread; such implementations SHOULD declare any
+/// isolate-affinity restrictions in their own dartdoc.
 abstract class WebAuthnProvider {
-  /// Constructs a [WebAuthnProvider]. Subclasses are expected to provide the
-  /// concrete `register` and `authenticate` implementations.
   const WebAuthnProvider();
 
   /// Registers a new WebAuthn credential (passkey creation).
@@ -275,13 +207,7 @@ abstract class WebAuthnProvider {
   });
 }
 
-/// Constant-time byte-array comparison.
-///
-/// Length difference returns `false` immediately (length is not protected by
-/// this comparison; the WebAuthn DTOs do not protect length). Past the
-/// length check, every byte position is compared with `acc |= (a[i] ^
-/// b[i])`, so the comparison time does not depend on which byte position
-/// differs.
+/// Byte-content equality over [a] and [b].
 bool _constantTimeEquals(Uint8List a, Uint8List b) {
   if (a.length != b.length) return false;
   var acc = 0;

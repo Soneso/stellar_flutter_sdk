@@ -46,10 +46,6 @@ abstract final class OZAddressStrKey {
   }
 
   /// Like [fromXdr] but returns the empty string in place of `null`.
-  /// Matches the previous inlined fall-through behaviour in the
-  /// context-rule parser where a missing address produced `''` rather
-  /// than a sentinel — kept as a separate entry point to make the
-  /// substitution at call sites a strict no-op.
   static String fromXdrOrEmpty(XdrSCAddress addressXdr) {
     return fromXdr(addressXdr) ?? '';
   }

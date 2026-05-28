@@ -34,7 +34,6 @@ import 'oz_validation.dart';
 /// internally — these `*Params` classes are used directly only when
 /// calling [OZPolicyManager.addPolicy] with custom parameters.
 sealed class PolicyInstallParams {
-  /// Constructor for the sealed `PolicyInstallParams` hierarchy.
   const PolicyInstallParams();
 
   /// Returns the on-chain `ScVal` map encoding of the parameter shape.
@@ -336,9 +335,9 @@ class OZPolicyManager {
   /// Removes a policy by matching the policy contract [policyAddress].
   ///
   /// Fetches the target rule, parses it, finds the policy index, and
-  /// delegates to the ID-based [removePolicy] overload. Renamed from
-  /// `removePolicy` (the ID-based form) because Dart does not support
-  /// overload-by-parameter-type.
+  /// delegates to the ID-based [removePolicy] overload. Dart does not
+  /// support overload-by-parameter-type; the `ByAddress` suffix
+  /// distinguishes this from the ID-based form.
   Future<TransactionResult> removePolicyByAddress({
     required int contextRuleId,
     required String policyAddress,

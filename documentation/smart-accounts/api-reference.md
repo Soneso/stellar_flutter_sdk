@@ -362,7 +362,7 @@ OZSmartAccountConfig({
 - `rpName`: Human-readable relying-party name shown during WebAuthn ceremonies. Default `'Smart Account'`.
 - `sessionExpiryMs`: Session validity in milliseconds. Default `OZConstants.defaultSessionExpiryMs` (7 days).
 - `signatureExpirationLedgers`: Auth-entry expiration in ledgers. Default `Util.ledgersPerHour` (720). Capped to `[1, 535680]`; the upper bound corresponds to approximately one month at five seconds per ledger.
-- `timeoutInSeconds`: Stellar transaction-level timeout. Default `OZConstants.defaultTimeoutSeconds` (30). Capped to `[1, 600]`.
+- `timeoutInSeconds`: Reserved for future use. No pipeline code currently reads this value; polling and transaction-submission timeouts are determined by internal defaults. Default `OZConstants.defaultTimeoutSeconds` (30). Capped to `[1, 600]`.
 - `relayerUrl`: Optional relayer endpoint. When set, transactions can be fee-sponsored via the relayer pipeline.
 - `indexerUrl`: Optional indexer endpoint. When unset, `effectiveIndexerUrl()` falls back to the well-known default URL for the configured network when available.
 - `webauthnProvider`: Platform-specific WebAuthn provider. Required for any passkey-driven operation; an absent provider causes `createWallet`, `connectWallet(prompt: true)`, `authenticatePasskey`, and signer / transaction WebAuthn flows to throw `WebAuthnNotSupported`.
@@ -387,7 +387,7 @@ See [WebAuthn Provider](#webauthn-provider), [Storage Adapter](#storage-adapter)
 static Future<KeyPair> createDefaultDeployer() async
 ```
 
-Derives the deterministic deployer keypair from `SHA-256("openzeppelin-smart-account-kit")`. The seed string is fixed across every implementation of the OpenZeppelin smart-account kit so the derived account ID is reproducible. The deployer only pays deployment fees; it does not control user wallets. Throws `ConfigurationException.invalidConfig` on derivation failure.
+Derives the deterministic deployer keypair from `SHA-256("openzeppelin-smart-account-kit")`. The seed string is fixed by the contract spec so the derived account ID is reproducible. The deployer only pays deployment fees; it does not control user wallets. Throws `ConfigurationException.invalidConfig` on derivation failure.
 
 #### builder
 
@@ -3061,7 +3061,7 @@ class OZRelayerResponse {
 }
 ```
 
-`error` is truncated to at most 200 characters (with an ellipsis suffix) when the relayer returns an oversized message; the cap prevents a hostile relayer from forcing arbitrarily large strings into response instances.
+The `error` string is not further truncated; the entire response body is bounded by `maxRelayerResponseBytes`.
 
 #### OZRelayerErrorCodes
 
