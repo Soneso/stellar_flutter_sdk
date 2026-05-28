@@ -164,7 +164,10 @@ scheme, including Ed25519.
 On-chain representation:
 `Vec([Symbol("External"), Address(verifier), Bytes(publicKey)])`
 
-SDK method:
+#### Add
+
+SDK method to add an Ed25519 signer to a context rule:
+
 ```dart
 await kit.signerManager.addEd25519(
   contextRuleId: 0,
@@ -172,6 +175,75 @@ await kit.signerManager.addEd25519(
   publicKey: ed25519PublicKey, // 32 bytes
 );
 ```
+
+See the [Signing](#signing) subsection below for how to authorize transactions once the signer is on-chain.
+
+#### Signing
+
+When a multi-signer ceremony involves an Ed25519 signer, the smart-account contract calls the registered verifier contract during `__check_auth` to validate the signature. The auth digest — `SHA-256(signaturePayload || contextRuleIds.toXDR())` — is computed by the SDK and must be signed with the Ed25519 private key that corresponds to the on-chain `(verifierAddress, publicKey)` entry.
+
+`OZExternalSignerManager` manages Ed25519 signing sources independently of the kit. Construct one, register the signing capability, then pass a `SelectedSignerEd25519` entry into any multi-signer method.
+
+**Register with a secret key (memory-only):**
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+const ed25519VerifierAddress =
+    'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM';
+
+final externalSignerManager = OZExternalSignerManager(
+  networkPassphrase: 'Test SDF Network ; September 2015',
+);
+// Derives the keypair from the raw 32-byte seed and stores it in memory under
+// the (verifierAddress, publicKey) tuple. Returns the 32-byte public key.
+// rawSeed is obtained from secure storage or a key derivation function.
+final ed25519PublicKey = externalSignerManager.addEd25519FromRawKey(
+  secretKeyBytes: rawSeed,
+  verifierAddress: ed25519VerifierAddress,
+);
+```
+
+**Register an out-of-process adapter (optional, for hardware wallets and remote services):**
+
+```dart
+externalSignerManager.setEd25519Adapter(myHardwareWalletAdapter);
+// Or equivalently: externalSignerManager.ed25519Adapter = myHardwareWalletAdapter;
+```
+
+When an adapter is set, it takes precedence over the in-memory keypair for the same `(verifierAddress, publicKey)` pair (adapter-first rule). See the [API Reference](api-reference.md#external-signer-management) for the full `OZExternalEd25519SignerAdapter` abstract-class contract.
+
+**Wire the manager through the config and pass the signer to a multi-signer method:**
+
+```dart
+// Supply the manager via config — construct the kit after the manager is ready.
+final config = OZSmartAccountConfig(
+  rpcUrl: 'https://soroban-testnet.stellar.org',
+  networkPassphrase: 'Test SDF Network ; September 2015',
+  accountWasmHash: '<64-char hex WASM hash>',
+  webauthnVerifierAddress: '<C-address of WebAuthn verifier>',
+  externalSignerManager: externalSignerManager,
+);
+final kit = OZSmartAccountKit.create(config: config);
+
+// Include the ed25519 selector alongside passkey and wallet entries.
+final result = await kit.multiSignerManager.multiSignerTransfer(
+  tokenContract: 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
+  recipient: 'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ',
+  amount: '10',
+  selectedSigners: <SelectedSigner>[
+    SelectedSignerPasskey(credentialId: savedCredId, keyData: savedKeyData),
+    SelectedSignerEd25519(
+      verifierAddress: ed25519VerifierAddress,
+      publicKey: ed25519PublicKey,
+    ),
+  ],
+);
+```
+
+The pipeline validates that a signing source is registered for each `SelectedSignerEd25519` entry before any RPC call. If no source is registered for a given `(verifierAddress, publicKey)` tuple, the pipeline throws `ValidationException.invalidInput` with a message that names the missing verifier. Ed25519 signing uses the same auth-digest computation, signer-index resolution, and authorization-payload assembly as the passkey path — both flow through the same multi-signer pipeline. See [How Passkeys Replace Secret Keys](#3-how-passkeys-replace-secret-keys) for the `__check_auth` mechanics that apply to both.
+
+For the full API surface including `addEd25519FromRawKey`, `canSignEd25519For`, `signEd25519AuthDigest`, `removeEd25519`, and the `OZExternalEd25519SignerAdapter` abstract class, see the [API Reference](api-reference.md#external-signer-management).
 
 ---
 

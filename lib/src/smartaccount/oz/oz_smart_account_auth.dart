@@ -27,7 +27,7 @@ import 'oz_smart_account_signatures.dart';
 /// - Building Soroban authorisation payload hashes for WebAuthn challenges.
 /// - Attaching pre-computed signatures to authorisation entries.
 /// - Managing signature expiration and map-entry ordering.
-/// - Double-XDR encoding of signature values.
+/// - Producing verifier-appropriate signature bytes for the auth payload.
 ///
 /// All entry points are pure static functions over their arguments; safe to
 /// call concurrently from any isolate. The [signAuthEntry] helper never
@@ -154,9 +154,9 @@ abstract class OZSmartAccountAuth {
   ///
   /// The procedure clones the input entry via XDR round-trip, sets the
   /// signature expiration on the cloned credentials, builds the signer-key
-  /// ScVal, double-XDR-encodes the signature value, reads the existing
-  /// AuthPayload (if any), upserts the new signer entry, writes the
-  /// payload back, and returns a new authorisation entry with the updated
+  /// ScVal, produces the verifier-appropriate signature bytes, reads the
+  /// existing AuthPayload (if any), upserts the new signer entry, writes
+  /// the payload back, and returns a new authorisation entry with the updated
   /// credentials. The input entry is never mutated.
   ///
   /// When [contextRuleIds] is non-empty it overrides any existing
@@ -165,8 +165,8 @@ abstract class OZSmartAccountAuth {
   ///
   /// Throws [TransactionSigningFailed] when credentials are not address
   /// type, when the entry cannot be cloned via XDR, when [signer] cannot
-  /// be encoded as an ScVal, or when the signature ScVal cannot be XDR-
-  /// encoded.
+  /// be encoded as an ScVal, or when [OZSmartAccountSignature.toAuthPayloadBytes]
+  /// fails (WebAuthn and Policy variants only).
   static Future<XdrSorobanAuthorizationEntry> signAuthEntry({
     required XdrSorobanAuthorizationEntry entry,
     required OZSmartAccountSigner signer,
@@ -210,34 +210,21 @@ abstract class OZSmartAccountAuth {
       );
     }
 
-    // Step 3: build the signer key as an ScVal.
-    XdrSCVal signerKeyScVal;
-    try {
-      signerKeyScVal = signer.toScVal();
-    } catch (e) {
-      throw TransactionException.signingFailed(
-        'Failed to convert signer to SCVal',
-        cause: e,
-      );
-    }
-
-    // Step 4: produce the double-XDR-encoded signature bytes. The
-    // OZSmartAccountSignature.toScVal value is XDR-encoded into raw bytes;
-    // the codec.write step later wraps those bytes into ScVal::Bytes.
-    final signatureScVal = signature.toScVal();
+    // Step 3: produce the bytes for the on-wire signers Map. The exact
+    // content is verifier-dependent: WebAuthn/Policy XDR-encode their
+    // ScVal; Ed25519 passes the raw 64-byte signature directly (see
+    // OZSmartAccountSignature.toAuthPayloadBytes).
     Uint8List sigXdrBytes;
     try {
-      final stream = XdrDataOutputStream();
-      XdrSCVal.encode(stream, signatureScVal);
-      sigXdrBytes = Uint8List.fromList(stream.bytes);
+      sigXdrBytes = signature.toAuthPayloadBytes();
     } catch (e) {
       throw TransactionException.signingFailed(
-        'Failed to XDR encode signature ScVal',
+        'Failed to encode signature bytes for auth payload',
         cause: e,
       );
     }
 
-    // Step 5: read the existing payload from the cloned credentials,
+    // Step 4: read the existing payload from the cloned credentials,
     // override or preserve context rule IDs, upsert the signer entry, and
     // write the payload back.
     final existingPayload =
@@ -255,9 +242,6 @@ abstract class OZSmartAccountAuth {
       signer,
       sigXdrBytes,
     );
-    // Touch signerKeyScVal so the variable is observed by the analyzer
-    // even though the payload codec re-derives the key from `signer`.
-    assert(signerKeyScVal.discriminant == XdrSCValType.SCV_VEC);
 
     final payloadScVal = OZSmartAccountAuthPayloadCodec.write(updatedPayload);
 
@@ -283,8 +267,8 @@ abstract class OZSmartAccountAuth {
   /// Adds a raw key/value entry to the auth entry's signature map.
   ///
   /// Used for delegated-signer placeholders where the value is `Bytes`
-  /// (often empty) rather than a double-XDR-encoded signature. Uses the
-  /// AuthPayload format with `context_rule_ids` and `signers` fields.
+  /// (often empty). Uses the AuthPayload format with `context_rule_ids`
+  /// and `signers` fields.
   ///
   /// When [signatureValue] is `XdrSCVal.SCV_BYTES` its raw bytes are
   /// stored directly; otherwise the value is XDR-encoded and the resulting

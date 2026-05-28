@@ -40,7 +40,11 @@ class OZSmartAccountAuthPayload {
     required List<int> contextRuleIds,
   }) : contextRuleIds = List<int>.unmodifiable(contextRuleIds);
 
-  /// Mutable map from signer to its double-XDR-encoded signature bytes.
+  /// Mutable map from signer to its verifier-appropriate signature bytes.
+  ///
+  /// For WebAuthn and Policy signers the bytes are the XDR-encoded [XdrSCVal];
+  /// for Ed25519 signers the bytes are the raw 64-byte signature (no XDR
+  /// wrapper). See [OZSmartAccountSignature.toAuthPayloadBytes].
   final Map<OZSmartAccountSigner, Uint8List> signers;
 
   /// Context rule IDs bound into the signing digest. The list is

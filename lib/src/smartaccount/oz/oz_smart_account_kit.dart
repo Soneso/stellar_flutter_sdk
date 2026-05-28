@@ -41,9 +41,10 @@ import 'oz_wallet_operations.dart';
 /// - [contextRuleManager] — context rules linking signers + policies.
 /// - [credentialManager] — local credential persistence and lifecycle.
 /// - [multiSignerManager] — multi-signer authorisation flow.
-/// - [externalSignerManager] — wallet / keypair signers external to the kit
-///   (`null` here; consumers construct [OZExternalSignerManager] directly
-///   when external signers are in use).
+/// - [externalSignerManager] — Ed25519 external-signer manager; consumers
+///   construct [OZExternalSignerManager] and pass it via
+///   [OZSmartAccountConfig.externalSignerManager] to enable Ed25519
+///   multi-signer signing.
 ///
 /// Construction is via the static [create] factory so the configuration
 /// invariants are validated once by [OZSmartAccountConfig] before the kit
@@ -57,14 +58,9 @@ import 'oz_wallet_operations.dart';
 /// each other. The kit is safe for concurrent access on the main isolate;
 /// do not call across isolates without explicit handoff.
 ///
-/// Garbage collection: Dart's tracing garbage collector reclaims unreachable
-/// object graphs even when they contain reference cycles, so the implicit
-/// kit-to-manager cycle (kit owns managers via `late final` fields; each
-/// manager holds a reference back to the kit for callbacks) does not
-/// require manual reference clearing. After [close] returns and the
-/// consumer releases its last reference, the entire graph becomes
-/// collectable. The managers are declared `late final` so they cannot be
-/// reassigned to `null` even if it were desirable.
+/// Garbage collection: the kit/manager reference cycle is reclaimed by Dart's
+/// tracing GC once the consumer drops its last reference; no manual release
+/// is required.
 ///
 /// Safe for concurrent access on Dart's main isolate; do not call across
 /// isolates without explicit handoff. Configuration, the shared
@@ -225,11 +221,21 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
   late final OZMultiSignerManager multiSignerManager =
       OZMultiSignerManager(this);
 
-  /// External-signer manager handle. The kit does not auto-instantiate
-  /// an [OZExternalSignerManager]; consumers that need external signers
-  /// construct one directly with the desired network passphrase, wallet
-  /// adapter, and connection-storage layer. Returns `null`.
-  OZExternalSignerManager? get externalSignerManager => null;
+  /// External-signer manager for Ed25519 multi-signer signing ceremonies.
+  ///
+  /// Returns the [OZExternalSignerManager] supplied via
+  /// [OZSmartAccountConfig.externalSignerManager] at kit construction time,
+  /// or `null` when none was configured.
+  ///
+  /// Consumers construct [OZExternalSignerManager] separately, register Ed25519
+  /// signing keypairs or adapters on it, and pass it through
+  /// [OZSmartAccountConfig.externalSignerManager] so that multi-signer
+  /// operations that include [SelectedSignerEd25519] entries can reach the
+  /// signing source. When this property is `null` any `SelectedSignerEd25519`
+  /// entry in a `selectedSigners` list causes [OZMultiSignerManager] to throw
+  /// [InvalidInput].
+  OZExternalSignerManager? get externalSignerManager =>
+      config.externalSignerManager;
 
   // ---------------------------------------------------------------------
   // Connection state
@@ -252,19 +258,9 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
   /// cleanly when the kit is being torn down.
   bool _closed = false;
 
-  /// Cached deployer keypair returned from [getDeployer].
-  ///
-  /// IMPORTANT INVARIANT: this cache is intentionally NOT synchronised.
-  /// Concurrent first-callers may each invoke
-  /// [OZSmartAccountConfig.effectiveDeployer] in parallel; the derivation
-  /// is deterministic so each call yields a keypair with the identical
-  /// account ID. The race window is bounded to "until the first call
-  /// completes"; after that, every subsequent caller sees the cached
-  /// reference. The redundant derivation is harmless aside from a tiny
-  /// extra cost on cold-cache concurrent fan-out; routing through
-  /// [_withLock] would serialise every [getDeployer] call against the
-  /// connection-state lock for negligible benefit and is therefore
-  /// avoided.
+  /// Cached deployer keypair. Intentionally unsynchronised — the derivation
+  /// is deterministic, so concurrent first-callers each compute the same
+  /// keypair and the race window collapses after the first cache write.
   KeyPair? _cachedDeployer;
 
   /// FIFO async-lock tail. Mutations against [_credentialId],
@@ -415,11 +411,6 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
   /// acquiring the lock observe the closed state and abort cleanly
   /// instead of mutating a torn-down kit.
   ///
-  /// No manual manager-reference release step is required. The managers
-  /// are held via `late final` fields that cannot be reassigned; Dart's
-  /// tracing garbage collector handles the kit-to-manager reference
-  /// cycle once the consumer drops its last strong reference. See the
-  /// class-level dartdoc for the full GC rationale.
   Future<void> close() async {
     await _withLock<void>(() async {
       if (_closed) {
@@ -472,22 +463,13 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
 
   /// Serialises an async [body] against the kit's state-mutation tail.
   ///
-  /// The lock is a Future-chain FIFO: each invocation chains its work
-  /// onto the previous tail. When the chain's current tail completes,
-  /// the cleanup step resets [_tail] back to a fresh resolved future so
-  /// newly arriving callers do not transitively hold onto every prior
-  /// completion. Memory usage is bounded by `O(in-flight count)`: while
-  /// N invocations are queued the chain holds N completion futures; once
-  /// each resolves it is detached, and after the entire chain drains
-  /// the tail collapses to a single completed future. The pattern
-  /// matches the async-lock convention used by [OZExternalSignerManager].
+  /// The lock is a Future-chain FIFO: each invocation chains its work onto the
+  /// previous tail. The cleanup step resets [_tail] to a fresh resolved future
+  /// so newly arriving callers do not hold onto every prior completion.
   ///
-  /// Errors raised inside [body] propagate to the returned future and
-  /// the caller observes them through the await/catch path. The cleanup
-  /// step runs regardless of success or failure — it is performed
-  /// inside the same `then`-attached body so it shares the caller's
-  /// error handler and does not spawn an orphan future that could
-  /// surface as an unhandled-future error in the zone.
+  /// Errors raised inside [body] propagate to the returned future. The cleanup
+  /// step runs regardless of success or failure and does not spawn an orphan
+  /// future that could surface as an unhandled-future error in the zone.
   Future<T> _withLock<T>(FutureOr<T> Function() body) {
     final completer = Completer<T>();
     final previous = _tail;

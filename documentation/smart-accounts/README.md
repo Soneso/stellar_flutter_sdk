@@ -31,8 +31,7 @@ supports:
   users never pay gas fees.
 - **Session management**: Silent reconnection without re-authentication
   for 7 days (configurable).
-- **Multi-signer transactions**: Coordinate signatures from several
-  signers in a single transaction for context rules that require it.
+- **Multi-signer transactions**: Coordinate signatures from passkey, delegated wallet, and Ed25519 external signers in a single transaction for context rules that require it.
 - **Credential discovery**: Optional indexer lookup that maps a passkey
   credential to one or more deployed smart-account contracts.
 
@@ -112,11 +111,7 @@ storage internally.
 iOS/macOS Keychain), `IndexedDBStorageAdapter` (web), and
 `LocalStorageAdapter` (web, smaller and unencrypted).
 
-`ExternalWalletAdapter` and `OZExternalSignerManager` are optional and
-enable signing with external Stellar wallets (for example through
-WalletConnect). The kit's `externalSignerManager` getter returns `null`
-by default; consumers construct `OZExternalSignerManager` directly when
-needed.
+`ExternalWalletAdapter` and `OZExternalSignerManager` are optional and enable signing with external Stellar wallets (for example through WalletConnect) and Ed25519 external signers. Construct `OZExternalSignerManager` separately, register signing sources on it, then supply it to the kit via `OZSmartAccountConfig(externalSignerManager: manager)`. The kit's `externalSignerManager` getter returns the configured instance, or `null` when none was supplied.
 
 ## Quick Start
 
@@ -389,10 +384,41 @@ await kit.policyManager.addPolicy(
 When a context rule requires multiple signatures, use
 `kit.multiSignerManager` to coordinate. The caller passes a list of
 `SelectedSigner` values and the manager drives one signing pass per
-signer. For passkey signers, every `SelectedSignerPasskey` in the list
-must carry `keyData` populated before the call.
+signer. Three signer types are supported: passkey, delegated wallet, and
+Ed25519 external signer.
+
+For passkey signers, every `SelectedSignerPasskey` in the list must carry
+`keyData` populated before the call. For Ed25519 signers, an
+`OZExternalSignerManager` must be wired through
+`OZSmartAccountConfig.externalSignerManager` before the kit is created
+and must have a signing source registered for each
+`SelectedSignerEd25519` entry.
 
 ```dart
+// 1. Construct the external-signer manager and register an Ed25519 key.
+const ed25519VerifierAddress =
+    'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM';
+final signerManager = OZExternalSignerManager(
+  networkPassphrase: 'Test SDF Network ; September 2015',
+);
+// rawSeed is the 32-byte Ed25519 seed obtained from secure storage.
+final ed25519PublicKey = signerManager.addEd25519FromRawKey(
+  secretKeyBytes: rawSeed,
+  verifierAddress: ed25519VerifierAddress,
+);
+
+// 2. Wire the manager through the config when constructing the kit.
+final config = OZSmartAccountConfig(
+  rpcUrl: 'https://soroban-testnet.stellar.org',
+  networkPassphrase: 'Test SDF Network ; September 2015',
+  accountWasmHash: '<64-char hex WASM hash>',
+  webauthnVerifierAddress: '<C-address of WebAuthn verifier>',
+  externalSignerManager: signerManager,
+  // ...other fields...
+);
+final kit = OZSmartAccountKit.create(config: config);
+
+// 3. Call the multi-signer method with all three signer kinds.
 final result = await kit.multiSignerManager.multiSignerTransfer(
   tokenContract:
       'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
@@ -400,8 +426,12 @@ final result = await kit.multiSignerManager.multiSignerTransfer(
       'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ',
   amount: '25',
   selectedSigners: <SelectedSigner>[
-    SelectedSignerPasskey(credentialId: passkeyA, keyData: keyDataA),
-    SelectedSignerWallet('GBBBBB...'),
+    SelectedSignerPasskey(credentialId: passkeyCredId, keyData: passkeyKeyData),
+    SelectedSignerWallet('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ'),
+    SelectedSignerEd25519(
+      verifierAddress: ed25519VerifierAddress,
+      publicKey: ed25519PublicKey,
+    ),
   ],
 );
 ```
@@ -484,6 +514,7 @@ bad input.
 | `webauthnProvider` | `WebAuthnProvider?` | `null` | Platform-specific WebAuthn implementation. Required for `createWallet`, `connectWallet(prompt: true)`, `authenticatePasskey`, and any passkey-signing flow. |
 | `storage` | `StorageAdapter?` | `InMemoryStorageAdapter()` | Credential and session persistence. Use a platform-specific adapter in production. |
 | `externalWallet` | `ExternalWalletAdapter?` | `null` | Adapter for external wallet signing. Drives the standalone `OZExternalSignerManager`. |
+| `externalSignerManager` | `OZExternalSignerManager?` | `null` | Manager for Ed25519 multi-signer signing. Construct separately, register Ed25519 keypairs via `addEd25519FromRawKey`, and supply here. Required when `selectedSigners` includes any `SelectedSignerEd25519` entries. |
 | `maxContextRuleScanId` | `int` | `50` | Upper bound on the context-rule id scan when listing rules. Must be `>= 0`. |
 
 ### Builder pattern

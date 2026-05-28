@@ -444,21 +444,33 @@ void main() {
       );
     });
 
-    test('testEd25519ToScVal_keysInAlphabeticalOrder', () {
+    test('testEd25519ToScVal_returnsBytesType', () {
       final sig = OZEd25519Signature(
         publicKey: _ed25519Pub(),
         signature: _signature64(),
       );
-      final keys = sig.toScVal().map!.map((e) => e.key.sym).toList();
-      expect(keys, ['public_key', 'signature']);
+      expect(sig.toScVal().discriminant, XdrSCValType.SCV_BYTES);
     });
 
-    test('testEd25519ToScVal_returnsMapWithTwoEntries', () {
+    test('testEd25519ToScVal_bytesMatchSignatureField', () {
+      final rawSig = _signature64();
+      final sig = OZEd25519Signature(
+        publicKey: _ed25519Pub(),
+        signature: rawSig,
+      );
+      expect(
+        sig.toScVal().bytes!.sCBytes,
+        orderedEquals(rawSig),
+      );
+    });
+
+    test('testEd25519ToScVal_publicKeyNotInOutput', () {
       final sig = OZEd25519Signature(
         publicKey: _ed25519Pub(),
         signature: _signature64(),
       );
-      expect(sig.toScVal().map?.length, 2);
+      // toScVal() returns Bytes, not a Map — map field must be null.
+      expect(sig.toScVal().map, isNull);
     });
 
     test('testEd25519Signature_equality_identicalFields', () {
@@ -565,33 +577,37 @@ void main() {
 
   group('OZSmartAccountSignature sealed exhaustiveness', () {
     test('testSealedClass_whenExhaustive', () {
-      final List<OZSmartAccountSignature> all = [
-        OZWebAuthnSignature(
-          authenticatorData: _bytes(16),
-          clientData: _bytes(20),
-          signature: _signature64(),
-        ),
-        OZEd25519Signature(
-          publicKey: _ed25519Pub(),
-          signature: _signature64(),
-        ),
-        OZPolicySignature.instance,
-      ];
-      for (final sig in all) {
-        expect(sig, isA<OZSmartAccountSignature>());
-        expect(sig.toScVal().discriminant, XdrSCValType.SCV_MAP);
-      }
+      final webAuthn = OZWebAuthnSignature(
+        authenticatorData: _bytes(16),
+        clientData: _bytes(20),
+        signature: _signature64(),
+      );
+      final ed25519 = OZEd25519Signature(
+        publicKey: _ed25519Pub(),
+        signature: _signature64(),
+      );
+      final policy = OZPolicySignature.instance;
+
+      // All subtypes extend the sealed base.
+      expect(webAuthn, isA<OZSmartAccountSignature>());
+      expect(ed25519, isA<OZSmartAccountSignature>());
+      expect(policy, isA<OZSmartAccountSignature>());
+
+      // WebAuthn and Policy emit Maps; Ed25519 emits Bytes (raw sig_data).
+      expect(webAuthn.toScVal().discriminant, XdrSCValType.SCV_MAP);
+      expect(ed25519.toScVal().discriminant, XdrSCValType.SCV_BYTES);
+      expect(policy.toScVal().discriminant, XdrSCValType.SCV_MAP);
     });
   });
 
-  // Cross-SDK byte-identity golden vector (WebAuthnSignature).
+  // WebAuthnSignature wire-format golden vector.
   //
   // Pins the byte-level XDR encoding of `OZWebAuthnSignature.toScVal()`. The
   // fixture inputs (37 bytes 0xAA, 16 bytes 0xBB, 64 bytes 0xCC) are chosen
   // so any drift in field name (`client_data` vs `client_data_json`),
   // alphabetical key ordering, or value-bytes encoding produces a different
-  // hex output and breaks the cross-SDK test in lockstep.
-  group('cross-SDK WebAuthnSignature golden vector', () {
+  // hex output and fails the test.
+  group('WebAuthnSignature wire-format golden vector', () {
     test('goldenVector6_webAuthnSignatureWireShape_matchesFixture', () {
       final signature = OZWebAuthnSignature(
         authenticatorData: Uint8List.fromList(List<int>.filled(37, 0xAA)),
@@ -607,6 +623,84 @@ void main() {
           '0000001100000001000000030000000f0000001261757468656e74696361746f725f6461746100000000000d00000025aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa0000000000000f0000000b636c69656e745f64617461000000000d00000010bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb0000000f000000097369676e61747572650000000000000d00000040cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
       expect(actualHex, expectedHex,
           reason: 'Golden vector 6 mismatch — actual: $actualHex');
+    });
+  });
+
+  group('toAuthPayloadBytes', () {
+    test('testEd25519Signature_toAuthPayloadBytes_isRaw64Bytes', () {
+      final rawSig = _signature64(7);
+      final sig = OZEd25519Signature(
+        publicKey: _ed25519Pub(),
+        signature: rawSig,
+      );
+      final bytes = sig.toAuthPayloadBytes();
+      expect(bytes, orderedEquals(rawSig));
+    });
+
+    test('testEd25519Signature_toAuthPayloadBytes_notXdrWrapped', () {
+      final sig = OZEd25519Signature(
+        publicKey: _ed25519Pub(),
+        signature: _signature64(),
+      );
+      final bytes = sig.toAuthPayloadBytes();
+      // Raw Ed25519 bytes must be exactly 64 — not XDR-inflated (~72 bytes).
+      expect(bytes.length, equals(64));
+    });
+
+    test('testWebAuthnSignature_toAuthPayloadBytes_isXdrEncodedMap', () {
+      final sig = OZWebAuthnSignature(
+        authenticatorData: _bytes(16),
+        clientData: _bytes(20),
+        signature: _signature64(),
+      );
+      final bytes = sig.toAuthPayloadBytes();
+      // Must be longer than 64 (contains the full XDR-encoded Map).
+      expect(bytes.length, greaterThan(64));
+      // First 4 bytes = SCV_MAP discriminant (17 = 0x00000011).
+      expect(bytes[0], equals(0x00));
+      expect(bytes[1], equals(0x00));
+      expect(bytes[2], equals(0x00));
+      expect(bytes[3], equals(0x11));
+    });
+
+    test('testPolicySignature_toAuthPayloadBytes_isXdrEncodedEmptyMap', () {
+      final bytes = OZPolicySignature.instance.toAuthPayloadBytes();
+      // XDR for SCV_MAP empty: 4 discriminant + 4 optional-present + 4 count=0 = 12 bytes.
+      expect(bytes.length, equals(12));
+      // First 4 bytes = SCV_MAP discriminant (17 = 0x00000011).
+      expect(bytes[0], equals(0x00));
+      expect(bytes[1], equals(0x00));
+      expect(bytes[2], equals(0x00));
+      expect(bytes[3], equals(0x11));
+    });
+
+    test('testWebAuthnAndEd25519_toAuthPayloadBytes_areDistinctLengths', () {
+      final ed25519 = OZEd25519Signature(
+        publicKey: _ed25519Pub(),
+        signature: _signature64(),
+      );
+      final webAuthn = OZWebAuthnSignature(
+        authenticatorData: _bytes(16),
+        clientData: _bytes(20),
+        signature: _signature64(),
+      );
+      final edBytes = ed25519.toAuthPayloadBytes();
+      final waBytes = webAuthn.toAuthPayloadBytes();
+      expect(edBytes.length, equals(64));
+      expect(waBytes.length, greaterThan(64));
+      expect(edBytes.length, isNot(equals(waBytes.length)));
+    });
+
+    test('testEd25519_toAuthPayloadBytes_matchesToScValBytes', () {
+      // Ed25519.toScVal() returns SCVal::Bytes(signature). The content of
+      // toAuthPayloadBytes() must equal the raw signature — same as the
+      // `sCBytes` field of the ScVal.
+      final rawSig = _signature64(3);
+      final sig = OZEd25519Signature(
+        publicKey: _ed25519Pub(),
+        signature: rawSig,
+      );
+      expect(sig.toAuthPayloadBytes(), orderedEquals(sig.toScVal().bytes!.sCBytes));
     });
   });
 }

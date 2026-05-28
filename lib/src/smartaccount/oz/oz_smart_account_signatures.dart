@@ -8,6 +8,7 @@ import '../../util.dart';
 import '../../xdr/xdr.dart';
 import '../core/smart_account_constants.dart';
 import '../core/smart_account_errors.dart';
+import '../core/smart_account_utils.dart';
 
 /// Base sealed class for OpenZeppelin Smart Account signature types.
 ///
@@ -41,11 +42,49 @@ sealed class OZSmartAccountSignature {
   /// concrete subtypes within this library.
   const OZSmartAccountSignature();
 
-  /// Converts this signature to its [XdrSCVal] representation.
+  /// XDR-encodes [scVal] and returns the resulting bytes.
   ///
-  /// The keys in the resulting map are alphabetically sorted because the
-  /// OpenZeppelin Smart Account verifier contract requires that ordering.
+  /// Throws [TransactionSigningFailed] when XDR encoding fails.
+  /// Used by [OZWebAuthnSignature] and [OZPolicySignature]; not used by
+  /// [OZEd25519Signature] (which returns raw bytes without XDR wrapping).
+  static Uint8List _encodeScValToBytes(XdrSCVal scVal, String contextLabel) {
+    final stream = XdrDataOutputStream();
+    try {
+      XdrSCVal.encode(stream, scVal);
+      return Uint8List.fromList(stream.bytes);
+    } catch (e) {
+      throw TransactionException.signingFailed(
+        'Failed to XDR encode $contextLabel signature ScVal',
+        cause: e,
+      );
+    }
+  }
+
+  /// Converts this signature to its [XdrSCVal] on-wire representation.
+  ///
+  /// The exact shape is variant-dependent: [OZWebAuthnSignature] and
+  /// [OZPolicySignature] return an [XdrSCVal] map; [OZEd25519Signature]
+  /// returns [XdrSCVal.forBytes] holding the raw 64-byte signature.
   XdrSCVal toScVal();
+
+  /// Returns the raw bytes to embed in the on-wire signers map of the
+  /// [OZSmartAccountAuthPayload].
+  ///
+  /// The content is verifier-dependent:
+  ///
+  /// | Signature type      | Content                                      |
+  /// |---------------------|----------------------------------------------|
+  /// | [OZWebAuthnSignature] | XDR-encoded [XdrSCVal] (Map with 3 fields) |
+  /// | [OZEd25519Signature]  | Raw 64-byte signature (no XDR wrapper)     |
+  /// | [OZPolicySignature]   | XDR-encoded [XdrSCVal] (empty Map)         |
+  ///
+  /// For [OZEd25519Signature] the Ed25519 verifier contract expects
+  /// `BytesN<64>` — exactly 64 raw bytes. XDR-wrapping inflates the
+  /// payload beyond 64 bytes, causing the contract to reject it.
+  ///
+  /// Throws [TransactionSigningFailed] when XDR encoding fails
+  /// (WebAuthn and Policy variants only; Ed25519 never throws).
+  Uint8List toAuthPayloadBytes();
 }
 
 /// WebAuthn signature from a passkey authentication ceremony.
@@ -124,6 +163,18 @@ final class OZWebAuthnSignature extends OZSmartAccountSignature {
     ]);
   }
 
+  /// Returns the XDR-encoded [XdrSCVal] map for inclusion in the on-wire
+  /// signers map of [OZSmartAccountAuthPayload].
+  ///
+  /// The WebAuthn verifier contract deserialises a `WebAuthnSigData` struct
+  /// from these bytes, so the full XDR encoding of the 3-field map is
+  /// required.
+  ///
+  /// Throws [TransactionSigningFailed] when XDR encoding fails.
+  @override
+  Uint8List toAuthPayloadBytes() =>
+      OZSmartAccountSignature._encodeScValToBytes(toScVal(), 'WebAuthn');
+
   /// Constant-time equality.
   ///
   /// Each byte field is compared using [Util.constantTimeEquals]
@@ -146,9 +197,9 @@ final class OZWebAuthnSignature extends OZSmartAccountSignature {
   /// polynomial accumulator.
   @override
   int get hashCode {
-    var result = _byteListContentHash(authenticatorData);
-    result = 0x1fffffff & (31 * result + _byteListContentHash(clientData));
-    result = 0x1fffffff & (31 * result + _byteListContentHash(signature));
+    var result = SmartAccountUtils.hashBytes(1, authenticatorData);
+    result = 0x1fffffff & (31 * result + SmartAccountUtils.hashBytes(1, clientData));
+    result = 0x1fffffff & (31 * result + SmartAccountUtils.hashBytes(1, signature));
     return result;
   }
 }
@@ -158,11 +209,14 @@ final class OZWebAuthnSignature extends OZSmartAccountSignature {
 /// Ed25519 signatures are 64 bytes and provide deterministic signing with
 /// strong side-channel resistance.
 ///
-/// Field ordering in the SCVal map is alphabetical and is critical for
-/// contract compatibility:
+/// [toScVal] returns the raw 64-byte signature as `XdrSCVal.forBytes(...)`.
+/// The Ed25519 verifier contract (`BytesN<64>` expectation) receives the
+/// signature directly; the corresponding public key is supplied separately
+/// from the smart account's on-chain `External(verifier, key_data)` storage
+/// and is NOT transmitted in the auth payload.
 ///
-/// 1. `public_key`
-/// 2. `signature`
+/// The [publicKey] field is retained on the struct for local Ed25519
+/// signature verification before submission.
 ///
 /// Instances are immutable value types and may be safely shared across Dart
 /// isolates. The byte fields are defensively copied at construction.
@@ -195,27 +249,36 @@ final class OZEd25519Signature extends OZSmartAccountSignature {
   }
 
   /// Ed25519 public key (32 bytes).
+  ///
+  /// Used for local signature verification before the transaction is submitted.
+  /// Not transmitted in the on-chain auth payload — the verifier contract
+  /// retrieves the public key from its `External(verifier, key_data)` storage.
   final Uint8List publicKey;
 
   /// Ed25519 signature (64 bytes).
   final Uint8List signature;
 
-  /// Converts the Ed25519 signature to a Soroban [XdrSCVal] map.
+  /// Returns the raw 64-byte Ed25519 signature as `XdrSCVal.forBytes(...)`.
   ///
-  /// The resulting map has keys in alphabetical order (`public_key`,
-  /// `signature`).
+  /// The Ed25519 verifier contract expects `BytesN<64>` directly as `sig_data`.
+  /// The public key is supplied separately from the smart account's on-chain
+  /// `External(verifier, key_data)` storage and is NOT transmitted here.
   @override
   XdrSCVal toScVal() {
-    return XdrSCVal.forMap([
-      XdrSCMapEntry(
-        XdrSCVal.forSymbol('public_key'),
-        XdrSCVal.forBytes(publicKey),
-      ),
-      XdrSCMapEntry(
-        XdrSCVal.forSymbol('signature'),
-        XdrSCVal.forBytes(signature),
-      ),
-    ]);
+    return XdrSCVal.forBytes(signature);
+  }
+
+  /// Returns the raw 64-byte Ed25519 signature for inclusion in the on-wire
+  /// signers map of [OZSmartAccountAuthPayload].
+  ///
+  /// The Ed25519 verifier contract expects `BytesN<64>` — exactly 64 raw
+  /// bytes. XDR-wrapping inflates the payload beyond 64 bytes and causes
+  /// the verifier to reject it, so no XDR envelope is applied here.
+  ///
+  /// This method never throws.
+  @override
+  Uint8List toAuthPayloadBytes() {
+    return signature;
   }
 
   /// Constant-time equality.
@@ -236,8 +299,8 @@ final class OZEd25519Signature extends OZSmartAccountSignature {
   /// accumulator.
   @override
   int get hashCode {
-    var result = _byteListContentHash(publicKey);
-    result = 0x1fffffff & (31 * result + _byteListContentHash(signature));
+    var result = SmartAccountUtils.hashBytes(1, publicKey);
+    result = 0x1fffffff & (31 * result + SmartAccountUtils.hashBytes(1, signature));
     return result;
   }
 }
@@ -264,14 +327,16 @@ final class OZPolicySignature extends OZSmartAccountSignature {
   XdrSCVal toScVal() {
     return XdrSCVal.forMap(const <XdrSCMapEntry>[]);
   }
+
+  /// Returns the XDR-encoded empty [XdrSCVal] map for inclusion in the
+  /// on-wire signers map of [OZSmartAccountAuthPayload].
+  ///
+  /// Policy-based authorisation requires the same XDR encoding that the
+  /// policy verifier contract expects when reading the signature slot.
+  ///
+  /// Throws [TransactionSigningFailed] when XDR encoding fails.
+  @override
+  Uint8List toAuthPayloadBytes() =>
+      OZSmartAccountSignature._encodeScValToBytes(toScVal(), 'Policy');
 }
 
-/// Polynomial content-hash for byte arrays, matching the convention used
-/// by the rest of the smart-account library (`31 * acc + byte`).
-int _byteListContentHash(Uint8List bytes) {
-  var hash = 1;
-  for (final b in bytes) {
-    hash = 0x1fffffff & (31 * hash + (b & 0xFF));
-  }
-  return hash;
-}

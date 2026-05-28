@@ -690,13 +690,12 @@ void main() {
     });
   });
 
-  // Cross-SDK byte-identity golden vectors (auth-digest).
+  // Auth-digest golden vectors.
   //
-  // These tests pin the byte-level output of the OZ auth-digest formula so a
-  // wire-format regression in this SDK or in a sibling SDK fails immediately
-  // rather than silently shipping divergent encodings. The expected hex
-  // strings are byte-identical across SDKs and must be updated in lockstep.
-  group('cross-SDK auth-digest golden vectors', () {
+  // These tests pin the byte-level output of the OZ auth-digest formula so
+  // wire-format regressions fail immediately rather than shipping silently.
+  // Update the expected hex strings whenever the formula changes.
+  group('auth-digest golden vectors', () {
     Uint8List sha256OfUtf8(String s) =>
         Uint8List.fromList(crypto.sha256.convert(utf8.encode(s)).bytes);
 

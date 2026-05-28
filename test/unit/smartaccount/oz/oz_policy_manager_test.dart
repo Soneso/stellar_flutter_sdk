@@ -663,7 +663,6 @@ void main() {
 
   // -------------------------------------------------------------------------
   // B.6 removePolicy by address (6 cases) — uses removePolicyByAddress
-  //                                          per D-118 disambiguation.
   // -------------------------------------------------------------------------
   group('B.6 removePolicyByAddress', () {
     /// Pre-populates the stub context-rule manager so [removePolicyByAddress]
@@ -691,7 +690,7 @@ void main() {
       };
     }
 
-    test('policy not in rule list throws ValidationException (D-133)',
+    test('policy not in rule list throws ValidationException',
         () async {
       final h = _buildKit();
       _seedContextRule(

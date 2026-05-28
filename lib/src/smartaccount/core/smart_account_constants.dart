@@ -13,6 +13,15 @@ class SmartAccountConstants {
   /// Size in bytes of an Ed25519 public key (RFC 8032).
   static const int ed25519PublicKeySize = 32;
 
+  /// Size in bytes of an Ed25519 secret seed (deterministic key material from
+  /// which the keypair is derived). Required by
+  /// [OZExternalSignerManager.addEd25519FromRawKey].
+  static const int ed25519SecretSeedSize = 32;
+
+  /// Size in bytes of a raw Ed25519 signature (the on-wire `BytesN<64>` payload
+  /// the Ed25519 verifier contract expects).
+  static const int ed25519SignatureSize = 64;
+
   /// Size in bytes of an uncompressed secp256r1 public key
   /// (1 prefix byte + 32 x-coordinate bytes + 32 y-coordinate bytes).
   static const int secp256r1PublicKeySize = 65;

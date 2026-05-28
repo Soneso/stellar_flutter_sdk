@@ -341,7 +341,7 @@ void main() {
       );
 
       // Kit is not connected; getForConnectedWallet must return empty
-      // rather than throwing (per D-122).
+      // rather than throwing.
       final result = await ctx.manager.getForConnectedWallet();
       expect(result, isEmpty);
     });
@@ -438,10 +438,10 @@ void main() {
     test(
         'sync emits SmartAccountEventCredentialSyncFailed when getContractData throws Exception',
         () async {
-      // why: F-CQ-Flu-6 contract — narrowed catch in `sync` keeps the
-      // stable boolean return contract for transient RPC failures while
-      // surfacing the swallowed exception through the kit's event
-      // emitter so consumers can observe it (logging, metrics, retry).
+      // The narrowed catch in `sync` keeps the stable boolean return
+      // contract for transient RPC failures while surfacing the swallowed
+      // exception through the kit's event emitter so consumers can
+      // observe it (logging, metrics, retry).
       final mock = MockSorobanServer();
       mock.getContractDataResponses
           .add(Exception('connection reset by peer'));

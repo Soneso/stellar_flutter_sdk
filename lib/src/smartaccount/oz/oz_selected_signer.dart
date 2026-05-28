@@ -9,12 +9,6 @@ import 'dart:typed_data';
 /// The caller explicitly lists every signer that should sign. There is
 /// no implicit connected passkey: to include the connected passkey,
 /// supply a [SelectedSignerPasskey] entry referencing it.
-///
-/// This type is declared in a dedicated file rather than alongside the
-/// multi-signer manager so the sibling managers (signer, policy,
-/// context-rule) can depend on the sealed hierarchy without pulling
-/// in the concrete manager, breaking what would otherwise be a cyclic
-/// import on the kit interface.
 sealed class SelectedSigner {
   /// Constructor for the sealed `SelectedSigner` hierarchy.
   const SelectedSigner();
@@ -80,6 +74,52 @@ final class SelectedSignerPasskey extends SelectedSigner {
         credentialIdBytes == null ? 0 : Object.hashAll(credentialIdBytes!),
         keyData == null ? 0 : Object.hashAll(keyData!),
         transports == null ? 0 : Object.hashAll(transports!),
+      );
+}
+
+/// An Ed25519 external signer identified by the verifier contract address and
+/// 32-byte public key.
+///
+/// The `(verifierAddress, publicKey)` pair identifies the on-chain
+/// `External(verifierAddress, publicKey)` signer slot. Signing capability for
+/// this signer must be registered separately via
+/// `OZExternalSignerManager.addEd25519FromRawKey` (or by setting an
+/// `OZExternalEd25519SignerAdapter`) before including this selector in a
+/// multi-signer operation.
+///
+/// Unlike passkey selectors, this type carries no signing material — it is
+/// a pure identifier.
+final class SelectedSignerEd25519 extends SelectedSigner {
+  /// Constructs an Ed25519 selected-signer entry.
+  ///
+  /// [verifierAddress] must be a valid C-strkey identifying the Ed25519
+  /// verifier contract registered on-chain for this signer slot.
+  /// [publicKey] must be the 32-byte Ed25519 public key for the signer.
+  const SelectedSignerEd25519({
+    required this.verifierAddress,
+    required this.publicKey,
+  });
+
+  /// C-strkey of the Ed25519 verifier contract registered as part of the
+  /// on-chain `External(verifierAddress, publicKey)` signer entry.
+  final String verifierAddress;
+
+  /// 32-byte Ed25519 public key identifying the signer slot on the smart
+  /// account.
+  final Uint8List publicKey;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! SelectedSignerEd25519) return false;
+    if (verifierAddress != other.verifierAddress) return false;
+    return _bytesEqualNullable(publicKey, other.publicKey);
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        verifierAddress,
+        Object.hashAll(publicKey),
       );
 }
 

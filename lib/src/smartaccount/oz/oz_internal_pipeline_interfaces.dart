@@ -13,6 +13,7 @@ import 'oz_builders.dart';
 import 'oz_indexer_client.dart';
 import 'oz_relayer_client.dart';
 import 'oz_selected_signer.dart';
+import 'oz_external_signer_manager.dart';
 import 'oz_smart_account_config.dart';
 import 'oz_smart_account_events.dart';
 import 'oz_smart_account_types.dart';
@@ -204,6 +205,11 @@ abstract class OZSmartAccountKitInterface {
   /// `null` when no adapter is set. Consumed by the multi-signer
   /// pipeline for delegated wallet signers.
   ExternalWalletAdapter? get externalWallet;
+
+  /// The external-signer manager for Ed25519 multi-signer signing
+  /// ceremonies, or `null` when none was supplied via
+  /// [OZSmartAccountConfig.externalSignerManager].
+  OZExternalSignerManager? get externalSignerManager;
 
   /// The multi-signer manager handle exposed through the kit
   /// interface. Typed as [Object] to avoid a circular import between

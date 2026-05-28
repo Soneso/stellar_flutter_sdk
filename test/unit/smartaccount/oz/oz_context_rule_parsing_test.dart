@@ -1231,13 +1231,11 @@ void main() {
   // tests below construct synthetic CallContract auth entries paired with
   // pre-built `ParsedContextRule` lists to exercise each tier directly.
   //
-  // - Tier 1: exact bidirectional signer-set match (per D-135).
-  // - Tier 2: rule signers subset of selected, no policies (per D-136).
-  // - Tier 3: selected signers subset of rule (threshold scenarios,
-  //   per D-137).
-  // - Empty-candidates throws with the "Add a Default rule" hint
-  //   (per D-138).
-  // - Ambiguous matches throw with the rule-id list (per D-138).
+  // - Tier 1: exact bidirectional signer-set match.
+  // - Tier 2: rule signers subset of selected, no policies.
+  // - Tier 3: selected signers subset of rule (threshold scenarios).
+  // - Empty-candidates throws with the "Add a Default rule" hint.
+  // - Ambiguous matches throw with the rule-id list.
   // ==========================================================================
 
   /// Builds a synthetic auth entry whose root invocation is a contract call

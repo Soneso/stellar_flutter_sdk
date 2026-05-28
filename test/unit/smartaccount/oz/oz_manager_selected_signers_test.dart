@@ -20,6 +20,10 @@ const String _credentialIdB64 = 'aGVsbG8tc21hcnQtYWNjb3VudA';
 const String _thirdAccountAddress =
     'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
+/// Well-formed Ed25519 verifier contract address used in Ed25519 routing tests.
+const String _verifierA =
+    'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK';
+
 /// Stub context-rule manager whose read paths always throw
 /// [WalletNotConnected]. Used by overloads (`removeSignerBySigner`,
 /// `removePolicyByAddress`) that fetch the rule before reaching their
@@ -619,10 +623,10 @@ void main() {
   });
 
   // =======================================================================
-  // Group J.1 — multi-signer fanout: 3-signer mix (plan line 720)
+  // multi-signer fanout: 3-signer mix
   // =======================================================================
 
-  group('Group J.1 multi-signer fanout', () {
+  group('multi-signer fanout', () {
     /// Builds a ready-to-use harness wiring a kit with the
     /// [MockOZMultiSignerManager] injected and [MockOZTransactionOperations]
     /// in place.
@@ -646,9 +650,8 @@ void main() {
     test(
         'submitWithMultipleSigners_threeSigners_passkey_delegated_ed25519_collectsAllSignatures',
         () async {
-      // J.1.1: three selected signers with mixed kinds. Verifies the
-      // signer manager forwards a 3-element selectedSigners list intact
-      // to the multi-signer manager.
+      // Three selected signers with mixed kinds. Verifies the signer manager
+      // forwards a 3-element selectedSigners list intact to the multi-signer manager.
       final h = buildHarness();
       final mgr = OZSignerManager(h.kit);
 
@@ -684,9 +687,9 @@ void main() {
     test(
         'submitWithMultipleSigners_passkey_plus_wallet_resolvesContextRulesForBothSignerKinds',
         () async {
-      // J.1.2: passkey + wallet selectedSigners. Verifies the multi-signer
-      // manager receives a mixed list while the host function payload
-      // identifies the connected smart-account contract.
+      // Passkey + wallet selectedSigners. Verifies the multi-signer manager
+      // receives a mixed list while the host function payload identifies
+      // the connected smart-account contract.
       final h = buildHarness();
       final mgr = OZContextRuleManager(h.kit);
 
@@ -718,11 +721,121 @@ void main() {
     });
 
     test(
+        'test_addContextRule_ed25519SelectedSigner_routesThroughMultiSignerPipeline',
+        () async {
+      final h = buildHarness();
+      final extManager = OZExternalSignerManager(
+        networkPassphrase: 'Test SDF Network ; September 2015',
+      );
+      final rawSeed = Uint8List.fromList(List<int>.generate(32, (i) => i));
+      final publicKey = extManager.addEd25519FromRawKey(
+        secretKeyBytes: rawSeed,
+        verifierAddress: _verifierA,
+      );
+      h.kit.setExternalSignerManager(extManager);
+
+      final mgr = OZContextRuleManager(h.kit);
+      final ed25519Signer = SelectedSignerEd25519(
+        verifierAddress: _verifierA,
+        publicKey: publicKey,
+      );
+
+      // addContextRule requires at least one signer or one policy; pass the
+      // Ed25519 signer as the contract-level signer being added to the rule.
+      final contractSigner = OZExternalSigner.ed25519(
+        verifierAddress: _verifierA,
+        publicKey: publicKey,
+      );
+      await mgr.addContextRule(
+        contextType: const ContextRuleTypeDefault(),
+        name: 'ed25519-rule',
+        signers: [contractSigner],
+        selectedSigners: [ed25519Signer],
+      );
+
+      expect(h.multi.submitWithMultipleSignersCalls.length, equals(1));
+      final call = h.multi.submitWithMultipleSignersCalls.single;
+      expect(call.selectedSigners.length, equals(1));
+      expect(call.selectedSigners.single, isA<SelectedSignerEd25519>());
+      final forwarded = call.selectedSigners.single as SelectedSignerEd25519;
+      expect(forwarded.verifierAddress, equals(_verifierA));
+      expect(forwarded.publicKey, orderedEquals(publicKey));
+    });
+
+    test(
+        'test_addPasskey_ed25519SelectedSigner_routesThroughMultiSignerPipeline',
+        () async {
+      final h = buildHarness();
+      final extManager = OZExternalSignerManager(
+        networkPassphrase: 'Test SDF Network ; September 2015',
+      );
+      final rawSeed = Uint8List.fromList(List<int>.generate(32, (i) => i + 1));
+      final publicKey = extManager.addEd25519FromRawKey(
+        secretKeyBytes: rawSeed,
+        verifierAddress: _verifierA,
+      );
+      h.kit.setExternalSignerManager(extManager);
+
+      final mgr = OZSignerManager(h.kit);
+      final ed25519Signer = SelectedSignerEd25519(
+        verifierAddress: _verifierA,
+        publicKey: publicKey,
+      );
+
+      await mgr.addPasskey(
+        contextRuleId: 0,
+        publicKey: Uint8List(65)..setAll(0, [0x04]),
+        credentialId: Uint8List(16),
+        selectedSigners: [ed25519Signer],
+      );
+
+      expect(h.multi.submitWithMultipleSignersCalls.length, equals(1));
+      final call = h.multi.submitWithMultipleSignersCalls.single;
+      expect(call.selectedSigners.length, equals(1));
+      expect(call.selectedSigners.single, isA<SelectedSignerEd25519>());
+    });
+
+    test(
+        'test_addSimpleThreshold_ed25519SelectedSigner_routesThroughMultiSignerPipeline',
+        () async {
+      final h = buildHarness();
+      final extManager = OZExternalSignerManager(
+        networkPassphrase: 'Test SDF Network ; September 2015',
+      );
+      final rawSeed = Uint8List.fromList(List<int>.generate(32, (i) => i + 2));
+      final publicKey = extManager.addEd25519FromRawKey(
+        secretKeyBytes: rawSeed,
+        verifierAddress: _verifierA,
+      );
+      h.kit.setExternalSignerManager(extManager);
+
+      final mgr = OZPolicyManager(h.kit);
+      final ed25519Signer = SelectedSignerEd25519(
+        verifierAddress: _verifierA,
+        publicKey: publicKey,
+      );
+
+      await mgr.addPolicy(
+        contextRuleId: 0,
+        policyAddress: _validContractId,
+        installParams: XdrSCVal.forVoid(),
+        selectedSigners: [ed25519Signer],
+      );
+
+      expect(h.multi.submitWithMultipleSignersCalls.length, equals(1));
+      final call = h.multi.submitWithMultipleSignersCalls.single;
+      expect(call.selectedSigners.length, equals(1));
+      expect(call.selectedSigners.single, isA<SelectedSignerEd25519>());
+      final forwarded = call.selectedSigners.single as SelectedSignerEd25519;
+      expect(forwarded.verifierAddress, equals(_verifierA));
+    });
+
+    test(
         'submitWithMultipleSigners_threeSigners_oneCancelled_failsFastNoFurtherPrompts',
         () async {
-      // J.1.3: simulate a cancellation (the multi-signer mock raises
-      // WebAuthnCancelled mid-flight) and verify the signer manager
-      // surfaces the failure without retrying or fanning further calls.
+      // Simulates a cancellation (the multi-signer mock raises WebAuthnCancelled
+      // mid-flight) and verifies the signer manager surfaces the failure without
+      // retrying or fanning further calls.
       final h = buildHarness();
       h.multi.submitWithMultipleSignersOverride = (_) {
         throw const WebAuthnCancelled(

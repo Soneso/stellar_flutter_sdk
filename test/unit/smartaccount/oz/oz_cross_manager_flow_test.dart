@@ -95,10 +95,10 @@ class _MutableRuleManager implements OZContextRuleManagerInterface {
 
 void main() {
   // =======================================================================
-  // Group J.4 — cross-manager flows (plan line 723)
+  // Cross-manager flows
   // =======================================================================
 
-  group('Group J.4 cross-manager flows', () {
+  group('cross-manager flows', () {
     test(
         'crossManagerFlow_addRule_addSigner_removeSigner_listRules_consistentState',
         () async {
@@ -258,18 +258,13 @@ void main() {
   });
 
   // =======================================================================
-  // Group J.5 — cross-SDK behavior probes
+  // Manager behaviour probes
   //
-  // These tests pin Flutter SDK behaviour we want to keep in sync with
-  // the iOS port. Each case captures an externally-observable contract
-  // (host function shape, validation surface, three-tier rule
-  // resolution) that the iOS implementation must mirror byte-for-byte.
-  // The Dart-only assertions document the expected behaviour; the iOS
-  // test suite reproduces the same shape against its own manager
-  // surface.
+  // Each case captures an externally-observable contract (host function
+  // shape, validation surface, three-tier rule resolution).
   // =======================================================================
 
-  group('Group J.5 cross-SDK behaviour probes', () {
+  group('manager behaviour probes', () {
     test('crossSDK_addPasskey_singleSigner_relayer_buildsIdenticalHostFunction',
         () async {
       // Probe: the host function emitted by addPasskey on the

@@ -759,14 +759,13 @@ void main() {
     });
   });
 
-  // Cross-SDK byte-identity golden vector (AuthPayload codec).
+  // AuthPayload codec golden vector.
   //
   // Pins the byte-level XDR encoding of the OZ AuthPayload outer named-struct
   // map plus inner signer-map sort. Uses deterministic strkey constants
   // (rather than randomly-generated KeyPairs) so the encoded bytes are
-  // reproducible across SDKs. The expected hex is byte-identical to the
-  // matching fixture in the sibling SDK and must be updated in lockstep.
-  group('cross-SDK AuthPayload codec golden vector', () {
+  // reproducible. Update the expected hex whenever the encoding changes.
+  group('AuthPayload codec golden vector', () {
     test(
         'goldenVector5_authPayloadWithTwoDelegatedSigners_matchesFixture',
         () {

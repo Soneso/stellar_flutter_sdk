@@ -26,6 +26,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart'
         InMemoryStorageAdapter,
         StorageAdapter,
         OZSmartAccountConfig,
+        OZExternalSignerManager,
         OZIndexerClient,
         OZRelayerClient,
         OZSmartAccountSigner,
@@ -50,6 +51,7 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
     OZTransactionOperations? transactionOperations,
     Object? multiSignerManager,
     ExternalWalletAdapter? externalWallet,
+    OZExternalSignerManager? externalSignerManager,
   })  : _config = config ??
             OZSmartAccountConfig(
               rpcUrl: 'https://soroban-testnet.stellar.org',
@@ -69,7 +71,8 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
         _storage = storage ?? InMemoryStorageAdapter(),
         _events = SmartAccountEventEmitter(),
         _injectedMultiSignerManager = multiSignerManager,
-        _externalWallet = externalWallet {
+        _externalWallet = externalWallet,
+        _externalSignerManager = externalSignerManager {
     _transactionOperations =
         transactionOperations ?? OZTransactionOperations(this);
   }
@@ -86,6 +89,7 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
   late OZTransactionOperations _transactionOperations;
   Object? _injectedMultiSignerManager;
   ExternalWalletAdapter? _externalWallet;
+  OZExternalSignerManager? _externalSignerManager;
 
   /// Test-only setter for the injected multi-signer manager. Lets tests
   /// rebind the kit's `multiSignerManager` accessor after construction
@@ -98,6 +102,11 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
   /// kit interface, mirroring `setMultiSignerManager` above.
   void setExternalWallet(ExternalWalletAdapter? adapter) {
     _externalWallet = adapter;
+  }
+
+  /// Test-only setter for the external-signer manager.
+  void setExternalSignerManager(OZExternalSignerManager? manager) {
+    _externalSignerManager = manager;
   }
 
   /// Test-only setter for the transaction operations exposed via the
@@ -205,6 +214,9 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
 
   @override
   ExternalWalletAdapter? get externalWallet => _externalWallet;
+
+  @override
+  OZExternalSignerManager? get externalSignerManager => _externalSignerManager;
 
   @override
   Object get multiSignerManager {

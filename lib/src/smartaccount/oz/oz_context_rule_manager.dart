@@ -245,7 +245,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   }
 
   // -------------------------------------------------------------------------
-  // Parse context rule (inline; per D-103 not split into a separate file)
+  // Parse context rule
   // -------------------------------------------------------------------------
 
   /// Parses a raw `ScVal` context-rule struct into a typed

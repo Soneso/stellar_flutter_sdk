@@ -18,10 +18,12 @@ import '../../transaction.dart';
 import '../../util.dart';
 import '../../xdr/xdr.dart';
 import '../core/allow_credential.dart';
+import '../core/smart_account_constants.dart';
 import '../core/smart_account_errors.dart';
 import '../core/smart_account_utils.dart';
 import '../core/web_authn_provider.dart';
 import 'oz_address_strkey.dart';
+import 'oz_external_signer_manager.dart' show OZExternalSignerManager;
 import 'oz_internal_pipeline_interfaces.dart';
 import 'oz_secure_nonce.dart';
 import 'oz_selected_signer.dart';
@@ -32,11 +34,8 @@ import 'oz_storage_adapter.dart';
 import 'oz_transaction_operations.dart';
 import 'oz_validation.dart';
 
-// Re-export the SelectedSigner hierarchy so consumers that import this
-// file directly (rather than the SDK barrel) keep getting the symbols
-// they previously did. The actual declarations live in
-// `oz_selected_signer.dart` to break a circular-import between this
-// manager and the sibling managers (signer, policy, context-rule).
+// Re-export the SelectedSigner hierarchy; declarations live in oz_selected_signer.dart
+// to avoid a circular import with the sibling managers.
 export 'oz_selected_signer.dart';
 
 /// Manager for multi-signature smart-account operations.
@@ -241,6 +240,26 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       }
     }
 
+    // Validate Ed25519 signers: verifier address format, public-key length,
+    // and signing-source availability. All precondition checks run before any
+    // RPC call so failures surface cheaply.
+    final ed25519Signers =
+        selectedSigners.whereType<SelectedSignerEd25519>().toList(
+              growable: false,
+            );
+
+    if (ed25519Signers.isNotEmpty) {
+      final extManager = _kit.externalSignerManager;
+      if (extManager == null) {
+        throw ValidationException.invalidInput(
+          'selectedSigners',
+          'Ed25519 signers require OZExternalSignerManager to be configured '
+              'on the kit',
+        );
+      }
+      await _validateEd25519Signers(extManager, ed25519Signers);
+    }
+
     // Step 1: simulate to discover auth entries.
     final deployer = await _kit.getDeployer();
     final deployerAccount = await _fetchAccount(deployer.accountId);
@@ -302,7 +321,8 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
 
     // Step 3c: hoist signer reconstruction outside the entry loop;
     // selectedSigners is invariant per call. Throws once if any
-    // passkey lacks keyData (per the documented hoist invariant).
+    // passkey lacks keyData (per the documented hoist invariant). Ed25519
+    // signers are included so context-rule resolution counts them correctly.
     final smartAccountSigners = <OZSmartAccountSigner>[];
     for (final selectedSigner in selectedSigners) {
       if (selectedSigner is SelectedSignerPasskey) {
@@ -318,6 +338,13 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
         );
       } else if (selectedSigner is SelectedSignerWallet) {
         smartAccountSigners.add(OZDelegatedSigner(selectedSigner.address));
+      } else if (selectedSigner is SelectedSignerEd25519) {
+        smartAccountSigners.add(
+          OZExternalSigner.ed25519(
+            verifierAddress: selectedSigner.verifierAddress,
+            publicKey: selectedSigner.publicKey,
+          ),
+        );
       }
     }
 
@@ -432,10 +459,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
           signature: compactSig,
         );
 
-        // why: keyData is guaranteed non-null here because the hoist
-        // throws above when any passkey lacks keyData. Removing the
-        // hoist would turn this into a runtime crash; defensive
-        // re-checks would mask hoist regressions.
+        // keyData is non-null here: the hoist above throws when any passkey lacks it.
         final passkeySigner = OZExternalSigner(
           _kit.config.webauthnVerifierAddress,
           selectedSigner.keyData!,
@@ -511,6 +535,15 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
         );
       }
 
+      // Step 4c: per-Ed25519 signer signing.
+      signedEntry = await _signEntryWithEd25519Signers(
+        workingEntry: signedEntry,
+        authDigest: authDigest,
+        expirationLedger: expirationLedger,
+        resolvedContextRuleIds: resolvedContextRuleIds,
+        ed25519Signers: ed25519Signers,
+      );
+
       signedAuthEntries.add(signedEntry);
     }
 
@@ -572,6 +605,145 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   // -------------------------------------------------------------------------
   // Private helpers
   // -------------------------------------------------------------------------
+
+  /// Validates each [SelectedSignerEd25519] in [ed25519Signers] against the
+  /// registered signing sources in [extManager].
+  ///
+  /// Checks (in order per signer):
+  /// 1. [SelectedSignerEd25519.verifierAddress] is a valid C-strkey.
+  /// 2. [SelectedSignerEd25519.publicKey] is exactly
+  ///    [SmartAccountConstants.ed25519PublicKeySize] bytes.
+  /// 3. [extManager.canSignEd25519For] returns true (keypair or adapter
+  ///    registered).
+  ///
+  /// Throws [ValidationException.invalidInput] on the first violation found.
+  /// All checks run synchronously via the manager's in-memory registry, so
+  /// the method returns quickly before any RPC call is made.
+  Future<void> _validateEd25519Signers(
+    OZExternalSignerManager extManager,
+    List<SelectedSignerEd25519> ed25519Signers,
+  ) async {
+    for (final ed25519Signer in ed25519Signers) {
+      if (!StrKey.isValidContractId(ed25519Signer.verifierAddress)) {
+        throw ValidationException.invalidInput(
+          'selectedSigners',
+          'Ed25519 signer has an invalid verifier address (must be a C... '
+              'contract strkey): ${ed25519Signer.verifierAddress}',
+        );
+      }
+
+      if (ed25519Signer.publicKey.length !=
+          SmartAccountConstants.ed25519PublicKeySize) {
+        throw ValidationException.invalidInput(
+          'selectedSigners',
+          'Ed25519 signer public key must be exactly '
+              '${SmartAccountConstants.ed25519PublicKeySize} bytes, '
+              'got ${ed25519Signer.publicKey.length}',
+        );
+      }
+
+      final canSign = extManager.canSignEd25519For(
+        verifierAddress: ed25519Signer.verifierAddress,
+        publicKey: ed25519Signer.publicKey,
+      );
+      if (!canSign) {
+        final prefix =
+            SmartAccountUtils.truncateForLog(ed25519Signer.verifierAddress);
+        throw ValidationException.invalidInput(
+          'selectedSigners',
+          'Ed25519 signer (verifier=$prefix...) has no registered keypair '
+              'or adapter — register via '
+              'OZExternalSignerManager.addEd25519FromRawKey(...) before '
+              'signing',
+        );
+      }
+    }
+  }
+
+  /// Collects one Ed25519 signature per [SelectedSignerEd25519] entry in
+  /// declaration order and chains each onto [workingEntry]'s signature map.
+  ///
+  /// The signing source is resolved via the adapter-first precedence rule
+  /// documented on [OZExternalSignerManager.signEd25519AuthDigest]. After the
+  /// adapter or in-memory keypair returns the 64-byte signature, the pipeline
+  /// locally verifies it before accepting it. This prevents a signing source
+  /// that returns a wrong signature from causing an opaque on-chain failure
+  /// after submission.
+  ///
+  /// Non-Ed25519 entries in [selectedSigners] are skipped. When no Ed25519
+  /// entries are present, [workingEntry] is returned unchanged.
+  Future<XdrSorobanAuthorizationEntry> _signEntryWithEd25519Signers({
+    required XdrSorobanAuthorizationEntry workingEntry,
+    required Uint8List authDigest,
+    required int expirationLedger,
+    required List<int> resolvedContextRuleIds,
+    required List<SelectedSignerEd25519> ed25519Signers,
+  }) async {
+    var currentEntry = workingEntry;
+
+    if (ed25519Signers.isEmpty) return currentEntry;
+
+    // validateSignerSet guarantees externalSignerManager is non-null whenever
+    // Ed25519 signers are present.
+    final extManager = _kit.externalSignerManager!;
+
+    for (final selectedSigner in ed25519Signers) {
+      final verifierAddress = selectedSigner.verifierAddress;
+      final publicKey = selectedSigner.publicKey;
+
+      // Request the 64-byte signature from the external signer manager. The
+      // manager implements adapter-first precedence internally.
+      final rawSignature = await extManager.signEd25519AuthDigest(
+        verifierAddress: verifierAddress,
+        publicKey: publicKey,
+        authDigest: authDigest,
+      );
+
+      // Local signature verification: ensure the returned signature verifies
+      // against the registered public key before trusting it downstream. This
+      // makes failures actionable before submission rather than producing an
+      // opaque on-chain auth failure.
+      if (rawSignature.length != SmartAccountConstants.ed25519SignatureSize) {
+        throw TransactionException.signingFailed(
+          'Ed25519 signing source returned ${rawSignature.length} bytes for '
+              'verifier $verifierAddress; expected '
+              '${SmartAccountConstants.ed25519SignatureSize}',
+        );
+      }
+
+      // KeyPair.verify takes the raw message bytes (no pre-hashing); it
+      // internally constructs the signed-message structure.
+      final verifierKeypair = KeyPair.fromPublicKey(publicKey);
+      final signatureValid = verifierKeypair.verify(authDigest, rawSignature);
+      if (!signatureValid) {
+        throw TransactionException.signingFailed(
+          'Ed25519 signing source returned a signature that does not verify '
+              'against the registered public key for verifier $verifierAddress',
+        );
+      }
+
+      // Wrap the verified 64-byte signature into the on-chain map shape and
+      // attach it to the working entry.
+      final ed25519Sig = OZEd25519Signature(
+        publicKey: publicKey,
+        signature: rawSignature,
+      );
+      final ed25519Signer = OZExternalSigner.ed25519(
+        verifierAddress: verifierAddress,
+        publicKey: publicKey,
+      );
+
+      currentEntry = await OZSmartAccountAuth.signAuthEntry(
+        entry: currentEntry,
+        signer: ed25519Signer,
+        signature: ed25519Sig,
+        expirationLedger: expirationLedger,
+        contextRuleIds: resolvedContextRuleIds,
+      );
+    }
+
+    return currentEntry;
+  }
 
   /// Reads the simulation-result error message, falling back to the JSON-RPC
   /// transport error when the result itself is absent.

@@ -571,6 +571,46 @@ abstract class SmartAccountUtils {
   }
 
   // ==========================================================================
+  // Hash helpers
+  // ==========================================================================
+
+  /// Mixes the bytes of [data] into [seed] using a 31× polynomial accumulator
+  /// and returns the resulting hash code value.
+  ///
+  /// Suitable for Dart `hashCode` implementations over `List<int>` / `Uint8List`
+  /// fields. The algorithm is identical to the one used by `Object.hashAll`
+  /// internals and is safe for use as a `Map` / `Set` key hash — not suitable
+  /// for cryptographic purposes.
+  ///
+  /// Usage in a `hashCode` getter that accumulates multiple fields:
+  /// ```dart
+  /// @override
+  /// int get hashCode => SmartAccountUtils.hashBytes(field1.hashCode, field2Bytes);
+  /// ```
+  @internal
+  static int hashBytes(int seed, List<int> data) {
+    var h = seed;
+    for (final b in data) {
+      h = 0x1fffffff & (31 * h + b);
+    }
+    return h;
+  }
+
+  /// Returns the first 8 characters of [address] for human-friendly log lines,
+  /// or the full string when shorter.
+  ///
+  /// Used for contract address truncation in error messages where printing the
+  /// full 56-character strkey would be noisy. The 8-character prefix is long
+  /// enough to distinguish addresses in a typical log trace.
+  @internal
+  static String truncateForLog(String address) {
+    const int prefixLength = 8;
+    return address.length > prefixLength
+        ? address.substring(0, prefixLength)
+        : address;
+  }
+
+  // ==========================================================================
   // Internal helpers
   // ==========================================================================
 

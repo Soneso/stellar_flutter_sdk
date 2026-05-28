@@ -32,10 +32,10 @@ OZSmartAccountSigner _delegated(String address) =>
 
 void main() {
   // =======================================================================
-  // Group J.3 — addContextRule validation (plan line 722)
+  // addContextRule validation
   // =======================================================================
 
-  group('Group J.3 addContextRule validation', () {
+  group('addContextRule validation', () {
     test('addContextRule_emptyName_throws', () async {
       final h = _buildHarness();
       final mgr = OZContextRuleManager(h.kit);

@@ -71,10 +71,10 @@ class _ScriptedRuleManager implements OZContextRuleManagerInterface {
 
 void main() {
   // =======================================================================
-  // Group J.2 — `removeSignerBySigner` round-trip (plan line 721)
+  // `removeSignerBySigner` round-trip
   // =======================================================================
 
-  group('Group J.2 removeSignerBySigner', () {
+  group('removeSignerBySigner', () {
     test(
         'removeSigner_bySignerValue_resolvesToCorrectIdViaListContextRules',
         () async {

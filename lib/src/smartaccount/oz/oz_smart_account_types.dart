@@ -10,6 +10,7 @@ import '../../util.dart';
 import '../../xdr/xdr.dart';
 import '../core/smart_account_constants.dart';
 import '../core/smart_account_errors.dart';
+import '../core/smart_account_utils.dart';
 
 /// Represents a signer that can authorise OpenZeppelin Smart Account
 /// transactions.
@@ -311,19 +312,8 @@ final class OZExternalSigner extends OZSmartAccountSigner {
   /// hash of [keyData], so logically equal signers hash equally.
   @override
   int get hashCode {
-    var result = verifierAddress.hashCode;
-    result = 0x1fffffff & (31 * result + _byteListContentHash(keyData));
-    return result;
-  }
-
-  static int _byteListContentHash(Uint8List bytes) {
-    // FNV-1a-like rolling hash for byte content (matches a typical
-    // `contentHashCode()` implementation).
-    var hash = 1;
-    for (final b in bytes) {
-      hash = 0x1fffffff & (31 * hash + b);
-    }
-    return hash;
+    final keyHash = SmartAccountUtils.hashBytes(1, keyData);
+    return 0x1fffffff & (31 * verifierAddress.hashCode + keyHash);
   }
 
   static bool _constantTimeEquals(Uint8List a, Uint8List b) {

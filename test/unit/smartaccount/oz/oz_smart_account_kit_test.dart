@@ -127,10 +127,10 @@ class _StubExternalWallet extends ExternalWalletAdapter {
 
 void main() {
   // =======================================================================
-  // Group A — kit-initialization tests
+  // kit-initialization tests
   // =======================================================================
 
-  group('Group A factory and initialization', () {
+  group('factory and initialization', () {
     test('factory_returnsKitForValidConfig', () {
       final config = _validConfig();
       final kit = OZSmartAccountKit.create(config: config);
@@ -246,13 +246,42 @@ void main() {
       final kit = OZSmartAccountKit.create(config: _validConfig());
       expect(kit.externalSignerManager, isNull);
     });
+
+    test('test_externalSignerManager_returnsConfigValue', () {
+      final manager = OZExternalSignerManager(
+        networkPassphrase: _validPassphrase,
+      );
+      final config = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        externalSignerManager: manager,
+      );
+      final kit = OZSmartAccountKit.create(config: config);
+
+      expect(identical(kit.externalSignerManager, manager), isTrue);
+    });
+
+    test('test_externalSignerManager_nilWhenNotSetInConfig', () {
+      final config = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        // externalSignerManager not set — defaults to null.
+      );
+      final kit = OZSmartAccountKit.create(config: config);
+
+      expect(kit.externalSignerManager, isNull);
+    });
   });
 
   // =======================================================================
-  // Group B — close lifecycle
+  // close lifecycle
   // =======================================================================
 
-  group('Group B close lifecycle', () {
+  group('close lifecycle', () {
     test('close_onFreshKit_doesNotThrow', () async {
       final kit = OZSmartAccountKit.create(config: _validConfig());
       await kit.close();
@@ -362,10 +391,10 @@ void main() {
   });
 
   // =======================================================================
-  // Group C — disconnect + requireConnected
+  // disconnect + requireConnected
   // =======================================================================
 
-  group('Group C disconnect and requireConnected', () {
+  group('disconnect and requireConnected', () {
     test('disconnect_emitsWalletDisconnected_andClearsState', () async {
       final storage = _RecordingStorage();
       final kit = OZSmartAccountKit.create(
@@ -435,10 +464,10 @@ void main() {
   });
 
   // =======================================================================
-  // Group D — default deployer caching
+  // default deployer caching
   // =======================================================================
 
-  group('Group D default deployer', () {
+  group('default deployer', () {
     test('getDeployer_withCustomKeypair_returnsThatKeypair', () async {
       final custom = KeyPair.random();
       final kit = OZSmartAccountKit.create(
@@ -474,11 +503,10 @@ void main() {
   });
 
   // =======================================================================
-  // Group E — above-floor coverage (state transitions, identity,
-  // resource release behaviour)
+  // above-floor coverage (state transitions, identity, resource release)
   // =======================================================================
 
-  group('Group E above-floor coverage', () {
+  group('above-floor coverage', () {
     test('stateTransitions_disconnectedToConnectedToDisconnected', () async {
       final kit = OZSmartAccountKit.create(config: _validConfig());
 
@@ -598,10 +626,10 @@ void main() {
   });
 
   // =======================================================================
-  // Group F — event-system tests directly invoking kit
+  // event-system tests directly invoking kit
   // =======================================================================
 
-  group('Group F kit event subscription', () {
+  group('kit event subscription', () {
     test('typeSafeSubscription_receivesDisconnectEvent', () async {
       final kit = OZSmartAccountKit.create(config: _validConfig());
       await kit.setConnectedState(
@@ -825,9 +853,8 @@ void main() {
 // ---------------------------------------------------------------------------
 
 /// Records the close-call order across the kit's HTTP transports so the
-/// `close_orderingFiresSorobanFirst` test can assert the cross-SDK parity
-/// contract. Each subclass appends its label to the shared list when
-/// `close` runs.
+/// `close_orderingFiresSorobanFirst` test can assert the documented teardown
+/// sequence.
 
 class _OrderedRecordingSorobanServer extends RecordingSorobanServer {
   _OrderedRecordingSorobanServer(this._order, this._label);

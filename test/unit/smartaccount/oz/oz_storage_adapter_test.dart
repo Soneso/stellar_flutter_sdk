@@ -1121,7 +1121,7 @@ void main() {
       expect(config.sessionExpiryMs, oneDayMs);
     });
 
-    // Group D: cross-SDK above-floor concurrency mandate.
+    // Above-floor concurrency.
     test('test_concurrent_writes_10_parallel_no_partial_state', () async {
       const iterations = 100;
       for (var run = 0; run < iterations; run++) {

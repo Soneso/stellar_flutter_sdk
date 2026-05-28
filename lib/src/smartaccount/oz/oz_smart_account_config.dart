@@ -10,6 +10,7 @@ import '../../util.dart';
 import '../core/smart_account_errors.dart';
 import '../core/web_authn_provider.dart';
 import 'oz_constants.dart';
+import 'oz_external_signer_manager.dart';
 import 'oz_indexer_client.dart';
 import 'oz_storage_adapter.dart';
 
@@ -61,6 +62,7 @@ import 'oz_storage_adapter.dart';
 /// | webauthnProvider            | No       | null                   |
 /// | storage                     | No       | InMemoryStorageAdapter |
 /// | externalWallet              | No       | null                   |
+/// | externalSignerManager       | No       | null                   |
 /// | maxContextRuleScanId        | No       | 50                     |
 ///
 /// Throws [ConfigurationException] if required parameters are blank or
@@ -93,6 +95,7 @@ class OZSmartAccountConfig {
     this.webauthnProvider,
     StorageAdapter? storage,
     this.externalWallet,
+    this.externalSignerManager,
     this.maxContextRuleScanId = 50,
   }) : storage = storage ?? InMemoryStorageAdapter() {
     if (rpcUrl.trim().isEmpty) {
@@ -225,6 +228,20 @@ class OZSmartAccountConfig {
   /// adapter instead of using WebAuthn credentials.
   final ExternalWalletAdapter? externalWallet;
 
+  /// Optional external-signer manager for Ed25519 multi-signer signing
+  /// ceremonies.
+  ///
+  /// Consumers construct [OZExternalSignerManager] separately, register
+  /// Ed25519 signing keypairs via
+  /// [OZExternalSignerManager.addEd25519FromRawKey], and supply the manager
+  /// here so that `kit.externalSignerManager` can forward signing requests
+  /// to it during multi-signer operations that include
+  /// `SelectedSignerEd25519` entries.
+  ///
+  /// When `null`, Ed25519 signers in `selectedSigners` cause
+  /// [OZMultiSignerManager] to throw [InvalidInput].
+  final OZExternalSignerManager? externalSignerManager;
+
   /// Maximum rule ID to scan when iterating context rules.
   ///
   /// The contract assigns monotonically increasing IDs to context rules.
@@ -320,9 +337,9 @@ class OZSmartAccountConfig {
   ///
   /// Each named argument defaults to the current value of the corresponding
   /// field. Pass [setDeployerKeypair] / [setRpId] / [setRelayerUrl] /
-  /// [setIndexerUrl] / [setWebauthnProvider] / [setExternalWallet] as
-  /// `true` together with the corresponding `null` argument to clear an
-  /// optional field.
+  /// [setIndexerUrl] / [setWebauthnProvider] / [setExternalWallet] /
+  /// [setExternalSignerManager] as `true` together with the corresponding
+  /// `null` argument to clear an optional field.
   OZSmartAccountConfig copyWith({
     String? rpcUrl,
     String? networkPassphrase,
@@ -345,6 +362,8 @@ class OZSmartAccountConfig {
     StorageAdapter? storage,
     ExternalWalletAdapter? externalWallet,
     bool setExternalWallet = false,
+    OZExternalSignerManager? externalSignerManager,
+    bool setExternalSignerManager = false,
     int? maxContextRuleScanId,
   }) {
     return OZSmartAccountConfig(
@@ -369,6 +388,9 @@ class OZSmartAccountConfig {
       externalWallet: setExternalWallet
           ? externalWallet
           : (externalWallet ?? this.externalWallet),
+      externalSignerManager: setExternalSignerManager
+          ? externalSignerManager
+          : (externalSignerManager ?? this.externalSignerManager),
       maxContextRuleScanId: maxContextRuleScanId ?? this.maxContextRuleScanId,
     );
   }
@@ -392,6 +414,11 @@ class OZSmartAccountConfig {
         webauthnProvider == other.webauthnProvider &&
         storage == other.storage &&
         externalWallet == other.externalWallet &&
+        // why: OZExternalSignerManager is a stateful object; value equality
+        // is meaningless. Use identity (identical) so two configs that
+        // reference the same manager instance compare equal, while different
+        // instances — even with the same network passphrase — do not.
+        identical(externalSignerManager, other.externalSignerManager) &&
         maxContextRuleScanId == other.maxContextRuleScanId;
   }
 
@@ -412,6 +439,7 @@ class OZSmartAccountConfig {
         webauthnProvider,
         storage,
         externalWallet,
+        identityHashCode(externalSignerManager),
         maxContextRuleScanId,
       ]);
 }
@@ -458,6 +486,7 @@ class OZSmartAccountConfigBuilder {
   WebAuthnProvider? _webauthnProvider;
   StorageAdapter? _storage;
   ExternalWalletAdapter? _externalWallet;
+  OZExternalSignerManager? _externalSignerManager;
   int _maxContextRuleScanId = 50;
 
   /// Sets the deployer keypair. Pass `null` to use the deterministic
@@ -529,6 +558,14 @@ class OZSmartAccountConfigBuilder {
     return this;
   }
 
+  /// Sets the external-signer manager for Ed25519 multi-signer signing
+  /// ceremonies. Pass `null` to disable Ed25519 multi-signer support.
+  OZSmartAccountConfigBuilder externalSignerManager(
+      OZExternalSignerManager? value) {
+    _externalSignerManager = value;
+    return this;
+  }
+
   /// Sets the maximum context rule ID to scan when iterating rules.
   OZSmartAccountConfigBuilder maxContextRuleScanId(int value) {
     _maxContextRuleScanId = value;
@@ -555,6 +592,7 @@ class OZSmartAccountConfigBuilder {
       webauthnProvider: _webauthnProvider,
       storage: _storage,
       externalWallet: _externalWallet,
+      externalSignerManager: _externalSignerManager,
       maxContextRuleScanId: _maxContextRuleScanId,
     );
   }
