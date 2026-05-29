@@ -188,15 +188,11 @@ abstract class OZSmartAccountKitInterface {
   /// the kit.
   String? get contractId;
 
-  /// The external wallet adapter currently configured on the kit, or
-  /// `null` when no adapter is set. Consumed by the multi-signer
-  /// pipeline for delegated wallet signers.
-  ExternalWalletAdapter? get externalWallet;
-
-  /// The external-signer manager for Ed25519 multi-signer signing
-  /// ceremonies, or `null` when none was supplied via
-  /// [OZSmartAccountConfig.externalSignerManager].
-  OZExternalSignerManager? get externalSignerManager;
+  /// The unified external-signer manager, constructed by the kit from the
+  /// supplied configuration. Non-null; provides in-memory keypair
+  /// registration and adapter-backed signing for both G-address wallet
+  /// signers and Ed25519 external signers.
+  OZExternalSignerManager get externalSigners;
 
   /// The multi-signer manager handle exposed through the kit
   /// interface. Typed as [Object] to avoid a circular import between

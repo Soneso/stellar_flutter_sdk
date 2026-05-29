@@ -216,26 +216,20 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
               growable: false,
             );
 
-    if (walletSigners.isNotEmpty && _kit.externalWallet == null) {
-      throw ValidationException.invalidInput(
-        'selectedSigners',
-        'Wallet signers require an external wallet adapter to be configured',
-      );
-    }
-
     for (final walletSigner in walletSigners) {
       bool canSign;
       try {
-        canSign = _kit.externalWallet!.canSignFor(walletSigner.address);
+        canSign = await _kit.externalSigners.canSignFor(walletSigner.address);
       } catch (_) {
         canSign = false;
       }
       if (!canSign) {
         throw ValidationException.invalidInput(
           'selectedSigners',
-          'No signer available for address: ${walletSigner.address}. '
-              'Use externalWallet.addFromSecret() or '
-              'externalWallet.addFromWallet() to add a signer.',
+          'No signing source available for address: ${walletSigner.address}. '
+              'Register an in-memory keypair via '
+              'kit.externalSigners.addFromSecret(secretKey), '
+              'or supply config.externalWallet at kit construction.',
         );
       }
     }
@@ -249,15 +243,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
             );
 
     if (ed25519Signers.isNotEmpty) {
-      final extManager = _kit.externalSignerManager;
-      if (extManager == null) {
-        throw ValidationException.invalidInput(
-          'selectedSigners',
-          'Ed25519 signers require OZExternalSignerManager to be configured '
-              'on the kit',
-        );
-      }
-      await _validateEd25519Signers(extManager, ed25519Signers);
+      await _validateEd25519Signers(_kit.externalSigners, ed25519Signers);
     }
 
     // Step 1: simulate to discover auth entries.
@@ -479,8 +465,6 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       for (final selectedSigner in selectedSigners) {
         if (selectedSigner is! SelectedSignerWallet) continue;
 
-        final externalWallet = _kit.externalWallet!;
-
         final checkAuthInvocation = XdrSorobanAuthorizedInvocation(
           XdrSorobanAuthorizedFunction.forInvokeContractArgs(
             XdrInvokeContractArgs(
@@ -500,28 +484,17 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
             final stream = XdrDataOutputStream();
             XdrHashIDPreimage.encode(stream, preimage);
             final preimageXdr = base64Encode(stream.bytes);
-            try {
-              final result = await externalWallet.signAuthEntry(
-                preimageXdr,
-                options: SignAuthEntryOptions(
-                  networkPassphrase: _kit.config.networkPassphrase,
-                  address: selectedSigner.address,
-                ),
-              );
-              final sigBytes = base64Decode(result.signedAuthEntry);
-              final sigSignerAddress = result.signerAddress ??
-                  selectedSigner.address;
-              return _AuthSignature(
-                publicKey: sigSignerAddress,
-                signature: Uint8List.fromList(sigBytes),
-              );
-            } catch (e) {
-              throw TransactionException.signingFailed(
-                'External wallet signing failed for '
-                '${selectedSigner.address}: $e',
-                cause: e,
-              );
-            }
+            final result = await _kit.externalSigners.signAuthEntry(
+              selectedSigner.address,
+              preimageXdr,
+            );
+            final sigBytes = base64Decode(result.signedAuthEntry);
+            final sigSignerAddress =
+                result.signerAddress ?? selectedSigner.address;
+            return _AuthSignature(
+              publicKey: sigSignerAddress,
+              signature: Uint8List.fromList(sigBytes),
+            );
           },
         );
         signedAuthEntries.add(signedDelegatedEntry);
@@ -651,10 +624,10 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
             SmartAccountUtils.truncateForLog(ed25519Signer.verifierAddress);
         throw ValidationException.invalidInput(
           'selectedSigners',
-          'Ed25519 signer (verifier=$prefix...) has no registered keypair '
-              'or adapter — register via '
-              'OZExternalSignerManager.addEd25519FromRawKey(...) before '
-              'signing',
+          'Ed25519 signer (verifier=$prefix...) has no registered signing '
+              'source. Register an in-memory key via '
+              'kit.externalSigners.addEd25519FromRawKey(...), '
+              'or supply config.externalEd25519Adapter at kit construction.',
         );
       }
     }
@@ -683,9 +656,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
 
     if (ed25519Signers.isEmpty) return currentEntry;
 
-    // _validateEd25519Signers guarantees externalSignerManager is non-null
-    // whenever Ed25519 signers are present.
-    final extManager = _kit.externalSignerManager!;
+    final extManager = _kit.externalSigners;
 
     for (final selectedSigner in ed25519Signers) {
       final verifierAddress = selectedSigner.verifierAddress;
@@ -801,8 +772,6 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     required SelectedSignerWallet walletSigner,
     required int expirationLedger,
   }) async {
-    final externalWallet = _kit.externalWallet!;
-
     final signedEntry = _cloneEntryWithExpiration(entry, expirationLedger);
 
     final credentials = signedEntry.credentials.address;
@@ -829,21 +798,11 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     XdrHashIDPreimage.encode(stream, preimage);
     final preimageXdr = base64Encode(stream.bytes);
 
-    final SignAuthEntryResult signResult;
-    try {
-      signResult = await externalWallet.signAuthEntry(
-        preimageXdr,
-        options: SignAuthEntryOptions(
-          networkPassphrase: _kit.config.networkPassphrase,
-          address: walletSigner.address,
-        ),
-      );
-    } catch (e) {
-      throw TransactionException.signingFailed(
-        'External wallet signing failed for ${walletSigner.address}: $e',
-        cause: e,
-      );
-    }
+    final SignAuthEntryResult signResult =
+        await _kit.externalSigners.signAuthEntry(
+      walletSigner.address,
+      preimageXdr,
+    );
 
     final signatureBytes = base64Decode(signResult.signedAuthEntry);
 

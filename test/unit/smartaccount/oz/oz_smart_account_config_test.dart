@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -624,17 +626,17 @@ void main() {
       expect(config.externalWallet, isNull);
     });
 
-    test('testBuilder_externalSignerManager_setter', () {
+    test('testBuilder_externalEd25519Adapter_setter', () {
       final config = OZSmartAccountConfig.builder(
         rpcUrl: _validRpcUrl,
         networkPassphrase: _validPassphrase,
         accountWasmHash: _validWasmHash,
         webauthnVerifierAddress: _validVerifier,
       )
-          .externalSignerManager(null)
+          .externalEd25519Adapter(null)
           .build();
 
-      expect(config.externalSignerManager, isNull);
+      expect(config.externalEd25519Adapter, isNull);
     });
 
     test('testBuilder_maxContextRuleScanId_setter', () {
@@ -655,5 +657,148 @@ void main() {
       expect(deployer, isNotNull);
       expect(deployer.accountId.startsWith('G'), isTrue);
     });
+
+    // -------------------------------------------------------------------------
+    // copyWith — externalEd25519Adapter both branches
+    //
+    // The sentinel flag pattern mirrors the existing setExternalWallet pattern.
+    // Both branches of the ternary in copyWith must be exercised:
+    //   (a) without the flag → the adapter is preserved from the original.
+    //   (b) with the flag + null → the adapter is cleared to null.
+    // -------------------------------------------------------------------------
+
+    test(
+        'testCopyWith_externalEd25519Adapter_withoutFlag_preservesOriginalAdapter',
+        () {
+      final adapter = _StubEd25519Adapter();
+      final original = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        externalEd25519Adapter: adapter,
+      );
+
+      // copyWith without setExternalEd25519Adapter: true must preserve the
+      // adapter from the original config even when the param is omitted.
+      final copied = original.copyWith(rpName: 'Other Name');
+
+      expect(
+        identical(copied.externalEd25519Adapter, adapter),
+        isTrue,
+        reason:
+            'externalEd25519Adapter must be preserved when setExternalEd25519Adapter is false',
+      );
+    });
+
+    test(
+        'testCopyWith_externalEd25519Adapter_withFlagAndNull_clearsAdapter',
+        () {
+      final adapter = _StubEd25519Adapter();
+      final original = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        externalEd25519Adapter: adapter,
+      );
+
+      // Setting the sentinel flag to true with a null adapter must clear the
+      // field to null in the produced config.
+      final cleared = original.copyWith(
+        setExternalEd25519Adapter: true,
+        externalEd25519Adapter: null,
+      );
+
+      expect(
+        cleared.externalEd25519Adapter,
+        isNull,
+        reason:
+            'externalEd25519Adapter must be null when setExternalEd25519Adapter is true and adapter is null',
+      );
+    });
+
+    test(
+        'testCopyWith_externalEd25519Adapter_withFlagAndNonNull_replacesAdapter',
+        () {
+      final original = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+      );
+      final adapter = _StubEd25519Adapter();
+
+      final updated = original.copyWith(
+        setExternalEd25519Adapter: true,
+        externalEd25519Adapter: adapter,
+      );
+
+      expect(
+        identical(updated.externalEd25519Adapter, adapter),
+        isTrue,
+        reason: 'copyWith with flag true must install the supplied adapter',
+      );
+    });
+
+    test(
+        'testEquality_differentExternalEd25519Adapter_notEqual',
+        () {
+      final a = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        externalEd25519Adapter: _StubEd25519Adapter(),
+      );
+      final b = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        externalEd25519Adapter: _StubEd25519Adapter(),
+      );
+
+      // Two distinct adapter instances must break equality (identical() check).
+      expect(a == b, isFalse);
+    });
+
+    test(
+        'testEquality_sameExternalEd25519AdapterInstance_equal',
+        () {
+      final adapter = _StubEd25519Adapter();
+      final a = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        externalEd25519Adapter: adapter,
+      );
+      final b = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        externalEd25519Adapter: adapter,
+      );
+
+      // Same instance must produce equal configs.
+      expect(a == b, isTrue);
+      expect(a.hashCode, equals(b.hashCode));
+    });
   });
+}
+
+/// Minimal [OZExternalEd25519SignerAdapter] stub used to test equality and
+/// copyWith behaviour. Never asked to sign in config-level tests.
+class _StubEd25519Adapter extends OZExternalEd25519SignerAdapter {
+  @override
+  bool canSignFor(String verifierAddress, Uint8List publicKey) => false;
+
+  @override
+  Future<Uint8List> signAuthDigest(
+    Uint8List authDigest,
+    Uint8List publicKey,
+  ) async =>
+      throw UnsupportedError('_StubEd25519Adapter.signAuthDigest not used in config tests');
 }

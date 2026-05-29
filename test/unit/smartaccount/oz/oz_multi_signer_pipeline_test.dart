@@ -676,7 +676,7 @@ void main() {
         config: config,
         sorobanServer: mock,
         deployer: deployer,
-        externalSignerManager: extManager,
+        externalSigners: extManager,
       );
       kit.setConnected(credentialId: _credentialIdB64, contractId: _contractA);
 
@@ -753,7 +753,7 @@ void main() {
         config: config,
         sorobanServer: mock,
         deployer: deployer,
-        externalSignerManager: extManager,
+        externalSigners: extManager,
       );
       kit.setConnected(credentialId: _credentialIdB64, contractId: _contractA);
 

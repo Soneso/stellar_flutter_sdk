@@ -31,9 +31,8 @@ import 'oz_wallet_operations.dart';
 /// [OZSmartAccountKit] owns the lifetime of the underlying [SorobanServer],
 /// optional [OZIndexerClient] and [OZRelayerClient] HTTP clients, and exposes
 /// eight manager objects that cover the smart-account feature set. Seven are
-/// instantiated lazily by the kit; the eighth ([externalSignerManager]) is
-/// supplied via [OZSmartAccountConfig.externalSignerManager] and surfaced
-/// unchanged:
+/// instantiated lazily by the kit; the eighth ([externalSigners]) is
+/// constructed by the kit from the supplied configuration:
 ///
 /// - [walletOperations] — create / connect / disconnect wallet lifecycle.
 /// - [transactionOperations] — host-function build, sign, and submit.
@@ -42,10 +41,10 @@ import 'oz_wallet_operations.dart';
 /// - [contextRuleManager] — context rules linking signers + policies.
 /// - [credentialManager] — local credential persistence and lifecycle.
 /// - [multiSignerManager] — multi-signer authorisation flow.
-/// - [externalSignerManager] — Ed25519 external-signer manager; consumers
-///   construct [OZExternalSignerManager] and pass it via
-///   [OZSmartAccountConfig.externalSignerManager] to enable Ed25519
-///   multi-signer signing.
+/// - [externalSigners] — unified external-signer manager, kit-constructed
+///   from [OZSmartAccountConfig.externalWallet] and
+///   [OZSmartAccountConfig.externalEd25519Adapter]. Non-null; available
+///   immediately after kit construction.
 ///
 /// Construction is via the static [create] factory so the configuration
 /// invariants are validated once by [OZSmartAccountConfig] before the kit
@@ -82,10 +81,10 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
     required StorageAdapter storage,
     required this.relayerClient,
     required this.indexerClient,
-    required ExternalWalletAdapter? externalWallet,
+    required OZExternalSignerManager externalSigners,
     required this.sorobanServer,
   })  : _storage = storage,
-        _externalWallet = externalWallet;
+        _externalSigners = externalSigners;
 
   /// Test-only constructor; production consumers use [create].
   @visibleForTesting
@@ -94,14 +93,14 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
     required StorageAdapter storage,
     required OZRelayerClient? relayerClient,
     required OZIndexerClient? indexerClient,
-    required ExternalWalletAdapter? externalWallet,
+    required OZExternalSignerManager externalSigners,
     required SorobanServer sorobanServer,
   }) : this._(
           config: config,
           storage: storage,
           relayerClient: relayerClient,
           indexerClient: indexerClient,
-          externalWallet: externalWallet,
+          externalSigners: externalSigners,
           sorobanServer: sorobanServer,
         );
 
@@ -132,11 +131,9 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
   /// Lifetime is bound to the kit; the adapter is supplied by [config].
   final StorageAdapter _storage;
 
-  /// Captured external-wallet adapter that mirrors
-  /// [OZSmartAccountConfig.externalWallet]; exposed through
-  /// [externalWallet]. Captured at construction time so the kit's view
-  /// stays stable for the lifetime of the instance.
-  final ExternalWalletAdapter? _externalWallet;
+  /// Kit-owned external-signer manager constructed from the supplied
+  /// configuration. Non-null; exposed through [externalSigners].
+  final OZExternalSignerManager _externalSigners;
 
   // Event emitter
 
@@ -176,21 +173,18 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
   late final OZMultiSignerManager multiSignerManager =
       OZMultiSignerManager(this);
 
-  /// External-signer manager for Ed25519 multi-signer signing ceremonies.
+  /// The unified external-signer manager, constructed by the kit from the
+  /// supplied configuration. Provides in-memory keypair registration and
+  /// adapter-backed signing for both G-address wallet signers and Ed25519
+  /// external signers.
   ///
-  /// Returns the [OZExternalSignerManager] supplied via
-  /// [OZSmartAccountConfig.externalSignerManager] at kit construction time,
-  /// or `null` when none was configured.
-  ///
-  /// Consumers construct [OZExternalSignerManager] separately, register Ed25519
-  /// signing keypairs or adapters on it, and pass it through
-  /// [OZSmartAccountConfig.externalSignerManager] so that multi-signer
-  /// operations that include [SelectedSignerEd25519] entries can reach the
-  /// signing source. When this property is `null` any `SelectedSignerEd25519`
-  /// entry in a `selectedSigners` list causes [OZMultiSignerManager] to throw
-  /// [InvalidInput].
-  OZExternalSignerManager? get externalSignerManager =>
-      config.externalSignerManager;
+  /// Supply [OZSmartAccountConfig.externalWallet] and / or
+  /// [OZSmartAccountConfig.externalEd25519Adapter] at kit construction to
+  /// enable adapter-backed signing. Register in-memory keys at runtime via
+  /// [OZExternalSignerManager.addFromSecret] (wallet) and
+  /// [OZExternalSignerManager.addEd25519FromRawKey] (Ed25519).
+  @override
+  OZExternalSignerManager get externalSigners => _externalSigners;
 
   // Connection state
 
@@ -238,13 +232,6 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
   /// when no wallet is connected.
   @override
   String? get contractId => _contractId;
-
-  /// External-wallet adapter exposed through the kit's interface.
-  ///
-  /// Returns the value captured from [config] at construction time so
-  /// the multi-signer pipeline observes a stable adapter reference.
-  @override
-  ExternalWalletAdapter? get externalWallet => _externalWallet;
 
   // Connection management
 
@@ -460,12 +447,19 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
             ),
           );
 
+    final externalSigners = OZExternalSignerManager(
+      networkPassphrase: config.networkPassphrase,
+      walletAdapter: config.externalWallet,
+      walletConnectionStorage: null,
+      ed25519Adapter: config.externalEd25519Adapter,
+    );
+
     return OZSmartAccountKit._(
       config: config,
       storage: config.storage,
       relayerClient: relayerClient,
       indexerClient: indexerClient,
-      externalWallet: config.externalWallet,
+      externalSigners: externalSigners,
       sorobanServer: SorobanServer(config.rpcUrl),
     );
   }

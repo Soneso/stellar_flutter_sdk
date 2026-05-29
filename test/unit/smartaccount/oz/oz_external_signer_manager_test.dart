@@ -1271,13 +1271,13 @@ void main() {
     test(
         'test_ed25519Adapter_takesPrecedenceForCanSignForTrue',
         () async {
-      final manager = _createManager();
       final keypair = KeyPair.random();
       final publicKey = Uint8List.fromList(keypair.publicKey);
 
-      // Adapter always claims it can sign — no in-memory keypair registered.
-      manager.setEd25519Adapter(
-        _AlwaysSignAdapter(keypair: keypair),
+      // Adapter injected at construction — always claims it can sign.
+      final manager = OZExternalSignerManager(
+        networkPassphrase: _testNetworkPassphrase,
+        ed25519Adapter: _AlwaysSignAdapter(keypair: keypair),
       );
 
       expect(
@@ -1304,15 +1304,16 @@ void main() {
     test(
         'test_ed25519Adapter_falsyAdapterFallsBackToInProcessKeypair',
         () async {
-      final manager = _createManager();
+      // Adapter injected at construction — claims it cannot sign for any key.
+      final manager = OZExternalSignerManager(
+        networkPassphrase: _testNetworkPassphrase,
+        ed25519Adapter: _NeverSignAdapter(),
+      );
       final rawSeed = Uint8List.fromList(List<int>.generate(32, (i) => i + 4));
       final publicKey = manager.addEd25519FromRawKey(
         secretKeyBytes: rawSeed,
         verifierAddress: _validContractVerifier,
       );
-
-      // Adapter claims it cannot sign for any key.
-      manager.setEd25519Adapter(_NeverSignAdapter());
 
       // canSignEd25519For still returns true via the in-memory fallback.
       expect(

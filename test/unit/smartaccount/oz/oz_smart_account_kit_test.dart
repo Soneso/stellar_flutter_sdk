@@ -74,7 +74,10 @@ OZSmartAccountKit _kitWithMockClients({
     storage: storage ?? config.storage,
     relayerClient: relayerClient,
     indexerClient: indexerClient,
-    externalWallet: externalWallet ?? config.externalWallet,
+    externalSigners: OZExternalSignerManager(
+      networkPassphrase: config.networkPassphrase,
+      walletAdapter: externalWallet ?? config.externalWallet,
+    ),
     sorobanServer: sorobanServer ?? RecordingSorobanServer(),
   );
 }
@@ -112,6 +115,21 @@ class _StubExternalWallet extends ExternalWalletAdapter {
 
   @override
   bool canSignFor(String address) => false;
+}
+
+/// Stub [OZExternalEd25519SignerAdapter] for accessor tests.
+class _StubEd25519Adapter extends OZExternalEd25519SignerAdapter {
+  const _StubEd25519Adapter();
+
+  @override
+  bool canSignFor(String verifierAddress, Uint8List publicKey) => false;
+
+  @override
+  Future<Uint8List> signAuthDigest(
+    Uint8List authDigest,
+    Uint8List publicKey,
+  ) async =>
+      throw UnsupportedError('_StubEd25519Adapter.signAuthDigest not used in tests');
 }
 
 void main() {
@@ -214,51 +232,48 @@ void main() {
       expect(kit.indexerClient, isNotNull);
     });
 
-    test('factory_externalWallet_mirrorsConfig', () {
+    test('factory_externalWallet_externalSigners_hasWalletAdapter', () {
       final adapter = _StubExternalWallet();
       final config = _validConfig(externalWallet: adapter);
       final kit = OZSmartAccountKit.create(config: config);
 
-      expect(identical(kit.externalWallet, adapter), isTrue);
+      expect(identical(kit.externalSigners.walletAdapter, adapter), isTrue);
     });
 
-    test('factory_noExternalWallet_externalWalletIsNull', () {
+    test('factory_noExternalWallet_externalSigners_walletAdapterIsNull', () {
       final kit = OZSmartAccountKit.create(config: _validConfig());
-      expect(kit.externalWallet, isNull);
+      expect(kit.externalSigners.walletAdapter, isNull);
     });
 
-    test('factory_externalSignerManager_isNull', () {
+    test('factory_externalSigners_isNonNull', () {
       final kit = OZSmartAccountKit.create(config: _validConfig());
-      expect(kit.externalSignerManager, isNull);
+      expect(kit.externalSigners, isNotNull);
     });
 
-    test('test_externalSignerManager_returnsConfigValue', () {
-      final manager = OZExternalSignerManager(
-        networkPassphrase: _validPassphrase,
-      );
+    test('factory_externalEd25519Adapter_flowsIntoExternalSigners', () {
+      final adapter = _StubEd25519Adapter();
       final config = OZSmartAccountConfig(
         rpcUrl: _validRpcUrl,
         networkPassphrase: _validPassphrase,
         accountWasmHash: _validWasmHash,
         webauthnVerifierAddress: _validVerifier,
-        externalSignerManager: manager,
+        externalEd25519Adapter: adapter,
       );
       final kit = OZSmartAccountKit.create(config: config);
 
-      expect(identical(kit.externalSignerManager, manager), isTrue);
+      expect(identical(kit.externalSigners.ed25519Adapter, adapter), isTrue);
     });
 
-    test('test_externalSignerManager_nilWhenNotSetInConfig', () {
+    test('factory_noEd25519Adapter_externalSigners_ed25519AdapterIsNull', () {
       final config = OZSmartAccountConfig(
         rpcUrl: _validRpcUrl,
         networkPassphrase: _validPassphrase,
         accountWasmHash: _validWasmHash,
         webauthnVerifierAddress: _validVerifier,
-        // externalSignerManager not set — defaults to null.
       );
       final kit = OZSmartAccountKit.create(config: config);
 
-      expect(kit.externalSignerManager, isNull);
+      expect(kit.externalSigners.ed25519Adapter, isNull);
     });
   });
 

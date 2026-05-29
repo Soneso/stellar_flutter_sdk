@@ -182,9 +182,11 @@ See the [Signing](#signing) subsection below for how to authorize transactions o
 
 When a multi-signer ceremony involves an Ed25519 signer, the smart-account contract calls the registered verifier contract during `__check_auth` to validate the signature. The auth digest — `SHA-256(signaturePayload || contextRuleIds.toXDR())` — is computed by the SDK and must be signed with the Ed25519 private key that corresponds to the on-chain `(verifierAddress, publicKey)` entry.
 
-`OZExternalSignerManager` manages Ed25519 signing sources independently of the kit. Construct one, register the signing capability, then pass a `SelectedSignerEd25519` entry into any multi-signer method.
+`kit.externalSigners` is the unified manager for all non-passkey signing sources, constructed by the kit. Pass a `SelectedSignerEd25519` entry into any multi-signer method and register the corresponding signing source on `kit.externalSigners` before the call.
 
-**Register with a secret key (memory-only):**
+Two signing models are available for Ed25519 signers:
+
+**Model 1 — in-memory keypair (runtime registration):**
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -192,40 +194,37 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 const ed25519VerifierAddress =
     'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM';
 
-final externalSignerManager = OZExternalSignerManager(
-  networkPassphrase: 'Test SDF Network ; September 2015',
-);
+final kit = OZSmartAccountKit.create(config: config);
+
 // Derives the keypair from the raw 32-byte seed and stores it in memory under
 // the (verifierAddress, publicKey) tuple. Returns the 32-byte public key.
 // rawSeed is obtained from secure storage or a key derivation function.
-final ed25519PublicKey = externalSignerManager.addEd25519FromRawKey(
+final ed25519PublicKey = kit.externalSigners.addEd25519FromRawKey(
   secretKeyBytes: rawSeed,
   verifierAddress: ed25519VerifierAddress,
 );
 ```
 
-**Register an out-of-process adapter (optional, for hardware wallets and remote services):**
+**Model 2 — out-of-process adapter (injected at kit construction, for hardware wallets and remote services):**
 
 ```dart
-externalSignerManager.setEd25519Adapter(myHardwareWalletAdapter);
-// Or equivalently: externalSignerManager.ed25519Adapter = myHardwareWalletAdapter;
-```
-
-When an adapter is set, it takes precedence over the in-memory keypair for the same `(verifierAddress, publicKey)` pair (adapter-first rule). See the [API Reference](api-reference.md#external-signer-management) for the full `OZExternalEd25519SignerAdapter` abstract-class contract.
-
-**Wire the manager through the config and pass the signer to a multi-signer method:**
-
-```dart
-// Supply the manager via config — construct the kit after the manager is ready.
 final config = OZSmartAccountConfig(
   rpcUrl: 'https://soroban-testnet.stellar.org',
   networkPassphrase: 'Test SDF Network ; September 2015',
   accountWasmHash: '<64-char hex WASM hash>',
   webauthnVerifierAddress: '<C-address of WebAuthn verifier>',
-  externalSignerManager: externalSignerManager,
+  externalEd25519Adapter: myHardwareWalletAdapter,
 );
 final kit = OZSmartAccountKit.create(config: config);
+```
 
+When an adapter is supplied, it takes precedence over any in-memory keypair for the same `(verifierAddress, publicKey)` pair (adapter-first rule). See the [API Reference](api-reference.md#external-signer-management) for the full `OZExternalEd25519SignerAdapter` abstract-class contract.
+
+Wallet (G-address) signers follow the same two-model symmetry: supply an `ExternalWalletAdapter` via `config.externalWallet` at kit construction, or register an in-memory keypair at runtime via `kit.externalSigners.addFromSecret`.
+
+**Pass the signer to a multi-signer method:**
+
+```dart
 // Include the ed25519 selector alongside passkey and wallet entries.
 final result = await kit.multiSignerManager.multiSignerTransfer(
   tokenContract: 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',

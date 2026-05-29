@@ -688,7 +688,7 @@ void main() {
         verifierAddress: _verifierA,
       );
 
-      final kit = FakePipelineKit(externalSignerManager: extManager);
+      final kit = FakePipelineKit(externalSigners: extManager);
       kit.setConnected(
         credentialId: 'test-cred',
         contractId: _validContractId,
@@ -721,7 +721,7 @@ void main() {
         networkPassphrase: _testNetworkPassphrase,
       );
 
-      final kit = FakePipelineKit(externalSignerManager: extManager);
+      final kit = FakePipelineKit(externalSigners: extManager);
       kit.setConnected(
         credentialId: 'test-cred',
         contractId: _validContractId,
@@ -752,7 +752,7 @@ void main() {
         networkPassphrase: _testNetworkPassphrase,
       );
 
-      final kit = FakePipelineKit(externalSignerManager: extManager);
+      final kit = FakePipelineKit(externalSigners: extManager);
       kit.setConnected(
         credentialId: 'test-cred',
         contractId: _validContractId,
@@ -787,7 +787,7 @@ void main() {
         verifierAddress: _verifierA,
       );
 
-      final kit = FakePipelineKit(externalSignerManager: extManager);
+      final kit = FakePipelineKit(externalSigners: extManager);
       kit.setConnected(
         credentialId: 'test-cred',
         contractId: _validContractId,
@@ -863,7 +863,7 @@ void main() {
         verifierAddress: _verifierA,
       );
 
-      final kit = FakePipelineKit(externalSignerManager: extManager);
+      final kit = FakePipelineKit(externalSigners: extManager);
       kit.setConnected(
         credentialId: 'test-cred',
         contractId: _validContractId,
@@ -917,7 +917,7 @@ void main() {
           verifierAddress: _verifierA,
         );
       }
-      final kit = FakePipelineKit(externalSignerManager: extManager);
+      final kit = FakePipelineKit(externalSigners: extManager);
       kit.setConnected(
         credentialId: 'test-cred',
         contractId: _validContractId,
@@ -1059,17 +1059,15 @@ void main() {
     test(
         'test_submitWithMultipleSigners_ed25519AdapterReachableForSigning',
         () async {
-      // Installs an Ed25519 adapter that claims it can sign, then verifies
-      // that canSignEd25519For returns true for the registered key.
+      // Constructs manager with an Ed25519 adapter at construction time, then
+      // verifies that canSignEd25519For returns true for the registered key.
+      final publicKey = Uint8List.fromList(KeyPair.random().publicKey);
       final extManager = OZExternalSignerManager(
         networkPassphrase: _testNetworkPassphrase,
+        ed25519Adapter: _ZeroBytesAdapter(publicKey: publicKey),
       );
-      final publicKey = Uint8List.fromList(KeyPair.random().publicKey);
 
-      // Install an adapter that claims it can sign but returns an invalid sig.
-      extManager.setEd25519Adapter(_ZeroBytesAdapter(publicKey: publicKey));
-
-      final kit = FakePipelineKit(externalSignerManager: extManager);
+      final kit = FakePipelineKit(externalSigners: extManager);
       kit.setConnected(
         credentialId: 'test-cred',
         contractId: _validContractId,
@@ -1109,9 +1107,18 @@ void main() {
 
   group('submitWithMultipleSigners validation guards', () {
     test('walletSigner_adapterCannotSign_throwsValidation', () async {
-      // External wallet configured but canSignFor returns false.
-      final kit = _buildConnectedKit();
-      kit.setExternalWallet(_NeverSignWallet());
+      // External wallet configured but canSignFor returns false; no keypair
+      // registered — externalSigners.canSignFor returns false.
+      final kit = FakePipelineKit(
+        externalSigners: OZExternalSignerManager(
+          networkPassphrase: _testNetworkPassphrase,
+          walletAdapter: _NeverSignWallet(),
+        ),
+      );
+      kit.setConnected(
+        credentialId: 'test-cred',
+        contractId: _validContractId,
+      );
       final manager = OZMultiSignerManager(kit);
 
       await expectLater(
@@ -1125,9 +1132,9 @@ void main() {
       );
     });
 
-    test('walletSigner_noExternalWallet_throwsValidation', () async {
+    test('walletSigner_noKeypairOrAdapter_throwsValidation', () async {
+      // No adapter and no in-memory keypair — per-address check fails.
       final kit = _buildConnectedKit();
-      // externalWallet is null by default on FakePipelineKit.
       final manager = OZMultiSignerManager(kit);
 
       await expectLater(
@@ -1141,9 +1148,85 @@ void main() {
       );
     });
 
-    test('ed25519Signer_noExternalSignerManager_throwsValidation', () async {
+    test('walletSigner_noKeypairOrAdapter_errorMessageContainsRemedies', () async {
+      // Verify the not-found error message text contains both remedies so
+      // consumers know how to register a signing source.
       final kit = _buildConnectedKit();
-      // externalSignerManager is null by default.
+      final manager = OZMultiSignerManager(kit);
+
+      try {
+        await manager.submitWithMultipleSigners(
+          hostFunction: _stubHostFunction(),
+          selectedSigners: <SelectedSigner>[
+            SelectedSignerWallet(_validAccountAddress),
+          ],
+        );
+        fail('Expected InvalidInput');
+      } on InvalidInput catch (e) {
+        expect(
+          e.message.contains('addFromSecret'),
+          isTrue,
+          reason: 'Error must mention addFromSecret remedy',
+        );
+        expect(
+          e.message.contains('config.externalWallet'),
+          isTrue,
+          reason: 'Error must mention config.externalWallet remedy',
+        );
+      }
+    });
+
+    test('walletSigner_inMemoryKeypairOnly_noAdapter_passesValidation', () async {
+      // A wallet signer backed only by an in-memory keypair (no wallet
+      // adapter) must pass validation: the per-address
+      // externalSigners.canSignFor check returns true for a registered
+      // keypair regardless of whether an adapter is present.
+      final extManager = OZExternalSignerManager(
+        networkPassphrase: _testNetworkPassphrase,
+      );
+      final keypair = KeyPair.random();
+      await extManager.addFromSecret(keypair.secretSeed!);
+
+      final kit = FakePipelineKit(externalSigners: extManager);
+      kit.setConnected(
+        credentialId: 'test-cred',
+        contractId: _validContractId,
+      );
+      final manager = OZMultiSignerManager(kit);
+
+      // Validation passes (no InvalidInput for the wallet signer path).
+      // The pipeline proceeds to RPC simulation which fails because no mock
+      // server is configured — that is expected and acceptable: any error
+      // other than the blanket-guard InvalidInput proves validation succeeded.
+      await expectLater(
+        () => manager.submitWithMultipleSigners(
+          hostFunction: _stubHostFunction(),
+          selectedSigners: <SelectedSigner>[
+            SelectedSignerWallet(keypair.accountId),
+          ],
+        ),
+        throwsA(isNot(isA<InvalidInput>())),
+      );
+    });
+
+    test('walletSigner_inMemoryKeypairOnly_canSignForReturnsTrue', () async {
+      // Unit-level verification: canSignFor on the manager returns true for a
+      // keypair address even when no wallet adapter is configured.
+      final extManager = OZExternalSignerManager(
+        networkPassphrase: _testNetworkPassphrase,
+      );
+      final keypair = KeyPair.random();
+      await extManager.addFromSecret(keypair.secretSeed!);
+
+      expect(await extManager.canSignFor(keypair.accountId), isTrue);
+      // A different address for which no keypair was registered must return false.
+      expect(await extManager.canSignFor(_validAccountAddress), isFalse);
+    });
+
+    test('ed25519Signer_noSigningSource_throwsValidation', () async {
+      // No adapter and no keypair for this (verifier, publicKey) — per-address
+      // check fails.
+      final kit = _buildConnectedKit();
       final manager = OZMultiSignerManager(kit);
 
       final pubKey = Uint8List(32);
@@ -1158,6 +1241,122 @@ void main() {
           ],
         ),
         throwsA(isA<InvalidInput>()),
+      );
+    });
+
+    test('ed25519Signer_noSigningSource_errorMessageContainsRemedies', () async {
+      // Verify the Ed25519 not-found error message text contains both remedies.
+      final extManager = OZExternalSignerManager(
+        networkPassphrase: _testNetworkPassphrase,
+      );
+      final kit = FakePipelineKit(externalSigners: extManager);
+      kit.setConnected(
+        credentialId: 'test-cred',
+        contractId: _validContractId,
+      );
+      final manager = OZMultiSignerManager(kit);
+      final pubKey = Uint8List.fromList(KeyPair.random().publicKey);
+
+      try {
+        await manager.submitWithMultipleSigners(
+          hostFunction: _stubHostFunction(),
+          selectedSigners: <SelectedSigner>[
+            SelectedSignerEd25519(
+              verifierAddress: _verifierA,
+              publicKey: pubKey,
+            ),
+          ],
+        );
+        fail('Expected InvalidInput');
+      } on InvalidInput catch (e) {
+        expect(
+          e.message.contains('addEd25519FromRawKey'),
+          isTrue,
+          reason: 'Error must mention addEd25519FromRawKey remedy',
+        );
+        expect(
+          e.message.contains('config.externalEd25519Adapter'),
+          isTrue,
+          reason: 'Error must mention config.externalEd25519Adapter remedy',
+        );
+      }
+    });
+
+    test('ed25519Signer_configInjectedAdapter_passesValidation', () async {
+      // Verify that an Ed25519 adapter injected via config.externalEd25519Adapter
+      // (flowing into the manager at kit construction) is consulted by
+      // canSignEd25519For and allows the per-address check to pass.
+      final keypair = KeyPair.random();
+      final publicKey = Uint8List.fromList(keypair.publicKey);
+
+      final extManager = OZExternalSignerManager(
+        networkPassphrase: _testNetworkPassphrase,
+        ed25519Adapter: _AlwaysSignAdapter(keypair: keypair),
+      );
+
+      final kit = FakePipelineKit(externalSigners: extManager);
+      kit.setConnected(
+        credentialId: 'test-cred',
+        contractId: _validContractId,
+      );
+
+      // canSignEd25519For returns true via the adapter path.
+      expect(
+        extManager.canSignEd25519For(
+          verifierAddress: _verifierA,
+          publicKey: publicKey,
+        ),
+        isTrue,
+      );
+
+      // Validation passes — pipeline proceeds to RPC, which fails on the
+      // NullSorobanServer. Any error other than InvalidInput proves
+      // per-address Ed25519 validation succeeded.
+      final manager = OZMultiSignerManager(kit);
+      await expectLater(
+        () => manager.submitWithMultipleSigners(
+          hostFunction: _stubHostFunction(),
+          selectedSigners: <SelectedSigner>[
+            SelectedSignerEd25519(
+              verifierAddress: _verifierA,
+              publicKey: publicKey,
+            ),
+          ],
+        ),
+        throwsA(isNot(isA<InvalidInput>())),
+      );
+    });
+
+    test('ed25519Signer_inMemoryKey_passesValidation', () async {
+      // An Ed25519 signer registered via addEd25519FromRawKey (in-memory path)
+      // must pass per-address validation through externalSigners.
+      final extManager = OZExternalSignerManager(
+        networkPassphrase: _testNetworkPassphrase,
+      );
+      final rawSeed = Uint8List.fromList(List<int>.generate(32, (i) => i + 50));
+      final publicKey = extManager.addEd25519FromRawKey(
+        secretKeyBytes: rawSeed,
+        verifierAddress: _verifierA,
+      );
+
+      final kit = FakePipelineKit(externalSigners: extManager);
+      kit.setConnected(
+        credentialId: 'test-cred',
+        contractId: _validContractId,
+      );
+      final manager = OZMultiSignerManager(kit);
+
+      await expectLater(
+        () => manager.submitWithMultipleSigners(
+          hostFunction: _stubHostFunction(),
+          selectedSigners: <SelectedSigner>[
+            SelectedSignerEd25519(
+              verifierAddress: _verifierA,
+              publicKey: publicKey,
+            ),
+          ],
+        ),
+        throwsA(isNot(isA<InvalidInput>())),
       );
     });
 
@@ -1409,6 +1608,25 @@ class _NeverSignWallet extends ExternalWalletAdapter {
     SignAuthEntryOptions? options,
   }) async {
     throw UnsupportedError('_NeverSignWallet cannot sign');
+  }
+}
+
+/// Adapter that always reports it can sign for every (verifierAddress,
+/// publicKey) pair and signs using the supplied [keypair].
+class _AlwaysSignAdapter extends OZExternalEd25519SignerAdapter {
+  _AlwaysSignAdapter({required this.keypair});
+
+  final KeyPair keypair;
+
+  @override
+  bool canSignFor(String verifierAddress, Uint8List publicKey) => true;
+
+  @override
+  Future<Uint8List> signAuthDigest(
+    Uint8List authDigest,
+    Uint8List publicKey,
+  ) async {
+    return Uint8List.fromList(keypair.sign(authDigest));
   }
 }
 

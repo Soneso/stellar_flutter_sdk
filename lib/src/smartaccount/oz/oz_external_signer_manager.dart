@@ -36,9 +36,6 @@ import 'oz_storage_adapter.dart';
 ///       Uint8List authDigest, Uint8List publicKey) async =>
 ///       _wallet.sign(authDigest, publicKey);
 /// }
-///
-/// final manager = OZExternalSignerManager(networkPassphrase: '...');
-/// manager.setEd25519Adapter(MyHardwareAdapter());
 /// ```
 abstract class OZExternalEd25519SignerAdapter {
   /// Constructs an Ed25519 signer adapter.
@@ -276,6 +273,7 @@ class OZExternalSignerManager {
     required this.networkPassphrase,
     this.walletAdapter,
     WalletConnectionStorage? walletConnectionStorage,
+    this.ed25519Adapter,
   }) : walletConnectionStorage = walletConnectionStorage;
 
   /// Network passphrase used when delegating to [walletAdapter].
@@ -289,6 +287,12 @@ class OZExternalSignerManager {
   /// connections are not restored across app launches.
   final WalletConnectionStorage? walletConnectionStorage;
 
+  /// Optional adapter for out-of-process Ed25519 signing.
+  ///
+  /// When set, the adapter is consulted via [OZExternalEd25519SignerAdapter.canSignFor]
+  /// before the in-memory keypair registry (adapter-first precedence rule).
+  final OZExternalEd25519SignerAdapter? ed25519Adapter;
+
   // Internal state
 
   final Map<String, KeyPair> _keypairSigners = <String, KeyPair>{};
@@ -298,16 +302,6 @@ class OZExternalSignerManager {
   /// `External(verifierAddress, publicKey)` signer identity.
   final Map<_Ed25519SignerKey, KeyPair> _ed25519Signers =
       <_Ed25519SignerKey, KeyPair>{};
-
-  /// Optional adapter for out-of-process Ed25519 signing.
-  ///
-  /// When set, the adapter is consulted via [OZExternalEd25519SignerAdapter.canSignFor]
-  /// before the in-memory keypair registry (adapter-first precedence rule).
-  /// Read via the [ed25519Adapter] getter. Write via [setEd25519Adapter].
-  OZExternalEd25519SignerAdapter? _ed25519Adapter;
-
-  /// The currently registered Ed25519 adapter, or `null` when none is set.
-  OZExternalEd25519SignerAdapter? get ed25519Adapter => _ed25519Adapter;
 
   bool _restored = false;
   Future<void> _tail = Future<void>.value();
@@ -593,12 +587,6 @@ class OZExternalSignerManager {
 
   // Ed25519 methods
 
-  /// Registers the optional Ed25519 adapter consulted by the multi-signer
-  /// pipeline. Pass `null` to clear.
-  void setEd25519Adapter(OZExternalEd25519SignerAdapter? adapter) {
-    _ed25519Adapter = adapter;
-  }
-
   /// Registers an Ed25519 signing keypair derived from raw 32-byte secret key
   /// material and stores it in memory under the composite
   /// `(verifierAddress, publicKey)` key. The keypair is never persisted to
@@ -609,8 +597,9 @@ class OZExternalSignerManager {
   ///
   /// [secretKeyBytes] must be exactly 32 bytes — the raw Ed25519 seed.
   /// This is not a Stellar S-strkey; it is the raw seed material.
-  /// For hardware wallets, HSMs, or remote signing services, use
-  /// [setEd25519Adapter] instead — the raw secret never enters process memory.
+  /// For hardware wallets, HSMs, or remote signing services, supply an
+  /// [OZExternalEd25519SignerAdapter] at construction instead — the raw
+  /// secret never enters process memory.
   ///
   /// [verifierAddress] is the C-strkey of the Ed25519 verifier contract
   /// under which the signer is registered on-chain.
@@ -663,7 +652,7 @@ class OZExternalSignerManager {
     required String verifierAddress,
     required Uint8List publicKey,
   }) {
-    final adapter = _ed25519Adapter;
+    final adapter = ed25519Adapter;
     if (adapter != null && adapter.canSignFor(verifierAddress, publicKey)) {
       return true;
     }
@@ -696,16 +685,11 @@ class OZExternalSignerManager {
     required Uint8List publicKey,
     required Uint8List authDigest,
   }) async {
-    // Snapshot the adapter reference before any await so the adapter-first
-    // check is consistent for the lifetime of this call.
-    final adapterSnapshot = _ed25519Adapter;
-
-    if (adapterSnapshot != null &&
-        adapterSnapshot.canSignFor(verifierAddress, publicKey)) {
+    final adapter = ed25519Adapter;
+    if (adapter != null && adapter.canSignFor(verifierAddress, publicKey)) {
       final Uint8List rawSignature;
       try {
-        rawSignature =
-            await adapterSnapshot.signAuthDigest(authDigest, publicKey);
+        rawSignature = await adapter.signAuthDigest(authDigest, publicKey);
       } catch (e) {
         throw TransactionException.signingFailed(
           'Ed25519 adapter signing failed for verifier $verifierAddress: $e',
@@ -724,9 +708,9 @@ class OZExternalSignerManager {
       final prefix = SmartAccountUtils.truncateForLog(verifierAddress);
       throw ValidationException.invalidInput(
         'selectedSigners',
-        'Ed25519 signer (verifier=$prefix...) has no registered keypair or '
-            'adapter — register via '
-            'OZExternalSignerManager.addEd25519FromRawKey(...) before signing',
+        'Ed25519 signer (verifier=$prefix...) has no registered signing source. '
+            'Register an in-memory key via addEd25519FromRawKey(...), '
+            'or supply an ed25519Adapter at construction.',
       );
     }
 

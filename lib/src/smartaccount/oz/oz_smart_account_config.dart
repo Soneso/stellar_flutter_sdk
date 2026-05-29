@@ -75,7 +75,7 @@ class OZSmartAccountConfig {
     this.webauthnProvider,
     StorageAdapter? storage,
     this.externalWallet,
-    this.externalSignerManager,
+    this.externalEd25519Adapter,
     this.maxContextRuleScanId = 50,
   }) : storage = storage ?? InMemoryStorageAdapter() {
     if (rpcUrl.trim().isEmpty) {
@@ -205,23 +205,19 @@ class OZSmartAccountConfig {
   final StorageAdapter storage;
 
   /// External wallet adapter for signing transactions with an external
-  /// signer. When set, the kit delegates transaction signing to this
-  /// adapter instead of using WebAuthn credentials.
+  /// signer. When set, the kit injects it into the kit-owned
+  /// [OZExternalSignerManager] at construction so all wallet-signer
+  /// operations route through `kit.externalSigners`.
   final ExternalWalletAdapter? externalWallet;
 
-  /// Optional external-signer manager for Ed25519 multi-signer signing
-  /// ceremonies.
+  /// Optional adapter for out-of-process Ed25519 signing.
   ///
-  /// Consumers construct [OZExternalSignerManager] separately, register
-  /// Ed25519 signing keypairs via
-  /// [OZExternalSignerManager.addEd25519FromRawKey], and supply the manager
-  /// here so that `kit.externalSignerManager` can forward signing requests
-  /// to it during multi-signer operations that include
-  /// `SelectedSignerEd25519` entries.
-  ///
-  /// When `null`, Ed25519 signers in `selectedSigners` cause
-  /// [OZMultiSignerManager] to throw [InvalidInput].
-  final OZExternalSignerManager? externalSignerManager;
+  /// When set, the kit injects it into the kit-owned
+  /// [OZExternalSignerManager] at construction. The adapter is consulted
+  /// first (adapter-first precedence) before the in-memory keypair
+  /// registry for every [SelectedSignerEd25519] entry during multi-signer
+  /// operations.
+  final OZExternalEd25519SignerAdapter? externalEd25519Adapter;
 
   /// Maximum rule ID to scan when iterating context rules.
   ///
@@ -302,7 +298,7 @@ class OZSmartAccountConfig {
   /// Each named argument defaults to the current value of the corresponding
   /// field. Pass [setDeployerKeypair] / [setRpId] / [setRelayerUrl] /
   /// [setIndexerUrl] / [setWebauthnProvider] / [setExternalWallet] /
-  /// [setExternalSignerManager] as `true` together with the corresponding
+  /// [setExternalEd25519Adapter] as `true` together with the corresponding
   /// `null` argument to clear an optional field.
   OZSmartAccountConfig copyWith({
     String? rpcUrl,
@@ -326,8 +322,8 @@ class OZSmartAccountConfig {
     StorageAdapter? storage,
     ExternalWalletAdapter? externalWallet,
     bool setExternalWallet = false,
-    OZExternalSignerManager? externalSignerManager,
-    bool setExternalSignerManager = false,
+    OZExternalEd25519SignerAdapter? externalEd25519Adapter,
+    bool setExternalEd25519Adapter = false,
     int? maxContextRuleScanId,
   }) {
     return OZSmartAccountConfig(
@@ -352,9 +348,9 @@ class OZSmartAccountConfig {
       externalWallet: setExternalWallet
           ? externalWallet
           : (externalWallet ?? this.externalWallet),
-      externalSignerManager: setExternalSignerManager
-          ? externalSignerManager
-          : (externalSignerManager ?? this.externalSignerManager),
+      externalEd25519Adapter: setExternalEd25519Adapter
+          ? externalEd25519Adapter
+          : (externalEd25519Adapter ?? this.externalEd25519Adapter),
       maxContextRuleScanId: maxContextRuleScanId ?? this.maxContextRuleScanId,
     );
   }
@@ -378,11 +374,11 @@ class OZSmartAccountConfig {
         webauthnProvider == other.webauthnProvider &&
         storage == other.storage &&
         externalWallet == other.externalWallet &&
-        // why: OZExternalSignerManager is a stateful object; value equality
-        // is meaningless. Use identity (identical) so two configs that
-        // reference the same manager instance compare equal, while different
-        // instances — even with the same network passphrase — do not.
-        identical(externalSignerManager, other.externalSignerManager) &&
+        // why: OZExternalEd25519SignerAdapter is a stateful object; value
+        // equality is meaningless. Use identity (identical) so two configs that
+        // reference the same adapter instance compare equal, while different
+        // instances do not.
+        identical(externalEd25519Adapter, other.externalEd25519Adapter) &&
         maxContextRuleScanId == other.maxContextRuleScanId;
   }
 
@@ -403,7 +399,7 @@ class OZSmartAccountConfig {
         webauthnProvider,
         storage,
         externalWallet,
-        identityHashCode(externalSignerManager),
+        identityHashCode(externalEd25519Adapter),
         maxContextRuleScanId,
       ]);
 }
@@ -450,7 +446,7 @@ class OZSmartAccountConfigBuilder {
   WebAuthnProvider? _webauthnProvider;
   StorageAdapter? _storage;
   ExternalWalletAdapter? _externalWallet;
-  OZExternalSignerManager? _externalSignerManager;
+  OZExternalEd25519SignerAdapter? _externalEd25519Adapter;
   int _maxContextRuleScanId = 50;
 
   /// Sets the deployer keypair. Pass `null` to use the deterministic
@@ -522,11 +518,11 @@ class OZSmartAccountConfigBuilder {
     return this;
   }
 
-  /// Sets the external-signer manager for Ed25519 multi-signer signing
-  /// ceremonies. Pass `null` to disable Ed25519 multi-signer support.
-  OZSmartAccountConfigBuilder externalSignerManager(
-      OZExternalSignerManager? value) {
-    _externalSignerManager = value;
+  /// Sets the Ed25519 adapter for out-of-process Ed25519 signing. Pass
+  /// `null` to disable adapter-backed Ed25519 signing.
+  OZSmartAccountConfigBuilder externalEd25519Adapter(
+      OZExternalEd25519SignerAdapter? value) {
+    _externalEd25519Adapter = value;
     return this;
   }
 
@@ -556,7 +552,7 @@ class OZSmartAccountConfigBuilder {
       webauthnProvider: _webauthnProvider,
       storage: _storage,
       externalWallet: _externalWallet,
-      externalSignerManager: _externalSignerManager,
+      externalEd25519Adapter: _externalEd25519Adapter,
       maxContextRuleScanId: _maxContextRuleScanId,
     );
   }

@@ -677,7 +677,7 @@ void main() {
         secretKeyBytes: rawSeed,
         verifierAddress: _verifierA,
       );
-      h.kit.setExternalSignerManager(extManager);
+      h.kit.setExternalSigners(extManager);
 
       final mgr = OZContextRuleManager(h.kit);
       final ed25519Signer = SelectedSignerEd25519(
@@ -719,7 +719,7 @@ void main() {
         secretKeyBytes: rawSeed,
         verifierAddress: _verifierA,
       );
-      h.kit.setExternalSignerManager(extManager);
+      h.kit.setExternalSigners(extManager);
 
       final mgr = OZSignerManager(h.kit);
       final ed25519Signer = SelectedSignerEd25519(
@@ -752,7 +752,7 @@ void main() {
         secretKeyBytes: rawSeed,
         verifierAddress: _verifierA,
       );
-      h.kit.setExternalSignerManager(extManager);
+      h.kit.setExternalSigners(extManager);
 
       final mgr = OZPolicyManager(h.kit);
       final ed25519Signer = SelectedSignerEd25519(

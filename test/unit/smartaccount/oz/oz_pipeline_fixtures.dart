@@ -31,7 +31,8 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart'
         OZRelayerClient,
         OZSmartAccountSigner,
         ExternalWalletAdapter,
-        ParsedContextRule;
+        ParsedContextRule,
+        Network;
 
 /// Test fixture: a fake transaction-operations kit that supplies just enough
 /// surface to drive pipeline-level test cases without opening real network
@@ -50,8 +51,7 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
     StorageAdapter? storage,
     OZTransactionOperations? transactionOperations,
     Object? multiSignerManager,
-    ExternalWalletAdapter? externalWallet,
-    OZExternalSignerManager? externalSignerManager,
+    OZExternalSignerManager? externalSigners,
   })  : _config = config ??
             OZSmartAccountConfig(
               rpcUrl: 'https://soroban-testnet.stellar.org',
@@ -71,8 +71,10 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
         _storage = storage ?? InMemoryStorageAdapter(),
         _events = SmartAccountEventEmitter(),
         _injectedMultiSignerManager = multiSignerManager,
-        _externalWallet = externalWallet,
-        _externalSignerManager = externalSignerManager {
+        _externalSigners = externalSigners ??
+            OZExternalSignerManager(
+              networkPassphrase: Network.TESTNET.networkPassphrase,
+            ) {
     _transactionOperations =
         transactionOperations ?? OZTransactionOperations(this);
   }
@@ -88,8 +90,7 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
   final SmartAccountEventEmitter _events;
   late OZTransactionOperations _transactionOperations;
   Object? _injectedMultiSignerManager;
-  ExternalWalletAdapter? _externalWallet;
-  OZExternalSignerManager? _externalSignerManager;
+  OZExternalSignerManager _externalSigners;
 
   /// Test-only setter for the injected multi-signer manager. Lets tests
   /// rebind the kit's `multiSignerManager` accessor after construction
@@ -98,15 +99,19 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
     _injectedMultiSignerManager = manager;
   }
 
-  /// Test-only setter for the external wallet adapter exposed via the
-  /// kit interface, mirroring `setMultiSignerManager` above.
-  void setExternalWallet(ExternalWalletAdapter? adapter) {
-    _externalWallet = adapter;
+  /// Test-only setter for the external-signer manager.
+  void setExternalSigners(OZExternalSignerManager manager) {
+    _externalSigners = manager;
   }
 
-  /// Test-only setter for the external-signer manager.
-  void setExternalSignerManager(OZExternalSignerManager? manager) {
-    _externalSignerManager = manager;
+  /// Test-only helper that replaces the kit's external-signer manager with a
+  /// new instance wrapping [adapter]. Preserves the config's network
+  /// passphrase; any previously registered in-memory keypairs are lost.
+  void setExternalWallet(ExternalWalletAdapter? adapter) {
+    _externalSigners = OZExternalSignerManager(
+      networkPassphrase: _config.networkPassphrase,
+      walletAdapter: adapter,
+    );
   }
 
   /// Test-only setter for the transaction operations exposed via the
@@ -213,10 +218,7 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
   String? get contractId => _connectedContractId;
 
   @override
-  ExternalWalletAdapter? get externalWallet => _externalWallet;
-
-  @override
-  OZExternalSignerManager? get externalSignerManager => _externalSignerManager;
+  OZExternalSignerManager get externalSigners => _externalSigners;
 
   @override
   Object get multiSignerManager {
