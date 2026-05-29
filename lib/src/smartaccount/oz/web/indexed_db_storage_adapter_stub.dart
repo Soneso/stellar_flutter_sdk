@@ -35,6 +35,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
         'InMemoryStorageAdapter for testing).',
       );
 
+  // coverage:ignore-start
   @override
   Future<void> save(StoredCredential credential) async => _unsupported();
 
@@ -66,6 +67,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
 
   @override
   Future<void> clearSession() async => _unsupported();
+  // coverage:ignore-end
 
   /// Closes the database connection. No-op on the stub because no
   /// connection is ever opened on non-web targets; safe to call from
@@ -75,5 +77,5 @@ class IndexedDBStorageAdapter implements StorageAdapter {
   /// Deletes the named database. Always throws [UnsupportedError] on
   /// non-web targets — there is no database to delete, so calling this
   /// outside the web target indicates a wiring bug worth surfacing.
-  Future<void> deleteDatabase({String? name}) async => _unsupported();
+  Future<void> deleteDatabase({String? name}) async => _unsupported(); // coverage:ignore-line
 }

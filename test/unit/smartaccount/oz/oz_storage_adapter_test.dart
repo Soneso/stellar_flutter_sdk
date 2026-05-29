@@ -6,6 +6,30 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 const String _testContractId =
     'CBCD1234EFGH5678IJKL9012MNOP3456QRST7890UVWX1234YZAB5678';
 
+/// A minimal ExternalWalletAdapter that doesn't override any default methods.
+/// Used to test the abstract class's default implementations.
+class _MinimalWalletAdapter extends ExternalWalletAdapter {
+  @override
+  Future<ConnectedWallet?> connect() async => null;
+
+  @override
+  Future<void> disconnect() async {}
+
+  @override
+  bool canSignFor(String address) => false;
+
+  @override
+  List<ConnectedWallet> getConnectedWallets() => const <ConnectedWallet>[];
+
+  @override
+  Future<SignAuthEntryResult> signAuthEntry(
+    String preimageXdr, {
+    SignAuthEntryOptions? options,
+  }) async {
+    throw UnsupportedError('not supported');
+  }
+}
+
 const String _validVerifier =
     'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM';
 
@@ -1434,6 +1458,246 @@ void main() {
           ),
         );
       }
+    });
+  });
+
+  group('ExternalWalletAdapter default implementations', () {
+    test('disconnectByAddress_noOpByDefault', () async {
+      final adapter = _MinimalWalletAdapter();
+      await expectLater(
+        adapter.disconnectByAddress('GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54'),
+        completes,
+      );
+    });
+
+    test('getWalletForAddress_returnsNullByDefault', () {
+      final adapter = _MinimalWalletAdapter();
+      expect(adapter.getWalletForAddress('G1'), isNull);
+    });
+
+    test('reconnect_returnsNullByDefault', () async {
+      final adapter = _MinimalWalletAdapter();
+      final result = await adapter.reconnect('freighter');
+      expect(result, isNull);
+    });
+  });
+
+  group('ConnectedWallet equality and hashCode', () {
+    test('differentWalletName_notEqual', () {
+      // Non-const: address and walletId match, walletName differs → line 520.
+      final a = ConnectedWallet(
+        address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+        walletId: 'freighter',
+        walletName: 'Freighter',
+      );
+      final b = ConnectedWallet(
+        address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+        walletId: 'freighter',
+        walletName: 'Freighter v2',
+      );
+      expect(a == b, isFalse);
+    });
+
+    test('equalInstances_areEqual', () {
+      const a = ConnectedWallet(
+        address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+        walletId: 'freighter',
+        walletName: 'Freighter',
+      );
+      const b = ConnectedWallet(
+        address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+        walletId: 'freighter',
+        walletName: 'Freighter',
+      );
+
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+    });
+
+    test('differentWalletId_notEqual', () {
+      const a = ConnectedWallet(
+        address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+        walletId: 'freighter',
+        walletName: 'Freighter',
+      );
+      const b = ConnectedWallet(
+        address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+        walletId: 'lobstr',
+        walletName: 'Freighter',
+      );
+
+      expect(a == b, isFalse);
+    });
+
+    test('differentType_notEqual', () {
+      const a = ConnectedWallet(
+        address: 'G1',
+        walletId: 'w',
+        walletName: 'W',
+      );
+      expect(a == 'not-a-wallet', isFalse);
+    });
+
+    test('identical_isEqual', () {
+      const a = ConnectedWallet(address: 'G1', walletId: 'w', walletName: 'W');
+      expect(a == a, isTrue);
+    });
+  });
+
+  group('SignAuthEntryOptions equality and hashCode', () {
+    test('differentAddress_notEqual', () {
+      // Non-const: passphrase matches, address differs → line 550.
+      final a = SignAuthEntryOptions(
+        networkPassphrase: 'testnet',
+        address: 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+      );
+      final b = SignAuthEntryOptions(
+        networkPassphrase: 'testnet',
+        address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+      );
+      expect(a == b, isFalse);
+    });
+
+    test('equalInstances_areEqual', () {
+      const a = SignAuthEntryOptions(
+        networkPassphrase: 'Test SDF Network ; September 2015',
+        address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+      );
+      const b = SignAuthEntryOptions(
+        networkPassphrase: 'Test SDF Network ; September 2015',
+        address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+      );
+
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+    });
+
+    test('differentPassphrase_notEqual', () {
+      const a = SignAuthEntryOptions(networkPassphrase: 'testnet');
+      const b = SignAuthEntryOptions(networkPassphrase: 'mainnet');
+      expect(a == b, isFalse);
+    });
+
+    test('nullFields_equalToOtherNullFields', () {
+      const a = SignAuthEntryOptions();
+      const b = SignAuthEntryOptions();
+      expect(a, equals(b));
+    });
+
+    test('differentType_notEqual', () {
+      const a = SignAuthEntryOptions(networkPassphrase: 'test');
+      expect(a == 'not-options', isFalse);
+    });
+
+    test('identical_isEqual', () {
+      const a = SignAuthEntryOptions(networkPassphrase: 'test');
+      expect(a == a, isTrue);
+    });
+  });
+
+  group('SignAuthEntryResult equality and hashCode', () {
+    test('differentSignerAddress_notEqual', () {
+      // Non-const: signedAuthEntry matches, signerAddress differs → line 586.
+      final a = SignAuthEntryResult(
+        signedAuthEntry: 'sig',
+        signerAddress: 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+      );
+      final b = SignAuthEntryResult(
+        signedAuthEntry: 'sig',
+        signerAddress: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+      );
+      expect(a == b, isFalse);
+    });
+
+    test('equalInstances_areEqual', () {
+      const a = SignAuthEntryResult(
+        signedAuthEntry: 'base64signature==',
+        signerAddress: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+      );
+      const b = SignAuthEntryResult(
+        signedAuthEntry: 'base64signature==',
+        signerAddress: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+      );
+
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+    });
+
+    test('differentSignature_notEqual', () {
+      const a = SignAuthEntryResult(signedAuthEntry: 'sigA');
+      const b = SignAuthEntryResult(signedAuthEntry: 'sigB');
+      expect(a == b, isFalse);
+    });
+
+    test('nullSignerAddress_equalToNullSignerAddress', () {
+      const a = SignAuthEntryResult(signedAuthEntry: 'sig', signerAddress: null);
+      const b = SignAuthEntryResult(signedAuthEntry: 'sig', signerAddress: null);
+      expect(a, equals(b));
+    });
+
+    test('differentType_notEqual', () {
+      const a = SignAuthEntryResult(signedAuthEntry: 'sig');
+      expect(a == 'not-a-result', isFalse);
+    });
+
+    test('identical_isEqual', () {
+      const a = SignAuthEntryResult(signedAuthEntry: 'sig');
+      expect(a == a, isTrue);
+    });
+  });
+
+  group('StoredCredential hashCode with transports', () {
+    test('hashCode_withNonNullTransports_doesNotThrow', () {
+      // Exercises _stringListHash with non-empty list (lines 228-229).
+      final cred = StoredCredential(
+        credentialId: 'cred-with-transports',
+        publicKey: _testPublicKey(seed: 9),
+        transports: const <String>['internal', 'usb'],
+        createdAt: 1700000000000,
+      );
+      // Just exercising hashCode with non-null transports.
+      final hash1 = cred.hashCode;
+      final cred2 = StoredCredential(
+        credentialId: 'cred-with-transports',
+        publicKey: _testPublicKey(seed: 9),
+        transports: const <String>['internal', 'usb'],
+        createdAt: 1700000000000,
+      );
+      expect(hash1, equals(cred2.hashCode));
+    });
+  });
+
+  group('InMemoryStorageAdapter update on missing credential', () {
+    test('update_missingCredential_throwsCredentialNotFound', () async {
+      final adapter = InMemoryStorageAdapter();
+      await expectLater(
+        adapter.update(
+          'non-existent-cred',
+          const StoredCredentialUpdate(nickname: 'New'),
+        ),
+        throwsA(isA<CredentialNotFound>()),
+      );
+    });
+
+    test('getSession_emptyAdapter_returnsNull', () async {
+      final adapter = InMemoryStorageAdapter();
+      final session = await adapter.getSession();
+      expect(session, isNull);
+    });
+
+    test('getSession_expiredSession_returnsNullAndClears', () async {
+      final adapter = InMemoryStorageAdapter();
+      await adapter.saveSession(StoredSession(
+        credentialId: 'cred',
+        contractId: 'contract',
+        connectedAt: 1000,
+        expiresAt: 1001, // well past
+      ));
+      final session = await adapter.getSession();
+      expect(session, isNull);
+      // Verify session is cleared by second call also returning null.
+      final again = await adapter.getSession();
+      expect(again, isNull);
     });
   });
 }

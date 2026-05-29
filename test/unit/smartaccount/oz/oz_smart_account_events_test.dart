@@ -16,6 +16,7 @@ Uint8List _publicKeyBytes() {
   return bytes;
 }
 
+
 void main() {
   group('addListener', () {
     test('testAddListener_receivesAllEventTypes', () {
@@ -801,6 +802,74 @@ void main() {
       expect(copied.credentialId, 'cr-new');
     });
 
+    test('testCredentialCreated_equalityAndHashCode', () {
+      final pk = _publicKeyBytes();
+      final cred = StoredCredential(
+        credentialId: 'cred-eq',
+        publicKey: pk,
+        createdAt: 1700000000000,
+      );
+      final event1 = SmartAccountEventCredentialCreated(credential: cred);
+      final event2 = SmartAccountEventCredentialCreated(credential: cred);
+      final event3 = SmartAccountEventCredentialCreated(
+        credential: StoredCredential(
+          credentialId: 'cred-other',
+          publicKey: pk,
+          createdAt: 1700000000001,
+        ),
+      );
+
+      expect(event1, equals(event2));
+      expect(event1.hashCode, equals(event2.hashCode));
+      expect(event1, isNot(equals(event3)));
+      expect(event1 == 'not-an-event', isFalse);
+    });
+
+    test('testCredentialSyncFailed_equalityAndHashCode', () {
+      final error = Exception('sync error');
+      final st = StackTrace.current;
+      final event1 = SmartAccountEventCredentialSyncFailed(
+        credentialId: 'cred-fail',
+        error: error,
+        stackTrace: st,
+      );
+      final event2 = SmartAccountEventCredentialSyncFailed(
+        credentialId: 'cred-fail',
+        error: error,
+        stackTrace: st,
+      );
+      final event3 = SmartAccountEventCredentialSyncFailed(
+        credentialId: 'cred-other',
+        error: error,
+        stackTrace: st,
+      );
+
+      expect(event1, equals(event2));
+      expect(event1.hashCode, equals(event2.hashCode));
+      expect(event1, isNot(equals(event3)));
+      expect(event1 == 'not-an-event', isFalse);
+    });
+
+    test('testTransactionSigned_equalityAndHashCode', () {
+      const event1 = SmartAccountEventTransactionSigned(
+        contractId: 'C1',
+        credentialId: 'cr1',
+      );
+      const event2 = SmartAccountEventTransactionSigned(
+        contractId: 'C1',
+        credentialId: 'cr1',
+      );
+      const event3 = SmartAccountEventTransactionSigned(
+        contractId: 'C1',
+        credentialId: 'cr2',
+      );
+
+      expect(event1, equals(event2));
+      expect(event1.hashCode, equals(event2.hashCode));
+      expect(event1, isNot(equals(event3)));
+      expect(event1 == 'other', isFalse);
+    });
+
     test('testDifferentEventTypes_areNeverEqual', () {
       const connected = SmartAccountEventWalletConnected(
           contractId: 'C', credentialId: 'cr');
@@ -859,5 +928,65 @@ void main() {
       expect(permanentCount, 3,
           reason: 'Permanent listener should fire for all events');
     });
+  });
+
+  group('equality field-level coverage', () {
+    // These tests use non-const, non-identical instances so the `identical()`
+    // early-return in operator== does not short-circuit and every field
+    // comparison is exercised by the coverage tool.
+
+    test('testWalletConnected_differentCredentialId_notEqual', () {
+      // Forces execution of the credentialId comparison on line 62 of
+      // oz_smart_account_events.dart.
+      final a = SmartAccountEventWalletConnected(
+        contractId: 'CONTRACT-A',
+        credentialId: 'cred-1',
+      );
+      final b = SmartAccountEventWalletConnected(
+        contractId: 'CONTRACT-A',
+        credentialId: 'cred-2',
+      );
+      expect(a == b, isFalse,
+          reason: 'Different credentialId must produce inequality');
+      // Also exercise the equal path so hashCode is hit.
+      final c = SmartAccountEventWalletConnected(
+        contractId: 'CONTRACT-A',
+        credentialId: 'cred-1',
+      );
+      expect(a == c, isTrue);
+      expect(a.hashCode, c.hashCode);
+    });
+
+    test('testCredentialDeleted_hashCode_coverage', () {
+      // hashCode on CredentialDeleted was not hit because const instances
+      // are identical() so operator== returns early.
+      final a = SmartAccountEventCredentialDeleted(credentialId: 'del-1');
+      final b = SmartAccountEventCredentialDeleted(credentialId: 'del-1');
+      // Non-identical, equal: hashCode must be called to satisfy the
+      // contract that equal objects have equal hash codes.
+      expect(a == b, isTrue);
+      expect(a.hashCode, b.hashCode);
+    });
+
+    test('testSessionExpired_differentCredentialId_notEqual', () {
+      // Forces execution of the credentialId comparison (lines 160-161).
+      final a = SmartAccountEventSessionExpired(
+        contractId: 'C-SESS',
+        credentialId: 'cred-x',
+      );
+      final b = SmartAccountEventSessionExpired(
+        contractId: 'C-SESS',
+        credentialId: 'cred-y',
+      );
+      expect(a == b, isFalse);
+      // Equal path: both fields match.
+      final c = SmartAccountEventSessionExpired(
+        contractId: 'C-SESS',
+        credentialId: 'cred-x',
+      );
+      expect(a == c, isTrue);
+      expect(a.hashCode, c.hashCode);
+    });
+
   });
 }

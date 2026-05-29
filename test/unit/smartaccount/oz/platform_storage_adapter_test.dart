@@ -288,4 +288,132 @@ void main() {
       expect(loaded, isNull);
     });
   });
+
+  group('PlatformException error paths', () {
+    test('save PlatformException maps to StorageWriteFailed', () async {
+      handler = (_) {
+        throw PlatformException(code: 'STORAGE_WRITE_FAILED', message: 'disk full');
+      };
+      try {
+        await newAdapter().save(sampleCredential());
+        fail('expected StorageWriteFailed');
+      } on StorageWriteFailed catch (e) {
+        expect(e.cause, isA<PlatformException>());
+      }
+    });
+
+    test('get PlatformException maps to StorageReadFailed', () async {
+      handler = (_) {
+        throw PlatformException(code: 'STORAGE_READ_FAILED', message: 'io error');
+      };
+      try {
+        await newAdapter().get('cred-001');
+        fail('expected StorageReadFailed');
+      } on StorageReadFailed catch (e) {
+        expect(e.cause, isA<PlatformException>());
+      }
+    });
+
+    test('getByContract PlatformException maps to StorageReadFailed', () async {
+      handler = (_) {
+        throw PlatformException(code: 'STORAGE_READ_FAILED', message: 'io error');
+      };
+      try {
+        await newAdapter().getByContract(
+            'CBCD0000000000000000000000000000000000000000000000000000');
+        fail('expected StorageReadFailed');
+      } on StorageReadFailed catch (e) {
+        expect(e.cause, isA<PlatformException>());
+      }
+    });
+
+    test('getAll PlatformException maps to StorageReadFailed', () async {
+      handler = (_) {
+        throw PlatformException(code: 'STORAGE_READ_FAILED', message: 'io error');
+      };
+      try {
+        await newAdapter().getAll();
+        fail('expected StorageReadFailed');
+      } on StorageReadFailed catch (e) {
+        expect(e.cause, isA<PlatformException>());
+      }
+    });
+
+    test('delete PlatformException maps to StorageWriteFailed', () async {
+      handler = (_) {
+        throw PlatformException(code: 'STORAGE_WRITE_FAILED', message: 'locked');
+      };
+      try {
+        await newAdapter().delete('cred-001');
+        fail('expected StorageWriteFailed');
+      } on StorageWriteFailed catch (e) {
+        expect(e.cause, isA<PlatformException>());
+      }
+    });
+
+    test('clear PlatformException maps to StorageWriteFailed', () async {
+      handler = (_) {
+        throw PlatformException(code: 'STORAGE_WRITE_FAILED', message: 'locked');
+      };
+      try {
+        await newAdapter().clear();
+        fail('expected StorageWriteFailed');
+      } on StorageWriteFailed catch (e) {
+        expect(e.cause, isA<PlatformException>());
+      }
+    });
+
+    test('saveSession PlatformException maps to StorageWriteFailed', () async {
+      handler = (_) {
+        throw PlatformException(code: 'STORAGE_WRITE_FAILED', message: 'locked');
+      };
+      try {
+        await newAdapter().saveSession(StoredSession(
+          credentialId: 'c',
+          contractId: 'C',
+          connectedAt: 1700000000000,
+          expiresAt: 1700604800000,
+        ));
+        fail('expected StorageWriteFailed');
+      } on StorageWriteFailed catch (e) {
+        expect(e.cause, isA<PlatformException>());
+      }
+    });
+
+    test('getSession PlatformException maps to StorageReadFailed', () async {
+      handler = (_) {
+        throw PlatformException(code: 'STORAGE_READ_FAILED', message: 'io error');
+      };
+      try {
+        await newAdapter().getSession();
+        fail('expected StorageReadFailed');
+      } on StorageReadFailed catch (e) {
+        expect(e.cause, isA<PlatformException>());
+      }
+    });
+
+    test('clearSession PlatformException maps to StorageWriteFailed', () async {
+      handler = (_) {
+        throw PlatformException(code: 'STORAGE_WRITE_FAILED', message: 'locked');
+      };
+      try {
+        await newAdapter().clearSession();
+        fail('expected StorageWriteFailed');
+      } on StorageWriteFailed catch (e) {
+        expect(e.cause, isA<PlatformException>());
+      }
+    });
+
+    test('unmapped PlatformException code maps to StorageWriteFailed', () async {
+      handler = (_) {
+        throw PlatformException(code: 'SOMETHING_UNEXPECTED', message: 'bug');
+      };
+      try {
+        await newAdapter().save(sampleCredential());
+        fail('expected StorageWriteFailed');
+      } on StorageWriteFailed catch (e) {
+        expect(e.cause, isA<PlatformException>());
+      }
+    });
+  });
 }

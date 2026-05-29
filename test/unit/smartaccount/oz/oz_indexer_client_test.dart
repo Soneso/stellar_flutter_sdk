@@ -1459,4 +1459,513 @@ void main() {
       expect(a == b, isFalse);
     });
   });
+
+  group('OZIndexerClient - DTO toJson', () {
+    test('OZCredentialLookupResponse_toJson', () {
+      const r = OZCredentialLookupResponse(
+        credentialId: 'cred-1',
+        contracts: <OZIndexedContractSummary>[],
+        count: 0,
+      );
+      final json = r.toJson();
+      expect(json['credentialId'], equals('cred-1'));
+      expect(json['count'], equals(0));
+      expect(json['contracts'], isEmpty);
+    });
+
+    test('OZAddressLookupResponse_toJson', () {
+      const r = OZAddressLookupResponse(
+        signerAddress: _testAccountId,
+        contracts: <OZIndexedContractSummary>[],
+        count: 0,
+      );
+      final json = r.toJson();
+      expect(json['signerAddress'], equals(_testAccountId));
+      expect(json['count'], equals(0));
+    });
+
+    test('OZIndexedSigner_toJson', () {
+      const signer = OZIndexedSigner(
+        signerType: 'Delegated',
+        signerAddress: _testAccountId,
+      );
+      final json = signer.toJson();
+      expect(json['signer_type'], equals('Delegated'));
+      expect(json['signer_address'], equals(_testAccountId));
+      expect(json.containsKey('credential_id'), isFalse);
+    });
+
+    test('OZIndexedSigner_toJson_withCredentialId', () {
+      // Exercises line 392 (credentialId != null branch).
+      const signer = OZIndexedSigner(
+        signerType: 'External',
+        credentialId: 'cred-hex-123',
+      );
+      final json = signer.toJson();
+      expect(json['signer_type'], equals('External'));
+      expect(json['credential_id'], equals('cred-hex-123'));
+      expect(json.containsKey('signer_address'), isFalse);
+    });
+
+    test('OZIndexedPolicy_toJson', () {
+      const policy = OZIndexedPolicy(policyAddress: _testContractId);
+      final json = policy.toJson();
+      expect(json['policy_address'], equals(_testContractId));
+    });
+
+    test('OZIndexedPolicy_toJson_withInstallParams', () {
+      // Exercises line 445 (installParams != null branch).
+      const policy = OZIndexedPolicy(
+        policyAddress: _testContractId,
+        installParams: <String, dynamic>{'key': 'value'},
+      );
+      final json = policy.toJson();
+      expect(json['policy_address'], equals(_testContractId));
+      expect(json['install_params'], isNotNull);
+    });
+
+    test('OZIndexerStatsResponse_toJson', () {
+      // Exercises lines 479-480.
+      const stats = OZIndexerStats(
+        totalEvents: 1,
+        uniqueContracts: 2,
+        uniqueCredentials: 3,
+        firstLedger: 100,
+        lastLedger: 200,
+        eventTypes: <OZEventTypeCount>[],
+      );
+      const r = OZIndexerStatsResponse(stats: stats);
+      final json = r.toJson();
+      expect(json['stats'], isNotNull);
+    });
+
+    test('OZIndexedContextRule_toJson', () {
+      const rule = OZIndexedContextRule(
+        contextRuleId: 0,
+        signers: <OZIndexedSigner>[],
+        policies: <OZIndexedPolicy>[],
+      );
+      final json = rule.toJson();
+      expect(json['context_rule_id'], equals(0));
+      expect(json['signers'], isEmpty);
+    });
+
+    test('OZIndexedContractSummary_toJson', () {
+      const summary = OZIndexedContractSummary(
+        contractId: _testContractId,
+        contextRuleCount: 2,
+        externalSignerCount: 1,
+        delegatedSignerCount: 0,
+        nativeSignerCount: 0,
+        firstSeenLedger: 100,
+        lastSeenLedger: 200,
+        contextRuleIds: <int>[0, 1],
+      );
+      final json = summary.toJson();
+      expect(json['contract_id'], equals(_testContractId));
+      expect(json['context_rule_count'], equals(2));
+    });
+
+    test('OZContractDetailsResponse_toJson', () {
+      const summary = OZIndexedContractSummary(
+        contractId: _testContractId,
+        contextRuleCount: 0,
+        externalSignerCount: 0,
+        delegatedSignerCount: 0,
+        nativeSignerCount: 0,
+        firstSeenLedger: 0,
+        lastSeenLedger: 0,
+        contextRuleIds: <int>[],
+      );
+      const r = OZContractDetailsResponse(
+        contractId: _testContractId,
+        summary: summary,
+        contextRules: <OZIndexedContextRule>[],
+      );
+      final json = r.toJson();
+      expect(json['contractId'], equals(_testContractId));
+    });
+
+    test('OZCredentialLookupResponse_equalityWithNonConstInstances', () {
+      // Use non-const (mutable) instances so identical() returns false.
+      final a = OZCredentialLookupResponse(
+        credentialId: 'cred-x',
+        contracts: const <OZIndexedContractSummary>[],
+        count: 5,
+      );
+      final b = OZCredentialLookupResponse(
+        credentialId: 'cred-x',
+        contracts: const <OZIndexedContractSummary>[],
+        count: 5,
+      );
+      final c = OZCredentialLookupResponse(
+        credentialId: 'cred-y',
+        contracts: const <OZIndexedContractSummary>[],
+        count: 5,
+      );
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+      expect(a == c, isFalse);
+    });
+
+    test('OZContractDetailsResponse_equalityWithNonConstInstances', () {
+      const summary = OZIndexedContractSummary(
+        contractId: _testContractId,
+        contextRuleCount: 0,
+        externalSignerCount: 0,
+        delegatedSignerCount: 0,
+        nativeSignerCount: 0,
+        firstSeenLedger: 0,
+        lastSeenLedger: 0,
+        contextRuleIds: <int>[],
+      );
+      final a = OZContractDetailsResponse(
+        contractId: _testContractId,
+        summary: summary,
+        contextRules: const <OZIndexedContextRule>[],
+      );
+      final b = OZContractDetailsResponse(
+        contractId: _testContractId,
+        summary: summary,
+        contextRules: const <OZIndexedContextRule>[],
+      );
+      final c = OZContractDetailsResponse(
+        contractId: _testAccountId, // different
+        summary: summary,
+        contextRules: const <OZIndexedContextRule>[],
+      );
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+      expect(a == c, isFalse);
+    });
+
+    test('OZIndexedContextRule_equalityWithNonConstInstances', () {
+      // Non-const so deepEquality path executes.
+      final a = OZIndexedContextRule(
+        contextRuleId: 0,
+        signers: <OZIndexedSigner>[const OZIndexedSigner(signerType: 'Delegated')],
+        policies: <OZIndexedPolicy>[],
+      );
+      final b = OZIndexedContextRule(
+        contextRuleId: 0,
+        signers: <OZIndexedSigner>[const OZIndexedSigner(signerType: 'Delegated')],
+        policies: <OZIndexedPolicy>[],
+      );
+      final c = OZIndexedContextRule(
+        contextRuleId: 1,
+        signers: <OZIndexedSigner>[],
+        policies: <OZIndexedPolicy>[],
+      );
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+      expect(a == c, isFalse);
+    });
+
+    test('OZIndexedSigner_equalityWithNonConstInstances', () {
+      final a = OZIndexedSigner(signerType: 'Delegated', signerAddress: _testAccountId);
+      final b = OZIndexedSigner(signerType: 'Delegated', signerAddress: _testAccountId);
+      final c = OZIndexedSigner(signerType: 'External', credentialId: 'abc');
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+      expect(a == c, isFalse);
+    });
+
+    test('OZAddressLookupResponse_equalityWithNonConstInstances', () {
+      final a = OZAddressLookupResponse(
+        signerAddress: _testAccountId,
+        contracts: const <OZIndexedContractSummary>[],
+        count: 3,
+      );
+      final b = OZAddressLookupResponse(
+        signerAddress: _testAccountId,
+        contracts: const <OZIndexedContractSummary>[],
+        count: 3,
+      );
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+    });
+  });
+
+  group('OZIndexerClient - response DTO equality and hashCode', () {
+    test('OZCredentialLookupResponse_equality', () {
+      const a = OZCredentialLookupResponse(
+        credentialId: 'cred-1',
+        contracts: <OZIndexedContractSummary>[],
+        count: 0,
+      );
+      const b = OZCredentialLookupResponse(
+        credentialId: 'cred-1',
+        contracts: <OZIndexedContractSummary>[],
+        count: 0,
+      );
+      const c = OZCredentialLookupResponse(
+        credentialId: 'cred-2',
+        contracts: <OZIndexedContractSummary>[],
+        count: 0,
+      );
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+      expect(a == c, isFalse);
+    });
+
+    test('OZAddressLookupResponse_equality', () {
+      const a = OZAddressLookupResponse(
+        signerAddress: _testAccountId,
+        contracts: <OZIndexedContractSummary>[],
+        count: 0,
+      );
+      const b = OZAddressLookupResponse(
+        signerAddress: _testAccountId,
+        contracts: <OZIndexedContractSummary>[],
+        count: 0,
+      );
+      const c = OZAddressLookupResponse(
+        signerAddress: _testContractId,
+        contracts: <OZIndexedContractSummary>[],
+        count: 0,
+      );
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+      expect(a == c, isFalse);
+    });
+
+    test('OZIndexedContractSummary_equality', () {
+      const a = OZIndexedContractSummary(
+        contractId: _testContractId,
+        contextRuleCount: 1,
+        externalSignerCount: 0,
+        delegatedSignerCount: 0,
+        nativeSignerCount: 0,
+        firstSeenLedger: 100,
+        lastSeenLedger: 200,
+        contextRuleIds: <int>[0],
+      );
+      const b = OZIndexedContractSummary(
+        contractId: _testContractId,
+        contextRuleCount: 1,
+        externalSignerCount: 0,
+        delegatedSignerCount: 0,
+        nativeSignerCount: 0,
+        firstSeenLedger: 100,
+        lastSeenLedger: 200,
+        contextRuleIds: <int>[0],
+      );
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+    });
+
+    test('OZIndexedContextRule_equality', () {
+      const a = OZIndexedContextRule(
+        contextRuleId: 0,
+        signers: <OZIndexedSigner>[],
+        policies: <OZIndexedPolicy>[],
+      );
+      const b = OZIndexedContextRule(
+        contextRuleId: 0,
+        signers: <OZIndexedSigner>[],
+        policies: <OZIndexedPolicy>[],
+      );
+      const c = OZIndexedContextRule(
+        contextRuleId: 1,
+        signers: <OZIndexedSigner>[],
+        policies: <OZIndexedPolicy>[],
+      );
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+      expect(a == c, isFalse);
+    });
+
+    test('OZIndexedSigner_equality', () {
+      const a = OZIndexedSigner(signerType: 'Delegated', signerAddress: _testAccountId);
+      const b = OZIndexedSigner(signerType: 'Delegated', signerAddress: _testAccountId);
+      const c = OZIndexedSigner(signerType: 'External', credentialId: 'abc123');
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+      expect(a == c, isFalse);
+    });
+
+    test('OZContractDetailsResponse_equality', () {
+      const a = OZContractDetailsResponse(
+        contractId: _testContractId,
+        summary: OZIndexedContractSummary(
+          contractId: _testContractId,
+          contextRuleCount: 0,
+          externalSignerCount: 0,
+          delegatedSignerCount: 0,
+          nativeSignerCount: 0,
+          firstSeenLedger: 0,
+          lastSeenLedger: 0,
+          contextRuleIds: <int>[],
+        ),
+        contextRules: <OZIndexedContextRule>[],
+      );
+      const b = OZContractDetailsResponse(
+        contractId: _testContractId,
+        summary: OZIndexedContractSummary(
+          contractId: _testContractId,
+          contextRuleCount: 0,
+          externalSignerCount: 0,
+          delegatedSignerCount: 0,
+          nativeSignerCount: 0,
+          firstSeenLedger: 0,
+          lastSeenLedger: 0,
+          contextRuleIds: <int>[],
+        ),
+        contextRules: <OZIndexedContextRule>[],
+      );
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+    });
+
+    test('OZIndexerStatsResponse_equality', () {
+      const stats1 = OZIndexerStats(
+        totalEvents: 10,
+        uniqueContracts: 2,
+        uniqueCredentials: 3,
+        firstLedger: 100,
+        lastLedger: 200,
+        eventTypes: <OZEventTypeCount>[],
+      );
+      const stats2 = OZIndexerStats(
+        totalEvents: 10,
+        uniqueContracts: 2,
+        uniqueCredentials: 3,
+        firstLedger: 100,
+        lastLedger: 200,
+        eventTypes: <OZEventTypeCount>[],
+      );
+      const stats3 = OZIndexerStats(
+        totalEvents: 99,
+        uniqueContracts: 2,
+        uniqueCredentials: 3,
+        firstLedger: 100,
+        lastLedger: 200,
+        eventTypes: <OZEventTypeCount>[],
+      );
+      const a = OZIndexerStatsResponse(stats: stats1);
+      const b = OZIndexerStatsResponse(stats: stats2);
+      const c = OZIndexerStatsResponse(stats: stats3);
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+      expect(a == c, isFalse);
+    });
+  });
+
+  group('OZIndexerClient - HTTP error responses', () {
+    test('lookupByCredentialId_404_throwsIndexerRequestFailed', () async {
+      final adapter = MockDioAdapter.response(
+        responseBody: '{"error":"not found"}',
+        statusCode: 404,
+      );
+      final client = _client(adapter);
+      // Use a valid base64url credential id (no padding, URL-safe alphabet).
+      const credId = 'aGVsbG8tc21hcnQtYWNjb3VudA';
+
+      await expectLater(
+        client.lookupByCredentialId(credId),
+        throwsA(isA<IndexerRequestFailed>()),
+      );
+      await client.close();
+    });
+
+    test('lookupByCredentialId_malformedJson_throwsIndexerRequestFailed', () async {
+      final adapter = MockDioAdapter.json('{bad json{{');
+      final client = _client(adapter);
+      const credId = 'aGVsbG8tc21hcnQtYWNjb3VudA';
+
+      await expectLater(
+        client.lookupByCredentialId(credId),
+        throwsA(isA<IndexerRequestFailed>()),
+      );
+      await client.close();
+    });
+
+    test('lookupByAddress_500_throwsIndexerRequestFailed', () async {
+      final adapter = MockDioAdapter.response(
+        responseBody: '{"error":"server error"}',
+        statusCode: 500,
+      );
+      final client = _client(adapter);
+
+      await expectLater(
+        client.lookupByAddress(_testAccountId),
+        throwsA(isA<IndexerRequestFailed>()),
+      );
+      await client.close();
+    });
+
+    test('getContract_404_throwsIndexerRequestFailed', () async {
+      final adapter = MockDioAdapter.response(
+        responseBody: '{"error":"not found"}',
+        statusCode: 404,
+      );
+      final client = _client(adapter);
+
+      await expectLater(
+        client.getContract(_testContractId),
+        throwsA(isA<IndexerRequestFailed>()),
+      );
+      await client.close();
+    });
+
+    test('getStats_500_throwsIndexerRequestFailed', () async {
+      final adapter = MockDioAdapter.response(
+        responseBody: '{}',
+        statusCode: 500,
+      );
+      final client = _client(adapter);
+
+      await expectLater(
+        client.getStats(),
+        throwsA(isA<IndexerRequestFailed>()),
+      );
+      await client.close();
+    });
+
+    test('getDefaultUrl_unknownPassphrase_returnsNull', () {
+      const unknownPassphrase = 'Unknown Network ; January 2099';
+      final url = OZIndexerClient.getDefaultUrl(unknownPassphrase);
+      expect(url, isNull);
+    });
+
+    test('getDefaultUrl_testnetPassphrase_returnsNonNull', () {
+      const testnetPassphrase = 'Test SDF Network ; September 2015';
+      final url = OZIndexerClient.getDefaultUrl(testnetPassphrase);
+      expect(url, isNotNull);
+    });
+
+    test('network_dioException_throwsIndexerRequestFailed', () async {
+      final adapter = MockDioAdapter.throwing(
+        dio.DioException(
+          requestOptions: dio.RequestOptions(path: '/'),
+          type: dio.DioExceptionType.connectionError,
+          message: 'connection refused',
+        ),
+      );
+      final client = _client(adapter);
+      const credId = 'aGVsbG8tc21hcnQtYWNjb3VudA';
+
+      await expectLater(
+        client.lookupByCredentialId(credId),
+        throwsA(isA<IndexerRequestFailed>()),
+      );
+      await client.close();
+    });
+
+    test('lookupByCredentialId_nonJsonContentType_throwsIndexerRequestFailed', () async {
+      final adapter = MockDioAdapter.response(
+        responseBody: '<html>Error</html>',
+        statusCode: 200,
+        contentType: 'text/html',
+      );
+      final client = _client(adapter);
+      const credId = 'aGVsbG8tc21hcnQtYWNjb3VudA';
+
+      await expectLater(
+        client.lookupByCredentialId(credId),
+        throwsA(isA<IndexerRequestFailed>()),
+      );
+      await client.close();
+    });
+  });
 }

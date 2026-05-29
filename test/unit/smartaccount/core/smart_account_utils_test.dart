@@ -218,6 +218,44 @@ void main() {
       );
       expect(out[0], justBelow);
     });
+
+    test('parseDerSignature_rComponentExceeds32BytesAfterStripping', () {
+      // Craft a DER signature where r contains 33 non-zero bytes (no leading
+      // zeros to strip). This value exceeds the 32-byte r-length guard.
+      // DER: 0x30 <len> 0x02 0x21 <33 non-zero bytes> 0x02 0x01 0x01
+      final rBytes = Uint8List(33);
+      for (var i = 0; i < 33; i++) {
+        rBytes[i] = i + 1; // non-zero so no stripping occurs
+      }
+      final sBytes = Uint8List.fromList([0x01]);
+      final inner = <int>[
+        0x02, rBytes.length, ...rBytes,
+        0x02, sBytes.length, ...sBytes,
+      ];
+      final raw = Uint8List.fromList([0x30, inner.length, ...inner]);
+      expect(
+        () => SmartAccountUtils.parseDerSignature(raw),
+        throwsA(isA<InvalidInput>()),
+      );
+    });
+
+    test('parseDerSignature_sComponentExceeds32BytesAfterStripping', () {
+      // Craft a DER signature where s contains 33 non-zero bytes.
+      final rBytes = Uint8List.fromList([0x01]);
+      final sBytes = Uint8List(33);
+      for (var i = 0; i < 33; i++) {
+        sBytes[i] = i + 1;
+      }
+      final inner = <int>[
+        0x02, rBytes.length, ...rBytes,
+        0x02, sBytes.length, ...sBytes,
+      ];
+      final raw = Uint8List.fromList([0x30, inner.length, ...inner]);
+      expect(
+        () => SmartAccountUtils.parseDerSignature(raw),
+        throwsA(isA<InvalidInput>()),
+      );
+    });
   });
 
   group('normalizeSignature', () {

@@ -302,6 +302,22 @@ void main() {
       expect(modified.networkPassphrase, original.networkPassphrase);
     });
 
+    test('testConfigCopy_withoutRpName_preservesOriginalRpName', () {
+      // copyWith without rpName must fall through to `rpName ?? this.rpName`
+      // (line 341 of oz_smart_account_config.dart).
+      final original = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        rpName: 'Original Name',
+      );
+      final copied = original.copyWith(rpcUrl: 'https://rpc2.example.com');
+      expect(copied.rpName, 'Original Name',
+          reason: 'rpName must be preserved when not provided to copyWith');
+      expect(copied.rpcUrl, 'https://rpc2.example.com');
+    });
+
     test('testEffectiveIndexerUrl_explicitUrlTakesPrecedence', () {
       final config = OZSmartAccountConfig(
         rpcUrl: _validRpcUrl,
@@ -538,6 +554,106 @@ void main() {
         timeoutInSeconds: 600,
       );
       expect(config.timeoutInSeconds, equals(600));
+    });
+
+    test('testMaxContextRuleScanId_negativeThrows', () {
+      expect(
+        () => OZSmartAccountConfig(
+          rpcUrl: _validRpcUrl,
+          networkPassphrase: _validPassphrase,
+          accountWasmHash: _validWasmHash,
+          webauthnVerifierAddress: _validVerifier,
+          maxContextRuleScanId: -1,
+        ),
+        throwsA(isA<InvalidConfig>().having(
+          (e) => e.toString(),
+          'message',
+          contains('maxContextRuleScanId must be non-negative'),
+        )),
+      );
+    });
+
+    test('testMaxContextRuleScanId_zeroAccepted', () {
+      final config = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        maxContextRuleScanId: 0,
+      );
+      expect(config.maxContextRuleScanId, 0);
+    });
+
+    test('testBuilder_webauthnProvider_setter', () {
+      final config = OZSmartAccountConfig.builder(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+      )
+          .webauthnProvider(null)
+          .build();
+
+      expect(config.webauthnProvider, isNull);
+    });
+
+    test('testBuilder_storage_setter', () {
+      final storage = InMemoryStorageAdapter();
+      final config = OZSmartAccountConfig.builder(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+      )
+          .storage(storage)
+          .build();
+
+      expect(config.storage, same(storage));
+    });
+
+    test('testBuilder_externalWallet_setter', () {
+      final config = OZSmartAccountConfig.builder(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+      )
+          .externalWallet(null)
+          .build();
+
+      expect(config.externalWallet, isNull);
+    });
+
+    test('testBuilder_externalSignerManager_setter', () {
+      final config = OZSmartAccountConfig.builder(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+      )
+          .externalSignerManager(null)
+          .build();
+
+      expect(config.externalSignerManager, isNull);
+    });
+
+    test('testBuilder_maxContextRuleScanId_setter', () {
+      final config = OZSmartAccountConfig.builder(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+      )
+          .maxContextRuleScanId(25)
+          .build();
+
+      expect(config.maxContextRuleScanId, 25);
+    });
+
+    test('testCreateDefaultDeployer_succeeds', () async {
+      final deployer = await OZSmartAccountConfig.createDefaultDeployer();
+      expect(deployer, isNotNull);
+      expect(deployer.accountId.startsWith('G'), isTrue);
     });
   });
 }

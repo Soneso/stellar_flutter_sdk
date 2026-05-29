@@ -8,7 +8,7 @@
 /// These constants tune timeouts, identification headers, and on-chain
 /// contract limits used by the OpenZeppelin smart-account managers.
 class OZConstants {
-  OZConstants._();
+  OZConstants._(); // coverage:ignore-line
 
   /// Default session expiry in milliseconds (7 days).
   static const int defaultSessionExpiryMs = 604800000;

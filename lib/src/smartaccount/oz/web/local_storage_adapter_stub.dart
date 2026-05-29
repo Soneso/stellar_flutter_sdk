@@ -31,6 +31,7 @@ class LocalStorageAdapter implements StorageAdapter {
         'InMemoryStorageAdapter for testing).',
       );
 
+  // coverage:ignore-start
   @override
   Future<void> save(StoredCredential credential) async => _unsupported();
 
@@ -62,4 +63,5 @@ class LocalStorageAdapter implements StorageAdapter {
 
   @override
   Future<void> clearSession() async => _unsupported();
+  // coverage:ignore-end
 }

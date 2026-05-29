@@ -1185,4 +1185,49 @@ void main() {
       }
     });
   });
+
+  group('AuthenticatorFlags equality and hashCode', () {
+    // These tests exercise the == operator and hashCode getter on
+    // AuthenticatorFlags (lines 35-43 of web_authn_cbor_parser.dart).
+    // Using non-const, non-identical instances so the identical() fast-path
+    // does not short-circuit.
+
+    test('testAuthenticatorFlags_equalInstances', () {
+      final a = AuthenticatorFlags(
+          deviceType: WebAuthnCborParser.deviceTypeMulti, backedUp: true);
+      final b = AuthenticatorFlags(
+          deviceType: WebAuthnCborParser.deviceTypeMulti, backedUp: true);
+      expect(a == b, isTrue);
+      expect(a.hashCode, b.hashCode);
+    });
+
+    test('testAuthenticatorFlags_differentDeviceType_notEqual', () {
+      final a = AuthenticatorFlags(
+          deviceType: WebAuthnCborParser.deviceTypeSingle, backedUp: false);
+      final b = AuthenticatorFlags(
+          deviceType: WebAuthnCborParser.deviceTypeMulti, backedUp: false);
+      expect(a == b, isFalse);
+    });
+
+    test('testAuthenticatorFlags_differentBackedUp_notEqual', () {
+      final a = AuthenticatorFlags(
+          deviceType: WebAuthnCborParser.deviceTypeMulti, backedUp: true);
+      final b = AuthenticatorFlags(
+          deviceType: WebAuthnCborParser.deviceTypeMulti, backedUp: false);
+      expect(a == b, isFalse);
+    });
+
+    test('testAuthenticatorFlags_notEqualToOtherType', () {
+      final a = AuthenticatorFlags(
+          deviceType: WebAuthnCborParser.deviceTypeSingle, backedUp: false);
+      expect(a == 'not-flags', isFalse);
+    });
+
+    test('testAuthenticatorFlags_nullFields_equal', () {
+      final a = AuthenticatorFlags();
+      final b = AuthenticatorFlags();
+      expect(a == b, isTrue);
+      expect(a.hashCode, b.hashCode);
+    });
+  });
 }

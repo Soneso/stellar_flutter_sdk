@@ -261,5 +261,154 @@ void main() {
         expect(e.code.code, 4004);
       }
     });
+
+    test('null native result throws WebAuthnAuthenticationFailed', () async {
+      handler = (call) => null;
+
+      try {
+        await provider().authenticate(challenge: bytes(<int>[1]));
+        fail('expected WebAuthnAuthenticationFailed');
+      } on WebAuthnAuthenticationFailed catch (e) {
+        expect(e.message, contains('null'));
+      }
+    });
+
+    test('platform exception unmapped code wraps as authentication failed',
+        () async {
+      handler = (call) {
+        throw PlatformException(
+          code: 'TOTALLY_UNEXPECTED',
+          message: 'mystery error',
+        );
+      };
+
+      try {
+        await provider().authenticate(challenge: bytes(<int>[1]));
+        fail('expected WebAuthnAuthenticationFailed');
+      } on WebAuthnAuthenticationFailed catch (e) {
+        expect(e.message, contains('TOTALLY_UNEXPECTED'));
+      }
+    });
+  });
+
+  group('register null result', () {
+    test('null native registration result throws WebAuthnRegistrationFailed',
+        () async {
+      handler = (call) => null;
+
+      try {
+        await provider().register(
+          challenge: bytes(<int>[1]),
+          userId: bytes(<int>[2]),
+          userName: 'alice',
+        );
+        fail('expected WebAuthnRegistrationFailed');
+      } on WebAuthnRegistrationFailed catch (e) {
+        expect(e.message, contains('null'));
+      }
+    });
+  });
+
+  group('platform exception WEBAUTHN_NOT_SUPPORTED', () {
+    test('register not-supported code wraps as WebAuthnNotSupported', () async {
+      handler = (call) {
+        throw PlatformException(
+          code: 'WEBAUTHN_NOT_SUPPORTED',
+          message: 'WebAuthn not available',
+        );
+      };
+
+      try {
+        await provider().register(
+          challenge: bytes(<int>[1]),
+          userId: bytes(<int>[2]),
+          userName: 'alice',
+        );
+        fail('expected WebAuthnNotSupported');
+      } on WebAuthnNotSupported catch (e) {
+        expect(e.message, contains('WebAuthn'));
+        expect(e.cause, isA<PlatformException>());
+      }
+    });
+
+    test('authenticate not-supported code wraps as WebAuthnNotSupported',
+        () async {
+      handler = (call) {
+        throw PlatformException(
+          code: 'WEBAUTHN_NOT_SUPPORTED',
+          message: 'WebAuthn not available on this device',
+        );
+      };
+
+      try {
+        await provider().authenticate(challenge: bytes(<int>[1]));
+        fail('expected WebAuthnNotSupported');
+      } on WebAuthnNotSupported catch (e) {
+        expect(e.message, contains('WebAuthn'));
+        expect(e.cause, isA<PlatformException>());
+      }
+    });
+  });
+
+  group('_requireBytes field types', () {
+    // These tests exercise the List<int> and generic List paths inside
+    // _requireBytes (lines 279-281) and the missing-field throw (line 283),
+    // plus _missingBytesException (lines 286, 293-296, 298).
+
+    test('registration result with List<int> bytes is accepted', () async {
+      // Return a map where credentialId is List<int>, not Uint8List.
+      // The _requireBytes helper falls through to the List<int> branch.
+      handler = (call) => <Object?, Object?>{
+            'credentialId': <int>[0x01, 0x02, 0x03],
+            'publicKey': bytes(List<int>.generate(65, (i) => i & 0xff)),
+            'attestationObject': bytes(<int>[0xb0, 0xb1]),
+          };
+
+      final result = await provider().register(
+        challenge: bytes(<int>[1]),
+        userId: bytes(<int>[2]),
+        userName: 'alice',
+      );
+      expect(result.credentialId, bytes(<int>[0x01, 0x02, 0x03]));
+    });
+
+    test('registration result with missing credentialId throws registration failed',
+        () async {
+      // Return a map without credentialId so _requireBytes throws
+      // _missingBytesException with registration context.
+      handler = (call) => <Object?, Object?>{
+            'publicKey': bytes(List<int>.generate(65, (i) => i & 0xff)),
+            'attestationObject': bytes(<int>[0xb0, 0xb1]),
+          };
+
+      try {
+        await provider().register(
+          challenge: bytes(<int>[1]),
+          userId: bytes(<int>[2]),
+          userName: 'alice',
+        );
+        fail('expected WebAuthnRegistrationFailed');
+      } on WebAuthnRegistrationFailed catch (e) {
+        expect(e.message, contains('credentialId'));
+      }
+    });
+
+    test('authentication result with missing credentialId throws authentication failed',
+        () async {
+      // Return a map without credentialId so _requireBytes throws
+      // _missingBytesException with authentication context.
+      handler = (call) => <Object?, Object?>{
+            'authenticatorData': bytes(<int>[0xd0, 0xd1]),
+            'clientDataJSON': bytes(<int>[0xe0, 0xe1]),
+            'signature': bytes(<int>[0xf0, 0xf1]),
+          };
+
+      try {
+        await provider().authenticate(challenge: bytes(<int>[1]));
+        fail('expected WebAuthnAuthenticationFailed');
+      } on WebAuthnAuthenticationFailed catch (e) {
+        expect(e.message, contains('credentialId'));
+      }
+    });
   });
 }

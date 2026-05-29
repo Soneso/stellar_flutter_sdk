@@ -83,4 +83,30 @@ void main() {
               'type; only the null sentinel grants the no-header pass');
     });
   });
+
+  group('genericErrorMessage', () {
+    test('nonEmptyToString_returnsToString', () {
+      expect(genericErrorMessage(Exception('rpc error')), contains('rpc error'));
+    });
+
+    test('emptyToString_returnsDefault', () {
+      // Create an object whose toString() is empty.
+      expect(
+        genericErrorMessage(_EmptyToString()),
+        equals('Request failed'),
+      );
+    });
+
+    test('customDefaultText_usedWhenEmpty', () {
+      expect(
+        genericErrorMessage(_EmptyToString(), defaultText: 'custom fallback'),
+        equals('custom fallback'),
+      );
+    });
+  });
+}
+
+class _EmptyToString {
+  @override
+  String toString() => '';
 }

@@ -7,7 +7,7 @@
 /// These constants describe public-key sizes and the uncompressed-point prefix
 /// byte used by the elliptic-curve schemes that Smart Account signers support.
 class SmartAccountConstants {
-  SmartAccountConstants._();
+  SmartAccountConstants._(); // coverage:ignore-line
 
   /// Size in bytes of an Ed25519 public key (RFC 8032).
   static const int ed25519PublicKeySize = 32;

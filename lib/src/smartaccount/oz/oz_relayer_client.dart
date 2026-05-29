@@ -26,7 +26,7 @@ const DeepCollectionEquality _detailsEquality = DeepCollectionEquality();
 /// the constant name so it can be compared directly with a server-emitted
 /// error-code field.
 class OZRelayerErrorCodes {
-  OZRelayerErrorCodes._();
+  OZRelayerErrorCodes._(); // coverage:ignore-line
 
   /// Request rejected due to invalid parameters.
   static const String invalidParams = 'INVALID_PARAMS';

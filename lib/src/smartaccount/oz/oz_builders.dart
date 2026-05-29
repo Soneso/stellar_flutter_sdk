@@ -216,7 +216,7 @@ class ParsedContextRule {
 /// [OZSmartAccountBuilders] to keep core builder utilities free of
 /// OZ-specific context-rule types.
 class OZBuilders {
-  OZBuilders._();
+  OZBuilders._(); // coverage:ignore-line
 
   /// Creates a [ContextRuleTypeDefault] rule.
   ///

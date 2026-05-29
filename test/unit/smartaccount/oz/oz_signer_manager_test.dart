@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_internal_pipeline_interfaces.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import 'mock_oz_multi_signer_manager.dart';
 import 'mock_oz_transaction_operations.dart';
 import 'oz_pipeline_fixtures.dart';
 
@@ -447,6 +448,246 @@ void main() {
         throwsA(isA<WalletNotConnected>()),
       );
       expect(txOps.submitCalls, isEmpty);
+    });
+
+    test(
+        'addNewPasskeySigner_noWebAuthnProvider_throwsWebAuthnNotSupported',
+        () async {
+      final h = _buildHarness();
+      final mgr = OZSignerManager(h.kit);
+      // Kit config has no webauthnProvider (default null).
+
+      await expectLater(
+        () => mgr.addNewPasskeySigner(
+          contextRuleId: 0,
+          userName: 'user',
+        ),
+        throwsA(isA<WebAuthnNotSupported>()),
+      );
+    });
+
+    test(
+        'addNewPasskeySigner_registrationThrows_wrapsAsRegistrationFailed',
+        () async {
+      final webauthn = RecordingWebAuthnProvider();
+      webauthn.registerResponses
+          .add(WebAuthnException.registrationFailed('simulated failure'));
+
+      final kit = FakePipelineKit(
+        config: OZSmartAccountConfig(
+          rpcUrl: 'https://soroban-testnet.stellar.org',
+          networkPassphrase: Network.TESTNET.networkPassphrase,
+          accountWasmHash: '0' * 64,
+          webauthnVerifierAddress:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          webauthnProvider: webauthn,
+        ),
+      );
+      kit.setConnected(
+        credentialId: _credentialIdB64,
+        contractId: _validContractId,
+      );
+      final mgr = OZSignerManager(kit);
+
+      await expectLater(
+        () => mgr.addNewPasskeySigner(
+          contextRuleId: 0,
+          userName: 'user',
+        ),
+        throwsA(isA<WebAuthnRegistrationFailed>()),
+      );
+    });
+  });
+
+  group('AddPasskeySignerResult equality and hashCode', () {
+    test('equalWithNonConstInstances', () {
+      final pk = Uint8List(65);
+      pk[0] = 0x04;
+      const txResult = TransactionResult(success: true, hash: 'h', ledger: 1);
+      final a = AddPasskeySignerResult(
+        credentialId: 'cred-1',
+        publicKey: pk,
+        transactionResult: txResult,
+      );
+      final b = AddPasskeySignerResult(
+        credentialId: 'cred-1',
+        publicKey: Uint8List.fromList(pk),
+        transactionResult: txResult,
+      );
+      final c = AddPasskeySignerResult(
+        credentialId: 'cred-2',
+        publicKey: pk,
+        transactionResult: txResult,
+      );
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+      expect(a == c, isFalse);
+      expect(a.toString(), contains('cred-1'));
+    });
+  });
+
+  group('OZSignerManager.addNewPasskeySigner success path', () {
+    test('successfulRegistration_returnsAddPasskeySignerResult', () async {
+      final credIdBytes = Uint8List.fromList(<int>[1, 2, 3, 4, 5]);
+      final pubKey = Uint8List(65);
+      pubKey[0] = 0x04;
+      for (var i = 1; i < 65; i++) pubKey[i] = i & 0xFF;
+
+      final regResult = WebAuthnRegistrationResult(
+        credentialId: credIdBytes,
+        publicKey: pubKey,
+        attestationObject: Uint8List.fromList(<int>[0xAA, 0xBB]),
+        transports: <String>['internal'],
+        deviceType: 'multiDevice',
+        backedUp: true,
+      );
+
+      final webauthn = RecordingWebAuthnProvider();
+      webauthn.registerResponses.add(regResult);
+
+      final kit = FakePipelineKit(
+        config: OZSmartAccountConfig(
+          rpcUrl: 'https://soroban-testnet.stellar.org',
+          networkPassphrase: Network.TESTNET.networkPassphrase,
+          accountWasmHash: '0' * 64,
+          webauthnVerifierAddress:
+              'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+          webauthnProvider: webauthn,
+        ),
+      );
+      kit.setConnected(
+        credentialId: _credentialIdB64,
+        contractId: _validContractId,
+      );
+
+      final txOps = MockOZTransactionOperations(kit);
+      kit.setTransactionOperations(txOps);
+
+      final mgr = OZSignerManager(kit);
+      final result = await mgr.addNewPasskeySigner(
+        contextRuleId: 0,
+        userName: 'alice',
+      );
+
+      expect(result.publicKey.length, 65);
+      expect(result.publicKey[0], 0x04);
+      expect(result.transactionResult.success, isTrue);
+      // Verify a CredentialCreated event was emitted.
+      expect(txOps.submitCalls, hasLength(1));
+    });
+  });
+
+  group('OZSignerManager.addPasskey validation', () {
+    test('wrongKeySize_throwsInvalidInput', () async {
+      final h = _buildHarness();
+      final mgr = OZSignerManager(h.kit);
+
+      await expectLater(
+        () => mgr.addPasskey(
+          contextRuleId: 0,
+          publicKey: Uint8List(32), // wrong size
+          credentialId: Uint8List.fromList(<int>[1, 2, 3]),
+        ),
+        throwsA(isA<InvalidInput>()),
+      );
+    });
+
+    test('wrongPrefixByte_throwsInvalidInput', () async {
+      final h = _buildHarness();
+      final mgr = OZSignerManager(h.kit);
+
+      final badKey = Uint8List(65);
+      badKey[0] = 0x02; // compressed prefix, not 0x04
+
+      await expectLater(
+        () => mgr.addPasskey(
+          contextRuleId: 0,
+          publicKey: badKey,
+          credentialId: Uint8List.fromList(<int>[1, 2, 3]),
+        ),
+        throwsA(isA<InvalidInput>()),
+      );
+    });
+
+    test('emptyCredentialId_throwsInvalidInput', () async {
+      final h = _buildHarness();
+      final mgr = OZSignerManager(h.kit);
+
+      final validKey = Uint8List(65);
+      validKey[0] = 0x04;
+
+      await expectLater(
+        () => mgr.addPasskey(
+          contextRuleId: 0,
+          publicKey: validKey,
+          credentialId: Uint8List(0),
+        ),
+        throwsA(isA<InvalidInput>()),
+      );
+    });
+  });
+
+  group('OZSignerManager multi-signer routing', () {
+    test('addPasskey_withSelectedSigners_routesToMultiSigner', () async {
+      // When selectedSigners is non-empty the _route method delegates
+      // to multiSignerManager.submitWithMultipleSigners.  We verify that
+      // the kit's multiSignerManager is consulted by supplying a mock.
+      final h = _buildHarness();
+      final mockMulti = MockOZMultiSignerManager(h.kit);
+      mockMulti.submitWithMultipleSignersDefault = const TransactionResult(
+        success: true,
+        hash: 'multi-signer-hash',
+      );
+      h.kit.setMultiSignerManager(mockMulti);
+      final mgr = OZSignerManager(h.kit);
+
+      final validKey = Uint8List(65);
+      validKey[0] = 0x04;
+
+      final result = await mgr.addPasskey(
+        contextRuleId: 0,
+        publicKey: validKey,
+        credentialId: Uint8List.fromList(<int>[1, 2, 3]),
+        selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+      );
+
+      expect(result.success, isTrue);
+      expect(mockMulti.submitWithMultipleSignersCalls, hasLength(1));
+    });
+
+    test('addDelegated_withSelectedSigners_routesToMultiSigner', () async {
+      final h = _buildHarness();
+      final mockMulti = MockOZMultiSignerManager(h.kit);
+      mockMulti.submitWithMultipleSignersDefault =
+          const TransactionResult(success: true, hash: 'd');
+      h.kit.setMultiSignerManager(mockMulti);
+      final mgr = OZSignerManager(h.kit);
+
+      await mgr.addDelegated(
+        contextRuleId: 0,
+        address: _accountAddressA,
+        selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+      );
+
+      expect(mockMulti.submitWithMultipleSignersCalls, hasLength(1));
+    });
+
+    test('addEd25519_withSelectedSigners_routesToMultiSigner', () async {
+      final h = _buildHarness();
+      final mockMulti = MockOZMultiSignerManager(h.kit);
+      mockMulti.submitWithMultipleSignersDefault =
+          const TransactionResult(success: true, hash: 'e');
+      h.kit.setMultiSignerManager(mockMulti);
+      final mgr = OZSignerManager(h.kit);
+
+      await mgr.addEd25519(
+        contextRuleId: 0,
+        verifierAddress: _verifierContract,
+        publicKey: Uint8List(32),
+        selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+      );
+
+      expect(mockMulti.submitWithMultipleSignersCalls, hasLength(1));
     });
   });
 }

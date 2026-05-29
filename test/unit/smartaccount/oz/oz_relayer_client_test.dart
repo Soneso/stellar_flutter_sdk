@@ -1037,4 +1037,23 @@ void main() {
       }
     });
   });
+
+  group('OZRelayerClient - generic exception path', () {
+    test('nonDioException_returnsFailureResponse', () async {
+      // Throw a plain Error (not DioException) to exercise the generic
+      // catch (e) block at line 362-365 in oz_relayer_client.dart.
+      final adapter = MockDioAdapter.throwing(StateError('internal error'));
+      final relayer = _client(adapter);
+      try {
+        final response = await relayer.send(
+          _testHostFunction(),
+          const <XdrSorobanAuthorizationEntry>[],
+        );
+        expect(response.success, isFalse);
+        expect(response.error, isNotNull);
+      } finally {
+        await relayer.close();
+      }
+    });
+  });
 }

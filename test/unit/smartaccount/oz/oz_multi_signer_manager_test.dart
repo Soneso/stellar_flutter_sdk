@@ -8,6 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_internal_pipeline_interfaces.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_secure_nonce.dart';
+
 import 'mock_oz_multi_signer_manager.dart';
 import 'mock_oz_transaction_operations.dart';
 import 'oz_pipeline_fixtures.dart';
@@ -406,10 +408,37 @@ void main() {
       expect(a.hashCode == b.hashCode, isTrue);
     });
 
+    test('wallet_equalityWithNonConstInstances', () {
+      // Non-const instances to exercise lines 140-141 in oz_selected_signer.dart.
+      final a = SelectedSignerWallet(_validAccountAddress);
+      final b = SelectedSignerWallet(_validAccountAddress);
+      final c = SelectedSignerWallet(_validTargetContract);
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+      expect(a == c, isFalse);
+      expect(a == 'not-a-wallet', isFalse);
+    });
+
     test('passkey_dataClassEquality_withNullFields', () {
       const a = SelectedSignerPasskey();
       const b = SelectedSignerPasskey();
       expect(a == b, isTrue);
+    });
+  });
+
+  group('OZSecureNonce', () {
+    test('generateBigInt_returnsNonNull', () {
+      final v = OZSecureNonce.generateBigInt();
+      expect(v, isNotNull);
+    });
+
+    test('bytes_negativeCount_throwsArgumentError', () {
+      expect(() => OZSecureNonce.bytes(-1), throwsArgumentError);
+    });
+
+    test('bytes_zeroCount_returnsEmpty', () {
+      final b = OZSecureNonce.bytes(0);
+      expect(b, isEmpty);
     });
   });
 
@@ -1077,6 +1106,259 @@ void main() {
       expect(h.multi.submitWithMultipleSignersCalls, isEmpty);
     });
   });
+
+  group('submitWithMultipleSigners validation guards', () {
+    test('walletSigner_adapterCannotSign_throwsValidation', () async {
+      // External wallet configured but canSignFor returns false.
+      final kit = _buildConnectedKit();
+      kit.setExternalWallet(_NeverSignWallet());
+      final manager = OZMultiSignerManager(kit);
+
+      await expectLater(
+        () => manager.submitWithMultipleSigners(
+          hostFunction: _stubHostFunction(),
+          selectedSigners: <SelectedSigner>[
+            SelectedSignerWallet(_validAccountAddress),
+          ],
+        ),
+        throwsA(isA<InvalidInput>()),
+      );
+    });
+
+    test('walletSigner_noExternalWallet_throwsValidation', () async {
+      final kit = _buildConnectedKit();
+      // externalWallet is null by default on FakePipelineKit.
+      final manager = OZMultiSignerManager(kit);
+
+      await expectLater(
+        () => manager.submitWithMultipleSigners(
+          hostFunction: _stubHostFunction(),
+          selectedSigners: <SelectedSigner>[
+            SelectedSignerWallet(_validAccountAddress),
+          ],
+        ),
+        throwsA(isA<InvalidInput>()),
+      );
+    });
+
+    test('ed25519Signer_noExternalSignerManager_throwsValidation', () async {
+      final kit = _buildConnectedKit();
+      // externalSignerManager is null by default.
+      final manager = OZMultiSignerManager(kit);
+
+      final pubKey = Uint8List(32);
+      await expectLater(
+        () => manager.submitWithMultipleSigners(
+          hostFunction: _stubHostFunction(),
+          selectedSigners: <SelectedSigner>[
+            SelectedSignerEd25519(
+              verifierAddress: _validTargetContract,
+              publicKey: pubKey,
+            ),
+          ],
+        ),
+        throwsA(isA<InvalidInput>()),
+      );
+    });
+
+    test('latestLedger_nullSequence_throwsSubmissionFailed', () async {
+      // After simulation succeeds with a non-empty auth list (so sorobanAuth is
+      // non-empty), the pipeline fetches the latest ledger. If the sequence
+      // is null, it throws submissionFailed (line 310).
+      // We need a valid auth entry XDR to get past the sorobanAuth check.
+      // Use the SOURCE_ACCOUNT entry which has a simple encoding.
+      final sourceAccountEntry = XdrSorobanAuthorizationEntry(
+        XdrSorobanCredentials.forSourceAccount(),
+        XdrSorobanAuthorizedInvocation(
+          XdrSorobanAuthorizedFunction.forInvokeContractArgs(
+            XdrInvokeContractArgs(
+              Address.forContractId(_validContractId).toXdr(),
+              'noop',
+              const <XdrSCVal>[],
+            ),
+          ),
+          <XdrSorobanAuthorizedInvocation>[],
+        ),
+      );
+      final entryXdr = sourceAccountEntry.toBase64EncodedXdrString();
+
+      final mock = MockSorobanServer();
+      mock.getAccountDefault = Account(_validAccountAddress, BigInt.from(1));
+      final simResp = SimulateTransactionResponse(<String, dynamic>{});
+      simResp.results = <SimulateTransactionResult>[
+        SimulateTransactionResult('', <String>[entryXdr]),
+      ];
+      mock.simulateDefault = simResp;
+
+      // latestLedger with null sequence.
+      final nullLedger = GetLatestLedgerResponse(<String, dynamic>{});
+      mock.latestLedgerDefault = nullLedger;
+
+      final kit = FakePipelineKit(sorobanServer: mock)
+        ..setConnected(credentialId: 'cred', contractId: _validContractId);
+      final manager = OZMultiSignerManager(kit);
+
+      await expectLater(
+        () => manager.submitWithMultipleSigners(
+          hostFunction: _stubHostFunction(),
+          selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+        ),
+        throwsA(isA<TransactionSubmissionFailed>()),
+      );
+    });
+
+    test('simulationThrows_throwsTransactionSimulationFailed', () async {
+      final mock = MockSorobanServer();
+      // getAccount must succeed so the simulation throw can be exercised.
+      mock.getAccountDefault = Account(_validAccountAddress, BigInt.from(1));
+      mock.simulateDefault = Exception('rpc unreachable');
+      final kit = FakePipelineKit(sorobanServer: mock)
+        ..setConnected(credentialId: 'cred', contractId: _validContractId);
+      final manager = OZMultiSignerManager(kit);
+
+      await expectLater(
+        () => manager.submitWithMultipleSigners(
+          hostFunction: _stubHostFunction(),
+          selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+        ),
+        throwsA(isA<TransactionSimulationFailed>()),
+      );
+    });
+
+    test('simulationReturnsErrorString_throwsTransactionSimulationFailed', () async {
+      final mock = MockSorobanServer();
+      mock.getAccountDefault = Account(_validAccountAddress, BigInt.from(1));
+      final simResp = SimulateTransactionResponse(<String, dynamic>{});
+      simResp.resultError = 'contract trap: simulated failure';
+      mock.simulateDefault = simResp;
+      final kit = FakePipelineKit(sorobanServer: mock)
+        ..setConnected(credentialId: 'cred', contractId: _validContractId);
+      final manager = OZMultiSignerManager(kit);
+
+      await expectLater(
+        () => manager.submitWithMultipleSigners(
+          hostFunction: _stubHostFunction(),
+          selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+        ),
+        throwsA(isA<TransactionSimulationFailed>()),
+      );
+    });
+
+    test('simulationReturnsNullSorobanAuth_throwsTransactionSimulationFailed', () async {
+      final mock = MockSorobanServer();
+      mock.getAccountDefault = Account(_validAccountAddress, BigInt.from(1));
+      // Empty results → sorobanAuth is null/empty.
+      final simResp = SimulateTransactionResponse(<String, dynamic>{});
+      simResp.results = <SimulateTransactionResult>[];
+      mock.simulateDefault = simResp;
+      final kit = FakePipelineKit(sorobanServer: mock)
+        ..setConnected(credentialId: 'cred', contractId: _validContractId);
+      final manager = OZMultiSignerManager(kit);
+
+      await expectLater(
+        () => manager.submitWithMultipleSigners(
+          hostFunction: _stubHostFunction(),
+          selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+        ),
+        throwsA(isA<TransactionSimulationFailed>()),
+      );
+    });
+
+    test('passkeyKeyDataNull_throwsInvalidInput', () async {
+      // Build a simulation response with one auth entry targeting the smart account.
+      final deployer = KeyPair.random();
+      final mock = MockSorobanServer();
+      mock.getAccountDefault = Account(deployer.accountId, BigInt.from(1));
+
+      final authEntry = _makeAddressCredsEntry(contractAddress: _validContractId);
+      final simResp = SimulateTransactionResponse(<String, dynamic>{});
+      simResp.results = <SimulateTransactionResult>[
+        SimulateTransactionResult('', <String>[authEntry.toBase64EncodedXdrString()]),
+      ];
+      mock.simulateDefault = simResp;
+
+      // latestLedger must succeed.
+      final ledgerResp = GetLatestLedgerResponse(<String, dynamic>{});
+      ledgerResp.sequence = 1000;
+      mock.latestLedgerDefault = ledgerResp;
+
+      final kit = FakePipelineKit(sorobanServer: mock, deployer: deployer)
+        ..setConnected(credentialId: 'cred', contractId: _validContractId);
+      final manager = OZMultiSignerManager(kit);
+
+      // SelectedSignerPasskey with no keyData triggers the hoist guard.
+      await expectLater(
+        () => manager.submitWithMultipleSigners(
+          hostFunction: _stubHostFunction(),
+          selectedSigners: <SelectedSigner>[
+            const SelectedSignerPasskey(), // keyData is null
+          ],
+        ),
+        throwsA(isA<InvalidInput>()),
+      );
+    });
+
+    test('multiSignerTransfer_selfTransfer_throwsInvalidInput', () async {
+      final kit = _buildConnectedKit();
+      final manager = OZMultiSignerManager(kit);
+
+      await expectLater(
+        () => manager.multiSignerTransfer(
+          tokenContract: _validTargetContract,
+          recipient: _validContractId, // same as connected contract
+          amount: '10',
+          selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+        ),
+        throwsA(isA<InvalidInput>()),
+      );
+    });
+
+    test('multiSignerContractCall_emptyFunctionName_throwsInvalidInput', () async {
+      final kit = _buildConnectedKit();
+      final manager = OZMultiSignerManager(kit);
+
+      await expectLater(
+        () => manager.multiSignerContractCall(
+          target: _validTargetContract,
+          targetFn: '',
+          selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+        ),
+        throwsA(isA<InvalidInput>()),
+      );
+    });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Helpers shared with Batch I tests.
+// ---------------------------------------------------------------------------
+
+XdrSorobanAuthorizationEntry _makeAddressCredsEntry({
+  required String contractAddress,
+  String? targetContract,
+  String targetFn = 'noop',
+}) {
+  final targetC = targetContract ?? contractAddress;
+  final invokeArgs = XdrInvokeContractArgs(
+    Address.forContractId(targetC).toXdr(),
+    targetFn,
+    const <XdrSCVal>[],
+  );
+  final invocation = XdrSorobanAuthorizedInvocation(
+    XdrSorobanAuthorizedFunction.forInvokeContractArgs(invokeArgs),
+    <XdrSorobanAuthorizedInvocation>[],
+  );
+  final placeholderSig = XdrSCVal(XdrSCValType.SCV_VOID);
+  final addressCredentials = XdrSorobanAddressCredentials(
+    Address.forContractId(contractAddress).toXdr(),
+    XdrInt64(BigInt.from(0)),
+    XdrUint32(0),
+    placeholderSig,
+  );
+  return XdrSorobanAuthorizationEntry(
+    XdrSorobanCredentials.forAddressCredentials(addressCredentials),
+    invocation,
+  );
 }
 
 const String _testNetworkPassphrase = 'Test SDF Network ; September 2015';
@@ -1105,6 +1387,29 @@ XdrHostFunction _stubHostFunction() {
       const <XdrSCVal>[],
     ),
   );
+}
+
+/// A wallet adapter that always reports it cannot sign for any address.
+class _NeverSignWallet extends ExternalWalletAdapter {
+  @override
+  Future<ConnectedWallet?> connect() async => null;
+
+  @override
+  Future<void> disconnect() async {}
+
+  @override
+  bool canSignFor(String address) => false;
+
+  @override
+  List<ConnectedWallet> getConnectedWallets() => const <ConnectedWallet>[];
+
+  @override
+  Future<SignAuthEntryResult> signAuthEntry(
+    String preimageXdr, {
+    SignAuthEntryOptions? options,
+  }) async {
+    throw UnsupportedError('_NeverSignWallet cannot sign');
+  }
 }
 
 /// Adapter that claims it can sign for a specific public key but returns

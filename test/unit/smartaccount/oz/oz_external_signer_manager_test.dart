@@ -1377,4 +1377,202 @@ void main() {
       );
     });
   });
+
+  group('ExternalSignerInfo equality and hashCode', () {
+    test('equalInstances_areEqual', () {
+      // Non-const to avoid Dart canonicalization making identical() true.
+      final a = ExternalSignerInfo(
+        address: _validG1,
+        type: ExternalSignerType.keypair,
+        walletName: 'Freighter',
+        walletId: 'freighter',
+      );
+      final b = ExternalSignerInfo(
+        address: _validG1,
+        type: ExternalSignerType.keypair,
+        walletName: 'Freighter',
+        walletId: 'freighter',
+      );
+
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+    });
+
+    test('differentWalletName_notEqual', () {
+      // Exercises lines 151-152 in oz_external_signer_manager.dart.
+      final a = ExternalSignerInfo(
+        address: _validG1,
+        type: ExternalSignerType.wallet,
+        walletName: 'Freighter',
+        walletId: 'freighter',
+      );
+      final b = ExternalSignerInfo(
+        address: _validG1,
+        type: ExternalSignerType.wallet,
+        walletName: 'LOBSTR',
+        walletId: 'freighter',
+      );
+      expect(a == b, isFalse);
+    });
+
+    test('differentWalletId_notEqual', () {
+      final a = ExternalSignerInfo(
+        address: _validG1,
+        type: ExternalSignerType.wallet,
+        walletName: 'Freighter',
+        walletId: 'freighter',
+      );
+      final b = ExternalSignerInfo(
+        address: _validG1,
+        type: ExternalSignerType.wallet,
+        walletName: 'Freighter',
+        walletId: 'lobstr',
+      );
+      expect(a == b, isFalse);
+    });
+
+    test('differentAddress_notEqual', () {
+      final a = ExternalSignerInfo(address: _validG1, type: ExternalSignerType.keypair);
+      final b = ExternalSignerInfo(address: _validG2, type: ExternalSignerType.keypair);
+      expect(a == b, isFalse);
+    });
+
+    test('differentType_notEqual', () {
+      final a = ExternalSignerInfo(address: _validG1, type: ExternalSignerType.keypair);
+      final b = ExternalSignerInfo(address: _validG1, type: ExternalSignerType.wallet);
+      expect(a == b, isFalse);
+    });
+
+    test('toString_containsFields', () {
+      final a = ExternalSignerInfo(
+        address: _validG1,
+        type: ExternalSignerType.keypair,
+        walletName: 'Freighter',
+      );
+      expect(a.toString(), contains(_validG1));
+    });
+
+    test('nonSignerInfoType_notEqual', () {
+      final a = ExternalSignerInfo(address: _validG1, type: ExternalSignerType.keypair);
+      expect(a == 'not-a-signer-info', isFalse);
+    });
+
+    test('identical_isEqual', () {
+      final a = ExternalSignerInfo(address: _validG1, type: ExternalSignerType.keypair);
+      expect(a == a, isTrue);
+    });
+  });
+
+  group('addFromWallet error paths', () {
+    test('noWalletAdapter_throwsMissingConfig', () async {
+      final manager = _createManager(); // no walletAdapter
+      await expectLater(
+        manager.addFromWallet(),
+        throwsA(isA<MissingConfig>()),
+      );
+    });
+
+    test('adapterReturnsNull_returnsNull', () async {
+      final adapter = RecordingWalletAdapter();
+      // connectResponses empty -> connect() returns null
+      final manager = _createManager(walletAdapter: adapter);
+      final result = await manager.addFromWallet();
+      expect(result, isNull);
+    });
+
+    test('adapterReturnsWallet_withStorage_savesConnection', () async {
+      final adapter = RecordingWalletAdapter();
+      const wallet = ConnectedWallet(
+        address: _validG1,
+        walletId: 'freighter',
+        walletName: 'Freighter',
+      );
+      adapter.connectResponses.add(wallet);
+
+      final storage = TestWalletStorage();
+      final manager = _createManager(
+        walletAdapter: adapter,
+        walletConnectionStorage: storage,
+      );
+
+      final result = await manager.addFromWallet();
+      expect(result, equals(wallet));
+      // Storage should have been written.
+      expect(storage.setCalls, isNotEmpty);
+    });
+  });
+
+  group('restoreConnections', () {
+    test('noStorageAndNoAdapter_returnsEmpty', () async {
+      final manager = _createManager();
+      final restored = await manager.restoreConnections();
+      expect(restored, isEmpty);
+    });
+
+    test('withStorageAndAdapter_restoresConnections', () async {
+      final adapter = RecordingWalletAdapter();
+      const wallet = ConnectedWallet(
+        address: _validG1,
+        walletId: 'freighter',
+        walletName: 'Freighter',
+      );
+      adapter.connectResponses.add(wallet);
+      final storage = TestWalletStorage();
+      final manager = _createManager(
+        walletAdapter: adapter,
+        walletConnectionStorage: storage,
+      );
+
+      // First add a wallet so it is stored.
+      await manager.addFromWallet();
+      // Now restore (reset manager state by creating fresh instance with same storage).
+      final manager2 = OZExternalSignerManager(
+        networkPassphrase: _testNetworkPassphrase,
+        walletAdapter: adapter,
+        walletConnectionStorage: storage,
+      );
+      adapter.reconnectResponses.add(wallet);
+
+      final restored = await manager2.restoreConnections();
+      expect(restored, isNotEmpty);
+    });
+  });
+
+  group('get (getSignerInfo) not-found', () {
+    test('unknownAddress_returnsNull', () async {
+      final manager = _createManager();
+      final info = await manager.get('GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54');
+      expect(info, isNull);
+    });
+
+    test('keypairAddress_returnsKeypairInfo', () async {
+      final manager = _createManager();
+      final keypair = KeyPair.random();
+      await manager.addFromSecret(keypair.secretSeed!);
+      final info = await manager.get(keypair.accountId);
+      expect(info, isNotNull);
+      expect(info!.type, ExternalSignerType.keypair);
+    });
+  });
+
+  group('InMemoryWalletConnectionStorage concurrent ordering', () {
+    test('concurrentWrites_areOrdered', () async {
+      final storage = InMemoryWalletConnectionStorage();
+
+      await Future.wait(<Future<void>>[
+        storage.setItem('key1', 'value1'),
+        storage.setItem('key2', 'value2'),
+        storage.setItem('key3', 'value3'),
+      ]);
+
+      expect(await storage.getItem('key1'), 'value1');
+      expect(await storage.getItem('key2'), 'value2');
+      expect(await storage.getItem('key3'), 'value3');
+    });
+
+    test('removeItem_onMissingKey_doesNotThrow', () async {
+      final storage = InMemoryWalletConnectionStorage();
+      await expectLater(storage.removeItem('missing'), completes);
+    });
+  });
 }

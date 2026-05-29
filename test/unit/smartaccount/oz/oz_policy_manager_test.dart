@@ -857,6 +857,47 @@ void main() {
       }
     });
 
+    test('SimpleThresholdParams_hashCode', () {
+      final a = SimpleThresholdParams(threshold: 2);
+      final b = SimpleThresholdParams(threshold: 2);
+      expect(a.hashCode, equals(b.hashCode));
+      expect(a, equals(b));
+    });
+
+    test('WeightedThresholdParams_equalityAndHashCode', () {
+      final signer = OZDelegatedSigner(
+          'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7');
+      final a = WeightedThresholdParams(
+        signerWeights: <OZSmartAccountSigner, int>{signer: 1},
+        threshold: 1,
+      );
+      final b = WeightedThresholdParams(
+        signerWeights: <OZSmartAccountSigner, int>{signer: 1},
+        threshold: 1,
+      );
+      final c = WeightedThresholdParams(
+        signerWeights: <OZSmartAccountSigner, int>{signer: 2},
+        threshold: 1,
+      );
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+      expect(a == c, isFalse);
+      expect(a == 'not-params', isFalse);
+    });
+
+    test('SpendingLimitParams_hashCode', () {
+      final a = SpendingLimitParams(
+        spendingLimit: BigInt.from(1000000),
+        periodLedgers: 100,
+      );
+      final b = SpendingLimitParams(
+        spendingLimit: BigInt.from(1000000),
+        periodLedgers: 100,
+      );
+      expect(a.hashCode, equals(b.hashCode));
+      expect(a, equals(b));
+    });
+
     test('scValToXdrBytes: round-trip yields decodable XDR', () {
       const value = 0x0123BABE;
       final scVal = XdrSCVal.forU32(value);

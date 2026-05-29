@@ -261,6 +261,54 @@ void main() {
       expect(result.deviceType, isNull);
       expect(result.backedUp, isNull);
     });
+
+    test('test_webauthn_registration_result_different_transport_lists_not_equal',
+        () {
+      // Two results with transport lists of different lengths. This exercises
+      // the `a.length != b.length` branch in _stringListEquals (line 236
+      // of web_authn_provider.dart).
+      final cred = Uint8List(16);
+      final pk = _expectedPublicKey();
+      final attest = _buildAttestationObject();
+      final r1 = WebAuthnRegistrationResult(
+        credentialId: Uint8List.fromList(cred),
+        publicKey: Uint8List.fromList(pk),
+        attestationObject: Uint8List.fromList(attest),
+        transports: const <String>['internal'],
+      );
+      final r2 = WebAuthnRegistrationResult(
+        credentialId: Uint8List.fromList(cred),
+        publicKey: Uint8List.fromList(pk),
+        attestationObject: Uint8List.fromList(attest),
+        transports: const <String>['internal', 'hybrid'],
+      );
+      expect(r1 == r2, isFalse,
+          reason: 'Different transport list lengths must produce inequality');
+    });
+
+    test('test_webauthn_registration_result_same_length_different_transport_content',
+        () {
+      // Two results with transport lists of equal length but different content.
+      // This exercises the per-element comparison (line 238 of
+      // web_authn_provider.dart).
+      final cred = Uint8List(16);
+      final pk = _expectedPublicKey();
+      final attest = _buildAttestationObject();
+      final r1 = WebAuthnRegistrationResult(
+        credentialId: Uint8List.fromList(cred),
+        publicKey: Uint8List.fromList(pk),
+        attestationObject: Uint8List.fromList(attest),
+        transports: const <String>['internal'],
+      );
+      final r2 = WebAuthnRegistrationResult(
+        credentialId: Uint8List.fromList(cred),
+        publicKey: Uint8List.fromList(pk),
+        attestationObject: Uint8List.fromList(attest),
+        transports: const <String>['hybrid'],
+      );
+      expect(r1 == r2, isFalse,
+          reason: 'Different transport values must produce inequality');
+    });
   });
 
   group('WebAuthnAuthenticationResult', () {

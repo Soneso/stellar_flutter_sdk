@@ -397,6 +397,13 @@ void main() {
       expect(a == c, isFalse);
     });
 
+    test('testConnectWalletOptions_equalityPromptDiffers', () {
+      const a = ConnectWalletOptions(fresh: true, prompt: false);
+      const b = ConnectWalletOptions(fresh: true, prompt: true);
+      expect(a == b, isFalse);
+      expect(a.hashCode, isNot(equals(b.hashCode)));
+    });
+
     test('testConnectWalletOptions_copy', () {
       const original = ConnectWalletOptions(fresh: true);
       final copy = original.copyWith(prompt: true);
@@ -430,6 +437,7 @@ void main() {
         publicKey: Uint8List.fromList(pk),
       );
       expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
     });
 
     test('testAuthenticatePasskeyResult_equality_differentPublicKey', () {
@@ -769,6 +777,217 @@ void main() {
       expect(await storage.getSession(), isNotNull);
       await kit.disconnect();
       expect(await storage.getSession(), isNull);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // connectWallet: session restoration
+  // -------------------------------------------------------------------------
+  group('deployPendingCredential build failure paths', () {
+    test('buildTransactionGenericFailure_wrapsAsSubmissionFailed', () async {
+      // When _buildDeployTransaction throws a non-SmartAccountException,
+      // lines 1047-1048 wrap it as TransactionSubmissionFailed.
+      final credentials = StubCredentialManager();
+      final pk = _bytes(65);
+      pk[0] = 0x04;
+      credentials.inject(StoredCredential(
+        credentialId: _credentialId,
+        publicKey: pk,
+        contractId: _contractA,
+        createdAt: 1700000000000,
+      ));
+
+      final mock = MockSorobanServer();
+      // getAccount throws a plain Error (not SmartAccountException).
+      mock.getAccountDefault = Error(); // causes _fetchAccount to throw
+
+      final kit = FakePipelineKit(
+        sorobanServer: mock,
+        credentialManager: credentials,
+      );
+      final ops = OZWalletOperations(kit);
+
+      await expectLater(
+        () => ops.deployPendingCredential(credentialId: _credentialId),
+        throwsA(isA<TransactionSubmissionFailed>()),
+      );
+    });
+  });
+
+  group('connectWallet session restoration', () {
+    test('validSession_contractNotOnChain_returnsNull', () async {
+      // A valid session exists, but getContractData returns null (contract not on-chain).
+      // The OZWalletNotFound path clears the session and falls through. Since
+      // prompt=false, returns null.
+      final storage = InMemoryStorageAdapter();
+      await storage.saveSession(
+        StoredSession(
+          credentialId: _credentialId,
+          contractId: _contractA,
+          connectedAt: DateTime.now().millisecondsSinceEpoch,
+          expiresAt: DateTime.now().millisecondsSinceEpoch + 60000,
+        ),
+      );
+
+      final mock = MockSorobanServer();
+      // getContractData returns null → contract not on-chain → WalletNotFound.
+      mock.getContractDataResponses.add(null);
+
+      final kit = FakePipelineKit(storage: storage, sorobanServer: mock);
+      final ops = OZWalletOperations(kit);
+      // Session exists but contract is not on-chain → session cleared, returns null.
+      final result = await ops.connectWallet();
+      expect(result, isNull);
+    });
+
+    test('noSession_promptFalse_returnsNull', () async {
+      // No session in storage + prompt=false → returns null without WebAuthn.
+      final kit = FakePipelineKit(config: _configWithoutProvider());
+      final ops = OZWalletOperations(kit);
+      final result = await ops.connectWallet(
+        options: const ConnectWalletOptions(prompt: false),
+      );
+      expect(result, isNull);
+    });
+
+    test('freshOption_skipsSessionCheck', () async {
+      final storage = InMemoryStorageAdapter();
+      await storage.saveSession(
+        StoredSession(
+          credentialId: _credentialId,
+          contractId: _contractA,
+          connectedAt: DateTime.now().millisecondsSinceEpoch,
+          expiresAt: DateTime.now().millisecondsSinceEpoch + 60000,
+        ),
+      );
+
+      final kit = FakePipelineKit(
+        config: _configWithoutProvider(),
+        storage: storage,
+      );
+      final ops = OZWalletOperations(kit);
+      // With fresh=true, session check is skipped and we go straight to
+      // the WebAuthn prompt path. Since no provider is configured, throws.
+      await expectLater(
+        () => ops.connectWallet(options: const ConnectWalletOptions(fresh: true)),
+        throwsA(isA<WebAuthnNotSupported>()),
+      );
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // connectWallet: credential storage resolution
+  // -------------------------------------------------------------------------
+  group('connectWallet credential storage resolution', () {
+    test('credentialWithFailedDeployment_throwsWalletNotFound', () async {
+      // _resolveViaStorage returns WalletNotFound for failed credentials.
+      // Use StubCredentialManager with the failed credential injected.
+      final credentials = StubCredentialManager();
+      final pk = _bytes(65);
+      pk[0] = 0x04;
+      credentials.inject(StoredCredential(
+        credentialId: _credentialId,
+        publicKey: pk,
+        contractId: _contractA,
+        deploymentStatus: CredentialDeploymentStatus.failed,
+        createdAt: 1700000000000,
+      ));
+
+      final provider = RecordingWebAuthnProvider();
+      final credIdBytes = base64Url.decode(
+        base64Url.normalize(_credentialId),
+      );
+      provider.authenticateResponses.add(WebAuthnAuthenticationResult(
+        credentialId: credIdBytes,
+        authenticatorData: _bytes(37, 3),
+        clientDataJSON: utf8.encode(
+          '{"type":"webauthn.get","challenge":"abc","origin":"https://test"}',
+        ),
+        signature: Uint8List.fromList(<int>[
+          0x30, 0x44,
+          0x02, 0x20, ..._bytes(32, 1),
+          0x02, 0x20, ..._bytes(32, 2),
+        ]),
+      ));
+
+      final config = OZSmartAccountConfig(
+        rpcUrl: 'https://soroban-testnet.stellar.org',
+        networkPassphrase: Network.TESTNET.networkPassphrase,
+        accountWasmHash: '0' * 64,
+        webauthnVerifierAddress: _contractA,
+        webauthnProvider: provider,
+      );
+      final kit = FakePipelineKit(
+        config: config,
+        credentialManager: credentials,
+      );
+      final ops = OZWalletOperations(kit);
+
+      await expectLater(
+        () => ops.connectWallet(
+          options: const ConnectWalletOptions(prompt: true),
+        ),
+        throwsA(isA<WalletNotFound>()),
+      );
+    });
+
+    test('credentialWithContractId_noIndexer_throwsWalletNotFound', () async {
+      // _resolveViaStorage finds the credential → returns its contractId.
+      // _connectWithCredentials calls _verifyContractExists which returns null
+      // (contract not on-chain) → throws WalletNotFound.
+      // No indexer → connect fails.
+      final credentials = StubCredentialManager();
+      final pk = _bytes(65);
+      pk[0] = 0x04;
+      credentials.inject(StoredCredential(
+        credentialId: _credentialId,
+        publicKey: pk,
+        contractId: _contractA,
+        deploymentStatus: CredentialDeploymentStatus.pending,
+        createdAt: 1700000000000,
+      ));
+
+      final provider = RecordingWebAuthnProvider();
+      final credIdBytes = base64Url.decode(
+        base64Url.normalize(_credentialId),
+      );
+      provider.authenticateResponses.add(WebAuthnAuthenticationResult(
+        credentialId: credIdBytes,
+        authenticatorData: _bytes(37, 3),
+        clientDataJSON: utf8.encode(
+          '{"type":"webauthn.get","challenge":"abc","origin":"https://test"}',
+        ),
+        signature: Uint8List.fromList(<int>[
+          0x30, 0x44,
+          0x02, 0x20, ..._bytes(32, 1),
+          0x02, 0x20, ..._bytes(32, 2),
+        ]),
+      ));
+
+      final mock = MockSorobanServer();
+      // getContractData returns null (contract not on-chain) → WalletNotFound.
+      mock.getContractDataResponses.add(null);
+
+      final config = OZSmartAccountConfig(
+        rpcUrl: 'https://soroban-testnet.stellar.org',
+        networkPassphrase: Network.TESTNET.networkPassphrase,
+        accountWasmHash: '0' * 64,
+        webauthnVerifierAddress: _contractA,
+        webauthnProvider: provider,
+      );
+      final kit = FakePipelineKit(
+        config: config,
+        sorobanServer: mock,
+        credentialManager: credentials,
+      );
+      final ops = OZWalletOperations(kit);
+
+      await expectLater(
+        () => ops.connectWallet(
+          options: const ConnectWalletOptions(prompt: true),
+        ),
+        throwsA(isA<WalletNotFound>()),
+      );
     });
   });
 
