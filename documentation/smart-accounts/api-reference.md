@@ -24,6 +24,7 @@ import 'package:dio/dio.dart' as dio;
 - [Wallet Operations](#wallet-operations)
 - [Transaction Operations](#transaction-operations)
 - [Credential Management](#credential-management)
+- [Signer Types](#signer-types)
 - [Signer Management](#signer-management)
 - [Multi-Signer Operations](#multi-signer-operations)
 - [External Signer Management](#external-signer-management)
@@ -1054,11 +1055,85 @@ class SyncResult {
 
 ---
 
+## Signer Types
+
+`OZSmartAccountSigner` is the central signer abstraction. It identifies *who* may authorise a transaction under a context rule and appears across the API: rule signer lists, [`removeSignerBySigner`](#removesignerbysigner), weighted-threshold maps (`Map<OZSmartAccountSigner, int>`), the auth-payload `signers` map, and the [`OZSmartAccountBuilders`](#ozsmartaccountbuilders) signer helpers.
+
+### OZSmartAccountSigner (sealed)
+
+```dart
+sealed class OZSmartAccountSigner {
+  const OZSmartAccountSigner();
+
+  XdrSCVal toScVal();
+  String get uniqueKey;
+}
+```
+
+Base type with two concrete arms: [`OZDelegatedSigner`](#ozdelegatedsigner) and [`OZExternalSigner`](#ozexternalsigner).
+
+- `toScVal()`: Converts the signer to its on-chain `XdrSCVal` representation for contract calls. Throws `ValidationException.invalidInput` when the underlying address or key data cannot be encoded.
+- `uniqueKey`: Stable identifier used for deduplication. Delegated signers yield `"delegated:<address>"`; external signers yield `"external:<verifierAddress>:<keyDataHex>"` (lowercase hex of the key data).
+
+### OZDelegatedSigner
+
+```dart
+final class OZDelegatedSigner extends OZSmartAccountSigner {
+  OZDelegatedSigner(String address);
+
+  final String address;
+}
+```
+
+A delegated signer using a Soroban address with the built-in `require_auth` verification mechanism. `address` is a Stellar account ID (`G…`) or contract ID (`C…`). The constructor throws `ValidationException.invalidAddress` when the address is neither a valid account ID nor a valid contract ID.
+
+`toScVal()` returns `Vec([Symbol("Delegated"), Address(address)])`.
+
+### OZExternalSigner
+
+```dart
+final class OZExternalSigner extends OZSmartAccountSigner {
+  OZExternalSigner(String verifierAddress, Uint8List keyData);
+
+  final String verifierAddress;
+  final Uint8List keyData;
+
+  static OZExternalSigner webAuthn({
+    required String verifierAddress,
+    required Uint8List publicKey,
+    required Uint8List credentialId,
+  });
+
+  static OZExternalSigner ed25519({
+    required String verifierAddress,
+    required Uint8List publicKey,
+  });
+}
+```
+
+An external signer that delegates signature verification to a Soroban verifier contract, enabling non-native schemes such as WebAuthn (secp256r1) and Ed25519.
+
+- `verifierAddress`: Contract address (`C…`) of the signature verifier.
+- `keyData`: Public-key bytes plus any additional authentication data (for WebAuthn this is `publicKey || credentialId`). Copied defensively on construction.
+
+The unnamed constructor throws `ValidationException.invalidAddress` when `verifierAddress` is not a valid contract ID, and `ValidationException.invalidInput` when `keyData` is empty.
+
+`toScVal()` returns `Vec([Symbol("External"), Address(verifierAddress), Bytes(keyData)])`.
+
+**Static factories:**
+
+- `webAuthn({required verifierAddress, required publicKey, required credentialId})`: Builds a WebAuthn signer. `publicKey` must be exactly `SmartAccountConstants.secp256r1PublicKeySize` (65) bytes starting with `SmartAccountConstants.uncompressedPubkeyPrefix` (`0x04`), and `credentialId` must be non-empty; the resulting `keyData` is `publicKey || credentialId`. Throws `ValidationException.invalidInput` when any precondition fails.
+- `ed25519({required verifierAddress, required publicKey})`: Builds an Ed25519 signer. `publicKey` must be exactly `SmartAccountConstants.ed25519PublicKeySize` (32) bytes; `keyData` is the public key itself. Throws `ValidationException.invalidInput` when the length is wrong.
+
+`OZExternalSigner` uses constant-time byte equality across `verifierAddress` and `keyData`, with a content-derived `hashCode`, so logically equal signers compare and hash equally.
+
+---
+
 ## Signer Management
 
 ### OZSignerManager
 
-Manages signers attached to context rules. Accessed via `kit.signerManager`.
+Manages signers attached to context rules. Accessed via `kit.signerManager`. See [Signer Types](#signer-types) for the `OZSmartAccountSigner` hierarchy these methods operate on.
 
 Each context rule may carry up to `OZConstants.maxSigners` signers (15). The signer manager supports three signer kinds:
 
@@ -1150,7 +1225,7 @@ Future<TransactionResult> removeSignerBySigner({
 }) async
 ```
 
-Removes a signer from `contextRuleId` by matching the signer value. Fetches the rule, parses it, finds the matching signer index via `OZSmartAccountBuilders.signersEqual`, and delegates to the ID-based `removeSigner`. Throws `ValidationException.invalidInput` when the signer is not on the rule.
+Removes a signer from `contextRuleId` by matching the [`OZSmartAccountSigner`](#signer-types) value. Fetches the rule, parses it, finds the matching signer index via `OZSmartAccountBuilders.signersEqual`, and delegates to the ID-based `removeSigner`. Throws `ValidationException.invalidInput` when the signer is not on the rule.
 
 ### AddPasskeySignerResult
 
@@ -1940,28 +2015,15 @@ final class SpendingLimitParams extends PolicyInstallParams {
 
 ## Events
 
-> **Scope: SDK lifecycle events only.** `kit.events` emits **kit-level** events (wallet connected/disconnected, credential created/deleted, session expired, transaction signed/submitted). It does **not** emit on-chain smart-account contract events such as `SignerAdded`, `SignerRemoved`, `PolicyInstalled`, `PolicyRemoved`, `ContextRuleAdded`, or `ContextRuleRemoved`. Those are emitted by the OpenZeppelin smart-account contract and must be queried via `SorobanServer.getEvents(...)` with the account's contract ID as a filter.
->
-> To fetch on-chain contract events (after the wallet is connected):
+> **Scope: SDK lifecycle events only.** `kit.events` emits **kit-level** events (wallet connected/disconnected, credential created/deleted, session expired, transaction signed/submitted). It does **not** emit on-chain smart-account contract events such as `SignerAdded`, `SignerRemoved`, `PolicyInstalled`, `PolicyRemoved`, `ContextRuleAdded`, or `ContextRuleRemoved`. Those are emitted by the OpenZeppelin smart-account contract and must be queried directly via Soroban RPC, filtering on the account's contract ID:
 >
 > ```dart
-> final response = await kit.sorobanServer.getEvents(
->   GetEventsRequest(
->     startLedger: fromLedger,
->     filters: [
->       EventFilter(
->         type: 'contract',
->         contractIds: [contractId],
->       ),
->     ],
->   ),
-> );
-> for (final event in response.events ?? const <EventInfo>[]) {
->   // event.topic and event.value are base64-XDR-encoded SCVal entries
-> }
+> final response = await kit.sorobanServer.getEvents(GetEventsRequest(
+>   startLedger: fromLedger,
+>   filters: [EventFilter(type: 'contract', contractIds: [contractId])],
+> ));
+> // Each event's topic and value are base64-XDR-encoded SCVal entries.
 > ```
->
-> Each event's `topic` and `value` are base64-XDR-encoded `SCVal` entries that can be parsed with the SDK's XDR utilities.
 
 The kit emits lifecycle events through `kit.events`, a `SmartAccountEventEmitter`. Event subscription is callback-based, not `Stream`-based. Consumers wanting `Stream` semantics can wrap `addListener` into a `StreamController`.
 
@@ -2163,14 +2225,14 @@ Every smart-account exception lives in `core/smart_account_errors.dart` and is s
 
 ### SmartAccountErrorCode
 
-> **Two independent namespaces share the 3xxx range.** `SmartAccountErrorCode` is the **SDK** error enum, surfaced via `SmartAccountException.code` when the kit raises a credential / wallet / WebAuthn / etc. error locally. A separate set of error codes, also in the 3xxx range, is defined by the **on-chain** OpenZeppelin smart-account contract and surfaced in transaction simulation / result XDR (typically wrapped in `TransactionSimulationFailed`). The two overlap but do not collide at runtime because they arrive through different channels:
+> **Two independent namespaces share the 3xxx range.** `SmartAccountErrorCode` (SDK, surfaced via `SmartAccountException.code`) and the on-chain OpenZeppelin smart-account contract enum (surfaced in simulation / result XDR, typically wrapped in `TransactionSimulationFailed`) both use 3xxx codes. They arrive through different channels and do not collide at runtime: check the exception type first to determine which namespace a code belongs to.
 >
 > | Numeric code | SDK meaning (`SmartAccountErrorCode`) | On-chain meaning (OZ contract) |
 > |---|---|---|
 > | 3002 | `credentialAlreadyExists` | `UnvalidatedContext` |
 > | 3003 | `credentialInvalid` | `ExternalVerificationFailed` |
 >
-> The table above shows only the two codes the SDK enum reuses; the on-chain enum spans `3000` and `3002`-`3016`. When inspecting an error code, first check the exception type to determine which namespace it belongs to. SDK-defined contract codes that the SDK interprets directly are declared in [`ContractErrorCodes`](#contract-error-codes); see the [OpenZeppelin contracts source](https://github.com/OpenZeppelin/stellar-contracts/blob/main/packages/accounts/src/smart_account/mod.rs) for the full on-chain `SmartAccountError` enum, along with the `WebAuthnError` and policy error enums.
+> SDK-defined contract codes the SDK interprets directly are declared in [`ContractErrorCodes`](#contract-error-codes).
 
 
 ```dart
@@ -3492,32 +3554,14 @@ An Ed25519 external signer identified by its verifier contract address and 32-by
 
 Value equality compares both fields. `publicKey` equality is byte-by-byte.
 
+Construct the kit and register the Ed25519 signing source exactly as shown in
+[`addEd25519FromRawKey`](#added25519fromrawkey). With `kit` and
+`ed25519PublicKey` in hand, route a multi-signer call:
+
 ```dart
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-
 // Example: transfer authorized by three different signer kinds in one call.
-const ed25519VerifierAddress =
-    'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM';
-
-// 1. Construct the kit.
-final config = OZSmartAccountConfig(
-  rpcUrl: 'https://soroban-testnet.stellar.org',
-  networkPassphrase: 'Test SDF Network ; September 2015',
-  accountWasmHash:
-      '86b49fe03f7df0ad1c2a28bd8361b923ab57096e09f397f92f0c00ae3bd06d28',
-  webauthnVerifierAddress:
-      'CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY',
-);
-final kit = OZSmartAccountKit.create(config: config);
-
-// 2. Register the in-memory Ed25519 signing source at runtime.
-// rawSeed is the 32-byte Ed25519 seed obtained from secure storage.
-final ed25519PublicKey = kit.externalSigners.addEd25519FromRawKey(
-  secretKeyBytes: rawSeed,
-  verifierAddress: ed25519VerifierAddress,
-);
-
-// 3. Call the multi-signer method; the kit resolves signing automatically.
+// `kit`, `ed25519VerifierAddress`, and `ed25519PublicKey` come from the
+// addEd25519FromRawKey snippet above.
 final result = await kit.multiSignerManager.multiSignerTransfer(
   tokenContract:
       'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
@@ -3536,3 +3580,38 @@ final result = await kit.multiSignerManager.multiSignerTransfer(
 ```
 
 See also: [`OZExternalSignerManager.addEd25519FromRawKey`](#added25519fromrawkey), [`OZExternalSignerManager.signEd25519AuthDigest`](#signed25519authdigest).
+
+---
+
+## Error Handling Example
+
+Every smart-account failure is a `SmartAccountException` subclass (see [Errors](#errors)). Catch concrete subtypes for fine-grained recovery and fall back to the sealed base for everything else.
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+Future<void> sendOrRecover(OZSmartAccountKit kit) async {
+  try {
+    final result = await kit.transactionOperations.transfer(
+      tokenContract: 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
+      recipient: 'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ',
+      amount: '10',
+    );
+    if (!result.success) {
+      print('Transfer rejected: ${result.error}');
+    }
+  } on WalletNotConnected {
+    print('Connect or create a wallet first.');
+  } on WebAuthnCancelled {
+    print('User cancelled the passkey prompt.');
+  } on WebAuthnNotSupported {
+    print('No WebAuthn provider configured for this platform.');
+  } on InvalidAddress catch (e) {
+    print('Bad address: ${e.message}');
+  } on TransactionException catch (e) {
+    print('Transaction failed (${e.code.code}): ${e.message}');
+  } on SmartAccountException catch (e) {
+    print('Smart-account error (${e.code.code}): ${e.message}');
+  }
+}
+```

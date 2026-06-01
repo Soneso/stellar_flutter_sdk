@@ -84,7 +84,7 @@ Users never see or manage cryptographic keys. They authorize
 transactions with their face or fingerprint, the same way they unlock
 their phone.
 
-The SDK ships `PlatformWebAuthnProvider` (iOS, macOS, Android) and `BrowserWebAuthnProvider` (web). Per-platform setup steps for entitlements, Digital Asset Links, and HTTPS hosting are in the dedicated WebAuthn pages: see Sub-pages in the [SDK guide](README.md#sub-pages).
+The SDK ships `PlatformWebAuthnProvider` (iOS, Android) and `BrowserWebAuthnProvider` (web). Per-platform setup steps for entitlements, Digital Asset Links, and HTTPS hosting are in the dedicated WebAuthn pages: see Sub-pages in the [SDK guide](README.md#sub-pages).
 
 ---
 
@@ -180,69 +180,9 @@ See the [Signing](#signing) subsection below for how to authorize transactions o
 
 #### Signing
 
-When a multi-signer ceremony involves an Ed25519 signer, the smart-account contract calls the registered verifier contract during `__check_auth` to validate the signature. The auth digest — `SHA-256(signaturePayload || contextRuleIds.toXDR())` — is computed by the SDK and must be signed with the Ed25519 private key that corresponds to the on-chain `(verifierAddress, publicKey)` entry.
+When a multi-signer ceremony involves an Ed25519 signer, the smart-account contract calls the registered verifier contract during `__check_auth` to validate the signature, the same way it does for passkeys (see [How Passkeys Replace Secret Keys](#3-how-passkeys-replace-secret-keys)).
 
-`kit.externalSigners` is the unified manager for all non-passkey signing sources, constructed by the kit. Pass a `SelectedSignerEd25519` entry into any multi-signer method and register the corresponding signing source on `kit.externalSigners` before the call.
-
-Two signing models are available for Ed25519 signers:
-
-**Model 1 — in-memory keypair (runtime registration):**
-
-```dart
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-
-const ed25519VerifierAddress =
-    'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM';
-
-final kit = OZSmartAccountKit.create(config: config);
-
-// Derives the keypair from the raw 32-byte seed and stores it in memory under
-// the (verifierAddress, publicKey) tuple. Returns the 32-byte public key.
-// rawSeed is obtained from secure storage or a key derivation function.
-final ed25519PublicKey = kit.externalSigners.addEd25519FromRawKey(
-  secretKeyBytes: rawSeed,
-  verifierAddress: ed25519VerifierAddress,
-);
-```
-
-**Model 2 — out-of-process adapter (injected at kit construction, for hardware wallets and remote services):**
-
-```dart
-final config = OZSmartAccountConfig(
-  rpcUrl: 'https://soroban-testnet.stellar.org',
-  networkPassphrase: 'Test SDF Network ; September 2015',
-  accountWasmHash: '<64-char hex WASM hash>',
-  webauthnVerifierAddress: '<C-address of WebAuthn verifier>',
-  externalEd25519Adapter: myHardwareWalletAdapter,
-);
-final kit = OZSmartAccountKit.create(config: config);
-```
-
-When an adapter is supplied, it takes precedence over any in-memory keypair for the same `(verifierAddress, publicKey)` pair (adapter-first rule). See the [API Reference](api-reference.md#external-signer-management) for the full `OZExternalEd25519SignerAdapter` abstract-class contract.
-
-Wallet (G-address) signers follow the same two-model symmetry: supply an `ExternalWalletAdapter` via `config.externalWallet` at kit construction, or register an in-memory keypair at runtime via `kit.externalSigners.addFromSecret`.
-
-**Pass the signer to a multi-signer method:**
-
-```dart
-// Include the ed25519 selector alongside passkey and wallet entries.
-final result = await kit.multiSignerManager.multiSignerTransfer(
-  tokenContract: 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
-  recipient: 'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ',
-  amount: '10',
-  selectedSigners: <SelectedSigner>[
-    SelectedSignerPasskey(credentialId: savedCredId, keyData: savedKeyData),
-    SelectedSignerEd25519(
-      verifierAddress: ed25519VerifierAddress,
-      publicKey: ed25519PublicKey,
-    ),
-  ],
-);
-```
-
-The pipeline validates that a signing source is registered for each `SelectedSignerEd25519` entry before any RPC call. If no source is registered for a given `(verifierAddress, publicKey)` tuple, the pipeline throws `ValidationException.invalidInput` with a message that names the missing verifier. Ed25519 signing uses the same auth-digest computation, signer-index resolution, and authorization-payload assembly as the passkey path — both flow through the same multi-signer pipeline. See [How Passkeys Replace Secret Keys](#3-how-passkeys-replace-secret-keys) for the `__check_auth` mechanics that apply to both.
-
-For the full API surface including `addEd25519FromRawKey`, `canSignEd25519For`, `signEd25519AuthDigest`, `removeEd25519`, and the `OZExternalEd25519SignerAdapter` abstract class, see the [API Reference](api-reference.md#external-signer-management).
+Ed25519 signers require a registered signing source on `kit.externalSigners` (in-memory via `addEd25519FromRawKey`, or an adapter via `config.externalEd25519Adapter`); see the [API Reference](api-reference.md#external-signer-management).
 
 ---
 
@@ -703,8 +643,8 @@ are used automatically when `config.indexerUrl` is omitted.
 
 **Storage choice per platform.** Use the production adapter for the
 target you are shipping:
-- Android / iOS / macOS: `PlatformStorageAdapter` (Keychain /
-  EncryptedSharedPreferences via the SDK's method channel).
+- Android / iOS: `PlatformStorageAdapter` (iOS Keychain /
+  Android EncryptedSharedPreferences via the SDK's method channel).
 - Flutter web: `IndexedDBStorageAdapter` for production, or
   `LocalStorageAdapter` for small datasets where the unencrypted,
   origin-scoped fallback is acceptable.

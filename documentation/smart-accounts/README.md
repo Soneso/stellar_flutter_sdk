@@ -5,7 +5,7 @@ Stellar using OpenZeppelin's Soroban contracts. Users authenticate with
 biometrics (Face ID, fingerprint, security keys) instead of managing
 secret keys. The SDK handles wallet creation, contract deployment,
 transaction signing, signer management, and policy enforcement across
-Android, iOS, macOS, and Flutter web.
+Android, iOS, and Flutter web.
 
 New to smart accounts? Start with the [onboarding guide](onboarding.md)
 for background on how smart accounts, passkeys, and the on-chain
@@ -102,13 +102,13 @@ reference to the kit and reads its Soroban server, relayer, indexer, and
 storage internally.
 
 `WebAuthnProvider` is a platform-specific interface. The SDK ships
-`PlatformWebAuthnProvider` (Android, iOS, macOS, via method channel) and
+`PlatformWebAuthnProvider` (Android, iOS, via method channel) and
 `BrowserWebAuthnProvider` (web, via `navigator.credentials`).
 
 `StorageAdapter` persists credentials and sessions. The SDK ships
 `InMemoryStorageAdapter` (default, non-persistent),
 `PlatformStorageAdapter` (Android `EncryptedSharedPreferences`,
-iOS/macOS Keychain), `IndexedDBStorageAdapter` (web), and
+iOS Keychain), `IndexedDBStorageAdapter` (web), and
 `LocalStorageAdapter` (web, smaller and unencrypted).
 
 `ExternalWalletAdapter` and `OZExternalEd25519SignerAdapter` are optional adapters that delegate signing to external processes (for example WalletConnect or a hardware wallet). The kit constructs one `OZExternalSignerManager` at creation time and exposes it as `kit.externalSigners` — the unified front door for all external signers. Supply adapters via `config.externalWallet` and `config.externalEd25519Adapter`; register in-memory keypairs at runtime via `kit.externalSigners.addFromSecret(...)` and `kit.externalSigners.addEd25519FromRawKey(...)`.
@@ -543,7 +543,7 @@ final config = OZSmartAccountConfig.builder(
 
 ### Platform wiring
 
-Each platform pairs a `WebAuthnProvider` with a `StorageAdapter`. Use `PlatformWebAuthnProvider` + `PlatformStorageAdapter` on Android/iOS/macOS, and `BrowserWebAuthnProvider` + `IndexedDBStorageAdapter` on web. See [Sub-pages](#sub-pages) for per-platform entitlements and hosting.
+Each platform pairs a `WebAuthnProvider` with a `StorageAdapter`. Use `PlatformWebAuthnProvider` + `PlatformStorageAdapter` on Android/iOS, and `BrowserWebAuthnProvider` + `IndexedDBStorageAdapter` on web. See [Sub-pages](#sub-pages) for per-platform entitlements and hosting.
 
 ### Storage adapter trade-offs
 
@@ -551,9 +551,9 @@ Each platform pairs a `WebAuthnProvider` with a `StorageAdapter`. Use `PlatformW
   persisted. Suitable for unit tests and ephemeral dev sessions. All
   instances compare equal (so two configs with the default storage
   remain equal).
-- **`PlatformStorageAdapter`** -- production choice on mobile and macOS.
+- **`PlatformStorageAdapter`** -- production choice on mobile.
   Android encrypts values with AES-256-GCM and wraps keys with
-  AES-256-SIV via the Android Keystore. iOS and macOS use the platform
+  AES-256-SIV via the Android Keystore. iOS uses the platform
   Keychain. Read-modify-write sequences are serialised on the native
   side.
 - **`IndexedDBStorageAdapter`** -- recommended for production web. Larger
@@ -616,8 +616,12 @@ involves two roles played by the deployer keypair:
 
 1. **Address derivation.** The contract address is computed from
    `hash(deployer_public_key, salt, network_passphrase)` where `salt`
-   is `SHA-256(credential_id)`. The same credential and deployer
-   therefore always produce the same contract address.
+   is `SHA-256(credential_id)`. This is deterministic: given the same
+   deployer keypair, credential ID, and network passphrase,
+   `SmartAccountUtils.deriveContractAddress(...)` always returns the
+   same contract address. It is a correctness property that follows
+   directly from how Soroban computes contract addresses, not a special
+   feature.
 2. **Transaction signing.** The deployer signs the deployment
    transaction as its source account.
 
@@ -635,15 +639,6 @@ On testnet, `autoFund: true` funds the smart-account contract via
 Friendbot after deployment, retaining
 `OZConstants.friendbotReserveXlm` (5 XLM) on the temporary funding
 account as its minimum balance reserve.
-
-## Deterministic address derivation
-
-Address derivation is deterministic: given the same deployer keypair,
-credential ID, and network passphrase,
-`SmartAccountUtils.deriveContractAddress(...)` always returns the same
-contract address. This is a correctness property, not a special
-feature; it follows directly from how Soroban computes contract
-addresses.
 
 ### Default deployer
 
