@@ -1,6 +1,6 @@
 ---
 name: stellar-flutter-sdk
-description: Build Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, XDR encoding/decoding, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with async/await and Stream patterns across Android, iOS, Web, and Desktop.
+description: Build Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with async/await and Stream patterns across Android, iOS, Web, and Desktop. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing in a Flutter app.
 license: Apache 2.0
 compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.0.5
 metadata:
@@ -339,7 +339,15 @@ XdrSCVal result = await client.invokeMethod(
 For contract authorization, multi-auth workflows, and low-level deploy/invoke:
 [Smart Contracts Guide](./references/soroban_contracts.md)
 
-## 7. XDR Encoding & Decoding
+## 7. Smart Accounts (OpenZeppelin)
+
+Passkey-authenticated Soroban smart accounts: biometric auth, multiple signers (passkey / delegated / Ed25519), context rules, policies, and optional fee sponsoring via a relayer. Entry point: `OZSmartAccountKit.create(config: OZSmartAccountConfig(...))` — requires `rpcUrl`, `networkPassphrase`, `accountWasmHash` (hex), `webauthnVerifierAddress` (C-address), plus a platform `webauthnProvider` and `storage`.
+
+- [Smart Accounts Guide](./references/smart_accounts.md) — kit config, wallet create/connect, signer types, transactions, credentials, events, `submit` / `fundWallet`, the `externalSigners` manager, indexer
+- [Context Rules & Policies](./references/smart_accounts_policies.md) — signer management, context rules, policies, multi-signer operations, common scenarios (recovery, rotation, `__check_auth` debugging), contract error codes
+- [WebAuthn Platform Setup](./references/smart_accounts_webauthn.md) — Android, iOS, and Web WebAuthn providers and storage adapters, DAL / AASA / RP-ID, cross-device passkeys
+
+## 8. XDR Encoding & Decoding
 
 XDR (External Data Representation) is Stellar's binary serialization format.
 
@@ -379,7 +387,7 @@ To submit a pre-signed XDR envelope: `sdk.submitTransactionEnvelopeXdrBase64(sig
 For all XdrSCVal factory methods and type mapping:
 [XDR Reference](./references/xdr.md) | [Contract Arguments](./references/soroban_contracts.md)
 
-## 8. Error Handling & Troubleshooting
+## 9. Error Handling & Troubleshooting
 
 ### Horizon Errors
 
@@ -423,14 +431,14 @@ if (health.status != GetHealthResponse.HEALTHY) { /* server unhealthy */ }
 For comprehensive error catalog and solutions:
 [Troubleshooting Guide](./references/troubleshooting.md)
 
-## 9. Security Best Practices
+## 10. Security Best Practices
 
 Covers secret key management (use `flutter_secure_storage` on mobile, environment variables on server, never store client-side on web), transaction verification before signing (inspect operations, validate fees), network passphrase validation, account ID validation via `StrKey`, and amount precision checks (max 7 decimal places).
 
 For complete security patterns and platform-specific key storage:
 [Security Guide](./references/security.md)
 
-## 10. SEP Implementations
+## 11. SEP Implementations
 
 The Flutter SDK implements 18 Stellar Ecosystem Proposals (SEPs) — authentication, deposit/withdrawal, federation, KYC, and more.
 
@@ -443,6 +451,9 @@ For all SEP examples with code: [SEP Implementations Guide](./references/sep.md)
 - [Horizon Streaming Guide](./references/horizon_streaming.md) - SSE patterns for all streaming endpoints
 - [RPC Reference](./references/rpc.md) - All 12 Soroban RPC methods
 - [Smart Contracts Guide](./references/soroban_contracts.md) - Contract deployment, invocation, auth
+- [Smart Accounts Guide](./references/smart_accounts.md) - OZ kit core: config, wallet create/connect, signer types, transactions, credentials, external signers, events, indexer
+- [Smart Accounts - Policies](./references/smart_accounts_policies.md) - Signer management, context rules, policies, multi-signer operations
+- [Smart Accounts - WebAuthn](./references/smart_accounts_webauthn.md) - WebAuthn providers and storage adapters for Android, iOS, and Web
 - [XDR Guide](./references/xdr.md) - XDR encoding/decoding and debugging
 - [Troubleshooting Guide](./references/troubleshooting.md) - Error codes, platform & environment info
 - [Security Guide](./references/security.md) - Platform-specific key storage, production deployment
