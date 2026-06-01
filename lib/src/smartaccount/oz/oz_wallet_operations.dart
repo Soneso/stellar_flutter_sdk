@@ -178,9 +178,7 @@ class DeployPendingResult {
 ///   with the chosen `contractId` to finalise.
 ///
 /// [OZConnectWalletAmbiguous] is by construction unreachable when an
-/// explicit `contractId` is supplied; the explicit-contract path always
-/// returns [OZConnectWalletConnected] or throws. The session-restore path
-/// therefore always observes [OZConnectWalletConnected].
+/// explicit `contractId` is supplied.
 sealed class OZConnectWalletResult {
   /// Base sealed-class constructor.
   const OZConnectWalletResult();
@@ -975,11 +973,8 @@ class OZWalletOperations {
       );
     }
 
-    // why: every downstream surface (credential storage lookup, deploy
-    // submission progress events, connected-state field, emitted events,
-    // saved session) keys on the unpadded Base64URL form. Normalise the
-    // caller-supplied id once here so a padded input does not leak through
-    // to consumers comparing the string directly.
+    // Normalise to the canonical unpadded Base64URL form; see
+    // _stripBase64UrlPadding.
     credentialId = _stripBase64UrlPadding(credentialId);
 
     _checkCancellation(cancelToken);
@@ -1106,10 +1101,8 @@ class OZWalletOperations {
       );
     }
 
-    // why: every downstream surface (storage lookups, connected-state field,
-    // emitted events, saved session) keys on the unpadded Base64URL form.
-    // Normalise the caller-supplied id once here so a padded input does not
-    // leak through to consumers comparing the string directly.
+    // Normalise to the canonical unpadded Base64URL form; see
+    // _stripBase64UrlPadding.
     if (credentialId != null) {
       credentialId = _stripBase64UrlPadding(credentialId);
     }
@@ -1743,11 +1736,7 @@ class OZWalletOperations {
 
   // Private: byte helpers
 
-  /// Routes through [OZSecureNonce.bytes] so every CSPRNG site in the
-  /// OZ stack draws from the same cached `Random.secure()` source. Kept
-  /// as a thin alias rather than inlined at the call sites for callsite
-  /// readability and to give a single edit point if the entropy source
-  /// ever needs to change.
+  /// Draws from the shared cached CSPRNG via [OZSecureNonce.bytes].
   Uint8List _secureRandomBytes(int length) => OZSecureNonce.bytes(length);
 
   String _base64UrlEncode(Uint8List bytes) {

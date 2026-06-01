@@ -217,9 +217,8 @@ bool _constantTimeEquals(Uint8List a, Uint8List b) {
   return acc == 0;
 }
 
-/// Computes a hash code over the bytes of [data] consistent with the
-/// `Arrays.hashCode(byte[])` formula, so that byte-equal arrays hash to the
-/// same value.
+/// Computes a hash code over the bytes of [data] so that byte-equal arrays
+/// hash to the same value.
 int _byteListHash(Uint8List data) {
   var result = 1;
   for (var i = 0; i < data.length; i++) {

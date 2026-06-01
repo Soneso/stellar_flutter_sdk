@@ -335,9 +335,9 @@ class OZPolicyManager {
   /// Removes a policy by matching the policy contract [policyAddress].
   ///
   /// Fetches the target rule, parses it, finds the policy index, and
-  /// delegates to the ID-based [removePolicy] overload. Dart does not
-  /// support overload-by-parameter-type; the `ByAddress` suffix
-  /// distinguishes this from the ID-based form.
+  /// delegates to the ID-based [removePolicy] form. The `ByAddress` suffix
+  /// distinguishes this from the ID-based form (Dart has no
+  /// overload-by-parameter-type).
   Future<TransactionResult> removePolicyByAddress({
     required int contextRuleId,
     required String policyAddress,

@@ -132,11 +132,6 @@ class TransactionResult {
 /// Future<List<int>> resolver(XdrSorobanAuthorizationEntry entry, int idx) async {
 ///   return <int>[ruleId];
 /// }
-///
-/// // Advanced: inspect entry to decide.
-/// Future<List<int>> resolver(XdrSorobanAuthorizationEntry entry, int idx) async {
-///   return idx == 0 ? <int>[rule1Id] : <int>[rule2Id];
-/// }
 /// ```
 typedef ResolveContextRuleIds = Future<List<int>> Function(
   XdrSorobanAuthorizationEntry entry,
@@ -1432,9 +1427,6 @@ class OZTransactionOperations {
       final contractIdHex = addr.contractId;
       if (contractIdHex != null) {
         if (contractIdHex.startsWith('C')) return contractIdHex;
-        // why: Address.fromXdr stores the contract id as hex via
-        // Util.bytesToHex(xdr.contractId.hash). Re-encode to canonical
-        // strkey for comparison against the connected `C...` address.
         return StrKey.encodeContractId(
           Util.hexToBytes(contractIdHex.toUpperCase()),
         );

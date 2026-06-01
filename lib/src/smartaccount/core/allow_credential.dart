@@ -58,9 +58,8 @@ class AllowCredential {
     return acc == 0;
   }
 
-  /// Computes a hash code over the bytes of [data] equivalent in spirit to
-  /// Java's `Arrays.hashCode(byte[])`, so that byte-equal arrays produce the
-  /// same hash code.
+  /// Computes a hash code over the bytes of [data] so that byte-equal arrays
+  /// produce the same hash code (31x polynomial accumulator).
   static int _byteListHash(Uint8List data) {
     var result = 1;
     for (var i = 0; i < data.length; i++) {
@@ -70,8 +69,7 @@ class AllowCredential {
   }
 
   /// Compares two transport lists, distinguishing `null` from the empty
-  /// list (`null` and `[]` are NOT considered equal, mirroring the source
-  /// reference).
+  /// list (`null` and `[]` are NOT considered equal).
   static bool _transportsEquals(List<String>? a, List<String>? b) {
     if (identical(a, b)) return true;
     if (a == null || b == null) return false;

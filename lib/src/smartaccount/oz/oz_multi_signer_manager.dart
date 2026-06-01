@@ -307,8 +307,8 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
 
     // Step 3c: hoist signer reconstruction outside the entry loop;
     // selectedSigners is invariant per call. Throws once if any
-    // passkey lacks keyData (per the documented hoist invariant). Ed25519
-    // signers are included so context-rule resolution counts them correctly.
+    // passkey lacks keyData. Ed25519 signers are included so context-rule
+    // resolution counts them correctly.
     final smartAccountSigners = <OZSmartAccountSigner>[];
     for (final selectedSigner in selectedSigners) {
       if (selectedSigner is SelectedSignerPasskey) {

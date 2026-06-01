@@ -25,8 +25,6 @@ class SmartAccountConstants {
   static const int secp256r1PublicKeySize = 65;
 
   /// Uncompressed point prefix byte (`0x04`) as defined in SEC 1 for
-  /// secp256r1 public keys. The byte is intentionally typed as a small
-  /// integer; comparisons should be performed against this constant rather
-  /// than the literal `0x04` so the intent is self-documenting.
+  /// secp256r1 public keys.
   static const int uncompressedPubkeyPrefix = 0x04;
 }

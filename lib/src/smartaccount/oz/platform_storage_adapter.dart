@@ -10,9 +10,7 @@ import 'oz_storage_serialization.dart';
 
 /// Method-channel name used by the platform storage bridge.
 ///
-/// The native iOS plugin (`IOSStorageAdapter` Swift handler) and Android
-/// plugin (`AndroidStorageAdapter` Kotlin handler) both register a handler
-/// on this channel.
+/// The native iOS/Android storage handler registered on this channel.
 const String _storageChannelName =
     'com.soneso.stellar_flutter_sdk/smartaccount/storage';
 

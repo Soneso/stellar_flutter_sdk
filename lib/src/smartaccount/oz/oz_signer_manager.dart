@@ -327,8 +327,8 @@ class OZSignerManager {
   /// matching signer index by [OZSmartAccountBuilders.signersEqual],
   /// and delegates to the ID-based [removeSigner] overload.
   ///
-  /// Dart does not support overload-by-parameter-type; the `BySigner`
-  /// suffix distinguishes this from the ID-based [removeSigner] overload.
+  /// The `BySigner` suffix distinguishes this from the ID-based
+  /// [removeSigner] form (Dart has no overload-by-parameter-type).
   ///
   /// Throws [InvalidInput] when the signer is not found on the rule or
   /// when the parsed `signerIds` list is shorter than `signers`.

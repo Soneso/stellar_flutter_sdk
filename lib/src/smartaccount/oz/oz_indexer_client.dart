@@ -638,11 +638,10 @@ const String _healthStatusOk = 'ok';
 /// Coerces a JSON numeric field that may arrive as either a JSON number or a
 /// JSON string-encoded number.
 ///
-/// The production indexer service serialises numeric columns (counts, ledger
-/// sequence numbers, event totals) as JSON strings to preserve full precision
-/// for values that exceed JavaScript's safe-integer range. Test fixtures in
-/// this repository use plain JSON numbers, so unit tests still pass; this
-/// helper bridges the two representations at every parse site.
+/// The indexer service serialises numeric columns (counts, ledger sequence
+/// numbers, event totals) as JSON strings to preserve full precision beyond
+/// JavaScript's safe-integer range; this helper accepts either a JSON number
+/// or a numeric string.
 int _asInt(Object? value, String field) {
   if (value is num) return value.toInt();
   if (value is String) {

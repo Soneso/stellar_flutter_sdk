@@ -178,7 +178,7 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
       // why: build descriptors only when allowCredentials is non-empty.
       // The WebAuthn spec treats omission and an empty `transports`
       // array differently — we omit the field entirely when no transport
-      // hints are present, mirroring the upstream implementation.
+      // hints are present.
       final descriptors = <web.PublicKeyCredentialDescriptor>[];
       for (final cred in allowCredentials) {
         final hasTransports =

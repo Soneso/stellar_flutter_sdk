@@ -116,19 +116,6 @@ class WebAuthnCborParser {
   /// that would exhaust the call stack.
   static const int _maxCborDepth = 64;
 
-  /// CBOR-encoded key for the `"authData"` field in a WebAuthn attestation
-  /// object map.
-  ///
-  /// Encoding: `0x68` (text string, length 8) followed by the ASCII bytes
-  /// for `"authData"`. Preserved for forward compatibility; the iteration
-  /// path uses [readCborTextString] rather than scanning for this byte
-  /// sequence.
-  // ignore: unused_field
-  static final Uint8List _authDataCborKey = Uint8List.fromList(<int>[
-    0x68, // text string, length 8
-    0x61, 0x75, 0x74, 0x68, 0x44, 0x61, 0x74, 0x61, // "authData"
-  ]);
-
   /// 10-byte CBOR map prefix that begins an ES256 COSE key for secp256r1.
   ///
   /// Encodes the first four CBOR map entries:

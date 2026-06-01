@@ -188,21 +188,15 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
 
   // Connection state
 
-  /// Connected credential ID. Mutated through [_withLock] so the change
-  /// cannot interleave against a concurrent [disconnect] or [close].
+  /// Connected credential ID. Mutated through [_withLock].
   String? _credentialId;
 
-  /// Connected smart-account contract address. Mutated through
-  /// [_withLock] so the change cannot interleave against a concurrent
-  /// [disconnect] or [close].
+  /// Connected smart-account contract address. Mutated through [_withLock].
   String? _contractId;
 
   /// Whether [close] has run. Idempotency guard for repeated [close]
   /// invocations and a sentinel that [disconnect] honours after teardown.
-  /// The transition from `false` to `true` is performed inside [_withLock]
-  /// so any concurrent caller observing `_closed == false` before the
-  /// lock-acquire will re-check after acquiring the lock and abort
-  /// cleanly when the kit is being torn down.
+  /// Flipped inside [_withLock].
   bool _closed = false;
 
   /// Cached deployer keypair. Intentionally unsynchronised — the derivation
@@ -240,10 +234,9 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
   ///
   /// Called by [walletOperations] after wallet creation and after a
   /// successful connect or reconnect. The write is routed through
-  /// [_withLock] so it cannot interleave against a concurrent
-  /// [disconnect] or [close]. Both scalar field writes are performed
-  /// inside the same lock acquisition so observers always see a
-  /// coherent (`credentialId`, `contractId`) pair.
+  /// [_withLock]; both scalar field writes happen inside the same lock
+  /// acquisition so observers always see a coherent
+  /// (`credentialId`, `contractId`) pair.
   @override
   Future<void> setConnectedState({
     required String credentialId,
@@ -284,10 +277,7 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
   /// Safe to call when no wallet is connected; the call is a no-op aside
   /// from the storage-clear request. After [close] has run this method
   /// returns without touching the kit's resources. The close-state check
-  /// is repeated inside [_withLock] so a caller that observed
-  /// `_closed == false` before queueing but reaches the front of the
-  /// lock queue after [close] has flipped the flag still aborts cleanly
-  /// instead of mutating a torn-down kit.
+  /// is repeated inside [_withLock].
   Future<void> disconnect() async {
     if (_closed) {
       return;
@@ -328,11 +318,7 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
   /// not touched; call [disconnect] first when ending an active session.
   ///
   /// The kit is not usable for new operations after [close] returns. The
-  /// `_closed` flag is set inside [_withLock] so concurrent callers of
-  /// [setConnectedState] / [disconnect] that re-check `_closed` after
-  /// acquiring the lock observe the closed state and abort cleanly
-  /// instead of mutating a torn-down kit.
-  ///
+  /// `_closed` flag is set inside [_withLock].
   Future<void> close() async {
     await _withLock<void>(() async {
       if (_closed) {

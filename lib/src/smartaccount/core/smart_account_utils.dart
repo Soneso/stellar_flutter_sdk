@@ -568,9 +568,7 @@ abstract class SmartAccountUtils {
   /// and returns the resulting hash code value.
   ///
   /// Suitable for Dart `hashCode` implementations over `List<int>` / `Uint8List`
-  /// fields. The algorithm is identical to the one used by `Object.hashAll`
-  /// internals and is safe for use as a `Map` / `Set` key hash — not suitable
-  /// for cryptographic purposes.
+  /// fields; not for cryptographic purposes.
   ///
   /// Usage in a `hashCode` getter that accumulates multiple fields:
   /// ```dart

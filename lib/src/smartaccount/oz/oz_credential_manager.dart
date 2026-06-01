@@ -262,14 +262,9 @@ class OZCredentialManager
       }
       return false;
     } on Exception catch (e, stackTrace) {
-      // why: narrowed from a bare `catch` so programmer errors
-      // (StateError, ArgumentError, …) still propagate. Transient RPC
-      // failures and storage-deletion failures remain absorbed and
-      // reported as "not deployed" so callers can render a stable UI
-      // without exception handling. The swallowed exception is surfaced
-      // through the kit's event emitter so consumers can observe
-      // failures (logging, metrics, retry decisions) without losing the
-      // stable boolean return contract.
+      // why: narrowed from a bare catch so programmer errors still
+      // propagate; transient failures are absorbed and surfaced via the
+      // event emitter.
       _kit.events.emit(
         SmartAccountEventCredentialSyncFailed(
           credentialId: credentialId,
