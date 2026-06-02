@@ -29,6 +29,7 @@ import 'oz_smart_account_events.dart';
 import 'oz_smart_account_signatures.dart';
 import 'oz_smart_account_types.dart';
 import 'oz_storage_adapter.dart';
+import 'oz_transaction_timeout.dart';
 
 // Public result types
 
@@ -1454,13 +1455,7 @@ class OZWalletOperations {
           .addOperation(operation)
           .addMemo(Memo.none())
           .addPreconditions(
-            TransactionPreconditions()
-              ..timeBounds = TimeBounds(
-                0,
-                DateTime.now().millisecondsSinceEpoch ~/ 1000 +
-                    _kit.config.timeoutInSeconds,
-              ),
-          )
+              buildTimeoutPreconditions(_kit.config.timeoutInSeconds))
           .build();
     } catch (e) {
       throw TransactionException.signingFailed(

@@ -496,21 +496,15 @@ void main() {
       expect(config.signatureExpirationLedgers, equals(535680));
     });
 
-    test('testTimeoutInSeconds_zeroThrows', () {
-      expect(
-        () => OZSmartAccountConfig(
-          rpcUrl: _validRpcUrl,
-          networkPassphrase: _validPassphrase,
-          accountWasmHash: _validWasmHash,
-          webauthnVerifierAddress: _validVerifier,
-          timeoutInSeconds: 0,
-        ),
-        throwsA(isA<InvalidConfig>().having(
-          (e) => e.toString(),
-          'message',
-          contains('timeoutInSeconds must be in [1, 600]'),
-        )),
+    test('testTimeoutInSeconds_zeroAccepted', () {
+      final config = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        timeoutInSeconds: 0,
       );
+      expect(config.timeoutInSeconds, equals(0));
     });
 
     test('testTimeoutInSeconds_negativeThrows', () {
@@ -525,29 +519,23 @@ void main() {
         throwsA(isA<InvalidConfig>().having(
           (e) => e.toString(),
           'message',
-          contains('timeoutInSeconds must be in [1, 600]'),
+          contains('timeoutInSeconds must be >= 0'),
         )),
       );
     });
 
-    test('testTimeoutInSeconds_aboveCapThrows', () {
-      expect(
-        () => OZSmartAccountConfig(
-          rpcUrl: _validRpcUrl,
-          networkPassphrase: _validPassphrase,
-          accountWasmHash: _validWasmHash,
-          webauthnVerifierAddress: _validVerifier,
-          timeoutInSeconds: 601,
-        ),
-        throwsA(isA<InvalidConfig>().having(
-          (e) => e.toString(),
-          'message',
-          contains('timeoutInSeconds must be in [1, 600]'),
-        )),
+    test('testTimeoutInSeconds_largeValueAccepted', () {
+      final config = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        timeoutInSeconds: 100000,
       );
+      expect(config.timeoutInSeconds, equals(100000));
     });
 
-    test('testTimeoutInSeconds_atCapAccepted', () {
+    test('testTimeoutInSeconds_accepted', () {
       final config = OZSmartAccountConfig(
         rpcUrl: _validRpcUrl,
         networkPassphrase: _validPassphrase,

@@ -115,12 +115,14 @@ class OZSmartAccountConfig {
         '~one month at 5s ledgers), got: $signatureExpirationLedgers',
       );
     }
-    // why: cap `timeoutInSeconds` at 600 seconds so a misconfigured kit
-    // cannot freeze a UI ceremony beyond 10 minutes and reject zero so
-    // every Stellar transaction has a non-degenerate validity window.
-    if (timeoutInSeconds < 1 || timeoutInSeconds > 600) {
+    // why: reject negative `timeoutInSeconds` only. Zero is a valid value
+    // that maps to a transaction max_time of 0 (Stellar's "no upper bound",
+    // i.e. the transaction never expires by time); any positive value sets
+    // max_time = now + timeoutInSeconds.
+    if (timeoutInSeconds < 0) {
       throw ConfigurationException.invalidConfig(
-        'timeoutInSeconds must be in [1, 600], got: $timeoutInSeconds',
+        'timeoutInSeconds must be >= 0 (0 means no expiry), '
+        'got: $timeoutInSeconds',
       );
     }
   }
@@ -177,9 +179,13 @@ class OZSmartAccountConfig {
   /// (about one hour at five seconds per ledger).
   final int signatureExpirationLedgers;
 
-  /// Sets each transaction's TimeBounds max_time to now + timeoutInSeconds
-  /// (min_time 0), bounding how long a signed transaction stays valid for
-  /// submission. Validated to [1, 600]. Default: 30.
+  /// Sets each transaction's TimeBounds max_time (min_time is always 0),
+  /// bounding how long a signed transaction stays valid for submission.
+  ///
+  /// A positive value sets `max_time = now + timeoutInSeconds`. A value of
+  /// `0` sets `max_time = 0`, which is Stellar's "no upper bound" (the
+  /// transaction never expires by time / infinite validity). Must be `>= 0`.
+  /// Default: 30.
   final int timeoutInSeconds;
 
   /// Optional relayer endpoint URL for fee sponsoring.

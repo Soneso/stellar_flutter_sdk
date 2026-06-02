@@ -32,6 +32,7 @@ import 'oz_smart_account_signatures.dart';
 import 'oz_smart_account_types.dart';
 import 'oz_storage_adapter.dart';
 import 'oz_transaction_operations.dart';
+import 'oz_transaction_timeout.dart';
 import 'oz_validation.dart';
 
 // Re-export the SelectedSigner hierarchy; declarations live in oz_selected_signer.dart
@@ -258,14 +259,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
         .setMaxOperationFee(AbstractTransaction.MIN_BASE_FEE)
         .addOperation(operation)
         .addMemo(Memo.none())
-        .addPreconditions(
-          TransactionPreconditions()
-            ..timeBounds = TimeBounds(
-              0,
-              DateTime.now().millisecondsSinceEpoch ~/ 1000 +
-                  _kit.config.timeoutInSeconds,
-            ),
-        )
+        .addPreconditions(buildTimeoutPreconditions(_kit.config.timeoutInSeconds))
         .build();
 
     final SimulateTransactionResponse simulation;
@@ -552,14 +546,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
         .setMaxOperationFee(AbstractTransaction.MIN_BASE_FEE)
         .addOperation(signedOperation)
         .addMemo(Memo.none())
-        .addPreconditions(
-          TransactionPreconditions()
-            ..timeBounds = TimeBounds(
-              0,
-              DateTime.now().millisecondsSinceEpoch ~/ 1000 +
-                  _kit.config.timeoutInSeconds,
-            ),
-        )
+        .addPreconditions(buildTimeoutPreconditions(_kit.config.timeoutInSeconds))
         .build();
 
     final SimulateTransactionResponse reSimulation;

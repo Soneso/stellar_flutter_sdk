@@ -30,6 +30,7 @@ import 'oz_smart_account_events.dart';
 import 'oz_smart_account_signatures.dart';
 import 'oz_smart_account_types.dart';
 import 'oz_storage_adapter.dart';
+import 'oz_transaction_timeout.dart';
 import 'oz_validation.dart';
 
 /// Result of a transaction submission and polling operation.
@@ -418,14 +419,7 @@ class OZTransactionOperations {
         .setMaxOperationFee(AbstractTransaction.MIN_BASE_FEE)
         .addOperation(operation)
         .addMemo(Memo.none())
-        .addPreconditions(
-          TransactionPreconditions()
-            ..timeBounds = TimeBounds(
-              0,
-              DateTime.now().millisecondsSinceEpoch ~/ 1000 +
-                  _kit.config.timeoutInSeconds,
-            ),
-        )
+        .addPreconditions(buildTimeoutPreconditions(_kit.config.timeoutInSeconds))
         .build();
 
     final simulation = await _simulateInitial(initialTransaction);
@@ -467,14 +461,7 @@ class OZTransactionOperations {
         .setMaxOperationFee(AbstractTransaction.MIN_BASE_FEE)
         .addOperation(signedOperation)
         .addMemo(Memo.none())
-        .addPreconditions(
-          TransactionPreconditions()
-            ..timeBounds = TimeBounds(
-              0,
-              DateTime.now().millisecondsSinceEpoch ~/ 1000 +
-                  _kit.config.timeoutInSeconds,
-            ),
-        )
+        .addPreconditions(buildTimeoutPreconditions(_kit.config.timeoutInSeconds))
         .build();
 
     final reSimulation = await _reSimulateSigned(signedTransaction);
@@ -752,14 +739,7 @@ class OZTransactionOperations {
         .setMaxOperationFee(AbstractTransaction.MIN_BASE_FEE)
         .addOperation(operation)
         .addMemo(Memo.none())
-        .addPreconditions(
-          TransactionPreconditions()
-            ..timeBounds = TimeBounds(
-              0,
-              DateTime.now().millisecondsSinceEpoch ~/ 1000 +
-                  _kit.config.timeoutInSeconds,
-            ),
-        )
+        .addPreconditions(buildTimeoutPreconditions(_kit.config.timeoutInSeconds))
         .build();
 
     final SimulateTransactionResponse simulation;
@@ -890,14 +870,7 @@ class OZTransactionOperations {
         .setMaxOperationFee(AbstractTransaction.MIN_BASE_FEE)
         .addOperation(operation)
         .addMemo(Memo.none())
-        .addPreconditions(
-          TransactionPreconditions()
-            ..timeBounds = TimeBounds(
-              0,
-              DateTime.now().millisecondsSinceEpoch ~/ 1000 +
-                  _kit.config.timeoutInSeconds,
-            ),
-        )
+        .addPreconditions(buildTimeoutPreconditions(_kit.config.timeoutInSeconds))
         .build();
 
     final SimulateTransactionResponse simulation;
@@ -945,14 +918,7 @@ class OZTransactionOperations {
         .setMaxOperationFee(AbstractTransaction.MIN_BASE_FEE)
         .addOperation(signedOperation)
         .addMemo(Memo.none())
-        .addPreconditions(
-          TransactionPreconditions()
-            ..timeBounds = TimeBounds(
-              0,
-              DateTime.now().millisecondsSinceEpoch ~/ 1000 +
-                  _kit.config.timeoutInSeconds,
-            ),
-        )
+        .addPreconditions(buildTimeoutPreconditions(_kit.config.timeoutInSeconds))
         .build();
 
     final SimulateTransactionResponse reSimulation;
