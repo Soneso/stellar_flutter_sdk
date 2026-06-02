@@ -1453,6 +1453,14 @@ class OZWalletOperations {
           .setMaxOperationFee(AbstractTransaction.MIN_BASE_FEE)
           .addOperation(operation)
           .addMemo(Memo.none())
+          .addPreconditions(
+            TransactionPreconditions()
+              ..timeBounds = TimeBounds(
+                0,
+                DateTime.now().millisecondsSinceEpoch ~/ 1000 +
+                    _kit.config.timeoutInSeconds,
+              ),
+          )
           .build();
     } catch (e) {
       throw TransactionException.signingFailed(

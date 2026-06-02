@@ -177,8 +177,9 @@ class OZSmartAccountConfig {
   /// (about one hour at five seconds per ledger).
   final int signatureExpirationLedgers;
 
-  /// Currently unused by the transaction pipeline; polling and submission
-  /// timeouts use internal defaults. Validated to [1, 600]. Default: 30.
+  /// Sets each transaction's TimeBounds max_time to now + timeoutInSeconds
+  /// (min_time 0), bounding how long a signed transaction stays valid for
+  /// submission. Validated to [1, 600]. Default: 30.
   final int timeoutInSeconds;
 
   /// Optional relayer endpoint URL for fee sponsoring.
