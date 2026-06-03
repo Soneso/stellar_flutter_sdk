@@ -1,8 +1,12 @@
 # Smart Accounts API Reference
 
-OpenZeppelin Smart Account support for the Stellar Flutter SDK. This reference documents every public class, function, constant, and event surface exposed by the smart-account namespace, covering wallet lifecycle, transaction signing, signer and policy management, WebAuthn ceremonies, storage, indexer / relayer integration, and the manual auth-entry helpers underneath.
+OpenZeppelin Smart Account Kit for Stellar/Soroban. This reference documents all public APIs for creating, managing, and operating smart accounts with WebAuthn/passkey authentication.
 
-All public symbols listed here are re-exported from the top-level package barrel `package:stellar_flutter_sdk/stellar_flutter_sdk.dart`. Imports throughout this document assume the consumer pulls everything from the barrel.
+**Location**: `package:stellar_flutter_sdk` (barrel export)
+
+**Platform Support**: iOS, Android, Web
+
+All public symbols listed here are re-exported from the top-level package barrel. Imports throughout this document assume the consumer pulls everything from the barrel.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -35,79 +39,22 @@ import 'package:dio/dio.dart' as dio;
 - [Constants](#constants)
 - [WebAuthn Provider](#webauthn-provider)
 - [Storage Adapter](#storage-adapter)
-- [Indexer and Relayer Clients](#indexer-and-relayer-clients)
+- [Indexer Client](#indexer-client)
+- [Relayer Client](#relayer-client)
 - [Auth Helpers](#auth-helpers)
 - [Builder Helpers](#builder-helpers)
+- [Utilities](#utilities)
 - [Selected Signer](#selected-signer)
   - [SelectedSignerPasskey](#selectedsignerpasskey)
   - [SelectedSignerWallet](#selectedsignerwallet)
   - [SelectedSignerEd25519](#selectedsignered25519)
+- [Error Handling Example](#error-handling-example)
 
 ---
 
 ## Quick Start
 
-End-to-end example: instantiate the kit, create a wallet with a fresh passkey, fund it on testnet, and transfer a token.
-
-```dart
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-
-Future<void> main() async {
-  final webauthnProvider = PlatformWebAuthnProvider(
-    rpId: 'example.com',
-    rpName: 'My Smart Account',
-  );
-
-  final storage = PlatformStorageAdapter();
-
-  // Real testnet values; replace for mainnet or your own deployment.
-  final config = OZSmartAccountConfig(
-    rpcUrl: 'https://soroban-testnet.stellar.org',
-    networkPassphrase: 'Test SDF Network ; September 2015',
-    accountWasmHash:
-        '86b49fe03f7df0ad1c2a28bd8361b923ab57096e09f397f92f0c00ae3bd06d28',
-    webauthnVerifierAddress:
-        'CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY',
-    webauthnProvider: webauthnProvider,
-    storage: storage,
-  );
-
-  final kit = OZSmartAccountKit.create(config: config);
-
-  try {
-    // Attempt to restore a saved session before prompting the user.
-    final restored = await kit.walletOperations.connectWallet();
-    if (restored is OZConnectWalletConnected) {
-      print('Restored ${restored.contractId}');
-    } else {
-      // No session: create a fresh wallet, deploy it, and fund it via Friendbot.
-      final created = await kit.walletOperations.createWallet(
-        userName: 'Alice',
-        autoSubmit: true,
-        autoFund: true,
-        nativeTokenContract:
-            'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
-      );
-      print('Created ${created.contractId}');
-    }
-
-    final result = await kit.transactionOperations.transfer(
-      tokenContract:
-          'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
-      recipient: 'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ',
-      amount: '10',
-    );
-    if (result.success) {
-      print('Transfer ${result.hash} confirmed at ledger ${result.ledger}');
-    } else {
-      print('Transfer failed: ${result.error}');
-    }
-  } finally {
-    await kit.disconnect();
-    await kit.close();
-  }
-}
-```
+See the [Quick Start in the README](README.md#quick-start) for an end-to-end example covering kit configuration, wallet creation, token transfer, and the reconnection patterns. The sections below document each public symbol in detail.
 
 ---
 
@@ -181,22 +128,9 @@ String? get contractId
 
 Smart account contract address (`C…`) of the currently connected wallet, or `null` when no wallet is connected.
 
-#### externalSigners
-
-```dart
-OZExternalSignerManager get externalSigners
-```
-
-The unified external-signer manager, constructed by the kit from the supplied configuration. Non-null for the lifetime of the kit. Provides in-memory keypair registration and adapter-backed signing for both G-address wallet signers and Ed25519 external signers.
-
-- **Wallet signers (G-address):** supply `config.externalWallet` at kit construction for out-of-process signing, or call `kit.externalSigners.addFromSecret(secretKey)` at runtime to register an in-memory keypair.
-- **Ed25519 signers:** supply `config.externalEd25519Adapter` at kit construction for out-of-process signing, or call `kit.externalSigners.addEd25519FromRawKey(...)` at runtime to register an in-memory key.
-
-See [External Signer Management](#external-signer-management).
-
 ### Manager Properties
 
-The kit exposes seven managers as lazy, identity-preserving `late final` fields. Every property returns the same instance for the lifetime of the kit.
+The kit exposes its managers as identity-preserving properties; every property returns the same instance for the lifetime of the kit. The seven core managers below are lazy `late final` fields; `externalSigners` is a getter over a manager constructed at initialization.
 
 #### walletOperations
 
@@ -254,6 +188,19 @@ late final OZMultiSignerManager multiSignerManager
 
 Multi-signature operations across passkey and external-wallet signers. See [Signer Management](#signer-management).
 
+#### externalSigners
+
+```dart
+OZExternalSignerManager get externalSigners
+```
+
+The unified external-signer manager, constructed by the kit from the supplied configuration. Non-null for the lifetime of the kit. Provides in-memory keypair registration and adapter-backed signing for both G-address wallet signers and Ed25519 external signers.
+
+- **Wallet signers (G-address):** supply `config.externalWallet` at kit construction for out-of-process signing, or call `kit.externalSigners.addFromSecret(secretKey)` at runtime to register an in-memory keypair.
+- **Ed25519 signers:** supply `config.externalEd25519Adapter` at kit construction for out-of-process signing, or call `kit.externalSigners.addEd25519FromRawKey(...)` at runtime to register an in-memory key.
+
+See [External Signer Management](#external-signer-management).
+
 ### Client Properties
 
 #### indexerClient
@@ -262,7 +209,7 @@ Multi-signature operations across passkey and external-wallet signers. See [Sign
 final OZIndexerClient? indexerClient
 ```
 
-The credential-to-contract indexer client. `null` when neither `config.indexerUrl` is set nor a network-default URL is registered for the configured passphrase. Use for direct credential or address lookups, contract-detail retrieval, and indexer statistics. See [Indexer and Relayer Clients](#indexer-and-relayer-clients).
+The credential-to-contract indexer client. `null` when neither `config.indexerUrl` is set nor a network-default URL is registered for the configured passphrase. Use for direct credential or address lookups, contract-detail retrieval, and indexer statistics. See [Indexer Client](#indexer-client).
 
 #### relayerClient
 
@@ -270,15 +217,7 @@ The credential-to-contract indexer client. `null` when neither `config.indexerUr
 final OZRelayerClient? relayerClient
 ```
 
-The fee-sponsoring relayer client. `null` when `config.relayerUrl` is unset. The kit uses this internally to submit transactions when present; direct access is available for advanced submission flows. See [Indexer and Relayer Clients](#indexer-and-relayer-clients).
-
-#### sorobanServer
-
-```dart
-final SorobanServer sorobanServer
-```
-
-The shared Soroban RPC server used by every manager for simulation, submission, and on-chain reads. Released by `close()`.
+The fee-sponsoring relayer client. `null` when `config.relayerUrl` is unset. The kit uses this internally to submit transactions when present; direct access is available for advanced submission flows. See [Relayer Client](#relayer-client).
 
 ### Lifecycle Methods
 
@@ -296,7 +235,7 @@ Disconnects the currently-connected wallet, clearing the in-memory connection st
 Future<void> close() async
 ```
 
-Releases every held HTTP-client resource and removes every registered event listener. Closes the shared `sorobanServer` transport first, then the optional `indexerClient` and `relayerClient` HTTP clients, and finally tears down the kit's event subscriptions. Idempotent: a second invocation is a no-op. Storage and connection state are not touched; call `disconnect()` first to end an active session. The kit is not usable for new operations after `close()` returns.
+Releases every held HTTP-client resource and removes every registered event listener. Closes the shared `sorobanServer` transport first, then the optional `indexerClient` and `relayerClient` HTTP clients, tears down the kit's event subscriptions, and clears any in-memory external signers (registered keypairs and Ed25519 keys). Idempotent: a second invocation is a no-op. Storage and connection state are not touched — persisted external-wallet connections are retained; call `disconnect()` first to end an active session. The kit is not usable for new operations after `close()` returns.
 
 #### getDeployer
 
@@ -305,14 +244,6 @@ Future<KeyPair> getDeployer() async
 ```
 
 Returns the deployer keypair, resolving to the deterministic default when `config.deployerKeypair` is unset. The first call resolves the deployer via `OZSmartAccountConfig.effectiveDeployer` and caches the result; subsequent calls return the cached keypair.
-
-#### getStorage
-
-```dart
-StorageAdapter getStorage()
-```
-
-Returns the storage adapter currently in use by the kit. Operations modules reach storage through this accessor so the kit remains the single owner of the adapter reference.
 
 ---
 
@@ -371,7 +302,7 @@ Every constructor parameter is also exposed as a public `final` field with the s
 
 See [WebAuthn Provider](#webauthn-provider), [Storage Adapter](#storage-adapter), and [ExternalWalletAdapter](#externalwalletadapter-abstract-class) for the platform-specific implementations and the abstract contracts.
 
-### Factory and computed accessors
+### Static Factories
 
 #### createDefaultDeployer
 
@@ -393,6 +324,8 @@ static OZSmartAccountConfigBuilder builder({
 ```
 
 Creates a fluent builder pre-populated with the four required fields. Use `OZSmartAccountConfigBuilder` setters to override defaults, then call `build()` to obtain a validated `OZSmartAccountConfig`. See [OZSmartAccountConfigBuilder](#ozsmartaccountconfigbuilder).
+
+### Instance Methods
 
 #### effectiveDeployer
 
@@ -616,28 +549,6 @@ class CreateWalletResult {
 
 Equality compares `publicKey` in constant time; `hashCode` is byte-content-derived.
 
-#### DeployPendingResult
-
-```dart
-class DeployPendingResult {
-  const DeployPendingResult({
-    required String contractId,
-    required String signedTransactionXdr,
-    String? transactionHash,
-  });
-
-  final String contractId;
-  final String signedTransactionXdr;
-  final String? transactionHash;
-
-  DeployPendingResult copyWith({...});
-}
-```
-
-- `contractId`: Smart account contract address.
-- `signedTransactionXdr`: Base64-encoded signed deploy-transaction envelope.
-- `transactionHash`: Present when `autoSubmit` was `true`, `null` otherwise.
-
 #### OZConnectWalletResult (sealed)
 
 ```dart
@@ -687,6 +598,28 @@ final class OZConnectWalletAmbiguous extends OZConnectWalletResult {
 
 - `credentialId`: Base64URL-encoded credential ID. Reuse for the disambiguation reconnect to avoid a second WebAuthn ceremony.
 - `candidates`: Contract addresses returned by the indexer. Let the user pick one and call `connectWallet` again with `ConnectWalletOptions(credentialId: …, contractId: chosen)`.
+
+#### DeployPendingResult
+
+```dart
+class DeployPendingResult {
+  const DeployPendingResult({
+    required String contractId,
+    required String signedTransactionXdr,
+    String? transactionHash,
+  });
+
+  final String contractId;
+  final String signedTransactionXdr;
+  final String? transactionHash;
+
+  DeployPendingResult copyWith({...});
+}
+```
+
+- `contractId`: Smart account contract address.
+- `signedTransactionXdr`: Base64-encoded signed deploy-transaction envelope.
+- `transactionHash`: Present when `autoSubmit` was `true`, `null` otherwise.
 
 #### AuthenticatePasskeyResult
 
@@ -1221,7 +1154,9 @@ Future<TransactionResult> removeSignerBySigner({
 
 Removes a signer from `contextRuleId` by matching the [`OZSmartAccountSigner`](#signer-types) value. Fetches the rule, parses it, finds the matching signer index via `OZSmartAccountBuilders.signersEqual`, and delegates to the ID-based `removeSigner`. Throws `ValidationException.invalidInput` when the signer is not on the rule.
 
-### AddPasskeySignerResult
+### Result Types
+
+#### AddPasskeySignerResult
 
 ```dart
 class AddPasskeySignerResult {
@@ -1326,12 +1261,12 @@ OZExternalSignerManager({
 })
 ```
 
-**Fields:**
+**Constructor parameters** (stored internally; not exposed as readable properties):
 
 - `networkPassphrase`: Network passphrase used when delegating to `walletAdapter`.
 - `walletAdapter`: Optional external-wallet adapter. When `null`, only keypair-backed wallet signers are supported.
 - `walletConnectionStorage`: Optional persistence layer for wallet connections.
-- `ed25519Adapter`: Optional adapter for out-of-process Ed25519 signing. Immutable after construction; takes adapter-first precedence over in-memory keypairs when set.
+- `ed25519Adapter`: Optional adapter for out-of-process Ed25519 signing. Takes adapter-first precedence over in-memory keypairs when set.
 
 #### hasWalletAdapter
 
@@ -1435,14 +1370,6 @@ Restores previously connected wallets from `walletConnectionStorage`. Reads the 
 ### Ed25519 Signing
 
 The following methods and types support Ed25519 external signers identified by a `(verifierAddress, publicKey)` tuple. They complement the wallet-based signing methods above. See also [`SelectedSignerEd25519`](#selectedsignered25519) for how to reference these signers in multi-signer calls.
-
-#### ed25519Adapter
-
-```dart
-final OZExternalEd25519SignerAdapter? ed25519Adapter
-```
-
-Immutable public field set at construction time via `OZExternalSignerManager({..., ed25519Adapter: adapter})`. When set, the adapter is consulted before the in-memory keypair registry for every Ed25519 signing request (adapter-first precedence rule).
 
 #### addEd25519FromRawKey
 
@@ -1743,7 +1670,7 @@ Throws `ValidationException.invalidInput` when the name is empty, when both `sig
 Future<XdrSCVal> getContextRule(int id) async
 ```
 
-Returns the raw `XdrSCVal` for the rule with the supplied on-chain `id`. Use `parseContextRule` to translate the response into a `ParsedContextRule`.
+Returns the raw `XdrSCVal` for the rule with the supplied on-chain `id`. Use `listContextRules` to obtain parsed `ParsedContextRule` objects directly.
 
 #### getContextRulesCount
 
@@ -1768,44 +1695,6 @@ Future<List<ParsedContextRule>> listContextRules({int? maxScanId}) async
 ```
 
 Returns every active context rule parsed into a `ParsedContextRule`.
-
-#### parseContextRule
-
-```dart
-ParsedContextRule parseContextRule(XdrSCVal scVal)
-```
-
-Synchronously parses a single raw rule struct into a typed `ParsedContextRule`. Throws `ValidationException.invalidInput` when required fields are missing or malformed.
-
-#### resolveContextRuleIdsForEntry
-
-```dart
-Future<List<int>> resolveContextRuleIdsForEntry(
-  XdrSorobanAuthorizationEntry entry,
-  List<OZSmartAccountSigner> signers,
-  List<Object> contextRules,
-) async
-```
-
-Resolves the context-rule IDs that apply to `entry` under the supplied `signers`. Fetches the active rule list when `contextRules` is empty before delegating to the pre-fetched-rules overload.
-
-#### resolveContextRuleIdsForEntryWithRules
-
-```dart
-List<int> resolveContextRuleIdsForEntryWithRules(
-  XdrSorobanAuthorizationEntry entry,
-  List<OZSmartAccountSigner> selectedSigners,
-  List<ParsedContextRule> rules,
-)
-```
-
-Synchronous three-tier resolution against the pre-fetched `rules` list:
-
-1. Tier 1: exact bidirectional signer-set match (same size, every selected signer in rule, every rule signer in selected).
-2. Tier 2: rule signers form a subset of selected, and the rule carries no policies.
-3. Tier 3: selected signers form a subset of rule (threshold scenarios where the user picks fewer signers than the rule).
-
-Throws `ValidationException.invalidInput` when no rule matches the entry, or when multiple candidate rules still match every selected signer ambiguously.
 
 #### updateName
 
@@ -2348,7 +2237,7 @@ sealed class WebAuthnException extends SmartAccountException {
   static WebAuthnException registrationFailed(String details, {Object? cause});
   static WebAuthnException authenticationFailed(String details, {Object? cause});
   static WebAuthnException notSupported({String? details, Object? cause});
-  static WebAuthnException cancelled({String? details, Object? cause});
+  static WebAuthnException cancelled({Object? cause});
 }
 
 final class WebAuthnRegistrationFailed extends WebAuthnException { }
@@ -2682,7 +2571,7 @@ Dispatches WebAuthn calls to the native platform's plugin via the `com.soneso.st
 ### BrowserWebAuthnProvider (web)
 
 ```dart
-class BrowserWebAuthnProvider implements WebAuthnProvider {
+class BrowserWebAuthnProvider extends WebAuthnProvider {
   BrowserWebAuthnProvider({
     required String rpId,
     required String rpName,
@@ -2960,114 +2849,412 @@ class SignAuthEntryResult {
 
 ---
 
-## Indexer and Relayer Clients
+## Indexer Client
 
-### OZIndexerClient
+The SDK includes an indexer client for reverse lookups from signer credentials to smart account contracts. The indexer is auto-configured for testnet and mainnet when no explicit URL is provided.
+
+### Using via OZSmartAccountKit (Recommended)
 
 ```dart
-class OZIndexerClient {
-  OZIndexerClient(String indexerUrl, {Duration? timeout});
+final kit = await OZSmartAccountKit.create(config);
 
-  static Map<String, String> get defaultIndexerUrls;
-  static String? getDefaultUrl(String networkPassphrase);
-  static OZIndexerClient? forNetwork(String networkPassphrase, {Duration? timeout});
+// indexerClient is null when no indexer URL is configured
+// (no explicit indexerUrl and no default for the network).
 
-  Future<OZCredentialLookupResponse> lookupByCredentialId(
-    String credentialId, {
-    dio.CancelToken? cancelToken,
-  });
+// Discover contracts by credential ID
+final contracts = await kit.indexerClient?.lookupByCredentialId(credentialId);
 
-  Future<OZAddressLookupResponse> lookupByAddress(
-    String address, {
-    dio.CancelToken? cancelToken,
-  });
+// Discover contracts by signer address
+final byAddress = await kit.indexerClient?.lookupByAddress('GABC...');
 
-  Future<OZContractDetailsResponse> getContract(
-    String contractId, {
-    dio.CancelToken? cancelToken,
-  });
+// Get full contract details (rules, signers, policies)
+final details = await kit.indexerClient?.getContract('CABC...');
 
-  Future<OZIndexerStatsResponse> getStats({dio.CancelToken? cancelToken});
-
-  Future<bool> isHealthy({dio.CancelToken? cancelToken});
-
-  Future<void> close();
-}
+// Health and stats
+final healthy = await kit.indexerClient?.isHealthy();
+final stats = await kit.indexerClient?.getStats();
 ```
 
-Client for the OpenZeppelin smart-account indexer service. The indexer maps WebAuthn credential IDs and signer addresses to deployed smart-account contract addresses, and exposes contract-detail and aggregate statistics endpoints.
+### Using OZIndexerClient Directly
 
-**Constructor parameters:**
+```dart
+// Create a client for a specific network (uses the default indexer URL).
+// Returns null when no default URL is configured for the network.
+final indexer =
+    OZIndexerClient.forNetwork('Test SDF Network ; September 2015');
 
-- `indexerUrl`: Indexer endpoint URL. Must be HTTPS, or `http://localhost…` for local development. Constructor throws `ConfigurationException.invalidConfig` for blank, non-HTTPS, or userinfo-bearing URLs.
-- `timeout`: Per-request timeout. Defaults to `OZConstants.defaultIndexerTimeoutMs` (10 s). The connect timeout is capped at `OZConstants.maxIndexerConnectTimeoutMs` independently of the overall timeout.
+// Or with a custom URL
+final custom = OZIndexerClient(
+  'https://smart-account-indexer.sdf-ecosystem.workers.dev',
+  timeout: Duration(seconds: 10),
+);
+```
 
-**Static helpers:**
+### Constructor
 
-- `defaultIndexerUrls`: Unmodifiable map from network passphrase to the well-known default indexer URL.
-- `getDefaultUrl(networkPassphrase)`: Returns the default URL for the supplied passphrase or `null`.
-- `forNetwork(networkPassphrase, {timeout})`: Convenience factory returning a client bound to the default URL for the network, or `null` when no default exists.
+```dart
+OZIndexerClient(String indexerUrl, {Duration? timeout});
+```
 
-**Method behaviour:** every call throws `IndexerException.requestFailed` for network or non-2xx errors, `IndexerException.timeout` when the request exceeds the configured timeout, and `ValidationException` for malformed inputs. `isHealthy` never throws and returns `false` for any failure mode.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `indexerUrl` | `String` | Indexer service URL. Must be HTTPS, or `http://localhost…` for local development. |
+| `timeout` | `Duration?` | Per-request timeout (default: `OZConstants.defaultIndexerTimeoutMs`, 10 s). The connect timeout is capped at `OZConstants.maxIndexerConnectTimeoutMs`. |
 
-`close` releases the underlying HTTP client and is idempotent. The injected-Dio test-only constructor `OZIndexerClient.withDio` is `@visibleForTesting`; the injected client is not closed by `close`.
+**Throws**: `ConfigurationException.invalidConfig` for blank, non-HTTPS, or host-less URLs.
 
-### Indexer response types
+The injected-Dio test-only constructor `OZIndexerClient.withDio` is `@visibleForTesting`; the injected client is not closed by `close`.
 
-The indexer client returns a family of public DTOs:
+### Factory Methods
 
-- `OZCredentialLookupResponse`: `credentialId`, `contracts: List<OZIndexedContractSummary>`, `count`.
-- `OZAddressLookupResponse`: `signerAddress`, `contracts: List<OZIndexedContractSummary>`, `count`.
-- `OZContractDetailsResponse`: `contractId`, `summary: OZIndexedContractSummary`, `contextRules: List<OZIndexedContextRule>`.
-- `OZIndexedContractSummary`: `contractId`, `contextRuleCount`, `externalSignerCount`, `delegatedSignerCount`, `nativeSignerCount`, `firstSeenLedger`, `lastSeenLedger`, `contextRuleIds`.
-- `OZIndexedContextRule`: parsed indexer-side rule representation including signers and policies.
-- `OZIndexedSigner`, `OZIndexedPolicy`: entries inside an indexed context rule.
-- `OZIndexerStatsResponse` and `OZIndexerStats`: aggregate counts and metadata.
-- `OZEventTypeCount`: counts per event type, embedded in stats responses.
-- `OZIndexerHealthCheckResponse`: health-check payload (`status`, version metadata).
+#### forNetwork
+
+```dart
+static OZIndexerClient? forNetwork(
+  String networkPassphrase, {
+  Duration? timeout,
+});
+```
+
+Creates an `OZIndexerClient` using the default indexer URL for a known network. Returns `null` when no default URL is configured for the network. The optional `timeout` is forwarded to the constructor.
+
+#### getDefaultUrl
+
+```dart
+static String? getDefaultUrl(String networkPassphrase);
+```
+
+Returns the default indexer URL for the given network passphrase, or `null` when unknown. The companion static getter `defaultIndexerUrls` exposes the full passphrase-to-URL map as an unmodifiable view.
+
+### Methods
+
+#### lookupByCredentialId
+
+```dart
+Future<OZCredentialLookupResponse> lookupByCredentialId(
+  String credentialId, {
+  dio.CancelToken? cancelToken,
+});
+```
+
+Finds all smart account contracts where the given credential is registered as a signer. `credentialId` must be Base64URL-encoded (RFC 4648, no padding); it is decoded and re-encoded as lowercase hex for the indexer API. The optional `cancelToken` aborts the in-flight request.
+
+**Returns**: `OZCredentialLookupResponse`
+
+**Throws**: `ValidationException.invalidInput` when `credentialId` is not valid base64url; `IndexerException.requestFailed` for network or non-2xx errors (cancellation surfaces here with a `Request cancelled` message); `IndexerException.timeout` when the request exceeds the configured timeout.
+
+---
+
+#### lookupByAddress
+
+```dart
+Future<OZAddressLookupResponse> lookupByAddress(
+  String address, {
+  dio.CancelToken? cancelToken,
+});
+```
+
+Finds all smart account contracts where the given address is registered as a signer. Accepts both G-addresses (Stellar accounts) and C-addresses (contracts). The optional `cancelToken` aborts the in-flight request.
+
+**Returns**: `OZAddressLookupResponse`
+
+**Throws**: `ValidationException` when the address format is invalid; `IndexerException.requestFailed` for network or non-2xx errors; `IndexerException.timeout` on timeout.
+
+---
+
+#### getContract
+
+```dart
+Future<OZContractDetailsResponse> getContract(
+  String contractId, {
+  dio.CancelToken? cancelToken,
+});
+```
+
+Retrieves full details for a smart account contract including all context rules, signers, and policies. `contractId` must be a `C...` contract address. The optional `cancelToken` aborts the in-flight request.
+
+**Returns**: `OZContractDetailsResponse`
+
+**Throws**: `ValidationException` when the contract ID format is invalid; `IndexerException.requestFailed` for network or non-2xx errors; `IndexerException.timeout` on timeout.
+
+---
+
+#### getStats
+
+```dart
+Future<OZIndexerStatsResponse> getStats({dio.CancelToken? cancelToken});
+```
+
+Returns indexer service statistics (total events, unique contracts, unique credentials, ledger range, per-event-type breakdown). The optional `cancelToken` aborts the in-flight request.
+
+**Returns**: `OZIndexerStatsResponse`
+
+**Throws**: `IndexerException.requestFailed` for network or non-2xx errors; `IndexerException.timeout` on timeout.
+
+---
+
+#### isHealthy
+
+```dart
+Future<bool> isHealthy({dio.CancelToken? cancelToken});
+```
+
+Returns `true` only when the indexer responds with HTTP 2xx and a JSON body whose `status` field equals `ok`. Any network failure, timeout, non-2xx status, cancellation, or malformed body returns `false`. This method never throws.
+
+---
+
+#### close
+
+```dart
+Future<void> close();
+```
+
+Closes the underlying HTTP client and is idempotent. The client must not be used after calling this. When using via `kit.indexerClient`, the kit's `close()` handles this automatically. A client created via `withDio` does not close the injected Dio instance.
+
+---
+
+### Response Types
 
 All response types carry `fromJson` / `toJson` for cross-process serialisation.
 
-### OZRelayerClient
+#### OZCredentialLookupResponse
 
 ```dart
-class OZRelayerClient {
-  OZRelayerClient(String relayerUrl, {Duration? timeout});
-
-  Future<OZRelayerResponse> send(
-    XdrHostFunction hostFunction,
-    List<XdrSorobanAuthorizationEntry> authEntries, {
-    int? perRequestTimeoutMs,
-    dio.CancelToken? cancelToken,
-  });
-
-  Future<OZRelayerResponse> sendXdr(
-    XdrTransactionEnvelope transactionEnvelope, {
-    int? perRequestTimeoutMs,
-    dio.CancelToken? cancelToken,
-  });
-
-  Future<void> close();
+class OZCredentialLookupResponse {
+  final String credentialId;
+  final List<OZIndexedContractSummary> contracts;
+  final int count;
 }
 ```
 
-Client for submitting transactions to an OpenZeppelin smart-account relayer.
+Result of a credential-ID lookup: the queried credential, the matching contracts, and their total count.
 
-**Constructor parameters:**
+#### OZAddressLookupResponse
 
-- `relayerUrl`: Relayer endpoint URL. Must be HTTPS, or `http://localhost…` for local development.
-- `timeout`: Default per-request timeout. Defaults to `OZConstants.defaultRelayerTimeoutMs` (6 min). The connect timeout is capped at `OZConstants.maxRelayerConnectTimeoutMs` independently of the overall timeout.
+```dart
+class OZAddressLookupResponse {
+  final String signerAddress;
+  final List<OZIndexedContractSummary> contracts;
+  final int count;
+}
+```
 
-**Submission modes:**
+Result of a signer-address lookup: the queried address, the matching contracts, and their total count.
 
-- `send(hostFunction, authEntries)`: Mode 1. The relayer assembles, fee-bumps, and submits the transaction from its components. Used when no source-account auth entry exists.
-- `sendXdr(transactionEnvelope)`: Mode 2. Submits a fully-signed envelope; the relayer fee-bumps it preserving the inner signature. Used when at least one source-account auth entry is present (for example wallet deployment).
+#### OZContractDetailsResponse
 
-Both methods return an `OZRelayerResponse` and **never throw** on network failure, timeout, cancellation, or relayer-reported errors. The `success` flag, `error`, and `errorCode` fields on the response carry the outcome.
+```dart
+class OZContractDetailsResponse {
+  final String contractId;
+  final OZIndexedContractSummary summary;
+  final List<OZIndexedContextRule> contextRules;
+}
+```
 
-`close` releases the underlying HTTP client and is idempotent. The injected-Dio test-only constructor `OZRelayerClient.withDio` is `@visibleForTesting`.
+Full details for a single contract: its summary plus every context rule with the rule's signers and policies.
 
-### Relayer types
+#### OZIndexedContractSummary
+
+```dart
+class OZIndexedContractSummary {
+  final String contractId;
+  final int contextRuleCount;
+  final int externalSignerCount;
+  final int delegatedSignerCount;
+  final int nativeSignerCount;
+  final int firstSeenLedger;
+  final int lastSeenLedger;
+  final List<int> contextRuleIds;
+}
+```
+
+Aggregate counts and metadata for a contract, including per-signer-kind tallies and the ledger range over which it was observed.
+
+#### OZIndexedContextRule
+
+```dart
+class OZIndexedContextRule {
+  final int contextRuleId;
+  final List<OZIndexedSigner> signers;
+  final List<OZIndexedPolicy> policies;
+}
+```
+
+A single context rule as reported by the indexer, with its registered signers and attached policies.
+
+#### OZIndexedSigner
+
+```dart
+class OZIndexedSigner {
+  final String signerType;      // "External", "Delegated", or "Native"
+  final String? signerAddress;  // Stellar address (Delegated signers)
+  final String? credentialId;   // Hex-encoded credential ID (External signers)
+}
+```
+
+A signer within a context rule. `signerAddress` is populated for delegated signers; `credentialId` for external (WebAuthn) signers.
+
+#### OZIndexedPolicy
+
+```dart
+class OZIndexedPolicy {
+  final String policyAddress;
+  final Object? installParams;  // Policy-specific parameters (untyped JSON)
+}
+```
+
+A policy attached to a context rule. `installParams` preserves whatever JSON shape (object, array, primitive, or `null`) the indexer reports.
+
+#### OZIndexerStatsResponse
+
+```dart
+class OZIndexerStatsResponse {
+  final OZIndexerStats stats;
+}
+```
+
+Wrapper around the indexer's `/api/stats` payload.
+
+#### OZIndexerStats
+
+```dart
+class OZIndexerStats {
+  final int totalEvents;
+  final int uniqueContracts;
+  final int uniqueCredentials;
+  final int firstLedger;
+  final int lastLedger;
+  final List<OZEventTypeCount> eventTypes;
+}
+```
+
+Aggregate indexer statistics: total events processed, unique contract and credential counts, the indexed ledger range, and a per-event-type breakdown.
+
+#### OZEventTypeCount
+
+```dart
+class OZEventTypeCount {
+  final String eventType;  // e.g. "signer_added"
+  final int count;
+}
+```
+
+Number of events observed for a single event type, embedded in `OZIndexerStats`.
+
+#### OZIndexerHealthCheckResponse
+
+```dart
+class OZIndexerHealthCheckResponse {
+  final String status;  // typically "ok"
+}
+```
+
+Health-check payload returned by the indexer root endpoint and consumed internally by `isHealthy`.
+
+---
+
+## Relayer Client
+
+The SDK includes a relayer client for fee-sponsored transaction submission. When configured, the SDK automatically routes transactions through the relayer so users don't need XLM to pay fees.
+
+### Using via OZSmartAccountKit (Recommended)
+
+When the relayer is configured, transaction submissions use it automatically:
+
+```dart
+final config = OZSmartAccountConfig(
+  // ... other config
+  relayerUrl: 'https://my-relayer-proxy.example.com',
+);
+final kit = await OZSmartAccountKit.create(config);
+
+// Transactions automatically use the relayer when configured.
+await kit.transactionOperations.transfer(
+  tokenContract: tokenContract,
+  recipient: recipient,
+  amount: '10',
+);
+
+// Bypass the relayer for a specific operation.
+await kit.transactionOperations.transfer(
+  tokenContract: tokenContract,
+  recipient: recipient,
+  amount: '10',
+  forceMethod: SubmissionMethod.rpc,
+);
+
+// Access the relayer client directly. relayerClient is null when no
+// relayer URL is configured.
+await kit.relayerClient?.sendXdr(transactionEnvelope);
+```
+
+### Constructor
+
+```dart
+OZRelayerClient(String relayerUrl, {Duration? timeout});
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `relayerUrl` | `String` | Relayer endpoint URL. Must be HTTPS, or `http://localhost…` for local development. |
+| `timeout` | `Duration?` | Default per-request timeout (default: `OZConstants.defaultRelayerTimeoutMs`, 6 min). The connect timeout is capped at `OZConstants.maxRelayerConnectTimeoutMs`. |
+
+**Throws**: `ConfigurationException.invalidConfig` if `relayerUrl` is blank or not HTTPS.
+
+The injected-Dio test-only constructor `OZRelayerClient.withDio` is `@visibleForTesting`; the injected client is not closed by `close`.
+
+Whether a relayer is in use is determined by `kit.relayerClient` being non-`null`, which the kit sets from the configured `relayerUrl`. A constructed `OZRelayerClient` is always configured, since the constructor rejects invalid URLs.
+
+### Methods
+
+#### send
+
+```dart
+Future<OZRelayerResponse> send(
+  XdrHostFunction hostFunction,
+  List<XdrSorobanAuthorizationEntry> authEntries, {
+  int? perRequestTimeoutMs,
+  dio.CancelToken? cancelToken,
+});
+```
+
+Submits a host function with signed authorization entries for fee sponsoring. The relayer assembles, fee-bumps, and submits the transaction from its components. Used when no source-account auth entry exists. XDR-to-base64 encoding is handled internally. The optional `perRequestTimeoutMs` overrides the client-level timeout for this call; `cancelToken` aborts the in-flight request.
+
+This method does not throw. All error conditions, including encoding failures, timeouts, and cancellation, are returned in the `OZRelayerResponse`.
+
+**Returns**: `OZRelayerResponse`
+
+---
+
+#### sendXdr
+
+```dart
+Future<OZRelayerResponse> sendXdr(
+  XdrTransactionEnvelope transactionEnvelope, {
+  int? perRequestTimeoutMs,
+  dio.CancelToken? cancelToken,
+});
+```
+
+Submits a complete signed transaction envelope for fee-bumping, preserving the inner signature. Used when the transaction contains source-account auth entries that require the deployer signature (for example wallet deployment). XDR-to-base64 encoding is handled internally. The optional `perRequestTimeoutMs` overrides the client-level timeout for this call; `cancelToken` aborts the in-flight request.
+
+This method does not throw. All error conditions are returned in the `OZRelayerResponse`.
+
+**Returns**: `OZRelayerResponse`
+
+---
+
+#### close
+
+```dart
+Future<void> close();
+```
+
+Closes the underlying HTTP client and is idempotent. When using via `kit.relayerClient`, the kit's `close()` handles this automatically. A client created via `withDio` does not close the injected Dio instance.
+
+---
+
+### Response and Error Types
 
 #### OZRelayerResponse
 
@@ -3093,7 +3280,15 @@ class OZRelayerResponse {
 }
 ```
 
-The `error` string is not further truncated; the entire response body is bounded by `maxRelayerResponseBytes`.
+| Property | Type | Description |
+|----------|------|-------------|
+| `success` | `bool` | Whether the relayer reported the submission as successful. |
+| `transactionId` | `String?` | Transaction ID assigned by the relayer, when reported. |
+| `hash` | `String?` | Transaction hash on the Stellar network if submission succeeded. |
+| `status` | `String?` | Transaction status (e.g. `PENDING`, `SUCCESS`, `ERROR`). |
+| `error` | `String?` | Error message if the request failed. Not further truncated; the body is bounded by `maxRelayerResponseBytes`. |
+| `errorCode` | `String?` | Error code for programmatic handling (see `OZRelayerErrorCodes`). Cancellation yields a `null` `errorCode`. |
+| `details` | `Object?` | Additional error details (JSON object or value) from the relayer. |
 
 #### OZRelayerErrorCodes
 
@@ -3440,6 +3635,10 @@ class OZSpendingLimitParams {
 
 These public value types are distinct from the sealed `PolicyInstallParams` hierarchy on `OZPolicyManager`; they exist so consumer code can pass typed policy descriptions through its own layers before reaching the manager-level convenience helpers.
 
+---
+
+## Utilities
+
 ### SmartAccountUtils
 
 Static helpers for WebAuthn signature processing, public-key extraction, and contract-address derivation. Operates on raw byte material independently of any platform WebAuthn API.
@@ -3454,9 +3653,6 @@ abstract class SmartAccountUtils {
     Uint8List? attestationObject,
   });
 
-  static Uint8List? extractPublicKeyFromAuthenticatorData(Uint8List authenticatorData);
-  static Uint8List extractPublicKeyFromAttestationObject(Uint8List attestationObject);
-
   static Uint8List getContractSalt(Uint8List credentialId);
 
   static String deriveContractAddress({
@@ -3469,8 +3665,6 @@ abstract class SmartAccountUtils {
 
 - `normalizeSignature`: Converts a DER-encoded secp256r1 signature into the 64-byte compact `r || s` form with `s` normalised to the lower half of the curve order (low-S). Throws `ValidationException.invalidInput` on malformed DER.
 - `extractPublicKeyFromRegistration`: Three-strategy public-key extraction: direct validation of `publicKey` if it is already a valid 65-byte uncompressed secp256r1 key; otherwise parse `authenticatorData` if available; otherwise scan `attestationObject` for the embedded public key.
-- `extractPublicKeyFromAuthenticatorData`: Parses WebAuthn authenticator data and returns the 65-byte uncompressed public key, or `null` when no attested credential data is present.
-- `extractPublicKeyFromAttestationObject`: Scans the attestation object for the embedded uncompressed public key.
 - `getContractSalt`: Returns `SHA-256(credentialId)`, the salt used in contract-address derivation.
 - `deriveContractAddress`: Computes the deterministic smart-account contract address from the credential ID, deployer public key, and network passphrase.
 
