@@ -2643,7 +2643,7 @@ class AllowCredential {
 
 Credential descriptor pairing a raw credential ID with optional transport hints, used to constrain which passkeys the authenticator offers during `authenticate`. When `transports` is `null` the authenticator picks the transport.
 
-### PlatformWebAuthnProvider (mobile / desktop)
+### PlatformWebAuthnProvider (mobile)
 
 ```dart
 class PlatformWebAuthnProvider implements WebAuthnProvider {
@@ -2693,7 +2693,7 @@ class BrowserWebAuthnProvider implements WebAuthnProvider {
 
 Bridges through `navigator.credentials.create()` / `.get()` to the browser's WebAuthn API. Requests COSE algorithm `-7` (ES256, secp256r1) during registration and applies a three-strategy public-key extraction.
 
-The class facade is selected by conditional export: on web the real implementation is used; on non-web targets a stub is selected so cross-target code that holds a typed handle compiles. Every method on the stub throws `UnsupportedError` with guidance to use `PlatformWebAuthnProvider` on mobile / desktop.
+The class facade is selected by conditional export: on web the real implementation is used; on non-web targets a stub is selected so cross-target code that holds a typed handle compiles. Every method on the stub throws `UnsupportedError` with guidance to use `PlatformWebAuthnProvider` on mobile.
 
 ---
 
@@ -2826,7 +2826,7 @@ Default fallback when `config.storage` is omitted. Stores all data in a Dart-iso
 
 All `InMemoryStorageAdapter` instances compare equal because two freshly-created instances are functionally identical (both empty); this makes the adapter usable as the default value of an enclosing data class without breaking that data class's structural equality.
 
-### PlatformStorageAdapter (mobile / desktop)
+### PlatformStorageAdapter (mobile)
 
 ```dart
 class PlatformStorageAdapter implements StorageAdapter {

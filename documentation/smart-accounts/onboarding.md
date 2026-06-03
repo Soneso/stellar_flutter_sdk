@@ -1,122 +1,58 @@
 # Smart Accounts: Developer Onboarding
 
-This guide explains the concepts behind Stellar smart accounts so you
-can follow the [SDK guide](README.md) and start building.
+This guide explains the concepts behind Stellar smart accounts so you can follow the [SDK guide](README.md) and start building.
 
-No prior knowledge of smart accounts, WebAuthn, or Soroban is required.
-Familiarity with Stellar accounts and transactions is assumed.
+No prior knowledge of smart accounts, WebAuthn, or Soroban is required. Familiarity with Stellar accounts and transactions is assumed.
 
 ---
 
 ## 1. The Problem with Traditional Stellar Accounts
 
-A traditional Stellar account is controlled by a single Ed25519 secret
-key (an `S...` string). Every transaction must be signed with that key.
-If the key is lost, the account and its funds are permanently
-inaccessible. Traditional accounts do support basic multi-signature
-through signer keys and weight thresholds, but they lack account
-recovery, spending limits, context-specific rules, or alternative
-signature schemes like passkeys. Key storage and backup falls entirely
-on the user or the application developer.
+A traditional Stellar account is controlled by a single Ed25519 secret key (an `S...` string). Every transaction must be signed with that key. If the key is lost, the account and its funds are permanently inaccessible. Traditional accounts do support basic multi-signature through signer keys and weight thresholds, but they lack account recovery, spending limits, context-specific rules, or alternative signature schemes like passkeys. Key storage and backup falls entirely on the user or the application developer.
 
 ---
 
 ## 2. What Is a Smart Account?
 
-Soroban is Stellar's smart contract platform. It allows deploying
-programs (contracts) that run on the Stellar network, hold state,
-enforce rules, and interact with other contracts and accounts.
+Soroban is Stellar's smart contract platform. It allows deploying programs (contracts) that run on the Stellar network, hold state, enforce rules, and interact with other contracts and accounts.
 
-A smart account is a Soroban contract deployed on Stellar that acts as
-an account. Instead of a single secret key controlling all operations,
-the authorization logic lives on-chain inside the contract. The contract
-stores authorization rules (called context rules), each containing
-authorized signers and policies, and decides at execution time whether a
-given transaction is authorized.
+A smart account is a Soroban contract deployed on Stellar that acts as an account. Instead of a single secret key controlling all operations, the authorization logic lives on-chain inside the contract. The contract stores authorization rules (called context rules), each containing authorized signers and policies, and decides at execution time whether a given transaction is authorized.
 
-The contract can enforce rules that traditional accounts cannot:
-requiring multiple signatures, limiting how much can be spent per day,
-or accepting biometric authentication instead of a secret key.
+The contract can enforce rules that traditional accounts cannot: requiring multiple signatures, limiting how much can be spent per day, or accepting biometric authentication instead of a secret key.
 
-This SDK uses the OpenZeppelin Soroban contract implementation for
-smart accounts. OpenZeppelin is a provider of audited, open-source
-smart contract libraries.
+This SDK uses the OpenZeppelin Soroban contract implementation for smart accounts. OpenZeppelin is a provider of audited, open-source smart contract libraries.
 
-Recovery works through multiple signers. If a passkey is lost, other
-signers on the account (a backup passkey, a delegated Stellar account,
-or an Ed25519 key) can still authorize transactions. Passkeys on modern
-devices also sync across devices via iCloud Keychain or Google Password
-Manager.
+Recovery works through multiple signers. If a passkey is lost, other signers on the account (a backup passkey, a delegated Stellar account, or an Ed25519 key) can still authorize transactions. Passkeys on modern devices also sync across devices via iCloud Keychain or Google Password Manager.
 
-Important: if a passkey is lost and no other signers are configured,
-the smart account becomes inaccessible, similar to losing a traditional
-secret key. Adding backup signers is strongly recommended for
-production use.
+Important: if a passkey is lost and no other signers are configured, the smart account becomes inaccessible, similar to losing a traditional secret key. Adding backup signers is recommended for production use.
 
 ---
 
 ## 3. How Passkeys Replace Secret Keys
 
-WebAuthn passkeys are a standard for passwordless authentication built
-into modern operating systems and browsers. When a user registers a
-passkey, their device generates a secp256r1 key pair and stores the
-private key in secure hardware (Secure Enclave on Apple devices,
-Trusted Execution Environment on Android, Trusted Platform Module on
-desktop). Passkeys use secp256r1, a different elliptic curve than
-Stellar's native Ed25519, because the WebAuthn standard requires it.
-The user authenticates with a biometric (Face ID, fingerprint) or a
-hardware security key.
+WebAuthn passkeys are a standard for passwordless authentication built into modern operating systems and browsers. When a user registers a passkey, their device generates a secp256r1 key pair and stores the private key in secure hardware (Secure Enclave on Apple devices, Trusted Execution Environment on Android). Passkeys use secp256r1, a different elliptic curve than Stellar's native Ed25519, because the WebAuthn standard requires it. The user authenticates with a biometric (Face ID, fingerprint) or a hardware security key.
 
-A credential ID is a unique identifier generated by the device when a
-passkey is created. It allows the device to locate the correct private
-key for future authentication.
+A credential ID is a unique identifier generated by the device when a passkey is created. It allows the device to locate the correct private key for future authentication.
 
-Smart accounts use contract-based authorization, so signature
-verification is handled by a verifier contract deployed on-chain. The
-verifier parses the WebAuthn-specific data (authenticator data, client
-data hash) and calls Soroban's native secp256r1 host function to verify
-the signature. When a user authenticates with their passkey, the smart
-account contract forwards the signature to the verifier. If the
-signature is valid and all policies are satisfied, the transaction
-executes.
+Smart accounts use contract-based authorization, so signature verification is handled by a verifier contract deployed on-chain. The verifier parses the WebAuthn-specific data (authenticator data, client data hash) and calls Soroban's native secp256r1 host function to verify the signature. When a user authenticates with their passkey, the smart account contract forwards the signature to the verifier. If the signature is valid and all policies are satisfied, the transaction executes.
 
-Users never see or manage cryptographic keys. They authorize
-transactions with their face or fingerprint, the same way they unlock
-their phone.
-
-The SDK ships `PlatformWebAuthnProvider` (iOS, Android) and `BrowserWebAuthnProvider` (web). Per-platform setup steps for entitlements, Digital Asset Links, and HTTPS hosting are in the dedicated WebAuthn pages: see Sub-pages in the [SDK guide](README.md#sub-pages).
+Users never see or manage cryptographic keys. They authorize transactions with their face or fingerprint, the same way they unlock their phone.
 
 ---
 
 ## 4. Key Concepts
 
-The code snippets below show how each concept maps to SDK method calls.
-The `kit` object is an instance of `OZSmartAccountKit`, the SDK's main
-entry point, covered in the [SDK guide](README.md).
+The code snippets below show how each concept maps to SDK method calls. The `kit` object is an instance of `OZSmartAccountKit`, the SDK's main entry point, covered in the [SDK guide](README.md).
 
-Before diving in: an **authorization entry** is a signed statement that
-a specific signer has approved a specific contract operation. Soroban
-uses these instead of traditional transaction signatures to authorize
-contract calls. This term comes up repeatedly below.
+Before diving in: an **authorization entry** is a signed statement that a specific signer has approved a specific contract operation. Soroban uses these instead of traditional transaction signatures to authorize contract calls. This term comes up repeatedly below.
 
-You do not need to construct on-chain data structures manually; the SDK
-handles all encoding. The on-chain representations shown below use
-Soroban contract value types (ScVal): `Vec` is a list, `Symbol` is a
-short string identifier, `Address` is a Stellar address, and `Bytes` is
-raw binary data.
+You do not need to construct on-chain data structures manually; the SDK handles all encoding. The on-chain representations shown below use Soroban contract value types (ScVal): `Vec` is a list, `Symbol` is a short string identifier, `Address` is a Stellar address, and `Bytes` is raw binary data.
 
 ### Signers
 
-A signer is an entity authorized to approve transactions on a smart
-account. The contract stores signers per context rule (explained
-below). There are three types:
+A signer is an entity authorized to approve transactions on a smart account. The contract stores signers per context rule (explained below). There are three types:
 
-**Delegated**: A Stellar address (G-address for accounts, C-address for
-contracts) that authorizes using Soroban's built-in verification. For
-accounts, this means signing the authorization entries with the
-account's secret key, which Soroban verifies automatically. For
-contracts, Soroban invokes the contract's own `__check_auth`. No
-external verifier contract is needed.
+**Delegated**: A Stellar address (G-address for accounts, C-address for contracts) that authorizes using Soroban's built-in verification. For accounts, this means signing the authorization entries with the account's secret key, which Soroban verifies automatically. For contracts, Soroban invokes the contract's own `__check_auth`. No external verifier contract is needed.
 
 On-chain representation: `Vec([Symbol("Delegated"), Address(address)])`
 
@@ -128,13 +64,9 @@ await kit.signerManager.addDelegated(
 );
 ```
 
-**Passkey (External)**: A WebAuthn public key verified by a verifier
-contract. The signer stores the verifier's contract address alongside a
-`keyData` blob containing the public key from the passkey registration
-concatenated with the credential ID.
+**Passkey (External)**: A WebAuthn public key verified by a verifier contract. The signer stores the verifier's contract address alongside a `keyData` blob containing the public key from the passkey registration concatenated with the credential ID.
 
-On-chain representation:
-`Vec([Symbol("External"), Address(verifier), Bytes(publicKey + credentialId)])`
+On-chain representation: `Vec([Symbol("External"), Address(verifier), Bytes(publicKey + credentialId)])`
 
 SDK methods:
 ```dart
@@ -153,169 +85,102 @@ await kit.signerManager.addPasskey(
 );
 ```
 
-**Ed25519 (External)**: A 32-byte Ed25519 public key, also verified by
-a verifier contract. Uses the same on-chain `External` format as
-passkeys, but `keyData` contains only the 32-byte public key (no
-credential ID). Traditional Stellar accounts verify Ed25519 natively,
-but smart accounts are contracts and use Soroban's contract-based
-authorization, which requires a verifier contract for any signature
-scheme, including Ed25519.
+**Ed25519 (External)**: A 32-byte Ed25519 public key, also verified by a verifier contract. Uses the same on-chain `External` format as passkeys, but `keyData` contains only the 32-byte public key (no credential ID). Traditional Stellar accounts verify Ed25519 natively, but smart accounts are contracts and use Soroban's contract-based authorization, which requires a verifier contract for any signature scheme, including Ed25519.
 
-On-chain representation:
-`Vec([Symbol("External"), Address(verifier), Bytes(publicKey)])`
+On-chain representation: `Vec([Symbol("External"), Address(verifier), Bytes(publicKey)])`
 
-#### Add
-
-SDK method to add an Ed25519 signer to a context rule:
-
+SDK method:
 ```dart
 await kit.signerManager.addEd25519(
   contextRuleId: 0,
-  verifierAddress: 'C...', // C-address of the Ed25519 verifier
+  verifierAddress: 'CVERIFIER...',
   publicKey: ed25519PublicKey, // 32 bytes
 );
 ```
-
-See the [Signing](#signing) subsection below for how to authorize transactions once the signer is on-chain.
-
-#### Signing
-
-When a multi-signer ceremony involves an Ed25519 signer, the smart-account contract calls the registered verifier contract during `__check_auth` to validate the signature, the same way it does for passkeys (see [How Passkeys Replace Secret Keys](#3-how-passkeys-replace-secret-keys)).
-
-Ed25519 signers require a registered signing source on `kit.externalSigners` (in-memory via `addEd25519FromRawKey`, or an adapter via `config.externalEd25519Adapter`); see the [API Reference](api-reference.md#external-signer-management).
 
 ---
 
 ### Context Rules
 
-A context rule is a named authorization configuration that defines who
-can authorize transactions and under what conditions. They are called
-"context" rules because they apply based on the context of the
-operation: what contract is being called, what type of action is being
-performed. When using this SDK, each smart account starts with a
-default rule (id `0`), created during deployment with the initial
-passkey signer.
+A context rule is a named authorization configuration that defines who can authorize transactions and under what conditions. They are called "context" rules because they apply based on the context of the operation: what contract is being called, what type of action is being performed. When using this SDK, each smart account starts with a default rule (id `0`), created during deployment with the initial passkey signer.
 
-You can add rules that apply only to specific scenarios. For example, a
-rule that activates only when calling a particular token contract, with
-its own set of signers and policies independent from the default rule.
+You can add rules that apply only to specific scenarios. For example, a rule that activates only when calling a particular token contract, with its own set of signers and policies independent from the default rule.
 
 Each context rule stores:
 - An id (`u32`).
-- A type: `ContextRuleTypeDefault()`,
-  `ContextRuleTypeCallContract(address)`, or
-  `ContextRuleTypeCreateContract(wasmHash)`. `wasmHash` is a 32-byte
-  `Uint8List` containing the SHA-256 hash of a compiled smart-contract
-  binary. `CreateContract` matches contract-creation operations
-  targeting that specific binary.
+- A type: `ContextRuleTypeDefault()`, `ContextRuleTypeCallContract(address)`, or `ContextRuleTypeCreateContract(wasmHash)`. `wasmHash` is a 32-byte `Uint8List` containing the SHA-256 hash of a compiled smart-contract binary. `CreateContract` matches contract-creation operations targeting that specific binary.
 - A name (human-readable string).
 - A list of signers (up to 15).
 - A list of policies (up to 5).
-- An optional expiration ledger number. Rules with an expiration are
-  automatically skipped after that ledger is reached, useful for
-  temporary authorization grants.
+- An optional expiration ledger number. Rules with an expiration are automatically skipped after that ledger is reached, useful for temporary authorization grants.
 
-Each context rule supports up to 15 signers (`OZConstants.maxSigners`)
-and 5 policies (`OZConstants.maxPolicies`).
+Each context rule supports up to 15 signers and 5 policies.
 
-When a transaction requires authorization, the contract collects all
-non-expired rules that match the operation's context type, plus any
-default rules, and evaluates them in order until one satisfies the
-requirements. Rules for a specific context type (for example
-`CallContract("C...")`) are evaluated before default rules, so
-default acts as a fallback when no specific rule is satisfied.
+When a transaction requires authorization, the contract collects all non-expired rules that match the operation's context type, plus any default rules, and evaluates them in order until one satisfies the requirements. Rules for a specific context type (for example `CallContract("C...")`) are evaluated before default rules, so default acts as a fallback when no specific rule is satisfied.
 
 SDK methods:
 ```dart
-// Add a rule for calls into a specific token contract. Signer values
-// are created via OZDelegatedSigner('GA7Q...') or
-// OZExternalSigner.webAuthn(...) -- see the Signers section above.
+// Add a rule for a specific contract.
+// Signer values are created using OZDelegatedSigner('GA7Q...') or
+// OZExternalSigner.webAuthn(...) -- see the Signers section above and
+// the SDK guide for full construction details.
 await kit.contextRuleManager.addContextRule(
-  contextType: ContextRuleTypeCallContract('C...'), // C-address of the token contract
+  contextType: ContextRuleTypeCallContract('CBCD1234...'),
   name: 'TokenTransfers',
   signers: <OZSmartAccountSigner>[delegatedSigner, passkeySigner],
 );
 
-// Get the count of active rules.
+// Get count of active rules
 final count = await kit.contextRuleManager.getContextRulesCount();
 
-// Get a specific rule by id (raw on-chain SCVal).
-final raw = await kit.contextRuleManager.getContextRule(0);
-
-// Or get a parsed list with friendly fields.
-final rules = await kit.contextRuleManager.listContextRules();
-for (final rule in rules) {
-  print('${rule.id}: ${rule.name} (${rule.signers.length} signers)');
-}
+// Get a specific rule by id
+final rule = await kit.contextRuleManager.getContextRule(0);
 ```
 
 ---
 
 ### Policies
 
-A policy is a constraint enforced when a context rule is used for
-authorization. Policies are separate Soroban contracts deployed
-alongside the smart account. The standard policy contracts
-(simple threshold, spending limit, weighted threshold) are provided by
-OpenZeppelin, typically deployed once per network and shared across all
-smart accounts. You do not deploy a new policy contract for each
-account. You need the contract address of each policy type you want to
-use, similar to the verifier contract. Each context rule can have up to
-5 policies.
+A policy is a constraint enforced when a context rule is used for authorization. Policies are separate Soroban contracts deployed alongside the smart account. Policy contracts (SimpleThreshold, SpendingLimit, WeightedThreshold) are standard contracts provided by OpenZeppelin, typically deployed once per network and shared across all smart accounts. You do not deploy a new policy contract for each account. You need the contract address of each policy type you want to use, similar to the verifier contract. Each context rule can have up to 5 policies.
 
 OpenZeppelin provides three policy implementations:
 
-**Simple threshold**: Requires M valid signatures out of N signers. For
-example, 2-of-3: any two of three signers must approve the transaction.
+**Simple Threshold**: Requires M valid signatures out of N signers. For example, 2-of-3: any two of three signers must approve the transaction.
 
-On-chain: stores `threshold: u32`.
+On-chain: stores `threshold: u32`
 
 SDK method:
 ```dart
 await kit.policyManager.addSimpleThreshold(
   contextRuleId: 0,
-  policyAddress: 'C...', // C-address of the simple-threshold policy
+  policyAddress: 'CPOLICY1234...',
   threshold: 2,
 );
 ```
 
-**Spending limit**: Limits the total token amount spent within a
-rolling window of ledgers. For example, 1000 tokens per day
-(approximately 17,280 ledgers at 5 seconds per ledger). The
-spending-limit policy intercepts any contract call where the function
-name is `transfer` and extracts the amount from the third argument. In
-practice this is almost always a token contract's `transfer` function.
-If a non-token contract has a function named `transfer`, the policy
-will attempt to apply the limit to it as well, so scope spending-limit
-policies to specific token contracts using context rules when this is a
-concern. Other function names are not subject to spending limits.
+**Spending Limit**: Limits the total token amount spent within a rolling window of ledgers. For example, 1000 tokens per day (approximately 17,280 ledgers at 5 seconds per ledger). The spending limit policy intercepts any contract call where the function name is `transfer` and extracts the amount from the third argument. In practice this is almost always a token contract's `transfer` function. If a non-token contract has a function named `transfer`, the policy will attempt to apply the limit to it as well, so scope spending limit policies to specific token contracts using context rules when this is a concern. Other function names are not subject to spending limits.
 
-On-chain: stores `spending_limit: i128, period_ledgers: u32`.
+On-chain: stores `spending_limit: i128, period_ledgers: u32`
 
 SDK method:
 ```dart
 await kit.policyManager.addSpendingLimit(
   contextRuleId: 0,
-  policyAddress: 'C...', // C-address of the spending-limit policy
+  policyAddress: 'CPOLICY5678...',
   spendingLimit: '1000',
   periodLedgers: Util.ledgersPerDay, // 17,280
 );
 ```
 
-**Weighted threshold**: Each signer has a weight (vote power). The sum
-of weights from valid signatures must meet or exceed a threshold. For
-example, signer A has weight 50, signer B has weight 30, signer C has
-weight 20, and the threshold is 80. A+B or A+C would pass; B+C would
-not.
+**Weighted Threshold**: Each signer has a weight (vote power). The sum of weights from valid signatures must meet or exceed a threshold. For example, signer A has weight 50, signer B has weight 30, signer C has weight 20, and the threshold is 80. A+B or A+C would pass; B+C would not.
 
-On-chain: stores
-`signer_weights: Map<Signer, u32>, threshold: u32`.
+On-chain: stores `signer_weights: Map<Signer, u32>, threshold: u32`
 
 SDK method:
 ```dart
 await kit.policyManager.addWeightedThreshold(
   contextRuleId: 0,
-  policyAddress: 'C...', // C-address of the weighted-threshold policy
+  policyAddress: 'CPOLICY9012...',
   signerWeights: <OZSmartAccountSigner, int>{
     signerA: 50,
     signerB: 30,
@@ -325,14 +190,12 @@ await kit.policyManager.addWeightedThreshold(
 );
 ```
 
-The policy interface is generic: any Soroban contract that implements
-the required `can_enforce()` and `enforce()` functions can be used as a
-policy. Use `addPolicy` to install one:
+The policy interface is generic: any Soroban contract that implements the required `can_enforce()` and `enforce()` functions can be used as a policy. Use `addPolicy` to install one:
 
 ```dart
 await kit.policyManager.addPolicy(
   contextRuleId: 0,
-  policyAddress: 'C...', // C-address of the custom policy contract
+  policyAddress: 'CCUSTOMPOLICY...',
   installParams: XdrSCVal.forMap([
     XdrSCMapEntry(
       XdrSCVal.forSymbol('my_param'),
@@ -342,84 +205,47 @@ await kit.policyManager.addPolicy(
 );
 ```
 
-The install parameters are policy-specific. Your custom policy contract
-defines what parameters it expects during installation.
+The install parameters are policy-specific. Your custom policy contract defines what parameters it expects during installation.
 
-A typical setup involves 3–5 deployed contracts: the smart account (one
-per user), a WebAuthn verifier (shared across all accounts on the
-network), and 1–3 policy contracts (also shared).
+A typical setup involves 3-5 deployed contracts: the smart account (one per user), a WebAuthn verifier (shared across all accounts on the network), and 1-3 policy contracts (also shared).
 
 ---
 
 ### Deployer
 
-The deployer is the Stellar account that creates the smart-account
-contract on-chain. It has two roles during deployment:
+The deployer is the Stellar account that creates the smart-account contract on-chain. It has two roles during deployment:
 
-1. **Address derivation.** The credential ID is hashed (SHA-256) to
-   produce a salt, and the contract address is derived from the
-   deployer's public key, the salt, and the network passphrase. The
-   same passkey and deployer always produce the same contract address.
-2. **Transaction signing.** The deployer signs the deployment
-   transaction as its source account.
+1. **Address derivation**: The credential ID is hashed (SHA-256) to produce a salt, and the contract address is derived from the deployer's public key, the salt, and the network passphrase. The same passkey and deployer always produce the same contract address.
+2. **Transaction signing**: The deployer signs the deployment transaction as its source account.
 
-After deployment, the deployer has no privileges over the contract. It
-cannot move funds, change signers, or modify policies. Only the
-configured signers can authorize operations.
+After deployment, the deployer has no privileges over the contract. It cannot move funds, change signers, or modify policies. Only the configured signers can authorize operations.
 
-The SDK provides a default deployer derived from
-`SHA-256("openzeppelin-smart-account-kit")`, where the hash is used as
-the Ed25519 seed to generate a deterministic keypair. Because the
-deployer has no privileges after deployment, its publicly derivable key
-is not a security concern; it only matters for address derivation and
-signing the deployment transaction. This default is suitable for
-testing and simple deployments. The seed string is fixed by the contract
-spec, so the same deployer keypair and contract addresses are produced
-deterministically from the same inputs every time.
-Production wallet applications typically use a custom deployer (via
-`deployerKeypair` in the config) for attribution and traceability,
-since the deployer's public key is visible on-chain.
+The SDK provides a default deployer derived from `SHA-256("openzeppelin-smart-account-kit")`, where the hash is used as the Ed25519 seed to generate a deterministic keypair. Because the deployer has no privileges after deployment, its publicly derivable key is not a security concern -- it only matters for address derivation and signing the deployment transaction. This default is suitable for testing and simple deployments. Other OpenZeppelin Smart Account SDK implementations use the same derivation, so all compatible SDKs produce identical results from the same inputs. Production wallet applications will typically use a custom deployer (via `deployerKeypair` in the config) for attribution and traceability, since the deployer's public key is visible on-chain.
 
-When a relayer is configured, the SDK still uses the deployer to derive
-the contract address and build the deployment transaction, but submits
-it to the relayer, which wraps it in a fee-bump transaction and pays
-the fees. The deployer account does not need to pay fees in this case,
-but it must still exist on the network with the minimum XLM reserve. On
-testnet, the default deployer is funded via Friendbot when needed.
+When a relayer is configured, the SDK still uses the deployer to derive the contract address and build the deployment transaction, but submits it to the relayer, which wraps it in a fee-bump transaction and pays the fees. The deployer account does not need to pay fees in this case, but it must still exist on the network with the minimum XLM reserve. On testnet, the default deployer is automatically funded via Friendbot.
 
-Without a relayer, the deployer pays the deployment fees directly, so
-you must provide a funded deployer via `deployerKeypair` in
-`OZSmartAccountConfig`.
+Without a relayer, the deployer pays the deployment fees directly, so you must provide your own funded deployer via `deployerKeypair` in `OZSmartAccountConfig`.
 
-If you use a custom deployer, an indexer is recommended for wallet
-discovery, since clients that do not know the deployer keypair cannot
-derive the contract address independently.
+If you use a custom deployer, an indexer is recommended for wallet discovery, since clients that do not know the deployer keypair cannot derive the contract address independently.
 
-On testnet, accounts are funded via Friendbot at no cost. On mainnet,
-deployment and contract operations require XLM for transaction fees and
-contract storage rent.
+On testnet, accounts are funded via Friendbot at no cost. On mainnet, deployment and contract operations require XLM for transaction fees and contract storage rent.
 
 ---
 
 ### Relayer
 
-A relayer is an optional server that submits transactions on behalf of
-users and pays the network fees. It wraps the user's transaction in a
-fee-bump transaction, sponsoring the fees.
+A relayer is an optional server that submits transactions on behalf of users and pays the network fees. It wraps the user's transaction in a fee-bump transaction, sponsoring the fees.
 
 Without a relayer:
 - Someone must fund the deployer account to pay deployment fees.
-- The smart account must hold XLM to cover transaction fees for every
-  operation.
+- The smart account must hold XLM to cover transaction fees for every operation.
 
 With a relayer:
 - Users never pay gas fees.
 - The relayer pays for deployment and all subsequent transactions.
 - Users only need tokens in their smart account for actual transfers.
 
-Relayer authentication and rate-limiting are implementation-specific.
-The SDK submits transactions to the relayer URL; the relayer operator
-is responsible for access control.
+Relayer authentication and rate-limiting are implementation-specific. The SDK submits transactions to the relayer URL; the relayer operator is responsible for access control.
 
 SDK configuration:
 ```dart
@@ -431,34 +257,19 @@ final config = OZSmartAccountConfig(
 
 ---
 
-### Verifier contract
+### Verifier Contract
 
-As described in section 3, the verifier contract is a Soroban contract
-that validates secp256r1 signatures on-chain. When a user authenticates
-with a passkey, the smart-account contract calls the verifier to check
-the signature.
+As described in section 3, the verifier contract is a Soroban contract that validates secp256r1 signatures on-chain. When a user authenticates with a passkey, the smart-account contract calls the verifier to check the signature.
 
-The WebAuthn verifier and Ed25519 verifier are typically separate
-contracts, each specialised for their signature scheme. The SDK's
-`webauthnVerifierAddress` config parameter sets the default verifier for
-passkey signers. For Ed25519 signers, the verifier address is specified
-per-signer when calling `addEd25519`.
+The WebAuthn verifier and Ed25519 verifier are typically separate contracts, each specialized for their signature scheme. The SDK's `webauthnVerifierAddress` config parameter sets the default verifier for passkey signers. For Ed25519 signers, the verifier address is specified per-signer when calling `addEd25519()`.
 
-External signers (both passkey and Ed25519 types) store a reference to
-their verifier contract. `__check_auth` is a standard Soroban interface
-that all custom account contracts must implement. Soroban calls it
-automatically whenever the contract's address appears as an
-authorization source in a transaction. The smart-account contract's
-implementation of `__check_auth` delegates signature verification to the
-appropriate verifier contract based on the signer's stored verifier
-address.
+External signers (both passkey and Ed25519 types) store a reference to their verifier contract. `__check_auth` is a standard Soroban interface that all custom account contracts must implement. Soroban calls it automatically whenever the contract's address appears as an authorization source in a transaction. The smart-account contract's implementation of `__check_auth` delegates signature verification to the appropriate verifier contract based on the signer's stored verifier address.
 
-The WebAuthn verifier contract address is a required configuration
-parameter:
+The WebAuthn verifier contract address is a required configuration parameter:
 ```dart
 final config = OZSmartAccountConfig(
   // other fields ...
-  webauthnVerifierAddress: 'C...', // C-address of the WebAuthn verifier
+  webauthnVerifierAddress: 'CVERIFIER...',
 );
 ```
 
@@ -466,27 +277,11 @@ final config = OZSmartAccountConfig(
 
 ### Indexer
 
-An indexer is an optional service that maps credential IDs to contract
-addresses. It solves a simple lookup problem: given a passkey
-credential, which smart-account contract does it belong to?
+An indexer is an optional service that maps credential IDs to contract addresses. It solves a simple lookup problem: given a passkey credential, which smart-account contract does it belong to?
 
-Without an indexer, the SDK derives the contract address from the
-credential ID and the deployer's public key. This works when the
-deployer keypair is known (including the default deployer). But if a
-custom deployer was used and the client does not have the deployer
-keypair, it cannot derive the address.
+Without an indexer, the SDK derives the contract address from the credential ID and the deployer's public key. This works when the deployer keypair is known (including the default deployer). But if a custom deployer was used and the client does not have the deployer keypair, it cannot derive the address.
 
-With an indexer, `connectWallet()` falls back to it when derivation
-under the configured deployer does not find an on-chain contract —
-typically because the passkey was added as a signer to an existing
-wallet rather than deploying its own. If the indexer reports the
-passkey on more than one contract, `connectWallet()` returns
-`OZConnectWalletAmbiguous(candidates: ..., credentialId: ...)` so the
-app can let the user pick.
-
-The SDK ships well-known indexer URLs for testnet and mainnet (see the
-[SDK guide](README.md#testnet-contract-addresses)). Set
-`config.indexerUrl` explicitly to use a different deployment.
+With an indexer, `connectWallet()` falls back to it when derivation under the configured deployer does not find an on-chain contract -- typically because the passkey was added as a signer to an existing wallet rather than deploying its own. If the indexer reports the passkey on more than one contract, `connectWallet()` returns `OZConnectWalletAmbiguous(candidates: ..., credentialId: ...)` so the app can let the user pick.
 
 SDK configuration:
 ```dart
@@ -514,62 +309,31 @@ User (biometric) --> Passkey --> SDK --> Smart Account Contract --> Verifier Con
 
 ## 5. End-to-End Lifecycle
 
-Recall that authorization entries (defined in section 4) are how
-Soroban authorizes contract operations. The smart-account contract
-checks these entries during transaction execution.
+Recall that authorization entries (defined in section 4) are how Soroban authorizes contract operations. The smart-account contract checks these entries during transaction execution.
 
 ### Creating a Wallet
 
-1. The user triggers wallet creation in the app (for example, tapping a
-   "Create Wallet" button).
-2. The operating system shows a biometric prompt (Face ID, fingerprint,
-   or security-key insertion).
-3. A passkey is created. The device generates a secp256r1 key pair and
-   stores the private key in secure hardware. The public key and a
-   credential ID are returned to the app.
-4. The public key and credential ID are passed from the platform's
-   WebAuthn API into the SDK by the `WebAuthnProvider` implementation.
-5. The SDK computes the deterministic contract address: it hashes the
-   credential ID (SHA-256) to produce a salt, then derives the address
-   from the deployer's public key, the salt, and the network
-   passphrase.
-6. A deployment transaction is built that creates the smart-account
-   contract on-chain. The contract is initialised with a default
-   context rule (id `0`) containing the passkey as its sole signer.
-7. The deployer signs the deployment transaction. It is submitted
-   either directly to Soroban RPC or through a relayer for fee
-   sponsoring.
-8. The smart-account contract is now live on Stellar at the derived
-   address. It can receive tokens and authorize transactions.
+1. The user triggers wallet creation in the app (for example, tapping a "Create Wallet" button).
+2. The operating system shows a biometric prompt (Face ID, fingerprint, or security-key insertion).
+3. A passkey is created. The device generates a secp256r1 key pair and stores the private key in secure hardware. The public key and a credential ID are returned to the app.
+4. The public key and credential ID are passed from the platform's WebAuthn API into the SDK by the `WebAuthnProvider` implementation.
+5. The SDK computes the deterministic contract address: it hashes the credential ID (SHA-256) to produce a salt, then derives the address from the deployer's public key, the salt, and the network passphrase.
+6. A deployment transaction is built that creates the smart-account contract on-chain. The contract is initialised with a default context rule (id `0`) containing the passkey as its sole signer.
+7. The deployer signs the deployment transaction. It is submitted either directly to Soroban RPC or through a relayer for fee sponsoring.
+8. The smart-account contract is now live on Stellar at the derived address. It can receive tokens and authorize transactions.
 
 ### Sending Tokens
 
-Because smart accounts are contracts, not traditional accounts, they
-interact with assets through Soroban's contract-to-contract interface
-rather than Stellar's built-in Payment operation. Assets (including
-XLM) are accessed through token contracts, which are Soroban-compatible
-wrappers around Stellar assets. Smart accounts call the token
-contract's `transfer` function to move tokens.
+Because smart accounts are contracts, not traditional accounts, they interact with assets through Soroban's contract-to-contract interface rather than Stellar's built-in Payment operation. Assets (including XLM) are accessed through token contracts, which are Soroban-compatible wrappers around Stellar assets. Smart accounts call the token contract's `transfer` function to move tokens.
 
-1. The app requests a token transfer (for example, the user enters a
-   recipient and amount).
-2. The SDK builds a Soroban transaction that invokes the token
-   contract's `transfer` function, with the smart account as the source
-   of the tokens.
-3. It simulates the transaction to determine what authorization entries
-   are needed.
-4. The operating system shows a biometric prompt. The passkey signs a
-   hash of the authorization entry (not the transaction itself, but the
-   specific on-chain authorization payload).
+1. The app requests a token transfer (for example, the user enters a recipient and amount).
+2. The SDK builds a Soroban transaction that invokes the token contract's `transfer` function, with the smart account as the source of the tokens.
+3. It simulates the transaction to determine what authorization entries are needed.
+4. The operating system shows a biometric prompt. The passkey signs a hash of the authorization entry (not the transaction itself, but the specific on-chain authorization payload).
 5. The signed authorization entry is assembled into the transaction.
-6. The transaction is submitted, either directly to Soroban RPC or
-   through a relayer for fee sponsoring.
-7. On-chain, Soroban calls the smart-account contract's `__check_auth`
-   function. It verifies the passkey signature via the verifier
-   contract and evaluates all policies attached to the matching context
-   rule (spending limits, thresholds, etc.).
-8. If verification passes and all policies are satisfied, the transfer
-   executes.
+6. The transaction is submitted, either directly to Soroban RPC or through a relayer for fee sponsoring.
+7. On-chain, Soroban calls the smart-account contract's `__check_auth` function. It verifies the passkey signature via the verifier contract and evaluates all policies attached to the matching context rule (spending limits, thresholds, etc.).
+8. If verification passes and all policies are satisfied, the transfer executes.
 
 ```
 App builds tx --> SDK simulates --> Passkey signs auth entry --> SDK assembles tx --> Submit
@@ -582,75 +346,26 @@ App builds tx --> SDK simulates --> Passkey signs auth entry --> SDK assembles t
 
 ### Reconnecting
 
-1. On app relaunch, the app calls `connectWallet()` with default
-   options. The SDK checks for a saved session in the
-   `StorageAdapter` (a platform-specific interface for persisting
-   credentials and session data, covered in the
-   [SDK guide](README.md)).
-2. If a valid (non-expired) session exists, the wallet is silently
-   reconnected. No biometric prompt is shown. The SDK loads the
-   credential ID and contract ID from the session and returns
-   `OZConnectWalletConnected`. Sessions last 7 days by default,
-   configurable via `sessionExpiryMs` in `OZSmartAccountConfig`.
-3. If no session exists or it has expired, `connectWallet()` returns
-   `null`. The app can then show a "Connect" button and call
-   `connectWallet(options: ConnectWalletOptions(prompt: true))` when
-   the user taps it, which triggers a WebAuthn biometric prompt.
-4. After authentication, the SDK runs a storage → derivation → indexer
-   cascade to resolve the contract address and verifies it exists
-   on-chain. If the indexer reports the passkey on multiple contracts,
-   the SDK returns `OZConnectWalletAmbiguous(candidates, credentialId)`
-   so the app can let the user pick (see the
-   [SDK guide](README.md#reconnect-to-an-existing-wallet) for the
-   picker pattern).
+1. On app relaunch, the app calls `connectWallet()` with default options. The SDK checks for a saved session in the `StorageAdapter` (a platform-specific interface for persisting credentials and session data, covered in the [SDK guide](README.md)).
+2. If a valid (non-expired) session exists, the wallet is silently reconnected. No biometric prompt is shown. The SDK loads the credential ID and contract ID from the session and returns `OZConnectWalletConnected`. Sessions last 7 days by default, configurable via `sessionExpiryMs` in `OZSmartAccountConfig`.
+3. If no session exists or it has expired, `connectWallet()` returns `null`. The app can then show a "Connect" button and call `connectWallet(options: ConnectWalletOptions(prompt: true))` when the user taps it, which triggers a WebAuthn biometric prompt.
+4. After authentication, the SDK runs a storage → derivation → indexer cascade to resolve the contract address and verifies it exists on-chain. If the indexer reports the passkey on multiple contracts, the SDK returns `OZConnectWalletAmbiguous(candidates, credentialId)` so the app can let the user pick (see the [SDK guide](README.md#reconnecting-to-an-existing-wallet) for the picker pattern).
 
 ---
 
 ## 6. What You Need Before Starting
 
-**Deployed contracts.** For testnet development, pre-deployed contracts
-are available and you just need their addresses and hashes. The
-smart-account WASM binary is uploaded to the network once and referenced
-by its SHA-256 hash (a hex string). Individual smart-account contracts
-are then deployed from this WASM. The WebAuthn verifier is a single
-contract instance shared by all accounts, so it is referenced by its
-deployed contract address (a `C...` string, 56 characters). The relayer
-and indexer are optional and can be added later. You do not need to
-deploy any contracts yourself if you use pre-deployed testnet
-contracts. Check the OpenZeppelin
-[stellar-contracts](https://github.com/OpenZeppelin/stellar-contracts)
-repository for current testnet addresses.
+**Deployed contracts**: For testnet development, pre-deployed contracts are available and you just need their addresses and hashes. The smart-account WASM binary is uploaded to the network once and referenced by its SHA-256 hash (a hex string). Individual smart-account contracts are then deployed from this WASM. The WebAuthn verifier is a single contract instance shared by all accounts, so it is referenced by its deployed contract address (a `C...` string, 56 characters). The relayer and indexer are optional and can be added later. You do not need to deploy any contracts yourself if you use pre-deployed testnet contracts. Check the OpenZeppelin [stellar-contracts](https://github.com/OpenZeppelin/stellar-contracts) repository for current testnet addresses.
 
-Testnet contract hashes can change when contracts are upgraded or
-testnet is reset. WASM entries may also expire if their TTL is not
-extended, though they can be restored. See
-[Testnet contract addresses](README.md#testnet-contract-addresses)
-for upload instructions.
+Testnet contract hashes can change when contracts are upgraded or testnet is reset. WASM entries may also expire if their TTL is not extended, though they can be restored. See [Testnet contract addresses](README.md#testnet-contract-addresses) for upload instructions.
 
-Detailed setup for each platform lives in the dedicated WebAuthn pages:
-- [iOS](webauthn-ios.md) -- AuthenticationServices,
-  apple-app-site-association, associated domains entitlement.
-- [Android](webauthn-android.md) -- Credential Manager, Digital Asset
-  Links.
-- [Web](webauthn-web.md) -- Browser WebAuthn API, IndexedDB storage,
-  localhost development.
+**Optional infrastructure**: A relayer server if you want to sponsor transaction fees for users. An indexer server if you want credential-to-contract lookup beyond the default deployer derivation.
 
-**Optional infrastructure.** A relayer server if you want to sponsor
-transaction fees for users. An indexer server if you want
-credential-to-contract lookup beyond the default deployer derivation.
-The SDK includes well-known indexer URLs for testnet and mainnet that
-are used automatically when `config.indexerUrl` is omitted.
+**Platform-specific WebAuthn setup**: Each platform requires configuration for passkey support. See the platform guides:
+- [Android](webauthn-android.md) -- Credential Manager, Digital Asset Links
+- [iOS](webauthn-ios.md) -- AuthenticationServices, apple-app-site-association
+- [Web](webauthn-web.md) -- Browser WebAuthn API
 
-**Storage choice per platform.** Use the production adapter for the
-target you are shipping:
-- Android / iOS: `PlatformStorageAdapter` (iOS Keychain /
-  Android EncryptedSharedPreferences via the SDK's method channel).
-- Flutter web: `IndexedDBStorageAdapter` for production, or
-  `LocalStorageAdapter` for small datasets where the unencrypted,
-  origin-scoped fallback is acceptable.
-- Tests: `InMemoryStorageAdapter` (the default if `storage` is
-  omitted). Do not use this in production; it is non-persistent and
-  unencrypted.
+For testnet development, contract addresses (WASM hash, verifier, policy contracts) are provided by the deployment operator or published alongside the OpenZeppelin contract releases. The SDK guide's configuration reference lists all required addresses. For local development, you can deploy the contracts yourself using the OpenZeppelin stellar-contracts repository.
 
-Once these prerequisites are in place, proceed to the
-[SDK guide](README.md) for implementation.
+Once these prerequisites are in place, proceed to the [SDK guide](README.md) for implementation.
