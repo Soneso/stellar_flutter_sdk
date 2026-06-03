@@ -37,7 +37,6 @@ import 'oz_storage_adapter.dart';
 ///   accountWasmHash: 'abc123...',
 ///   webauthnVerifierAddress: 'CBCD1234...',
 /// )
-///     .rpName('My Custom Wallet')
 ///     .sessionExpiryMs(86400000)
 ///     .relayerUrl('https://relayer.example.com')
 ///     .storage(myPersistentStorage)
@@ -65,8 +64,6 @@ class OZSmartAccountConfig {
     required this.accountWasmHash,
     required this.webauthnVerifierAddress,
     this.deployerKeypair,
-    this.rpId,
-    this.rpName = 'Smart Account',
     this.sessionExpiryMs = OZConstants.defaultSessionExpiryMs,
     this.signatureExpirationLedgers = Util.ledgersPerHour,
     this.timeoutInSeconds = OZConstants.defaultTimeoutSeconds,
@@ -158,16 +155,6 @@ class OZSmartAccountConfig {
   /// only pays for deployment transactions; it does not control user
   /// wallets.
   final KeyPair? deployerKeypair;
-
-  /// WebAuthn Relying Party ID.
-  ///
-  /// Should match the domain where WebAuthn credentials are created. When
-  /// `null` the browser uses the current domain. Example: `example.com`.
-  final String? rpId;
-
-  /// WebAuthn Relying Party name displayed to users during authentication.
-  /// Default: `Smart Account`.
-  final String rpName;
 
   /// Session expiry time in milliseconds. Sessions enable silent
   /// reconnection without re-authentication. Default: 604_800_000
@@ -302,7 +289,7 @@ class OZSmartAccountConfig {
   /// Returns a copy of this configuration with the given fields replaced.
   ///
   /// Each named argument defaults to the current value of the corresponding
-  /// field. Pass [setDeployerKeypair] / [setRpId] / [setRelayerUrl] /
+  /// field. Pass [setDeployerKeypair] / [setRelayerUrl] /
   /// [setIndexerUrl] / [setWebauthnProvider] / [setExternalWallet] /
   /// [setExternalEd25519Adapter] as `true` together with the corresponding
   /// `null` argument to clear an optional field.
@@ -313,9 +300,6 @@ class OZSmartAccountConfig {
     String? webauthnVerifierAddress,
     KeyPair? deployerKeypair,
     bool setDeployerKeypair = false,
-    String? rpId,
-    bool setRpId = false,
-    String? rpName,
     int? sessionExpiryMs,
     int? signatureExpirationLedgers,
     int? timeoutInSeconds,
@@ -339,8 +323,6 @@ class OZSmartAccountConfig {
       webauthnVerifierAddress:
           webauthnVerifierAddress ?? this.webauthnVerifierAddress,
       deployerKeypair: setDeployerKeypair ? deployerKeypair : (deployerKeypair ?? this.deployerKeypair),
-      rpId: setRpId ? rpId : (rpId ?? this.rpId),
-      rpName: rpName ?? this.rpName,
       sessionExpiryMs: sessionExpiryMs ?? this.sessionExpiryMs,
       signatureExpirationLedgers:
           signatureExpirationLedgers ?? this.signatureExpirationLedgers,
@@ -370,8 +352,6 @@ class OZSmartAccountConfig {
         accountWasmHash == other.accountWasmHash &&
         webauthnVerifierAddress == other.webauthnVerifierAddress &&
         deployerKeypair == other.deployerKeypair &&
-        rpId == other.rpId &&
-        rpName == other.rpName &&
         sessionExpiryMs == other.sessionExpiryMs &&
         signatureExpirationLedgers == other.signatureExpirationLedgers &&
         timeoutInSeconds == other.timeoutInSeconds &&
@@ -395,8 +375,6 @@ class OZSmartAccountConfig {
         accountWasmHash,
         webauthnVerifierAddress,
         deployerKeypair,
-        rpId,
-        rpName,
         sessionExpiryMs,
         signatureExpirationLedgers,
         timeoutInSeconds,
@@ -421,7 +399,6 @@ class OZSmartAccountConfig {
 ///   accountWasmHash: 'abc123...',
 ///   webauthnVerifierAddress: 'CBCD1234...',
 /// )
-///     .rpName('My Wallet')
 ///     .sessionExpiryMs(86400000)
 ///     .build();
 /// ```
@@ -442,8 +419,6 @@ class OZSmartAccountConfigBuilder {
   final String _accountWasmHash;
   final String _webauthnVerifierAddress;
   KeyPair? _deployerKeypair;
-  String? _rpId;
-  String _rpName = 'Smart Account';
   int _sessionExpiryMs = OZConstants.defaultSessionExpiryMs;
   int _signatureExpirationLedgers = Util.ledgersPerHour;
   int _timeoutInSeconds = OZConstants.defaultTimeoutSeconds;
@@ -459,19 +434,6 @@ class OZSmartAccountConfigBuilder {
   /// default.
   OZSmartAccountConfigBuilder deployerKeypair(KeyPair? value) {
     _deployerKeypair = value;
-    return this;
-  }
-
-  /// Sets the WebAuthn Relying Party ID. Pass `null` to use the browser
-  /// default.
-  OZSmartAccountConfigBuilder rpId(String? value) {
-    _rpId = value;
-    return this;
-  }
-
-  /// Sets the WebAuthn Relying Party name.
-  OZSmartAccountConfigBuilder rpName(String value) {
-    _rpName = value;
     return this;
   }
 
@@ -548,8 +510,6 @@ class OZSmartAccountConfigBuilder {
       accountWasmHash: _accountWasmHash,
       webauthnVerifierAddress: _webauthnVerifierAddress,
       deployerKeypair: _deployerKeypair,
-      rpId: _rpId,
-      rpName: _rpName,
       sessionExpiryMs: _sessionExpiryMs,
       signatureExpirationLedgers: _signatureExpirationLedgers,
       timeoutInSeconds: _timeoutInSeconds,

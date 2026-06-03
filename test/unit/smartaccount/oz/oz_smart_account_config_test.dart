@@ -31,8 +31,6 @@ void main() {
       final config = _validConfig();
 
       expect(config.deployerKeypair, isNull);
-      expect(config.rpId, isNull);
-      expect(config.rpName, 'Smart Account');
       expect(config.sessionExpiryMs, OZConstants.defaultSessionExpiryMs);
       expect(config.signatureExpirationLedgers, Util.ledgersPerHour);
       expect(config.timeoutInSeconds, OZConstants.defaultTimeoutSeconds);
@@ -165,8 +163,6 @@ void main() {
         accountWasmHash: _validWasmHash,
         webauthnVerifierAddress: _validVerifier,
       )
-          .rpName('My Custom Wallet')
-          .rpId('example.com')
           .sessionExpiryMs(86400000)
           .signatureExpirationLedgers(1440)
           .timeoutInSeconds(60)
@@ -174,8 +170,6 @@ void main() {
           .indexerUrl('https://indexer.example.com')
           .build();
 
-      expect(config.rpName, 'My Custom Wallet');
-      expect(config.rpId, 'example.com');
       expect(config.sessionExpiryMs, 86400000);
       expect(config.signatureExpirationLedgers, 1440);
       expect(config.timeoutInSeconds, 60);
@@ -191,8 +185,6 @@ void main() {
         webauthnVerifierAddress: _validVerifier,
       ).build();
 
-      expect(config.rpName, 'Smart Account');
-      expect(config.rpId, isNull);
       expect(config.sessionExpiryMs, OZConstants.defaultSessionExpiryMs);
       expect(config.signatureExpirationLedgers, Util.ledgersPerHour);
       expect(config.timeoutInSeconds, OZConstants.defaultTimeoutSeconds);
@@ -207,7 +199,6 @@ void main() {
         networkPassphrase: _validPassphrase,
         accountWasmHash: _validWasmHash,
         webauthnVerifierAddress: _validVerifier,
-        rpName: 'Test',
         sessionExpiryMs: 100000,
         relayerUrl: 'https://relayer.test',
       );
@@ -218,7 +209,6 @@ void main() {
         accountWasmHash: _validWasmHash,
         webauthnVerifierAddress: _validVerifier,
       )
-          .rpName('Test')
           .sessionExpiryMs(100000)
           .relayerUrl('https://relayer.test')
           .build();
@@ -233,13 +223,11 @@ void main() {
         accountWasmHash: _validWasmHash,
         webauthnVerifierAddress: _validVerifier,
       )
-          .rpId(null)
           .relayerUrl(null)
           .indexerUrl(null)
           .deployerKeypair(null)
           .build();
 
-      expect(config.rpId, isNull);
       expect(config.relayerUrl, isNull);
       expect(config.indexerUrl, isNull);
       expect(config.deployerKeypair, isNull);
@@ -254,8 +242,6 @@ void main() {
       );
 
       final result = builder
-          .rpName('A')
-          .rpId('b.com')
           .sessionExpiryMs(1000)
           .signatureExpirationLedgers(100)
           .timeoutInSeconds(10)
@@ -266,8 +252,8 @@ void main() {
       expect(identical(result, builder), isTrue);
 
       final config = result.build();
-      expect(config.rpName, 'A');
-      expect(config.rpId, 'b.com');
+      expect(config.sessionExpiryMs, 1000);
+      expect(config.relayerUrl, 'https://r.com');
     });
 
     test('testConfigEquality_identicalConfigsAreEqual', () {
@@ -297,27 +283,11 @@ void main() {
 
     test('testConfigCopy_withModifiedFields', () {
       final original = _validConfig();
-      final modified = original.copyWith(rpName: 'Modified Wallet');
+      final modified = original.copyWith(sessionExpiryMs: 999000);
 
-      expect(modified.rpName, 'Modified Wallet');
+      expect(modified.sessionExpiryMs, 999000);
       expect(modified.rpcUrl, original.rpcUrl);
       expect(modified.networkPassphrase, original.networkPassphrase);
-    });
-
-    test('testConfigCopy_withoutRpName_preservesOriginalRpName', () {
-      // copyWith without rpName must fall through to `rpName ?? this.rpName`
-      // (line 341 of oz_smart_account_config.dart).
-      final original = OZSmartAccountConfig(
-        rpcUrl: _validRpcUrl,
-        networkPassphrase: _validPassphrase,
-        accountWasmHash: _validWasmHash,
-        webauthnVerifierAddress: _validVerifier,
-        rpName: 'Original Name',
-      );
-      final copied = original.copyWith(rpcUrl: 'https://rpc2.example.com');
-      expect(copied.rpName, 'Original Name',
-          reason: 'rpName must be preserved when not provided to copyWith');
-      expect(copied.rpcUrl, 'https://rpc2.example.com');
     });
 
     test('testEffectiveIndexerUrl_explicitUrlTakesPrecedence', () {
@@ -669,7 +639,7 @@ void main() {
 
       // copyWith without setExternalEd25519Adapter: true must preserve the
       // adapter from the original config even when the param is omitted.
-      final copied = original.copyWith(rpName: 'Other Name');
+      final copied = original.copyWith(sessionExpiryMs: 999000);
 
       expect(
         identical(copied.externalEd25519Adapter, adapter),
