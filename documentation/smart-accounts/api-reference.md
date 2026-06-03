@@ -329,8 +329,6 @@ OZSmartAccountConfig({
   required String accountWasmHash,
   required String webauthnVerifierAddress,
   KeyPair? deployerKeypair,
-  String? rpId,
-  String rpName = 'Smart Account',
   int sessionExpiryMs = OZConstants.defaultSessionExpiryMs,
   int signatureExpirationLedgers = Util.ledgersPerHour,
   int timeoutInSeconds = OZConstants.defaultTimeoutSeconds,
@@ -354,11 +352,9 @@ OZSmartAccountConfig({
 **Optional fields and defaults:**
 
 - `deployerKeypair`: Keypair used to deploy and submit transactions. Defaults to the deterministic default derived from `SHA-256("openzeppelin-smart-account-kit")`. Production apps typically supply a custom keypair for attribution.
-- `rpId`: WebAuthn relying-party ID (domain name). Forwarded to providers when constructed by consumer code; the kit itself does not read this field.
-- `rpName`: Human-readable relying-party name shown during WebAuthn ceremonies. Default `'Smart Account'`.
 - `sessionExpiryMs`: Session validity in milliseconds. Default `OZConstants.defaultSessionExpiryMs` (7 days).
 - `signatureExpirationLedgers`: Auth-entry expiration in ledgers. Default `Util.ledgersPerHour` (720). Capped to `[1, 535680]`; the upper bound corresponds to approximately one month at five seconds per ledger.
-- `timeoutInSeconds`: Reserved for future use. No pipeline code currently reads this value; polling and transaction-submission timeouts are determined by internal defaults. Default `OZConstants.defaultTimeoutSeconds` (30). Capped to `[1, 600]`.
+- `timeoutInSeconds`: Sets each transaction's TimeBounds (`max_time = now + timeoutInSeconds`, `min_time = 0`), bounding how long a signed transaction stays valid for submission. A value of `0` sets `max_time = 0` (Stellar's "no upper bound", i.e. no expiry / infinite validity). Default `OZConstants.defaultTimeoutSeconds` (30). Must be `>= 0`.
 - `relayerUrl`: Optional relayer endpoint. When set, transactions can be fee-sponsored via the relayer pipeline.
 - `indexerUrl`: Optional indexer endpoint. When unset, `effectiveIndexerUrl()` falls back to the well-known default URL for the configured network when available.
 - `webauthnProvider`: Platform-specific WebAuthn provider. Required for any passkey-driven operation; an absent provider causes `createWallet`, `connectWallet(prompt: true)`, `authenticatePasskey`, and signer / transaction WebAuthn flows to throw `WebAuthnNotSupported`.
@@ -434,8 +430,6 @@ OZSmartAccountConfigBuilder({
 Setter methods (each returns the builder for chaining):
 
 - `deployerKeypair(KeyPair? value)`
-- `rpId(String? value)`
-- `rpName(String value)`
 - `sessionExpiryMs(int value)`
 - `signatureExpirationLedgers(int value)`
 - `timeoutInSeconds(int value)`

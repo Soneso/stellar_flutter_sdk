@@ -106,8 +106,6 @@ Every public smart-account type (`OZSmartAccountKit`, `OZSmartAccountConfig`, si
 | Field | Type | Default | Notes |
 |-------|------|---------|-------|
 | `deployerKeypair` | `KeyPair?` | `null` | Null means use the deterministic default deployer |
-| `rpId` | `String?` | `null` | WebAuthn Relying Party ID (domain); browser uses origin when null |
-| `rpName` | `String` | `'Smart Account'` | Display name shown during WebAuthn prompts |
 | `sessionExpiryMs` | `int` | `604800000` (7 days) | Session duration for silent reconnect (milliseconds) |
 | `signatureExpirationLedgers` | `int` | `720` (`Util.ledgersPerHour`, ~1 h) | Auth-entry expiration in ledgers (not seconds); replay window. Must be in `[1, 535680]` |
 | `timeoutInSeconds` | `int` | `30` | Reserved; no pipeline code currently reads it. Must be in `[1, 600]` |

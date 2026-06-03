@@ -12,7 +12,7 @@ Platform-specific guide for configuring WebAuthn passkey authentication in Flutt
 
 ## Step 1: Configure the kit
 
-`OZSmartAccountConfig` stores `rpId` and `rpName` for documentation and for the case where downstream code reads them; the provider itself receives the values directly through its constructor and is the only component that actually uses them at the WebAuthn API surface.
+The relying-party identifier and display name are set on the `PlatformWebAuthnProvider`, which is the only component that uses them at the WebAuthn API surface. Pass the constructed provider to `OZSmartAccountConfig.webauthnProvider`.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -22,16 +22,12 @@ final config = OZSmartAccountConfig(
   networkPassphrase: Network.TESTNET.networkPassphrase,
   accountWasmHash: '<account-wasm-hash-hex>',
   webauthnVerifierAddress: '<webauthn-verifier-c-address>',
-  rpId: 'app.example.com',
-  rpName: 'My Stellar Wallet',
   webauthnProvider: PlatformWebAuthnProvider(
     rpId: 'app.example.com',
     rpName: 'My Stellar Wallet',
   ),
 );
 ```
-
-The same `rpId` value MUST be passed to both `OZSmartAccountConfig` and `PlatformWebAuthnProvider`. The provider is the value Credential Manager actually uses at the platform layer.
 
 ## Step 2: Wire `PlatformWebAuthnProvider`
 
@@ -206,8 +202,6 @@ final config = OZSmartAccountConfig(
   networkPassphrase: Network.TESTNET.networkPassphrase,
   accountWasmHash: '<wasm-hash-hex>',
   webauthnVerifierAddress: '<verifier-c-address>',
-  rpId: 'wallet.example.com',
-  rpName: 'My Stellar App',
   webauthnProvider: webauthnProvider,
   storage: storage,
 );

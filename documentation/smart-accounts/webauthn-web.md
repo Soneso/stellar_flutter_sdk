@@ -13,7 +13,7 @@ Platform-specific guide for configuring WebAuthn passkey authentication in Flutt
 
 No additional dependencies are needed on top of `stellar_flutter_sdk`.
 
-## Step 1: Set the RP-ID and RP-Name
+## Step 1: Set the RP-ID and RP-Name on the provider
 
 WebAuthn binds every passkey to a relying-party identifier. On the web the browser enforces the RP-ID against the page's origin:
 
@@ -21,6 +21,8 @@ WebAuthn binds every passkey to a relying-party identifier. On the web the brows
 - The RP-ID may be a registrable suffix of the origin (e.g. `example.com` when the page is served from `app.example.com`). Use this when passkeys should work across multiple subdomains of the same site.
 - The RP-ID must NOT be a public suffix such as `com` or `co.uk`. The browser rejects such values with a `SecurityError`.
 - For local development, use `localhost`. See Step 3.
+
+The relying-party identifier and display name are set on `BrowserWebAuthnProvider`, which is the only component that passes them to the browser's WebAuthn API. Pass the constructed provider to `OZSmartAccountConfig.webauthnProvider`.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -30,8 +32,6 @@ final config = OZSmartAccountConfig(
   networkPassphrase: Network.TESTNET.networkPassphrase,
   accountWasmHash: '<account-wasm-hash-hex>',
   webauthnVerifierAddress: '<webauthn-verifier-c-address>',
-  rpId: 'app.example.com',
-  rpName: 'My Stellar Wallet',
   webauthnProvider: BrowserWebAuthnProvider(
     rpId: 'app.example.com',
     rpName: 'My Stellar Wallet',
@@ -39,10 +39,6 @@ final config = OZSmartAccountConfig(
   storage: IndexedDBStorageAdapter(),
 );
 ```
-
-The same `rpId` value MUST be passed to both `OZSmartAccountConfig` and `BrowserWebAuthnProvider`. The provider is the value the browser actually receives in the WebAuthn ceremony.
-
-The `rpName` is a display name shown to the user during the system prompt. Keep it short and recognisable.
 
 ## Step 2: Wire `BrowserWebAuthnProvider`
 
@@ -176,8 +172,6 @@ final config = OZSmartAccountConfig(
   networkPassphrase: Network.TESTNET.networkPassphrase,
   accountWasmHash: '<wasm-hash-hex>',
   webauthnVerifierAddress: '<verifier-c-address>',
-  rpId: 'wallet.example.com',
-  rpName: 'My Stellar App',
   webauthnProvider: webauthnProvider,
   storage: storage,
 );

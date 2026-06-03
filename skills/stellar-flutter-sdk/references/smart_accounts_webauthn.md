@@ -315,8 +315,6 @@ final config = OZSmartAccountConfig(
   networkPassphrase: Network.TESTNET.networkPassphrase,
   accountWasmHash: '<account-wasm-hash-hex>',          // 64-char hex (SHA-256 of WASM)
   webauthnVerifierAddress: '<webauthn-verifier-c-address>', // C-address
-  rpId: 'app.example.com',
-  rpName: 'My Stellar Wallet',
   webauthnProvider: provider,   // a WebAuthnProvider
   storage: storage,             // a StorageAdapter; omit for InMemoryStorageAdapter
 );
@@ -326,9 +324,6 @@ final config = OZSmartAccountConfig(
 // WRONG: OZSmartAccountConfig(..., webAuthnProvider: provider)  — capital A is wrong
 // CORRECT: OZSmartAccountConfig(..., webauthnProvider: provider)
 ```
-
-The same `rpId` MUST be passed to both the config and the provider; the
-provider's value is the one the platform actually uses at the WebAuthn API.
 
 ---
 
@@ -491,8 +486,6 @@ final config = OZSmartAccountConfig(
   networkPassphrase: Network.TESTNET.networkPassphrase,
   accountWasmHash: '<wasm-hash-hex>',
   webauthnVerifierAddress: '<verifier-c-address>',
-  rpId: 'wallet.example.com',
-  rpName: 'My Stellar App',
   webauthnProvider: webauthnProvider,
   storage: storage,
 );
@@ -687,8 +680,6 @@ final config = OZSmartAccountConfig(
   networkPassphrase: Network.TESTNET.networkPassphrase,
   accountWasmHash: '<wasm-hash-hex>',
   webauthnVerifierAddress: '<verifier-c-address>',
-  rpId: 'wallet.example.com',
-  rpName: 'My Stellar App',
   webauthnProvider: webauthnProvider,
   storage: storage,
 );
@@ -893,8 +884,6 @@ final config = OZSmartAccountConfig(
   networkPassphrase: Network.TESTNET.networkPassphrase,
   accountWasmHash: '<wasm-hash-hex>',
   webauthnVerifierAddress: '<verifier-c-address>',
-  rpId: 'wallet.example.com',
-  rpName: 'My Stellar App',
   webauthnProvider: webauthnProvider,
   storage: storage,
 );
