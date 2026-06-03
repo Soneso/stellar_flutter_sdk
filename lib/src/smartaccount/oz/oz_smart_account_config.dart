@@ -102,14 +102,17 @@ class OZSmartAccountConfig {
         'got: $maxContextRuleScanId',
       );
     }
-    // why: cap `signatureExpirationLedgers` at 535_680 (the protocol-level
-    // ~one-month limit at 5 seconds per ledger) and reject zero / negative
-    // values so the signing pass cannot produce an immediately-expired or
-    // beyond-protocol-limit expiration ledger.
-    if (signatureExpirationLedgers < 1 || signatureExpirationLedgers > 535680) {
+    // why: reject zero and negative values — an auth entry with
+    // signatureExpirationLedgers < 1 would be immediately expired or invalid
+    // before submission. No upper bound is enforced client-side: the maximum
+    // is the network's configurable maxEntryTTL (CAP-0046-11), which is not
+    // a fixed constant and may change between network upgrades. The host
+    // enforces the upper bound at submission and reports an out-of-range
+    // expiration ledger as a transaction error.
+    if (signatureExpirationLedgers < 1) {
       throw ConfigurationException.invalidConfig(
-        'signatureExpirationLedgers must be in [1, 535680] (one ledger to '
-        '~one month at 5s ledgers), got: $signatureExpirationLedgers',
+        'signatureExpirationLedgers must be >= 1, '
+        'got: $signatureExpirationLedgers',
       );
     }
     // why: reject negative `timeoutInSeconds` only. Zero is a valid value
@@ -163,7 +166,7 @@ class OZSmartAccountConfig {
 
   /// Signature expiration in ledgers for auth entries. Auth entries expire
   /// after this many ledgers to prevent replay attacks. Default: 720
-  /// (about one hour at five seconds per ledger).
+  /// (about one hour at five seconds per ledger). Must be >= 1.
   final int signatureExpirationLedgers;
 
   /// Sets each transaction's TimeBounds max_time (min_time is always 0),

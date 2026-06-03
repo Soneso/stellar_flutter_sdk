@@ -107,7 +107,7 @@ Every public smart-account type (`OZSmartAccountKit`, `OZSmartAccountConfig`, si
 |-------|------|---------|-------|
 | `deployerKeypair` | `KeyPair?` | `null` | Null means use the deterministic default deployer |
 | `sessionExpiryMs` | `int` | `604800000` (7 days) | Session duration for silent reconnect (milliseconds) |
-| `signatureExpirationLedgers` | `int` | `720` (`Util.ledgersPerHour`, ~1 h) | Auth-entry expiration in ledgers (not seconds); replay window. Must be in `[1, 535680]` |
+| `signatureExpirationLedgers` | `int` | `720` (`Util.ledgersPerHour`, ~1 h) | Auth-entry expiration in ledgers (not seconds); replay window. Must be `>= 1`. No client-side upper bound; the network's `maxEntryTTL` (CAP-0046-11) is the real ceiling, enforced by the host at submission |
 | `timeoutInSeconds` | `int` | `30` | Reserved; no pipeline code currently reads it. Must be in `[1, 600]` |
 | `relayerUrl` | `String?` | `null` | Enables fee-bump relayer |
 | `indexerUrl` | `String?` | `null` | Enables credential-to-contract discovery |

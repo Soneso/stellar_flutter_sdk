@@ -353,7 +353,7 @@ OZSmartAccountConfig({
 
 - `deployerKeypair`: Keypair used to deploy and submit transactions. Defaults to the deterministic default derived from `SHA-256("openzeppelin-smart-account-kit")`. Production apps typically supply a custom keypair for attribution.
 - `sessionExpiryMs`: Session validity in milliseconds. Default `OZConstants.defaultSessionExpiryMs` (7 days).
-- `signatureExpirationLedgers`: Auth-entry expiration in ledgers. Default `Util.ledgersPerHour` (720). Capped to `[1, 535680]`; the upper bound corresponds to approximately one month at five seconds per ledger.
+- `signatureExpirationLedgers`: Auth-entry expiration in ledgers. Default `Util.ledgersPerHour` (720). Must be `>= 1`. No upper bound is enforced client-side; the network's configurable `maxEntryTTL` (CAP-0046-11) is the real ceiling, checked by the host at submission.
 - `timeoutInSeconds`: Sets each transaction's TimeBounds (`max_time = now + timeoutInSeconds`, `min_time = 0`), bounding how long a signed transaction stays valid for submission. A value of `0` sets `max_time = 0` (Stellar's "no upper bound", i.e. no expiry / infinite validity). Default `OZConstants.defaultTimeoutSeconds` (30). Must be `>= 0`.
 - `relayerUrl`: Optional relayer endpoint. When set, transactions can be fee-sponsored via the relayer pipeline.
 - `indexerUrl`: Optional indexer endpoint. When unset, `effectiveIndexerUrl()` falls back to the well-known default URL for the configured network when available.

@@ -416,7 +416,7 @@ void main() {
         throwsA(isA<InvalidConfig>().having(
           (e) => e.toString(),
           'message',
-          contains('signatureExpirationLedgers must be in [1, 535680]'),
+          contains('signatureExpirationLedgers must be >= 1'),
         )),
       );
     });
@@ -433,29 +433,26 @@ void main() {
         throwsA(isA<InvalidConfig>().having(
           (e) => e.toString(),
           'message',
-          contains('signatureExpirationLedgers must be in [1, 535680]'),
+          contains('signatureExpirationLedgers must be >= 1'),
         )),
       );
     });
 
-    test('testSignatureExpirationLedgers_aboveProtocolCapThrows', () {
-      expect(
-        () => OZSmartAccountConfig(
-          rpcUrl: _validRpcUrl,
-          networkPassphrase: _validPassphrase,
-          accountWasmHash: _validWasmHash,
-          webauthnVerifierAddress: _validVerifier,
-          signatureExpirationLedgers: 535681,
-        ),
-        throwsA(isA<InvalidConfig>().having(
-          (e) => e.toString(),
-          'message',
-          contains('signatureExpirationLedgers must be in [1, 535680]'),
-        )),
+    test('testSignatureExpirationLedgers_largeValueAccepted', () {
+      // No upper bound is enforced client-side; the network's maxEntryTTL
+      // is the real ceiling, checked by the host at submission.
+      final config = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        signatureExpirationLedgers: 1000000,
       );
+      expect(config.signatureExpirationLedgers, equals(1000000));
     });
 
-    test('testSignatureExpirationLedgers_atProtocolCapAccepted', () {
+    test('testSignatureExpirationLedgers_previousCapValueAccepted', () {
+      // 535680 was formerly the upper cap; it is now an ordinary accepted value.
       final config = OZSmartAccountConfig(
         rpcUrl: _validRpcUrl,
         networkPassphrase: _validPassphrase,
