@@ -142,8 +142,8 @@ The first verification done by Credential Manager on a device is cached locally;
 
 ## Storage Adapters
 
-- **`PlatformStorageAdapter`**: production storage backed by `EncryptedSharedPreferences` (AES-256-GCM via the Android Keystore). Requires API 28+.
-- **`InMemoryStorageAdapter`**: non-persistent process-memory storage. Suitable for unit tests.
+- **`PlatformStorageAdapter`**: production storage backed by `EncryptedSharedPreferences` (values encrypted with AES-256-GCM, keys wrapped with AES-256-SIV via the Android Keystore). Read-modify-write sequences are serialised on the native side. Requires API 28+.
+- **`InMemoryStorageAdapter`**: non-persistent, unencrypted process-memory storage. Suitable for unit tests and ephemeral dev sessions. All instances compare equal, so two configs using the default storage remain equal.
 
 ## Common errors
 

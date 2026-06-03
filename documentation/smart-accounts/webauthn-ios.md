@@ -130,8 +130,8 @@ For development builds with `?mode=developer`, the simulator can exercise the AA
 
 ## Storage Adapters
 
-- **`PlatformStorageAdapter`**: production storage backed by the native iOS Keychain via method channel.
-- **`InMemoryStorageAdapter`**: non-persistent process-memory storage. Suitable for unit tests and ephemeral dev flows.
+- **`PlatformStorageAdapter`**: production storage backed by the native iOS Keychain via method channel. Read-modify-write sequences are serialised on the native side.
+- **`InMemoryStorageAdapter`**: non-persistent, unencrypted process-memory storage. Suitable for unit tests and ephemeral dev flows. All instances compare equal, so two configs using the default storage remain equal.
 
 ## Common errors
 

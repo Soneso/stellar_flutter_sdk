@@ -190,7 +190,7 @@ if (result.success) {
 await kit.disconnect();
 ```
 
-The example above wires the mobile adapters (`PlatformWebAuthnProvider` + `PlatformStorageAdapter`). On web, swap them for the browser equivalents (`BrowserWebAuthnProvider` + `IndexedDBStorageAdapter`); see [Platform wiring](#platform-wiring).
+The example above wires the mobile adapters (`PlatformWebAuthnProvider` + `PlatformStorageAdapter`). On web, swap them for the browser equivalents (`BrowserWebAuthnProvider` + `IndexedDBStorageAdapter`); see [Sub-pages](#sub-pages) for per-platform setup.
 
 ### Reconnecting to an Existing Wallet
 
@@ -429,12 +429,14 @@ the rest have defaults. The constructor validates inputs and throws
 | `relayerUrl` | `String?` | `null` | Relayer endpoint for fee-sponsored transactions. When set, users do not pay gas fees. |
 | `indexerUrl` | `String?` | `null` | Indexer endpoint for credential-to-contract discovery. When `null`, falls back to the built-in per-network default (testnet/mainnet). |
 | `webauthnProvider` | `WebAuthnProvider?` | `null` | Platform-specific WebAuthn implementation. Required for `createWallet`, `connectWallet(prompt: true)`, `authenticatePasskey`, and any passkey-signing flow. |
-| `storage` | `StorageAdapter?` | `InMemoryStorageAdapter()` | Credential and session persistence. See [Storage Adapter Trade-Offs](#storage-adapter-trade-offs). |
+| `storage` | `StorageAdapter?` | `InMemoryStorageAdapter()` | Credential and session persistence. Use a platform-specific adapter in production. Per-platform adapters and trade-offs are documented in the [Android](webauthn-android.md#storage-adapters), [iOS](webauthn-ios.md#storage-adapters), and [web](webauthn-web.md#storage-adapters) setup pages. |
 | `externalWallet` | `ExternalWalletAdapter?` | `null` | Wallet adapter (e.g., Freighter, Lobstr) backing the adapter custody model for `SelectedSignerWallet` signers. The kit injects it into `kit.externalSigners`. |
 | `externalEd25519Adapter` | `OZExternalEd25519SignerAdapter?` | `null` | Ed25519 adapter (hardware wallet, HSM, remote signing service) backing the adapter custody model for `SelectedSignerEd25519` signers. The kit injects it into `kit.externalSigners`. |
 | `maxContextRuleScanId` | `int` | `50` | Upper bound on the context-rule IDs scanned when listing rules without an explicit scan limit. Must be `>= 0`. |
 
 ### Builder Pattern
+
+For configuration with many optional fields, use the builder:
 
 ```dart
 final config = OZSmartAccountConfig.builder(
@@ -448,64 +450,28 @@ final config = OZSmartAccountConfig.builder(
     .indexerUrl('https://indexer.example.com')
     .signatureExpirationLedgers(1440) // ~2 hours
     .storage(myStorageAdapter)
-    .webauthnProvider(myWebAuthnProvider)
+    .externalWallet(myExternalWallet)
     .build();
 ```
 
-### Platform Wiring
-
-Each platform pairs a `WebAuthnProvider` with a `StorageAdapter`. Use `PlatformWebAuthnProvider` + `PlatformStorageAdapter` on Android/iOS, and `BrowserWebAuthnProvider` + `IndexedDBStorageAdapter` on web. See [Sub-pages](#sub-pages) for per-platform entitlements and hosting.
-
-### Storage Adapter Trade-Offs
-
-- **`InMemoryStorageAdapter`** -- process-memory only, not encrypted, not
-  persisted. Suitable for unit tests and ephemeral dev sessions. All
-  instances compare equal (so two configs with the default storage
-  remain equal).
-- **`PlatformStorageAdapter`** -- production choice on mobile.
-  Android encrypts values with AES-256-GCM and wraps keys with
-  AES-256-SIV via the Android Keystore. iOS uses the platform
-  Keychain. Read-modify-write sequences are serialised on the native
-  side.
-- **`IndexedDBStorageAdapter`** -- recommended for production web. Larger
-  quota than `localStorage`, indices on `contractId`, `createdAt`, and
-  `isPrimary`, and an extra `Future<void> close()` and
-  `deleteDatabase()` API beyond the abstract interface.
-- **`LocalStorageAdapter`** -- web fallback. Around 5 MB per origin,
-  unencrypted, simpler to reason about than IndexedDB. Use only when
-  the dataset is small and the threat model accepts unencrypted local
-  storage.
-
-Per-platform setup steps for entitlements, Digital Asset Links, and
-HTTPS hosting live in the dedicated WebAuthn pages: see
-[Sub-pages](#sub-pages).
-
 ## Testnet contract addresses
 
-Two values in `OZSmartAccountConfig` are tied to on-chain deployments
-and change when the contracts are rebuilt or testnet is reset:
+The SDK needs two values that depend on the network: a WASM hash
+(`accountWasmHash`) for the uploaded smart account binary, and a verifier
+contract address (`webauthnVerifierAddress`). Both can change when
+contracts are upgraded, testnet is reset, or their TTL expires.
 
-- `accountWasmHash` -- SHA-256 (hex) of the uploaded smart-account WASM.
-- `webauthnVerifierAddress` -- `C...` address of the deployed WebAuthn
-  signature verifier contract.
+Current testnet values are in `demo_config.dart` in the [demo app](https://github.com/Soneso/flutter-oz-smartaccount-demo):
 
-| Network passphrase | Default indexer URL |
-|---|---|
-| `Test SDF Network ; September 2015` | `https://smart-account-indexer.sdf-ecosystem.workers.dev` |
-| `Public Global Stellar Network ; September 2015` | `https://smart-account-indexer-mainnet.sdf-ecosystem.workers.dev` |
-
-Current testnet WASM hash and verifier contract address are published in
-the OpenZeppelin
-[stellar-contracts](https://github.com/OpenZeppelin/stellar-contracts)
-repository. Look up the latest release for the multisig account example
-and the WebAuthn verifier contract.
+```
+lib/config/demo_config.dart
+```
 
 ### Uploading your own WASM
 
-If the published hash has expired (entries can be restored, but the hash
-remains the same after restoration) or you need a custom build, clone
-[stellar-contracts](https://github.com/OpenZeppelin/stellar-contracts)
-and build/upload:
+If the testnet hash has expired or you need a custom contract, clone the
+[OpenZeppelin stellar-contracts](https://github.com/OpenZeppelin/stellar-contracts)
+repository and build/upload:
 
 ```bash
 # Build the smart-account WASM
@@ -518,72 +484,94 @@ stellar contract upload \
   --wasm target/wasm32v1-none/release/multisig_account_example.wasm
 ```
 
-The command prints a hex string. Use it as `accountWasmHash`.
+The command prints a hex string. Use it as `accountWasmHash` in your `OZSmartAccountConfig`.
 
 ## How wallet deployment works
 
-`createWallet` deploys a Soroban smart-account contract. The deployment
-involves two roles played by the deployer keypair:
+When `createWallet` is called, the SDK deploys a Soroban smart-account
+contract. The deployment involves two roles:
 
-1. **Address derivation.** The contract address is computed from
+**Deployer keypair**: The deployer is the source account of the
+deployment transaction. It serves two purposes:
+
+1. **Address derivation**: The contract address is computed from
    `hash(deployer_public_key, salt, network_passphrase)` where `salt`
-   is `SHA-256(credential_id)`. This is deterministic: given the same
-   deployer keypair, credential ID, and network passphrase,
-   `SmartAccountUtils.deriveContractAddress(...)` always returns the
-   same contract address. It is a correctness property that follows
-   directly from how Soroban computes contract addresses, not a special
-   feature.
-2. **Transaction signing.** The deployer signs the deployment
+   is `SHA-256(credential_id)`. This makes the address deterministic --
+   the same credential and deployer always produce the same contract
+   address.
+2. **Transaction signing**: The deployer signs the deployment
    transaction as its source account.
 
 After deployment, the deployer has no privileges over the contract.
 Only the configured signers (passkeys, delegated accounts, Ed25519
 keys) can authorize operations on the smart account.
 
-When a relayer is configured, the SDK still uses the deployer to derive
-the contract address and build the deployment transaction, but submits
-through the relayer which wraps it in a fee-bump transaction and pays
-the fees. The deployer account must still exist on the network with the
-minimum XLM reserve, but does not need to pay fees in this case.
+**Fee payment**: The deployer account pays the deployment transaction
+fee. When a relayer is configured, the relayer wraps the deployment in
+a fee-bump transaction and sponsors the fee instead, so the deployer
+only needs to exist on the network with the minimum XLM reserve. If you
+use the default deployer (derived from a well-known seed -- see below),
+you need either a relayer for fee sponsoring or to fund the deployer
+account before deployment. You can also provide your own funded keypair
+via `deployerKeypair` in the config.
 
-On testnet, `autoFund: true` funds the smart-account contract via
-Friendbot after deployment, retaining
-`OZConstants.friendbotReserveXlm` (5 XLM) on the temporary funding
-account as its minimum balance reserve.
+## Deterministic address derivation
+
+Contract address derivation is deterministic: given the same deployer
+keypair, credential ID, and network passphrase, the SDK always produces
+the same contract address. This is a correctness property, not a special
+feature -- it follows from how Soroban computes contract addresses.
 
 ### Default deployer
 
 The SDK provides a default deployer derived from
-`SHA-256("openzeppelin-smart-account-kit")` used as the Ed25519 seed:
+`SHA-256("openzeppelin-smart-account-kit")`. This default is suitable for
+testing and simple deployments. Other OpenZeppelin Smart Account SDK
+implementations use the same derivation, so all SDKs produce identical
+results from the same inputs.
 
 ```dart
 final deployer = await OZSmartAccountConfig.createDefaultDeployer();
 ```
 
 The default deployer's secret seed is publicly derivable. It is intended
-to be used either with a relayer that sponsors transaction fees, or
-funded externally before deployment. The seed string is fixed by the
-contract spec, so the default deployer keypair is always the same and
-wallets deployed through it share a single deterministic address space.
+to be used with a relayer that sponsors transaction fees, or funded
+externally.
 
 ### Custom deployers
 
-Production wallet applications typically use a custom deployer for
-attribution and traceability. The deployer's public key is visible
-on-chain, so a custom deployer gives the wallet provider an identity
-that distinguishes deployments by different providers.
+Production wallet applications will typically use a custom deployer for
+attribution and traceability. The deployer signs the deployment
+transaction, so its public key is visible on-chain -- a custom deployer
+gives the wallet provider identity and allows distinguishing deployments
+by different providers.
+
+Set `deployerKeypair` in the config to use your own deployer:
 
 ```dart
 final config = OZSmartAccountConfig(
-  // required fields ...
+  // ...required fields...
   deployerKeypair: myFundedKeypair,
 );
 ```
 
-Address derivation still applies: the same deployer plus credential ID
-always produces the same contract address. With a custom deployer, an
-indexer is recommended for wallet discovery, since clients that do not
-know the deployer keypair cannot derive the address independently.
+When using a custom deployer, address derivation still works the same
+way: the same deployer + credential ID always produces the same contract
+address. An indexer is recommended for wallet discovery with custom
+deployers, since clients that do not know the deployer keypair cannot
+derive the address independently.
+
+### Deterministic Contract Addresses
+
+Given the same credential ID and deployer,
+`SmartAccountUtils.deriveContractAddress(...)` computes the same
+C-address. This enables:
+
+- Wallet discovery without an indexer (derive the address, check if it
+  exists on-chain)
+- Consistent address display across applications
+- Correctness verification (same inputs produce the same outputs
+  regardless of SDK implementation)
 
 ### Signer format compatibility
 
@@ -595,38 +583,24 @@ public key with the raw credential ID into the `keyData` field; the
 alone. Signers added by any compatible smart-account SDK are recognised
 on-chain.
 
-WebAuthn-side helpers in `SmartAccountUtils` convert raw passkey output
-into these formats:
-
-- `extractPublicKeyFromRegistration({publicKey, authenticatorData,
-  attestationObject})` runs a three-strategy cascade to produce the
-  65-byte SEC1 uncompressed key from whatever the platform returned.
-- `normalizeSignature(derBytes)` converts a DER-encoded ECDSA signature
-  into the 64-byte compact `r || s` form with `s` in the low-S range,
-  which is what the on-chain verifier expects.
-
 ## Contract limits
 
-The OpenZeppelin smart-account contract enforces these limits per
-context rule, also surfaced in `OZConstants`:
+The OpenZeppelin smart-account contract enforces these limits:
 
-| Limit | Value | Source |
-|---|---|---|
-| Maximum signers per context rule | 15 | `OZConstants.maxSigners` |
-| Maximum policies per context rule | 5 | `OZConstants.maxPolicies` |
+| Limit | Value |
+|---|---|
+| Maximum signers per context rule | 15 |
+| Maximum policies per context rule | 5 |
 
-The kit validates these limits client-side before submitting
-transactions and reports violations as `ValidationException`. Contract-
-level error codes returned by failed simulations are surfaced via
-`ContractErrorCodes` (for example `keyDataTooLarge`, `nameTooLong`,
-`unauthorizedSigner`).
+These limits are defined in `OZConstants` and validated client-side
+before submitting transactions.
 
 ## Sub-pages
 
 | Guide | Description |
 |---|---|
-| [Onboarding Guide](onboarding.md) | Concepts behind smart accounts, passkeys, the on-chain contract, and the end-to-end lifecycle. |
-| [API Reference](api-reference.md) | Full API reference for every public class and method in the smart-account namespace. |
-| [WebAuthn Setup: iOS](webauthn-ios.md) | iOS AuthenticationServices integration and apple-app-site-association hosting. |
-| [WebAuthn Setup: Android](webauthn-android.md) | Android Credential Manager integration and Digital Asset Links hosting. |
-| [WebAuthn Setup: Web](webauthn-web.md) | Browser WebAuthn API, IndexedDB storage, and localhost development. |
+| [Onboarding Guide](onboarding.md) | Smart account concepts, passkeys, on-chain contract interface, end-to-end lifecycle |
+| [WebAuthn Setup: Android](webauthn-android.md) | Android Credential Manager integration, Digital Asset Links setup |
+| [WebAuthn Setup: iOS](webauthn-ios.md) | iOS AuthenticationServices integration, apple-app-site-association setup |
+| [WebAuthn Setup: Web](webauthn-web.md) | Browser WebAuthn API, localhost development setup |
+| [API Reference](api-reference.md) | Full API reference for all public classes and methods |

@@ -101,8 +101,8 @@ Passkeys registered against `localhost` are usable only on `localhost`; producti
 
 ## Storage Adapters
 
-- **`IndexedDBStorageAdapter`**: production storage backed by IndexedDB. Structured, large quotas, async operations.
-- **`LocalStorageAdapter`**: backed by synchronous `window.localStorage`; the adapter exposes the standard `Future`-returning `StorageAdapter` interface. Suitable for smaller payloads or environments where IndexedDB is unavailable; limited to ~5 MB per origin.
+- **`IndexedDBStorageAdapter`**: recommended for production web. Backed by IndexedDB with a larger quota than `localStorage`, indices on `contractId`, `createdAt`, and `isPrimary`, and an extra `Future<void> close()` and `deleteDatabase()` API beyond the abstract interface.
+- **`LocalStorageAdapter`**: web fallback backed by synchronous `window.localStorage`; the adapter exposes the standard `Future`-returning `StorageAdapter` interface. Around 5 MB per origin and unencrypted, simpler to reason about than IndexedDB. Use only when the dataset is small and the threat model accepts unencrypted local storage.
 
 ## Common errors
 
