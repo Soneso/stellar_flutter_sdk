@@ -27,7 +27,7 @@ const String _verifierA =
 /// Stub context-rule manager whose read paths always throw [WalletNotConnected].
 class _NotConnectedRuleManager implements OZContextRuleManagerInterface {
   @override
-  Future<List<Object>> listContextRules() async {
+  Future<List<ParsedContextRule>> listContextRules() async {
     throw WalletException.notConnected();
   }
 
@@ -35,7 +35,7 @@ class _NotConnectedRuleManager implements OZContextRuleManagerInterface {
   Future<List<int>> resolveContextRuleIdsForEntry(
     XdrSorobanAuthorizationEntry entry,
     List<OZSmartAccountSigner> signers,
-    List<Object> contextRules,
+    List<ParsedContextRule> contextRules,
   ) async {
     throw WalletException.notConnected();
   }

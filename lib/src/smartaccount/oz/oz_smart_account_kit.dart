@@ -124,6 +124,10 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
 
   /// Shared [SorobanServer] used by every manager for RPC simulation,
   /// submission, and on-chain lookups. Released by [close].
+  ///
+  /// Not part of the public API: this accessor exists so the kit's internal
+  /// managers share a single RPC client. Consumers should not depend on it.
+  @internal
   @override
   final SorobanServer sorobanServer;
 
@@ -335,6 +339,9 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
       await indexerClient?.close();
       await relayerClient?.close();
       events.removeAllListeners();
+      // Drop in-memory signing secrets (registered keypairs / Ed25519 keys).
+      // Persisted wallet connections and the external-wallet adapter are left intact.
+      await _externalSigners.clearInMemorySigners();
     });
   }
 
@@ -364,6 +371,11 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
   ///
   /// Operations modules reach storage through this accessor so the kit
   /// remains the single owner of the adapter reference.
+  ///
+  /// Not part of the public API: this accessor exists so the kit's internal
+  /// managers share a single storage adapter. Consumers should not depend
+  /// on it.
+  @internal
   @override
   StorageAdapter getStorage() => _storage;
 

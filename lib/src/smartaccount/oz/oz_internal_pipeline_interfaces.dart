@@ -46,7 +46,7 @@ abstract class OZCredentialManagerInterface {
 abstract class OZContextRuleManagerInterface {
   /// Returns the parsed list of all context rules currently active on the
   /// connected smart account.
-  Future<List<Object>> listContextRules();
+  Future<List<ParsedContextRule>> listContextRules();
 
   /// Resolves the context rule IDs that apply to the given auth entry under
   /// the supplied signers and pre-fetched context rules. Implementations
@@ -54,7 +54,7 @@ abstract class OZContextRuleManagerInterface {
   Future<List<int>> resolveContextRuleIdsForEntry(
     XdrSorobanAuthorizationEntry entry,
     List<OZSmartAccountSigner> signers,
-    List<Object> contextRules,
+    List<ParsedContextRule> contextRules,
   );
 
   /// Returns the raw on-chain `ScVal` representations of every active

@@ -259,6 +259,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// `name`, `policies`, `policy_ids`, `signer_ids`, `signers`,
   /// `valid_until`.
   @override
+  @internal
   ParsedContextRule parseContextRule(XdrSCVal scVal) {
     final mapEntries = scVal.map;
     if (mapEntries == null) {
@@ -645,18 +646,17 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// supplied [signers]. Fetches the active rule list before delegating
   /// to the pre-fetched-rules overload.
   @override
+  @internal
   Future<List<int>> resolveContextRuleIdsForEntry(
     XdrSorobanAuthorizationEntry entry,
     List<OZSmartAccountSigner> signers,
-    List<Object> contextRules,
+    List<ParsedContextRule> contextRules,
   ) async {
     if (contextRules.isEmpty) {
       final rules = await listContextRules();
       return resolveContextRuleIdsForEntryWithRules(entry, signers, rules);
     }
-    final parsed =
-        contextRules.whereType<ParsedContextRule>().toList(growable: false);
-    return resolveContextRuleIdsForEntryWithRules(entry, signers, parsed);
+    return resolveContextRuleIdsForEntryWithRules(entry, signers, contextRules);
   }
 
   /// Synchronous 3-tier rule resolution against a pre-fetched
@@ -679,6 +679,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// - When no candidates match, throw with the "Add a Default rule"
   ///   hint. When multiple candidates contain every selected signer,
   ///   throw with the matching-rule-id list.
+  @internal
   List<int> resolveContextRuleIdsForEntryWithRules(
     XdrSorobanAuthorizationEntry entry,
     List<OZSmartAccountSigner> selectedSigners,

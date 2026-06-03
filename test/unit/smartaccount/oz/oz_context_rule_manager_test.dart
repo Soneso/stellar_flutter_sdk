@@ -340,7 +340,7 @@ void main() {
         mgr.resolveContextRuleIdsForEntry(
           entry,
           <OZSmartAccountSigner>[],
-          <Object>[], // empty → delegates to listContextRules → returns empty
+          const <ParsedContextRule>[], // empty → delegates to listContextRules → returns empty
         ),
         throwsA(isA<InvalidInput>()),
       );

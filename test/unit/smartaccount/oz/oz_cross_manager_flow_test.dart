@@ -42,13 +42,14 @@ class _MutableRuleManager implements OZContextRuleManagerInterface {
   }
 
   @override
-  Future<List<Object>> listContextRules() async => List<Object>.from(rules);
+  Future<List<ParsedContextRule>> listContextRules() async =>
+      List<ParsedContextRule>.from(rules);
 
   @override
   Future<List<int>> resolveContextRuleIdsForEntry(
     XdrSorobanAuthorizationEntry entry,
     List<OZSmartAccountSigner> signers,
-    List<Object> contextRules,
+    List<ParsedContextRule> contextRules,
   ) async {
     if (rules.isEmpty) return const <int>[];
     return <int>[rules.first.id];
@@ -176,7 +177,7 @@ void main() {
       // is the exact instance the kit uses for rule lookups.
       final list = await h.rules.listContextRules();
       expect(list.length, 1);
-      final parsed = list.first as ParsedContextRule;
+      final parsed = list.first;
       expect(parsed.signers.length, 2);
       // Silence unused-variable warning when ruleManager is only used
       // for the add path above.

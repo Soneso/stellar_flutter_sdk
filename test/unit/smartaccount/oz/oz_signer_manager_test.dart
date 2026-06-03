@@ -49,13 +49,14 @@ class _ScriptedRuleManager implements OZContextRuleManagerInterface {
   final ParsedContextRule _rule;
 
   @override
-  Future<List<Object>> listContextRules() async => <Object>[_rule];
+  Future<List<ParsedContextRule>> listContextRules() async =>
+      <ParsedContextRule>[_rule];
 
   @override
   Future<List<int>> resolveContextRuleIdsForEntry(
     XdrSorobanAuthorizationEntry entry,
     List<OZSmartAccountSigner> signers,
-    List<Object> contextRules,
+    List<ParsedContextRule> contextRules,
   ) async =>
       <int>[_rule.id];
 

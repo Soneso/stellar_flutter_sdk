@@ -325,7 +325,7 @@ class StubCredentialManager implements OZWalletCredentialManagerInterface {
 /// Stub context-rule manager exposed for tests that need to inject
 /// context-rule state without standing up the full rule manager.
 class StubContextRuleManager implements OZContextRuleManagerInterface {
-  List<Object> rules = const <Object>[];
+  List<ParsedContextRule> rules = const <ParsedContextRule>[];
   List<XdrSCVal> allRules = const <XdrSCVal>[];
   List<int> resolved = const <int>[];
 
@@ -341,13 +341,13 @@ class StubContextRuleManager implements OZContextRuleManagerInterface {
       const <XdrSCVal, ParsedContextRule>{};
 
   @override
-  Future<List<Object>> listContextRules() async => rules;
+  Future<List<ParsedContextRule>> listContextRules() async => rules;
 
   @override
   Future<List<int>> resolveContextRuleIdsForEntry(
     XdrSorobanAuthorizationEntry entry,
     List<OZSmartAccountSigner> signers,
-    List<Object> contextRules,
+    List<ParsedContextRule> contextRules,
   ) async {
     return resolved;
   }

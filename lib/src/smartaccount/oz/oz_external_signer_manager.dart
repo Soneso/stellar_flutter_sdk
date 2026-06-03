@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart' as crypto;
+import 'package:meta/meta.dart';
 
 import '../../key_pair.dart';
 import '../../util.dart';
@@ -277,20 +278,24 @@ class OZExternalSignerManager {
   }) : walletConnectionStorage = walletConnectionStorage;
 
   /// Network passphrase used when delegating to [walletAdapter].
+  @internal
   final String networkPassphrase;
 
   /// Optional external wallet adapter. When `null`, only keypair signers
   /// are supported.
+  @internal
   final ExternalWalletAdapter? walletAdapter;
 
   /// Optional connection persistence layer. When `null`, wallet
   /// connections are not restored across app launches.
+  @internal
   final WalletConnectionStorage? walletConnectionStorage;
 
   /// Optional adapter for out-of-process Ed25519 signing.
   ///
   /// When set, the adapter is consulted via [OZExternalEd25519SignerAdapter.canSignFor]
   /// before the in-memory keypair registry (adapter-first precedence rule).
+  @internal
   final OZExternalEd25519SignerAdapter? ed25519Adapter;
 
   // Internal state
@@ -583,6 +588,18 @@ class OZExternalSignerManager {
 
     await walletAdapter?.disconnect();
     await walletConnectionStorage?.removeItem(_walletStorageKey);
+  }
+
+  /// Drops in-memory keypair and Ed25519 signing secrets only. Unlike
+  /// [removeAll], this does NOT disconnect the external-wallet adapter and does
+  /// NOT remove persisted wallet connections from storage. Called by
+  /// [OZSmartAccountKit.close] to release sensitive key material on teardown.
+  @internal
+  Future<void> clearInMemorySigners() async {
+    await _withLock<void>(() {
+      _keypairSigners.clear();
+      _ed25519Signers.clear();
+    });
   }
 
   // Ed25519 methods
