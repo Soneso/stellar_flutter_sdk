@@ -882,7 +882,7 @@ class OZWalletOperations {
     if (allowCredentials != null && allowCredentials.isNotEmpty) {
       var matched = false;
       for (final allow in allowCredentials) {
-        if (_bytesEqualList(allow.id, authenticationResult.credentialId)) {
+        if (Util.constantTimeEquals(allow.id, authenticationResult.credentialId)) {
           matched = true;
           break;
         }
@@ -1752,19 +1752,6 @@ class OZWalletOperations {
 
   Uint8List _base64UrlDecode(String s) {
     return base64Url.decode(base64Url.normalize(s));
-  }
-
-  /// Constant-time byte comparison over [Uint8List] values. Treats the
-  /// inputs as opaque byte strings; unequal lengths short-circuit to
-  /// `false`.
-  bool _bytesEqualList(Uint8List a, Uint8List b) {
-    if (identical(a, b)) return true;
-    if (a.length != b.length) return false;
-    var diff = 0;
-    for (var i = 0; i < a.length; i++) {
-      diff |= a[i] ^ b[i];
-    }
-    return diff == 0;
   }
 }
 

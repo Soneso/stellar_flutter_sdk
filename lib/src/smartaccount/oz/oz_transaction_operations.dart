@@ -661,7 +661,7 @@ class OZTransactionOperations {
       // could return a signature from a different credential. Verify the
       // result's credentialId matches the one we requested before using
       // its signature.
-      if (!_bytesEqual(authResult.credentialId, credIdBytes)) {
+      if (!Util.constantTimeEquals(authResult.credentialId, credIdBytes)) {
         throw CredentialException.invalid(
           'WebAuthn provider returned a signature for a different credential than was requested',
         );
@@ -1131,7 +1131,7 @@ class OZTransactionOperations {
           final suffix = Uint8List.fromList(
             keyDataBytes.sublist(pubKeySize, keyDataBytes.length),
           );
-          if (_bytesEqual(suffix, credentialIdBytes)) {
+          if (Util.constantTimeEquals(suffix, credentialIdBytes)) {
             return Uint8List.fromList(keyDataBytes);
           }
         }
@@ -1464,16 +1464,6 @@ class OZTransactionOperations {
     final lo = i128.lo.uint64;
     final shifted = hi << 64;
     return shifted + lo;
-  }
-
-  /// Constant-time byte-array comparison used for keyData suffix matching.
-  bool _bytesEqual(Uint8List a, Uint8List b) {
-    if (a.length != b.length) return false;
-    var diff = 0;
-    for (var i = 0; i < a.length; i++) {
-      diff |= a[i] ^ b[i];
-    }
-    return diff == 0;
   }
 
   /// Concatenates two byte arrays into a fresh [Uint8List].

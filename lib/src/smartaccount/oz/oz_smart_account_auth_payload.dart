@@ -229,11 +229,7 @@ abstract class OZSmartAccountAuthPayloadCodec {
     }
     if (a is OZExternalSigner && b is OZExternalSigner) {
       if (a.verifierAddress != b.verifierAddress) return false;
-      if (a.keyData.length != b.keyData.length) return false;
-      for (var i = 0; i < a.keyData.length; i++) {
-        if (a.keyData[i] != b.keyData[i]) return false;
-      }
-      return true;
+      return Util.constantTimeEquals(a.keyData, b.keyData);
     }
     return false;
   }

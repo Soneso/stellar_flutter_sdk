@@ -4,6 +4,7 @@
 
 import 'dart:typed_data';
 
+import '../../util.dart';
 import 'allow_credential.dart';
 import 'smart_account_errors.dart';
 
@@ -32,10 +33,10 @@ class WebAuthnAuthenticationResult {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! WebAuthnAuthenticationResult) return false;
-    final a = _constantTimeEquals(credentialId, other.credentialId);
-    final b = _constantTimeEquals(authenticatorData, other.authenticatorData);
-    final c = _constantTimeEquals(clientDataJSON, other.clientDataJSON);
-    final d = _constantTimeEquals(signature, other.signature);
+    final a = Util.constantTimeEquals(credentialId, other.credentialId);
+    final b = Util.constantTimeEquals(authenticatorData, other.authenticatorData);
+    final c = Util.constantTimeEquals(clientDataJSON, other.clientDataJSON);
+    final d = Util.constantTimeEquals(signature, other.signature);
     return a && b && c && d;
   }
 
@@ -108,9 +109,9 @@ class WebAuthnRegistrationResult {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! WebAuthnRegistrationResult) return false;
-    final a = _constantTimeEquals(credentialId, other.credentialId);
-    final b = _constantTimeEquals(publicKey, other.publicKey);
-    final c = _constantTimeEquals(attestationObject, other.attestationObject);
+    final a = Util.constantTimeEquals(credentialId, other.credentialId);
+    final b = Util.constantTimeEquals(publicKey, other.publicKey);
+    final c = Util.constantTimeEquals(attestationObject, other.attestationObject);
     final bytesMatch = a && b && c;
     return bytesMatch &&
         _stringListEquals(transports, other.transports) &&
@@ -205,16 +206,6 @@ abstract class WebAuthnProvider {
     required Uint8List challenge,
     List<AllowCredential>? allowCredentials,
   });
-}
-
-/// Byte-content equality over [a] and [b].
-bool _constantTimeEquals(Uint8List a, Uint8List b) {
-  if (a.length != b.length) return false;
-  var acc = 0;
-  for (var i = 0; i < a.length; i++) {
-    acc |= a[i] ^ b[i];
-  }
-  return acc == 0;
 }
 
 /// Computes a hash code over the bytes of [data] so that byte-equal arrays

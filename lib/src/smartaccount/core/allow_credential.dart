@@ -4,6 +4,8 @@
 
 import 'dart:typed_data';
 
+import '../../util.dart';
+
 /// A credential descriptor pairing a credential ID with optional transport
 /// hints (`internal`, `hybrid`, `usb`, `ble`, `nfc`).
 ///
@@ -36,7 +38,7 @@ class AllowCredential {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! AllowCredential) return false;
-    if (!_byteListEquals(id, other.id)) return false;
+    if (!Util.constantTimeEquals(id, other.id)) return false;
     return _transportsEquals(transports, other.transports);
   }
 
@@ -46,16 +48,6 @@ class AllowCredential {
         ? 0
         : Object.hashAll(transports as Iterable<Object?>);
     return Object.hash(_byteListHash(id), transportsHash);
-  }
-
-  /// Byte-content equality over [a] and [b].
-  static bool _byteListEquals(Uint8List a, Uint8List b) {
-    if (a.length != b.length) return false;
-    var acc = 0;
-    for (var i = 0; i < a.length; i++) {
-      acc |= a[i] ^ b[i];
-    }
-    return acc == 0;
   }
 
   /// Computes a hash code over the bytes of [data] so that byte-equal arrays

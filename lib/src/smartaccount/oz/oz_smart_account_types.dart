@@ -299,7 +299,7 @@ final class OZExternalSigner extends OZSmartAccountSigner {
     if (identical(this, other)) return true;
     if (other is! OZExternalSigner) return false;
     final addressMatch = verifierAddress == other.verifierAddress;
-    final keyMatch = _constantTimeEquals(keyData, other.keyData);
+    final keyMatch = Util.constantTimeEquals(keyData, other.keyData);
     return (addressMatch ? 1 : 0) & (keyMatch ? 1 : 0) == 1;
   }
 
@@ -309,17 +309,6 @@ final class OZExternalSigner extends OZSmartAccountSigner {
   int get hashCode {
     final keyHash = SmartAccountUtils.hashBytes(1, keyData);
     return 0x1fffffff & (31 * verifierAddress.hashCode + keyHash);
-  }
-
-  static bool _constantTimeEquals(Uint8List a, Uint8List b) {
-    if (a.length != b.length) {
-      return false;
-    }
-    var diff = 0;
-    for (var i = 0; i < a.length; i++) {
-      diff |= a[i] ^ b[i];
-    }
-    return diff == 0;
   }
 }
 
