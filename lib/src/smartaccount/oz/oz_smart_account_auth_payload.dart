@@ -4,11 +4,11 @@
 
 import 'dart:typed_data';
 
-import '../../key_pair.dart';
-import '../../soroban/soroban_auth.dart';
 import '../../util.dart';
 import '../../xdr/xdr.dart';
 import '../core/smart_account_errors.dart';
+import 'oz_address_strkey.dart';
+import 'oz_smart_account_builders.dart';
 import 'oz_smart_account_types.dart';
 
 /// Represents the AuthPayload format used by the OpenZeppelin Smart Account
@@ -209,7 +209,7 @@ abstract class OZSmartAccountAuthPayloadCodec {
   ) {
     OZSmartAccountSigner? existingKey;
     for (final candidate in payload.signers.keys) {
-      if (_signersEqual(candidate, signer)) {
+      if (OZSmartAccountBuilders.signersEqual(candidate, signer)) {
         existingKey = candidate;
         break;
       }
@@ -218,20 +218,6 @@ abstract class OZSmartAccountAuthPayloadCodec {
       payload.signers.remove(existingKey);
     }
     payload.signers[signer] = Uint8List.fromList(signatureBytes);
-  }
-
-  /// Local equality used by [upsertSigner] so the codec does not depend
-  /// on the higher-level builders module. Performs field-by-field
-  /// comparison by signer type.
-  static bool _signersEqual(OZSmartAccountSigner a, OZSmartAccountSigner b) {
-    if (a is OZDelegatedSigner && b is OZDelegatedSigner) {
-      return a.address == b.address;
-    }
-    if (a is OZExternalSigner && b is OZExternalSigner) {
-      if (a.verifierAddress != b.verifierAddress) return false;
-      return Util.constantTimeEquals(a.keyData, b.keyData);
-    }
-    return false;
   }
 
   /// Parses an [OZSmartAccountSigner] from its [XdrSCVal] representation.
@@ -332,20 +318,12 @@ abstract class OZSmartAccountAuthPayloadCodec {
   /// Decodes an [XdrSCAddress] back to its strkey representation. Used to
   /// reconstruct signer addresses from their on-chain encoding.
   static String _addressXdrToString(XdrSCAddress address) {
-    final addr = Address.fromXdr(address);
-    if (addr.type == Address.TYPE_ACCOUNT && addr.accountId != null) {
-      return addr.accountId!;
+    final strKey = OZAddressStrKey.fromXdr(address);
+    if (strKey == null) {
+      throw TransactionException.signingFailed(
+        'Unsupported signer address type',
+      );
     }
-    if (addr.type == Address.TYPE_CONTRACT && addr.contractId != null) {
-      // `Address.fromXdr` returns the contract ID as hex; re-encode it as
-      // its strkey C-address form so signer types accept it.
-      return StrKey.encodeContractIdHex(addr.contractId!);
-    }
-    if (addr.type == Address.TYPE_MUXED_ACCOUNT && addr.muxedAccountId != null) {
-      return addr.muxedAccountId!;
-    }
-    throw TransactionException.signingFailed(
-      'Unsupported signer address type: ${addr.type}',
-    );
+    return strKey;
   }
 }

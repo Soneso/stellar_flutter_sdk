@@ -23,10 +23,11 @@ import '../../xdr/xdr.dart';
 @internal
 abstract final class OZAddressStrKey {
   /// Returns the canonical StrKey representation of [addressXdr], or
-  /// `null` when the XDR carries neither an account ID nor a contract
-  /// ID (defensive against malformed payloads). Contract IDs already in
-  /// StrKey form pass through unchanged; raw hex contract IDs are
-  /// re-encoded through [StrKey.encodeContractId].
+  /// `null` when the XDR carries no account ID, muxed account ID, or
+  /// contract ID (defensive against malformed payloads). Contract IDs
+  /// already in StrKey form pass through unchanged; raw hex contract IDs
+  /// are re-encoded through [StrKey.encodeContractId]. Account variants
+  /// return their `G…` (or `M…` muxed) StrKey form.
   static String? fromXdr(XdrSCAddress addressXdr) {
     try {
       final addr = Address.fromXdr(addressXdr);
@@ -39,6 +40,8 @@ abstract final class OZAddressStrKey {
       }
       final accountId = addr.accountId;
       if (accountId != null) return accountId;
+      final muxedAccountId = addr.muxedAccountId;
+      if (muxedAccountId != null) return muxedAccountId;
       return null;
     } catch (_) {
       return null;

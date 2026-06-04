@@ -350,7 +350,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
         continue;
       }
 
-      final entryAddress = _addressToString(addressCreds.address);
+      final entryAddress = OZAddressStrKey.fromXdr(addressCreds.address);
       if (entryAddress != connected.contractId) {
         SelectedSignerWallet? matching;
         for (final w in walletSigners) {
@@ -948,9 +948,6 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     }
     return XdrSCVal.forAddress(Address.forAccountId(address).toXdr());
   }
-
-  String? _addressToString(XdrSCAddress addressXdr) =>
-      OZAddressStrKey.fromXdr(addressXdr);
 }
 
 class _AuthSignature {

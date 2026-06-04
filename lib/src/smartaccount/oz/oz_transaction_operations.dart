@@ -21,6 +21,7 @@ import '../../xdr/xdr.dart';
 import '../core/allow_credential.dart';
 import '../core/smart_account_errors.dart';
 import '../core/smart_account_utils.dart';
+import 'oz_address_strkey.dart';
 import 'oz_constants.dart';
 import 'oz_internal_pipeline_interfaces.dart';
 import 'oz_relayer_client.dart';
@@ -584,7 +585,7 @@ class OZTransactionOperations {
         continue;
       }
 
-      final entryAddress = _addressToString(addressCreds.address);
+      final entryAddress = OZAddressStrKey.fromXdr(addressCreds.address);
       if (entryAddress != contractId) {
         // Auth entry does not point at our smart account — pass through.
         signed.add(entry);
@@ -1420,28 +1421,6 @@ class OZTransactionOperations {
     return entries
         .map(SorobanAuthorizationEntry.fromXdr)
         .toList(growable: true);
-  }
-
-  /// Returns the strkey string form of an [XdrSCAddress], suitable for
-  /// comparing against the connected smart-account contract address. For
-  /// contract addresses returns the canonical `C...` strkey (XDR stores
-  /// the underlying 32-byte hash as hex; we re-encode to strkey here).
-  /// For account addresses returns the canonical `G...` strkey.
-  String? _addressToString(XdrSCAddress addressXdr) {
-    try {
-      final addr = Address.fromXdr(addressXdr);
-      final contractIdHex = addr.contractId;
-      if (contractIdHex != null) {
-        if (contractIdHex.startsWith('C')) return contractIdHex;
-        return StrKey.encodeContractId(
-          Util.hexToBytes(contractIdHex.toUpperCase()),
-        );
-      }
-      if (addr.accountId != null) return addr.accountId;
-      return null;
-    } catch (_) {
-      return null;
-    }
   }
 
   /// Builds an `XdrSCVal` of address type from a G- or C-address string.
