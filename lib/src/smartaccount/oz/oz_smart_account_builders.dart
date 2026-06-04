@@ -2,12 +2,12 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'dart:convert';
 import 'dart:typed_data';
 
 import '../../util.dart';
 import '../core/smart_account_constants.dart';
 import '../core/smart_account_errors.dart';
+import 'oz_base64url.dart';
 import 'oz_smart_account_types.dart';
 
 /// Builder utilities for OpenZeppelin Smart Account signers and policy
@@ -102,15 +102,7 @@ abstract class OZSmartAccountBuilders {
   static String? getCredentialIdStringFromSigner(OZSmartAccountSigner signer) {
     final credentialId = getCredentialIdFromSigner(signer);
     if (credentialId == null) return null;
-    return _stripBase64UrlPadding(base64Url.encode(credentialId));
-  }
-
-  static String _stripBase64UrlPadding(String encoded) {
-    var s = encoded;
-    while (s.isNotEmpty && s.endsWith('=')) {
-      s = s.substring(0, s.length - 1);
-    }
-    return s;
+    return ozBase64UrlEncode(credentialId);
   }
 
   static bool isDelegatedSigner(OZSmartAccountSigner signer) {
@@ -169,7 +161,7 @@ abstract class OZSmartAccountBuilders {
   ) {
     final signerCredId = getCredentialIdStringFromSigner(signer);
     if (signerCredId == null) return false;
-    return signerCredId == _stripBase64UrlPadding(credentialId);
+    return signerCredId == ozStripBase64UrlPadding(credentialId);
   }
 
   /// Returns `true` when [signer] is an [OZDelegatedSigner] whose address

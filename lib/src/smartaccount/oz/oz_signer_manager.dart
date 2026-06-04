@@ -2,7 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
@@ -13,6 +12,7 @@ import '../../xdr/xdr.dart';
 import '../core/smart_account_constants.dart';
 import '../core/smart_account_errors.dart';
 import '../core/web_authn_provider.dart';
+import 'oz_base64url.dart';
 import 'oz_internal_pipeline_interfaces.dart';
 import 'oz_secure_nonce.dart';
 import 'oz_selected_signer.dart';
@@ -151,7 +151,7 @@ class OZSignerManager {
     }
 
     final credentialIdBase64url =
-        _base64UrlEncode(registrationResult.credentialId);
+        ozBase64UrlEncode(registrationResult.credentialId);
 
     final credential = await _credentialManager.createPendingCredential(
       credentialId: credentialIdBase64url,
@@ -427,12 +427,4 @@ class OZSignerManager {
 
   OZTransactionOperations get _transactionOperations =>
       (_kit as OZSmartAccountWalletKitInterface).transactionOperations;
-}
-
-String _base64UrlEncode(Uint8List bytes) {
-  var encoded = base64Url.encode(bytes);
-  while (encoded.isNotEmpty && encoded.endsWith('=')) {
-    encoded = encoded.substring(0, encoded.length - 1);
-  }
-  return encoded;
 }

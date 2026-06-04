@@ -2,7 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart' as dio;
@@ -22,6 +21,7 @@ import '../core/allow_credential.dart';
 import '../core/smart_account_errors.dart';
 import '../core/smart_account_utils.dart';
 import '../core/web_authn_provider.dart';
+import 'oz_base64url.dart';
 import 'oz_internal_pipeline_interfaces.dart';
 import 'oz_relayer_client.dart';
 import 'oz_secure_nonce.dart';
@@ -489,7 +489,7 @@ class OZWalletOperations {
     }
 
     final credentialIdBase64url =
-        _base64UrlEncode(registrationResult.credentialId);
+        ozBase64UrlEncode(registrationResult.credentialId);
 
     final StoredCredential credential;
     try {
@@ -719,7 +719,7 @@ class OZWalletOperations {
     }
 
     final credentialIdBase64url =
-        _base64UrlEncode(authenticationResult.credentialId);
+        ozBase64UrlEncode(authenticationResult.credentialId);
 
     _checkCancellation(cancelToken);
 
@@ -844,8 +844,8 @@ class OZWalletOperations {
         // why: storage entries are keyed under the unpadded Base64URL form
         // produced by the connect path. Normalise here so a padded caller
         // input still hits the matching storage entry for transport hints.
-        final credIdStr = _stripBase64UrlPadding(rawCredIdStr);
-        final idBytes = _base64UrlDecode(credIdStr);
+        final credIdStr = ozStripBase64UrlPadding(rawCredIdStr);
+        final idBytes = ozBase64UrlDecode(credIdStr);
         StoredCredential? stored;
         try {
           stored = await _kit.getStorage().get(credIdStr);
@@ -895,7 +895,7 @@ class OZWalletOperations {
     }
 
     final credentialIdBase64url =
-        _base64UrlEncode(authenticationResult.credentialId);
+        ozBase64UrlEncode(authenticationResult.credentialId);
 
     final Uint8List normalizedSignature;
     try {
@@ -975,8 +975,8 @@ class OZWalletOperations {
     }
 
     // Normalise to the canonical unpadded Base64URL form; see
-    // _stripBase64UrlPadding.
-    credentialId = _stripBase64UrlPadding(credentialId);
+    // ozStripBase64UrlPadding.
+    credentialId = ozStripBase64UrlPadding(credentialId);
 
     _checkCancellation(cancelToken);
 
@@ -1000,7 +1000,7 @@ class OZWalletOperations {
 
     final Uint8List credentialIdBytes;
     try {
-      credentialIdBytes = _base64UrlDecode(credentialId);
+      credentialIdBytes = ozBase64UrlDecode(credentialId);
     } catch (e) {
       throw CredentialException.invalid(
         'Invalid Base64URL-encoded credential ID: $credentialId',
@@ -1103,9 +1103,9 @@ class OZWalletOperations {
     }
 
     // Normalise to the canonical unpadded Base64URL form; see
-    // _stripBase64UrlPadding.
+    // ozStripBase64UrlPadding.
     if (credentialId != null) {
-      credentialId = _stripBase64UrlPadding(credentialId);
+      credentialId = ozStripBase64UrlPadding(credentialId);
     }
 
     String? finalContractId = contractId;
@@ -1140,7 +1140,7 @@ class OZWalletOperations {
       if (finalContractId == null) {
         final Uint8List credentialIdBytes;
         try {
-          credentialIdBytes = _base64UrlDecode(credentialId);
+          credentialIdBytes = ozBase64UrlDecode(credentialId);
         } catch (e) {
           throw ValidationException.invalidInput(
             'credentialId',
@@ -1737,40 +1737,11 @@ class OZWalletOperations {
     _checkCancellation(cancelToken);
   }
 
-  // Private: byte helpers
-
   /// Draws from the shared cached CSPRNG via [OZSecureNonce.bytes].
   Uint8List _secureRandomBytes(int length) => OZSecureNonce.bytes(length);
-
-  String _base64UrlEncode(Uint8List bytes) {
-    var encoded = base64Url.encode(bytes);
-    while (encoded.isNotEmpty && encoded.endsWith('=')) {
-      encoded = encoded.substring(0, encoded.length - 1);
-    }
-    return encoded;
-  }
-
-  Uint8List _base64UrlDecode(String s) {
-    return base64Url.decode(base64Url.normalize(s));
-  }
 }
 
 // File-private helpers
-
-/// Strips trailing `=` padding from a Base64URL-encoded string.
-///
-/// The connect path encodes credential IDs without padding (RFC 4648 §5
-/// recommends the unpadded form for URL-safe Base64). Callers may pass
-/// padded values from external sources; normalising here keeps storage
-/// lookups, connected-state fields, emitted events, and saved sessions
-/// on a single canonical form.
-String _stripBase64UrlPadding(String encoded) {
-  var s = encoded;
-  while (s.isNotEmpty && s.endsWith('=')) {
-    s = s.substring(0, s.length - 1);
-  }
-  return s;
-}
 
 int _byteListContentHash(Uint8List bytes) {
   var hash = 1;

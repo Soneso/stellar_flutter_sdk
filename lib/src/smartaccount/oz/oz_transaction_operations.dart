@@ -2,7 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart' as dio;
@@ -22,6 +21,7 @@ import '../core/allow_credential.dart';
 import '../core/smart_account_errors.dart';
 import '../core/smart_account_utils.dart';
 import 'oz_address_strkey.dart';
+import 'oz_base64url.dart';
 import 'oz_constants.dart';
 import 'oz_internal_pipeline_interfaces.dart';
 import 'oz_relayer_client.dart';
@@ -608,7 +608,7 @@ class OZTransactionOperations {
 
       final Uint8List credIdBytes;
       try {
-        credIdBytes = _base64UrlDecode(credentialId);
+        credIdBytes = ozBase64UrlDecode(credentialId);
       } catch (e) {
         throw CredentialException.invalid(
           'Failed to decode credentialId from Base64URL: $credentialId',
@@ -1140,7 +1140,7 @@ class OZTransactionOperations {
       }
     }
     throw CredentialException.notFound(
-      'No signer found on-chain for credential ID: ${_base64UrlEncode(credentialIdBytes)}',
+      'No signer found on-chain for credential ID: ${ozBase64UrlEncode(credentialIdBytes)}',
     );
   }
 
@@ -1451,22 +1451,6 @@ class OZTransactionOperations {
       ..setRange(0, a.length, a)
       ..setRange(a.length, a.length + b.length, b);
     return out;
-  }
-
-  /// Base64URL-decodes a credential ID string. Accepts both padded and
-  /// unpadded input as produced by WebAuthn user agents.
-  Uint8List _base64UrlDecode(String s) {
-    return base64Url.decode(base64Url.normalize(s));
-  }
-
-  /// Base64URL-encodes byte content without trailing `=` padding, matching
-  /// the WebAuthn credential-ID format.
-  String _base64UrlEncode(Uint8List bytes) {
-    var encoded = base64Url.encode(bytes);
-    while (encoded.isNotEmpty && encoded.endsWith('=')) {
-      encoded = encoded.substring(0, encoded.length - 1);
-    }
-    return encoded;
   }
 
   /// Round-trips an auth entry through XDR so the cloned copy can be safely
