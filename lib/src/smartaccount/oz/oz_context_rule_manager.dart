@@ -18,6 +18,7 @@ import 'oz_policy_manager.dart';
 import 'oz_selected_signer.dart';
 import 'oz_smart_account_builders.dart';
 import 'oz_smart_account_types.dart';
+import 'oz_submission_routing.dart';
 import 'oz_transaction_operations.dart';
 import 'oz_validation.dart';
 
@@ -149,7 +150,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
       ),
     );
 
-    return _route(hostFunction, selectedSigners, forceMethod);
+    return ozRouteSubmission(_kit as OZSmartAccountWalletKitInterface, hostFunction, selectedSigners, forceMethod);
   }
 
   // -------------------------------------------------------------------------
@@ -591,7 +592,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
       ),
     );
 
-    return _route(hostFunction, selectedSigners, forceMethod);
+    return ozRouteSubmission(_kit as OZSmartAccountWalletKitInterface, hostFunction, selectedSigners, forceMethod);
   }
 
   /// Updates the expiration ledger of a context rule. Pass `null` to
@@ -616,7 +617,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
       ),
     );
 
-    return _route(hostFunction, selectedSigners, forceMethod);
+    return ozRouteSubmission(_kit as OZSmartAccountWalletKitInterface, hostFunction, selectedSigners, forceMethod);
   }
 
   /// Removes a context rule.
@@ -635,7 +636,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
       ),
     );
 
-    return _route(hostFunction, selectedSigners, forceMethod);
+    return ozRouteSubmission(_kit as OZSmartAccountWalletKitInterface, hostFunction, selectedSigners, forceMethod);
   }
 
   // -------------------------------------------------------------------------
@@ -905,28 +906,4 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
 
   // -------------------------------------------------------------------------
   // Routing helper
-  // -------------------------------------------------------------------------
-
-  Future<TransactionResult> _route(
-    XdrHostFunction hostFunction,
-    List<SelectedSigner> selectedSigners,
-    SubmissionMethod? forceMethod,
-  ) async {
-    final transactionOps =
-        (_kit as OZSmartAccountWalletKitInterface).transactionOperations;
-    if (selectedSigners.isEmpty) {
-      return transactionOps.submit(
-        hostFunction: hostFunction,
-        auth: const <XdrSorobanAuthorizationEntry>[],
-        forceMethod: forceMethod,
-      );
-    }
-    final manager =
-        _kit.multiSignerManager as OZMultiSignerManagerInterface;
-    return manager.submitWithMultipleSigners(
-      hostFunction: hostFunction,
-      selectedSigners: selectedSigners,
-      forceMethod: forceMethod,
-    );
-  }
 }

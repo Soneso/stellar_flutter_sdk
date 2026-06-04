@@ -12,6 +12,7 @@ import '../core/smart_account_errors.dart';
 import 'oz_internal_pipeline_interfaces.dart';
 import 'oz_selected_signer.dart';
 import 'oz_smart_account_types.dart';
+import 'oz_submission_routing.dart';
 import 'oz_transaction_operations.dart';
 import 'oz_validation.dart';
 
@@ -329,7 +330,7 @@ class OZPolicyManager {
       policyId: policyId,
     );
 
-    return _route(hostFunction, selectedSigners, forceMethod);
+    return ozRouteSubmission(_kit as OZSmartAccountWalletKitInterface, hostFunction, selectedSigners, forceMethod);
   }
 
   /// Removes a policy by matching the policy contract [policyAddress].
@@ -402,7 +403,7 @@ class OZPolicyManager {
       installParams: installParams,
     );
 
-    return _route(hostFunction, selectedSigners, forceMethod);
+    return ozRouteSubmission(_kit as OZSmartAccountWalletKitInterface, hostFunction, selectedSigners, forceMethod);
   }
 
   // -------------------------------------------------------------------------
@@ -442,27 +443,6 @@ class OZPolicyManager {
           XdrSCVal.forU32(policyId),
         ],
       ),
-    );
-  }
-
-  Future<TransactionResult> _route(
-    XdrHostFunction hostFunction,
-    List<SelectedSigner> selectedSigners,
-    SubmissionMethod? forceMethod,
-  ) async {
-    if (selectedSigners.isEmpty) {
-      return (_kit as OZSmartAccountWalletKitInterface).transactionOperations.submit(
-            hostFunction: hostFunction,
-            auth: const <XdrSorobanAuthorizationEntry>[],
-            forceMethod: forceMethod,
-          );
-    }
-    final manager =
-        _kit.multiSignerManager as OZMultiSignerManagerInterface;
-    return manager.submitWithMultipleSigners(
-      hostFunction: hostFunction,
-      selectedSigners: selectedSigners,
-      forceMethod: forceMethod,
     );
   }
 

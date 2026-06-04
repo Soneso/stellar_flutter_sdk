@@ -19,6 +19,7 @@ import 'oz_selected_signer.dart';
 import 'oz_smart_account_builders.dart';
 import 'oz_smart_account_events.dart';
 import 'oz_smart_account_types.dart';
+import 'oz_submission_routing.dart';
 import 'oz_transaction_operations.dart';
 
 /// Result of the [OZSignerManager.addNewPasskeySigner] end-to-end flow.
@@ -317,7 +318,7 @@ class OZSignerManager {
       ),
     );
 
-    return _route(hostFunction, selectedSigners, forceMethod);
+    return ozRouteSubmission(_kit as OZSmartAccountWalletKitInterface, hostFunction, selectedSigners, forceMethod);
   }
 
   /// Removes a signer from [contextRuleId] by matching the [signer]
@@ -401,30 +402,7 @@ class OZSignerManager {
       ),
     );
 
-    return _route(hostFunction, selectedSigners, forceMethod);
+    return ozRouteSubmission(_kit as OZSmartAccountWalletKitInterface, hostFunction, selectedSigners, forceMethod);
   }
 
-  Future<TransactionResult> _route(
-    XdrHostFunction hostFunction,
-    List<SelectedSigner> selectedSigners,
-    SubmissionMethod? forceMethod,
-  ) async {
-    if (selectedSigners.isEmpty) {
-      return _transactionOperations.submit(
-        hostFunction: hostFunction,
-        auth: const <XdrSorobanAuthorizationEntry>[],
-        forceMethod: forceMethod,
-      );
-    }
-    final manager =
-        _kit.multiSignerManager as OZMultiSignerManagerInterface;
-    return manager.submitWithMultipleSigners(
-      hostFunction: hostFunction,
-      selectedSigners: selectedSigners,
-      forceMethod: forceMethod,
-    );
-  }
-
-  OZTransactionOperations get _transactionOperations =>
-      (_kit as OZSmartAccountWalletKitInterface).transactionOperations;
 }
