@@ -868,6 +868,49 @@ void main() {
       expect(result, isNotNull);
       expect(result!.length, equals(65));
     });
+
+    test(
+        'test_extract_public_key_pattern_fallback_accepts_valid_separator', () {
+      // A leading non-map byte forces the pattern-matching fallback (map
+      // iteration is skipped for a non-map major type), exercising the
+      // separator validation added to the fallback path.
+      final prefix = Uint8List.fromList(
+          const [0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20]);
+      final validSeparator = Uint8List.fromList(const [0x22, 0x58, 0x20]);
+      final data = _concat(<Uint8List>[
+        Uint8List.fromList(const [0x00]),
+        prefix,
+        _testX,
+        validSeparator,
+        _testY,
+      ]);
+      final result = WebAuthnCborParser.extractPublicKeyFromCoseKey(data);
+      expect(result, isNotNull);
+      expect(result!.sublist(1, 33), equals(_testX));
+      expect(result.sublist(33, 65), equals(_testY));
+    });
+
+    test(
+        'test_extract_public_key_pattern_fallback_rejects_corrupted_separator',
+        () {
+      // Same forced-fallback shape but with a corrupted Y-coordinate
+      // separator: the strict pattern fallback must return null rather than
+      // accept a coincidental prefix match.
+      final prefix = Uint8List.fromList(
+          const [0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20]);
+      final corruptedSeparator = Uint8List.fromList(const [0x99, 0x99, 0x99]);
+      final data = _concat(<Uint8List>[
+        Uint8List.fromList(const [0x00]),
+        prefix,
+        _testX,
+        corruptedSeparator,
+        _testY,
+      ]);
+      expect(
+        WebAuthnCborParser.extractPublicKeyFromCoseKey(data),
+        isNull,
+      );
+    });
   });
 
   // =========================================================================

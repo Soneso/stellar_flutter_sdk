@@ -12,6 +12,7 @@ import '../../key_pair.dart';
 import '../../xdr/xdr.dart';
 import 'smart_account_constants.dart';
 import 'smart_account_errors.dart';
+import 'web_authn_cbor_parser.dart';
 
 /// Cryptographic helpers for smart-account operations.
 ///
@@ -353,32 +354,32 @@ abstract class SmartAccountUtils {
       return null;
     }
 
-    final xStart = coseKeyStart + 10;
-    final separatorStart = xStart + 32;
-    final yStart = separatorStart + 3;
-    final requiredLength = yStart + 32;
-
-    if (authenticatorData.length < requiredLength) {
+    // Full-key length guard. Returns null (not throw) so the public method
+    // falls through to the attestation-object strategy when the buffer is
+    // truncated after the prefix but before the complete key.
+    final fullKeyRequiredLength = coseKeyStart + 10 + 32 + 3 + 32;
+    if (authenticatorData.length < fullKeyRequiredLength) {
       return null;
     }
 
-    _validateCoseYMarker(authenticatorData, separatorStart, 'authenticatorData');
+    // All structural gates passed — delegate parsing to WebAuthnCborParser,
+    // which handles CBOR map iteration (order-tolerant) and a strict pattern
+    // fallback (validates the [0x22, 0x58, 0x20] Y-coordinate separator).
+    final coseKeySlice = Uint8List.sublistView(authenticatorData, coseKeyStart);
+    final key = WebAuthnCborParser.extractPublicKeyFromCoseKey(coseKeySlice);
+    if (key == null) {
+      throw ValidationException.invalidInput(
+        'authenticatorData',
+        'COSE key structure is invalid: could not extract secp256r1 '
+            'coordinates from authenticator data',
+      );
+    }
 
-    final x = Uint8List.fromList(
-      authenticatorData.sublist(xStart, xStart + 32),
+    _validatePointOnCurve(
+      Uint8List.sublistView(key, 1, 33),
+      Uint8List.sublistView(key, 33, 65),
     );
-    final y = Uint8List.fromList(
-      authenticatorData.sublist(yStart, yStart + 32),
-    );
-
-    _validatePointOnCurve(x, y);
-
-    final publicKey =
-        Uint8List(SmartAccountConstants.secp256r1PublicKeySize);
-    publicKey[0] = SmartAccountConstants.uncompressedPubkeyPrefix;
-    publicKey.setRange(1, 33, x);
-    publicKey.setRange(33, 65, y);
-    return publicKey;
+    return key;
   }
 
   /// Extracts the secp256r1 public key from a raw WebAuthn attestation
@@ -417,39 +418,23 @@ abstract class SmartAccountUtils {
       );
     }
 
-    final xStart = prefixIndex + prefix.length;
-    final separatorStart = xStart + 32;
-    final yStart = separatorStart + 3;
-
-    final requiredLength = yStart + 32;
-    if (attestationObject.length < requiredLength) {
+    // Prefix present; delegate full parsing to WebAuthnCborParser. Its pattern
+    // fallback locates the prefix and strictly validates the [0x22, 0x58, 0x20]
+    // Y-coordinate separator.
+    final key = WebAuthnCborParser.extractPublicKeyFromCoseKey(attestationObject);
+    if (key == null) {
       throw ValidationException.invalidInput(
         'attestationObject',
-        'Insufficient data after COSE key prefix',
+        'COSE key structure is malformed: could not extract secp256r1 '
+            'coordinates from attestation object',
       );
     }
 
-    _validateCoseYMarker(
-      attestationObject,
-      separatorStart,
-      'attestationObject',
+    _validatePointOnCurve(
+      Uint8List.sublistView(key, 1, 33),
+      Uint8List.sublistView(key, 33, 65),
     );
-
-    final x = Uint8List.fromList(
-      attestationObject.sublist(xStart, xStart + 32),
-    );
-    final y = Uint8List.fromList(
-      attestationObject.sublist(yStart, yStart + 32),
-    );
-
-    _validatePointOnCurve(x, y);
-
-    final publicKey =
-        Uint8List(SmartAccountConstants.secp256r1PublicKeySize);
-    publicKey[0] = SmartAccountConstants.uncompressedPubkeyPrefix;
-    publicKey.setRange(1, 33, x);
-    publicKey.setRange(33, 65, y);
-    return publicKey;
+    return key;
   }
 
   // Contract salt and address derivation
@@ -655,34 +640,6 @@ abstract class SmartAccountUtils {
     '5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b',
     radix: 16,
   );
-
-  /// Validates the 3-byte COSE Y-coordinate separator at the given offset.
-  ///
-  /// The separator bytes `[0x22, 0x58, 0x20]` are the CBOR encoding of map
-  /// key `-3`, a byte string of length 32. Their presence at the exact
-  /// offset after the X coordinate confirms the surrounding structure is a
-  /// valid ES256 COSE key and not a coincidental byte match elsewhere in
-  /// the attestation data.
-  static void _validateCoseYMarker(
-    Uint8List data,
-    int offset,
-    String sourceName,
-  ) {
-    final sep0 = data[offset] & 0xFF;
-    final sep1 = data[offset + 1] & 0xFF;
-    final sep2 = data[offset + 2] & 0xFF;
-    if (sep0 != 0x22 || sep1 != 0x58 || sep2 != 0x20) {
-      final hex0 = sep0.toRadixString(16).padLeft(2, '0');
-      final hex1 = sep1.toRadixString(16).padLeft(2, '0');
-      final hex2 = sep2.toRadixString(16).padLeft(2, '0');
-      throw ValidationException.invalidInput(
-        sourceName,
-        'COSE key structure is invalid: Y-coordinate marker '
-            '[0x22, 0x58, 0x20] not found at expected offset $offset '
-            '(found [0x$hex0, 0x$hex1, 0x$hex2])',
-      );
-    }
-  }
 
   /// Validates that the point `(x, y)` lies on the secp256r1 curve.
   ///

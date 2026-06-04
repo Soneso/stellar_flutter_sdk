@@ -333,11 +333,23 @@ class WebAuthnCborParser {
     if (prefixIndex < 0) return null;
 
     final xStart = prefixIndex + _coseEs256KeyPrefix.length;
+    final separatorStart = xStart + 32;
     // 3 bytes: CBOR key -3 (0x22) + bstr header (0x58 0x20).
-    final yStart = xStart + 32 + 3;
+    final yStart = separatorStart + 3;
     final requiredLength = yStart + 32;
 
     if (data.length < requiredLength) return null;
+
+    // Validate the 3-byte Y-coordinate separator [0x22, 0x58, 0x20] at the fixed
+    // offset. This confirms the X coordinate occupies exactly the 32 bytes
+    // preceding it and that the surrounding structure is a valid ES256 COSE key,
+    // not a coincidental prefix match. A mismatch means the key data is
+    // structurally malformed.
+    if (data[separatorStart] != 0x22 ||
+        data[separatorStart + 1] != 0x58 ||
+        data[separatorStart + 2] != 0x20) {
+      return null;
+    }
 
     final x = Uint8List.fromList(data.sublist(xStart, xStart + 32));
     final y = Uint8List.fromList(data.sublist(yStart, yStart + 32));
