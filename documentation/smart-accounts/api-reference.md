@@ -2115,7 +2115,7 @@ Every smart-account exception lives in `core/smart_account_errors.dart` and is s
 > | 3002 | `credentialAlreadyExists` | `UnvalidatedContext` |
 > | 3003 | `credentialInvalid` | `ExternalVerificationFailed` |
 >
-> SDK-defined contract codes the SDK interprets directly are declared in [`ContractErrorCodes`](#contract-error-codes).
+> SDK-defined contract codes the SDK interprets directly are declared in [`OZContractErrorCodes`](#oz-contract-error-codes).
 
 
 ```dart
@@ -2344,10 +2344,10 @@ final class IndexerTimeout extends IndexerException { }
 
 **Error Codes**: 10001-10002
 
-### Contract error codes
+### OZ contract error codes
 
 ```dart
-class ContractErrorCodes {
+class OZContractErrorCodes {
   static const int mathOverflow = 3012;
   static const int keyDataTooLarge = 3013;
   static const int contextRuleIdsLengthMismatch = 3014;

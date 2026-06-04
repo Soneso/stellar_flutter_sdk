@@ -1269,7 +1269,7 @@ await kit.signerManager.removeSigner(contextRuleId: 0, signerId: rule.signerIds[
 
 **Preconditions.** A call such as `kit.transactionOperations.transfer(...)`, `kit.signerManager.removeSigner(...)`, or a policy install throws `TransactionSimulationFailed`. The contract rejected the auth check or a policy enforcement hook.
 
-**Flow.** The simulation error message wraps the RPC simulation error, which contains the host error in the form `Error(Contract, #NNNN)`. Extract the numeric code and map it to an action. There is no typed contract-error exception; only the SDK constants in `ContractErrorCodes` (3012–3016) are surfaced as named values.
+**Flow.** The simulation error message wraps the RPC simulation error, which contains the host error in the form `Error(Contract, #NNNN)`. Extract the numeric code and map it to an action. There is no typed contract-error exception; only the SDK constants in `OZContractErrorCodes` (3012–3016) are surfaced as named values.
 
 ```dart
 final _contractErrorRegex = RegExp(r'Error\s*\(\s*Contract\s*,\s*#(\d+)\s*\)');
@@ -1298,7 +1298,7 @@ try {
     _ => 'Contract error $code — see Contract Error Codes below',
   };
   print('transfer rejected: $hint');
-  if (code == ContractErrorCodes.unauthorizedSigner) { // 3016
+  if (code == OZContractErrorCodes.unauthorizedSigner) { // 3016
     // Recovery: re-resolve rule IDs or adjust the selected-signer set.
   }
 }
@@ -1312,7 +1312,7 @@ try {
 // CORRECT: extract the contract code from the message text
 ```
 
-`ContractErrorCodes` constants (the codes the SDK interprets directly): `mathOverflow` 3012, `keyDataTooLarge` 3013, `contextRuleIdsLengthMismatch` 3014, `nameTooLong` 3015, `unauthorizedSigner` 3016. All other codes are on-chain-only — parse the message yourself.
+`OZContractErrorCodes` constants (the codes the SDK interprets directly): `mathOverflow` 3012, `keyDataTooLarge` 3013, `contextRuleIdsLengthMismatch` 3014, `nameTooLong` 3015, `unauthorizedSigner` 3016. All other codes are on-chain-only — parse the message yourself.
 
 ---
 
@@ -1347,7 +1347,7 @@ When the smart account contract rejects a call, the on-chain code is surfaced in
 | 3015 | NameTooLong | Rule name > 20 UTF-8 bytes | Shorten the name. |
 | 3016 | UnauthorizedSigner | A signer in the auth payload is not on the selected rule | Adjust `selectedSigners`, or pass `resolveContextRuleIds`. |
 
-Codes 3012–3016 are exposed as named constants on `ContractErrorCodes`; the rest are on-chain-only.
+Codes 3012–3016 are exposed as named constants on `OZContractErrorCodes`; the rest are on-chain-only.
 
 ### SimpleThreshold policy errors (3200 range)
 

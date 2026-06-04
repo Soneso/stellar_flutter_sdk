@@ -342,14 +342,6 @@ void main() {
           'Indexer request timed out: https://example/');
     });
 
-    test('contract error codes are correct', () {
-      expect(ContractErrorCodes.mathOverflow, 3012);
-      expect(ContractErrorCodes.keyDataTooLarge, 3013);
-      expect(ContractErrorCodes.contextRuleIdsLengthMismatch, 3014);
-      expect(ContractErrorCodes.nameTooLong, 3015);
-      expect(ContractErrorCodes.unauthorizedSigner, 3016);
-    });
-
     test('toString without cause omits the caused-by suffix', () {
       final ex = const InvalidConfig('alone');
       expect(ex.toString(), 'SmartAccountException [1001]: alone');

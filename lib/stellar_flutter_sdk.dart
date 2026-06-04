@@ -194,6 +194,7 @@ export 'src/smartaccount/core/web_authn_provider.dart';
 export 'src/smartaccount/oz/oz_builders.dart';
 export 'src/smartaccount/oz/oz_constants.dart';
 export 'src/smartaccount/oz/oz_context_rule_manager.dart';
+export 'src/smartaccount/oz/oz_contract_error_codes.dart';
 export 'src/smartaccount/oz/oz_credential_manager.dart';
 export 'src/smartaccount/oz/oz_external_signer_manager.dart';
 export 'src/smartaccount/oz/oz_multi_signer_manager.dart';
