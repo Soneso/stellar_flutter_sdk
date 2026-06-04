@@ -39,3 +39,17 @@ Future<TransactionResult> ozRouteSubmission(
     forceMethod: forceMethod,
   );
 }
+
+/// Resolves the submission method for a transaction: honours an explicit
+/// [forceMethod], otherwise selects the relayer when one is configured on the
+/// [kit] and falls back to direct RPC submission.
+@internal
+SubmissionMethod ozResolveSubmissionMethod(
+  OZSmartAccountKitInterface kit,
+  SubmissionMethod? forceMethod,
+) {
+  if (forceMethod != null) return forceMethod;
+  return kit.relayerClient != null
+      ? SubmissionMethod.relayer
+      : SubmissionMethod.rpc;
+}

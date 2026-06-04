@@ -754,13 +754,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     List<SelectedSigner> selectedSigners,
   ) {
     requireContractAddress(target, fieldName: 'target');
-
-    if (targetFn.trim().isEmpty) {
-      throw ValidationException.invalidInput(
-        'targetFn',
-        'Function name cannot be empty',
-      );
-    }
+    requireNonBlankFunctionName(targetFn);
 
     if (selectedSigners.isEmpty) {
       throw ValidationException.invalidInput(

@@ -31,6 +31,7 @@ import 'oz_smart_account_events.dart';
 import 'oz_smart_account_signatures.dart';
 import 'oz_smart_account_types.dart';
 import 'oz_storage_adapter.dart';
+import 'oz_submission_routing.dart';
 import 'oz_transaction_timeout.dart';
 import 'oz_validation.dart';
 
@@ -304,9 +305,7 @@ class OZTransactionOperations {
 
     requireContractAddress(target, fieldName: 'target');
 
-    if (targetFn.trim().isEmpty) {
-      throw ValidationException.invalidInput('targetFn', 'Function name cannot be empty');
-    }
+    requireNonBlankFunctionName(targetFn);
 
     final invokeArgs = XdrInvokeContractArgs(
       Address.forContractId(target).toXdr(),
@@ -349,9 +348,7 @@ class OZTransactionOperations {
 
     requireContractAddress(target, fieldName: 'target');
 
-    if (targetFn.trim().isEmpty) {
-      throw ValidationException.invalidInput('targetFn', 'Function name cannot be empty');
-    }
+    requireNonBlankFunctionName(targetFn);
 
     final functionArgs = <XdrSCVal>[
       XdrSCVal.forAddress(Address.forContractId(target).toXdr()),
@@ -468,7 +465,7 @@ class OZTransactionOperations {
     final reSimulation = await _reSimulateSigned(signedTransaction);
     _applySimulationToTransaction(signedTransaction, reSimulation);
 
-    final submissionMethod = _resolveSubmissionMethod(forceMethod);
+    final submissionMethod = ozResolveSubmissionMethod(_kit, forceMethod);
     final useRelayer = submissionMethod == SubmissionMethod.relayer;
 
     return _submitOrRelay(
@@ -709,7 +706,7 @@ class OZTransactionOperations {
     final deployer = await _kit.getDeployer();
     _applySimulationToTransaction(signedTransaction, simulation);
 
-    final useRelayer = _resolveSubmissionMethod(forceMethod) == SubmissionMethod.relayer;
+    final useRelayer = ozResolveSubmissionMethod(_kit, forceMethod) == SubmissionMethod.relayer;
 
     return _submitOrRelay(
       transaction: signedTransaction,
@@ -939,7 +936,7 @@ class OZTransactionOperations {
 
     _applySimulationToTransaction(signedTransaction, reSimulation);
 
-    final submissionMethod = _resolveSubmissionMethod(forceMethod);
+    final submissionMethod = ozResolveSubmissionMethod(_kit, forceMethod);
     final useRelayer = submissionMethod == SubmissionMethod.relayer;
 
     final result = await _submitOrRelay(
@@ -1080,13 +1077,6 @@ class OZTransactionOperations {
       }
     }
     return result;
-  }
-
-  /// Resolves the submission method: explicit override wins, otherwise the
-  /// kit auto-detects based on relayer configuration.
-  SubmissionMethod _resolveSubmissionMethod(SubmissionMethod? forceMethod) {
-    if (forceMethod != null) return forceMethod;
-    return _kit.relayerClient != null ? SubmissionMethod.relayer : SubmissionMethod.rpc;
   }
 
   /// Returns `true` when relayer Mode 2 (signed transaction XDR) is required

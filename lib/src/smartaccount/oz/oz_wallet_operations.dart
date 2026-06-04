@@ -29,6 +29,7 @@ import 'oz_smart_account_events.dart';
 import 'oz_smart_account_signatures.dart';
 import 'oz_smart_account_types.dart';
 import 'oz_storage_adapter.dart';
+import 'oz_submission_routing.dart';
 import 'oz_transaction_timeout.dart';
 
 // Public result types
@@ -1487,7 +1488,7 @@ class OZWalletOperations {
       );
     }
 
-    final useRelayer = _resolveDeploySubmissionMethod(forceMethod) ==
+    final useRelayer = ozResolveSubmissionMethod(_kit, forceMethod) ==
         SubmissionMethod.relayer;
 
     if (simulation.transactionData != null) {
@@ -1532,7 +1533,7 @@ class OZWalletOperations {
     SubmissionMethod? forceMethod,
     dio.CancelToken? cancelToken,
   }) async {
-    final useRelayer = _resolveDeploySubmissionMethod(forceMethod) ==
+    final useRelayer = ozResolveSubmissionMethod(_kit, forceMethod) ==
         SubmissionMethod.relayer;
 
     final String transactionHash;
@@ -1689,15 +1690,6 @@ class OZWalletOperations {
     }
 
     return transactionHash;
-  }
-
-  // Private: submission-method resolution for deploy transactions
-
-  SubmissionMethod _resolveDeploySubmissionMethod(SubmissionMethod? forceMethod) {
-    if (forceMethod != null) return forceMethod;
-    return _kit.relayerClient != null
-        ? SubmissionMethod.relayer
-        : SubmissionMethod.rpc;
   }
 
   // Private: cancellation plumbing

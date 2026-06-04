@@ -76,3 +76,16 @@ void requireStellarAddress(String address, {required String fieldName}) {
     );
   }
 }
+
+/// Validates that [targetFn] is a non-blank contract function name.
+///
+/// Throws a [ValidationException] (`invalidInput`) on `targetFn` when the
+/// trimmed value is empty.
+void requireNonBlankFunctionName(String targetFn) {
+  if (targetFn.trim().isEmpty) {
+    throw ValidationException.invalidInput(
+      'targetFn',
+      'Function name cannot be empty',
+    );
+  }
+}
