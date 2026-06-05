@@ -4,10 +4,9 @@
 
 import 'package:flutter/services.dart';
 
-import '../core/allow_credential.dart';
-import '../core/smart_account_errors.dart';
-import '../core/web_authn_provider.dart';
-import 'oz_constants.dart';
+import 'allow_credential.dart';
+import 'smart_account_errors.dart';
+import 'web_authn_provider.dart';
 
 /// Method-channel name used by the platform WebAuthn bridge.
 ///
@@ -55,7 +54,7 @@ class PlatformWebAuthnProvider implements WebAuthnProvider {
   PlatformWebAuthnProvider({
     required this.rpId,
     required this.rpName,
-    this.timeout = OZConstants.webauthnTimeoutMs,
+    this.timeout = WebAuthnProvider.defaultTimeoutMs,
     this.authenticatorAttachment,
     MethodChannel? methodChannel,
   })  : assert(rpId.isNotEmpty, 'rpId must not be empty'),
@@ -74,7 +73,7 @@ class PlatformWebAuthnProvider implements WebAuthnProvider {
   final String rpName;
 
   /// Timeout for the WebAuthn ceremony in milliseconds. Defaults to
-  /// [OZConstants.webauthnTimeoutMs] (60 s).
+  /// [WebAuthnProvider.defaultTimeoutMs] (60 s).
   final int timeout;
 
   /// Optional authenticator-attachment hint. `null` (the default) allows

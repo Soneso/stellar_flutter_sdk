@@ -148,6 +148,10 @@ class WebAuthnRegistrationResult {
 abstract class WebAuthnProvider {
   const WebAuthnProvider();
 
+  /// Default operation timeout in milliseconds (60 seconds), used by the
+  /// shipped providers when no explicit timeout is supplied.
+  static const int defaultTimeoutMs = 60000;
+
   /// Registers a new WebAuthn credential (passkey creation).
   ///
   /// Triggers the platform's credential-creation flow, prompting the user to

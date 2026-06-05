@@ -18,10 +18,6 @@ void main() {
       expect(OZConstants.defaultRelayerTimeoutMs, 6 * 60 * 1000);
     });
 
-    test('test_WEBAUTHN_TIMEOUT_MS_equals_60000', () {
-      expect(OZConstants.webauthnTimeoutMs, 60000);
-    });
-
     test('test_FRIENDBOT_RESERVE_XLM_equals_5', () {
       expect(OZConstants.friendbotReserveXlm, 5);
     });
@@ -52,15 +48,14 @@ void main() {
       expect(OZConstants.clientName, 'flutter-stellar-sdk');
     });
 
-    test('test_OZConstants_exposes_exactly_15_public_constants', () {
-      // Inventory check: the fifteen values below must all be present and
+    test('test_OZConstants_exposes_exactly_14_public_constants', () {
+      // Inventory check: the fourteen values below must all be present and
       // surfacing the correct constants. If a new constant is added or one is
       // removed/renamed, this list will fall out of date and force review.
       final values = <Object>[
         OZConstants.defaultSessionExpiryMs,
         OZConstants.defaultIndexerTimeoutMs,
         OZConstants.defaultRelayerTimeoutMs,
-        OZConstants.webauthnTimeoutMs,
         OZConstants.friendbotReserveXlm,
         OZConstants.defaultTimeoutSeconds,
         OZConstants.maxSigners,
@@ -73,7 +68,7 @@ void main() {
         OZConstants.maxIndexerConnectTimeoutMs,
         OZConstants.maxRelayerConnectTimeoutMs,
       ];
-      expect(values.length, 15);
+      expect(values.length, 14);
       expect(values, everyElement(isNotNull));
     });
   });

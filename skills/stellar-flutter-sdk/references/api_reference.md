@@ -732,7 +732,6 @@ String get credentialId
 static const int defaultSessionExpiryMs
 static const int defaultIndexerTimeoutMs
 static const int defaultRelayerTimeoutMs
-static const int webauthnTimeoutMs
 static const int friendbotReserveXlm
 static const int defaultTimeoutSeconds
 static const int maxSigners
@@ -1764,6 +1763,7 @@ static WebAuthnCancelled cancelled()
 ## final class WebAuthnNotSupported extends WebAuthnException
 const WebAuthnNotSupported()
 ## abstract class WebAuthnProvider
+static const int defaultTimeoutMs
 const WebAuthnProvider()
 Future<WebAuthnRegistrationResult> register()
 Future<WebAuthnAuthenticationResult> authenticate()

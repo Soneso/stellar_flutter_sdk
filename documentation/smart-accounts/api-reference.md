@@ -2389,7 +2389,6 @@ class OZConstants {
   static const int defaultSessionExpiryMs = 604800000;          // 7 days
   static const int defaultIndexerTimeoutMs = 10000;             // 10 s
   static const int defaultRelayerTimeoutMs = 360000;            // 6 min
-  static const int webauthnTimeoutMs = 60000;                   // 60 s
   static const int friendbotReserveXlm = 5;
   static const int defaultTimeoutSeconds = 30;
   static const int maxSigners = 15;                             // per context rule
@@ -2440,6 +2439,10 @@ The web storage facades expose the following static defaults:
 ```dart
 abstract class WebAuthnProvider {
   const WebAuthnProvider();
+
+  /// Default operation timeout in milliseconds (60 s), used by the shipped
+  /// providers when no explicit timeout is supplied.
+  static const int defaultTimeoutMs = 60000;
 
   Future<WebAuthnRegistrationResult> register({
     required Uint8List challenge,
@@ -2539,7 +2542,7 @@ class PlatformWebAuthnProvider implements WebAuthnProvider {
   PlatformWebAuthnProvider({
     required String rpId,
     required String rpName,
-    int timeout = OZConstants.webauthnTimeoutMs,
+    int timeout = WebAuthnProvider.defaultTimeoutMs,
     String? authenticatorAttachment,
     MethodChannel? methodChannel,
   });
@@ -2557,7 +2560,7 @@ Dispatches WebAuthn calls to the native platform's plugin via the `com.soneso.st
 
 - `rpId`: Relying-party identifier (domain name). Must match the domain declared in the platform's associated-domains configuration.
 - `rpName`: Human-readable relying-party name shown in the system passkey prompt.
-- `timeout`: WebAuthn ceremony timeout in milliseconds. Defaults to `OZConstants.webauthnTimeoutMs` (60 s).
+- `timeout`: WebAuthn ceremony timeout in milliseconds. Defaults to `WebAuthnProvider.defaultTimeoutMs` (60 s).
 - `authenticatorAttachment`: Optional `"platform"` or `"cross-platform"` hint. `null` (the default) allows both. Currently ignored by the Apple-side implementation.
 - `methodChannel`: Test-only override of the method channel.
 
@@ -2575,7 +2578,7 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
   BrowserWebAuthnProvider({
     required String rpId,
     required String rpName,
-    int timeoutMs = OZConstants.webauthnTimeoutMs,
+    int timeoutMs = WebAuthnProvider.defaultTimeoutMs,
   });
 }
 ```

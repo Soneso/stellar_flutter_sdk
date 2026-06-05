@@ -8,7 +8,7 @@ library;
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stellar_flutter_sdk/src/smartaccount/oz/browser_webauthn_provider.dart';
+import 'package:stellar_flutter_sdk/src/smartaccount/core/browser_webauthn_provider.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/oz/indexed_db_storage_adapter.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/oz/local_storage_adapter.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_storage_adapter.dart';

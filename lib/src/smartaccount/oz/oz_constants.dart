@@ -19,9 +19,6 @@ class OZConstants {
   /// Default HTTP timeout for relayer requests in milliseconds (6 minutes).
   static const int defaultRelayerTimeoutMs = 360000;
 
-  /// Timeout for WebAuthn credential operations in milliseconds (60 seconds).
-  static const int webauthnTimeoutMs = 60000;
-
   /// XLM amount retained in the temporary funding account as the minimum
   /// balance reserve when transferring Friendbot funds to a smart-account
   /// wallet.

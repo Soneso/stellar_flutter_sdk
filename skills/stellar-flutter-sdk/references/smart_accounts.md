@@ -1507,7 +1507,7 @@ OZConstants.defaultSessionExpiryMs; // 604800000 (7 days)
 OZConstants.defaultTimeoutSeconds;  // 30
 OZConstants.defaultRelayerTimeoutMs;// 360000 (6 min)
 OZConstants.defaultIndexerTimeoutMs;// 10000
-OZConstants.webauthnTimeoutMs;      // 60000
+WebAuthnProvider.defaultTimeoutMs;  // 60000
 OZConstants.friendbotReserveXlm;    // 5
 ```
 

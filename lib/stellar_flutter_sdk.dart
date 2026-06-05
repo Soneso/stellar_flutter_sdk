@@ -217,9 +217,9 @@ export 'src/smartaccount/oz/oz_wallet_operations.dart';
 
 // Smart Accounts — platform bridges
 export 'src/smartaccount/oz/platform_storage_adapter.dart';
-export 'src/smartaccount/oz/platform_webauthn_provider.dart';
+export 'src/smartaccount/core/platform_webauthn_provider.dart';
 
 // Smart Accounts — web platform facades
-export 'src/smartaccount/oz/browser_webauthn_provider.dart';
+export 'src/smartaccount/core/browser_webauthn_provider.dart';
 export 'src/smartaccount/oz/indexed_db_storage_adapter.dart';
 export 'src/smartaccount/oz/local_storage_adapter.dart';

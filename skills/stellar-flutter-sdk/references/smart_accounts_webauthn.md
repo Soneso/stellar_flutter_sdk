@@ -69,7 +69,7 @@ ships:
 
 ```dart
 // WRONG: importing the web/native files directly
-// import 'package:stellar_flutter_sdk/src/smartaccount/oz/web/browser_webauthn_provider_web.dart';
+// import 'package:stellar_flutter_sdk/src/smartaccount/core/web/browser_webauthn_provider_web.dart';
 // CORRECT: import only the package barrel; the conditional export picks the impl
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 ```

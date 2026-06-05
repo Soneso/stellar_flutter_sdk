@@ -4,9 +4,8 @@
 
 import 'dart:typed_data';
 
-import '../../core/allow_credential.dart';
-import '../../core/web_authn_provider.dart';
-import '../oz_constants.dart';
+import '../allow_credential.dart';
+import '../web_authn_provider.dart';
 
 /// Non-web stub of [BrowserWebAuthnProvider].
 ///
@@ -36,7 +35,7 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
   BrowserWebAuthnProvider({
     required this.rpId,
     required this.rpName,
-    this.timeoutMs = OZConstants.webauthnTimeoutMs,
+    this.timeoutMs = WebAuthnProvider.defaultTimeoutMs,
   });
 
   Never _unsupported() => throw UnsupportedError(

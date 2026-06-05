@@ -16,8 +16,8 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/core/allow_credential.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/core/smart_account_errors.dart';
-import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_constants.dart';
-import 'package:stellar_flutter_sdk/src/smartaccount/oz/web/browser_webauthn_provider_web.dart';
+import 'package:stellar_flutter_sdk/src/smartaccount/core/web/browser_webauthn_provider_web.dart';
+import 'package:stellar_flutter_sdk/src/smartaccount/core/web_authn_provider.dart';
 import 'package:web/web.dart' as web;
 
 JSObject _domException(String name, String message) {
@@ -237,7 +237,7 @@ void main() {
         rpId: 'example.com',
         rpName: 'Example',
       );
-      expect(provider.timeoutMs, OZConstants.webauthnTimeoutMs);
+      expect(provider.timeoutMs, WebAuthnProvider.defaultTimeoutMs);
       expect(provider.timeoutMs, 60000);
     });
 

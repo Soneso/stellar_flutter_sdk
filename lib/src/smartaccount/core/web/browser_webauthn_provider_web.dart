@@ -10,12 +10,11 @@ import 'dart:typed_data';
 import 'package:meta/meta.dart';
 import 'package:web/web.dart' as web;
 
-import '../../core/allow_credential.dart';
-import '../../core/smart_account_errors.dart';
-import '../../core/smart_account_utils.dart';
-import '../../core/web_authn_cbor_parser.dart';
-import '../../core/web_authn_provider.dart';
-import '../oz_constants.dart';
+import '../allow_credential.dart';
+import '../smart_account_errors.dart';
+import '../smart_account_utils.dart';
+import '../web_authn_cbor_parser.dart';
+import '../web_authn_provider.dart';
 
 /// Browser implementation of [WebAuthnProvider] using the Web
 /// Authentication API.
@@ -62,7 +61,7 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
   BrowserWebAuthnProvider({
     required this.rpId,
     required this.rpName,
-    this.timeoutMs = OZConstants.webauthnTimeoutMs,
+    this.timeoutMs = WebAuthnProvider.defaultTimeoutMs,
   }) : _injectedCredentials = null;
 
   /// Constructs a [BrowserWebAuthnProvider] backed by an injected
@@ -73,7 +72,7 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
     required this.rpId,
     required this.rpName,
     required web.CredentialsContainer credentialsContainer,
-    this.timeoutMs = OZConstants.webauthnTimeoutMs,
+    this.timeoutMs = WebAuthnProvider.defaultTimeoutMs,
   }) : _injectedCredentials = credentialsContainer;
 
   @override
