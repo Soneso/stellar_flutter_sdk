@@ -258,6 +258,15 @@ _METHOD_RE = re.compile(
     r'([\w.]+\s*<[\w<>,?.\s]+?>[?]?|[\w<>,?.]+)\s+'
     r'(\w+)\s*(<|\()'
 )
+# Matches a method whose return type is itself a function type: the pattern
+# captures everything up to and including the first `Function` keyword so the
+# caller can then balance the function-type's `(...)` and extract the real
+# method name from the remainder. Group 1: optional `static `. Group 2: the
+# prefix before `Function` (e.g. `void ` or empty). The `Function` keyword
+# is consumed by the match.
+_FUNC_TYPE_RETURN_RE = re.compile(
+    r'^(static\s+)?((?:[\w<>,?.\s]*?\s+)?)Function\s*\('
+)
 # No-return-type method declarations: `[static] name(params)` (implicit
 # dynamic return). The general method pattern requires a return-type token, so
 # these would otherwise be dropped. Matched only after the typed-method branch.
@@ -305,6 +314,13 @@ def _classify_method(line: str, info: ClassInfo, class_name: str) -> bool:
     if method_name in SUPPRESSED_METHODS:
         return True
 
+    # Function-type return: _METHOD_RE matched `Function` as the method name
+    # because the true return type is `{prefix} Function({func_params})`.
+    # Re-parse: balance the function-type's `(...)`, then extract the real
+    # method name and its parameter list from the remainder of the line.
+    if method_name == 'Function':
+        return _classify_func_type_return_method(line, info, class_name)
+
     # Resolve an optional generic clause before the parameter list.
     delim_pos = m.start(4)
     if line[delim_pos] == '<':
@@ -337,6 +353,85 @@ def _classify_method(line: str, info: ClassInfo, class_name: str) -> bool:
     return True
 
 
+def _classify_func_type_return_method(
+    line: str, info: ClassInfo, class_name: str
+) -> bool:
+    """
+    Handle a method whose return type is itself a function type, e.g.:
+        void Function() addListener(OZSmartAccountEventListener listener)
+        void Function() on<E extends OZSmartAccountEvent>(void Function(E) listener)
+
+    Strategy:
+    1. Match the `_FUNC_TYPE_RETURN_RE` to locate the `Function(` opener and
+       any static/prefix before it.
+    2. Balance the function-type's `(...)` to find where the return type ends.
+    3. Extract the real method name from the remainder (first word token).
+    4. Handle an optional generic clause, then extract the method's param list.
+    """
+    fm = _FUNC_TYPE_RETURN_RE.match(line)
+    if not fm:
+        return False
+
+    is_static = bool(fm.group(1))
+    # The full return type ends at the closing `)` of Function(...)
+    # fm.end() points one past the `(` that opened Function's params.
+    func_paren_open = fm.end() - 1  # index of `(` in `Function(`
+    func_paren_close = balance_parens(line, func_paren_open)
+    return_type = compact_whitespace(line[:func_paren_close + 1])
+
+    # Remainder after the return type: ' addListener(params)' or ' on<E>(params)'
+    remainder = line[func_paren_close + 1:].lstrip()
+    if not remainder:
+        return False
+
+    # Extract real method name.
+    name_m = re.match(r'(\w+)', remainder)
+    if not name_m:
+        return False
+    real_name = name_m.group(1)
+
+    if is_private(real_name):
+        return True  # consumed
+    if real_name == class_name:
+        return False  # constructor — should not happen with func-type return
+    if real_name in SUPPRESSED_METHODS:
+        return True
+
+    after_name = remainder[name_m.end():]
+
+    # Optional generic clause on the method itself: `<E extends Foo>`.
+    generic = ""
+    if after_name.lstrip().startswith('<'):
+        angle_start = len(after_name) - len(after_name.lstrip())
+        # Work in absolute position in `line`.
+        abs_angle = func_paren_close + 1 + (len(line[func_paren_close + 1:]) - len(after_name)) + angle_start
+        abs_angle_end = balance(line, abs_angle, '<', '>')
+        generic = compact_whitespace(line[abs_angle:abs_angle_end + 1])
+        after_name = line[abs_angle_end + 1:].lstrip()
+    else:
+        after_name = after_name.lstrip()
+
+    # Method parameter list.
+    if not after_name.startswith('('):
+        return False
+    # after_name is a suffix of line; find its absolute position.
+    abs_paren_start = len(line) - len(after_name)
+    abs_paren_end = balance_parens(line, abs_paren_start)
+    params = compact_whitespace(line[abs_paren_start + 1:abs_paren_end])
+
+    after = line[abs_paren_end + 1:].strip()
+    is_async = after.startswith('async')
+
+    sig = ""
+    if is_static:
+        sig += "static "
+    sig += f"{return_type} {real_name}{generic}({params})"
+    if is_async:
+        sig += " async"
+    info.methods.append(sig)
+    return True
+
+
 def extract_top_level_members(body: str, class_name: str) -> ClassInfo:
     """
     Extract public members from a class body by tokenizing top-level
@@ -354,10 +449,16 @@ def _split_top_level_declarations(body: str) -> list[tuple[str, str]]:
     ('block_start' | 'statement', text) tuple where `text` is the normalized
     declaration prefix up to its `{` (block_start) or `;` (statement). Nested
     braces and string literals are skipped.
+
+    Paren depth is tracked independently: a `{` that opens a Dart named-
+    parameter block (e.g. `foo({required int x})`) sits inside an unmatched
+    `(` and must NOT be treated as a body-block boundary — it is folded into
+    the current accumulated text so the full parameter list is preserved.
     """
     decls: list[tuple[str, str]] = []
     current_line: list[str] = []
-    depth = 0
+    depth = 0        # brace depth
+    paren_depth = 0  # paren depth (to detect named-parameter blocks)
     i = 0
     n = len(body)
 
@@ -370,9 +471,15 @@ def _split_top_level_declarations(body: str) -> list[tuple[str, str]]:
             i = end
             continue
 
+        if ch == '(':
+            paren_depth += 1
+        elif ch == ')':
+            if paren_depth > 0:
+                paren_depth -= 1
+
         if ch == '{':
-            if depth == 0:
-                # Start of a method/getter/setter/constructor body.
+            if depth == 0 and paren_depth == 0:
+                # True body block: start of a method/getter/setter/constructor body.
                 line_text = ''.join(current_line).strip()
                 if line_text:
                     decls.append(('block_start', line_text))
@@ -381,6 +488,10 @@ def _split_top_level_declarations(body: str) -> list[tuple[str, str]]:
                 i = balance_braces(body, i) + 1
                 continue
             else:
+                # Either nested brace (depth > 0) or a named-parameter block
+                # opener (depth == 0 but paren_depth > 0). In both cases,
+                # append the character and track brace depth so the matching
+                # `}` is handled correctly.
                 depth += 1
         elif ch == '}':
             depth -= 1
@@ -410,7 +521,13 @@ def _classify_member(line: str, info: ClassInfo, class_name: str) -> None:
     """Classify a single normalized declaration line into the appropriate bucket."""
     line = compact_whitespace(line)
 
-    # Remove annotations like @override, @visibleForTesting, @Deprecated, etc.
+    # Members annotated @visibleForTesting are test-only and must not appear in
+    # the reference. Detect BEFORE the general annotation strip so the tag is
+    # still present in `line`.
+    if '@visibleForTesting' in line:
+        return
+
+    # Remove annotations like @override, @Deprecated, etc.
     line = re.sub(r'@\w+(?:\([^)]*\))?\s*', '', line).strip()
     if not line:
         return
@@ -569,6 +686,9 @@ def scan_public_member_count(body: str, type_name: str) -> int:
     count = 0
     for _kind, raw in _split_top_level_declarations(body):
         line = compact_whitespace(raw)
+        # Mirror _classify_member: skip @visibleForTesting members before strip.
+        if '@visibleForTesting' in line:
+            continue
         line = re.sub(r'@\w+(?:\([^)]*\))?\s*', '', line).strip()
         if not line:
             continue
