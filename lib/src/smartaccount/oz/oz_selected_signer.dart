@@ -8,23 +8,23 @@ import 'dart:typed_data';
 ///
 /// The caller explicitly lists every signer that should sign. There is
 /// no implicit connected passkey: to include the connected passkey,
-/// supply a [SelectedSignerPasskey] entry referencing it.
-sealed class SelectedSigner {
-  const SelectedSigner();
+/// supply a [OZSelectedSignerPasskey] entry referencing it.
+sealed class OZSelectedSigner {
+  const OZSelectedSigner();
 }
 
 /// A WebAuthn passkey signer entry. Each instance triggers one OS
 /// WebAuthn authentication prompt.
-final class SelectedSignerPasskey extends SelectedSigner {
+final class OZSelectedSignerPasskey extends OZSelectedSigner {
   /// Constructs a passkey selected-signer entry.
   ///
   /// All fields are optional because the connected passkey can be
-  /// referenced via a default-constructed [SelectedSignerPasskey];
+  /// referenced via a default-constructed [OZSelectedSignerPasskey];
   /// non-connected passkeys must populate at least [credentialIdBytes]
   /// (used as the WebAuthn `allowCredentials` constraint) and [keyData]
   /// (used to reconstruct the on-chain external signer for context-rule
   /// resolution).
-  const SelectedSignerPasskey({
+  const OZSelectedSignerPasskey({
     this.credentialId,
     this.credentialIdBytes,
     this.keyData,
@@ -57,7 +57,7 @@ final class SelectedSignerPasskey extends SelectedSigner {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! SelectedSignerPasskey) return false;
+    if (other is! OZSelectedSignerPasskey) return false;
     if (credentialId != other.credentialId) return false;
     if (!_bytesEqualNullable(credentialIdBytes, other.credentialIdBytes)) {
       return false;
@@ -88,13 +88,13 @@ final class SelectedSignerPasskey extends SelectedSigner {
 ///
 /// Unlike passkey selectors, this type carries no signing material — it is
 /// a pure identifier.
-final class SelectedSignerEd25519 extends SelectedSigner {
+final class OZSelectedSignerEd25519 extends OZSelectedSigner {
   /// Constructs an Ed25519 selected-signer entry.
   ///
   /// [verifierAddress] must be a valid C-strkey identifying the Ed25519
   /// verifier contract registered on-chain for this signer slot.
   /// [publicKey] must be the 32-byte Ed25519 public key for the signer.
-  const SelectedSignerEd25519({
+  const OZSelectedSignerEd25519({
     required this.verifierAddress,
     required this.publicKey,
   });
@@ -110,7 +110,7 @@ final class SelectedSignerEd25519 extends SelectedSigner {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! SelectedSignerEd25519) return false;
+    if (other is! OZSelectedSignerEd25519) return false;
     if (verifierAddress != other.verifierAddress) return false;
     return _bytesEqualNullable(publicKey, other.publicKey);
   }
@@ -127,9 +127,9 @@ final class SelectedSignerEd25519 extends SelectedSigner {
 /// The address must have been registered as a `Delegated` signer on the
 /// smart-account contract and the external wallet adapter must be able
 /// to sign for it.
-final class SelectedSignerWallet extends SelectedSigner {
+final class OZSelectedSignerWallet extends OZSelectedSigner {
   /// Constructs a wallet selected-signer entry.
-  const SelectedSignerWallet(this.address);
+  const OZSelectedSignerWallet(this.address);
 
   /// Stellar G-address of the delegated signer.
   final String address;
@@ -137,7 +137,7 @@ final class SelectedSignerWallet extends SelectedSigner {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! SelectedSignerWallet) return false;
+    if (other is! OZSelectedSignerWallet) return false;
     return other.address == address;
   }
 

@@ -40,23 +40,23 @@ const String _credentialIdB64 = 'aGVsbG8tc21hcnQtYWNjb3VudA';
   return (kit: kit, txOps: txOps);
 }
 
-/// Stub context-rule manager that returns a pre-baked [ParsedContextRule]
+/// Stub context-rule manager that returns a pre-baked [OZParsedContextRule]
 /// for any rule id, so `removeSignerBySigner` can resolve a value to an
 /// id without going on-chain.
 class _ScriptedRuleManager implements OZContextRuleManagerInterface {
   _ScriptedRuleManager(this._rule);
 
-  final ParsedContextRule _rule;
+  final OZParsedContextRule _rule;
 
   @override
-  Future<List<ParsedContextRule>> listContextRules() async =>
-      <ParsedContextRule>[_rule];
+  Future<List<OZParsedContextRule>> listContextRules() async =>
+      <OZParsedContextRule>[_rule];
 
   @override
   Future<List<int>> resolveContextRuleIdsForEntry(
     XdrSorobanAuthorizationEntry entry,
     List<OZSmartAccountSigner> signers,
-    List<ParsedContextRule> contextRules,
+    List<OZParsedContextRule> contextRules,
   ) async =>
       <int>[_rule.id];
 
@@ -68,7 +68,7 @@ class _ScriptedRuleManager implements OZContextRuleManagerInterface {
   Future<XdrSCVal> getContextRule(int id) async => XdrSCVal.forVoid();
 
   @override
-  ParsedContextRule parseContextRule(XdrSCVal scVal) => _rule;
+  OZParsedContextRule parseContextRule(XdrSCVal scVal) => _rule;
 }
 
 void main() {
@@ -88,9 +88,9 @@ void main() {
       final signerB = OZDelegatedSigner(_accountAddressB);
       final signerC = OZDelegatedSigner(_accountAddressC);
 
-      final rule = ParsedContextRule(
+      final rule = OZParsedContextRule(
         id: 0,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'rule',
         signers: <OZSmartAccountSigner>[signerA, signerB, signerC],
         signerIds: const <int>[10, 20, 30],
@@ -128,9 +128,9 @@ void main() {
       final ruleSigner = OZDelegatedSigner(_accountAddressA);
       final missingSigner = OZDelegatedSigner(_accountAddressB);
 
-      final rule = ParsedContextRule(
+      final rule = OZParsedContextRule(
         id: 0,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'rule',
         signers: <OZSmartAccountSigner>[ruleSigner],
         signerIds: const <int>[10],
@@ -146,7 +146,7 @@ void main() {
           contextRuleId: 0,
           signer: missingSigner,
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
 
       // No submission should have happened.
@@ -171,7 +171,7 @@ void main() {
           publicKey: pk,
           credentialId: Uint8List.fromList(<int>[1, 2, 3]),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -186,7 +186,7 @@ void main() {
           publicKey: pk,
           credentialId: Uint8List(0),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -200,7 +200,7 @@ void main() {
           verifierAddress: _accountAddressA,
           publicKey: Uint8List(32),
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -271,7 +271,7 @@ void main() {
           publicKey: shortKey,
           credentialId: Uint8List.fromList(<int>[1]),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
       // Repeat with 66 bytes — same expectation.
       final longKey = Uint8List(66);
@@ -282,7 +282,7 @@ void main() {
           publicKey: longKey,
           credentialId: Uint8List.fromList(<int>[1]),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -296,7 +296,7 @@ void main() {
           verifierAddress: _verifierContract,
           publicKey: Uint8List(31),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
       await expectLater(
         () => mgr.addEd25519(
@@ -304,7 +304,7 @@ void main() {
           verifierAddress: _verifierContract,
           publicKey: Uint8List(33),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -313,14 +313,14 @@ void main() {
       final mgr = OZSignerManager(h.kit);
       await expectLater(
         () => mgr.addDelegated(contextRuleId: 0, address: 'NOTAVALIDADDRESS'),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
   });
 
   // When the parsed context rule has a `signerIds` list shorter than its
   // `signers` list, attempting to look up the matching id by signer
-  // value must surface as a [InvalidInput] rather than a generic
+  // value must surface as a [SmartAccountInvalidInput] rather than a generic
   // RangeError.
 
   group('removeSignerBySigner misaligned signerIds', () {
@@ -328,9 +328,9 @@ void main() {
       final signerA = OZDelegatedSigner(_accountAddressA);
       final signerB = OZDelegatedSigner(_accountAddressB);
 
-      final rule = ParsedContextRule(
+      final rule = OZParsedContextRule(
         id: 0,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'rule',
         signers: <OZSmartAccountSigner>[signerA, signerB],
         // signerIds contains only one entry, while signers has two —
@@ -348,7 +348,7 @@ void main() {
           contextRuleId: 0,
           signer: signerB,
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
 
       // No submission should have happened.
@@ -359,7 +359,7 @@ void main() {
   // The companion file `oz_manager_selected_signers_test.dart` covers each
   // signer-manager method in its multi-signer (`selectedSigners`-non-empty)
   // form against a disconnected kit. The single-signer branch is asserted
-  // here so both submission paths are pinned to the same `WalletNotConnected`
+  // here so both submission paths are pinned to the same `SmartAccountWalletNotConnected`
   // failure mode no matter which overload the caller hit.
 
   group('OZSignerManager not-connected gates (single-signer path)', () {
@@ -378,7 +378,7 @@ void main() {
           publicKey: pk,
           credentialId: Uint8List.fromList(<int>[1, 2, 3]),
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
       expect(txOps.submitCalls, isEmpty);
     });
@@ -394,7 +394,7 @@ void main() {
           contextRuleId: 0,
           address: _accountAddressA,
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
       expect(txOps.submitCalls, isEmpty);
     });
@@ -411,7 +411,7 @@ void main() {
           verifierAddress: _verifierContract,
           publicKey: Uint8List(32),
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
       expect(txOps.submitCalls, isEmpty);
     });
@@ -424,7 +424,7 @@ void main() {
 
       await expectLater(
         () => mgr.removeSigner(contextRuleId: 0, signerId: 1),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
       expect(txOps.submitCalls, isEmpty);
     });
@@ -446,7 +446,7 @@ void main() {
           contextRuleId: 0,
           userName: 'test-user',
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
       expect(txOps.submitCalls, isEmpty);
     });
@@ -500,22 +500,22 @@ void main() {
     });
   });
 
-  group('AddPasskeySignerResult equality and hashCode', () {
+  group('OZAddPasskeySignerResult equality and hashCode', () {
     test('equalWithNonConstInstances', () {
       final pk = Uint8List(65);
       pk[0] = 0x04;
-      const txResult = TransactionResult(success: true, hash: 'h', ledger: 1);
-      final a = AddPasskeySignerResult(
+      const txResult = OZTransactionResult(success: true, hash: 'h', ledger: 1);
+      final a = OZAddPasskeySignerResult(
         credentialId: 'cred-1',
         publicKey: pk,
         transactionResult: txResult,
       );
-      final b = AddPasskeySignerResult(
+      final b = OZAddPasskeySignerResult(
         credentialId: 'cred-1',
         publicKey: Uint8List.fromList(pk),
         transactionResult: txResult,
       );
-      final c = AddPasskeySignerResult(
+      final c = OZAddPasskeySignerResult(
         credentialId: 'cred-2',
         publicKey: pk,
         transactionResult: txResult,
@@ -589,7 +589,7 @@ void main() {
           publicKey: Uint8List(32), // wrong size
           credentialId: Uint8List.fromList(<int>[1, 2, 3]),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -606,7 +606,7 @@ void main() {
           publicKey: badKey,
           credentialId: Uint8List.fromList(<int>[1, 2, 3]),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -623,7 +623,7 @@ void main() {
           publicKey: validKey,
           credentialId: Uint8List(0),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
@@ -635,7 +635,7 @@ void main() {
       // the kit's multiSignerManager is consulted by supplying a mock.
       final h = _buildHarness();
       final mockMulti = MockOZMultiSignerManager(h.kit);
-      mockMulti.submitWithMultipleSignersDefault = const TransactionResult(
+      mockMulti.submitWithMultipleSignersDefault = const OZTransactionResult(
         success: true,
         hash: 'multi-signer-hash',
       );
@@ -649,7 +649,7 @@ void main() {
         contextRuleId: 0,
         publicKey: validKey,
         credentialId: Uint8List.fromList(<int>[1, 2, 3]),
-        selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+        selectedSigners: <OZSelectedSigner>[const OZSelectedSignerPasskey()],
       );
 
       expect(result.success, isTrue);
@@ -660,14 +660,14 @@ void main() {
       final h = _buildHarness();
       final mockMulti = MockOZMultiSignerManager(h.kit);
       mockMulti.submitWithMultipleSignersDefault =
-          const TransactionResult(success: true, hash: 'd');
+          const OZTransactionResult(success: true, hash: 'd');
       h.kit.setMultiSignerManager(mockMulti);
       final mgr = OZSignerManager(h.kit);
 
       await mgr.addDelegated(
         contextRuleId: 0,
         address: _accountAddressA,
-        selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+        selectedSigners: <OZSelectedSigner>[const OZSelectedSignerPasskey()],
       );
 
       expect(mockMulti.submitWithMultipleSignersCalls, hasLength(1));
@@ -677,7 +677,7 @@ void main() {
       final h = _buildHarness();
       final mockMulti = MockOZMultiSignerManager(h.kit);
       mockMulti.submitWithMultipleSignersDefault =
-          const TransactionResult(success: true, hash: 'e');
+          const OZTransactionResult(success: true, hash: 'e');
       h.kit.setMultiSignerManager(mockMulti);
       final mgr = OZSignerManager(h.kit);
 
@@ -685,7 +685,7 @@ void main() {
         contextRuleId: 0,
         verifierAddress: _verifierContract,
         publicKey: Uint8List(32),
-        selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+        selectedSigners: <OZSelectedSigner>[const OZSelectedSignerPasskey()],
       );
 
       expect(mockMulti.submitWithMultipleSignersCalls, hasLength(1));

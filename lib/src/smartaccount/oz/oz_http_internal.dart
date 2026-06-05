@@ -131,15 +131,15 @@ bool isJsonContentType(String? contentType) {
 /// every error message (e.g. `'Indexer'` or `'Relayer'`). It is
 /// capitalised exactly as it should appear in the rendered message.
 ///
-/// Throws [InvalidConfig] when any of the above checks fail.
+/// Throws [SmartAccountInvalidConfig] when any of the above checks fail.
 @internal
 String normalizeOZUrl(String url, {required String serviceName}) {
   final trimmed = url.trim();
   if (trimmed.isEmpty) {
-    throw ConfigurationException.invalidConfig('$serviceName URL is required');
+    throw SmartAccountConfigurationException.invalidConfig('$serviceName URL is required');
   }
   if (!trimmed.startsWith('https://') && !isLocalhostUrl(trimmed)) {
-    throw ConfigurationException.invalidConfig(
+    throw SmartAccountConfigurationException.invalidConfig(
       '$serviceName URL must use HTTPS (or http://localhost for '
       'development): $trimmed',
     );
@@ -151,7 +151,7 @@ String normalizeOZUrl(String url, {required String serviceName}) {
   // request-time failures don't surface as opaque URL errors.
   final parsed = Uri.tryParse(stripped);
   if (parsed == null || parsed.host.isEmpty) {
-    throw ConfigurationException.invalidConfig(
+    throw SmartAccountConfigurationException.invalidConfig(
       '$serviceName URL must include a host: $trimmed',
     );
   }

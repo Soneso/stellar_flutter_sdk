@@ -197,7 +197,7 @@ Future<
       MockSorobanServer soroban,
       RecordingWebAuthnProvider provider,
       KeyPair deployer,
-      StoredCredential stored,
+      OZStoredCredential stored,
     })> _harness({
   RecordingRelayerClient? relayer,
   RecordingIndexerClient? indexer,
@@ -213,13 +213,13 @@ Future<
     webauthnProvider: provider,
   );
   final credentials = StubCredentialManager();
-  final stored = StoredCredential(
+  final stored = OZStoredCredential(
     credentialId: _credentialIdB64,
     publicKey: _bytes(65, 4),
     contractId: _contractA,
   );
   credentials.inject(stored);
-  final storage = InMemoryStorageAdapter();
+  final storage = OZInMemoryStorageAdapter();
   // Pre-populate the storage adapter so the signing path's
   // `_kit.getStorage().get(credentialId)` hits, bypassing the on-chain
   // context-rule walk that would otherwise need populated rule fixtures.
@@ -482,7 +482,7 @@ void main() {
           auth: const <XdrSorobanAuthorizationEntry>[],
         ),
         throwsA(
-          isA<TransactionSimulationFailed>().having(
+          isA<SmartAccountTransactionSimulationFailed>().having(
             (e) => e.message,
             'message',
             contains('Re-simulation error'),
@@ -510,7 +510,7 @@ void main() {
           auth: const <XdrSorobanAuthorizationEntry>[],
         ),
         throwsA(
-          isA<TransactionSimulationFailed>().having(
+          isA<SmartAccountTransactionSimulationFailed>().having(
             (e) => e.message,
             'message',
             allOf(contains('Simulation error'), contains('contract not found')),
@@ -531,7 +531,7 @@ void main() {
       soroban.getContractDataResponses
           .add(LedgerEntry('', '', 0, null, null));
       final credentials = StubCredentialManager();
-      credentials.inject(StoredCredential(
+      credentials.inject(OZStoredCredential(
         credentialId: _credentialIdB64,
         publicKey: _bytes(65),
         contractId: _contractA,
@@ -550,7 +550,7 @@ void main() {
       final ops = OZWalletOperations(kit);
 
       final result = await ops.connectWallet(
-        options: const ConnectWalletOptions(credentialId: _credentialIdB64),
+        options: const OZConnectWalletOptions(credentialId: _credentialIdB64),
       );
       expect(result, isA<OZConnectWalletConnected>());
       expect(
@@ -561,11 +561,11 @@ void main() {
 
     test('connectWallet_storageHit_failedCredential_throwsNotFound', () async {
       final credentials = StubCredentialManager();
-      credentials.inject(StoredCredential(
+      credentials.inject(OZStoredCredential(
         credentialId: _credentialIdB64,
         publicKey: _bytes(65),
         contractId: _contractA,
-        deploymentStatus: CredentialDeploymentStatus.failed,
+        deploymentStatus: OZCredentialDeploymentStatus.failed,
         deploymentError: 'previous deploy failed',
       ));
       final config = OZSmartAccountConfig(
@@ -581,10 +581,10 @@ void main() {
       final ops = OZWalletOperations(kit);
       await expectLater(
         () => ops.connectWallet(
-          options: const ConnectWalletOptions(credentialId: _credentialIdB64),
+          options: const OZConnectWalletOptions(credentialId: _credentialIdB64),
         ),
         throwsA(
-          isA<WalletNotFound>().having(
+          isA<SmartAccountWalletNotFound>().having(
             (e) => e.message,
             'message',
             allOf(
@@ -616,14 +616,14 @@ void main() {
       );
       final ops = OZWalletOperations(kit);
       final result = await ops.connectWallet(
-        options: const ConnectWalletOptions(credentialId: _credentialIdB64),
+        options: const OZConnectWalletOptions(credentialId: _credentialIdB64),
       );
       expect(result, isA<OZConnectWalletConnected>());
     });
 
     test('connectWallet_derivationMiss_fallsThroughToIndexer', () async {
       // First getContractData call (derivation verify) returns null →
-      // WalletNotFound → fall through. Indexer returns 1 candidate; second
+      // SmartAccountWalletNotFound → fall through. Indexer returns 1 candidate; second
       // getContractData (indexer single-candidate verify) returns live;
       // third (end-of-cascade) returns live.
       final soroban = MockSorobanServer();
@@ -663,7 +663,7 @@ void main() {
       );
       final ops = OZWalletOperations(kit);
       final result = await ops.connectWallet(
-        options: const ConnectWalletOptions(credentialId: _credentialIdB64),
+        options: const OZConnectWalletOptions(credentialId: _credentialIdB64),
       );
       expect(result, isA<OZConnectWalletConnected>());
       expect(
@@ -707,7 +707,7 @@ void main() {
       );
       final ops = OZWalletOperations(kit);
       final result = await ops.connectWallet(
-        options: const ConnectWalletOptions(credentialId: _credentialIdB64),
+        options: const OZConnectWalletOptions(credentialId: _credentialIdB64),
       );
       expect(result, isA<OZConnectWalletConnected>());
     });
@@ -760,7 +760,7 @@ void main() {
       );
       final ops = OZWalletOperations(kit);
       final result = await ops.connectWallet(
-        options: const ConnectWalletOptions(credentialId: _credentialIdB64),
+        options: const OZConnectWalletOptions(credentialId: _credentialIdB64),
       );
       expect(result, isA<OZConnectWalletAmbiguous>());
       final ambig = result! as OZConnectWalletAmbiguous;
@@ -768,7 +768,7 @@ void main() {
       // Kit must NOT be in connected state when Ambiguous is returned.
       await expectLater(
         () => kit.requireConnected(),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
   });
@@ -783,12 +783,12 @@ void main() {
       final ops = OZTransactionOperations(kit);
       await expectLater(
         () => ops.fundWallet(nativeTokenContract: 'not-a-c-address'),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
     test('fundWallet_validatesConnectedBeforeFriendbot', () async {
-      // The not-connected case throws WalletNotConnected before any
+      // The not-connected case throws SmartAccountWalletNotConnected before any
       // Friendbot interaction. Sufficient as a unit-level smoke for the
       // call-order contract; the real Friendbot path is covered in
       // testnet integration tests.
@@ -796,7 +796,7 @@ void main() {
       final ops = OZTransactionOperations(kit);
       await expectLater(
         () => ops.fundWallet(nativeTokenContract: _contractA),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
   });
@@ -912,7 +912,7 @@ void main() {
           ),
         ),
         auth: const <XdrSorobanAuthorizationEntry>[],
-        forceMethod: SubmissionMethod.rpc,
+        forceMethod: OZSubmissionMethod.rpc,
       );
       // Relayer must NOT have been contacted.
       expect(relayerHarness.adapter.capturedUrls, isEmpty);
@@ -947,7 +947,7 @@ void main() {
           auth: const <XdrSorobanAuthorizationEntry>[],
         ),
         throwsA(
-          isA<TransactionSubmissionFailed>().having(
+          isA<SmartAccountTransactionSubmissionFailed>().having(
             (e) => e.toString().toLowerCase(),
             'message',
             anyOf(contains('timeout'), contains('timed out')),
@@ -1052,7 +1052,7 @@ void main() {
           auth: const <XdrSorobanAuthorizationEntry>[],
         ),
         throwsA(
-          isA<TransactionSimulationFailed>().having(
+          isA<SmartAccountTransactionSimulationFailed>().having(
             (e) => e.message,
             'message',
             allOf(contains('Simulation error'), contains('wasm hash mismatch')),
@@ -1064,7 +1064,7 @@ void main() {
     test('connectWallet_indexerMalformedJson_propagatesIndexerException',
         () async {
       // Indexer adapter returns malformed JSON; OZIndexerClient surfaces
-      // an IndexerException which `connectWallet` propagates.
+      // an SmartAccountIndexerException which `connectWallet` propagates.
       final soroban = MockSorobanServer();
       soroban.getContractDataResponses.add(null); // derivation miss
       final indexer = buildIndexerHarness(responseBody: '{not json');
@@ -1081,9 +1081,9 @@ void main() {
       final ops = OZWalletOperations(kit);
       await expectLater(
         () => ops.connectWallet(
-          options: const ConnectWalletOptions(credentialId: _credentialIdB64),
+          options: const OZConnectWalletOptions(credentialId: _credentialIdB64),
         ),
-        throwsA(isA<IndexerException>()),
+        throwsA(isA<SmartAccountIndexerException>()),
       );
     });
 
@@ -1123,7 +1123,7 @@ void main() {
           ),
           auth: const <XdrSorobanAuthorizationEntry>[],
         ),
-        throwsA(isA<CredentialException>()),
+        throwsA(isA<SmartAccountCredentialException>()),
       );
     });
   });
@@ -1131,7 +1131,7 @@ void main() {
   group('deploy', () {
     test('deployPendingCredential_autoSubmitFalse_returnsXdrOnly', () async {
       final credentials = StubCredentialManager();
-      credentials.inject(StoredCredential(
+      credentials.inject(OZStoredCredential(
         credentialId: _credentialIdB64,
         publicKey: _bytes(65, 4),
         contractId: _contractA,
@@ -1169,7 +1169,7 @@ void main() {
           credentialId: 'missing',
           autoSubmit: false,
         ),
-        throwsA(isA<CredentialNotFound>()),
+        throwsA(isA<SmartAccountCredentialNotFound>()),
       );
     });
 
@@ -1177,7 +1177,7 @@ void main() {
         'deployPendingCredential_credentialMissingPublicKey_throwsInvalid',
         () async {
       final credentials = StubCredentialManager();
-      credentials.inject(StoredCredential(
+      credentials.inject(OZStoredCredential(
         credentialId: 'cred',
         publicKey: Uint8List(0),
         contractId: _contractA,
@@ -1190,7 +1190,7 @@ void main() {
           autoSubmit: false,
         ),
         throwsA(
-          isA<CredentialInvalid>().having(
+          isA<SmartAccountCredentialInvalid>().having(
             (e) => e.message,
             'message',
             contains('missing publicKey'),
@@ -1202,7 +1202,7 @@ void main() {
     test('deployPendingCredential_simulateFailure_marksCredentialFailed',
         () async {
       final credentials = StubCredentialManager();
-      credentials.inject(StoredCredential(
+      credentials.inject(OZStoredCredential(
         credentialId: _credentialIdB64,
         publicKey: _bytes(65, 4),
         contractId: _contractA,
@@ -1228,7 +1228,7 @@ void main() {
           credentialId: _credentialIdB64,
           autoSubmit: false,
         ),
-        throwsA(isA<TransactionSimulationFailed>()),
+        throwsA(isA<SmartAccountTransactionSimulationFailed>()),
       );
       // Failure must be recorded against the credential.
       expect(credentials.markedFailures, isNotEmpty);
@@ -1240,7 +1240,7 @@ void main() {
         'deployPendingCredential_autoSubmit_relayer_setsFeeToResourceFeeOnly',
         () async {
       final credentials = StubCredentialManager();
-      credentials.inject(StoredCredential(
+      credentials.inject(OZStoredCredential(
         credentialId: _credentialIdB64,
         publicKey: _bytes(65, 4),
         contractId: _contractA,
@@ -1314,7 +1314,7 @@ void main() {
         tokenContract: _contractB,
         recipient: _contractB,
         amount: '1',
-        forceMethod: SubmissionMethod.rpc,
+        forceMethod: OZSubmissionMethod.rpc,
       );
       expect(h.soroban.sendCalls.length, equals(1));
     });
@@ -1345,7 +1345,7 @@ void main() {
       await ops.contractCall(
         target: _contractB,
         targetFn: 'noop',
-        forceMethod: SubmissionMethod.rpc,
+        forceMethod: OZSubmissionMethod.rpc,
       );
       expect(h.soroban.sendCalls.length, equals(1));
     });
@@ -1392,7 +1392,7 @@ void main() {
           ),
         ),
         auth: const <XdrSorobanAuthorizationEntry>[],
-        forceMethod: SubmissionMethod.rpc,
+        forceMethod: OZSubmissionMethod.rpc,
       );
       expect(h.soroban.sendCalls.length, equals(1));
     });
@@ -1446,7 +1446,7 @@ void main() {
           amount: '1',
           cancelToken: token,
         ),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
 
@@ -1462,7 +1462,7 @@ void main() {
           targetFn: 'noop',
           cancelToken: token,
         ),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
 
@@ -1479,7 +1479,7 @@ void main() {
           targetFn: 'noop',
           cancelToken: token,
         ),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
 
@@ -1501,7 +1501,7 @@ void main() {
           auth: const <XdrSorobanAuthorizationEntry>[],
           cancelToken: token,
         ),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
 
@@ -1516,7 +1516,7 @@ void main() {
           nativeTokenContract: _contractA,
           cancelToken: token,
         ),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
 
@@ -1550,7 +1550,7 @@ void main() {
       token.cancel('test');
       await expectLater(
         () => ops.createWallet(cancelToken: token),
-        throwsA(isA<TransactionException>()),
+        throwsA(isA<SmartAccountTransactionException>()),
       );
     });
 
@@ -1561,7 +1561,7 @@ void main() {
       // credentialId so the cancellation checks fire after the storage
       // lookup.
       final credentials = StubCredentialManager();
-      credentials.inject(StoredCredential(
+      credentials.inject(OZStoredCredential(
         credentialId: _credentialIdB64,
         publicKey: _bytes(65),
         contractId: _contractA,
@@ -1578,10 +1578,10 @@ void main() {
       token.cancel('test');
       await expectLater(
         () => ops.connectWallet(
-          options: const ConnectWalletOptions(credentialId: _credentialIdB64),
+          options: const OZConnectWalletOptions(credentialId: _credentialIdB64),
           cancelToken: token,
         ),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
 
@@ -1604,14 +1604,14 @@ void main() {
           credentialIds: <String>[_credentialIdB64],
           cancelToken: token,
         ),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
 
     test('deployPendingCredential_cancelledBeforeSubmit_throwsSubmissionFailed',
         () async {
       final credentials = StubCredentialManager();
-      credentials.inject(StoredCredential(
+      credentials.inject(OZStoredCredential(
         credentialId: _credentialIdB64,
         publicKey: _bytes(65, 4),
         contractId: _contractA,
@@ -1638,7 +1638,7 @@ void main() {
           autoSubmit: true,
           cancelToken: token,
         ),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
   });

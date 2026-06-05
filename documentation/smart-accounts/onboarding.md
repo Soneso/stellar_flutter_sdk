@@ -108,7 +108,7 @@ You can add rules that apply only to specific scenarios. For example, a rule tha
 
 Each context rule stores:
 - An id (`u32`).
-- A type: `ContextRuleTypeDefault()`, `ContextRuleTypeCallContract(address)`, or `ContextRuleTypeCreateContract(wasmHash)`. `wasmHash` is a 32-byte `Uint8List` containing the SHA-256 hash of a compiled smart-contract binary. `CreateContract` matches contract-creation operations targeting that specific binary.
+- A type: `OZContextRuleTypeDefault()`, `OZContextRuleTypeCallContract(address)`, or `OZContextRuleTypeCreateContract(wasmHash)`. `wasmHash` is a 32-byte `Uint8List` containing the SHA-256 hash of a compiled smart-contract binary. `CreateContract` matches contract-creation operations targeting that specific binary.
 - A name (human-readable string).
 - A list of signers (up to 15).
 - A list of policies (up to 5).
@@ -125,7 +125,7 @@ SDK methods:
 // OZExternalSigner.webAuthn(...) -- see the Signers section above and
 // the SDK guide for full construction details.
 await kit.contextRuleManager.addContextRule(
-  contextType: ContextRuleTypeCallContract('CBCD1234...'),
+  contextType: OZContextRuleTypeCallContract('CBCD1234...'),
   name: 'TokenTransfers',
   signers: <OZSmartAccountSigner>[delegatedSigner, passkeySigner],
 );
@@ -346,9 +346,9 @@ App builds tx --> SDK simulates --> Passkey signs auth entry --> SDK assembles t
 
 ### Reconnecting
 
-1. On app relaunch, the app calls `connectWallet()` with default options. The SDK checks for a saved session in the `StorageAdapter` (a platform-specific interface for persisting credentials and session data, covered in the [SDK guide](README.md)).
+1. On app relaunch, the app calls `connectWallet()` with default options. The SDK checks for a saved session in the `OZStorageAdapter` (a platform-specific interface for persisting credentials and session data, covered in the [SDK guide](README.md)).
 2. If a valid (non-expired) session exists, the wallet is silently reconnected. No biometric prompt is shown. The SDK loads the credential ID and contract ID from the session and returns `OZConnectWalletConnected`. Sessions last 7 days by default, configurable via `sessionExpiryMs` in `OZSmartAccountConfig`.
-3. If no session exists or it has expired, `connectWallet()` returns `null`. The app can then show a "Connect" button and call `connectWallet(options: ConnectWalletOptions(prompt: true))` when the user taps it, which triggers a WebAuthn biometric prompt.
+3. If no session exists or it has expired, `connectWallet()` returns `null`. The app can then show a "Connect" button and call `connectWallet(options: OZConnectWalletOptions(prompt: true))` when the user taps it, which triggers a WebAuthn biometric prompt.
 4. After authentication, the SDK runs a storage → derivation → indexer cascade to resolve the contract address and verifies it exists on-chain. If the indexer reports the passkey on multiple contracts, the SDK returns `OZConnectWalletAmbiguous(candidates, credentialId)` so the app can let the user pick (see the [SDK guide](README.md#reconnecting-to-an-existing-wallet) for the picker pattern).
 
 ---

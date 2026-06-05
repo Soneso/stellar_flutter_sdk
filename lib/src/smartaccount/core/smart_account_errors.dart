@@ -150,23 +150,23 @@ sealed class SmartAccountException implements Exception {
     final message = _extractMessage(err);
     switch (defaultCode) {
       case SmartAccountErrorCode.invalidConfig:
-        return InvalidConfig(message, err);
+        return SmartAccountInvalidConfig(message, err);
       case SmartAccountErrorCode.missingConfig:
-        return MissingConfig(message, err);
+        return SmartAccountMissingConfig(message, err);
       case SmartAccountErrorCode.walletNotConnected:
-        return WalletNotConnected(message: message, cause: err);
+        return SmartAccountWalletNotConnected(message: message, cause: err);
       case SmartAccountErrorCode.walletAlreadyExists:
-        return WalletAlreadyExists(message, err);
+        return SmartAccountWalletAlreadyExists(message, err);
       case SmartAccountErrorCode.walletNotFound:
-        return WalletNotFound(message, err);
+        return SmartAccountWalletNotFound(message, err);
       case SmartAccountErrorCode.credentialNotFound:
-        return CredentialNotFound(message, err);
+        return SmartAccountCredentialNotFound(message, err);
       case SmartAccountErrorCode.credentialAlreadyExists:
-        return CredentialAlreadyExists(message, err);
+        return SmartAccountCredentialAlreadyExists(message, err);
       case SmartAccountErrorCode.credentialInvalid:
-        return CredentialInvalid(message, err);
+        return SmartAccountCredentialInvalid(message, err);
       case SmartAccountErrorCode.credentialDeploymentFailed:
-        return CredentialDeploymentFailed(message, err);
+        return SmartAccountCredentialDeploymentFailed(message, err);
       case SmartAccountErrorCode.webauthnRegistrationFailed:
         return WebAuthnRegistrationFailed(message, err);
       case SmartAccountErrorCode.webauthnAuthenticationFailed:
@@ -176,35 +176,35 @@ sealed class SmartAccountException implements Exception {
       case SmartAccountErrorCode.webauthnCancelled:
         return WebAuthnCancelled(message: message, cause: err);
       case SmartAccountErrorCode.transactionSimulationFailed:
-        return TransactionSimulationFailed(message, err);
+        return SmartAccountTransactionSimulationFailed(message, err);
       case SmartAccountErrorCode.transactionSigningFailed:
-        return TransactionSigningFailed(message, err);
+        return SmartAccountTransactionSigningFailed(message, err);
       case SmartAccountErrorCode.transactionSubmissionFailed:
-        return TransactionSubmissionFailed(message, err);
+        return SmartAccountTransactionSubmissionFailed(message, err);
       case SmartAccountErrorCode.transactionTimeout:
-        return TransactionTimeout(message: message, cause: err);
+        return SmartAccountTransactionTimeout(message: message, cause: err);
       case SmartAccountErrorCode.signerNotFound:
-        return SignerNotFound(message, err);
+        return SmartAccountSignerNotFound(message, err);
       case SmartAccountErrorCode.signerInvalid:
-        return SignerInvalid(message, err);
+        return SmartAccountSignerInvalid(message, err);
       case SmartAccountErrorCode.invalidAddress:
-        return InvalidAddress(message, err);
+        return SmartAccountInvalidAddress(message, err);
       case SmartAccountErrorCode.invalidAmount:
-        return InvalidAmount(message, err);
+        return SmartAccountInvalidAmount(message, err);
       case SmartAccountErrorCode.invalidInput:
-        return InvalidInput(message, err);
+        return SmartAccountInvalidInput(message, err);
       case SmartAccountErrorCode.storageReadFailed:
-        return StorageReadFailed(message, err);
+        return SmartAccountStorageReadFailed(message, err);
       case SmartAccountErrorCode.storageWriteFailed:
-        return StorageWriteFailed(message, err);
+        return SmartAccountStorageWriteFailed(message, err);
       case SmartAccountErrorCode.sessionExpired:
-        return SessionExpired(message: message, cause: err);
+        return SmartAccountSessionExpired(message: message, cause: err);
       case SmartAccountErrorCode.sessionInvalid:
-        return SessionInvalid(message, err);
+        return SmartAccountSessionInvalid(message, err);
       case SmartAccountErrorCode.indexerRequestFailed:
-        return IndexerRequestFailed(message, err);
+        return SmartAccountIndexerRequestFailed(message, err);
       case SmartAccountErrorCode.indexerTimeout:
-        return IndexerTimeout(message, err);
+        return SmartAccountIndexerTimeout(message, err);
     }
   }
 
@@ -237,125 +237,125 @@ sealed class SmartAccountException implements Exception {
 }
 
 /// Configuration-related errors (1xxx range).
-sealed class ConfigurationException extends SmartAccountException {
-  const ConfigurationException(super.code, super.message, [super.cause]);
+sealed class SmartAccountConfigurationException extends SmartAccountException {
+  const SmartAccountConfigurationException(super.code, super.message, [super.cause]);
 
   /// Creates an invalid configuration error using the standard message format
   /// `"Invalid configuration: <details>"`.
-  static InvalidConfig invalidConfig(String details, {Object? cause}) =>
-      InvalidConfig('Invalid configuration: $details', cause);
+  static SmartAccountInvalidConfig invalidConfig(String details, {Object? cause}) =>
+      SmartAccountInvalidConfig('Invalid configuration: $details', cause);
 
   /// Creates a missing configuration error using the standard message format
   /// `"Missing required configuration: <param>"`.
-  static MissingConfig missingConfig(String param, {Object? cause}) =>
-      MissingConfig('Missing required configuration: $param', cause);
+  static SmartAccountMissingConfig missingConfig(String param, {Object? cause}) =>
+      SmartAccountMissingConfig('Missing required configuration: $param', cause);
 }
 
 /// Configuration is structurally invalid.
-final class InvalidConfig extends ConfigurationException {
-  const InvalidConfig(String message, [Object? cause])
+final class SmartAccountInvalidConfig extends SmartAccountConfigurationException {
+  const SmartAccountInvalidConfig(String message, [Object? cause])
       : super(SmartAccountErrorCode.invalidConfig, message, cause);
 }
 
 /// A required configuration parameter is missing.
-final class MissingConfig extends ConfigurationException {
-  const MissingConfig(String message, [Object? cause])
+final class SmartAccountMissingConfig extends SmartAccountConfigurationException {
+  const SmartAccountMissingConfig(String message, [Object? cause])
       : super(SmartAccountErrorCode.missingConfig, message, cause);
 }
 
 /// Wallet state-related errors (2xxx range).
-sealed class WalletException extends SmartAccountException {
-  const WalletException(super.code, super.message, [super.cause]);
+sealed class SmartAccountWalletException extends SmartAccountException {
+  const SmartAccountWalletException(super.code, super.message, [super.cause]);
 
   /// Creates a wallet-not-connected error. When [details] is omitted the
   /// default message `"Wallet is not connected"` is used.
-  static WalletNotConnected notConnected({String? details, Object? cause}) =>
-      WalletNotConnected(
+  static SmartAccountWalletNotConnected notConnected({String? details, Object? cause}) =>
+      SmartAccountWalletNotConnected(
         message: details ?? 'Wallet is not connected',
         cause: cause,
       );
 
   /// Creates a wallet-already-exists error using the message format
   /// `"Wallet already exists: <identifier>"`.
-  static WalletAlreadyExists alreadyExists(String identifier,
+  static SmartAccountWalletAlreadyExists alreadyExists(String identifier,
           {Object? cause}) =>
-      WalletAlreadyExists('Wallet already exists: $identifier', cause);
+      SmartAccountWalletAlreadyExists('Wallet already exists: $identifier', cause);
 
   /// Creates a wallet-not-found error using the message format
   /// `"Wallet not found: <identifier>"`.
-  static WalletNotFound notFound(String identifier, {Object? cause}) =>
-      WalletNotFound('Wallet not found: $identifier', cause);
+  static SmartAccountWalletNotFound notFound(String identifier, {Object? cause}) =>
+      SmartAccountWalletNotFound('Wallet not found: $identifier', cause);
 }
 
 /// Operation requires a connected wallet, but none is connected.
-final class WalletNotConnected extends WalletException {
-  const WalletNotConnected({
+final class SmartAccountWalletNotConnected extends SmartAccountWalletException {
+  const SmartAccountWalletNotConnected({
     String message = 'Wallet is not connected',
     Object? cause,
   }) : super(SmartAccountErrorCode.walletNotConnected, message, cause);
 }
 
 /// A wallet with the same identifier already exists.
-final class WalletAlreadyExists extends WalletException {
-  const WalletAlreadyExists(String message, [Object? cause])
+final class SmartAccountWalletAlreadyExists extends SmartAccountWalletException {
+  const SmartAccountWalletAlreadyExists(String message, [Object? cause])
       : super(SmartAccountErrorCode.walletAlreadyExists, message, cause);
 }
 
 /// The requested wallet could not be found.
-final class WalletNotFound extends WalletException {
-  const WalletNotFound(String message, [Object? cause])
+final class SmartAccountWalletNotFound extends SmartAccountWalletException {
+  const SmartAccountWalletNotFound(String message, [Object? cause])
       : super(SmartAccountErrorCode.walletNotFound, message, cause);
 }
 
 /// Credential-related errors (3xxx range).
-sealed class CredentialException extends SmartAccountException {
-  const CredentialException(super.code, super.message, [super.cause]);
+sealed class SmartAccountCredentialException extends SmartAccountException {
+  const SmartAccountCredentialException(super.code, super.message, [super.cause]);
 
   /// Creates a credential-not-found error using the message format
   /// `"Credential not found: <credentialId>"`.
-  static CredentialNotFound notFound(String credentialId, {Object? cause}) =>
-      CredentialNotFound('Credential not found: $credentialId', cause);
+  static SmartAccountCredentialNotFound notFound(String credentialId, {Object? cause}) =>
+      SmartAccountCredentialNotFound('Credential not found: $credentialId', cause);
 
   /// Creates a credential-already-exists error using the message format
   /// `"Credential already exists: <credentialId>"`.
-  static CredentialAlreadyExists alreadyExists(String credentialId,
+  static SmartAccountCredentialAlreadyExists alreadyExists(String credentialId,
           {Object? cause}) =>
-      CredentialAlreadyExists('Credential already exists: $credentialId', cause);
+      SmartAccountCredentialAlreadyExists('Credential already exists: $credentialId', cause);
 
   /// Creates an invalid-credential error using the message format
   /// `"Invalid credential: <reason>"`.
-  static CredentialInvalid invalid(String reason, {Object? cause}) =>
-      CredentialInvalid('Invalid credential: $reason', cause);
+  static SmartAccountCredentialInvalid invalid(String reason, {Object? cause}) =>
+      SmartAccountCredentialInvalid('Invalid credential: $reason', cause);
 
   /// Creates a credential-deployment-failed error using the message format
   /// `"Credential deployment failed: <reason>"`.
-  static CredentialDeploymentFailed deploymentFailed(String reason,
+  static SmartAccountCredentialDeploymentFailed deploymentFailed(String reason,
           {Object? cause}) =>
-      CredentialDeploymentFailed(
+      SmartAccountCredentialDeploymentFailed(
           'Credential deployment failed: $reason', cause);
 }
 
 /// The requested credential could not be found.
-final class CredentialNotFound extends CredentialException {
-  const CredentialNotFound(String message, [Object? cause])
+final class SmartAccountCredentialNotFound extends SmartAccountCredentialException {
+  const SmartAccountCredentialNotFound(String message, [Object? cause])
       : super(SmartAccountErrorCode.credentialNotFound, message, cause);
 }
 
 /// A credential with the same identifier already exists.
-final class CredentialAlreadyExists extends CredentialException {
-  const CredentialAlreadyExists(String message, [Object? cause])
+final class SmartAccountCredentialAlreadyExists extends SmartAccountCredentialException {
+  const SmartAccountCredentialAlreadyExists(String message, [Object? cause])
       : super(SmartAccountErrorCode.credentialAlreadyExists, message, cause);
 }
 
 /// The credential is invalid or malformed.
-final class CredentialInvalid extends CredentialException {
-  const CredentialInvalid(String message, [Object? cause])
+final class SmartAccountCredentialInvalid extends SmartAccountCredentialException {
+  const SmartAccountCredentialInvalid(String message, [Object? cause])
       : super(SmartAccountErrorCode.credentialInvalid, message, cause);
 }
 
 /// Credential deployment failed.
-final class CredentialDeploymentFailed extends CredentialException {
-  const CredentialDeploymentFailed(String message, [Object? cause])
+final class SmartAccountCredentialDeploymentFailed extends SmartAccountCredentialException {
+  const SmartAccountCredentialDeploymentFailed(String message, [Object? cause])
       : super(SmartAccountErrorCode.credentialDeploymentFailed, message, cause);
 }
 
@@ -421,172 +421,172 @@ final class WebAuthnCancelled extends WebAuthnException {
 }
 
 /// Transaction-related errors (5xxx range).
-sealed class TransactionException extends SmartAccountException {
-  const TransactionException(super.code, super.message, [super.cause]);
+sealed class SmartAccountTransactionException extends SmartAccountException {
+  const SmartAccountTransactionException(super.code, super.message, [super.cause]);
 
   /// Creates a transaction-simulation-failed error using the message format
   /// `"Transaction simulation failed: <reason>"`.
-  static TransactionSimulationFailed simulationFailed(String reason,
+  static SmartAccountTransactionSimulationFailed simulationFailed(String reason,
           {Object? cause}) =>
-      TransactionSimulationFailed(
+      SmartAccountTransactionSimulationFailed(
           'Transaction simulation failed: $reason', cause);
 
   /// Creates a transaction-signing-failed error using the message format
   /// `"Transaction signing failed: <reason>"`.
-  static TransactionSigningFailed signingFailed(String reason,
+  static SmartAccountTransactionSigningFailed signingFailed(String reason,
           {Object? cause}) =>
-      TransactionSigningFailed('Transaction signing failed: $reason', cause);
+      SmartAccountTransactionSigningFailed('Transaction signing failed: $reason', cause);
 
   /// Creates a transaction-submission-failed error using the message format
   /// `"Transaction submission failed: <reason>"`.
-  static TransactionSubmissionFailed submissionFailed(String reason,
+  static SmartAccountTransactionSubmissionFailed submissionFailed(String reason,
           {Object? cause}) =>
-      TransactionSubmissionFailed(
+      SmartAccountTransactionSubmissionFailed(
           'Transaction submission failed: $reason', cause);
 
   /// Creates a transaction-timeout error. When [details] is omitted the
   /// default message `"Transaction timed out"` is used.
-  static TransactionTimeout timeout({String? details, Object? cause}) =>
-      TransactionTimeout(
+  static SmartAccountTransactionTimeout timeout({String? details, Object? cause}) =>
+      SmartAccountTransactionTimeout(
         message: details ?? 'Transaction timed out',
         cause: cause,
       );
 }
 
 /// Transaction simulation failed.
-final class TransactionSimulationFailed extends TransactionException {
-  const TransactionSimulationFailed(String message, [Object? cause])
+final class SmartAccountTransactionSimulationFailed extends SmartAccountTransactionException {
+  const SmartAccountTransactionSimulationFailed(String message, [Object? cause])
       : super(SmartAccountErrorCode.transactionSimulationFailed, message,
             cause);
 }
 
 /// Transaction signing failed.
-final class TransactionSigningFailed extends TransactionException {
-  const TransactionSigningFailed(String message, [Object? cause])
+final class SmartAccountTransactionSigningFailed extends SmartAccountTransactionException {
+  const SmartAccountTransactionSigningFailed(String message, [Object? cause])
       : super(SmartAccountErrorCode.transactionSigningFailed, message, cause);
 }
 
 /// Transaction submission failed.
-final class TransactionSubmissionFailed extends TransactionException {
-  const TransactionSubmissionFailed(String message, [Object? cause])
+final class SmartAccountTransactionSubmissionFailed extends SmartAccountTransactionException {
+  const SmartAccountTransactionSubmissionFailed(String message, [Object? cause])
       : super(SmartAccountErrorCode.transactionSubmissionFailed, message,
             cause);
 }
 
 /// Transaction did not reach a final state within the allotted time.
-final class TransactionTimeout extends TransactionException {
-  const TransactionTimeout({
+final class SmartAccountTransactionTimeout extends SmartAccountTransactionException {
+  const SmartAccountTransactionTimeout({
     String message = 'Transaction timed out',
     Object? cause,
   }) : super(SmartAccountErrorCode.transactionTimeout, message, cause);
 }
 
 /// Signer-related errors (6xxx range).
-sealed class SignerException extends SmartAccountException {
-  const SignerException(super.code, super.message, [super.cause]);
+sealed class SmartAccountSignerException extends SmartAccountException {
+  const SmartAccountSignerException(super.code, super.message, [super.cause]);
 
   /// Creates a signer-not-found error using the message format
   /// `"Signer not found: <signerId>"`.
-  static SignerNotFound notFound(String signerId, {Object? cause}) =>
-      SignerNotFound('Signer not found: $signerId', cause);
+  static SmartAccountSignerNotFound notFound(String signerId, {Object? cause}) =>
+      SmartAccountSignerNotFound('Signer not found: $signerId', cause);
 
   /// Creates an invalid-signer error using the message format
   /// `"Invalid signer: <reason>"`.
-  static SignerInvalid invalid(String reason, {Object? cause}) =>
-      SignerInvalid('Invalid signer: $reason', cause);
+  static SmartAccountSignerInvalid invalid(String reason, {Object? cause}) =>
+      SmartAccountSignerInvalid('Invalid signer: $reason', cause);
 }
 
 /// The requested signer could not be found.
-final class SignerNotFound extends SignerException {
-  const SignerNotFound(String message, [Object? cause])
+final class SmartAccountSignerNotFound extends SmartAccountSignerException {
+  const SmartAccountSignerNotFound(String message, [Object? cause])
       : super(SmartAccountErrorCode.signerNotFound, message, cause);
 }
 
 /// The signer is invalid or malformed.
-final class SignerInvalid extends SignerException {
-  const SignerInvalid(String message, [Object? cause])
+final class SmartAccountSignerInvalid extends SmartAccountSignerException {
+  const SmartAccountSignerInvalid(String message, [Object? cause])
       : super(SmartAccountErrorCode.signerInvalid, message, cause);
 }
 
 /// Validation-related errors (7xxx range).
-sealed class ValidationException extends SmartAccountException {
-  const ValidationException(super.code, super.message, [super.cause]);
+sealed class SmartAccountValidationException extends SmartAccountException {
+  const SmartAccountValidationException(super.code, super.message, [super.cause]);
 
   /// Creates an invalid-address error using the message format
   /// `"Invalid address: <address>"`.
-  static InvalidAddress invalidAddress(String address, {Object? cause}) =>
-      InvalidAddress('Invalid address: $address', cause);
+  static SmartAccountInvalidAddress invalidAddress(String address, {Object? cause}) =>
+      SmartAccountInvalidAddress('Invalid address: $address', cause);
 
   /// Creates an invalid-amount error using the message format
   /// `"Invalid amount: <amount>"`, optionally followed by ` - <reason>`
   /// when [reason] is supplied.
-  static InvalidAmount invalidAmount(String amount,
+  static SmartAccountInvalidAmount invalidAmount(String amount,
       {String? reason, Object? cause}) {
     final suffix = reason == null ? '' : ' - $reason';
-    return InvalidAmount('Invalid amount: $amount$suffix', cause);
+    return SmartAccountInvalidAmount('Invalid amount: $amount$suffix', cause);
   }
 
   /// Creates an invalid-input error using the message format
   /// `"Invalid input for <field>: <reason>"`.
-  static InvalidInput invalidInput(String field, String reason,
+  static SmartAccountInvalidInput invalidInput(String field, String reason,
           {Object? cause}) =>
-      InvalidInput('Invalid input for $field: $reason', cause);
+      SmartAccountInvalidInput('Invalid input for $field: $reason', cause);
 }
 
 /// The supplied address is not a valid Stellar address.
-final class InvalidAddress extends ValidationException {
-  const InvalidAddress(String message, [Object? cause])
+final class SmartAccountInvalidAddress extends SmartAccountValidationException {
+  const SmartAccountInvalidAddress(String message, [Object? cause])
       : super(SmartAccountErrorCode.invalidAddress, message, cause);
 }
 
 /// The supplied amount is not valid.
-final class InvalidAmount extends ValidationException {
-  const InvalidAmount(String message, [Object? cause])
+final class SmartAccountInvalidAmount extends SmartAccountValidationException {
+  const SmartAccountInvalidAmount(String message, [Object? cause])
       : super(SmartAccountErrorCode.invalidAmount, message, cause);
 }
 
 /// The supplied input is not valid.
-final class InvalidInput extends ValidationException {
-  const InvalidInput(String message, [Object? cause])
+final class SmartAccountInvalidInput extends SmartAccountValidationException {
+  const SmartAccountInvalidInput(String message, [Object? cause])
       : super(SmartAccountErrorCode.invalidInput, message, cause);
 }
 
 /// Storage-related errors (8xxx range).
-sealed class StorageException extends SmartAccountException {
-  const StorageException(super.code, super.message, [super.cause]);
+sealed class SmartAccountStorageException extends SmartAccountException {
+  const SmartAccountStorageException(super.code, super.message, [super.cause]);
 
   /// Creates a storage-read-failed error using the message format
   /// `"Storage read failed for key: <key>"`.
-  static StorageReadFailed readFailed(String key, {Object? cause}) =>
-      StorageReadFailed('Storage read failed for key: $key', cause);
+  static SmartAccountStorageReadFailed readFailed(String key, {Object? cause}) =>
+      SmartAccountStorageReadFailed('Storage read failed for key: $key', cause);
 
   /// Creates a storage-write-failed error using the message format
   /// `"Storage write failed for key: <key>"`.
-  static StorageWriteFailed writeFailed(String key, {Object? cause}) =>
-      StorageWriteFailed('Storage write failed for key: $key', cause);
+  static SmartAccountStorageWriteFailed writeFailed(String key, {Object? cause}) =>
+      SmartAccountStorageWriteFailed('Storage write failed for key: $key', cause);
 }
 
 /// Reading from the storage backend failed.
-final class StorageReadFailed extends StorageException {
-  const StorageReadFailed(String message, [Object? cause])
+final class SmartAccountStorageReadFailed extends SmartAccountStorageException {
+  const SmartAccountStorageReadFailed(String message, [Object? cause])
       : super(SmartAccountErrorCode.storageReadFailed, message, cause);
 }
 
 /// Writing to the storage backend failed.
-final class StorageWriteFailed extends StorageException {
-  const StorageWriteFailed(String message, [Object? cause])
+final class SmartAccountStorageWriteFailed extends SmartAccountStorageException {
+  const SmartAccountStorageWriteFailed(String message, [Object? cause])
       : super(SmartAccountErrorCode.storageWriteFailed, message, cause);
 }
 
 /// Session-related errors (9xxx range).
-sealed class SessionException extends SmartAccountException {
-  const SessionException(super.code, super.message, [super.cause]);
+sealed class SmartAccountSessionException extends SmartAccountException {
+  const SmartAccountSessionException(super.code, super.message, [super.cause]);
 
   /// Creates a session-expired error. When [sessionId] is provided the
   /// message format is `"Session expired: <sessionId>"`; otherwise the
   /// default message `"Session has expired"` is used.
-  static SessionExpired expired({String? sessionId, Object? cause}) =>
-      SessionExpired(
+  static SmartAccountSessionExpired expired({String? sessionId, Object? cause}) =>
+      SmartAccountSessionExpired(
         message: sessionId == null
             ? 'Session has expired'
             : 'Session expired: $sessionId',
@@ -595,47 +595,47 @@ sealed class SessionException extends SmartAccountException {
 
   /// Creates an invalid-session error using the message format
   /// `"Invalid session: <reason>"`.
-  static SessionInvalid invalid(String reason, {Object? cause}) =>
-      SessionInvalid('Invalid session: $reason', cause);
+  static SmartAccountSessionInvalid invalid(String reason, {Object? cause}) =>
+      SmartAccountSessionInvalid('Invalid session: $reason', cause);
 }
 
 /// Session has expired.
-final class SessionExpired extends SessionException {
-  const SessionExpired({
+final class SmartAccountSessionExpired extends SmartAccountSessionException {
+  const SmartAccountSessionExpired({
     String message = 'Session has expired',
     Object? cause,
   }) : super(SmartAccountErrorCode.sessionExpired, message, cause);
 }
 
 /// Session is invalid or malformed.
-final class SessionInvalid extends SessionException {
-  const SessionInvalid(String message, [Object? cause])
+final class SmartAccountSessionInvalid extends SmartAccountSessionException {
+  const SmartAccountSessionInvalid(String message, [Object? cause])
       : super(SmartAccountErrorCode.sessionInvalid, message, cause);
 }
 
 /// Indexer-related errors (10xxx range).
-sealed class IndexerException extends SmartAccountException {
-  const IndexerException(super.code, super.message, [super.cause]);
+sealed class SmartAccountIndexerException extends SmartAccountException {
+  const SmartAccountIndexerException(super.code, super.message, [super.cause]);
 
   /// Creates an indexer request-failed error using the message format
   /// `"Indexer request failed: <reason>"`.
-  static IndexerRequestFailed requestFailed(String reason, {Object? cause}) =>
-      IndexerRequestFailed('Indexer request failed: $reason', cause);
+  static SmartAccountIndexerRequestFailed requestFailed(String reason, {Object? cause}) =>
+      SmartAccountIndexerRequestFailed('Indexer request failed: $reason', cause);
 
   /// Creates an indexer timeout error using the message format
   /// `"Indexer request timed out: <url>"`.
-  static IndexerTimeout timeout(String url, {Object? cause}) =>
-      IndexerTimeout('Indexer request timed out: $url', cause);
+  static SmartAccountIndexerTimeout timeout(String url, {Object? cause}) =>
+      SmartAccountIndexerTimeout('Indexer request timed out: $url', cause);
 }
 
 /// The indexer request failed (network error or non-success HTTP status).
-final class IndexerRequestFailed extends IndexerException {
-  const IndexerRequestFailed(String message, [Object? cause])
+final class SmartAccountIndexerRequestFailed extends SmartAccountIndexerException {
+  const SmartAccountIndexerRequestFailed(String message, [Object? cause])
       : super(SmartAccountErrorCode.indexerRequestFailed, message, cause);
 }
 
 /// The indexer request timed out.
-final class IndexerTimeout extends IndexerException {
-  const IndexerTimeout(String message, [Object? cause])
+final class SmartAccountIndexerTimeout extends SmartAccountIndexerException {
+  const SmartAccountIndexerTimeout(String message, [Object? cause])
       : super(SmartAccountErrorCode.indexerTimeout, message, cause);
 }

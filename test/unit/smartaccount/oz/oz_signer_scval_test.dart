@@ -53,9 +53,9 @@ void main() {
           XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT);
     });
 
-    test('invalid address throws InvalidAddress', () {
+    test('invalid address throws SmartAccountInvalidAddress', () {
       expect(() => OZDelegatedSigner('NOT_A_VALID'),
-          throwsA(isA<InvalidAddress>()));
+          throwsA(isA<SmartAccountInvalidAddress>()));
     });
 
     test('toScVal called twice produces structurally identical Vecs', () {
@@ -94,14 +94,14 @@ void main() {
       expect(sc.vec![2].bytes!.sCBytes, keyData);
     });
 
-    test('invalid verifier address throws InvalidAddress', () {
+    test('invalid verifier address throws SmartAccountInvalidAddress', () {
       expect(() => OZExternalSigner('NOT_VALID', _bytes(8)),
-          throwsA(isA<InvalidAddress>()));
+          throwsA(isA<SmartAccountInvalidAddress>()));
     });
 
-    test('empty keyData throws InvalidInput', () {
+    test('empty keyData throws SmartAccountInvalidInput', () {
       expect(() => OZExternalSigner(kValidContractId, Uint8List(0)),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('webAuthn factory produces 65+credId keyData', () {
@@ -121,7 +121,7 @@ void main() {
           publicKey: Uint8List(64),
           credentialId: _bytes(20),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -133,7 +133,7 @@ void main() {
           publicKey: pk,
           credentialId: _bytes(20),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -145,7 +145,7 @@ void main() {
           publicKey: pk,
           credentialId: Uint8List(0),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -163,7 +163,7 @@ void main() {
           verifierAddress: kValidContractId,
           publicKey: Uint8List(31),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -176,34 +176,34 @@ void main() {
     });
   });
 
-  group('SubmissionMethod', () {
+  group('OZSubmissionMethod', () {
     test('has exactly two values', () {
-      expect(SubmissionMethod.values.length, 2);
+      expect(OZSubmissionMethod.values.length, 2);
     });
 
     test('values are relayer and rpc', () {
-      expect(SubmissionMethod.values, [
-        SubmissionMethod.relayer,
-        SubmissionMethod.rpc,
+      expect(OZSubmissionMethod.values, [
+        OZSubmissionMethod.relayer,
+        OZSubmissionMethod.rpc,
       ]);
     });
 
     test('relayer name is "relayer"', () {
-      expect(SubmissionMethod.relayer.name, 'relayer');
+      expect(OZSubmissionMethod.relayer.name, 'relayer');
     });
 
     test('rpc name is "rpc"', () {
-      expect(SubmissionMethod.rpc.name, 'rpc');
+      expect(OZSubmissionMethod.rpc.name, 'rpc');
     });
 
     test('values can be used in equality', () {
-      expect(SubmissionMethod.relayer == SubmissionMethod.relayer, isTrue);
-      expect(SubmissionMethod.relayer == SubmissionMethod.rpc, isFalse);
+      expect(OZSubmissionMethod.relayer == OZSubmissionMethod.relayer, isTrue);
+      expect(OZSubmissionMethod.relayer == OZSubmissionMethod.rpc, isFalse);
     });
 
     test('values support hashCode', () {
-      expect(SubmissionMethod.relayer.hashCode,
-          SubmissionMethod.relayer.hashCode);
+      expect(OZSubmissionMethod.relayer.hashCode,
+          OZSubmissionMethod.relayer.hashCode);
     });
   });
 }

@@ -19,11 +19,11 @@ import 'oz_transaction_operations.dart';
 /// ([OZTransactionOperations.submit]); a non-empty list routes to
 /// [OZMultiSignerManagerInterface.submitWithMultipleSigners].
 @internal
-Future<TransactionResult> ozRouteSubmission(
+Future<OZTransactionResult> ozRouteSubmission(
   OZSmartAccountWalletKitInterface kit,
   XdrHostFunction hostFunction,
-  List<SelectedSigner> selectedSigners,
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners,
+  OZSubmissionMethod? forceMethod,
 ) {
   if (selectedSigners.isEmpty) {
     return kit.transactionOperations.submit(
@@ -44,12 +44,12 @@ Future<TransactionResult> ozRouteSubmission(
 /// [forceMethod], otherwise selects the relayer when one is configured on the
 /// [kit] and falls back to direct RPC submission.
 @internal
-SubmissionMethod ozResolveSubmissionMethod(
+OZSubmissionMethod ozResolveSubmissionMethod(
   OZSmartAccountKitInterface kit,
-  SubmissionMethod? forceMethod,
+  OZSubmissionMethod? forceMethod,
 ) {
   if (forceMethod != null) return forceMethod;
   return kit.relayerClient != null
-      ? SubmissionMethod.relayer
-      : SubmissionMethod.rpc;
+      ? OZSubmissionMethod.relayer
+      : OZSubmissionMethod.rpc;
 }

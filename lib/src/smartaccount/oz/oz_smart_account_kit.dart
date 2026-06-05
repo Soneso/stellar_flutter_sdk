@@ -78,7 +78,7 @@ import 'oz_wallet_operations.dart';
 class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
   OZSmartAccountKit._({
     required this.config,
-    required StorageAdapter storage,
+    required OZStorageAdapter storage,
     required this.relayerClient,
     required this.indexerClient,
     required OZExternalSignerManager externalSigners,
@@ -90,7 +90,7 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
   @visibleForTesting
   OZSmartAccountKit.forTesting({
     required OZSmartAccountConfig config,
-    required StorageAdapter storage,
+    required OZStorageAdapter storage,
     required OZRelayerClient? relayerClient,
     required OZIndexerClient? indexerClient,
     required OZExternalSignerManager externalSigners,
@@ -133,7 +133,7 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
 
   /// Storage adapter held privately and surfaced through [getStorage].
   /// Lifetime is bound to the kit; the adapter is supplied by [config].
-  final StorageAdapter _storage;
+  final OZStorageAdapter _storage;
 
   /// Kit-owned external-signer manager constructed from the supplied
   /// configuration. Non-null; exposed through [externalSigners].
@@ -145,7 +145,7 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
   /// lifecycle notifications (wallet connected / disconnected, credential
   /// created / deleted, transaction signed / submitted, etc.).
   @override
-  final SmartAccountEventEmitter events = SmartAccountEventEmitter();
+  final OZSmartAccountEventEmitter events = OZSmartAccountEventEmitter();
 
   // Managers (lazy, identity-preserving)
 
@@ -253,14 +253,14 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
   }
 
   /// Returns the connected credential ID and contract address, or throws
-  /// [WalletNotConnected] when no wallet is connected.
+  /// [SmartAccountWalletNotConnected] when no wallet is connected.
   @override
   Future<OZConnectedState> requireConnected() async {
     return _withLock<OZConnectedState>(() {
       final cId = _credentialId;
       final ctId = _contractId;
       if (cId == null || ctId == null) {
-        throw WalletException.notConnected(
+        throw SmartAccountWalletException.notConnected(
           details:
               'No wallet connected. Call createWallet() or connectWallet() first.',
         );
@@ -272,8 +272,8 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
   /// Disconnects the currently-connected wallet.
   ///
   /// Clears the in-memory connection state, removes the persisted
-  /// session via [StorageAdapter.clearSession], and emits a
-  /// [SmartAccountEventWalletDisconnected] event when a wallet was
+  /// session via [OZStorageAdapter.clearSession], and emits a
+  /// [OZSmartAccountEventWalletDisconnected] event when a wallet was
   /// connected at the time of the call. The stored credential entries
   /// remain in storage and can be reconnected later via
   /// [OZWalletOperations.connectWallet].
@@ -303,7 +303,7 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
 
     if (capturedContractId != null) {
       events.emit(
-        SmartAccountEventWalletDisconnected(contractId: capturedContractId),
+        OZSmartAccountEventWalletDisconnected(contractId: capturedContractId),
       );
     }
   }
@@ -377,7 +377,7 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
   /// on it.
   @internal
   @override
-  StorageAdapter getStorage() => _storage;
+  OZStorageAdapter getStorage() => _storage;
 
   /// Serialises an async [body] against the kit's state-mutation tail.
   ///

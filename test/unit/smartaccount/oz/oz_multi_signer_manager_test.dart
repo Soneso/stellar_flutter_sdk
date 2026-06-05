@@ -50,7 +50,7 @@ OZMultiSignerManager _manager(FakePipelineKit kit) => OZMultiSignerManager(kit);
 
 /// Returns a passkey selected-signer with no credential data; sufficient to
 /// drive validation paths that fail before any signing work.
-SelectedSignerPasskey _passkeyStub() => const SelectedSignerPasskey();
+OZSelectedSignerPasskey _passkeyStub() => const OZSelectedSignerPasskey();
 
 void main() {
 
@@ -61,9 +61,9 @@ void main() {
         () => manager.multiSignerExecuteAndSubmit(
           target: _validTargetContract,
           targetFn: 'vote',
-          selectedSigners: <SelectedSigner>[_passkeyStub()],
+          selectedSigners: <OZSelectedSigner>[_passkeyStub()],
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
   });
@@ -75,9 +75,9 @@ void main() {
         () => manager.multiSignerExecuteAndSubmit(
           target: _validAccountAddress, // G-address, not a contract
           targetFn: 'vote',
-          selectedSigners: <SelectedSigner>[_passkeyStub()],
+          selectedSigners: <OZSelectedSigner>[_passkeyStub()],
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -87,9 +87,9 @@ void main() {
         () => manager.multiSignerExecuteAndSubmit(
           target: 'CABC', // valid prefix but far too short
           targetFn: 'vote',
-          selectedSigners: <SelectedSigner>[_passkeyStub()],
+          selectedSigners: <OZSelectedSigner>[_passkeyStub()],
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -99,9 +99,9 @@ void main() {
         () => manager.multiSignerExecuteAndSubmit(
           target: '',
           targetFn: 'vote',
-          selectedSigners: <SelectedSigner>[_passkeyStub()],
+          selectedSigners: <OZSelectedSigner>[_passkeyStub()],
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
   });
@@ -113,10 +113,10 @@ void main() {
         await manager.multiSignerExecuteAndSubmit(
           target: _validTargetContract,
           targetFn: '',
-          selectedSigners: <SelectedSigner>[_passkeyStub()],
+          selectedSigners: <OZSelectedSigner>[_passkeyStub()],
         );
-        fail('Expected InvalidInput');
-      } on InvalidInput catch (e) {
+        fail('Expected SmartAccountInvalidInput');
+      } on SmartAccountInvalidInput catch (e) {
         expect(
           e.message.contains('Function name'),
           isTrue,
@@ -132,9 +132,9 @@ void main() {
         () => manager.multiSignerExecuteAndSubmit(
           target: _validTargetContract,
           targetFn: '   ',
-          selectedSigners: <SelectedSigner>[_passkeyStub()],
+          selectedSigners: <OZSelectedSigner>[_passkeyStub()],
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
@@ -146,10 +146,10 @@ void main() {
         await manager.multiSignerExecuteAndSubmit(
           target: _validTargetContract,
           targetFn: 'vote',
-          selectedSigners: const <SelectedSigner>[],
+          selectedSigners: const <OZSelectedSigner>[],
         );
-        fail('Expected InvalidInput');
-      } on InvalidInput catch (e) {
+        fail('Expected SmartAccountInvalidInput');
+      } on SmartAccountInvalidInput catch (e) {
         expect(
           e.message.contains('signer'),
           isTrue,
@@ -168,9 +168,9 @@ void main() {
           tokenContract: _validTargetContract,
           recipient: _validAccountAddress,
           amount: '10',
-          selectedSigners: <SelectedSigner>[_passkeyStub()],
+          selectedSigners: <OZSelectedSigner>[_passkeyStub()],
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
   });
@@ -183,7 +183,7 @@ void main() {
   // into multiSignerContractCall which calls requireContractAddress on the
   // target. The rows below pass a valid recipient that is distinct from the
   // connected contractId so the failure surfaces on the tokenContract leg
-  // as InvalidAddress.
+  // as SmartAccountInvalidAddress.
   // ==========================================================================
 
   group('multiSignerTransfer tokenContract validation', () {
@@ -194,9 +194,9 @@ void main() {
           tokenContract: _validAccountAddress, // G-address, not a contract
           recipient: _validAccountAddress,
           amount: '10',
-          selectedSigners: <SelectedSigner>[_passkeyStub()],
+          selectedSigners: <OZSelectedSigner>[_passkeyStub()],
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -207,9 +207,9 @@ void main() {
           tokenContract: 'CABC',
           recipient: _validAccountAddress,
           amount: '10',
-          selectedSigners: <SelectedSigner>[_passkeyStub()],
+          selectedSigners: <OZSelectedSigner>[_passkeyStub()],
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
   });
@@ -222,9 +222,9 @@ void main() {
           tokenContract: _validTargetContract,
           recipient: 'NOTAVALIDADDRESS',
           amount: '10',
-          selectedSigners: <SelectedSigner>[_passkeyStub()],
+          selectedSigners: <OZSelectedSigner>[_passkeyStub()],
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
   });
@@ -243,10 +243,10 @@ void main() {
           tokenContract: _validTargetContract,
           recipient: _validContractId, // == connected contractId
           amount: '10',
-          selectedSigners: <SelectedSigner>[_passkeyStub()],
+          selectedSigners: <OZSelectedSigner>[_passkeyStub()],
         );
-        fail('Expected InvalidInput');
-      } on InvalidInput catch (e) {
+        fail('Expected SmartAccountInvalidInput');
+      } on SmartAccountInvalidInput catch (e) {
         expect(
           e.message.toLowerCase().contains('self'),
           isTrue,
@@ -260,7 +260,7 @@ void main() {
   // ==========================================================================
   // multiSignerTransfer — selectedSigners validation
   //
-  // Empty signers must throw InvalidInput. The guard is reached after
+  // Empty signers must throw SmartAccountInvalidInput. The guard is reached after
   // requireConnected + requireStellarAddress(recipient) + self-transfer guard
   // + amount conversion + multiSignerContractCall's requireContractAddress
   // for the token contract; supplying valid distinct addresses ensures the
@@ -275,10 +275,10 @@ void main() {
           tokenContract: _validTargetContract,
           recipient: _validAccountAddress,
           amount: '10',
-          selectedSigners: const <SelectedSigner>[],
+          selectedSigners: const <OZSelectedSigner>[],
         );
-        fail('Expected InvalidInput');
-      } on InvalidInput catch (e) {
+        fail('Expected SmartAccountInvalidInput');
+      } on SmartAccountInvalidInput catch (e) {
         expect(
           e.message.contains('signer'),
           isTrue,
@@ -293,7 +293,7 @@ void main() {
   // multiSignerTransfer — forceMethod parameter acceptance
   //
   // These rows verify the named parameter compiles and is accepted with each
-  // documented value. The call still throws WalletNotConnected because the
+  // documented value. The call still throws SmartAccountWalletNotConnected because the
   // kit is unconnected — that proves the signature accepts the parameter
   // without reaching the submission stage.
   // ==========================================================================
@@ -306,10 +306,10 @@ void main() {
           tokenContract: _validTargetContract,
           recipient: _validAccountAddress,
           amount: '10',
-          selectedSigners: <SelectedSigner>[_passkeyStub()],
+          selectedSigners: <OZSelectedSigner>[_passkeyStub()],
           // forceMethod not specified — defaults to null.
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -320,10 +320,10 @@ void main() {
           tokenContract: _validTargetContract,
           recipient: _validAccountAddress,
           amount: '10',
-          selectedSigners: <SelectedSigner>[_passkeyStub()],
-          forceMethod: SubmissionMethod.rpc,
+          selectedSigners: <OZSelectedSigner>[_passkeyStub()],
+          forceMethod: OZSubmissionMethod.rpc,
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -334,10 +334,10 @@ void main() {
           tokenContract: _validTargetContract,
           recipient: _validAccountAddress,
           amount: '10',
-          selectedSigners: <SelectedSigner>[_passkeyStub()],
-          forceMethod: SubmissionMethod.relayer,
+          selectedSigners: <OZSelectedSigner>[_passkeyStub()],
+          forceMethod: OZSubmissionMethod.relayer,
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
   });
@@ -349,10 +349,10 @@ void main() {
         () => manager.multiSignerExecuteAndSubmit(
           target: _validTargetContract,
           targetFn: 'vote',
-          selectedSigners: <SelectedSigner>[_passkeyStub()],
+          selectedSigners: <OZSelectedSigner>[_passkeyStub()],
           // forceMethod defaults to null.
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -362,17 +362,17 @@ void main() {
         () => manager.multiSignerExecuteAndSubmit(
           target: _validTargetContract,
           targetFn: 'vote',
-          selectedSigners: <SelectedSigner>[_passkeyStub()],
-          forceMethod: SubmissionMethod.rpc,
+          selectedSigners: <OZSelectedSigner>[_passkeyStub()],
+          forceMethod: OZSubmissionMethod.rpc,
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
   });
 
-  group('SelectedSigner sealed class', () {
+  group('OZSelectedSigner sealed class', () {
     test('passkey_defaultFieldsAreNull', () {
-      const signer = SelectedSignerPasskey();
+      const signer = OZSelectedSignerPasskey();
       expect(signer.credentialId, isNull);
       expect(signer.credentialIdBytes, isNull);
       expect(signer.keyData, isNull);
@@ -384,7 +384,7 @@ void main() {
       for (var i = 0; i < keyData.length; i++) {
         keyData[i] = i & 0xFF;
       }
-      final signer = SelectedSignerPasskey(
+      final signer = OZSelectedSignerPasskey(
         credentialId: 'abc123',
         credentialIdBytes: credBytes,
         keyData: keyData,
@@ -397,22 +397,22 @@ void main() {
     });
 
     test('wallet_holdsAddress', () {
-      const signer = SelectedSignerWallet(_validAccountAddress);
+      const signer = OZSelectedSignerWallet(_validAccountAddress);
       expect(signer.address, _validAccountAddress);
     });
 
     test('wallet_dataClassEquality', () {
-      const a = SelectedSignerWallet(_validAccountAddress);
-      const b = SelectedSignerWallet(_validAccountAddress);
+      const a = OZSelectedSignerWallet(_validAccountAddress);
+      const b = OZSelectedSignerWallet(_validAccountAddress);
       expect(a == b, isTrue);
       expect(a.hashCode == b.hashCode, isTrue);
     });
 
     test('wallet_equalityWithNonConstInstances', () {
       // Non-const instances to exercise lines 140-141 in oz_selected_signer.dart.
-      final a = SelectedSignerWallet(_validAccountAddress);
-      final b = SelectedSignerWallet(_validAccountAddress);
-      final c = SelectedSignerWallet(_validTargetContract);
+      final a = OZSelectedSignerWallet(_validAccountAddress);
+      final b = OZSelectedSignerWallet(_validAccountAddress);
+      final c = OZSelectedSignerWallet(_validTargetContract);
       expect(a, equals(b));
       expect(a.hashCode, equals(b.hashCode));
       expect(a == c, isFalse);
@@ -420,8 +420,8 @@ void main() {
     });
 
     test('passkey_dataClassEquality_withNullFields', () {
-      const a = SelectedSignerPasskey();
-      const b = SelectedSignerPasskey();
+      const a = OZSelectedSignerPasskey();
+      const b = OZSelectedSignerPasskey();
       expect(a == b, isTrue);
     });
   });
@@ -519,18 +519,18 @@ void main() {
   });
 
   // ==========================================================================
-  // SelectedSignerPasskey.transports propagation
+  // OZSelectedSignerPasskey.transports propagation
   //
   // The transports list (when supplied alongside credentialIdBytes) must
-  // flow into the WebAuthn AllowCredential entry built by
+  // flow into the WebAuthn WebAuthnAllowCredential entry built by
   // submitWithMultipleSigners so cross-device authentication picks the
   // correct authenticator transport.
   // ==========================================================================
 
-  group('SelectedSignerPasskey transports', () {
+  group('OZSelectedSignerPasskey transports', () {
     test('transports_assignedToFieldUnchanged', () {
       final transports = <String>['internal', 'hybrid'];
-      final signer = SelectedSignerPasskey(
+      final signer = OZSelectedSignerPasskey(
         credentialIdBytes: Uint8List.fromList(<int>[1, 2, 3]),
         keyData: Uint8List(97),
         transports: transports,
@@ -542,12 +542,12 @@ void main() {
     test(
         'transports_listIdentityIsPreservedThroughEqualityAndHash',
         () {
-      final a = SelectedSignerPasskey(
+      final a = OZSelectedSignerPasskey(
         credentialIdBytes: Uint8List.fromList(<int>[9]),
         keyData: Uint8List(97),
         transports: const <String>['hybrid', 'usb'],
       );
-      final b = SelectedSignerPasskey(
+      final b = OZSelectedSignerPasskey(
         credentialIdBytes: Uint8List.fromList(<int>[9]),
         keyData: Uint8List(97),
         transports: const <String>['hybrid', 'usb'],
@@ -557,12 +557,12 @@ void main() {
     });
 
     test('transports_differingListsBreakEquality', () {
-      final a = SelectedSignerPasskey(
+      final a = OZSelectedSignerPasskey(
         credentialIdBytes: Uint8List.fromList(<int>[7]),
         keyData: Uint8List(97),
         transports: const <String>['internal'],
       );
-      final b = SelectedSignerPasskey(
+      final b = OZSelectedSignerPasskey(
         credentialIdBytes: Uint8List.fromList(<int>[7]),
         keyData: Uint8List(97),
         transports: const <String>['hybrid'],
@@ -573,18 +573,18 @@ void main() {
     test(
         'transportsAllowCredentialBuilder_includesTransportsWhenIdSupplied',
         () {
-      // Mirrors the inline AllowCredential construction in submitWithMultipleSigners;
+      // Mirrors the inline WebAuthnAllowCredential construction in submitWithMultipleSigners;
       // the production pipeline does not extract a helper to invoke directly.
       final credBytes = Uint8List.fromList(<int>[42, 43, 44]);
       final transports = <String>['internal', 'hybrid'];
-      final signer = SelectedSignerPasskey(
+      final signer = OZSelectedSignerPasskey(
         credentialIdBytes: credBytes,
         keyData: Uint8List(97),
         transports: transports,
       );
       final allowCreds = signer.credentialIdBytes != null
-          ? <AllowCredential>[
-              AllowCredential(
+          ? <WebAuthnAllowCredential>[
+              WebAuthnAllowCredential(
                 id: signer.credentialIdBytes!,
                 transports: signer.transports,
               ),
@@ -601,12 +601,12 @@ void main() {
       // When credentialIdBytes is null the entire allowCredentials list
       // becomes null; the transports field is dropped along with it because
       // there is no credential to associate them with.
-      final signer = SelectedSignerPasskey(
+      final signer = OZSelectedSignerPasskey(
         transports: const <String>['internal'],
       );
       final allowCreds = signer.credentialIdBytes != null
-          ? <AllowCredential>[
-              AllowCredential(
+          ? <WebAuthnAllowCredential>[
+              WebAuthnAllowCredential(
                 id: signer.credentialIdBytes!,
                 transports: signer.transports,
               ),
@@ -616,19 +616,19 @@ void main() {
     });
   });
 
-  group('SelectedSignerEd25519 construction and equality', () {
+  group('OZSelectedSignerEd25519 construction and equality', () {
     test('test_selectedSignerEd25519_constructionAndEquality', () {
       final pk = Uint8List.fromList(List<int>.generate(32, (i) => i & 0xFF));
 
-      final a = SelectedSignerEd25519(
+      final a = OZSelectedSignerEd25519(
         verifierAddress: _verifierA,
         publicKey: pk,
       );
-      final b = SelectedSignerEd25519(
+      final b = OZSelectedSignerEd25519(
         verifierAddress: _verifierA,
         publicKey: Uint8List.fromList(pk),
       );
-      final c = SelectedSignerEd25519(
+      final c = OZSelectedSignerEd25519(
         verifierAddress: _verifierB,
         publicKey: pk,
       );
@@ -640,7 +640,7 @@ void main() {
       final altPk = Uint8List.fromList(
         List<int>.generate(32, (i) => (i + 1) & 0xFF),
       );
-      final d = SelectedSignerEd25519(
+      final d = OZSelectedSignerEd25519(
         verifierAddress: _verifierA,
         publicKey: altPk,
       );
@@ -651,11 +651,11 @@ void main() {
     test('test_selectedSignerEd25519_hashCodeStableAcrossInstances', () {
       final pk = Uint8List.fromList(List<int>.generate(32, (i) => i & 0xFF));
 
-      final a = SelectedSignerEd25519(
+      final a = OZSelectedSignerEd25519(
         verifierAddress: _verifierA,
         publicKey: pk,
       );
-      final b = SelectedSignerEd25519(
+      final b = OZSelectedSignerEd25519(
         verifierAddress: _verifierA,
         publicKey: Uint8List.fromList(pk),
       );
@@ -663,7 +663,7 @@ void main() {
       expect(a.hashCode, equals(b.hashCode),
           reason: 'Hash codes must be stable for byte-equivalent instances');
 
-      final c = SelectedSignerEd25519(
+      final c = OZSelectedSignerEd25519(
         verifierAddress: _verifierB,
         publicKey: pk,
       );
@@ -703,14 +703,14 @@ void main() {
         () => manager.submitWithMultipleSigners(
           hostFunction: _stubHostFunction(),
           selectedSigners: [
-            SelectedSignerEd25519(
+            OZSelectedSignerEd25519(
               verifierAddress: _verifierA,
               publicKey: publicKey,
             ),
           ],
         ),
         // Reaches RPC simulation after validation passes.
-        throwsA(isNot(isA<InvalidInput>())),
+        throwsA(isNot(isA<SmartAccountInvalidInput>())),
       );
     });
 
@@ -735,13 +735,13 @@ void main() {
         () => manager.submitWithMultipleSigners(
           hostFunction: _stubHostFunction(),
           selectedSigners: [
-            SelectedSignerEd25519(
+            OZSelectedSignerEd25519(
               verifierAddress: _verifierA,
               publicKey: unregisteredKey,
             ),
           ],
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -764,14 +764,14 @@ void main() {
         () => manager.submitWithMultipleSigners(
           hostFunction: _stubHostFunction(),
           selectedSigners: [
-            SelectedSignerEd25519(
+            OZSelectedSignerEd25519(
               verifierAddress: _verifierA,
               // 16 bytes is not a valid Ed25519 public key.
               publicKey: Uint8List(16),
             ),
           ],
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -799,13 +799,13 @@ void main() {
         () => manager.submitWithMultipleSigners(
           hostFunction: _stubHostFunction(),
           selectedSigners: [
-            SelectedSignerEd25519(
+            OZSelectedSignerEd25519(
               verifierAddress: 'G${'A' * 55}', // G-address, not C-address
               publicKey: publicKey,
             ),
           ],
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -940,7 +940,7 @@ void main() {
         verifierAddress: _verifierA,
       );
 
-      final ed25519Signer = SelectedSignerEd25519(
+      final ed25519Signer = OZSelectedSignerEd25519(
         verifierAddress: _verifierA,
         publicKey: publicKey,
       );
@@ -957,8 +957,8 @@ void main() {
       expect(h.multi.submitWithMultipleSignersCalls.length, equals(1));
       final call = h.multi.submitWithMultipleSignersCalls.single;
       expect(call.selectedSigners.length, equals(1));
-      expect(call.selectedSigners.single, isA<SelectedSignerEd25519>());
-      final forwarded = call.selectedSigners.single as SelectedSignerEd25519;
+      expect(call.selectedSigners.single, isA<OZSelectedSignerEd25519>());
+      final forwarded = call.selectedSigners.single as OZSelectedSignerEd25519;
       expect(forwarded.verifierAddress, equals(_verifierA));
       expect(forwarded.publicKey, orderedEquals(publicKey));
 
@@ -991,17 +991,17 @@ void main() {
         verifierAddress: _verifierA,
       );
 
-      final selected = <SelectedSigner>[
-        SelectedSignerPasskey(
+      final selected = <OZSelectedSigner>[
+        OZSelectedSignerPasskey(
           credentialId: 'pk-a',
           credentialIdBytes: Uint8List.fromList(<int>[1, 2, 3, 4]),
           keyData: _passkeyKeyDataLocal(seed: 1),
         ),
-        SelectedSignerEd25519(
+        OZSelectedSignerEd25519(
           verifierAddress: _verifierA,
           publicKey: publicKey,
         ),
-        SelectedSignerWallet(_validAccountAddress),
+        OZSelectedSignerWallet(_validAccountAddress),
       ];
 
       final signerMgr = OZSignerManager(h.kit);
@@ -1014,9 +1014,9 @@ void main() {
       expect(h.multi.submitWithMultipleSignersCalls.length, equals(1));
       final call = h.multi.submitWithMultipleSignersCalls.single;
       expect(call.selectedSigners.length, equals(3));
-      expect(call.selectedSigners[0], isA<SelectedSignerPasskey>());
-      expect(call.selectedSigners[1], isA<SelectedSignerEd25519>());
-      expect(call.selectedSigners[2], isA<SelectedSignerWallet>());
+      expect(call.selectedSigners[0], isA<OZSelectedSignerPasskey>());
+      expect(call.selectedSigners[1], isA<OZSelectedSignerEd25519>());
+      expect(call.selectedSigners[2], isA<OZSelectedSignerWallet>());
     });
 
     test(
@@ -1030,12 +1030,12 @@ void main() {
         verifierAddress: _verifierA,
       );
 
-      final selected = <SelectedSigner>[
-        SelectedSignerEd25519(
+      final selected = <OZSelectedSigner>[
+        OZSelectedSignerEd25519(
           verifierAddress: _verifierA,
           publicKey: publicKey,
         ),
-        SelectedSignerPasskey(
+        OZSelectedSignerPasskey(
           credentialId: 'pk-b',
           credentialIdBytes: Uint8List.fromList(<int>[9, 8, 7, 6]),
           keyData: _passkeyKeyDataLocal(seed: 2),
@@ -1052,8 +1052,8 @@ void main() {
       expect(h.multi.submitWithMultipleSignersCalls.length, equals(1));
       final call = h.multi.submitWithMultipleSignersCalls.single;
       expect(call.selectedSigners.length, equals(2));
-      expect(call.selectedSigners[0], isA<SelectedSignerEd25519>());
-      expect(call.selectedSigners[1], isA<SelectedSignerPasskey>());
+      expect(call.selectedSigners[0], isA<OZSelectedSignerEd25519>());
+      expect(call.selectedSigners[1], isA<OZSelectedSignerPasskey>());
     });
 
     test(
@@ -1096,7 +1096,7 @@ void main() {
       await ctxMgr.updateName(
         id: 0,
         name: 'policy-only',
-        selectedSigners: const <SelectedSigner>[],
+        selectedSigners: const <OZSelectedSigner>[],
       );
 
       // With zero selectedSigners the call goes directly through the passkey
@@ -1124,11 +1124,11 @@ void main() {
       await expectLater(
         () => manager.submitWithMultipleSigners(
           hostFunction: _stubHostFunction(),
-          selectedSigners: <SelectedSigner>[
-            SelectedSignerWallet(_validAccountAddress),
+          selectedSigners: <OZSelectedSigner>[
+            OZSelectedSignerWallet(_validAccountAddress),
           ],
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -1140,11 +1140,11 @@ void main() {
       await expectLater(
         () => manager.submitWithMultipleSigners(
           hostFunction: _stubHostFunction(),
-          selectedSigners: <SelectedSigner>[
-            SelectedSignerWallet(_validAccountAddress),
+          selectedSigners: <OZSelectedSigner>[
+            OZSelectedSignerWallet(_validAccountAddress),
           ],
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -1157,12 +1157,12 @@ void main() {
       try {
         await manager.submitWithMultipleSigners(
           hostFunction: _stubHostFunction(),
-          selectedSigners: <SelectedSigner>[
-            SelectedSignerWallet(_validAccountAddress),
+          selectedSigners: <OZSelectedSigner>[
+            OZSelectedSignerWallet(_validAccountAddress),
           ],
         );
-        fail('Expected InvalidInput');
-      } on InvalidInput catch (e) {
+        fail('Expected SmartAccountInvalidInput');
+      } on SmartAccountInvalidInput catch (e) {
         expect(
           e.message.contains('addFromSecret'),
           isTrue,
@@ -1194,18 +1194,18 @@ void main() {
       );
       final manager = OZMultiSignerManager(kit);
 
-      // Validation passes (no InvalidInput for the wallet signer path).
+      // Validation passes (no SmartAccountInvalidInput for the wallet signer path).
       // The pipeline proceeds to RPC simulation which fails because no mock
       // server is configured — that is expected and acceptable: any error
-      // other than the blanket-guard InvalidInput proves validation succeeded.
+      // other than the blanket-guard SmartAccountInvalidInput proves validation succeeded.
       await expectLater(
         () => manager.submitWithMultipleSigners(
           hostFunction: _stubHostFunction(),
-          selectedSigners: <SelectedSigner>[
-            SelectedSignerWallet(keypair.accountId),
+          selectedSigners: <OZSelectedSigner>[
+            OZSelectedSignerWallet(keypair.accountId),
           ],
         ),
-        throwsA(isNot(isA<InvalidInput>())),
+        throwsA(isNot(isA<SmartAccountInvalidInput>())),
       );
     });
 
@@ -1233,14 +1233,14 @@ void main() {
       await expectLater(
         () => manager.submitWithMultipleSigners(
           hostFunction: _stubHostFunction(),
-          selectedSigners: <SelectedSigner>[
-            SelectedSignerEd25519(
+          selectedSigners: <OZSelectedSigner>[
+            OZSelectedSignerEd25519(
               verifierAddress: _validTargetContract,
               publicKey: pubKey,
             ),
           ],
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -1260,15 +1260,15 @@ void main() {
       try {
         await manager.submitWithMultipleSigners(
           hostFunction: _stubHostFunction(),
-          selectedSigners: <SelectedSigner>[
-            SelectedSignerEd25519(
+          selectedSigners: <OZSelectedSigner>[
+            OZSelectedSignerEd25519(
               verifierAddress: _verifierA,
               publicKey: pubKey,
             ),
           ],
         );
-        fail('Expected InvalidInput');
-      } on InvalidInput catch (e) {
+        fail('Expected SmartAccountInvalidInput');
+      } on SmartAccountInvalidInput catch (e) {
         expect(
           e.message.contains('addEd25519FromRawKey'),
           isTrue,
@@ -1310,20 +1310,20 @@ void main() {
       );
 
       // Validation passes — pipeline proceeds to RPC, which fails on the
-      // NullSorobanServer. Any error other than InvalidInput proves
+      // NullSorobanServer. Any error other than SmartAccountInvalidInput proves
       // per-address Ed25519 validation succeeded.
       final manager = OZMultiSignerManager(kit);
       await expectLater(
         () => manager.submitWithMultipleSigners(
           hostFunction: _stubHostFunction(),
-          selectedSigners: <SelectedSigner>[
-            SelectedSignerEd25519(
+          selectedSigners: <OZSelectedSigner>[
+            OZSelectedSignerEd25519(
               verifierAddress: _verifierA,
               publicKey: publicKey,
             ),
           ],
         ),
-        throwsA(isNot(isA<InvalidInput>())),
+        throwsA(isNot(isA<SmartAccountInvalidInput>())),
       );
     });
 
@@ -1349,14 +1349,14 @@ void main() {
       await expectLater(
         () => manager.submitWithMultipleSigners(
           hostFunction: _stubHostFunction(),
-          selectedSigners: <SelectedSigner>[
-            SelectedSignerEd25519(
+          selectedSigners: <OZSelectedSigner>[
+            OZSelectedSignerEd25519(
               verifierAddress: _verifierA,
               publicKey: publicKey,
             ),
           ],
         ),
-        throwsA(isNot(isA<InvalidInput>())),
+        throwsA(isNot(isA<SmartAccountInvalidInput>())),
       );
     });
 
@@ -1400,9 +1400,9 @@ void main() {
       await expectLater(
         () => manager.submitWithMultipleSigners(
           hostFunction: _stubHostFunction(),
-          selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+          selectedSigners: <OZSelectedSigner>[const OZSelectedSignerPasskey()],
         ),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
 
@@ -1418,9 +1418,9 @@ void main() {
       await expectLater(
         () => manager.submitWithMultipleSigners(
           hostFunction: _stubHostFunction(),
-          selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+          selectedSigners: <OZSelectedSigner>[const OZSelectedSignerPasskey()],
         ),
-        throwsA(isA<TransactionSimulationFailed>()),
+        throwsA(isA<SmartAccountTransactionSimulationFailed>()),
       );
     });
 
@@ -1437,9 +1437,9 @@ void main() {
       await expectLater(
         () => manager.submitWithMultipleSigners(
           hostFunction: _stubHostFunction(),
-          selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+          selectedSigners: <OZSelectedSigner>[const OZSelectedSignerPasskey()],
         ),
-        throwsA(isA<TransactionSimulationFailed>()),
+        throwsA(isA<SmartAccountTransactionSimulationFailed>()),
       );
     });
 
@@ -1457,9 +1457,9 @@ void main() {
       await expectLater(
         () => manager.submitWithMultipleSigners(
           hostFunction: _stubHostFunction(),
-          selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+          selectedSigners: <OZSelectedSigner>[const OZSelectedSignerPasskey()],
         ),
-        throwsA(isA<TransactionSimulationFailed>()),
+        throwsA(isA<SmartAccountTransactionSimulationFailed>()),
       );
     });
 
@@ -1485,15 +1485,15 @@ void main() {
         ..setConnected(credentialId: 'cred', contractId: _validContractId);
       final manager = OZMultiSignerManager(kit);
 
-      // SelectedSignerPasskey with no keyData triggers the hoist guard.
+      // OZSelectedSignerPasskey with no keyData triggers the hoist guard.
       await expectLater(
         () => manager.submitWithMultipleSigners(
           hostFunction: _stubHostFunction(),
-          selectedSigners: <SelectedSigner>[
-            const SelectedSignerPasskey(), // keyData is null
+          selectedSigners: <OZSelectedSigner>[
+            const OZSelectedSignerPasskey(), // keyData is null
           ],
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -1506,9 +1506,9 @@ void main() {
           tokenContract: _validTargetContract,
           recipient: _validContractId, // same as connected contract
           amount: '10',
-          selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+          selectedSigners: <OZSelectedSigner>[const OZSelectedSignerPasskey()],
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -1520,9 +1520,9 @@ void main() {
         () => manager.multiSignerContractCall(
           target: _validTargetContract,
           targetFn: '',
-          selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+          selectedSigners: <OZSelectedSigner>[const OZSelectedSignerPasskey()],
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
@@ -1589,9 +1589,9 @@ XdrHostFunction _stubHostFunction() {
 }
 
 /// A wallet adapter that always reports it cannot sign for any address.
-class _NeverSignWallet extends ExternalWalletAdapter {
+class _NeverSignWallet extends OZExternalWalletAdapter {
   @override
-  Future<ConnectedWallet?> connect() async => null;
+  Future<OZConnectedWallet?> connect() async => null;
 
   @override
   Future<void> disconnect() async {}
@@ -1600,12 +1600,12 @@ class _NeverSignWallet extends ExternalWalletAdapter {
   bool canSignFor(String address) => false;
 
   @override
-  List<ConnectedWallet> getConnectedWallets() => const <ConnectedWallet>[];
+  List<OZConnectedWallet> getConnectedWallets() => const <OZConnectedWallet>[];
 
   @override
-  Future<SignAuthEntryResult> signAuthEntry(
+  Future<OZSignAuthEntryResult> signAuthEntry(
     String preimageXdr, {
-    SignAuthEntryOptions? options,
+    OZSignAuthEntryOptions? options,
   }) async {
     throw UnsupportedError('_NeverSignWallet cannot sign');
   }

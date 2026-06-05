@@ -206,12 +206,12 @@ void main() {
 
       await provider().authenticate(
         challenge: bytes(<int>[0x20]),
-        allowCredentials: <AllowCredential>[
-          AllowCredential(
+        allowCredentials: <WebAuthnAllowCredential>[
+          WebAuthnAllowCredential(
             id: bytes(<int>[0x30, 0x31]),
             transports: const <String>['internal', 'hybrid'],
           ),
-          AllowCredential(id: bytes(<int>[0x40])),
+          WebAuthnAllowCredential(id: bytes(<int>[0x40])),
         ],
       );
 

@@ -160,7 +160,7 @@ class OZRelayerResponse {
 /// }
 /// ```
 ///
-/// Throws [InvalidConfig] from the constructor when the URL is blank or
+/// Throws [SmartAccountInvalidConfig] from the constructor when the URL is blank or
 /// uses a non-HTTPS scheme other than `http://localhost`.
 class OZRelayerClient {
   /// Creates a relayer client for the given [relayerUrl].

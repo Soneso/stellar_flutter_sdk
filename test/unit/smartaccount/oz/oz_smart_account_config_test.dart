@@ -56,7 +56,7 @@ void main() {
           accountWasmHash: _validWasmHash,
           webauthnVerifierAddress: '    ',
         ),
-        throwsA(isA<InvalidConfig>()),
+        throwsA(isA<SmartAccountInvalidConfig>()),
       );
     });
 
@@ -68,7 +68,7 @@ void main() {
           accountWasmHash: _validWasmHash,
           webauthnVerifierAddress: 'G${'A' * 55}',
         ),
-        throwsA(isA<InvalidConfig>()),
+        throwsA(isA<SmartAccountInvalidConfig>()),
       );
     });
 
@@ -80,7 +80,7 @@ void main() {
           accountWasmHash: _validWasmHash,
           webauthnVerifierAddress: 'CABC',
         ),
-        throwsA(isA<InvalidConfig>()),
+        throwsA(isA<SmartAccountInvalidConfig>()),
       );
     });
 
@@ -92,7 +92,7 @@ void main() {
           accountWasmHash: _validWasmHash,
           webauthnVerifierAddress: 'C${'A' * 56}',
         ),
-        throwsA(isA<InvalidConfig>()),
+        throwsA(isA<SmartAccountInvalidConfig>()),
       );
     });
 
@@ -104,7 +104,7 @@ void main() {
           accountWasmHash: _validWasmHash,
           webauthnVerifierAddress: _validVerifier,
         ),
-        throwsA(isA<MissingConfig>()),
+        throwsA(isA<SmartAccountMissingConfig>()),
       );
     });
 
@@ -116,7 +116,7 @@ void main() {
           accountWasmHash: _validWasmHash,
           webauthnVerifierAddress: _validVerifier,
         ),
-        throwsA(isA<MissingConfig>()),
+        throwsA(isA<SmartAccountMissingConfig>()),
       );
     });
 
@@ -128,7 +128,7 @@ void main() {
           accountWasmHash: '   ',
           webauthnVerifierAddress: _validVerifier,
         ),
-        throwsA(isA<MissingConfig>()),
+        throwsA(isA<SmartAccountMissingConfig>()),
       );
     });
 
@@ -140,7 +140,7 @@ void main() {
           accountWasmHash: 'not_a_valid_hex_hash',
           webauthnVerifierAddress: _validVerifier,
         ),
-        throwsA(isA<InvalidConfig>()),
+        throwsA(isA<SmartAccountInvalidConfig>()),
       );
     });
 
@@ -152,7 +152,7 @@ void main() {
           accountWasmHash: 'abcdef',
           webauthnVerifierAddress: _validVerifier,
         ),
-        throwsA(isA<InvalidConfig>()),
+        throwsA(isA<SmartAccountInvalidConfig>()),
       );
     });
 
@@ -413,7 +413,7 @@ void main() {
           webauthnVerifierAddress: _validVerifier,
           signatureExpirationLedgers: 0,
         ),
-        throwsA(isA<InvalidConfig>().having(
+        throwsA(isA<SmartAccountInvalidConfig>().having(
           (e) => e.toString(),
           'message',
           contains('signatureExpirationLedgers must be >= 1'),
@@ -430,7 +430,7 @@ void main() {
           webauthnVerifierAddress: _validVerifier,
           signatureExpirationLedgers: -1,
         ),
-        throwsA(isA<InvalidConfig>().having(
+        throwsA(isA<SmartAccountInvalidConfig>().having(
           (e) => e.toString(),
           'message',
           contains('signatureExpirationLedgers must be >= 1'),
@@ -483,7 +483,7 @@ void main() {
           webauthnVerifierAddress: _validVerifier,
           timeoutInSeconds: -5,
         ),
-        throwsA(isA<InvalidConfig>().having(
+        throwsA(isA<SmartAccountInvalidConfig>().having(
           (e) => e.toString(),
           'message',
           contains('timeoutInSeconds must be >= 0'),
@@ -522,7 +522,7 @@ void main() {
           webauthnVerifierAddress: _validVerifier,
           maxContextRuleScanId: -1,
         ),
-        throwsA(isA<InvalidConfig>().having(
+        throwsA(isA<SmartAccountInvalidConfig>().having(
           (e) => e.toString(),
           'message',
           contains('maxContextRuleScanId must be non-negative'),
@@ -555,7 +555,7 @@ void main() {
     });
 
     test('testBuilder_storage_setter', () {
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
       final config = OZSmartAccountConfig.builder(
         rpcUrl: _validRpcUrl,
         networkPassphrase: _validPassphrase,

@@ -54,7 +54,7 @@ class BrowserWebAuthnProvider extends WebAuthnProvider {
   @override
   Future<WebAuthnAuthenticationResult> authenticate({
     required Uint8List challenge,
-    List<AllowCredential>? allowCredentials,
+    List<WebAuthnAllowCredential>? allowCredentials,
   }) async =>
       _unsupported();
 }

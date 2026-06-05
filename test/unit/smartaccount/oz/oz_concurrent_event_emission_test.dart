@@ -8,7 +8,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 void main() {
   group('concurrent emit', () {
     test('testConcurrentEmit_noLostEventsWithSingleListener', () async {
-      final emitter = SmartAccountEventEmitter();
+      final emitter = OZSmartAccountEventEmitter();
       var count = 0;
 
       emitter.addListener((_) => count++);
@@ -17,7 +17,7 @@ void main() {
       final jobs = <Future<void>>[];
       for (var i = 1; i <= eventCount; i++) {
         jobs.add(Future<void>(() {
-          emitter.emit(SmartAccountEventTransactionSubmitted(
+          emitter.emit(OZSmartAccountEventTransactionSubmitted(
             hash: 'hash-$i',
             success: true,
           ));
@@ -30,7 +30,7 @@ void main() {
     });
 
     test('testConcurrentEmit_noExceptionWithMultipleListeners', () async {
-      final emitter = SmartAccountEventEmitter();
+      final emitter = OZSmartAccountEventEmitter();
 
       for (var i = 0; i < 5; i++) {
         emitter.addListener((_) {});
@@ -39,7 +39,7 @@ void main() {
       final jobs = <Future<void>>[];
       for (var i = 1; i <= 50; i++) {
         jobs.add(Future<void>(() {
-          emitter.emit(SmartAccountEventWalletConnected(
+          emitter.emit(OZSmartAccountEventWalletConnected(
             contractId: 'contract-$i',
             credentialId: 'cred-$i',
           ));
@@ -49,12 +49,12 @@ void main() {
     });
 
     test('testConcurrentSubscribeAndEmit_noException', () async {
-      final emitter = SmartAccountEventEmitter();
+      final emitter = OZSmartAccountEventEmitter();
 
       final jobs = <Future<void>>[];
       for (var i = 1; i <= 30; i++) {
         jobs.add(Future<void>(() {
-          emitter.emit(SmartAccountEventTransactionSubmitted(
+          emitter.emit(OZSmartAccountEventTransactionSubmitted(
             hash: 'hash-$i',
             success: i % 2 == 0,
           ));
@@ -70,7 +70,7 @@ void main() {
     });
 
     test('testConcurrentUnsubscribeAndEmit_noException', () async {
-      final emitter = SmartAccountEventEmitter();
+      final emitter = OZSmartAccountEventEmitter();
       final unsubscribers = <void Function()>[];
 
       for (var i = 0; i < 20; i++) {
@@ -81,7 +81,7 @@ void main() {
       for (var i = 1; i <= 30; i++) {
         jobs.add(Future<void>(() {
           emitter.emit(
-              SmartAccountEventWalletDisconnected(contractId: 'c-$i'));
+              OZSmartAccountEventWalletDisconnected(contractId: 'c-$i'));
         }));
       }
       for (final unsub in unsubscribers) {
@@ -92,12 +92,12 @@ void main() {
     });
 
     test('testConcurrentTypedListeners_noException', () async {
-      final emitter = SmartAccountEventEmitter();
+      final emitter = OZSmartAccountEventEmitter();
 
       final subscribeJobs = <Future<void>>[];
       for (var i = 1; i <= 10; i++) {
         subscribeJobs.add(Future<void>(() {
-          emitter.on<SmartAccountEventWalletConnected>((_) {});
+          emitter.on<OZSmartAccountEventWalletConnected>((_) {});
         }));
       }
       await Future.wait(subscribeJobs);
@@ -106,12 +106,12 @@ void main() {
       for (var i = 1; i <= 40; i++) {
         emitJobs.add(Future<void>(() {
           if (i % 2 == 0) {
-            emitter.emit(SmartAccountEventWalletConnected(
+            emitter.emit(OZSmartAccountEventWalletConnected(
               contractId: 'c-$i',
               credentialId: 'cred-$i',
             ));
           } else {
-            emitter.emit(SmartAccountEventTransactionSubmitted(
+            emitter.emit(OZSmartAccountEventTransactionSubmitted(
               hash: 'h-$i',
               success: true,
             ));
@@ -122,14 +122,14 @@ void main() {
     });
 
     test('testConcurrentEmit_listenerCountRemainsConsistent', () async {
-      final emitter = SmartAccountEventEmitter();
+      final emitter = OZSmartAccountEventEmitter();
 
       emitter.addListener((_) {});
 
       final jobs = <Future<void>>[];
       for (var i = 1; i <= 60; i++) {
         jobs.add(Future<void>(() {
-          emitter.emit(SmartAccountEventSessionExpired(
+          emitter.emit(OZSmartAccountEventSessionExpired(
             contractId: 'c-$i',
             credentialId: 'cred-$i',
           ));
@@ -143,7 +143,7 @@ void main() {
 
   group('removeAllListeners under concurrency', () {
     test('testConcurrentRemoveAllAndEmit_noException', () async {
-      final emitter = SmartAccountEventEmitter();
+      final emitter = OZSmartAccountEventEmitter();
 
       for (var i = 0; i < 10; i++) {
         emitter.addListener((_) {});
@@ -153,7 +153,7 @@ void main() {
       for (var i = 1; i <= 20; i++) {
         jobs.add(Future<void>(() {
           emitter.emit(
-              SmartAccountEventCredentialDeleted(credentialId: 'cred-$i'));
+              OZSmartAccountEventCredentialDeleted(credentialId: 'cred-$i'));
         }));
       }
       jobs.add(Future<void>(() => emitter.removeAllListeners()));

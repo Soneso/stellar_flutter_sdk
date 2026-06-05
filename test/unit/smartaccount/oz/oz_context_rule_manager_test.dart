@@ -54,11 +54,11 @@ void main() {
       final mgr = OZContextRuleManager(h.kit);
       await expectLater(
         () => mgr.addContextRule(
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: '',
           signers: <OZSmartAccountSigner>[_delegated(_accountAddress)],
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
       expect(h.txOps.submitCalls, isEmpty);
     });
@@ -68,11 +68,11 @@ void main() {
       final mgr = OZContextRuleManager(h.kit);
       await expectLater(
         () => mgr.addContextRule(
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: 'rule',
           signers: const <OZSmartAccountSigner>[],
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
       expect(h.txOps.submitCalls, isEmpty);
     });
@@ -92,11 +92,11 @@ void main() {
       );
       await expectLater(
         () => mgr.addContextRule(
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: 'too-many',
           signers: signers,
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
       expect(h.txOps.submitCalls, isEmpty);
     });
@@ -121,12 +121,12 @@ void main() {
       }
       await expectLater(
         () => mgr.addContextRule(
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: 'too-many-policies',
           signers: <OZSmartAccountSigner>[_delegated(_accountAddress)],
           policies: policies,
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
       expect(h.txOps.submitCalls, isEmpty);
     });
@@ -138,7 +138,7 @@ void main() {
       final h = _buildHarness();
       final mgr = OZContextRuleManager(h.kit);
       await mgr.addContextRule(
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'default-rule',
         signers: <OZSmartAccountSigner>[_delegated(_accountAddress)],
       );
@@ -151,7 +151,7 @@ void main() {
       final h = _buildHarness();
       final mgr = OZContextRuleManager(h.kit);
       await mgr.addContextRule(
-        contextType: const ContextRuleTypeCallContract(_verifierContract),
+        contextType: const OZContextRuleTypeCallContract(_verifierContract),
         name: 'call',
         signers: <OZSmartAccountSigner>[_delegated(_accountAddress)],
       );
@@ -166,14 +166,14 @@ void main() {
       final mgr = OZContextRuleManager(h.kit);
       await expectLater(
         () => mgr.addContextRule(
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: 'bad-policy',
           signers: <OZSmartAccountSigner>[_delegated(_accountAddress)],
           policies: <String, XdrSCVal>{
             'NOT_A_C_ADDRESS': XdrSCVal.forVoid(),
           },
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
       expect(h.txOps.submitCalls, isEmpty);
     });
@@ -183,7 +183,7 @@ void main() {
       final mgr = OZContextRuleManager(h.kit);
       await expectLater(
         () => mgr.updateName(id: 0, name: ''),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
       expect(h.txOps.submitCalls, isEmpty);
     });
@@ -207,7 +207,7 @@ void main() {
         XdrSCMapEntry(XdrSCVal.forSymbol('id'), XdrSCVal.forU32(7)),
         XdrSCMapEntry(
           XdrSCVal.forSymbol('context_type'),
-          const ContextRuleTypeDefault().toScVal(),
+          const OZContextRuleTypeDefault().toScVal(),
         ),
         XdrSCMapEntry(XdrSCVal.forSymbol('name'), XdrSCVal.forString('hello')),
         XdrSCMapEntry(
@@ -237,7 +237,7 @@ void main() {
       final parsed = mgr.parseContextRule(ruleScVal);
       expect(parsed.id, 7);
       expect(parsed.name, 'hello');
-      expect(parsed.contextType, const ContextRuleTypeDefault());
+      expect(parsed.contextType, const OZContextRuleTypeDefault());
       expect(parsed.signers.length, 1);
       expect(parsed.signerIds, <int>[11]);
       expect(parsed.policies, isEmpty);
@@ -252,7 +252,7 @@ void main() {
       final mgr = OZContextRuleManager(h.kit);
 
       await mgr.addContextRule(
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'policy-rule',
         signers: <OZSmartAccountSigner>[OZDelegatedSigner(_accountAddress)],
         policies: <String, XdrSCVal>{
@@ -269,15 +269,15 @@ void main() {
       final h = _buildHarness();
       final mockMulti = MockOZMultiSignerManager(h.kit);
       mockMulti.submitWithMultipleSignersDefault =
-          const TransactionResult(success: true, hash: 'multi-add');
+          const OZTransactionResult(success: true, hash: 'multi-add');
       h.kit.setMultiSignerManager(mockMulti);
       final mgr = OZContextRuleManager(h.kit);
 
       await mgr.addContextRule(
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'multi-rule',
         signers: <OZSmartAccountSigner>[OZDelegatedSigner(_accountAddress)],
-        selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+        selectedSigners: <OZSelectedSigner>[const OZSelectedSignerPasskey()],
       );
 
       expect(mockMulti.submitWithMultipleSignersCalls, hasLength(1));
@@ -287,13 +287,13 @@ void main() {
       final h = _buildHarness();
       final mockMulti = MockOZMultiSignerManager(h.kit);
       mockMulti.submitWithMultipleSignersDefault =
-          const TransactionResult(success: true, hash: 'multi-remove');
+          const OZTransactionResult(success: true, hash: 'multi-remove');
       h.kit.setMultiSignerManager(mockMulti);
       final mgr = OZContextRuleManager(h.kit);
 
       await mgr.removeContextRule(
         id: 0,
-        selectedSigners: <SelectedSigner>[const SelectedSignerPasskey()],
+        selectedSigners: <OZSelectedSigner>[const OZSelectedSignerPasskey()],
       );
 
       expect(mockMulti.submitWithMultipleSignersCalls, hasLength(1));
@@ -309,7 +309,7 @@ void main() {
 
       await expectLater(
         mgr.getContextRulesCount(),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -329,7 +329,7 @@ void main() {
       // When contextRules is empty, the manager calls listContextRules first.
       // With 0 active rules, resolveContextRuleIdsForEntry ends up calling
       // resolveContextRuleIdsForEntryWithRules with an empty list, which
-      // throws ValidationException for any auth entry that requires a rule.
+      // throws SmartAccountValidationException for any auth entry that requires a rule.
       final h = _buildHarness();
       // First simulate call = count (0), no rules fetched.
       h.txOps.simulateAndExtractResultDefault = XdrSCVal.forU32(0);
@@ -340,9 +340,9 @@ void main() {
         mgr.resolveContextRuleIdsForEntry(
           entry,
           <OZSmartAccountSigner>[],
-          const <ParsedContextRule>[], // empty → delegates to listContextRules → returns empty
+          const <OZParsedContextRule>[], // empty → delegates to listContextRules → returns empty
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -351,9 +351,9 @@ void main() {
       final mgr = OZContextRuleManager(h.kit);
 
       // Create a CallContract rule with a specific contract.
-      final rule = ParsedContextRule(
+      final rule = OZParsedContextRule(
         id: 0,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'rule',
         signers: <OZSmartAccountSigner>[OZDelegatedSigner(_accountAddress)],
         signerIds: const <int>[10],
@@ -362,7 +362,7 @@ void main() {
       );
 
       // Use an entry that results in a CallContract context requiring a
-      // specific contract, but no rule matches → should throw ValidationException.
+      // specific contract, but no rule matches → should throw SmartAccountValidationException.
       // Actually with a Default rule and specific CallContract entry, the Default
       // rule matches everything, so let's use an explicit CallContract entry type.
       // With the Default rule, it matches any context, so we need a different setup.
@@ -370,7 +370,7 @@ void main() {
       final result = mgr.resolveContextRuleIdsForEntryWithRules(
         _makeSourceAccountEntry(),
         <OZSmartAccountSigner>[],
-        <ParsedContextRule>[rule],
+        <OZParsedContextRule>[rule],
       );
       // Default rule with one candidate → returns its id.
       expect(result, isNotEmpty);
@@ -415,8 +415,8 @@ void main() {
           // First call: count query returns 1.
           return XdrSCVal.forU32(1);
         }
-        // Second call (getContextRule): throw TransactionSimulationFailed.
-        throw TransactionException.simulationFailed('no rule at this id');
+        // Second call (getContextRule): throw SmartAccountTransactionSimulationFailed.
+        throw SmartAccountTransactionException.simulationFailed('no rule at this id');
       };
       final mgr = OZContextRuleManager(h.kit);
 

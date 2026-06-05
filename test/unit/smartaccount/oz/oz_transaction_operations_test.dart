@@ -17,9 +17,9 @@ const String _accountA =
 const String _credentialId = 'aGVsbG8tc21hcnQtYWNjb3VudA';
 
 void main() {
-  group('TransactionResult value type', () {
+  group('OZTransactionResult value type', () {
     test('transactionResult_allFields', () {
-      const result = TransactionResult(
+      const result = OZTransactionResult(
         success: true,
         hash: 'h',
         ledger: 42,
@@ -32,7 +32,7 @@ void main() {
     });
 
     test('transactionResult_defaults', () {
-      const result = TransactionResult(success: false);
+      const result = OZTransactionResult(success: false);
       expect(result.success, isFalse);
       expect(result.hash, isNull);
       expect(result.ledger, isNull);
@@ -40,7 +40,7 @@ void main() {
     });
 
     test('transactionResult_failureWithError', () {
-      const result = TransactionResult(
+      const result = OZTransactionResult(
         success: false,
         hash: 'abc',
         error: 'something went wrong',
@@ -51,24 +51,24 @@ void main() {
     });
 
     test('transactionResult_successWithLedger', () {
-      const result = TransactionResult(success: true, hash: 'h', ledger: 99);
+      const result = OZTransactionResult(success: true, hash: 'h', ledger: 99);
       expect(result.success, isTrue);
       expect(result.hash, equals('h'));
       expect(result.ledger, equals(99));
     });
 
     test('transactionResult_equalInstances', () {
-      const a = TransactionResult(success: true, hash: 'h', ledger: 1);
-      const b = TransactionResult(success: true, hash: 'h', ledger: 1);
+      const a = OZTransactionResult(success: true, hash: 'h', ledger: 1);
+      const b = OZTransactionResult(success: true, hash: 'h', ledger: 1);
       expect(a, equals(b));
       expect(a.hashCode, equals(b.hashCode));
     });
 
     test('transactionResult_equalityWithNonConstInstances', () {
       // Non-const instances so identical() returns false, exercising the == body.
-      final a = TransactionResult(success: true, hash: 'h', ledger: 1, error: null);
-      final b = TransactionResult(success: true, hash: 'h', ledger: 1, error: null);
-      final c = TransactionResult(success: true, hash: 'h', ledger: 1, error: 'e');
+      final a = OZTransactionResult(success: true, hash: 'h', ledger: 1, error: null);
+      final b = OZTransactionResult(success: true, hash: 'h', ledger: 1, error: null);
+      final c = OZTransactionResult(success: true, hash: 'h', ledger: 1, error: 'e');
       expect(a, equals(b));
       expect(a.hashCode, equals(b.hashCode));
       expect(a == c, isFalse);
@@ -76,7 +76,7 @@ void main() {
     });
 
     test('transactionResult_copyWithAllFields', () {
-      const original = TransactionResult(success: true, hash: 'h', ledger: 1);
+      const original = OZTransactionResult(success: true, hash: 'h', ledger: 1);
       final copy = original.copyWith(success: false, hash: 'h2', ledger: 2, error: 'e');
       expect(copy.success, isFalse);
       expect(copy.hash, 'h2');
@@ -85,23 +85,23 @@ void main() {
     });
 
     test('transactionResult_toString', () {
-      const r = TransactionResult(success: true, hash: 'h', ledger: 5);
+      const r = OZTransactionResult(success: true, hash: 'h', ledger: 5);
       expect(r.toString(), contains('success: true'));
       expect(r.toString(), contains('hash: h'));
     });
 
     test('transactionResult_unequalInstances', () {
-      const a = TransactionResult(success: true, hash: 'h', ledger: 1);
-      const b = TransactionResult(success: false, hash: 'h', ledger: 1);
-      const c = TransactionResult(success: true, hash: 'g', ledger: 1);
-      const d = TransactionResult(success: true, hash: 'h', ledger: 2);
+      const a = OZTransactionResult(success: true, hash: 'h', ledger: 1);
+      const b = OZTransactionResult(success: false, hash: 'h', ledger: 1);
+      const c = OZTransactionResult(success: true, hash: 'g', ledger: 1);
+      const d = OZTransactionResult(success: true, hash: 'h', ledger: 2);
       expect(a == b, isFalse);
       expect(a == c, isFalse);
       expect(a == d, isFalse);
     });
 
     test('transactionResult_copy', () {
-      const original = TransactionResult(success: true, hash: 'h', ledger: 1);
+      const original = OZTransactionResult(success: true, hash: 'h', ledger: 1);
       final copy = original.copyWith(error: 'err');
       expect(copy.success, isTrue);
       expect(copy.hash, equals('h'));
@@ -110,29 +110,29 @@ void main() {
     });
   });
 
-  group('SubmissionMethod enum behavior', () {
+  group('OZSubmissionMethod enum behavior', () {
     test('submissionMethod_values', () {
-      expect(SubmissionMethod.values.length, equals(2));
-      expect(SubmissionMethod.values, contains(SubmissionMethod.relayer));
-      expect(SubmissionMethod.values, contains(SubmissionMethod.rpc));
+      expect(OZSubmissionMethod.values.length, equals(2));
+      expect(OZSubmissionMethod.values, contains(OZSubmissionMethod.relayer));
+      expect(OZSubmissionMethod.values, contains(OZSubmissionMethod.rpc));
     });
 
     test('submissionMethod_valueOf', () {
-      final byName = SubmissionMethod.values.firstWhere((e) => e.name == 'relayer');
-      expect(byName, equals(SubmissionMethod.relayer));
+      final byName = OZSubmissionMethod.values.firstWhere((e) => e.name == 'relayer');
+      expect(byName, equals(OZSubmissionMethod.relayer));
     });
 
     test('submissionMethod_invalidValue_throws', () {
       expect(
-        () => SubmissionMethod.values.firstWhere((e) => e.name == 'unknown'),
+        () => OZSubmissionMethod.values.firstWhere((e) => e.name == 'unknown'),
         throwsStateError,
       );
     });
   });
 
-  group('ResolveContextRuleIds typealias behavior', () {
+  group('OZResolveContextRuleIds typealias behavior', () {
     test('resolveContextRuleIds_lambdaUsable', () async {
-      ResolveContextRuleIds resolver =
+      OZResolveContextRuleIds resolver =
           (entry, idx) async => <int>[1, 2, 3];
       final dummy = _dummyAuthEntry();
       final result = await resolver(dummy, 0);
@@ -140,14 +140,14 @@ void main() {
     });
 
     test('resolveContextRuleIds_emptyList', () async {
-      ResolveContextRuleIds resolver = (entry, idx) async => const <int>[];
+      OZResolveContextRuleIds resolver = (entry, idx) async => const <int>[];
       final dummy = _dummyAuthEntry();
       final result = await resolver(dummy, 0);
       expect(result, isEmpty);
     });
 
     test('resolveContextRuleIds_multipleIds', () async {
-      ResolveContextRuleIds resolver =
+      OZResolveContextRuleIds resolver =
           (entry, idx) async => <int>[7, 8, 9, 10];
       final dummy = _dummyAuthEntry();
       final result = await resolver(dummy, 2);
@@ -165,7 +165,7 @@ void main() {
           recipient: _accountA,
           amount: '1',
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -179,7 +179,7 @@ void main() {
           recipient: 'not-a-real-address',
           amount: '1',
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -193,7 +193,7 @@ void main() {
           recipient: '',
           amount: '1',
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -210,7 +210,7 @@ void main() {
           recipient: muxed,
           amount: '1',
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -225,7 +225,7 @@ void main() {
           amount: '1',
         ),
         throwsA(
-          isA<InvalidInput>().having(
+          isA<SmartAccountInvalidInput>().having(
             (e) => e.message,
             'message',
             contains('Cannot transfer to self'),
@@ -244,7 +244,7 @@ void main() {
           recipient: _accountA,
           amount: '0',
         ),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
@@ -258,7 +258,7 @@ void main() {
           recipient: _accountA,
           amount: '-1',
         ),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
@@ -272,7 +272,7 @@ void main() {
           recipient: _accountA,
           amount: 'abc',
         ),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
@@ -286,7 +286,7 @@ void main() {
           recipient: _accountA,
           amount: '',
         ),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
@@ -300,7 +300,7 @@ void main() {
           recipient: _accountA,
           amount: '1e5',
         ),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
@@ -315,7 +315,7 @@ void main() {
           recipient: _accountA,
           amount: '0.00000001',
         ),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
@@ -325,14 +325,14 @@ void main() {
       final ops = OZTransactionOperations(kit);
       // tokenContract validation runs inside contractCall (after recipient
       // validation but before any network). A non-contract address should
-      // produce InvalidAddress.
+      // produce SmartAccountInvalidAddress.
       await expectLater(
         () => ops.transfer(
           tokenContract: 'not-a-contract-id',
           recipient: _accountA,
           amount: '1',
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -352,9 +352,9 @@ void main() {
         // If somehow it succeeds (no network attempted in stub), that's fine.
       } catch (e) {
         // Validation must not be the failure mode.
-        expect(e, isNot(isA<InvalidAddress>()));
-        expect(e, isNot(isA<InvalidInput>()));
-        expect(e, isNot(isA<InvalidAmount>()));
+        expect(e, isNot(isA<SmartAccountInvalidAddress>()));
+        expect(e, isNot(isA<SmartAccountInvalidInput>()));
+        expect(e, isNot(isA<SmartAccountInvalidAmount>()));
       }
     });
 
@@ -376,8 +376,8 @@ void main() {
           amount: '10',
         );
       } catch (e) {
-        expect(e, isNot(isA<InvalidAddress>()));
-        expect(e, isNot(isA<InvalidInput>()));
+        expect(e, isNot(isA<SmartAccountInvalidAddress>()));
+        expect(e, isNot(isA<SmartAccountInvalidInput>()));
       }
     });
   });
@@ -391,7 +391,7 @@ void main() {
           target: _contractA,
           targetFn: 'hello',
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -404,7 +404,7 @@ void main() {
           target: 'garbage',
           targetFn: 'hello',
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -417,7 +417,7 @@ void main() {
           target: _accountA, // G-address, but contractCall requires C-address
           targetFn: 'hello',
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -430,7 +430,7 @@ void main() {
           target: '',
           targetFn: 'hello',
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -444,7 +444,7 @@ void main() {
           targetFn: '',
         ),
         throwsA(
-          isA<InvalidInput>().having(
+          isA<SmartAccountInvalidInput>().having(
             (e) => e.message,
             'message',
             contains('cannot be empty'),
@@ -462,7 +462,7 @@ void main() {
           target: _contractA,
           targetFn: '   ',
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -476,8 +476,8 @@ void main() {
           targetFn: 'hello',
         );
       } catch (e) {
-        expect(e, isNot(isA<InvalidAddress>()));
-        expect(e, isNot(isA<InvalidInput>()));
+        expect(e, isNot(isA<SmartAccountInvalidAddress>()));
+        expect(e, isNot(isA<SmartAccountInvalidInput>()));
       }
     });
   });
@@ -491,7 +491,7 @@ void main() {
           target: _contractA,
           targetFn: 'hello',
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -504,7 +504,7 @@ void main() {
           target: 'garbage',
           targetFn: 'hello',
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -517,7 +517,7 @@ void main() {
           target: _accountA,
           targetFn: 'hello',
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -530,7 +530,7 @@ void main() {
           target: '',
           targetFn: 'hello',
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -544,7 +544,7 @@ void main() {
           target: _contractA,
           targetFn: '',
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
@@ -553,7 +553,7 @@ void main() {
     test('transfer_notConnected_beforeRecipientValidation', () async {
       final kit = FakePipelineKit();
       final ops = OZTransactionOperations(kit);
-      // Recipient is malformed AND not connected — must throw WalletNotConnected
+      // Recipient is malformed AND not connected — must throw SmartAccountWalletNotConnected
       // first.
       await expectLater(
         () => ops.transfer(
@@ -561,7 +561,7 @@ void main() {
           recipient: 'garbage',
           amount: '1',
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -575,7 +575,7 @@ void main() {
           recipient: _accountA,
           amount: 'abc',
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -587,7 +587,7 @@ void main() {
           target: 'garbage',
           targetFn: 'hello',
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -599,7 +599,7 @@ void main() {
           target: 'garbage',
           targetFn: 'hello',
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
   });
@@ -610,7 +610,7 @@ void main() {
       final ops = OZTransactionOperations(kit);
       await expectLater(
         () => ops.fundWallet(nativeTokenContract: _contractA),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -620,7 +620,7 @@ void main() {
       final ops = OZTransactionOperations(kit);
       await expectLater(
         () => ops.fundWallet(nativeTokenContract: 'garbage'),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
   });
@@ -649,7 +649,7 @@ void main() {
       final kit = FakePipelineKit();
       await expectLater(
         () => kit.requireConnected(),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -705,7 +705,7 @@ void main() {
           target: _contractA,
           targetFn: '',
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -719,7 +719,7 @@ void main() {
           target: _contractA,
           targetFn: '   ',
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
@@ -743,7 +743,7 @@ void main() {
           hostFunction: hostFn,
           auth: const <XdrSorobanAuthorizationEntry>[],
         ),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
   });
@@ -769,7 +769,7 @@ void main() {
 
       await expectLater(
         ops.simulateAndExtractResult(hostFn),
-        throwsA(isA<TransactionSimulationFailed>()),
+        throwsA(isA<SmartAccountTransactionSimulationFailed>()),
       );
     });
 
@@ -796,7 +796,7 @@ void main() {
 
       await expectLater(
         ops.simulateAndExtractResult(hostFn),
-        throwsA(isA<TransactionSimulationFailed>()),
+        throwsA(isA<SmartAccountTransactionSimulationFailed>()),
       );
     });
 
@@ -823,7 +823,7 @@ void main() {
 
       await expectLater(
         ops.simulateAndExtractResult(hostFn),
-        throwsA(isA<TransactionSimulationFailed>()),
+        throwsA(isA<SmartAccountTransactionSimulationFailed>()),
       );
     });
 
@@ -851,7 +851,7 @@ void main() {
 
       await expectLater(
         ops.simulateAndExtractResult(hostFn),
-        throwsA(isA<TransactionSimulationFailed>()),
+        throwsA(isA<SmartAccountTransactionSimulationFailed>()),
       );
     });
   });
@@ -886,7 +886,7 @@ void main() {
           hostFunction: hostFn,
           auth: const <XdrSorobanAuthorizationEntry>[],
         ),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
 
@@ -921,7 +921,7 @@ void main() {
           hostFunction: hostFn,
           auth: const <XdrSorobanAuthorizationEntry>[],
         ),
-        throwsA(isA<TransactionSimulationFailed>()),
+        throwsA(isA<SmartAccountTransactionSimulationFailed>()),
       );
     });
   });
@@ -978,11 +978,11 @@ void main() {
       );
 
       // Store the credential so key-data lookup works.
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
       final pk = Uint8List(65);
       pk[0] = 0x04;
       for (var i = 1; i < 65; i++) pk[i] = i & 0xFF;
-      await storage.save(StoredCredential(
+      await storage.save(OZStoredCredential(
         credentialId: _credentialId,
         publicKey: pk,
         contractId: _contractA,
@@ -1007,7 +1007,7 @@ void main() {
             return <int>[0]; // rule ID 0
           },
         ),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
 
       expect(resolverCalled, isTrue, reason: 'Custom resolver should have been called');
@@ -1017,7 +1017,7 @@ void main() {
   group('submit pipeline: credential mismatch', () {
     test('webauthn_returns_wrong_credentialId_throwsCredentialException', () async {
       // When the WebAuthn provider returns a different credentialId than
-      // requested, the signing path throws CredentialException (line 667).
+      // requested, the signing path throws SmartAccountCredentialException (line 667).
       final deployer = KeyPair.random();
       final mock = MockSorobanServer();
       mock.getAccountResponses.add(Account(deployer.accountId, BigInt.from(1)));
@@ -1058,11 +1058,11 @@ void main() {
         webauthnProvider: provider,
       );
 
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
       final pk = Uint8List(65);
       pk[0] = 0x04;
       for (var i = 1; i < 65; i++) pk[i] = i & 0xFF;
-      await storage.save(StoredCredential(
+      await storage.save(OZStoredCredential(
         credentialId: _credentialId,
         publicKey: pk,
         contractId: _contractA,
@@ -1082,7 +1082,7 @@ void main() {
           hostFunction: _makeSimpleHostFunction(_contractA),
           auth: const <XdrSorobanAuthorizationEntry>[],
         ),
-        throwsA(isA<CredentialInvalid>()),
+        throwsA(isA<SmartAccountCredentialInvalid>()),
       );
     });
   });
@@ -1090,7 +1090,7 @@ void main() {
   group('submit pipeline: credential lookup from context rules', () {
     test('noCredentialInStorage_noContextRules_throwsCredentialNotFound', () async {
       // When the credential is not in storage and context rules are empty,
-      // _findKeyDataFromContextRules throws CredentialNotFound.
+      // _findKeyDataFromContextRules throws SmartAccountCredentialNotFound.
       final deployer = KeyPair.random();
       final mock = MockSorobanServer();
       mock.getAccountResponses.add(Account(deployer.accountId, BigInt.from(1)));
@@ -1119,7 +1119,7 @@ void main() {
       // The code at line 622-633 checks storage first, then finds credentials.
       // If credential not in storage, calls _findKeyDataFromContextRules.
       // _findKeyDataFromContextRules calls getAllContextRules → simulate count.
-      // Let's set up: count returns 0 (empty rules), then throws CredentialNotFound.
+      // Let's set up: count returns 0 (empty rules), then throws SmartAccountCredentialNotFound.
 
       // StubContextRuleManager.getAllContextRules returns empty list.
       // But getAllContextRules calls getContextRulesCount which calls simulateAndExtractResult.
@@ -1141,7 +1141,7 @@ void main() {
         config: config,
         sorobanServer: mock,
         deployer: deployer,
-        storage: InMemoryStorageAdapter(),
+        storage: OZInMemoryStorageAdapter(),
       )..setConnected(credentialId: _credentialId, contractId: _contractA);
 
       final ops = OZTransactionOperations(kit);
@@ -1151,7 +1151,7 @@ void main() {
           hostFunction: _makeSimpleHostFunction(_contractA),
           auth: const <XdrSorobanAuthorizationEntry>[],
         ),
-        throwsA(isA<CredentialNotFound>()),
+        throwsA(isA<SmartAccountCredentialNotFound>()),
       );
     });
   });
@@ -1190,7 +1190,7 @@ void main() {
           hostFunction: hostFn,
           auth: const <XdrSorobanAuthorizationEntry>[],
         ),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
 
@@ -1227,7 +1227,7 @@ void main() {
           hostFunction: hostFn,
           auth: const <XdrSorobanAuthorizationEntry>[],
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
@@ -1268,7 +1268,7 @@ void main() {
           hostFunction: _makeSimpleHostFunction(_contractA),
           auth: const <XdrSorobanAuthorizationEntry>[],
         ),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
 
@@ -1333,9 +1333,9 @@ void main() {
         () => ops.submit(
           hostFunction: _makeSimpleHostFunction(_contractA),
           auth: const <XdrSorobanAuthorizationEntry>[],
-          forceMethod: SubmissionMethod.relayer, // relayer forced but not configured
+          forceMethod: OZSubmissionMethod.relayer, // relayer forced but not configured
         ),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
   });
@@ -1371,7 +1371,7 @@ void main() {
           hostFunction: hostFn,
           auth: const <XdrSorobanAuthorizationEntry>[],
         ),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
   });

@@ -47,7 +47,7 @@ class MockWebAuthnProvider extends WebAuthnProvider {
   Uint8List? _lastRegisterUserId;
   String? _lastRegisterUserName;
   Uint8List? _lastAuthenticateChallenge;
-  List<AllowCredential>? _lastAuthenticateAllowCredentials;
+  List<WebAuthnAllowCredential>? _lastAuthenticateAllowCredentials;
 
   int get registerCallCount => _registerCallCount;
   int get authenticateCallCount => _authenticateCallCount;
@@ -55,7 +55,7 @@ class MockWebAuthnProvider extends WebAuthnProvider {
   Uint8List? get lastRegisterUserId => _lastRegisterUserId;
   String? get lastRegisterUserName => _lastRegisterUserName;
   Uint8List? get lastAuthenticateChallenge => _lastAuthenticateChallenge;
-  List<AllowCredential>? get lastAuthenticateAllowCredentials =>
+  List<WebAuthnAllowCredential>? get lastAuthenticateAllowCredentials =>
       _lastAuthenticateAllowCredentials;
 
   // ----- WebAuthnProvider implementation -----
@@ -80,7 +80,7 @@ class MockWebAuthnProvider extends WebAuthnProvider {
   @override
   Future<WebAuthnAuthenticationResult> authenticate({
     required Uint8List challenge,
-    List<AllowCredential>? allowCredentials,
+    List<WebAuthnAllowCredential>? allowCredentials,
   }) async {
     _authenticateCallCount++;
     _lastAuthenticateChallenge = Uint8List.fromList(challenge);

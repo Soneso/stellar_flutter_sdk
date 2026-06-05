@@ -34,26 +34,26 @@ class RecordingTransactionOperations extends OZTransactionOperations {
   final List<({
     XdrHostFunction hostFunction,
     List<XdrSorobanAuthorizationEntry> auth,
-    SubmissionMethod? forceMethod,
+    OZSubmissionMethod? forceMethod,
   })> submitCalls = <({
     XdrHostFunction hostFunction,
     List<XdrSorobanAuthorizationEntry> auth,
-    SubmissionMethod? forceMethod,
+    OZSubmissionMethod? forceMethod,
   })>[];
 
   /// Result returned from every `submit()` invocation.
-  TransactionResult result =
-      const TransactionResult(success: true, hash: 'recorded-tx');
+  OZTransactionResult result =
+      const OZTransactionResult(success: true, hash: 'recorded-tx');
 
   /// When non-null, `submit()` raises this error instead of returning
   /// [result]. Used by failure-propagation tests.
   Object? errorToThrow;
 
   @override
-  Future<TransactionResult> submit({
+  Future<OZTransactionResult> submit({
     required XdrHostFunction hostFunction,
     required List<XdrSorobanAuthorizationEntry> auth,
-    SubmissionMethod? forceMethod,
+    OZSubmissionMethod? forceMethod,
     dynamic resolveContextRuleIds,
     dynamic cancelToken,
   }) async {
@@ -79,23 +79,23 @@ class RecordingMultiSignerManager extends OZMultiSignerManager {
 
   final List<({
     XdrHostFunction hostFunction,
-    List<SelectedSigner> selectedSigners,
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners,
+    OZSubmissionMethod? forceMethod,
   })> calls = <({
     XdrHostFunction hostFunction,
-    List<SelectedSigner> selectedSigners,
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners,
+    OZSubmissionMethod? forceMethod,
   })>[];
 
-  TransactionResult result =
-      const TransactionResult(success: true, hash: 'multi-tx');
+  OZTransactionResult result =
+      const OZTransactionResult(success: true, hash: 'multi-tx');
 
   @override
-  Future<TransactionResult> submitWithMultipleSigners({
+  Future<OZTransactionResult> submitWithMultipleSigners({
     required XdrHostFunction hostFunction,
-    required List<SelectedSigner> selectedSigners,
-    SubmissionMethod? forceMethod,
-    ResolveContextRuleIds? resolveContextRuleIds,
+    required List<OZSelectedSigner> selectedSigners,
+    OZSubmissionMethod? forceMethod,
+    OZResolveContextRuleIds? resolveContextRuleIds,
   }) async {
     calls.add((
       hostFunction: hostFunction,
@@ -182,7 +182,7 @@ String _contractIdHex(String cAddress) =>
 
 void main() {
   group('addSimpleThreshold', () {
-    test('zero threshold throws ValidationException', () async {
+    test('zero threshold throws SmartAccountValidationException', () async {
       final h = _buildKit();
       await expectLater(
         () => OZPolicyManager(h.kit).addSimpleThreshold(
@@ -190,7 +190,7 @@ void main() {
           policyAddress: _policyContractA,
           threshold: 0,
         ),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
@@ -215,7 +215,7 @@ void main() {
       expect(decoded.args[2].discriminant, equals(XdrSCValType.SCV_MAP));
     });
 
-    test('invalid policy address throws InvalidAddress', () async {
+    test('invalid policy address throws SmartAccountInvalidAddress', () async {
       final h = _buildKit();
       await expectLater(
         () => OZPolicyManager(h.kit).addSimpleThreshold(
@@ -223,11 +223,11 @@ void main() {
           policyAddress: 'not-a-c-address',
           threshold: 1,
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
-    test('not connected throws WalletNotConnected', () async {
+    test('not connected throws SmartAccountWalletNotConnected', () async {
       final ruleManager = StubContextRuleManager();
       final disconnectedKit = _RoutingKit(
         contextRuleManager: ruleManager,
@@ -239,7 +239,7 @@ void main() {
           policyAddress: _policyContractA,
           threshold: 1,
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -263,7 +263,7 @@ void main() {
         contextRuleId: 1,
         policyAddress: _policyContractA,
         threshold: 1,
-        selectedSigners: const <SelectedSigner>[SelectedSignerPasskey()],
+        selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
       );
       expect(h.recordingMulti.calls.length, equals(1));
       expect(h.recordingOps.submitCalls, isEmpty);
@@ -275,7 +275,7 @@ void main() {
   });
 
   group('addWeightedThreshold', () {
-    test('empty signerWeights throws ValidationException', () async {
+    test('empty signerWeights throws SmartAccountValidationException', () async {
       final h = _buildKit();
       await expectLater(
         () => OZPolicyManager(h.kit).addWeightedThreshold(
@@ -284,11 +284,11 @@ void main() {
           signerWeights: const <OZSmartAccountSigner, int>{},
           threshold: 1,
         ),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
-    test('zero threshold throws ValidationException', () async {
+    test('zero threshold throws SmartAccountValidationException', () async {
       final h = _buildKit();
       await expectLater(
         () => OZPolicyManager(h.kit).addWeightedThreshold(
@@ -299,7 +299,7 @@ void main() {
           },
           threshold: 0,
         ),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
@@ -360,7 +360,7 @@ void main() {
       expect(less, isTrue);
     });
 
-    test('invalid policy address throws InvalidAddress', () async {
+    test('invalid policy address throws SmartAccountInvalidAddress', () async {
       final h = _buildKit();
       await expectLater(
         () => OZPolicyManager(h.kit).addWeightedThreshold(
@@ -371,11 +371,11 @@ void main() {
           },
           threshold: 1,
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
-    test('not connected throws WalletNotConnected', () async {
+    test('not connected throws SmartAccountWalletNotConnected', () async {
       final ruleManager = StubContextRuleManager();
       final kit = _RoutingKit(contextRuleManager: ruleManager);
       await expectLater(
@@ -387,7 +387,7 @@ void main() {
           },
           threshold: 1,
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -402,7 +402,7 @@ void main() {
           OZDelegatedSigner(_validG1): 1,
         },
         threshold: 1,
-        selectedSigners: const <SelectedSigner>[SelectedSignerPasskey()],
+        selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
       );
       expect(h.recordingMulti.calls.length, equals(1));
       expect(h.recordingOps.submitCalls, isEmpty);
@@ -420,7 +420,7 @@ void main() {
           spendingLimit: '0',
           periodLedgers: 1,
         ),
-        // Either ValidationException (from SpendingLimitParams) or
+        // Either SmartAccountValidationException (from OZSpendingLimitPolicyParams) or
         // ArgumentError (from Util.toXdrInt64Amount) is acceptable here;
         // the important contract is that no submit is dispatched.
         throwsA(anything),
@@ -442,7 +442,7 @@ void main() {
       expect(h.recordingOps.submitCalls, isEmpty);
     });
 
-    test('zero periodLedgers throws ValidationException', () async {
+    test('zero periodLedgers throws SmartAccountValidationException', () async {
       final h = _buildKit();
       await expectLater(
         () => OZPolicyManager(h.kit).addSpendingLimit(
@@ -451,7 +451,7 @@ void main() {
           spendingLimit: '1',
           periodLedgers: 0,
         ),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
@@ -481,7 +481,7 @@ void main() {
       expect(limitEntry.val.i128!.lo.uint64, equals(BigInt.from(1000000000)));
     });
 
-    test('invalid policy address throws InvalidAddress', () async {
+    test('invalid policy address throws SmartAccountInvalidAddress', () async {
       final h = _buildKit();
       await expectLater(
         () => OZPolicyManager(h.kit).addSpendingLimit(
@@ -490,7 +490,7 @@ void main() {
           spendingLimit: '1',
           periodLedgers: 1,
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -502,7 +502,7 @@ void main() {
         policyAddress: _policyContractA,
         spendingLimit: '5',
         periodLedgers: 100,
-        selectedSigners: const <SelectedSigner>[SelectedSignerPasskey()],
+        selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
       );
       expect(h.recordingMulti.calls.length, equals(1));
       expect(h.recordingOps.submitCalls, isEmpty);
@@ -510,7 +510,7 @@ void main() {
   });
 
   group('addPolicy', () {
-    test('invalid policy address throws InvalidAddress', () async {
+    test('invalid policy address throws SmartAccountInvalidAddress', () async {
       final h = _buildKit();
       await expectLater(
         () => OZPolicyManager(h.kit).addPolicy(
@@ -518,11 +518,11 @@ void main() {
           policyAddress: 'not-c',
           installParams: XdrSCVal.forMap(const <XdrSCMapEntry>[]),
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
-    test('not connected throws WalletNotConnected', () async {
+    test('not connected throws SmartAccountWalletNotConnected', () async {
       final ruleManager = StubContextRuleManager();
       final kit = _RoutingKit(contextRuleManager: ruleManager);
       await expectLater(
@@ -531,7 +531,7 @@ void main() {
           policyAddress: _policyContractA,
           installParams: XdrSCVal.forMap(const <XdrSCMapEntry>[]),
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -572,7 +572,7 @@ void main() {
         contextRuleId: 1,
         policyAddress: _policyContractA,
         installParams: XdrSCVal.forMap(const <XdrSCMapEntry>[]),
-        selectedSigners: const <SelectedSigner>[SelectedSignerPasskey()],
+        selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
       );
       expect(h.recordingMulti.calls.length, equals(1));
       expect(h.recordingOps.submitCalls, isEmpty);
@@ -580,7 +580,7 @@ void main() {
   });
 
   group('removePolicy by ID', () {
-    test('not connected throws WalletNotConnected', () async {
+    test('not connected throws SmartAccountWalletNotConnected', () async {
       final ruleManager = StubContextRuleManager();
       final kit = _RoutingKit(contextRuleManager: ruleManager);
       await expectLater(
@@ -588,7 +588,7 @@ void main() {
           contextRuleId: 1,
           policyId: 1,
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -626,7 +626,7 @@ void main() {
       await OZPolicyManager(h.kit).removePolicy(
         contextRuleId: 1,
         policyId: 1,
-        selectedSigners: const <SelectedSigner>[SelectedSignerPasskey()],
+        selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
       );
       expect(h.recordingMulti.calls.length, equals(1));
       expect(h.recordingOps.submitCalls, isEmpty);
@@ -635,13 +635,13 @@ void main() {
     test('propagates submit failure to caller', () async {
       final h = _buildKit();
       h.recordingOps.errorToThrow =
-          TransactionException.simulationFailed('boom');
+          SmartAccountTransactionException.simulationFailed('boom');
       await expectLater(
         () => OZPolicyManager(h.kit).removePolicy(
           contextRuleId: 1,
           policyId: 1,
         ),
-        throwsA(isA<TransactionSimulationFailed>()),
+        throwsA(isA<SmartAccountTransactionSimulationFailed>()),
       );
     });
   });
@@ -659,10 +659,10 @@ void main() {
       // Build a unique synthetic ScVal as the rule key.
       final scVal = XdrSCVal.forU32(contextRuleId);
       ruleManager.contextRulesById = <int, XdrSCVal>{contextRuleId: scVal};
-      ruleManager.parsedContextRules = <XdrSCVal, ParsedContextRule>{
-        scVal: ParsedContextRule(
+      ruleManager.parsedContextRules = <XdrSCVal, OZParsedContextRule>{
+        scVal: OZParsedContextRule(
           id: contextRuleId,
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: 'rule-$contextRuleId',
           signers: const <OZSmartAccountSigner>[],
           signerIds: const <int>[],
@@ -672,7 +672,7 @@ void main() {
       };
     }
 
-    test('policy not in rule list throws ValidationException',
+    test('policy not in rule list throws SmartAccountValidationException',
         () async {
       final h = _buildKit();
       _seedContextRule(
@@ -686,18 +686,18 @@ void main() {
           contextRuleId: 1,
           policyAddress: _policyContractA,
         ),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
-    test('invalid address throws InvalidAddress', () async {
+    test('invalid address throws SmartAccountInvalidAddress', () async {
       final h = _buildKit();
       await expectLater(
         () => OZPolicyManager(h.kit).removePolicyByAddress(
           contextRuleId: 1,
           policyAddress: 'not-a-c-address',
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -740,7 +740,7 @@ void main() {
           contextRuleId: 2,
           policyAddress: _policyContractB,
         ),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
@@ -767,7 +767,7 @@ void main() {
       expect(decoded.args[1].u32!.uint32, equals(55));
     });
 
-    test('empty policies list throws not-found ValidationException',
+    test('empty policies list throws not-found SmartAccountValidationException',
         () async {
       final h = _buildKit();
       _seedContextRule(
@@ -781,7 +781,7 @@ void main() {
           contextRuleId: 9,
           policyAddress: _policyContractA,
         ),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
   });
@@ -858,8 +858,8 @@ void main() {
     });
 
     test('SimpleThresholdParams_hashCode', () {
-      final a = SimpleThresholdParams(threshold: 2);
-      final b = SimpleThresholdParams(threshold: 2);
+      final a = OZSimpleThresholdPolicyParams(threshold: 2);
+      final b = OZSimpleThresholdPolicyParams(threshold: 2);
       expect(a.hashCode, equals(b.hashCode));
       expect(a, equals(b));
     });
@@ -867,15 +867,15 @@ void main() {
     test('WeightedThresholdParams_equalityAndHashCode', () {
       final signer = OZDelegatedSigner(
           'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7');
-      final a = WeightedThresholdParams(
+      final a = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{signer: 1},
         threshold: 1,
       );
-      final b = WeightedThresholdParams(
+      final b = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{signer: 1},
         threshold: 1,
       );
-      final c = WeightedThresholdParams(
+      final c = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{signer: 2},
         threshold: 1,
       );
@@ -886,11 +886,11 @@ void main() {
     });
 
     test('SpendingLimitParams_hashCode', () {
-      final a = SpendingLimitParams(
+      final a = OZSpendingLimitPolicyParams(
         spendingLimit: BigInt.from(1000000),
         periodLedgers: 100,
       );
-      final b = SpendingLimitParams(
+      final b = OZSpendingLimitPolicyParams(
         spendingLimit: BigInt.from(1000000),
         periodLedgers: 100,
       );

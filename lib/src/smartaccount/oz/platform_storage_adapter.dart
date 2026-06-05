@@ -19,7 +19,7 @@ const String _codeReadFailed = 'STORAGE_READ_FAILED';
 const String _codeWriteFailed = 'STORAGE_WRITE_FAILED';
 const String _codeNotFound = 'CREDENTIAL_NOT_FOUND';
 
-/// `StorageAdapter` implementation that dispatches to the native platform's
+/// `OZStorageAdapter` implementation that dispatches to the native platform's
 /// secure-storage plugin via a Flutter method channel.
 ///
 /// On Android the underlying storage is `EncryptedSharedPreferences` backed
@@ -43,11 +43,11 @@ const String _codeNotFound = 'CREDENTIAL_NOT_FOUND';
 ///   to keep "look up an entry that may not exist" calls non-fatal.
 /// - [getAll] skips corrupted entries (logged) and returns the valid
 ///   subset.
-/// - [update] throws [StorageReadFailed] when the entry to be updated is
+/// - [update] throws [SmartAccountStorageReadFailed] when the entry to be updated is
 ///   corrupt, because the read-modify-write sequence cannot proceed safely
 ///   without a known prior state. Callers that want lossy semantics should
 ///   delete the corrupt entry and `save` a replacement.
-class PlatformStorageAdapter implements StorageAdapter {
+class OZPlatformStorageAdapter implements OZStorageAdapter {
   /// Constructs a platform storage adapter.
   ///
   /// The optional [methodChannel] parameter exists so unit tests can
@@ -55,15 +55,15 @@ class PlatformStorageAdapter implements StorageAdapter {
   /// `TestDefaultBinaryMessengerBinding.defaultBinaryMessenger.setMockMethodCallHandler`.
   /// Production code MUST omit this argument so the shared channel name is
   /// used and consumers' native overlays continue to receive calls.
-  PlatformStorageAdapter({MethodChannel? methodChannel})
+  OZPlatformStorageAdapter({MethodChannel? methodChannel})
       : _channel = methodChannel ?? const MethodChannel(_storageChannelName);
 
   final MethodChannel _channel;
 
-  // StorageAdapter — Credential operations
+  // OZStorageAdapter — Credential operations
 
   @override
-  Future<void> save(StoredCredential credential) async {
+  Future<void> save(OZStoredCredential credential) async {
     final args = <String, Object?>{
       'credential': credential.toSerializable().toJson(),
     };
@@ -75,7 +75,7 @@ class PlatformStorageAdapter implements StorageAdapter {
   }
 
   @override
-  Future<StoredCredential?> get(String credentialId) async {
+  Future<OZStoredCredential?> get(String credentialId) async {
     try {
       final raw = await _channel.invokeMapMethod<Object?, Object?>(
         'storage.get',
@@ -89,13 +89,13 @@ class PlatformStorageAdapter implements StorageAdapter {
   }
 
   @override
-  Future<List<StoredCredential>> getByContract(String contractId) async {
+  Future<List<OZStoredCredential>> getByContract(String contractId) async {
     try {
       final raw = await _channel.invokeListMethod<Object?>(
         'storage.getByContract',
         <String, Object?>{'contractId': contractId},
       );
-      if (raw == null) return const <StoredCredential>[];
+      if (raw == null) return const <OZStoredCredential>[];
       return raw
           .whereType<Map<Object?, Object?>>()
           .map(_decodeCredential)
@@ -106,11 +106,11 @@ class PlatformStorageAdapter implements StorageAdapter {
   }
 
   @override
-  Future<List<StoredCredential>> getAll() async {
+  Future<List<OZStoredCredential>> getAll() async {
     try {
       final raw =
           await _channel.invokeListMethod<Object?>('storage.getAll', null);
-      if (raw == null) return const <StoredCredential>[];
+      if (raw == null) return const <OZStoredCredential>[];
       return raw
           .whereType<Map<Object?, Object?>>()
           .map(_decodeCredential)
@@ -135,7 +135,7 @@ class PlatformStorageAdapter implements StorageAdapter {
   @override
   Future<void> update(
     String credentialId,
-    StoredCredentialUpdate updates,
+    OZStoredCredentialUpdate updates,
   ) async {
     final args = <String, Object?>{
       'credentialId': credentialId,
@@ -145,7 +145,7 @@ class PlatformStorageAdapter implements StorageAdapter {
       await _channel.invokeMethod<void>('storage.update', args);
     } on PlatformException catch (e) {
       if (e.code == _codeNotFound) {
-        throw CredentialException.notFound(credentialId, cause: e);
+        throw SmartAccountCredentialException.notFound(credentialId, cause: e);
       }
       throw _mapStorageException(e, 'credential:$credentialId');
     }
@@ -160,10 +160,10 @@ class PlatformStorageAdapter implements StorageAdapter {
     }
   }
 
-  // StorageAdapter — Session operations
+  // OZStorageAdapter — Session operations
 
   @override
-  Future<void> saveSession(StoredSession session) async {
+  Future<void> saveSession(OZStoredSession session) async {
     final args = <String, Object?>{
       'session': session.toSerializable().toJson(),
     };
@@ -175,7 +175,7 @@ class PlatformStorageAdapter implements StorageAdapter {
   }
 
   @override
-  Future<StoredSession?> getSession() async {
+  Future<OZStoredSession?> getSession() async {
     try {
       final raw = await _channel.invokeMapMethod<Object?, Object?>(
         'storage.getSession',
@@ -199,20 +199,20 @@ class PlatformStorageAdapter implements StorageAdapter {
 
   // Marshaling helpers
 
-  StoredCredential _decodeCredential(Map<Object?, Object?> raw) {
+  OZStoredCredential _decodeCredential(Map<Object?, Object?> raw) {
     final json = _stringKeyedMap(raw);
     return SerializableCredential.fromJson(json).toStoredCredential();
   }
 
-  StoredSession _decodeSession(Map<Object?, Object?> raw) {
+  OZStoredSession _decodeSession(Map<Object?, Object?> raw) {
     final json = _stringKeyedMap(raw);
     return SerializableSession.fromJson(json).toStoredSession();
   }
 
-  /// Serialises a [StoredCredentialUpdate] to a JSON-shaped map. Only
+  /// Serialises a [OZStoredCredentialUpdate] to a JSON-shaped map. Only
   /// non-null fields are included so the wire payload matches the partial-
-  /// update semantics documented on [StoredCredentialUpdate].
-  Map<String, Object?> _encodeUpdates(StoredCredentialUpdate updates) {
+  /// update semantics documented on [OZStoredCredentialUpdate].
+  Map<String, Object?> _encodeUpdates(OZStoredCredentialUpdate updates) {
     final map = <String, Object?>{};
     if (updates.deploymentStatus != null) {
       map['deploymentStatus'] = updates.deploymentStatus!.name;
@@ -257,19 +257,19 @@ class PlatformStorageAdapter implements StorageAdapter {
     return value;
   }
 
-  StorageException _mapStorageException(PlatformException e, String key) {
+  SmartAccountStorageException _mapStorageException(PlatformException e, String key) {
     switch (e.code) {
       case _codeReadFailed:
-        return StorageException.readFailed(key, cause: e);
+        return SmartAccountStorageException.readFailed(key, cause: e);
       case _codeWriteFailed:
-        return StorageException.writeFailed(key, cause: e);
+        return SmartAccountStorageException.writeFailed(key, cause: e);
       default:
         // Unmapped codes are surfaced as write failures because the most
         // common producer of an unmapped code is a native-side bug while
         // attempting to mutate storage. Read-only methods can still receive
         // this fallback; the wrapped `PlatformException.cause` carries the
         // original code so callers can disambiguate if needed.
-        return StorageException.writeFailed(key, cause: e);
+        return SmartAccountStorageException.writeFailed(key, cause: e);
     }
   }
 }

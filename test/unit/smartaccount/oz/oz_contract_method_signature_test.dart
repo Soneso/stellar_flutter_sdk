@@ -46,7 +46,7 @@ void main() {
       final h = _harness();
       final mgr = OZContextRuleManager(h.kit);
       await mgr.addContextRule(
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'my-rule',
         signers: <OZSmartAccountSigner>[OZDelegatedSigner(_validAccountAddress)],
       );
@@ -209,12 +209,12 @@ void main() {
   });
 
   // =======================================================================
-  // ContextRuleType variant names
+  // OZContextRuleType variant names
   // =======================================================================
 
-  group('ContextRuleType variant names match the ABI', () {
-    test('ContextRuleTypeDefault toScVal uses "Default" symbol', () {
-      final scVal = const ContextRuleTypeDefault().toScVal();
+  group('OZContextRuleType variant names match the ABI', () {
+    test('OZContextRuleTypeDefault toScVal uses "Default" symbol', () {
+      final scVal = const OZContextRuleTypeDefault().toScVal();
       expect(scVal.discriminant, XdrSCValType.SCV_VEC);
       final vec = scVal.vec!;
       expect(vec.length, 1);
@@ -222,9 +222,9 @@ void main() {
       expect(vec[0].sym, 'Default');
     });
 
-    test('ContextRuleTypeCallContract toScVal uses "CallContract" symbol', () {
+    test('OZContextRuleTypeCallContract toScVal uses "CallContract" symbol', () {
       final scVal =
-          const ContextRuleTypeCallContract(_verifierContract).toScVal();
+          const OZContextRuleTypeCallContract(_verifierContract).toScVal();
       expect(scVal.discriminant, XdrSCValType.SCV_VEC);
       final vec = scVal.vec!;
       expect(vec.length, 2);
@@ -232,13 +232,13 @@ void main() {
       expect(vec[1].discriminant, XdrSCValType.SCV_ADDRESS);
     });
 
-    test('ContextRuleTypeCreateContract toScVal uses "CreateContract" symbol',
+    test('OZContextRuleTypeCreateContract toScVal uses "CreateContract" symbol',
         () {
       final wasmHash = Uint8List(32);
       for (var i = 0; i < 32; i++) {
         wasmHash[i] = i & 0xFF;
       }
-      final scVal = ContextRuleTypeCreateContract(wasmHash).toScVal();
+      final scVal = OZContextRuleTypeCreateContract(wasmHash).toScVal();
       expect(scVal.discriminant, XdrSCValType.SCV_VEC);
       final vec = scVal.vec!;
       expect(vec.length, 2);
@@ -270,7 +270,7 @@ void main() {
       final h = _harness();
       final mgr = OZContextRuleManager(h.kit);
       await mgr.addContextRule(
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'human-readable',
         signers: <OZSmartAccountSigner>[OZDelegatedSigner(_validAccountAddress)],
       );
@@ -299,7 +299,7 @@ void main() {
       final h = _harness();
       final mgr = OZContextRuleManager(h.kit);
       await mgr.addContextRule(
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'rule',
         signers: <OZSmartAccountSigner>[OZDelegatedSigner(_validAccountAddress)],
       );
@@ -316,7 +316,7 @@ void main() {
       final h = _harness();
       final mgr = OZContextRuleManager(h.kit);
       await mgr.addContextRule(
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'rule',
         validUntil: 1_000_000,
         signers: <OZSmartAccountSigner>[OZDelegatedSigner(_validAccountAddress)],
@@ -470,7 +470,7 @@ void main() {
   });
 
   // =======================================================================
-  // add_policy argument shape (across PolicyInstallParams arms)
+  // add_policy argument shape (across OZPolicyInstallParams arms)
   // =======================================================================
 
   group('add_policy argument shape', () {
@@ -491,7 +491,7 @@ void main() {
       expect(args[2].discriminant, XdrSCValType.SCV_VOID);
     });
 
-    test('SimpleThresholdParams encodes as map with "threshold"', () async {
+    test('OZSimpleThresholdPolicyParams encodes as map with "threshold"', () async {
       final h = _harness();
       final mgr = OZPolicyManager(h.kit);
       await mgr.addSimpleThreshold(
@@ -508,7 +508,7 @@ void main() {
       expect(entries[0].val.u32?.uint32, 2);
     });
 
-    test('WeightedThresholdParams encodes top-level keys signer_weights+threshold',
+    test('OZWeightedThresholdPolicyParams encodes top-level keys signer_weights+threshold',
         () async {
       final h = _harness();
       final mgr = OZPolicyManager(h.kit);
@@ -526,7 +526,7 @@ void main() {
       expect(keys, <String>['signer_weights', 'threshold']);
     });
 
-    test('SpendingLimitParams encodes period_ledgers + spending_limit keys',
+    test('OZSpendingLimitPolicyParams encodes period_ledgers + spending_limit keys',
         () async {
       final h = _harness();
       final mgr = OZPolicyManager(h.kit);
@@ -632,14 +632,14 @@ void main() {
   // =======================================================================
 
   group('Policy install parameter field names', () {
-    test('SimpleThresholdParams field is "threshold"', () {
-      final scVal = const SimpleThresholdParams(threshold: 1).toScVal();
+    test('OZSimpleThresholdPolicyParams field is "threshold"', () {
+      final scVal = const OZSimpleThresholdPolicyParams(threshold: 1).toScVal();
       expect(scVal.map!.map((e) => e.key.sym).toList(), <String>['threshold']);
     });
 
-    test('WeightedThresholdParams fields are "signer_weights" / "threshold"',
+    test('OZWeightedThresholdPolicyParams fields are "signer_weights" / "threshold"',
         () {
-      final scVal = WeightedThresholdParams(
+      final scVal = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{
           OZDelegatedSigner(_validAccountAddress): 1,
         },
@@ -651,9 +651,9 @@ void main() {
       );
     });
 
-    test('SpendingLimitParams fields are "period_ledgers" / "spending_limit"',
+    test('OZSpendingLimitPolicyParams fields are "period_ledgers" / "spending_limit"',
         () {
-      final scVal = SpendingLimitParams(
+      final scVal = OZSpendingLimitPolicyParams(
         spendingLimit: BigInt.from(100),
         periodLedgers: 17280,
       ).toScVal();

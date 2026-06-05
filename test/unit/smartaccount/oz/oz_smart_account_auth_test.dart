@@ -194,7 +194,7 @@ void main() {
       final entry = _buildSourceAccountEntry();
       await expectLater(
         OZSmartAccountAuth.buildAuthPayloadHash(entry, 100, kNetworkPassphrase),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -297,7 +297,7 @@ void main() {
           signerKey: signer.toScVal(),
           signatureValue: XdrSCVal.forBytes(_bytes(0)),
         ),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -370,7 +370,7 @@ void main() {
           signature: _webauthn(),
           expirationLedger: 100,
         ),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -549,7 +549,7 @@ void main() {
     test('testCodecRead_nonMapThrows', () {
       expect(
         () => OZSmartAccountAuthPayloadCodec.read(XdrSCVal.forU32(0)),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -622,7 +622,7 @@ void main() {
     test('testCodecSignerFromScVal_throwsOnNonVec', () {
       expect(
         () => OZSmartAccountAuthPayloadCodec.signerFromScVal(XdrSCVal.forU32(0)),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -632,14 +632,14 @@ void main() {
           XdrSCVal.forSymbol('UnknownTag'),
           XdrSCVal.forAddressStrKey(kValidContractId),
         ])),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
     test('testCodecSignerFromScVal_throwsOnEmptyVec', () {
       expect(
         () => OZSmartAccountAuthPayloadCodec.signerFromScVal(XdrSCVal.forVec([])),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 

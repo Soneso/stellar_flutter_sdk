@@ -17,11 +17,11 @@ import 'package:stellar_flutter_sdk/src/smartaccount/oz/local_storage_adapter.da
 import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_storage_adapter.dart';
 
 void main() {
-  group('LocalStorageAdapter (real Chrome)', () {
-    late LocalStorageAdapter adapter;
+  group('OZLocalStorageAdapter (real Chrome)', () {
+    late OZLocalStorageAdapter adapter;
 
     setUp(() async {
-      adapter = LocalStorageAdapter(keyPrefix: 'integration_test_');
+      adapter = OZLocalStorageAdapter(keyPrefix: 'integration_test_');
       await adapter.clear();
     });
 
@@ -30,7 +30,7 @@ void main() {
     });
 
     test('test_real_localstorage_round_trip', () async {
-      final cred = StoredCredential(
+      final cred = OZStoredCredential(
         credentialId: 'integration-real-1',
         publicKey: Uint8List.fromList(<int>[
           0x04, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48,

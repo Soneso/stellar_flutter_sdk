@@ -25,7 +25,7 @@ import 'oz_validation.dart';
 /// Manages context rules on OpenZeppelin smart accounts.
 ///
 /// Context rules define the authorisation requirements for different
-/// transaction shapes. A rule pairs a [ContextRuleType] match (default,
+/// transaction shapes. A rule pairs a [OZContextRuleType] match (default,
 /// call-contract, or create-contract) with a signer list and a policy
 /// list. When a transaction matches a rule, the smart account
 /// authorises it only if the rule's signer and policy requirements
@@ -36,7 +36,7 @@ import 'oz_validation.dart';
 /// - Maximum 15 signers per rule.
 /// - Maximum 5 policies per rule.
 ///
-/// State-changing methods accept an optional [SelectedSigner] list to
+/// State-changing methods accept an optional [OZSelectedSigner] list to
 /// route through the multi-signer pipeline; an empty list routes
 /// through the single-signer path that the connected passkey signs.
 class OZContextRuleManager implements OZContextRuleManagerInterface {
@@ -59,37 +59,37 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// policies)` invocation, and routes through the single-signer or
   /// multi-signer pipeline.
   ///
-  /// Throws [InvalidInput] when [name] is empty, when [signers] and
+  /// Throws [SmartAccountInvalidInput] when [name] is empty, when [signers] and
   /// [policies] are both empty, when [signers] exceeds
   /// [OZConstants.maxSigners], when [policies] exceeds
   /// [OZConstants.maxPolicies], or when any policy address is invalid.
-  Future<TransactionResult> addContextRule({
-    required ContextRuleType contextType,
+  Future<OZTransactionResult> addContextRule({
+    required OZContextRuleType contextType,
     required String name,
     int? validUntil,
     required List<OZSmartAccountSigner> signers,
     Map<String, XdrSCVal> policies = const <String, XdrSCVal>{},
-    List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+    OZSubmissionMethod? forceMethod,
   }) async {
     final connected = await _kit.requireConnected();
 
     if (name.isEmpty) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'name',
         'Context rule name cannot be empty',
       );
     }
 
     if (signers.isEmpty && policies.isEmpty) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'signers',
         'Context rule must have at least one signer or one policy',
       );
     }
 
     if (signers.length > OZConstants.maxSigners) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'signers',
         'Context rule cannot have more than ${OZConstants.maxSigners} '
             'signers, got: ${signers.length}',
@@ -97,7 +97,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     }
 
     if (policies.length > OZConstants.maxPolicies) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'policies',
         'Context rule cannot have more than ${OZConstants.maxPolicies} '
             'policies, got: ${policies.length}',
@@ -161,7 +161,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   ///
   /// Issues a simulated `get_context_rule(id)` invocation and returns
   /// the raw `ScVal` response. Use [parseContextRule] to translate the
-  /// response into a [ParsedContextRule].
+  /// response into a [OZParsedContextRule].
   @override
   Future<XdrSCVal> getContextRule(int id) async {
     final connected = await _kit.requireConnected();
@@ -200,7 +200,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
 
     final u32 = resultScVal.u32;
     if (u32 == null) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'result',
         'Expected U32 result from get_context_rules_count, got: $resultScVal',
       );
@@ -225,7 +225,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
       try {
         final ruleScVal = await getContextRule(id);
         result.add(ruleScVal);
-      } on TransactionSimulationFailed {
+      } on SmartAccountTransactionSimulationFailed {
         // why: removed-rule gaps surface as simulation failures. Other
         // transaction failures must continue to propagate, hence the
         // narrow catch.
@@ -234,11 +234,11 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     return result;
   }
 
-  /// Lists every active context rule, parsed into [ParsedContextRule]
+  /// Lists every active context rule, parsed into [OZParsedContextRule]
   /// instances. Fetches the rules via [getAllContextRules] and translates
   /// each one through [parseContextRule].
   @override
-  Future<List<ParsedContextRule>> listContextRules({int? maxScanId}) async {
+  Future<List<OZParsedContextRule>> listContextRules({int? maxScanId}) async {
     final raw = await getAllContextRules(maxScanId: maxScanId);
     return raw
         .map((scVal) => parseContextRule(scVal))
@@ -250,7 +250,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   // -------------------------------------------------------------------------
 
   /// Parses a raw `ScVal` context-rule struct into a typed
-  /// [ParsedContextRule]. Exposed via the interface for sibling
+  /// [OZParsedContextRule]. Exposed via the interface for sibling
   /// managers (signer manager, policy manager) that resolve value-form
   /// signers and policies to on-chain numeric IDs.
   ///
@@ -261,10 +261,10 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// `valid_until`.
   @override
   @internal
-  ParsedContextRule parseContextRule(XdrSCVal scVal) {
+  OZParsedContextRule parseContextRule(XdrSCVal scVal) {
     final mapEntries = scVal.map;
     if (mapEntries == null) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'contextRule',
         'Expected Map ScVal for context rule',
       );
@@ -279,7 +279,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
 
     final idField = fields['id'];
     if (idField == null) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'contextRule',
         'Missing required field: id',
       );
@@ -288,14 +288,14 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
 
     final nameField = fields['name'];
     if (nameField == null) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'contextRule',
         'Missing required field: name',
       );
     }
     final name = nameField.str;
     if (name == null) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'name',
         'Expected String for name, got: $nameField',
       );
@@ -303,7 +303,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
 
     final contextTypeField = fields['context_type'];
     if (contextTypeField == null) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'contextRule',
         'Missing required field: context_type',
       );
@@ -325,7 +325,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
       }
     }
 
-    return ParsedContextRule(
+    return OZParsedContextRule(
       id: id,
       contextType: contextType,
       name: name,
@@ -337,66 +337,66 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     );
   }
 
-  ContextRuleType _parseContextRuleType(XdrSCVal scVal) {
+  OZContextRuleType _parseContextRuleType(XdrSCVal scVal) {
     final vec = scVal.vec;
     if (vec == null) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'context_type',
         'Expected Vec for context_type, got: $scVal',
       );
     }
     if (vec.isEmpty) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'context_type',
         'context_type Vec is empty',
       );
     }
     final discriminant = vec[0].sym;
     if (discriminant == null) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'context_type',
         'Expected Symbol discriminant in context_type Vec',
       );
     }
     switch (discriminant) {
       case 'Default':
-        return const ContextRuleTypeDefault();
+        return const OZContextRuleTypeDefault();
       case 'CallContract':
         if (vec.length < 2) {
-          throw ValidationException.invalidInput(
+          throw SmartAccountValidationException.invalidInput(
             'context_type',
             'CallContract context_type missing address element',
           );
         }
         final addressXdr = vec[1].address;
         if (addressXdr == null) {
-          throw ValidationException.invalidInput(
+          throw SmartAccountValidationException.invalidInput(
             'context_type',
             'Expected Address for CallContract context_type',
           );
         }
-        return ContextRuleTypeCallContract(
+        return OZContextRuleTypeCallContract(
           OZAddressStrKey.fromXdrOrEmpty(addressXdr),
         );
       case 'CreateContract':
         if (vec.length < 2) {
-          throw ValidationException.invalidInput(
+          throw SmartAccountValidationException.invalidInput(
             'context_type',
             'CreateContract context_type missing wasm hash element',
           );
         }
         final bytes = vec[1].bytes;
         if (bytes == null) {
-          throw ValidationException.invalidInput(
+          throw SmartAccountValidationException.invalidInput(
             'context_type',
             'Expected Bytes for CreateContract context_type',
           );
         }
-        return ContextRuleTypeCreateContract(
+        return OZContextRuleTypeCreateContract(
           Uint8List.fromList(bytes.sCBytes),
         );
       default:
-        throw ValidationException.invalidInput(
+        throw SmartAccountValidationException.invalidInput(
           'context_type',
           'Unknown context_type discriminant: $discriminant',
         );
@@ -406,20 +406,20 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   OZSmartAccountSigner _parseSigner(XdrSCVal scVal) {
     final vec = scVal.vec;
     if (vec == null) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'signer',
         'Expected Vec for signer, got: $scVal',
       );
     }
     if (vec.isEmpty) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'signer',
         'Signer Vec is empty',
       );
     }
     final discriminant = vec[0].sym;
     if (discriminant == null) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'signer',
         'Expected Symbol discriminant in signer Vec',
       );
@@ -427,14 +427,14 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     switch (discriminant) {
       case 'Delegated':
         if (vec.length < 2) {
-          throw ValidationException.invalidInput(
+          throw SmartAccountValidationException.invalidInput(
             'signer',
             'Delegated signer missing address element',
           );
         }
         final addressXdr = vec[1].address;
         if (addressXdr == null) {
-          throw ValidationException.invalidInput(
+          throw SmartAccountValidationException.invalidInput(
             'signer',
             'Expected Address for Delegated signer',
           );
@@ -444,21 +444,21 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
         );
       case 'External':
         if (vec.length < 3) {
-          throw ValidationException.invalidInput(
+          throw SmartAccountValidationException.invalidInput(
             'signer',
             'External signer missing address or keyData element',
           );
         }
         final verifierAddressXdr = vec[1].address;
         if (verifierAddressXdr == null) {
-          throw ValidationException.invalidInput(
+          throw SmartAccountValidationException.invalidInput(
             'signer',
             'Expected Address for External signer verifier',
           );
         }
         final keyDataBytes = vec[2].bytes;
         if (keyDataBytes == null) {
-          throw ValidationException.invalidInput(
+          throw SmartAccountValidationException.invalidInput(
             'signer',
             'Expected Bytes for External signer keyData',
           );
@@ -473,7 +473,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
           Uint8List.fromList(keyDataBytes.sCBytes),
         );
       default:
-        throw ValidationException.invalidInput(
+        throw SmartAccountValidationException.invalidInput(
           'signer',
           'Unknown signer discriminant: $discriminant',
         );
@@ -484,7 +484,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     if (field == null) return const <OZSmartAccountSigner>[];
     final vec = field.vec;
     if (vec == null) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'signers',
         'Expected Vec for signers, got: $field',
       );
@@ -496,7 +496,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     if (field == null) return const <int>[];
     final vec = field.vec;
     if (vec == null) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         fieldName,
         'Expected Vec for $fieldName, got: $field',
       );
@@ -510,7 +510,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     if (field == null) return const <String>[];
     final vec = field.vec;
     if (vec == null) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         fieldName,
         'Expected Vec for $fieldName, got: $field',
       );
@@ -518,7 +518,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     return vec.map((entry) {
       final addressXdr = entry.address;
       if (addressXdr == null) {
-        throw ValidationException.invalidInput(
+        throw SmartAccountValidationException.invalidInput(
           fieldName,
           'Expected Address entries in $fieldName',
         );
@@ -530,7 +530,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   int _expectU32(XdrSCVal scVal, {required String fieldName}) {
     final u32 = scVal.u32;
     if (u32 == null) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         fieldName,
         'Expected U32 for $fieldName, got: $scVal',
       );
@@ -543,19 +543,19 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// where the OZ contract ABI mandates a contract reference (currently
   /// only the External signer's verifier).
   ///
-  /// Throws [ValidationException.invalidInput] when [scVal] is empty,
+  /// Throws [SmartAccountValidationException.invalidInput] when [scVal] is empty,
   /// undecodable, or decodes to a non-contract address (G-address,
   /// muxed account, etc.).
   String _requireContractAddressFromXdr(XdrSCAddress scVal) {
     final decoded = OZAddressStrKey.fromXdr(scVal);
     if (decoded == null || decoded.isEmpty) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'verifierAddress',
         'External signer verifier address is missing or undecodable',
       );
     }
     if (!StrKey.isValidContractId(decoded)) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'verifierAddress',
         'External signer verifier must be a contract address (C...), '
             'got: $decoded',
@@ -569,16 +569,16 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   // -------------------------------------------------------------------------
 
   /// Updates the human-readable name of a context rule.
-  Future<TransactionResult> updateName({
+  Future<OZTransactionResult> updateName({
     required int id,
     required String name,
-    List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+    OZSubmissionMethod? forceMethod,
   }) async {
     final connected = await _kit.requireConnected();
 
     if (name.isEmpty) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'name',
         'Context rule name cannot be empty',
       );
@@ -597,11 +597,11 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
 
   /// Updates the expiration ledger of a context rule. Pass `null` to
   /// remove the expiration (encoded on-chain as `Option::None`).
-  Future<TransactionResult> updateValidUntil({
+  Future<OZTransactionResult> updateValidUntil({
     required int id,
     int? validUntil,
-    List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+    OZSubmissionMethod? forceMethod,
   }) async {
     final connected = await _kit.requireConnected();
 
@@ -621,10 +621,10 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   }
 
   /// Removes a context rule.
-  Future<TransactionResult> removeContextRule({
+  Future<OZTransactionResult> removeContextRule({
     required int id,
-    List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+    OZSubmissionMethod? forceMethod,
   }) async {
     final connected = await _kit.requireConnected();
 
@@ -651,7 +651,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   Future<List<int>> resolveContextRuleIdsForEntry(
     XdrSorobanAuthorizationEntry entry,
     List<OZSmartAccountSigner> signers,
-    List<ParsedContextRule> contextRules,
+    List<OZParsedContextRule> contextRules,
   ) async {
     if (contextRules.isEmpty) {
       final rules = await listContextRules();
@@ -665,7 +665,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   ///
   /// Algorithm:
   ///
-  /// - Build the list of [ContextRuleType]s from the auth entry's
+  /// - Build the list of [OZContextRuleType]s from the auth entry's
   ///   invocation tree.
   /// - For each required type, filter the rules to those whose type
   ///   matches (Default matches anything; specific types require
@@ -684,7 +684,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   List<int> resolveContextRuleIdsForEntryWithRules(
     XdrSorobanAuthorizationEntry entry,
     List<OZSmartAccountSigner> selectedSigners,
-    List<ParsedContextRule> rules,
+    List<OZParsedContextRule> rules,
   ) {
     final contexts = _buildInvocationContextTypes(entry);
     return contexts
@@ -699,9 +699,9 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// to the next tier. Disambiguation and "no match" diagnostics are
   /// emitted from the calling site once every tier has been exhausted.
   int _resolveSingleContext(
-    ContextRuleType contextType,
+    OZContextRuleType contextType,
     List<OZSmartAccountSigner> selectedSigners,
-    List<ParsedContextRule> rules,
+    List<OZParsedContextRule> rules,
   ) {
     final candidates = rules
         .where((rule) => _contextRuleTypeMatches(rule.contextType, contextType))
@@ -719,7 +719,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     if (tier3 != null) return tier3;
 
     if (candidates.isEmpty) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'contextRuleIds',
         'No context rule matches $contextType. Add a rule for this '
             'context type or a Default rule.',
@@ -733,13 +733,13 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
         _candidatesContainingAllSelected(candidates, selectedSigners);
     if (allMatching.length > 1) {
       final ids = allMatching.map((r) => r.id.toString()).join(', ');
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'contextRuleIds',
         'Selected signers match multiple context rules: $ids.',
       );
     }
 
-    throw ValidationException.invalidInput(
+    throw SmartAccountValidationException.invalidInput(
       'contextRuleIds',
       'No context rule contains all selected signers.',
     );
@@ -748,7 +748,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// Tier 1: exact bidirectional signer-set match (same size, every
   /// selected signer in rule, every rule signer in selected).
   int? _tier1Match(
-    List<ParsedContextRule> candidates,
+    List<OZParsedContextRule> candidates,
     List<OZSmartAccountSigner> selectedSigners,
   ) {
     final matches = candidates.where((rule) {
@@ -762,7 +762,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// Tier 2: rule signers form a subset of selected, AND the rule
   /// carries no policies.
   int? _tier2Match(
-    List<ParsedContextRule> candidates,
+    List<OZParsedContextRule> candidates,
     List<OZSmartAccountSigner> selectedSigners,
   ) {
     final matches = candidates.where((rule) {
@@ -775,7 +775,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// Tier 3: selected signers form a subset of rule (threshold
   /// scenarios where the user picks fewer signers than the rule).
   int? _tier3Match(
-    List<ParsedContextRule> candidates,
+    List<OZParsedContextRule> candidates,
     List<OZSmartAccountSigner> selectedSigners,
   ) {
     final matches = _candidatesContainingAllSelected(candidates, selectedSigners);
@@ -785,7 +785,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// Predicate: every signer in [selectedSigners] is present in
   /// [rule.signers]. Used by Tier 1 and Tier 3.
   bool _everySelectedInRule(
-    ParsedContextRule rule,
+    OZParsedContextRule rule,
     List<OZSmartAccountSigner> selectedSigners,
   ) {
     return selectedSigners.every((selected) => rule.signers.any(
@@ -796,7 +796,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// Predicate: every signer on the rule is present in
   /// [selectedSigners]. Used by Tier 1 and Tier 2.
   bool _everyRuleSignerInSelected(
-    ParsedContextRule rule,
+    OZParsedContextRule rule,
     List<OZSmartAccountSigner> selectedSigners,
   ) {
     return rule.signers.every((ruleSigner) => selectedSigners.any(
@@ -804,8 +804,8 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
             OZSmartAccountBuilders.signersEqual(ruleSigner, selected)));
   }
 
-  List<ParsedContextRule> _candidatesContainingAllSelected(
-    List<ParsedContextRule> candidates,
+  List<OZParsedContextRule> _candidatesContainingAllSelected(
+    List<OZParsedContextRule> candidates,
     List<OZSmartAccountSigner> selectedSigners,
   ) {
     return candidates
@@ -817,10 +817,10 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   // Invocation-tree walking
   // -------------------------------------------------------------------------
 
-  List<ContextRuleType> _buildInvocationContextTypes(
+  List<OZContextRuleType> _buildInvocationContextTypes(
     XdrSorobanAuthorizationEntry entry,
   ) {
-    final result = <ContextRuleType>[];
+    final result = <OZContextRuleType>[];
     _collectInvocationContextTypes(entry.rootInvocation.function, result);
     _collectSubInvocationContextTypes(
       entry.rootInvocation.subInvocations,
@@ -831,7 +831,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
 
   void _collectInvocationContextTypes(
     XdrSorobanAuthorizedFunction function,
-    List<ContextRuleType> result,
+    List<OZContextRuleType> result,
   ) {
     final discriminant = function.discriminant;
     switch (discriminant) {
@@ -839,7 +839,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
             .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
         final contractFn = function.contractFn;
         if (contractFn == null) return;
-        result.add(ContextRuleTypeCallContract(
+        result.add(OZContextRuleTypeCallContract(
           OZAddressStrKey.fromXdrOrEmpty(contractFn.contractAddress),
         ));
         break;
@@ -848,21 +848,21 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
         final createFn = function.createContractHostFn;
         if (createFn == null) return;
         final wasmHash = _extractWasmHash(createFn.executable);
-        result.add(ContextRuleTypeCreateContract(wasmHash));
+        result.add(OZContextRuleTypeCreateContract(wasmHash));
         break;
       case XdrSorobanAuthorizedFunctionType
             .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
         final createV2Fn = function.createContractV2HostFn;
         if (createV2Fn == null) return;
         final wasmHash = _extractWasmHash(createV2Fn.executable);
-        result.add(ContextRuleTypeCreateContract(wasmHash));
+        result.add(OZContextRuleTypeCreateContract(wasmHash));
         break;
     }
   }
 
   void _collectSubInvocationContextTypes(
     List<XdrSorobanAuthorizedInvocation> subInvocations,
-    List<ContextRuleType> result,
+    List<OZContextRuleType> result,
   ) {
     for (final sub in subInvocations) {
       _collectInvocationContextTypes(sub.function, result);
@@ -876,20 +876,20 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM:
         final hash = executable.wasmHash;
         if (hash == null) {
-          throw ValidationException.invalidInput(
+          throw SmartAccountValidationException.invalidInput(
             'executable',
             'WASM contract executable is missing its hash',
           );
         }
         return Uint8List.fromList(hash.hash);
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET:
-        throw ValidationException.invalidInput(
+        throw SmartAccountValidationException.invalidInput(
           'executable',
           'CreateContract invocation references a Stellar Asset '
               'Contract, not a WASM contract',
         );
       default:
-        throw ValidationException.invalidInput(
+        throw SmartAccountValidationException.invalidInput(
           'executable',
           'Unknown contract executable type: $type',
         );
@@ -897,10 +897,10 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   }
 
   bool _contextRuleTypeMatches(
-    ContextRuleType ruleType,
-    ContextRuleType requiredType,
+    OZContextRuleType ruleType,
+    OZContextRuleType requiredType,
   ) {
-    if (ruleType is ContextRuleTypeDefault) return true;
+    if (ruleType is OZContextRuleTypeDefault) return true;
     return ruleType == requiredType;
   }
 

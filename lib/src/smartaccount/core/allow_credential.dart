@@ -12,7 +12,7 @@ import '../../util.dart';
 /// When [transports] is `null`, the authenticator uses its default transport
 /// selection. Equality is byte-content-based on [id]; [id] is stored by
 /// reference.
-class AllowCredential {
+class WebAuthnAllowCredential {
   /// The raw credential ID bytes. Stored by reference; mutating the original
   /// array will be reflected here.
   final Uint8List id;
@@ -21,23 +21,23 @@ class AllowCredential {
   /// `ble`, `nfc`). `null` means the authenticator picks the transport.
   final List<String>? transports;
 
-  /// Constructs an [AllowCredential] from a raw credential [id] and optional
+  /// Constructs a [WebAuthnAllowCredential] from a raw credential [id] and optional
   /// [transports].
-  const AllowCredential({required this.id, this.transports});
+  const WebAuthnAllowCredential({required this.id, this.transports});
 
-  /// Creates an [AllowCredential] from a raw credential [id] with no
+  /// Creates a [WebAuthnAllowCredential] from a raw credential [id] with no
   /// transport hints.
-  static AllowCredential fromId(Uint8List id) => AllowCredential(id: id);
+  static WebAuthnAllowCredential fromId(Uint8List id) => WebAuthnAllowCredential(id: id);
 
-  /// Creates a list of [AllowCredential] from raw credential [ids] with no
+  /// Creates a list of [WebAuthnAllowCredential] from raw credential [ids] with no
   /// transport hints.
-  static List<AllowCredential> fromIds(List<Uint8List> ids) =>
-      ids.map(AllowCredential.fromId).toList(growable: false);
+  static List<WebAuthnAllowCredential> fromIds(List<Uint8List> ids) =>
+      ids.map(WebAuthnAllowCredential.fromId).toList(growable: false);
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! AllowCredential) return false;
+    if (other is! WebAuthnAllowCredential) return false;
     if (!Util.constantTimeEquals(id, other.id)) return false;
     return _transportsEquals(transports, other.transports);
   }

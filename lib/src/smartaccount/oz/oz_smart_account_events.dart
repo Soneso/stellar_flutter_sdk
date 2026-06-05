@@ -17,24 +17,24 @@ import 'oz_storage_adapter.dart';
 ///
 /// ```dart
 /// kit.events.addListener((event) {
-///   if (event is SmartAccountEventWalletConnected) {
+///   if (event is OZSmartAccountEventWalletConnected) {
 ///     print('Connected to ${event.contractId}');
-///   } else if (event is SmartAccountEventTransactionSubmitted) {
+///   } else if (event is OZSmartAccountEventTransactionSubmitted) {
 ///     print('Transaction ${event.hash} submitted');
 ///   }
 /// });
 /// ```
-sealed class SmartAccountEvent {
-  const SmartAccountEvent();
+sealed class OZSmartAccountEvent {
+  const OZSmartAccountEvent();
 
-  /// The string identifier used by [SmartAccountEventEmitter] when keying
+  /// The string identifier used by [OZSmartAccountEventEmitter] when keying
   /// type-specific listeners and resolving counts in
-  /// [SmartAccountEventEmitter.listenerCount].
+  /// [OZSmartAccountEventEmitter.listenerCount].
   ///
   /// The identifier matches the unqualified arm name (for example
   /// `"WalletConnected"`) so it can be passed verbatim to
-  /// [SmartAccountEventEmitter.removeAllListeners] and
-  /// [SmartAccountEventEmitter.listenerCount].
+  /// [OZSmartAccountEventEmitter.removeAllListeners] and
+  /// [OZSmartAccountEventEmitter.listenerCount].
   String get eventTypeName;
 }
 
@@ -42,8 +42,8 @@ sealed class SmartAccountEvent {
 ///
 /// This event is fired when connecting to an existing wallet, either through
 /// automatic session restoration or an explicit wallet connection call.
-final class SmartAccountEventWalletConnected extends SmartAccountEvent {
-  const SmartAccountEventWalletConnected({
+final class OZSmartAccountEventWalletConnected extends OZSmartAccountEvent {
+  const OZSmartAccountEventWalletConnected({
     required this.contractId,
     required this.credentialId,
   });
@@ -57,7 +57,7 @@ final class SmartAccountEventWalletConnected extends SmartAccountEvent {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is SmartAccountEventWalletConnected &&
+    return other is OZSmartAccountEventWalletConnected &&
         other.contractId == contractId &&
         other.credentialId == credentialId;
   }
@@ -70,8 +70,8 @@ final class SmartAccountEventWalletConnected extends SmartAccountEvent {
 ///
 /// This event is fired when `disconnect()` is called. The session is cleared,
 /// but stored credentials remain for future reconnection.
-final class SmartAccountEventWalletDisconnected extends SmartAccountEvent {
-  const SmartAccountEventWalletDisconnected({required this.contractId});
+final class OZSmartAccountEventWalletDisconnected extends OZSmartAccountEvent {
+  const OZSmartAccountEventWalletDisconnected({required this.contractId});
 
   final String contractId;
 
@@ -81,7 +81,7 @@ final class SmartAccountEventWalletDisconnected extends SmartAccountEvent {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is SmartAccountEventWalletDisconnected &&
+    return other is OZSmartAccountEventWalletDisconnected &&
         other.contractId == contractId;
   }
 
@@ -94,10 +94,10 @@ final class SmartAccountEventWalletDisconnected extends SmartAccountEvent {
 /// This event is fired after successful WebAuthn credential creation, whether
 /// during initial wallet setup or when adding a new signer to an existing
 /// wallet. Note that the wallet may not be deployed yet.
-final class SmartAccountEventCredentialCreated extends SmartAccountEvent {
-  const SmartAccountEventCredentialCreated({required this.credential});
+final class OZSmartAccountEventCredentialCreated extends OZSmartAccountEvent {
+  const OZSmartAccountEventCredentialCreated({required this.credential});
 
-  final StoredCredential credential;
+  final OZStoredCredential credential;
 
   @override
   String get eventTypeName => 'CredentialCreated';
@@ -105,7 +105,7 @@ final class SmartAccountEventCredentialCreated extends SmartAccountEvent {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is SmartAccountEventCredentialCreated &&
+    return other is OZSmartAccountEventCredentialCreated &&
         other.credential == credential;
   }
 
@@ -118,8 +118,8 @@ final class SmartAccountEventCredentialCreated extends SmartAccountEvent {
 /// This event is fired when a credential is removed via the credential
 /// management API. Deleting a connected credential does not clear the
 /// kit's connection state; call `disconnect()` first if that is required.
-final class SmartAccountEventCredentialDeleted extends SmartAccountEvent {
-  const SmartAccountEventCredentialDeleted({required this.credentialId});
+final class OZSmartAccountEventCredentialDeleted extends OZSmartAccountEvent {
+  const OZSmartAccountEventCredentialDeleted({required this.credentialId});
 
   final String credentialId;
 
@@ -129,7 +129,7 @@ final class SmartAccountEventCredentialDeleted extends SmartAccountEvent {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is SmartAccountEventCredentialDeleted &&
+    return other is OZSmartAccountEventCredentialDeleted &&
         other.credentialId == credentialId;
   }
 
@@ -141,8 +141,8 @@ final class SmartAccountEventCredentialDeleted extends SmartAccountEvent {
 ///
 /// This event is fired when attempting to restore a session that has expired.
 /// The application should prompt the user to reconnect.
-final class SmartAccountEventSessionExpired extends SmartAccountEvent {
-  const SmartAccountEventSessionExpired({
+final class OZSmartAccountEventSessionExpired extends OZSmartAccountEvent {
+  const OZSmartAccountEventSessionExpired({
     required this.contractId,
     required this.credentialId,
   });
@@ -156,7 +156,7 @@ final class SmartAccountEventSessionExpired extends SmartAccountEvent {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is SmartAccountEventSessionExpired &&
+    return other is OZSmartAccountEventSessionExpired &&
         other.contractId == contractId &&
         other.credentialId == credentialId;
   }
@@ -180,8 +180,8 @@ final class SmartAccountEventSessionExpired extends SmartAccountEvent {
 /// `ArgumentError`, `RangeError`) are NOT routed through this event; they
 /// continue to propagate so caller bugs surface as test failures rather
 /// than silent debug events.
-final class SmartAccountEventCredentialSyncFailed extends SmartAccountEvent {
-  const SmartAccountEventCredentialSyncFailed({
+final class OZSmartAccountEventCredentialSyncFailed extends OZSmartAccountEvent {
+  const OZSmartAccountEventCredentialSyncFailed({
     required this.credentialId,
     required this.error,
     this.stackTrace,
@@ -204,7 +204,7 @@ final class SmartAccountEventCredentialSyncFailed extends SmartAccountEvent {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is SmartAccountEventCredentialSyncFailed &&
+    return other is OZSmartAccountEventCredentialSyncFailed &&
         other.credentialId == credentialId &&
         other.error == error &&
         other.stackTrace == stackTrace;
@@ -218,8 +218,8 @@ final class SmartAccountEventCredentialSyncFailed extends SmartAccountEvent {
 ///
 /// This event is fired after successfully collecting all required signatures
 /// for a transaction, before submission to the network.
-final class SmartAccountEventTransactionSigned extends SmartAccountEvent {
-  const SmartAccountEventTransactionSigned({
+final class OZSmartAccountEventTransactionSigned extends OZSmartAccountEvent {
+  const OZSmartAccountEventTransactionSigned({
     required this.contractId,
     required this.credentialId,
   });
@@ -235,7 +235,7 @@ final class SmartAccountEventTransactionSigned extends SmartAccountEvent {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is SmartAccountEventTransactionSigned &&
+    return other is OZSmartAccountEventTransactionSigned &&
         other.contractId == contractId &&
         other.credentialId == credentialId;
   }
@@ -250,8 +250,8 @@ final class SmartAccountEventTransactionSigned extends SmartAccountEvent {
 /// the relayer service. The success flag indicates whether the transaction
 /// was successfully sent to the network node, not whether it was included in
 /// a ledger.
-final class SmartAccountEventTransactionSubmitted extends SmartAccountEvent {
-  const SmartAccountEventTransactionSubmitted({
+final class OZSmartAccountEventTransactionSubmitted extends OZSmartAccountEvent {
+  const OZSmartAccountEventTransactionSubmitted({
     required this.hash,
     required this.success,
   });
@@ -268,7 +268,7 @@ final class SmartAccountEventTransactionSubmitted extends SmartAccountEvent {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is SmartAccountEventTransactionSubmitted &&
+    return other is OZSmartAccountEventTransactionSubmitted &&
         other.hash == hash &&
         other.success == success;
   }
@@ -277,20 +277,20 @@ final class SmartAccountEventTransactionSubmitted extends SmartAccountEvent {
   int get hashCode => Object.hash(hash, success);
 }
 
-/// Listener function invoked when a [SmartAccountEvent] is dispatched.
+/// Listener function invoked when a [OZSmartAccountEvent] is dispatched.
 ///
-/// Use [SmartAccountEventEmitter.addListener] to register a listener for all
-/// event types, or [SmartAccountEventEmitter.on] / [SmartAccountEventEmitter.once]
+/// Use [OZSmartAccountEventEmitter.addListener] to register a listener for all
+/// event types, or [OZSmartAccountEventEmitter.on] / [OZSmartAccountEventEmitter.once]
 /// for type-specific subscriptions.
-typedef SmartAccountEventListener = void Function(SmartAccountEvent event);
+typedef OZSmartAccountEventListener = void Function(OZSmartAccountEvent event);
 
 /// Optional handler invoked when a listener throws while processing an event.
 ///
 /// Receives the [event] that was being dispatched, the [error] thrown by the
 /// listener, and the [stackTrace] captured at the throw site. Set via
-/// [SmartAccountEventEmitter.setErrorHandler]; pass `null` to disable.
-typedef SmartAccountEventErrorHandler = void Function(
-  SmartAccountEvent event,
+/// [OZSmartAccountEventEmitter.setErrorHandler]; pass `null` to disable.
+typedef OZSmartAccountEventErrorHandler = void Function(
+  OZSmartAccountEvent event,
   Object error,
   StackTrace stackTrace,
 );
@@ -303,26 +303,26 @@ typedef SmartAccountEventErrorHandler = void Function(
 /// Example:
 ///
 /// ```dart
-/// final emitter = SmartAccountEventEmitter();
+/// final emitter = OZSmartAccountEventEmitter();
 ///
-/// final unsubscribe = emitter.on<SmartAccountEventWalletConnected>((event) {
+/// final unsubscribe = emitter.on<OZSmartAccountEventWalletConnected>((event) {
 ///   print('Connected to ${event.contractId}');
 /// });
 ///
 /// final unsubGlobal = emitter.addListener((event) {
-///   if (event is SmartAccountEventWalletDisconnected) {
+///   if (event is OZSmartAccountEventWalletDisconnected) {
 ///     print('Disconnected from ${event.contractId}');
 ///   }
 /// });
 ///
-/// emitter.once<SmartAccountEventTransactionSubmitted>((event) {
+/// emitter.once<OZSmartAccountEventTransactionSubmitted>((event) {
 ///   print('First transaction: ${event.hash}');
 /// });
 ///
 /// unsubscribe();
 /// ```
-class SmartAccountEventEmitter {
-  SmartAccountEventEmitter();
+class OZSmartAccountEventEmitter {
+  OZSmartAccountEventEmitter();
 
   // why: Single-isolate concurrency model — all state mutation runs on Dart's
   // main isolate, which gives single-threaded mutation safety without an
@@ -331,9 +331,9 @@ class SmartAccountEventEmitter {
   // callback cannot mutate the iteration target. Do not introduce an `await`
   // inside emit's dispatch loop without first introducing an explicit lock —
   // suspending mid-dispatch breaks this single-threaded invariant.
-  final Map<String, List<SmartAccountEventListener>> _listeners = {};
-  final List<SmartAccountEventListener> _globalListeners = [];
-  SmartAccountEventErrorHandler? _errorHandler;
+  final Map<String, List<OZSmartAccountEventListener>> _listeners = {};
+  final List<OZSmartAccountEventListener> _globalListeners = [];
+  OZSmartAccountEventErrorHandler? _errorHandler;
 
   /// Sets the error handler invoked when a listener throws.
   ///
@@ -341,7 +341,7 @@ class SmartAccountEventEmitter {
   /// and stack trace produced by the failing listener. Pass `null` to
   /// disable error reporting; thrown errors are then silently caught so a
   /// single failing listener cannot affect other listeners.
-  void setErrorHandler(SmartAccountEventErrorHandler? handler) {
+  void setErrorHandler(OZSmartAccountEventErrorHandler? handler) {
     _errorHandler = handler;
   }
 
@@ -350,7 +350,7 @@ class SmartAccountEventEmitter {
   /// Returns an idempotent unsubscribe function. Calling it more than once is
   /// safe and removes only the registration created by this `addListener`
   /// call.
-  void Function() addListener(SmartAccountEventListener listener) {
+  void Function() addListener(OZSmartAccountEventListener listener) {
     _globalListeners.add(listener);
     return () {
       _globalListeners.remove(listener);
@@ -362,11 +362,11 @@ class SmartAccountEventEmitter {
   /// The returned unsubscribe function removes only this typed registration;
   /// calling it more than once is safe. Type filtering uses Dart's `is` check
   /// so subclass relationships are honoured naturally.
-  void Function() on<E extends SmartAccountEvent>(
+  void Function() on<E extends OZSmartAccountEvent>(
     void Function(E event) listener,
   ) {
     final eventType = _eventTypeNameFor<E>();
-    SmartAccountEventListener? wrapper;
+    OZSmartAccountEventListener? wrapper;
     wrapper = (event) {
       if (event is E) {
         listener(event);
@@ -386,7 +386,7 @@ class SmartAccountEventEmitter {
   /// After the first matching event the listener is auto-unsubscribed. The
   /// returned function may also be called manually to cancel the
   /// subscription before any event fires.
-  void Function() once<E extends SmartAccountEvent>(
+  void Function() once<E extends OZSmartAccountEvent>(
     void Function(E event) listener,
   ) {
     late void Function() unsubscribe;
@@ -445,13 +445,13 @@ class SmartAccountEventEmitter {
   ///
   /// This method is intended for use by the Smart Account Kit's operation
   /// modules.
-  void emit(SmartAccountEvent event) {
+  void emit(OZSmartAccountEvent event) {
     final eventType = event.eventTypeName;
     // why: snapshot listeners before dispatch so a listener that calls
     // addListener / on / removeAllListeners during its callback cannot
     // mutate the iteration target. Global listeners are appended after the
     // typed snapshot so emission order matches subscription category.
-    final snapshot = <SmartAccountEventListener>[];
+    final snapshot = <OZSmartAccountEventListener>[];
     final typed = _listeners[eventType];
     if (typed != null && typed.isNotEmpty) {
       snapshot.addAll(typed);
@@ -474,7 +474,7 @@ class SmartAccountEventEmitter {
 
   void _addTypedListener(
     String eventType,
-    SmartAccountEventListener listener,
+    OZSmartAccountEventListener listener,
   ) {
     final bucket = _listeners.putIfAbsent(eventType, () => []);
     bucket.add(listener);
@@ -482,7 +482,7 @@ class SmartAccountEventEmitter {
 
   void _removeTypedListener(
     String eventType,
-    SmartAccountEventListener listener,
+    OZSmartAccountEventListener listener,
   ) {
     final bucket = _listeners[eventType];
     if (bucket == null) {
@@ -494,37 +494,37 @@ class SmartAccountEventEmitter {
     }
   }
 
-  // why: keys returned here MUST match SmartAccountEvent subclass eventTypeName
+  // why: keys returned here MUST match OZSmartAccountEvent subclass eventTypeName
   // values exactly. emit() looks up listener buckets by event.eventTypeName at
   // dispatch time; on<E> and once<E> register listeners under the bucket key
   // returned here. A drift between the two sources of truth (e.g. renaming an
   // arm's eventTypeName getter without updating this helper) produces silent
   // dead listeners — typed listeners land in a bucket the emitter never reads.
-  // When adding a new SmartAccountEvent arm, update both: the arm's
+  // When adding a new OZSmartAccountEvent arm, update both: the arm's
   // eventTypeName override AND this helper's mapping.
-  static String _eventTypeNameFor<E extends SmartAccountEvent>() {
-    if (E == SmartAccountEventWalletConnected) {
+  static String _eventTypeNameFor<E extends OZSmartAccountEvent>() {
+    if (E == OZSmartAccountEventWalletConnected) {
       return 'WalletConnected';
     }
-    if (E == SmartAccountEventWalletDisconnected) {
+    if (E == OZSmartAccountEventWalletDisconnected) {
       return 'WalletDisconnected';
     }
-    if (E == SmartAccountEventCredentialCreated) {
+    if (E == OZSmartAccountEventCredentialCreated) {
       return 'CredentialCreated';
     }
-    if (E == SmartAccountEventCredentialDeleted) {
+    if (E == OZSmartAccountEventCredentialDeleted) {
       return 'CredentialDeleted';
     }
-    if (E == SmartAccountEventCredentialSyncFailed) {
+    if (E == OZSmartAccountEventCredentialSyncFailed) {
       return 'CredentialSyncFailed';
     }
-    if (E == SmartAccountEventSessionExpired) {
+    if (E == OZSmartAccountEventSessionExpired) {
       return 'SessionExpired';
     }
-    if (E == SmartAccountEventTransactionSigned) {
+    if (E == OZSmartAccountEventTransactionSigned) {
       return 'TransactionSigned';
     }
-    if (E == SmartAccountEventTransactionSubmitted) {
+    if (E == OZSmartAccountEventTransactionSubmitted) {
       return 'TransactionSubmitted';
     }
     return E.toString();

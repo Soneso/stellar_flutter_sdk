@@ -130,8 +130,8 @@ For development builds with `?mode=developer`, the simulator can exercise the AA
 
 ## Storage Adapters
 
-- **`PlatformStorageAdapter`**: production storage backed by the native iOS Keychain via method channel. Read-modify-write sequences are serialised on the native side.
-- **`InMemoryStorageAdapter`**: non-persistent, unencrypted process-memory storage. Suitable for unit tests and ephemeral dev flows. All instances compare equal, so two configs using the default storage remain equal.
+- **`OZPlatformStorageAdapter`**: production storage backed by the native iOS Keychain via method channel. Read-modify-write sequences are serialised on the native side.
+- **`OZInMemoryStorageAdapter`**: non-persistent, unencrypted process-memory storage. Suitable for unit tests and ephemeral dev flows. All instances compare equal, so two configs using the default storage remain equal.
 
 ## Common errors
 
@@ -169,7 +169,7 @@ Apple stores passkeys in iCloud Keychain when the user is signed in to iCloud wi
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-final storage = PlatformStorageAdapter();
+final storage = OZPlatformStorageAdapter();
 final webauthnProvider = PlatformWebAuthnProvider(
   rpId: 'wallet.example.com',
   rpName: 'My Stellar App',

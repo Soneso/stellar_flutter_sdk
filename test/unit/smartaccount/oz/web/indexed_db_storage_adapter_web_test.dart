@@ -357,13 +357,13 @@ JSObject _domStringList(List<String> values) {
   return obj;
 }
 
-StoredCredential _credential({
+OZStoredCredential _credential({
   String credentialId = 'cred-1',
   String? contractId,
   bool isPrimary = false,
   int createdAt = 1_000_000,
 }) {
-  return StoredCredential(
+  return OZStoredCredential(
     credentialId: credentialId,
     publicKey: Uint8List.fromList(<int>[
       0x04,
@@ -377,13 +377,13 @@ StoredCredential _credential({
   );
 }
 
-StoredSession _session({
+OZStoredSession _session({
   String credentialId = 'cred-1',
   String contractId = 'CABC',
   int connectedAt = 5_000,
   int expiresAt = 9_000_000_000_000,
 }) =>
-    StoredSession(
+    OZStoredSession(
       credentialId: credentialId,
       contractId: contractId,
       connectedAt: connectedAt,
@@ -391,15 +391,15 @@ StoredSession _session({
     );
 
 void main() {
-  group('IndexedDBStorageAdapter (web)', () {
+  group('OZIndexedDBStorageAdapter (web)', () {
     late _FakeFactory fakeFactory;
 
     setUp(() {
       fakeFactory = _FakeFactory();
     });
 
-    IndexedDBStorageAdapter newAdapter({String dbName = 'unit_test_db'}) {
-      return IndexedDBStorageAdapter.withFactory(
+    OZIndexedDBStorageAdapter newAdapter({String dbName = 'unit_test_db'}) {
+      return OZIndexedDBStorageAdapter.withFactory(
         factory: fakeFactory.toJS(),
         dbName: dbName,
       );
@@ -448,11 +448,11 @@ void main() {
       expect(
         db!.stores.keys.toSet(),
         {
-          IndexedDBStorageAdapter.storeCredentials,
-          IndexedDBStorageAdapter.storeSessions,
+          OZIndexedDBStorageAdapter.storeCredentials,
+          OZIndexedDBStorageAdapter.storeSessions,
         },
       );
-      expect(IndexedDBStorageAdapter.dbVersion, 1);
+      expect(OZIndexedDBStorageAdapter.dbVersion, 1);
     });
 
     test('test_schema_upgrade_path_preserves_data', () async {
@@ -468,21 +468,21 @@ void main() {
     test('test_quota_exceeded_error_handled', () async {
       final factory = _FakeFactory();
       // Replace put with a thrower.
-      final adapter = IndexedDBStorageAdapter.withFactory(
+      final adapter = OZIndexedDBStorageAdapter.withFactory(
         factory: factory.toJS(),
         dbName: 'quota_db',
       );
       // Force the request to fail when calling put.
       final db = factory.databases.putIfAbsent('quota_db', () => _FakeDatabase());
       // Pre-create the stores so `open` does not run upgradeneeded.
-      db.stores[IndexedDBStorageAdapter.storeCredentials] =
+      db.stores[OZIndexedDBStorageAdapter.storeCredentials] =
           _FakeStore('credentialId');
-      db.stores[IndexedDBStorageAdapter.storeSessions] = _FakeStore('key');
+      db.stores[OZIndexedDBStorageAdapter.storeSessions] = _FakeStore('key');
       // Inject a put-failing override after first open.
       db.throwOnTransaction = true;
       await expectLater(
         adapter.save(_credential()),
-        throwsA(isA<StorageWriteFailed>()),
+        throwsA(isA<SmartAccountStorageWriteFailed>()),
       );
     });
 
@@ -499,7 +499,7 @@ void main() {
 
     test('test_database_closed_mid_transaction_error', () async {
       final factory = _FakeFactory();
-      final adapter = IndexedDBStorageAdapter.withFactory(
+      final adapter = OZIndexedDBStorageAdapter.withFactory(
         factory: factory.toJS(),
         dbName: 'closed_db',
       );
@@ -509,7 +509,7 @@ void main() {
       db.throwOnTransaction = true;
       await expectLater(
         adapter.save(_credential(credentialId: 'second')),
-        throwsA(isA<StorageWriteFailed>()),
+        throwsA(isA<SmartAccountStorageWriteFailed>()),
       );
     });
 
@@ -518,7 +518,7 @@ void main() {
       await adapter.save(_credential());
       await adapter.update(
         'cred-1',
-        const StoredCredentialUpdate(nickname: 'Touch ID'),
+        const OZStoredCredentialUpdate(nickname: 'Touch ID'),
       );
       final loaded = await adapter.get('cred-1');
       expect(loaded?.nickname, 'Touch ID');
@@ -527,24 +527,24 @@ void main() {
     test('test_indexeddb_save_throws_when_unavailable', () async {
       final factory = _FakeFactory();
       factory.unavailable = true;
-      final adapter = IndexedDBStorageAdapter.withFactory(
+      final adapter = OZIndexedDBStorageAdapter.withFactory(
         factory: factory.toJS(),
       );
       await expectLater(
         adapter.save(_credential()),
-        throwsA(isA<StorageReadFailed>()),
+        throwsA(isA<SmartAccountStorageReadFailed>()),
       );
     });
 
     test('test_indexeddb_get_throws_when_unavailable', () async {
       final factory = _FakeFactory();
       factory.unavailable = true;
-      final adapter = IndexedDBStorageAdapter.withFactory(
+      final adapter = OZIndexedDBStorageAdapter.withFactory(
         factory: factory.toJS(),
       );
       await expectLater(
         adapter.get('any'),
-        throwsA(isA<StorageReadFailed>()),
+        throwsA(isA<SmartAccountStorageReadFailed>()),
       );
     });
 
@@ -552,21 +552,21 @@ void main() {
       // Pre-populate a database whose stored schema version is HIGHER than
       // the version the adapter requests, then simulate the browser's
       // VersionError on open. The adapter routes IDBOpenDBRequest.onerror
-      // through StorageException.readFailed regardless of the originating
-      // operation, so a save attempt also surfaces StorageReadFailed.
+      // through SmartAccountStorageException.readFailed regardless of the originating
+      // operation, so a save attempt also surfaces SmartAccountStorageReadFailed.
       // The browser's IDBRequest.error surface only exposes `message`
       // (not `name`), so the assertion checks the version-conflict message
       // text rather than the DOMException name.
       final factory = _FakeFactory();
       factory.versionError = true;
-      final adapter = IndexedDBStorageAdapter.withFactory(
+      final adapter = OZIndexedDBStorageAdapter.withFactory(
         factory: factory.toJS(),
         dbName: 'version_conflict_db',
       );
       await expectLater(
         adapter.save(_credential()),
         throwsA(
-          isA<StorageReadFailed>()
+          isA<SmartAccountStorageReadFailed>()
               .having(
                 (e) => e.message,
                 'message',

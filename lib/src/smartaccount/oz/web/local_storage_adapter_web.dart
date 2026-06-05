@@ -29,7 +29,7 @@ import '../oz_storage_serialization.dart';
 ///   conditional-export wiring routes consumers to a stub that throws
 ///   [UnsupportedError] from each operation.
 ///
-/// For production web applications consider [IndexedDBStorageAdapter]
+/// For production web applications consider [OZIndexedDBStorageAdapter]
 /// instead — it scales beyond the per-origin localStorage cap and
 /// supports indexed contract-ID lookups.
 ///
@@ -38,7 +38,7 @@ import '../oz_storage_serialization.dart';
 ///   raw WebAuthn base64URL-safe identifier)
 /// - Credential index: `{prefix}credential_index`
 /// - Session: `{prefix}session_current`
-class LocalStorageAdapter implements StorageAdapter {
+class OZLocalStorageAdapter implements OZStorageAdapter {
   /// Default key prefix for localStorage entries.
   static const String defaultKeyPrefix = 'stellar_sa_';
 
@@ -56,15 +56,15 @@ class LocalStorageAdapter implements StorageAdapter {
 
   Future<void> _tail = Future<void>.value();
 
-  /// Constructs a [LocalStorageAdapter] backed by `window.localStorage`.
-  LocalStorageAdapter({this.keyPrefix = defaultKeyPrefix})
+  /// Constructs a [OZLocalStorageAdapter] backed by `window.localStorage`.
+  OZLocalStorageAdapter({this.keyPrefix = defaultKeyPrefix})
       : _injectedStorage = null;
 
-  /// Constructs a [LocalStorageAdapter] backed by an injected
+  /// Constructs a [OZLocalStorageAdapter] backed by an injected
   /// [web.Storage]. Test seam — production code uses the unnamed
   /// constructor.
   @visibleForTesting
-  LocalStorageAdapter.withStorage({
+  OZLocalStorageAdapter.withStorage({
     required web.Storage storage,
     this.keyPrefix = defaultKeyPrefix,
   }) : _injectedStorage = storage;
@@ -92,7 +92,7 @@ class LocalStorageAdapter implements StorageAdapter {
   // ---------------------------------------------------------------------------
 
   @override
-  Future<void> save(StoredCredential credential) {
+  Future<void> save(OZStoredCredential credential) {
     return _withLock<void>(() {
       final storage = _requireLocalStorage();
       try {
@@ -103,12 +103,12 @@ class LocalStorageAdapter implements StorageAdapter {
       } on Object catch (e) {
         final messageStr = _readJsErrorMessage(e) ?? 'Unknown error';
         if (messageStr.toLowerCase().contains('quota')) {
-          throw StorageException.writeFailed(
+          throw SmartAccountStorageException.writeFailed(
             'credential:${credential.credentialId}',
             cause: Exception('localStorage quota exceeded: $messageStr'),
           );
         }
-        throw StorageException.writeFailed(
+        throw SmartAccountStorageException.writeFailed(
           'credential:${credential.credentialId}',
           cause: Exception(messageStr),
         );
@@ -117,8 +117,8 @@ class LocalStorageAdapter implements StorageAdapter {
   }
 
   @override
-  Future<StoredCredential?> get(String credentialId) {
-    return _withLock<StoredCredential?>(() {
+  Future<OZStoredCredential?> get(String credentialId) {
+    return _withLock<OZStoredCredential?>(() {
       final storage = _requireLocalStorage();
       final key = _credentialKey(credentialId);
       final json = storage.getItem(key);
@@ -126,7 +126,7 @@ class LocalStorageAdapter implements StorageAdapter {
       try {
         return _deserializeCredential(json);
       } on Object catch (e) {
-        throw StorageException.readFailed(
+        throw SmartAccountStorageException.readFailed(
           'credential:$credentialId',
           cause: Exception(
             _readJsErrorMessage(e) ?? 'Failed to deserialize credential',
@@ -137,11 +137,11 @@ class LocalStorageAdapter implements StorageAdapter {
   }
 
   @override
-  Future<List<StoredCredential>> getByContract(String contractId) {
-    return _withLock<List<StoredCredential>>(() {
+  Future<List<OZStoredCredential>> getByContract(String contractId) {
+    return _withLock<List<OZStoredCredential>>(() {
       final storage = _requireLocalStorage();
       final index = _readIndex(storage);
-      final result = <StoredCredential>[];
+      final result = <OZStoredCredential>[];
       for (final id in index) {
         final key = _credentialKey(id);
         final json = storage.getItem(key);
@@ -154,23 +154,23 @@ class LocalStorageAdapter implements StorageAdapter {
         } on Object catch (e) {
           final message = _readJsErrorMessage(e) ?? 'unknown error';
           developer.log(
-            "LocalStorageAdapter: corrupted credential data for '$id', "
+            "OZLocalStorageAdapter: corrupted credential data for '$id', "
             'skipping: $message',
-            name: 'LocalStorageAdapter',
+            name: 'OZLocalStorageAdapter',
             level: 900,
           );
         }
       }
-      return List<StoredCredential>.unmodifiable(result);
+      return List<OZStoredCredential>.unmodifiable(result);
     });
   }
 
   @override
-  Future<List<StoredCredential>> getAll() {
-    return _withLock<List<StoredCredential>>(() {
+  Future<List<OZStoredCredential>> getAll() {
+    return _withLock<List<OZStoredCredential>>(() {
       final storage = _requireLocalStorage();
       final index = _readIndex(storage);
-      final result = <StoredCredential>[];
+      final result = <OZStoredCredential>[];
       for (final credentialId in index) {
         final key = _credentialKey(credentialId);
         final json = storage.getItem(key);
@@ -180,14 +180,14 @@ class LocalStorageAdapter implements StorageAdapter {
         } on Object catch (e) {
           final message = _readJsErrorMessage(e) ?? 'unknown error';
           developer.log(
-            "LocalStorageAdapter: corrupted credential data for "
+            "OZLocalStorageAdapter: corrupted credential data for "
             "'$credentialId', skipping: $message",
-            name: 'LocalStorageAdapter',
+            name: 'OZLocalStorageAdapter',
             level: 900,
           );
         }
       }
-      return List<StoredCredential>.unmodifiable(result);
+      return List<OZStoredCredential>.unmodifiable(result);
     });
   }
 
@@ -202,19 +202,19 @@ class LocalStorageAdapter implements StorageAdapter {
   }
 
   @override
-  Future<void> update(String credentialId, StoredCredentialUpdate updates) {
+  Future<void> update(String credentialId, OZStoredCredentialUpdate updates) {
     return _withLock<void>(() {
       final storage = _requireLocalStorage();
       final key = _credentialKey(credentialId);
       final json = storage.getItem(key);
       if (json == null) {
-        throw CredentialException.notFound(credentialId);
+        throw SmartAccountCredentialException.notFound(credentialId);
       }
-      StoredCredential existing;
+      OZStoredCredential existing;
       try {
         existing = _deserializeCredential(json);
       } on Object catch (e) {
-        throw StorageException.readFailed(
+        throw SmartAccountStorageException.readFailed(
           'credential:$credentialId',
           cause: Exception(
             _readJsErrorMessage(e) ?? 'Failed to deserialize credential',
@@ -227,7 +227,7 @@ class LocalStorageAdapter implements StorageAdapter {
         storage.setItem(key, updatedJson);
       } on Object catch (e) {
         final message = _readJsErrorMessage(e) ?? 'Unknown error';
-        throw StorageException.writeFailed(
+        throw SmartAccountStorageException.writeFailed(
           'credential:$credentialId',
           cause: Exception(message),
         );
@@ -253,7 +253,7 @@ class LocalStorageAdapter implements StorageAdapter {
   // ---------------------------------------------------------------------------
 
   @override
-  Future<void> saveSession(StoredSession session) {
+  Future<void> saveSession(OZStoredSession session) {
     return _withLock<void>(() {
       final storage = _requireLocalStorage();
       try {
@@ -261,7 +261,7 @@ class LocalStorageAdapter implements StorageAdapter {
         storage.setItem(_prefixedKey(_sessionKey), json);
       } on Object catch (e) {
         final message = _readJsErrorMessage(e) ?? 'Unknown error';
-        throw StorageException.writeFailed(
+        throw SmartAccountStorageException.writeFailed(
           'session',
           cause: Exception(message),
         );
@@ -270,8 +270,8 @@ class LocalStorageAdapter implements StorageAdapter {
   }
 
   @override
-  Future<StoredSession?> getSession() {
-    return _withLock<StoredSession?>(() {
+  Future<OZStoredSession?> getSession() {
+    return _withLock<OZStoredSession?>(() {
       final storage = _requireLocalStorage();
       final json = storage.getItem(_prefixedKey(_sessionKey));
       if (json == null) return null;
@@ -283,7 +283,7 @@ class LocalStorageAdapter implements StorageAdapter {
         }
         return session;
       } on Object catch (e) {
-        throw StorageException.readFailed(
+        throw SmartAccountStorageException.readFailed(
           'session',
           cause: Exception(
             _readJsErrorMessage(e) ?? 'Failed to deserialize session',
@@ -364,11 +364,11 @@ class LocalStorageAdapter implements StorageAdapter {
     try {
       return web.window.localStorage;
     } on Object {
-      throw StorageException.readFailed(
+      throw SmartAccountStorageException.readFailed(
         'localStorage',
         cause: Exception(
           'localStorage is not available in this environment. '
-          'LocalStorageAdapter requires a browser environment.',
+          'OZLocalStorageAdapter requires a browser environment.',
         ),
       );
     }
@@ -379,11 +379,11 @@ class LocalStorageAdapter implements StorageAdapter {
 // JSON serialization helpers (file-private)
 // ---------------------------------------------------------------------------
 
-String _serializeCredential(StoredCredential credential) {
+String _serializeCredential(OZStoredCredential credential) {
   return jsonEncode(credential.toSerializable().toJson());
 }
 
-StoredCredential _deserializeCredential(String json) {
+OZStoredCredential _deserializeCredential(String json) {
   final decoded = jsonDecode(json);
   if (decoded is! Map<String, dynamic>) {
     throw const FormatException(
@@ -393,11 +393,11 @@ StoredCredential _deserializeCredential(String json) {
   return SerializableCredential.fromJson(decoded).toStoredCredential();
 }
 
-String _serializeSession(StoredSession session) {
+String _serializeSession(OZStoredSession session) {
   return jsonEncode(session.toSerializable().toJson());
 }
 
-StoredSession _deserializeSession(String json) {
+OZStoredSession _deserializeSession(String json) {
   final decoded = jsonDecode(json);
   if (decoded is! Map<String, dynamic>) {
     throw const FormatException(

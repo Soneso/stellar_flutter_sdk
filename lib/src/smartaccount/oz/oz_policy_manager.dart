@@ -21,11 +21,11 @@ import 'oz_validation.dart';
 ///
 /// Sealed hierarchy of three policy types:
 ///
-/// - [SimpleThresholdParams]: M-of-N authorisation (equal-weight
+/// - [OZSimpleThresholdPolicyParams]: M-of-N authorisation (equal-weight
 ///   signers).
-/// - [WeightedThresholdParams]: weighted voting with a configurable
+/// - [OZWeightedThresholdPolicyParams]: weighted voting with a configurable
 ///   threshold.
-/// - [SpendingLimitParams]: maximum spend per ledger window.
+/// - [OZSpendingLimitPolicyParams]: maximum spend per ledger window.
 ///
 /// Policies are installed on a context rule and evaluated when matching
 /// transactions request authorisation. For most use cases the
@@ -34,8 +34,8 @@ import 'oz_validation.dart';
 /// [OZPolicyManager.addSpendingLimit] handle parameter encoding
 /// internally — these `*Params` classes are used directly only when
 /// calling [OZPolicyManager.addPolicy] with custom parameters.
-sealed class PolicyInstallParams {
-  const PolicyInstallParams();
+sealed class OZPolicyInstallParams {
+  const OZPolicyInstallParams();
 
   /// Returns the on-chain `ScVal` map encoding of the parameter shape.
   /// Marked [internal] because consumer code should prefer the
@@ -47,9 +47,9 @@ sealed class PolicyInstallParams {
 /// Simple threshold policy parameters. Requires at least [threshold]
 /// signers from the context rule's signer list to authorise the call.
 /// All signers carry equal weight.
-final class SimpleThresholdParams extends PolicyInstallParams {
+final class OZSimpleThresholdPolicyParams extends OZPolicyInstallParams {
   /// Constructs simple threshold params. [threshold] must be > 0.
-  const SimpleThresholdParams({required this.threshold});
+  const OZSimpleThresholdPolicyParams({required this.threshold});
 
   /// Minimum signer count required to authorise.
   final int threshold;
@@ -57,7 +57,7 @@ final class SimpleThresholdParams extends PolicyInstallParams {
   @override
   XdrSCVal toScVal() {
     if (threshold <= 0) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'threshold',
         'Threshold must be greater than zero',
       );
@@ -73,7 +73,7 @@ final class SimpleThresholdParams extends PolicyInstallParams {
 
   @override
   bool operator ==(Object other) =>
-      other is SimpleThresholdParams && other.threshold == threshold;
+      other is OZSimpleThresholdPolicyParams && other.threshold == threshold;
 
   @override
   int get hashCode => threshold.hashCode;
@@ -81,10 +81,10 @@ final class SimpleThresholdParams extends PolicyInstallParams {
 
 /// Weighted threshold policy parameters. Each signer carries a vote
 /// weight; the sum of approving-signer weights must reach [threshold].
-final class WeightedThresholdParams extends PolicyInstallParams {
+final class OZWeightedThresholdPolicyParams extends OZPolicyInstallParams {
   /// Constructs weighted threshold params. [threshold] must be > 0 and
   /// [signerWeights] must be non-empty.
-  WeightedThresholdParams({
+  OZWeightedThresholdPolicyParams({
     required this.signerWeights,
     required this.threshold,
   });
@@ -98,13 +98,13 @@ final class WeightedThresholdParams extends PolicyInstallParams {
   @override
   XdrSCVal toScVal() {
     if (threshold <= 0) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'threshold',
         'Threshold must be greater than zero',
       );
     }
     if (signerWeights.isEmpty) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'signerWeights',
         'Weighted threshold policy requires at least one signer with weight',
       );
@@ -141,7 +141,7 @@ final class WeightedThresholdParams extends PolicyInstallParams {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! WeightedThresholdParams) return false;
+    if (other is! OZWeightedThresholdPolicyParams) return false;
     if (other.threshold != threshold) return false;
     return _weightsEquality.equals(other.signerWeights, signerWeights);
   }
@@ -163,10 +163,10 @@ final class WeightedThresholdParams extends PolicyInstallParams {
 
 /// Spending limit policy parameters. Restricts the total amount spent
 /// within a rolling ledger window.
-final class SpendingLimitParams extends PolicyInstallParams {
+final class OZSpendingLimitPolicyParams extends OZPolicyInstallParams {
   /// Constructs spending limit params. [spendingLimit] must be > 0 and
   /// [periodLedgers] must be > 0.
-  const SpendingLimitParams({
+  const OZSpendingLimitPolicyParams({
     required this.spendingLimit,
     required this.periodLedgers,
   });
@@ -180,13 +180,13 @@ final class SpendingLimitParams extends PolicyInstallParams {
   @override
   XdrSCVal toScVal() {
     if (spendingLimit <= BigInt.zero) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'spendingLimit',
         'Spending limit must be greater than zero, got: $spendingLimit',
       );
     }
     if (periodLedgers <= 0) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'periodLedgers',
         'Period ledgers must be greater than zero, got: $periodLedgers',
       );
@@ -206,7 +206,7 @@ final class SpendingLimitParams extends PolicyInstallParams {
 
   @override
   bool operator ==(Object other) =>
-      other is SpendingLimitParams &&
+      other is OZSpendingLimitPolicyParams &&
       other.spendingLimit == spendingLimit &&
       other.periodLedgers == periodLedgers;
 
@@ -242,14 +242,14 @@ class OZPolicyManager {
 
   /// Adds a simple threshold policy that requires at least [threshold]
   /// signers from the context rule's signer list to authorise.
-  Future<TransactionResult> addSimpleThreshold({
+  Future<OZTransactionResult> addSimpleThreshold({
     required int contextRuleId,
     required String policyAddress,
     required int threshold,
-    List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+    OZSubmissionMethod? forceMethod,
   }) async {
-    final params = SimpleThresholdParams(threshold: threshold);
+    final params = OZSimpleThresholdPolicyParams(threshold: threshold);
     return addPolicy(
       contextRuleId: contextRuleId,
       policyAddress: policyAddress,
@@ -262,15 +262,15 @@ class OZPolicyManager {
   /// Adds a weighted threshold policy. Each signer carries a vote
   /// weight; the sum of approving-signer weights must reach
   /// [threshold].
-  Future<TransactionResult> addWeightedThreshold({
+  Future<OZTransactionResult> addWeightedThreshold({
     required int contextRuleId,
     required String policyAddress,
     required Map<OZSmartAccountSigner, int> signerWeights,
     required int threshold,
-    List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+    OZSubmissionMethod? forceMethod,
   }) async {
-    final params = WeightedThresholdParams(
+    final params = OZWeightedThresholdPolicyParams(
       signerWeights: signerWeights,
       threshold: threshold,
     );
@@ -286,16 +286,16 @@ class OZPolicyManager {
   /// Adds a spending-limit policy. Converts [spendingLimit] (a decimal
   /// XLM-style string with up to seven decimal places) to stroops via
   /// [Util.toXdrInt64Amount].
-  Future<TransactionResult> addSpendingLimit({
+  Future<OZTransactionResult> addSpendingLimit({
     required int contextRuleId,
     required String policyAddress,
     required String spendingLimit,
     required int periodLedgers,
-    List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+    OZSubmissionMethod? forceMethod,
   }) async {
     final stroops = Util.toXdrInt64Amount(spendingLimit);
-    final params = SpendingLimitParams(
+    final params = OZSpendingLimitPolicyParams(
       spendingLimit: stroops,
       periodLedgers: periodLedgers,
     );
@@ -316,11 +316,11 @@ class OZPolicyManager {
   ///
   /// Builds a `remove_policy(context_rule_id, policy_id)` invocation
   /// and routes through single-signer or multi-signer submission.
-  Future<TransactionResult> removePolicy({
+  Future<OZTransactionResult> removePolicy({
     required int contextRuleId,
     required int policyId,
-    List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+    OZSubmissionMethod? forceMethod,
   }) async {
     final connected = await _kit.requireConnected();
 
@@ -339,11 +339,11 @@ class OZPolicyManager {
   /// delegates to the ID-based [removePolicy] form. The `ByAddress` suffix
   /// distinguishes this from the ID-based form (Dart has no
   /// overload-by-parameter-type).
-  Future<TransactionResult> removePolicyByAddress({
+  Future<OZTransactionResult> removePolicyByAddress({
     required int contextRuleId,
     required String policyAddress,
-    List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+    OZSubmissionMethod? forceMethod,
   }) async {
     requireContractAddress(policyAddress, fieldName: 'policyAddress');
 
@@ -354,14 +354,14 @@ class OZPolicyManager {
 
     final policyIndex = rule.policies.indexOf(policyAddress);
     if (policyIndex == -1) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'policyAddress',
         'Policy $policyAddress not found on context rule $contextRuleId',
       );
     }
 
     if (policyIndex >= rule.policyIds.length) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'policyAddress',
         'Policy found at index $policyIndex but policyIds has only '
             '${rule.policyIds.length} entries',
@@ -386,12 +386,12 @@ class OZPolicyManager {
   /// [addWeightedThreshold], and [addSpendingLimit] delegate to. Call
   /// directly for custom policy contracts whose installation parameters
   /// are not covered by the convenience helpers.
-  Future<TransactionResult> addPolicy({
+  Future<OZTransactionResult> addPolicy({
     required int contextRuleId,
     required String policyAddress,
     required XdrSCVal installParams,
-    List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+    OZSubmissionMethod? forceMethod,
   }) async {
     final connected = await _kit.requireConnected();
     requireContractAddress(policyAddress, fieldName: 'policyAddress');
@@ -455,7 +455,7 @@ class OZPolicyManager {
   ///
   /// Soroban mandates ScMap keys are ordered lexicographically by their
   /// XDR encoding — this is a deterministic-encoding requirement, not
-  /// stylistic. Used by [WeightedThresholdParams.toScVal] and by
+  /// stylistic. Used by [OZWeightedThresholdPolicyParams.toScVal] and by
   /// `OZContextRuleManager.addContextRule` when sorting the policies
   /// map.
   static List<XdrSCMapEntry> sortMapByKeyXdr(List<XdrSCMapEntry> entries) {

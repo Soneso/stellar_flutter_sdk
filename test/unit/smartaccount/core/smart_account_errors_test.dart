@@ -37,37 +37,37 @@ const Map<SmartAccountErrorCode, int> _codeTable = {
 /// [SmartAccountException.wrapError] when that code is supplied as the
 /// default code.
 final Map<SmartAccountErrorCode, Type> _expectedArmType = {
-  SmartAccountErrorCode.invalidConfig: InvalidConfig,
-  SmartAccountErrorCode.missingConfig: MissingConfig,
-  SmartAccountErrorCode.walletNotConnected: WalletNotConnected,
-  SmartAccountErrorCode.walletAlreadyExists: WalletAlreadyExists,
-  SmartAccountErrorCode.walletNotFound: WalletNotFound,
-  SmartAccountErrorCode.credentialNotFound: CredentialNotFound,
-  SmartAccountErrorCode.credentialAlreadyExists: CredentialAlreadyExists,
-  SmartAccountErrorCode.credentialInvalid: CredentialInvalid,
-  SmartAccountErrorCode.credentialDeploymentFailed: CredentialDeploymentFailed,
+  SmartAccountErrorCode.invalidConfig: SmartAccountInvalidConfig,
+  SmartAccountErrorCode.missingConfig: SmartAccountMissingConfig,
+  SmartAccountErrorCode.walletNotConnected: SmartAccountWalletNotConnected,
+  SmartAccountErrorCode.walletAlreadyExists: SmartAccountWalletAlreadyExists,
+  SmartAccountErrorCode.walletNotFound: SmartAccountWalletNotFound,
+  SmartAccountErrorCode.credentialNotFound: SmartAccountCredentialNotFound,
+  SmartAccountErrorCode.credentialAlreadyExists: SmartAccountCredentialAlreadyExists,
+  SmartAccountErrorCode.credentialInvalid: SmartAccountCredentialInvalid,
+  SmartAccountErrorCode.credentialDeploymentFailed: SmartAccountCredentialDeploymentFailed,
   SmartAccountErrorCode.webauthnRegistrationFailed: WebAuthnRegistrationFailed,
   SmartAccountErrorCode.webauthnAuthenticationFailed:
       WebAuthnAuthenticationFailed,
   SmartAccountErrorCode.webauthnNotSupported: WebAuthnNotSupported,
   SmartAccountErrorCode.webauthnCancelled: WebAuthnCancelled,
   SmartAccountErrorCode.transactionSimulationFailed:
-      TransactionSimulationFailed,
-  SmartAccountErrorCode.transactionSigningFailed: TransactionSigningFailed,
+      SmartAccountTransactionSimulationFailed,
+  SmartAccountErrorCode.transactionSigningFailed: SmartAccountTransactionSigningFailed,
   SmartAccountErrorCode.transactionSubmissionFailed:
-      TransactionSubmissionFailed,
-  SmartAccountErrorCode.transactionTimeout: TransactionTimeout,
-  SmartAccountErrorCode.signerNotFound: SignerNotFound,
-  SmartAccountErrorCode.signerInvalid: SignerInvalid,
-  SmartAccountErrorCode.invalidAddress: InvalidAddress,
-  SmartAccountErrorCode.invalidAmount: InvalidAmount,
-  SmartAccountErrorCode.invalidInput: InvalidInput,
-  SmartAccountErrorCode.storageReadFailed: StorageReadFailed,
-  SmartAccountErrorCode.storageWriteFailed: StorageWriteFailed,
-  SmartAccountErrorCode.sessionExpired: SessionExpired,
-  SmartAccountErrorCode.sessionInvalid: SessionInvalid,
-  SmartAccountErrorCode.indexerRequestFailed: IndexerRequestFailed,
-  SmartAccountErrorCode.indexerTimeout: IndexerTimeout,
+      SmartAccountTransactionSubmissionFailed,
+  SmartAccountErrorCode.transactionTimeout: SmartAccountTransactionTimeout,
+  SmartAccountErrorCode.signerNotFound: SmartAccountSignerNotFound,
+  SmartAccountErrorCode.signerInvalid: SmartAccountSignerInvalid,
+  SmartAccountErrorCode.invalidAddress: SmartAccountInvalidAddress,
+  SmartAccountErrorCode.invalidAmount: SmartAccountInvalidAmount,
+  SmartAccountErrorCode.invalidInput: SmartAccountInvalidInput,
+  SmartAccountErrorCode.storageReadFailed: SmartAccountStorageReadFailed,
+  SmartAccountErrorCode.storageWriteFailed: SmartAccountStorageWriteFailed,
+  SmartAccountErrorCode.sessionExpired: SmartAccountSessionExpired,
+  SmartAccountErrorCode.sessionInvalid: SmartAccountSessionInvalid,
+  SmartAccountErrorCode.indexerRequestFailed: SmartAccountIndexerRequestFailed,
+  SmartAccountErrorCode.indexerTimeout: SmartAccountIndexerTimeout,
 };
 
 void main() {
@@ -99,14 +99,14 @@ void main() {
     test(
         'test_smart_account_exception_code_property_returns_underlying_error_code',
         () {
-      final ex = const InvalidInput('something went wrong');
+      final ex = const SmartAccountInvalidInput('something went wrong');
       expect(ex.code, SmartAccountErrorCode.invalidInput);
       expect(ex.code.code, 7003);
     });
 
     test('test_smart_account_exception_to_string_format_includes_code_and_message',
         () {
-      final ex = const InvalidConfig('bad value');
+      final ex = const SmartAccountInvalidConfig('bad value');
       final text = ex.toString();
       expect(text, contains('SmartAccountException'));
       expect(text, contains('[1001]'));
@@ -117,7 +117,7 @@ void main() {
         'test_smart_account_exception_to_string_includes_caused_by_when_cause_present',
         () {
       final cause = Exception('downstream failure');
-      final ex = InvalidConfig('outer message', cause);
+      final ex = SmartAccountInvalidConfig('outer message', cause);
       expect(ex.toString(), contains('caused by:'));
       expect(ex.toString(), contains('downstream failure'));
     });
@@ -126,14 +126,14 @@ void main() {
   group('SmartAccountException.wrapError', () {
     test('test_wrap_error_returns_input_unchanged_when_already_smart_account_exception',
         () {
-      final original = const InvalidConfig('hi');
+      final original = const SmartAccountInvalidConfig('hi');
       final wrapped = SmartAccountException.wrapError(original);
       expect(identical(original, wrapped), isTrue);
     });
 
     test('test_wrap_error_default_code_is_INVALID_INPUT_when_unspecified', () {
       final wrapped = SmartAccountException.wrapError(Exception('boom'));
-      expect(wrapped, isA<InvalidInput>());
+      expect(wrapped, isA<SmartAccountInvalidInput>());
       expect(wrapped.code, SmartAccountErrorCode.invalidInput);
     });
 
@@ -153,16 +153,16 @@ void main() {
   group('Sealed-subtype arm counts', () {
     test('test_each_sealed_subtype_has_correct_arm_count', () {
       // Configuration: 2
-      expect(<Type>{InvalidConfig, MissingConfig}.length, 2);
+      expect(<Type>{SmartAccountInvalidConfig, SmartAccountMissingConfig}.length, 2);
       // Wallet: 3
-      expect(<Type>{WalletNotConnected, WalletAlreadyExists, WalletNotFound}
+      expect(<Type>{SmartAccountWalletNotConnected, SmartAccountWalletAlreadyExists, SmartAccountWalletNotFound}
           .length, 3);
       // Credential: 4
       expect(<Type>{
-        CredentialNotFound,
-        CredentialAlreadyExists,
-        CredentialInvalid,
-        CredentialDeploymentFailed
+        SmartAccountCredentialNotFound,
+        SmartAccountCredentialAlreadyExists,
+        SmartAccountCredentialInvalid,
+        SmartAccountCredentialDeploymentFailed
       }.length, 4);
       // WebAuthn: 4
       expect(<Type>{
@@ -173,52 +173,52 @@ void main() {
       }.length, 4);
       // Transaction: 4
       expect(<Type>{
-        TransactionSimulationFailed,
-        TransactionSigningFailed,
-        TransactionSubmissionFailed,
-        TransactionTimeout
+        SmartAccountTransactionSimulationFailed,
+        SmartAccountTransactionSigningFailed,
+        SmartAccountTransactionSubmissionFailed,
+        SmartAccountTransactionTimeout
       }.length, 4);
       // Signer: 2
-      expect(<Type>{SignerNotFound, SignerInvalid}.length, 2);
+      expect(<Type>{SmartAccountSignerNotFound, SmartAccountSignerInvalid}.length, 2);
       // Validation: 3
-      expect(<Type>{InvalidAddress, InvalidAmount, InvalidInput}.length, 3);
+      expect(<Type>{SmartAccountInvalidAddress, SmartAccountInvalidAmount, SmartAccountInvalidInput}.length, 3);
       // Storage: 2
-      expect(<Type>{StorageReadFailed, StorageWriteFailed}.length, 2);
+      expect(<Type>{SmartAccountStorageReadFailed, SmartAccountStorageWriteFailed}.length, 2);
       // Session: 2
-      expect(<Type>{SessionExpired, SessionInvalid}.length, 2);
+      expect(<Type>{SmartAccountSessionExpired, SmartAccountSessionInvalid}.length, 2);
       // Indexer: 2
-      expect(<Type>{IndexerRequestFailed, IndexerTimeout}.length, 2);
+      expect(<Type>{SmartAccountIndexerRequestFailed, SmartAccountIndexerTimeout}.length, 2);
     });
   });
 
   group('Default messages', () {
     test('test_default_messages_present_NotConnected_NotSupported_Cancelled_Timeout_Expired',
         () {
-      expect(const WalletNotConnected().message, 'Wallet is not connected');
+      expect(const SmartAccountWalletNotConnected().message, 'Wallet is not connected');
       expect(const WebAuthnNotSupported().message,
           'WebAuthn is not supported on this platform');
       expect(const WebAuthnCancelled().message,
           'User cancelled WebAuthn operation');
-      expect(const TransactionTimeout().message, 'Transaction timed out');
-      expect(const SessionExpired().message, 'Session has expired');
+      expect(const SmartAccountTransactionTimeout().message, 'Transaction timed out');
+      expect(const SmartAccountSessionExpired().message, 'Session has expired');
     });
   });
 
   group('Companion factories', () {
     test('test_companion_factory_invalidAddress_message_format_invalid_address_colon_address',
         () {
-      final ex = ValidationException.invalidAddress('GBADADDR');
-      expect(ex, isA<InvalidAddress>());
+      final ex = SmartAccountValidationException.invalidAddress('GBADADDR');
+      expect(ex, isA<SmartAccountInvalidAddress>());
       expect(ex.message, 'Invalid address: GBADADDR');
       expect(ex.code, SmartAccountErrorCode.invalidAddress);
     });
 
     test('test_companion_factory_invalidAmount_optional_reason_appended_after_dash',
         () {
-      final without = ValidationException.invalidAmount('-1');
+      final without = SmartAccountValidationException.invalidAmount('-1');
       expect(without.message, 'Invalid amount: -1');
 
-      final withReason = ValidationException.invalidAmount(
+      final withReason = SmartAccountValidationException.invalidAmount(
         '-1',
         reason: 'must be positive',
       );
@@ -226,15 +226,15 @@ void main() {
     });
 
     test('test_companion_factory_invalidInput_field_and_reason_in_message', () {
-      final ex = ValidationException.invalidInput('publicKey', 'wrong size');
+      final ex = SmartAccountValidationException.invalidInput('publicKey', 'wrong size');
       expect(ex.message, 'Invalid input for publicKey: wrong size');
     });
 
     test(
         'test_companion_factory_invalidInput_throws_correct_arm_with_correct_code',
         () {
-      final ex = ValidationException.invalidInput('field', 'reason');
-      expect(ex, isA<InvalidInput>());
+      final ex = SmartAccountValidationException.invalidInput('field', 'reason');
+      expect(ex, isA<SmartAccountInvalidInput>());
       expect(ex.code, SmartAccountErrorCode.invalidInput);
       expect(ex.code.code, 7003);
     });
@@ -242,38 +242,38 @@ void main() {
 
   group('All companion factories produce correctly-coded arms', () {
     test('configuration factories', () {
-      expect(ConfigurationException.invalidConfig('x'), isA<InvalidConfig>());
-      expect(ConfigurationException.invalidConfig('x').message,
+      expect(SmartAccountConfigurationException.invalidConfig('x'), isA<SmartAccountInvalidConfig>());
+      expect(SmartAccountConfigurationException.invalidConfig('x').message,
           'Invalid configuration: x');
-      expect(ConfigurationException.missingConfig('y'), isA<MissingConfig>());
-      expect(ConfigurationException.missingConfig('y').message,
+      expect(SmartAccountConfigurationException.missingConfig('y'), isA<SmartAccountMissingConfig>());
+      expect(SmartAccountConfigurationException.missingConfig('y').message,
           'Missing required configuration: y');
     });
 
     test('wallet factories', () {
-      expect(WalletException.notConnected(), isA<WalletNotConnected>());
-      expect(WalletException.notConnected(details: 'hello').message, 'hello');
-      expect(WalletException.alreadyExists('id'), isA<WalletAlreadyExists>());
-      expect(WalletException.alreadyExists('id').message,
+      expect(SmartAccountWalletException.notConnected(), isA<SmartAccountWalletNotConnected>());
+      expect(SmartAccountWalletException.notConnected(details: 'hello').message, 'hello');
+      expect(SmartAccountWalletException.alreadyExists('id'), isA<SmartAccountWalletAlreadyExists>());
+      expect(SmartAccountWalletException.alreadyExists('id').message,
           'Wallet already exists: id');
-      expect(WalletException.notFound('id'), isA<WalletNotFound>());
-      expect(WalletException.notFound('id').message, 'Wallet not found: id');
+      expect(SmartAccountWalletException.notFound('id'), isA<SmartAccountWalletNotFound>());
+      expect(SmartAccountWalletException.notFound('id').message, 'Wallet not found: id');
     });
 
     test('credential factories', () {
-      expect(CredentialException.notFound('cid'), isA<CredentialNotFound>());
-      expect(CredentialException.notFound('cid').message,
+      expect(SmartAccountCredentialException.notFound('cid'), isA<SmartAccountCredentialNotFound>());
+      expect(SmartAccountCredentialException.notFound('cid').message,
           'Credential not found: cid');
-      expect(CredentialException.alreadyExists('cid'),
-          isA<CredentialAlreadyExists>());
-      expect(CredentialException.alreadyExists('cid').message,
+      expect(SmartAccountCredentialException.alreadyExists('cid'),
+          isA<SmartAccountCredentialAlreadyExists>());
+      expect(SmartAccountCredentialException.alreadyExists('cid').message,
           'Credential already exists: cid');
-      expect(CredentialException.invalid('bad'), isA<CredentialInvalid>());
-      expect(CredentialException.invalid('bad').message,
+      expect(SmartAccountCredentialException.invalid('bad'), isA<SmartAccountCredentialInvalid>());
+      expect(SmartAccountCredentialException.invalid('bad').message,
           'Invalid credential: bad');
-      expect(CredentialException.deploymentFailed('boom'),
-          isA<CredentialDeploymentFailed>());
-      expect(CredentialException.deploymentFailed('boom').message,
+      expect(SmartAccountCredentialException.deploymentFailed('boom'),
+          isA<SmartAccountCredentialDeploymentFailed>());
+      expect(SmartAccountCredentialException.deploymentFailed('boom').message,
           'Credential deployment failed: boom');
     });
 
@@ -295,61 +295,61 @@ void main() {
     });
 
     test('transaction factories', () {
-      expect(TransactionException.simulationFailed('s'),
-          isA<TransactionSimulationFailed>());
-      expect(TransactionException.simulationFailed('s').message,
+      expect(SmartAccountTransactionException.simulationFailed('s'),
+          isA<SmartAccountTransactionSimulationFailed>());
+      expect(SmartAccountTransactionException.simulationFailed('s').message,
           'Transaction simulation failed: s');
-      expect(TransactionException.signingFailed('si'),
-          isA<TransactionSigningFailed>());
-      expect(TransactionException.submissionFailed('sub'),
-          isA<TransactionSubmissionFailed>());
-      expect(TransactionException.timeout(), isA<TransactionTimeout>());
-      expect(TransactionException.timeout(details: 'tt').message, 'tt');
+      expect(SmartAccountTransactionException.signingFailed('si'),
+          isA<SmartAccountTransactionSigningFailed>());
+      expect(SmartAccountTransactionException.submissionFailed('sub'),
+          isA<SmartAccountTransactionSubmissionFailed>());
+      expect(SmartAccountTransactionException.timeout(), isA<SmartAccountTransactionTimeout>());
+      expect(SmartAccountTransactionException.timeout(details: 'tt').message, 'tt');
     });
 
     test('signer factories', () {
-      expect(SignerException.notFound('sid'), isA<SignerNotFound>());
-      expect(SignerException.notFound('sid').message, 'Signer not found: sid');
-      expect(SignerException.invalid('reason'), isA<SignerInvalid>());
-      expect(SignerException.invalid('reason').message,
+      expect(SmartAccountSignerException.notFound('sid'), isA<SmartAccountSignerNotFound>());
+      expect(SmartAccountSignerException.notFound('sid').message, 'Signer not found: sid');
+      expect(SmartAccountSignerException.invalid('reason'), isA<SmartAccountSignerInvalid>());
+      expect(SmartAccountSignerException.invalid('reason').message,
           'Invalid signer: reason');
     });
 
     test('storage factories', () {
-      expect(StorageException.readFailed('k'), isA<StorageReadFailed>());
-      expect(StorageException.readFailed('k').message,
+      expect(SmartAccountStorageException.readFailed('k'), isA<SmartAccountStorageReadFailed>());
+      expect(SmartAccountStorageException.readFailed('k').message,
           'Storage read failed for key: k');
-      expect(StorageException.writeFailed('k'), isA<StorageWriteFailed>());
-      expect(StorageException.writeFailed('k').message,
+      expect(SmartAccountStorageException.writeFailed('k'), isA<SmartAccountStorageWriteFailed>());
+      expect(SmartAccountStorageException.writeFailed('k').message,
           'Storage write failed for key: k');
     });
 
     test('session factories', () {
-      expect(SessionException.expired(), isA<SessionExpired>());
-      expect(SessionException.expired().message, 'Session has expired');
-      expect(SessionException.expired(sessionId: 'sid').message,
+      expect(SmartAccountSessionException.expired(), isA<SmartAccountSessionExpired>());
+      expect(SmartAccountSessionException.expired().message, 'Session has expired');
+      expect(SmartAccountSessionException.expired(sessionId: 'sid').message,
           'Session expired: sid');
-      expect(SessionException.invalid('bad'), isA<SessionInvalid>());
-      expect(SessionException.invalid('bad').message, 'Invalid session: bad');
+      expect(SmartAccountSessionException.invalid('bad'), isA<SmartAccountSessionInvalid>());
+      expect(SmartAccountSessionException.invalid('bad').message, 'Invalid session: bad');
     });
 
     test('indexer factories', () {
-      expect(IndexerException.requestFailed('rf'), isA<IndexerRequestFailed>());
-      expect(IndexerException.requestFailed('rf').message,
+      expect(SmartAccountIndexerException.requestFailed('rf'), isA<SmartAccountIndexerRequestFailed>());
+      expect(SmartAccountIndexerException.requestFailed('rf').message,
           'Indexer request failed: rf');
-      expect(IndexerException.timeout('https://example/'), isA<IndexerTimeout>());
-      expect(IndexerException.timeout('https://example/').message,
+      expect(SmartAccountIndexerException.timeout('https://example/'), isA<SmartAccountIndexerTimeout>());
+      expect(SmartAccountIndexerException.timeout('https://example/').message,
           'Indexer request timed out: https://example/');
     });
 
     test('toString without cause omits the caused-by suffix', () {
-      final ex = const InvalidConfig('alone');
+      final ex = const SmartAccountInvalidConfig('alone');
       expect(ex.toString(), 'SmartAccountException [1001]: alone');
     });
 
     test('wrapError preserves SmartAccountException identity for every arm',
         () {
-      const ex = InvalidAddress('keep me');
+      const ex = SmartAccountInvalidAddress('keep me');
       final wrapped = SmartAccountException.wrapError(
         ex,
         defaultCode: SmartAccountErrorCode.transactionTimeout,
@@ -362,7 +362,7 @@ void main() {
       final wrapped = SmartAccountException.wrapError(
         ArgumentError('bad arg'),
       );
-      expect(wrapped, isA<InvalidInput>());
+      expect(wrapped, isA<SmartAccountInvalidInput>());
       expect(wrapped.message, contains('bad arg'));
     });
   });
@@ -374,49 +374,49 @@ void main() {
       // exercises that exhaustiveness contract. If a new subtype is added
       // without updating this switch, `flutter analyze` rejects the file.
       const samples = <SmartAccountException>[
-        InvalidConfig('a'),
-        MissingConfig('a'),
-        WalletNotConnected(),
-        WalletAlreadyExists('a'),
-        WalletNotFound('a'),
-        CredentialNotFound('a'),
-        CredentialAlreadyExists('a'),
-        CredentialInvalid('a'),
-        CredentialDeploymentFailed('a'),
+        SmartAccountInvalidConfig('a'),
+        SmartAccountMissingConfig('a'),
+        SmartAccountWalletNotConnected(),
+        SmartAccountWalletAlreadyExists('a'),
+        SmartAccountWalletNotFound('a'),
+        SmartAccountCredentialNotFound('a'),
+        SmartAccountCredentialAlreadyExists('a'),
+        SmartAccountCredentialInvalid('a'),
+        SmartAccountCredentialDeploymentFailed('a'),
         WebAuthnRegistrationFailed('a'),
         WebAuthnAuthenticationFailed('a'),
         WebAuthnNotSupported(),
         WebAuthnCancelled(),
-        TransactionSimulationFailed('a'),
-        TransactionSigningFailed('a'),
-        TransactionSubmissionFailed('a'),
-        TransactionTimeout(),
-        SignerNotFound('a'),
-        SignerInvalid('a'),
-        InvalidAddress('a'),
-        InvalidAmount('a'),
-        InvalidInput('a'),
-        StorageReadFailed('a'),
-        StorageWriteFailed('a'),
-        SessionExpired(),
-        SessionInvalid('a'),
-        IndexerRequestFailed('a'),
-        IndexerTimeout('a'),
+        SmartAccountTransactionSimulationFailed('a'),
+        SmartAccountTransactionSigningFailed('a'),
+        SmartAccountTransactionSubmissionFailed('a'),
+        SmartAccountTransactionTimeout(),
+        SmartAccountSignerNotFound('a'),
+        SmartAccountSignerInvalid('a'),
+        SmartAccountInvalidAddress('a'),
+        SmartAccountInvalidAmount('a'),
+        SmartAccountInvalidInput('a'),
+        SmartAccountStorageReadFailed('a'),
+        SmartAccountStorageWriteFailed('a'),
+        SmartAccountSessionExpired(),
+        SmartAccountSessionInvalid('a'),
+        SmartAccountIndexerRequestFailed('a'),
+        SmartAccountIndexerTimeout('a'),
       ];
 
       // Exhaustive switch — a missing arm fails analyzer-time compilation.
       for (final ex in samples) {
         final family = switch (ex) {
-          ConfigurationException() => 'config',
-          WalletException() => 'wallet',
-          CredentialException() => 'credential',
+          SmartAccountConfigurationException() => 'config',
+          SmartAccountWalletException() => 'wallet',
+          SmartAccountCredentialException() => 'credential',
           WebAuthnException() => 'webauthn',
-          TransactionException() => 'transaction',
-          SignerException() => 'signer',
-          ValidationException() => 'validation',
-          StorageException() => 'storage',
-          SessionException() => 'session',
-          IndexerException() => 'indexer',
+          SmartAccountTransactionException() => 'transaction',
+          SmartAccountSignerException() => 'signer',
+          SmartAccountValidationException() => 'validation',
+          SmartAccountStorageException() => 'storage',
+          SmartAccountSessionException() => 'session',
+          SmartAccountIndexerException() => 'indexer',
         };
         expect(family, isNotEmpty);
       }

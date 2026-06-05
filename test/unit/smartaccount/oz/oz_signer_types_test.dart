@@ -73,7 +73,7 @@ void main() {
 
     test('rejects invalid address', () {
       expect(() => OZDelegatedSigner('NOT_A_VALID_ADDRESS'),
-          throwsA(isA<InvalidAddress>()));
+          throwsA(isA<SmartAccountInvalidAddress>()));
     });
 
     test('equality on identical address returns true', () {
@@ -162,12 +162,12 @@ void main() {
 
     test('rejects invalid verifier address', () {
       expect(() => OZExternalSigner('NOT_VALID', _bytes(8)),
-          throwsA(isA<InvalidAddress>()));
+          throwsA(isA<SmartAccountInvalidAddress>()));
     });
 
     test('rejects empty keyData', () {
       expect(() => OZExternalSigner(kValidContractId, Uint8List(0)),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('keyData is stored by value (input mutation does not bleed in)', () {
@@ -290,7 +290,7 @@ void main() {
           publicKey: Uint8List(64),
           credentialId: _bytes(20),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -302,7 +302,7 @@ void main() {
           publicKey: pk,
           credentialId: _bytes(20),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -313,7 +313,7 @@ void main() {
           publicKey: _secp256r1Pubkey(),
           credentialId: Uint8List(0),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -324,7 +324,7 @@ void main() {
           publicKey: _secp256r1Pubkey(),
           credentialId: _bytes(20),
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -361,7 +361,7 @@ void main() {
           verifierAddress: kValidContractId,
           publicKey: Uint8List(31),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -371,7 +371,7 @@ void main() {
           verifierAddress: 'NOT_VALID',
           publicKey: _ed25519Pubkey(),
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
   });
@@ -522,17 +522,17 @@ void main() {
     });
   });
 
-  group('SubmissionMethod integration', () {
+  group('OZSubmissionMethod integration', () {
     test('values are usable as map keys', () {
-      final m = <SubmissionMethod, String>{
-        SubmissionMethod.relayer: 'r',
-        SubmissionMethod.rpc: 'p',
+      final m = <OZSubmissionMethod, String>{
+        OZSubmissionMethod.relayer: 'r',
+        OZSubmissionMethod.rpc: 'p',
       };
-      expect(m[SubmissionMethod.relayer], 'r');
+      expect(m[OZSubmissionMethod.relayer], 'r');
     });
 
     test('values can be compared by name', () {
-      expect(SubmissionMethod.relayer.name.compareTo('relayer'), 0);
+      expect(OZSubmissionMethod.relayer.name.compareTo('relayer'), 0);
     });
   });
 

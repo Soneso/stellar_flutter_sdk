@@ -53,29 +53,29 @@ The kit is split into two layers: a protocol-agnostic `core/` layer (signer type
 |  Entry point. Created via OZSmartAccountKit.create(config: ...).      |
 |  Provides sub-managers as properties:                                 |
 |                                                                       |
-|  +-----------------------+  +----------------------------+            |
-|  | walletOperations      |  | transactionOperations      |            |
-|  | (OZWalletOperations)  |  | (OZTransactionOperations)  |            |
-|  +-----------------------+  +----------------------------+            |
-|  +-----------------------+  +----------------------------+            |
-|  | signerManager         |  | contextRuleManager         |            |
-|  | (OZSignerManager)     |  | (OZContextRuleManager)     |            |
-|  +-----------------------+  +----------------------------+            |
-|  +-----------------------+  +----------------------------+            |
-|  | policyManager         |  | multiSignerManager         |            |
-|  | (OZPolicyManager)     |  | (OZMultiSignerManager)     |            |
-|  +-----------------------+  +----------------------------+            |
-|  +-----------------------+  +----------------------------+            |
-|  | credentialManager     |  | events                     |            |
-|  | (OZCredentialManager) |  | (SmartAccountEventEmitter) |            |
-|  +-----------------------+  +----------------------------+            |
+|  +-----------------------+  +------------------------------+          |
+|  | walletOperations      |  | transactionOperations        |          |
+|  | (OZWalletOperations)  |  | (OZTransactionOperations)    |          |
+|  +-----------------------+  +------------------------------+          |
+|  +-----------------------+  +------------------------------+          |
+|  | signerManager         |  | contextRuleManager           |          |
+|  | (OZSignerManager)     |  | (OZContextRuleManager)       |          |
+|  +-----------------------+  +------------------------------+          |
+|  +-----------------------+  +------------------------------+          |
+|  | policyManager         |  | multiSignerManager           |          |
+|  | (OZPolicyManager)     |  | (OZMultiSignerManager)       |          |
+|  +-----------------------+  +------------------------------+          |
+|  +-----------------------+  +------------------------------+          |
+|  | credentialManager     |  | events                       |          |
+|  | (OZCredentialManager) |  | (OZSmartAccountEventEmitter) |          |
+|  +-----------------------+  +------------------------------+          |
 +-----------------------------------------------------------------------+
-        |                    |                       |
-        v                    v                       v
-+-------------------+  +-------------------+  +-----------------------+
-| WebAuthnProvider  |  | StorageAdapter    |  | ExternalWalletAdapter |
-| (platform impl)   |  | (platform impl)   |  | (optional)            |
-+-------------------+  +-------------------+  +-----------------------+
+           |                     |                        |
+           v                     v                        v
++------------------+  +------------------+  +-------------------------+
+| WebAuthnProvider |  | OZStorageAdapter |  | OZExternalWalletAdapter |
+| (platform impl)  |  | (platform impl)  |  | (optional)              |
++------------------+  +------------------+  +-------------------------+
 
         OZSmartAccountKit also uses:
 
@@ -95,7 +95,7 @@ storage internally.
 use the provided implementation. It triggers the OS-level biometric
 prompt and returns raw WebAuthn attestation/assertion data.
 
-**StorageAdapter** persists credentials and sessions. The SDK includes an
+**OZStorageAdapter** persists credentials and sessions. The SDK includes an
 in-memory adapter for testing and platform-storage adapters for
 production (see the Configuration Reference).
 
@@ -136,7 +136,7 @@ final config = OZSmartAccountConfig(
   accountWasmHash: '<64-char hex WASM hash>',
   webauthnVerifierAddress: '<C-address of the WebAuthn verifier>',
   webauthnProvider: webauthn,
-  storage: PlatformStorageAdapter(),         // optional: defaults to InMemoryStorageAdapter
+  storage: OZPlatformStorageAdapter(),         // optional: defaults to OZInMemoryStorageAdapter
   relayerUrl: 'https://relayer.example.com', // optional: enables fee sponsoring
   indexerUrl: 'https://indexer.example.com', // optional: enables credential lookup
 );
@@ -190,7 +190,7 @@ if (result.success) {
 await kit.disconnect();
 ```
 
-The example above wires the mobile adapters (`PlatformWebAuthnProvider` + `PlatformStorageAdapter`). On web, swap them for the browser equivalents (`BrowserWebAuthnProvider` + `IndexedDBStorageAdapter`); see [Sub-pages](#sub-pages) for per-platform setup.
+The example above wires the mobile adapters (`PlatformWebAuthnProvider` + `OZPlatformStorageAdapter`). On web, swap them for the browser equivalents (`BrowserWebAuthnProvider` + `OZIndexedDBStorageAdapter`); see [Sub-pages](#sub-pages) for per-platform setup.
 
 ### Reconnecting to an Existing Wallet
 
@@ -216,7 +216,7 @@ switch (silent) {
 
 // Phase 2: User taps "Connect" -- triggers WebAuthn if no session
 final result = await kit.walletOperations.connectWallet(
-  options: const ConnectWalletOptions(prompt: true),
+  options: const OZConnectWalletOptions(prompt: true),
 );
 switch (result) {
   case null:
@@ -230,7 +230,7 @@ switch (result) {
     // Reusing credentialId avoids a second WebAuthn ceremony.
     final chosen = await showContractPicker(candidates);
     await kit.walletOperations.connectWallet(
-      options: ConnectWalletOptions(
+      options: OZConnectWalletOptions(
         credentialId: credentialId,
         contractId: chosen,
       ),
@@ -243,7 +243,7 @@ operations):
 
 ```dart
 final fresh = await kit.walletOperations.connectWallet(
-  options: const ConnectWalletOptions(fresh: true),
+  options: const OZConnectWalletOptions(fresh: true),
 );
 ```
 
@@ -253,7 +253,7 @@ check; the cascade is bypassed so the result is always
 
 ```dart
 final direct = await kit.walletOperations.connectWallet(
-  options: const ConnectWalletOptions(
+  options: const OZConnectWalletOptions(
     credentialId: '<credential id>',
     contractId: '<C-address>',
   ),
@@ -265,7 +265,7 @@ final direct = await kit.walletOperations.connectWallet(
 When `createWallet(autoSubmit: false)` is used, or if a deployment fails
 after the credential is created, use `deployPendingCredential` to submit
 the deploy transaction later. The credential must exist in local
-storage. The `signedTransactionXdr` field on `CreateWalletResult` is
+storage. The `signedTransactionXdr` field on `OZCreateWalletResult` is
 always populated regardless of `autoSubmit`, so it can also be submitted
 externally.
 
@@ -365,9 +365,9 @@ authorized through the matching call-contract context rule; and
 `multiSignerExecuteAndSubmit()` routes a call through the smart account's
 `execute` entry point.
 
-All three signer kinds — passkey (`SelectedSignerPasskey`), delegated
-wallet (`SelectedSignerWallet`), and Ed25519 external
-(`SelectedSignerEd25519`) — may be mixed in the same `selectedSigners`
+All three signer kinds — passkey (`OZSelectedSignerPasskey`), delegated
+wallet (`OZSelectedSignerWallet`), and Ed25519 external
+(`OZSelectedSignerEd25519`) — may be mixed in the same `selectedSigners`
 list. Wallet and Ed25519 signers resolve through the kit-owned
 `kit.externalSigners` manager: register an in-memory key at runtime
 (`kit.externalSigners.addFromSecret(...)` /
@@ -375,7 +375,7 @@ list. Wallet and Ed25519 signers resolve through the kit-owned
 kit construction (`externalWallet` / `externalEd25519Adapter`).
 
 See the [API Reference](api-reference.md#multi-signer-operations) for
-`SelectedSigner` types, custody models, and registration examples.
+`OZSelectedSigner` types, custody models, and registration examples.
 
 ### Error Handling
 
@@ -392,11 +392,11 @@ try {
   print('User cancelled the biometric prompt');
 } on WebAuthnNotSupported catch (e) {
   print('WebAuthn not configured: ${e.message}');
-} on TransactionSimulationFailed catch (e) {
+} on SmartAccountTransactionSimulationFailed catch (e) {
   print('Contract simulation failed: ${e.message}');
-} on TransactionSubmissionFailed catch (e) {
+} on SmartAccountTransactionSubmissionFailed catch (e) {
   print('Transaction submission failed: ${e.message}');
-} on WalletNotFound {
+} on SmartAccountWalletNotFound {
   print('Wallet not found on-chain');
 } on SmartAccountException catch (e) {
   print('Error [${e.code.code}]: ${e.message}');
@@ -407,7 +407,7 @@ try {
 
 `OZSmartAccountConfig` holds all parameters. Four fields are required;
 the rest have defaults. The constructor validates inputs and throws
-`ConfigurationException` on invalid values.
+`SmartAccountConfigurationException` on invalid values.
 
 ### Required Fields
 
@@ -429,9 +429,9 @@ the rest have defaults. The constructor validates inputs and throws
 | `relayerUrl` | `String?` | `null` | Relayer endpoint for fee-sponsored transactions. When set, users do not pay gas fees. |
 | `indexerUrl` | `String?` | `null` | Indexer endpoint for credential-to-contract discovery. When `null`, falls back to the built-in per-network default (testnet/mainnet). |
 | `webauthnProvider` | `WebAuthnProvider?` | `null` | Platform-specific WebAuthn implementation. Required for `createWallet`, `connectWallet(prompt: true)`, `authenticatePasskey`, and any passkey-signing flow. |
-| `storage` | `StorageAdapter?` | `InMemoryStorageAdapter()` | Credential and session persistence. Use a platform-specific adapter in production. Per-platform adapters and trade-offs are documented in the [Android](webauthn-android.md#storage-adapters), [iOS](webauthn-ios.md#storage-adapters), and [web](webauthn-web.md#storage-adapters) setup pages. |
-| `externalWallet` | `ExternalWalletAdapter?` | `null` | Wallet adapter (e.g., Freighter, Lobstr) backing the adapter custody model for `SelectedSignerWallet` signers. The kit injects it into `kit.externalSigners`. |
-| `externalEd25519Adapter` | `OZExternalEd25519SignerAdapter?` | `null` | Ed25519 adapter (hardware wallet, HSM, remote signing service) backing the adapter custody model for `SelectedSignerEd25519` signers. The kit injects it into `kit.externalSigners`. |
+| `storage` | `OZStorageAdapter?` | `OZInMemoryStorageAdapter()` | Credential and session persistence. Use a platform-specific adapter in production. Per-platform adapters and trade-offs are documented in the [Android](webauthn-android.md#storage-adapters), [iOS](webauthn-ios.md#storage-adapters), and [web](webauthn-web.md#storage-adapters) setup pages. |
+| `externalWallet` | `OZExternalWalletAdapter?` | `null` | Wallet adapter (e.g., Freighter, Lobstr) backing the adapter custody model for `OZSelectedSignerWallet` signers. The kit injects it into `kit.externalSigners`. |
+| `externalEd25519Adapter` | `OZExternalEd25519SignerAdapter?` | `null` | Ed25519 adapter (hardware wallet, HSM, remote signing service) backing the adapter custody model for `OZSelectedSignerEd25519` signers. The kit injects it into `kit.externalSigners`. |
 | `maxContextRuleScanId` | `int` | `50` | Upper bound on the context-rule IDs scanned when listing rules without an explicit scan limit. Must be `>= 0`. |
 
 ### Builder Pattern

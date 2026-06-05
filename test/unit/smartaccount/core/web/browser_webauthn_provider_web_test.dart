@@ -541,7 +541,7 @@ void main() {
       await provider.authenticate(
         challenge: Uint8List(32),
         allowCredentials: [
-          AllowCredential(
+          WebAuthnAllowCredential(
             id: Uint8List.fromList(const <int>[1, 2, 3]),
             transports: const ['internal', 'hybrid'],
           ),
@@ -580,7 +580,7 @@ void main() {
       await provider.authenticate(
         challenge: Uint8List(32),
         allowCredentials: [
-          AllowCredential(
+          WebAuthnAllowCredential(
             id: Uint8List.fromList(const <int>[1, 2, 3]),
             transports: const <String>[],
           ),

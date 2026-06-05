@@ -81,17 +81,17 @@ Context-rule IDs and on-chain signer/policy IDs are plain Dart `int` (the contra
 Runs a WebAuthn registration ceremony, persists the credential locally, emits a `CredentialCreated` event, then submits the on-chain `add_signer` call. Requires `webauthnProvider` in config.
 
 ```dart
-Future<AddPasskeySignerResult> addNewPasskeySigner({
+Future<OZAddPasskeySignerResult> addNewPasskeySigner({
   required int contextRuleId,
   required String userName,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 });
 
-class AddPasskeySignerResult {
+class OZAddPasskeySignerResult {
   final String credentialId;          // Base64URL, no padding
   final Uint8List publicKey;          // 65 bytes uncompressed secp256r1
-  final TransactionResult transactionResult;
+  final OZTransactionResult transactionResult;
 }
 ```
 
@@ -119,12 +119,12 @@ Use when you already hold the public key and raw credential ID (e.g. imported fr
 > **Transport authenticity.** The `publicKey` and `credentialId` must arrive over a channel authenticated to the user. An attacker who controls the import channel (unsigned QR code, clipboard, unauthenticated WebSocket, URL query parameter) can substitute their own public key and become a signer on your smart account. Show the user a short hex fingerprint of the credential on both devices and require explicit confirmation. The SDK provides no canonical fingerprint helper — any stable hash-and-truncate both sides reproduce works (e.g. the first 16 bytes of `SHA-256(publicKey)`; do not use the raw `publicKey[0..15]` because byte 0 is always the constant `0x04` SEC-1 prefix).
 
 ```dart
-Future<TransactionResult> addPasskey({
+Future<OZTransactionResult> addPasskey({
   required int contextRuleId,
   required Uint8List publicKey,    // 65 bytes, 0x04 prefix
   required Uint8List credentialId, // raw bytes, NOT Base64URL
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 });
 ```
 
@@ -139,7 +139,7 @@ if (!result.success) print('Failed: ${result.error}');
 ```
 
 ```dart
-// WRONG: publicKey.length == 33  — compressed format, rejected (InvalidInput)
+// WRONG: publicKey.length == 33  — compressed format, rejected (SmartAccountInvalidInput)
 // CORRECT: publicKey.length == 65 and publicKey[0] == 0x04
 // WRONG: credentialId = base64Url.encode(credIdBytes)  — that is a String, not Uint8List
 // CORRECT: credentialId is the raw Uint8List from the WebAuthn ceremony
@@ -148,11 +148,11 @@ if (!result.success) print('Failed: ${result.error}');
 ### addDelegated — add a Stellar account or contract signer
 
 ```dart
-Future<TransactionResult> addDelegated({
+Future<OZTransactionResult> addDelegated({
   required int contextRuleId,
   required String address, // G-address (account) or C-address (contract)
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 });
 ```
 
@@ -169,19 +169,19 @@ await kit.signerManager.addDelegated(
 );
 ```
 
-The underlying `OZDelegatedSigner(address)` constructor throws `InvalidAddress` if `address` is neither a valid G-address nor a valid C-address.
+The underlying `OZDelegatedSigner(address)` constructor throws `SmartAccountInvalidAddress` if `address` is neither a valid G-address nor a valid C-address.
 
 ### addEd25519 — add an Ed25519 external signer
 
 Requires a deployed Ed25519 verifier contract. `publicKey` is the raw 32-byte Ed25519 key.
 
 ```dart
-Future<TransactionResult> addEd25519({
+Future<OZTransactionResult> addEd25519({
   required int contextRuleId,
   required String verifierAddress, // C-address of the Ed25519 verifier
   required Uint8List publicKey,    // 32 bytes
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 });
 ```
 
@@ -200,14 +200,14 @@ await kit.signerManager.addEd25519(
 
 ### removeSigner — by on-chain ID
 
-Signer IDs are assigned by the contract on insertion and are returned from `ParsedContextRule.signerIds`, positionally aligned with `ParsedContextRule.signers`.
+Signer IDs are assigned by the contract on insertion and are returned from `OZParsedContextRule.signerIds`, positionally aligned with `OZParsedContextRule.signers`.
 
 ```dart
-Future<TransactionResult> removeSigner({
+Future<OZTransactionResult> removeSigner({
   required int contextRuleId,
   required int signerId,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 });
 ```
 
@@ -237,11 +237,11 @@ if (idx >= 0) {
 Convenience overload that resolves the on-chain ID internally (Dart has no overload-by-type, hence the `BySigner` suffix). Fetches the rule, finds the matching signer via `OZSmartAccountBuilders.signersEqual`, and delegates to the ID-based `removeSigner`.
 
 ```dart
-Future<TransactionResult> removeSignerBySigner({
+Future<OZTransactionResult> removeSignerBySigner({
   required int contextRuleId,
   required OZSmartAccountSigner signer,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 });
 ```
 
@@ -252,7 +252,7 @@ await kit.signerManager.removeSignerBySigner(
 );
 ```
 
-Throws `InvalidInput` if the signer is not on the rule.
+Throws `SmartAccountInvalidInput` if the signer is not on the rule.
 
 ### Removing the last signer
 
@@ -283,7 +283,7 @@ final ed = OZExternalSigner.ed25519(
 );
 ```
 
-`OZExternalSigner.webAuthn` packs `keyData = publicKey || credentialId`. `OZExternalSigner.ed25519` sets `keyData = publicKey` (exactly 32 bytes). This length difference is how parsed signers are discriminated (see [Inbound SelectedSigner mapping](#inbound-mapping-on-chain-signer-to-selectedsigner)).
+`OZExternalSigner.webAuthn` packs `keyData = publicKey || credentialId`. `OZExternalSigner.ed25519` sets `keyData = publicKey` (exactly 32 bytes). This length difference is how parsed signers are discriminated (see [Inbound OZSelectedSigner mapping](#inbound-mapping-on-chain-signer-to-ozselectedsigner)).
 
 ### Deduplicating signers across rules
 
@@ -316,24 +316,24 @@ for (final rule in rules) {
 
 ### The Default rule
 
-Every smart account is deployed with one rule at `id = 0`: context type `ContextRuleTypeDefault`, name `"DefaultRule"`, signers `[initial passkey]`, policies `[]`. The Default rule is the fallback for any operation that does not match a more specific rule. Add signers/policies to it freely, but do not remove it unless you have added a rule of equivalent or greater coverage — otherwise the account becomes unusable.
+Every smart account is deployed with one rule at `id = 0`: context type `OZContextRuleTypeDefault`, name `"DefaultRule"`, signers `[initial passkey]`, policies `[]`. The Default rule is the fallback for any operation that does not match a more specific rule. Add signers/policies to it freely, but do not remove it unless you have added a rule of equivalent or greater coverage — otherwise the account becomes unusable.
 
-### ContextRuleType
+### OZContextRuleType
 
 A sealed hierarchy with three variants that determine which invocations a rule applies to:
 
 ```dart
-sealed class ContextRuleType { /* ... */ }
+sealed class OZContextRuleType { /* ... */ }
 
-final class ContextRuleTypeDefault extends ContextRuleType {
-  const ContextRuleTypeDefault();
+final class OZContextRuleTypeDefault extends OZContextRuleType {
+  const OZContextRuleTypeDefault();
 }
-final class ContextRuleTypeCallContract extends ContextRuleType {
-  const ContextRuleTypeCallContract(this.contractAddress); // C-address String
+final class OZContextRuleTypeCallContract extends OZContextRuleType {
+  const OZContextRuleTypeCallContract(this.contractAddress); // C-address String
   final String contractAddress;
 }
-final class ContextRuleTypeCreateContract extends ContextRuleType {
-  ContextRuleTypeCreateContract(Uint8List wasmHash); // copies; 32 bytes
+final class OZContextRuleTypeCreateContract extends OZContextRuleType {
+  OZContextRuleTypeCreateContract(Uint8List wasmHash); // copies; 32 bytes
   final Uint8List wasmHash;
 }
 ```
@@ -347,12 +347,12 @@ CreateContract  ->  Vec([Symbol("CreateContract"), Bytes(wasmHash)])
 ```
 
 ```dart
-// WRONG: ContextRuleTypeCallContract(Address('CB26...'))
+// WRONG: OZContextRuleTypeCallContract(Address('CB26...'))
 //        — parameter is a String C-address, NOT an Address object
-// CORRECT: ContextRuleTypeCallContract('CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY')
+// CORRECT: OZContextRuleTypeCallContract('CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY')
 
-// WRONG: ContextRuleTypeCreateContract('abcd...')  — parameter is Uint8List, not hex String
-// CORRECT: ContextRuleTypeCreateContract(wasmHash32Bytes)
+// WRONG: OZContextRuleTypeCreateContract('abcd...')  — parameter is Uint8List, not hex String
+// CORRECT: OZContextRuleTypeCreateContract(wasmHash32Bytes)
 //          or OZBuilders.createCreateContractContextFromHex('abcd...') to convert from hex
 ```
 
@@ -368,14 +368,14 @@ final createCtx2 = OZBuilders.createCreateContractContextFromBytes(wasmHash32Byt
 ### addContextRule
 
 ```dart
-Future<TransactionResult> addContextRule({
-  required ContextRuleType contextType,
+Future<OZTransactionResult> addContextRule({
+  required OZContextRuleType contextType,
   required String name,                              // max 20 UTF-8 bytes
   int? validUntil,                                   // ledger sequence, null = no expiration
   required List<OZSmartAccountSigner> signers,
   Map<String, XdrSCVal> policies = const <String, XdrSCVal>{}, // C-address -> install params
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 });
 ```
 
@@ -386,7 +386,7 @@ final signerA = OZDelegatedSigner('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXU
 final signerB = OZDelegatedSigner('GC3C4MCEADMY26BVBPJIIUOKD5WZEZW5XI2LSU5F4QDZARBVAM4UTZEL');
 
 final result = await kit.contextRuleManager.addContextRule(
-  contextType: ContextRuleTypeCallContract(
+  contextType: OZContextRuleTypeCallContract(
     'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
   ),
   name: 'TokenTransfers', // <= 20 bytes
@@ -404,7 +404,7 @@ final thresholdParams = XdrSCVal.forMap(<XdrSCMapEntry>[
 ]);
 
 await kit.contextRuleManager.addContextRule(
-  contextType: ContextRuleTypeCallContract(
+  contextType: OZContextRuleTypeCallContract(
     'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
   ),
   name: 'Guarded',
@@ -419,7 +419,7 @@ await kit.contextRuleManager.addContextRule(
 // WRONG: name longer than 20 UTF-8 bytes -> contract error 3015 NameTooLong
 // CORRECT: name must be <= 20 UTF-8 bytes
 
-// WRONG: signers empty AND policies empty -> InvalidInput (a rule needs >= 1 of each kind)
+// WRONG: signers empty AND policies empty -> SmartAccountInvalidInput (a rule needs >= 1 of each kind)
 // CORRECT: supply at least one signer or one policy
 
 // WRONG: validUntil set to an already-past ledger -> contract error 3005 PastValidUntil
@@ -428,12 +428,12 @@ await kit.contextRuleManager.addContextRule(
 
 The convenience methods on `kit.policyManager` (next section) cannot create a rule; they only install onto an existing one. To create a rule with a policy in a single transaction, use the `policies` map here.
 
-### ParsedContextRule
+### OZParsedContextRule
 
 ```dart
-class ParsedContextRule {
+class OZParsedContextRule {
   final int id;
-  final ContextRuleType contextType;
+  final OZContextRuleType contextType;
   final String name;
   final List<OZSmartAccountSigner> signers; // aligned with signerIds
   final List<int> signerIds;
@@ -446,11 +446,11 @@ class ParsedContextRule {
 ### Listing and reading rules
 
 ```dart
-Future<List<ParsedContextRule>> listContextRules({int? maxScanId});
+Future<List<OZParsedContextRule>> listContextRules({int? maxScanId});
 Future<List<XdrSCVal>> getAllContextRules({int? maxScanId});
 Future<XdrSCVal> getContextRule(int id);          // raw rule struct
 Future<int> getContextRulesCount();
-ParsedContextRule parseContextRule(XdrSCVal scVal); // synchronous
+OZParsedContextRule parseContextRule(XdrSCVal scVal); // synchronous
 ```
 
 ```dart
@@ -469,11 +469,11 @@ IDs are monotonically increasing and never reused, so removed rules leave gaps. 
 ### updateName
 
 ```dart
-Future<TransactionResult> updateName({
+Future<OZTransactionResult> updateName({
   required int id,
   required String name,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 });
 ```
 
@@ -488,11 +488,11 @@ Names do not affect matching or enforcement.
 Set or clear a rule's expiration ledger. Pass `null` to remove expiration.
 
 ```dart
-Future<TransactionResult> updateValidUntil({
+Future<OZTransactionResult> updateValidUntil({
   required int id,
   int? validUntil,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 });
 ```
 
@@ -513,10 +513,10 @@ The contract skips a rule once its `validUntil` is past; evaluation falls back t
 ### removeContextRule
 
 ```dart
-Future<TransactionResult> removeContextRule({
+Future<OZTransactionResult> removeContextRule({
   required int id,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 });
 ```
 
@@ -569,7 +569,7 @@ You need a deployed policy contract C-address before installing it. Sources: pub
 ```dart
 // WRONG: hard-coding a placeholder C-address with illegal base32 digits.
 //        Stellar strkeys use the base32 alphabet A-Z + 2-7 ONLY — no 0/1/8/9.
-//        requireContractAddress(...) throws InvalidAddress on such a string.
+//        requireContractAddress(...) throws SmartAccountInvalidAddress on such a string.
 const policyAddress = 'C0LICY1POLICY8POLICY9...'; // contains 0/1/8/9 — invalid
 
 // CORRECT: a real deployed policy C-address (A-Z + 2-7 only)
@@ -581,12 +581,12 @@ const policyAddress = 'CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY'
 `addPolicy` is the generic entry point and the production idiom for every policy contract, including the three built-in ones. Build the install-param `XdrSCVal` **once** and feed the same value to both surfaces: `addContextRule(policies: {policyAddr: installParams})` to attach it when the rule is created, and `addPolicy(installParams: installParams)` to attach it to an existing rule later. The convenience methods below are a shortcut for an already-existing rule only — they cannot create a rule and they re-encode params the generic path lets you control directly.
 
 ```dart
-Future<TransactionResult> addPolicy({
+Future<OZTransactionResult> addPolicy({
   required int contextRuleId,
   required String policyAddress,
   required XdrSCVal installParams, // SCVal map with policy-specific keys
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 });
 ```
 
@@ -599,7 +599,7 @@ WeightedThreshold  -> map{ Symbol("signer_weights"): map{ <signerScVal>: U32, ..
                            Symbol("threshold"): U32 }
 ```
 
-The `PolicyInstallParams` sealed hierarchy (`SimpleThresholdParams`, `WeightedThresholdParams`, `SpendingLimitParams`) is public, but its `toScVal()` method is annotated `@internal`. Prefer the convenience methods, or build the `XdrSCVal` directly as shown — do not rely on `toScVal()` from application code.
+The `OZPolicyInstallParams` sealed hierarchy (`OZSimpleThresholdPolicyParams`, `OZWeightedThresholdPolicyParams`, `OZSpendingLimitPolicyParams`) is public, but its `toScVal()` method is annotated `@internal`. Prefer the convenience methods, or build the `XdrSCVal` directly as shown — do not rely on `toScVal()` from application code.
 
 Compact SimpleThreshold example via the generic path:
 
@@ -642,12 +642,12 @@ These three methods encode the install params for you and call `addPolicy` inter
 #### addSimpleThreshold — M-of-N
 
 ```dart
-Future<TransactionResult> addSimpleThreshold({
+Future<OZTransactionResult> addSimpleThreshold({
   required int contextRuleId,
   required String policyAddress,
   required int threshold, // >= 1
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 });
 ```
 
@@ -670,13 +670,13 @@ await kit.policyManager.addSimpleThreshold(
 Each signer carries a weight; the sum of approving weights must reach `threshold`. Weight-map keys are `OZSmartAccountSigner` values that must match exactly what is stored on the rule.
 
 ```dart
-Future<TransactionResult> addWeightedThreshold({
+Future<OZTransactionResult> addWeightedThreshold({
   required int contextRuleId,
   required String policyAddress,
   required Map<OZSmartAccountSigner, int> signerWeights,
   required int threshold,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 });
 ```
 
@@ -707,13 +707,13 @@ await kit.policyManager.addWeightedThreshold(
 Caps the total amount transferred by the rule's context within a rolling window measured in ledgers. The policy intercepts a `transfer` invocation (argument 2 read as `i128`), so it applies to any SEP-41 token.
 
 ```dart
-Future<TransactionResult> addSpendingLimit({
+Future<OZTransactionResult> addSpendingLimit({
   required int contextRuleId,
   required String policyAddress,
   required String spendingLimit, // decimal XLM-style string, e.g. "1000" or "10.5"
   required int periodLedgers,    // window in ledgers (~5 s each)
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 });
 ```
 
@@ -725,14 +725,14 @@ const nativeSac = 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC';
 
 // 1. Create a CallContract rule scoping the policy to the native SAC.
 await kit.contextRuleManager.addContextRule(
-  contextType: ContextRuleTypeCallContract(nativeSac),
+  contextType: OZContextRuleTypeCallContract(nativeSac),
   name: 'XlmDailyLimit',
   signers: <OZSmartAccountSigner>[OZDelegatedSigner('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ')],
 );
 
 // 2. Install the policy on that rule.
 final rules = await kit.contextRuleManager.listContextRules();
-final ruleId = rules.lastWhere((r) => r.contextType == ContextRuleTypeCallContract(nativeSac)).id;
+final ruleId = rules.lastWhere((r) => r.contextType == OZContextRuleTypeCallContract(nativeSac)).id;
 await kit.policyManager.addSpendingLimit(
   contextRuleId: ruleId,
   policyAddress: 'CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY',
@@ -752,7 +752,7 @@ await kit.policyManager.addSpendingLimit(
 // CORRECT: install on a CallContract(target-token) rule
 ```
 
-Internally, `addSpendingLimit` and the underlying `SpendingLimitParams` carry the limit as a `BigInt` (stroops). See [BigInt for i128 amounts](#bigint-for-i128) — never clamp these to a Dart `int`/JS `Number`.
+Internally, `addSpendingLimit` and the underlying `OZSpendingLimitPolicyParams` carry the limit as a `BigInt` (stroops). See [BigInt for i128 amounts](#bigint-for-i128) — never clamp these to a Dart `int`/JS `Number`.
 
 ### Editing an installed policy's params
 
@@ -821,14 +821,14 @@ await kit.multiSignerManager.multiSignerExecuteAndSubmit(
 
 ### removePolicy — by ID
 
-Policy IDs align positionally with `ParsedContextRule.policies` via `ParsedContextRule.policyIds`.
+Policy IDs align positionally with `OZParsedContextRule.policies` via `OZParsedContextRule.policyIds`.
 
 ```dart
-Future<TransactionResult> removePolicy({
+Future<OZTransactionResult> removePolicy({
   required int contextRuleId,
   required int policyId,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 });
 ```
 
@@ -844,11 +844,11 @@ if (rule.policyIds.isNotEmpty) {
 Convenience overload (Dart has no overload-by-type, hence `ByAddress`) that resolves the ID internally by matching the policy contract address.
 
 ```dart
-Future<TransactionResult> removePolicyByAddress({
+Future<OZTransactionResult> removePolicyByAddress({
   required int contextRuleId,
   required String policyAddress,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 });
 ```
 
@@ -859,7 +859,7 @@ await kit.policyManager.removePolicyByAddress(
 );
 ```
 
-Throws `InvalidInput` if the policy is not on the rule.
+Throws `SmartAccountInvalidInput` if the policy is not on the rule.
 
 ---
 
@@ -889,7 +889,7 @@ await kit.transactionOperations.contractCall(target: tokenC, targetFn: 'transfer
 // WRONG (multi-signer method, connected passkey only):
 await kit.multiSignerManager.multiSignerTransfer(
   tokenContract: tokenC, recipient: r, amount: '1',
-  selectedSigners: <SelectedSigner>[SelectedSignerPasskey()], // routes to multi-signer, fails
+  selectedSigners: <OZSelectedSigner>[OZSelectedSignerPasskey()], // routes to multi-signer, fails
 );
 // CORRECT: use the single-signer transfer for connected-passkey-only.
 await kit.transactionOperations.transfer(tokenContract: tokenC, recipient: r, amount: '1');
@@ -897,15 +897,15 @@ await kit.transactionOperations.transfer(tokenContract: tokenC, recipient: r, am
 
 When you genuinely need more than one signer, list every signer that will sign (including the connected passkey if it participates) and populate each selector fully.
 
-### SelectedSigner
+### OZSelectedSigner
 
 A sealed hierarchy with three variants:
 
 ```dart
-sealed class SelectedSigner { const SelectedSigner(); }
+sealed class OZSelectedSigner { const OZSelectedSigner(); }
 
-final class SelectedSignerPasskey extends SelectedSigner {
-  const SelectedSignerPasskey({
+final class OZSelectedSignerPasskey extends OZSelectedSigner {
+  const OZSelectedSignerPasskey({
     this.credentialId,        // String? Base64URL, for tracking/lastUsed
     this.credentialIdBytes,   // Uint8List? raw -> WebAuthn allowCredentials hint
     this.keyData,             // Uint8List? 65-byte pubkey || credentialId
@@ -917,30 +917,30 @@ final class SelectedSignerPasskey extends SelectedSigner {
   final List<String>? transports;
 }
 
-final class SelectedSignerEd25519 extends SelectedSigner {
-  const SelectedSignerEd25519({required this.verifierAddress, required this.publicKey});
+final class OZSelectedSignerEd25519 extends OZSelectedSigner {
+  const OZSelectedSignerEd25519({required this.verifierAddress, required this.publicKey});
   final String verifierAddress; // C-address of the Ed25519 verifier
   final Uint8List publicKey;    // 32-byte Ed25519 public key
 }
 
-final class SelectedSignerWallet extends SelectedSigner {
-  const SelectedSignerWallet(this.address); // G-address of the delegated signer
+final class OZSelectedSignerWallet extends OZSelectedSigner {
+  const OZSelectedSignerWallet(this.address); // G-address of the delegated signer
   final String address;
 }
 ```
 
-Each `SelectedSignerPasskey` triggers one OS WebAuthn prompt. `SelectedSignerWallet` and `SelectedSignerEd25519` sign through `kit.externalSigners`.
+Each `OZSelectedSignerPasskey` triggers one OS WebAuthn prompt. `OZSelectedSignerWallet` and `OZSelectedSignerEd25519` sign through `kit.externalSigners`.
 
 #### keyData-null rule (passkey selectors)
 
-In a multi-signer ceremony, every `SelectedSignerPasskey` MUST carry non-null `keyData`. Signer reconstruction is hoisted **outside** the per-entry loop; a `keyData: null` passkey selector throws `InvalidInput` ("keyData is required for passkey signers for rule resolution") before any prompt.
+In a multi-signer ceremony, every `OZSelectedSignerPasskey` MUST carry non-null `keyData`. Signer reconstruction is hoisted **outside** the per-entry loop; a `keyData: null` passkey selector throws `SmartAccountInvalidInput` ("keyData is required for passkey signers for rule resolution") before any prompt.
 
 ```dart
 // WRONG: a passkey selector in a multi-signer list with keyData null
-final p = SelectedSignerPasskey(credentialId: cred.credentialId); // keyData null -> throws
+final p = OZSelectedSignerPasskey(credentialId: cred.credentialId); // keyData null -> throws
 
 // CORRECT: supply keyData (and credentialIdBytes for allowCredentials routing)
-final passkeySigner = SelectedSignerPasskey(
+final passkeySigner = OZSelectedSignerPasskey(
   credentialId: cred.credentialId,                  // Base64URL
   credentialIdBytes: base64Url.decode(base64Url.normalize(cred.credentialId)),
   keyData: onChainSigner.keyData,                   // pubkey || credId from the parsed rule
@@ -949,26 +949,26 @@ final passkeySigner = SelectedSignerPasskey(
 ```
 
 ```dart
-// WRONG: SelectedSignerWallet('CB26...')  — wallet selectors must be G-addresses
-// CORRECT: SelectedSignerWallet('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ')
+// WRONG: OZSelectedSignerWallet('CB26...')  — wallet selectors must be G-addresses
+// CORRECT: OZSelectedSignerWallet('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ')
 ```
 
-### Inbound mapping: on-chain signer to SelectedSigner
+### Inbound mapping: on-chain signer to OZSelectedSigner
 
-Build a `SelectedSigner` from a signer read off a parsed rule. Discriminate by `OZExternalSigner.keyData` length using the constants in `SmartAccountConstants`: `> secp256r1PublicKeySize` (65) is a WebAuthn passkey (65-byte pubkey followed by the credential id); `== ed25519PublicKeySize` (32) is an Ed25519 signer.
+Build an `OZSelectedSigner` from a signer read off a parsed rule. Discriminate by `OZExternalSigner.keyData` length using the constants in `SmartAccountConstants`: `> secp256r1PublicKeySize` (65) is a WebAuthn passkey (65-byte pubkey followed by the credential id); `== ed25519PublicKeySize` (32) is an Ed25519 signer.
 
 ```dart
 final rule = (await kit.contextRuleManager.listContextRules())
     .firstWhere((r) => r.id == contextRuleId);
 
-final available = <SelectedSigner>[];
+final available = <OZSelectedSigner>[];
 for (final signer in rule.signers) {
   if (signer is OZExternalSigner &&
       signer.keyData.length == SmartAccountConstants.ed25519PublicKeySize) {
     // Ed25519 external signer
     if (kit.externalSigners.canSignEd25519For(
           verifierAddress: signer.verifierAddress, publicKey: signer.keyData)) {
-      available.add(SelectedSignerEd25519(
+      available.add(OZSelectedSignerEd25519(
         verifierAddress: signer.verifierAddress,
         publicKey: signer.keyData,
       ));
@@ -980,7 +980,7 @@ for (final signer in rule.signers) {
     if (credIdStr == null) continue;
     final credIdBytes = OZSmartAccountBuilders.getCredentialIdFromSigner(signer);
     final stored = await kit.credentialManager.getCredential(credIdStr);
-    available.add(SelectedSignerPasskey(
+    available.add(OZSelectedSignerPasskey(
       credentialId: credIdStr,
       credentialIdBytes: credIdBytes,        // raw credential id bytes
       keyData: signer.keyData,               // MUST be non-null (keyData-null rule)
@@ -988,7 +988,7 @@ for (final signer in rule.signers) {
     ));
   } else if (signer is OZDelegatedSigner) {
     if (await kit.externalSigners.canSignFor(signer.address)) {
-      available.add(SelectedSignerWallet(signer.address));
+      available.add(OZSelectedSignerWallet(signer.address));
     }
   }
 }
@@ -999,33 +999,33 @@ for (final signer in rule.signers) {
 ### multiSignerTransfer
 
 ```dart
-Future<TransactionResult> multiSignerTransfer({
+Future<OZTransactionResult> multiSignerTransfer({
   required String tokenContract,
   required String recipient,
   required String amount,                 // decimal string, NOT stroops
-  required List<SelectedSigner> selectedSigners,
-  SubmissionMethod? forceMethod,
-  ResolveContextRuleIds? resolveContextRuleIds,
+  required List<OZSelectedSigner> selectedSigners,
+  OZSubmissionMethod? forceMethod,
+  OZResolveContextRuleIds? resolveContextRuleIds,
 });
 ```
 
 A 2-of-2 transfer with the connected passkey plus an external wallet:
 
 ```dart
-final passkey = SelectedSignerPasskey(
+final passkey = OZSelectedSignerPasskey(
   credentialId: kit.credentialId,
   credentialIdBytes: kit.credentialId == null
       ? null
       : base64Url.decode(base64Url.normalize(kit.credentialId!)),
   keyData: onChainPasskeySigner.keyData, // from the parsed rule
 );
-final wallet = SelectedSignerWallet('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ');
+final wallet = OZSelectedSignerWallet('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ');
 
 final result = await kit.multiSignerManager.multiSignerTransfer(
   tokenContract: 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
   recipient: 'GC3C4MCEADMY26BVBPJIIUOKD5WZEZW5XI2LSU5F4QDZARBVAM4UTZEL',
   amount: '100',
-  selectedSigners: <SelectedSigner>[passkey, wallet],
+  selectedSigners: <OZSelectedSigner>[passkey, wallet],
 );
 if (result.success) print('Multi-sig transfer ok: ${result.hash}');
 ```
@@ -1035,13 +1035,13 @@ if (result.success) print('Multi-sig transfer ok: ${result.hash}');
 Direct call to an external contract, authorized under a `CallContract` rule on the target.
 
 ```dart
-Future<TransactionResult> multiSignerContractCall({
+Future<OZTransactionResult> multiSignerContractCall({
   required String target,                 // C-address
   required String targetFn,
   List<XdrSCVal> targetArgs = const <XdrSCVal>[],
-  required List<SelectedSigner> selectedSigners,
-  SubmissionMethod? forceMethod,
-  ResolveContextRuleIds? resolveContextRuleIds,
+  required List<OZSelectedSigner> selectedSigners,
+  OZSubmissionMethod? forceMethod,
+  OZResolveContextRuleIds? resolveContextRuleIds,
 });
 ```
 
@@ -1057,7 +1057,7 @@ await kit.multiSignerManager.multiSignerContractCall(
   target: 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
   targetFn: 'approve',
   targetArgs: args,
-  selectedSigners: <SelectedSigner>[passkey, wallet],
+  selectedSigners: <OZSelectedSigner>[passkey, wallet],
 );
 ```
 
@@ -1066,13 +1066,13 @@ await kit.multiSignerManager.multiSignerContractCall(
 Routes through the smart account's `execute(target, target_fn, target_args)` entry point; the target sees the smart account contract as the `require_auth` caller.
 
 ```dart
-Future<TransactionResult> multiSignerExecuteAndSubmit({
+Future<OZTransactionResult> multiSignerExecuteAndSubmit({
   required String target,
   required String targetFn,
   List<XdrSCVal> targetArgs = const <XdrSCVal>[],
-  required List<SelectedSigner> selectedSigners,
-  SubmissionMethod? forceMethod,
-  ResolveContextRuleIds? resolveContextRuleIds,
+  required List<OZSelectedSigner> selectedSigners,
+  OZSubmissionMethod? forceMethod,
+  OZResolveContextRuleIds? resolveContextRuleIds,
 });
 ```
 
@@ -1082,17 +1082,17 @@ await kit.multiSignerManager.multiSignerExecuteAndSubmit(
   target: 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
   targetFn: 'vote',
   targetArgs: <XdrSCVal>[XdrSCVal.forU32(42), XdrSCVal.forBool(true)],
-  selectedSigners: <SelectedSigner>[
-    SelectedSignerWallet('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ'),
-    SelectedSignerWallet('GC3C4MCEADMY26BVBPJIIUOKD5WZEZW5XI2LSU5F4QDZARBVAM4UTZEL'),
+  selectedSigners: <OZSelectedSigner>[
+    OZSelectedSignerWallet('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ'),
+    OZSelectedSignerWallet('GC3C4MCEADMY26BVBPJIIUOKD5WZEZW5XI2LSU5F4QDZARBVAM4UTZEL'),
   ],
 );
 ```
 
-### ResolveContextRuleIds (advanced)
+### OZResolveContextRuleIds (advanced)
 
 ```dart
-typedef ResolveContextRuleIds = Future<List<int>> Function(
+typedef OZResolveContextRuleIds = Future<List<int>> Function(
   XdrSorobanAuthorizationEntry entry,
   int index,
 );
@@ -1112,14 +1112,14 @@ await kit.multiSignerManager.multiSignerTransfer(
 );
 ```
 
-When auto-resolution cannot find a unique rule it throws `InvalidInput` with one of: "No context rule matches ..." (add a matching or Default rule), "Selected signers match multiple context rules: ..." (use the callback), or "No context rule contains all selected signers." (the selection crosses rules).
+When auto-resolution cannot find a unique rule it throws `SmartAccountInvalidInput` with one of: "No context rule matches ..." (add a matching or Default rule), "Selected signers match multiple context rules: ..." (use the callback), or "No context rule contains all selected signers." (the selection crosses rules).
 
 ### Custody requirements
 
-A `SelectedSignerWallet` (G-address) resolves through `kit.externalSigners`. Register a signing source by either model:
+An `OZSelectedSignerWallet` (G-address) resolves through `kit.externalSigners`. Register a signing source by either model:
 
 - **In-memory custody (runtime):** `kit.externalSigners.addFromSecret('S...')` for a wallet keypair, or `kit.externalSigners.addEd25519FromRawKey(secretKeyBytes: seed32, verifierAddress: 'C...')` for an Ed25519 external signer. Both are memory-only and never persisted.
-- **Adapter custody (kit construction):** supply `config.externalWallet` (an `ExternalWalletAdapter`) and/or `config.externalEd25519Adapter` (an `OZExternalEd25519SignerAdapter`). Resolution tries the in-memory entry first, then the adapter.
+- **Adapter custody (kit construction):** supply `config.externalWallet` (an `OZExternalWalletAdapter`) and/or `config.externalEd25519Adapter` (an `OZExternalEd25519SignerAdapter`). Resolution tries the in-memory entry first, then the adapter.
 
 ```dart
 // In-memory wallet keypair
@@ -1142,7 +1142,7 @@ kit.externalSigners.addEd25519FromRawKey(
 
 ### Signing order and prompts
 
-Signatures are collected in the order `selectedSigners` is supplied. Each `SelectedSignerPasskey` triggers one WebAuthn prompt; the SDK passes its `credentialIdBytes` + `transports` as `allowCredentials` so the OS routes to the correct passkey. If a passkey prompt is cancelled, the call fails fast with `WebAuthnAuthenticationFailed` and remaining signers are not prompted.
+Signatures are collected in the order `selectedSigners` is supplied. Each `OZSelectedSignerPasskey` triggers one WebAuthn prompt; the SDK passes its `credentialIdBytes` + `transports` as `allowCredentials` so the OS routes to the correct passkey. If a passkey prompt is cancelled, the call fails fast with `WebAuthnAuthenticationFailed` and remaining signers are not prompted.
 
 ### Add-before-remove (signer set safety)
 
@@ -1156,7 +1156,7 @@ Each flow assumes `final OZSmartAccountKit kit` exists and `connectWallet(...)` 
 
 ### Passkey recovery via backup signer (lost device)
 
-**Preconditions.** A backup `OZDelegatedSigner(G-address)` was added earlier to the Default rule, and the user still controls that Stellar account through an `ExternalWalletAdapter` configured on `config.externalWallet`. The original passkey is gone. The smart account's contract ID is known (server-side record, indexer, or backup).
+**Preconditions.** A backup `OZDelegatedSigner(G-address)` was added earlier to the Default rule, and the user still controls that Stellar account through an `OZExternalWalletAdapter` configured on `config.externalWallet`. The original passkey is gone. The smart account's contract ID is known (server-side record, indexer, or backup).
 
 **Flow.** Register a fresh passkey, connect directly using the new credential + known contract ID, then add the new passkey on-chain authorized by the backup signer, and finally remove the old passkey.
 
@@ -1180,7 +1180,7 @@ final newCredBytes = reg.credentialId;
 // 2. Direct connect using the known (credentialId, contractId) pair. The new
 //    passkey is not yet on-chain, which is fine: signing is routed to the backup.
 final connected = await kit.walletOperations.connectWallet(
-  options: ConnectWalletOptions(
+  options: OZConnectWalletOptions(
     credentialId: base64Url.encode(newCredBytes),
     contractId: knownContractId,
   ),
@@ -1188,7 +1188,7 @@ final connected = await kit.walletOperations.connectWallet(
 if (connected == null) throw StateError('Unable to reconnect to $knownContractId');
 
 // 3. The backup signer on the Default rule.
-final backup = SelectedSignerWallet('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ');
+final backup = OZSelectedSignerWallet('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ');
 
 // 4. Add the new passkey on-chain, authorized by the backup signer. The
 //    non-empty selectedSigners list is load-bearing: an empty list would route
@@ -1197,7 +1197,7 @@ final addResult = await kit.signerManager.addPasskey(
   contextRuleId: 0,
   publicKey: reg.publicKey,
   credentialId: newCredBytes,
-  selectedSigners: <SelectedSigner>[backup],
+  selectedSigners: <OZSelectedSigner>[backup],
 );
 if (!addResult.success) throw StateError('add_signer failed: ${addResult.error}');
 
@@ -1210,7 +1210,7 @@ if (oldIdx >= 0) {
   await kit.signerManager.removeSigner(
     contextRuleId: 0,
     signerId: rule.signerIds[oldIdx],
-    selectedSigners: <SelectedSigner>[backup],
+    selectedSigners: <OZSelectedSigner>[backup],
   );
 }
 ```
@@ -1221,7 +1221,7 @@ if (oldIdx >= 0) {
 // CORRECT: pass selectedSigners: [backup] so signing routes to the backup via kit.externalSigners.
 ```
 
-A raw-Ed25519 backup added via `addEd25519` uses the Ed25519 pipeline and is expressed as `SelectedSignerEd25519`, not `SelectedSignerWallet`; the verifier address and the in-memory/adapter Ed25519 key must be registered.
+A raw-Ed25519 backup added via `addEd25519` uses the Ed25519 pipeline and is expressed as `OZSelectedSignerEd25519`, not `OZSelectedSignerWallet`; the verifier address and the in-memory/adapter Ed25519 key must be registered.
 
 ### Signer rotation (add new, then remove old)
 
@@ -1246,7 +1246,7 @@ final oldCredentialId = kit.credentialId!;
 
 // 3. Reconnect using the new passkey (addNewPasskeySigner already persisted it).
 final reconn = await kit.walletOperations.connectWallet(
-  options: ConnectWalletOptions(credentialId: newCredentialId),
+  options: OZConnectWalletOptions(credentialId: newCredentialId),
 );
 if (reconn == null) throw StateError('Failed to reconnect with new passkey');
 
@@ -1267,7 +1267,7 @@ await kit.signerManager.removeSigner(contextRuleId: 0, signerId: rule.signerIds[
 
 ### Debugging failed `__check_auth` via contract error codes
 
-**Preconditions.** A call such as `kit.transactionOperations.transfer(...)`, `kit.signerManager.removeSigner(...)`, or a policy install throws `TransactionSimulationFailed`. The contract rejected the auth check or a policy enforcement hook.
+**Preconditions.** A call such as `kit.transactionOperations.transfer(...)`, `kit.signerManager.removeSigner(...)`, or a policy install throws `SmartAccountTransactionSimulationFailed`. The contract rejected the auth check or a policy enforcement hook.
 
 **Flow.** The simulation error message wraps the RPC simulation error, which contains the host error in the form `Error(Contract, #NNNN)`. Extract the numeric code and map it to an action. There is no typed contract-error exception; only the SDK constants in `OZContractErrorCodes` (3012–3016) are surfaced as named values.
 
@@ -1288,7 +1288,7 @@ try {
     recipient: 'GC3C4MCEADMY26BVBPJIIUOKD5WZEZW5XI2LSU5F4QDZARBVAM4UTZEL',
     amount: '10',
   );
-} on TransactionSimulationFailed catch (e) {
+} on SmartAccountTransactionSimulationFailed catch (e) {
   final code = parseContractErrorCode(e);
   final hint = switch (code) {
     3004 => 'NoSignersAndPolicies — rule would have 0 signers and 0 policies; add one first',
@@ -1306,7 +1306,7 @@ try {
 
 ```dart
 // WRONG: catch a typed ContractException with a .code field — no such class exists
-// CORRECT: catch TransactionSimulationFailed and parse the message for Error(Contract, #NNNN)
+// CORRECT: catch SmartAccountTransactionSimulationFailed and parse the message for Error(Contract, #NNNN)
 // WRONG: switching on e.code (that is SmartAccountErrorCode.transactionSimulationFailed,
 //        the SDK error kind, not the on-chain contract code)
 // CORRECT: extract the contract code from the message text
@@ -1324,7 +1324,7 @@ Signer, policy, and context-rule changes do not emit dedicated kit events; they 
 
 ## Contract Error Codes
 
-When the smart account contract rejects a call, the on-chain code is surfaced inside a `TransactionSimulationFailed` (simulation) or `TransactionSubmissionFailed` (submit/poll) message in the form `Error(Contract, #NNNN)`. Extract it with the regex shown above; the numeric value matches the contract's error enum.
+When the smart account contract rejects a call, the on-chain code is surfaced inside a `SmartAccountTransactionSimulationFailed` (simulation) or `SmartAccountTransactionSubmissionFailed` (submit/poll) message in the form `Error(Contract, #NNNN)`. Extract it with the regex shown above; the numeric value matches the contract's error enum.
 
 ### Smart account errors (3000 range)
 
@@ -1335,9 +1335,9 @@ When the smart account contract rejects a call, the on-chain code is surfaced in
 | 3003 | ExternalVerificationFailed | Verifier contract rejected the signature | Signature or key data is wrong, or the verifier was upgraded. |
 | 3004 | NoSignersAndPolicies | Rule would have 0 signers and 0 policies | Supply at least one signer or one policy. |
 | 3005 | PastValidUntil | `validUntil` is <= current ledger | Compute `validUntil` from a future ledger sequence. |
-| 3006 | SignerNotFound | `signerId` not present on the rule | Use `ParsedContextRule.signerIds`. |
+| 3006 | SmartAccountSignerNotFound | `signerId` not present on the rule | Use `OZParsedContextRule.signerIds`. |
 | 3007 | DuplicateSigner | Signer already on the rule | Each signer can appear at most once per rule. |
-| 3008 | PolicyNotFound | `policyId` not present on the rule | Use `ParsedContextRule.policyIds`. |
+| 3008 | PolicyNotFound | `policyId` not present on the rule | Use `OZParsedContextRule.policyIds`. |
 | 3009 | DuplicatePolicy | Policy contract already installed on the rule | Remove the existing installation first, or target a different rule. |
 | 3010 | TooManySigners | > 15 signers on a rule | Limit to `OZConstants.maxSigners` = 15. |
 | 3011 | TooManyPolicies | > 5 policies on a rule | Limit to `OZConstants.maxPolicies` = 5. |
@@ -1391,20 +1391,20 @@ try {
     threshold: 2,
   );
   if (!res.success) print('submit failed: ${res.error}');
-} on TransactionSimulationFailed catch (e) {
+} on SmartAccountTransactionSimulationFailed catch (e) {
   print('simulation failed: $e'); // message carries the contract error code
-} on InvalidInput catch (e) {
+} on SmartAccountInvalidInput catch (e) {
   print('client-side validation: ${e.message}');
-} on WalletNotConnected {
+} on SmartAccountWalletNotConnected {
   print('call connectWallet() first');
 }
 ```
 
-`TransactionSimulationFailed`, `TransactionSubmissionFailed`, `InvalidInput`, `InvalidAddress`, `InvalidAmount`, and `WalletNotConnected` are concrete exception subtypes (not factory methods). Catch the sealed bases `TransactionException` / `ValidationException` / `WalletException` for broader handling.
+`SmartAccountTransactionSimulationFailed`, `SmartAccountTransactionSubmissionFailed`, `SmartAccountInvalidInput`, `SmartAccountInvalidAddress`, `SmartAccountInvalidAmount`, and `SmartAccountWalletNotConnected` are concrete exception subtypes (not factory methods). Catch the sealed bases `SmartAccountTransactionException` / `SmartAccountValidationException` / `SmartAccountWalletException` for broader handling.
 
 ### BigInt for i128
 
-i128 amounts (transfer amounts, spending limits) and the stroops they convert to are `BigInt` end-to-end. `Util.toXdrInt64Amount(String)` returns a `BigInt`; `Util.stroopsToI128ScVal(BigInt)` consumes one; `SpendingLimitParams.spendingLimit` is a `BigInt`. On web, a stroops value above 2^53 exceeds JS `Number` range.
+i128 amounts (transfer amounts, spending limits) and the stroops they convert to are `BigInt` end-to-end. `Util.toXdrInt64Amount(String)` returns a `BigInt`; `Util.stroopsToI128ScVal(BigInt)` consumes one; `OZSpendingLimitPolicyParams.spendingLimit` is a `BigInt`. On web, a stroops value above 2^53 exceeds JS `Number` range.
 
 ```dart
 // WRONG: int stroops = (double.parse(amount) * 10000000).toInt(); // overflows on web

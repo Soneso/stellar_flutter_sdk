@@ -146,7 +146,7 @@ void main() {
 
       expect(result.id, 42);
       expect(result.name, 'MyRule');
-      expect(result.contextType, isA<ContextRuleTypeDefault>());
+      expect(result.contextType, isA<OZContextRuleTypeDefault>());
       expect(result.signers.length, 1);
       expect(result.signers[0], isA<OZDelegatedSigner>());
       expect(
@@ -164,7 +164,7 @@ void main() {
       final result = manager.parseContextRule(
         _buildFullRuleMap(contextType: _defaultContextTypeScVal()),
       );
-      expect(result.contextType, isA<ContextRuleTypeDefault>());
+      expect(result.contextType, isA<OZContextRuleTypeDefault>());
     });
 
     test('callContractContextType', () {
@@ -175,9 +175,9 @@ void main() {
         ),
       );
 
-      expect(result.contextType, isA<ContextRuleTypeCallContract>());
+      expect(result.contextType, isA<OZContextRuleTypeCallContract>());
       expect(
-        (result.contextType as ContextRuleTypeCallContract).contractAddress,
+        (result.contextType as OZContextRuleTypeCallContract).contractAddress,
         _validContractAddress2,
       );
     });
@@ -194,9 +194,9 @@ void main() {
         ),
       );
 
-      expect(result.contextType, isA<ContextRuleTypeCreateContract>());
+      expect(result.contextType, isA<OZContextRuleTypeCreateContract>());
       expect(
-        (result.contextType as ContextRuleTypeCreateContract).wasmHash,
+        (result.contextType as OZContextRuleTypeCreateContract).wasmHash,
         orderedEquals(wasmHash),
       );
     });
@@ -290,8 +290,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(
           e.message.contains('id'),
           isTrue,
@@ -309,8 +309,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(
           e.message.contains('name'),
           isTrue,
@@ -329,8 +329,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(
           e.message.contains('context_type'),
           isTrue,
@@ -353,8 +353,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('id'), isTrue);
       }
     });
@@ -369,8 +369,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('name'), isTrue);
       }
     });
@@ -385,8 +385,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('context_type'), isTrue);
       }
     });
@@ -402,8 +402,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('signers'), isTrue);
       }
     });
@@ -422,8 +422,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('signer_ids'), isTrue);
       }
     });
@@ -436,8 +436,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('valid_until'), isTrue);
       }
     });
@@ -448,8 +448,8 @@ void main() {
       final manager = _manager(_buildKit());
       try {
         manager.parseContextRule(XdrSCVal.forVec(const <XdrSCVal>[]));
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(
           e.message.contains('Map'),
           isTrue,
@@ -462,7 +462,7 @@ void main() {
       final manager = _manager(_buildKit());
       expect(
         () => manager.parseContextRule(XdrSCVal.forVoid()),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
@@ -470,7 +470,7 @@ void main() {
       final manager = _manager(_buildKit());
       expect(
         () => manager.parseContextRule(XdrSCVal.forString('not-a-map')),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
   });
@@ -483,8 +483,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('context_type'), isTrue);
       }
     });
@@ -497,8 +497,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(
           e.message.contains('Unknown'),
           isTrue,
@@ -517,8 +517,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('CallContract'), isTrue);
       }
     });
@@ -531,8 +531,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('CreateContract'), isTrue);
       }
     });
@@ -550,8 +550,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('UnknownType'), isTrue);
       }
     });
@@ -566,8 +566,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('signer'), isTrue);
       }
     });
@@ -583,8 +583,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('Delegated'), isTrue);
       }
     });
@@ -602,8 +602,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('External'), isTrue);
       }
     });
@@ -627,8 +627,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(
           e.message.toLowerCase().contains('contract'),
           isTrue,
@@ -646,9 +646,9 @@ void main() {
     });
   });
 
-  group('ContextRuleType toScVal', () {
+  group('OZContextRuleType toScVal', () {
     test('defaultToScVal', () {
-      final scVal = const ContextRuleTypeDefault().toScVal();
+      final scVal = const OZContextRuleTypeDefault().toScVal();
       expect(scVal.discriminant, XdrSCValType.SCV_VEC);
       final elements = scVal.vec!;
       expect(elements.length, 1);
@@ -657,7 +657,7 @@ void main() {
 
     test('callContractToScVal', () {
       final scVal =
-          const ContextRuleTypeCallContract(_validContractAddress2).toScVal();
+          const OZContextRuleTypeCallContract(_validContractAddress2).toScVal();
       expect(scVal.discriminant, XdrSCValType.SCV_VEC);
       final elements = scVal.vec!;
       expect(elements.length, 2);
@@ -679,7 +679,7 @@ void main() {
       for (var i = 0; i < 32; i++) {
         wasmHash[i] = (i * 3) & 0xFF;
       }
-      final scVal = ContextRuleTypeCreateContract(wasmHash).toScVal();
+      final scVal = OZContextRuleTypeCreateContract(wasmHash).toScVal();
       expect(scVal.discriminant, XdrSCValType.SCV_VEC);
       final elements = scVal.vec!;
       expect(elements.length, 2);
@@ -691,22 +691,22 @@ void main() {
     test('callContractInvalidAddress_throwsValidationException', () {
       expect(
         () =>
-            const ContextRuleTypeCallContract('INVALID_ADDRESS').toScVal(),
-        throwsA(isA<ValidationException>()),
+            const OZContextRuleTypeCallContract('INVALID_ADDRESS').toScVal(),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
   });
 
-  group('ContextRuleType equality', () {
+  group('OZContextRuleType equality', () {
     test('defaultEquality', () {
-      const a = ContextRuleTypeDefault();
-      const b = ContextRuleTypeDefault();
+      const a = OZContextRuleTypeDefault();
+      const b = OZContextRuleTypeDefault();
       expect(a, b);
     });
 
     test('callContractEquality', () {
-      const a = ContextRuleTypeCallContract(_validContractAddress);
-      const b = ContextRuleTypeCallContract(_validContractAddress);
+      const a = OZContextRuleTypeCallContract(_validContractAddress);
+      const b = OZContextRuleTypeCallContract(_validContractAddress);
       expect(a, b);
       expect(a.hashCode, b.hashCode);
     });
@@ -716,19 +716,19 @@ void main() {
       for (var i = 0; i < 32; i++) {
         hash[i] = i & 0xFF;
       }
-      final a = ContextRuleTypeCreateContract(Uint8List.fromList(hash));
-      final b = ContextRuleTypeCreateContract(Uint8List.fromList(hash));
+      final a = OZContextRuleTypeCreateContract(Uint8List.fromList(hash));
+      final b = OZContextRuleTypeCreateContract(Uint8List.fromList(hash));
       expect(a, b);
       expect(a.hashCode, b.hashCode);
     });
   });
 
-  group('ParsedContextRule data class', () {
+  group('OZParsedContextRule data class', () {
     test('constructionAndFieldAccess', () {
       final signer = OZDelegatedSigner(_validAccountAddress);
-      final rule = ParsedContextRule(
+      final rule = OZParsedContextRule(
         id: 5,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'TestRule',
         signers: <OZSmartAccountSigner>[signer],
         signerIds: const <int>[10],
@@ -738,7 +738,7 @@ void main() {
       );
 
       expect(rule.id, 5);
-      expect(rule.contextType, isA<ContextRuleTypeDefault>());
+      expect(rule.contextType, isA<OZContextRuleTypeDefault>());
       expect(rule.name, 'TestRule');
       expect(rule.signers.length, 1);
       expect(rule.signerIds, <int>[10]);
@@ -748,9 +748,9 @@ void main() {
     });
 
     test('nullValidUntil', () {
-      final rule = ParsedContextRule(
+      final rule = OZParsedContextRule(
         id: 0,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'NoExpiry',
         signers: const <OZSmartAccountSigner>[],
         signerIds: const <int>[],
@@ -761,18 +761,18 @@ void main() {
     });
 
     test('valueClassEquality', () {
-      final a = ParsedContextRule(
+      final a = OZParsedContextRule(
         id: 1,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'Rule',
         signers: const <OZSmartAccountSigner>[],
         signerIds: const <int>[],
         policies: const <String>[],
         policyIds: const <int>[],
       );
-      final b = ParsedContextRule(
+      final b = OZParsedContextRule(
         id: 1,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'Rule',
         signers: const <OZSmartAccountSigner>[],
         signerIds: const <int>[],
@@ -789,13 +789,13 @@ void main() {
       final manager = _manager(_buildKit());
       await expectLater(
         () => manager.addContextRule(
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: 'Rule',
           signers: <OZSmartAccountSigner>[
             OZDelegatedSigner(_validAccountAddress),
           ],
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -803,14 +803,14 @@ void main() {
       final manager = _manager(_buildConnectedKit());
       try {
         await manager.addContextRule(
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: '',
           signers: <OZSmartAccountSigner>[
             OZDelegatedSigner(_validAccountAddress),
           ],
         );
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('name'), isTrue);
       }
     });
@@ -819,13 +819,13 @@ void main() {
       final manager = _manager(_buildConnectedKit());
       try {
         await manager.addContextRule(
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: 'EmptyRule',
           signers: const <OZSmartAccountSigner>[],
           policies: const <String, XdrSCVal>{},
         );
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(
           e.message.contains('signer') || e.message.contains('policy'),
           isTrue,
@@ -845,12 +845,12 @@ void main() {
 
       try {
         await manager.addContextRule(
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: 'TooManySigners',
           signers: signers,
         );
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(
           e.message.contains('15') || e.message.contains('signers'),
           isTrue,
@@ -872,15 +872,15 @@ void main() {
 
       try {
         await manager.addContextRule(
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: 'TooManyPolicies',
           signers: <OZSmartAccountSigner>[
             OZDelegatedSigner(_validAccountAddress),
           ],
           policies: policies,
         );
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(
           e.message.contains('5') || e.message.contains('policies'),
           isTrue,
@@ -894,7 +894,7 @@ void main() {
       final manager = _manager(_buildConnectedKit());
       try {
         await manager.addContextRule(
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: 'BadPolicy',
           signers: <OZSmartAccountSigner>[
             OZDelegatedSigner(_validAccountAddress),
@@ -903,8 +903,8 @@ void main() {
             'INVALID_ADDRESS': XdrSCVal.forVoid(),
           },
         );
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(
           e.message.toLowerCase().contains('address'),
           isTrue,
@@ -920,7 +920,7 @@ void main() {
       // Policy addresses must be C-addresses (contracts), not G-addresses.
       try {
         await manager.addContextRule(
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: 'GAddressPolicy',
           signers: <OZSmartAccountSigner>[
             OZDelegatedSigner(_validAccountAddress),
@@ -929,8 +929,8 @@ void main() {
             _validAccountAddress: XdrSCVal.forVoid(),
           },
         );
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message, isNotEmpty);
       }
     });
@@ -939,21 +939,21 @@ void main() {
   group('parseContextRule round-trip', () {
     test('defaultContextType', () {
       final manager = _manager(_buildKit());
-      final scVal = const ContextRuleTypeDefault().toScVal();
+      final scVal = const OZContextRuleTypeDefault().toScVal();
       final ruleMap = _buildFullRuleMap(contextType: scVal);
       final parsed = manager.parseContextRule(ruleMap);
-      expect(parsed.contextType, isA<ContextRuleTypeDefault>());
+      expect(parsed.contextType, isA<OZContextRuleTypeDefault>());
     });
 
     test('callContractContextType', () {
       final manager = _manager(_buildKit());
       final scVal =
-          const ContextRuleTypeCallContract(_validContractAddress2).toScVal();
+          const OZContextRuleTypeCallContract(_validContractAddress2).toScVal();
       final ruleMap = _buildFullRuleMap(contextType: scVal);
       final parsed = manager.parseContextRule(ruleMap);
-      expect(parsed.contextType, isA<ContextRuleTypeCallContract>());
+      expect(parsed.contextType, isA<OZContextRuleTypeCallContract>());
       expect(
-        (parsed.contextType as ContextRuleTypeCallContract).contractAddress,
+        (parsed.contextType as OZContextRuleTypeCallContract).contractAddress,
         _validContractAddress2,
       );
     });
@@ -964,12 +964,12 @@ void main() {
       for (var i = 0; i < 32; i++) {
         wasmHash[i] = (i * 7) & 0xFF;
       }
-      final scVal = ContextRuleTypeCreateContract(wasmHash).toScVal();
+      final scVal = OZContextRuleTypeCreateContract(wasmHash).toScVal();
       final ruleMap = _buildFullRuleMap(contextType: scVal);
       final parsed = manager.parseContextRule(ruleMap);
-      expect(parsed.contextType, isA<ContextRuleTypeCreateContract>());
+      expect(parsed.contextType, isA<OZContextRuleTypeCreateContract>());
       expect(
-        (parsed.contextType as ContextRuleTypeCreateContract).wasmHash,
+        (parsed.contextType as OZContextRuleTypeCreateContract).wasmHash,
         orderedEquals(wasmHash),
       );
     });
@@ -1012,7 +1012,7 @@ void main() {
       final result = manager.parseContextRule(ruleMap);
       expect(result.id, 99);
       expect(result.name, 'ReversedFields');
-      expect(result.contextType, isA<ContextRuleTypeDefault>());
+      expect(result.contextType, isA<OZContextRuleTypeDefault>());
     });
   });
 
@@ -1055,8 +1055,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('policies'), isTrue);
       }
     });
@@ -1072,8 +1072,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('policy_ids'), isTrue);
       }
     });
@@ -1092,8 +1092,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('policy_ids'), isTrue);
       }
     });
@@ -1116,8 +1116,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('signer'), isTrue);
       }
     });
@@ -1131,8 +1131,8 @@ void main() {
 
       try {
         manager.parseContextRule(ruleMap);
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('context_type'), isTrue);
       }
     });
@@ -1145,7 +1145,7 @@ void main() {
   // synchronous `resolveContextRuleIdsForEntryWithRules(entry, signers,
   // rules)` accessor on the concrete `OZContextRuleManager` class. The
   // tests below construct synthetic CallContract auth entries paired with
-  // pre-built `ParsedContextRule` lists to exercise each tier directly.
+  // pre-built `OZParsedContextRule` lists to exercise each tier directly.
   //
   // - Tier 1: exact bidirectional signer-set match.
   // - Tier 2: rule signers subset of selected, no policies.
@@ -1182,15 +1182,15 @@ void main() {
     );
   }
 
-  ParsedContextRule buildRule({
+  OZParsedContextRule buildRule({
     required int id,
-    required ContextRuleType contextType,
+    required OZContextRuleType contextType,
     List<OZSmartAccountSigner> signers = const <OZSmartAccountSigner>[],
     List<String> policies = const <String>[],
     List<int> signerIds = const <int>[],
     List<int> policyIds = const <int>[],
   }) {
-    return ParsedContextRule(
+    return OZParsedContextRule(
       id: id,
       contextType: contextType,
       name: 'rule-$id',
@@ -1207,14 +1207,14 @@ void main() {
       final signer = OZDelegatedSigner(_validAccountAddress);
       final rule = buildRule(
         id: 11,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         signers: <OZSmartAccountSigner>[signer],
       );
       // Add a second matching candidate so single-candidate fast-path
       // is bypassed and Tier 1 is the resolver branch under test.
       final decoy = buildRule(
         id: 12,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         signers: <OZSmartAccountSigner>[
           OZDelegatedSigner(
               'GBVRV25F7XA5I2L3ILSA6XW3OCWLKGGLG4OP2EHKTWC5IHQ3EV26FQLS'),
@@ -1224,7 +1224,7 @@ void main() {
       final ids = manager.resolveContextRuleIdsForEntryWithRules(
         entry,
         <OZSmartAccountSigner>[signer],
-        <ParsedContextRule>[rule, decoy],
+        <OZParsedContextRule>[rule, decoy],
       );
       expect(ids, <int>[11]);
     });
@@ -1237,19 +1237,19 @@ void main() {
       );
       final rule = buildRule(
         id: 21,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         signers: <OZSmartAccountSigner>[s1, s2],
       );
       final decoy = buildRule(
         id: 22,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         signers: <OZSmartAccountSigner>[s1],
       );
       final entry = buildCallContractEntry();
       final ids = manager.resolveContextRuleIdsForEntryWithRules(
         entry,
         <OZSmartAccountSigner>[s1, s2],
-        <ParsedContextRule>[rule, decoy],
+        <OZParsedContextRule>[rule, decoy],
       );
       expect(ids, <int>[21]);
     });
@@ -1264,12 +1264,12 @@ void main() {
       // not fire. With two candidates the resolver falls through to Tier 3.
       final rule1 = buildRule(
         id: 31,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         signers: <OZSmartAccountSigner>[s1, s2],
       );
       final rule2 = buildRule(
         id: 32,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         // Different signer set so subset and exact tiers do not pick it.
         signers: <OZSmartAccountSigner>[s2],
       );
@@ -1277,7 +1277,7 @@ void main() {
       final ids = manager.resolveContextRuleIdsForEntryWithRules(
         entry,
         <OZSmartAccountSigner>[s1],
-        <ParsedContextRule>[rule1, rule2],
+        <OZParsedContextRule>[rule1, rule2],
       );
       // Selected signer s1 only fits inside rule 31 (Tier 3).
       expect(ids, <int>[31]);
@@ -1294,12 +1294,12 @@ void main() {
       // every selected signer.
       final rule = buildRule(
         id: 41,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         signers: <OZSmartAccountSigner>[s1, s2],
       );
       final decoy = buildRule(
         id: 42,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         signers: <OZSmartAccountSigner>[
           OZDelegatedSigner(
             'GADQQCIKBMGA2DQPCAIREEYUCULBOGAZDINRYHI6D4QCCIRDEQSSMYVS',
@@ -1310,7 +1310,7 @@ void main() {
       final ids = manager.resolveContextRuleIdsForEntryWithRules(
         entry,
         <OZSmartAccountSigner>[s1],
-        <ParsedContextRule>[rule, decoy],
+        <OZParsedContextRule>[rule, decoy],
       );
       expect(ids, <int>[41]);
     });
@@ -1326,13 +1326,13 @@ void main() {
       // Tier 2 rule: subset of selected, no policies.
       final tier2 = buildRule(
         id: 51,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         signers: <OZSmartAccountSigner>[s1],
       );
       // Decoy: doesn't qualify for Tier 1 (size mismatch) and has policies.
       final decoy = buildRule(
         id: 52,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         signers: <OZSmartAccountSigner>[s2],
         policies: <String>[_validContractAddress2],
       );
@@ -1340,7 +1340,7 @@ void main() {
       final ids = manager.resolveContextRuleIdsForEntryWithRules(
         entry,
         <OZSmartAccountSigner>[s1, s2],
-        <ParsedContextRule>[tier2, decoy],
+        <OZParsedContextRule>[tier2, decoy],
       );
       expect(ids, <int>[51]);
     });
@@ -1356,13 +1356,13 @@ void main() {
       // (policies present).
       final ruleA = buildRule(
         id: 61,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         signers: <OZSmartAccountSigner>[s1],
         policies: <String>[_validContractAddress2],
       );
       final ruleB = buildRule(
         id: 62,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         signers: <OZSmartAccountSigner>[s1, s2],
         policies: <String>[_validContractAddress2],
       );
@@ -1370,7 +1370,7 @@ void main() {
       final ids = manager.resolveContextRuleIdsForEntryWithRules(
         entry,
         <OZSmartAccountSigner>[s1],
-        <ParsedContextRule>[ruleA, ruleB],
+        <OZParsedContextRule>[ruleA, ruleB],
       );
       // Rule 61: signers [s1], size 1 == selected size 1 -> Tier 1 match.
       // Rule 62: signers [s1, s2], size 2 != selected size 1 -> Tier 1 miss.
@@ -1391,14 +1391,14 @@ void main() {
       // 2-of-3 threshold scenario: rule has 3 signers, user picks 2.
       final rule = buildRule(
         id: 71,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         signers: <OZSmartAccountSigner>[s1, s2, s3],
         policies: <String>[_validContractAddress2],
       );
       // Decoy candidate so single-candidate fast-path is bypassed.
       final decoy = buildRule(
         id: 72,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         signers: <OZSmartAccountSigner>[
           OZDelegatedSigner(
             'GAHA6EARCIJRIFIWC4MBSGQ3DQOR4HZAEERCGJBFEYTSQKJKFMWC34NB',
@@ -1409,7 +1409,7 @@ void main() {
       final ids = manager.resolveContextRuleIdsForEntryWithRules(
         entry,
         <OZSmartAccountSigner>[s1, s2],
-        <ParsedContextRule>[rule, decoy],
+        <OZParsedContextRule>[rule, decoy],
       );
       expect(ids, <int>[71]);
     });
@@ -1426,13 +1426,13 @@ void main() {
       // Two rules where selected [s1] is a subset of both.
       final ruleA = buildRule(
         id: 81,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         signers: <OZSmartAccountSigner>[s1, s2],
         policies: <String>[_validContractAddress2],
       );
       final ruleB = buildRule(
         id: 82,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         signers: <OZSmartAccountSigner>[s1, s3],
         policies: <String>[_validContractAddress2],
       );
@@ -1441,10 +1441,10 @@ void main() {
         manager.resolveContextRuleIdsForEntryWithRules(
           entry,
           <OZSmartAccountSigner>[s1],
-          <ParsedContextRule>[ruleA, ruleB],
+          <OZParsedContextRule>[ruleA, ruleB],
         );
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('multiple'), isTrue,
             reason: 'Should hint at ambiguity, got: ${e.message}');
         expect(e.message.contains('81'), isTrue);
@@ -1460,14 +1460,14 @@ void main() {
       // and is also not a Default rule, so candidates is empty.
       final unrelated = buildRule(
         id: 91,
-        contextType: ContextRuleTypeCallContract(_validContractAddress),
+        contextType: OZContextRuleTypeCallContract(_validContractAddress),
         signers: <OZSmartAccountSigner>[
           OZDelegatedSigner(_validAccountAddress),
         ],
       );
       final unrelated2 = buildRule(
         id: 92,
-        contextType: ContextRuleTypeCallContract(_validContractAddress),
+        contextType: OZContextRuleTypeCallContract(_validContractAddress),
         signers: <OZSmartAccountSigner>[
           OZDelegatedSigner(_validAccountAddress),
         ],
@@ -1482,10 +1482,10 @@ void main() {
           <OZSmartAccountSigner>[
             OZDelegatedSigner(_validAccountAddress),
           ],
-          <ParsedContextRule>[unrelated, unrelated2],
+          <OZParsedContextRule>[unrelated, unrelated2],
         );
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
         expect(e.message.contains('Default'), isTrue,
             reason: 'Should mention Default-rule hint, got: ${e.message}');
       }

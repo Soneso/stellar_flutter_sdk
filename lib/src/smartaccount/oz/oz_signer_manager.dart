@@ -27,10 +27,10 @@ import 'oz_transaction_operations.dart';
 /// Carries the WebAuthn credential information from the registration
 /// ceremony together with the on-chain transaction result produced by
 /// adding the new passkey as a signer on the smart-account contract.
-class AddPasskeySignerResult {
+class OZAddPasskeySignerResult {
   /// Constructs a result wrapping the credential metadata and the
   /// matching transaction outcome.
-  const AddPasskeySignerResult({
+  const OZAddPasskeySignerResult({
     required this.credentialId,
     required this.publicKey,
     required this.transactionResult,
@@ -43,12 +43,12 @@ class AddPasskeySignerResult {
   final Uint8List publicKey;
 
   /// Transaction result from the on-chain signer addition.
-  final TransactionResult transactionResult;
+  final OZTransactionResult transactionResult;
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! AddPasskeySignerResult) return false;
+    if (other is! OZAddPasskeySignerResult) return false;
     return other.credentialId == credentialId &&
         Util.constantTimeEquals(other.publicKey, publicKey) &&
         other.transactionResult == transactionResult;
@@ -63,7 +63,7 @@ class AddPasskeySignerResult {
 
   @override
   String toString() =>
-      'AddPasskeySignerResult(credentialId: $credentialId, '
+      'OZAddPasskeySignerResult(credentialId: $credentialId, '
       'publicKey: ${publicKey.length} bytes, '
       'transactionResult: $transactionResult)';
 }
@@ -84,7 +84,7 @@ class AddPasskeySignerResult {
 /// on-chain by their representation (address for delegated, verifier
 /// plus key data for external).
 ///
-/// Every state-changing method accepts an optional [SelectedSigner]
+/// Every state-changing method accepts an optional [OZSelectedSigner]
 /// list. An empty list (the default) uses the single-signer path,
 /// authorising through the connected passkey. A non-empty list routes
 /// to [OZMultiSignerManager.submitWithMultipleSigners] for multi-signer
@@ -114,15 +114,15 @@ class OZSignerManager {
   /// [addPasskey].
   ///
   /// Throws [WebAuthnNotSupported] when no WebAuthn provider is configured,
-  /// [WalletNotConnected] when no wallet is connected,
+  /// [SmartAccountWalletNotConnected] when no wallet is connected,
   /// [WebAuthnRegistrationFailed] when the registration ceremony fails or
   /// is cancelled, and [SmartAccountException] for downstream storage or
   /// on-chain failures.
-  Future<AddPasskeySignerResult> addNewPasskeySigner({
+  Future<OZAddPasskeySignerResult> addNewPasskeySigner({
     required int contextRuleId,
     required String userName,
-    List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+    OZSubmissionMethod? forceMethod,
   }) async {
     final connected = await _kit.requireConnected();
 
@@ -164,7 +164,7 @@ class OZSignerManager {
     );
 
     _kit.events.emit(
-      SmartAccountEventCredentialCreated(credential: credential),
+      OZSmartAccountEventCredentialCreated(credential: credential),
     );
 
     final transactionResult = await addPasskey(
@@ -175,7 +175,7 @@ class OZSignerManager {
       forceMethod: forceMethod,
     );
 
-    return AddPasskeySignerResult(
+    return OZAddPasskeySignerResult(
       credentialId: credentialIdBase64url,
       publicKey: registrationResult.publicKey,
       transactionResult: transactionResult,
@@ -192,19 +192,19 @@ class OZSignerManager {
   /// non-empty. Constructs an [OZExternalSigner] for WebAuthn and
   /// delegates to the private [_addSigner] helper.
   ///
-  /// Throws [InvalidInput] on validation failure and propagates any
+  /// Throws [SmartAccountInvalidInput] on validation failure and propagates any
   /// transaction failures from the signing pipeline.
-  Future<TransactionResult> addPasskey({
+  Future<OZTransactionResult> addPasskey({
     required int contextRuleId,
     required Uint8List publicKey,
     required Uint8List credentialId,
-    List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+    OZSubmissionMethod? forceMethod,
   }) async {
     await _kit.requireConnected();
 
     if (publicKey.length != SmartAccountConstants.secp256r1PublicKeySize) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'publicKey',
         'Public key must be ${SmartAccountConstants.secp256r1PublicKeySize} '
             'bytes, got: ${publicKey.length}',
@@ -212,7 +212,7 @@ class OZSignerManager {
     }
 
     if (publicKey[0] != SmartAccountConstants.uncompressedPubkeyPrefix) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'publicKey',
         'Public key must start with 0x04 (uncompressed format), '
             'got: 0x${publicKey[0].toRadixString(16).padLeft(2, '0')}',
@@ -220,7 +220,7 @@ class OZSignerManager {
     }
 
     if (credentialId.isEmpty) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'credentialId',
         'Credential ID cannot be empty',
       );
@@ -244,11 +244,11 @@ class OZSignerManager {
   ///
   /// Builds an [OZDelegatedSigner] for [address] (validation happens in
   /// the signer constructor) and delegates to [_addSigner].
-  Future<TransactionResult> addDelegated({
+  Future<OZTransactionResult> addDelegated({
     required int contextRuleId,
     required String address,
-    List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+    OZSubmissionMethod? forceMethod,
   }) async {
     await _kit.requireConnected();
 
@@ -266,12 +266,12 @@ class OZSignerManager {
   ///
   /// Constructs an [OZExternalSigner] via the Ed25519 factory
   /// (validation happens in the factory) and delegates to [_addSigner].
-  Future<TransactionResult> addEd25519({
+  Future<OZTransactionResult> addEd25519({
     required int contextRuleId,
     required String verifierAddress,
     required Uint8List publicKey,
-    List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+    OZSubmissionMethod? forceMethod,
   }) async {
     await _kit.requireConnected();
 
@@ -297,11 +297,11 @@ class OZSignerManager {
   /// IMPORTANT: the contract rejects removing the last signer from a
   /// rule that has no policies. Callers must ensure either at least
   /// one signer remains or that policies provide an authorisation path.
-  Future<TransactionResult> removeSigner({
+  Future<OZTransactionResult> removeSigner({
     required int contextRuleId,
     required int signerId,
-    List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+    OZSubmissionMethod? forceMethod,
   }) async {
     final connected = await _kit.requireConnected();
 
@@ -331,13 +331,13 @@ class OZSignerManager {
   /// The `BySigner` suffix distinguishes this from the ID-based
   /// [removeSigner] form (Dart has no overload-by-parameter-type).
   ///
-  /// Throws [InvalidInput] when the signer is not found on the rule or
+  /// Throws [SmartAccountInvalidInput] when the signer is not found on the rule or
   /// when the parsed `signerIds` list is shorter than `signers`.
-  Future<TransactionResult> removeSignerBySigner({
+  Future<OZTransactionResult> removeSignerBySigner({
     required int contextRuleId,
     required OZSmartAccountSigner signer,
-    List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-    SubmissionMethod? forceMethod,
+    List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+    OZSubmissionMethod? forceMethod,
   }) async {
     final ruleScVal = await _kit.contextRuleManager.getContextRule(
       contextRuleId,
@@ -353,14 +353,14 @@ class OZSignerManager {
     }
 
     if (signerIndex == -1) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'signer',
         'Signer not found on context rule $contextRuleId',
       );
     }
 
     if (signerIndex >= rule.signerIds.length) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'signer',
         'Signer found at index $signerIndex but signerIds has only '
             '${rule.signerIds.length} entries',
@@ -379,11 +379,11 @@ class OZSignerManager {
   // Private helpers
   // -------------------------------------------------------------------------
 
-  Future<TransactionResult> _addSigner({
+  Future<OZTransactionResult> _addSigner({
     required int contextRuleId,
     required OZSmartAccountSigner signer,
-    required List<SelectedSigner> selectedSigners,
-    required SubmissionMethod? forceMethod,
+    required List<OZSelectedSigner> selectedSigners,
+    required OZSubmissionMethod? forceMethod,
   }) async {
     final connected = await _kit.requireConnected();
 

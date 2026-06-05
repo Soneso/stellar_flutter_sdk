@@ -540,7 +540,7 @@ void main() {
           'NOT_A_VALID_CONTRACT',
           _ed25519Pub(),
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -551,7 +551,7 @@ void main() {
           publicKey: _secp256r1Pub(),
           credentialId: _credentialId(),
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -561,7 +561,7 @@ void main() {
           ed25519VerifierAddress: 'NOT_A_VALID_CONTRACT',
           publicKey: _ed25519Pub(),
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
   });
@@ -569,12 +569,12 @@ void main() {
   group('OZSmartAccountBuilders — createThresholdParams', () {
     test('testCreateThresholdParams_thresholdZero_throwsInvalidInput', () {
       expect(() => OZSmartAccountBuilders.createThresholdParams(0),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('testCreateThresholdParams_thresholdNegative_throwsInvalidInput', () {
       expect(() => OZSmartAccountBuilders.createThresholdParams(-1),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('testCreateThresholdParams_happyPath', () {
@@ -602,7 +602,7 @@ void main() {
           threshold: 1,
           signerWeights: <OZSmartAccountSigner, int>{},
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -615,7 +615,7 @@ void main() {
           threshold: 1,
           signerWeights: <OZSmartAccountSigner, int>{s: 0},
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -629,7 +629,7 @@ void main() {
           threshold: 100,
           signerWeights: <OZSmartAccountSigner, int>{s: 50},
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -643,7 +643,7 @@ void main() {
           threshold: 0,
           signerWeights: <OZSmartAccountSigner, int>{s: 1},
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -680,7 +680,7 @@ void main() {
           spendingLimit: '100',
           periodLedgers: 0,
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -690,7 +690,7 @@ void main() {
           spendingLimit: '0',
           periodLedgers: 100,
         ),
-        throwsA(isA<InvalidAmount>()),
+        throwsA(isA<SmartAccountInvalidAmount>()),
       );
     });
 

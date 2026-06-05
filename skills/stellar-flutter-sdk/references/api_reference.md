@@ -48,19 +48,6 @@ AccountMergeOperationBuilder.forMuxedDestinationAccount(this._destination)
 AccountMergeOperationBuilder setSourceAccount(String sourceAccountId)
 AccountMergeOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount)
 AccountMergeOperation build()
-## AddPasskeySignerResult
-final String credentialId
-final Uint8List publicKey
-final TransactionResult transactionResult
-const AddPasskeySignerResult()
-bool operator ==(Object other)
-## AllowCredential
-final Uint8List id
-final List<String>? transports
-const AllowCredential()
-static AllowCredential fromId(Uint8List id)
-static List<AllowCredential> fromIds(List<Uint8List> ids)
-bool operator ==(Object other)
 ## AllowTrustOperation extends Operation
 AllowTrustOperation(this._trustor, this._assetCode, this._authorize, this._authorizeToMaintainLiabilities)
 String get trustor
@@ -128,12 +115,6 @@ XdrAsset toXdr()
 XdrChangeTrustAsset toXdrChangeTrustAsset()
 XdrTrustlineAsset toXdrTrustLineAsset()
 bool operator ==(Object object)
-## AuthenticatePasskeyResult
-final String credentialId
-final OZWebAuthnSignature signature
-final Uint8List publicKey
-const AuthenticatePasskeyResult()
-bool operator ==(Object other)
 ## Base16Codec extends Codec<List<int>, String>
 final Converter<String, List<int>> decoder
 final Converter<List<int>, String> encoder
@@ -233,38 +214,6 @@ ClawbackOperationBuilder.forMuxedFromAccount(this._asset, this._from, this._amou
 ClawbackOperationBuilder setSourceAccount(String sourceAccountId)
 ClawbackOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount)
 ClawbackOperation build()
-## sealed class ConfigurationException extends SmartAccountException
-const ConfigurationException(super.code, super.message, [super.cause])
-static InvalidConfig invalidConfig(String details)
-static MissingConfig missingConfig(String param)
-## ConnectWalletOptions
-final String? credentialId
-final String? contractId
-final bool fresh
-final bool prompt
-const ConnectWalletOptions()
-ConnectWalletOptions copyWith()
-bool operator ==(Object other)
-## ConnectedWallet
-final String address
-final String walletId
-final String walletName
-const ConnectedWallet()
-bool operator ==(Object other)
-## sealed class ContextRuleType
-const ContextRuleType()
-XdrSCVal toScVal()
-## final class ContextRuleTypeCallContract extends ContextRuleType
-final String contractAddress
-const ContextRuleTypeCallContract(this.contractAddress)
-bool operator ==(Object other)
-## final class ContextRuleTypeCreateContract extends ContextRuleType
-final Uint8List wasmHash
-ContextRuleTypeCreateContract(Uint8List wasmHash)
-bool operator ==(Object other)
-## final class ContextRuleTypeDefault extends ContextRuleType
-const ContextRuleTypeDefault()
-bool operator ==(Object other)
 ## CreateAccountOperation extends Operation
 CreateAccountOperation(this._destination, this._startingBalance)
 String get startingBalance
@@ -321,40 +270,6 @@ CreatePassiveSellOfferOperationBuilder(this._selling, this._buying, this._amount
 CreatePassiveSellOfferOperationBuilder setSourceAccount(String sourceAccountId)
 CreatePassiveSellOfferOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount)
 CreatePassiveSellOfferOperation build()
-## CreateWalletResult
-final String credentialId
-final String contractId
-final Uint8List publicKey
-final String signedTransactionXdr
-final String? transactionHash
-final String? nickname
-const CreateWalletResult()
-CreateWalletResult copyWith()
-bool operator ==(Object other)
-## final class CredentialAlreadyExists extends CredentialException
-const CredentialAlreadyExists(String message, [Object? cause])
-## final class CredentialDeploymentFailed extends CredentialException
-const CredentialDeploymentFailed(String message, [Object? cause])
-## enum CredentialDeploymentStatus
-pending
-failed
-## sealed class CredentialException extends SmartAccountException
-const CredentialException(super.code, super.message, [super.cause])
-static CredentialNotFound notFound(String credentialId)
-static CredentialAlreadyExists alreadyExists(String credentialId)
-static CredentialInvalid invalid(String reason)
-static CredentialDeploymentFailed deploymentFailed(String reason)
-## final class CredentialInvalid extends CredentialException
-const CredentialInvalid(String message, [Object? cause])
-## final class CredentialNotFound extends CredentialException
-const CredentialNotFound(String message, [Object? cause])
-## DeployPendingResult
-final String contractId
-final String signedTransactionXdr
-final String? transactionHash
-const DeployPendingResult()
-DeployPendingResult copyWith()
-bool operator ==(Object other)
 ## DeploySACWithAssetHostFunction extends HostFunction
 DeploySACWithAssetHostFunction(this._asset)
 Asset get asset
@@ -379,26 +294,6 @@ ExtendFootprintTTLOperationBuilder(this._extendTo)
 ExtendFootprintTTLOperationBuilder setSourceAccount(String sourceAccountId)
 ExtendFootprintTTLOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount)
 ExtendFootprintTTLOperation build()
-## ExternalSignerInfo
-final String address
-final ExternalSignerType type
-final String? walletName
-final String? walletId
-const ExternalSignerInfo()
-bool operator ==(Object other)
-## enum ExternalSignerType
-keypair
-wallet
-## abstract class ExternalWalletAdapter
-const ExternalWalletAdapter()
-Future<ConnectedWallet?> connect()
-Future<void> disconnect()
-Future<void> disconnectByAddress(String address) async
-Future<SignAuthEntryResult> signAuthEntry(String preimageXdr)
-List<ConnectedWallet> getConnectedWallets()
-bool canSignFor(String address)
-ConnectedWallet? getWalletForAddress(String address)
-Future<ConnectedWallet?> reconnect(String walletId) async
 ## FeeBumpTransaction extends AbstractTransaction
 FeeBumpTransaction(this._mFeeAccount, this._mFee, this._mInner)
 int get fee
@@ -426,64 +321,6 @@ static Future<bool> fundTestAccount(String accountId) async
 HostFunction()
 factory HostFunction.fromXdr(XdrHostFunction xdr)
 XdrHostFunction toXdr()
-## InMemoryStorageAdapter implements StorageAdapter
-InMemoryStorageAdapter()
-Future<void> save(StoredCredential credential)
-Future<StoredCredential?> get(String credentialId)
-Future<List<StoredCredential>> getByContract(String contractId)
-Future<List<StoredCredential>> getAll()
-Future<void> delete(String credentialId)
-Future<void> update(String credentialId, StoredCredentialUpdate updates)
-Future<void> clear()
-Future<void> saveSession(StoredSession session)
-Future<StoredSession?> getSession()
-Future<void> clearSession()
-bool operator ==(Object other)
-## InMemoryWalletConnectionStorage extends WalletConnectionStorage
-InMemoryWalletConnectionStorage()
-Future<String?> getItem(String key)
-Future<void> setItem(String key, String value)
-Future<void> removeItem(String key)
-## IndexedDBStorageAdapter implements StorageAdapter
-static const String defaultDbName
-static const int dbVersion
-static const String storeCredentials
-static const String storeSessions
-static const String indexContractId
-static const String indexCreatedAt
-static const String indexIsPrimary
-static const String sessionKey
-final String dbName
-IndexedDBStorageAdapter()
-IndexedDBStorageAdapter.withFactory()
-Future<void> close()
-Future<void> save(StoredCredential credential)
-Future<StoredCredential?> get(String credentialId)
-Future<List<StoredCredential>> getByContract(String contractId)
-Future<List<StoredCredential>> getAll()
-Future<void> delete(String credentialId)
-Future<void> update(String credentialId, StoredCredentialUpdate updates)
-Future<void> clear()
-Future<void> saveSession(StoredSession session)
-Future<StoredSession?> getSession()
-Future<void> clearSession()
-Future<void> deleteDatabase()
-## sealed class IndexerException extends SmartAccountException
-const IndexerException(super.code, super.message, [super.cause])
-static IndexerRequestFailed requestFailed(String reason)
-static IndexerTimeout timeout(String url)
-## final class IndexerRequestFailed extends IndexerException
-const IndexerRequestFailed(String message, [Object? cause])
-## final class IndexerTimeout extends IndexerException
-const IndexerTimeout(String message, [Object? cause])
-## final class InvalidAddress extends ValidationException
-const InvalidAddress(String message, [Object? cause])
-## final class InvalidAmount extends ValidationException
-const InvalidAmount(String message, [Object? cause])
-## final class InvalidConfig extends ConfigurationException
-const InvalidConfig(String message, [Object? cause])
-## final class InvalidInput extends ValidationException
-const InvalidInput(String message, [Object? cause])
 ## InvokeContractHostFunction extends HostFunction
 List<XdrSCVal>? arguments
 InvokeContractHostFunction(this._contractID, this._functionName)
@@ -579,21 +416,6 @@ LiquidityPoolWithdrawOperationBuilder()
 LiquidityPoolWithdrawOperationBuilder setSourceAccount(String sourceAccountId)
 LiquidityPoolWithdrawOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount)
 LiquidityPoolWithdrawOperation build()
-## LocalStorageAdapter implements StorageAdapter
-static const String defaultKeyPrefix
-final String keyPrefix
-LocalStorageAdapter()
-LocalStorageAdapter.withStorage()
-Future<void> save(StoredCredential credential)
-Future<StoredCredential?> get(String credentialId)
-Future<List<StoredCredential>> getByContract(String contractId)
-Future<List<StoredCredential>> getAll()
-Future<void> delete(String credentialId)
-Future<void> update(String credentialId, StoredCredentialUpdate updates)
-Future<void> clear()
-Future<void> saveSession(StoredSession session)
-Future<StoredSession?> getSession()
-Future<void> clearSession()
 ## ManageBuyOfferOperation extends Operation
 ManageBuyOfferOperation(this._selling, this._buying, this._amount, this._price, this._offerId)
 Asset get selling
@@ -681,8 +503,6 @@ bool operator ==(Object o)
 ## MemoTooLongException implements Exception
 final message
 MemoTooLongException([this.message])
-## final class MissingConfig extends ConfigurationException
-const MissingConfig(String message, [Object? cause])
 ## MuxedAccount
 MuxedAccount(this._ed25519AccountId, this._id)
 String get ed25519AccountId
@@ -699,6 +519,12 @@ static const Network FUTURENET
 Network(this._networkPassphrase)
 String get networkPassphrase
 Uint8List? get networkId
+## OZAddPasskeySignerResult
+final String credentialId
+final Uint8List publicKey
+final OZTransactionResult transactionResult
+const OZAddPasskeySignerResult()
+bool operator ==(Object other)
 ## OZAddressLookupResponse
 final String signerAddress
 final List<OZIndexedContractSummary> contracts
@@ -707,12 +533,18 @@ const OZAddressLookupResponse()
 factory OZAddressLookupResponse.fromJson(Map<String, dynamic> json)
 Map<String, dynamic> toJson()
 bool operator ==(Object other)
+## OZAuthenticatePasskeyResult
+final String credentialId
+final OZWebAuthnSignature signature
+final Uint8List publicKey
+const OZAuthenticatePasskeyResult()
+bool operator ==(Object other)
 ## OZBuilders
-static ContextRuleType createDefaultContext()
-static ContextRuleType createCallContractContext(String contractAddress)
-static ContextRuleType createCreateContractContextFromHex(String wasmHashHex,)
-static ContextRuleType createCreateContractContextFromBytes(Uint8List wasmHash,)
-static List<OZSmartAccountSigner> collectUniqueSignersFromRules(List<ParsedContextRule> rules,)
+static OZContextRuleType createDefaultContext()
+static OZContextRuleType createCallContractContext(String contractAddress)
+static OZContextRuleType createCreateContractContextFromHex(String wasmHashHex,)
+static OZContextRuleType createCreateContractContextFromBytes(Uint8List wasmHash,)
+static List<OZSmartAccountSigner> collectUniqueSignersFromRules(List<OZParsedContextRule> rules,)
 ## final class OZConnectWalletAmbiguous extends OZConnectWalletResult
 final String credentialId
 final List<String> candidates
@@ -725,9 +557,23 @@ final bool restoredFromSession
 const OZConnectWalletConnected()
 OZConnectWalletConnected copyWith()
 bool operator ==(Object other)
+## OZConnectWalletOptions
+final String? credentialId
+final String? contractId
+final bool fresh
+final bool prompt
+const OZConnectWalletOptions()
+OZConnectWalletOptions copyWith()
+bool operator ==(Object other)
 ## sealed class OZConnectWalletResult
 const OZConnectWalletResult()
 String get credentialId
+## OZConnectedWallet
+final String address
+final String walletId
+final String walletName
+const OZConnectedWallet()
+bool operator ==(Object other)
 ## OZConstants
 static const int defaultSessionExpiryMs
 static const int defaultIndexerTimeoutMs
@@ -745,17 +591,31 @@ static const int maxIndexerConnectTimeoutMs
 static const int maxRelayerConnectTimeoutMs
 ## OZContextRuleManager implements OZContextRuleManagerInterface
 OZContextRuleManager(this._kit)
-Future<TransactionResult> addContextRule()
+Future<OZTransactionResult> addContextRule()
 Future<XdrSCVal> getContextRule(int id) async
 Future<int> getContextRulesCount() async
 Future<List<XdrSCVal>> getAllContextRules()
-Future<List<ParsedContextRule>> listContextRules()
-ParsedContextRule parseContextRule(XdrSCVal scVal)
-Future<TransactionResult> updateName()
-Future<TransactionResult> updateValidUntil()
-Future<TransactionResult> removeContextRule()
-Future<List<int>> resolveContextRuleIdsForEntry(XdrSorobanAuthorizationEntry entry, List<OZSmartAccountSigner> signers, List<ParsedContextRule> contextRules,) async
-List<int> resolveContextRuleIdsForEntryWithRules(XdrSorobanAuthorizationEntry entry, List<OZSmartAccountSigner> selectedSigners, List<ParsedContextRule> rules,)
+Future<List<OZParsedContextRule>> listContextRules()
+OZParsedContextRule parseContextRule(XdrSCVal scVal)
+Future<OZTransactionResult> updateName()
+Future<OZTransactionResult> updateValidUntil()
+Future<OZTransactionResult> removeContextRule()
+Future<List<int>> resolveContextRuleIdsForEntry(XdrSorobanAuthorizationEntry entry, List<OZSmartAccountSigner> signers, List<OZParsedContextRule> contextRules,) async
+List<int> resolveContextRuleIdsForEntryWithRules(XdrSorobanAuthorizationEntry entry, List<OZSmartAccountSigner> selectedSigners, List<OZParsedContextRule> rules,)
+## sealed class OZContextRuleType
+const OZContextRuleType()
+XdrSCVal toScVal()
+## final class OZContextRuleTypeCallContract extends OZContextRuleType
+final String contractAddress
+const OZContextRuleTypeCallContract(this.contractAddress)
+bool operator ==(Object other)
+## final class OZContextRuleTypeCreateContract extends OZContextRuleType
+final Uint8List wasmHash
+OZContextRuleTypeCreateContract(Uint8List wasmHash)
+bool operator ==(Object other)
+## final class OZContextRuleTypeDefault extends OZContextRuleType
+const OZContextRuleTypeDefault()
+bool operator ==(Object other)
 ## OZContractDetailsResponse
 final String contractId
 final OZIndexedContractSummary summary
@@ -770,6 +630,19 @@ static const int keyDataTooLarge
 static const int contextRuleIdsLengthMismatch
 static const int nameTooLong
 static const int unauthorizedSigner
+## OZCreateWalletResult
+final String credentialId
+final String contractId
+final Uint8List publicKey
+final String signedTransactionXdr
+final String? transactionHash
+final String? nickname
+const OZCreateWalletResult()
+OZCreateWalletResult copyWith()
+bool operator ==(Object other)
+## enum OZCredentialDeploymentStatus
+pending
+failed
 ## OZCredentialLookupResponse
 final String credentialId
 final List<OZIndexedContractSummary> contracts
@@ -780,18 +653,18 @@ Map<String, dynamic> toJson()
 bool operator ==(Object other)
 ## OZCredentialManager implements OZWalletCredentialManagerInterface
 OZCredentialManager(this._kit)
-Future<StoredCredential> createPendingCredential()
-Future<StoredCredential> saveCredential()
+Future<OZStoredCredential> createPendingCredential()
+Future<OZStoredCredential> saveCredential()
 Future<void> markDeploymentFailed()
 Future<bool> sync(String credentialId) async
-Future<SyncResult> syncAll() async
+Future<OZSyncResult> syncAll() async
 Future<void> deleteCredential()
-Future<StoredCredential?> getCredential(String credentialId) async
-Future<List<StoredCredential>> getCredentialsByContract(String contractId,) async
-Future<List<StoredCredential>> getAllCredentials() async
-Future<List<StoredCredential>> getForConnectedWallet() async
-Future<List<StoredCredential>> getPendingCredentials() async
-Future<void> updateCredential(String credentialId, StoredCredentialUpdate updates,) async
+Future<OZStoredCredential?> getCredential(String credentialId) async
+Future<List<OZStoredCredential>> getCredentialsByContract(String contractId,) async
+Future<List<OZStoredCredential>> getAllCredentials() async
+Future<List<OZStoredCredential>> getForConnectedWallet() async
+Future<List<OZStoredCredential>> getPendingCredentials() async
+Future<void> updateCredential(String credentialId, OZStoredCredentialUpdate updates,) async
 Future<void> updateLastUsed(String credentialId) async
 Future<void> updateNickname(String credentialId, String? nickname) async
 Future<void> setPrimary(String credentialId) async
@@ -801,6 +674,13 @@ final String address
 OZDelegatedSigner(this.address)
 String get uniqueKey
 XdrSCVal toScVal()
+bool operator ==(Object other)
+## OZDeployPendingResult
+final String contractId
+final String signedTransactionXdr
+final String? transactionHash
+const OZDeployPendingResult()
+OZDeployPendingResult copyWith()
 bool operator ==(Object other)
 ## final class OZEd25519Signature extends OZSmartAccountSignature
 final Uint8List publicKey
@@ -829,20 +709,27 @@ static OZExternalSigner webAuthn()
 static OZExternalSigner ed25519()
 XdrSCVal toScVal()
 bool operator ==(Object other)
+## OZExternalSignerInfo
+final String address
+final OZExternalSignerType type
+final String? walletName
+final String? walletId
+const OZExternalSignerInfo()
+bool operator ==(Object other)
 ## OZExternalSignerManager
 final String networkPassphrase
-final ExternalWalletAdapter? walletAdapter
-final WalletConnectionStorage? walletConnectionStorage
+final OZExternalWalletAdapter? walletAdapter
+final OZWalletConnectionStorage? walletConnectionStorage
 final OZExternalEd25519SignerAdapter? ed25519Adapter
 OZExternalSignerManager()
 bool get hasWalletAdapter
 Future<String> addFromSecret(String secretKey) async
-Future<ConnectedWallet?> addFromWallet() async
+Future<OZConnectedWallet?> addFromWallet() async
 Future<bool> canSignFor(String address) async
-Future<ExternalSignerInfo?> get(String address) async
-Future<List<ExternalSignerInfo>> getAll() async
+Future<OZExternalSignerInfo?> get(String address) async
+Future<List<OZExternalSignerInfo>> getAll() async
 Future<bool> hasSigners() async
-Future<SignAuthEntryResult> signAuthEntry(String address, String authEntry,) async
+Future<OZSignAuthEntryResult> signAuthEntry(String address, String authEntry,) async
 Future<void> remove(String address) async
 Future<void> removeAll() async
 Future<void> clearInMemorySigners() async
@@ -850,7 +737,38 @@ Uint8List addEd25519FromRawKey()
 bool canSignEd25519For()
 Future<Uint8List> signEd25519AuthDigest()
 void removeEd25519()
-Future<List<ConnectedWallet>> restoreConnections() async
+Future<List<OZConnectedWallet>> restoreConnections() async
+## enum OZExternalSignerType
+keypair
+wallet
+## abstract class OZExternalWalletAdapter
+const OZExternalWalletAdapter()
+Future<OZConnectedWallet?> connect()
+Future<void> disconnect()
+Future<void> disconnectByAddress(String address) async
+Future<OZSignAuthEntryResult> signAuthEntry(String preimageXdr)
+List<OZConnectedWallet> getConnectedWallets()
+bool canSignFor(String address)
+OZConnectedWallet? getWalletForAddress(String address)
+Future<OZConnectedWallet?> reconnect(String walletId) async
+## OZInMemoryStorageAdapter implements OZStorageAdapter
+OZInMemoryStorageAdapter()
+Future<void> save(OZStoredCredential credential)
+Future<OZStoredCredential?> get(String credentialId)
+Future<List<OZStoredCredential>> getByContract(String contractId)
+Future<List<OZStoredCredential>> getAll()
+Future<void> delete(String credentialId)
+Future<void> update(String credentialId, OZStoredCredentialUpdate updates)
+Future<void> clear()
+Future<void> saveSession(OZStoredSession session)
+Future<OZStoredSession?> getSession()
+Future<void> clearSession()
+bool operator ==(Object other)
+## OZInMemoryWalletConnectionStorage extends OZWalletConnectionStorage
+OZInMemoryWalletConnectionStorage()
+Future<String?> getItem(String key)
+Future<void> setItem(String key, String value)
+Future<void> removeItem(String key)
 ## OZIndexedContextRule
 final int contextRuleId
 final List<OZIndexedSigner> signers
@@ -872,6 +790,30 @@ const OZIndexedContractSummary()
 factory OZIndexedContractSummary.fromJson(Map<String, dynamic> json)
 Map<String, dynamic> toJson()
 bool operator ==(Object other)
+## OZIndexedDBStorageAdapter implements OZStorageAdapter
+static const String defaultDbName
+static const int dbVersion
+static const String storeCredentials
+static const String storeSessions
+static const String indexContractId
+static const String indexCreatedAt
+static const String indexIsPrimary
+static const String sessionKey
+final String dbName
+OZIndexedDBStorageAdapter()
+OZIndexedDBStorageAdapter.withFactory()
+Future<void> close()
+Future<void> save(OZStoredCredential credential)
+Future<OZStoredCredential?> get(String credentialId)
+Future<List<OZStoredCredential>> getByContract(String contractId)
+Future<List<OZStoredCredential>> getAll()
+Future<void> delete(String credentialId)
+Future<void> update(String credentialId, OZStoredCredentialUpdate updates)
+Future<void> clear()
+Future<void> saveSession(OZStoredSession session)
+Future<OZStoredSession?> getSession()
+Future<void> clearSession()
+Future<void> deleteDatabase()
 ## OZIndexedPolicy
 final String policyAddress
 final Object? installParams
@@ -922,21 +864,62 @@ const OZIndexerStatsResponse()
 factory OZIndexerStatsResponse.fromJson(Map<String, dynamic> json)
 Map<String, dynamic> toJson()
 bool operator ==(Object other)
+## OZLocalStorageAdapter implements OZStorageAdapter
+static const String defaultKeyPrefix
+final String keyPrefix
+OZLocalStorageAdapter()
+OZLocalStorageAdapter.withStorage()
+Future<void> save(OZStoredCredential credential)
+Future<OZStoredCredential?> get(String credentialId)
+Future<List<OZStoredCredential>> getByContract(String contractId)
+Future<List<OZStoredCredential>> getAll()
+Future<void> delete(String credentialId)
+Future<void> update(String credentialId, OZStoredCredentialUpdate updates)
+Future<void> clear()
+Future<void> saveSession(OZStoredSession session)
+Future<OZStoredSession?> getSession()
+Future<void> clearSession()
 ## OZMultiSignerManager implements OZMultiSignerManagerInterface
 OZMultiSignerManager(this._kit)
-Future<TransactionResult> multiSignerTransfer()
-Future<TransactionResult> multiSignerContractCall()
-Future<TransactionResult> multiSignerExecuteAndSubmit()
-Future<TransactionResult> submitWithMultipleSigners()
+Future<OZTransactionResult> multiSignerTransfer()
+Future<OZTransactionResult> multiSignerContractCall()
+Future<OZTransactionResult> multiSignerExecuteAndSubmit()
+Future<OZTransactionResult> submitWithMultipleSigners()
 XdrInt64 generateNonceForTest()
+## OZParsedContextRule
+final int id
+final OZContextRuleType contextType
+final String name
+final List<OZSmartAccountSigner> signers
+final List<int> signerIds
+final List<String> policies
+final List<int> policyIds
+final int? validUntil
+const OZParsedContextRule()
+bool operator ==(Object other)
+## OZPlatformStorageAdapter implements OZStorageAdapter
+OZPlatformStorageAdapter()
+Future<void> save(OZStoredCredential credential) async
+Future<OZStoredCredential?> get(String credentialId) async
+Future<List<OZStoredCredential>> getByContract(String contractId) async
+Future<List<OZStoredCredential>> getAll() async
+Future<void> delete(String credentialId) async
+Future<void> update(String credentialId, OZStoredCredentialUpdate updates,) async
+Future<void> clear() async
+Future<void> saveSession(OZStoredSession session) async
+Future<OZStoredSession?> getSession() async
+Future<void> clearSession() async
+## sealed class OZPolicyInstallParams
+const OZPolicyInstallParams()
+XdrSCVal toScVal()
 ## OZPolicyManager
 OZPolicyManager(this._kit)
-Future<TransactionResult> addSimpleThreshold()
-Future<TransactionResult> addWeightedThreshold()
-Future<TransactionResult> addSpendingLimit()
-Future<TransactionResult> removePolicy()
-Future<TransactionResult> removePolicyByAddress()
-Future<TransactionResult> addPolicy()
+Future<OZTransactionResult> addSimpleThreshold()
+Future<OZTransactionResult> addWeightedThreshold()
+Future<OZTransactionResult> addSpendingLimit()
+Future<OZTransactionResult> removePolicy()
+Future<OZTransactionResult> removePolicyByAddress()
+Future<OZTransactionResult> addPolicy()
 static List<XdrSCMapEntry> sortMapByKeyXdr(List<XdrSCMapEntry> entries)
 static List<int> scValToXdrBytes(XdrSCVal scVal)
 ## final class OZPolicySignature extends OZSmartAccountSignature
@@ -969,17 +952,52 @@ final String? errorCode
 final Object? details
 const OZRelayerResponse()
 bool operator ==(Object other)
+## typedef OZResolveContextRuleIds
+typedef OZResolveContextRuleIds = Future<List<int>> Function( XdrSorobanAuthorizationEntry entry, int index, )
+## sealed class OZSelectedSigner
+const OZSelectedSigner()
+## final class OZSelectedSignerEd25519 extends OZSelectedSigner
+final String verifierAddress
+final Uint8List publicKey
+const OZSelectedSignerEd25519()
+bool operator ==(Object other)
+## final class OZSelectedSignerPasskey extends OZSelectedSigner
+final String? credentialId
+final Uint8List? credentialIdBytes
+final Uint8List? keyData
+final List<String>? transports
+const OZSelectedSignerPasskey()
+bool operator ==(Object other)
+## final class OZSelectedSignerWallet extends OZSelectedSigner
+final String address
+const OZSelectedSignerWallet(this.address)
+bool operator ==(Object other)
+## OZSignAuthEntryOptions
+final String? networkPassphrase
+final String? address
+const OZSignAuthEntryOptions()
+bool operator ==(Object other)
+## OZSignAuthEntryResult
+final String signedAuthEntry
+final String? signerAddress
+const OZSignAuthEntryResult()
+bool operator ==(Object other)
 ## OZSignerManager
 OZSignerManager(this._kit)
-Future<AddPasskeySignerResult> addNewPasskeySigner()
-Future<TransactionResult> addPasskey()
-Future<TransactionResult> addDelegated()
-Future<TransactionResult> addEd25519()
-Future<TransactionResult> removeSigner()
-Future<TransactionResult> removeSignerBySigner()
+Future<OZAddPasskeySignerResult> addNewPasskeySigner()
+Future<OZTransactionResult> addPasskey()
+Future<OZTransactionResult> addDelegated()
+Future<OZTransactionResult> addEd25519()
+Future<OZTransactionResult> removeSigner()
+Future<OZTransactionResult> removeSignerBySigner()
 ## OZSimpleThresholdParams
 final int threshold
 const OZSimpleThresholdParams()
+## final class OZSimpleThresholdPolicyParams extends OZPolicyInstallParams
+final int threshold
+const OZSimpleThresholdPolicyParams()
+XdrSCVal toScVal()
+bool operator ==(Object other)
 ## abstract class OZSmartAccountAuth
 static Future<Uint8List> buildAuthDigest(Uint8List signaturePayload, List<int> contextRuleIds,) async
 static Future<Uint8List> buildAuthPayloadHash(XdrSorobanAuthorizationEntry entry, int expirationLedger, String networkPassphrase,) async
@@ -1026,8 +1044,8 @@ final int timeoutInSeconds
 final String? relayerUrl
 final String? indexerUrl
 final WebAuthnProvider? webauthnProvider
-final StorageAdapter storage
-final ExternalWalletAdapter? externalWallet
+final OZStorageAdapter storage
+final OZExternalWalletAdapter? externalWallet
 final OZExternalEd25519SignerAdapter? externalEd25519Adapter
 final int maxContextRuleScanId
 OZSmartAccountConfig()
@@ -1046,17 +1064,79 @@ OZSmartAccountConfigBuilder timeoutInSeconds(int value)
 OZSmartAccountConfigBuilder relayerUrl(String? value)
 OZSmartAccountConfigBuilder indexerUrl(String? value)
 OZSmartAccountConfigBuilder webauthnProvider(WebAuthnProvider? value)
-OZSmartAccountConfigBuilder storage(StorageAdapter value)
-OZSmartAccountConfigBuilder externalWallet(ExternalWalletAdapter? value)
+OZSmartAccountConfigBuilder storage(OZStorageAdapter value)
+OZSmartAccountConfigBuilder externalWallet(OZExternalWalletAdapter? value)
 OZSmartAccountConfigBuilder externalEd25519Adapter(OZExternalEd25519SignerAdapter? value)
 OZSmartAccountConfigBuilder maxContextRuleScanId(int value)
 OZSmartAccountConfig build()
+## sealed class OZSmartAccountEvent
+const OZSmartAccountEvent()
+String get eventTypeName
+## final class OZSmartAccountEventCredentialCreated extends OZSmartAccountEvent
+final OZStoredCredential credential
+const OZSmartAccountEventCredentialCreated()
+String get eventTypeName
+bool operator ==(Object other)
+## final class OZSmartAccountEventCredentialDeleted extends OZSmartAccountEvent
+final String credentialId
+const OZSmartAccountEventCredentialDeleted()
+String get eventTypeName
+bool operator ==(Object other)
+## final class OZSmartAccountEventCredentialSyncFailed extends OZSmartAccountEvent
+final String credentialId
+final Object error
+final StackTrace? stackTrace
+const OZSmartAccountEventCredentialSyncFailed()
+String get eventTypeName
+bool operator ==(Object other)
+## OZSmartAccountEventEmitter
+OZSmartAccountEventEmitter()
+void setErrorHandler(OZSmartAccountEventErrorHandler? handler)
+void Function()
+void Function()
+void Function()
+void removeAllListeners([String? eventType])
+int listenerCount(String eventType)
+void emit(OZSmartAccountEvent event)
+## typedef OZSmartAccountEventErrorHandler
+typedef OZSmartAccountEventErrorHandler = void Function( OZSmartAccountEvent event, Object error, StackTrace stackTrace, )
+## typedef OZSmartAccountEventListener
+typedef OZSmartAccountEventListener = void Function(OZSmartAccountEvent event)
+## final class OZSmartAccountEventSessionExpired extends OZSmartAccountEvent
+final String contractId
+final String credentialId
+const OZSmartAccountEventSessionExpired()
+String get eventTypeName
+bool operator ==(Object other)
+## final class OZSmartAccountEventTransactionSigned extends OZSmartAccountEvent
+final String contractId
+final String? credentialId
+const OZSmartAccountEventTransactionSigned()
+String get eventTypeName
+bool operator ==(Object other)
+## final class OZSmartAccountEventTransactionSubmitted extends OZSmartAccountEvent
+final String hash
+final bool success
+const OZSmartAccountEventTransactionSubmitted()
+String get eventTypeName
+bool operator ==(Object other)
+## final class OZSmartAccountEventWalletConnected extends OZSmartAccountEvent
+final String contractId
+final String credentialId
+const OZSmartAccountEventWalletConnected()
+String get eventTypeName
+bool operator ==(Object other)
+## final class OZSmartAccountEventWalletDisconnected extends OZSmartAccountEvent
+final String contractId
+const OZSmartAccountEventWalletDisconnected()
+String get eventTypeName
+bool operator ==(Object other)
 ## OZSmartAccountKit implements OZSmartAccountWalletKitInterface
 final OZSmartAccountConfig config
 final OZRelayerClient? relayerClient
 final OZIndexerClient? indexerClient
 final SorobanServer sorobanServer
-final SmartAccountEventEmitter events
+final OZSmartAccountEventEmitter events
 late final OZWalletOperations walletOperations
 late final OZTransactionOperations transactionOperations
 late final OZSignerManager signerManager
@@ -1074,7 +1154,7 @@ Future<OZConnectedState> requireConnected() async
 Future<void> disconnect() async
 Future<void> close() async
 Future<KeyPair> getDeployer() async
-StorageAdapter getStorage()
+OZStorageAdapter getStorage()
 static OZSmartAccountKit create()
 ## sealed class OZSmartAccountSignature
 const OZSmartAccountSignature()
@@ -1087,21 +1167,96 @@ XdrSCVal toScVal()
 ## OZSpendingLimitParams
 final BigInt spendingLimit
 final int periodLedgers
+## final class OZSpendingLimitPolicyParams extends OZPolicyInstallParams
+final BigInt spendingLimit
+final int periodLedgers
+const OZSpendingLimitPolicyParams()
+XdrSCVal toScVal()
+bool operator ==(Object other)
+## abstract class OZStorageAdapter
+Future<void> save(OZStoredCredential credential)
+Future<OZStoredCredential?> get(String credentialId)
+Future<List<OZStoredCredential>> getByContract(String contractId)
+Future<List<OZStoredCredential>> getAll()
+Future<void> delete(String credentialId)
+Future<void> update(String credentialId, OZStoredCredentialUpdate updates)
+Future<void> clear()
+Future<void> saveSession(OZStoredSession session)
+Future<OZStoredSession?> getSession()
+Future<void> clearSession()
+## OZStoredCredential
+final String credentialId
+final Uint8List publicKey
+final String? contractId
+final OZCredentialDeploymentStatus deploymentStatus
+final String? deploymentError
+final int createdAt
+final int? lastUsedAt
+final String? nickname
+final bool isPrimary
+final List<String>? transports
+final String? deviceType
+final bool? backedUp
+OZStoredCredential()
+OZStoredCredential copyWith()
+OZStoredCredential applyUpdate(OZStoredCredentialUpdate updates)
+bool operator ==(Object other)
+## OZStoredCredentialUpdate
+final OZCredentialDeploymentStatus? deploymentStatus
+final String? deploymentError
+final String? contractId
+final int? lastUsedAt
+final String? nickname
+final bool? isPrimary
+final List<String>? transports
+final String? deviceType
+final bool? backedUp
+const OZStoredCredentialUpdate()
+## OZStoredSession
+final String credentialId
+final String contractId
+final int connectedAt
+final int expiresAt
+const OZStoredSession()
+bool get isExpired
+bool operator ==(Object other)
+## enum OZSubmissionMethod
+relayer
+rpc
+## OZSyncResult
+final int deployed
+final int pending
+final int failed
+const OZSyncResult()
+bool operator ==(Object other)
 ## OZTransactionOperations
 OZTransactionOperations(this._kit)
-Future<TransactionResult> transfer()
-Future<TransactionResult> contractCall()
-Future<TransactionResult> executeAndSubmit()
-Future<TransactionResult> submit()
-Future<TransactionResult> submitMultiSignerTransaction()
+Future<OZTransactionResult> transfer()
+Future<OZTransactionResult> contractCall()
+Future<OZTransactionResult> executeAndSubmit()
+Future<OZTransactionResult> submit()
+Future<OZTransactionResult> submitMultiSignerTransaction()
 Future<XdrSCVal> simulateAndExtractResult(XdrHostFunction hostFunction) async
 Future<String> fundWallet()
+## OZTransactionResult
+final bool success
+final String? hash
+final int? ledger
+final String? error
+const OZTransactionResult()
+OZTransactionResult copyWith()
+bool operator ==(Object other)
+## abstract class OZWalletConnectionStorage
+const OZWalletConnectionStorage()
+Future<String?> getItem(String key)
+Future<void> setItem(String key, String value)
+Future<void> removeItem(String key)
 ## OZWalletOperations
 OZWalletOperations(this._kit)
-Future<CreateWalletResult> createWallet()
+Future<OZCreateWalletResult> createWallet()
 Future<OZConnectWalletResult?> connectWallet()
-Future<AuthenticatePasskeyResult> authenticatePasskey()
-Future<DeployPendingResult> deployPendingCredential()
+Future<OZAuthenticatePasskeyResult> authenticatePasskey()
+Future<OZDeployPendingResult> deployPendingCredential()
 ## final class OZWebAuthnSignature extends OZSmartAccountSignature
 final Uint8List authenticatorData
 final Uint8List clientData
@@ -1114,6 +1269,12 @@ bool operator ==(Object other)
 final int threshold
 final Map<OZSmartAccountSigner, int> signerWeights
 const OZWeightedThresholdParams()
+## final class OZWeightedThresholdPolicyParams extends OZPolicyInstallParams
+final Map<OZSmartAccountSigner, int> signerWeights
+final int threshold
+OZWeightedThresholdPolicyParams()
+XdrSCVal toScVal()
+bool operator ==(Object other)
 ## abstract class Operation
 MuxedAccount? sourceAccount
 Operation()
@@ -1121,17 +1282,6 @@ XdrOperation toXdr()
 String toXdrBase64()
 static Operation fromXdr(XdrOperation xdrOp)
 XdrOperationBody toOperationBody()
-## ParsedContextRule
-final int id
-final ContextRuleType contextType
-final String name
-final List<OZSmartAccountSigner> signers
-final List<int> signerIds
-final List<String> policies
-final List<int> policyIds
-final int? validUntil
-const ParsedContextRule()
-bool operator ==(Object other)
 ## PathPaymentStrictReceiveOperation extends Operation
 PathPaymentStrictReceiveOperation(this._sendAsset, this._sendMax, this._destination, this._destAsset, this._destAmount, List<Asset>? path)
 Asset get sendAsset
@@ -1179,18 +1329,6 @@ PaymentOperationBuilder.forMuxedDestinationAccount(this._destination, this._asse
 PaymentOperationBuilder setSourceAccount(String sourceAccountId)
 PaymentOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount)
 PaymentOperation build()
-## PlatformStorageAdapter implements StorageAdapter
-PlatformStorageAdapter()
-Future<void> save(StoredCredential credential) async
-Future<StoredCredential?> get(String credentialId) async
-Future<List<StoredCredential>> getByContract(String contractId) async
-Future<List<StoredCredential>> getAll() async
-Future<void> delete(String credentialId) async
-Future<void> update(String credentialId, StoredCredentialUpdate updates,) async
-Future<void> clear() async
-Future<void> saveSession(StoredSession session) async
-Future<StoredSession?> getSession() async
-Future<void> clearSession() async
 ## PlatformWebAuthnProvider implements WebAuthnProvider
 final String rpId
 final String rpName
@@ -1199,9 +1337,6 @@ final String? authenticatorAttachment
 PlatformWebAuthnProvider()
 Future<WebAuthnRegistrationResult> register()
 Future<WebAuthnAuthenticationResult> authenticate()
-## sealed class PolicyInstallParams
-const PolicyInstallParams()
-XdrSCVal toScVal()
 ## Price
 int n
 int d
@@ -1213,8 +1348,6 @@ Map<String, dynamic> toJson()
 static Price fromString(String price)
 XdrPrice toXdr()
 bool operator ==(Object object)
-## typedef ResolveContextRuleIds
-typedef ResolveContextRuleIds = Future<List<int>> Function( XdrSorobanAuthorizationEntry entry, int index, )
 ## RestoreFootprintOperation extends Operation
 RestoreFootprintOperation()
 XdrOperationBody toOperationBody()
@@ -1244,32 +1377,6 @@ RevokeSponsorshipOperationBuilder revokeSha256HashSigner(String signerAccountId,
 RevokeSponsorshipOperationBuilder setSourceAccount(String sourceAccountId)
 RevokeSponsorshipOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount)
 RevokeSponsorshipOperation build()
-## sealed class SelectedSigner
-const SelectedSigner()
-## final class SelectedSignerEd25519 extends SelectedSigner
-final String verifierAddress
-final Uint8List publicKey
-const SelectedSignerEd25519()
-bool operator ==(Object other)
-## final class SelectedSignerPasskey extends SelectedSigner
-final String? credentialId
-final Uint8List? credentialIdBytes
-final Uint8List? keyData
-final List<String>? transports
-const SelectedSignerPasskey()
-bool operator ==(Object other)
-## final class SelectedSignerWallet extends SelectedSigner
-final String address
-const SelectedSignerWallet(this.address)
-bool operator ==(Object other)
-## sealed class SessionException extends SmartAccountException
-const SessionException(super.code, super.message, [super.cause])
-static SessionExpired expired()
-static SessionInvalid invalid(String reason)
-## final class SessionExpired extends SessionException
-const SessionExpired()
-## final class SessionInvalid extends SessionException
-const SessionInvalid(String message, [Object? cause])
 ## SetOptionsOperation extends Operation
 SetOptionsOperation(String? inflationDestination, int? clearFlags, int? setFlags, int? masterKeyWeight, int? lowThreshold, int? mediumThreshold, int? highThreshold, String? homeDomain, XdrSignerKey? signer, int? signerWeight)
 String? get inflationDestination
@@ -1311,47 +1418,42 @@ SetTrustLineFlagsOperationBuilder(this._trustorId, this._asset, this._clearFlags
 SetTrustLineFlagsOperationBuilder setSourceAccount(String sourceAccountId)
 SetTrustLineFlagsOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount)
 SetTrustLineFlagsOperation build()
-## SignAuthEntryOptions
-final String? networkPassphrase
-final String? address
-const SignAuthEntryOptions()
-bool operator ==(Object other)
-## SignAuthEntryResult
-final String signedAuthEntry
-final String? signerAddress
-const SignAuthEntryResult()
-bool operator ==(Object other)
 ## SignedPayloadSigner
 SignedPayloadSigner(this._signerAccountID, this._payload)
 XdrAccountID get signerAccountID
 Uint8List get payload
 static SignedPayloadSigner fromAccountId(String accountId, Uint8List payload)
 static SignedPayloadSigner fromPublicKey(Uint8List signerED25519PublicKey, Uint8List payload)
-## sealed class SignerException extends SmartAccountException
-const SignerException(super.code, super.message, [super.cause])
-static SignerNotFound notFound(String signerId)
-static SignerInvalid invalid(String reason)
-## final class SignerInvalid extends SignerException
-const SignerInvalid(String message, [Object? cause])
 ## SignerKey
 static XdrSignerKey ed25519PublicKey(KeyPair keyPair)
 static XdrSignerKey sha256Hash(Uint8List hash)
 static XdrSignerKey preAuthTx(Transaction tx, Network network)
 static XdrSignerKey preAuthTxHash(Uint8List hash)
 static XdrSignerKey signedPayload(SignedPayloadSigner signedPayloadSigner)
-## final class SignerNotFound extends SignerException
-const SignerNotFound(String message, [Object? cause])
-## final class SimpleThresholdParams extends PolicyInstallParams
-final int threshold
-const SimpleThresholdParams()
-XdrSCVal toScVal()
-bool operator ==(Object other)
+## sealed class SmartAccountConfigurationException extends SmartAccountException
+const SmartAccountConfigurationException(super.code, super.message, [super.cause])
+static SmartAccountInvalidConfig invalidConfig(String details)
+static SmartAccountMissingConfig missingConfig(String param)
 ## SmartAccountConstants
 static const int ed25519PublicKeySize
 static const int ed25519SecretSeedSize
 static const int ed25519SignatureSize
 static const int secp256r1PublicKeySize
 static const int uncompressedPubkeyPrefix
+## final class SmartAccountCredentialAlreadyExists extends SmartAccountCredentialException
+const SmartAccountCredentialAlreadyExists(String message, [Object? cause])
+## final class SmartAccountCredentialDeploymentFailed extends SmartAccountCredentialException
+const SmartAccountCredentialDeploymentFailed(String message, [Object? cause])
+## sealed class SmartAccountCredentialException extends SmartAccountException
+const SmartAccountCredentialException(super.code, super.message, [super.cause])
+static SmartAccountCredentialNotFound notFound(String credentialId)
+static SmartAccountCredentialAlreadyExists alreadyExists(String credentialId)
+static SmartAccountCredentialInvalid invalid(String reason)
+static SmartAccountCredentialDeploymentFailed deploymentFailed(String reason)
+## final class SmartAccountCredentialInvalid extends SmartAccountCredentialException
+const SmartAccountCredentialInvalid(String message, [Object? cause])
+## final class SmartAccountCredentialNotFound extends SmartAccountCredentialException
+const SmartAccountCredentialNotFound(String message, [Object? cause])
 ## enum SmartAccountErrorCode
 invalidConfig
 missingConfig
@@ -1383,74 +1485,68 @@ indexerRequestFailed
 indexerTimeout
 final int code
 const SmartAccountErrorCode(this.code)
-## sealed class SmartAccountEvent
-const SmartAccountEvent()
-String get eventTypeName
-## final class SmartAccountEventCredentialCreated extends SmartAccountEvent
-final StoredCredential credential
-const SmartAccountEventCredentialCreated()
-String get eventTypeName
-bool operator ==(Object other)
-## final class SmartAccountEventCredentialDeleted extends SmartAccountEvent
-final String credentialId
-const SmartAccountEventCredentialDeleted()
-String get eventTypeName
-bool operator ==(Object other)
-## final class SmartAccountEventCredentialSyncFailed extends SmartAccountEvent
-final String credentialId
-final Object error
-final StackTrace? stackTrace
-const SmartAccountEventCredentialSyncFailed()
-String get eventTypeName
-bool operator ==(Object other)
-## SmartAccountEventEmitter
-SmartAccountEventEmitter()
-void setErrorHandler(SmartAccountEventErrorHandler? handler)
-void Function()
-void Function()
-void Function()
-void removeAllListeners([String? eventType])
-int listenerCount(String eventType)
-void emit(SmartAccountEvent event)
-## typedef SmartAccountEventErrorHandler
-typedef SmartAccountEventErrorHandler = void Function( SmartAccountEvent event, Object error, StackTrace stackTrace, )
-## typedef SmartAccountEventListener
-typedef SmartAccountEventListener = void Function(SmartAccountEvent event)
-## final class SmartAccountEventSessionExpired extends SmartAccountEvent
-final String contractId
-final String credentialId
-const SmartAccountEventSessionExpired()
-String get eventTypeName
-bool operator ==(Object other)
-## final class SmartAccountEventTransactionSigned extends SmartAccountEvent
-final String contractId
-final String? credentialId
-const SmartAccountEventTransactionSigned()
-String get eventTypeName
-bool operator ==(Object other)
-## final class SmartAccountEventTransactionSubmitted extends SmartAccountEvent
-final String hash
-final bool success
-const SmartAccountEventTransactionSubmitted()
-String get eventTypeName
-bool operator ==(Object other)
-## final class SmartAccountEventWalletConnected extends SmartAccountEvent
-final String contractId
-final String credentialId
-const SmartAccountEventWalletConnected()
-String get eventTypeName
-bool operator ==(Object other)
-## final class SmartAccountEventWalletDisconnected extends SmartAccountEvent
-final String contractId
-const SmartAccountEventWalletDisconnected()
-String get eventTypeName
-bool operator ==(Object other)
 ## sealed class SmartAccountException implements Exception
 final SmartAccountErrorCode code
 final String message
 final Object? cause
 const SmartAccountException(this.code, this.message, [this.cause])
 static SmartAccountException wrapError(Object err)
+## sealed class SmartAccountIndexerException extends SmartAccountException
+const SmartAccountIndexerException(super.code, super.message, [super.cause])
+static SmartAccountIndexerRequestFailed requestFailed(String reason)
+static SmartAccountIndexerTimeout timeout(String url)
+## final class SmartAccountIndexerRequestFailed extends SmartAccountIndexerException
+const SmartAccountIndexerRequestFailed(String message, [Object? cause])
+## final class SmartAccountIndexerTimeout extends SmartAccountIndexerException
+const SmartAccountIndexerTimeout(String message, [Object? cause])
+## final class SmartAccountInvalidAddress extends SmartAccountValidationException
+const SmartAccountInvalidAddress(String message, [Object? cause])
+## final class SmartAccountInvalidAmount extends SmartAccountValidationException
+const SmartAccountInvalidAmount(String message, [Object? cause])
+## final class SmartAccountInvalidConfig extends SmartAccountConfigurationException
+const SmartAccountInvalidConfig(String message, [Object? cause])
+## final class SmartAccountInvalidInput extends SmartAccountValidationException
+const SmartAccountInvalidInput(String message, [Object? cause])
+## final class SmartAccountMissingConfig extends SmartAccountConfigurationException
+const SmartAccountMissingConfig(String message, [Object? cause])
+## sealed class SmartAccountSessionException extends SmartAccountException
+const SmartAccountSessionException(super.code, super.message, [super.cause])
+static SmartAccountSessionExpired expired()
+static SmartAccountSessionInvalid invalid(String reason)
+## final class SmartAccountSessionExpired extends SmartAccountSessionException
+const SmartAccountSessionExpired()
+## final class SmartAccountSessionInvalid extends SmartAccountSessionException
+const SmartAccountSessionInvalid(String message, [Object? cause])
+## sealed class SmartAccountSignerException extends SmartAccountException
+const SmartAccountSignerException(super.code, super.message, [super.cause])
+static SmartAccountSignerNotFound notFound(String signerId)
+static SmartAccountSignerInvalid invalid(String reason)
+## final class SmartAccountSignerInvalid extends SmartAccountSignerException
+const SmartAccountSignerInvalid(String message, [Object? cause])
+## final class SmartAccountSignerNotFound extends SmartAccountSignerException
+const SmartAccountSignerNotFound(String message, [Object? cause])
+## sealed class SmartAccountStorageException extends SmartAccountException
+const SmartAccountStorageException(super.code, super.message, [super.cause])
+static SmartAccountStorageReadFailed readFailed(String key)
+static SmartAccountStorageWriteFailed writeFailed(String key)
+## final class SmartAccountStorageReadFailed extends SmartAccountStorageException
+const SmartAccountStorageReadFailed(String message, [Object? cause])
+## final class SmartAccountStorageWriteFailed extends SmartAccountStorageException
+const SmartAccountStorageWriteFailed(String message, [Object? cause])
+## sealed class SmartAccountTransactionException extends SmartAccountException
+const SmartAccountTransactionException(super.code, super.message, [super.cause])
+static SmartAccountTransactionSimulationFailed simulationFailed(String reason)
+static SmartAccountTransactionSigningFailed signingFailed(String reason)
+static SmartAccountTransactionSubmissionFailed submissionFailed(String reason)
+static SmartAccountTransactionTimeout timeout()
+## final class SmartAccountTransactionSigningFailed extends SmartAccountTransactionException
+const SmartAccountTransactionSigningFailed(String message, [Object? cause])
+## final class SmartAccountTransactionSimulationFailed extends SmartAccountTransactionException
+const SmartAccountTransactionSimulationFailed(String message, [Object? cause])
+## final class SmartAccountTransactionSubmissionFailed extends SmartAccountTransactionException
+const SmartAccountTransactionSubmissionFailed(String message, [Object? cause])
+## final class SmartAccountTransactionTimeout extends SmartAccountTransactionException
+const SmartAccountTransactionTimeout()
 ## abstract class SmartAccountUtils
 static List<BigInt> parseDerSignature(Uint8List derSignature)
 static Uint8List normalizeSignature(Uint8List derSignature)
@@ -1462,12 +1558,22 @@ static String deriveContractAddress()
 static int hashBytes(int seed, List<int> data)
 static String truncateForLog(String address)
 static int findSubarray(Uint8List array, Uint8List subarray)
-## final class SpendingLimitParams extends PolicyInstallParams
-final BigInt spendingLimit
-final int periodLedgers
-const SpendingLimitParams()
-XdrSCVal toScVal()
-bool operator ==(Object other)
+## sealed class SmartAccountValidationException extends SmartAccountException
+const SmartAccountValidationException(super.code, super.message, [super.cause])
+static SmartAccountInvalidAddress invalidAddress(String address)
+static SmartAccountInvalidAmount invalidAmount(String amount)
+static SmartAccountInvalidInput invalidInput(String field, String reason)
+## final class SmartAccountWalletAlreadyExists extends SmartAccountWalletException
+const SmartAccountWalletAlreadyExists(String message, [Object? cause])
+## sealed class SmartAccountWalletException extends SmartAccountException
+const SmartAccountWalletException(super.code, super.message, [super.cause])
+static SmartAccountWalletNotConnected notConnected()
+static SmartAccountWalletAlreadyExists alreadyExists(String identifier)
+static SmartAccountWalletNotFound notFound(String identifier)
+## final class SmartAccountWalletNotConnected extends SmartAccountWalletException
+const SmartAccountWalletNotConnected()
+## final class SmartAccountWalletNotFound extends SmartAccountWalletException
+const SmartAccountWalletNotFound(String message, [Object? cause])
 ## StellarSDK
 static const versionNumber
 static const StellarSDK PUBLIC
@@ -1502,61 +1608,6 @@ Future<SubmitAsyncTransactionResponse> submitAsyncTransaction(Transaction transa
 Future<SubmitAsyncTransactionResponse> submitAsyncFeeBumpTransaction(FeeBumpTransaction feeBumpTransaction) async
 Future<SubmitTransactionResponse> submitTransactionEnvelopeXdrBase64(String transactionEnvelopeXdrBase64) async
 Future<SubmitAsyncTransactionResponse> submitAsyncTransactionEnvelopeXdrBase64(String transactionEnvelopeXdrBase64) async
-## abstract class StorageAdapter
-Future<void> save(StoredCredential credential)
-Future<StoredCredential?> get(String credentialId)
-Future<List<StoredCredential>> getByContract(String contractId)
-Future<List<StoredCredential>> getAll()
-Future<void> delete(String credentialId)
-Future<void> update(String credentialId, StoredCredentialUpdate updates)
-Future<void> clear()
-Future<void> saveSession(StoredSession session)
-Future<StoredSession?> getSession()
-Future<void> clearSession()
-## sealed class StorageException extends SmartAccountException
-const StorageException(super.code, super.message, [super.cause])
-static StorageReadFailed readFailed(String key)
-static StorageWriteFailed writeFailed(String key)
-## final class StorageReadFailed extends StorageException
-const StorageReadFailed(String message, [Object? cause])
-## final class StorageWriteFailed extends StorageException
-const StorageWriteFailed(String message, [Object? cause])
-## StoredCredential
-final String credentialId
-final Uint8List publicKey
-final String? contractId
-final CredentialDeploymentStatus deploymentStatus
-final String? deploymentError
-final int createdAt
-final int? lastUsedAt
-final String? nickname
-final bool isPrimary
-final List<String>? transports
-final String? deviceType
-final bool? backedUp
-StoredCredential()
-StoredCredential copyWith()
-StoredCredential applyUpdate(StoredCredentialUpdate updates)
-bool operator ==(Object other)
-## StoredCredentialUpdate
-final CredentialDeploymentStatus? deploymentStatus
-final String? deploymentError
-final String? contractId
-final int? lastUsedAt
-final String? nickname
-final bool? isPrimary
-final List<String>? transports
-final String? deviceType
-final bool? backedUp
-const StoredCredentialUpdate()
-## StoredSession
-final String credentialId
-final String contractId
-final int connectedAt
-final int expiresAt
-const StoredSession()
-bool get isExpired
-bool operator ==(Object other)
 ## StrKey
 static String encodeStellarAccountId(Uint8List data)
 static Uint8List decodeStellarAccountId(String accountId)
@@ -1595,15 +1646,6 @@ static bool isValidLiquidityPoolId(String liquidityPoolId)
 static String encodeCheck(VersionByte versionByte, Uint8List data)
 static Uint8List decodeCheck(VersionByte versionByte, String encData)
 static Uint8List calculateChecksum(Uint8List bytes)
-## enum SubmissionMethod
-relayer
-rpc
-## SyncResult
-final int deployed
-final int pending
-final int failed
-const SyncResult()
-bool operator ==(Object other)
 ## TimeBounds
 TimeBounds(int minTime, int maxTime)
 int get minTime
@@ -1647,12 +1689,6 @@ BigInt get sequenceNumber
 BigInt get incrementedSequenceNumber
 MuxedAccount get muxedAccount
 void incrementSequenceNumber()
-## sealed class TransactionException extends SmartAccountException
-const TransactionException(super.code, super.message, [super.cause])
-static TransactionSimulationFailed simulationFailed(String reason)
-static TransactionSigningFailed signingFailed(String reason)
-static TransactionSubmissionFailed submissionFailed(String reason)
-static TransactionTimeout timeout()
 ## TransactionPreconditions
 static const MAX_EXTRA_SIGNERS_COUNT
 static const TIMEOUT_INFINITE
@@ -1671,22 +1707,6 @@ set extraSigners(List<XdrSignerKey>? value)
 static TransactionPreconditions fromXdr(XdrPreconditions xdr)
 bool hasV2()
 XdrPreconditions toXdr()
-## TransactionResult
-final bool success
-final String? hash
-final int? ledger
-final String? error
-const TransactionResult()
-TransactionResult copyWith()
-bool operator ==(Object other)
-## final class TransactionSigningFailed extends TransactionException
-const TransactionSigningFailed(String message, [Object? cause])
-## final class TransactionSimulationFailed extends TransactionException
-const TransactionSimulationFailed(String message, [Object? cause])
-## final class TransactionSubmissionFailed extends TransactionException
-const TransactionSubmissionFailed(String message, [Object? cause])
-## final class TransactionTimeout extends TransactionException
-const TransactionTimeout()
 ## UploadContractWasmHostFunction extends HostFunction
 UploadContractWasmHostFunction(this._contractCode)
 Uint8List get contractCode
@@ -1710,11 +1730,6 @@ static Uri appendEndpointToUrl(String baseUrl, String endpoint)
 static BigInt toXdrInt64Amount(String value)
 static String fromXdrInt64Amount(BigInt value)
 static XdrSCVal stroopsToI128ScVal(BigInt stroops)
-## sealed class ValidationException extends SmartAccountException
-const ValidationException(super.code, super.message, [super.cause])
-static InvalidAddress invalidAddress(String address)
-static InvalidAmount invalidAmount(String amount)
-static InvalidInput invalidInput(String field, String reason)
 ## VersionByte
 static const ACCOUNT_ID
 static const MUXED_ACCOUNT_ID
@@ -1727,22 +1742,13 @@ static const LIQUIDITY_POOL
 static const CLAIMABLE_BALANCE
 VersionByte(this._value)
 getValue()
-## final class WalletAlreadyExists extends WalletException
-const WalletAlreadyExists(String message, [Object? cause])
-## abstract class WalletConnectionStorage
-const WalletConnectionStorage()
-Future<String?> getItem(String key)
-Future<void> setItem(String key, String value)
-Future<void> removeItem(String key)
-## sealed class WalletException extends SmartAccountException
-const WalletException(super.code, super.message, [super.cause])
-static WalletNotConnected notConnected()
-static WalletAlreadyExists alreadyExists(String identifier)
-static WalletNotFound notFound(String identifier)
-## final class WalletNotConnected extends WalletException
-const WalletNotConnected()
-## final class WalletNotFound extends WalletException
-const WalletNotFound(String message, [Object? cause])
+## WebAuthnAllowCredential
+final Uint8List id
+final List<String>? transports
+const WebAuthnAllowCredential()
+static WebAuthnAllowCredential fromId(Uint8List id)
+static List<WebAuthnAllowCredential> fromIds(List<Uint8List> ids)
+bool operator ==(Object other)
 ## final class WebAuthnAuthenticationFailed extends WebAuthnException
 const WebAuthnAuthenticationFailed(String message, [Object? cause])
 ## WebAuthnAuthenticationResult
@@ -1777,12 +1783,6 @@ final List<String>? transports
 final String? deviceType
 final bool? backedUp
 const WebAuthnRegistrationResult()
-bool operator ==(Object other)
-## final class WeightedThresholdParams extends PolicyInstallParams
-final Map<OZSmartAccountSigner, int> signerWeights
-final int threshold
-WeightedThresholdParams()
-XdrSCVal toScVal()
 bool operator ==(Object other)
 ---
 ## Requests (Query Builders)

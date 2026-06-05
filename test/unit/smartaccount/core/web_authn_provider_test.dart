@@ -460,12 +460,12 @@ void main() {
     test('test_mock_provider_authenticate_tracks_call_count_and_args',
         () async {
       final mock = MockWebAuthnProvider();
-      final allow1 = <AllowCredential>[
-        AllowCredential.fromId(Uint8List.fromList(const [0x01])),
+      final allow1 = <WebAuthnAllowCredential>[
+        WebAuthnAllowCredential.fromId(Uint8List.fromList(const [0x01])),
       ];
-      final allow2 = <AllowCredential>[
-        AllowCredential.fromId(Uint8List.fromList(const [0x02])),
-        AllowCredential.fromId(Uint8List.fromList(const [0x03])),
+      final allow2 = <WebAuthnAllowCredential>[
+        WebAuthnAllowCredential.fromId(Uint8List.fromList(const [0x02])),
+        WebAuthnAllowCredential.fromId(Uint8List.fromList(const [0x03])),
       ];
 
       await mock.authenticate(
@@ -494,8 +494,8 @@ void main() {
       );
       await mock.authenticate(
         challenge: Uint8List.fromList(const [0x77]),
-        allowCredentials: <AllowCredential>[
-          AllowCredential.fromId(Uint8List.fromList(const [0x66])),
+        allowCredentials: <WebAuthnAllowCredential>[
+          WebAuthnAllowCredential.fromId(Uint8List.fromList(const [0x66])),
         ],
       );
       mock.registrationException = WebAuthnException.cancelled();

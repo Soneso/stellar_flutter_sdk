@@ -47,7 +47,7 @@ abstract class OZSmartAccountAuth {
   /// contract requires this binding so signers cannot be replayed against a
   /// different rule set.
   ///
-  /// Throws [TransactionSigningFailed] when XDR encoding of the rule-IDs
+  /// Throws [SmartAccountTransactionSigningFailed] when XDR encoding of the rule-IDs
   /// vector fails.
   static Future<Uint8List> buildAuthDigest(
     Uint8List signaturePayload,
@@ -63,7 +63,7 @@ abstract class OZSmartAccountAuth {
       XdrSCVal.encode(stream, ruleIdsScVal);
       ruleIdsXdr = Uint8List.fromList(stream.bytes);
     } catch (e) {
-      throw TransactionException.signingFailed(
+      throw SmartAccountTransactionException.signingFailed(
         'Failed to XDR encode context rule IDs ScVal',
         cause: e,
       );
@@ -91,7 +91,7 @@ abstract class OZSmartAccountAuth {
   /// invocation: entry.rootInvocation }` and the returned value is
   /// `SHA-256(XDR_encode(preimage))`.
   ///
-  /// Throws [TransactionSigningFailed] when [entry] does not have address
+  /// Throws [SmartAccountTransactionSigningFailed] when [entry] does not have address
   /// credentials, or when XDR encoding fails.
   static Future<Uint8List> buildAuthPayloadHash(
     XdrSorobanAuthorizationEntry entry,
@@ -102,7 +102,7 @@ abstract class OZSmartAccountAuth {
     if (entry.credentials.discriminant !=
             XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS ||
         credentials == null) {
-      throw TransactionException.signingFailed(
+      throw SmartAccountTransactionException.signingFailed(
         'Credentials must be of type address to build auth payload hash',
       );
     }
@@ -123,7 +123,7 @@ abstract class OZSmartAccountAuth {
   /// supplied [nonce] and [expirationLedger] instead of reading them from
   /// existing credentials.
   ///
-  /// Throws [TransactionSigningFailed] when XDR encoding fails.
+  /// Throws [SmartAccountTransactionSigningFailed] when XDR encoding fails.
   static Future<Uint8List> buildSourceAccountAuthPayloadHash(
     XdrSorobanAuthorizationEntry entry,
     XdrInt64 nonce,
@@ -157,7 +157,7 @@ abstract class OZSmartAccountAuth {
   /// context-rule IDs in the payload; otherwise the existing value is
   /// preserved.
   ///
-  /// Throws [TransactionSigningFailed] when credentials are not address
+  /// Throws [SmartAccountTransactionSigningFailed] when credentials are not address
   /// type, when the entry cannot be cloned via XDR, when [signer] cannot
   /// be encoded as an ScVal, or when [OZSmartAccountSignature.toAuthPayloadBytes]
   /// fails (WebAuthn and Policy variants only).
@@ -176,7 +176,7 @@ abstract class OZSmartAccountAuth {
       XdrSorobanAuthorizationEntry.encode(stream, entry);
       entryBytes = Uint8List.fromList(stream.bytes);
     } catch (e) {
-      throw TransactionException.signingFailed(
+      throw SmartAccountTransactionException.signingFailed(
         'Failed to XDR encode authorization entry for cloning',
         cause: e,
       );
@@ -188,7 +188,7 @@ abstract class OZSmartAccountAuth {
         XdrDataInputStream(entryBytes),
       );
     } catch (e) {
-      throw TransactionException.signingFailed(
+      throw SmartAccountTransactionException.signingFailed(
         'Failed to XDR decode authorization entry after cloning',
         cause: e,
       );
@@ -199,7 +199,7 @@ abstract class OZSmartAccountAuth {
     if (entryCopy.credentials.discriminant !=
             XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS ||
         credentialsCopy == null) {
-      throw TransactionException.signingFailed(
+      throw SmartAccountTransactionException.signingFailed(
         'Credentials must be of type address to sign auth entry',
       );
     }
@@ -212,7 +212,7 @@ abstract class OZSmartAccountAuth {
     try {
       sigXdrBytes = signature.toAuthPayloadBytes();
     } catch (e) {
-      throw TransactionException.signingFailed(
+      throw SmartAccountTransactionException.signingFailed(
         'Failed to encode signature bytes for auth payload',
         cause: e,
       );
@@ -266,7 +266,7 @@ abstract class OZSmartAccountAuth {
   /// stored directly; otherwise the value is XDR-encoded and the resulting
   /// bytes are stored.
   ///
-  /// Throws [TransactionSigningFailed] when [entry] does not have address
+  /// Throws [SmartAccountTransactionSigningFailed] when [entry] does not have address
   /// credentials, or when XDR encoding of the signature value fails.
   static XdrSorobanAuthorizationEntry addRawSignatureMapEntry({
     required XdrSorobanAuthorizationEntry entry,
@@ -278,7 +278,7 @@ abstract class OZSmartAccountAuth {
     if (entry.credentials.discriminant !=
             XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS ||
         credentials == null) {
-      throw TransactionException.signingFailed(
+      throw SmartAccountTransactionException.signingFailed(
         'Credentials must be of type address to add signature map entry',
       );
     }
@@ -303,7 +303,7 @@ abstract class OZSmartAccountAuth {
         XdrSCVal.encode(stream, signatureValue);
         sigBytes = Uint8List.fromList(stream.bytes);
       } catch (e) {
-        throw TransactionException.signingFailed(
+        throw SmartAccountTransactionException.signingFailed(
           'Failed to XDR-encode raw signature value',
           cause: e,
         );
@@ -366,7 +366,7 @@ abstract class OZSmartAccountAuth {
       XdrHashIDPreimage.encode(stream, preimage);
       encodedPreimage = Uint8List.fromList(stream.bytes);
     } catch (e) {
-      throw TransactionException.signingFailed(
+      throw SmartAccountTransactionException.signingFailed(
         'Failed to XDR encode auth payload preimage',
         cause: e,
       );

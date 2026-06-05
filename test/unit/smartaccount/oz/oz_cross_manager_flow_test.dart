@@ -26,15 +26,15 @@ const String _credentialIdB64 = 'aGVsbG8tc21hcnQtYWNjb3VudA';
 /// per-id `parseContextRule` mappings to drive cross-manager scenarios
 /// without standing up the real on-chain rule store.
 class _MutableRuleManager implements OZContextRuleManagerInterface {
-  final List<ParsedContextRule> rules = <ParsedContextRule>[];
+  final List<OZParsedContextRule> rules = <OZParsedContextRule>[];
   final Map<int, XdrSCVal> _byId = <int, XdrSCVal>{};
-  final Map<XdrSCVal, ParsedContextRule> _parsed =
-      <XdrSCVal, ParsedContextRule>{};
+  final Map<XdrSCVal, OZParsedContextRule> _parsed =
+      <XdrSCVal, OZParsedContextRule>{};
 
   /// Adds a rule and registers a sentinel ScVal for `getContextRule(id)`
   /// plus `parseContextRule(scVal)` lookups so the sibling manager
   /// resolution paths return [rule].
-  void registerRule(ParsedContextRule rule) {
+  void registerRule(OZParsedContextRule rule) {
     rules.add(rule);
     final sentinel = XdrSCVal.forU32(rule.id + 1000); // unique ScVal per rule
     _byId[rule.id] = sentinel;
@@ -42,14 +42,14 @@ class _MutableRuleManager implements OZContextRuleManagerInterface {
   }
 
   @override
-  Future<List<ParsedContextRule>> listContextRules() async =>
-      List<ParsedContextRule>.from(rules);
+  Future<List<OZParsedContextRule>> listContextRules() async =>
+      List<OZParsedContextRule>.from(rules);
 
   @override
   Future<List<int>> resolveContextRuleIdsForEntry(
     XdrSorobanAuthorizationEntry entry,
     List<OZSmartAccountSigner> signers,
-    List<ParsedContextRule> contextRules,
+    List<OZParsedContextRule> contextRules,
   ) async {
     if (rules.isEmpty) return const <int>[];
     return <int>[rules.first.id];
@@ -69,7 +69,7 @@ class _MutableRuleManager implements OZContextRuleManagerInterface {
   }
 
   @override
-  ParsedContextRule parseContextRule(XdrSCVal scVal) {
+  OZParsedContextRule parseContextRule(XdrSCVal scVal) {
     final r = _parsed[scVal];
     if (r == null) {
       throw StateError('No parsed rule registered for the supplied ScVal');
@@ -112,10 +112,10 @@ void main() {
       final signerManager = OZSignerManager(h.kit);
 
       // Step 1: add a rule. The harness's transaction-operations layer
-      // returns a successful TransactionResult by default so the call
+      // returns a successful OZTransactionResult by default so the call
       // resolves cleanly.
       await ruleManager.addContextRule(
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'rule',
         signers: <OZSmartAccountSigner>[OZDelegatedSigner(_accountAddressA)],
       );
@@ -129,9 +129,9 @@ void main() {
       // signer ID resolution can succeed.
       final originalSigner = OZDelegatedSigner(_accountAddressA);
       final newSigner = OZDelegatedSigner(_accountAddressB);
-      h.rules.registerRule(ParsedContextRule(
+      h.rules.registerRule(OZParsedContextRule(
         id: 1,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'rule',
         signers: <OZSmartAccountSigner>[originalSigner, newSigner],
         signerIds: const <int>[10, 20],
@@ -195,9 +195,9 @@ void main() {
 
       // Register a parsed rule that contains the policy at index 0
       // with policy id = 5.
-      h.rules.registerRule(ParsedContextRule(
+      h.rules.registerRule(OZParsedContextRule(
         id: 0,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'rule',
         signers: <OZSmartAccountSigner>[OZDelegatedSigner(_accountAddressA)],
         signerIds: const <int>[10],
@@ -210,8 +210,8 @@ void main() {
         contextRuleId: 0,
         policyAddress: policyAddress,
         installParams: XdrSCVal.forVoid(),
-        selectedSigners: <SelectedSigner>[
-          SelectedSignerPasskey(
+        selectedSigners: <OZSelectedSigner>[
+          OZSelectedSignerPasskey(
             credentialId: 'pk-a',
             credentialIdBytes: Uint8List.fromList(<int>[1, 2, 3]),
             keyData: Uint8List(65)..[0] = 0x04,
@@ -241,7 +241,7 @@ void main() {
         () async {
       // Verifies that an OZExternalSignerManager fed an Ed25519 secret
       // can claim it can sign for the resulting G-address — the same
-      // address a multi-signer SelectedSignerWallet would target.
+      // address a multi-signer OZSelectedSignerWallet would target.
       final externalMgr = OZExternalSignerManager(
         networkPassphrase: Network.TESTNET.networkPassphrase,
       );
@@ -252,8 +252,8 @@ void main() {
       expect(await externalMgr.canSignFor(addedAddress), isTrue);
 
       // The address is one a multi-signer flow would reference; ensure
-      // SelectedSignerWallet accepts it as-is.
-      final selected = SelectedSignerWallet(addedAddress);
+      // OZSelectedSignerWallet accepts it as-is.
+      final selected = OZSelectedSignerWallet(addedAddress);
       expect(selected.address, addedAddress);
     });
   });
@@ -286,7 +286,7 @@ void main() {
         contextRuleId: 3,
         publicKey: pk,
         credentialId: credentialId,
-        forceMethod: SubmissionMethod.relayer,
+        forceMethod: OZSubmissionMethod.relayer,
       );
       // Single-signer path uses txOps.submit, not the multi-signer manager.
       expect(h.txOps.submitCalls.length, 1);
@@ -302,27 +302,27 @@ void main() {
         pk.length + credentialId.length,
       );
       // forceMethod faithfully forwarded.
-      expect(h.txOps.submitCalls[0].forceMethod, SubmissionMethod.relayer);
+      expect(h.txOps.submitCalls[0].forceMethod, OZSubmissionMethod.relayer);
     });
 
     test('addContextRule_validatesPolicyAddressBeforeBuilding',
         () async {
       // Probe: the policy-address validator runs BEFORE the host
       // function is built. Surface this by asserting that a malformed
-      // policy address surfaces InvalidAddress and zero submission
+      // policy address surfaces SmartAccountInvalidAddress and zero submission
       // calls reach the transaction-operations layer.
       final h = _harness();
       final mgr = OZContextRuleManager(h.kit);
       await expectLater(
         () => mgr.addContextRule(
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: 'has-bad-policy',
           signers: <OZSmartAccountSigner>[OZDelegatedSigner(_accountAddressA)],
           policies: <String, XdrSCVal>{
             'NOT_A_REAL_C_ADDRESS_XX': XdrSCVal.forVoid(),
           },
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
       expect(h.txOps.submitCalls, isEmpty);
     });
@@ -339,19 +339,19 @@ void main() {
       final signerB = OZDelegatedSigner(_accountAddressB);
 
       // Tier 1: exact bidirectional signer-set match wins outright.
-      final tier1Rules = <ParsedContextRule>[
-        ParsedContextRule(
+      final tier1Rules = <OZParsedContextRule>[
+        OZParsedContextRule(
           id: 1,
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: 'exact',
           signers: <OZSmartAccountSigner>[signerA, signerB],
           signerIds: const <int>[10, 20],
           policies: const <String>[],
           policyIds: const <int>[],
         ),
-        ParsedContextRule(
+        OZParsedContextRule(
           id: 2,
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: 'extra-signer',
           signers: <OZSmartAccountSigner>[signerA, signerB, signerA],
           signerIds: const <int>[30, 40, 50],

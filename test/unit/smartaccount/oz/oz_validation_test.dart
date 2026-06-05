@@ -21,15 +21,15 @@ void main() {
 
     test('test_requireContractAddress_invalidAddress_throwsInvalidAddress7001',
         () {
-      InvalidAddress? captured;
+      SmartAccountInvalidAddress? captured;
       try {
         requireContractAddress('not-a-valid-address',
             fieldName: 'policyAddress');
-        fail('Expected InvalidAddress to be thrown');
-      } on InvalidAddress catch (e) {
+        fail('Expected SmartAccountInvalidAddress to be thrown');
+      } on SmartAccountInvalidAddress catch (e) {
         captured = e;
       }
-      expect(captured, isA<InvalidAddress>());
+      expect(captured, isA<SmartAccountInvalidAddress>());
       final exception = captured;
       expect(exception.code, SmartAccountErrorCode.invalidAddress);
       expect(exception.code.code, 7001);
@@ -64,14 +64,14 @@ void main() {
       expect(muxedAddress.startsWith('M'), isTrue,
           reason: 'Test fixture must produce an M-prefixed muxed address');
 
-      InvalidAddress? captured;
+      SmartAccountInvalidAddress? captured;
       try {
         requireStellarAddress(muxedAddress, fieldName: 'recipient');
-        fail('Expected InvalidAddress to be thrown');
-      } on InvalidAddress catch (e) {
+        fail('Expected SmartAccountInvalidAddress to be thrown');
+      } on SmartAccountInvalidAddress catch (e) {
         captured = e;
       }
-      expect(captured, isA<InvalidAddress>());
+      expect(captured, isA<SmartAccountInvalidAddress>());
       final exception = captured;
       expect(exception.code, SmartAccountErrorCode.invalidAddress);
       expect(exception.code.code, 7001);

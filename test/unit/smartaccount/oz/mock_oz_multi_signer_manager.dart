@@ -17,25 +17,25 @@ import 'package:stellar_flutter_sdk/src/xdr/xdr.dart';
 /// the OZ sibling managers (`OZSignerManager`, `OZPolicyManager`,
 /// `OZContextRuleManager`) succeeds. Every public entry point used by
 /// those managers is overridden to record the call and return a canned
-/// [TransactionResult] without touching the network.
+/// [OZTransactionResult] without touching the network.
 class MockOZMultiSignerManager extends OZMultiSignerManager {
   MockOZMultiSignerManager(OZSmartAccountWalletKitInterface kit) : super(kit);
 
-  TransactionResult submitWithMultipleSignersDefault =
-      const TransactionResult(success: true, hash: 'mock-multi-signer-hash');
+  OZTransactionResult submitWithMultipleSignersDefault =
+      const OZTransactionResult(success: true, hash: 'mock-multi-signer-hash');
 
-  TransactionResult multiSignerTransferDefault =
-      const TransactionResult(success: true, hash: 'mock-multi-transfer-hash');
+  OZTransactionResult multiSignerTransferDefault =
+      const OZTransactionResult(success: true, hash: 'mock-multi-transfer-hash');
 
-  TransactionResult multiSignerContractCallDefault = const TransactionResult(
+  OZTransactionResult multiSignerContractCallDefault = const OZTransactionResult(
     success: true,
     hash: 'mock-multi-contract-call-hash',
   );
 
-  TransactionResult multiSignerExecuteAndSubmitDefault =
-      const TransactionResult(success: true, hash: 'mock-multi-execute-hash');
+  OZTransactionResult multiSignerExecuteAndSubmitDefault =
+      const OZTransactionResult(success: true, hash: 'mock-multi-execute-hash');
 
-  TransactionResult? Function(SubmitWithMultipleSignersInvocation invocation)?
+  OZTransactionResult? Function(SubmitWithMultipleSignersInvocation invocation)?
       submitWithMultipleSignersOverride;
 
   final List<SubmitWithMultipleSignersInvocation>
@@ -48,15 +48,15 @@ class MockOZMultiSignerManager extends OZMultiSignerManager {
       <MultiSignerExecuteInvocation>[];
 
   @override
-  Future<TransactionResult> submitWithMultipleSigners({
+  Future<OZTransactionResult> submitWithMultipleSigners({
     required XdrHostFunction hostFunction,
-    required List<SelectedSigner> selectedSigners,
-    SubmissionMethod? forceMethod,
-    ResolveContextRuleIds? resolveContextRuleIds,
+    required List<OZSelectedSigner> selectedSigners,
+    OZSubmissionMethod? forceMethod,
+    OZResolveContextRuleIds? resolveContextRuleIds,
   }) async {
     final invocation = SubmitWithMultipleSignersInvocation(
       hostFunction: hostFunction,
-      selectedSigners: List<SelectedSigner>.unmodifiable(selectedSigners),
+      selectedSigners: List<OZSelectedSigner>.unmodifiable(selectedSigners),
       forceMethod: forceMethod,
       resolveContextRuleIds: resolveContextRuleIds,
     );
@@ -66,19 +66,19 @@ class MockOZMultiSignerManager extends OZMultiSignerManager {
   }
 
   @override
-  Future<TransactionResult> multiSignerTransfer({
+  Future<OZTransactionResult> multiSignerTransfer({
     required String tokenContract,
     required String recipient,
     required String amount,
-    required List<SelectedSigner> selectedSigners,
-    SubmissionMethod? forceMethod,
-    ResolveContextRuleIds? resolveContextRuleIds,
+    required List<OZSelectedSigner> selectedSigners,
+    OZSubmissionMethod? forceMethod,
+    OZResolveContextRuleIds? resolveContextRuleIds,
   }) async {
     multiSignerTransferCalls.add(MultiSignerTransferInvocation(
       tokenContract: tokenContract,
       recipient: recipient,
       amount: amount,
-      selectedSigners: List<SelectedSigner>.unmodifiable(selectedSigners),
+      selectedSigners: List<OZSelectedSigner>.unmodifiable(selectedSigners),
       forceMethod: forceMethod,
       resolveContextRuleIds: resolveContextRuleIds,
     ));
@@ -86,19 +86,19 @@ class MockOZMultiSignerManager extends OZMultiSignerManager {
   }
 
   @override
-  Future<TransactionResult> multiSignerContractCall({
+  Future<OZTransactionResult> multiSignerContractCall({
     required String target,
     required String targetFn,
     List<XdrSCVal> targetArgs = const <XdrSCVal>[],
-    required List<SelectedSigner> selectedSigners,
-    SubmissionMethod? forceMethod,
-    ResolveContextRuleIds? resolveContextRuleIds,
+    required List<OZSelectedSigner> selectedSigners,
+    OZSubmissionMethod? forceMethod,
+    OZResolveContextRuleIds? resolveContextRuleIds,
   }) async {
     multiSignerContractCallCalls.add(MultiSignerContractCallInvocation(
       target: target,
       targetFn: targetFn,
       targetArgs: List<XdrSCVal>.unmodifiable(targetArgs),
-      selectedSigners: List<SelectedSigner>.unmodifiable(selectedSigners),
+      selectedSigners: List<OZSelectedSigner>.unmodifiable(selectedSigners),
       forceMethod: forceMethod,
       resolveContextRuleIds: resolveContextRuleIds,
     ));
@@ -106,19 +106,19 @@ class MockOZMultiSignerManager extends OZMultiSignerManager {
   }
 
   @override
-  Future<TransactionResult> multiSignerExecuteAndSubmit({
+  Future<OZTransactionResult> multiSignerExecuteAndSubmit({
     required String target,
     required String targetFn,
     List<XdrSCVal> targetArgs = const <XdrSCVal>[],
-    required List<SelectedSigner> selectedSigners,
-    SubmissionMethod? forceMethod,
-    ResolveContextRuleIds? resolveContextRuleIds,
+    required List<OZSelectedSigner> selectedSigners,
+    OZSubmissionMethod? forceMethod,
+    OZResolveContextRuleIds? resolveContextRuleIds,
   }) async {
     multiSignerExecuteAndSubmitCalls.add(MultiSignerExecuteInvocation(
       target: target,
       targetFn: targetFn,
       targetArgs: List<XdrSCVal>.unmodifiable(targetArgs),
-      selectedSigners: List<SelectedSigner>.unmodifiable(selectedSigners),
+      selectedSigners: List<OZSelectedSigner>.unmodifiable(selectedSigners),
       forceMethod: forceMethod,
       resolveContextRuleIds: resolveContextRuleIds,
     ));
@@ -136,9 +136,9 @@ class SubmitWithMultipleSignersInvocation {
   });
 
   final XdrHostFunction hostFunction;
-  final List<SelectedSigner> selectedSigners;
-  final SubmissionMethod? forceMethod;
-  final ResolveContextRuleIds? resolveContextRuleIds;
+  final List<OZSelectedSigner> selectedSigners;
+  final OZSubmissionMethod? forceMethod;
+  final OZResolveContextRuleIds? resolveContextRuleIds;
 }
 
 /// Captured invocation record for [multiSignerTransfer].
@@ -155,9 +155,9 @@ class MultiSignerTransferInvocation {
   final String tokenContract;
   final String recipient;
   final String amount;
-  final List<SelectedSigner> selectedSigners;
-  final SubmissionMethod? forceMethod;
-  final ResolveContextRuleIds? resolveContextRuleIds;
+  final List<OZSelectedSigner> selectedSigners;
+  final OZSubmissionMethod? forceMethod;
+  final OZResolveContextRuleIds? resolveContextRuleIds;
 }
 
 /// Captured invocation record for [multiSignerContractCall].
@@ -174,9 +174,9 @@ class MultiSignerContractCallInvocation {
   final String target;
   final String targetFn;
   final List<XdrSCVal> targetArgs;
-  final List<SelectedSigner> selectedSigners;
-  final SubmissionMethod? forceMethod;
-  final ResolveContextRuleIds? resolveContextRuleIds;
+  final List<OZSelectedSigner> selectedSigners;
+  final OZSubmissionMethod? forceMethod;
+  final OZResolveContextRuleIds? resolveContextRuleIds;
 }
 
 /// Captured invocation record for [multiSignerExecuteAndSubmit].
@@ -193,7 +193,7 @@ class MultiSignerExecuteInvocation {
   final String target;
   final String targetFn;
   final List<XdrSCVal> targetArgs;
-  final List<SelectedSigner> selectedSigners;
-  final SubmissionMethod? forceMethod;
-  final ResolveContextRuleIds? resolveContextRuleIds;
+  final List<OZSelectedSigner> selectedSigners;
+  final OZSubmissionMethod? forceMethod;
+  final OZResolveContextRuleIds? resolveContextRuleIds;
 }

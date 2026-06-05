@@ -68,7 +68,7 @@ abstract class OZSmartAccountAuthPayloadCodec {
   ///
   /// Accepts `XdrSCVal.SCV_VOID` (returns an empty payload) or
   /// `XdrSCVal.SCV_MAP` (the full payload). Throws
-  /// [TransactionSigningFailed] when the input is not Void or Map, or when
+  /// [SmartAccountTransactionSigningFailed] when the input is not Void or Map, or when
   /// a signer entry has a value that is not a `Bytes` ScVal.
   static OZSmartAccountAuthPayload read(XdrSCVal signatureScVal) {
     if (signatureScVal.discriminant == XdrSCValType.SCV_VOID) {
@@ -78,7 +78,7 @@ abstract class OZSmartAccountAuthPayloadCodec {
       );
     }
     if (signatureScVal.discriminant != XdrSCValType.SCV_MAP) {
-      throw TransactionException.signingFailed(
+      throw SmartAccountTransactionException.signingFailed(
         'Smart account auth signature is not encoded as AuthPayload',
       );
     }
@@ -116,7 +116,7 @@ abstract class OZSmartAccountAuthPayloadCodec {
             final sigVal = signerEntry.val;
             if (sigVal.discriminant != XdrSCValType.SCV_BYTES ||
                 sigVal.bytes == null) {
-              throw TransactionException.signingFailed(
+              throw SmartAccountTransactionException.signingFailed(
                 'Signer signature value is not encoded as Bytes in '
                 'AuthPayload',
               );
@@ -143,7 +143,7 @@ abstract class OZSmartAccountAuthPayloadCodec {
   /// deterministic and the host-side dynamic-Map ordering check is
   /// satisfied.
   ///
-  /// Throws [TransactionSigningFailed] when XDR encoding of a signer key
+  /// Throws [SmartAccountTransactionSigningFailed] when XDR encoding of a signer key
   /// fails.
   static XdrSCVal write(OZSmartAccountAuthPayload payload) {
     // Build signer map entries, wrapping each raw signature byte array in
@@ -168,7 +168,7 @@ abstract class OZSmartAccountAuthPayloadCodec {
         final keyB = _xdrHexOfScVal(b.key);
         return keyA.compareTo(keyB);
       } catch (e) {
-        throw TransactionException.signingFailed(
+        throw SmartAccountTransactionException.signingFailed(
           'Failed to XDR-encode signer key for sorting: $e',
           cause: e,
         );
@@ -229,30 +229,30 @@ abstract class OZSmartAccountAuthPayloadCodec {
   /// - `Vec([Symbol("External"), Address(...), Bytes(...)])` returns an
   ///   [OZExternalSigner].
   ///
-  /// Throws [TransactionSigningFailed] when the input is not a Vec, the
+  /// Throws [SmartAccountTransactionSigningFailed] when the input is not a Vec, the
   /// Vec is empty, the first element is not a Symbol, the type tag is
   /// unknown, or any required positional element has the wrong shape.
   static OZSmartAccountSigner signerFromScVal(XdrSCVal scVal) {
     if (scVal.discriminant != XdrSCValType.SCV_VEC) {
-      throw TransactionException.signingFailed(
+      throw SmartAccountTransactionException.signingFailed(
         'Signer ScVal is not a Vec',
       );
     }
     final elements = scVal.vec;
     if (elements == null) {
-      throw TransactionException.signingFailed(
+      throw SmartAccountTransactionException.signingFailed(
         'Signer ScVal Vec is null or empty',
       );
     }
     if (elements.isEmpty) {
-      throw TransactionException.signingFailed(
+      throw SmartAccountTransactionException.signingFailed(
         'Signer ScVal Vec is empty',
       );
     }
 
     final typeTag = elements[0];
     if (typeTag.discriminant != XdrSCValType.SCV_SYMBOL) {
-      throw TransactionException.signingFailed(
+      throw SmartAccountTransactionException.signingFailed(
         'First element of signer Vec is not a Symbol',
       );
     }
@@ -261,14 +261,14 @@ abstract class OZSmartAccountAuthPayloadCodec {
     switch (tag) {
       case 'Delegated':
         if (elements.length < 2) {
-          throw TransactionException.signingFailed(
+          throw SmartAccountTransactionException.signingFailed(
             'Delegated signer Vec must have at least 2 elements',
           );
         }
         final addressScVal = elements[1];
         if (addressScVal.discriminant != XdrSCValType.SCV_ADDRESS ||
             addressScVal.address == null) {
-          throw TransactionException.signingFailed(
+          throw SmartAccountTransactionException.signingFailed(
             'Delegated signer second element is not an Address',
           );
         }
@@ -277,14 +277,14 @@ abstract class OZSmartAccountAuthPayloadCodec {
         return OZDelegatedSigner(addressStr);
       case 'External':
         if (elements.length < 3) {
-          throw TransactionException.signingFailed(
+          throw SmartAccountTransactionException.signingFailed(
             'External signer Vec must have at least 3 elements',
           );
         }
         final addressScVal = elements[1];
         if (addressScVal.discriminant != XdrSCValType.SCV_ADDRESS ||
             addressScVal.address == null) {
-          throw TransactionException.signingFailed(
+          throw SmartAccountTransactionException.signingFailed(
             'External signer second element is not an Address',
           );
         }
@@ -293,14 +293,14 @@ abstract class OZSmartAccountAuthPayloadCodec {
         final keyDataScVal = elements[2];
         if (keyDataScVal.discriminant != XdrSCValType.SCV_BYTES ||
             keyDataScVal.bytes == null) {
-          throw TransactionException.signingFailed(
+          throw SmartAccountTransactionException.signingFailed(
             'External signer third element is not Bytes',
           );
         }
         final keyData = Uint8List.fromList(keyDataScVal.bytes!.sCBytes);
         return OZExternalSigner(verifierAddressStr, keyData);
       default:
-        throw TransactionException.signingFailed(
+        throw SmartAccountTransactionException.signingFailed(
           "Unknown signer type tag: '$tag'",
         );
     }
@@ -320,7 +320,7 @@ abstract class OZSmartAccountAuthPayloadCodec {
   static String _addressXdrToString(XdrSCAddress address) {
     final strKey = OZAddressStrKey.fromXdr(address);
     if (strKey == null) {
-      throw TransactionException.signingFailed(
+      throw SmartAccountTransactionException.signingFailed(
         'Unsupported signer address type',
       );
     }

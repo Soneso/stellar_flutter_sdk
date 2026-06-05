@@ -71,28 +71,28 @@ void main() {
     test('testRead_nonMapNonVoidThrows', () {
       expect(
         () => OZSmartAccountAuthPayloadCodec.read(XdrSCVal.forU32(7)),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
     test('testRead_symbolScValThrows', () {
       expect(
         () => OZSmartAccountAuthPayloadCodec.read(XdrSCVal.forSymbol('foo')),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
     test('testRead_bytesScValThrows', () {
       expect(
         () => OZSmartAccountAuthPayloadCodec.read(XdrSCVal.forBytes(_bytes(4))),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
     test('testRead_vecScValThrows', () {
       expect(
         () => OZSmartAccountAuthPayloadCodec.read(XdrSCVal.forVec([])),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -170,7 +170,7 @@ void main() {
       ]);
       expect(
         () => OZSmartAccountAuthPayloadCodec.read(scVal),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -430,7 +430,7 @@ void main() {
     test('testCodecRead_nonMapThrows', () {
       expect(
         () => OZSmartAccountAuthPayloadCodec.read(XdrSCVal.forU32(0)),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -501,7 +501,7 @@ void main() {
     test('testCodecSignerFromScVal_throwsOnNonVec', () {
       expect(
         () => OZSmartAccountAuthPayloadCodec.signerFromScVal(XdrSCVal.forU32(0)),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -513,14 +513,14 @@ void main() {
             XdrSCVal.forAddressStrKey(kValidContractId),
           ]),
         ),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
     test('testCodecSignerFromScVal_throwsOnEmptyVec', () {
       expect(
         () => OZSmartAccountAuthPayloadCodec.signerFromScVal(XdrSCVal.forVec([])),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -655,14 +655,14 @@ void main() {
     test('testSignerFromScVal_nonVecThrows', () {
       expect(
         () => OZSmartAccountAuthPayloadCodec.signerFromScVal(XdrSCVal.forU32(0)),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
     test('testSignerFromScVal_emptyVecThrows', () {
       expect(
         () => OZSmartAccountAuthPayloadCodec.signerFromScVal(XdrSCVal.forVec([])),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -674,7 +674,7 @@ void main() {
             XdrSCVal.forAddressStrKey(kValidGAddress),
           ]),
         ),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -686,7 +686,7 @@ void main() {
             XdrSCVal.forAddressStrKey(kValidContractId),
           ]),
         ),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -695,7 +695,7 @@ void main() {
         () => OZSmartAccountAuthPayloadCodec.signerFromScVal(
           XdrSCVal.forVec([XdrSCVal.forSymbol('Delegated')]),
         ),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -707,7 +707,7 @@ void main() {
             XdrSCVal.forU32(7),
           ]),
         ),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -719,7 +719,7 @@ void main() {
             XdrSCVal.forAddressStrKey(kValidContractId),
           ]),
         ),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -732,7 +732,7 @@ void main() {
             XdrSCVal.forBytes(_bytes(4)),
           ]),
         ),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -745,7 +745,7 @@ void main() {
             XdrSCVal.forU32(7),
           ]),
         ),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -754,7 +754,7 @@ void main() {
         () => OZSmartAccountAuthPayloadCodec.signerFromScVal(
           XdrSCVal.forVec([XdrSCVal.forSymbol('External')]),
         ),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
   });

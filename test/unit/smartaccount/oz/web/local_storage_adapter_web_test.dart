@@ -25,7 +25,7 @@ import 'package:web/web.dart' as web;
 /// [web.Storage] extension-type contract via a JS object whose
 /// methods are wired to a Dart-side [Map]. The shim is structurally
 /// indistinguishable from `window.localStorage` for the methods
-/// [LocalStorageAdapter] uses.
+/// [OZLocalStorageAdapter] uses.
 web.Storage _makeFakeStorage({
   Map<String, String>? seed,
   bool throwQuotaExceeded = false,
@@ -94,7 +94,7 @@ JSObject _domException(String name, String message) {
   return obj;
 }
 
-StoredCredential _credential({
+OZStoredCredential _credential({
   String credentialId = 'cred-1',
   String? contractId,
   bool isPrimary = false,
@@ -104,11 +104,11 @@ StoredCredential _credential({
   List<String>? transports,
   String? deviceType,
   bool? backedUp,
-  CredentialDeploymentStatus deploymentStatus =
-      CredentialDeploymentStatus.pending,
+  OZCredentialDeploymentStatus deploymentStatus =
+      OZCredentialDeploymentStatus.pending,
   String? deploymentError,
 }) {
-  return StoredCredential(
+  return OZStoredCredential(
     credentialId: credentialId,
     publicKey: Uint8List.fromList(<int>[
       0x04,
@@ -133,13 +133,13 @@ StoredCredential _credential({
   );
 }
 
-StoredSession _session({
+OZStoredSession _session({
   String credentialId = 'cred-1',
   String contractId = 'CABCDEF',
   int connectedAt = 5_000,
   int expiresAt = 9_000_000_000_000,
 }) =>
-    StoredSession(
+    OZStoredSession(
       credentialId: credentialId,
       contractId: contractId,
       connectedAt: connectedAt,
@@ -147,9 +147,9 @@ StoredSession _session({
     );
 
 void main() {
-  group('LocalStorageAdapter (web)', () {
+  group('OZLocalStorageAdapter (web)', () {
     test('test_save_and_get_credential_round_trip', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       final cred = _credential();
@@ -161,7 +161,7 @@ void main() {
     });
 
     test('test_save_and_get_session_round_trip', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       final session = _session();
@@ -171,7 +171,7 @@ void main() {
     });
 
     test('test_get_by_contract_id_filters', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await adapter.save(_credential(credentialId: 'a', contractId: 'X'));
@@ -182,7 +182,7 @@ void main() {
     });
 
     test('test_clear_removes_all', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await adapter.save(_credential(credentialId: 'a'));
@@ -194,13 +194,13 @@ void main() {
     });
 
     test('test_quota_exceeded_error_handled', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(throwQuotaExceeded: true),
       );
       await expectLater(
         adapter.save(_credential()),
         throwsA(
-          isA<StorageWriteFailed>()
+          isA<SmartAccountStorageWriteFailed>()
               .having((e) => e.cause.toString(), 'cause', contains('quota')),
         ),
       );
@@ -210,17 +210,17 @@ void main() {
       // Reuse the quota path — the adapter cannot inspect payload size
       // directly; the browser raises QuotaExceededError when the cap is
       // reached.
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(throwQuotaExceeded: true),
       );
       await expectLater(
         adapter.save(_credential()),
-        throwsA(isA<StorageWriteFailed>()),
+        throwsA(isA<SmartAccountStorageWriteFailed>()),
       );
     });
 
     test('test_concurrent_writes_no_partial_state', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       final futures = <Future<void>>[];
@@ -237,13 +237,13 @@ void main() {
     });
 
     test('test_credential_update_atomic', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await adapter.save(_credential());
       await adapter.update(
         'cred-1',
-        const StoredCredentialUpdate(nickname: 'Touch ID'),
+        const OZStoredCredentialUpdate(nickname: 'Touch ID'),
       );
       final loaded = await adapter.get('cred-1');
       expect(loaded?.nickname, 'Touch ID');
@@ -272,17 +272,17 @@ void main() {
       fake.setProperty('clear'.toJS, clearImpl.toJS);
       fake.setProperty('key'.toJS, keyImpl.toJS);
       fake.setProperty('length'.toJS, 0.toJS);
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: fake as web.Storage,
       );
       await expectLater(
         adapter.save(_credential()),
-        throwsA(isA<StorageWriteFailed>()),
+        throwsA(isA<SmartAccountStorageWriteFailed>()),
       );
     });
 
     test('test_save_credential_with_all_fields_populated', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       final cred = _credential(
@@ -295,7 +295,7 @@ void main() {
         transports: const ['usb', 'nfc'],
         deviceType: 'singleDevice',
         backedUp: false,
-        deploymentStatus: CredentialDeploymentStatus.failed,
+        deploymentStatus: OZCredentialDeploymentStatus.failed,
         deploymentError: 'Out of fee',
       );
       await adapter.save(cred);
@@ -304,10 +304,10 @@ void main() {
     });
 
     test('test_save_credential_with_minimal_fields', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
-      final cred = StoredCredential(
+      final cred = OZStoredCredential(
         credentialId: 'min',
         publicKey: Uint8List.fromList(<int>[0x04, 0x01]),
       );
@@ -318,14 +318,14 @@ void main() {
     });
 
     test('test_get_nonexistent_credential_returns_null', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       expect(await adapter.get('missing'), isNull);
     });
 
     test('test_save_existing_credential_overwrites', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await adapter.save(_credential(nickname: 'Old'));
@@ -335,7 +335,7 @@ void main() {
     });
 
     test('test_delete_credential', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await adapter.save(_credential());
@@ -344,14 +344,14 @@ void main() {
     });
 
     test('test_delete_nonexistent_credential_does_not_throw', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await expectLater(adapter.delete('missing'), completes);
     });
 
     test('test_delete_removes_only_target_credential', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await adapter.save(_credential(credentialId: 'a'));
@@ -361,14 +361,14 @@ void main() {
     });
 
     test('test_get_all_empty_returns_empty_list', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       expect(await adapter.getAll(), isEmpty);
     });
 
     test('test_get_all_with_multiple_credentials', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       for (var i = 0; i < 5; i++) {
@@ -379,7 +379,7 @@ void main() {
     });
 
     test('test_get_by_contract_id_no_match_returns_empty_list', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await adapter.save(_credential(contractId: 'X'));
@@ -387,31 +387,31 @@ void main() {
     });
 
     test('test_update_nonexistent_credential_throws', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await expectLater(
-        adapter.update('missing', const StoredCredentialUpdate()),
-        throwsA(isA<CredentialNotFound>()),
+        adapter.update('missing', const OZStoredCredentialUpdate()),
+        throwsA(isA<SmartAccountCredentialNotFound>()),
       );
     });
 
     test('test_clear_on_empty_adapter_does_not_throw', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await expectLater(adapter.clear(), completes);
     });
 
     test('test_get_session_when_none_exists_returns_null', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       expect(await adapter.getSession(), isNull);
     });
 
     test('test_save_session_overwrites_previous', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await adapter.saveSession(_session(contractId: 'OLD'));
@@ -423,7 +423,7 @@ void main() {
     test('test_expired_session_auto_cleared_on_get_session', () async {
       final storage = _makeFakeStorage();
       final adapter =
-          LocalStorageAdapter.withStorage(storage: storage);
+          OZLocalStorageAdapter.withStorage(storage: storage);
       // Manually inject an already-expired session.
       await adapter.saveSession(
         _session(connectedAt: 0, expiresAt: 1),
@@ -434,7 +434,7 @@ void main() {
     });
 
     test('test_clear_session', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await adapter.saveSession(_session());
@@ -443,14 +443,14 @@ void main() {
     });
 
     test('test_clear_session_when_none_exists_does_not_throw', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await expectLater(adapter.clearSession(), completes);
     });
 
     test('test_get_by_contract_excludes_null_contract_id', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await adapter.save(_credential(credentialId: 'no-contract'));
@@ -462,52 +462,52 @@ void main() {
     });
 
     test('test_update_is_primary', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await adapter.save(_credential());
       await adapter.update(
         'cred-1',
-        const StoredCredentialUpdate(isPrimary: true),
+        const OZStoredCredentialUpdate(isPrimary: true),
       );
       final loaded = await adapter.get('cred-1');
       expect(loaded?.isPrimary, isTrue);
     });
 
     test('test_update_transports', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await adapter.save(_credential());
       await adapter.update(
         'cred-1',
-        const StoredCredentialUpdate(transports: ['internal', 'hybrid']),
+        const OZStoredCredentialUpdate(transports: ['internal', 'hybrid']),
       );
       final loaded = await adapter.get('cred-1');
       expect(loaded?.transports, ['internal', 'hybrid']);
     });
 
     test('test_update_contract_id', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await adapter.save(_credential());
       await adapter.update(
         'cred-1',
-        const StoredCredentialUpdate(contractId: 'CXYZ'),
+        const OZStoredCredentialUpdate(contractId: 'CXYZ'),
       );
       final loaded = await adapter.get('cred-1');
       expect(loaded?.contractId, 'CXYZ');
     });
 
     test('test_update_last_used_at', () async {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
       await adapter.save(_credential());
       await adapter.update(
         'cred-1',
-        const StoredCredentialUpdate(lastUsedAt: 999),
+        const OZStoredCredentialUpdate(lastUsedAt: 999),
       );
       final loaded = await adapter.get('cred-1');
       expect(loaded?.lastUsedAt, 999);
@@ -516,15 +516,15 @@ void main() {
     test(
         'test_local_storage_adapter_implements_storage_adapter_interface',
         () {
-      final adapter = LocalStorageAdapter.withStorage(
+      final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
-      expect(adapter, isA<StorageAdapter>());
+      expect(adapter, isA<OZStorageAdapter>());
     });
 
     test('test_get_all_skips_corrupted_credentials', () async {
       final storage = _makeFakeStorage();
-      final adapter = LocalStorageAdapter.withStorage(storage: storage);
+      final adapter = OZLocalStorageAdapter.withStorage(storage: storage);
       await adapter.save(_credential(credentialId: 'good'));
       // Inject corruption directly into the underlying storage by
       // adding a garbage entry that the index references.
@@ -539,14 +539,14 @@ void main() {
 
     test('test_get_corrupted_credential_throws', () async {
       final storage = _makeFakeStorage();
-      final adapter = LocalStorageAdapter.withStorage(storage: storage);
+      final adapter = OZLocalStorageAdapter.withStorage(storage: storage);
       // Direct read of a single corrupted credential surfaces the
-      // deserialization failure as StorageReadFailed.
+      // deserialization failure as SmartAccountStorageReadFailed.
       const corruptKey = 'stellar_sa_cred_bad';
       storage.setItem(corruptKey, '{not-valid-json}');
       await expectLater(
         adapter.get('bad'),
-        throwsA(isA<StorageReadFailed>()),
+        throwsA(isA<SmartAccountStorageReadFailed>()),
       );
     });
   });

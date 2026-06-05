@@ -44,7 +44,7 @@ import 'oz_storage_adapter.dart';
 ///     .build();
 /// ```
 ///
-/// Throws [ConfigurationException] if required parameters are blank or
+/// Throws [SmartAccountConfigurationException] if required parameters are blank or
 /// invalid (e.g. `accountWasmHash` is not a 64-character hex string, or
 /// `webauthnVerifierAddress` is not a valid C-address).
 class OZSmartAccountConfig {
@@ -54,8 +54,8 @@ class OZSmartAccountConfig {
   /// and [webauthnVerifierAddress] are validated in the constructor; all
   /// optional parameters fall back to their documented defaults.
   ///
-  /// When [storage] is omitted a fresh [InMemoryStorageAdapter] is allocated.
-  /// All [InMemoryStorageAdapter] instances compare equal so two configs
+  /// When [storage] is omitted a fresh [OZInMemoryStorageAdapter] is allocated.
+  /// All [OZInMemoryStorageAdapter] instances compare equal so two configs
   /// constructed with identical inputs (including the default storage) are
   /// equal as well.
   OZSmartAccountConfig({
@@ -70,34 +70,34 @@ class OZSmartAccountConfig {
     this.relayerUrl,
     this.indexerUrl,
     this.webauthnProvider,
-    StorageAdapter? storage,
+    OZStorageAdapter? storage,
     this.externalWallet,
     this.externalEd25519Adapter,
     this.maxContextRuleScanId = 50,
-  }) : storage = storage ?? InMemoryStorageAdapter() {
+  }) : storage = storage ?? OZInMemoryStorageAdapter() {
     if (rpcUrl.trim().isEmpty) {
-      throw ConfigurationException.missingConfig('rpcUrl');
+      throw SmartAccountConfigurationException.missingConfig('rpcUrl');
     }
     if (networkPassphrase.trim().isEmpty) {
-      throw ConfigurationException.missingConfig('networkPassphrase');
+      throw SmartAccountConfigurationException.missingConfig('networkPassphrase');
     }
     if (accountWasmHash.trim().isEmpty) {
-      throw ConfigurationException.missingConfig('accountWasmHash');
+      throw SmartAccountConfigurationException.missingConfig('accountWasmHash');
     }
     if (!RegExp(r'^[0-9a-fA-F]{64}$').hasMatch(accountWasmHash)) {
-      throw ConfigurationException.invalidConfig(
+      throw SmartAccountConfigurationException.invalidConfig(
         'accountWasmHash must be a 64-character hex string '
         '(SHA-256 of WASM), got: $accountWasmHash',
       );
     }
     if (!StrKey.isValidContractId(webauthnVerifierAddress)) {
-      throw ConfigurationException.invalidConfig(
+      throw SmartAccountConfigurationException.invalidConfig(
         'webauthnVerifierAddress must be a valid contract address '
         '(C...), got: $webauthnVerifierAddress',
       );
     }
     if (maxContextRuleScanId < 0) {
-      throw ConfigurationException.invalidConfig(
+      throw SmartAccountConfigurationException.invalidConfig(
         'maxContextRuleScanId must be non-negative, '
         'got: $maxContextRuleScanId',
       );
@@ -110,7 +110,7 @@ class OZSmartAccountConfig {
     // enforces the upper bound at submission and reports an out-of-range
     // expiration ledger as a transaction error.
     if (signatureExpirationLedgers < 1) {
-      throw ConfigurationException.invalidConfig(
+      throw SmartAccountConfigurationException.invalidConfig(
         'signatureExpirationLedgers must be >= 1, '
         'got: $signatureExpirationLedgers',
       );
@@ -120,7 +120,7 @@ class OZSmartAccountConfig {
     // i.e. the transaction never expires by time); any positive value sets
     // max_time = now + timeoutInSeconds.
     if (timeoutInSeconds < 0) {
-      throw ConfigurationException.invalidConfig(
+      throw SmartAccountConfigurationException.invalidConfig(
         'timeoutInSeconds must be >= 0 (0 means no expiry), '
         'got: $timeoutInSeconds',
       );
@@ -197,21 +197,21 @@ class OZSmartAccountConfig {
   final WebAuthnProvider? webauthnProvider;
 
   /// Storage adapter for persisting credentials and session data. Defaults
-  /// to [InMemoryStorageAdapter] (non-persistent, suitable for testing).
-  final StorageAdapter storage;
+  /// to [OZInMemoryStorageAdapter] (non-persistent, suitable for testing).
+  final OZStorageAdapter storage;
 
   /// External wallet adapter for signing transactions with an external
   /// signer. When set, the kit injects it into the kit-owned
   /// [OZExternalSignerManager] at construction so all wallet-signer
   /// operations route through `kit.externalSigners`.
-  final ExternalWalletAdapter? externalWallet;
+  final OZExternalWalletAdapter? externalWallet;
 
   /// Optional adapter for out-of-process Ed25519 signing.
   ///
   /// When set, the kit injects it into the kit-owned
   /// [OZExternalSignerManager] at construction. The adapter is consulted
   /// first (adapter-first precedence) before the in-memory keypair
-  /// registry for every [SelectedSignerEd25519] entry during multi-signer
+  /// registry for every [OZSelectedSignerEd25519] entry during multi-signer
   /// operations.
   final OZExternalEd25519SignerAdapter? externalEd25519Adapter;
 
@@ -233,7 +233,7 @@ class OZSmartAccountConfig {
   /// production apps typically use a custom deployer for attribution and
   /// traceability.
   ///
-  /// Throws [ConfigurationException] if seed generation fails.
+  /// Throws [SmartAccountConfigurationException] if seed generation fails.
   static Future<KeyPair> createDefaultDeployer() async {
     try {
       // why: this exact UTF-8 byte sequence is the protocol-defined constant
@@ -245,7 +245,7 @@ class OZSmartAccountConfig {
       final seedHash = Util.hash(seedBytes);
       return KeyPair.fromSecretSeedList(seedHash);
     } catch (e) {
-      throw ConfigurationException.invalidConfig(
+      throw SmartAccountConfigurationException.invalidConfig(
         'Failed to create default deployer keypair: $e',
         cause: e,
       );
@@ -273,7 +273,7 @@ class OZSmartAccountConfig {
   /// Asynchronous because the default-deployer derivation hashes a fixed
   /// seed and constructs an Ed25519 keypair.
   ///
-  /// Throws [ConfigurationException] if default deployer creation fails.
+  /// Throws [SmartAccountConfigurationException] if default deployer creation fails.
   Future<KeyPair> effectiveDeployer() async {
     final configured = deployerKeypair;
     if (configured != null) return configured;
@@ -312,8 +312,8 @@ class OZSmartAccountConfig {
     bool setIndexerUrl = false,
     WebAuthnProvider? webauthnProvider,
     bool setWebauthnProvider = false,
-    StorageAdapter? storage,
-    ExternalWalletAdapter? externalWallet,
+    OZStorageAdapter? storage,
+    OZExternalWalletAdapter? externalWallet,
     bool setExternalWallet = false,
     OZExternalEd25519SignerAdapter? externalEd25519Adapter,
     bool setExternalEd25519Adapter = false,
@@ -428,8 +428,8 @@ class OZSmartAccountConfigBuilder {
   String? _relayerUrl;
   String? _indexerUrl;
   WebAuthnProvider? _webauthnProvider;
-  StorageAdapter? _storage;
-  ExternalWalletAdapter? _externalWallet;
+  OZStorageAdapter? _storage;
+  OZExternalWalletAdapter? _externalWallet;
   OZExternalEd25519SignerAdapter? _externalEd25519Adapter;
   int _maxContextRuleScanId = 50;
 
@@ -477,14 +477,14 @@ class OZSmartAccountConfigBuilder {
   }
 
   /// Sets the storage adapter for persisting credentials and sessions.
-  OZSmartAccountConfigBuilder storage(StorageAdapter value) {
+  OZSmartAccountConfigBuilder storage(OZStorageAdapter value) {
     _storage = value;
     return this;
   }
 
   /// Sets the external wallet adapter. Pass `null` to disable external
   /// signing.
-  OZSmartAccountConfigBuilder externalWallet(ExternalWalletAdapter? value) {
+  OZSmartAccountConfigBuilder externalWallet(OZExternalWalletAdapter? value) {
     _externalWallet = value;
     return this;
   }
@@ -505,7 +505,7 @@ class OZSmartAccountConfigBuilder {
 
   /// Builds the [OZSmartAccountConfig], running constructor validation.
   ///
-  /// Throws [ConfigurationException] when validation fails.
+  /// Throws [SmartAccountConfigurationException] when validation fails.
   OZSmartAccountConfig build() {
     return OZSmartAccountConfig(
       rpcUrl: _rpcUrl,

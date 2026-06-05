@@ -36,7 +36,7 @@ final config = OZSmartAccountConfig(
     rpId: 'app.example.com',
     rpName: 'My Stellar Wallet',
   ),
-  storage: IndexedDBStorageAdapter(),
+  storage: OZIndexedDBStorageAdapter(),
 );
 ```
 
@@ -101,8 +101,8 @@ Passkeys registered against `localhost` are usable only on `localhost`; producti
 
 ## Storage Adapters
 
-- **`IndexedDBStorageAdapter`**: recommended for production web. Backed by IndexedDB with a larger quota than `localStorage`, indices on `contractId`, `createdAt`, and `isPrimary`, and an extra `Future<void> close()` and `deleteDatabase()` API beyond the abstract interface.
-- **`LocalStorageAdapter`**: web fallback backed by synchronous `window.localStorage`; the adapter exposes the standard `Future`-returning `StorageAdapter` interface. Around 5 MB per origin and unencrypted, simpler to reason about than IndexedDB. Use only when the dataset is small and the threat model accepts unencrypted local storage.
+- **`OZIndexedDBStorageAdapter`**: recommended for production web. Backed by IndexedDB with a larger quota than `localStorage`, indices on `contractId`, `createdAt`, and `isPrimary`, and an extra `Future<void> close()` and `deleteDatabase()` API beyond the abstract interface.
+- **`OZLocalStorageAdapter`**: web fallback backed by synchronous `window.localStorage`; the adapter exposes the standard `Future`-returning `OZStorageAdapter` interface. Around 5 MB per origin and unencrypted, simpler to reason about than IndexedDB. Use only when the dataset is small and the threat model accepts unencrypted local storage.
 
 ## Common errors
 
@@ -137,16 +137,16 @@ The browser disables WebAuthn inside iframes by default. To enable a ceremony fr
 
 ### IndexedDB unavailable
 
-`IndexedDBStorageAdapter` raises `StorageReadFailed` when IndexedDB is disabled (older private-browsing modes, some web-worker contexts). Fall back to `LocalStorageAdapter`:
+`OZIndexedDBStorageAdapter` raises `SmartAccountStorageReadFailed` when IndexedDB is disabled (older private-browsing modes, some web-worker contexts). Fall back to `OZLocalStorageAdapter`:
 
 ```dart
-StorageAdapter storage;
+OZStorageAdapter storage;
 try {
-  final idb = IndexedDBStorageAdapter();
+  final idb = OZIndexedDBStorageAdapter();
   await idb.getAll();
   storage = idb;
-} on StorageReadFailed {
-  storage = LocalStorageAdapter();
+} on SmartAccountStorageReadFailed {
+  storage = OZLocalStorageAdapter();
 }
 ```
 
@@ -161,7 +161,7 @@ Sync depends on the browser and operating system: Safari uses iCloud Keychain, C
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-final storage = IndexedDBStorageAdapter();
+final storage = OZIndexedDBStorageAdapter();
 final webauthnProvider = BrowserWebAuthnProvider(
   rpId: 'wallet.example.com',
   rpName: 'My Stellar App',

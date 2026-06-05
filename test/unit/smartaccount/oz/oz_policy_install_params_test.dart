@@ -15,20 +15,20 @@ OZSmartAccountSigner _external() => OZExternalSigner.ed25519(
     );
 
 void main() {
-  group('SimpleThresholdParams', () {
-    test('zeroThreshold throws ValidationException with correct field', () {
-      const params = SimpleThresholdParams(threshold: 0);
+  group('OZSimpleThresholdPolicyParams', () {
+    test('zeroThreshold throws SmartAccountValidationException with correct field', () {
+      const params = OZSimpleThresholdPolicyParams(threshold: 0);
       try {
         params.toScVal();
-        fail('Expected ValidationException');
-      } on ValidationException catch (e) {
-        expect(e, isA<InvalidInput>());
+        fail('Expected SmartAccountValidationException');
+      } on SmartAccountValidationException catch (e) {
+        expect(e, isA<SmartAccountInvalidInput>());
         expect(e.message, contains('Threshold must be greater than zero'));
       }
     });
 
     test('threshold of one builds ScVal map with single key', () {
-      const params = SimpleThresholdParams(threshold: 1);
+      const params = OZSimpleThresholdPolicyParams(threshold: 1);
       final scVal = params.toScVal();
       expect(scVal.discriminant, XdrSCValType.SCV_MAP);
       final map = scVal.map;
@@ -39,46 +39,46 @@ void main() {
     });
 
     test('large threshold value builds ScVal', () {
-      const params = SimpleThresholdParams(threshold: 0x7FFFFFFE);
+      const params = OZSimpleThresholdPolicyParams(threshold: 0x7FFFFFFE);
       final scVal = params.toScVal();
       expect(scVal.map![0].val.u32?.uint32, 0x7FFFFFFE);
     });
 
     test('ScVal map has threshold key', () {
-      const params = SimpleThresholdParams(threshold: 5);
+      const params = OZSimpleThresholdPolicyParams(threshold: 5);
       final map = params.toScVal().map!;
       final keys = map.map((e) => e.key.sym).toList();
       expect(keys, contains('threshold'));
     });
 
     test('ScVal threshold value matches input', () {
-      const params = SimpleThresholdParams(threshold: 42);
+      const params = OZSimpleThresholdPolicyParams(threshold: 42);
       final value = params.toScVal().map![0].val.u32!.uint32;
       expect(value, 42);
     });
   });
 
-  group('WeightedThresholdParams', () {
-    test('zero threshold throws ValidationException', () {
-      final params = WeightedThresholdParams(
+  group('OZWeightedThresholdPolicyParams', () {
+    test('zero threshold throws SmartAccountValidationException', () {
+      final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{
           _delegated('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'): 1,
         },
         threshold: 0,
       );
-      expect(() => params.toScVal(), throwsA(isA<ValidationException>()));
+      expect(() => params.toScVal(), throwsA(isA<SmartAccountValidationException>()));
     });
 
-    test('empty signerWeights throws ValidationException', () {
-      final params = WeightedThresholdParams(
+    test('empty signerWeights throws SmartAccountValidationException', () {
+      final params = OZWeightedThresholdPolicyParams(
         signerWeights: const <OZSmartAccountSigner, int>{},
         threshold: 1,
       );
-      expect(() => params.toScVal(), throwsA(isA<ValidationException>()));
+      expect(() => params.toScVal(), throwsA(isA<SmartAccountValidationException>()));
     });
 
     test('single signer builds ScVal', () {
-      final params = WeightedThresholdParams(
+      final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{
           _delegated('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'): 50,
         },
@@ -92,7 +92,7 @@ void main() {
     });
 
     test('multiple signers builds ScVal', () {
-      final params = WeightedThresholdParams(
+      final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{
           _delegated('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'): 50,
           _delegated('GBVRV25F7XA5I2L3ILSA6XW3OCWLKGGLG4OP2EHKTWC5IHQ3EV26FQLS'): 30,
@@ -107,7 +107,7 @@ void main() {
     test('signer_weights map sorted by XDR bytes', () {
       // Build with two signers; the inner map must be sorted by XDR
       // byte order regardless of insertion order.
-      final params = WeightedThresholdParams(
+      final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{
           _delegated('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'): 1,
           _delegated('GBVRV25F7XA5I2L3ILSA6XW3OCWLKGGLG4OP2EHKTWC5IHQ3EV26FQLS'): 2,
@@ -123,7 +123,7 @@ void main() {
     });
 
     test('top-level keys alphabetical: signer_weights then threshold', () {
-      final params = WeightedThresholdParams(
+      final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{_external(): 1},
         threshold: 1,
       );
@@ -132,7 +132,7 @@ void main() {
     });
 
     test('signer_weights map shape: address keys, U32 values', () {
-      final params = WeightedThresholdParams(
+      final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{
           _delegated('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'): 7,
         },
@@ -144,7 +144,7 @@ void main() {
     });
 
     test('threshold encoded as U32', () {
-      final params = WeightedThresholdParams(
+      final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{_external(): 1},
         threshold: 100,
       );
@@ -153,7 +153,7 @@ void main() {
     });
 
     test('mixed signer types: external and delegated', () {
-      final params = WeightedThresholdParams(
+      final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{
           _delegated('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'): 30,
           _external(): 70,
@@ -166,7 +166,7 @@ void main() {
     });
 
     test('signer_weights value is map type', () {
-      final params = WeightedThresholdParams(
+      final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{_external(): 1},
         threshold: 1,
       );
@@ -175,33 +175,33 @@ void main() {
     });
   });
 
-  group('SpendingLimitParams', () {
-    test('zero amount throws ValidationException', () {
-      final params = SpendingLimitParams(
+  group('OZSpendingLimitPolicyParams', () {
+    test('zero amount throws SmartAccountValidationException', () {
+      final params = OZSpendingLimitPolicyParams(
         spendingLimit: BigInt.zero,
         periodLedgers: 1,
       );
-      expect(() => params.toScVal(), throwsA(isA<ValidationException>()));
+      expect(() => params.toScVal(), throwsA(isA<SmartAccountValidationException>()));
     });
 
-    test('negative amount throws ValidationException', () {
-      final params = SpendingLimitParams(
+    test('negative amount throws SmartAccountValidationException', () {
+      final params = OZSpendingLimitPolicyParams(
         spendingLimit: BigInt.from(-1),
         periodLedgers: 1,
       );
-      expect(() => params.toScVal(), throwsA(isA<ValidationException>()));
+      expect(() => params.toScVal(), throwsA(isA<SmartAccountValidationException>()));
     });
 
-    test('zero periodLedgers throws ValidationException', () {
-      final params = SpendingLimitParams(
+    test('zero periodLedgers throws SmartAccountValidationException', () {
+      final params = OZSpendingLimitPolicyParams(
         spendingLimit: BigInt.from(100),
         periodLedgers: 0,
       );
-      expect(() => params.toScVal(), throwsA(isA<ValidationException>()));
+      expect(() => params.toScVal(), throwsA(isA<SmartAccountValidationException>()));
     });
 
     test('valid input builds ScVal', () {
-      final params = SpendingLimitParams(
+      final params = OZSpendingLimitPolicyParams(
         spendingLimit: BigInt.from(1000000000),
         periodLedgers: 17280,
       );
@@ -210,7 +210,7 @@ void main() {
     });
 
     test('top-level keys alphabetical: period_ledgers then spending_limit', () {
-      final params = SpendingLimitParams(
+      final params = OZSpendingLimitPolicyParams(
         spendingLimit: BigInt.from(100),
         periodLedgers: 1,
       );
@@ -219,7 +219,7 @@ void main() {
     });
 
     test('amount encoded as I128', () {
-      final params = SpendingLimitParams(
+      final params = OZSpendingLimitPolicyParams(
         spendingLimit: BigInt.from(1234567),
         periodLedgers: 1,
       );
@@ -228,7 +228,7 @@ void main() {
     });
 
     test('periodLedgers encoded as U32', () {
-      final params = SpendingLimitParams(
+      final params = OZSpendingLimitPolicyParams(
         spendingLimit: BigInt.from(100),
         periodLedgers: 720,
       );
@@ -238,7 +238,7 @@ void main() {
 
     test('large amount preserved as BigInt', () {
       final big = BigInt.parse('99999999999999999');
-      final params = SpendingLimitParams(
+      final params = OZSpendingLimitPolicyParams(
         spendingLimit: big,
         periodLedgers: 1,
       );
@@ -252,7 +252,7 @@ void main() {
       // Verify that OZPolicyManager.addSpendingLimit converts via
       // Util.toXdrInt64Amount; here we only verify the params class
       // uses the precomputed BigInt.
-      final params = SpendingLimitParams(
+      final params = OZSpendingLimitPolicyParams(
         spendingLimit: BigInt.from(100) * BigInt.from(10000000),
         periodLedgers: 1,
       );
@@ -261,7 +261,7 @@ void main() {
 
     test('amountToStroops round-trip preserves value', () {
       final stroops = Util.toXdrInt64Amount('123.4567890');
-      final params = SpendingLimitParams(
+      final params = OZSpendingLimitPolicyParams(
         spendingLimit: stroops,
         periodLedgers: 1,
       );
@@ -269,61 +269,61 @@ void main() {
     });
   });
 
-  group('PolicyInstallParams sealed-class behaviour', () {
-    test('SimpleThresholdParams is a PolicyInstallParams arm', () {
-      const params = SimpleThresholdParams(threshold: 1);
-      expect(params, isA<PolicyInstallParams>());
+  group('OZPolicyInstallParams sealed-class behaviour', () {
+    test('OZSimpleThresholdPolicyParams is a OZPolicyInstallParams arm', () {
+      const params = OZSimpleThresholdPolicyParams(threshold: 1);
+      expect(params, isA<OZPolicyInstallParams>());
     });
 
-    test('WeightedThresholdParams is a PolicyInstallParams arm', () {
-      final params = WeightedThresholdParams(
+    test('OZWeightedThresholdPolicyParams is a OZPolicyInstallParams arm', () {
+      final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{_external(): 1},
         threshold: 1,
       );
-      expect(params, isA<PolicyInstallParams>());
+      expect(params, isA<OZPolicyInstallParams>());
     });
 
-    test('SpendingLimitParams is a PolicyInstallParams arm', () {
-      final params = SpendingLimitParams(
+    test('OZSpendingLimitPolicyParams is a OZPolicyInstallParams arm', () {
+      final params = OZSpendingLimitPolicyParams(
         spendingLimit: BigInt.from(1),
         periodLedgers: 1,
       );
-      expect(params, isA<PolicyInstallParams>());
+      expect(params, isA<OZPolicyInstallParams>());
     });
 
-    test('switch over PolicyInstallParams compiles exhaustively', () {
-      String describe(PolicyInstallParams p) {
+    test('switch over OZPolicyInstallParams compiles exhaustively', () {
+      String describe(OZPolicyInstallParams p) {
         return switch (p) {
-          SimpleThresholdParams() => 'simple',
-          WeightedThresholdParams() => 'weighted',
-          SpendingLimitParams() => 'spending',
+          OZSimpleThresholdPolicyParams() => 'simple',
+          OZWeightedThresholdPolicyParams() => 'weighted',
+          OZSpendingLimitPolicyParams() => 'spending',
         };
       }
 
       expect(
-        describe(const SimpleThresholdParams(threshold: 1)),
+        describe(const OZSimpleThresholdPolicyParams(threshold: 1)),
         'simple',
       );
     });
 
-    test('SimpleThresholdParams equality by threshold', () {
-      const a = SimpleThresholdParams(threshold: 5);
-      const b = SimpleThresholdParams(threshold: 5);
-      const c = SimpleThresholdParams(threshold: 6);
+    test('OZSimpleThresholdPolicyParams equality by threshold', () {
+      const a = OZSimpleThresholdPolicyParams(threshold: 5);
+      const b = OZSimpleThresholdPolicyParams(threshold: 5);
+      const c = OZSimpleThresholdPolicyParams(threshold: 6);
       expect(a, b);
       expect(a, isNot(c));
     });
 
-    test('SpendingLimitParams equality by fields', () {
-      final a = SpendingLimitParams(
+    test('OZSpendingLimitPolicyParams equality by fields', () {
+      final a = OZSpendingLimitPolicyParams(
         spendingLimit: BigInt.from(100),
         periodLedgers: 1,
       );
-      final b = SpendingLimitParams(
+      final b = OZSpendingLimitPolicyParams(
         spendingLimit: BigInt.from(100),
         periodLedgers: 1,
       );
-      final c = SpendingLimitParams(
+      final c = OZSpendingLimitPolicyParams(
         spendingLimit: BigInt.from(200),
         periodLedgers: 1,
       );

@@ -45,9 +45,9 @@ import 'package:dio/dio.dart' as dio;
 - [Builder Helpers](#builder-helpers)
 - [Utilities](#utilities)
 - [Selected Signer](#selected-signer)
-  - [SelectedSignerPasskey](#selectedsignerpasskey)
-  - [SelectedSignerWallet](#selectedsignerwallet)
-  - [SelectedSignerEd25519](#selectedsignered25519)
+  - [OZSelectedSignerPasskey](#ozselectedsignerpasskey)
+  - [OZSelectedSignerWallet](#ozselectedsignerwallet)
+  - [OZSelectedSignerEd25519](#ozselectedsignered25519)
 - [Error Handling Example](#error-handling-example)
 
 ---
@@ -99,7 +99,7 @@ The configuration captured at construction time. Defines network endpoints, cont
 #### events
 
 ```dart
-final SmartAccountEventEmitter events
+final OZSmartAccountEventEmitter events
 ```
 
 The shared event emitter. Subscribers receive lifecycle events for wallet connection / disconnection, credential creation / deletion, session expiry, credential sync failures, transaction signing, and transaction submission. The emitter is callback-based, not `Stream`-based; see [Events](#events).
@@ -227,7 +227,7 @@ The fee-sponsoring relayer client. `null` when `config.relayerUrl` is unset. The
 Future<void> disconnect() async
 ```
 
-Disconnects the currently-connected wallet, clearing the in-memory connection state and removing the persisted session via `StorageAdapter.clearSession`. When a wallet was connected at the time of the call, emits a `SmartAccountEventWalletDisconnected` event. Stored credential entries remain in storage and can be reconnected later via `walletOperations.connectWallet`. Safe to call when no wallet is connected; the call is a no-op aside from the storage-clear request.
+Disconnects the currently-connected wallet, clearing the in-memory connection state and removing the persisted session via `OZStorageAdapter.clearSession`. When a wallet was connected at the time of the call, emits an `OZSmartAccountEventWalletDisconnected` event. Stored credential entries remain in storage and can be reconnected later via `walletOperations.connectWallet`. Safe to call when no wallet is connected; the call is a no-op aside from the storage-clear request.
 
 #### close
 
@@ -266,8 +266,8 @@ OZSmartAccountConfig({
   String? relayerUrl,
   String? indexerUrl,
   WebAuthnProvider? webauthnProvider,
-  StorageAdapter? storage,
-  ExternalWalletAdapter? externalWallet,
+  OZStorageAdapter? storage,
+  OZExternalWalletAdapter? externalWallet,
   OZExternalEd25519SignerAdapter? externalEd25519Adapter,
   int maxContextRuleScanId = 50,
 })
@@ -289,18 +289,18 @@ OZSmartAccountConfig({
 - `relayerUrl`: Optional relayer endpoint. When set, transactions can be fee-sponsored via the relayer pipeline.
 - `indexerUrl`: Optional indexer endpoint. When unset, `effectiveIndexerUrl()` falls back to the well-known default URL for the configured network when available.
 - `webauthnProvider`: Platform-specific WebAuthn provider. Required for any passkey-driven operation; an absent provider causes `createWallet`, `connectWallet(prompt: true)`, `authenticatePasskey`, and signer / transaction WebAuthn flows to throw `WebAuthnNotSupported`.
-- `storage`: Storage adapter for credentials and sessions. Defaults to a fresh `InMemoryStorageAdapter()` when omitted. All `InMemoryStorageAdapter` instances compare equal, so two configs with the default storage are structurally equal.
+- `storage`: Storage adapter for credentials and sessions. Defaults to a fresh `OZInMemoryStorageAdapter()` when omitted. All `OZInMemoryStorageAdapter` instances compare equal, so two configs with the default storage are structurally equal.
 - `externalWallet`: Optional adapter for out-of-process wallet signing (for example WalletConnect). The kit injects this into the internally-constructed `OZExternalSignerManager`. In-memory G-address keypairs can also be registered at runtime via `kit.externalSigners.addFromSecret(secretKey)` without an adapter.
 - `externalEd25519Adapter`: Optional adapter for out-of-process Ed25519 signing (for example hardware wallets and remote signing services). The kit injects this into the internally-constructed `OZExternalSignerManager`. In-memory Ed25519 keys can also be registered at runtime via `kit.externalSigners.addEd25519FromRawKey(...)` without an adapter.
 - `maxContextRuleScanId`: Upper bound on rule IDs to scan when iterating context rules. Default `50`. Increase if the account has had many add / remove cycles. Must be non-negative.
 
-Throws `ConfigurationException.missingConfig` when a required parameter is blank, and `ConfigurationException.invalidConfig` when `accountWasmHash`, `webauthnVerifierAddress`, `signatureExpirationLedgers`, `timeoutInSeconds`, or `maxContextRuleScanId` fails validation.
+Throws `SmartAccountConfigurationException.missingConfig` when a required parameter is blank, and `SmartAccountConfigurationException.invalidConfig` when `accountWasmHash`, `webauthnVerifierAddress`, `signatureExpirationLedgers`, `timeoutInSeconds`, or `maxContextRuleScanId` fails validation.
 
 Every constructor parameter is also exposed as a public `final` field with the same name and type.
 
 ### Platform-specific provider integration
 
-See [WebAuthn Provider](#webauthn-provider), [Storage Adapter](#storage-adapter), and [ExternalWalletAdapter](#externalwalletadapter-abstract-class) for the platform-specific implementations and the abstract contracts.
+See [WebAuthn Provider](#webauthn-provider), [Storage Adapter](#storage-adapter), and [OZExternalWalletAdapter](#ozexternalwalletadapter-abstract-class) for the platform-specific implementations and the abstract contracts.
 
 ### Static Factories
 
@@ -310,7 +310,7 @@ See [WebAuthn Provider](#webauthn-provider), [Storage Adapter](#storage-adapter)
 static Future<KeyPair> createDefaultDeployer() async
 ```
 
-Derives the deterministic deployer keypair from `SHA-256("openzeppelin-smart-account-kit")`. The seed string is fixed by the contract spec so the derived account ID is reproducible. The deployer only pays deployment fees; it does not control user wallets. Throws `ConfigurationException.invalidConfig` on derivation failure.
+Derives the deterministic deployer keypair from `SHA-256("openzeppelin-smart-account-kit")`. The seed string is fixed by the contract spec so the derived account ID is reproducible. The deployer only pays deployment fees; it does not control user wallets. Throws `SmartAccountConfigurationException.invalidConfig` on derivation failure.
 
 #### builder
 
@@ -333,7 +333,7 @@ Creates a fluent builder pre-populated with the four required fields. Use `OZSma
 Future<KeyPair> effectiveDeployer() async
 ```
 
-Returns `deployerKeypair` when set; otherwise resolves to the deterministic default. Throws `ConfigurationException` if default derivation fails.
+Returns `deployerKeypair` when set; otherwise resolves to the deterministic default. Throws `SmartAccountConfigurationException` if default derivation fails.
 
 #### effectiveIndexerUrl
 
@@ -369,8 +369,8 @@ Setter methods (each returns the builder for chaining):
 - `relayerUrl(String? value)`
 - `indexerUrl(String? value)`
 - `webauthnProvider(WebAuthnProvider? value)`
-- `storage(StorageAdapter value)`
-- `externalWallet(ExternalWalletAdapter? value)`
+- `storage(OZStorageAdapter value)`
+- `externalWallet(OZExternalWalletAdapter? value)`
 - `externalEd25519Adapter(OZExternalEd25519SignerAdapter? value)`
 - `maxContextRuleScanId(int value)`
 
@@ -380,7 +380,7 @@ Setter methods (each returns the builder for chaining):
 OZSmartAccountConfig build()
 ```
 
-Constructs the `OZSmartAccountConfig`, applying constructor validation. Throws `ConfigurationException` on failure.
+Constructs the `OZSmartAccountConfig`, applying constructor validation. Throws `SmartAccountConfigurationException` on failure.
 
 ---
 
@@ -397,12 +397,12 @@ final walletOps = kit.walletOperations;
 #### createWallet
 
 ```dart
-Future<CreateWalletResult> createWallet({
+Future<OZCreateWalletResult> createWallet({
   String userName = 'Smart Account User',
   bool autoSubmit = false,
   bool autoFund = false,
   String? nativeTokenContract,
-  SubmissionMethod? forceMethod,
+  OZSubmissionMethod? forceMethod,
   dio.CancelToken? cancelToken,
 }) async
 ```
@@ -415,8 +415,8 @@ Flow:
 2. Generate a 32-byte random challenge and a 32-byte random user ID; trigger the WebAuthn registration ceremony.
 3. Extract the uncompressed secp256r1 public key from the registration result via `SmartAccountUtils.extractPublicKeyFromRegistration`.
 4. Derive the deterministic smart-account contract address from the credential ID and the effective deployer.
-5. Persist the credential as pending via the credential manager and emit a `SmartAccountEventCredentialCreated` event.
-6. Set the kit's connected state and emit `SmartAccountEventWalletConnected`; save the session.
+5. Persist the credential as pending via the credential manager and emit an `OZSmartAccountEventCredentialCreated` event.
+6. Set the kit's connected state and emit `OZSmartAccountEventWalletConnected`; save the session.
 7. Build and sign the deploy transaction unconditionally so the caller can submit externally when `autoSubmit` is `false`.
 8. When `autoSubmit` is `true`, submit the deploy transaction. When `autoFund` is also `true`, wait briefly for RPC visibility and then fund the wallet via Friendbot (testnet only). On success the pending credential is deleted.
 
@@ -427,17 +427,17 @@ Flow:
 - `autoFund`: When `true`, fund the deployed wallet via Friendbot after a 5 s ledger-close delay. Requires `autoSubmit == true`, `nativeTokenContract != null`, and testnet.
 - `nativeTokenContract`: Native-token Soroban contract address required when `autoFund` is `true`.
 - `forceMethod`: Optional submission-method override. Defaults to auto-detection (relayer when configured, otherwise direct RPC).
-- `cancelToken`: Optional Dio cancel token. Cancellation surfaces as `TransactionException.submissionFailed` with the underlying `DioException.cancel` preserved as the cause.
+- `cancelToken`: Optional Dio cancel token. Cancellation surfaces as `SmartAccountTransactionException.submissionFailed` with the underlying `DioException.cancel` preserved as the cause.
 
-**Returns:** A `CreateWalletResult` carrying the credential ID, contract address, 65-byte public key, signed transaction XDR (always populated), optional transaction hash, and the nickname used for the credential.
+**Returns:** An `OZCreateWalletResult` carrying the credential ID, contract address, 65-byte public key, signed transaction XDR (always populated), optional transaction hash, and the nickname used for the credential.
 
-**Throws:** `WebAuthnException.notSupported` when no provider is configured; `ValidationException.invalidInput` for missing auto-fund prerequisites; `WebAuthnException.registrationFailed` when the ceremony fails or is cancelled; `CredentialException.alreadyExists` when a duplicate credential ID is encountered; `StorageException.writeFailed` on persistence failures; `TransactionException` for build, sign, simulation, or submission failures.
+**Throws:** `WebAuthnException.notSupported` when no provider is configured; `SmartAccountValidationException.invalidInput` for missing auto-fund prerequisites; `WebAuthnException.registrationFailed` when the ceremony fails or is cancelled; `SmartAccountCredentialException.alreadyExists` when a duplicate credential ID is encountered; `SmartAccountStorageException.writeFailed` on persistence failures; `SmartAccountTransactionException` for build, sign, simulation, or submission failures.
 
 #### connectWallet
 
 ```dart
 Future<OZConnectWalletResult?> connectWallet({
-  ConnectWalletOptions options = const ConnectWalletOptions(),
+  OZConnectWalletOptions options = const OZConnectWalletOptions(),
   dio.CancelToken? cancelToken,
 }) async
 ```
@@ -458,16 +458,16 @@ Connection cascade (when a credential ID is available, either supplied or freshl
 
 1. Storage: a `pending` entry is trusted; a `failed` entry throws with a hint to call `deployPendingCredential`.
 2. Deterministic derivation under the configured deployer, with on-chain verification.
-3. Indexer lookup: zero results throw `WalletException.notFound`; one result is verified and returned as `OZConnectWalletConnected`; multiple results are returned as `OZConnectWalletAmbiguous` without setting the connected state.
+3. Indexer lookup: zero results throw `SmartAccountWalletException.notFound`; one result is verified and returned as `OZConnectWalletConnected`; multiple results are returned as `OZConnectWalletAmbiguous` without setting the connected state.
 
 **Returns:** `null` when no session exists and `prompt` is `false`; otherwise an `OZConnectWalletConnected` (single-contract success, state set and session saved) or `OZConnectWalletAmbiguous` (caller must let the user pick a contract and reconnect with `credentialId` + the chosen `contractId`).
 
-**Throws:** `ValidationException.invalidInput` when `contractId` is supplied without `credentialId`; `WebAuthnException` family on WebAuthn failures; `WalletException.notFound` when no on-chain contract is resolved; `TransactionException` on XDR or simulation failures during derivation / verification.
+**Throws:** `SmartAccountValidationException.invalidInput` when `contractId` is supplied without `credentialId`; `WebAuthnException` family on WebAuthn failures; `SmartAccountWalletException.notFound` when no on-chain contract is resolved; `SmartAccountTransactionException` on XDR or simulation failures during derivation / verification.
 
 #### authenticatePasskey
 
 ```dart
-Future<AuthenticatePasskeyResult> authenticatePasskey({
+Future<OZAuthenticatePasskeyResult> authenticatePasskey({
   Uint8List? challenge,
   List<String>? credentialIds,
   dio.CancelToken? cancelToken,
@@ -479,21 +479,21 @@ Triggers a WebAuthn authentication ceremony without modifying the kit's connecti
 **Parameters:**
 
 - `challenge`: Optional challenge bytes. When omitted, a 32-byte secure random challenge is generated.
-- `credentialIds`: Optional list of Base64URL-encoded credential IDs. When supplied, the authenticator is restricted to these credentials (the WebAuthn `allowCredentials` constraint). Padded and unpadded forms are accepted interchangeably; transport hints from local storage are forwarded into each `AllowCredential` entry.
+- `credentialIds`: Optional list of Base64URL-encoded credential IDs. When supplied, the authenticator is restricted to these credentials (the WebAuthn `allowCredentials` constraint). Padded and unpadded forms are accepted interchangeably; transport hints from local storage are forwarded into each `WebAuthnAllowCredential` entry.
 
-**Returns:** An `AuthenticatePasskeyResult` carrying the credential ID, the normalised (64-byte compact, low-S) `OZWebAuthnSignature`, and the 65-byte public key when the credential is in local storage (empty otherwise).
+**Returns:** An `OZAuthenticatePasskeyResult` carrying the credential ID, the normalised (64-byte compact, low-S) `OZWebAuthnSignature`, and the 65-byte public key when the credential is in local storage (empty otherwise).
 
-**Throws:** `WebAuthnException.notSupported` when no provider is configured; `WebAuthnException.authenticationFailed` on ceremony failure; `CredentialException.invalid` when the provider returns a signature for a credential outside the requested allow-list; `ValidationException.invalidInput` when signature normalisation fails.
+**Throws:** `WebAuthnException.notSupported` when no provider is configured; `WebAuthnException.authenticationFailed` on ceremony failure; `SmartAccountCredentialException.invalid` when the provider returns a signature for a credential outside the requested allow-list; `SmartAccountValidationException.invalidInput` when signature normalisation fails.
 
 #### deployPendingCredential
 
 ```dart
-Future<DeployPendingResult> deployPendingCredential({
+Future<OZDeployPendingResult> deployPendingCredential({
   required String credentialId,
   bool autoSubmit = true,
   bool autoFund = false,
   String? nativeTokenContract,
-  SubmissionMethod? forceMethod,
+  OZSubmissionMethod? forceMethod,
   dio.CancelToken? cancelToken,
 }) async
 ```
@@ -510,17 +510,17 @@ Sets the kit's connected state on success so the kit is ready immediately after 
 - `nativeTokenContract`: Native-token Soroban contract address required when `autoFund` is `true`.
 - `forceMethod`: Optional submission-method override.
 
-**Returns:** A `DeployPendingResult` carrying the contract address, the signed transaction XDR, and the optional transaction hash when submitted.
+**Returns:** An `OZDeployPendingResult` carrying the contract address, the signed transaction XDR, and the optional transaction hash when submitted.
 
-**Throws:** `ValidationException.invalidInput` when the auto-fund prerequisites are unmet; `CredentialException.notFound` when the credential is missing from storage; `CredentialException.invalid` when required fields are absent; `TransactionException` on build, sign, simulation, or submission failure.
+**Throws:** `SmartAccountValidationException.invalidInput` when the auto-fund prerequisites are unmet; `SmartAccountCredentialException.notFound` when the credential is missing from storage; `SmartAccountCredentialException.invalid` when required fields are absent; `SmartAccountTransactionException` on build, sign, simulation, or submission failure.
 
 ### Result Types
 
-#### CreateWalletResult
+#### OZCreateWalletResult
 
 ```dart
-class CreateWalletResult {
-  const CreateWalletResult({
+class OZCreateWalletResult {
+  const OZCreateWalletResult({
     required String credentialId,
     required String contractId,
     required Uint8List publicKey,
@@ -536,7 +536,7 @@ class CreateWalletResult {
   final String? transactionHash;
   final String? nickname;
 
-  CreateWalletResult copyWith({...});
+  OZCreateWalletResult copyWith({...});
 }
 ```
 
@@ -597,13 +597,13 @@ final class OZConnectWalletAmbiguous extends OZConnectWalletResult {
 ```
 
 - `credentialId`: Base64URL-encoded credential ID. Reuse for the disambiguation reconnect to avoid a second WebAuthn ceremony.
-- `candidates`: Contract addresses returned by the indexer. Let the user pick one and call `connectWallet` again with `ConnectWalletOptions(credentialId: …, contractId: chosen)`.
+- `candidates`: Contract addresses returned by the indexer. Let the user pick one and call `connectWallet` again with `OZConnectWalletOptions(credentialId: …, contractId: chosen)`.
 
-#### DeployPendingResult
+#### OZDeployPendingResult
 
 ```dart
-class DeployPendingResult {
-  const DeployPendingResult({
+class OZDeployPendingResult {
+  const OZDeployPendingResult({
     required String contractId,
     required String signedTransactionXdr,
     String? transactionHash,
@@ -613,7 +613,7 @@ class DeployPendingResult {
   final String signedTransactionXdr;
   final String? transactionHash;
 
-  DeployPendingResult copyWith({...});
+  OZDeployPendingResult copyWith({...});
 }
 ```
 
@@ -621,11 +621,11 @@ class DeployPendingResult {
 - `signedTransactionXdr`: Base64-encoded signed deploy-transaction envelope.
 - `transactionHash`: Present when `autoSubmit` was `true`, `null` otherwise.
 
-#### AuthenticatePasskeyResult
+#### OZAuthenticatePasskeyResult
 
 ```dart
-class AuthenticatePasskeyResult {
-  const AuthenticatePasskeyResult({
+class OZAuthenticatePasskeyResult {
+  const OZAuthenticatePasskeyResult({
     required String credentialId,
     required OZWebAuthnSignature signature,
     required Uint8List publicKey,
@@ -641,11 +641,11 @@ class AuthenticatePasskeyResult {
 - `signature`: Normalised (64-byte compact, low-S) `OZWebAuthnSignature`.
 - `publicKey`: 65-byte uncompressed secp256r1 public key when present locally; otherwise an empty `Uint8List`.
 
-#### ConnectWalletOptions
+#### OZConnectWalletOptions
 
 ```dart
-class ConnectWalletOptions {
-  const ConnectWalletOptions({
+class OZConnectWalletOptions {
+  const OZConnectWalletOptions({
     String? credentialId,
     String? contractId,
     bool fresh = false,
@@ -657,7 +657,7 @@ class ConnectWalletOptions {
   final bool fresh;
   final bool prompt;
 
-  ConnectWalletOptions copyWith({
+  OZConnectWalletOptions copyWith({
     String? credentialId,
     bool clearCredentialId = false,
     String? contractId,
@@ -681,11 +681,11 @@ High-level transaction building, signing, and submission for smart-account opera
 #### transfer
 
 ```dart
-Future<TransactionResult> transfer({
+Future<OZTransactionResult> transfer({
   required String tokenContract,
   required String recipient,
   required String amount,
-  SubmissionMethod? forceMethod,
+  OZSubmissionMethod? forceMethod,
   dio.CancelToken? cancelToken,
 }) async
 ```
@@ -697,21 +697,21 @@ SEP-41 token transfer from the connected smart account to `recipient`. The decim
 - `tokenContract`: Token contract address (`C…`). Use the SAC address for XLM or the contract address for any SEP-41 custom token.
 - `recipient`: Recipient address (`G…` or `C…`). Validated against Stellar address format.
 - `amount`: Decimal amount, e.g. `"100"` or `"10.5"`. Converted to stroops internally.
-- `forceMethod`: Optional `SubmissionMethod` override.
+- `forceMethod`: Optional `OZSubmissionMethod` override.
 
-**Returns:** A `TransactionResult` carrying the submission outcome.
+**Returns:** An `OZTransactionResult` carrying the submission outcome.
 
-**Throws:** `WalletNotConnected`; `ValidationException.invalidAddress` for malformed recipients; `ValidationException.invalidInput` for self-transfer or invalid amount; downstream `TransactionException`, `WebAuthnException`, `CredentialException`.
+**Throws:** `SmartAccountWalletNotConnected`; `SmartAccountValidationException.invalidAddress` for malformed recipients; `SmartAccountValidationException.invalidInput` for self-transfer or invalid amount; downstream `SmartAccountTransactionException`, `WebAuthnException`, `SmartAccountCredentialException`.
 
 #### contractCall
 
 ```dart
-Future<TransactionResult> contractCall({
+Future<OZTransactionResult> contractCall({
   required String target,
   required String targetFn,
   List<XdrSCVal> targetArgs = const <XdrSCVal>[],
-  SubmissionMethod? forceMethod,
-  ResolveContextRuleIds? resolveContextRuleIds,
+  OZSubmissionMethod? forceMethod,
+  OZResolveContextRuleIds? resolveContextRuleIds,
   dio.CancelToken? cancelToken,
 }) async
 ```
@@ -729,12 +729,12 @@ Invokes an arbitrary function on an external contract directly from the smart ac
 #### executeAndSubmit
 
 ```dart
-Future<TransactionResult> executeAndSubmit({
+Future<OZTransactionResult> executeAndSubmit({
   required String target,
   required String targetFn,
   List<XdrSCVal> targetArgs = const <XdrSCVal>[],
-  SubmissionMethod? forceMethod,
-  ResolveContextRuleIds? resolveContextRuleIds,
+  OZSubmissionMethod? forceMethod,
+  OZResolveContextRuleIds? resolveContextRuleIds,
   dio.CancelToken? cancelToken,
 }) async
 ```
@@ -746,11 +746,11 @@ The auth context is `CallContract(smartAccountAddress)`, so only `Default` rules
 #### submit
 
 ```dart
-Future<TransactionResult> submit({
+Future<OZTransactionResult> submit({
   required XdrHostFunction hostFunction,
   required List<XdrSorobanAuthorizationEntry> auth,
-  SubmissionMethod? forceMethod,
-  ResolveContextRuleIds? resolveContextRuleIds,
+  OZSubmissionMethod? forceMethod,
+  OZResolveContextRuleIds? resolveContextRuleIds,
   dio.CancelToken? cancelToken,
 }) async
 ```
@@ -764,22 +764,22 @@ This is the primitive that `transfer`, `contractCall`, and `executeAndSubmit` bu
 ```dart
 Future<String> fundWallet({
   required String nativeTokenContract,
-  SubmissionMethod? forceMethod,
+  OZSubmissionMethod? forceMethod,
   dio.CancelToken? cancelToken,
 }) async
 ```
 
 Funds the connected smart-account wallet on testnet using Friendbot. Creates a temporary keypair, funds it via Friendbot, transfers all but `OZConstants.friendbotReserveXlm` to the smart account using the native-token contract, and returns the amount funded as a decimal XLM string.
 
-**Throws:** `ValidationException.invalidAddress` for malformed `nativeTokenContract`; `TransactionException` on any step failure.
+**Throws:** `SmartAccountValidationException.invalidAddress` for malformed `nativeTokenContract`; `SmartAccountTransactionException` on any step failure.
 
 ### Result Types
 
-#### TransactionResult
+#### OZTransactionResult
 
 ```dart
-class TransactionResult {
-  const TransactionResult({
+class OZTransactionResult {
+  const OZTransactionResult({
     required bool success,
     String? hash,
     int? ledger,
@@ -791,7 +791,7 @@ class TransactionResult {
   final int? ledger;
   final String? error;
 
-  TransactionResult copyWith({
+  OZTransactionResult copyWith({
     bool? success,
     String? hash,
     int? ledger,
@@ -805,10 +805,10 @@ class TransactionResult {
 - `ledger`: Ledger number where the transaction was confirmed.
 - `error`: Error message when `success` is `false`.
 
-#### ResolveContextRuleIds (typedef)
+#### OZResolveContextRuleIds (typedef)
 
 ```dart
-typedef ResolveContextRuleIds = Future<List<int>> Function(
+typedef OZResolveContextRuleIds = Future<List<int>> Function(
   XdrSorobanAuthorizationEntry entry,
   int index,
 );
@@ -816,10 +816,10 @@ typedef ResolveContextRuleIds = Future<List<int>> Function(
 
 Optional callback invoked during signing for each authorisation entry that matches the connected smart account. Receives the entry and its index in the auth-entries list and returns the context-rule IDs to use for the entry. When no callback is supplied the SDK auto-resolves the rule IDs from the connected signer and the active context rules.
 
-#### SubmissionMethod
+#### OZSubmissionMethod
 
 ```dart
-enum SubmissionMethod {
+enum OZSubmissionMethod {
   relayer,
   rpc,
 }
@@ -848,7 +848,7 @@ After successful deployment (or successful sync) the credential is removed rathe
 #### createPendingCredential
 
 ```dart
-Future<StoredCredential> createPendingCredential({
+Future<OZStoredCredential> createPendingCredential({
   required String credentialId,
   required Uint8List publicKey,
   required String contractId,
@@ -861,12 +861,12 @@ Future<StoredCredential> createPendingCredential({
 
 Creates a credential with `deploymentStatus = pending` and `isPrimary = false`. Validates that `publicKey` is exactly 65 bytes, that `credentialId` is non-empty, and that no credential with the same ID already exists.
 
-Throws `ValidationException.invalidInput`, `CredentialException.alreadyExists`, `StorageException.writeFailed`.
+Throws `SmartAccountValidationException.invalidInput`, `SmartAccountCredentialException.alreadyExists`, `SmartAccountStorageException.writeFailed`.
 
 #### saveCredential
 
 ```dart
-Future<StoredCredential> saveCredential({
+Future<OZStoredCredential> saveCredential({
   required String credentialId,
   required Uint8List publicKey,
   String? nickname,
@@ -882,17 +882,17 @@ Persists a credential with `deploymentStatus = pending` and `isPrimary = false` 
 Future<bool> sync(String credentialId) async
 ```
 
-Checks whether the smart-account contract for this credential exists on-chain. When found, deletes the credential from storage and returns `true`. When not found or on transient RPC failure, returns `false`; swallowed exceptions are emitted as `SmartAccountEventCredentialSyncFailed` so consumers can observe them without losing the stable-return contract.
+Checks whether the smart-account contract for this credential exists on-chain. When found, deletes the credential from storage and returns `true`. When not found or on transient RPC failure, returns `false`; swallowed exceptions are emitted as `OZSmartAccountEventCredentialSyncFailed` so consumers can observe them without losing the stable-return contract.
 
-Throws `CredentialException.notFound` when the credential is absent from storage; `StorageException.readFailed` on storage failure.
+Throws `SmartAccountCredentialException.notFound` when the credential is absent from storage; `SmartAccountStorageException.readFailed` on storage failure.
 
 #### syncAll
 
 ```dart
-Future<SyncResult> syncAll() async
+Future<OZSyncResult> syncAll() async
 ```
 
-Runs `sync` against every stored credential and returns a `SyncResult` carrying the counts of credentials confirmed as deployed (and removed), credentials still pending, and credentials marked failed.
+Runs `sync` against every stored credential and returns an `OZSyncResult` carrying the counts of credentials confirmed as deployed (and removed), credentials still pending, and credentials marked failed.
 
 #### deleteCredential
 
@@ -900,14 +900,14 @@ Runs `sync` against every stored credential and returns a `SyncResult` carrying 
 Future<void> deleteCredential({required String credentialId}) async
 ```
 
-Deletes the credential after verifying via `sync` that the corresponding contract is not on-chain. Refusing to delete a deployed credential prevents the user from removing a wallet that still exists on-chain. Emits `SmartAccountEventCredentialDeleted` on success.
+Deletes the credential after verifying via `sync` that the corresponding contract is not on-chain. Refusing to delete a deployed credential prevents the user from removing a wallet that still exists on-chain. Emits `OZSmartAccountEventCredentialDeleted` on success.
 
-Throws `CredentialException.notFound`, `CredentialException.invalid` (when the credential is on-chain), `StorageException`.
+Throws `SmartAccountCredentialException.notFound`, `SmartAccountCredentialException.invalid` (when the credential is on-chain), `SmartAccountStorageException`.
 
 #### getCredential
 
 ```dart
-Future<StoredCredential?> getCredential(String credentialId) async
+Future<OZStoredCredential?> getCredential(String credentialId) async
 ```
 
 Returns the stored credential or `null` when not present.
@@ -915,7 +915,7 @@ Returns the stored credential or `null` when not present.
 #### getCredentialsByContract
 
 ```dart
-Future<List<StoredCredential>> getCredentialsByContract(String contractId) async
+Future<List<OZStoredCredential>> getCredentialsByContract(String contractId) async
 ```
 
 Returns all stored credentials whose `contractId` equals the supplied value.
@@ -923,7 +923,7 @@ Returns all stored credentials whose `contractId` equals the supplied value.
 #### getAllCredentials
 
 ```dart
-Future<List<StoredCredential>> getAllCredentials() async
+Future<List<OZStoredCredential>> getAllCredentials() async
 ```
 
 Returns every stored credential.
@@ -931,7 +931,7 @@ Returns every stored credential.
 #### getForConnectedWallet
 
 ```dart
-Future<List<StoredCredential>> getForConnectedWallet() async
+Future<List<OZStoredCredential>> getForConnectedWallet() async
 ```
 
 Returns all credentials whose `contractId` matches `kit.contractId`. Returns an empty list when no wallet is connected.
@@ -939,7 +939,7 @@ Returns all credentials whose `contractId` matches `kit.contractId`. Returns an 
 #### getPendingCredentials
 
 ```dart
-Future<List<StoredCredential>> getPendingCredentials() async
+Future<List<OZStoredCredential>> getPendingCredentials() async
 ```
 
 Returns every stored credential whose `deploymentStatus` is `pending` or `failed`. Useful for surfacing wallets that still need attention (retry, sync, or delete).
@@ -950,7 +950,7 @@ Returns every stored credential whose `deploymentStatus` is `pending` or `failed
 Future<void> updateNickname(String credentialId, String? nickname) async
 ```
 
-Updates the credential's nickname. Throws `CredentialException.notFound` when the credential is absent.
+Updates the credential's nickname. Throws `SmartAccountCredentialException.notFound` when the credential is absent.
 
 #### clearAll
 
@@ -960,11 +960,11 @@ Future<void> clearAll() async
 
 Removes every credential from storage. Irreversible; intended for account-deletion or reset flows.
 
-### SyncResult
+### OZSyncResult
 
 ```dart
-class SyncResult {
-  const SyncResult({
+class OZSyncResult {
+  const OZSyncResult({
     required int deployed,
     required int pending,
     required int failed,
@@ -999,7 +999,7 @@ sealed class OZSmartAccountSigner {
 
 Base type with two concrete arms: [`OZDelegatedSigner`](#ozdelegatedsigner) and [`OZExternalSigner`](#ozexternalsigner).
 
-- `toScVal()`: Converts the signer to its on-chain `XdrSCVal` representation for contract calls. Throws `ValidationException.invalidInput` when the underlying address or key data cannot be encoded.
+- `toScVal()`: Converts the signer to its on-chain `XdrSCVal` representation for contract calls. Throws `SmartAccountValidationException.invalidInput` when the underlying address or key data cannot be encoded.
 - `uniqueKey`: Stable identifier used for deduplication. Delegated signers yield `"delegated:<address>"`; external signers yield `"external:<verifierAddress>:<keyDataHex>"` (lowercase hex of the key data).
 
 ### OZDelegatedSigner
@@ -1012,7 +1012,7 @@ final class OZDelegatedSigner extends OZSmartAccountSigner {
 }
 ```
 
-A delegated signer using a Soroban address with the built-in `require_auth` verification mechanism. `address` is a Stellar account ID (`G…`) or contract ID (`C…`). The constructor throws `ValidationException.invalidAddress` when the address is neither a valid account ID nor a valid contract ID.
+A delegated signer using a Soroban address with the built-in `require_auth` verification mechanism. `address` is a Stellar account ID (`G…`) or contract ID (`C…`). The constructor throws `SmartAccountValidationException.invalidAddress` when the address is neither a valid account ID nor a valid contract ID.
 
 `toScVal()` returns `Vec([Symbol("Delegated"), Address(address)])`.
 
@@ -1043,14 +1043,14 @@ An external signer that delegates signature verification to a Soroban verifier c
 - `verifierAddress`: Contract address (`C…`) of the signature verifier.
 - `keyData`: Public-key bytes plus any additional authentication data (for WebAuthn this is `publicKey || credentialId`). Copied defensively on construction.
 
-The unnamed constructor throws `ValidationException.invalidAddress` when `verifierAddress` is not a valid contract ID, and `ValidationException.invalidInput` when `keyData` is empty.
+The unnamed constructor throws `SmartAccountValidationException.invalidAddress` when `verifierAddress` is not a valid contract ID, and `SmartAccountValidationException.invalidInput` when `keyData` is empty.
 
 `toScVal()` returns `Vec([Symbol("External"), Address(verifierAddress), Bytes(keyData)])`.
 
 **Static factories:**
 
-- `webAuthn({required verifierAddress, required publicKey, required credentialId})`: Builds a WebAuthn signer. `publicKey` must be exactly `SmartAccountConstants.secp256r1PublicKeySize` (65) bytes starting with `SmartAccountConstants.uncompressedPubkeyPrefix` (`0x04`), and `credentialId` must be non-empty; the resulting `keyData` is `publicKey || credentialId`. Throws `ValidationException.invalidInput` when any precondition fails.
-- `ed25519({required verifierAddress, required publicKey})`: Builds an Ed25519 signer. `publicKey` must be exactly `SmartAccountConstants.ed25519PublicKeySize` (32) bytes; `keyData` is the public key itself. Throws `ValidationException.invalidInput` when the length is wrong.
+- `webAuthn({required verifierAddress, required publicKey, required credentialId})`: Builds a WebAuthn signer. `publicKey` must be exactly `SmartAccountConstants.secp256r1PublicKeySize` (65) bytes starting with `SmartAccountConstants.uncompressedPubkeyPrefix` (`0x04`), and `credentialId` must be non-empty; the resulting `keyData` is `publicKey || credentialId`. Throws `SmartAccountValidationException.invalidInput` when any precondition fails.
+- `ed25519({required verifierAddress, required publicKey})`: Builds an Ed25519 signer. `publicKey` must be exactly `SmartAccountConstants.ed25519PublicKeySize` (32) bytes; `keyData` is the public key itself. Throws `SmartAccountValidationException.invalidInput` when the length is wrong.
 
 `OZExternalSigner` uses constant-time byte equality across `verifierAddress` and `keyData`, with a content-derived `hashCode`, so logically equal signers compare and hash equally.
 
@@ -1068,32 +1068,32 @@ Each context rule may carry up to `OZConstants.maxSigners` signers (15). The sig
 - Delegated signers (Stellar accounts or contracts authorising via Soroban's native `require_auth`).
 - Ed25519 signers (32-byte Ed25519 keys verified by a deployed Ed25519 verifier contract).
 
-Every state-changing method accepts an optional `List<SelectedSigner>`; an empty list (the default) routes through the single-signer pipeline that authorises with the connected passkey, while a non-empty list routes through `OZMultiSignerManager.submitWithMultipleSigners`.
+Every state-changing method accepts an optional `List<OZSelectedSigner>`; an empty list (the default) routes through the single-signer pipeline that authorises with the connected passkey, while a non-empty list routes through `OZMultiSignerManager.submitWithMultipleSigners`.
 
 #### addNewPasskeySigner
 
 ```dart
-Future<AddPasskeySignerResult> addNewPasskeySigner({
+Future<OZAddPasskeySignerResult> addNewPasskeySigner({
   required int contextRuleId,
   required String userName,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 }) async
 ```
 
-Registers a new WebAuthn passkey and adds it as a signer to `contextRuleId` in one flow. Triggers a WebAuthn registration ceremony, stores the credential locally as pending, emits `SmartAccountEventCredentialCreated`, then delegates to `addPasskey` for the on-chain signer addition.
+Registers a new WebAuthn passkey and adds it as a signer to `contextRuleId` in one flow. Triggers a WebAuthn registration ceremony, stores the credential locally as pending, emits `OZSmartAccountEventCredentialCreated`, then delegates to `addPasskey` for the on-chain signer addition.
 
-Returns an `AddPasskeySignerResult` carrying the new credential ID, the 65-byte uncompressed public key, and the on-chain `TransactionResult`.
+Returns an `OZAddPasskeySignerResult` carrying the new credential ID, the 65-byte uncompressed public key, and the on-chain `OZTransactionResult`.
 
 #### addPasskey
 
 ```dart
-Future<TransactionResult> addPasskey({
+Future<OZTransactionResult> addPasskey({
   required int contextRuleId,
   required Uint8List publicKey,
   required Uint8List credentialId,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 }) async
 ```
 
@@ -1102,11 +1102,11 @@ Adds a previously-registered WebAuthn passkey as a signer to `contextRuleId`. Va
 #### addDelegated
 
 ```dart
-Future<TransactionResult> addDelegated({
+Future<OZTransactionResult> addDelegated({
   required int contextRuleId,
   required String address,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 }) async
 ```
 
@@ -1115,12 +1115,12 @@ Adds a delegated signer (Stellar G-address or C-address) to `contextRuleId`. Add
 #### addEd25519
 
 ```dart
-Future<TransactionResult> addEd25519({
+Future<OZTransactionResult> addEd25519({
   required int contextRuleId,
   required String verifierAddress,
   required Uint8List publicKey,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 }) async
 ```
 
@@ -1129,11 +1129,11 @@ Adds an Ed25519 signer to `contextRuleId`. Validates that `verifierAddress` is a
 #### removeSigner
 
 ```dart
-Future<TransactionResult> removeSigner({
+Future<OZTransactionResult> removeSigner({
   required int contextRuleId,
   required int signerId,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 }) async
 ```
 
@@ -1144,31 +1144,31 @@ The contract rejects removing the last signer from a rule that has no policies. 
 #### removeSignerBySigner
 
 ```dart
-Future<TransactionResult> removeSignerBySigner({
+Future<OZTransactionResult> removeSignerBySigner({
   required int contextRuleId,
   required OZSmartAccountSigner signer,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 }) async
 ```
 
-Removes a signer from `contextRuleId` by matching the [`OZSmartAccountSigner`](#signer-types) value. Fetches the rule, parses it, finds the matching signer index via `OZSmartAccountBuilders.signersEqual`, and delegates to the ID-based `removeSigner`. Throws `ValidationException.invalidInput` when the signer is not on the rule.
+Removes a signer from `contextRuleId` by matching the [`OZSmartAccountSigner`](#signer-types) value. Fetches the rule, parses it, finds the matching signer index via `OZSmartAccountBuilders.signersEqual`, and delegates to the ID-based `removeSigner`. Throws `SmartAccountValidationException.invalidInput` when the signer is not on the rule.
 
 ### Result Types
 
-#### AddPasskeySignerResult
+#### OZAddPasskeySignerResult
 
 ```dart
-class AddPasskeySignerResult {
-  const AddPasskeySignerResult({
+class OZAddPasskeySignerResult {
+  const OZAddPasskeySignerResult({
     required String credentialId,
     required Uint8List publicKey,
-    required TransactionResult transactionResult,
+    required OZTransactionResult transactionResult,
   });
 
   final String credentialId;
   final Uint8List publicKey;
-  final TransactionResult transactionResult;
+  final OZTransactionResult transactionResult;
 }
 ```
 
@@ -1180,20 +1180,20 @@ class AddPasskeySignerResult {
 
 Manages multi-signature smart-account operations. Accessed via `kit.multiSignerManager`.
 
-Signatures are collected sequentially in the order supplied via `selectedSigners`, enabling fail-fast behaviour on user cancellation. Each `SelectedSignerPasskey` triggers one WebAuthn authentication prompt; each `SelectedSignerWallet` signs via the configured `ExternalWalletAdapter`; each `SelectedSignerEd25519` calls `OZExternalSignerManager.signEd25519AuthDigest(...)` using the signing source registered for that `(verifierAddress, publicKey)` pair. The connected passkey is not added implicitly; include a `SelectedSignerPasskey` referencing it when it should sign.
+Signatures are collected sequentially in the order supplied via `selectedSigners`, enabling fail-fast behaviour on user cancellation. Each `OZSelectedSignerPasskey` triggers one WebAuthn authentication prompt; each `OZSelectedSignerWallet` signs via the configured `OZExternalWalletAdapter`; each `OZSelectedSignerEd25519` calls `OZExternalSignerManager.signEd25519AuthDigest(...)` using the signing source registered for that `(verifierAddress, publicKey)` pair. The connected passkey is not added implicitly; include an `OZSelectedSignerPasskey` referencing it when it should sign.
 
-`submitWithMultipleSigners` hoists external-signer reconstruction outside the per-entry loop, so every `SelectedSignerPasskey` in the list must carry a non-null `keyData` before the call; the hoist throws once at the top if any entry omits it.
+`submitWithMultipleSigners` hoists external-signer reconstruction outside the per-entry loop, so every `OZSelectedSignerPasskey` in the list must carry a non-null `keyData` before the call; the hoist throws once at the top if any entry omits it.
 
 #### multiSignerTransfer
 
 ```dart
-Future<TransactionResult> multiSignerTransfer({
+Future<OZTransactionResult> multiSignerTransfer({
   required String tokenContract,
   required String recipient,
   required String amount,
-  required List<SelectedSigner> selectedSigners,
-  SubmissionMethod? forceMethod,
-  ResolveContextRuleIds? resolveContextRuleIds,
+  required List<OZSelectedSigner> selectedSigners,
+  OZSubmissionMethod? forceMethod,
+  OZResolveContextRuleIds? resolveContextRuleIds,
 }) async
 ```
 
@@ -1202,13 +1202,13 @@ SEP-41 transfer signed by the explicit list of signers in `selectedSigners`. Bui
 #### multiSignerContractCall
 
 ```dart
-Future<TransactionResult> multiSignerContractCall({
+Future<OZTransactionResult> multiSignerContractCall({
   required String target,
   required String targetFn,
   List<XdrSCVal> targetArgs = const <XdrSCVal>[],
-  required List<SelectedSigner> selectedSigners,
-  SubmissionMethod? forceMethod,
-  ResolveContextRuleIds? resolveContextRuleIds,
+  required List<OZSelectedSigner> selectedSigners,
+  OZSubmissionMethod? forceMethod,
+  OZResolveContextRuleIds? resolveContextRuleIds,
 }) async
 ```
 
@@ -1217,13 +1217,13 @@ Calls an arbitrary function on an external contract directly, with multi-signer 
 #### multiSignerExecuteAndSubmit
 
 ```dart
-Future<TransactionResult> multiSignerExecuteAndSubmit({
+Future<OZTransactionResult> multiSignerExecuteAndSubmit({
   required String target,
   required String targetFn,
   List<XdrSCVal> targetArgs = const <XdrSCVal>[],
-  required List<SelectedSigner> selectedSigners,
-  SubmissionMethod? forceMethod,
-  ResolveContextRuleIds? resolveContextRuleIds,
+  required List<OZSelectedSigner> selectedSigners,
+  OZSubmissionMethod? forceMethod,
+  OZResolveContextRuleIds? resolveContextRuleIds,
 }) async
 ```
 
@@ -1232,11 +1232,11 @@ Executes a contract call through the smart account's `execute()` entry point wit
 #### submitWithMultipleSigners
 
 ```dart
-Future<TransactionResult> submitWithMultipleSigners({
+Future<OZTransactionResult> submitWithMultipleSigners({
   required XdrHostFunction hostFunction,
-  required List<SelectedSigner> selectedSigners,
-  SubmissionMethod? forceMethod,
-  ResolveContextRuleIds? resolveContextRuleIds,
+  required List<OZSelectedSigner> selectedSigners,
+  OZSubmissionMethod? forceMethod,
+  OZResolveContextRuleIds? resolveContextRuleIds,
 }) async
 ```
 
@@ -1248,15 +1248,15 @@ Shared low-level multi-signer signing pipeline. Validates the complete signer se
 
 ### OZExternalSignerManager
 
-Manager for non-passkey signers used by multi-signer smart-account operations. Coordinates Stellar account signers that originate from Ed25519 secret keys (memory-only) or from external wallet connections through an `ExternalWalletAdapter`, and Ed25519 external signers identified by a `(verifierAddress, publicKey)` tuple.
+Manager for non-passkey signers used by multi-signer smart-account operations. Coordinates Stellar account signers that originate from Ed25519 secret keys (memory-only) or from external wallet connections through an `OZExternalWalletAdapter`, and Ed25519 external signers identified by a `(verifierAddress, publicKey)` tuple.
 
 The kit constructs one `OZExternalSignerManager` at creation time, injecting the wallet and Ed25519 adapters from the config, and exposes it as `kit.externalSigners`. Access this instance to register in-memory keys at runtime or inspect registered signers. The manager can also be instantiated directly when needed outside a kit context.
 
 ```dart
 OZExternalSignerManager({
   required String networkPassphrase,
-  ExternalWalletAdapter? walletAdapter,
-  WalletConnectionStorage? walletConnectionStorage,
+  OZExternalWalletAdapter? walletAdapter,
+  OZWalletConnectionStorage? walletConnectionStorage,
   OZExternalEd25519SignerAdapter? ed25519Adapter,
 })
 ```
@@ -1284,17 +1284,17 @@ Future<String> addFromSecret(String secretKey) async
 
 Adds an Ed25519 keypair signer derived from `secretKey`. The keypair is held in memory only and never persisted. Returns the derived G-address. When a signer with the same address already exists, the keypair entry takes precedence and the persisted wallet connection (if any) is removed.
 
-Throws `SignerException.invalid` when the secret key is invalid.
+Throws `SmartAccountSignerException.invalid` when the secret key is invalid.
 
 #### addFromWallet
 
 ```dart
-Future<ConnectedWallet?> addFromWallet() async
+Future<OZConnectedWallet?> addFromWallet() async
 ```
 
 Connects an external wallet via `walletAdapter` and adds it as a signer. Returns `null` when the user cancels. When `walletConnectionStorage` is configured the connection is persisted for later restoration via `restoreConnections`.
 
-Throws `ConfigurationException.missingConfig` when no wallet adapter is configured.
+Throws `SmartAccountConfigurationException.missingConfig` when no wallet adapter is configured.
 
 #### canSignFor
 
@@ -1307,7 +1307,7 @@ Future<bool> canSignFor(String address) async
 #### get
 
 ```dart
-Future<ExternalSignerInfo?> get(String address) async
+Future<OZExternalSignerInfo?> get(String address) async
 ```
 
 Returns the signer info for `address`, preferring keypair entries over wallet entries.
@@ -1315,7 +1315,7 @@ Returns the signer info for `address`, preferring keypair entries over wallet en
 #### getAll
 
 ```dart
-Future<List<ExternalSignerInfo>> getAll() async
+Future<List<OZExternalSignerInfo>> getAll() async
 ```
 
 Lists every managed signer. Keypair signers come first; wallet signers whose addresses overlap with keypair signers are skipped.
@@ -1331,15 +1331,15 @@ Future<bool> hasSigners() async
 #### signAuthEntry
 
 ```dart
-Future<SignAuthEntryResult> signAuthEntry(
+Future<OZSignAuthEntryResult> signAuthEntry(
   String address,
   String authEntry,
 ) async
 ```
 
-Signs an authorisation-entry preimage for `address`. For keypair signers the base64-encoded preimage is decoded, SHA-256-hashed, and signed with the in-memory Ed25519 keypair. For wallet signers the call is delegated to `ExternalWalletAdapter.signAuthEntry`. Keypair signers take precedence over wallet signers for the same address.
+Signs an authorisation-entry preimage for `address`. For keypair signers the base64-encoded preimage is decoded, SHA-256-hashed, and signed with the in-memory Ed25519 keypair. For wallet signers the call is delegated to `OZExternalWalletAdapter.signAuthEntry`. Keypair signers take precedence over wallet signers for the same address.
 
-Throws `SignerException.notFound` when no signer is available for `address`; `TransactionException.signingFailed` on signing failure.
+Throws `SmartAccountSignerException.notFound` when no signer is available for `address`; `SmartAccountTransactionException.signingFailed` on signing failure.
 
 #### remove
 
@@ -1355,21 +1355,21 @@ Removes the signer registered for `address`. Removes the keypair entry, asks the
 Future<void> removeAll() async
 ```
 
-Removes every managed signer. Clears the keypair map, all Ed25519 keypair registrations, disconnects every external wallet connection via `ExternalWalletAdapter.disconnect`, and clears the persisted wallet connections from `walletConnectionStorage`. The `ed25519Adapter` is immutable and is not affected by this call.
+Removes every managed signer. Clears the keypair map, all Ed25519 keypair registrations, disconnects every external wallet connection via `OZExternalWalletAdapter.disconnect`, and clears the persisted wallet connections from `walletConnectionStorage`. The `ed25519Adapter` is immutable and is not affected by this call.
 
 #### restoreConnections
 
 ```dart
-Future<List<ConnectedWallet>> restoreConnections() async
+Future<List<OZConnectedWallet>> restoreConnections() async
 ```
 
-Restores previously connected wallets from `walletConnectionStorage`. Reads the persisted list and calls `ExternalWalletAdapter.reconnect` for each entry; wallets whose reconnect returns `null` or throws are removed from storage. Idempotent: subsequent calls return the currently connected wallets without re-reading.
+Restores previously connected wallets from `walletConnectionStorage`. Reads the persisted list and calls `OZExternalWalletAdapter.reconnect` for each entry; wallets whose reconnect returns `null` or throws are removed from storage. Idempotent: subsequent calls return the currently connected wallets without re-reading.
 
 ---
 
 ### Ed25519 Signing
 
-The following methods and types support Ed25519 external signers identified by a `(verifierAddress, publicKey)` tuple. They complement the wallet-based signing methods above. See also [`SelectedSignerEd25519`](#selectedsignered25519) for how to reference these signers in multi-signer calls.
+The following methods and types support Ed25519 external signers identified by a `(verifierAddress, publicKey)` tuple. They complement the wallet-based signing methods above. See also [`OZSelectedSignerEd25519`](#ozselectedsignered25519) for how to reference these signers in multi-signer calls.
 
 #### addEd25519FromRawKey
 
@@ -1391,9 +1391,9 @@ For hardware wallets, HSMs, or remote signing services, supply an `OZExternalEd2
 - `secretKeyBytes`: Exactly 32 bytes of raw Ed25519 seed material. This is not a Stellar S-strkey; it is the raw seed.
 - `verifierAddress`: C-strkey of the Ed25519 verifier contract under which this key is registered on-chain.
 
-**Returns:** The derived 32-byte Ed25519 public key as a `Uint8List`. Pass this as the `publicKey` argument of `SelectedSignerEd25519(verifierAddress: ..., publicKey: ...)` to route multi-signer signing through this keypair.
+**Returns:** The derived 32-byte Ed25519 public key as a `Uint8List`. Pass this as the `publicKey` argument of `OZSelectedSignerEd25519(verifierAddress: ..., publicKey: ...)` to route multi-signer signing through this keypair.
 
-**Throws:** `ValidationException.invalidInput` when `secretKeyBytes` is not exactly 32 bytes. `SignerException.invalid` when keypair construction fails.
+**Throws:** `SmartAccountValidationException.invalidInput` when `secretKeyBytes` is not exactly 32 bytes. `SmartAccountSignerException.invalid` when keypair construction fails.
 
 ```dart
 import 'dart:typed_data';
@@ -1428,13 +1428,13 @@ final ed25519PublicKey = kit.externalSigners.addEd25519FromRawKey(
 );
 
 // 3. Pass the identifier to the multi-signer call.
-final signer = SelectedSignerEd25519(
+final signer = OZSelectedSignerEd25519(
   verifierAddress: ed25519VerifierAddress,
   publicKey: ed25519PublicKey,
 );
 ```
 
-See also: [`SelectedSignerEd25519`](#selectedsignered25519).
+See also: [`OZSelectedSignerEd25519`](#ozselectedsignered25519).
 
 #### canSignEd25519For
 
@@ -1466,9 +1466,9 @@ Future<Uint8List> signEd25519AuthDigest({
 
 Produces a 64-byte Ed25519 signature over the supplied auth digest. Resolves the signing source using adapter-first precedence: the adapter is consulted first; if it claims it can sign, it signs. Otherwise the in-memory keypair registry is used. Throws when neither source is available.
 
-The multi-signer pipeline calls this method automatically for each `SelectedSignerEd25519` entry in `selectedSigners`. Direct calls are available for advanced integrations that need to produce signatures outside the pipeline.
+The multi-signer pipeline calls this method automatically for each `OZSelectedSignerEd25519` entry in `selectedSigners`. Direct calls are available for advanced integrations that need to produce signatures outside the pipeline.
 
-After the signing source returns the 64-byte signature, the pipeline locally verifies it against `publicKey` via `KeyPair.fromPublicKey(publicKey).verify(authDigest, signature)` before incorporating it into the authorization payload. A wrong signature throws `TransactionException.signingFailed`.
+After the signing source returns the 64-byte signature, the pipeline locally verifies it against `publicKey` via `KeyPair.fromPublicKey(publicKey).verify(authDigest, signature)` before incorporating it into the authorization payload. A wrong signature throws `SmartAccountTransactionException.signingFailed`.
 
 **Parameters:**
 
@@ -1478,13 +1478,13 @@ After the signing source returns the 64-byte signature, the pipeline locally ver
 
 **Returns:** 64-byte raw Ed25519 signature over `authDigest`.
 
-**Throws:** `ValidationException.invalidInput` (field `"selectedSigners"`) when no signing source is registered for the tuple; `TransactionException.signingFailed` when the adapter or in-memory keypair fails to produce a valid signature.
+**Throws:** `SmartAccountValidationException.invalidInput` (field `"selectedSigners"`) when no signing source is registered for the tuple; `SmartAccountTransactionException.signingFailed` when the adapter or in-memory keypair fails to produce a valid signature.
 
 > **Quirk — adapter-first precedence**: when `ed25519Adapter` is set and its `canSignFor(verifierAddress, publicKey)` returns `true`, the adapter always signs, even if an in-memory keypair is also registered for the same tuple. To use only the in-memory keypair, construct the manager without supplying an `ed25519Adapter`.
 
-> **Quirk — tuple-keyed storage**: the same 32-byte public key registered under two different verifier addresses is stored as two distinct entries. This matches the on-chain signer identity, where an `External(verifierAddress, publicKey)` entry is uniquely identified by both fields. Passing the wrong `verifierAddress` results in `ValidationException.invalidInput` even when the public key is correct.
+> **Quirk — tuple-keyed storage**: the same 32-byte public key registered under two different verifier addresses is stored as two distinct entries. This matches the on-chain signer identity, where an `External(verifierAddress, publicKey)` entry is uniquely identified by both fields. Passing the wrong `verifierAddress` results in `SmartAccountValidationException.invalidInput` even when the public key is correct.
 
-See also: [`OZExternalEd25519SignerAdapter`](#ozexternaled25519signeradapter), [`SelectedSignerEd25519`](#selectedsignered25519).
+See also: [`OZExternalEd25519SignerAdapter`](#ozexternaled25519signeradapter), [`OZSelectedSignerEd25519`](#ozselectedsignered25519).
 
 #### removeEd25519
 
@@ -1529,7 +1529,7 @@ Adapter for out-of-process Ed25519 signing sources such as hardware wallets and 
 - Called only when `canSignFor` returned `true` for the same `publicKey`.
 - `authDigest` — 32-byte digest computed as `SHA-256(signaturePayload || contextRuleIds.toXDR())`.
 - `publicKey` — the same 32-byte Ed25519 public key passed to `canSignFor`.
-- Returns a 64-byte raw Ed25519 signature over `authDigest`. The pipeline locally verifies the returned signature before incorporating it; a wrong signature throws `TransactionException.signingFailed`.
+- Returns a 64-byte raw Ed25519 signature over `authDigest`. The pipeline locally verifies the returned signature before incorporating it; a wrong signature throws `SmartAccountTransactionException.signingFailed`.
 - Throws any error that prevents signing (hardware unavailable, user cancelled, etc.).
 
 ```dart
@@ -1572,13 +1572,13 @@ See also: [`OZExternalSignerManager.signEd25519AuthDigest`](#signed25519authdige
 
 ### Supporting types
 
-#### ExternalSignerInfo
+#### OZExternalSignerInfo
 
 ```dart
-class ExternalSignerInfo {
-  const ExternalSignerInfo({
+class OZExternalSignerInfo {
+  const OZExternalSignerInfo({
     required String address,
-    required ExternalSignerType type,
+    required OZExternalSignerType type,
     String? walletName,
     String? walletId,
   });
@@ -1589,17 +1589,17 @@ class ExternalSignerInfo {
 - `type`: `keypair` or `wallet`.
 - `walletName`, `walletId`: Only meaningful when `type == wallet`.
 
-#### ExternalSignerType
+#### OZExternalSignerType
 
 ```dart
-enum ExternalSignerType { keypair, wallet }
+enum OZExternalSignerType { keypair, wallet }
 ```
 
-#### WalletConnectionStorage
+#### OZWalletConnectionStorage
 
 ```dart
-abstract class WalletConnectionStorage {
-  const WalletConnectionStorage();
+abstract class OZWalletConnectionStorage {
+  const OZWalletConnectionStorage();
   Future<String?> getItem(String key);
   Future<void> setItem(String key, String value);
   Future<void> removeItem(String key);
@@ -1608,11 +1608,11 @@ abstract class WalletConnectionStorage {
 
 Simple key-value storage interface for persisting external wallet connections. Implementations must be safe for concurrent calls.
 
-#### InMemoryWalletConnectionStorage
+#### OZInMemoryWalletConnectionStorage
 
 ```dart
-class InMemoryWalletConnectionStorage extends WalletConnectionStorage {
-  InMemoryWalletConnectionStorage();
+class OZInMemoryWalletConnectionStorage extends OZWalletConnectionStorage {
+  OZInMemoryWalletConnectionStorage();
 }
 ```
 
@@ -1621,10 +1621,10 @@ Default in-memory implementation. Not persistent.
 #### createInMemoryWalletConnectionStorage
 
 ```dart
-WalletConnectionStorage createInMemoryWalletConnectionStorage()
+OZWalletConnectionStorage createInMemoryWalletConnectionStorage()
 ```
 
-Top-level factory returning a fresh `InMemoryWalletConnectionStorage`.
+Top-level factory returning a fresh `OZInMemoryWalletConnectionStorage`.
 
 ---
 
@@ -1634,21 +1634,21 @@ Top-level factory returning a fresh `InMemoryWalletConnectionStorage`.
 
 Manages context rules on the connected smart account. Accessed via `kit.contextRuleManager`.
 
-A context rule pairs a `ContextRuleType` match (default, call-contract, or create-contract) with a signer list and a policy list. When a transaction matches a rule, the smart account authorises it only if the rule's signer and policy requirements are met. Per-rule limits: at most `OZConstants.maxSigners` (15) signers, at most `OZConstants.maxPolicies` (5) policies.
+A context rule pairs an `OZContextRuleType` match (default, call-contract, or create-contract) with a signer list and a policy list. When a transaction matches a rule, the smart account authorises it only if the rule's signer and policy requirements are met. Per-rule limits: at most `OZConstants.maxSigners` (15) signers, at most `OZConstants.maxPolicies` (5) policies.
 
-Every state-changing method accepts an optional `List<SelectedSigner>` with the same semantics as on [OZSignerManager](#ozsignermanager): an empty list (the default) authorises with the connected passkey; a non-empty list routes through `OZMultiSignerManager.submitWithMultipleSigners`.
+Every state-changing method accepts an optional `List<OZSelectedSigner>` with the same semantics as on [OZSignerManager](#ozsignermanager): an empty list (the default) authorises with the connected passkey; a non-empty list routes through `OZMultiSignerManager.submitWithMultipleSigners`.
 
 #### addContextRule
 
 ```dart
-Future<TransactionResult> addContextRule({
-  required ContextRuleType contextType,
+Future<OZTransactionResult> addContextRule({
+  required OZContextRuleType contextType,
   required String name,
   int? validUntil,
   required List<OZSmartAccountSigner> signers,
   Map<String, XdrSCVal> policies = const <String, XdrSCVal>{},
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 }) async
 ```
 
@@ -1656,13 +1656,13 @@ Adds a new context rule.
 
 **Parameters:**
 
-- `contextType`: The `ContextRuleType` (default, call-contract, or create-contract).
+- `contextType`: The `OZContextRuleType` (default, call-contract, or create-contract).
 - `name`: Human-readable rule name. Must be non-empty.
 - `validUntil`: Optional expiration ledger. `null` means no expiration.
 - `signers`: Signers attached to the rule. Must obey the per-rule maximum.
 - `policies`: Map from policy contract address to its installation parameters (XDR-encoded `ScVal`). Validated and ordered deterministically before submission.
 
-Throws `ValidationException.invalidInput` when the name is empty, when both `signers` and `policies` are empty, when the signer or policy limits are exceeded, or when any policy address is malformed.
+Throws `SmartAccountValidationException.invalidInput` when the name is empty, when both `signers` and `policies` are empty, when the signer or policy limits are exceeded, or when any policy address is malformed.
 
 #### getContextRule
 
@@ -1670,7 +1670,7 @@ Throws `ValidationException.invalidInput` when the name is empty, when both `sig
 Future<XdrSCVal> getContextRule(int id) async
 ```
 
-Returns the raw `XdrSCVal` for the rule with the supplied on-chain `id`. Use `listContextRules` to obtain parsed `ParsedContextRule` objects directly.
+Returns the raw `XdrSCVal` for the rule with the supplied on-chain `id`. Use `listContextRules` to obtain parsed `OZParsedContextRule` objects directly.
 
 #### getContextRulesCount
 
@@ -1691,32 +1691,32 @@ Returns the raw `XdrSCVal` representation of every active context rule. Iterates
 #### listContextRules
 
 ```dart
-Future<List<ParsedContextRule>> listContextRules({int? maxScanId}) async
+Future<List<OZParsedContextRule>> listContextRules({int? maxScanId}) async
 ```
 
-Returns every active context rule parsed into a `ParsedContextRule`.
+Returns every active context rule parsed into an `OZParsedContextRule`.
 
 #### updateName
 
 ```dart
-Future<TransactionResult> updateName({
+Future<OZTransactionResult> updateName({
   required int id,
   required String name,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 }) async
 ```
 
-Updates the human-readable name of a context rule. Throws `ValidationException.invalidInput` for an empty name.
+Updates the human-readable name of a context rule. Throws `SmartAccountValidationException.invalidInput` for an empty name.
 
 #### updateValidUntil
 
 ```dart
-Future<TransactionResult> updateValidUntil({
+Future<OZTransactionResult> updateValidUntil({
   required int id,
   int? validUntil,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 }) async
 ```
 
@@ -1725,10 +1725,10 @@ Updates the expiration ledger of a context rule. Pass `null` to remove the expir
 #### removeContextRule
 
 ```dart
-Future<TransactionResult> removeContextRule({
+Future<OZTransactionResult> removeContextRule({
   required int id,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 }) async
 ```
 
@@ -1736,7 +1736,7 @@ Removes a context rule.
 
 ### Supporting types
 
-See [Builder Helpers](#builder-helpers) for `ContextRuleType` (sealed: `ContextRuleTypeDefault`, `ContextRuleTypeCallContract`, `ContextRuleTypeCreateContract`), `ParsedContextRule`, and `OZBuilders`.
+See [Builder Helpers](#builder-helpers) for `OZContextRuleType` (sealed: `OZContextRuleTypeDefault`, `OZContextRuleTypeCallContract`, `OZContextRuleTypeCreateContract`), `OZParsedContextRule`, and `OZBuilders`.
 
 ---
 
@@ -1748,61 +1748,61 @@ Manages policies on context rules. Accessed via `kit.policyManager`.
 
 A context rule may carry up to `OZConstants.maxPolicies` (5) policies. Every policy must be satisfied for the rule to authorise a transaction. Three convenience helpers are provided for the built-in policy types; custom policy contracts use `addPolicy` directly with an XDR-encoded install-params `ScVal`.
 
-Every state-changing method accepts an optional `List<SelectedSigner>` with the same semantics as on [OZSignerManager](#ozsignermanager).
+Every state-changing method accepts an optional `List<OZSelectedSigner>` with the same semantics as on [OZSignerManager](#ozsignermanager).
 
 #### addSimpleThreshold
 
 ```dart
-Future<TransactionResult> addSimpleThreshold({
+Future<OZTransactionResult> addSimpleThreshold({
   required int contextRuleId,
   required String policyAddress,
   required int threshold,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 }) async
 ```
 
-Installs a `SimpleThresholdParams` policy at `policyAddress` requiring at least `threshold` equal-weight signers from the rule's signer list.
+Installs an `OZSimpleThresholdPolicyParams` policy at `policyAddress` requiring at least `threshold` equal-weight signers from the rule's signer list.
 
 #### addWeightedThreshold
 
 ```dart
-Future<TransactionResult> addWeightedThreshold({
+Future<OZTransactionResult> addWeightedThreshold({
   required int contextRuleId,
   required String policyAddress,
   required Map<OZSmartAccountSigner, int> signerWeights,
   required int threshold,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 }) async
 ```
 
-Installs a `WeightedThresholdParams` policy where each signer carries a vote weight and the sum of approving-signer weights must reach `threshold`.
+Installs an `OZWeightedThresholdPolicyParams` policy where each signer carries a vote weight and the sum of approving-signer weights must reach `threshold`.
 
 #### addSpendingLimit
 
 ```dart
-Future<TransactionResult> addSpendingLimit({
+Future<OZTransactionResult> addSpendingLimit({
   required int contextRuleId,
   required String policyAddress,
   required String spendingLimit,
   required int periodLedgers,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 }) async
 ```
 
-Installs a `SpendingLimitParams` policy capping the total amount spent within a rolling ledger window. The decimal `spendingLimit` string is converted to stroops via `Util.toXdrInt64Amount`.
+Installs an `OZSpendingLimitPolicyParams` policy capping the total amount spent within a rolling ledger window. The decimal `spendingLimit` string is converted to stroops via `Util.toXdrInt64Amount`.
 
 #### addPolicy
 
 ```dart
-Future<TransactionResult> addPolicy({
+Future<OZTransactionResult> addPolicy({
   required int contextRuleId,
   required String policyAddress,
   required XdrSCVal installParams,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 }) async
 ```
 
@@ -1811,11 +1811,11 @@ Adds a policy with custom installation parameters. This is the generic entry poi
 #### removePolicy
 
 ```dart
-Future<TransactionResult> removePolicy({
+Future<OZTransactionResult> removePolicy({
   required int contextRuleId,
   required int policyId,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 }) async
 ```
 
@@ -1824,11 +1824,11 @@ Removes a policy by its on-chain policy ID.
 #### removePolicyByAddress
 
 ```dart
-Future<TransactionResult> removePolicyByAddress({
+Future<OZTransactionResult> removePolicyByAddress({
   required int contextRuleId,
   required String policyAddress,
-  List<SelectedSigner> selectedSigners = const <SelectedSigner>[],
-  SubmissionMethod? forceMethod,
+  List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
+  OZSubmissionMethod? forceMethod,
 }) async
 ```
 
@@ -1846,31 +1846,31 @@ static List<int> scValToXdrBytes(XdrSCVal scVal)
 
 ### Policy parameter types
 
-The policy parameter classes are exposed as a sealed hierarchy under `PolicyInstallParams`. The `toScVal()` method on each is marked `@internal` because consumer flows normally use the convenience helpers on `OZPolicyManager`.
+The policy parameter classes are exposed as a sealed hierarchy under `OZPolicyInstallParams`. The `toScVal()` method on each is marked `@internal` because consumer flows normally use the convenience helpers on `OZPolicyManager`.
 
-#### PolicyInstallParams (sealed)
+#### OZPolicyInstallParams (sealed)
 
 ```dart
-sealed class PolicyInstallParams {
-  const PolicyInstallParams();
+sealed class OZPolicyInstallParams {
+  const OZPolicyInstallParams();
   @internal XdrSCVal toScVal();
 }
 ```
 
-#### SimpleThresholdParams
+#### OZSimpleThresholdPolicyParams
 
 ```dart
-final class SimpleThresholdParams extends PolicyInstallParams {
-  const SimpleThresholdParams({required int threshold});
+final class OZSimpleThresholdPolicyParams extends OZPolicyInstallParams {
+  const OZSimpleThresholdPolicyParams({required int threshold});
   final int threshold;
 }
 ```
 
-#### WeightedThresholdParams
+#### OZWeightedThresholdPolicyParams
 
 ```dart
-final class WeightedThresholdParams extends PolicyInstallParams {
-  WeightedThresholdParams({
+final class OZWeightedThresholdPolicyParams extends OZPolicyInstallParams {
+  OZWeightedThresholdPolicyParams({
     required Map<OZSmartAccountSigner, int> signerWeights,
     required int threshold,
   });
@@ -1879,11 +1879,11 @@ final class WeightedThresholdParams extends PolicyInstallParams {
 }
 ```
 
-#### SpendingLimitParams
+#### OZSpendingLimitPolicyParams
 
 ```dart
-final class SpendingLimitParams extends PolicyInstallParams {
-  const SpendingLimitParams({
+final class OZSpendingLimitPolicyParams extends OZPolicyInstallParams {
+  const OZSpendingLimitPolicyParams({
     required BigInt spendingLimit,
     required int periodLedgers,
   });
@@ -1908,21 +1908,21 @@ final class SpendingLimitParams extends PolicyInstallParams {
 > // Each event's topic and value are base64-XDR-encoded SCVal entries.
 > ```
 
-The kit emits lifecycle events through `kit.events`, a `SmartAccountEventEmitter`. Event subscription is callback-based, not `Stream`-based. Consumers wanting `Stream` semantics can wrap `addListener` into a `StreamController`.
+The kit emits lifecycle events through `kit.events`, an `OZSmartAccountEventEmitter`. Event subscription is callback-based, not `Stream`-based. Consumers wanting `Stream` semantics can wrap `addListener` into a `StreamController`.
 
-### SmartAccountEventEmitter
+### OZSmartAccountEventEmitter
 
 ```dart
-class SmartAccountEventEmitter {
-  SmartAccountEventEmitter();
+class OZSmartAccountEventEmitter {
+  OZSmartAccountEventEmitter();
 
-  void setErrorHandler(SmartAccountEventErrorHandler? handler);
-  void Function() addListener(SmartAccountEventListener listener);
-  void Function() on<E extends SmartAccountEvent>(void Function(E event) listener);
-  void Function() once<E extends SmartAccountEvent>(void Function(E event) listener);
+  void setErrorHandler(OZSmartAccountEventErrorHandler? handler);
+  void Function() addListener(OZSmartAccountEventListener listener);
+  void Function() on<E extends OZSmartAccountEvent>(void Function(E event) listener);
+  void Function() once<E extends OZSmartAccountEvent>(void Function(E event) listener);
   void removeAllListeners([String? eventType]);
   int listenerCount(String eventType);
-  void emit(SmartAccountEvent event);
+  void emit(OZSmartAccountEvent event);
 }
 ```
 
@@ -1937,9 +1937,9 @@ class SmartAccountEventEmitter {
 ### Typedefs
 
 ```dart
-typedef SmartAccountEventListener = void Function(SmartAccountEvent event);
-typedef SmartAccountEventErrorHandler = void Function(
-  SmartAccountEvent event,
+typedef OZSmartAccountEventListener = void Function(OZSmartAccountEvent event);
+typedef OZSmartAccountEventErrorHandler = void Function(
+  OZSmartAccountEvent event,
   Object error,
   StackTrace stackTrace,
 );
@@ -1948,19 +1948,19 @@ typedef SmartAccountEventErrorHandler = void Function(
 ### Event hierarchy
 
 ```dart
-sealed class SmartAccountEvent {
-  const SmartAccountEvent();
+sealed class OZSmartAccountEvent {
+  const OZSmartAccountEvent();
   String get eventTypeName;
 }
 ```
 
 All concrete event arms are `final class` subclasses.
 
-#### SmartAccountEventWalletConnected
+#### OZSmartAccountEventWalletConnected
 
 ```dart
-final class SmartAccountEventWalletConnected extends SmartAccountEvent {
-  const SmartAccountEventWalletConnected({
+final class OZSmartAccountEventWalletConnected extends OZSmartAccountEvent {
+  const OZSmartAccountEventWalletConnected({
     required String contractId,
     required String credentialId,
   });
@@ -1972,11 +1972,11 @@ final class SmartAccountEventWalletConnected extends SmartAccountEvent {
 
 Emitted by wallet creation, connection, and deploy-pending paths after the kit's state is set.
 
-#### SmartAccountEventWalletDisconnected
+#### OZSmartAccountEventWalletDisconnected
 
 ```dart
-final class SmartAccountEventWalletDisconnected extends SmartAccountEvent {
-  const SmartAccountEventWalletDisconnected({required String contractId});
+final class OZSmartAccountEventWalletDisconnected extends OZSmartAccountEvent {
+  const OZSmartAccountEventWalletDisconnected({required String contractId});
   final String contractId;
   // eventTypeName: 'WalletDisconnected'
 }
@@ -1984,23 +1984,23 @@ final class SmartAccountEventWalletDisconnected extends SmartAccountEvent {
 
 Emitted by `kit.disconnect()` when a wallet was connected at the time of the call.
 
-#### SmartAccountEventCredentialCreated
+#### OZSmartAccountEventCredentialCreated
 
 ```dart
-final class SmartAccountEventCredentialCreated extends SmartAccountEvent {
-  const SmartAccountEventCredentialCreated({required StoredCredential credential});
-  final StoredCredential credential;
+final class OZSmartAccountEventCredentialCreated extends OZSmartAccountEvent {
+  const OZSmartAccountEventCredentialCreated({required OZStoredCredential credential});
+  final OZStoredCredential credential;
   // eventTypeName: 'CredentialCreated'
 }
 ```
 
 Emitted by `createWallet` and `addNewPasskeySigner` after the pending credential is persisted.
 
-#### SmartAccountEventCredentialDeleted
+#### OZSmartAccountEventCredentialDeleted
 
 ```dart
-final class SmartAccountEventCredentialDeleted extends SmartAccountEvent {
-  const SmartAccountEventCredentialDeleted({required String credentialId});
+final class OZSmartAccountEventCredentialDeleted extends OZSmartAccountEvent {
+  const OZSmartAccountEventCredentialDeleted({required String credentialId});
   final String credentialId;
   // eventTypeName: 'CredentialDeleted'
 }
@@ -2008,11 +2008,11 @@ final class SmartAccountEventCredentialDeleted extends SmartAccountEvent {
 
 Emitted by `credentialManager.deleteCredential` on successful removal.
 
-#### SmartAccountEventSessionExpired
+#### OZSmartAccountEventSessionExpired
 
 ```dart
-final class SmartAccountEventSessionExpired extends SmartAccountEvent {
-  const SmartAccountEventSessionExpired({
+final class OZSmartAccountEventSessionExpired extends OZSmartAccountEvent {
+  const OZSmartAccountEventSessionExpired({
     required String contractId,
     required String credentialId,
   });
@@ -2024,11 +2024,11 @@ final class SmartAccountEventSessionExpired extends SmartAccountEvent {
 
 Emitted by `connectWallet` when an expired session is found and auto-cleared.
 
-#### SmartAccountEventCredentialSyncFailed
+#### OZSmartAccountEventCredentialSyncFailed
 
 ```dart
-final class SmartAccountEventCredentialSyncFailed extends SmartAccountEvent {
-  const SmartAccountEventCredentialSyncFailed({
+final class OZSmartAccountEventCredentialSyncFailed extends OZSmartAccountEvent {
+  const OZSmartAccountEventCredentialSyncFailed({
     required String credentialId,
     required Object error,
     StackTrace? stackTrace,
@@ -2042,11 +2042,11 @@ final class SmartAccountEventCredentialSyncFailed extends SmartAccountEvent {
 
 Emitted by `credentialManager.sync` when a non-fatal exception is swallowed. Programmer errors (`Error` subclasses such as `StateError`, `ArgumentError`) are not routed through this event and continue to propagate.
 
-#### SmartAccountEventTransactionSigned
+#### OZSmartAccountEventTransactionSigned
 
 ```dart
-final class SmartAccountEventTransactionSigned extends SmartAccountEvent {
-  const SmartAccountEventTransactionSigned({
+final class OZSmartAccountEventTransactionSigned extends OZSmartAccountEvent {
+  const OZSmartAccountEventTransactionSigned({
     required String contractId,
     required String? credentialId,
   });
@@ -2058,11 +2058,11 @@ final class SmartAccountEventTransactionSigned extends SmartAccountEvent {
 
 Emitted by `transactionOperations.submit` after every required signature has been collected. `credentialId` is `null` when only external signers were involved.
 
-#### SmartAccountEventTransactionSubmitted
+#### OZSmartAccountEventTransactionSubmitted
 
 ```dart
-final class SmartAccountEventTransactionSubmitted extends SmartAccountEvent {
-  const SmartAccountEventTransactionSubmitted({
+final class OZSmartAccountEventTransactionSubmitted extends OZSmartAccountEvent {
+  const OZSmartAccountEventTransactionSubmitted({
     required String hash,
     required bool success,
   });
@@ -2080,18 +2080,18 @@ Emitted after sending the signed transaction to Soroban RPC or the relayer. `suc
 // Assuming `kit` is constructed as in Quick Start.
 // Global subscription: receive every event.
 final unsubscribeAll = kit.events.addListener((event) {
-  if (event is SmartAccountEventWalletConnected) {
+  if (event is OZSmartAccountEventWalletConnected) {
     print('Connected to ${event.contractId}');
   }
 });
 
 // Typed subscription: receive a single arm.
-final unsubscribeTx = kit.events.on<SmartAccountEventTransactionSubmitted>(
+final unsubscribeTx = kit.events.on<OZSmartAccountEventTransactionSubmitted>(
   (event) => print('tx ${event.hash} submitted (success=${event.success})'),
 );
 
 // One-shot subscription.
-kit.events.once<SmartAccountEventWalletDisconnected>(
+kit.events.once<OZSmartAccountEventWalletDisconnected>(
   (event) => print('disconnected once: ${event.contractId}'),
 );
 
@@ -2108,7 +2108,7 @@ Every smart-account exception lives in `core/smart_account_errors.dart` and is s
 
 ### SmartAccountErrorCode
 
-> **Two independent namespaces share the 3xxx range.** `SmartAccountErrorCode` (SDK, surfaced via `SmartAccountException.code`) and the on-chain OpenZeppelin smart-account contract enum (surfaced in simulation / result XDR, typically wrapped in `TransactionSimulationFailed`) both use 3xxx codes. They arrive through different channels and do not collide at runtime: check the exception type first to determine which namespace a code belongs to.
+> **Two independent namespaces share the 3xxx range.** `SmartAccountErrorCode` (SDK, surfaced via `SmartAccountException.code`) and the on-chain OpenZeppelin smart-account contract enum (surfaced in simulation / result XDR, typically wrapped in `SmartAccountTransactionSimulationFailed`) both use 3xxx codes. They arrive through different channels and do not collide at runtime: check the exception type first to determine which namespace a code belongs to.
 >
 > | Numeric code | SDK meaning (`SmartAccountErrorCode`) | On-chain meaning (OZ contract) |
 > |---|---|---|
@@ -2176,54 +2176,54 @@ sealed class SmartAccountException implements Exception {
 
 Catch `SmartAccountException` for general handling and switch on concrete subtypes when fine-grained recovery is required.
 
-### ConfigurationException
+### SmartAccountConfigurationException
 
 ```dart
-sealed class ConfigurationException extends SmartAccountException {
-  static ConfigurationException invalidConfig(String details, {Object? cause});
-  static ConfigurationException missingConfig(String param, {Object? cause});
+sealed class SmartAccountConfigurationException extends SmartAccountException {
+  static SmartAccountConfigurationException invalidConfig(String details, {Object? cause});
+  static SmartAccountConfigurationException missingConfig(String param, {Object? cause});
 }
 
-final class InvalidConfig extends ConfigurationException { }
-final class MissingConfig extends ConfigurationException { }
+final class SmartAccountInvalidConfig extends SmartAccountConfigurationException { }
+final class SmartAccountMissingConfig extends SmartAccountConfigurationException { }
 ```
 
 **Error Codes**: 1001 (invalidConfig), 1002 (missingConfig)
 
 ---
 
-### WalletException
+### SmartAccountWalletException
 
 ```dart
-sealed class WalletException extends SmartAccountException {
-  static WalletException notConnected({String? details, Object? cause});
-  static WalletException alreadyExists(String identifier, {Object? cause});
-  static WalletException notFound(String identifier, {Object? cause});
+sealed class SmartAccountWalletException extends SmartAccountException {
+  static SmartAccountWalletException notConnected({String? details, Object? cause});
+  static SmartAccountWalletException alreadyExists(String identifier, {Object? cause});
+  static SmartAccountWalletException notFound(String identifier, {Object? cause});
 }
 
-final class WalletNotConnected extends WalletException { }
-final class WalletAlreadyExists extends WalletException { }
-final class WalletNotFound extends WalletException { }
+final class SmartAccountWalletNotConnected extends SmartAccountWalletException { }
+final class SmartAccountWalletAlreadyExists extends SmartAccountWalletException { }
+final class SmartAccountWalletNotFound extends SmartAccountWalletException { }
 ```
 
 **Error Codes**: 2001 (walletNotConnected), 2002 (walletAlreadyExists), 2003 (walletNotFound)
 
 ---
 
-### CredentialException
+### SmartAccountCredentialException
 
 ```dart
-sealed class CredentialException extends SmartAccountException {
-  static CredentialException notFound(String credentialId, {Object? cause});
-  static CredentialException alreadyExists(String credentialId, {Object? cause});
-  static CredentialException invalid(String details, {Object? cause});
-  static CredentialException deploymentFailed(String details, {Object? cause});
+sealed class SmartAccountCredentialException extends SmartAccountException {
+  static SmartAccountCredentialException notFound(String credentialId, {Object? cause});
+  static SmartAccountCredentialException alreadyExists(String credentialId, {Object? cause});
+  static SmartAccountCredentialException invalid(String details, {Object? cause});
+  static SmartAccountCredentialException deploymentFailed(String details, {Object? cause});
 }
 
-final class CredentialNotFound extends CredentialException { }
-final class CredentialAlreadyExists extends CredentialException { }
-final class CredentialInvalid extends CredentialException { }
-final class CredentialDeploymentFailed extends CredentialException { }
+final class SmartAccountCredentialNotFound extends SmartAccountCredentialException { }
+final class SmartAccountCredentialAlreadyExists extends SmartAccountCredentialException { }
+final class SmartAccountCredentialInvalid extends SmartAccountCredentialException { }
+final class SmartAccountCredentialDeploymentFailed extends SmartAccountCredentialException { }
 ```
 
 **Error Codes**: 3001-3004
@@ -2250,96 +2250,96 @@ final class WebAuthnCancelled extends WebAuthnException { }
 
 ---
 
-### TransactionException
+### SmartAccountTransactionException
 
 ```dart
-sealed class TransactionException extends SmartAccountException {
-  static TransactionException simulationFailed(String details, {Object? cause});
-  static TransactionException signingFailed(String details, {Object? cause});
-  static TransactionException submissionFailed(String details, {Object? cause});
-  static TransactionException timeout({String? details, Object? cause});
+sealed class SmartAccountTransactionException extends SmartAccountException {
+  static SmartAccountTransactionException simulationFailed(String details, {Object? cause});
+  static SmartAccountTransactionException signingFailed(String details, {Object? cause});
+  static SmartAccountTransactionException submissionFailed(String details, {Object? cause});
+  static SmartAccountTransactionException timeout({String? details, Object? cause});
 }
 
-final class TransactionSimulationFailed extends TransactionException { }
-final class TransactionSigningFailed extends TransactionException { }
-final class TransactionSubmissionFailed extends TransactionException { }
-final class TransactionTimeout extends TransactionException { }
+final class SmartAccountTransactionSimulationFailed extends SmartAccountTransactionException { }
+final class SmartAccountTransactionSigningFailed extends SmartAccountTransactionException { }
+final class SmartAccountTransactionSubmissionFailed extends SmartAccountTransactionException { }
+final class SmartAccountTransactionTimeout extends SmartAccountTransactionException { }
 ```
 
 **Error Codes**: 5001-5004
 
 ---
 
-### SignerException
+### SmartAccountSignerException
 
 ```dart
-sealed class SignerException extends SmartAccountException {
-  static SignerException notFound(String identifier, {Object? cause});
-  static SignerException invalid(String details, {Object? cause});
+sealed class SmartAccountSignerException extends SmartAccountException {
+  static SmartAccountSignerException notFound(String identifier, {Object? cause});
+  static SmartAccountSignerException invalid(String details, {Object? cause});
 }
 
-final class SignerNotFound extends SignerException { }
-final class SignerInvalid extends SignerException { }
+final class SmartAccountSignerNotFound extends SmartAccountSignerException { }
+final class SmartAccountSignerInvalid extends SmartAccountSignerException { }
 ```
 
 **Error Codes**: 6001 (signerNotFound), 6002 (signerInvalid)
 
 ---
 
-### ValidationException
+### SmartAccountValidationException
 
 ```dart
-sealed class ValidationException extends SmartAccountException {
-  static ValidationException invalidAddress(String address, {Object? cause});
-  static ValidationException invalidAmount(String value, {String? reason, Object? cause});
-  static ValidationException invalidInput(String field, String reason, {Object? cause});
+sealed class SmartAccountValidationException extends SmartAccountException {
+  static SmartAccountValidationException invalidAddress(String address, {Object? cause});
+  static SmartAccountValidationException invalidAmount(String value, {String? reason, Object? cause});
+  static SmartAccountValidationException invalidInput(String field, String reason, {Object? cause});
 }
 
-final class InvalidAddress extends ValidationException { }
-final class InvalidAmount extends ValidationException { }
-final class InvalidInput extends ValidationException { }
+final class SmartAccountInvalidAddress extends SmartAccountValidationException { }
+final class SmartAccountInvalidAmount extends SmartAccountValidationException { }
+final class SmartAccountInvalidInput extends SmartAccountValidationException { }
 ```
 
 **Error Codes**: 7001 (invalidAddress), 7002 (invalidAmount), 7003 (invalidInput)
 
 ---
 
-### StorageException
+### SmartAccountStorageException
 
 ```dart
-sealed class StorageException extends SmartAccountException {
-  static StorageException readFailed(String key, {Object? cause});
-  static StorageException writeFailed(String key, {Object? cause});
+sealed class SmartAccountStorageException extends SmartAccountException {
+  static SmartAccountStorageException readFailed(String key, {Object? cause});
+  static SmartAccountStorageException writeFailed(String key, {Object? cause});
 }
 
-final class StorageReadFailed extends StorageException { }
-final class StorageWriteFailed extends StorageException { }
+final class SmartAccountStorageReadFailed extends SmartAccountStorageException { }
+final class SmartAccountStorageWriteFailed extends SmartAccountStorageException { }
 ```
 
 **Error Codes**: 8001-8002
 
 ---
 
-### SessionException
+### SmartAccountSessionException
 
 ```dart
-sealed class SessionException extends SmartAccountException { }
+sealed class SmartAccountSessionException extends SmartAccountException { }
 
-final class SessionExpired extends SessionException { }
-final class SessionInvalid extends SessionException { }
+final class SmartAccountSessionExpired extends SmartAccountSessionException { }
+final class SmartAccountSessionInvalid extends SmartAccountSessionException { }
 ```
 
 **Error Codes**: 9001 (sessionExpired), 9002 (sessionInvalid)
 
 ---
 
-### IndexerException
+### SmartAccountIndexerException
 
 ```dart
-sealed class IndexerException extends SmartAccountException { }
+sealed class SmartAccountIndexerException extends SmartAccountException { }
 
-final class IndexerRequestFailed extends IndexerException { }
-final class IndexerTimeout extends IndexerException { }
+final class SmartAccountIndexerRequestFailed extends SmartAccountIndexerException { }
+final class SmartAccountIndexerTimeout extends SmartAccountIndexerException { }
 ```
 
 **Error Codes**: 10001-10002
@@ -2356,15 +2356,15 @@ class OZContractErrorCodes {
 }
 ```
 
-Numeric error codes returned by the OpenZeppelin smart-account contract for failed on-chain calls. Surfaced as the `error` field on `TransactionResult` (alongside the SDK's error wrapping).
+Numeric error codes returned by the OpenZeppelin smart-account contract for failed on-chain calls. Surfaced as the `error` field on `OZTransactionResult` (alongside the SDK's error wrapping).
 
 ### Cancellation semantics
 
 Every cancellable async method accepts an optional `dio.CancelToken`. Cancellation surfaces as:
 
-- `TransactionException.submissionFailed('Operation cancelled', cause: <DioException of type cancel>)` for kit-level transaction operations.
+- `SmartAccountTransactionException.submissionFailed('Operation cancelled', cause: <DioException of type cancel>)` for kit-level transaction operations.
 - `OZRelayerResponse(success: false, error: 'Request cancelled')` for the relayer client; the relayer never throws after construction.
-- `IndexerException.requestFailed('Request cancelled')` for the indexer client.
+- `SmartAccountIndexerException.requestFailed('Request cancelled')` for the indexer client.
 
 ---
 
@@ -2423,12 +2423,12 @@ The platform-bridge classes use the following Flutter method-channel names:
 
 These names are part of the public contract between the SDK and consumers who supply their own native overlays.
 
-### LocalStorageAdapter and IndexedDBStorageAdapter defaults
+### OZLocalStorageAdapter and OZIndexedDBStorageAdapter defaults
 
 The web storage facades expose the following static defaults:
 
-- `LocalStorageAdapter.defaultKeyPrefix`: `'stellar_sa_'`
-- `IndexedDBStorageAdapter.defaultDbName`: `'stellar_smart_account'`
+- `OZLocalStorageAdapter.defaultKeyPrefix`: `'stellar_sa_'`
+- `OZIndexedDBStorageAdapter.defaultDbName`: `'stellar_smart_account'`
 
 ---
 
@@ -2452,7 +2452,7 @@ abstract class WebAuthnProvider {
 
   Future<WebAuthnAuthenticationResult> authenticate({
     required Uint8List challenge,
-    List<AllowCredential>? allowCredentials,
+    List<WebAuthnAllowCredential>? allowCredentials,
   });
 }
 ```
@@ -2519,17 +2519,17 @@ class WebAuthnRegistrationResult {
 - `deviceType`: `singleDevice` for hardware keys, `multiDevice` for synced passkeys.
 - `backedUp`: Whether the passkey is backed up or synced.
 
-### AllowCredential
+### WebAuthnAllowCredential
 
 ```dart
-class AllowCredential {
-  const AllowCredential({required Uint8List id, List<String>? transports});
+class WebAuthnAllowCredential {
+  const WebAuthnAllowCredential({required Uint8List id, List<String>? transports});
 
   final Uint8List id;
   final List<String>? transports;
 
-  static AllowCredential fromId(Uint8List id);
-  static List<AllowCredential> fromIds(List<Uint8List> ids);
+  static WebAuthnAllowCredential fromId(Uint8List id);
+  static List<WebAuthnAllowCredential> fromIds(List<Uint8List> ids);
 }
 ```
 
@@ -2591,38 +2591,38 @@ The class facade is selected by conditional export: on web the real implementati
 
 ## Storage Adapter
 
-### StorageAdapter abstract class
+### OZStorageAdapter abstract class
 
 ```dart
-abstract class StorageAdapter {
-  Future<void> save(StoredCredential credential);
-  Future<StoredCredential?> get(String credentialId);
-  Future<List<StoredCredential>> getByContract(String contractId);
-  Future<List<StoredCredential>> getAll();
+abstract class OZStorageAdapter {
+  Future<void> save(OZStoredCredential credential);
+  Future<OZStoredCredential?> get(String credentialId);
+  Future<List<OZStoredCredential>> getByContract(String contractId);
+  Future<List<OZStoredCredential>> getAll();
   Future<void> delete(String credentialId);
-  Future<void> update(String credentialId, StoredCredentialUpdate updates);
+  Future<void> update(String credentialId, OZStoredCredentialUpdate updates);
   Future<void> clear();
-  Future<void> saveSession(StoredSession session);
-  Future<StoredSession?> getSession();
+  Future<void> saveSession(OZStoredSession session);
+  Future<OZStoredSession?> getSession();
   Future<void> clearSession();
 }
 ```
 
 Pluggable persistence layer for smart-account credentials and sessions. Implementations must be safe for concurrent calls from a single Dart isolate; cross-isolate or cross-process implementations are responsible for any additional synchronisation.
 
-`save` has upsert semantics. `delete` is silently a no-op when no credential matches. `update` throws `CredentialException.notFound` when the target credential does not exist. `getSession` auto-clears expired sessions and returns `null`, so callers always observe "valid session or none".
+`save` has upsert semantics. `delete` is silently a no-op when no credential matches. `update` throws `SmartAccountCredentialException.notFound` when the target credential does not exist. `getSession` auto-clears expired sessions and returns `null`, so callers always observe "valid session or none".
 
 ### Supporting types
 
-#### StoredCredential
+#### OZStoredCredential
 
 ```dart
-class StoredCredential {
-  StoredCredential({
+class OZStoredCredential {
+  OZStoredCredential({
     required String credentialId,
     required Uint8List publicKey,
     String? contractId,
-    CredentialDeploymentStatus deploymentStatus = CredentialDeploymentStatus.pending,
+    OZCredentialDeploymentStatus deploymentStatus = OZCredentialDeploymentStatus.pending,
     String? deploymentError,
     int? createdAt,
     int? lastUsedAt,
@@ -2636,7 +2636,7 @@ class StoredCredential {
   final String credentialId;
   final Uint8List publicKey;
   final String? contractId;
-  final CredentialDeploymentStatus deploymentStatus;
+  final OZCredentialDeploymentStatus deploymentStatus;
   final String? deploymentError;
   final int createdAt;
   final int? lastUsedAt;
@@ -2646,19 +2646,19 @@ class StoredCredential {
   final String? deviceType;
   final bool? backedUp;
 
-  StoredCredential copyWith({...});
-  StoredCredential applyUpdate(StoredCredentialUpdate updates);
+  OZStoredCredential copyWith({...});
+  OZStoredCredential applyUpdate(OZStoredCredentialUpdate updates);
 }
 ```
 
 Equality compares `publicKey` in constant time so credential lookups cannot leak partial-key match information through timing differences.
 
-#### StoredCredentialUpdate
+#### OZStoredCredentialUpdate
 
 ```dart
-class StoredCredentialUpdate {
-  const StoredCredentialUpdate({
-    CredentialDeploymentStatus? deploymentStatus,
+class OZStoredCredentialUpdate {
+  const OZStoredCredentialUpdate({
+    OZCredentialDeploymentStatus? deploymentStatus,
     String? deploymentError,
     String? contractId,
     int? lastUsedAt,
@@ -2671,13 +2671,13 @@ class StoredCredentialUpdate {
 }
 ```
 
-Partial update spec. Only non-null fields are applied; a `null` value means "no change" and does not clear the field. To clear a field, save a full replacement `StoredCredential` via `StorageAdapter.save`.
+Partial update spec. Only non-null fields are applied; a `null` value means "no change" and does not clear the field. To clear a field, save a full replacement `OZStoredCredential` via `OZStorageAdapter.save`.
 
-#### StoredSession
+#### OZStoredSession
 
 ```dart
-class StoredSession {
-  const StoredSession({
+class OZStoredSession {
+  const OZStoredSession({
     required String credentialId,
     required String contractId,
     required int connectedAt,
@@ -2693,10 +2693,10 @@ class StoredSession {
 }
 ```
 
-#### CredentialDeploymentStatus
+#### OZCredentialDeploymentStatus
 
 ```dart
-enum CredentialDeploymentStatus {
+enum OZCredentialDeploymentStatus {
   pending,
   failed,
 }
@@ -2704,11 +2704,11 @@ enum CredentialDeploymentStatus {
 
 On successful deployment the credential is removed from storage rather than transitioned to a terminal "deployed" state, so the only persisted statuses are `pending` and `failed`.
 
-### InMemoryStorageAdapter
+### OZInMemoryStorageAdapter
 
 ```dart
-class InMemoryStorageAdapter implements StorageAdapter {
-  InMemoryStorageAdapter();
+class OZInMemoryStorageAdapter implements OZStorageAdapter {
+  OZInMemoryStorageAdapter();
 }
 ```
 
@@ -2716,13 +2716,13 @@ Default fallback when `config.storage` is omitted. Stores all data in a Dart-iso
 
 **Security:** this adapter stores credential public-key bytes and session metadata in plain process memory. Suitable only for testing and development. Production apps must supply a platform-backed secure storage adapter.
 
-All `InMemoryStorageAdapter` instances compare equal because two freshly-created instances are functionally identical (both empty); this makes the adapter usable as the default value of an enclosing data class without breaking that data class's structural equality.
+All `OZInMemoryStorageAdapter` instances compare equal because two freshly-created instances are functionally identical (both empty); this makes the adapter usable as the default value of an enclosing data class without breaking that data class's structural equality.
 
-### PlatformStorageAdapter (mobile)
+### OZPlatformStorageAdapter (mobile)
 
 ```dart
-class PlatformStorageAdapter implements StorageAdapter {
-  PlatformStorageAdapter({MethodChannel? methodChannel});
+class OZPlatformStorageAdapter implements OZStorageAdapter {
+  OZPlatformStorageAdapter({MethodChannel? methodChannel});
 }
 ```
 
@@ -2737,15 +2737,15 @@ Method-channel calls are dispatched in arrival order. The native handlers serial
 
 - `get` returns `null` if the stored payload is corrupt or unreadable; the corruption is logged on the native side but not surfaced to Dart.
 - `getAll` skips corrupted entries (logged) and returns the valid subset.
-- `update` throws `StorageReadFailed` when the entry is corrupt, because the read-modify-write sequence cannot proceed safely without a known prior state. Callers wanting lossy semantics should `delete` the corrupt entry and `save` a replacement.
+- `update` throws `SmartAccountStorageReadFailed` when the entry is corrupt, because the read-modify-write sequence cannot proceed safely without a known prior state. Callers wanting lossy semantics should `delete` the corrupt entry and `save` a replacement.
 
 The optional `methodChannel` parameter exists for testing only; production code must omit it so the shared channel name is used.
 
-### IndexedDBStorageAdapter (web)
+### OZIndexedDBStorageAdapter (web)
 
 ```dart
-class IndexedDBStorageAdapter implements StorageAdapter {
-  IndexedDBStorageAdapter({String dbName = defaultDbName});
+class OZIndexedDBStorageAdapter implements OZStorageAdapter {
+  OZIndexedDBStorageAdapter({String dbName = defaultDbName});
 
   static const String defaultDbName = 'stellar_smart_account';
 
@@ -2756,57 +2756,57 @@ class IndexedDBStorageAdapter implements StorageAdapter {
 
 Browser IndexedDB-backed storage adapter; the recommended option for production web. The database name defaults to `stellar_smart_account` and can be overridden for test isolation. Stores credentials in a `credentials` object store with indices on `contractId`, `createdAt`, and `isPrimary`; sessions live in a `sessions` store keyed by `'current'`.
 
-In addition to the `StorageAdapter` interface, exposes `close()` to release the database connection and `deleteDatabase({String? name})` to remove the database (useful in tests and account-deletion flows).
+In addition to the `OZStorageAdapter` interface, exposes `close()` to release the database connection and `deleteDatabase({String? name})` to remove the database (useful in tests and account-deletion flows).
 
 The class is a conditional-export facade: on web the real `IDBDatabase`-backed implementation is used; on non-web targets a stub is selected so cross-target code compiles. Construction succeeds and `close()` is a no-op on non-web; every other operation throws `UnsupportedError`.
 
-### LocalStorageAdapter (web)
+### OZLocalStorageAdapter (web)
 
 ```dart
-class LocalStorageAdapter implements StorageAdapter {
-  LocalStorageAdapter({String keyPrefix = defaultKeyPrefix});
+class OZLocalStorageAdapter implements OZStorageAdapter {
+  OZLocalStorageAdapter({String keyPrefix = defaultKeyPrefix});
 
   static const String defaultKeyPrefix = 'stellar_sa_';
 }
 ```
 
-Browser `localStorage`-backed storage adapter. Approximately 5 MB capacity per origin, unencrypted. Inferior to `IndexedDBStorageAdapter` for production: prefer `IndexedDBStorageAdapter` unless you have a specific reason to use `localStorage` (for example synchronous compatibility with another stack).
+Browser `localStorage`-backed storage adapter. Approximately 5 MB capacity per origin, unencrypted. Inferior to `OZIndexedDBStorageAdapter` for production: prefer `OZIndexedDBStorageAdapter` unless you have a specific reason to use `localStorage` (for example synchronous compatibility with another stack).
 
 The class is a conditional-export facade: on web the real `Storage`-backed implementation is used; on non-web targets a stub is selected. Construction succeeds on non-web; every storage operation throws `UnsupportedError`.
 
-### ExternalWalletAdapter abstract class
+### OZExternalWalletAdapter abstract class
 
 ```dart
-abstract class ExternalWalletAdapter {
-  const ExternalWalletAdapter();
+abstract class OZExternalWalletAdapter {
+  const OZExternalWalletAdapter();
 
-  Future<ConnectedWallet?> connect();
+  Future<OZConnectedWallet?> connect();
   Future<void> disconnect();
   Future<void> disconnectByAddress(String address) async {}
 
-  Future<SignAuthEntryResult> signAuthEntry(
+  Future<OZSignAuthEntryResult> signAuthEntry(
     String preimageXdr, {
-    SignAuthEntryOptions? options,
+    OZSignAuthEntryOptions? options,
   });
 
-  List<ConnectedWallet> getConnectedWallets();
+  List<OZConnectedWallet> getConnectedWallets();
   bool canSignFor(String address);
-  ConnectedWallet? getWalletForAddress(String address) => null;
-  Future<ConnectedWallet?> reconnect(String walletId) async => null;
+  OZConnectedWallet? getWalletForAddress(String address) => null;
+  Future<OZConnectedWallet?> reconnect(String walletId) async => null;
 }
 ```
 
 Protocol for integrating external wallets (Freighter, LOBSTR, and so on) into the multi-signer pipeline. Concrete adapters extend this class so they inherit the no-op defaults for `disconnectByAddress`, `getWalletForAddress`, and `reconnect`.
 
-**signAuthEntry contract:** the SDK supplies a base64-encoded `HashIDPreimage` XDR. The wallet must base64-decode the preimage bytes, SHA-256 hash them, Ed25519-sign the 32-byte hash, and return the 64-byte raw signature base64-encoded. The SDK handles auth-entry construction and signature framing. Adapters that omit the SHA-256 step, sign a different payload, or return a non-canonical encoding produce a signature that the Soroban host rejects at submission time, surfacing as `TransactionException.simulationFailed` during the post-sign re-simulation.
+**signAuthEntry contract:** the SDK supplies a base64-encoded `HashIDPreimage` XDR. The wallet must base64-decode the preimage bytes, SHA-256 hash them, Ed25519-sign the 32-byte hash, and return the 64-byte raw signature base64-encoded. The SDK handles auth-entry construction and signature framing. Adapters that omit the SHA-256 step, sign a different payload, or return a non-canonical encoding produce a signature that the Soroban host rejects at submission time, surfacing as `SmartAccountTransactionException.simulationFailed` during the post-sign re-simulation.
 
 ### Supporting types
 
-#### ConnectedWallet
+#### OZConnectedWallet
 
 ```dart
-class ConnectedWallet {
-  const ConnectedWallet({
+class OZConnectedWallet {
+  const OZConnectedWallet({
     required String address,
     required String walletId,
     required String walletName,
@@ -2822,22 +2822,22 @@ class ConnectedWallet {
 - `walletId`: Unique wallet identifier (for example `freighter`, `lobstr`). Used for reconnection via `reconnect`.
 - `walletName`: Human-readable display name.
 
-#### SignAuthEntryOptions
+#### OZSignAuthEntryOptions
 
 ```dart
-class SignAuthEntryOptions {
-  const SignAuthEntryOptions({String? networkPassphrase, String? address});
+class OZSignAuthEntryOptions {
+  const OZSignAuthEntryOptions({String? networkPassphrase, String? address});
 
   final String? networkPassphrase;
   final String? address;
 }
 ```
 
-#### SignAuthEntryResult
+#### OZSignAuthEntryResult
 
 ```dart
-class SignAuthEntryResult {
-  const SignAuthEntryResult({
+class OZSignAuthEntryResult {
+  const OZSignAuthEntryResult({
     required String signedAuthEntry,
     String? signerAddress,
   });
@@ -2904,7 +2904,7 @@ OZIndexerClient(String indexerUrl, {Duration? timeout});
 | `indexerUrl` | `String` | Indexer service URL. Must be HTTPS, or `http://localhost…` for local development. |
 | `timeout` | `Duration?` | Per-request timeout (default: `OZConstants.defaultIndexerTimeoutMs`, 10 s). The connect timeout is capped at `OZConstants.maxIndexerConnectTimeoutMs`. |
 
-**Throws**: `ConfigurationException.invalidConfig` for blank, non-HTTPS, or host-less URLs.
+**Throws**: `SmartAccountConfigurationException.invalidConfig` for blank, non-HTTPS, or host-less URLs.
 
 The injected-Dio test-only constructor `OZIndexerClient.withDio` is `@visibleForTesting`; the injected client is not closed by `close`.
 
@@ -2944,7 +2944,7 @@ Finds all smart account contracts where the given credential is registered as a 
 
 **Returns**: `OZCredentialLookupResponse`
 
-**Throws**: `ValidationException.invalidInput` when `credentialId` is not valid base64url; `IndexerException.requestFailed` for network or non-2xx errors (cancellation surfaces here with a `Request cancelled` message); `IndexerException.timeout` when the request exceeds the configured timeout.
+**Throws**: `SmartAccountValidationException.invalidInput` when `credentialId` is not valid base64url; `SmartAccountIndexerException.requestFailed` for network or non-2xx errors (cancellation surfaces here with a `Request cancelled` message); `SmartAccountIndexerException.timeout` when the request exceeds the configured timeout.
 
 ---
 
@@ -2961,7 +2961,7 @@ Finds all smart account contracts where the given address is registered as a sig
 
 **Returns**: `OZAddressLookupResponse`
 
-**Throws**: `ValidationException` when the address format is invalid; `IndexerException.requestFailed` for network or non-2xx errors; `IndexerException.timeout` on timeout.
+**Throws**: `SmartAccountValidationException` when the address format is invalid; `SmartAccountIndexerException.requestFailed` for network or non-2xx errors; `SmartAccountIndexerException.timeout` on timeout.
 
 ---
 
@@ -2978,7 +2978,7 @@ Retrieves full details for a smart account contract including all context rules,
 
 **Returns**: `OZContractDetailsResponse`
 
-**Throws**: `ValidationException` when the contract ID format is invalid; `IndexerException.requestFailed` for network or non-2xx errors; `IndexerException.timeout` on timeout.
+**Throws**: `SmartAccountValidationException` when the contract ID format is invalid; `SmartAccountIndexerException.requestFailed` for network or non-2xx errors; `SmartAccountIndexerException.timeout` on timeout.
 
 ---
 
@@ -2992,7 +2992,7 @@ Returns indexer service statistics (total events, unique contracts, unique crede
 
 **Returns**: `OZIndexerStatsResponse`
 
-**Throws**: `IndexerException.requestFailed` for network or non-2xx errors; `IndexerException.timeout` on timeout.
+**Throws**: `SmartAccountIndexerException.requestFailed` for network or non-2xx errors; `SmartAccountIndexerException.timeout` on timeout.
 
 ---
 
@@ -3183,7 +3183,7 @@ await kit.transactionOperations.transfer(
   tokenContract: tokenContract,
   recipient: recipient,
   amount: '10',
-  forceMethod: SubmissionMethod.rpc,
+  forceMethod: OZSubmissionMethod.rpc,
 );
 
 // Access the relayer client directly. relayerClient is null when no
@@ -3202,7 +3202,7 @@ OZRelayerClient(String relayerUrl, {Duration? timeout});
 | `relayerUrl` | `String` | Relayer endpoint URL. Must be HTTPS, or `http://localhost…` for local development. |
 | `timeout` | `Duration?` | Default per-request timeout (default: `OZConstants.defaultRelayerTimeoutMs`, 6 min). The connect timeout is capped at `OZConstants.maxRelayerConnectTimeoutMs`. |
 
-**Throws**: `ConfigurationException.invalidConfig` if `relayerUrl` is blank or not HTTPS.
+**Throws**: `SmartAccountConfigurationException.invalidConfig` if `relayerUrl` is blank or not HTTPS.
 
 The injected-Dio test-only constructor `OZRelayerClient.withDio` is `@visibleForTesting`; the injected client is not closed by `close`.
 
@@ -3444,7 +3444,7 @@ final class OZWebAuthnSignature extends OZSmartAccountSignature {
 
 WebAuthn signature from a passkey authentication ceremony.
 
-- `signature` must be in compact 64-byte format (`r || s`) with a normalised low-S value to prevent malleability. Constructor throws `ValidationException.invalidInput` otherwise.
+- `signature` must be in compact 64-byte format (`r || s`) with a normalised low-S value to prevent malleability. Constructor throws `SmartAccountValidationException.invalidInput` otherwise.
 - The on-chain map field is named `client_data` (not `client_data_json`) and keys are emitted in alphabetical order: `authenticator_data`, `client_data`, `signature`.
 - `toAuthPayloadBytes()` returns the XDR-encoded 3-field map.
 - Equality uses constant-time byte comparison.
@@ -3463,7 +3463,7 @@ final class OZEd25519Signature extends OZSmartAccountSignature {
 }
 ```
 
-Ed25519 signature with a 32-byte public key and a 64-byte signature. Constructor throws `ValidationException.invalidInput` when either length is wrong.
+Ed25519 signature with a 32-byte public key and a 64-byte signature. Constructor throws `SmartAccountValidationException.invalidInput` when either length is wrong.
 
 `toScVal()` returns the raw 64-byte signature as `XdrSCVal.forBytes(...)`. `toAuthPayloadBytes()` also returns the raw 64-byte signature — no XDR wrapper — because the Ed25519 verifier contract expects `BytesN<64>` directly. The public key is supplied separately from the smart account's on-chain `External(verifier, key_data)` storage and is NOT transmitted in the auth payload. The `publicKey` field is retained on the struct for local Ed25519 signature verification before submission.
 
@@ -3483,65 +3483,65 @@ Singleton policy-authorisation signature, encoded as an empty `ScMap`. Indicates
 
 ### OZBuilders
 
-Static helpers for `ContextRuleType` and parsed-rule utilities.
+Static helpers for `OZContextRuleType` and parsed-rule utilities.
 
 ```dart
 class OZBuilders {
-  static ContextRuleType createDefaultContext();
-  static ContextRuleType createCallContractContext(String contractAddress);
-  static ContextRuleType createCreateContractContextFromHex(String wasmHashHex);
-  static ContextRuleType createCreateContractContextFromBytes(Uint8List wasmHash);
+  static OZContextRuleType createDefaultContext();
+  static OZContextRuleType createCallContractContext(String contractAddress);
+  static OZContextRuleType createCreateContractContextFromHex(String wasmHashHex);
+  static OZContextRuleType createCreateContractContextFromBytes(Uint8List wasmHash);
 
   static List<OZSmartAccountSigner> collectUniqueSignersFromRules(
-    List<ParsedContextRule> rules,
+    List<OZParsedContextRule> rules,
   );
 }
 ```
 
-- `createDefaultContext`: Returns `ContextRuleTypeDefault`. Matches any operation that does not match a more specific rule.
-- `createCallContractContext`: Returns `ContextRuleTypeCallContract` for the supplied contract address. Validates the address.
-- `createCreateContractContextFromHex`: Returns `ContextRuleTypeCreateContract` from a hex-encoded WASM hash (optionally `0x`-prefixed); must decode to 32 bytes.
-- `createCreateContractContextFromBytes`: Returns `ContextRuleTypeCreateContract` from raw WASM-hash bytes; must be exactly 32 bytes.
+- `createDefaultContext`: Returns `OZContextRuleTypeDefault`. Matches any operation that does not match a more specific rule.
+- `createCallContractContext`: Returns `OZContextRuleTypeCallContract` for the supplied contract address. Validates the address.
+- `createCreateContractContextFromHex`: Returns `OZContextRuleTypeCreateContract` from a hex-encoded WASM hash (optionally `0x`-prefixed); must decode to 32 bytes.
+- `createCreateContractContextFromBytes`: Returns `OZContextRuleTypeCreateContract` from raw WASM-hash bytes; must be exactly 32 bytes.
 - `collectUniqueSignersFromRules`: Returns the unique signers from `rules`, removing duplicates across rules. First occurrence wins.
 
-### ContextRuleType (sealed)
+### OZContextRuleType (sealed)
 
 ```dart
-sealed class ContextRuleType {
-  const ContextRuleType();
+sealed class OZContextRuleType {
+  const OZContextRuleType();
   XdrSCVal toScVal();
 }
 
-final class ContextRuleTypeDefault extends ContextRuleType {
-  const ContextRuleTypeDefault();
+final class OZContextRuleTypeDefault extends OZContextRuleType {
+  const OZContextRuleTypeDefault();
 }
 
-final class ContextRuleTypeCallContract extends ContextRuleType {
-  const ContextRuleTypeCallContract(String contractAddress);
+final class OZContextRuleTypeCallContract extends OZContextRuleType {
+  const OZContextRuleTypeCallContract(String contractAddress);
   final String contractAddress;
 }
 
-final class ContextRuleTypeCreateContract extends ContextRuleType {
-  ContextRuleTypeCreateContract(Uint8List wasmHash);
+final class OZContextRuleTypeCreateContract extends OZContextRuleType {
+  OZContextRuleTypeCreateContract(Uint8List wasmHash);
   final Uint8List wasmHash;
 }
 ```
 
 `toScVal` produces:
 
-- `ContextRuleTypeDefault` → `Vec([Symbol("Default")])`
-- `ContextRuleTypeCallContract` → `Vec([Symbol("CallContract"), Address(contractAddress)])`
-- `ContextRuleTypeCreateContract` → `Vec([Symbol("CreateContract"), Bytes(wasmHash)])`
+- `OZContextRuleTypeDefault` → `Vec([Symbol("Default")])`
+- `OZContextRuleTypeCallContract` → `Vec([Symbol("CallContract"), Address(contractAddress)])`
+- `OZContextRuleTypeCreateContract` → `Vec([Symbol("CreateContract"), Bytes(wasmHash)])`
 
-`ContextRuleTypeCreateContract` defensively copies the supplied `wasmHash` and uses constant-time byte equality.
+`OZContextRuleTypeCreateContract` defensively copies the supplied `wasmHash` and uses constant-time byte equality.
 
-### ParsedContextRule
+### OZParsedContextRule
 
 ```dart
-class ParsedContextRule {
-  const ParsedContextRule({
+class OZParsedContextRule {
+  const OZParsedContextRule({
     required int id,
-    required ContextRuleType contextType,
+    required OZContextRuleType contextType,
     required String name,
     required List<OZSmartAccountSigner> signers,
     required List<int> signerIds,
@@ -3636,7 +3636,7 @@ class OZSpendingLimitParams {
 }
 ```
 
-These public value types are distinct from the sealed `PolicyInstallParams` hierarchy on `OZPolicyManager`; they exist so consumer code can pass typed policy descriptions through its own layers before reaching the manager-level convenience helpers.
+These public value types are distinct from the sealed `OZPolicyInstallParams` hierarchy on `OZPolicyManager`; they exist so consumer code can pass typed policy descriptions through its own layers before reaching the manager-level convenience helpers.
 
 ---
 
@@ -3666,7 +3666,7 @@ abstract class SmartAccountUtils {
 }
 ```
 
-- `normalizeSignature`: Converts a DER-encoded secp256r1 signature into the 64-byte compact `r || s` form with `s` normalised to the lower half of the curve order (low-S). Throws `ValidationException.invalidInput` on malformed DER.
+- `normalizeSignature`: Converts a DER-encoded secp256r1 signature into the 64-byte compact `r || s` form with `s` normalised to the lower half of the curve order (low-S). Throws `SmartAccountValidationException.invalidInput` on malformed DER.
 - `extractPublicKeyFromRegistration`: Three-strategy public-key extraction: direct validation of `publicKey` if it is already a valid 65-byte uncompressed secp256r1 key; otherwise parse `authenticatorData` if available; otherwise scan `attestationObject` for the embedded public key.
 - `getContractSalt`: Returns `SHA-256(credentialId)`, the salt used in contract-address derivation.
 - `deriveContractAddress`: Computes the deterministic smart-account contract address from the credential ID, deployer public key, and network passphrase.
@@ -3675,21 +3675,21 @@ abstract class SmartAccountUtils {
 
 ## Selected Signer
 
-### SelectedSigner (sealed)
+### OZSelectedSigner (sealed)
 
 ```dart
-sealed class SelectedSigner {
-  const SelectedSigner();
+sealed class OZSelectedSigner {
+  const OZSelectedSigner();
 }
 ```
 
-Selects a signer to participate in a multi-signature operation. There is no implicit connected passkey: to include it, supply a `SelectedSignerPasskey` entry referencing it.
+Selects a signer to participate in a multi-signature operation. There is no implicit connected passkey: to include it, supply an `OZSelectedSignerPasskey` entry referencing it.
 
-### SelectedSignerPasskey
+### OZSelectedSignerPasskey
 
 ```dart
-final class SelectedSignerPasskey extends SelectedSigner {
-  const SelectedSignerPasskey({
+final class OZSelectedSignerPasskey extends OZSelectedSigner {
+  const OZSelectedSignerPasskey({
     String? credentialId,
     Uint8List? credentialIdBytes,
     Uint8List? keyData,
@@ -3710,11 +3710,11 @@ A WebAuthn passkey signer entry. Each instance triggers one OS WebAuthn authenti
 - `keyData`: External-signer key data (uncompressed secp256r1 public key concatenated with the credential ID bytes, in that order). When supplied the SDK uses it directly without an on-chain lookup. `OZMultiSignerManager.submitWithMultipleSigners` requires this field to be non-null.
 - `transports`: Optional WebAuthn transport hints (`internal`, `hybrid`, `usb`, `nfc`, `ble`). When `credentialIdBytes` is `null` the transports are dropped and the multi-signer pipeline leaves `allowCredentials` unset entirely.
 
-### SelectedSignerWallet
+### OZSelectedSignerWallet
 
 ```dart
-final class SelectedSignerWallet extends SelectedSigner {
-  const SelectedSignerWallet(String address);
+final class OZSelectedSignerWallet extends OZSelectedSigner {
+  const OZSelectedSignerWallet(String address);
 
   final String address;
 }
@@ -3722,11 +3722,11 @@ final class SelectedSignerWallet extends SelectedSigner {
 
 A delegated wallet signer identified by its Stellar G-address. The address must have been registered as a `Delegated` signer on the smart-account contract, and the external wallet adapter must be able to sign for it.
 
-### SelectedSignerEd25519
+### OZSelectedSignerEd25519
 
 ```dart
-final class SelectedSignerEd25519 extends SelectedSigner {
-  const SelectedSignerEd25519({
+final class OZSelectedSignerEd25519 extends OZSelectedSigner {
+  const OZSelectedSignerEd25519({
     required String verifierAddress,
     required Uint8List publicKey,
   });
@@ -3741,7 +3741,7 @@ An Ed25519 external signer identified by its verifier contract address and 32-by
 - `verifierAddress` — C-strkey of the Ed25519 verifier contract registered as part of the on-chain `External(verifierAddress, publicKey)` signer entry. The smart-account contract calls this verifier during `__check_auth` to validate the Ed25519 signature.
 - `publicKey` — 32-byte Ed25519 public key identifying the signer slot on the smart account. Must match the public key registered in the on-chain signer entry.
 
-`SelectedSignerEd25519` carries no signing material. It is a pure identifier; the signing capability must be registered on `kit.externalSigners` before the multi-signer pipeline executes — either by calling [`kit.externalSigners.addEd25519FromRawKey`](#added25519fromrawkey) at runtime, or by supplying `config.externalEd25519Adapter` at kit construction. The kit resolves the signing source automatically when `SelectedSignerEd25519` appears in `selectedSigners`.
+`OZSelectedSignerEd25519` carries no signing material. It is a pure identifier; the signing capability must be registered on `kit.externalSigners` before the multi-signer pipeline executes — either by calling [`kit.externalSigners.addEd25519FromRawKey`](#added25519fromrawkey) at runtime, or by supplying `config.externalEd25519Adapter` at kit construction. The kit resolves the signing source automatically when `OZSelectedSignerEd25519` appears in `selectedSigners`.
 
 Value equality compares both fields. `publicKey` equality is byte-by-byte.
 
@@ -3759,10 +3759,10 @@ final result = await kit.multiSignerManager.multiSignerTransfer(
   recipient:
       'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ',
   amount: '10',
-  selectedSigners: <SelectedSigner>[
-    SelectedSignerPasskey(credentialId: savedCredId, keyData: savedKeyData),
-    SelectedSignerWallet('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ'),
-    SelectedSignerEd25519(
+  selectedSigners: <OZSelectedSigner>[
+    OZSelectedSignerPasskey(credentialId: savedCredId, keyData: savedKeyData),
+    OZSelectedSignerWallet('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ'),
+    OZSelectedSignerEd25519(
       verifierAddress: ed25519VerifierAddress,
       publicKey: ed25519PublicKey,
     ),
@@ -3791,15 +3791,15 @@ Future<void> sendOrRecover(OZSmartAccountKit kit) async {
     if (!result.success) {
       print('Transfer rejected: ${result.error}');
     }
-  } on WalletNotConnected {
+  } on SmartAccountWalletNotConnected {
     print('Connect or create a wallet first.');
   } on WebAuthnCancelled {
     print('User cancelled the passkey prompt.');
   } on WebAuthnNotSupported {
     print('No WebAuthn provider configured for this platform.');
-  } on InvalidAddress catch (e) {
+  } on SmartAccountInvalidAddress catch (e) {
     print('Bad address: ${e.message}');
-  } on TransactionException catch (e) {
+  } on SmartAccountTransactionException catch (e) {
     print('Transaction failed (${e.code.code}): ${e.message}');
   } on SmartAccountException catch (e) {
     print('Smart-account error (${e.code.code}): ${e.message}');

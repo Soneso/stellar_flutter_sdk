@@ -35,7 +35,7 @@ import 'oz_transaction_operations.dart';
 import 'oz_transaction_timeout.dart';
 import 'oz_validation.dart';
 
-// Re-export the SelectedSigner hierarchy; declarations live in oz_selected_signer.dart
+// Re-export the OZSelectedSigner hierarchy; declarations live in oz_selected_signer.dart
 // to avoid a circular import with the sibling managers.
 export 'oz_selected_signer.dart';
 
@@ -43,13 +43,13 @@ export 'oz_selected_signer.dart';
 ///
 /// Provides functionality for executing multi-signer operations across
 /// passkey and external-wallet signers. Signatures are collected
-/// sequentially in the order the caller supplies via [SelectedSigner],
+/// sequentially in the order the caller supplies via [OZSelectedSigner],
 /// enabling fail-fast behaviour on user cancellation.
 ///
-/// Each [SelectedSignerPasskey] triggers one OS WebAuthn authentication
-/// prompt. Each [SelectedSignerWallet] signs via the configured
-/// [ExternalWalletAdapter]. The connected passkey is NOT added
-/// implicitly; if it should sign, include a [SelectedSignerPasskey]
+/// Each [OZSelectedSignerPasskey] triggers one OS WebAuthn authentication
+/// prompt. Each [OZSelectedSignerWallet] signs via the configured
+/// [OZExternalWalletAdapter]. The connected passkey is NOT added
+/// implicitly; if it should sign, include a [OZSelectedSignerPasskey]
 /// referencing it.
 ///
 /// Delegated wallet signers produce their own auth entries with Address
@@ -76,20 +76,20 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   /// [amount] to stroops via [Util.toXdrInt64Amount], builds a
   /// `transfer(from, to, amount)` host function, and routes through the
   /// multi-signer signing pipeline.
-  Future<TransactionResult> multiSignerTransfer({
+  Future<OZTransactionResult> multiSignerTransfer({
     required String tokenContract,
     required String recipient,
     required String amount,
-    required List<SelectedSigner> selectedSigners,
-    SubmissionMethod? forceMethod,
-    ResolveContextRuleIds? resolveContextRuleIds,
+    required List<OZSelectedSigner> selectedSigners,
+    OZSubmissionMethod? forceMethod,
+    OZResolveContextRuleIds? resolveContextRuleIds,
   }) async {
     final connected = await _kit.requireConnected();
 
     requireStellarAddress(recipient, fieldName: 'recipient');
 
     if (recipient == connected.contractId) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'recipient',
         'Cannot transfer to self',
       );
@@ -123,13 +123,13 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   /// The smart account's matching `CallContract(target)` context rule
   /// is used for authorisation, allowing per-contract multi-signer
   /// rules to take effect.
-  Future<TransactionResult> multiSignerContractCall({
+  Future<OZTransactionResult> multiSignerContractCall({
     required String target,
     required String targetFn,
     List<XdrSCVal> targetArgs = const <XdrSCVal>[],
-    required List<SelectedSigner> selectedSigners,
-    SubmissionMethod? forceMethod,
-    ResolveContextRuleIds? resolveContextRuleIds,
+    required List<OZSelectedSigner> selectedSigners,
+    OZSubmissionMethod? forceMethod,
+    OZResolveContextRuleIds? resolveContextRuleIds,
   }) async {
     await _kit.requireConnected();
     _validateContractCallArgs(target, targetFn, selectedSigners);
@@ -157,13 +157,13 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   /// Executes an arbitrary contract call through the smart account's
   /// `execute(target, target_fn, target_args)` entry point with
   /// multi-signer authorisation.
-  Future<TransactionResult> multiSignerExecuteAndSubmit({
+  Future<OZTransactionResult> multiSignerExecuteAndSubmit({
     required String target,
     required String targetFn,
     List<XdrSCVal> targetArgs = const <XdrSCVal>[],
-    required List<SelectedSigner> selectedSigners,
-    SubmissionMethod? forceMethod,
-    ResolveContextRuleIds? resolveContextRuleIds,
+    required List<OZSelectedSigner> selectedSigners,
+    OZSubmissionMethod? forceMethod,
+    OZResolveContextRuleIds? resolveContextRuleIds,
   }) async {
     final connected = await _kit.requireConnected();
     _validateContractCallArgs(target, targetFn, selectedSigners);
@@ -200,20 +200,20 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   /// discover auth entries, hoists the per-signer external-signer
   /// reconstruction outside the entry loop, signs each entry per signer
   /// (passkey signatures via WebAuthn, wallet signatures via
-  /// [ExternalWalletAdapter]), re-simulates with the signed entries to
+  /// [OZExternalWalletAdapter]), re-simulates with the signed entries to
   /// pick up accurate resource fees, and routes through
   /// [OZTransactionOperations.submitMultiSignerTransaction] for the
   /// final relayer-or-RPC submission.
-  Future<TransactionResult> submitWithMultipleSigners({
+  Future<OZTransactionResult> submitWithMultipleSigners({
     required XdrHostFunction hostFunction,
-    required List<SelectedSigner> selectedSigners,
-    SubmissionMethod? forceMethod,
-    ResolveContextRuleIds? resolveContextRuleIds,
+    required List<OZSelectedSigner> selectedSigners,
+    OZSubmissionMethod? forceMethod,
+    OZResolveContextRuleIds? resolveContextRuleIds,
   }) async {
     final connected = await _kit.requireConnected();
 
     final walletSigners =
-        selectedSigners.whereType<SelectedSignerWallet>().toList(
+        selectedSigners.whereType<OZSelectedSignerWallet>().toList(
               growable: false,
             );
 
@@ -225,7 +225,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
         canSign = false;
       }
       if (!canSign) {
-        throw ValidationException.invalidInput(
+        throw SmartAccountValidationException.invalidInput(
           'selectedSigners',
           'No signing source available for address: ${walletSigner.address}. '
               'Register an in-memory keypair via '
@@ -239,7 +239,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     // and signing-source availability. All precondition checks run before any
     // RPC call so failures surface cheaply.
     final ed25519Signers =
-        selectedSigners.whereType<SelectedSignerEd25519>().toList(
+        selectedSigners.whereType<OZSelectedSignerEd25519>().toList(
               growable: false,
             );
 
@@ -267,7 +267,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       simulation = await _kit.sorobanServer
           .simulateTransaction(SimulateTransactionRequest(transaction));
     } catch (e) {
-      throw TransactionException.simulationFailed(
+      throw SmartAccountTransactionException.simulationFailed(
         'Failed to simulate multi-signer transaction: $e',
         cause: e,
       );
@@ -275,14 +275,14 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
 
     final initialError = _simulationErrorMessage(simulation);
     if (initialError != null) {
-      throw TransactionException.simulationFailed(
+      throw SmartAccountTransactionException.simulationFailed(
         'Simulation error: $initialError',
       );
     }
 
     final sorobanAuth = simulation.sorobanAuth;
     if (sorobanAuth == null || sorobanAuth.isEmpty) {
-      throw TransactionException.simulationFailed(
+      throw SmartAccountTransactionException.simulationFailed(
         'No auth entries returned from simulation',
       );
     }
@@ -295,7 +295,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     final latestLedger = await _kit.sorobanServer.getLatestLedger();
     final ledgerSeq = latestLedger.sequence;
     if (ledgerSeq == null) {
-      throw TransactionException.submissionFailed(
+      throw SmartAccountTransactionException.submissionFailed(
         'Failed to fetch latest ledger sequence',
       );
     }
@@ -313,10 +313,10 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     // resolution counts them correctly.
     final smartAccountSigners = <OZSmartAccountSigner>[];
     for (final selectedSigner in selectedSigners) {
-      if (selectedSigner is SelectedSignerPasskey) {
+      if (selectedSigner is OZSelectedSignerPasskey) {
         final keyData = selectedSigner.keyData;
         if (keyData == null) {
-          throw ValidationException.invalidInput(
+          throw SmartAccountValidationException.invalidInput(
             'selectedSigners',
             'keyData is required for passkey signers for rule resolution',
           );
@@ -324,9 +324,9 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
         smartAccountSigners.add(
           OZExternalSigner(_kit.config.webauthnVerifierAddress, keyData),
         );
-      } else if (selectedSigner is SelectedSignerWallet) {
+      } else if (selectedSigner is OZSelectedSignerWallet) {
         smartAccountSigners.add(OZDelegatedSigner(selectedSigner.address));
-      } else if (selectedSigner is SelectedSignerEd25519) {
+      } else if (selectedSigner is OZSelectedSignerEd25519) {
         smartAccountSigners.add(
           OZExternalSigner.ed25519(
             verifierAddress: selectedSigner.verifierAddress,
@@ -352,7 +352,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
 
       final entryAddress = OZAddressStrKey.fromXdr(addressCreds.address);
       if (entryAddress != connected.contractId) {
-        SelectedSignerWallet? matching;
+        OZSelectedSignerWallet? matching;
         for (final w in walletSigners) {
           if (w.address == entryAddress) {
             matching = w;
@@ -367,7 +367,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
           );
           signedAuthEntries.add(signedWalletEntry);
         } else {
-          throw TransactionException.signingFailed(
+          throw SmartAccountTransactionException.signingFailed(
             'Unsupported auth entry for $entryAddress. '
             'Add an external signer for that address or remove it from '
             'the transaction.',
@@ -404,11 +404,11 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
           signerIndex < selectedSigners.length;
           signerIndex++) {
         final selectedSigner = selectedSigners[signerIndex];
-        if (selectedSigner is! SelectedSignerPasskey) continue;
+        if (selectedSigner is! OZSelectedSignerPasskey) continue;
 
         final webauthnProvider = _kit.config.webauthnProvider;
         if (webauthnProvider == null) {
-          throw ValidationException.invalidInput(
+          throw SmartAccountValidationException.invalidInput(
             'webauthnProvider',
             'WebAuthn provider is required for passkey signers but is '
                 'not configured',
@@ -416,8 +416,8 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
         }
 
         final allowCredentials = selectedSigner.credentialIdBytes != null
-            ? <AllowCredential>[
-                AllowCredential(
+            ? <WebAuthnAllowCredential>[
+                WebAuthnAllowCredential(
                   id: selectedSigner.credentialIdBytes!,
                   transports: selectedSigner.transports,
                 ),
@@ -465,7 +465,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       // Step 4b: per-wallet delegated-signer auth entries plus
       // placeholders.
       for (final selectedSigner in selectedSigners) {
-        if (selectedSigner is! SelectedSignerWallet) continue;
+        if (selectedSigner is! OZSelectedSignerWallet) continue;
 
         final checkAuthInvocation = XdrSorobanAuthorizedInvocation(
           XdrSorobanAuthorizedFunction.forInvokeContractArgs(
@@ -524,7 +524,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
 
     // Update lastUsedAt for each passkey signer that participated.
     for (final signer in selectedSigners) {
-      if (signer is SelectedSignerPasskey && signer.credentialId != null) {
+      if (signer is OZSelectedSignerPasskey && signer.credentialId != null) {
         try {
           await _kit.credentialManager.updateLastUsed(signer.credentialId!);
         } catch (_) {
@@ -555,7 +555,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
         SimulateTransactionRequest(signedTransaction),
       );
     } catch (e) {
-      throw TransactionException.simulationFailed(
+      throw SmartAccountTransactionException.simulationFailed(
         'Failed to re-simulate signed multi-signer transaction: $e',
         cause: e,
       );
@@ -563,7 +563,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
 
     final reSimError = _simulationErrorMessage(reSimulation);
     if (reSimError != null) {
-      throw TransactionException.simulationFailed(
+      throw SmartAccountTransactionException.simulationFailed(
         'Re-simulation error: $reSimError',
       );
     }
@@ -582,26 +582,26 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   // Private helpers
   // -------------------------------------------------------------------------
 
-  /// Validates each [SelectedSignerEd25519] in [ed25519Signers] against the
+  /// Validates each [OZSelectedSignerEd25519] in [ed25519Signers] against the
   /// registered signing sources in [extManager].
   ///
   /// Checks (in order per signer):
-  /// 1. [SelectedSignerEd25519.verifierAddress] is a valid C-strkey.
-  /// 2. [SelectedSignerEd25519.publicKey] is exactly
+  /// 1. [OZSelectedSignerEd25519.verifierAddress] is a valid C-strkey.
+  /// 2. [OZSelectedSignerEd25519.publicKey] is exactly
   ///    [SmartAccountConstants.ed25519PublicKeySize] bytes.
   /// 3. [extManager.canSignEd25519For] returns true (keypair or adapter
   ///    registered).
   ///
-  /// Throws [ValidationException.invalidInput] on the first violation found.
+  /// Throws [SmartAccountValidationException.invalidInput] on the first violation found.
   /// All checks run synchronously via the manager's in-memory registry, so
   /// the method returns quickly before any RPC call is made.
   Future<void> _validateEd25519Signers(
     OZExternalSignerManager extManager,
-    List<SelectedSignerEd25519> ed25519Signers,
+    List<OZSelectedSignerEd25519> ed25519Signers,
   ) async {
     for (final ed25519Signer in ed25519Signers) {
       if (!StrKey.isValidContractId(ed25519Signer.verifierAddress)) {
-        throw ValidationException.invalidInput(
+        throw SmartAccountValidationException.invalidInput(
           'selectedSigners',
           'Ed25519 signer has an invalid verifier address (must be a C... '
               'contract strkey): ${ed25519Signer.verifierAddress}',
@@ -610,7 +610,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
 
       if (ed25519Signer.publicKey.length !=
           SmartAccountConstants.ed25519PublicKeySize) {
-        throw ValidationException.invalidInput(
+        throw SmartAccountValidationException.invalidInput(
           'selectedSigners',
           'Ed25519 signer public key must be exactly '
               '${SmartAccountConstants.ed25519PublicKeySize} bytes, '
@@ -625,7 +625,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       if (!canSign) {
         final prefix =
             SmartAccountUtils.truncateForLog(ed25519Signer.verifierAddress);
-        throw ValidationException.invalidInput(
+        throw SmartAccountValidationException.invalidInput(
           'selectedSigners',
           'Ed25519 signer (verifier=$prefix...) has no registered signing '
               'source. Register an in-memory key via '
@@ -636,7 +636,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     }
   }
 
-  /// Collects one Ed25519 signature per [SelectedSignerEd25519] entry in
+  /// Collects one Ed25519 signature per [OZSelectedSignerEd25519] entry in
   /// declaration order and chains each onto [workingEntry]'s signature map.
   ///
   /// The signing source is resolved via the adapter-first precedence rule
@@ -653,7 +653,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     required Uint8List authDigest,
     required int expirationLedger,
     required List<int> resolvedContextRuleIds,
-    required List<SelectedSignerEd25519> ed25519Signers,
+    required List<OZSelectedSignerEd25519> ed25519Signers,
   }) async {
     var currentEntry = workingEntry;
 
@@ -678,7 +678,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       // makes failures actionable before submission rather than producing an
       // opaque on-chain auth failure.
       if (rawSignature.length != SmartAccountConstants.ed25519SignatureSize) {
-        throw TransactionException.signingFailed(
+        throw SmartAccountTransactionException.signingFailed(
           'Ed25519 signing source returned ${rawSignature.length} bytes for '
               'verifier $verifierAddress; expected '
               '${SmartAccountConstants.ed25519SignatureSize}',
@@ -690,7 +690,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       final verifierKeypair = KeyPair.fromPublicKey(publicKey);
       final signatureValid = verifierKeypair.verify(authDigest, rawSignature);
       if (!signatureValid) {
-        throw TransactionException.signingFailed(
+        throw SmartAccountTransactionException.signingFailed(
           'Ed25519 signing source returned a signature that does not verify '
               'against the registered public key for verifier $verifierAddress',
         );
@@ -751,13 +751,13 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   void _validateContractCallArgs(
     String target,
     String targetFn,
-    List<SelectedSigner> selectedSigners,
+    List<OZSelectedSigner> selectedSigners,
   ) {
     requireContractAddress(target, fieldName: 'target');
     requireNonBlankFunctionName(targetFn);
 
     if (selectedSigners.isEmpty) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'selectedSigners',
         'At least one signer must be provided',
       );
@@ -766,14 +766,14 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
 
   Future<XdrSorobanAuthorizationEntry> _signWalletAddressAuthEntry({
     required XdrSorobanAuthorizationEntry entry,
-    required SelectedSignerWallet walletSigner,
+    required OZSelectedSignerWallet walletSigner,
     required int expirationLedger,
   }) async {
     final signedEntry = _cloneEntryWithExpiration(entry, expirationLedger);
 
     final credentials = signedEntry.credentials.address;
     if (credentials == null) {
-      throw TransactionException.signingFailed(
+      throw SmartAccountTransactionException.signingFailed(
         'Expected Address credentials on wallet auth entry for '
         '${walletSigner.address}',
       );
@@ -795,7 +795,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     XdrHashIDPreimage.encode(stream, preimage);
     final preimageXdr = base64Encode(stream.bytes);
 
-    final SignAuthEntryResult signResult =
+    final OZSignAuthEntryResult signResult =
         await _kit.externalSigners.signAuthEntry(
       walletSigner.address,
       preimageXdr,
@@ -929,7 +929,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   Future<Account> _fetchAccount(String accountId) async {
     final account = await _kit.sorobanServer.getAccount(accountId);
     if (account == null) {
-      throw TransactionException.submissionFailed(
+      throw SmartAccountTransactionException.submissionFailed(
         'Failed to fetch deployer account $accountId',
       );
     }

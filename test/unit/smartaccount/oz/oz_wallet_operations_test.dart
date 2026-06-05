@@ -36,12 +36,12 @@ OZSmartAccountConfig _configWithoutProvider({
 
 void main() {
   // -------------------------------------------------------------------------
-  // CreateWalletResult value type
+  // OZCreateWalletResult value type
   // -------------------------------------------------------------------------
-  group('CreateWalletResult value type', () {
+  group('OZCreateWalletResult value type', () {
     test('testCreateWalletResult_construction_defaultOptionalFields', () {
       final pk = _bytes(65);
-      final r = CreateWalletResult(
+      final r = OZCreateWalletResult(
         credentialId: 'cred',
         contractId: _contractA,
         publicKey: pk,
@@ -57,7 +57,7 @@ void main() {
 
     test('testCreateWalletResult_constructionWithAllFields', () {
       final pk = _bytes(65, 1);
-      final r = CreateWalletResult(
+      final r = OZCreateWalletResult(
         credentialId: 'cred',
         contractId: _contractA,
         publicKey: pk,
@@ -71,7 +71,7 @@ void main() {
 
     test('testCreateWalletResult_equality_sameData', () {
       final pk = _bytes(65, 2);
-      final a = CreateWalletResult(
+      final a = OZCreateWalletResult(
         credentialId: 'cred',
         contractId: _contractA,
         publicKey: pk,
@@ -79,7 +79,7 @@ void main() {
         transactionHash: 'h',
         nickname: 'n',
       );
-      final b = CreateWalletResult(
+      final b = OZCreateWalletResult(
         credentialId: 'cred',
         contractId: _contractA,
         publicKey: Uint8List.fromList(pk),
@@ -92,13 +92,13 @@ void main() {
     });
 
     test('testCreateWalletResult_equality_differentPublicKey', () {
-      final a = CreateWalletResult(
+      final a = OZCreateWalletResult(
         credentialId: 'cred',
         contractId: _contractA,
         publicKey: _bytes(65, 1),
         signedTransactionXdr: 'xdr',
       );
-      final b = CreateWalletResult(
+      final b = OZCreateWalletResult(
         credentialId: 'cred',
         contractId: _contractA,
         publicKey: _bytes(65, 2),
@@ -109,13 +109,13 @@ void main() {
 
     test('testCreateWalletResult_equality_differentCredentialId', () {
       final pk = _bytes(65);
-      final a = CreateWalletResult(
+      final a = OZCreateWalletResult(
         credentialId: 'cred1',
         contractId: _contractA,
         publicKey: pk,
         signedTransactionXdr: 'xdr',
       );
-      final b = CreateWalletResult(
+      final b = OZCreateWalletResult(
         credentialId: 'cred2',
         contractId: _contractA,
         publicKey: pk,
@@ -126,14 +126,14 @@ void main() {
 
     test('testCreateWalletResult_equality_differentTransactionHash', () {
       final pk = _bytes(65);
-      final a = CreateWalletResult(
+      final a = OZCreateWalletResult(
         credentialId: 'cred',
         contractId: _contractA,
         publicKey: pk,
         signedTransactionXdr: 'xdr',
         transactionHash: 'h1',
       );
-      final b = CreateWalletResult(
+      final b = OZCreateWalletResult(
         credentialId: 'cred',
         contractId: _contractA,
         publicKey: pk,
@@ -145,14 +145,14 @@ void main() {
 
     test('testCreateWalletResult_equality_differentNickname', () {
       final pk = _bytes(65);
-      final a = CreateWalletResult(
+      final a = OZCreateWalletResult(
         credentialId: 'cred',
         contractId: _contractA,
         publicKey: pk,
         signedTransactionXdr: 'xdr',
         nickname: 'Alice',
       );
-      final b = CreateWalletResult(
+      final b = OZCreateWalletResult(
         credentialId: 'cred',
         contractId: _contractA,
         publicKey: pk,
@@ -164,7 +164,7 @@ void main() {
 
     test('testCreateWalletResult_copy', () {
       final pk = _bytes(65);
-      final original = CreateWalletResult(
+      final original = OZCreateWalletResult(
         credentialId: 'cred',
         contractId: _contractA,
         publicKey: pk,
@@ -176,7 +176,7 @@ void main() {
     });
 
     test('testCreateWalletResult_equality_notEqualToNull', () {
-      final Object? r = CreateWalletResult(
+      final Object? r = OZCreateWalletResult(
         credentialId: 'cred',
         contractId: _contractA,
         publicKey: _bytes(65),
@@ -186,7 +186,7 @@ void main() {
     });
 
     test('testCreateWalletResult_equality_notEqualToOtherType', () {
-      final r = CreateWalletResult(
+      final r = OZCreateWalletResult(
         credentialId: 'cred',
         contractId: _contractA,
         publicKey: _bytes(65),
@@ -196,7 +196,7 @@ void main() {
     });
 
     test('testCreateWalletResult_equality_sameInstance', () {
-      final r = CreateWalletResult(
+      final r = OZCreateWalletResult(
         credentialId: 'cred',
         contractId: _contractA,
         publicKey: _bytes(65),
@@ -207,11 +207,11 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
-  // DeployPendingResult value type
+  // OZDeployPendingResult value type
   // -------------------------------------------------------------------------
-  group('DeployPendingResult value type', () {
+  group('OZDeployPendingResult value type', () {
     test('testDeployPendingResult_construction_defaultOptionalFields', () {
-      const r = DeployPendingResult(
+      const r = OZDeployPendingResult(
         contractId: _contractA,
         signedTransactionXdr: 'xdr',
       );
@@ -221,7 +221,7 @@ void main() {
     });
 
     test('testDeployPendingResult_withTransactionHash', () {
-      const r = DeployPendingResult(
+      const r = OZDeployPendingResult(
         contractId: _contractA,
         signedTransactionXdr: 'xdr',
         transactionHash: 'h',
@@ -230,17 +230,17 @@ void main() {
     });
 
     test('testDeployPendingResult_equality', () {
-      const a = DeployPendingResult(
+      const a = OZDeployPendingResult(
         contractId: _contractA,
         signedTransactionXdr: 'xdr',
         transactionHash: 'h',
       );
-      const b = DeployPendingResult(
+      const b = OZDeployPendingResult(
         contractId: _contractA,
         signedTransactionXdr: 'xdr',
         transactionHash: 'h',
       );
-      const c = DeployPendingResult(
+      const c = OZDeployPendingResult(
         contractId: _contractA,
         signedTransactionXdr: 'xdr',
         transactionHash: 'h2',
@@ -250,7 +250,7 @@ void main() {
     });
 
     test('testDeployPendingResult_copy', () {
-      const original = DeployPendingResult(
+      const original = OZDeployPendingResult(
         contractId: _contractA,
         signedTransactionXdr: 'xdr',
       );
@@ -348,11 +348,11 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
-  // ConnectWalletOptions value type
+  // OZConnectWalletOptions value type
   // -------------------------------------------------------------------------
-  group('ConnectWalletOptions value type', () {
+  group('OZConnectWalletOptions value type', () {
     test('testConnectWalletOptions_defaultValues', () {
-      const o = ConnectWalletOptions();
+      const o = OZConnectWalletOptions();
       expect(o.credentialId, isNull);
       expect(o.contractId, isNull);
       expect(o.fresh, isFalse);
@@ -360,17 +360,17 @@ void main() {
     });
 
     test('testConnectWalletOptions_withPrompt', () {
-      const o = ConnectWalletOptions(prompt: true);
+      const o = OZConnectWalletOptions(prompt: true);
       expect(o.prompt, isTrue);
     });
 
     test('testConnectWalletOptions_withFresh', () {
-      const o = ConnectWalletOptions(fresh: true);
+      const o = OZConnectWalletOptions(fresh: true);
       expect(o.fresh, isTrue);
     });
 
     test('testConnectWalletOptions_withCredentialIdAndContractId', () {
-      const o = ConnectWalletOptions(
+      const o = OZConnectWalletOptions(
         credentialId: 'cred',
         contractId: _contractA,
       );
@@ -379,7 +379,7 @@ void main() {
     });
 
     test('testConnectWalletOptions_withAllFields', () {
-      const o = ConnectWalletOptions(
+      const o = OZConnectWalletOptions(
         credentialId: 'cred',
         contractId: _contractA,
         fresh: true,
@@ -390,22 +390,22 @@ void main() {
     });
 
     test('testConnectWalletOptions_equality', () {
-      const a = ConnectWalletOptions(credentialId: 'cred', fresh: true);
-      const b = ConnectWalletOptions(credentialId: 'cred', fresh: true);
-      const c = ConnectWalletOptions(credentialId: 'cred', fresh: false);
+      const a = OZConnectWalletOptions(credentialId: 'cred', fresh: true);
+      const b = OZConnectWalletOptions(credentialId: 'cred', fresh: true);
+      const c = OZConnectWalletOptions(credentialId: 'cred', fresh: false);
       expect(a, equals(b));
       expect(a == c, isFalse);
     });
 
     test('testConnectWalletOptions_equalityPromptDiffers', () {
-      const a = ConnectWalletOptions(fresh: true, prompt: false);
-      const b = ConnectWalletOptions(fresh: true, prompt: true);
+      const a = OZConnectWalletOptions(fresh: true, prompt: false);
+      const b = OZConnectWalletOptions(fresh: true, prompt: true);
       expect(a == b, isFalse);
       expect(a.hashCode, isNot(equals(b.hashCode)));
     });
 
     test('testConnectWalletOptions_copy', () {
-      const original = ConnectWalletOptions(fresh: true);
+      const original = OZConnectWalletOptions(fresh: true);
       final copy = original.copyWith(prompt: true);
       expect(copy.fresh, isTrue);
       expect(copy.prompt, isTrue);
@@ -413,9 +413,9 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
-  // AuthenticatePasskeyResult value type
+  // OZAuthenticatePasskeyResult value type
   // -------------------------------------------------------------------------
-  group('AuthenticatePasskeyResult value type', () {
+  group('OZAuthenticatePasskeyResult value type', () {
     OZWebAuthnSignature mkSig([int seed = 0]) {
       return OZWebAuthnSignature(
         authenticatorData: _bytes(37, seed),
@@ -426,12 +426,12 @@ void main() {
 
     test('testAuthenticatePasskeyResult_equality_sameData', () {
       final pk = _bytes(65, 5);
-      final a = AuthenticatePasskeyResult(
+      final a = OZAuthenticatePasskeyResult(
         credentialId: 'cred',
         signature: mkSig(),
         publicKey: pk,
       );
-      final b = AuthenticatePasskeyResult(
+      final b = OZAuthenticatePasskeyResult(
         credentialId: 'cred',
         signature: mkSig(),
         publicKey: Uint8List.fromList(pk),
@@ -441,12 +441,12 @@ void main() {
     });
 
     test('testAuthenticatePasskeyResult_equality_differentPublicKey', () {
-      final a = AuthenticatePasskeyResult(
+      final a = OZAuthenticatePasskeyResult(
         credentialId: 'cred',
         signature: mkSig(),
         publicKey: _bytes(65, 1),
       );
-      final b = AuthenticatePasskeyResult(
+      final b = OZAuthenticatePasskeyResult(
         credentialId: 'cred',
         signature: mkSig(),
         publicKey: _bytes(65, 2),
@@ -455,12 +455,12 @@ void main() {
     });
 
     test('testAuthenticatePasskeyResult_equality_differentCredentialId', () {
-      final a = AuthenticatePasskeyResult(
+      final a = OZAuthenticatePasskeyResult(
         credentialId: 'cred1',
         signature: mkSig(),
         publicKey: _bytes(65),
       );
-      final b = AuthenticatePasskeyResult(
+      final b = OZAuthenticatePasskeyResult(
         credentialId: 'cred2',
         signature: mkSig(),
         publicKey: _bytes(65),
@@ -469,7 +469,7 @@ void main() {
     });
 
     test('testAuthenticatePasskeyResult_equality_notEqualToOtherType', () {
-      final r = AuthenticatePasskeyResult(
+      final r = OZAuthenticatePasskeyResult(
         credentialId: 'cred',
         signature: mkSig(),
         publicKey: _bytes(65),
@@ -478,7 +478,7 @@ void main() {
     });
 
     test('testAuthenticatePasskeyResult_equality_notEqualToNull', () {
-      final Object? r = AuthenticatePasskeyResult(
+      final Object? r = OZAuthenticatePasskeyResult(
         credentialId: 'cred',
         signature: mkSig(),
         publicKey: _bytes(65),
@@ -489,7 +489,7 @@ void main() {
     test('testAuthenticatePasskeyResult_fieldAccess', () {
       final sig = mkSig();
       final pk = _bytes(65);
-      final r = AuthenticatePasskeyResult(
+      final r = OZAuthenticatePasskeyResult(
         credentialId: 'cred',
         signature: sig,
         publicKey: pk,
@@ -594,7 +594,7 @@ void main() {
       final kit = FakePipelineKit(config: _configWithoutProvider());
       final ops = OZWalletOperations(kit);
       final result =
-          await ops.connectWallet(options: const ConnectWalletOptions());
+          await ops.connectWallet(options: const OZConnectWalletOptions());
       expect(result, isNull);
     });
 
@@ -604,7 +604,7 @@ void main() {
       final ops = OZWalletOperations(kit);
       await expectLater(
         () => ops.connectWallet(
-          options: const ConnectWalletOptions(fresh: true),
+          options: const OZConnectWalletOptions(fresh: true),
         ),
         throwsA(isA<WebAuthnNotSupported>()),
       );
@@ -617,7 +617,7 @@ void main() {
       final ops = OZWalletOperations(kit);
       await expectLater(
         () => ops.connectWallet(
-          options: const ConnectWalletOptions(prompt: true),
+          options: const OZConnectWalletOptions(prompt: true),
         ),
         throwsA(isA<WebAuthnNotSupported>()),
       );
@@ -629,9 +629,9 @@ void main() {
       final ops = OZWalletOperations(kit);
       await expectLater(
         () => ops.connectWallet(
-          options: const ConnectWalletOptions(contractId: _contractA),
+          options: const OZConnectWalletOptions(contractId: _contractA),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
@@ -644,7 +644,7 @@ void main() {
       final kit = FakePipelineKit();
       await expectLater(
         () => kit.requireConnected(),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -677,7 +677,7 @@ void main() {
       final kit = FakePipelineKit();
       await expectLater(
         () => kit.requireConnected(),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -698,7 +698,7 @@ void main() {
       expect((await kit.requireConnected()).credentialId, equals('cred'));
       await expectLater(
         () => fresh.requireConnected(),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
   });
@@ -714,7 +714,7 @@ void main() {
       await kit.disconnect();
       await expectLater(
         () => kit.requireConnected(),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -723,7 +723,7 @@ void main() {
       await kit.disconnect();
       await expectLater(
         () => kit.requireConnected(),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -734,28 +734,28 @@ void main() {
       await kit.disconnect();
       await expectLater(
         () => kit.requireConnected(),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
     test('testDisconnect_emitsEvent_whenConnected', () async {
       final kit = FakePipelineKit();
       await kit.setConnectedState(credentialId: 'cred', contractId: _contractA);
-      final captured = <SmartAccountEvent>[];
+      final captured = <OZSmartAccountEvent>[];
       kit.events.addListener(captured.add);
       await kit.disconnect();
       expect(captured.length, equals(1));
       final evt = captured.single;
-      expect(evt, isA<SmartAccountEventWalletDisconnected>());
+      expect(evt, isA<OZSmartAccountEventWalletDisconnected>());
       expect(
-        (evt as SmartAccountEventWalletDisconnected).contractId,
+        (evt as OZSmartAccountEventWalletDisconnected).contractId,
         equals(_contractA),
       );
     });
 
     test('testDisconnect_doesNotEmitEvent_whenNotConnected', () async {
       final kit = FakePipelineKit();
-      final captured = <SmartAccountEvent>[];
+      final captured = <OZSmartAccountEvent>[];
       kit.events.addListener(captured.add);
       await kit.disconnect();
       expect(captured, isEmpty);
@@ -766,7 +766,7 @@ void main() {
       await kit.setConnectedState(credentialId: 'cred', contractId: _contractA);
       final storage = kit.getStorage();
       await storage.saveSession(
-        StoredSession(
+        OZStoredSession(
           credentialId: 'cred',
           contractId: _contractA,
           connectedAt: DateTime.now().millisecondsSinceEpoch,
@@ -786,11 +786,11 @@ void main() {
   group('deployPendingCredential build failure paths', () {
     test('buildTransactionGenericFailure_wrapsAsSubmissionFailed', () async {
       // When _buildDeployTransaction throws a non-SmartAccountException,
-      // lines 1047-1048 wrap it as TransactionSubmissionFailed.
+      // lines 1047-1048 wrap it as SmartAccountTransactionSubmissionFailed.
       final credentials = StubCredentialManager();
       final pk = _bytes(65);
       pk[0] = 0x04;
-      credentials.inject(StoredCredential(
+      credentials.inject(OZStoredCredential(
         credentialId: _credentialId,
         publicKey: pk,
         contractId: _contractA,
@@ -809,7 +809,7 @@ void main() {
 
       await expectLater(
         () => ops.deployPendingCredential(credentialId: _credentialId),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
   });
@@ -819,9 +819,9 @@ void main() {
       // A valid session exists, but getContractData returns null (contract not on-chain).
       // The OZWalletNotFound path clears the session and falls through. Since
       // prompt=false, returns null.
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
       await storage.saveSession(
-        StoredSession(
+        OZStoredSession(
           credentialId: _credentialId,
           contractId: _contractA,
           connectedAt: DateTime.now().millisecondsSinceEpoch,
@@ -830,7 +830,7 @@ void main() {
       );
 
       final mock = MockSorobanServer();
-      // getContractData returns null → contract not on-chain → WalletNotFound.
+      // getContractData returns null → contract not on-chain → SmartAccountWalletNotFound.
       mock.getContractDataResponses.add(null);
 
       final kit = FakePipelineKit(storage: storage, sorobanServer: mock);
@@ -845,15 +845,15 @@ void main() {
       final kit = FakePipelineKit(config: _configWithoutProvider());
       final ops = OZWalletOperations(kit);
       final result = await ops.connectWallet(
-        options: const ConnectWalletOptions(prompt: false),
+        options: const OZConnectWalletOptions(prompt: false),
       );
       expect(result, isNull);
     });
 
     test('freshOption_skipsSessionCheck', () async {
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
       await storage.saveSession(
-        StoredSession(
+        OZStoredSession(
           credentialId: _credentialId,
           contractId: _contractA,
           connectedAt: DateTime.now().millisecondsSinceEpoch,
@@ -869,7 +869,7 @@ void main() {
       // With fresh=true, session check is skipped and we go straight to
       // the WebAuthn prompt path. Since no provider is configured, throws.
       await expectLater(
-        () => ops.connectWallet(options: const ConnectWalletOptions(fresh: true)),
+        () => ops.connectWallet(options: const OZConnectWalletOptions(fresh: true)),
         throwsA(isA<WebAuthnNotSupported>()),
       );
     });
@@ -880,16 +880,16 @@ void main() {
   // -------------------------------------------------------------------------
   group('connectWallet credential storage resolution', () {
     test('credentialWithFailedDeployment_throwsWalletNotFound', () async {
-      // _resolveViaStorage returns WalletNotFound for failed credentials.
+      // _resolveViaStorage returns SmartAccountWalletNotFound for failed credentials.
       // Use StubCredentialManager with the failed credential injected.
       final credentials = StubCredentialManager();
       final pk = _bytes(65);
       pk[0] = 0x04;
-      credentials.inject(StoredCredential(
+      credentials.inject(OZStoredCredential(
         credentialId: _credentialId,
         publicKey: pk,
         contractId: _contractA,
-        deploymentStatus: CredentialDeploymentStatus.failed,
+        deploymentStatus: OZCredentialDeploymentStatus.failed,
         createdAt: 1700000000000,
       ));
 
@@ -925,25 +925,25 @@ void main() {
 
       await expectLater(
         () => ops.connectWallet(
-          options: const ConnectWalletOptions(prompt: true),
+          options: const OZConnectWalletOptions(prompt: true),
         ),
-        throwsA(isA<WalletNotFound>()),
+        throwsA(isA<SmartAccountWalletNotFound>()),
       );
     });
 
     test('credentialWithContractId_noIndexer_throwsWalletNotFound', () async {
       // _resolveViaStorage finds the credential → returns its contractId.
       // _connectWithCredentials calls _verifyContractExists which returns null
-      // (contract not on-chain) → throws WalletNotFound.
+      // (contract not on-chain) → throws SmartAccountWalletNotFound.
       // No indexer → connect fails.
       final credentials = StubCredentialManager();
       final pk = _bytes(65);
       pk[0] = 0x04;
-      credentials.inject(StoredCredential(
+      credentials.inject(OZStoredCredential(
         credentialId: _credentialId,
         publicKey: pk,
         contractId: _contractA,
-        deploymentStatus: CredentialDeploymentStatus.pending,
+        deploymentStatus: OZCredentialDeploymentStatus.pending,
         createdAt: 1700000000000,
       ));
 
@@ -965,7 +965,7 @@ void main() {
       ));
 
       final mock = MockSorobanServer();
-      // getContractData returns null (contract not on-chain) → WalletNotFound.
+      // getContractData returns null (contract not on-chain) → SmartAccountWalletNotFound.
       mock.getContractDataResponses.add(null);
 
       final config = OZSmartAccountConfig(
@@ -984,9 +984,9 @@ void main() {
 
       await expectLater(
         () => ops.connectWallet(
-          options: const ConnectWalletOptions(prompt: true),
+          options: const OZConnectWalletOptions(prompt: true),
         ),
-        throwsA(isA<WalletNotFound>()),
+        throwsA(isA<SmartAccountWalletNotFound>()),
       );
     });
   });
@@ -1006,7 +1006,7 @@ void main() {
           autoSubmit: true,
           autoFund: true,
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -1017,7 +1017,7 @@ void main() {
       final ops = OZWalletOperations(kit);
       await expectLater(
         () => ops.deployPendingCredential(credentialId: _credentialId),
-        throwsA(isA<CredentialNotFound>()),
+        throwsA(isA<SmartAccountCredentialNotFound>()),
       );
     });
 
@@ -1034,7 +1034,7 @@ void main() {
       await expectLater(
         () => ops.deployPendingCredential(credentialId: _credentialId),
         throwsA(
-          isA<CredentialInvalid>().having(
+          isA<SmartAccountCredentialInvalid>().having(
             (e) => e.message,
             'message',
             contains('missing publicKey'),
@@ -1055,7 +1055,7 @@ void main() {
       final ops = OZWalletOperations(kit);
       await expectLater(
         () => ops.deployPendingCredential(credentialId: _credentialId),
-        throwsA(isA<CredentialInvalid>()),
+        throwsA(isA<SmartAccountCredentialInvalid>()),
       );
     });
 
@@ -1071,7 +1071,7 @@ void main() {
       final ops = OZWalletOperations(kit);
       await expectLater(
         () => ops.deployPendingCredential(credentialId: _credentialId),
-        throwsA(isA<CredentialInvalid>()),
+        throwsA(isA<SmartAccountCredentialInvalid>()),
       );
     });
 
@@ -1087,17 +1087,17 @@ void main() {
           autoSubmit: true,
           autoFund: true,
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
 
   // -------------------------------------------------------------------------
-  // Above-floor: ConnectWalletOptions copyWith edge cases
+  // Above-floor: OZConnectWalletOptions copyWith edge cases
   // -------------------------------------------------------------------------
-  group('above-floor: ConnectWalletOptions copyWith', () {
+  group('above-floor: OZConnectWalletOptions copyWith', () {
     test('copyWith_clearsFields_whenClearFlagsTrue', () {
-      const original = ConnectWalletOptions(
+      const original = OZConnectWalletOptions(
         credentialId: 'cred',
         contractId: _contractA,
         fresh: true,
@@ -1130,16 +1130,16 @@ void main() {
     // and what the connect path produces.
     const String _paddedCredentialId = '$_credentialId==';
 
-    SmartAccountEventWalletConnected? _connectedEvent(
-      List<SmartAccountEvent> captured,
+    OZSmartAccountEventWalletConnected? _connectedEvent(
+      List<OZSmartAccountEvent> captured,
     ) {
       for (final e in captured) {
-        if (e is SmartAccountEventWalletConnected) return e;
+        if (e is OZSmartAccountEventWalletConnected) return e;
       }
       return null;
     }
 
-    Future<({FakePipelineKit kit, List<SmartAccountEvent> captured})> _runConnect(
+    Future<({FakePipelineKit kit, List<OZSmartAccountEvent> captured})> _runConnect(
       String suppliedCredentialId,
     ) async {
       final soroban = MockSorobanServer();
@@ -1151,12 +1151,12 @@ void main() {
         config: _configWithoutProvider(),
         sorobanServer: soroban,
       );
-      final captured = <SmartAccountEvent>[];
+      final captured = <OZSmartAccountEvent>[];
       kit.events.addListener(captured.add);
 
       final ops = OZWalletOperations(kit);
       final result = await ops.connectWallet(
-        options: ConnectWalletOptions(
+        options: OZConnectWalletOptions(
           credentialId: suppliedCredentialId,
           contractId: _contractA,
         ),
@@ -1248,9 +1248,9 @@ void main() {
         ),
       );
 
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
       await storage.save(
-        StoredCredential(
+        OZStoredCredential(
           credentialId: _credentialId,
           publicKey: _bytes(65),
           contractId: _contractA,

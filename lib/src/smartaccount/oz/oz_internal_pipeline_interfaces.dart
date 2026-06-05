@@ -33,7 +33,7 @@ import 'oz_transaction_operations.dart';
 abstract class OZCredentialManagerInterface {
   /// Looks up a stored credential by its Base64URL-encoded ID, returning
   /// `null` when no entry exists.
-  Future<StoredCredential?> getCredential(String credentialId);
+  Future<OZStoredCredential?> getCredential(String credentialId);
 
   /// Updates the `lastUsedAt` timestamp on the stored credential, if present.
   Future<void> updateLastUsed(String credentialId);
@@ -46,7 +46,7 @@ abstract class OZCredentialManagerInterface {
 abstract class OZContextRuleManagerInterface {
   /// Returns the parsed list of all context rules currently active on the
   /// connected smart account.
-  Future<List<ParsedContextRule>> listContextRules();
+  Future<List<OZParsedContextRule>> listContextRules();
 
   /// Resolves the context rule IDs that apply to the given auth entry under
   /// the supplied signers and pre-fetched context rules. Implementations
@@ -54,7 +54,7 @@ abstract class OZContextRuleManagerInterface {
   Future<List<int>> resolveContextRuleIdsForEntry(
     XdrSorobanAuthorizationEntry entry,
     List<OZSmartAccountSigner> signers,
-    List<ParsedContextRule> contextRules,
+    List<OZParsedContextRule> contextRules,
   );
 
   /// Returns the raw on-chain `ScVal` representations of every active
@@ -69,11 +69,11 @@ abstract class OZContextRuleManagerInterface {
   /// the matching `remove_signer` / `remove_policy` invocation.
   Future<XdrSCVal> getContextRule(int id);
 
-  /// Parses a raw context-rule `ScVal` into a [ParsedContextRule]
+  /// Parses a raw context-rule `ScVal` into a [OZParsedContextRule]
   /// instance. Exposed via the interface (rather than a class-level
   /// method) so the sibling managers can drive the parser through the
   /// kit's `contextRuleManager` accessor.
-  ParsedContextRule parseContextRule(XdrSCVal scVal);
+  OZParsedContextRule parseContextRule(XdrSCVal scVal);
 }
 
 /// Internal abstraction over the multi-signer manager the
@@ -89,14 +89,14 @@ abstract class OZContextRuleManagerInterface {
 @internal
 abstract class OZMultiSignerManagerInterface {
   /// Submits [hostFunction] under the [selectedSigners] list, returning
-  /// the same [TransactionResult] the concrete manager would yield. The
+  /// the same [OZTransactionResult] the concrete manager would yield. The
   /// optional [forceMethod] mirrors the named parameter on the concrete
   /// implementation and forces submission via RPC or relayer respectively
   /// instead of letting the SDK pick automatically.
-  Future<TransactionResult> submitWithMultipleSigners({
+  Future<OZTransactionResult> submitWithMultipleSigners({
     required XdrHostFunction hostFunction,
-    required List<SelectedSigner> selectedSigners,
-    SubmissionMethod? forceMethod,
+    required List<OZSelectedSigner> selectedSigners,
+    OZSubmissionMethod? forceMethod,
   });
 }
 
@@ -141,7 +141,7 @@ abstract class OZSmartAccountKitInterface {
 
   /// Event emitter for lifecycle notifications. Operations emit signing,
   /// submission, and connection events through this emitter.
-  SmartAccountEventEmitter get events;
+  OZSmartAccountEventEmitter get events;
 
   /// Indexer client, when configured. `null` when the kit has no indexer.
   OZIndexerClient? get indexerClient;
@@ -160,9 +160,9 @@ abstract class OZSmartAccountKitInterface {
   Future<KeyPair> getDeployer();
 
   /// Returns the storage adapter currently in use by the kit.
-  StorageAdapter getStorage();
+  OZStorageAdapter getStorage();
 
-  /// Returns the active connected state, throwing [WalletNotConnected] when
+  /// Returns the active connected state, throwing [SmartAccountWalletNotConnected] when
   /// no wallet is connected.
   ///
   /// Implementations route the paired read of credential ID + contract ID
@@ -211,7 +211,7 @@ abstract class OZWalletCredentialManagerInterface
     implements OZCredentialManagerInterface {
   /// Persists a freshly-registered credential in `pending` status with the
   /// supplied metadata.
-  Future<StoredCredential> createPendingCredential({
+  Future<OZStoredCredential> createPendingCredential({
     required String credentialId,
     required Uint8List publicKey,
     required String contractId,
@@ -232,7 +232,7 @@ abstract class OZWalletCredentialManagerInterface
   Future<void> setPrimary(String credentialId);
 
   /// Deletes a credential from local storage. Throws
-  /// `CredentialException.notFound` when the credential id does not exist.
+  /// `SmartAccountCredentialException.notFound` when the credential id does not exist.
   Future<void> deleteCredential({required String credentialId});
 }
 

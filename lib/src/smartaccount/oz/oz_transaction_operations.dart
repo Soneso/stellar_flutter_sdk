@@ -56,10 +56,10 @@ import 'oz_validation.dart';
 ///   print('Transaction failed: ${result.error ?? "unknown error"}');
 /// }
 /// ```
-class TransactionResult {
+class OZTransactionResult {
   /// Constructs a transaction result. [success] is required; remaining
   /// fields are optional.
-  const TransactionResult({
+  const OZTransactionResult({
     required this.success,
     this.hash,
     this.ledger,
@@ -83,14 +83,14 @@ class TransactionResult {
   ///
   /// Each named argument defaults to the current value of the corresponding
   /// field. There is no explicit `setNull` flag — to clear an optional field
-  /// construct a new [TransactionResult] directly.
-  TransactionResult copyWith({
+  /// construct a new [OZTransactionResult] directly.
+  OZTransactionResult copyWith({
     bool? success,
     String? hash,
     int? ledger,
     String? error,
   }) {
-    return TransactionResult(
+    return OZTransactionResult(
       success: success ?? this.success,
       hash: hash ?? this.hash,
       ledger: ledger ?? this.ledger,
@@ -101,7 +101,7 @@ class TransactionResult {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! TransactionResult) return false;
+    if (other is! OZTransactionResult) return false;
     return success == other.success &&
         hash == other.hash &&
         ledger == other.ledger &&
@@ -113,7 +113,7 @@ class TransactionResult {
 
   @override
   String toString() =>
-      'TransactionResult(success: $success, hash: $hash, ledger: $ledger, error: $error)';
+      'OZTransactionResult(success: $success, hash: $hash, ledger: $ledger, error: $error)';
 }
 
 /// Callback for resolving context-rule IDs per authorization entry.
@@ -136,7 +136,7 @@ class TransactionResult {
 ///   return <int>[ruleId];
 /// }
 /// ```
-typedef ResolveContextRuleIds = Future<List<int>> Function(
+typedef OZResolveContextRuleIds = Future<List<int>> Function(
   XdrSorobanAuthorizationEntry entry,
   int index,
 );
@@ -210,20 +210,20 @@ class OZTransactionOperations {
   /// is the recipient address (G-address or C-address). [forceMethod]
   /// optionally overrides the auto-detected submission method.
   ///
-  /// Throws [WalletNotConnected] when no wallet is connected,
-  /// [InvalidAddress] when the recipient address is malformed,
-  /// [InvalidInput] when the recipient is the smart account itself or when
-  /// the amount is invalid, and [TransactionException] /
+  /// Throws [SmartAccountWalletNotConnected] when no wallet is connected,
+  /// [SmartAccountInvalidAddress] when the recipient address is malformed,
+  /// [SmartAccountInvalidInput] when the recipient is the smart account itself or when
+  /// the amount is invalid, and [SmartAccountTransactionException] /
   /// [WebAuthnException] for downstream failures.
   ///
   /// The optional [cancelToken] can be cancelled to abort an in-flight
-  /// request. Cancellation surfaces as a [TransactionException] from any
+  /// request. Cancellation surfaces as a [SmartAccountTransactionException] from any
   /// network step that observes the cancellation between awaits.
-  Future<TransactionResult> transfer({
+  Future<OZTransactionResult> transfer({
     required String tokenContract,
     required String recipient,
     required String amount,
-    SubmissionMethod? forceMethod,
+    OZSubmissionMethod? forceMethod,
     dio.CancelToken? cancelToken,
   }) async {
     _checkCancellation(cancelToken);
@@ -233,14 +233,14 @@ class OZTransactionOperations {
     requireStellarAddress(recipient, fieldName: 'recipient');
 
     if (recipient == connected.contractId) {
-      throw ValidationException.invalidInput('recipient', 'Cannot transfer to self');
+      throw SmartAccountValidationException.invalidInput('recipient', 'Cannot transfer to self');
     }
 
     final BigInt stroops;
     try {
       stroops = Util.toXdrInt64Amount(amount);
     } catch (e) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'amount',
         'Invalid decimal amount: $amount',
         cause: e,
@@ -248,7 +248,7 @@ class OZTransactionOperations {
     }
 
     if (stroops <= BigInt.zero) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'amount',
         'Amount must be positive, got: $amount',
       );
@@ -289,14 +289,14 @@ class OZTransactionOperations {
   /// auto-detected submission method. [resolveContextRuleIds] optionally
   /// supplies a per-entry callback resolving the context rule IDs. The
   /// optional [cancelToken] can be cancelled to abort an in-flight
-  /// request; cancellation surfaces as a [TransactionException] from any
+  /// request; cancellation surfaces as a [SmartAccountTransactionException] from any
   /// network step that observes the cancellation between awaits.
-  Future<TransactionResult> contractCall({
+  Future<OZTransactionResult> contractCall({
     required String target,
     required String targetFn,
     List<XdrSCVal> targetArgs = const <XdrSCVal>[],
-    SubmissionMethod? forceMethod,
-    ResolveContextRuleIds? resolveContextRuleIds,
+    OZSubmissionMethod? forceMethod,
+    OZResolveContextRuleIds? resolveContextRuleIds,
     dio.CancelToken? cancelToken,
   }) async {
     _checkCancellation(cancelToken);
@@ -332,14 +332,14 @@ class OZTransactionOperations {
   /// target on the smart account's behalf. The smart account's authorization
   /// rules (context rules, signers, policies) apply. The optional
   /// [cancelToken] can be cancelled to abort an in-flight request;
-  /// cancellation surfaces as a [TransactionException] from any network
+  /// cancellation surfaces as a [SmartAccountTransactionException] from any network
   /// step that observes the cancellation between awaits.
-  Future<TransactionResult> executeAndSubmit({
+  Future<OZTransactionResult> executeAndSubmit({
     required String target,
     required String targetFn,
     List<XdrSCVal> targetArgs = const <XdrSCVal>[],
-    SubmissionMethod? forceMethod,
-    ResolveContextRuleIds? resolveContextRuleIds,
+    OZSubmissionMethod? forceMethod,
+    OZResolveContextRuleIds? resolveContextRuleIds,
     dio.CancelToken? cancelToken,
   }) async {
     _checkCancellation(cancelToken);
@@ -389,12 +389,12 @@ class OZTransactionOperations {
   ///
   /// The optional [cancelToken] can be cancelled to abort an in-flight
   /// network request; on cancellation the method throws a
-  /// [TransactionException] wrapping a [dio.DioExceptionType.cancel].
-  Future<TransactionResult> submit({
+  /// [SmartAccountTransactionException] wrapping a [dio.DioExceptionType.cancel].
+  Future<OZTransactionResult> submit({
     required XdrHostFunction hostFunction,
     required List<XdrSorobanAuthorizationEntry> auth,
-    SubmissionMethod? forceMethod,
-    ResolveContextRuleIds? resolveContextRuleIds,
+    OZSubmissionMethod? forceMethod,
+    OZResolveContextRuleIds? resolveContextRuleIds,
     dio.CancelToken? cancelToken,
   }) async {
     _checkCancellation(cancelToken);
@@ -441,7 +441,7 @@ class OZTransactionOperations {
       }
     }
 
-    _kit.events.emit(SmartAccountEventTransactionSigned(
+    _kit.events.emit(OZSmartAccountEventTransactionSigned(
       contractId: contractId,
       credentialId: signedAuthEntries.isNotEmpty ? credentialId : null,
     ));
@@ -466,7 +466,7 @@ class OZTransactionOperations {
     _applySimulationToTransaction(signedTransaction, reSimulation);
 
     final submissionMethod = ozResolveSubmissionMethod(_kit, forceMethod);
-    final useRelayer = submissionMethod == SubmissionMethod.relayer;
+    final useRelayer = submissionMethod == OZSubmissionMethod.relayer;
 
     return _submitOrRelay(
       transaction: signedTransaction,
@@ -483,7 +483,7 @@ class OZTransactionOperations {
   /// Performs the initial simulation against the unsigned transaction.
   ///
   /// Wraps the underlying `simulateTransaction` call so RPC failures are
-  /// converted to [TransactionException]s with submission-failed/
+  /// converted to [SmartAccountTransactionException]s with submission-failed/
   /// simulation-failed semantics.
   Future<SimulateTransactionResponse> _simulateInitial(
     Transaction transaction,
@@ -493,7 +493,7 @@ class OZTransactionOperations {
       simulation = await _kit.sorobanServer
           .simulateTransaction(SimulateTransactionRequest(transaction));
     } catch (e) {
-      throw TransactionException.submissionFailed(
+      throw SmartAccountTransactionException.submissionFailed(
         'Failed to simulate transaction: $e',
         cause: e,
       );
@@ -501,7 +501,7 @@ class OZTransactionOperations {
 
     final initialError = _errorMessage(simulation);
     if (initialError != null) {
-      throw TransactionException.simulationFailed(
+      throw SmartAccountTransactionException.simulationFailed(
         'Simulation error: $initialError',
       );
     }
@@ -522,7 +522,7 @@ class OZTransactionOperations {
       reSimulation = await _kit.sorobanServer
           .simulateTransaction(SimulateTransactionRequest(signedTransaction));
     } catch (e) {
-      throw TransactionException.submissionFailed(
+      throw SmartAccountTransactionException.submissionFailed(
         'Failed to re-simulate signed transaction: $e',
         cause: e,
       );
@@ -530,7 +530,7 @@ class OZTransactionOperations {
 
     final reSimError = _errorMessage(reSimulation);
     if (reSimError != null) {
-      throw TransactionException.simulationFailed(
+      throw SmartAccountTransactionException.simulationFailed(
         'Re-simulation error: $reSimError',
       );
     }
@@ -548,7 +548,7 @@ class OZTransactionOperations {
     required List<XdrSorobanAuthorizationEntry> simulatedAuthEntries,
     required String contractId,
     required String credentialId,
-    required ResolveContextRuleIds? resolveContextRuleIds,
+    required OZResolveContextRuleIds? resolveContextRuleIds,
     required dio.CancelToken? cancelToken,
   }) async {
     if (simulatedAuthEntries.isEmpty) {
@@ -558,7 +558,7 @@ class OZTransactionOperations {
     final latestLedger = await _kit.sorobanServer.getLatestLedger();
     final ledgerSeq = latestLedger.sequence;
     if (ledgerSeq == null) {
-      throw TransactionException.submissionFailed(
+      throw SmartAccountTransactionException.submissionFailed(
         'Failed to fetch latest ledger sequence',
       );
     }
@@ -597,7 +597,7 @@ class OZTransactionOperations {
 
       final webauthnProvider = _kit.config.webauthnProvider;
       if (webauthnProvider == null) {
-        throw ValidationException.invalidInput(
+        throw SmartAccountValidationException.invalidInput(
           'webauthnProvider',
           'WebAuthn provider is required for signing auth entries but is not configured',
         );
@@ -607,7 +607,7 @@ class OZTransactionOperations {
       try {
         credIdBytes = ozBase64UrlDecode(credentialId);
       } catch (e) {
-        throw CredentialException.invalid(
+        throw SmartAccountCredentialException.invalid(
           'Failed to decode credentialId from Base64URL: $credentialId',
           cause: e,
         );
@@ -615,7 +615,7 @@ class OZTransactionOperations {
 
       // Resolve key data: first try local storage, then fall through to
       // on-chain context-rule scanning.
-      StoredCredential? stored;
+      OZStoredCredential? stored;
       try {
         stored = await _kit.getStorage().get(credentialId);
       } catch (_) {
@@ -649,8 +649,8 @@ class OZTransactionOperations {
 
       final authResult = await webauthnProvider.authenticate(
         challenge: authDigest,
-        allowCredentials: <AllowCredential>[
-          AllowCredential(id: credIdBytes, transports: stored?.transports),
+        allowCredentials: <WebAuthnAllowCredential>[
+          WebAuthnAllowCredential(id: credIdBytes, transports: stored?.transports),
         ],
       );
 
@@ -660,7 +660,7 @@ class OZTransactionOperations {
       // result's credentialId matches the one we requested before using
       // its signature.
       if (!Util.constantTimeEquals(authResult.credentialId, credIdBytes)) {
-        throw CredentialException.invalid(
+        throw SmartAccountCredentialException.invalid(
           'WebAuthn provider returned a signature for a different credential than was requested',
         );
       }
@@ -696,17 +696,17 @@ class OZTransactionOperations {
   /// already been performed by the caller; this method only applies the
   /// re-simulation result, signs the envelope when required, and submits.
   @internal
-  Future<TransactionResult> submitMultiSignerTransaction({
+  Future<OZTransactionResult> submitMultiSignerTransaction({
     required XdrHostFunction hostFunction,
     required List<XdrSorobanAuthorizationEntry> signedAuthEntries,
     required Transaction signedTransaction,
     required SimulateTransactionResponse simulation,
-    SubmissionMethod? forceMethod,
+    OZSubmissionMethod? forceMethod,
   }) async {
     final deployer = await _kit.getDeployer();
     _applySimulationToTransaction(signedTransaction, simulation);
 
-    final useRelayer = ozResolveSubmissionMethod(_kit, forceMethod) == SubmissionMethod.relayer;
+    final useRelayer = ozResolveSubmissionMethod(_kit, forceMethod) == OZSubmissionMethod.relayer;
 
     return _submitOrRelay(
       transaction: signedTransaction,
@@ -722,7 +722,7 @@ class OZTransactionOperations {
   /// Simulates a host function and returns its return-value `ScVal`.
   ///
   /// Used for read-only queries (e.g. token balance lookups) where no
-  /// submission is performed. Throws [TransactionException] on simulation
+  /// submission is performed. Throws [SmartAccountTransactionException] on simulation
   /// failure or when the simulation produced no result entry.
   @internal
   Future<XdrSCVal> simulateAndExtractResult(XdrHostFunction hostFunction) async {
@@ -745,7 +745,7 @@ class OZTransactionOperations {
       simulation = await _kit.sorobanServer
           .simulateTransaction(SimulateTransactionRequest(transaction));
     } catch (e) {
-      throw TransactionException.simulationFailed(
+      throw SmartAccountTransactionException.simulationFailed(
         'Failed to simulate read-only host function: $e',
         cause: e,
       );
@@ -753,16 +753,16 @@ class OZTransactionOperations {
 
     final err = _errorMessage(simulation);
     if (err != null) {
-      throw TransactionException.simulationFailed('Simulation error: $err');
+      throw SmartAccountTransactionException.simulationFailed('Simulation error: $err');
     }
 
     final results = simulation.results;
     if (results == null || results.isEmpty) {
-      throw TransactionException.simulationFailed('No results returned from simulation');
+      throw SmartAccountTransactionException.simulationFailed('No results returned from simulation');
     }
     final result = results[0].resultValue;
     if (result == null) {
-      throw TransactionException.simulationFailed('No return value in simulation result');
+      throw SmartAccountTransactionException.simulationFailed('No return value in simulation result');
     }
     return result;
   }
@@ -779,7 +779,7 @@ class OZTransactionOperations {
   /// keypair.
   ///
   /// Returns the funded amount as a decimal XLM string. Throws
-  /// [TransactionException] when Friendbot funding, balance lookup, or
+  /// [SmartAccountTransactionException] when Friendbot funding, balance lookup, or
   /// submission fails. Only valid on testnet — Friendbot is testnet-only.
   ///
   /// The optional [cancelToken] can be cancelled to abort the operation;
@@ -787,7 +787,7 @@ class OZTransactionOperations {
   /// including the 5-second Friendbot-propagation delay.
   Future<String> fundWallet({
     required String nativeTokenContract,
-    SubmissionMethod? forceMethod,
+    OZSubmissionMethod? forceMethod,
     dio.CancelToken? cancelToken,
   }) async {
     _checkCancellation(cancelToken);
@@ -802,7 +802,7 @@ class OZTransactionOperations {
 
     final funded = await FriendBot.fundTestAccount(tempKeypair.accountId);
     if (!funded) {
-      throw TransactionException.submissionFailed('Friendbot funding failed');
+      throw SmartAccountTransactionException.submissionFailed('Friendbot funding failed');
     }
 
     // why: Friendbot returns once Horizon has confirmed the deposit but
@@ -834,14 +834,14 @@ class OZTransactionOperations {
     try {
       balanceStroops = _scValToBigInt(balanceResult);
     } catch (e) {
-      throw TransactionException.submissionFailed(
+      throw SmartAccountTransactionException.submissionFailed(
         'Failed to query temp account balance',
         cause: e,
       );
     }
 
     if (balanceStroops <= reserveStroops) {
-      throw TransactionException.submissionFailed(
+      throw SmartAccountTransactionException.submissionFailed(
         'Insufficient balance after Friendbot funding',
       );
     }
@@ -876,7 +876,7 @@ class OZTransactionOperations {
       simulation = await _kit.sorobanServer
           .simulateTransaction(SimulateTransactionRequest(transaction));
     } catch (e) {
-      throw TransactionException.submissionFailed(
+      throw SmartAccountTransactionException.submissionFailed(
         'Failed to simulate funding transfer: $e',
         cause: e,
       );
@@ -884,7 +884,7 @@ class OZTransactionOperations {
 
     final simErr = _errorMessage(simulation);
     if (simErr != null) {
-      throw TransactionException.simulationFailed(
+      throw SmartAccountTransactionException.simulationFailed(
         'Failed to simulate funding transfer: $simErr',
       );
     }
@@ -894,7 +894,7 @@ class OZTransactionOperations {
     final latestLedger = await _kit.sorobanServer.getLatestLedger();
     final ledgerSeq = latestLedger.sequence;
     if (ledgerSeq == null) {
-      throw TransactionException.submissionFailed('Failed to fetch latest ledger sequence');
+      throw SmartAccountTransactionException.submissionFailed('Failed to fetch latest ledger sequence');
     }
     final expirationLedger = ledgerSeq + Util.ledgersPerHour;
 
@@ -924,20 +924,20 @@ class OZTransactionOperations {
       reSimulation = await _kit.sorobanServer
           .simulateTransaction(SimulateTransactionRequest(signedTransaction));
     } catch (e) {
-      throw TransactionException.submissionFailed(
+      throw SmartAccountTransactionException.submissionFailed(
         'Failed to re-simulate funding transfer: $e',
         cause: e,
       );
     }
     final reSimError = _errorMessage(reSimulation);
     if (reSimError != null) {
-      throw TransactionException.simulationFailed('Re-simulation error: $reSimError');
+      throw SmartAccountTransactionException.simulationFailed('Re-simulation error: $reSimError');
     }
 
     _applySimulationToTransaction(signedTransaction, reSimulation);
 
     final submissionMethod = ozResolveSubmissionMethod(_kit, forceMethod);
-    final useRelayer = submissionMethod == SubmissionMethod.relayer;
+    final useRelayer = submissionMethod == OZSubmissionMethod.relayer;
 
     final result = await _submitOrRelay(
       transaction: signedTransaction,
@@ -950,7 +950,7 @@ class OZTransactionOperations {
     );
 
     if (!result.success) {
-      throw TransactionException.submissionFailed(
+      throw SmartAccountTransactionException.submissionFailed(
         'Funding transaction failed: ${result.error ?? 'unknown error'}',
       );
     }
@@ -1129,7 +1129,7 @@ class OZTransactionOperations {
         break;
       }
     }
-    throw CredentialException.notFound(
+    throw SmartAccountCredentialException.notFound(
       'No signer found on-chain for credential ID: ${ozBase64UrlEncode(credentialIdBytes)}',
     );
   }
@@ -1139,7 +1139,7 @@ class OZTransactionOperations {
   /// Signs the envelope when the path requires it (direct RPC submission
   /// always; relayer Mode 2 when source-account auth is present). Polls for
   /// confirmation on the RPC path and after Mode 1 relayer submission.
-  Future<TransactionResult> _submitOrRelay({
+  Future<OZTransactionResult> _submitOrRelay({
     required Transaction transaction,
     required XdrHostFunction hostFunction,
     required List<XdrSorobanAuthorizationEntry> signedAuthEntries,
@@ -1159,7 +1159,7 @@ class OZTransactionOperations {
     if (useRelayer) {
       final relayer = _kit.relayerClient;
       if (relayer == null) {
-        throw TransactionException.submissionFailed('Relayer is not configured');
+        throw SmartAccountTransactionException.submissionFailed('Relayer is not configured');
       }
 
       final OZRelayerResponse relayerResponse;
@@ -1177,7 +1177,7 @@ class OZTransactionOperations {
       }
 
       if (emitEvents && relayerResponse.hash != null) {
-        _kit.events.emit(SmartAccountEventTransactionSubmitted(
+        _kit.events.emit(OZSmartAccountEventTransactionSubmitted(
           hash: relayerResponse.hash!,
           success: relayerResponse.success,
         ));
@@ -1186,7 +1186,7 @@ class OZTransactionOperations {
       if (relayerResponse.success && relayerResponse.hash != null) {
         return _pollForConfirmation(relayerResponse.hash!, cancelToken);
       }
-      return TransactionResult(
+      return OZTransactionResult(
         success: false,
         hash: relayerResponse.hash,
         error: relayerResponse.error ?? 'Relayer submission failed',
@@ -1198,7 +1198,7 @@ class OZTransactionOperations {
     try {
       sendResult = await _kit.sorobanServer.sendTransaction(transaction);
     } catch (e) {
-      throw TransactionException.submissionFailed(
+      throw SmartAccountTransactionException.submissionFailed(
         'Failed to send transaction: $e',
         cause: e,
       );
@@ -1206,14 +1206,14 @@ class OZTransactionOperations {
 
     final status = sendResult.status;
     if (status == SendTransactionResponse.STATUS_ERROR) {
-      return TransactionResult(
+      return OZTransactionResult(
         success: false,
         hash: sendResult.hash ?? '',
         error: sendResult.errorResultXdr ?? 'Transaction rejected by network',
       );
     }
     if (status == SendTransactionResponse.STATUS_TRY_AGAIN_LATER) {
-      return TransactionResult(
+      return OZTransactionResult(
         success: false,
         hash: sendResult.hash ?? '',
         error: 'Network is congested. Try again later.',
@@ -1222,13 +1222,13 @@ class OZTransactionOperations {
 
     final hash = sendResult.hash;
     if (hash == null) {
-      throw TransactionException.submissionFailed(
+      throw SmartAccountTransactionException.submissionFailed(
         'No transaction hash returned from send result',
       );
     }
 
     if (emitEvents) {
-      _kit.events.emit(SmartAccountEventTransactionSubmitted(
+      _kit.events.emit(OZSmartAccountEventTransactionSubmitted(
         hash: hash,
         success: true,
       ));
@@ -1240,7 +1240,7 @@ class OZTransactionOperations {
   /// poll loop. Uses 30 attempts at 3-second intervals (90-second budget)
   /// to absorb ledger-close jitter and network congestion. Cancellation is
   /// observed each time the sleep strategy fires.
-  Future<TransactionResult> _pollForConfirmation(
+  Future<OZTransactionResult> _pollForConfirmation(
     String hash, [
     dio.CancelToken? cancelToken,
   ]) async {
@@ -1255,7 +1255,7 @@ class OZTransactionOperations {
         },
       );
     } catch (e) {
-      throw TransactionException.submissionFailed(
+      throw SmartAccountTransactionException.submissionFailed(
         'Failed to poll for transaction confirmation: $e',
         cause: e,
       );
@@ -1263,20 +1263,20 @@ class OZTransactionOperations {
 
     switch (response.status) {
       case GetTransactionResponse.STATUS_SUCCESS:
-        return TransactionResult(
+        return OZTransactionResult(
           success: true,
           hash: hash,
           ledger: response.ledger,
         );
       case GetTransactionResponse.STATUS_FAILED:
-        return TransactionResult(
+        return OZTransactionResult(
           success: false,
           hash: hash,
           ledger: response.ledger,
           error: response.resultXdr ?? 'Transaction failed on-chain',
         );
       default:
-        return TransactionResult(
+        return OZTransactionResult(
           success: false,
           hash: hash,
           error: 'Transaction not confirmed after 30 polling attempts',
@@ -1294,13 +1294,13 @@ class OZTransactionOperations {
   /// generator; see [OZSecureNonce] for the implementation rationale.
   XdrInt64 _generateNonce() => OZSecureNonce.generate();
 
-  /// Throws a [TransactionException] when [cancelToken] has been
+  /// Throws a [SmartAccountTransactionException] when [cancelToken] has been
   /// cancelled. Called between long-running awaits in the pipeline so
   /// callers can abort in flight even when the wrapped network calls
   /// themselves don't expose cancellation.
   void _checkCancellation(dio.CancelToken? cancelToken) {
     if (cancelToken != null && cancelToken.isCancelled) {
-      throw TransactionException.submissionFailed(
+      throw SmartAccountTransactionException.submissionFailed(
         'Operation cancelled',
         cause: cancelToken.cancelError,
       );
@@ -1308,20 +1308,20 @@ class OZTransactionOperations {
   }
 
   /// Fetches an account from Soroban RPC, throwing
-  /// [TransactionException.submissionFailed] when the account is not found
+  /// [SmartAccountTransactionException.submissionFailed] when the account is not found
   /// or when the RPC call fails.
   Future<Account> _fetchAccount(String accountId) async {
     final Account? account;
     try {
       account = await _kit.sorobanServer.getAccount(accountId);
     } catch (e) {
-      throw TransactionException.submissionFailed(
+      throw SmartAccountTransactionException.submissionFailed(
         'Failed to fetch account $accountId: $e',
         cause: e,
       );
     }
     if (account == null) {
-      throw TransactionException.submissionFailed(
+      throw SmartAccountTransactionException.submissionFailed(
         'Account not found: $accountId',
       );
     }

@@ -137,7 +137,7 @@ class PlatformWebAuthnProvider implements WebAuthnProvider {
   @override
   Future<WebAuthnAuthenticationResult> authenticate({
     required Uint8List challenge,
-    List<AllowCredential>? allowCredentials,
+    List<WebAuthnAllowCredential>? allowCredentials,
   }) async {
     final args = <String, Object?>{
       'rpId': rpId,

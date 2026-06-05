@@ -41,7 +41,7 @@ sealed class OZSmartAccountSignature {
 
   /// XDR-encodes [scVal] and returns the resulting bytes.
   ///
-  /// Throws [TransactionSigningFailed] when XDR encoding fails.
+  /// Throws [SmartAccountTransactionSigningFailed] when XDR encoding fails.
   /// Used by [OZWebAuthnSignature] and [OZPolicySignature]; not used by
   /// [OZEd25519Signature] (which returns raw bytes without XDR wrapping).
   static Uint8List _encodeScValToBytes(XdrSCVal scVal, String contextLabel) {
@@ -50,7 +50,7 @@ sealed class OZSmartAccountSignature {
       XdrSCVal.encode(stream, scVal);
       return Uint8List.fromList(stream.bytes);
     } catch (e) {
-      throw TransactionException.signingFailed(
+      throw SmartAccountTransactionException.signingFailed(
         'Failed to XDR encode $contextLabel signature ScVal',
         cause: e,
       );
@@ -79,7 +79,7 @@ sealed class OZSmartAccountSignature {
   /// `BytesN<64>` — exactly 64 raw bytes. XDR-wrapping inflates the
   /// payload beyond 64 bytes, causing the contract to reject it.
   ///
-  /// Throws [TransactionSigningFailed] when XDR encoding fails
+  /// Throws [SmartAccountTransactionSigningFailed] when XDR encoding fails
   /// (WebAuthn and Policy variants only; Ed25519 never throws).
   Uint8List toAuthPayloadBytes();
 }
@@ -104,7 +104,7 @@ sealed class OZSmartAccountSignature {
 final class OZWebAuthnSignature extends OZSmartAccountSignature {
   /// Constructs an [OZWebAuthnSignature].
   ///
-  /// Throws [InvalidInput] when [signature] is not exactly 64 bytes.
+  /// Throws [SmartAccountInvalidInput] when [signature] is not exactly 64 bytes.
   OZWebAuthnSignature({
     required Uint8List authenticatorData,
     required Uint8List clientData,
@@ -113,7 +113,7 @@ final class OZWebAuthnSignature extends OZSmartAccountSignature {
         clientData = Uint8List.fromList(clientData),
         signature = Uint8List.fromList(signature) {
     if (signature.length != 64) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'signature',
         'WebAuthn signature must be exactly 64 bytes, '
             'got ${signature.length}',
@@ -166,7 +166,7 @@ final class OZWebAuthnSignature extends OZSmartAccountSignature {
   /// from these bytes, so the full XDR encoding of the 3-field map is
   /// required.
   ///
-  /// Throws [TransactionSigningFailed] when XDR encoding fails.
+  /// Throws [SmartAccountTransactionSigningFailed] when XDR encoding fails.
   @override
   Uint8List toAuthPayloadBytes() =>
       OZSmartAccountSignature._encodeScValToBytes(toScVal(), 'WebAuthn');
@@ -212,7 +212,7 @@ final class OZWebAuthnSignature extends OZSmartAccountSignature {
 final class OZEd25519Signature extends OZSmartAccountSignature {
   /// Constructs an [OZEd25519Signature].
   ///
-  /// Throws [InvalidInput] when [publicKey] is not exactly
+  /// Throws [SmartAccountInvalidInput] when [publicKey] is not exactly
   /// [SmartAccountConstants.ed25519PublicKeySize] bytes, or when
   /// [signature] is not exactly 64 bytes.
   OZEd25519Signature({
@@ -221,7 +221,7 @@ final class OZEd25519Signature extends OZSmartAccountSignature {
   })  : publicKey = Uint8List.fromList(publicKey),
         signature = Uint8List.fromList(signature) {
     if (publicKey.length != SmartAccountConstants.ed25519PublicKeySize) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'publicKey',
         'Ed25519 public key must be exactly '
             '${SmartAccountConstants.ed25519PublicKeySize} bytes, '
@@ -229,7 +229,7 @@ final class OZEd25519Signature extends OZSmartAccountSignature {
       );
     }
     if (signature.length != 64) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'signature',
         'Ed25519 signature must be exactly 64 bytes, '
             'got ${signature.length}',
@@ -317,7 +317,7 @@ final class OZPolicySignature extends OZSmartAccountSignature {
   /// Policy-based authorisation requires the same XDR encoding that the
   /// policy verifier contract expects when reading the signature slot.
   ///
-  /// Throws [TransactionSigningFailed] when XDR encoding fails.
+  /// Throws [SmartAccountTransactionSigningFailed] when XDR encoding fails.
   @override
   Uint8List toAuthPayloadBytes() =>
       OZSmartAccountSignature._encodeScValToBytes(toScVal(), 'Policy');

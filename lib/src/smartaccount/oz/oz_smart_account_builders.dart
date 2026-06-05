@@ -215,10 +215,10 @@ abstract class OZSmartAccountBuilders {
   /// Creates simple threshold policy parameters requiring at least
   /// [threshold] signers.
   ///
-  /// Throws [InvalidInput] when [threshold] is less than 1.
+  /// Throws [SmartAccountInvalidInput] when [threshold] is less than 1.
   static OZSimpleThresholdParams createThresholdParams(int threshold) {
     if (threshold < 1) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'threshold',
         'Threshold must be at least 1, got: $threshold',
       );
@@ -231,7 +231,7 @@ abstract class OZSmartAccountBuilders {
   /// Each signer has a weight; authorisation succeeds when the sum of
   /// weights of authenticated signers meets or exceeds [threshold].
   ///
-  /// Throws [InvalidInput] when [threshold] is less than 1, when
+  /// Throws [SmartAccountInvalidInput] when [threshold] is less than 1, when
   /// [signerWeights] is empty, when any weight is less than 1, or when
   /// the total weight is less than [threshold].
   static OZWeightedThresholdParams createWeightedThresholdParams({
@@ -239,13 +239,13 @@ abstract class OZSmartAccountBuilders {
     required Map<OZSmartAccountSigner, int> signerWeights,
   }) {
     if (threshold < 1) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'threshold',
         'Threshold must be at least 1, got: $threshold',
       );
     }
     if (signerWeights.isEmpty) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'signerWeights',
         'At least one signer weight must be provided',
       );
@@ -254,7 +254,7 @@ abstract class OZSmartAccountBuilders {
     var totalWeight = 0;
     for (final weight in signerWeights.values) {
       if (weight < 1) {
-        throw ValidationException.invalidInput(
+        throw SmartAccountValidationException.invalidInput(
           'signerWeights',
           'All weights must be positive integers, got: $weight',
         );
@@ -263,7 +263,7 @@ abstract class OZSmartAccountBuilders {
     }
 
     if (totalWeight < threshold) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'signerWeights',
         'Sum of weights ($totalWeight) must be >= threshold ($threshold)',
       );
@@ -286,21 +286,21 @@ abstract class OZSmartAccountBuilders {
   /// [Util.ledgersPerHour] and
   /// [Util.ledgersPerDay].
   ///
-  /// Throws [InvalidAmount] when the spending limit string is invalid or
-  /// not positive, and [InvalidInput] when [periodLedgers] is less than 1.
+  /// Throws [SmartAccountInvalidAmount] when the spending limit string is invalid or
+  /// not positive, and [SmartAccountInvalidInput] when [periodLedgers] is less than 1.
   static OZSpendingLimitParams createSpendingLimitParams({
     required String spendingLimit,
     required int periodLedgers,
   }) {
     final stroops = Util.toXdrInt64Amount(spendingLimit);
     if (stroops <= BigInt.zero) {
-      throw ValidationException.invalidAmount(
+      throw SmartAccountValidationException.invalidAmount(
         spendingLimit,
         reason: 'must be greater than zero',
       );
     }
     if (periodLedgers < 1) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'periodLedgers',
         'Period must be at least 1 ledger, got: $periodLedgers',
       );

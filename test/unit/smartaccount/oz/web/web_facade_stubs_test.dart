@@ -58,19 +58,19 @@ void main() {
     });
   });
 
-  group('LocalStorageAdapter stub', () {
+  group('OZLocalStorageAdapter stub', () {
     test('test_local_storage_adapter_stub_construction_does_not_throw', () {
-      expect(() => LocalStorageAdapter(), returnsNormally);
+      expect(() => OZLocalStorageAdapter(), returnsNormally);
       expect(
-        () => LocalStorageAdapter(keyPrefix: 'custom_'),
+        () => OZLocalStorageAdapter(keyPrefix: 'custom_'),
         returnsNormally,
       );
     });
 
     test('test_local_storage_adapter_stub_save_throws_unsupported_error',
         () async {
-      final adapter = LocalStorageAdapter();
-      final credential = StoredCredential(
+      final adapter = OZLocalStorageAdapter();
+      final credential = OZStoredCredential(
         credentialId: 'abc',
         publicKey: Uint8List.fromList(const <int>[0x04, 0x01, 0x02]),
       );
@@ -81,20 +81,20 @@ void main() {
     });
   });
 
-  group('IndexedDBStorageAdapter stub', () {
+  group('OZIndexedDBStorageAdapter stub', () {
     test('test_indexed_db_storage_adapter_stub_construction_does_not_throw',
         () {
-      expect(() => IndexedDBStorageAdapter(), returnsNormally);
+      expect(() => OZIndexedDBStorageAdapter(), returnsNormally);
       expect(
-        () => IndexedDBStorageAdapter(dbName: 'custom_db'),
+        () => OZIndexedDBStorageAdapter(dbName: 'custom_db'),
         returnsNormally,
       );
     });
 
     test('test_indexed_db_storage_adapter_stub_save_throws_unsupported_error',
         () async {
-      final adapter = IndexedDBStorageAdapter();
-      final credential = StoredCredential(
+      final adapter = OZIndexedDBStorageAdapter();
+      final credential = OZStoredCredential(
         credentialId: 'abc',
         publicKey: Uint8List.fromList(const <int>[0x04, 0x01, 0x02]),
       );
@@ -105,7 +105,7 @@ void main() {
     });
 
     test('test_indexed_db_storage_adapter_stub_close_no_op', () async {
-      final adapter = IndexedDBStorageAdapter();
+      final adapter = OZIndexedDBStorageAdapter();
       // why: close() on the stub is a no-op so cross-target shutdown
       // code can call it unconditionally.
       await expectLater(adapter.close(), completes);

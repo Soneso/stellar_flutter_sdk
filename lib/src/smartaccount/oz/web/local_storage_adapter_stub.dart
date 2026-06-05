@@ -4,14 +4,14 @@
 
 import '../oz_storage_adapter.dart';
 
-/// Non-web stub of [LocalStorageAdapter].
+/// Non-web stub of [OZLocalStorageAdapter].
 ///
 /// Selected on targets without `dart:js_interop` (Dart VM, Flutter
 /// mobile/desktop). Construction succeeds so consumer code can declare a
 /// shared adapter handle that is overridden with a platform-specific
 /// adapter at wiring time. Every storage operation throws
 /// [UnsupportedError] with guidance toward an alternative.
-class LocalStorageAdapter implements StorageAdapter {
+class OZLocalStorageAdapter implements OZStorageAdapter {
   /// Default key prefix used for entries written by the browser
   /// implementation. Exposed so cross-target code can reference the same
   /// constant on either target.
@@ -20,46 +20,46 @@ class LocalStorageAdapter implements StorageAdapter {
   /// Prefix prepended to every storage key.
   final String keyPrefix;
 
-  /// Constructs a [LocalStorageAdapter] stub with the given [keyPrefix].
-  LocalStorageAdapter({this.keyPrefix = defaultKeyPrefix});
+  /// Constructs a [OZLocalStorageAdapter] stub with the given [keyPrefix].
+  OZLocalStorageAdapter({this.keyPrefix = defaultKeyPrefix});
 
   Never _unsupported() => throw UnsupportedError(
-        'LocalStorageAdapter is only available on Flutter web. '
-        'On non-web targets supply a platform-appropriate StorageAdapter '
+        'OZLocalStorageAdapter is only available on Flutter web. '
+        'On non-web targets supply a platform-appropriate OZStorageAdapter '
         '(e.g. a Keychain-backed implementation on iOS, an '
         'EncryptedSharedPreferences-backed implementation on Android, or '
-        'InMemoryStorageAdapter for testing).',
+        'OZInMemoryStorageAdapter for testing).',
       );
 
   // coverage:ignore-start
   @override
-  Future<void> save(StoredCredential credential) async => _unsupported();
+  Future<void> save(OZStoredCredential credential) async => _unsupported();
 
   @override
-  Future<StoredCredential?> get(String credentialId) async => _unsupported();
+  Future<OZStoredCredential?> get(String credentialId) async => _unsupported();
 
   @override
-  Future<List<StoredCredential>> getByContract(String contractId) async =>
+  Future<List<OZStoredCredential>> getByContract(String contractId) async =>
       _unsupported();
 
   @override
-  Future<List<StoredCredential>> getAll() async => _unsupported();
+  Future<List<OZStoredCredential>> getAll() async => _unsupported();
 
   @override
   Future<void> delete(String credentialId) async => _unsupported();
 
   @override
-  Future<void> update(String credentialId, StoredCredentialUpdate updates) async =>
+  Future<void> update(String credentialId, OZStoredCredentialUpdate updates) async =>
       _unsupported();
 
   @override
   Future<void> clear() async => _unsupported();
 
   @override
-  Future<void> saveSession(StoredSession session) async => _unsupported();
+  Future<void> saveSession(OZStoredSession session) async => _unsupported();
 
   @override
-  Future<StoredSession?> getSession() async => _unsupported();
+  Future<OZStoredSession?> getSession() async => _unsupported();
 
   @override
   Future<void> clearSession() async => _unsupported();

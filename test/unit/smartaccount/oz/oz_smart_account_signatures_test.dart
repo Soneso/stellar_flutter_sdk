@@ -199,9 +199,9 @@ void main() {
           clientData: _bytes(20),
           signature: Uint8List(63),
         );
-        fail('expected ValidationException');
+        fail('expected SmartAccountValidationException');
       } catch (e) {
-        expect(e, isA<InvalidInput>());
+        expect(e, isA<SmartAccountInvalidInput>());
         expect(e.toString().contains('signature'), isTrue);
       }
     });
@@ -244,7 +244,7 @@ void main() {
           clientData: _bytes(20),
           signature: Uint8List(0),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -430,7 +430,7 @@ void main() {
           publicKey: Uint8List(31),
           signature: _signature64(),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -440,7 +440,7 @@ void main() {
           publicKey: _ed25519Pub(),
           signature: Uint8List(63),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 

@@ -58,17 +58,17 @@ OZRelayerClient _client(
 void main() {
   group('OZRelayerClient - constructor validation', () {
     test('testConstructor_blankUrl_throwsConfigurationException', () {
-      expect(() => OZRelayerClient(''), throwsA(isA<InvalidConfig>()));
+      expect(() => OZRelayerClient(''), throwsA(isA<SmartAccountInvalidConfig>()));
     });
 
     test('testConstructor_whitespaceUrl_throwsConfigurationException', () {
-      expect(() => OZRelayerClient('   '), throwsA(isA<InvalidConfig>()));
+      expect(() => OZRelayerClient('   '), throwsA(isA<SmartAccountInvalidConfig>()));
     });
 
     test('testConstructor_httpUrl_throwsConfigurationException', () {
       expect(
         () => OZRelayerClient('http://relayer.example.com'),
-        throwsA(isA<InvalidConfig>()),
+        throwsA(isA<SmartAccountInvalidConfig>()),
       );
     });
 
@@ -95,14 +95,14 @@ void main() {
     test('testConstructor_ftpSchemeThrows', () {
       expect(
         () => OZRelayerClient('ftp://relayer.example.com'),
-        throwsA(isA<InvalidConfig>()),
+        throwsA(isA<SmartAccountInvalidConfig>()),
       );
     });
 
     test('testConstructor_noSchemeThrows', () {
       expect(
         () => OZRelayerClient('relayer.example.com'),
-        throwsA(isA<InvalidConfig>()),
+        throwsA(isA<SmartAccountInvalidConfig>()),
       );
     });
 
@@ -127,7 +127,7 @@ void main() {
     test('testConstructor_schemeOnlyUrl_throwsConfigurationException', () {
       expect(
         () => OZRelayerClient('https://'),
-        throwsA(isA<InvalidConfig>()),
+        throwsA(isA<SmartAccountInvalidConfig>()),
       );
     });
   });

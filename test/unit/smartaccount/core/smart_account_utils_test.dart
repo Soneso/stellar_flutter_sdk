@@ -109,58 +109,58 @@ void main() {
     test('parseDerSignature_tooShort', () {
       expect(
         () => SmartAccountUtils.parseDerSignature(Uint8List(4)),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
     test('parseDerSignature_wrongLeadingByte', () {
       final out = Uint8List.fromList([0x31, 6, 0x02, 1, 1, 0x02, 1, 1]);
       expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('parseDerSignature_lengthMismatch', () {
       final out = Uint8List.fromList([0x30, 99, 0x02, 1, 1, 0x02, 1, 1]);
       expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('parseDerSignature_missingRMarker', () {
       final out = Uint8List.fromList([0x30, 6, 0x03, 1, 1, 0x02, 1, 1]);
       expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('parseDerSignature_zeroLengthR', () {
       final out = Uint8List.fromList([0x30, 6, 0x02, 0, 0x02, 1, 1, 0]);
       expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('parseDerSignature_truncatedRComponent', () {
       // R length claims 5 bytes but only 1 is present.
       final out = Uint8List.fromList([0x30, 4, 0x02, 5, 0x01, 0x02]);
       expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('parseDerSignature_missingSMarker', () {
       // R length 1 followed by something other than 0x02 marker.
       final out = Uint8List.fromList([0x30, 6, 0x02, 1, 1, 0x03, 1, 1]);
       expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('parseDerSignature_zeroLengthS', () {
       final out = Uint8List.fromList([0x30, 6, 0x02, 1, 1, 0x02, 0, 0]);
       expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('parseDerSignature_truncatedSComponent', () {
       final out = Uint8List.fromList([0x30, 6, 0x02, 1, 1, 0x02, 5, 1]);
       expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('parseDerSignature_trailingBytesAfterS', () {
@@ -168,7 +168,7 @@ void main() {
         0x30, 8, 0x02, 1, 1, 0x02, 1, 1, 0x99, 0x99,
       ]);
       expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('parseDerSignature_trailingBytesInsideEnvelope', () {
@@ -178,19 +178,19 @@ void main() {
         0x30, 6, 0x02, 1, 1, 0x02, 1, 1, 0x99, 0x99,
       ]);
       expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('parseDerSignature_rIsZero', () {
       final out = Uint8List.fromList([0x30, 6, 0x02, 1, 0, 0x02, 1, 1]);
       expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('parseDerSignature_sIsZero', () {
       final out = Uint8List.fromList([0x30, 6, 0x02, 1, 1, 0x02, 1, 0]);
       expect(() => SmartAccountUtils.parseDerSignature(out),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('parseDerSignature_rExceedsCurveOrder', () {
@@ -198,7 +198,7 @@ void main() {
       expect(
         () => SmartAccountUtils.parseDerSignature(
             _encodeDerSignature(tooBig, BigInt.one)),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -207,7 +207,7 @@ void main() {
       expect(
         () => SmartAccountUtils.parseDerSignature(
             _encodeDerSignature(BigInt.one, tooBig)),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -235,7 +235,7 @@ void main() {
       final raw = Uint8List.fromList([0x30, inner.length, ...inner]);
       expect(
         () => SmartAccountUtils.parseDerSignature(raw),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -253,7 +253,7 @@ void main() {
       final raw = Uint8List.fromList([0x30, inner.length, ...inner]);
       expect(
         () => SmartAccountUtils.parseDerSignature(raw),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
@@ -289,7 +289,7 @@ void main() {
     test('test_normalize_der_truncated_rejected', () {
       expect(
         () => SmartAccountUtils.normalizeSignature(Uint8List(4)),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -310,7 +310,7 @@ void main() {
     test('test_normalize_signature_length_zero_rejected', () {
       expect(
         () => SmartAccountUtils.normalizeSignature(Uint8List(0)),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -319,7 +319,7 @@ void main() {
       expect(
         () => SmartAccountUtils.normalizeSignature(
             _encodeDerSignature(BigInt.zero, BigInt.one)),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -351,7 +351,7 @@ void main() {
           final out = SmartAccountUtils.normalizeSignature(input);
           expect(out.length, 64);
           validCount++;
-        } on InvalidInput {
+        } on SmartAccountInvalidInput {
           invalidCount++;
         } catch (e) {
           fail('Unexpected error type: $e');
@@ -393,25 +393,25 @@ void main() {
     test('testNormalizeSignature_invalidHeader', () {
       final out = Uint8List.fromList([0x31, 6, 0x02, 1, 1, 0x02, 1, 1]);
       expect(() => SmartAccountUtils.normalizeSignature(out),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('testNormalizeSignature_missingRMarker', () {
       final out = Uint8List.fromList([0x30, 6, 0x99, 1, 1, 0x02, 1, 1]);
       expect(() => SmartAccountUtils.normalizeSignature(out),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('testNormalizeSignature_missingSMarker', () {
       final out = Uint8List.fromList([0x30, 6, 0x02, 1, 1, 0x99, 1, 1]);
       expect(() => SmartAccountUtils.normalizeSignature(out),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
 
     test('testNormalizeSignature_truncated', () {
       final out = Uint8List.fromList([0x30, 4, 0x02, 5, 1]);
       expect(() => SmartAccountUtils.normalizeSignature(out),
-          throwsA(isA<InvalidInput>()));
+          throwsA(isA<SmartAccountInvalidInput>()));
     });
   });
 
@@ -438,12 +438,12 @@ void main() {
       pk[0] = 0x02;
       expect(
         () => SmartAccountUtils.extractPublicKeyFromRegistration(publicKey: pk),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
       pk[0] = 0x03;
       expect(
         () => SmartAccountUtils.extractPublicKeyFromRegistration(publicKey: pk),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -455,7 +455,7 @@ void main() {
       pk[64] = 1;
       expect(
         () => SmartAccountUtils.extractPublicKeyFromRegistration(publicKey: pk),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -477,7 +477,7 @@ void main() {
       expect(
         () => SmartAccountUtils.extractPublicKeyFromRegistration(
             attestationObject: attest),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -486,7 +486,7 @@ void main() {
       expect(
         () => SmartAccountUtils.extractPublicKeyFromRegistration(
             attestationObject: attest),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -535,7 +535,7 @@ void main() {
     test('extractPublicKey_noParametersThrows', () {
       expect(
         () => SmartAccountUtils.extractPublicKeyFromRegistration(),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -544,7 +544,7 @@ void main() {
       expect(
         () => SmartAccountUtils.extractPublicKeyFromRegistration(
             publicKey: Uint8List(0)),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -556,7 +556,7 @@ void main() {
       pk[60] = 0xFF;
       expect(
         () => SmartAccountUtils.extractPublicKeyFromRegistration(publicKey: pk),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -566,7 +566,7 @@ void main() {
       // X = 0, Y = 0 -> point at infinity, must be rejected.
       expect(
         () => SmartAccountUtils.extractPublicKeyFromRegistration(publicKey: pk),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -579,7 +579,7 @@ void main() {
       }
       expect(
         () => SmartAccountUtils.extractPublicKeyFromRegistration(publicKey: pk),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -589,7 +589,7 @@ void main() {
       expect(
         () =>
             SmartAccountUtils.extractPublicKeyFromRegistration(publicKey: pk),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
@@ -684,7 +684,7 @@ void main() {
       expect(
         () => SmartAccountUtils.extractPublicKeyFromAuthenticatorData(
             Uint8List.fromList(builder)),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -703,7 +703,7 @@ void main() {
       expect(
         () => SmartAccountUtils.extractPublicKeyFromAuthenticatorData(
             Uint8List.fromList(builder)),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -774,7 +774,7 @@ void main() {
       final attest = Uint8List.fromList(List<int>.generate(150, (i) => i));
       expect(
         () => SmartAccountUtils.extractPublicKeyFromAttestationObject(attest),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -785,7 +785,7 @@ void main() {
       ]);
       expect(
         () => SmartAccountUtils.extractPublicKeyFromAttestationObject(attest),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -800,7 +800,7 @@ void main() {
       ]);
       expect(
         () => SmartAccountUtils.extractPublicKeyFromAttestationObject(attest),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -813,7 +813,7 @@ void main() {
       ]);
       expect(
         () => SmartAccountUtils.extractPublicKeyFromAttestationObject(attest),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
@@ -842,7 +842,7 @@ void main() {
       expect(
         () => SmartAccountUtils.extractPublicKeyFromAuthenticatorData(
             Uint8List.fromList(builder)),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -855,7 +855,7 @@ void main() {
       ]);
       expect(
         () => SmartAccountUtils.extractPublicKeyFromAttestationObject(attest),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -865,7 +865,7 @@ void main() {
       pk.setRange(33, 65, _bigIntToFixedBytes(_gy, 32));
       expect(
         () => SmartAccountUtils.extractPublicKeyFromRegistration(publicKey: pk),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -875,7 +875,7 @@ void main() {
       pk.setRange(1, 33, _bigIntToFixedBytes(_gx, 32));
       expect(
         () => SmartAccountUtils.extractPublicKeyFromRegistration(publicKey: pk),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -889,7 +889,7 @@ void main() {
       pk.setRange(33, 65, _bigIntToFixedBytes(_gy, 32));
       expect(
         () => SmartAccountUtils.extractPublicKeyFromRegistration(publicKey: pk),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -902,7 +902,7 @@ void main() {
       }
       expect(
         () => SmartAccountUtils.extractPublicKeyFromRegistration(publicKey: pk),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
@@ -999,7 +999,7 @@ void main() {
           deployerPublicKey: 'NOT_A_VALID_KEY',
           networkPassphrase: 'Test SDF Network ; September 2015',
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
   });

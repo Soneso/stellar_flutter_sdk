@@ -33,21 +33,21 @@ void main() {
         .setMockMethodCallHandler(channel, null);
   });
 
-  PlatformStorageAdapter newAdapter() =>
-      PlatformStorageAdapter(methodChannel: channel);
+  OZPlatformStorageAdapter newAdapter() =>
+      OZPlatformStorageAdapter(methodChannel: channel);
 
   Uint8List bytes(List<int> values) => Uint8List.fromList(values);
 
-  StoredCredential sampleCredential({
+  OZStoredCredential sampleCredential({
     String id = 'cred-001',
     String? contractId = 'CBCD0000000000000000000000000000000000000000000000000000',
     bool primary = true,
   }) {
-    return StoredCredential(
+    return OZStoredCredential(
       credentialId: id,
       publicKey: bytes(List<int>.generate(65, (i) => i & 0xff)),
       contractId: contractId,
-      deploymentStatus: CredentialDeploymentStatus.pending,
+      deploymentStatus: OZCredentialDeploymentStatus.pending,
       createdAt: 1700000000000,
       lastUsedAt: 1700001000000,
       nickname: 'Test Device',
@@ -58,7 +58,7 @@ void main() {
     );
   }
 
-  Map<String, Object?> credentialJson(StoredCredential credential) {
+  Map<String, Object?> credentialJson(OZStoredCredential credential) {
     return <String, Object?>{
       'credentialId': credential.credentialId,
       'publicKeyHex': convert.hex.encode(credential.publicKey),
@@ -77,7 +77,7 @@ void main() {
     };
   }
 
-  Map<String, Object?> sessionJson(StoredSession session) {
+  Map<String, Object?> sessionJson(OZStoredSession session) {
     return <String, Object?>{
       'credentialId': session.credentialId,
       'contractId': session.contractId,
@@ -195,7 +195,7 @@ void main() {
 
       await newAdapter().update(
         'cred-001',
-        const StoredCredentialUpdate(
+        const OZStoredCredentialUpdate(
           contractId: 'C-NEW',
           lastUsedAt: 1700002000000,
           transports: <String>['internal', 'hybrid'],
@@ -214,10 +214,10 @@ void main() {
       try {
         await newAdapter().update(
           'cred-001',
-          const StoredCredentialUpdate(nickname: 'New nickname'),
+          const OZStoredCredentialUpdate(nickname: 'New nickname'),
         );
-        fail('expected CredentialNotFound');
-      } on CredentialNotFound catch (e) {
+        fail('expected SmartAccountCredentialNotFound');
+      } on SmartAccountCredentialNotFound catch (e) {
         expect(e.code.code, 3001);
         expect(e.message, contains('cred-001'));
         expect(e.cause, isA<PlatformException>());
@@ -235,10 +235,10 @@ void main() {
       try {
         await newAdapter().update(
           'cred-001',
-          const StoredCredentialUpdate(nickname: 'New'),
+          const OZStoredCredentialUpdate(nickname: 'New'),
         );
-        fail('expected StorageReadFailed');
-      } on StorageReadFailed catch (e) {
+        fail('expected SmartAccountStorageReadFailed');
+      } on SmartAccountStorageReadFailed catch (e) {
         expect(e.code.code, 8001);
         expect(e.message, contains('credential:cred-001'));
       }
@@ -247,7 +247,7 @@ void main() {
 
   group('session operations', () {
     test('save session round trip', () async {
-      final session = StoredSession(
+      final session = OZStoredSession(
         credentialId: 'cred-1',
         contractId: 'CBCD000',
         connectedAt: 1700000000000,
@@ -290,128 +290,128 @@ void main() {
   });
 
   group('PlatformException error paths', () {
-    test('save PlatformException maps to StorageWriteFailed', () async {
+    test('save PlatformException maps to SmartAccountStorageWriteFailed', () async {
       handler = (_) {
         throw PlatformException(code: 'STORAGE_WRITE_FAILED', message: 'disk full');
       };
       try {
         await newAdapter().save(sampleCredential());
-        fail('expected StorageWriteFailed');
-      } on StorageWriteFailed catch (e) {
+        fail('expected SmartAccountStorageWriteFailed');
+      } on SmartAccountStorageWriteFailed catch (e) {
         expect(e.cause, isA<PlatformException>());
       }
     });
 
-    test('get PlatformException maps to StorageReadFailed', () async {
+    test('get PlatformException maps to SmartAccountStorageReadFailed', () async {
       handler = (_) {
         throw PlatformException(code: 'STORAGE_READ_FAILED', message: 'io error');
       };
       try {
         await newAdapter().get('cred-001');
-        fail('expected StorageReadFailed');
-      } on StorageReadFailed catch (e) {
+        fail('expected SmartAccountStorageReadFailed');
+      } on SmartAccountStorageReadFailed catch (e) {
         expect(e.cause, isA<PlatformException>());
       }
     });
 
-    test('getByContract PlatformException maps to StorageReadFailed', () async {
+    test('getByContract PlatformException maps to SmartAccountStorageReadFailed', () async {
       handler = (_) {
         throw PlatformException(code: 'STORAGE_READ_FAILED', message: 'io error');
       };
       try {
         await newAdapter().getByContract(
             'CBCD0000000000000000000000000000000000000000000000000000');
-        fail('expected StorageReadFailed');
-      } on StorageReadFailed catch (e) {
+        fail('expected SmartAccountStorageReadFailed');
+      } on SmartAccountStorageReadFailed catch (e) {
         expect(e.cause, isA<PlatformException>());
       }
     });
 
-    test('getAll PlatformException maps to StorageReadFailed', () async {
+    test('getAll PlatformException maps to SmartAccountStorageReadFailed', () async {
       handler = (_) {
         throw PlatformException(code: 'STORAGE_READ_FAILED', message: 'io error');
       };
       try {
         await newAdapter().getAll();
-        fail('expected StorageReadFailed');
-      } on StorageReadFailed catch (e) {
+        fail('expected SmartAccountStorageReadFailed');
+      } on SmartAccountStorageReadFailed catch (e) {
         expect(e.cause, isA<PlatformException>());
       }
     });
 
-    test('delete PlatformException maps to StorageWriteFailed', () async {
+    test('delete PlatformException maps to SmartAccountStorageWriteFailed', () async {
       handler = (_) {
         throw PlatformException(code: 'STORAGE_WRITE_FAILED', message: 'locked');
       };
       try {
         await newAdapter().delete('cred-001');
-        fail('expected StorageWriteFailed');
-      } on StorageWriteFailed catch (e) {
+        fail('expected SmartAccountStorageWriteFailed');
+      } on SmartAccountStorageWriteFailed catch (e) {
         expect(e.cause, isA<PlatformException>());
       }
     });
 
-    test('clear PlatformException maps to StorageWriteFailed', () async {
+    test('clear PlatformException maps to SmartAccountStorageWriteFailed', () async {
       handler = (_) {
         throw PlatformException(code: 'STORAGE_WRITE_FAILED', message: 'locked');
       };
       try {
         await newAdapter().clear();
-        fail('expected StorageWriteFailed');
-      } on StorageWriteFailed catch (e) {
+        fail('expected SmartAccountStorageWriteFailed');
+      } on SmartAccountStorageWriteFailed catch (e) {
         expect(e.cause, isA<PlatformException>());
       }
     });
 
-    test('saveSession PlatformException maps to StorageWriteFailed', () async {
+    test('saveSession PlatformException maps to SmartAccountStorageWriteFailed', () async {
       handler = (_) {
         throw PlatformException(code: 'STORAGE_WRITE_FAILED', message: 'locked');
       };
       try {
-        await newAdapter().saveSession(StoredSession(
+        await newAdapter().saveSession(OZStoredSession(
           credentialId: 'c',
           contractId: 'C',
           connectedAt: 1700000000000,
           expiresAt: 1700604800000,
         ));
-        fail('expected StorageWriteFailed');
-      } on StorageWriteFailed catch (e) {
+        fail('expected SmartAccountStorageWriteFailed');
+      } on SmartAccountStorageWriteFailed catch (e) {
         expect(e.cause, isA<PlatformException>());
       }
     });
 
-    test('getSession PlatformException maps to StorageReadFailed', () async {
+    test('getSession PlatformException maps to SmartAccountStorageReadFailed', () async {
       handler = (_) {
         throw PlatformException(code: 'STORAGE_READ_FAILED', message: 'io error');
       };
       try {
         await newAdapter().getSession();
-        fail('expected StorageReadFailed');
-      } on StorageReadFailed catch (e) {
+        fail('expected SmartAccountStorageReadFailed');
+      } on SmartAccountStorageReadFailed catch (e) {
         expect(e.cause, isA<PlatformException>());
       }
     });
 
-    test('clearSession PlatformException maps to StorageWriteFailed', () async {
+    test('clearSession PlatformException maps to SmartAccountStorageWriteFailed', () async {
       handler = (_) {
         throw PlatformException(code: 'STORAGE_WRITE_FAILED', message: 'locked');
       };
       try {
         await newAdapter().clearSession();
-        fail('expected StorageWriteFailed');
-      } on StorageWriteFailed catch (e) {
+        fail('expected SmartAccountStorageWriteFailed');
+      } on SmartAccountStorageWriteFailed catch (e) {
         expect(e.cause, isA<PlatformException>());
       }
     });
 
-    test('unmapped PlatformException code maps to StorageWriteFailed', () async {
+    test('unmapped PlatformException code maps to SmartAccountStorageWriteFailed', () async {
       handler = (_) {
         throw PlatformException(code: 'SOMETHING_UNEXPECTED', message: 'bug');
       };
       try {
         await newAdapter().save(sampleCredential());
-        fail('expected StorageWriteFailed');
-      } on StorageWriteFailed catch (e) {
+        fail('expected SmartAccountStorageWriteFailed');
+      } on SmartAccountStorageWriteFailed catch (e) {
         expect(e.cause, isA<PlatformException>());
       }
     });

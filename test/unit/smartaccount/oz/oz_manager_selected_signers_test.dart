@@ -24,35 +24,35 @@ const String _thirdAccountAddress =
 const String _verifierA =
     'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK';
 
-/// Stub context-rule manager whose read paths always throw [WalletNotConnected].
+/// Stub context-rule manager whose read paths always throw [SmartAccountWalletNotConnected].
 class _NotConnectedRuleManager implements OZContextRuleManagerInterface {
   @override
-  Future<List<ParsedContextRule>> listContextRules() async {
-    throw WalletException.notConnected();
+  Future<List<OZParsedContextRule>> listContextRules() async {
+    throw SmartAccountWalletException.notConnected();
   }
 
   @override
   Future<List<int>> resolveContextRuleIdsForEntry(
     XdrSorobanAuthorizationEntry entry,
     List<OZSmartAccountSigner> signers,
-    List<ParsedContextRule> contextRules,
+    List<OZParsedContextRule> contextRules,
   ) async {
-    throw WalletException.notConnected();
+    throw SmartAccountWalletException.notConnected();
   }
 
   @override
   Future<List<XdrSCVal>> getAllContextRules({int? maxScanId}) async {
-    throw WalletException.notConnected();
+    throw SmartAccountWalletException.notConnected();
   }
 
   @override
   Future<XdrSCVal> getContextRule(int id) async {
-    throw WalletException.notConnected();
+    throw SmartAccountWalletException.notConnected();
   }
 
   @override
-  ParsedContextRule parseContextRule(XdrSCVal scVal) {
-    throw WalletException.notConnected();
+  OZParsedContextRule parseContextRule(XdrSCVal scVal) {
+    throw SmartAccountWalletException.notConnected();
   }
 }
 
@@ -60,7 +60,7 @@ class _NotConnectedRuleManager implements OZContextRuleManagerInterface {
 FakePipelineKit _disconnectedKit() => FakePipelineKit();
 
 /// Builds an unconnected kit whose context-rule manager surfaces
-/// [WalletNotConnected] on every read, matching what a real
+/// [SmartAccountWalletNotConnected] on every read, matching what a real
 /// disconnected kit would do at the RPC step.
 FakePipelineKit _disconnectedKitWithNotConnectedRuleReads() =>
     FakePipelineKit(contextRuleManager: _NotConnectedRuleManager());
@@ -73,16 +73,16 @@ FakePipelineKit _connectedKit() {
   return kit;
 }
 
-SelectedSigner _passkeyStub() => const SelectedSignerPasskey(
+OZSelectedSigner _passkeyStub() => const OZSelectedSignerPasskey(
       credentialId: null,
       credentialIdBytes: null,
       keyData: null,
     );
 
-SelectedSigner _walletStub({String address = _validAccountAddress}) =>
-    SelectedSignerWallet(address);
+OZSelectedSigner _walletStub({String address = _validAccountAddress}) =>
+    OZSelectedSignerWallet(address);
 
-List<SelectedSigner> _multiSigners() => <SelectedSigner>[
+List<OZSelectedSigner> _multiSigners() => <OZSelectedSigner>[
       _passkeyStub(),
       _walletStub(),
     ];
@@ -100,7 +100,7 @@ void main() {
           address: _validAccountAddress,
           selectedSigners: _multiSigners(),
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -116,7 +116,7 @@ void main() {
           address: 'INVALID',
           selectedSigners: _multiSigners(),
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
   });
@@ -133,7 +133,7 @@ void main() {
           publicKey: Uint8List(32),
           selectedSigners: _multiSigners(),
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -149,7 +149,7 @@ void main() {
           publicKey: Uint8List(10),
           selectedSigners: _multiSigners(),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
@@ -166,7 +166,7 @@ void main() {
           credentialId: Uint8List(16),
           selectedSigners: _multiSigners(),
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -181,7 +181,7 @@ void main() {
           credentialId: Uint8List(16),
           selectedSigners: _multiSigners(),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
@@ -197,7 +197,7 @@ void main() {
           signerId: 1,
           selectedSigners: _multiSigners(),
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -216,7 +216,7 @@ void main() {
           signer: OZDelegatedSigner(_validAccountAddress),
           selectedSigners: _multiSigners(),
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
   });
@@ -233,7 +233,7 @@ void main() {
           installParams: XdrSCVal.forVoid(),
           selectedSigners: _multiSigners(),
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -248,7 +248,7 @@ void main() {
           installParams: XdrSCVal.forVoid(),
           selectedSigners: _multiSigners(),
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
   });
@@ -264,7 +264,7 @@ void main() {
           policyId: 1,
           selectedSigners: _multiSigners(),
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -282,7 +282,7 @@ void main() {
           policyAddress: _validContractId,
           selectedSigners: _multiSigners(),
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
   });
@@ -298,7 +298,7 @@ void main() {
           name: 'New Name',
           selectedSigners: _multiSigners(),
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -312,7 +312,7 @@ void main() {
           name: '',
           selectedSigners: _multiSigners(),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
@@ -329,7 +329,7 @@ void main() {
           validUntil: 100,
           selectedSigners: _multiSigners(),
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
   });
@@ -346,7 +346,7 @@ void main() {
           userName: 'test',
           selectedSigners: _multiSigners(),
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
   });
@@ -365,7 +365,7 @@ void main() {
           contextRuleId: 0,
           address: _validAccountAddress,
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -374,7 +374,7 @@ void main() {
       final mgr = OZSignerManager(kit);
       await expectLater(
         () => mgr.removeSigner(contextRuleId: 0, signerId: 1),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -387,7 +387,7 @@ void main() {
           policyAddress: _validContractId,
           installParams: XdrSCVal.forVoid(),
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -396,7 +396,7 @@ void main() {
       final mgr = OZPolicyManager(kit);
       await expectLater(
         () => mgr.removePolicy(contextRuleId: 0, policyId: 1),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -405,7 +405,7 @@ void main() {
       final mgr = OZContextRuleManager(kit);
       await expectLater(
         () => mgr.updateName(id: 0, name: 'Test'),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -414,7 +414,7 @@ void main() {
       final mgr = OZContextRuleManager(kit);
       await expectLater(
         () => mgr.updateValidUntil(id: 0, validUntil: 100),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
   });
@@ -425,12 +425,12 @@ void main() {
       final mgr = OZContextRuleManager(kit);
       await expectLater(
         () => mgr.addContextRule(
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: 'TestRule',
           signers: const <OZSmartAccountSigner>[],
           selectedSigners: _multiSigners(),
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -439,11 +439,11 @@ void main() {
       final mgr = OZContextRuleManager(kit);
       await expectLater(
         () => mgr.addContextRule(
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: 'TestRule',
           signers: const <OZSmartAccountSigner>[],
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
   });
@@ -454,7 +454,7 @@ void main() {
       final mgr = OZContextRuleManager(kit);
       await expectLater(
         () => mgr.removeContextRule(id: 0, selectedSigners: _multiSigners()),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -463,7 +463,7 @@ void main() {
       final mgr = OZContextRuleManager(kit);
       await expectLater(
         () => mgr.removeContextRule(id: 0),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
   });
@@ -476,9 +476,9 @@ void main() {
         () => mgr.addDelegated(
           contextRuleId: 0,
           address: _validAccountAddress,
-          forceMethod: SubmissionMethod.rpc,
+          forceMethod: OZSubmissionMethod.rpc,
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -489,9 +489,9 @@ void main() {
         () => mgr.removePolicy(
           contextRuleId: 0,
           policyId: 1,
-          forceMethod: SubmissionMethod.rpc,
+          forceMethod: OZSubmissionMethod.rpc,
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -502,7 +502,7 @@ void main() {
       // check fires first regardless, confirming the default is reachable.
       await expectLater(
         () => mgr.updateName(id: 0, name: 'Test'),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -511,12 +511,12 @@ void main() {
       final mgr = OZContextRuleManager(kit);
       await expectLater(
         () => mgr.addContextRule(
-          contextType: const ContextRuleTypeDefault(),
+          contextType: const OZContextRuleTypeDefault(),
           name: 'TestRule',
           signers: const <OZSmartAccountSigner>[],
-          forceMethod: SubmissionMethod.relayer,
+          forceMethod: OZSubmissionMethod.relayer,
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -524,8 +524,8 @@ void main() {
       final kit = _disconnectedKit();
       final mgr = OZContextRuleManager(kit);
       await expectLater(
-        () => mgr.removeContextRule(id: 0, forceMethod: SubmissionMethod.rpc),
-        throwsA(isA<WalletNotConnected>()),
+        () => mgr.removeContextRule(id: 0, forceMethod: OZSubmissionMethod.rpc),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -536,9 +536,9 @@ void main() {
         () => mgr.removeSigner(
           contextRuleId: 0,
           signerId: 1,
-          forceMethod: SubmissionMethod.rpc,
+          forceMethod: OZSubmissionMethod.rpc,
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -549,9 +549,9 @@ void main() {
         () => mgr.updateValidUntil(
           id: 0,
           validUntil: 100,
-          forceMethod: SubmissionMethod.relayer,
+          forceMethod: OZSubmissionMethod.relayer,
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -564,9 +564,9 @@ void main() {
           policyAddress: _validContractId,
           spendingLimit: '100',
           periodLedgers: 17280,
-          forceMethod: SubmissionMethod.rpc,
+          forceMethod: OZSubmissionMethod.rpc,
         ),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
   });
@@ -600,14 +600,14 @@ void main() {
       final h = buildHarness();
       final mgr = OZSignerManager(h.kit);
 
-      final selected = <SelectedSigner>[
-        SelectedSignerPasskey(
+      final selected = <OZSelectedSigner>[
+        OZSelectedSignerPasskey(
           credentialId: 'pk-a',
           credentialIdBytes: Uint8List.fromList(<int>[1, 2, 3, 4]),
           keyData: _passkeyKeyData(seed: 1),
         ),
-        SelectedSignerWallet(_validAccountAddress),
-        SelectedSignerPasskey(
+        OZSelectedSignerWallet(_validAccountAddress),
+        OZSelectedSignerPasskey(
           credentialId: 'pk-b',
           credentialIdBytes: Uint8List.fromList(<int>[9, 8, 7, 6]),
           keyData: _passkeyKeyData(seed: 2),
@@ -624,9 +624,9 @@ void main() {
       expect(h.txOps.submitCalls, isEmpty);
       final captured = h.multi.submitWithMultipleSignersCalls.first;
       expect(captured.selectedSigners.length, 3);
-      expect(captured.selectedSigners[0], isA<SelectedSignerPasskey>());
-      expect(captured.selectedSigners[1], isA<SelectedSignerWallet>());
-      expect(captured.selectedSigners[2], isA<SelectedSignerPasskey>());
+      expect(captured.selectedSigners[0], isA<OZSelectedSignerPasskey>());
+      expect(captured.selectedSigners[1], isA<OZSelectedSignerWallet>());
+      expect(captured.selectedSigners[2], isA<OZSelectedSignerPasskey>());
     });
 
     test(
@@ -638,13 +638,13 @@ void main() {
       final h = buildHarness();
       final mgr = OZContextRuleManager(h.kit);
 
-      final selected = <SelectedSigner>[
-        SelectedSignerPasskey(
+      final selected = <OZSelectedSigner>[
+        OZSelectedSignerPasskey(
           credentialId: 'pk-a',
           credentialIdBytes: Uint8List.fromList(<int>[1, 2, 3, 4]),
           keyData: _passkeyKeyData(seed: 7),
         ),
-        SelectedSignerWallet(_validAccountAddress),
+        OZSelectedSignerWallet(_validAccountAddress),
       ];
 
       await mgr.updateName(
@@ -656,8 +656,8 @@ void main() {
       expect(h.multi.submitWithMultipleSignersCalls.length, 1);
       final captured = h.multi.submitWithMultipleSignersCalls.first;
       expect(captured.selectedSigners.length, 2);
-      expect(captured.selectedSigners[0], isA<SelectedSignerPasskey>());
-      expect(captured.selectedSigners[1], isA<SelectedSignerWallet>());
+      expect(captured.selectedSigners[0], isA<OZSelectedSignerPasskey>());
+      expect(captured.selectedSigners[1], isA<OZSelectedSignerWallet>());
 
       // Host function targets the smart-account contract for the rule update.
       final invokeArgs = captured.hostFunction.invokeContract;
@@ -680,7 +680,7 @@ void main() {
       h.kit.setExternalSigners(extManager);
 
       final mgr = OZContextRuleManager(h.kit);
-      final ed25519Signer = SelectedSignerEd25519(
+      final ed25519Signer = OZSelectedSignerEd25519(
         verifierAddress: _verifierA,
         publicKey: publicKey,
       );
@@ -692,7 +692,7 @@ void main() {
         publicKey: publicKey,
       );
       await mgr.addContextRule(
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'ed25519-rule',
         signers: [contractSigner],
         selectedSigners: [ed25519Signer],
@@ -701,8 +701,8 @@ void main() {
       expect(h.multi.submitWithMultipleSignersCalls.length, equals(1));
       final call = h.multi.submitWithMultipleSignersCalls.single;
       expect(call.selectedSigners.length, equals(1));
-      expect(call.selectedSigners.single, isA<SelectedSignerEd25519>());
-      final forwarded = call.selectedSigners.single as SelectedSignerEd25519;
+      expect(call.selectedSigners.single, isA<OZSelectedSignerEd25519>());
+      final forwarded = call.selectedSigners.single as OZSelectedSignerEd25519;
       expect(forwarded.verifierAddress, equals(_verifierA));
       expect(forwarded.publicKey, orderedEquals(publicKey));
     });
@@ -722,7 +722,7 @@ void main() {
       h.kit.setExternalSigners(extManager);
 
       final mgr = OZSignerManager(h.kit);
-      final ed25519Signer = SelectedSignerEd25519(
+      final ed25519Signer = OZSelectedSignerEd25519(
         verifierAddress: _verifierA,
         publicKey: publicKey,
       );
@@ -737,7 +737,7 @@ void main() {
       expect(h.multi.submitWithMultipleSignersCalls.length, equals(1));
       final call = h.multi.submitWithMultipleSignersCalls.single;
       expect(call.selectedSigners.length, equals(1));
-      expect(call.selectedSigners.single, isA<SelectedSignerEd25519>());
+      expect(call.selectedSigners.single, isA<OZSelectedSignerEd25519>());
     });
 
     test(
@@ -755,7 +755,7 @@ void main() {
       h.kit.setExternalSigners(extManager);
 
       final mgr = OZPolicyManager(h.kit);
-      final ed25519Signer = SelectedSignerEd25519(
+      final ed25519Signer = OZSelectedSignerEd25519(
         verifierAddress: _verifierA,
         publicKey: publicKey,
       );
@@ -770,8 +770,8 @@ void main() {
       expect(h.multi.submitWithMultipleSignersCalls.length, equals(1));
       final call = h.multi.submitWithMultipleSignersCalls.single;
       expect(call.selectedSigners.length, equals(1));
-      expect(call.selectedSigners.single, isA<SelectedSignerEd25519>());
-      final forwarded = call.selectedSigners.single as SelectedSignerEd25519;
+      expect(call.selectedSigners.single, isA<OZSelectedSignerEd25519>());
+      final forwarded = call.selectedSigners.single as OZSelectedSignerEd25519;
       expect(forwarded.verifierAddress, equals(_verifierA));
     });
 
@@ -789,18 +789,18 @@ void main() {
       };
 
       final mgr = OZPolicyManager(h.kit);
-      final selected = <SelectedSigner>[
-        SelectedSignerPasskey(
+      final selected = <OZSelectedSigner>[
+        OZSelectedSignerPasskey(
           credentialId: 'pk-a',
           credentialIdBytes: Uint8List.fromList(<int>[1, 2, 3, 4]),
           keyData: _passkeyKeyData(seed: 9),
         ),
-        SelectedSignerPasskey(
+        OZSelectedSignerPasskey(
           credentialId: 'pk-b',
           credentialIdBytes: Uint8List.fromList(<int>[9, 8, 7, 6]),
           keyData: _passkeyKeyData(seed: 11),
         ),
-        SelectedSignerWallet(_thirdAccountAddress),
+        OZSelectedSignerWallet(_thirdAccountAddress),
       ];
 
       await expectLater(
@@ -820,7 +820,7 @@ void main() {
 
 /// Builds a 97-byte passkey keyData buffer (uncompressed secp256r1 pubkey
 /// concatenated with a credential ID stub) suitable for satisfying the
-/// hoisting requirement on [SelectedSignerPasskey].
+/// hoisting requirement on [OZSelectedSignerPasskey].
 Uint8List _passkeyKeyData({required int seed}) {
   final pk = Uint8List(65);
   pk[0] = 0x04;

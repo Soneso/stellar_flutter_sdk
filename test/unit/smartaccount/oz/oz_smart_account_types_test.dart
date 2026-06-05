@@ -49,7 +49,7 @@ void main() {
     test('test_delegated_signer_rejects_invalid_address_throws_invalid_address',
         () {
       expect(() => OZDelegatedSigner('not-an-address'),
-          throwsA(isA<InvalidAddress>()));
+          throwsA(isA<SmartAccountInvalidAddress>()));
     });
 
     test('test_delegated_signer_to_scval_returns_vec_symbol_address', () {
@@ -106,7 +106,7 @@ void main() {
           publicKey: pubkey,
           credentialId: Uint8List.fromList(<int>[1, 2, 3]),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -120,7 +120,7 @@ void main() {
           publicKey: pubkey,
           credentialId: Uint8List.fromList(<int>[1, 2, 3]),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -134,7 +134,7 @@ void main() {
           publicKey: pubkey,
           credentialId: Uint8List.fromList(<int>[1, 2, 3]),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -148,7 +148,7 @@ void main() {
           publicKey: pubkey,
           credentialId: Uint8List(0),
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
@@ -173,7 +173,7 @@ void main() {
           verifierAddress: kValidContractId,
           publicKey: pubkey,
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
@@ -187,7 +187,7 @@ void main() {
           kValidGAddress,
           Uint8List.fromList(<int>[1, 2, 3]),
         ),
-        throwsA(isA<InvalidAddress>()),
+        throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
@@ -195,7 +195,7 @@ void main() {
         () {
       expect(
         () => OZExternalSigner(kValidContractId, Uint8List(0)),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -300,11 +300,11 @@ void main() {
     });
   });
 
-  group('SubmissionMethod', () {
+  group('OZSubmissionMethod', () {
     test('test_submission_method_has_two_cases_relayer_and_rpc', () {
-      expect(SubmissionMethod.values.length, 2);
-      expect(SubmissionMethod.values, contains(SubmissionMethod.relayer));
-      expect(SubmissionMethod.values, contains(SubmissionMethod.rpc));
+      expect(OZSubmissionMethod.values.length, 2);
+      expect(OZSubmissionMethod.values, contains(OZSubmissionMethod.relayer));
+      expect(OZSubmissionMethod.values, contains(OZSubmissionMethod.rpc));
     });
 
     test('test_delegatedSigner_toScVal_invalidAddress_throwsValidationException', () {
@@ -326,19 +326,19 @@ void main() {
 
     test('test_submission_method_round_trip_through_string_or_index', () {
       // Round-trip through index.
-      for (final method in SubmissionMethod.values) {
-        final viaIndex = SubmissionMethod.values[method.index];
+      for (final method in OZSubmissionMethod.values) {
+        final viaIndex = OZSubmissionMethod.values[method.index];
         expect(viaIndex, method);
       }
       // Round-trip through string name.
-      for (final method in SubmissionMethod.values) {
-        final viaName = SubmissionMethod.values
+      for (final method in OZSubmissionMethod.values) {
+        final viaName = OZSubmissionMethod.values
             .firstWhere((m) => m.name == method.name);
         expect(viaName, method);
       }
       // Specific names match expected values.
-      expect(SubmissionMethod.relayer.name, 'relayer');
-      expect(SubmissionMethod.rpc.name, 'rpc');
+      expect(OZSubmissionMethod.relayer.name, 'relayer');
+      expect(OZSubmissionMethod.rpc.name, 'rpc');
     });
   });
 }

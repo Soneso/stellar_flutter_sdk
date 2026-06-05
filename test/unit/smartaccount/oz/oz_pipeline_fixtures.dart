@@ -21,17 +21,17 @@ import 'package:stellar_flutter_sdk/src/transaction.dart';
 import 'package:stellar_flutter_sdk/src/xdr/xdr.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart'
     show
-        SmartAccountEventWalletDisconnected,
-        StoredCredential,
-        InMemoryStorageAdapter,
-        StorageAdapter,
+        OZSmartAccountEventWalletDisconnected,
+        OZStoredCredential,
+        OZInMemoryStorageAdapter,
+        OZStorageAdapter,
         OZSmartAccountConfig,
         OZExternalSignerManager,
         OZIndexerClient,
         OZRelayerClient,
         OZSmartAccountSigner,
-        ExternalWalletAdapter,
-        ParsedContextRule,
+        OZExternalWalletAdapter,
+        OZParsedContextRule,
         Network;
 
 /// Test fixture: a fake transaction-operations kit that supplies just enough
@@ -48,7 +48,7 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
     KeyPair? deployer,
     OZWalletCredentialManagerInterface? credentialManager,
     OZContextRuleManagerInterface? contextRuleManager,
-    StorageAdapter? storage,
+    OZStorageAdapter? storage,
     OZTransactionOperations? transactionOperations,
     Object? multiSignerManager,
     OZExternalSignerManager? externalSigners,
@@ -68,8 +68,8 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
         _credentialManager = credentialManager ?? StubCredentialManager(),
         _contextRuleManager =
             contextRuleManager ?? StubContextRuleManager(),
-        _storage = storage ?? InMemoryStorageAdapter(),
-        _events = SmartAccountEventEmitter(),
+        _storage = storage ?? OZInMemoryStorageAdapter(),
+        _events = OZSmartAccountEventEmitter(),
         _injectedMultiSignerManager = multiSignerManager,
         _externalSigners = externalSigners ??
             OZExternalSignerManager(
@@ -86,8 +86,8 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
   final KeyPair _deployer;
   final OZWalletCredentialManagerInterface _credentialManager;
   final OZContextRuleManagerInterface _contextRuleManager;
-  StorageAdapter _storage;
-  final SmartAccountEventEmitter _events;
+  OZStorageAdapter _storage;
+  final OZSmartAccountEventEmitter _events;
   late OZTransactionOperations _transactionOperations;
   Object? _injectedMultiSignerManager;
   OZExternalSignerManager _externalSigners;
@@ -107,7 +107,7 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
   /// Test-only helper that replaces the kit's external-signer manager with a
   /// new instance wrapping [adapter]. Preserves the config's network
   /// passphrase; any previously registered in-memory keypairs are lost.
-  void setExternalWallet(ExternalWalletAdapter? adapter) {
+  void setExternalWallet(OZExternalWalletAdapter? adapter) {
     _externalSigners = OZExternalSignerManager(
       networkPassphrase: _config.networkPassphrase,
       walletAdapter: adapter,
@@ -140,7 +140,7 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
   }
 
   /// Allows tests to inject a different storage adapter.
-  void replaceStorage(StorageAdapter storage) {
+  void replaceStorage(OZStorageAdapter storage) {
     _storage = storage;
   }
 
@@ -160,7 +160,7 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
     }
     if (wasConnected && priorContractId != null) {
       _events.emit(
-        SmartAccountEventWalletDisconnected(contractId: priorContractId),
+        OZSmartAccountEventWalletDisconnected(contractId: priorContractId),
       );
     }
   }
@@ -172,7 +172,7 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
   SorobanServer get sorobanServer => _sorobanServer;
 
   @override
-  SmartAccountEventEmitter get events => _events;
+  OZSmartAccountEventEmitter get events => _events;
 
   @override
   OZIndexerClient? get indexerClient => _indexerClient;
@@ -190,14 +190,14 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
   Future<KeyPair> getDeployer() async => _deployer;
 
   @override
-  StorageAdapter getStorage() => _storage;
+  OZStorageAdapter getStorage() => _storage;
 
   @override
   Future<OZConnectedState> requireConnected() async {
     final cid = _connectedCredentialId;
     final ctr = _connectedContractId;
     if (cid == null || ctr == null) {
-      throw WalletException.notConnected();
+      throw SmartAccountWalletException.notConnected();
     }
     return OZConnectedState(credentialId: cid, contractId: ctr);
   }
@@ -235,7 +235,7 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
 /// Stub credential manager exposed for tests that need to inject stored
 /// credentials directly or assert on stored state after operations.
 class StubCredentialManager implements OZWalletCredentialManagerInterface {
-  final Map<String, StoredCredential> _store = {};
+  final Map<String, OZStoredCredential> _store = {};
 
   /// Records every `markDeploymentFailed` call so tests can assert on
   /// failure propagation.
@@ -246,7 +246,7 @@ class StubCredentialManager implements OZWalletCredentialManagerInterface {
   final List<String> deletedCredentialIds = <String>[];
 
   @override
-  Future<StoredCredential?> getCredential(String credentialId) async {
+  Future<OZStoredCredential?> getCredential(String credentialId) async {
     return _store[credentialId];
   }
 
@@ -261,7 +261,7 @@ class StubCredentialManager implements OZWalletCredentialManagerInterface {
   }
 
   @override
-  Future<StoredCredential> createPendingCredential({
+  Future<OZStoredCredential> createPendingCredential({
     required String credentialId,
     required Uint8List publicKey,
     required String contractId,
@@ -270,7 +270,7 @@ class StubCredentialManager implements OZWalletCredentialManagerInterface {
     String? deviceType,
     bool? backedUp,
   }) async {
-    final c = StoredCredential(
+    final c = OZStoredCredential(
       credentialId: credentialId,
       publicKey: publicKey,
       contractId: contractId,
@@ -292,7 +292,7 @@ class StubCredentialManager implements OZWalletCredentialManagerInterface {
     final existing = _store[credentialId];
     if (existing != null) {
       _store[credentialId] = existing.copyWith(
-        deploymentStatus: CredentialDeploymentStatus.failed,
+        deploymentStatus: OZCredentialDeploymentStatus.failed,
         deploymentError: error,
       );
     }
@@ -313,19 +313,19 @@ class StubCredentialManager implements OZWalletCredentialManagerInterface {
   }
 
   /// Test-only: directly inject a stored credential.
-  void inject(StoredCredential credential) {
+  void inject(OZStoredCredential credential) {
     _store[credential.credentialId] = credential;
   }
 
   /// Test-only: returns the credential currently stored under
   /// [credentialId], or `null`.
-  StoredCredential? peek(String credentialId) => _store[credentialId];
+  OZStoredCredential? peek(String credentialId) => _store[credentialId];
 }
 
 /// Stub context-rule manager exposed for tests that need to inject
 /// context-rule state without standing up the full rule manager.
 class StubContextRuleManager implements OZContextRuleManagerInterface {
-  List<ParsedContextRule> rules = const <ParsedContextRule>[];
+  List<OZParsedContextRule> rules = const <OZParsedContextRule>[];
   List<XdrSCVal> allRules = const <XdrSCVal>[];
   List<int> resolved = const <int>[];
 
@@ -337,17 +337,17 @@ class StubContextRuleManager implements OZContextRuleManagerInterface {
   /// Pre-set table consumed by [parseContextRule]. When unset, the
   /// stub throws to surface accidental parser invocations during
   /// pipeline tests.
-  Map<XdrSCVal, ParsedContextRule> parsedContextRules =
-      const <XdrSCVal, ParsedContextRule>{};
+  Map<XdrSCVal, OZParsedContextRule> parsedContextRules =
+      const <XdrSCVal, OZParsedContextRule>{};
 
   @override
-  Future<List<ParsedContextRule>> listContextRules() async => rules;
+  Future<List<OZParsedContextRule>> listContextRules() async => rules;
 
   @override
   Future<List<int>> resolveContextRuleIdsForEntry(
     XdrSorobanAuthorizationEntry entry,
     List<OZSmartAccountSigner> signers,
-    List<ParsedContextRule> contextRules,
+    List<OZParsedContextRule> contextRules,
   ) async {
     return resolved;
   }
@@ -368,7 +368,7 @@ class StubContextRuleManager implements OZContextRuleManagerInterface {
   }
 
   @override
-  ParsedContextRule parseContextRule(XdrSCVal scVal) {
+  OZParsedContextRule parseContextRule(XdrSCVal scVal) {
     final rule = parsedContextRules[scVal];
     if (rule == null) {
       throw StateError(
@@ -512,7 +512,7 @@ class MockSorobanServer extends SorobanServer {
   /// Queue of `getContractData` outcomes. May contain a [LedgerEntry], a
   /// [Function] returning one, an exception to throw, or a plain `null`
   /// (`null` is used to signal "no entry on-chain" so the SDK throws
-  /// [WalletException.notFound] in `_verifyContractExists`).
+  /// [SmartAccountWalletException.notFound] in `_verifyContractExists`).
   final List<Object?> getContractDataResponses = <Object?>[];
 
   /// Fallback `getContractData` outcome.
@@ -673,10 +673,10 @@ class RecordingWebAuthnProvider implements WebAuthnProvider {
     String userName
   })>[];
 
-  final List<({Uint8List challenge, List<AllowCredential>? allowCredentials})>
+  final List<({Uint8List challenge, List<WebAuthnAllowCredential>? allowCredentials})>
       authenticateCalls = <({
     Uint8List challenge,
-    List<AllowCredential>? allowCredentials
+    List<WebAuthnAllowCredential>? allowCredentials
   })>[];
 
   /// Queue of registration outcomes; can hold [WebAuthnRegistrationResult]
@@ -716,7 +716,7 @@ class RecordingWebAuthnProvider implements WebAuthnProvider {
   @override
   Future<WebAuthnAuthenticationResult> authenticate({
     required Uint8List challenge,
-    List<AllowCredential>? allowCredentials,
+    List<WebAuthnAllowCredential>? allowCredentials,
   }) async {
     authenticateCalls.add((
       challenge: challenge,

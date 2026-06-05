@@ -45,12 +45,12 @@ abstract class SmartAccountUtils {
   /// DER format:
   /// `0x30 [total_len] 0x02 [r_len] [r_bytes] 0x02 [s_len] [s_bytes]`.
   ///
-  /// Throws [InvalidInput] when the DER structure is malformed or the
+  /// Throws [SmartAccountInvalidInput] when the DER structure is malformed or the
   /// `r`/`s` values violate the secp256r1 constraints.
   @internal
   static List<BigInt> parseDerSignature(Uint8List derSignature) {
     if (derSignature.length < 8 || derSignature[0] != 0x30) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'derSignature',
         'Invalid DER signature format',
       );
@@ -58,7 +58,7 @@ abstract class SmartAccountUtils {
 
     final totalLength = derSignature[1] & 0xFF;
     if (2 + totalLength != derSignature.length) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'derSignature',
         'Invalid DER signature format: declared length does not match '
             'actual size',
@@ -67,7 +67,7 @@ abstract class SmartAccountUtils {
 
     var offset = 2;
     if (offset + 1 >= derSignature.length || derSignature[offset] != 0x02) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'derSignature',
         'Invalid DER signature format: missing r component marker',
       );
@@ -75,7 +75,7 @@ abstract class SmartAccountUtils {
 
     final rLength = derSignature[offset + 1] & 0xFF;
     if (rLength == 0 || offset + 2 + rLength > derSignature.length) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'derSignature',
         'Invalid DER signature format: truncated r component',
       );
@@ -93,7 +93,7 @@ abstract class SmartAccountUtils {
 
     offset = offset + 2 + rLength;
     if (offset + 1 >= derSignature.length || derSignature[offset] != 0x02) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'derSignature',
         'Invalid DER signature format: missing s component marker',
       );
@@ -101,7 +101,7 @@ abstract class SmartAccountUtils {
 
     final sLength = derSignature[offset + 1] & 0xFF;
     if (sLength == 0 || offset + 2 + sLength > derSignature.length) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'derSignature',
         'Invalid DER signature format: truncated s component',
       );
@@ -119,21 +119,21 @@ abstract class SmartAccountUtils {
 
     final endOffset = offset + 2 + sLength;
     if (endOffset != derSignature.length) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'derSignature',
         'Invalid DER signature format: trailing bytes after s component',
       );
     }
 
     if (r.length > 32) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'derSignature',
         'Invalid DER signature: r component exceeds 32 bytes after '
             'stripping (${r.length} bytes)',
       );
     }
     if (s.length > 32) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'derSignature',
         'Invalid DER signature: s component exceeds 32 bytes after '
             'stripping (${s.length} bytes)',
@@ -141,13 +141,13 @@ abstract class SmartAccountUtils {
     }
 
     if (r.length == 1 && r[0] == 0x00) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'derSignature',
         'Invalid DER signature: r component is zero (invalid ECDSA value)',
       );
     }
     if (s.length == 1 && s[0] == 0x00) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'derSignature',
         'Invalid DER signature: s component is zero (invalid ECDSA value)',
       );
@@ -155,14 +155,14 @@ abstract class SmartAccountUtils {
 
     final rBigInt = _bytesToUnsignedBigInteger(r);
     if (rBigInt >= _curveOrder) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'derSignature',
         'Invalid DER signature: r component exceeds curve order',
       );
     }
     final sBigInt = _bytesToUnsignedBigInteger(s);
     if (sBigInt >= _curveOrder) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'derSignature',
         'Invalid DER signature: s component exceeds curve order',
       );
@@ -185,7 +185,7 @@ abstract class SmartAccountUtils {
   /// than half the curve order are converted to their complement, which
   /// the Stellar/Soroban verifier requires.
   ///
-  /// Throws [InvalidInput] when the DER format is invalid.
+  /// Throws [SmartAccountInvalidInput] when the DER format is invalid.
   static Uint8List normalizeSignature(Uint8List derSignature) {
     final parts = parseDerSignature(derSignature);
     final rBigInt = parts[0];
@@ -225,7 +225,7 @@ abstract class SmartAccountUtils {
   /// keys (`0x02`/`0x03` prefix) are not supported and cause the method
   /// to throw immediately rather than fall through to other strategies.
   ///
-  /// Throws [InvalidInput] when a compressed-key prefix is detected, when
+  /// Throws [SmartAccountInvalidInput] when a compressed-key prefix is detected, when
   /// no extraction source is provided, or when all strategies fail.
   static Uint8List extractPublicKeyFromRegistration({
     Uint8List? publicKey,
@@ -254,7 +254,7 @@ abstract class SmartAccountUtils {
 
       if (candidate[0] == 0x02 || candidate[0] == 0x03) {
         final prefixHex = candidate[0].toRadixString(16).padLeft(2, '0');
-        throw ValidationException.invalidInput(
+        throw SmartAccountValidationException.invalidInput(
           'publicKey',
           'Compressed secp256r1 key format (prefix 0x$prefixHex) is not '
               'supported; the platform must provide an uncompressed key '
@@ -278,7 +278,7 @@ abstract class SmartAccountUtils {
       return extractPublicKeyFromAttestationObject(attestationObject);
     }
 
-    throw ValidationException.invalidInput(
+    throw SmartAccountValidationException.invalidInput(
       'registration',
       'Could not extract public key from attestation response: no valid '
           'publicKey, authenticatorData, or attestationObject provided',
@@ -309,7 +309,7 @@ abstract class SmartAccountUtils {
   ///
   /// Returns the 65-byte uncompressed public key or `null` when the data
   /// is too short, when the `AT` flag is not set, or when the COSE prefix
-  /// does not match. Throws [InvalidInput] when the `Y` marker is
+  /// does not match. Throws [SmartAccountInvalidInput] when the `Y` marker is
   /// malformed or when the extracted point is not on the secp256r1 curve.
   @internal
   static Uint8List? extractPublicKeyFromAuthenticatorData(
@@ -368,7 +368,7 @@ abstract class SmartAccountUtils {
     final coseKeySlice = Uint8List.sublistView(authenticatorData, coseKeyStart);
     final key = WebAuthnCborParser.extractPublicKeyFromCoseKey(coseKeySlice);
     if (key == null) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'authenticatorData',
         'COSE key structure is invalid: could not extract secp256r1 '
             'coordinates from authenticator data',
@@ -389,7 +389,7 @@ abstract class SmartAccountUtils {
   /// and extracts the `X`/`Y` coordinates of the public key. Returns the
   /// 65-byte uncompressed public key (`0x04` prefix + `X` + `Y`).
   ///
-  /// Throws [InvalidInput] when the COSE prefix is not found, when there
+  /// Throws [SmartAccountInvalidInput] when the COSE prefix is not found, when there
   /// is insufficient data after the prefix, when the `Y` marker does not
   /// match `[0x22, 0x58, 0x20]`, or when the extracted point is not on
   /// the secp256r1 curve.
@@ -412,7 +412,7 @@ abstract class SmartAccountUtils {
 
     final prefixIndex = findSubarray(attestationObject, prefix);
     if (prefixIndex < 0) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'attestationObject',
         'COSE key prefix not found in attestation',
       );
@@ -423,7 +423,7 @@ abstract class SmartAccountUtils {
     // Y-coordinate separator.
     final key = WebAuthnCborParser.extractPublicKeyFromCoseKey(attestationObject);
     if (key == null) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'attestationObject',
         'COSE key structure is malformed: could not extract secp256r1 '
             'coordinates from attestation object',
@@ -473,9 +473,9 @@ abstract class SmartAccountUtils {
   /// contractId = StrKey.encodeContractId(contractIdBytes)
   /// ```
   ///
-  /// Throws [InvalidAddress] when [deployerPublicKey] is invalid,
-  /// [InvalidInput] when contract-ID encoding fails, and
-  /// [TransactionSigningFailed] when XDR encoding fails.
+  /// Throws [SmartAccountInvalidAddress] when [deployerPublicKey] is invalid,
+  /// [SmartAccountInvalidInput] when contract-ID encoding fails, and
+  /// [SmartAccountTransactionSigningFailed] when XDR encoding fails.
   static String deriveContractAddress({
     required Uint8List credentialId,
     required String deployerPublicKey,
@@ -490,7 +490,7 @@ abstract class SmartAccountUtils {
       KeyPair.fromAccountId(deployerPublicKey);
       deployerAddress = XdrSCAddress.forAccountId(deployerPublicKey);
     } catch (e) {
-      throw ValidationException.invalidAddress(
+      throw SmartAccountValidationException.invalidAddress(
         deployerPublicKey,
         cause: e,
       );
@@ -526,7 +526,7 @@ abstract class SmartAccountUtils {
       XdrHashIDPreimage.encode(stream, preimage);
       encodedPreimage = Uint8List.fromList(stream.bytes);
     } catch (e) {
-      throw TransactionException.signingFailed(
+      throw SmartAccountTransactionException.signingFailed(
         'Failed to XDR encode contract ID preimage',
         cause: e,
       );
@@ -539,7 +539,7 @@ abstract class SmartAccountUtils {
     try {
       return StrKey.encodeContractId(contractIdBytes);
     } catch (e) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'contractId',
         'Failed to encode contract ID: $e',
         cause: e,
@@ -653,7 +653,7 @@ abstract class SmartAccountUtils {
     final yBig = _bytesToUnsignedBigInteger(y);
 
     if (xBig == BigInt.zero || yBig == BigInt.zero) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'publicKey',
         'Extracted secp256r1 coordinates contain a zero component; the '
             'point is not a valid curve point',
@@ -661,7 +661,7 @@ abstract class SmartAccountUtils {
     }
 
     if (xBig >= _curveP || yBig >= _curveP) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'publicKey',
         'Extracted secp256r1 coordinates exceed the field prime',
       );
@@ -673,7 +673,7 @@ abstract class SmartAccountUtils {
     final rhs = (x3 + ax + _curveB) % _curveP;
 
     if (lhs != rhs) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'publicKey',
         'Extracted secp256r1 public key coordinates are not on the P-256 '
             'curve; the attestation data may be malformed or corrupted',

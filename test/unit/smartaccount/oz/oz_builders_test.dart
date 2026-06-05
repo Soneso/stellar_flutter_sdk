@@ -16,15 +16,15 @@ OZDelegatedSigner _delegatedSigner(String address) {
   return OZDelegatedSigner(address);
 }
 
-ParsedContextRule _ruleWith(
+OZParsedContextRule _ruleWith(
   int id,
   List<OZSmartAccountSigner> signers, {
   String name = 'rule',
-  ContextRuleType? contextType,
+  OZContextRuleType? contextType,
 }) {
-  return ParsedContextRule(
+  return OZParsedContextRule(
     id: id,
-    contextType: contextType ?? const ContextRuleTypeDefault(),
+    contextType: contextType ?? const OZContextRuleTypeDefault(),
     name: name,
     signers: signers,
     signerIds: List<int>.generate(signers.length, (i) => i),
@@ -37,29 +37,29 @@ void main() {
   group('createDefaultContext', () {
     test('testCreateDefaultContext_returnsDefault', () {
       final result = OZBuilders.createDefaultContext();
-      expect(result, isA<ContextRuleTypeDefault>());
+      expect(result, isA<OZContextRuleTypeDefault>());
     });
   });
 
   group('createCallContractContext', () {
     test('testCreateCallContractContext_validAddress', () {
       final result = OZBuilders.createCallContractContext(_kValidContractId);
-      expect(result, isA<ContextRuleTypeCallContract>());
-      expect((result as ContextRuleTypeCallContract).contractAddress,
+      expect(result, isA<OZContextRuleTypeCallContract>());
+      expect((result as OZContextRuleTypeCallContract).contractAddress,
           _kValidContractId);
     });
 
     test('testCreateCallContractContext_invalidAddress_throws', () {
       expect(
         () => OZBuilders.createCallContractContext('GABC...'),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
     test('testCreateCallContractContext_emptyAddress_throws', () {
       expect(
         () => OZBuilders.createCallContractContext(''),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
   });
@@ -68,28 +68,28 @@ void main() {
     test('testCreateCreateContractContext_validHex', () {
       final hex = 'a' * 64;
       final result = OZBuilders.createCreateContractContextFromHex(hex);
-      expect(result, isA<ContextRuleTypeCreateContract>());
-      expect((result as ContextRuleTypeCreateContract).wasmHash.length, 32);
+      expect(result, isA<OZContextRuleTypeCreateContract>());
+      expect((result as OZContextRuleTypeCreateContract).wasmHash.length, 32);
     });
 
     test('testCreateCreateContractContext_validHexWith0xPrefix', () {
       final hex = '0x${'b' * 64}';
       final result = OZBuilders.createCreateContractContextFromHex(hex);
-      expect(result, isA<ContextRuleTypeCreateContract>());
-      expect((result as ContextRuleTypeCreateContract).wasmHash.length, 32);
+      expect(result, isA<OZContextRuleTypeCreateContract>());
+      expect((result as OZContextRuleTypeCreateContract).wasmHash.length, 32);
     });
 
     test('testCreateCreateContractContext_shortHex_throws', () {
       expect(
         () => OZBuilders.createCreateContractContextFromHex('abc123'),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
     test('testCreateCreateContractContext_longHex_throws', () {
       expect(
         () => OZBuilders.createCreateContractContextFromHex('a' * 66),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
   });
@@ -101,8 +101,8 @@ void main() {
         bytes[i] = i;
       }
       final result = OZBuilders.createCreateContractContextFromBytes(bytes);
-      expect(result, isA<ContextRuleTypeCreateContract>());
-      final hash = (result as ContextRuleTypeCreateContract).wasmHash;
+      expect(result, isA<OZContextRuleTypeCreateContract>());
+      final hash = (result as OZContextRuleTypeCreateContract).wasmHash;
       expect(hash.length, 32);
       for (var i = 0; i < 32; i++) {
         expect(hash[i], i);
@@ -112,7 +112,7 @@ void main() {
     test('testCreateCreateContractContext_wrongSizeBytes_throws', () {
       expect(
         () => OZBuilders.createCreateContractContextFromBytes(Uint8List(16)),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
   });
@@ -120,7 +120,7 @@ void main() {
   group('collectUniqueSignersFromRules', () {
     test('testCollectUniqueSignersFromRules_emptyRules', () {
       final result = OZBuilders.collectUniqueSignersFromRules(
-          const <ParsedContextRule>[]);
+          const <OZParsedContextRule>[]);
       expect(result, isEmpty);
     });
 
@@ -142,13 +142,13 @@ void main() {
         2,
         [_delegatedSigner(addressB), signerC],
         name: 'B',
-        contextType: ContextRuleTypeCallContract(_kValidContractId),
+        contextType: OZContextRuleTypeCallContract(_kValidContractId),
       );
       final ruleC = _ruleWith(
         3,
         [_delegatedSigner(addressA), signerD],
         name: 'C',
-        contextType: ContextRuleTypeCallContract(_kValidContractIdAlt),
+        contextType: OZContextRuleTypeCallContract(_kValidContractIdAlt),
       );
 
       final result =
@@ -164,25 +164,25 @@ void main() {
     });
   });
 
-  group('ContextRuleType equality', () {
+  group('OZContextRuleType equality', () {
     test('ContextRuleTypeDefault_equalityWithNonConstInstances', () {
       // Non-const to avoid identical() short-circuit, exercising line 76.
-      final a = const ContextRuleTypeDefault();
-      final b = ContextRuleTypeDefault();
+      final a = const OZContextRuleTypeDefault();
+      final b = OZContextRuleTypeDefault();
       expect(a, equals(b));
       expect(a.hashCode, equals(b.hashCode));
     });
 
     test('ContextRuleTypeDefault_notEqualToOtherType', () {
-      const a = ContextRuleTypeDefault();
-      const b = ContextRuleTypeCallContract(_kValidContractId);
+      const a = OZContextRuleTypeDefault();
+      const b = OZContextRuleTypeCallContract(_kValidContractId);
       expect(a == b, isFalse);
     });
 
     test('ContextRuleTypeCallContract_equalityWithNonConstInstances', () {
-      final a = ContextRuleTypeCallContract(_kValidContractId);
-      final b = ContextRuleTypeCallContract(_kValidContractId);
-      final c = ContextRuleTypeCallContract(_kValidContractIdAlt);
+      final a = OZContextRuleTypeCallContract(_kValidContractId);
+      final b = OZContextRuleTypeCallContract(_kValidContractId);
+      final c = OZContextRuleTypeCallContract(_kValidContractIdAlt);
       expect(a, equals(b));
       expect(a.hashCode, equals(b.hashCode));
       expect(a == c, isFalse);
@@ -190,34 +190,34 @@ void main() {
 
     test('ContextRuleTypeCreateContract_equalityWithNonConstInstances', () {
       final wasm = Uint8List.fromList(List<int>.generate(32, (i) => i));
-      final a = ContextRuleTypeCreateContract(wasm);
-      final b = ContextRuleTypeCreateContract(Uint8List.fromList(List<int>.generate(32, (i) => i)));
-      final c = ContextRuleTypeCreateContract(Uint8List.fromList(List<int>.generate(32, (i) => i + 1)));
+      final a = OZContextRuleTypeCreateContract(wasm);
+      final b = OZContextRuleTypeCreateContract(Uint8List.fromList(List<int>.generate(32, (i) => i)));
+      final c = OZContextRuleTypeCreateContract(Uint8List.fromList(List<int>.generate(32, (i) => i + 1)));
       expect(a, equals(b));
       expect(a.hashCode, equals(b.hashCode));
       expect(a == c, isFalse);
     });
   });
 
-  group('ParsedContextRule equality', () {
-    // These tests exercise ParsedContextRule.operator== including the
+  group('OZParsedContextRule equality', () {
+    // These tests exercise OZParsedContextRule.operator== including the
     // _listEquals helper (lines 202-208 of oz_builders.dart).
 
     test('ParsedContextRule_differentSignerCount_notEqual', () {
       // Exercises _listEquals length mismatch (line 204).
       final signer = _delegatedSigner(_kValidContractIdAlt);
-      final a = ParsedContextRule(
+      final a = OZParsedContextRule(
         id: 1,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'rule',
         signers: <OZSmartAccountSigner>[signer],
         signerIds: const <int>[0],
         policies: const <String>[],
         policyIds: const <int>[],
       );
-      final b = ParsedContextRule(
+      final b = OZParsedContextRule(
         id: 1,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'rule',
         signers: const <OZSmartAccountSigner>[],
         signerIds: const <int>[],
@@ -232,18 +232,18 @@ void main() {
       // Exercises the per-element comparison in _listEquals (line 206).
       final s1 = _delegatedSigner(_kValidContractId);
       final s2 = _delegatedSigner(_kValidContractIdAlt);
-      final a = ParsedContextRule(
+      final a = OZParsedContextRule(
         id: 1,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'rule',
         signers: <OZSmartAccountSigner>[s1],
         signerIds: const <int>[0],
         policies: const <String>[],
         policyIds: const <int>[],
       );
-      final b = ParsedContextRule(
+      final b = OZParsedContextRule(
         id: 1,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'rule',
         signers: <OZSmartAccountSigner>[s2],
         signerIds: const <int>[0],
@@ -257,18 +257,18 @@ void main() {
     test('ParsedContextRule_equal_instances', () {
       final s1 = _delegatedSigner(_kValidContractId);
       final s2 = _delegatedSigner(_kValidContractId);
-      final a = ParsedContextRule(
+      final a = OZParsedContextRule(
         id: 1,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'rule',
         signers: <OZSmartAccountSigner>[s1],
         signerIds: const <int>[0],
         policies: const <String>[],
         policyIds: const <int>[],
       );
-      final b = ParsedContextRule(
+      final b = OZParsedContextRule(
         id: 1,
-        contextType: const ContextRuleTypeDefault(),
+        contextType: const OZContextRuleTypeDefault(),
         name: 'rule',
         signers: <OZSmartAccountSigner>[s2],
         signerIds: const <int>[0],

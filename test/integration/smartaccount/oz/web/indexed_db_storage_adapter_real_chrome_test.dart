@@ -17,11 +17,11 @@ import 'package:stellar_flutter_sdk/src/smartaccount/oz/indexed_db_storage_adapt
 import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_storage_adapter.dart';
 
 void main() {
-  group('IndexedDBStorageAdapter (real Chrome)', () {
-    late IndexedDBStorageAdapter adapter;
+  group('OZIndexedDBStorageAdapter (real Chrome)', () {
+    late OZIndexedDBStorageAdapter adapter;
 
     setUp(() async {
-      adapter = IndexedDBStorageAdapter(dbName: 'integration_test_db');
+      adapter = OZIndexedDBStorageAdapter(dbName: 'integration_test_db');
       await adapter.clear();
     });
 
@@ -30,7 +30,7 @@ void main() {
     });
 
     test('test_real_indexeddb_round_trip', () async {
-      final cred = StoredCredential(
+      final cred = OZStoredCredential(
         credentialId: 'integration-real-idb-1',
         publicKey: Uint8List.fromList(<int>[
           0x04, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48,

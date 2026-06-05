@@ -143,7 +143,7 @@ void main() {
       final ops = OZWalletOperations(kit);
 
       await expectLater(
-        () => ops.connectWallet(options: const ConnectWalletOptions(prompt: true)),
+        () => ops.connectWallet(options: const OZConnectWalletOptions(prompt: true)),
         throwsA(isA<WebAuthnAuthenticationFailed>()),
       );
     });
@@ -185,7 +185,7 @@ void main() {
       final ops = OZWalletOperations(kit);
 
       final result = await ops.connectWallet(
-        options: const ConnectWalletOptions(prompt: true),
+        options: const OZConnectWalletOptions(prompt: true),
       );
 
       expect(result, isNotNull);
@@ -195,7 +195,7 @@ void main() {
 
   group('OZWalletOperations.connectWallet indexer edge cases', () {
     test('indexerReturnsEmpty_throwsWalletNotFound', () async {
-      // _resolveViaIndexer with empty candidates → line 1258 throws WalletNotFound.
+      // _resolveViaIndexer with empty candidates → line 1258 throws SmartAccountWalletNotFound.
       final provider = RecordingWebAuthnProvider();
       final credIdBytes = base64Url.decode(base64Url.normalize(_credentialIdB64));
       final sig = Uint8List.fromList(<int>[
@@ -237,8 +237,8 @@ void main() {
       final ops = OZWalletOperations(kit);
 
       await expectLater(
-        () => ops.connectWallet(options: const ConnectWalletOptions(prompt: true)),
-        throwsA(isA<WalletNotFound>()),
+        () => ops.connectWallet(options: const OZConnectWalletOptions(prompt: true)),
+        throwsA(isA<SmartAccountWalletNotFound>()),
       );
     });
   });
@@ -306,7 +306,7 @@ void main() {
       final ops = OZWalletOperations(kit);
 
       final result = await ops.connectWallet(
-        options: const ConnectWalletOptions(prompt: true),
+        options: const OZConnectWalletOptions(prompt: true),
       );
 
       expect(result, isNotNull);
@@ -319,9 +319,9 @@ void main() {
   group('OZWalletOperations.connectWallet session restoration pipeline', () {
     test('validSession_contractOnChain_returnsConnectedFromSession', () async {
       // Restore from a valid non-expired session when the contract is on-chain.
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
       await storage.saveSession(
-        StoredSession(
+        OZStoredSession(
           credentialId: _credentialIdB64,
           contractId: _contractA,
           connectedAt: DateTime.now().millisecondsSinceEpoch,
@@ -352,11 +352,11 @@ void main() {
       // Prompt=true + WebAuthn auth → credential found in storage → contract on-chain.
       final credentials = StubCredentialManager();
       final pubKey = _validSecp256r1PublicKey();
-      credentials.inject(StoredCredential(
+      credentials.inject(OZStoredCredential(
         credentialId: _credentialIdB64,
         publicKey: pubKey,
         contractId: _contractA,
-        deploymentStatus: CredentialDeploymentStatus.pending,
+        deploymentStatus: OZCredentialDeploymentStatus.pending,
         createdAt: 1700000000000,
       ));
 
@@ -397,7 +397,7 @@ void main() {
       final ops = OZWalletOperations(kit);
 
       final result = await ops.connectWallet(
-        options: const ConnectWalletOptions(prompt: true),
+        options: const OZConnectWalletOptions(prompt: true),
       );
 
       expect(result, isNotNull);
@@ -432,7 +432,7 @@ void main() {
 
     test('invalidSignature_throwsValidationException', () async {
       // When the WebAuthn signature is malformed, normalizeSignature throws
-      // ValidationException which is rethrown via line 906 of oz_wallet_operations.
+      // SmartAccountValidationException which is rethrown via line 906 of oz_wallet_operations.
       final provider = RecordingWebAuthnProvider();
       final credIdBytes = base64Url.decode(base64Url.normalize(_credentialIdB64));
       // Invalid DER signature (wrong prefix).
@@ -457,13 +457,13 @@ void main() {
 
       await expectLater(
         () => ops.authenticatePasskey(),
-        throwsA(isA<ValidationException>()),
+        throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
     test('credentialIdMismatch_throwsCredentialInvalid', () async {
       // When allowCredentials is specified and the returned credentialId
-      // doesn't match, line 892 throws CredentialInvalid.
+      // doesn't match, line 892 throws SmartAccountCredentialInvalid.
       final provider = RecordingWebAuthnProvider();
       final requestedCredIdBytes = Uint8List.fromList(<int>[0x01, 0x02, 0x03]);
       final returnedCredIdBytes = Uint8List.fromList(<int>[0x99, 0x98]); // different
@@ -495,7 +495,7 @@ void main() {
         () => ops.authenticatePasskey(
           credentialIds: <String>[base64Url.encode(requestedCredIdBytes)],
         ),
-        throwsA(isA<CredentialInvalid>()),
+        throwsA(isA<SmartAccountCredentialInvalid>()),
       );
     });
   });

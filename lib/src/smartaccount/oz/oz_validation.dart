@@ -9,12 +9,12 @@ import '../core/smart_account_errors.dart';
 ///
 /// Uses full StrKey validation including the CRC16 checksum.
 ///
-/// Throws an [InvalidAddress] validation exception when [address] is not a
+/// Throws an [SmartAccountInvalidAddress] validation exception when [address] is not a
 /// valid contract address. The exception message is
 /// `"<fieldName> must be a valid contract address (C...), got: <address>"`.
 void requireContractAddress(String address, {required String fieldName}) {
   if (!StrKey.isValidContractId(address)) {
-    throw InvalidAddress(
+    throw SmartAccountInvalidAddress(
       '$fieldName must be a valid contract address (C...), got: $address',
     );
   }
@@ -64,13 +64,13 @@ bool isLocalhostUrl(String url) {
 /// IDs (M-addresses) are intentionally rejected: callers that need muxed
 /// addresses must validate them separately.
 ///
-/// Throws an [InvalidAddress] validation exception when [address] is not a
+/// Throws an [SmartAccountInvalidAddress] validation exception when [address] is not a
 /// valid Stellar address. The exception message is
 /// `"<fieldName> must be a valid Stellar address (G... or C...), got: <address>"`.
 void requireStellarAddress(String address, {required String fieldName}) {
   if (!StrKey.isValidStellarAccountId(address) &&
       !StrKey.isValidContractId(address)) {
-    throw InvalidAddress(
+    throw SmartAccountInvalidAddress(
       '$fieldName must be a valid Stellar address (G... or C...), '
       'got: $address',
     );
@@ -79,11 +79,11 @@ void requireStellarAddress(String address, {required String fieldName}) {
 
 /// Validates that [targetFn] is a non-blank contract function name.
 ///
-/// Throws a [ValidationException] (`invalidInput`) on `targetFn` when the
+/// Throws a [SmartAccountValidationException] (`invalidInput`) on `targetFn` when the
 /// trimmed value is empty.
 void requireNonBlankFunctionName(String targetFn) {
   if (targetFn.trim().isEmpty) {
-    throw ValidationException.invalidInput(
+    throw SmartAccountValidationException.invalidInput(
       'targetFn',
       'Function name cannot be empty',
     );

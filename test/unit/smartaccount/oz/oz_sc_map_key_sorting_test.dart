@@ -307,13 +307,13 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
-  // Round-trip with WeightedThresholdParams + policies map (4 cases)
+  // Round-trip with OZWeightedThresholdPolicyParams + policies map (4 cases)
   // -------------------------------------------------------------------------
   group('OZPolicyManager.sortMapByKeyXdr — policy round-trips', () {
-    test('WeightedThresholdParams inner signer_weights map is sorted', () {
+    test('OZWeightedThresholdPolicyParams inner signer_weights map is sorted', () {
       // Pass signers in a deliberately unsorted order; the inner ScVal
       // map for `signer_weights` must come out sorted by XDR bytes.
-      final params = WeightedThresholdParams(
+      final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{
           OZDelegatedSigner(_gAddr3): 20,
           OZDelegatedSigner(_gAddr1): 50,
@@ -334,16 +334,16 @@ void main() {
     });
 
     test(
-        'WeightedThresholdParams XDR is deterministic across signer-input order',
+        'OZWeightedThresholdPolicyParams XDR is deterministic across signer-input order',
         () {
       final s1 = OZDelegatedSigner(_gAddr1);
       final s2 = OZDelegatedSigner(_gAddr2);
 
-      final paramsA = WeightedThresholdParams(
+      final paramsA = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{s1: 50, s2: 30},
         threshold: 80,
       );
-      final paramsB = WeightedThresholdParams(
+      final paramsB = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{s2: 30, s1: 50},
         threshold: 80,
       );

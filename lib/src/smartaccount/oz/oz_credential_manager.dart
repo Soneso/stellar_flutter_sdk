@@ -31,7 +31,7 @@ import 'oz_storage_adapter.dart';
 /// indexer. Failed deployments can be retried by deleting the credential
 /// and creating a new one.
 ///
-/// Thread safety: every operation delegates to the [StorageAdapter], which
+/// Thread safety: every operation delegates to the [OZStorageAdapter], which
 /// is responsible for serialising concurrent calls.
 ///
 /// Example:
@@ -54,7 +54,7 @@ class OZCredentialManager
 
   final OZSmartAccountKitInterface _kit;
 
-  StorageAdapter get _storage => _kit.getStorage();
+  OZStorageAdapter get _storage => _kit.getStorage();
 
   /// Creates a new pending credential in storage.
   ///
@@ -67,11 +67,11 @@ class OZCredentialManager
   /// - [credentialId] must not be empty.
   /// - [credentialId] must be unique (no existing credential with same ID).
   ///
-  /// Throws [InvalidInput] when validation fails,
-  /// [CredentialAlreadyExists] when a credential with the same ID exists,
-  /// and [StorageWriteFailed] when persistence fails.
+  /// Throws [SmartAccountInvalidInput] when validation fails,
+  /// [SmartAccountCredentialAlreadyExists] when a credential with the same ID exists,
+  /// and [SmartAccountStorageWriteFailed] when persistence fails.
   @override
-  Future<StoredCredential> createPendingCredential({
+  Future<OZStoredCredential> createPendingCredential({
     required String credentialId,
     required Uint8List publicKey,
     required String contractId,
@@ -81,7 +81,7 @@ class OZCredentialManager
     bool? backedUp,
   }) async {
     if (publicKey.length != SmartAccountConstants.secp256r1PublicKeySize) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'publicKey',
         'Expected ${SmartAccountConstants.secp256r1PublicKeySize} bytes, '
             'got ${publicKey.length}',
@@ -89,7 +89,7 @@ class OZCredentialManager
     }
 
     if (credentialId.isEmpty) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'credentialId',
         'Credential ID cannot be empty',
       );
@@ -97,14 +97,14 @@ class OZCredentialManager
 
     final existing = await _storage.get(credentialId);
     if (existing != null) {
-      throw CredentialException.alreadyExists(credentialId);
+      throw SmartAccountCredentialException.alreadyExists(credentialId);
     }
 
-    final credential = StoredCredential(
+    final credential = OZStoredCredential(
       credentialId: credentialId,
       publicKey: publicKey,
       contractId: contractId,
-      deploymentStatus: CredentialDeploymentStatus.pending,
+      deploymentStatus: OZCredentialDeploymentStatus.pending,
       isPrimary: false,
       nickname: nickname,
       transports: transports,
@@ -114,12 +114,12 @@ class OZCredentialManager
 
     try {
       await _storage.save(credential);
-    } on CredentialException {
+    } on SmartAccountCredentialException {
       rethrow;
-    } on StorageException {
+    } on SmartAccountStorageException {
       rethrow;
     } catch (e) {
-      throw StorageException.writeFailed(credentialId, cause: e);
+      throw SmartAccountStorageException.writeFailed(credentialId, cause: e);
     }
 
     return credential;
@@ -135,43 +135,43 @@ class OZCredentialManager
   /// with the same ID is silently overwritten. A `null` [contractId] is
   /// stored as the empty string.
   ///
-  /// Throws [InvalidInput] when [credentialId] is empty or [publicKey] is
-  /// the wrong size, and [StorageWriteFailed] when persistence fails.
-  Future<StoredCredential> saveCredential({
+  /// Throws [SmartAccountInvalidInput] when [credentialId] is empty or [publicKey] is
+  /// the wrong size, and [SmartAccountStorageWriteFailed] when persistence fails.
+  Future<OZStoredCredential> saveCredential({
     required String credentialId,
     required Uint8List publicKey,
     String? nickname,
     String? contractId,
   }) async {
     if (credentialId.isEmpty) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'credentialId',
         'Credential ID cannot be empty',
       );
     }
 
     if (publicKey.length != SmartAccountConstants.secp256r1PublicKeySize) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'publicKey',
         'Expected ${SmartAccountConstants.secp256r1PublicKeySize} bytes, '
             'got ${publicKey.length}',
       );
     }
 
-    final credential = StoredCredential(
+    final credential = OZStoredCredential(
       credentialId: credentialId,
       publicKey: publicKey,
       contractId: contractId ?? '',
       nickname: nickname,
-      deploymentStatus: CredentialDeploymentStatus.pending,
+      deploymentStatus: OZCredentialDeploymentStatus.pending,
     );
 
     try {
       await _storage.save(credential);
-    } on StorageException {
+    } on SmartAccountStorageException {
       rethrow;
     } catch (e) {
-      throw StorageException.writeFailed(credentialId, cause: e);
+      throw SmartAccountStorageException.writeFailed(credentialId, cause: e);
     }
 
     return credential;
@@ -183,8 +183,8 @@ class OZCredentialManager
   /// supplied [error] message. Marked [internal] because failure marking is
   /// driven by the wallet-operations layer, not by consumer code.
   ///
-  /// Throws [CredentialNotFound] when the credential does not exist and
-  /// [StorageWriteFailed] when the update fails.
+  /// Throws [SmartAccountCredentialNotFound] when the credential does not exist and
+  /// [SmartAccountStorageWriteFailed] when the update fails.
   @override
   @internal
   Future<void> markDeploymentFailed({
@@ -193,22 +193,22 @@ class OZCredentialManager
   }) async {
     final existing = await _storage.get(credentialId);
     if (existing == null) {
-      throw CredentialException.notFound(credentialId);
+      throw SmartAccountCredentialException.notFound(credentialId);
     }
 
-    final update = StoredCredentialUpdate(
-      deploymentStatus: CredentialDeploymentStatus.failed,
+    final update = OZStoredCredentialUpdate(
+      deploymentStatus: OZCredentialDeploymentStatus.failed,
       deploymentError: error,
     );
 
     try {
       await _storage.update(credentialId, update);
-    } on CredentialException {
+    } on SmartAccountCredentialException {
       rethrow;
-    } on StorageException {
+    } on SmartAccountStorageException {
       rethrow;
     } catch (e) {
-      throw StorageException.writeFailed(credentialId, cause: e);
+      throw SmartAccountStorageException.writeFailed(credentialId, cause: e);
     }
   }
 
@@ -225,24 +225,24 @@ class OZCredentialManager
   /// as "not deployed" rather than surfacing a thrown exception that
   /// callers cannot recover from. The trade-off is a false negative on
   /// RPC outages. Swallowed exceptions are emitted as
-  /// [SmartAccountEventCredentialSyncFailed] so consumers can observe
+  /// [OZSmartAccountEventCredentialSyncFailed] so consumers can observe
   /// transient failures without losing the documented stable-return
   /// contract.
   ///
-  /// Throws [CredentialNotFound] when the credential does not exist in
-  /// storage and [StorageReadFailed] when the read itself fails.
+  /// Throws [SmartAccountCredentialNotFound] when the credential does not exist in
+  /// storage and [SmartAccountStorageReadFailed] when the read itself fails.
   Future<bool> sync(String credentialId) async {
-    final StoredCredential? credential;
+    final OZStoredCredential? credential;
     try {
       credential = await _storage.get(credentialId);
-    } on StorageException {
+    } on SmartAccountStorageException {
       rethrow;
     } catch (e) {
-      throw StorageException.readFailed(credentialId, cause: e);
+      throw SmartAccountStorageException.readFailed(credentialId, cause: e);
     }
 
     if (credential == null) {
-      throw CredentialException.notFound(credentialId);
+      throw SmartAccountCredentialException.notFound(credentialId);
     }
 
     final contractAddress = credential.contractId;
@@ -266,7 +266,7 @@ class OZCredentialManager
       // propagate; transient failures are absorbed and surfaced via the
       // event emitter.
       _kit.events.emit(
-        SmartAccountEventCredentialSyncFailed(
+        OZSmartAccountEventCredentialSyncFailed(
           credentialId: credentialId,
           error: e,
           stackTrace: stackTrace,
@@ -280,17 +280,17 @@ class OZCredentialManager
   ///
   /// Iterates through all stored credentials, calling [sync] on each.
   /// Credentials confirmed as deployed are removed from storage by [sync].
-  /// Returns a summary [SyncResult] tally.
+  /// Returns a summary [OZSyncResult] tally.
   ///
-  /// Throws [StorageReadFailed] when reading credentials fails.
-  Future<SyncResult> syncAll() async {
-    final List<StoredCredential> all;
+  /// Throws [SmartAccountStorageReadFailed] when reading credentials fails.
+  Future<OZSyncResult> syncAll() async {
+    final List<OZStoredCredential> all;
     try {
       all = await _storage.getAll();
-    } on StorageException {
+    } on SmartAccountStorageException {
       rethrow;
     } catch (e) {
-      throw StorageException.readFailed('all', cause: e);
+      throw SmartAccountStorageException.readFailed('all', cause: e);
     }
 
     var deployed = 0;
@@ -301,7 +301,7 @@ class OZCredentialManager
       bool exists;
       try {
         exists = await sync(credential.credentialId);
-      } on CredentialException {
+      } on SmartAccountCredentialException {
         // why: sync may have already removed the credential during this
         // loop iteration. Treat that as "not deployed" and move on.
         exists = false;
@@ -310,88 +310,88 @@ class OZCredentialManager
       if (exists) {
         deployed++;
       } else if (credential.deploymentStatus ==
-          CredentialDeploymentStatus.failed) {
+          OZCredentialDeploymentStatus.failed) {
         failed++;
       } else {
         pending++;
       }
     }
 
-    return SyncResult(deployed: deployed, pending: pending, failed: failed);
+    return OZSyncResult(deployed: deployed, pending: pending, failed: failed);
   }
 
   /// Deletes a credential from storage with a defensive deploy guard.
   ///
   /// Calls [sync] first; when the contract is already deployed on-chain the
   /// deletion is rejected because the wallet exists on-chain. After
-  /// successful deletion a [SmartAccountEventCredentialDeleted] event is
+  /// successful deletion a [OZSmartAccountEventCredentialDeleted] event is
   /// emitted on the kit's event emitter.
   ///
-  /// Throws [CredentialNotFound] when the credential is missing,
-  /// [CredentialInvalid] when the credential is already deployed, and
-  /// [StorageWriteFailed] when deletion fails.
+  /// Throws [SmartAccountCredentialNotFound] when the credential is missing,
+  /// [SmartAccountCredentialInvalid] when the credential is already deployed, and
+  /// [SmartAccountStorageWriteFailed] when deletion fails.
   @override
   Future<void> deleteCredential({required String credentialId}) async {
-    final StoredCredential? credential;
+    final OZStoredCredential? credential;
     try {
       credential = await _storage.get(credentialId);
-    } on StorageException {
+    } on SmartAccountStorageException {
       rethrow;
     } catch (e) {
-      throw StorageException.readFailed(credentialId, cause: e);
+      throw SmartAccountStorageException.readFailed(credentialId, cause: e);
     }
 
     if (credential == null) {
-      throw CredentialException.notFound(credentialId);
+      throw SmartAccountCredentialException.notFound(credentialId);
     }
 
     final isDeployed = await sync(credentialId);
     if (isDeployed) {
-      throw CredentialException.invalid(
+      throw SmartAccountCredentialException.invalid(
         'Cannot delete a deployed credential. The wallet exists on-chain.',
       );
     }
 
     try {
       await _storage.delete(credentialId);
-    } on StorageException {
+    } on SmartAccountStorageException {
       rethrow;
     } catch (e) {
-      throw StorageException.writeFailed(credentialId, cause: e);
+      throw SmartAccountStorageException.writeFailed(credentialId, cause: e);
     }
 
     _kit.events.emit(
-      SmartAccountEventCredentialDeleted(credentialId: credentialId),
+      OZSmartAccountEventCredentialDeleted(credentialId: credentialId),
     );
   }
 
   /// Retrieves a credential by its ID.
   ///
   /// Returns `null` when no credential is stored under [credentialId].
-  /// Throws [StorageReadFailed] when the read fails.
+  /// Throws [SmartAccountStorageReadFailed] when the read fails.
   @override
-  Future<StoredCredential?> getCredential(String credentialId) async {
+  Future<OZStoredCredential?> getCredential(String credentialId) async {
     try {
       return await _storage.get(credentialId);
-    } on StorageException {
+    } on SmartAccountStorageException {
       rethrow;
     } catch (e) {
-      throw StorageException.readFailed(credentialId, cause: e);
+      throw SmartAccountStorageException.readFailed(credentialId, cause: e);
     }
   }
 
-  /// Retrieves all credentials whose [StoredCredential.contractId] matches
+  /// Retrieves all credentials whose [OZStoredCredential.contractId] matches
   /// the supplied [contractId]. Returns an empty list when no credentials
-  /// match. Throws [StorageReadFailed] when reading fails.
-  Future<List<StoredCredential>> getCredentialsByContract(
+  /// match. Throws [SmartAccountStorageReadFailed] when reading fails.
+  Future<List<OZStoredCredential>> getCredentialsByContract(
     String contractId,
   ) async {
     try {
       return await _storage.getByContract(contractId);
-    } on StorageException {
+    } on SmartAccountStorageException {
       rethrow;
     } catch (e) {
-      throw StorageException.readFailed(
+      throw SmartAccountStorageException.readFailed(
         'contract:$contractId',
         cause: e,
       );
@@ -399,14 +399,14 @@ class OZCredentialManager
   }
 
   /// Retrieves all stored credentials regardless of deployment status or
-  /// associated contract. Throws [StorageReadFailed] when reading fails.
-  Future<List<StoredCredential>> getAllCredentials() async {
+  /// associated contract. Throws [SmartAccountStorageReadFailed] when reading fails.
+  Future<List<OZStoredCredential>> getAllCredentials() async {
     try {
       return await _storage.getAll();
-    } on StorageException {
+    } on SmartAccountStorageException {
       rethrow;
     } catch (e) {
-      throw StorageException.readFailed('all', cause: e);
+      throw SmartAccountStorageException.readFailed('all', cause: e);
     }
   }
 
@@ -414,9 +414,9 @@ class OZCredentialManager
   /// empty list when no wallet is connected (rather than throwing) so
   /// consumer code can render a "no wallet" state without exception
   /// handling.
-  Future<List<StoredCredential>> getForConnectedWallet() async {
+  Future<List<OZStoredCredential>> getForConnectedWallet() async {
     final contractId = _kit.contractId;
-    if (contractId == null) return const <StoredCredential>[];
+    if (contractId == null) return const <OZStoredCredential>[];
     return getCredentialsByContract(contractId);
   }
 
@@ -424,22 +424,22 @@ class OZCredentialManager
   /// `failed`, useful for surfacing wallets that still need attention
   /// (retry, sync, or delete).
   ///
-  /// Throws [StorageReadFailed] when reading fails.
-  Future<List<StoredCredential>> getPendingCredentials() async {
-    final List<StoredCredential> all;
+  /// Throws [SmartAccountStorageReadFailed] when reading fails.
+  Future<List<OZStoredCredential>> getPendingCredentials() async {
+    final List<OZStoredCredential> all;
     try {
       all = await _storage.getAll();
-    } on StorageException {
+    } on SmartAccountStorageException {
       rethrow;
     } catch (e) {
-      throw StorageException.readFailed('all', cause: e);
+      throw SmartAccountStorageException.readFailed('all', cause: e);
     }
 
     return all
         .where(
           (c) =>
-              c.deploymentStatus == CredentialDeploymentStatus.pending ||
-              c.deploymentStatus == CredentialDeploymentStatus.failed,
+              c.deploymentStatus == OZCredentialDeploymentStatus.pending ||
+              c.deploymentStatus == OZCredentialDeploymentStatus.failed,
         )
         .toList(growable: false);
   }
@@ -451,26 +451,26 @@ class OZCredentialManager
   /// implementation detail; consumers use the named partial-update methods
   /// such as [updateNickname] or the internal [updateLastUsed]/[setPrimary].
   ///
-  /// Throws [CredentialNotFound] when the credential does not exist and
-  /// [StorageWriteFailed] when the write fails.
+  /// Throws [SmartAccountCredentialNotFound] when the credential does not exist and
+  /// [SmartAccountStorageWriteFailed] when the write fails.
   @internal
   Future<void> updateCredential(
     String credentialId,
-    StoredCredentialUpdate updates,
+    OZStoredCredentialUpdate updates,
   ) async {
     final existing = await _storage.get(credentialId);
     if (existing == null) {
-      throw CredentialException.notFound(credentialId);
+      throw SmartAccountCredentialException.notFound(credentialId);
     }
 
     try {
       await _storage.update(credentialId, updates);
-    } on CredentialException {
+    } on SmartAccountCredentialException {
       rethrow;
-    } on StorageException {
+    } on SmartAccountStorageException {
       rethrow;
     } catch (e) {
-      throw StorageException.writeFailed(credentialId, cause: e);
+      throw SmartAccountStorageException.writeFailed(credentialId, cause: e);
     }
   }
 
@@ -480,7 +480,7 @@ class OZCredentialManager
   @override
   @internal
   Future<void> updateLastUsed(String credentialId) async {
-    final update = StoredCredentialUpdate(
+    final update = OZStoredCredentialUpdate(
       lastUsedAt: DateTime.now().millisecondsSinceEpoch,
     );
     await updateCredential(credentialId, update);
@@ -488,12 +488,12 @@ class OZCredentialManager
 
   /// Updates the nickname of an existing credential. Pass `null` to leave
   /// the nickname unchanged (the partial-update semantics of
-  /// [StoredCredentialUpdate] do not allow clearing a value to null).
+  /// [OZStoredCredentialUpdate] do not allow clearing a value to null).
   ///
-  /// Throws [CredentialNotFound] when the credential does not exist and
-  /// [StorageWriteFailed] when the update fails.
+  /// Throws [SmartAccountCredentialNotFound] when the credential does not exist and
+  /// [SmartAccountStorageWriteFailed] when the update fails.
   Future<void> updateNickname(String credentialId, String? nickname) async {
-    final update = StoredCredentialUpdate(nickname: nickname);
+    final update = OZStoredCredentialUpdate(nickname: nickname);
     await updateCredential(credentialId, update);
   }
 
@@ -507,18 +507,18 @@ class OZCredentialManager
   /// Marked [internal] because the wallet lifecycle layer drives primary
   /// assignment.
   ///
-  /// Throws [CredentialNotFound] when the credential does not exist and
-  /// [StorageWriteFailed] when the write fails.
+  /// Throws [SmartAccountCredentialNotFound] when the credential does not exist and
+  /// [SmartAccountStorageWriteFailed] when the write fails.
   @override
   @internal
   Future<void> setPrimary(String credentialId) async {
     final credential = await _storage.get(credentialId);
     if (credential == null) {
-      throw CredentialException.notFound(credentialId);
+      throw SmartAccountCredentialException.notFound(credentialId);
     }
 
     final contractId = credential.contractId;
-    final List<StoredCredential> allCredentials = contractId != null
+    final List<OZStoredCredential> allCredentials = contractId != null
         ? await _storage.getByContract(contractId)
         : await _storage.getAll();
 
@@ -527,7 +527,7 @@ class OZCredentialManager
         try {
           await _storage.update(
             cred.credentialId,
-            const StoredCredentialUpdate(isPrimary: false),
+            const OZStoredCredentialUpdate(isPrimary: false),
           );
         } catch (_) {
           // why: best-effort. The new primary is set regardless. Two
@@ -537,29 +537,29 @@ class OZCredentialManager
       }
     }
 
-    const update = StoredCredentialUpdate(isPrimary: true);
+    const update = OZStoredCredentialUpdate(isPrimary: true);
     try {
       await _storage.update(credentialId, update);
-    } on CredentialException {
+    } on SmartAccountCredentialException {
       rethrow;
-    } on StorageException {
+    } on SmartAccountStorageException {
       rethrow;
     } catch (e) {
-      throw StorageException.writeFailed(credentialId, cause: e);
+      throw SmartAccountStorageException.writeFailed(credentialId, cause: e);
     }
   }
 
   /// Clears every credential from storage. Irreversible; intended for
   /// account-deletion or reset flows.
   ///
-  /// Throws [StorageWriteFailed] when clearing fails.
+  /// Throws [SmartAccountStorageWriteFailed] when clearing fails.
   Future<void> clearAll() async {
     try {
       await _storage.clear();
-    } on StorageException {
+    } on SmartAccountStorageException {
       rethrow;
     } catch (e) {
-      throw StorageException.writeFailed('all', cause: e);
+      throw SmartAccountStorageException.writeFailed('all', cause: e);
     }
   }
 }
@@ -570,9 +570,9 @@ class OZCredentialManager
 /// credentials confirmed as deployed (and removed from storage), the
 /// count still pending deployment, and the count whose deployment is
 /// marked as failed.
-class SyncResult {
+class OZSyncResult {
   /// Constructs a sync result with the supplied counts.
-  const SyncResult({
+  const OZSyncResult({
     required this.deployed,
     required this.pending,
     required this.failed,
@@ -591,7 +591,7 @@ class SyncResult {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! SyncResult) return false;
+    if (other is! OZSyncResult) return false;
     return other.deployed == deployed &&
         other.pending == pending &&
         other.failed == failed;
@@ -602,5 +602,5 @@ class SyncResult {
 
   @override
   String toString() =>
-      'SyncResult(deployed: $deployed, pending: $pending, failed: $failed)';
+      'OZSyncResult(deployed: $deployed, pending: $pending, failed: $failed)';
 }

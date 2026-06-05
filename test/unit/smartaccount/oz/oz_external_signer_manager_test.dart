@@ -18,8 +18,8 @@ const String _validG1 =
 const String _validG2 =
     'GBVRV25F7XA5I2L3ILSA6XW3OCWLKGGLG4OP2EHKTWC5IHQ3EV26FQLS';
 
-/// In-memory [WalletConnectionStorage] with a public map for direct JSON inspection.
-class TestWalletStorage extends WalletConnectionStorage {
+/// In-memory [OZWalletConnectionStorage] with a public map for direct JSON inspection.
+class TestWalletStorage extends OZWalletConnectionStorage {
   final Map<String, String> data = <String, String>{};
 
   final List<String> getCalls = <String>[];
@@ -45,10 +45,10 @@ class TestWalletStorage extends WalletConnectionStorage {
   }
 }
 
-/// Recording [ExternalWalletAdapter]. FIFO queues: pop the next pre-configured
+/// Recording [OZExternalWalletAdapter]. FIFO queues: pop the next pre-configured
 /// outcome per call (value or throwable); exhausted queues return null/default.
 /// Inspect *Calls fields and *Count fields to assert interaction with the manager.
-class RecordingWalletAdapter extends ExternalWalletAdapter {
+class RecordingWalletAdapter extends OZExternalWalletAdapter {
   RecordingWalletAdapter();
 
   final List<Object?> connectResponses = <Object?>[];
@@ -58,11 +58,11 @@ class RecordingWalletAdapter extends ExternalWalletAdapter {
   final List<String> reconnectCalls = <String>[];
 
   final List<Object> signAuthEntryResponses = <Object>[];
-  final List<({String preimageXdr, SignAuthEntryOptions? options})>
+  final List<({String preimageXdr, OZSignAuthEntryOptions? options})>
       signAuthEntryCalls =
-      <({String preimageXdr, SignAuthEntryOptions? options})>[];
+      <({String preimageXdr, OZSignAuthEntryOptions? options})>[];
 
-  final List<ConnectedWallet> connected = <ConnectedWallet>[];
+  final List<OZConnectedWallet> connected = <OZConnectedWallet>[];
 
   int disconnectCount = 0;
 
@@ -75,25 +75,25 @@ class RecordingWalletAdapter extends ExternalWalletAdapter {
   bool throwOnCanSignFor = false;
 
   @override
-  Future<ConnectedWallet?> connect() async {
+  Future<OZConnectedWallet?> connect() async {
     connectCallCount++;
     if (connectResponses.isEmpty) return null;
     final Object? v = connectResponses.removeAt(0);
     if (v is Exception) throw v;
     if (v is Error) throw v;
-    final wallet = v as ConnectedWallet?;
+    final wallet = v as OZConnectedWallet?;
     if (wallet != null) connected.add(wallet);
     return wallet;
   }
 
   @override
-  Future<ConnectedWallet?> reconnect(String walletId) async {
+  Future<OZConnectedWallet?> reconnect(String walletId) async {
     reconnectCalls.add(walletId);
     if (reconnectResponses.isEmpty) return null;
     final Object? v = reconnectResponses.removeAt(0);
     if (v is Exception) throw v;
     if (v is Error) throw v;
-    final wallet = v as ConnectedWallet?;
+    final wallet = v as OZConnectedWallet?;
     if (wallet != null) connected.add(wallet);
     return wallet;
   }
@@ -114,9 +114,9 @@ class RecordingWalletAdapter extends ExternalWalletAdapter {
   }
 
   @override
-  Future<SignAuthEntryResult> signAuthEntry(
+  Future<OZSignAuthEntryResult> signAuthEntry(
     String preimageXdr, {
-    SignAuthEntryOptions? options,
+    OZSignAuthEntryOptions? options,
   }) async {
     signAuthEntryCalls.add((preimageXdr: preimageXdr, options: options));
     if (signAuthEntryResponses.isEmpty) {
@@ -126,7 +126,7 @@ class RecordingWalletAdapter extends ExternalWalletAdapter {
     if (v is Exception || v is Error) {
       throw v;
     }
-    return v as SignAuthEntryResult;
+    return v as OZSignAuthEntryResult;
   }
 
   @override
@@ -138,11 +138,11 @@ class RecordingWalletAdapter extends ExternalWalletAdapter {
   }
 
   @override
-  List<ConnectedWallet> getConnectedWallets() =>
-      List<ConnectedWallet>.unmodifiable(connected);
+  List<OZConnectedWallet> getConnectedWallets() =>
+      List<OZConnectedWallet>.unmodifiable(connected);
 
   @override
-  ConnectedWallet? getWalletForAddress(String address) {
+  OZConnectedWallet? getWalletForAddress(String address) {
     for (final w in connected) {
       if (w.address == address) return w;
     }
@@ -195,8 +195,8 @@ class _NeverSignAdapter extends OZExternalEd25519SignerAdapter {
 }
 
 OZExternalSignerManager _createManager({
-  ExternalWalletAdapter? walletAdapter,
-  WalletConnectionStorage? walletConnectionStorage,
+  OZExternalWalletAdapter? walletAdapter,
+  OZWalletConnectionStorage? walletConnectionStorage,
 }) {
   return OZExternalSignerManager(
     networkPassphrase: _testNetworkPassphrase,
@@ -229,33 +229,33 @@ void main() {
 
       expect(info, isNotNull);
       expect(info!.address, equals(address));
-      expect(info.type, equals(ExternalSignerType.keypair));
+      expect(info.type, equals(OZExternalSignerType.keypair));
       expect(info.walletName, isNull);
       expect(info.walletId, isNull);
     });
 
-    test('invalid secret string throws SignerInvalid', () async {
+    test('invalid secret string throws SmartAccountSignerInvalid', () async {
       final manager = _createManager();
       await expectLater(
         () => manager.addFromSecret('INVALID_SECRET_KEY'),
-        throwsA(isA<SignerInvalid>()),
+        throwsA(isA<SmartAccountSignerInvalid>()),
       );
     });
 
-    test('empty secret string throws SignerInvalid', () async {
+    test('empty secret string throws SmartAccountSignerInvalid', () async {
       final manager = _createManager();
       await expectLater(
         () => manager.addFromSecret(''),
-        throwsA(isA<SignerInvalid>()),
+        throwsA(isA<SmartAccountSignerInvalid>()),
       );
     });
 
-    test('public key in place of secret throws SignerInvalid', () async {
+    test('public key in place of secret throws SmartAccountSignerInvalid', () async {
       final manager = _createManager();
       final keypair = KeyPair.random();
       await expectLater(
         () => manager.addFromSecret(keypair.accountId),
-        throwsA(isA<SignerInvalid>()),
+        throwsA(isA<SmartAccountSignerInvalid>()),
       );
     });
 
@@ -344,16 +344,16 @@ void main() {
       for (final k in keypairs) {
         final info = await manager.get(k.accountId);
         expect(info, isNotNull);
-        expect(info!.type, equals(ExternalSignerType.keypair));
+        expect(info!.type, equals(OZExternalSignerType.keypair));
       }
     });
   });
   group('addFromWallet', () {
-    test('no adapter throws MissingConfig', () async {
+    test('no adapter throws SmartAccountMissingConfig', () async {
       final manager = _createManager();
       await expectLater(
         () => manager.addFromWallet(),
-        throwsA(isA<MissingConfig>()),
+        throwsA(isA<SmartAccountMissingConfig>()),
       );
     });
 
@@ -370,7 +370,7 @@ void main() {
 
     test('successful connect persists wallet to storage', () async {
       final adapter = RecordingWalletAdapter();
-      final wallet = ConnectedWallet(
+      final wallet = OZConnectedWallet(
         address: _validG1,
         walletId: 'freighter',
         walletName: 'Freighter',
@@ -397,7 +397,7 @@ void main() {
         () async {
       final adapter = RecordingWalletAdapter();
       adapter.connectResponses.add(
-        ConnectedWallet(
+        OZConnectedWallet(
           address: _validG1,
           walletId: 'lobstr',
           walletName: 'LOBSTR',
@@ -425,7 +425,7 @@ void main() {
     test('wallet adapter reports signer returns true', () async {
       final adapter = RecordingWalletAdapter();
       adapter.connected.add(
-        ConnectedWallet(
+        OZConnectedWallet(
           address: _validG1,
           walletId: 'w1',
           walletName: 'Test',
@@ -444,7 +444,7 @@ void main() {
         () async {
       final adapter = RecordingWalletAdapter();
       adapter.connected.add(
-        ConnectedWallet(
+        OZConnectedWallet(
           address: _validG2,
           walletId: 'w',
           walletName: 'Test',
@@ -466,7 +466,7 @@ void main() {
       // For that keypair address, the wallet adapter reports nothing,
       // so the keypair entry resolves through get().
       final info = await manager.get(keypairAddr);
-      expect(info!.type, equals(ExternalSignerType.keypair));
+      expect(info!.type, equals(OZExternalSignerType.keypair));
     });
   });
   group('signAuthEntry', () {
@@ -502,7 +502,7 @@ void main() {
 
       await expectLater(
         () => manager.signAuthEntry(address, '!!!not base64!!!'),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -511,14 +511,14 @@ void main() {
         () async {
       final adapter = RecordingWalletAdapter();
       adapter.connected.add(
-        ConnectedWallet(
+        OZConnectedWallet(
           address: _validG1,
           walletId: 'w',
           walletName: 'Test',
         ),
       );
       adapter.signAuthEntryResponses.add(
-        SignAuthEntryResult(
+        OZSignAuthEntryResult(
           signedAuthEntry: base64Encode(Uint8List(64)),
           signerAddress: _validG1,
         ),
@@ -536,11 +536,11 @@ void main() {
       expect(call.options!.address, equals(_validG1));
     });
 
-    test('no signer registered throws SignerNotFound', () async {
+    test('no signer registered throws SmartAccountSignerNotFound', () async {
       final manager = _createManager();
       await expectLater(
         () => manager.signAuthEntry(_validG1, base64Encode(Uint8List(32))),
-        throwsA(isA<SignerNotFound>()),
+        throwsA(isA<SmartAccountSignerNotFound>()),
       );
     });
 
@@ -557,7 +557,7 @@ void main() {
           await manager.addFromSecret(keypair.secretSeed);
 
       adapter.connected.add(
-        ConnectedWallet(
+        OZConnectedWallet(
           address: address,
           walletId: 'shadow',
           walletName: 'Shadow',
@@ -572,11 +572,11 @@ void main() {
     });
 
     test(
-        'wallet adapter throws: error wrapped as TransactionSigningFailed',
+        'wallet adapter throws: error wrapped as SmartAccountTransactionSigningFailed',
         () async {
       final adapter = RecordingWalletAdapter();
       adapter.connected.add(
-        ConnectedWallet(
+        OZConnectedWallet(
           address: _validG1,
           walletId: 'w',
           walletName: 'Test',
@@ -587,7 +587,7 @@ void main() {
 
       await expectLater(
         () => manager.signAuthEntry(_validG1, base64Encode(Uint8List(32))),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -626,7 +626,7 @@ void main() {
         () async {
       final adapter = RecordingWalletAdapter();
       adapter.connected.add(
-        ConnectedWallet(
+        OZConnectedWallet(
           address: _validG1,
           walletId: 'w1',
           walletName: 'W1',
@@ -641,10 +641,10 @@ void main() {
       final all = await manager.getAll();
       expect(all.length, equals(2));
       // Keypair signers come first.
-      expect(all.first.type, equals(ExternalSignerType.keypair));
+      expect(all.first.type, equals(OZExternalSignerType.keypair));
       expect(all.first.address, equals(keypairAddr));
       // Wallet signers follow.
-      expect(all.last.type, equals(ExternalSignerType.wallet));
+      expect(all.last.type, equals(OZExternalSignerType.wallet));
       expect(all.last.address, equals(_validG1));
     });
 
@@ -658,7 +658,7 @@ void main() {
           await manager.addFromSecret(keypair.secretSeed);
       // Adapter also reports a wallet for the same address.
       adapter.connected.add(
-        ConnectedWallet(
+        OZConnectedWallet(
           address: address,
           walletId: 'shadow',
           walletName: 'Shadow',
@@ -667,7 +667,7 @@ void main() {
 
       final all = await manager.getAll();
       expect(all.length, equals(1));
-      expect(all.single.type, equals(ExternalSignerType.keypair));
+      expect(all.single.type, equals(OZExternalSignerType.keypair));
     });
 
     test('get returns keypair entry when both keypair and wallet exist',
@@ -679,7 +679,7 @@ void main() {
       final address =
           await manager.addFromSecret(keypair.secretSeed);
       adapter.connected.add(
-        ConnectedWallet(
+        OZConnectedWallet(
           address: address,
           walletId: 'shadow',
           walletName: 'Shadow',
@@ -688,7 +688,7 @@ void main() {
 
       final info = await manager.get(address);
       expect(info, isNotNull);
-      expect(info!.type, equals(ExternalSignerType.keypair));
+      expect(info!.type, equals(OZExternalSignerType.keypair));
     });
 
     test('hasSigners returns false on empty manager', () async {
@@ -705,7 +705,7 @@ void main() {
 
       final adapter = RecordingWalletAdapter();
       adapter.connected.add(
-        ConnectedWallet(
+        OZConnectedWallet(
           address: _validG2,
           walletId: 'w',
           walletName: 'W',
@@ -725,7 +725,7 @@ void main() {
       final address =
           await manager.addFromSecret(keypair.secretSeed);
       adapter.connected.add(
-        ConnectedWallet(
+        OZConnectedWallet(
           address: address,
           walletId: 'w',
           walletName: 'W',
@@ -760,7 +760,7 @@ void main() {
       await manager.addFromSecret(KeyPair.random().secretSeed);
       await manager.addFromSecret(KeyPair.random().secretSeed);
       adapter.connected.add(
-        ConnectedWallet(
+        OZConnectedWallet(
           address: _validG1,
           walletId: 'w',
           walletName: 'W',
@@ -806,7 +806,7 @@ void main() {
         },
       ]);
       adapter.reconnectResponses.add(
-        ConnectedWallet(
+        OZConnectedWallet(
           address: _validG1,
           walletId: 'freighter',
           walletName: 'Freighter',
@@ -874,7 +874,7 @@ void main() {
         },
       ]);
       adapter.reconnectResponses.add(
-        ConnectedWallet(
+        OZConnectedWallet(
           address: _validG1,
           walletId: 'freighter',
           walletName: 'Freighter',
@@ -906,7 +906,7 @@ void main() {
         },
       ]);
       adapter.reconnectResponses.add(
-        ConnectedWallet(
+        OZConnectedWallet(
           address: _validG1,
           walletId: 'freighter',
           walletName: 'Freighter',
@@ -968,12 +968,12 @@ void main() {
       // Add three wallets in order; storage must contain them in that
       // append order.
       adapter.connectResponses.addAll([
-        ConnectedWallet(
+        OZConnectedWallet(
           address: _validG1,
           walletId: 'a',
           walletName: 'A',
         ),
-        ConnectedWallet(
+        OZConnectedWallet(
           address: _validG2,
           walletId: 'b',
           walletName: 'B',
@@ -1009,14 +1009,14 @@ void main() {
         },
       ]);
       adapter.reconnectResponses.add(
-        ConnectedWallet(
+        OZConnectedWallet(
           address: _validG1,
           walletId: 'first',
           walletName: 'First',
         ),
       );
       adapter.reconnectResponses.add(
-        ConnectedWallet(
+        OZConnectedWallet(
           address: _validG2,
           walletId: 'second',
           walletName: 'Second',
@@ -1107,7 +1107,7 @@ void main() {
           secretKeyBytes: Uint8List.fromList(List<int>.generate(16, (i) => i)),
           verifierAddress: _validContractVerifier,
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -1121,7 +1121,7 @@ void main() {
           secretKeyBytes: Uint8List.fromList(List<int>.generate(33, (i) => i)),
           verifierAddress: _validContractVerifier,
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -1232,7 +1232,7 @@ void main() {
           publicKey: randomKey,
           authDigest: authDigest,
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
   });
@@ -1379,18 +1379,18 @@ void main() {
     });
   });
 
-  group('ExternalSignerInfo equality and hashCode', () {
+  group('OZExternalSignerInfo equality and hashCode', () {
     test('equalInstances_areEqual', () {
       // Non-const to avoid Dart canonicalization making identical() true.
-      final a = ExternalSignerInfo(
+      final a = OZExternalSignerInfo(
         address: _validG1,
-        type: ExternalSignerType.keypair,
+        type: OZExternalSignerType.keypair,
         walletName: 'Freighter',
         walletId: 'freighter',
       );
-      final b = ExternalSignerInfo(
+      final b = OZExternalSignerInfo(
         address: _validG1,
-        type: ExternalSignerType.keypair,
+        type: OZExternalSignerType.keypair,
         walletName: 'Freighter',
         walletId: 'freighter',
       );
@@ -1401,15 +1401,15 @@ void main() {
 
     test('differentWalletName_notEqual', () {
       // Exercises lines 151-152 in oz_external_signer_manager.dart.
-      final a = ExternalSignerInfo(
+      final a = OZExternalSignerInfo(
         address: _validG1,
-        type: ExternalSignerType.wallet,
+        type: OZExternalSignerType.wallet,
         walletName: 'Freighter',
         walletId: 'freighter',
       );
-      final b = ExternalSignerInfo(
+      final b = OZExternalSignerInfo(
         address: _validG1,
-        type: ExternalSignerType.wallet,
+        type: OZExternalSignerType.wallet,
         walletName: 'LOBSTR',
         walletId: 'freighter',
       );
@@ -1417,15 +1417,15 @@ void main() {
     });
 
     test('differentWalletId_notEqual', () {
-      final a = ExternalSignerInfo(
+      final a = OZExternalSignerInfo(
         address: _validG1,
-        type: ExternalSignerType.wallet,
+        type: OZExternalSignerType.wallet,
         walletName: 'Freighter',
         walletId: 'freighter',
       );
-      final b = ExternalSignerInfo(
+      final b = OZExternalSignerInfo(
         address: _validG1,
-        type: ExternalSignerType.wallet,
+        type: OZExternalSignerType.wallet,
         walletName: 'Freighter',
         walletId: 'lobstr',
       );
@@ -1433,33 +1433,33 @@ void main() {
     });
 
     test('differentAddress_notEqual', () {
-      final a = ExternalSignerInfo(address: _validG1, type: ExternalSignerType.keypair);
-      final b = ExternalSignerInfo(address: _validG2, type: ExternalSignerType.keypair);
+      final a = OZExternalSignerInfo(address: _validG1, type: OZExternalSignerType.keypair);
+      final b = OZExternalSignerInfo(address: _validG2, type: OZExternalSignerType.keypair);
       expect(a == b, isFalse);
     });
 
     test('differentType_notEqual', () {
-      final a = ExternalSignerInfo(address: _validG1, type: ExternalSignerType.keypair);
-      final b = ExternalSignerInfo(address: _validG1, type: ExternalSignerType.wallet);
+      final a = OZExternalSignerInfo(address: _validG1, type: OZExternalSignerType.keypair);
+      final b = OZExternalSignerInfo(address: _validG1, type: OZExternalSignerType.wallet);
       expect(a == b, isFalse);
     });
 
     test('toString_containsFields', () {
-      final a = ExternalSignerInfo(
+      final a = OZExternalSignerInfo(
         address: _validG1,
-        type: ExternalSignerType.keypair,
+        type: OZExternalSignerType.keypair,
         walletName: 'Freighter',
       );
       expect(a.toString(), contains(_validG1));
     });
 
     test('nonSignerInfoType_notEqual', () {
-      final a = ExternalSignerInfo(address: _validG1, type: ExternalSignerType.keypair);
+      final a = OZExternalSignerInfo(address: _validG1, type: OZExternalSignerType.keypair);
       expect(a == 'not-a-signer-info', isFalse);
     });
 
     test('identical_isEqual', () {
-      final a = ExternalSignerInfo(address: _validG1, type: ExternalSignerType.keypair);
+      final a = OZExternalSignerInfo(address: _validG1, type: OZExternalSignerType.keypair);
       expect(a == a, isTrue);
     });
   });
@@ -1469,7 +1469,7 @@ void main() {
       final manager = _createManager(); // no walletAdapter
       await expectLater(
         manager.addFromWallet(),
-        throwsA(isA<MissingConfig>()),
+        throwsA(isA<SmartAccountMissingConfig>()),
       );
     });
 
@@ -1483,7 +1483,7 @@ void main() {
 
     test('adapterReturnsWallet_withStorage_savesConnection', () async {
       final adapter = RecordingWalletAdapter();
-      const wallet = ConnectedWallet(
+      const wallet = OZConnectedWallet(
         address: _validG1,
         walletId: 'freighter',
         walletName: 'Freighter',
@@ -1512,7 +1512,7 @@ void main() {
 
     test('withStorageAndAdapter_restoresConnections', () async {
       final adapter = RecordingWalletAdapter();
-      const wallet = ConnectedWallet(
+      const wallet = OZConnectedWallet(
         address: _validG1,
         walletId: 'freighter',
         walletName: 'Freighter',
@@ -1552,13 +1552,13 @@ void main() {
       await manager.addFromSecret(keypair.secretSeed!);
       final info = await manager.get(keypair.accountId);
       expect(info, isNotNull);
-      expect(info!.type, ExternalSignerType.keypair);
+      expect(info!.type, OZExternalSignerType.keypair);
     });
   });
 
-  group('InMemoryWalletConnectionStorage concurrent ordering', () {
+  group('OZInMemoryWalletConnectionStorage concurrent ordering', () {
     test('concurrentWrites_areOrdered', () async {
-      final storage = InMemoryWalletConnectionStorage();
+      final storage = OZInMemoryWalletConnectionStorage();
 
       await Future.wait(<Future<void>>[
         storage.setItem('key1', 'value1'),
@@ -1572,7 +1572,7 @@ void main() {
     });
 
     test('removeItem_onMissingKey_doesNotThrow', () async {
-      final storage = InMemoryWalletConnectionStorage();
+      final storage = OZInMemoryWalletConnectionStorage();
       await expectLater(storage.removeItem('missing'), completes);
     });
   });

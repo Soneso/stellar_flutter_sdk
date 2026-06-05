@@ -175,7 +175,7 @@ void main() {
           autoFund: true,
           nativeTokenContract: null, // missing
         ),
-        throwsA(isA<InvalidInput>()),
+        throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
 
@@ -215,7 +215,7 @@ void main() {
       final ops = OZWalletOperations(kit);
       await expectLater(
         () => ops.createWallet(autoSubmit: true),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
 
@@ -262,7 +262,7 @@ void main() {
       final ops = OZWalletOperations(kit);
       await expectLater(
         () => ops.createWallet(autoSubmit: true),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
 
@@ -310,7 +310,7 @@ void main() {
       final ops = OZWalletOperations(kit);
       await expectLater(
         () => ops.createWallet(autoSubmit: true),
-        throwsA(isA<TransactionSubmissionFailed>()),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
 

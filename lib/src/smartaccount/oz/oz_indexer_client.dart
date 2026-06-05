@@ -679,7 +679,7 @@ const Map<String, String> _defaultIndexerUrls = <String, String>{
 /// }
 /// ```
 ///
-/// Throws [InvalidConfig] from the constructor when the URL is blank or
+/// Throws [SmartAccountInvalidConfig] from the constructor when the URL is blank or
 /// uses a non-HTTPS scheme other than `http://localhost`.
 class OZIndexerClient {
   /// Creates an indexer client for the given [indexerUrl].
@@ -754,12 +754,12 @@ class OZIndexerClient {
   /// the indexer API.
   ///
   /// The optional [cancelToken] can be cancelled to abort the in-flight
-  /// request; a cancelled request surfaces as [IndexerRequestFailed]
+  /// request; a cancelled request surfaces as [SmartAccountIndexerRequestFailed]
   /// with a `Request cancelled` message.
   ///
-  /// Throws [InvalidInput] when [credentialId] is not valid base64url,
-  /// [IndexerRequestFailed] for network or non-2xx errors, and
-  /// [IndexerTimeout] when the request exceeds the configured timeout.
+  /// Throws [SmartAccountInvalidInput] when [credentialId] is not valid base64url,
+  /// [SmartAccountIndexerRequestFailed] for network or non-2xx errors, and
+  /// [SmartAccountIndexerTimeout] when the request exceeds the configured timeout.
   Future<OZCredentialLookupResponse> lookupByCredentialId(
     String credentialId, {
     dio.CancelToken? cancelToken,
@@ -775,12 +775,12 @@ class OZIndexerClient {
   /// [address] is a Stellar account ID (`G...`) or contract address (`C...`).
   ///
   /// The optional [cancelToken] can be cancelled to abort the in-flight
-  /// request; a cancelled request surfaces as [IndexerRequestFailed]
+  /// request; a cancelled request surfaces as [SmartAccountIndexerRequestFailed]
   /// with a `Request cancelled` message.
   ///
-  /// Throws [InvalidAddress] when [address] is not a valid Stellar address,
-  /// [IndexerRequestFailed] for network or non-2xx errors, and
-  /// [IndexerTimeout] when the request exceeds the configured timeout.
+  /// Throws [SmartAccountInvalidAddress] when [address] is not a valid Stellar address,
+  /// [SmartAccountIndexerRequestFailed] for network or non-2xx errors, and
+  /// [SmartAccountIndexerTimeout] when the request exceeds the configured timeout.
   Future<OZAddressLookupResponse> lookupByAddress(
     String address, {
     dio.CancelToken? cancelToken,
@@ -796,12 +796,12 @@ class OZIndexerClient {
   /// [contractId] is a Stellar contract address (`C...`).
   ///
   /// The optional [cancelToken] can be cancelled to abort the in-flight
-  /// request; a cancelled request surfaces as [IndexerRequestFailed]
+  /// request; a cancelled request surfaces as [SmartAccountIndexerRequestFailed]
   /// with a `Request cancelled` message.
   ///
-  /// Throws [InvalidAddress] when [contractId] is not a valid contract
-  /// address, [IndexerRequestFailed] for network or non-2xx errors, and
-  /// [IndexerTimeout] when the request exceeds the configured timeout.
+  /// Throws [SmartAccountInvalidAddress] when [contractId] is not a valid contract
+  /// address, [SmartAccountIndexerRequestFailed] for network or non-2xx errors, and
+  /// [SmartAccountIndexerTimeout] when the request exceeds the configured timeout.
   Future<OZContractDetailsResponse> getContract(
     String contractId, {
     dio.CancelToken? cancelToken,
@@ -815,11 +815,11 @@ class OZIndexerClient {
   /// Gets aggregate statistics from the indexer.
   ///
   /// The optional [cancelToken] can be cancelled to abort the in-flight
-  /// request; a cancelled request surfaces as [IndexerRequestFailed]
+  /// request; a cancelled request surfaces as [SmartAccountIndexerRequestFailed]
   /// with a `Request cancelled` message.
   ///
-  /// Throws [IndexerRequestFailed] for network or non-2xx errors, and
-  /// [IndexerTimeout] when the request exceeds the configured timeout.
+  /// Throws [SmartAccountIndexerRequestFailed] for network or non-2xx errors, and
+  /// [SmartAccountIndexerTimeout] when the request exceeds the configured timeout.
   Future<OZIndexerStatsResponse> getStats({
     dio.CancelToken? cancelToken,
   }) async {
@@ -897,7 +897,7 @@ class OZIndexerClient {
   }
 
   /// GETs [url] and returns the raw response body, mapping HTTP and
-  /// transport errors to [IndexerException] subtypes.
+  /// transport errors to [SmartAccountIndexerException] subtypes.
   Future<String> _performRequest(
     String url, {
     dio.CancelToken? cancelToken,
@@ -910,20 +910,20 @@ class OZIndexerClient {
       );
       final body = response.data ?? '';
       if (body.length > OZConstants.maxIndexerResponseBytes) {
-        throw IndexerException.requestFailed(
+        throw SmartAccountIndexerException.requestFailed(
           'Indexer response body exceeds maximum size of '
           '${OZConstants.maxIndexerResponseBytes} bytes',
         );
       }
       final status = response.statusCode ?? 0;
       if (status < 200 || status >= 300) {
-        throw IndexerException.requestFailed(
+        throw SmartAccountIndexerException.requestFailed(
           'HTTP $status: ${truncateBody(body)}',
         );
       }
       final responseContentType = response.headers.value('content-type');
       if (!isJsonContentType(responseContentType)) {
-        throw IndexerException.requestFailed(
+        throw SmartAccountIndexerException.requestFailed(
           'Unexpected Content-Type: $responseContentType',
         );
       }
@@ -933,26 +933,26 @@ class OZIndexerClient {
       // only raises DioException here for transport, timeout, cancellation,
       // or decoding failures.
       if (e.type == dio.DioExceptionType.cancel) {
-        throw IndexerException.requestFailed(
+        throw SmartAccountIndexerException.requestFailed(
           'Request cancelled',
           cause: e,
         );
       }
       if (isDioTimeout(e)) {
-        throw IndexerException.timeout(url, cause: e);
+        throw SmartAccountIndexerException.timeout(url, cause: e);
       }
-      throw IndexerException.requestFailed(
+      throw SmartAccountIndexerException.requestFailed(
         dioErrorMessage(e),
         cause: e,
       );
     } on SmartAccountException {
-      // SDK exceptions (including IndexerException raised by the
+      // SDK exceptions (including SmartAccountIndexerException raised by the
       // non-2xx branch above) must surface unchanged. The
       // `on SmartAccountException` clause prevents the catch-all below
       // from re-wrapping them.
       rethrow;
     } catch (e) {
-      throw IndexerException.requestFailed(
+      throw SmartAccountIndexerException.requestFailed(
         genericErrorMessage(e, defaultText: 'Request failed'),
         cause: e,
       );
@@ -960,20 +960,20 @@ class OZIndexerClient {
   }
 
   /// Decodes [body] as a JSON object, mapping malformed inputs to
-  /// [IndexerRequestFailed] so callers never need to handle a Dart
+  /// [SmartAccountIndexerRequestFailed] so callers never need to handle a Dart
   /// [FormatException] directly.
   Map<String, dynamic> _decodeJsonObject(String body) {
     Object? parsed;
     try {
       parsed = json.decode(body);
     } on FormatException catch (e) {
-      throw IndexerException.requestFailed(
+      throw SmartAccountIndexerException.requestFailed(
         'Failed to parse indexer response as JSON: ${truncateBody(body)}',
         cause: e,
       );
     }
     if (parsed is! Map<String, dynamic>) {
-      throw IndexerException.requestFailed(
+      throw SmartAccountIndexerException.requestFailed(
         'Indexer response is not a JSON object: ${truncateBody(body)}',
       );
     }
@@ -985,7 +985,7 @@ class OZIndexerClient {
     try {
       bytes = base64.decode(base64.normalize(base64Url));
     } on FormatException catch (e) {
-      throw ValidationException.invalidInput(
+      throw SmartAccountValidationException.invalidInput(
         'credentialId',
         'Failed to decode base64url credential ID: $base64Url',
         cause: e,

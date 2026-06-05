@@ -15,7 +15,7 @@ import '../core/smart_account_errors.dart';
 /// states are [pending] and [failed]. A credential whose status was
 /// [pending] disappears from storage once its smart-account contract has
 /// been deployed.
-enum CredentialDeploymentStatus {
+enum OZCredentialDeploymentStatus {
   /// Credential created but smart account contract not yet deployed.
   pending,
 
@@ -30,17 +30,17 @@ enum CredentialDeploymentStatus {
 /// and usage history.
 ///
 /// Equality is byte-content based.
-class StoredCredential {
+class OZStoredCredential {
   /// Constructs a stored credential. [credentialId] and [publicKey] are
   /// required; all metadata fields default to safe non-set values.
   ///
   /// When [createdAt] is omitted the current wall-clock millisecond
   /// timestamp is captured.
-  StoredCredential({
+  OZStoredCredential({
     required this.credentialId,
     required Uint8List publicKey,
     this.contractId,
-    this.deploymentStatus = CredentialDeploymentStatus.pending,
+    this.deploymentStatus = OZCredentialDeploymentStatus.pending,
     this.deploymentError,
     int? createdAt,
     this.lastUsedAt,
@@ -65,7 +65,7 @@ class StoredCredential {
   final String? contractId;
 
   /// Current deployment status of the smart account contract.
-  final CredentialDeploymentStatus deploymentStatus;
+  final OZCredentialDeploymentStatus deploymentStatus;
 
   /// Error message captured when deployment failed.
   final String? deploymentError;
@@ -107,12 +107,12 @@ class StoredCredential {
   /// `true` together with the corresponding `null` argument to clear an
   /// optional field. Without these flags a `null` argument means
   /// "no change" — the existing value is retained.
-  StoredCredential copyWith({
+  OZStoredCredential copyWith({
     String? credentialId,
     Uint8List? publicKey,
     String? contractId,
     bool setContractId = false,
-    CredentialDeploymentStatus? deploymentStatus,
+    OZCredentialDeploymentStatus? deploymentStatus,
     String? deploymentError,
     bool setDeploymentError = false,
     int? createdAt,
@@ -128,7 +128,7 @@ class StoredCredential {
     bool? backedUp,
     bool setBackedUp = false,
   }) {
-    return StoredCredential(
+    return OZStoredCredential(
       credentialId: credentialId ?? this.credentialId,
       publicKey: publicKey ?? this.publicKey,
       contractId: setContractId ? contractId : (contractId ?? this.contractId),
@@ -152,9 +152,9 @@ class StoredCredential {
   /// Applies the given partial [updates] to this credential and returns a
   /// new instance. Fields whose update value is `null` are left unchanged
   /// — there is no way to clear a previously-set field via this helper. To
-  /// clear a field, save a full replacement [StoredCredential] through
-  /// [StorageAdapter.save].
-  StoredCredential applyUpdate(StoredCredentialUpdate updates) =>
+  /// clear a field, save a full replacement [OZStoredCredential] through
+  /// [OZStorageAdapter.save].
+  OZStoredCredential applyUpdate(OZStoredCredentialUpdate updates) =>
       copyWith(
         deploymentStatus: updates.deploymentStatus,
         deploymentError: updates.deploymentError,
@@ -170,7 +170,7 @@ class StoredCredential {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! StoredCredential) return false;
+    if (other is! OZStoredCredential) return false;
     if (credentialId != other.credentialId) return false;
     if (!Util.constantTimeEquals(publicKey, other.publicKey)) return false;
     if (contractId != other.contractId) return false;
@@ -235,10 +235,10 @@ int _stringListHash(List<String>? values) {
 ///
 /// Sessions enable users to reconnect to their smart account wallet without
 /// re-authentication, as long as the session has not expired.
-class StoredSession {
+class OZStoredSession {
   /// Constructs a stored session with the four required timestamps and
   /// identifiers.
-  const StoredSession({
+  const OZStoredSession({
     required this.credentialId,
     required this.contractId,
     required this.connectedAt,
@@ -264,7 +264,7 @@ class StoredSession {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! StoredSession) return false;
+    if (other is! OZStoredSession) return false;
     return credentialId == other.credentialId &&
         contractId == other.contractId &&
         connectedAt == other.connectedAt &&
@@ -280,11 +280,11 @@ class StoredSession {
 ///
 /// Only non-null fields are applied during an update operation. A `null`
 /// value means "no change" and does not clear the field. To reset a field
-/// to `null`, replace the whole credential via [StorageAdapter.save].
-class StoredCredentialUpdate {
-  /// Constructs a partial update specification for [StoredCredential]. All
+/// to `null`, replace the whole credential via [OZStorageAdapter.save].
+class OZStoredCredentialUpdate {
+  /// Constructs a partial update specification for [OZStoredCredential]. All
   /// fields default to `null` (no change).
-  const StoredCredentialUpdate({
+  const OZStoredCredentialUpdate({
     this.deploymentStatus,
     this.deploymentError,
     this.contractId,
@@ -296,7 +296,7 @@ class StoredCredentialUpdate {
     this.backedUp,
   });
 
-  final CredentialDeploymentStatus? deploymentStatus;
+  final OZCredentialDeploymentStatus? deploymentStatus;
   final String? deploymentError;
   final String? contractId;
   final int? lastUsedAt;
@@ -317,45 +317,45 @@ class StoredCredentialUpdate {
 /// implementations that span multiple isolates or processes are responsible
 /// for any additional synchronisation those environments require.
 ///
-/// The default implementation is [InMemoryStorageAdapter] (memory only).
+/// The default implementation is [OZInMemoryStorageAdapter] (memory only).
 /// Platform-specific implementations can provide persistent storage.
-abstract class StorageAdapter {
-  /// Throws [StorageWriteFailed] if persistence fails.
-  Future<void> save(StoredCredential credential);
+abstract class OZStorageAdapter {
+  /// Throws [SmartAccountStorageWriteFailed] if persistence fails.
+  Future<void> save(OZStoredCredential credential);
 
-  /// Returns `null` if not found. Throws [StorageReadFailed] if reading fails.
-  Future<StoredCredential?> get(String credentialId);
+  /// Returns `null` if not found. Throws [SmartAccountStorageReadFailed] if reading fails.
+  Future<OZStoredCredential?> get(String credentialId);
 
   /// Returns an empty list when no credentials match.
   ///
-  /// Throws [StorageReadFailed] if reading fails.
-  Future<List<StoredCredential>> getByContract(String contractId);
+  /// Throws [SmartAccountStorageReadFailed] if reading fails.
+  Future<List<OZStoredCredential>> getByContract(String contractId);
 
-  /// Throws [StorageReadFailed] if reading fails.
-  Future<List<StoredCredential>> getAll();
+  /// Throws [SmartAccountStorageReadFailed] if reading fails.
+  Future<List<OZStoredCredential>> getAll();
 
   /// Silently no-ops if no credential with [credentialId] exists.
   ///
-  /// Throws [StorageWriteFailed] if deletion fails.
+  /// Throws [SmartAccountStorageWriteFailed] if deletion fails.
   Future<void> delete(String credentialId);
 
-  /// Throws [CredentialNotFound] if no credential with [credentialId] exists.
-  /// Throws [StorageWriteFailed] if persistence fails.
-  Future<void> update(String credentialId, StoredCredentialUpdate updates);
+  /// Throws [SmartAccountCredentialNotFound] if no credential with [credentialId] exists.
+  /// Throws [SmartAccountStorageWriteFailed] if persistence fails.
+  Future<void> update(String credentialId, OZStoredCredentialUpdate updates);
 
-  /// Throws [StorageWriteFailed] if clearing fails.
+  /// Throws [SmartAccountStorageWriteFailed] if clearing fails.
   Future<void> clear();
 
-  /// Throws [StorageWriteFailed] if saving fails.
-  Future<void> saveSession(StoredSession session);
+  /// Throws [SmartAccountStorageWriteFailed] if saving fails.
+  Future<void> saveSession(OZStoredSession session);
 
   /// Returns `null` when no session exists or when the saved session has
   /// already expired; an expired session is auto-cleared so callers always
-  /// observe "valid session or none". Throws [StorageReadFailed] if reading
+  /// observe "valid session or none". Throws [SmartAccountStorageReadFailed] if reading
   /// fails.
-  Future<StoredSession?> getSession();
+  Future<OZStoredSession?> getSession();
 
-  /// Throws [StorageWriteFailed] if clearing fails.
+  /// Throws [SmartAccountStorageWriteFailed] if clearing fails.
   Future<void> clearSession();
 }
 
@@ -366,7 +366,7 @@ abstract class StorageAdapter {
 /// internal [Future]-based lock so that interleaved reads and writes never
 /// observe a partially-applied update.
 ///
-/// All [InMemoryStorageAdapter] instances compare equal because two
+/// All [OZInMemoryStorageAdapter] instances compare equal because two
 /// freshly-created instances are functionally identical (both empty); this
 /// makes the adapter usable as a default value of an enclosing data class
 /// without breaking that data class's structural equality.
@@ -377,11 +377,11 @@ abstract class StorageAdapter {
 /// secure storage adapter (for example a Keychain-backed implementation on
 /// Apple platforms or an EncryptedSharedPreferences-backed implementation on
 /// Android) via [OZSmartAccountConfig.storage].
-class InMemoryStorageAdapter implements StorageAdapter {
-  InMemoryStorageAdapter();
+class OZInMemoryStorageAdapter implements OZStorageAdapter {
+  OZInMemoryStorageAdapter();
 
-  final Map<String, StoredCredential> _credentials = {};
-  StoredSession? _session;
+  final Map<String, OZStoredCredential> _credentials = {};
+  OZStoredSession? _session;
   Future<void> _tail = Future<void>.value();
 
   // why: in-memory FIFO serialization without a runtime dependency.
@@ -404,27 +404,27 @@ class InMemoryStorageAdapter implements StorageAdapter {
   }
 
   @override
-  Future<void> save(StoredCredential credential) {
+  Future<void> save(OZStoredCredential credential) {
     return _withLock<void>(() {
       _credentials[credential.credentialId] = credential;
     });
   }
 
   @override
-  Future<StoredCredential?> get(String credentialId) {
-    return _withLock<StoredCredential?>(() => _credentials[credentialId]);
+  Future<OZStoredCredential?> get(String credentialId) {
+    return _withLock<OZStoredCredential?>(() => _credentials[credentialId]);
   }
 
   @override
-  Future<List<StoredCredential>> getByContract(String contractId) {
-    return _withLock<List<StoredCredential>>(() => _credentials.values
+  Future<List<OZStoredCredential>> getByContract(String contractId) {
+    return _withLock<List<OZStoredCredential>>(() => _credentials.values
         .where((credential) => credential.contractId == contractId)
         .toList(growable: false));
   }
 
   @override
-  Future<List<StoredCredential>> getAll() {
-    return _withLock<List<StoredCredential>>(
+  Future<List<OZStoredCredential>> getAll() {
+    return _withLock<List<OZStoredCredential>>(
         () => _credentials.values.toList(growable: false));
   }
 
@@ -436,11 +436,11 @@ class InMemoryStorageAdapter implements StorageAdapter {
   }
 
   @override
-  Future<void> update(String credentialId, StoredCredentialUpdate updates) {
+  Future<void> update(String credentialId, OZStoredCredentialUpdate updates) {
     return _withLock<void>(() {
       final existing = _credentials[credentialId];
       if (existing == null) {
-        throw CredentialException.notFound(credentialId);
+        throw SmartAccountCredentialException.notFound(credentialId);
       }
       _credentials[credentialId] = existing.applyUpdate(updates);
     });
@@ -454,15 +454,15 @@ class InMemoryStorageAdapter implements StorageAdapter {
   }
 
   @override
-  Future<void> saveSession(StoredSession session) {
+  Future<void> saveSession(OZStoredSession session) {
     return _withLock<void>(() {
       _session = session;
     });
   }
 
   @override
-  Future<StoredSession?> getSession() {
-    return _withLock<StoredSession?>(() {
+  Future<OZStoredSession?> getSession() {
+    return _withLock<OZStoredSession?>(() {
       final current = _session;
       if (current == null) return null;
       if (current.isExpired) {
@@ -481,20 +481,20 @@ class InMemoryStorageAdapter implements StorageAdapter {
   }
 
   @override
-  bool operator ==(Object other) => other is InMemoryStorageAdapter;
+  bool operator ==(Object other) => other is OZInMemoryStorageAdapter;
 
   @override
-  int get hashCode => (InMemoryStorageAdapter).hashCode;
+  int get hashCode => (OZInMemoryStorageAdapter).hashCode;
 }
 
 /// Information about an externally connected wallet.
 ///
-/// Returned by [ExternalWalletAdapter.connect] and
-/// [ExternalWalletAdapter.getConnectedWallets] to identify which wallet is
+/// Returned by [OZExternalWalletAdapter.connect] and
+/// [OZExternalWalletAdapter.getConnectedWallets] to identify which wallet is
 /// connected and its signing address.
-class ConnectedWallet {
+class OZConnectedWallet {
   /// Constructs a connected-wallet record.
-  const ConnectedWallet({
+  const OZConnectedWallet({
     required this.address,
     required this.walletId,
     required this.walletName,
@@ -504,7 +504,7 @@ class ConnectedWallet {
   final String address;
 
   /// Unique wallet identifier (e.g. `freighter`, `lobstr`). Used for
-  /// reconnection via [ExternalWalletAdapter.reconnect].
+  /// reconnection via [OZExternalWalletAdapter.reconnect].
   final String walletId;
 
   /// Human-readable display name for the wallet (e.g. `Freighter`,
@@ -514,7 +514,7 @@ class ConnectedWallet {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! ConnectedWallet) return false;
+    if (other is! OZConnectedWallet) return false;
     return address == other.address &&
         walletId == other.walletId &&
         walletName == other.walletName;
@@ -528,10 +528,10 @@ class ConnectedWallet {
 ///
 /// Allows specifying a network passphrase and a particular address when
 /// multiple wallets are connected.
-class SignAuthEntryOptions {
+class OZSignAuthEntryOptions {
   /// Constructs a sign-auth-entry options record. All fields default to
   /// `null` so callers can omit any combination.
-  const SignAuthEntryOptions({
+  const OZSignAuthEntryOptions({
     this.networkPassphrase,
     this.address,
   });
@@ -545,7 +545,7 @@ class SignAuthEntryOptions {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! SignAuthEntryOptions) return false;
+    if (other is! OZSignAuthEntryOptions) return false;
     return networkPassphrase == other.networkPassphrase &&
         address == other.address;
   }
@@ -559,9 +559,9 @@ class SignAuthEntryOptions {
 /// Carries the raw Ed25519 signature and optionally the signer address,
 /// which may differ from the requested address in some wallet
 /// implementations.
-class SignAuthEntryResult {
+class OZSignAuthEntryResult {
   /// Constructs a sign-auth-entry result.
-  const SignAuthEntryResult({
+  const OZSignAuthEntryResult({
     required this.signedAuthEntry,
     this.signerAddress,
   });
@@ -581,7 +581,7 @@ class SignAuthEntryResult {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! SignAuthEntryResult) return false;
+    if (other is! OZSignAuthEntryResult) return false;
     return signedAuthEntry == other.signedAuthEntry &&
         signerAddress == other.signerAddress;
   }
@@ -600,20 +600,20 @@ class SignAuthEntryResult {
 /// Concrete adapters extend this class so they can inherit the no-op
 /// defaults for [disconnectByAddress], [getWalletForAddress], and
 /// [reconnect].
-abstract class ExternalWalletAdapter {
+abstract class OZExternalWalletAdapter {
   /// Constructs an external wallet adapter base.
-  const ExternalWalletAdapter();
+  const OZExternalWalletAdapter();
 
   /// Connects to the external wallet, prompting the user to authorise the
   /// connection through the wallet's UI.
   ///
   /// Returns the connected-wallet info, or `null` if the user cancelled.
-  /// Throws a [WalletException] if connection fails.
-  Future<ConnectedWallet?> connect();
+  /// Throws a [SmartAccountWalletException] if connection fails.
+  Future<OZConnectedWallet?> connect();
 
   /// Disconnects all external wallets.
   ///
-  /// Throws a [WalletException] if disconnection fails.
+  /// Throws a [SmartAccountWalletException] if disconnection fails.
   Future<void> disconnect();
 
   /// Disconnects a specific wallet by its Stellar [address].
@@ -640,29 +640,29 @@ abstract class ExternalWalletAdapter {
   /// that omit the SHA-256 step, sign a different payload, or return a
   /// non-canonical encoding produce a signature that the Soroban host
   /// rejects at submission time. That rejection surfaces in the SDK as
-  /// `TransactionException.simulationFailed` during the post-sign
+  /// `SmartAccountTransactionException.simulationFailed` during the post-sign
   /// re-simulation, not as a direct error from this method.
   ///
-  /// Throws [TransactionSigningFailed] if signing fails or is rejected.
-  Future<SignAuthEntryResult> signAuthEntry(
+  /// Throws [SmartAccountTransactionSigningFailed] if signing fails or is rejected.
+  Future<OZSignAuthEntryResult> signAuthEntry(
     String preimageXdr, {
-    SignAuthEntryOptions? options,
+    OZSignAuthEntryOptions? options,
   });
 
   /// Returns all currently connected wallets.
-  List<ConnectedWallet> getConnectedWallets();
+  List<OZConnectedWallet> getConnectedWallets();
 
   /// Returns whether a wallet is connected that can sign for [address].
   bool canSignFor(String address);
 
   /// Returns wallet info for a specific [address] when known. Default
   /// implementation returns `null`.
-  ConnectedWallet? getWalletForAddress(String address) => null;
+  OZConnectedWallet? getWalletForAddress(String address) => null;
 
   /// Reconnects to a previously connected wallet by its [walletId].
   ///
   /// Used for restoring wallet connections after page reloads or app
   /// restarts. The default implementation returns `null`, indicating
   /// reconnection is not supported by this adapter.
-  Future<ConnectedWallet?> reconnect(String walletId) async => null;
+  Future<OZConnectedWallet?> reconnect(String walletId) async => null;
 }

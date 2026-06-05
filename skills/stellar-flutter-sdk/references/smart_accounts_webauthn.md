@@ -1,6 +1,6 @@
 # Smart Accounts — WebAuthn Providers and Storage Adapters
 
-Platform-specific classes that supply a `WebAuthnProvider` and a `StorageAdapter` to `OZSmartAccountConfig`. Kit API and transaction flows live in [smart_accounts.md](./smart_accounts.md); signer, context-rule, policy, and multi-signer flows live in [smart_accounts_policies.md](./smart_accounts_policies.md).
+Platform-specific classes that supply a `WebAuthnProvider` and an `OZStorageAdapter` to `OZSmartAccountConfig`. Kit API and transaction flows live in [smart_accounts.md](./smart_accounts.md); signer, context-rule, policy, and multi-signer flows live in [smart_accounts_policies.md](./smart_accounts_policies.md).
 
 Every class documented here is exported from the package barrel, so a single import covers them all:
 
@@ -15,8 +15,8 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 - [Android](#android)
 - [iOS](#ios)
 - [Web](#web)
-- [Choosing a StorageAdapter](#choosing-a-storageadapter)
-- [Implementing a custom StorageAdapter](#implementing-a-custom-storageadapter)
+- [Choosing an OZStorageAdapter](#choosing-an-ozstorageadapter)
+- [Implementing a custom OZStorageAdapter](#implementing-a-custom-ozstorageadapter)
 - [Implementing a custom WebAuthnProvider](#implementing-a-custom-webauthnprovider)
 - [Cross-platform checklist](#cross-platform-checklist)
 
@@ -29,7 +29,7 @@ pieces are injected into `OZSmartAccountConfig`:
 
 - **`WebAuthnProvider`** — runs the platform passkey ceremony (register a new
   passkey, authenticate with an existing one).
-- **`StorageAdapter`** — persists credential and session records so a user can
+- **`OZStorageAdapter`** — persists credential and session records so a user can
   reconnect without a fresh ceremony.
 
 Both are platform-specific because passkeys are a platform capability. The SDK
@@ -37,12 +37,12 @@ ships:
 
 | Platform | WebAuthn provider | WebAuthn API | Min version | Storage (production) |
 |----------|-------------------|--------------|-------------|----------------------|
-| Android | `PlatformWebAuthnProvider` (method channel → Credential Manager) | `androidx.credentials` | API 28 (Android 9) | `PlatformStorageAdapter` (`EncryptedSharedPreferences`) |
-| iOS | `PlatformWebAuthnProvider` (method channel → AuthenticationServices) | `AuthenticationServices` | iOS 16 | `PlatformStorageAdapter` (Keychain) |
-| Web | `BrowserWebAuthnProvider` (`navigator.credentials`) | Web Authentication API | Chrome 67+, Firefox 60+, Safari 14+, Edge 79+ | `IndexedDBStorageAdapter` |
-| Any (tests / ephemeral) | — | — | — | `InMemoryStorageAdapter` |
+| Android | `PlatformWebAuthnProvider` (method channel → Credential Manager) | `androidx.credentials` | API 28 (Android 9) | `OZPlatformStorageAdapter` (`EncryptedSharedPreferences`) |
+| iOS | `PlatformWebAuthnProvider` (method channel → AuthenticationServices) | `AuthenticationServices` | iOS 16 | `OZPlatformStorageAdapter` (Keychain) |
+| Web | `BrowserWebAuthnProvider` (`navigator.credentials`) | Web Authentication API | Chrome 67+, Firefox 60+, Safari 14+, Edge 79+ | `OZIndexedDBStorageAdapter` |
+| Any (tests / ephemeral) | — | — | — | `OZInMemoryStorageAdapter` |
 
-> `PlatformWebAuthnProvider` and `PlatformStorageAdapter` drive a native plugin
+> `PlatformWebAuthnProvider` and `OZPlatformStorageAdapter` drive a native plugin
 > (AuthenticationServices + Keychain on iOS, Credential Manager on Android).
 > WebAuthn is supported on Android, iOS, and Web only — there is no macOS native
 > plugin, so the platform providers raise `MissingPluginException` on macOS.
@@ -50,11 +50,11 @@ ships:
 ### How Flutter selects the implementation
 
 - **Mobile (Android / iOS)** — `PlatformWebAuthnProvider` and
-  `PlatformStorageAdapter` dispatch over a Flutter method channel to a native
+  `OZPlatformStorageAdapter` dispatch over a Flutter method channel to a native
   plugin. The Dart class is identical across these targets; only the native
   handler differs.
-- **Web** — `BrowserWebAuthnProvider`, `IndexedDBStorageAdapter`, and
-  `LocalStorageAdapter` are public facades wired with a conditional export:
+- **Web** — `BrowserWebAuthnProvider`, `OZIndexedDBStorageAdapter`, and
+  `OZLocalStorageAdapter` are public facades wired with a conditional export:
 
   ```dart
   // Inside the SDK (browser_webauthn_provider.dart):
@@ -109,7 +109,7 @@ abstract class WebAuthnProvider {
 
   Future<WebAuthnAuthenticationResult> authenticate({
     required Uint8List challenge,             // auth payload hash; passed as-is
-    List<AllowCredential>? allowCredentials,  // optional credential descriptors + transport hints
+    List<WebAuthnAllowCredential>? allowCredentials,  // optional credential descriptors + transport hints
   });
 }
 ```
@@ -121,7 +121,7 @@ abstract class WebAuthnProvider {
 // WRONG: provider.authenticate(challenge: c, allowCredentialIds: [idBytes])  — no such param
 // CORRECT: provider.authenticate(
 //   challenge: c,
-//   allowCredentials: AllowCredential.fromIds([idBytes]),
+//   allowCredentials: WebAuthnAllowCredential.fromIds([idBytes]),
 // )
 ```
 
@@ -165,16 +165,16 @@ The kit normalises the DER signature to the 64-byte compact `r || s` low-S form
 that Soroban requires. A provider returns the DER bytes exactly as the platform
 delivers them; it must **not** pre-normalise.
 
-### `AllowCredential`
+### `WebAuthnAllowCredential`
 
 ```dart
-class AllowCredential {
-  const AllowCredential({required this.id, this.transports});
+class WebAuthnAllowCredential {
+  const WebAuthnAllowCredential({required this.id, this.transports});
   final Uint8List id;               // raw credential ID bytes
   final List<String>? transports;   // 'internal' | 'hybrid' | 'usb' | 'ble' | 'nfc'
 
-  static AllowCredential fromId(Uint8List id);
-  static List<AllowCredential> fromIds(List<Uint8List> ids);
+  static WebAuthnAllowCredential fromId(Uint8List id);
+  static List<WebAuthnAllowCredential> fromIds(List<Uint8List> ids);
 }
 ```
 
@@ -184,14 +184,14 @@ restricts to the current device's platform authenticator. When `transports` is
 `null` the authenticator picks defaults.
 
 Registration captures transports (`WebAuthnRegistrationResult.transports`), the
-SDK stores them on the `StoredCredential`, and a later `authenticate` looks
-them up to build the `AllowCredential` list — so cross-device hints survive
+SDK stores them on the `OZStoredCredential`, and a later `authenticate` looks
+them up to build the `WebAuthnAllowCredential` list — so cross-device hints survive
 across sessions automatically.
 
 ```dart
 // Build a constrained allow-list with a transport hint:
 final allow = [
-  AllowCredential(id: credentialIdBytes, transports: ['hybrid', 'internal']),
+  WebAuthnAllowCredential(id: credentialIdBytes, transports: ['hybrid', 'internal']),
 ];
 final result = await provider.authenticate(
   challenge: payloadHash,
@@ -199,24 +199,24 @@ final result = await provider.authenticate(
 );
 ```
 
-### `StorageAdapter`
+### `OZStorageAdapter`
 
 Method names are short (`save` / `get` / `delete`), not
 `saveCredential` / `getCredential`.
 
 ```dart
-abstract class StorageAdapter {
+abstract class OZStorageAdapter {
   // Credentials
-  Future<void> save(StoredCredential credential);
-  Future<StoredCredential?> get(String credentialId);          // null if absent
-  Future<List<StoredCredential>> getByContract(String contractId);
-  Future<List<StoredCredential>> getAll();
+  Future<void> save(OZStoredCredential credential);
+  Future<OZStoredCredential?> get(String credentialId);          // null if absent
+  Future<List<OZStoredCredential>> getByContract(String contractId);
+  Future<List<OZStoredCredential>> getAll();
   Future<void> delete(String credentialId);                    // no-op if absent
-  Future<void> update(String credentialId, StoredCredentialUpdate updates); // throws CredentialNotFound if absent
+  Future<void> update(String credentialId, OZStoredCredentialUpdate updates); // throws SmartAccountCredentialNotFound if absent
   Future<void> clear();
   // Sessions
-  Future<void> saveSession(StoredSession session);
-  Future<StoredSession?> getSession();                         // null if absent OR expired
+  Future<void> saveSession(OZStoredSession session);
+  Future<OZStoredSession?> getSession();                         // null if absent OR expired
   Future<void> clearSession();
 }
 ```
@@ -230,7 +230,7 @@ abstract class StorageAdapter {
 // CORRECT: storage.delete(id)
 ```
 
-`update` applies a partial `StoredCredentialUpdate`: non-null fields overwrite,
+`update` applies a partial `OZStoredCredentialUpdate`: non-null fields overwrite,
 null fields are left unchanged. There is no way to reset a field to null via
 `update` — `save` a full replacement credential for that.
 
@@ -238,15 +238,15 @@ null fields are left unchanged. There is no way to reset a field to null via
 has expired** (the adapter auto-clears expired sessions on read). After app
 restart, always check the return value.
 
-### `StoredCredential` and `StoredCredentialUpdate`
+### `OZStoredCredential` and `OZStoredCredentialUpdate`
 
 ```dart
-class StoredCredential {
-  StoredCredential({
+class OZStoredCredential {
+  OZStoredCredential({
     required this.credentialId,   // String, Base64URL-encoded
     required Uint8List publicKey, // 65-byte uncompressed secp256r1
     this.contractId,              // String?  smart-account C-address once derived
-    this.deploymentStatus = CredentialDeploymentStatus.pending,
+    this.deploymentStatus = OZCredentialDeploymentStatus.pending,
     this.deploymentError,
     int? createdAt,               // ms since epoch; defaults to now
     this.lastUsedAt,
@@ -256,15 +256,15 @@ class StoredCredential {
     this.deviceType,              // 'singleDevice' | 'multiDevice'
     this.backedUp,
   });
-  StoredCredential applyUpdate(StoredCredentialUpdate updates); // null = no change
+  OZStoredCredential applyUpdate(OZStoredCredentialUpdate updates); // null = no change
 }
 
-enum CredentialDeploymentStatus { pending, failed }  // success removes the record from storage
+enum OZCredentialDeploymentStatus { pending, failed }  // success removes the record from storage
 ```
 
 ```dart
-class StoredCredentialUpdate {
-  const StoredCredentialUpdate({
+class OZStoredCredentialUpdate {
+  const OZStoredCredentialUpdate({
     this.deploymentStatus, this.deploymentError, this.contractId,
     this.lastUsedAt, this.nickname, this.isPrimary,
     this.transports, this.deviceType, this.backedUp,
@@ -273,11 +273,11 @@ class StoredCredentialUpdate {
 }
 ```
 
-### `StoredSession`
+### `OZStoredSession`
 
 ```dart
-class StoredSession {
-  const StoredSession({
+class OZStoredSession {
+  const OZStoredSession({
     required this.credentialId, // String
     required this.contractId,   // String, smart-account C-address
     required this.connectedAt,  // int, ms since epoch
@@ -287,7 +287,7 @@ class StoredSession {
 }
 ```
 
-### `InMemoryStorageAdapter`
+### `OZInMemoryStorageAdapter`
 
 Tests and ephemeral flows only. It is the **default** when
 `OZSmartAccountConfig.storage` is omitted. Every instance compares equal to
@@ -295,19 +295,19 @@ every other instance, so config copies that fall back to the default keep
 structural equality.
 
 ```dart
-final storage = InMemoryStorageAdapter(); // not persisted; lost on restart
+final storage = OZInMemoryStorageAdapter(); // not persisted; lost on restart
 ```
 
 ```dart
-// WRONG: shipping production with InMemoryStorageAdapter — credentials lost on restart
-// CORRECT: wire a platform adapter (PlatformStorageAdapter / IndexedDBStorageAdapter)
+// WRONG: shipping production with OZInMemoryStorageAdapter — credentials lost on restart
+// CORRECT: wire a platform adapter (OZPlatformStorageAdapter / OZIndexedDBStorageAdapter)
 ```
 
 ### Injecting into `OZSmartAccountConfig`
 
 The config takes the provider and adapter directly. The provider parameter is
 `webauthnProvider` (all lowercase after `web`); `storage` defaults to a fresh
-`InMemoryStorageAdapter` when omitted.
+`OZInMemoryStorageAdapter` when omitted.
 
 ```dart
 final config = OZSmartAccountConfig(
@@ -316,7 +316,7 @@ final config = OZSmartAccountConfig(
   accountWasmHash: '<account-wasm-hash-hex>',          // 64-char hex (SHA-256 of WASM)
   webauthnVerifierAddress: '<webauthn-verifier-c-address>', // C-address
   webauthnProvider: provider,   // a WebAuthnProvider
-  storage: storage,             // a StorageAdapter; omit for InMemoryStorageAdapter
+  storage: storage,             // an OZStorageAdapter; omit for OZInMemoryStorageAdapter
 );
 ```
 
@@ -331,7 +331,7 @@ final config = OZSmartAccountConfig(
 
 `PlatformWebAuthnProvider` dispatches over a method channel to the native
 plugin, which uses `androidx.credentials.CredentialManager`.
-`PlatformStorageAdapter` stores credentials in `EncryptedSharedPreferences`
+`OZPlatformStorageAdapter` stores credentials in `EncryptedSharedPreferences`
 (AES-256-GCM values / AES-256-SIV keys) backed by the Android Keystore.
 
 ### Prerequisites
@@ -462,12 +462,12 @@ isolate fail with `WebAuthnRegistrationFailed` / `WebAuthnAuthenticationFailed`.
 
 ### Storage adapters (Android)
 
-- **`PlatformStorageAdapter`** — production; `EncryptedSharedPreferences` +
+- **`OZPlatformStorageAdapter`** — production; `EncryptedSharedPreferences` +
   Android Keystore. Requires API 28+.
-- **`InMemoryStorageAdapter`** — non-persistent; unit tests only.
+- **`OZInMemoryStorageAdapter`** — non-persistent; unit tests only.
 
 ```dart
-final storage = PlatformStorageAdapter(); // no constructor arguments
+final storage = OZPlatformStorageAdapter(); // no constructor arguments
 ```
 
 ### Full kit initialization (Android)
@@ -475,7 +475,7 @@ final storage = PlatformStorageAdapter(); // no constructor arguments
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-final storage = PlatformStorageAdapter();
+final storage = OZPlatformStorageAdapter();
 final webauthnProvider = PlatformWebAuthnProvider(
   rpId: 'wallet.example.com',
   rpName: 'My Stellar App',
@@ -509,8 +509,8 @@ final kit = OZSmartAccountKit.create(config: config);
   value in `sha256_cert_fingerprints`. Inspect the APK with
   `apksigner verify --print-certs <apk>`.
 - **`EncryptedSharedPreferences` init failure** → Android Keystore unavailable
-  (rooted / custom ROM / old emulator). Surfaces as `StorageWriteFailed`. Fall
-  back to `InMemoryStorageAdapter` for testing only.
+  (rooted / custom ROM / old emulator). Surfaces as `SmartAccountStorageWriteFailed`. Fall
+  back to `OZInMemoryStorageAdapter` for testing only.
 - **`WebAuthnNotSupported`** → `Build.VERSION.SDK_INT < 28`. Guard kit
   construction on the API level and present a fallback UI.
 
@@ -519,7 +519,7 @@ final kit = OZSmartAccountKit.create(config: config);
 ## iOS
 
 `PlatformWebAuthnProvider` is the same class as on Android; the native plugin
-differs and uses Apple's `AuthenticationServices`. `PlatformStorageAdapter`
+differs and uses Apple's `AuthenticationServices`. `OZPlatformStorageAdapter`
 stores credentials in the iOS Keychain.
 
 ### Prerequisites
@@ -638,19 +638,19 @@ time.
 
 ### Storage adapters (iOS)
 
-- **`PlatformStorageAdapter`** — production; native iOS Keychain via the method
+- **`OZPlatformStorageAdapter`** — production; native iOS Keychain via the method
   channel.
-- **`InMemoryStorageAdapter`** — non-persistent; unit tests and ephemeral dev
+- **`OZInMemoryStorageAdapter`** — non-persistent; unit tests and ephemeral dev
   flows.
 
 A normally code-signed iOS app needs no extra entitlement to use the Keychain
-through `PlatformStorageAdapter`; the Associated Domains entitlement above is
+through `OZPlatformStorageAdapter`; the Associated Domains entitlement above is
 the only WebAuthn-related entitlement required. A custom keychain access group
 (for sharing storage with an app extension or sibling app) is the only case
 that needs an additional `keychain-access-groups` entitlement.
 
 ```dart
-final storage = PlatformStorageAdapter(); // no constructor arguments
+final storage = OZPlatformStorageAdapter(); // no constructor arguments
 ```
 
 ### Build and test
@@ -669,7 +669,7 @@ device for end-to-end testing.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-final storage = PlatformStorageAdapter();
+final storage = OZPlatformStorageAdapter();
 final webauthnProvider = PlatformWebAuthnProvider(
   rpId: 'wallet.example.com',
   rpName: 'My Stellar App',
@@ -760,7 +760,7 @@ BrowserWebAuthnProvider({
 
 ### Cross-device passkeys (QR flow via transports)
 
-When `authenticate` receives `AllowCredential`s with transport hints, the
+When `authenticate` receives `WebAuthnAllowCredential`s with transport hints, the
 browser provider forwards them into the `allowCredentials` descriptors of
 `navigator.credentials.get(...)`. Including `'hybrid'` is what makes the
 browser offer the cross-device "use a passkey on another device" QR-code flow.
@@ -773,7 +773,7 @@ registered with hybrid support.
 final result = await provider.authenticate(
   challenge: payloadHash,
   allowCredentials: [
-    AllowCredential(id: credentialIdBytes, transports: ['hybrid', 'internal']),
+    WebAuthnAllowCredential(id: credentialIdBytes, transports: ['hybrid', 'internal']),
   ],
 );
 ```
@@ -785,22 +785,22 @@ present, so pass a non-empty list (or `null`) — never `[]`.
 ### Storage adapters (Web)
 
 ```dart
-class IndexedDBStorageAdapter implements StorageAdapter {
-  IndexedDBStorageAdapter({String dbName = 'stellar_smart_account'});
+class OZIndexedDBStorageAdapter implements OZStorageAdapter {
+  OZIndexedDBStorageAdapter({String dbName = 'stellar_smart_account'});
   Future<void> close(); // releases the connection; reopens lazily on the next op
 }
 
-class LocalStorageAdapter implements StorageAdapter {
-  LocalStorageAdapter({String keyPrefix = 'stellar_sa_'});
+class OZLocalStorageAdapter implements OZStorageAdapter {
+  OZLocalStorageAdapter({String keyPrefix = 'stellar_sa_'});
 }
 ```
 
-- **`IndexedDBStorageAdapter`** — production; structured, large quota, async,
+- **`OZIndexedDBStorageAdapter`** — production; structured, large quota, async,
   with a `contractId` index. The version-1 schema (object stores `credentials`
   and `sessions`) is managed by the adapter — do not open the database yourself
   with a different version.
-- **`LocalStorageAdapter`** — backed by synchronous `window.localStorage`
-  (~5 MB per origin); exposes the same `Future`-returning `StorageAdapter`
+- **`OZLocalStorageAdapter`** — backed by synchronous `window.localStorage`
+  (~5 MB per origin); exposes the same `Future`-returning `OZStorageAdapter`
   interface. Use for smaller payloads or where IndexedDB is unavailable.
 
 Both are browser-only facades. On non-web targets the conditional export routes
@@ -808,13 +808,13 @@ to a stub that throws `UnsupportedError` from storage operations.
 
 ```dart
 // Fallback pattern (private browsing can disable IndexedDB):
-StorageAdapter storage;
+OZStorageAdapter storage;
 try {
-  final idb = IndexedDBStorageAdapter();
-  await idb.getAll(); // forces the open; throws StorageReadFailed if IndexedDB is unavailable
+  final idb = OZIndexedDBStorageAdapter();
+  await idb.getAll(); // forces the open; throws SmartAccountStorageReadFailed if IndexedDB is unavailable
   storage = idb;
-} on StorageReadFailed {
-  storage = LocalStorageAdapter();
+} on SmartAccountStorageReadFailed {
+  storage = OZLocalStorageAdapter();
 }
 ```
 
@@ -873,7 +873,7 @@ locally.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-final storage = IndexedDBStorageAdapter();
+final storage = OZIndexedDBStorageAdapter();
 final webauthnProvider = BrowserWebAuthnProvider(
   rpId: 'wallet.example.com',
   rpName: 'My Stellar App',
@@ -914,35 +914,35 @@ final kit = OZSmartAccountKit.create(config: config);
   `allow="publickey-credentials-create; publickey-credentials-get"`. CSP
   `connect-src` must additionally permit the Soroban RPC and any indexer/relayer
   URLs.
-- **IndexedDB unavailable** → `IndexedDBStorageAdapter` raises
-  `StorageReadFailed`; fall back to `LocalStorageAdapter` (see the fallback
+- **IndexedDB unavailable** → `OZIndexedDBStorageAdapter` raises
+  `SmartAccountStorageReadFailed`; fall back to `OZLocalStorageAdapter` (see the fallback
   pattern above).
 
 ---
 
-## Choosing a StorageAdapter
+## Choosing an OZStorageAdapter
 
 | Platform | Recommended (production) | Fallback | Never in production |
 |----------|--------------------------|----------|---------------------|
-| Android | `PlatformStorageAdapter` (`EncryptedSharedPreferences` + Keystore) | `InMemoryStorageAdapter` for unit tests | `InMemoryStorageAdapter` in release builds |
-| iOS | `PlatformStorageAdapter` (Keychain) | `InMemoryStorageAdapter` for tests | `InMemoryStorageAdapter` |
-| Web | `IndexedDBStorageAdapter` | `LocalStorageAdapter` (small data, private-mode fallback) | `InMemoryStorageAdapter` |
+| Android | `OZPlatformStorageAdapter` (`EncryptedSharedPreferences` + Keystore) | `OZInMemoryStorageAdapter` for unit tests | `OZInMemoryStorageAdapter` in release builds |
+| iOS | `OZPlatformStorageAdapter` (Keychain) | `OZInMemoryStorageAdapter` for tests | `OZInMemoryStorageAdapter` |
+| Web | `OZIndexedDBStorageAdapter` | `OZLocalStorageAdapter` (small data, private-mode fallback) | `OZInMemoryStorageAdapter` |
 
-`StoredCredential` holds **public keys only** (no secret material), so the
+`OZStoredCredential` holds **public keys only** (no secret material), so the
 security bar is lower than for private-key storage — but session tokens and
 contract IDs are privacy-sensitive. Use platform encryption where it exists.
 
 ---
 
-## Implementing a custom StorageAdapter
+## Implementing a custom OZStorageAdapter
 
-For unusual platforms or server-side persistence, implement the `StorageAdapter`
+For unusual platforms or server-side persistence, implement the `OZStorageAdapter`
 interface directly. Minimal skeleton:
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-class MyDatabaseStorageAdapter implements StorageAdapter {
+class MyDatabaseStorageAdapter implements OZStorageAdapter {
   MyDatabaseStorageAdapter(this._db);
   final MyDatabase _db;
 
@@ -957,35 +957,35 @@ class MyDatabaseStorageAdapter implements StorageAdapter {
   }
 
   @override
-  Future<void> save(StoredCredential credential) => _withLock(() async {
+  Future<void> save(OZStoredCredential credential) => _withLock(() async {
         try {
           await _db.upsertCredential(credential);
         } catch (e) {
-          throw StorageException.writeFailed('save:${credential.credentialId}', cause: e);
+          throw SmartAccountStorageException.writeFailed('save:${credential.credentialId}', cause: e);
         }
       });
 
   @override
-  Future<StoredCredential?> get(String credentialId) =>
+  Future<OZStoredCredential?> get(String credentialId) =>
       _withLock(() => _db.loadCredential(credentialId));
 
   @override
-  Future<List<StoredCredential>> getByContract(String contractId) =>
+  Future<List<OZStoredCredential>> getByContract(String contractId) =>
       _withLock(() => _db.loadCredentialsByContract(contractId));
 
   @override
-  Future<List<StoredCredential>> getAll() => _withLock(() => _db.loadAllCredentials());
+  Future<List<OZStoredCredential>> getAll() => _withLock(() => _db.loadAllCredentials());
 
   @override
   Future<void> delete(String credentialId) =>
       _withLock(() => _db.deleteCredential(credentialId));
 
   @override
-  Future<void> update(String credentialId, StoredCredentialUpdate updates) =>
+  Future<void> update(String credentialId, OZStoredCredentialUpdate updates) =>
       _withLock(() async {
         final existing = await _db.loadCredential(credentialId);
         if (existing == null) {
-          throw CredentialException.notFound(credentialId);
+          throw SmartAccountCredentialException.notFound(credentialId);
         }
         await _db.upsertCredential(existing.applyUpdate(updates)); // partial: null = no change
       });
@@ -994,10 +994,10 @@ class MyDatabaseStorageAdapter implements StorageAdapter {
   Future<void> clear() => _withLock(() => _db.clearCredentials());
 
   @override
-  Future<void> saveSession(StoredSession session) => _withLock(() => _db.saveSession(session));
+  Future<void> saveSession(OZStoredSession session) => _withLock(() => _db.saveSession(session));
 
   @override
-  Future<StoredSession?> getSession() => _withLock(() async {
+  Future<OZStoredSession?> getSession() => _withLock(() async {
         final s = await _db.loadSession();
         if (s == null) return null;
         if (s.isExpired) {           // auto-clear expired sessions on read
@@ -1017,11 +1017,11 @@ Contracts to satisfy:
 - **Concurrency safety** — multiple calls may arrive before earlier ones
   complete; serialise read-modify-write sequences.
 - **Expired-session read** — `getSession()` returns null and clears the row
-  when `StoredSession.isExpired` is true.
+  when `OZStoredSession.isExpired` is true.
 - **`update` partial semantics** — apply non-null fields only via
-  `StoredCredential.applyUpdate(updates)`; never overwrite with null.
-- **Exceptions** — wrap underlying errors in `StorageException.readFailed` /
-  `writeFailed`, and throw `CredentialException.notFound(id)` from `update` for
+  `OZStoredCredential.applyUpdate(updates)`; never overwrite with null.
+- **Exceptions** — wrap underlying errors in `SmartAccountStorageException.readFailed` /
+  `writeFailed`, and throw `SmartAccountCredentialException.notFound(id)` from `update` for
   unknown IDs.
 
 ---
@@ -1079,7 +1079,7 @@ class MyCustomWebAuthnProvider extends WebAuthnProvider {
   @override
   Future<WebAuthnAuthenticationResult> authenticate({
     required Uint8List challenge,
-    List<AllowCredential>? allowCredentials,
+    List<WebAuthnAllowCredential>? allowCredentials,
   }) async {
     try {
       // 1. Call your native assertion API, passing challenge as-is.
@@ -1123,7 +1123,7 @@ error-handling paths work.
 | Extra dependencies | none (ship with the plugin) | none | none |
 | WebAuthn provider | `PlatformWebAuthnProvider` | `PlatformWebAuthnProvider` | `BrowserWebAuthnProvider` |
 | Timeout parameter | `timeout` | `timeout` | `timeoutMs` |
-| Storage adapter | `PlatformStorageAdapter` | `PlatformStorageAdapter` | `IndexedDBStorageAdapter` / `LocalStorageAdapter` |
+| Storage adapter | `OZPlatformStorageAdapter` | `OZPlatformStorageAdapter` | `OZIndexedDBStorageAdapter` / `OZLocalStorageAdapter` |
 | Minimum runtime | API 28 | iOS 16 | Chrome 67+, Firefox 60+, Safari 14+, Edge 79+ |
 | Localhost development | not supported | not supported | supported (`rpId: 'localhost'` over `http://localhost`) |
 | Missing-credential error | `WebAuthnAuthenticationFailed` | `WebAuthnCancelled` | `WebAuthnCancelled` |

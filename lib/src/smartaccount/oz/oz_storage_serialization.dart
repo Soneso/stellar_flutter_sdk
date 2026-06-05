@@ -7,7 +7,7 @@ import 'dart:typed_data';
 import '../../util.dart';
 import 'oz_storage_adapter.dart';
 
-/// JSON-serialisable representation of [StoredCredential] used by
+/// JSON-serialisable representation of [OZStoredCredential] used by
 /// persistent storage adapters.
 ///
 /// Persistent backends frequently cannot store binary blobs alongside the
@@ -21,7 +21,7 @@ import 'oz_storage_adapter.dart';
 /// its relative path.
 class SerializableCredential {
   /// Constructs a serialisable credential record. Defaults match the
-  /// corresponding [StoredCredential] defaults so consumers can omit
+  /// corresponding [OZStoredCredential] defaults so consumers can omit
   /// unused metadata.
   const SerializableCredential({
     required this.credentialId,
@@ -130,7 +130,7 @@ class SerializableCredential {
   }
 }
 
-/// JSON-serialisable representation of [StoredSession].
+/// JSON-serialisable representation of [OZStoredSession].
 ///
 /// Internal to the smart-account storage layer; not re-exposed via the
 /// SDK barrel.
@@ -233,9 +233,9 @@ class CredentialIndex {
   }
 }
 
-/// Conversion helpers between [StoredCredential] / [StoredSession] and
+/// Conversion helpers between [OZStoredCredential] / [OZStoredSession] and
 /// their serialisable counterparts.
-extension StoredCredentialSerialization on StoredCredential {
+extension StoredCredentialSerialization on OZStoredCredential {
   /// Returns a [SerializableCredential] view of this credential, hex-
   /// encoding the public key and rendering the deployment status as its
   /// enum-name string.
@@ -259,14 +259,14 @@ extension StoredCredentialSerialization on StoredCredential {
 
 /// Reverse-direction conversion for [SerializableCredential].
 extension SerializableCredentialConversion on SerializableCredential {
-  /// Reconstructs a [StoredCredential] from this serialisable form.
+  /// Reconstructs a [OZStoredCredential] from this serialisable form.
   ///
   /// Throws [ArgumentError] if [deploymentStatus] is not a known
-  /// [CredentialDeploymentStatus] enum name. Throws [FormatException] if
+  /// [OZCredentialDeploymentStatus] enum name. Throws [FormatException] if
   /// [publicKeyHex] is not valid hex.
-  StoredCredential toStoredCredential() {
+  OZStoredCredential toStoredCredential() {
     final pubKeyBytes = Util.hexToBytes(publicKeyHex);
-    return StoredCredential(
+    return OZStoredCredential(
       credentialId: credentialId,
       publicKey: Uint8List.fromList(pubKeyBytes),
       contractId: contractId,
@@ -283,8 +283,8 @@ extension SerializableCredentialConversion on SerializableCredential {
   }
 }
 
-/// Forward conversion from [StoredSession] to its serialisable form.
-extension StoredSessionSerialization on StoredSession {
+/// Forward conversion from [OZStoredSession] to its serialisable form.
+extension StoredSessionSerialization on OZStoredSession {
   /// Returns a [SerializableSession] view of this session.
   SerializableSession toSerializable() {
     return SerializableSession(
@@ -298,9 +298,9 @@ extension StoredSessionSerialization on StoredSession {
 
 /// Reverse-direction conversion for [SerializableSession].
 extension SerializableSessionConversion on SerializableSession {
-  /// Reconstructs a [StoredSession] from this serialisable form.
-  StoredSession toStoredSession() {
-    return StoredSession(
+  /// Reconstructs a [OZStoredSession] from this serialisable form.
+  OZStoredSession toStoredSession() {
+    return OZStoredSession(
       credentialId: credentialId,
       contractId: contractId,
       connectedAt: connectedAt,
@@ -309,14 +309,14 @@ extension SerializableSessionConversion on SerializableSession {
   }
 }
 
-CredentialDeploymentStatus _statusFromName(String name) {
-  for (final status in CredentialDeploymentStatus.values) {
+OZCredentialDeploymentStatus _statusFromName(String name) {
+  for (final status in OZCredentialDeploymentStatus.values) {
     if (status.name == name) return status;
   }
   throw ArgumentError.value(
     name,
     'deploymentStatus',
-    'Unknown CredentialDeploymentStatus name',
+    'Unknown OZCredentialDeploymentStatus name',
   );
 }
 

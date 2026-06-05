@@ -10,7 +10,7 @@
 /// throws [UnsupportedError] from each storage method while keeping
 /// construction safe.
 ///
-/// For production web applications consider [IndexedDBStorageAdapter]
+/// For production web applications consider [OZIndexedDBStorageAdapter]
 /// instead — it scales beyond the per-origin localStorage cap and offers
 /// indexed lookups.
 library;

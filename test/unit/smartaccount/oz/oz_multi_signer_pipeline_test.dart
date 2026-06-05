@@ -128,7 +128,7 @@ Future<
       MockSorobanServer soroban,
       RecordingWebAuthnProvider provider,
       KeyPair deployer,
-      StoredCredential stored,
+      OZStoredCredential stored,
     })> _harness() async {
   final soroban = MockSorobanServer();
   final provider = RecordingWebAuthnProvider();
@@ -141,13 +141,13 @@ Future<
     webauthnProvider: provider,
   );
   final credentials = StubCredentialManager();
-  final stored = StoredCredential(
+  final stored = OZStoredCredential(
     credentialId: _credentialIdB64,
     publicKey: _bytes(65, 4),
     contractId: _contractA,
   );
   credentials.inject(stored);
-  final storage = InMemoryStorageAdapter();
+  final storage = OZInMemoryStorageAdapter();
   await storage.save(stored);
   final kit = FakePipelineKit(
     config: config,
@@ -167,13 +167,13 @@ Future<
 
 /// A wallet adapter that always reports it can sign for a specific address
 /// and returns a dummy signature.
-class _AlwaysSignWallet extends ExternalWalletAdapter {
+class _AlwaysSignWallet extends OZExternalWalletAdapter {
   _AlwaysSignWallet(this._address);
 
   final String _address;
 
   @override
-  Future<ConnectedWallet?> connect() async => ConnectedWallet(
+  Future<OZConnectedWallet?> connect() async => OZConnectedWallet(
         address: _address,
         walletId: 'test-wallet',
         walletName: 'Test Wallet',
@@ -186,8 +186,8 @@ class _AlwaysSignWallet extends ExternalWalletAdapter {
   bool canSignFor(String address) => address == _address;
 
   @override
-  List<ConnectedWallet> getConnectedWallets() => <ConnectedWallet>[
-        ConnectedWallet(
+  List<OZConnectedWallet> getConnectedWallets() => <OZConnectedWallet>[
+        OZConnectedWallet(
           address: _address,
           walletId: 'test-wallet',
           walletName: 'Test Wallet',
@@ -195,9 +195,9 @@ class _AlwaysSignWallet extends ExternalWalletAdapter {
       ];
 
   @override
-  ConnectedWallet? getWalletForAddress(String address) {
+  OZConnectedWallet? getWalletForAddress(String address) {
     if (address != _address) return null;
-    return ConnectedWallet(
+    return OZConnectedWallet(
       address: _address,
       walletId: 'test-wallet',
       walletName: 'Test Wallet',
@@ -205,13 +205,13 @@ class _AlwaysSignWallet extends ExternalWalletAdapter {
   }
 
   @override
-  Future<SignAuthEntryResult> signAuthEntry(
+  Future<OZSignAuthEntryResult> signAuthEntry(
     String preimageXdr, {
-    SignAuthEntryOptions? options,
+    OZSignAuthEntryOptions? options,
   }) async {
     // Return a dummy 64-byte signature (all zeros) encoded as base64.
     final dummySig = List<int>.filled(64, 0);
-    return SignAuthEntryResult(
+    return OZSignAuthEntryResult(
       signedAuthEntry: base64.encode(dummySig),
       signerAddress: _address,
     );
@@ -254,8 +254,8 @@ void main() {
       final credentialIdBytes = base64Url.decode(base64Url.normalize(_credentialIdB64));
       final result = await manager.submitWithMultipleSigners(
         hostFunction: hostFn,
-        selectedSigners: <SelectedSigner>[
-          SelectedSignerPasskey(
+        selectedSigners: <OZSelectedSigner>[
+          OZSelectedSignerPasskey(
             keyData: keyData,
             credentialIdBytes: credentialIdBytes,
             transports: const <String>['internal'],
@@ -296,8 +296,8 @@ void main() {
       final keyData = _passkeyKeyData();
       final result = await manager.submitWithMultipleSigners(
         hostFunction: hostFn,
-        selectedSigners: <SelectedSigner>[
-          SelectedSignerPasskey(keyData: keyData),
+        selectedSigners: <OZSelectedSigner>[
+          OZSelectedSignerPasskey(keyData: keyData),
         ],
         resolveContextRuleIds: (entry, idx) async {
           resolverCalled = true;
@@ -330,8 +330,8 @@ void main() {
       final result = await manager.multiSignerExecuteAndSubmit(
         target: _contractB,
         targetFn: 'execute_me',
-        selectedSigners: <SelectedSigner>[
-          SelectedSignerPasskey(keyData: keyData),
+        selectedSigners: <OZSelectedSigner>[
+          OZSelectedSignerPasskey(keyData: keyData),
         ],
       );
 
@@ -361,8 +361,8 @@ void main() {
         tokenContract: _contractB,
         recipient: 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
         amount: '10',
-        selectedSigners: <SelectedSigner>[
-          SelectedSignerPasskey(keyData: keyData),
+        selectedSigners: <OZSelectedSigner>[
+          OZSelectedSignerPasskey(keyData: keyData),
         ],
       );
 
@@ -438,8 +438,8 @@ void main() {
             const <XdrSCVal>[],
           ),
         ),
-        selectedSigners: <SelectedSigner>[
-          SelectedSignerWallet(walletAddress),
+        selectedSigners: <OZSelectedSigner>[
+          OZSelectedSignerWallet(walletAddress),
         ],
       );
 
@@ -479,9 +479,9 @@ void main() {
             const <XdrSCVal>[],
           ),
         ),
-        selectedSigners: <SelectedSigner>[
-          SelectedSignerPasskey(keyData: keyData),
-          SelectedSignerWallet(walletAddress),
+        selectedSigners: <OZSelectedSigner>[
+          OZSelectedSignerPasskey(keyData: keyData),
+          OZSelectedSignerWallet(walletAddress),
         ],
       );
 
@@ -490,7 +490,7 @@ void main() {
 
     test('walletSigner_authEntryForUnmatchedAddress_throwsSigningFailed', () async {
       // When auth entry address is neither the smart-account contract nor
-      // a wallet signer address, line 382 throws TransactionSigningFailed.
+      // a wallet signer address, line 382 throws SmartAccountTransactionSigningFailed.
       final walletAddress =
           'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7';
       final unmatchedAddress =
@@ -553,12 +553,12 @@ void main() {
               const <XdrSCVal>[],
             ),
           ),
-          selectedSigners: <SelectedSigner>[
-            SelectedSignerWallet(walletAddress), // wallet signs walletAddress entries
+          selectedSigners: <OZSelectedSigner>[
+            OZSelectedSignerWallet(walletAddress), // wallet signs walletAddress entries
             // but the auth entry points to unmatchedAddress - no match
           ],
         ),
-        throwsA(isA<TransactionSigningFailed>()),
+        throwsA(isA<SmartAccountTransactionSigningFailed>()),
       );
     });
 
@@ -631,8 +631,8 @@ void main() {
             const <XdrSCVal>[],
           ),
         ),
-        selectedSigners: <SelectedSigner>[
-          SelectedSignerWallet(walletAddress),
+        selectedSigners: <OZSelectedSigner>[
+          OZSelectedSignerWallet(walletAddress),
         ],
       );
 
@@ -689,8 +689,8 @@ void main() {
             const <XdrSCVal>[],
           ),
         ),
-        selectedSigners: <SelectedSigner>[
-          SelectedSignerEd25519(
+        selectedSigners: <OZSelectedSigner>[
+          OZSelectedSignerEd25519(
             verifierAddress: _contractA,
             publicKey: publicKey,
           ),
@@ -703,7 +703,7 @@ void main() {
     });
 
     test('ed25519Signer_hoist_executes_lines341_345', () async {
-      // When an SelectedSignerEd25519 is in selectedSigners, the hoist loop
+      // When an OZSelectedSignerEd25519 is in selectedSigners, the hoist loop
       // at lines 341-345 in oz_multi_signer_manager.dart executes.
       // The Ed25519 signing path requires a matching signer in extManager.
       final extManager = OZExternalSignerManager(
@@ -766,8 +766,8 @@ void main() {
             const <XdrSCVal>[],
           ),
         ),
-        selectedSigners: <SelectedSigner>[
-          SelectedSignerEd25519(
+        selectedSigners: <OZSelectedSigner>[
+          OZSelectedSignerEd25519(
             verifierAddress: _contractA,
             publicKey: publicKey,
           ),
@@ -817,8 +817,8 @@ void main() {
             const <XdrSCVal>[],
           ),
         ),
-        selectedSigners: <SelectedSigner>[
-          SelectedSignerPasskey(keyData: keyData),
+        selectedSigners: <OZSelectedSigner>[
+          OZSelectedSignerPasskey(keyData: keyData),
         ],
       );
 

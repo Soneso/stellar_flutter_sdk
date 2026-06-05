@@ -40,9 +40,9 @@ const String _credentialIdB64 = 'aGVsbG8tc21hcnQtYWNjb3VudA';
 OZSmartAccountConfig _validConfig({
   String? indexerUrl,
   String? relayerUrl,
-  StorageAdapter? storage,
+  OZStorageAdapter? storage,
   KeyPair? deployerKeypair,
-  ExternalWalletAdapter? externalWallet,
+  OZExternalWalletAdapter? externalWallet,
 }) {
   return OZSmartAccountConfig(
     rpcUrl: _validRpcUrl,
@@ -61,8 +61,8 @@ OZSmartAccountConfig _validConfig({
 OZSmartAccountKit _kitWithMockClients({
   MockOZIndexerClient? indexerClient,
   MockOZRelayerClient? relayerClient,
-  StorageAdapter? storage,
-  ExternalWalletAdapter? externalWallet,
+  OZStorageAdapter? storage,
+  OZExternalWalletAdapter? externalWallet,
   RecordingSorobanServer? sorobanServer,
 }) {
   final config = _validConfig(
@@ -82,8 +82,8 @@ OZSmartAccountKit _kitWithMockClients({
   );
 }
 
-/// Wraps [InMemoryStorageAdapter] and counts [clearSession] calls.
-class _RecordingStorage extends InMemoryStorageAdapter {
+/// Wraps [OZInMemoryStorageAdapter] and counts [clearSession] calls.
+class _RecordingStorage extends OZInMemoryStorageAdapter {
   int clearSessionCalls = 0;
 
   @override
@@ -93,25 +93,25 @@ class _RecordingStorage extends InMemoryStorageAdapter {
   }
 }
 
-/// Stub [ExternalWalletAdapter] for accessor tests. Every operational method raises so accidental invocation surfaces as a test failure.
-class _StubExternalWallet extends ExternalWalletAdapter {
+/// Stub [OZExternalWalletAdapter] for accessor tests. Every operational method raises so accidental invocation surfaces as a test failure.
+class _StubExternalWallet extends OZExternalWalletAdapter {
   @override
-  Future<ConnectedWallet?> connect() async => null;
+  Future<OZConnectedWallet?> connect() async => null;
 
   @override
   Future<void> disconnect() async {}
 
   @override
-  Future<SignAuthEntryResult> signAuthEntry(
+  Future<OZSignAuthEntryResult> signAuthEntry(
     String preimageXdr, {
-    SignAuthEntryOptions? options,
+    OZSignAuthEntryOptions? options,
   }) =>
       throw UnsupportedError(
         '_StubExternalWallet.signAuthEntry is not implemented for tests',
       );
 
   @override
-  List<ConnectedWallet> getConnectedWallets() => const <ConnectedWallet>[];
+  List<OZConnectedWallet> getConnectedWallets() => const <OZConnectedWallet>[];
 
   @override
   bool canSignFor(String address) => false;
@@ -153,7 +153,7 @@ void main() {
           accountWasmHash: _validWasmHash,
           webauthnVerifierAddress: _validVerifier,
         ),
-        throwsA(isA<ConfigurationException>()),
+        throwsA(isA<SmartAccountConfigurationException>()),
       );
     });
 
@@ -165,7 +165,7 @@ void main() {
           accountWasmHash: _validWasmHash,
           webauthnVerifierAddress: _validVerifier,
         ),
-        throwsA(isA<ConfigurationException>()),
+        throwsA(isA<SmartAccountConfigurationException>()),
       );
     });
 
@@ -177,7 +177,7 @@ void main() {
           accountWasmHash: '',
           webauthnVerifierAddress: _validVerifier,
         ),
-        throwsA(isA<ConfigurationException>()),
+        throwsA(isA<SmartAccountConfigurationException>()),
       );
     });
 
@@ -189,7 +189,7 @@ void main() {
           accountWasmHash: _validWasmHash,
           webauthnVerifierAddress: 'G${'A' * 55}',
         ),
-        throwsA(isA<ConfigurationException>()),
+        throwsA(isA<SmartAccountConfigurationException>()),
       );
     });
 
@@ -201,12 +201,12 @@ void main() {
           accountWasmHash: _validWasmHash,
           webauthnVerifierAddress: 'CABC',
         ),
-        throwsA(isA<ConfigurationException>()),
+        throwsA(isA<SmartAccountConfigurationException>()),
       );
     });
 
     test('factory_customStorageAdapter_passedThrough', () {
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
       final config = _validConfig(storage: storage);
       final kit = OZSmartAccountKit.create(config: config);
 
@@ -361,7 +361,7 @@ void main() {
       final kit = OZSmartAccountKit.create(config: _validConfig());
 
       var disconnectedFired = 0;
-      kit.events.on<SmartAccountEventWalletDisconnected>(
+      kit.events.on<OZSmartAccountEventWalletDisconnected>(
         (_) => disconnectedFired++,
       );
       expect(
@@ -375,7 +375,7 @@ void main() {
 
       // Re-emit after close — confirms the listener really detached.
       kit.events.emit(
-        const SmartAccountEventWalletDisconnected(contractId: _validContractId),
+        const OZSmartAccountEventWalletDisconnected(contractId: _validContractId),
       );
       expect(disconnectedFired, equals(0));
     });
@@ -396,7 +396,7 @@ void main() {
 
       String? observedContractId;
       bool wasConnectedAtEventTime = true;
-      kit.events.on<SmartAccountEventWalletDisconnected>((event) {
+      kit.events.on<OZSmartAccountEventWalletDisconnected>((event) {
         observedContractId = event.contractId;
         wasConnectedAtEventTime = kit.isConnected;
       });
@@ -418,7 +418,7 @@ void main() {
       final kit = OZSmartAccountKit.create(config: _validConfig());
 
       var disconnectedFired = 0;
-      kit.events.on<SmartAccountEventWalletDisconnected>(
+      kit.events.on<OZSmartAccountEventWalletDisconnected>(
         (_) => disconnectedFired++,
       );
 
@@ -433,7 +433,7 @@ void main() {
 
       await expectLater(
         () => kit.requireConnected(),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -582,7 +582,7 @@ void main() {
 
       // Re-emit after close — confirms global listeners detached too.
       kit.events.emit(
-        const SmartAccountEventWalletDisconnected(contractId: _validContractId),
+        const OZSmartAccountEventWalletDisconnected(contractId: _validContractId),
       );
       expect(globalListenerHits, equals(0));
     });
@@ -598,7 +598,7 @@ void main() {
 
       // disconnect after close must not throw and must not emit
       var events = 0;
-      kit.events.on<SmartAccountEventWalletDisconnected>((_) => events++);
+      kit.events.on<OZSmartAccountEventWalletDisconnected>((_) => events++);
       await kit.disconnect();
       expect(events, equals(0));
     });
@@ -612,8 +612,8 @@ void main() {
         contractId: _validContractId,
       );
 
-      final received = <SmartAccountEventWalletDisconnected>[];
-      kit.events.on<SmartAccountEventWalletDisconnected>(received.add);
+      final received = <OZSmartAccountEventWalletDisconnected>[];
+      kit.events.on<OZSmartAccountEventWalletDisconnected>(received.add);
 
       await kit.disconnect();
 
@@ -625,7 +625,7 @@ void main() {
       final kit = OZSmartAccountKit.create(config: _validConfig());
 
       var hits = 0;
-      kit.events.once<SmartAccountEventWalletDisconnected>((_) => hits++);
+      kit.events.once<OZSmartAccountEventWalletDisconnected>((_) => hits++);
 
       await kit.setConnectedState(
         credentialId: _credentialIdB64,
@@ -645,7 +645,7 @@ void main() {
       final kit = OZSmartAccountKit.create(config: _validConfig());
 
       var hits = 0;
-      kit.events.on<SmartAccountEventWalletDisconnected>((_) => hits++);
+      kit.events.on<OZSmartAccountEventWalletDisconnected>((_) => hits++);
       kit.events.removeAllListeners();
 
       await kit.setConnectedState(
@@ -716,7 +716,7 @@ void main() {
       );
 
       var disconnectedFired = 0;
-      kit.events.on<SmartAccountEventWalletDisconnected>(
+      kit.events.on<OZSmartAccountEventWalletDisconnected>(
         (_) => disconnectedFired++,
       );
 

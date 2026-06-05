@@ -6,11 +6,11 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 const String _testContractId =
     'CBCD1234EFGH5678IJKL9012MNOP3456QRST7890UVWX1234YZAB5678';
 
-/// A minimal ExternalWalletAdapter that doesn't override any default methods.
+/// A minimal OZExternalWalletAdapter that doesn't override any default methods.
 /// Used to test the abstract class's default implementations.
-class _MinimalWalletAdapter extends ExternalWalletAdapter {
+class _MinimalWalletAdapter extends OZExternalWalletAdapter {
   @override
-  Future<ConnectedWallet?> connect() async => null;
+  Future<OZConnectedWallet?> connect() async => null;
 
   @override
   Future<void> disconnect() async {}
@@ -19,12 +19,12 @@ class _MinimalWalletAdapter extends ExternalWalletAdapter {
   bool canSignFor(String address) => false;
 
   @override
-  List<ConnectedWallet> getConnectedWallets() => const <ConnectedWallet>[];
+  List<OZConnectedWallet> getConnectedWallets() => const <OZConnectedWallet>[];
 
   @override
-  Future<SignAuthEntryResult> signAuthEntry(
+  Future<OZSignAuthEntryResult> signAuthEntry(
     String preimageXdr, {
-    SignAuthEntryOptions? options,
+    OZSignAuthEntryOptions? options,
   }) async {
     throw UnsupportedError('not supported');
   }
@@ -42,15 +42,15 @@ Uint8List _testPublicKey({int seed = 0}) {
   return out;
 }
 
-StoredCredential _fullCredential({
+OZStoredCredential _fullCredential({
   String id = 'cred-full-001',
   String contractId = _testContractId,
 }) {
-  return StoredCredential(
+  return OZStoredCredential(
     credentialId: id,
     publicKey: _testPublicKey(seed: 1),
     contractId: contractId,
-    deploymentStatus: CredentialDeploymentStatus.pending,
+    deploymentStatus: OZCredentialDeploymentStatus.pending,
     createdAt: 1700000000000,
     lastUsedAt: 1700001000000,
     nickname: 'MacBook Pro Touch ID',
@@ -61,17 +61,17 @@ StoredCredential _fullCredential({
   );
 }
 
-StoredCredential _minimalCredential({
+OZStoredCredential _minimalCredential({
   String id = 'cred-minimal-001',
 }) {
-  return StoredCredential(
+  return OZStoredCredential(
     credentialId: id,
     publicKey: _testPublicKey(seed: 2),
     createdAt: 1700000000000,
   );
 }
 
-InMemoryStorageAdapter _newAdapter() => InMemoryStorageAdapter();
+OZInMemoryStorageAdapter _newAdapter() => OZInMemoryStorageAdapter();
 
 bool _bytesEqual(Uint8List a, Uint8List b) {
   if (a.length != b.length) return false;
@@ -82,7 +82,7 @@ bool _bytesEqual(Uint8List a, Uint8List b) {
 }
 
 void main() {
-  group('InMemoryStorageAdapter - StorageAdapterTest', () {
+  group('OZInMemoryStorageAdapter - StorageAdapterTest', () {
     test('testSaveAndRetrieveCredential', () async {
       final adapter = _newAdapter();
       final credential = _fullCredential();
@@ -110,7 +110,7 @@ void main() {
       expect(retrieved!.credentialId, 'cred-full-001');
       expect(_bytesEqual(_testPublicKey(seed: 1), retrieved.publicKey), isTrue);
       expect(retrieved.contractId, _testContractId);
-      expect(retrieved.deploymentStatus, CredentialDeploymentStatus.pending);
+      expect(retrieved.deploymentStatus, OZCredentialDeploymentStatus.pending);
       expect(retrieved.deploymentError, isNull);
       expect(retrieved.createdAt, 1700000000000);
       expect(retrieved.lastUsedAt, 1700001000000);
@@ -132,7 +132,7 @@ void main() {
       expect(retrieved!.credentialId, 'cred-minimal-001');
       expect(_bytesEqual(_testPublicKey(seed: 2), retrieved.publicKey), isTrue);
       expect(retrieved.contractId, isNull);
-      expect(retrieved.deploymentStatus, CredentialDeploymentStatus.pending);
+      expect(retrieved.deploymentStatus, OZCredentialDeploymentStatus.pending);
       expect(retrieved.deploymentError, isNull);
       expect(retrieved.lastUsedAt, isNull);
       expect(retrieved.nickname, isNull);
@@ -150,21 +150,21 @@ void main() {
 
     test('testSaveExistingCredentialOverwrites', () async {
       final adapter = _newAdapter();
-      final original = StoredCredential(
+      final original = OZStoredCredential(
         credentialId: 'cred-upsert',
         publicKey: _testPublicKey(seed: 10),
         contractId: 'CONTRACT_A',
-        deploymentStatus: CredentialDeploymentStatus.pending,
+        deploymentStatus: OZCredentialDeploymentStatus.pending,
         createdAt: 1700000000000,
         nickname: 'Original Name',
       );
       await adapter.save(original);
 
-      final replacement = StoredCredential(
+      final replacement = OZStoredCredential(
         credentialId: 'cred-upsert',
         publicKey: _testPublicKey(seed: 20),
         contractId: 'CONTRACT_B',
-        deploymentStatus: CredentialDeploymentStatus.failed,
+        deploymentStatus: OZCredentialDeploymentStatus.failed,
         createdAt: 1700002000000,
         nickname: 'Replaced Name',
         deploymentError: 'Insufficient balance',
@@ -175,7 +175,7 @@ void main() {
       expect(retrieved, isNotNull);
       expect(_bytesEqual(_testPublicKey(seed: 20), retrieved!.publicKey), isTrue);
       expect(retrieved.contractId, 'CONTRACT_B');
-      expect(retrieved.deploymentStatus, CredentialDeploymentStatus.failed);
+      expect(retrieved.deploymentStatus, OZCredentialDeploymentStatus.failed);
       expect(retrieved.nickname, 'Replaced Name');
       expect(retrieved.deploymentError, 'Insufficient balance');
 
@@ -189,15 +189,15 @@ void main() {
 
       await adapter.update(
         'cred-full-001',
-        const StoredCredentialUpdate(
-          deploymentStatus: CredentialDeploymentStatus.failed,
+        const OZStoredCredentialUpdate(
+          deploymentStatus: OZCredentialDeploymentStatus.failed,
           deploymentError: 'Transaction failed: insufficient balance',
         ),
       );
 
       final updated = await adapter.get('cred-full-001');
       expect(updated, isNotNull);
-      expect(updated!.deploymentStatus, CredentialDeploymentStatus.failed);
+      expect(updated!.deploymentStatus, OZCredentialDeploymentStatus.failed);
       expect(
         updated.deploymentError,
         'Transaction failed: insufficient balance',
@@ -213,7 +213,7 @@ void main() {
       const newTimestamp = 1700099000000;
       await adapter.update(
         'cred-full-001',
-        const StoredCredentialUpdate(lastUsedAt: newTimestamp),
+        const OZStoredCredentialUpdate(lastUsedAt: newTimestamp),
       );
 
       final updated = await adapter.get('cred-full-001');
@@ -228,7 +228,7 @@ void main() {
 
       await adapter.update(
         'cred-full-001',
-        const StoredCredentialUpdate(nickname: 'YubiKey 5'),
+        const OZStoredCredentialUpdate(nickname: 'YubiKey 5'),
       );
 
       final updated = await adapter.get('cred-full-001');
@@ -244,7 +244,7 @@ void main() {
 
       await adapter.update(
         'cred-full-001',
-        const StoredCredentialUpdate(isPrimary: false),
+        const OZStoredCredentialUpdate(isPrimary: false),
       );
 
       final updated = await adapter.get('cred-full-001');
@@ -258,7 +258,7 @@ void main() {
 
       await adapter.update(
         'cred-full-001',
-        const StoredCredentialUpdate(transports: ['ble', 'nfc']),
+        const OZStoredCredentialUpdate(transports: ['ble', 'nfc']),
       );
 
       final updated = await adapter.get('cred-full-001');
@@ -272,7 +272,7 @@ void main() {
 
       await adapter.update(
         'cred-full-001',
-        const StoredCredentialUpdate(
+        const OZStoredCredentialUpdate(
           deviceType: 'singleDevice',
           backedUp: false,
         ),
@@ -292,7 +292,7 @@ void main() {
           'CNEW1234CONT5678RACT9012ADDR3456GOES7890HERE1234ABCD5678';
       await adapter.update(
         'cred-minimal-001',
-        const StoredCredentialUpdate(contractId: newContractId),
+        const OZStoredCredentialUpdate(contractId: newContractId),
       );
 
       final updated = await adapter.get('cred-minimal-001');
@@ -307,7 +307,7 @@ void main() {
 
       await adapter.update(
         'cred-full-001',
-        const StoredCredentialUpdate(nickname: 'Updated Name'),
+        const OZStoredCredentialUpdate(nickname: 'Updated Name'),
       );
 
       final updated = await adapter.get('cred-full-001');
@@ -329,9 +329,9 @@ void main() {
       await expectLater(
         adapter.update(
           'nonexistent-id',
-          const StoredCredentialUpdate(nickname: 'Should fail'),
+          const OZStoredCredentialUpdate(nickname: 'Should fail'),
         ),
-        throwsA(isA<CredentialNotFound>()),
+        throwsA(isA<SmartAccountCredentialNotFound>()),
       );
     });
 
@@ -341,8 +341,8 @@ void main() {
 
       await adapter.update(
         'cred-full-001',
-        const StoredCredentialUpdate(
-          deploymentStatus: CredentialDeploymentStatus.failed,
+        const OZStoredCredentialUpdate(
+          deploymentStatus: OZCredentialDeploymentStatus.failed,
           deploymentError: 'Network timeout',
           lastUsedAt: 1700099000000,
           nickname: 'Updated Device',
@@ -352,7 +352,7 @@ void main() {
 
       final updated = await adapter.get('cred-full-001');
       expect(updated, isNotNull);
-      expect(updated!.deploymentStatus, CredentialDeploymentStatus.failed);
+      expect(updated!.deploymentStatus, OZCredentialDeploymentStatus.failed);
       expect(updated.deploymentError, 'Network timeout');
       expect(updated.lastUsedAt, 1700099000000);
       expect(updated.nickname, 'Updated Device');
@@ -477,7 +477,7 @@ void main() {
       final adapter = _newAdapter();
       const now = 1700000000000;
       const expiresAt = 9007199254740991;
-      final session = StoredSession(
+      final session = OZStoredSession(
         credentialId: 'cred-session-001',
         contractId:
             'CSESS1234CONT5678RACT9012ADDR3456GOES7890HERE1234ABCD5678',
@@ -508,7 +508,7 @@ void main() {
       final adapter = _newAdapter();
       const now = 1700000000000;
 
-      final session1 = StoredSession(
+      final session1 = OZStoredSession(
         credentialId: 'cred-session-1',
         contractId: 'CONTRACT_1',
         connectedAt: now,
@@ -516,7 +516,7 @@ void main() {
       );
       await adapter.saveSession(session1);
 
-      final session2 = StoredSession(
+      final session2 = OZStoredSession(
         credentialId: 'cred-session-2',
         contractId: 'CONTRACT_2',
         connectedAt: now + 1000,
@@ -533,7 +533,7 @@ void main() {
     test('testClearSession', () async {
       final adapter = _newAdapter();
       const now = 1700000000000;
-      await adapter.saveSession(StoredSession(
+      await adapter.saveSession(OZStoredSession(
         credentialId: 'cred-session',
         contractId: 'CONTRACT',
         connectedAt: now,
@@ -554,7 +554,7 @@ void main() {
 
     test('testExpiredSessionAutoClearedOnGetSession', () async {
       final adapter = _newAdapter();
-      const session = StoredSession(
+      const session = OZStoredSession(
         credentialId: 'cred-expired',
         contractId: 'CONTRACT_EXPIRED',
         connectedAt: 1000,
@@ -573,7 +573,7 @@ void main() {
 
     test('testNonExpiredSessionIsReturned', () async {
       final adapter = _newAdapter();
-      const session = StoredSession(
+      const session = OZStoredSession(
         credentialId: 'cred-valid',
         contractId: 'CONTRACT_VALID',
         connectedAt: 1700000000000,
@@ -589,7 +589,7 @@ void main() {
     test('testClearCredentialsDoesNotAffectSession', () async {
       final adapter = _newAdapter();
       await adapter.save(_fullCredential());
-      await adapter.saveSession(const StoredSession(
+      await adapter.saveSession(const OZStoredSession(
         credentialId: 'cred-full-001',
         contractId: 'CONTRACT',
         connectedAt: 1700000000000,
@@ -607,7 +607,7 @@ void main() {
     test('testClearSessionDoesNotAffectCredentials', () async {
       final adapter = _newAdapter();
       await adapter.save(_fullCredential());
-      await adapter.saveSession(const StoredSession(
+      await adapter.saveSession(const OZStoredSession(
         credentialId: 'cred-full-001',
         contractId: 'CONTRACT',
         connectedAt: 1700000000000,
@@ -638,7 +638,7 @@ void main() {
       ];
 
       for (final id in specialIds) {
-        await adapter.save(StoredCredential(
+        await adapter.save(OZStoredCredential(
           credentialId: id,
           publicKey: _testPublicKey(),
           createdAt: 1700000000000,
@@ -657,7 +657,7 @@ void main() {
 
     test('testCredentialIdWithEmptyString', () async {
       final adapter = _newAdapter();
-      final credential = StoredCredential(
+      final credential = OZStoredCredential(
         credentialId: '',
         publicKey: _testPublicKey(),
         createdAt: 1700000000000,
@@ -674,7 +674,7 @@ void main() {
       final adapter = _newAdapter();
       final largeKey =
           Uint8List.fromList(List<int>.generate(1024, (i) => i % 256));
-      final credential = StoredCredential(
+      final credential = OZStoredCredential(
         credentialId: 'cred-large-key',
         publicKey: largeKey,
         createdAt: 1700000000000,
@@ -690,7 +690,7 @@ void main() {
     test('testLargeNickname', () async {
       final adapter = _newAdapter();
       final longNickname = 'A' * 10000;
-      final credential = StoredCredential(
+      final credential = OZStoredCredential(
         credentialId: 'cred-long-name',
         publicKey: _testPublicKey(),
         nickname: longNickname,
@@ -708,7 +708,7 @@ void main() {
       final adapter = _newAdapter();
       final manyTransports =
           List<String>.generate(100, (i) => 'transport-${i + 1}');
-      final credential = StoredCredential(
+      final credential = OZStoredCredential(
         credentialId: 'cred-many-transports',
         publicKey: _testPublicKey(),
         transports: manyTransports,
@@ -729,7 +729,7 @@ void main() {
       const sharedContract =
           'CSHARED1234ABCD5678EFGH9012IJKL3456MNOP7890QRST1234UVWX';
 
-      final cred1 = StoredCredential(
+      final cred1 = OZStoredCredential(
         credentialId: 'cred-primary',
         publicKey: _testPublicKey(seed: 1),
         contractId: sharedContract,
@@ -737,7 +737,7 @@ void main() {
         nickname: 'Primary Passkey',
         createdAt: 1700000000000,
       );
-      final cred2 = StoredCredential(
+      final cred2 = OZStoredCredential(
         credentialId: 'cred-backup',
         publicKey: _testPublicKey(seed: 2),
         contractId: sharedContract,
@@ -745,7 +745,7 @@ void main() {
         nickname: 'Backup YubiKey',
         createdAt: 1700000001000,
       );
-      final cred3 = StoredCredential(
+      final cred3 = OZStoredCredential(
         credentialId: 'cred-recovery',
         publicKey: _testPublicKey(seed: 3),
         contractId: sharedContract,
@@ -772,7 +772,7 @@ void main() {
 
       for (var i = 1; i <= 50; i++) {
         final id = 'cred-rapid-$i';
-        final credential = StoredCredential(
+        final credential = OZStoredCredential(
           credentialId: id,
           publicKey: _testPublicKey(seed: i),
           contractId: 'CONTRACT_RAPID',
@@ -796,7 +796,7 @@ void main() {
       for (var i = 1; i <= 20; i++) {
         await adapter.update(
           'cred-full-001',
-          StoredCredentialUpdate(
+          OZStoredCredentialUpdate(
             lastUsedAt: 1700000000000 + i * 1000,
             nickname: 'Update #$i',
           ),
@@ -811,37 +811,37 @@ void main() {
 
     test('testDeploymentStatusTransition', () async {
       final adapter = _newAdapter();
-      final credential = StoredCredential(
+      final credential = OZStoredCredential(
         credentialId: 'cred-deploy',
         publicKey: _testPublicKey(),
-        deploymentStatus: CredentialDeploymentStatus.pending,
+        deploymentStatus: OZCredentialDeploymentStatus.pending,
         createdAt: 1700000000000,
       );
       await adapter.save(credential);
 
       await adapter.update(
         'cred-deploy',
-        const StoredCredentialUpdate(
-          deploymentStatus: CredentialDeploymentStatus.failed,
+        const OZStoredCredentialUpdate(
+          deploymentStatus: OZCredentialDeploymentStatus.failed,
           deploymentError: 'Transaction rejected',
         ),
       );
 
       final failed = await adapter.get('cred-deploy');
       expect(failed, isNotNull);
-      expect(failed!.deploymentStatus, CredentialDeploymentStatus.failed);
+      expect(failed!.deploymentStatus, OZCredentialDeploymentStatus.failed);
       expect(failed.deploymentError, 'Transaction rejected');
 
       await adapter.update(
         'cred-deploy',
-        const StoredCredentialUpdate(
-          deploymentStatus: CredentialDeploymentStatus.pending,
+        const OZStoredCredentialUpdate(
+          deploymentStatus: OZCredentialDeploymentStatus.pending,
         ),
       );
 
       final retrying = await adapter.get('cred-deploy');
       expect(retrying, isNotNull);
-      expect(retrying!.deploymentStatus, CredentialDeploymentStatus.pending);
+      expect(retrying!.deploymentStatus, OZCredentialDeploymentStatus.pending);
       expect(retrying.deploymentError, 'Transaction rejected');
     });
 
@@ -852,7 +852,7 @@ void main() {
       await adapter.delete('cred-lifecycle');
       expect(await adapter.get('cred-lifecycle'), isNull);
 
-      final newCredential = StoredCredential(
+      final newCredential = OZStoredCredential(
         credentialId: 'cred-lifecycle',
         publicKey: _testPublicKey(seed: 99),
         contractId: 'NEW_CONTRACT',
@@ -876,9 +876,9 @@ void main() {
       await expectLater(
         adapter.update(
           'cred-deleted',
-          const StoredCredentialUpdate(nickname: 'Should fail'),
+          const OZStoredCredentialUpdate(nickname: 'Should fail'),
         ),
-        throwsA(isA<CredentialNotFound>()),
+        throwsA(isA<SmartAccountCredentialNotFound>()),
       );
     });
 
@@ -896,7 +896,7 @@ void main() {
     });
 
     test('testStoredSessionIsExpiredProperty', () {
-      const expired = StoredSession(
+      const expired = OZStoredSession(
         credentialId: 'cred',
         contractId: 'CONTRACT',
         connectedAt: 1000,
@@ -905,7 +905,7 @@ void main() {
       expect(expired.isExpired, isTrue,
           reason: 'Session expiring at epoch 2000ms should be expired');
 
-      const valid = StoredSession(
+      const valid = OZStoredSession(
         credentialId: 'cred',
         contractId: 'CONTRACT',
         connectedAt: 1700000000000,
@@ -918,14 +918,14 @@ void main() {
 
     test('testStoredCredentialEqualityWithSameData', () {
       final key = _testPublicKey(seed: 5);
-      final cred1 = StoredCredential(
+      final cred1 = OZStoredCredential(
         credentialId: 'cred-eq',
         publicKey: Uint8List.fromList(key),
         contractId: 'CONTRACT',
         createdAt: 1700000000000,
         nickname: 'Test',
       );
-      final cred2 = StoredCredential(
+      final cred2 = OZStoredCredential(
         credentialId: 'cred-eq',
         publicKey: Uint8List.fromList(key),
         contractId: 'CONTRACT',
@@ -940,12 +940,12 @@ void main() {
     });
 
     test('testStoredCredentialInequalityWithDifferentPublicKey', () {
-      final cred1 = StoredCredential(
+      final cred1 = OZStoredCredential(
         credentialId: 'cred-neq',
         publicKey: _testPublicKey(seed: 1),
         createdAt: 1700000000000,
       );
-      final cred2 = StoredCredential(
+      final cred2 = OZStoredCredential(
         credentialId: 'cred-neq',
         publicKey: _testPublicKey(seed: 2),
         createdAt: 1700000000000,
@@ -957,7 +957,7 @@ void main() {
     });
 
     test('testInMemoryStorageAdapterImplementsStorageAdapterInterface', () {
-      final StorageAdapter adapter = InMemoryStorageAdapter();
+      final OZStorageAdapter adapter = OZInMemoryStorageAdapter();
       expect(adapter, isNotNull);
     });
   });
@@ -966,7 +966,7 @@ void main() {
     const contractId = 'CBCD1234AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 
     test('testStoredSession_expiresAtZero_isExpired', () {
-      const session = StoredSession(
+      const session = OZStoredSession(
         credentialId: 'cred',
         contractId: contractId,
         connectedAt: 0,
@@ -977,7 +977,7 @@ void main() {
     });
 
     test('testStoredSession_expiresAtMaxValue_notExpired', () {
-      const session = StoredSession(
+      const session = OZStoredSession(
         credentialId: 'cred',
         contractId: contractId,
         connectedAt: 1700000000000,
@@ -989,7 +989,7 @@ void main() {
     });
 
     test('testStoredSession_expiresAtInPast_isExpired', () {
-      const session = StoredSession(
+      const session = OZStoredSession(
         credentialId: 'cred',
         contractId: contractId,
         connectedAt: 1000,
@@ -999,7 +999,7 @@ void main() {
     });
 
     test('testStoredSession_allFieldsAccessible', () {
-      const session = StoredSession(
+      const session = OZStoredSession(
         credentialId: 'cred-abc',
         contractId: 'CONTRACT-XYZ',
         connectedAt: 1700000000000,
@@ -1013,13 +1013,13 @@ void main() {
     });
 
     test('testStoredSession_equalityCheck', () {
-      const session1 = StoredSession(
+      const session1 = OZStoredSession(
         credentialId: 'cred',
         contractId: 'CONTRACT',
         connectedAt: 1000,
         expiresAt: 2000,
       );
-      const session2 = StoredSession(
+      const session2 = OZStoredSession(
         credentialId: 'cred',
         contractId: 'CONTRACT',
         connectedAt: 1000,
@@ -1031,9 +1031,9 @@ void main() {
     });
 
     test('testSaveSession_thenRetrieve', () async {
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
 
-      const session = StoredSession(
+      const session = OZStoredSession(
         credentialId: 'cred-session',
         contractId: contractId,
         connectedAt: 1700000000000,
@@ -1048,15 +1048,15 @@ void main() {
     });
 
     test('testGetSession_noneExists_returnsNull', () async {
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
       final result = await storage.getSession();
       expect(result, isNull);
     });
 
     test('testSaveSession_overwritesPreviousSession', () async {
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
 
-      const session1 = StoredSession(
+      const session1 = OZStoredSession(
         credentialId: 'cred-1',
         contractId: 'CONTRACT_1',
         connectedAt: 1700000000000,
@@ -1064,7 +1064,7 @@ void main() {
       );
       await storage.saveSession(session1);
 
-      const session2 = StoredSession(
+      const session2 = OZStoredSession(
         credentialId: 'cred-2',
         contractId: 'CONTRACT_2',
         connectedAt: 1700001000000,
@@ -1079,9 +1079,9 @@ void main() {
     });
 
     test('testClearSession_removesSession', () async {
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
 
-      await storage.saveSession(StoredSession(
+      await storage.saveSession(OZStoredSession(
         credentialId: 'cred',
         contractId: contractId,
         connectedAt: 1700000000000,
@@ -1094,15 +1094,15 @@ void main() {
     });
 
     test('testClearSession_whenNoneExists_noOp', () async {
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
       await storage.clearSession();
       expect(await storage.getSession(), isNull);
     });
 
     test('testExpiredSession_autoClearedOnGet', () async {
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
 
-      const expiredSession = StoredSession(
+      const expiredSession = OZStoredSession(
         credentialId: 'expired-cred',
         contractId: 'CBCD1234AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
         connectedAt: 1000,
@@ -1148,7 +1148,7 @@ void main() {
     test('test_concurrent_writes_10_parallel_no_partial_state', () async {
       const iterations = 100;
       for (var run = 0; run < iterations; run++) {
-        final adapter = InMemoryStorageAdapter();
+        final adapter = OZInMemoryStorageAdapter();
         const writerCount = 10;
         const id = 'cred-concurrent';
 
@@ -1156,7 +1156,7 @@ void main() {
         final expectedKeys = <int>[];
         for (var i = 0; i < writerCount; i++) {
           expectedKeys.add(i);
-          writes.add(adapter.save(StoredCredential(
+          writes.add(adapter.save(OZStoredCredential(
             credentialId: id,
             publicKey: _testPublicKey(seed: i),
             contractId: 'CONTRACT_$i',
@@ -1202,8 +1202,8 @@ void main() {
     const String _kitContractId =
         'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK';
 
-    OZSmartAccountKit _makeKit({StorageAdapter? storage}) {
-      final resolvedStorage = storage ?? InMemoryStorageAdapter();
+    OZSmartAccountKit _makeKit({OZStorageAdapter? storage}) {
+      final resolvedStorage = storage ?? OZInMemoryStorageAdapter();
       final config = OZSmartAccountConfig(
         rpcUrl: _validRpcUrl,
         networkPassphrase: 'Test SDF Network ; September 2015',
@@ -1215,10 +1215,10 @@ void main() {
     }
 
     test('testKitDisconnect_clearsSession', () async {
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
       final kit = _makeKit(storage: storage);
 
-      const session = StoredSession(
+      const session = OZStoredSession(
         credentialId: 'session-cred',
         contractId: _kitContractId,
         connectedAt: 1700000000000,
@@ -1246,24 +1246,24 @@ void main() {
     });
 
     test('testSessionIndependentFromCredentials', () async {
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
       // why: instantiating the kit eagerly initialises every manager and
       // wires storage through the production code path; the kit handle is
       // unused after construction because the assertions target storage.
       _makeKit(storage: storage);
 
-      final credential = StoredCredential(
+      final credential = OZStoredCredential(
         credentialId: 'cred-shared',
         publicKey: _testPublicKey(seed: 1),
         contractId: _kitContractId,
-        deploymentStatus: CredentialDeploymentStatus.pending,
+        deploymentStatus: OZCredentialDeploymentStatus.pending,
         createdAt: 1700000000000,
         nickname: 'primary',
         isPrimary: true,
       );
       await storage.save(credential);
 
-      const session = StoredSession(
+      const session = OZStoredSession(
         credentialId: 'cred-shared',
         contractId: _kitContractId,
         connectedAt: 1700000000000,
@@ -1290,30 +1290,30 @@ void main() {
     });
 
     test('testClearSessionDoesNotAffectCredentials', () async {
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
       final kit = _makeKit(storage: storage);
 
-      final primaryCredential = StoredCredential(
+      final primaryCredential = OZStoredCredential(
         credentialId: 'cred-primary',
         publicKey: _testPublicKey(seed: 1),
         contractId: _kitContractId,
-        deploymentStatus: CredentialDeploymentStatus.pending,
+        deploymentStatus: OZCredentialDeploymentStatus.pending,
         createdAt: 1700000000000,
         nickname: 'primary',
         isPrimary: true,
       );
-      final secondaryCredential = StoredCredential(
+      final secondaryCredential = OZStoredCredential(
         credentialId: 'cred-secondary',
         publicKey: _testPublicKey(seed: 2),
         contractId: _kitContractId,
-        deploymentStatus: CredentialDeploymentStatus.failed,
+        deploymentStatus: OZCredentialDeploymentStatus.failed,
         createdAt: 1700000000001,
         nickname: 'secondary',
       );
       await storage.save(primaryCredential);
       await storage.save(secondaryCredential);
 
-      const session = StoredSession(
+      const session = OZStoredSession(
         credentialId: 'cred-primary',
         contractId: _kitContractId,
         connectedAt: 1700000000000,
@@ -1339,10 +1339,10 @@ void main() {
       expect(primaryAfter, isNotNull);
       expect(secondaryAfter, isNotNull);
       expect(primaryAfter!.deploymentStatus,
-          equals(CredentialDeploymentStatus.pending));
+          equals(OZCredentialDeploymentStatus.pending));
       expect(primaryAfter.isPrimary, isTrue);
       expect(secondaryAfter!.deploymentStatus,
-          equals(CredentialDeploymentStatus.failed));
+          equals(OZCredentialDeploymentStatus.failed));
       expect(secondaryAfter.contractId, equals(_kitContractId));
     });
 
@@ -1357,7 +1357,7 @@ void main() {
           reason: 'Fresh kit must expose null contractId');
       await expectLater(
         () => kit.requireConnected(),
-        throwsA(isA<WalletNotConnected>()),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
@@ -1396,13 +1396,13 @@ void main() {
     });
 
     test('testKitIsConnected_afterDisconnect', () async {
-      final storage = InMemoryStorageAdapter();
+      final storage = OZInMemoryStorageAdapter();
       final kit = _makeKit(storage: storage);
 
       expect(kit.isConnected, isFalse);
 
       var disconnectedFired = 0;
-      kit.events.on<SmartAccountEventWalletDisconnected>(
+      kit.events.on<OZSmartAccountEventWalletDisconnected>(
         (_) => disconnectedFired++,
       );
 
@@ -1429,7 +1429,7 @@ void main() {
       try {
         await kit.requireConnected();
         fail('requireConnected must throw when no wallet is connected');
-      } on WalletNotConnected catch (e) {
+      } on SmartAccountWalletNotConnected catch (e) {
         expect(
           e.message,
           equals(
@@ -1450,7 +1450,7 @@ void main() {
       try {
         await kit.requireConnected();
         fail('requireConnected must throw after disconnect');
-      } on WalletNotConnected catch (e) {
+      } on SmartAccountWalletNotConnected catch (e) {
         expect(
           e.message,
           equals(
@@ -1461,7 +1461,7 @@ void main() {
     });
   });
 
-  group('ExternalWalletAdapter default implementations', () {
+  group('OZExternalWalletAdapter default implementations', () {
     test('disconnectByAddress_noOpByDefault', () async {
       final adapter = _MinimalWalletAdapter();
       await expectLater(
@@ -1482,15 +1482,15 @@ void main() {
     });
   });
 
-  group('ConnectedWallet equality and hashCode', () {
+  group('OZConnectedWallet equality and hashCode', () {
     test('differentWalletName_notEqual', () {
       // Non-const: address and walletId match, walletName differs → line 520.
-      final a = ConnectedWallet(
+      final a = OZConnectedWallet(
         address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
         walletId: 'freighter',
         walletName: 'Freighter',
       );
-      final b = ConnectedWallet(
+      final b = OZConnectedWallet(
         address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
         walletId: 'freighter',
         walletName: 'Freighter v2',
@@ -1499,12 +1499,12 @@ void main() {
     });
 
     test('equalInstances_areEqual', () {
-      const a = ConnectedWallet(
+      const a = OZConnectedWallet(
         address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
         walletId: 'freighter',
         walletName: 'Freighter',
       );
-      const b = ConnectedWallet(
+      const b = OZConnectedWallet(
         address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
         walletId: 'freighter',
         walletName: 'Freighter',
@@ -1515,12 +1515,12 @@ void main() {
     });
 
     test('differentWalletId_notEqual', () {
-      const a = ConnectedWallet(
+      const a = OZConnectedWallet(
         address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
         walletId: 'freighter',
         walletName: 'Freighter',
       );
-      const b = ConnectedWallet(
+      const b = OZConnectedWallet(
         address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
         walletId: 'lobstr',
         walletName: 'Freighter',
@@ -1530,7 +1530,7 @@ void main() {
     });
 
     test('differentType_notEqual', () {
-      const a = ConnectedWallet(
+      const a = OZConnectedWallet(
         address: 'G1',
         walletId: 'w',
         walletName: 'W',
@@ -1539,19 +1539,19 @@ void main() {
     });
 
     test('identical_isEqual', () {
-      const a = ConnectedWallet(address: 'G1', walletId: 'w', walletName: 'W');
+      const a = OZConnectedWallet(address: 'G1', walletId: 'w', walletName: 'W');
       expect(a == a, isTrue);
     });
   });
 
-  group('SignAuthEntryOptions equality and hashCode', () {
+  group('OZSignAuthEntryOptions equality and hashCode', () {
     test('differentAddress_notEqual', () {
       // Non-const: passphrase matches, address differs → line 550.
-      final a = SignAuthEntryOptions(
+      final a = OZSignAuthEntryOptions(
         networkPassphrase: 'testnet',
         address: 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
       );
-      final b = SignAuthEntryOptions(
+      final b = OZSignAuthEntryOptions(
         networkPassphrase: 'testnet',
         address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
       );
@@ -1559,11 +1559,11 @@ void main() {
     });
 
     test('equalInstances_areEqual', () {
-      const a = SignAuthEntryOptions(
+      const a = OZSignAuthEntryOptions(
         networkPassphrase: 'Test SDF Network ; September 2015',
         address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
       );
-      const b = SignAuthEntryOptions(
+      const b = OZSignAuthEntryOptions(
         networkPassphrase: 'Test SDF Network ; September 2015',
         address: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
       );
@@ -1573,36 +1573,36 @@ void main() {
     });
 
     test('differentPassphrase_notEqual', () {
-      const a = SignAuthEntryOptions(networkPassphrase: 'testnet');
-      const b = SignAuthEntryOptions(networkPassphrase: 'mainnet');
+      const a = OZSignAuthEntryOptions(networkPassphrase: 'testnet');
+      const b = OZSignAuthEntryOptions(networkPassphrase: 'mainnet');
       expect(a == b, isFalse);
     });
 
     test('nullFields_equalToOtherNullFields', () {
-      const a = SignAuthEntryOptions();
-      const b = SignAuthEntryOptions();
+      const a = OZSignAuthEntryOptions();
+      const b = OZSignAuthEntryOptions();
       expect(a, equals(b));
     });
 
     test('differentType_notEqual', () {
-      const a = SignAuthEntryOptions(networkPassphrase: 'test');
+      const a = OZSignAuthEntryOptions(networkPassphrase: 'test');
       expect(a == 'not-options', isFalse);
     });
 
     test('identical_isEqual', () {
-      const a = SignAuthEntryOptions(networkPassphrase: 'test');
+      const a = OZSignAuthEntryOptions(networkPassphrase: 'test');
       expect(a == a, isTrue);
     });
   });
 
-  group('SignAuthEntryResult equality and hashCode', () {
+  group('OZSignAuthEntryResult equality and hashCode', () {
     test('differentSignerAddress_notEqual', () {
       // Non-const: signedAuthEntry matches, signerAddress differs → line 586.
-      final a = SignAuthEntryResult(
+      final a = OZSignAuthEntryResult(
         signedAuthEntry: 'sig',
         signerAddress: 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
       );
-      final b = SignAuthEntryResult(
+      final b = OZSignAuthEntryResult(
         signedAuthEntry: 'sig',
         signerAddress: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
       );
@@ -1610,11 +1610,11 @@ void main() {
     });
 
     test('equalInstances_areEqual', () {
-      const a = SignAuthEntryResult(
+      const a = OZSignAuthEntryResult(
         signedAuthEntry: 'base64signature==',
         signerAddress: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
       );
-      const b = SignAuthEntryResult(
+      const b = OZSignAuthEntryResult(
         signedAuthEntry: 'base64signature==',
         signerAddress: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
       );
@@ -1624,32 +1624,32 @@ void main() {
     });
 
     test('differentSignature_notEqual', () {
-      const a = SignAuthEntryResult(signedAuthEntry: 'sigA');
-      const b = SignAuthEntryResult(signedAuthEntry: 'sigB');
+      const a = OZSignAuthEntryResult(signedAuthEntry: 'sigA');
+      const b = OZSignAuthEntryResult(signedAuthEntry: 'sigB');
       expect(a == b, isFalse);
     });
 
     test('nullSignerAddress_equalToNullSignerAddress', () {
-      const a = SignAuthEntryResult(signedAuthEntry: 'sig', signerAddress: null);
-      const b = SignAuthEntryResult(signedAuthEntry: 'sig', signerAddress: null);
+      const a = OZSignAuthEntryResult(signedAuthEntry: 'sig', signerAddress: null);
+      const b = OZSignAuthEntryResult(signedAuthEntry: 'sig', signerAddress: null);
       expect(a, equals(b));
     });
 
     test('differentType_notEqual', () {
-      const a = SignAuthEntryResult(signedAuthEntry: 'sig');
+      const a = OZSignAuthEntryResult(signedAuthEntry: 'sig');
       expect(a == 'not-a-result', isFalse);
     });
 
     test('identical_isEqual', () {
-      const a = SignAuthEntryResult(signedAuthEntry: 'sig');
+      const a = OZSignAuthEntryResult(signedAuthEntry: 'sig');
       expect(a == a, isTrue);
     });
   });
 
-  group('StoredCredential hashCode with transports', () {
+  group('OZStoredCredential hashCode with transports', () {
     test('hashCode_withNonNullTransports_doesNotThrow', () {
       // Exercises _stringListHash with non-empty list (lines 228-229).
-      final cred = StoredCredential(
+      final cred = OZStoredCredential(
         credentialId: 'cred-with-transports',
         publicKey: _testPublicKey(seed: 9),
         transports: const <String>['internal', 'usb'],
@@ -1657,7 +1657,7 @@ void main() {
       );
       // Just exercising hashCode with non-null transports.
       final hash1 = cred.hashCode;
-      final cred2 = StoredCredential(
+      final cred2 = OZStoredCredential(
         credentialId: 'cred-with-transports',
         publicKey: _testPublicKey(seed: 9),
         transports: const <String>['internal', 'usb'],
@@ -1667,27 +1667,27 @@ void main() {
     });
   });
 
-  group('InMemoryStorageAdapter update on missing credential', () {
+  group('OZInMemoryStorageAdapter update on missing credential', () {
     test('update_missingCredential_throwsCredentialNotFound', () async {
-      final adapter = InMemoryStorageAdapter();
+      final adapter = OZInMemoryStorageAdapter();
       await expectLater(
         adapter.update(
           'non-existent-cred',
-          const StoredCredentialUpdate(nickname: 'New'),
+          const OZStoredCredentialUpdate(nickname: 'New'),
         ),
-        throwsA(isA<CredentialNotFound>()),
+        throwsA(isA<SmartAccountCredentialNotFound>()),
       );
     });
 
     test('getSession_emptyAdapter_returnsNull', () async {
-      final adapter = InMemoryStorageAdapter();
+      final adapter = OZInMemoryStorageAdapter();
       final session = await adapter.getSession();
       expect(session, isNull);
     });
 
     test('getSession_expiredSession_returnsNullAndClears', () async {
-      final adapter = InMemoryStorageAdapter();
-      await adapter.saveSession(StoredSession(
+      final adapter = OZInMemoryStorageAdapter();
+      await adapter.saveSession(OZStoredSession(
         credentialId: 'cred',
         contractId: 'contract',
         connectedAt: 1000,

@@ -38,17 +38,17 @@ OZIndexerClient _client(
 void main() {
   group('OZIndexerClient - constructor validation', () {
     test('testConstructor_blankUrl_throwsConfigurationException', () {
-      expect(() => OZIndexerClient(''), throwsA(isA<InvalidConfig>()));
+      expect(() => OZIndexerClient(''), throwsA(isA<SmartAccountInvalidConfig>()));
     });
 
     test('testConstructor_whitespaceUrl_throwsConfigurationException', () {
-      expect(() => OZIndexerClient('   '), throwsA(isA<InvalidConfig>()));
+      expect(() => OZIndexerClient('   '), throwsA(isA<SmartAccountInvalidConfig>()));
     });
 
     test('testConstructor_httpUrl_throwsConfigurationException', () {
       expect(
         () => OZIndexerClient('http://indexer.example.com'),
-        throwsA(isA<InvalidConfig>()),
+        throwsA(isA<SmartAccountInvalidConfig>()),
       );
     });
 
@@ -65,14 +65,14 @@ void main() {
     test('testConstructor_ftpSchemeThrows', () {
       expect(
         () => OZIndexerClient('ftp://indexer.example.com'),
-        throwsA(isA<InvalidConfig>()),
+        throwsA(isA<SmartAccountInvalidConfig>()),
       );
     });
 
     test('testConstructor_noSchemeThrows', () {
       expect(
         () => OZIndexerClient('indexer.example.com'),
-        throwsA(isA<InvalidConfig>()),
+        throwsA(isA<SmartAccountInvalidConfig>()),
       );
     });
 
@@ -89,7 +89,7 @@ void main() {
     test('testConstructor_schemeOnlyUrl_throwsConfigurationException', () {
       expect(
         () => OZIndexerClient('https://'),
-        throwsA(isA<InvalidConfig>()),
+        throwsA(isA<SmartAccountInvalidConfig>()),
       );
     });
   });
@@ -253,7 +253,7 @@ void main() {
       try {
         await expectLater(
           indexer.lookupByCredentialId('!!!invalid-base64url!!!'),
-          throwsA(isA<InvalidInput>()),
+          throwsA(isA<SmartAccountInvalidInput>()),
         );
       } finally {
         await indexer.close();
@@ -269,8 +269,8 @@ void main() {
       try {
         try {
           await indexer.lookupByCredentialId('qrvM3Q');
-          fail('expected IndexerRequestFailed');
-        } on IndexerRequestFailed catch (e) {
+          fail('expected SmartAccountIndexerRequestFailed');
+        } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('404'), isTrue);
         }
       } finally {
@@ -287,8 +287,8 @@ void main() {
       try {
         try {
           await indexer.lookupByCredentialId('qrvM3Q');
-          fail('expected IndexerRequestFailed');
-        } on IndexerRequestFailed catch (e) {
+          fail('expected SmartAccountIndexerRequestFailed');
+        } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('500'), isTrue);
         }
       } finally {
@@ -306,7 +306,7 @@ void main() {
       try {
         await expectLater(
           indexer.lookupByCredentialId('qrvM3Q'),
-          throwsA(isA<IndexerRequestFailed>()),
+          throwsA(isA<SmartAccountIndexerRequestFailed>()),
         );
       } finally {
         await indexer.close();
@@ -383,7 +383,7 @@ void main() {
       try {
         await expectLater(
           indexer.lookupByAddress('INVALID_ADDRESS'),
-          throwsA(isA<InvalidAddress>()),
+          throwsA(isA<SmartAccountInvalidAddress>()),
         );
       } finally {
         await indexer.close();
@@ -399,7 +399,7 @@ void main() {
       try {
         await expectLater(
           indexer.lookupByAddress(_testAccountId),
-          throwsA(isA<IndexerRequestFailed>()),
+          throwsA(isA<SmartAccountIndexerRequestFailed>()),
         );
       } finally {
         await indexer.close();
@@ -508,7 +508,7 @@ void main() {
       try {
         await expectLater(
           indexer.getContract(_testAccountId),
-          throwsA(isA<InvalidAddress>()),
+          throwsA(isA<SmartAccountInvalidAddress>()),
         );
       } finally {
         await indexer.close();
@@ -524,7 +524,7 @@ void main() {
       try {
         await expectLater(
           indexer.getContract(_testContractId),
-          throwsA(isA<IndexerRequestFailed>()),
+          throwsA(isA<SmartAccountIndexerRequestFailed>()),
         );
       } finally {
         await indexer.close();
@@ -605,8 +605,8 @@ void main() {
       try {
         try {
           await indexer.getStats();
-          fail('expected IndexerRequestFailed');
-        } on IndexerRequestFailed catch (e) {
+          fail('expected SmartAccountIndexerRequestFailed');
+        } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('500'), isTrue);
         }
       } finally {
@@ -626,8 +626,8 @@ void main() {
       try {
         try {
           await indexer.lookupByCredentialId('qrvM3Q');
-          fail('expected IndexerRequestFailed');
-        } on IndexerRequestFailed catch (e) {
+          fail('expected SmartAccountIndexerRequestFailed');
+        } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('...'), isTrue,
               reason: 'Long error body must be truncated with ellipsis');
           expect(e.message.contains('x' * 201), isFalse,
@@ -648,8 +648,8 @@ void main() {
       try {
         try {
           await indexer.lookupByCredentialId('qrvM3Q');
-          fail('expected IndexerRequestFailed');
-        } on IndexerRequestFailed catch (e) {
+          fail('expected SmartAccountIndexerRequestFailed');
+        } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('short error'), isTrue);
           expect(e.message.endsWith('...'), isFalse,
               reason: 'Short error body must not be truncated');
@@ -670,8 +670,8 @@ void main() {
       try {
         try {
           await indexer.getStats();
-          fail('expected IndexerTimeout');
-        } on IndexerTimeout catch (e) {
+          fail('expected SmartAccountIndexerTimeout');
+        } on SmartAccountIndexerTimeout catch (e) {
           expect(e.message.contains('timed out'), isTrue,
               reason: 'Timeout exception message must indicate timeout');
         }
@@ -688,8 +688,8 @@ void main() {
       try {
         try {
           await indexer.lookupByCredentialId('qrvM3Q');
-          fail('expected IndexerRequestFailed');
-        } on IndexerRequestFailed catch (e) {
+          fail('expected SmartAccountIndexerRequestFailed');
+        } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('unexpected network failure'), isTrue);
         }
       } finally {
@@ -826,8 +826,8 @@ void main() {
       try {
         try {
           await indexer.lookupByCredentialId('qrvM3Q');
-          fail('expected IndexerRequestFailed for oversized response');
-        } on IndexerRequestFailed catch (e) {
+          fail('expected SmartAccountIndexerRequestFailed for oversized response');
+        } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('exceeds maximum size'), isTrue);
         }
       } finally {
@@ -849,8 +849,8 @@ void main() {
       try {
         try {
           await indexer.lookupByCredentialId('qrvM3Q');
-          fail('expected IndexerRequestFailed for non-JSON Content-Type');
-        } on IndexerRequestFailed catch (e) {
+          fail('expected SmartAccountIndexerRequestFailed for non-JSON Content-Type');
+        } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('Unexpected Content-Type'), isTrue,
               reason: 'Error message must identify the unexpected type');
           expect(e.message.contains('text/html'), isTrue);
@@ -888,8 +888,8 @@ void main() {
       try {
         try {
           await indexer.lookupByCredentialId('qrvM3Q');
-          fail('expected IndexerRequestFailed for malformed JSON body');
-        } on IndexerRequestFailed catch (e) {
+          fail('expected SmartAccountIndexerRequestFailed for malformed JSON body');
+        } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('Failed to parse'), isTrue,
               reason:
                   'A malformed JSON body under application/json must surface '
@@ -910,8 +910,8 @@ void main() {
       try {
         try {
           await indexer.lookupByCredentialId('qrvM3Q');
-          fail('expected IndexerRequestFailed for non-object JSON body');
-        } on IndexerRequestFailed catch (e) {
+          fail('expected SmartAccountIndexerRequestFailed for non-object JSON body');
+        } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('is not a JSON object'), isTrue,
               reason:
                   'A non-object JSON body must surface as a typed '
@@ -942,8 +942,8 @@ void main() {
         try {
           try {
             await indexer.getStats();
-            fail('expected IndexerTimeout for $variant');
-          } on IndexerTimeout catch (e) {
+            fail('expected SmartAccountIndexerTimeout for $variant');
+          } on SmartAccountIndexerTimeout catch (e) {
             expect(e.message.contains('timed out'), isTrue,
                 reason: 'Timeout exception message must indicate timeout');
           }
@@ -1014,8 +1014,8 @@ void main() {
         cancelToken.cancel('test cancellation');
         try {
           await future;
-          fail('expected IndexerRequestFailed for cancelled request');
-        } on IndexerRequestFailed catch (e) {
+          fail('expected SmartAccountIndexerRequestFailed for cancelled request');
+        } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('Request cancelled'), isTrue);
         }
       } finally {
@@ -1036,8 +1036,8 @@ void main() {
         cancelToken.cancel('test cancellation');
         try {
           await future;
-          fail('expected IndexerRequestFailed for cancelled request');
-        } on IndexerRequestFailed catch (e) {
+          fail('expected SmartAccountIndexerRequestFailed for cancelled request');
+        } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('Request cancelled'), isTrue);
         }
       } finally {
@@ -1059,8 +1059,8 @@ void main() {
         cancelToken.cancel('test cancellation');
         try {
           await future;
-          fail('expected IndexerRequestFailed for cancelled request');
-        } on IndexerRequestFailed catch (e) {
+          fail('expected SmartAccountIndexerRequestFailed for cancelled request');
+        } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('Request cancelled'), isTrue);
         }
       } finally {
@@ -1082,8 +1082,8 @@ void main() {
         cancelToken.cancel('test cancellation');
         try {
           await future;
-          fail('expected IndexerRequestFailed for cancelled request');
-        } on IndexerRequestFailed catch (e) {
+          fail('expected SmartAccountIndexerRequestFailed for cancelled request');
+        } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('Request cancelled'), isTrue);
         }
       } finally {
@@ -1863,7 +1863,7 @@ void main() {
 
       await expectLater(
         client.lookupByCredentialId(credId),
-        throwsA(isA<IndexerRequestFailed>()),
+        throwsA(isA<SmartAccountIndexerRequestFailed>()),
       );
       await client.close();
     });
@@ -1875,7 +1875,7 @@ void main() {
 
       await expectLater(
         client.lookupByCredentialId(credId),
-        throwsA(isA<IndexerRequestFailed>()),
+        throwsA(isA<SmartAccountIndexerRequestFailed>()),
       );
       await client.close();
     });
@@ -1889,7 +1889,7 @@ void main() {
 
       await expectLater(
         client.lookupByAddress(_testAccountId),
-        throwsA(isA<IndexerRequestFailed>()),
+        throwsA(isA<SmartAccountIndexerRequestFailed>()),
       );
       await client.close();
     });
@@ -1903,7 +1903,7 @@ void main() {
 
       await expectLater(
         client.getContract(_testContractId),
-        throwsA(isA<IndexerRequestFailed>()),
+        throwsA(isA<SmartAccountIndexerRequestFailed>()),
       );
       await client.close();
     });
@@ -1917,7 +1917,7 @@ void main() {
 
       await expectLater(
         client.getStats(),
-        throwsA(isA<IndexerRequestFailed>()),
+        throwsA(isA<SmartAccountIndexerRequestFailed>()),
       );
       await client.close();
     });
@@ -1947,7 +1947,7 @@ void main() {
 
       await expectLater(
         client.lookupByCredentialId(credId),
-        throwsA(isA<IndexerRequestFailed>()),
+        throwsA(isA<SmartAccountIndexerRequestFailed>()),
       );
       await client.close();
     });
@@ -1963,7 +1963,7 @@ void main() {
 
       await expectLater(
         client.lookupByCredentialId(credId),
-        throwsA(isA<IndexerRequestFailed>()),
+        throwsA(isA<SmartAccountIndexerRequestFailed>()),
       );
       await client.close();
     });

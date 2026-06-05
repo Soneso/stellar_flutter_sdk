@@ -208,7 +208,7 @@ abstract class WebAuthnProvider {
   /// [WebAuthnCancelled]) if authentication fails or the user cancels.
   Future<WebAuthnAuthenticationResult> authenticate({
     required Uint8List challenge,
-    List<AllowCredential>? allowCredentials,
+    List<WebAuthnAllowCredential>? allowCredentials,
   });
 }
 

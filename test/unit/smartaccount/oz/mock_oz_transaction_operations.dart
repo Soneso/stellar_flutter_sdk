@@ -17,24 +17,24 @@ import 'package:stellar_flutter_sdk/src/xdr/xdr.dart';
 /// surface that the OZ managers call (`submit`, `transfer`,
 /// `contractCall`, `executeAndSubmit`, `fundWallet`,
 /// `simulateAndExtractResult`). Each call records its arguments into
-/// a typed record list and returns a canned [TransactionResult] from a
+/// a typed record list and returns a canned [OZTransactionResult] from a
 /// per-method default. Tests configure the canned outcomes by mutating
 /// the public `*Default` fields and inspect captured calls through the
 /// matching `*Calls` lists.
 class MockOZTransactionOperations extends OZTransactionOperations {
   MockOZTransactionOperations(OZSmartAccountKitInterface kit) : super(kit);
 
-  TransactionResult submitDefault =
-      const TransactionResult(success: true, hash: 'mock-submit-hash');
+  OZTransactionResult submitDefault =
+      const OZTransactionResult(success: true, hash: 'mock-submit-hash');
 
-  TransactionResult transferDefault =
-      const TransactionResult(success: true, hash: 'mock-transfer-hash');
+  OZTransactionResult transferDefault =
+      const OZTransactionResult(success: true, hash: 'mock-transfer-hash');
 
-  TransactionResult contractCallDefault =
-      const TransactionResult(success: true, hash: 'mock-contract-call-hash');
+  OZTransactionResult contractCallDefault =
+      const OZTransactionResult(success: true, hash: 'mock-contract-call-hash');
 
-  TransactionResult executeAndSubmitDefault =
-      const TransactionResult(success: true, hash: 'mock-execute-hash');
+  OZTransactionResult executeAndSubmitDefault =
+      const OZTransactionResult(success: true, hash: 'mock-execute-hash');
 
   String fundWalletDefault = '100.0000000';
 
@@ -42,7 +42,7 @@ class MockOZTransactionOperations extends OZTransactionOperations {
   /// the call happened do not need to wire a richer fixture.
   XdrSCVal simulateAndExtractResultDefault = XdrSCVal.forVoid();
 
-  TransactionResult? Function(SubmitInvocation invocation)? submitOverride;
+  OZTransactionResult? Function(SubmitInvocation invocation)? submitOverride;
 
   XdrSCVal? Function(XdrHostFunction hostFunction)?
       simulateAndExtractResultOverride;
@@ -58,11 +58,11 @@ class MockOZTransactionOperations extends OZTransactionOperations {
       <XdrHostFunction>[];
 
   @override
-  Future<TransactionResult> submit({
+  Future<OZTransactionResult> submit({
     required XdrHostFunction hostFunction,
     required List<XdrSorobanAuthorizationEntry> auth,
-    SubmissionMethod? forceMethod,
-    ResolveContextRuleIds? resolveContextRuleIds,
+    OZSubmissionMethod? forceMethod,
+    OZResolveContextRuleIds? resolveContextRuleIds,
     dio.CancelToken? cancelToken,
   }) async {
     final invocation = SubmitInvocation(
@@ -78,11 +78,11 @@ class MockOZTransactionOperations extends OZTransactionOperations {
   }
 
   @override
-  Future<TransactionResult> transfer({
+  Future<OZTransactionResult> transfer({
     required String tokenContract,
     required String recipient,
     required String amount,
-    SubmissionMethod? forceMethod,
+    OZSubmissionMethod? forceMethod,
     dio.CancelToken? cancelToken,
   }) async {
     transferCalls.add(TransferInvocation(
@@ -96,12 +96,12 @@ class MockOZTransactionOperations extends OZTransactionOperations {
   }
 
   @override
-  Future<TransactionResult> contractCall({
+  Future<OZTransactionResult> contractCall({
     required String target,
     required String targetFn,
     List<XdrSCVal> targetArgs = const <XdrSCVal>[],
-    SubmissionMethod? forceMethod,
-    ResolveContextRuleIds? resolveContextRuleIds,
+    OZSubmissionMethod? forceMethod,
+    OZResolveContextRuleIds? resolveContextRuleIds,
     dio.CancelToken? cancelToken,
   }) async {
     contractCallCalls.add(ContractCallInvocation(
@@ -116,12 +116,12 @@ class MockOZTransactionOperations extends OZTransactionOperations {
   }
 
   @override
-  Future<TransactionResult> executeAndSubmit({
+  Future<OZTransactionResult> executeAndSubmit({
     required String target,
     required String targetFn,
     List<XdrSCVal> targetArgs = const <XdrSCVal>[],
-    SubmissionMethod? forceMethod,
-    ResolveContextRuleIds? resolveContextRuleIds,
+    OZSubmissionMethod? forceMethod,
+    OZResolveContextRuleIds? resolveContextRuleIds,
     dio.CancelToken? cancelToken,
   }) async {
     executeAndSubmitCalls.add(ExecuteAndSubmitInvocation(
@@ -138,7 +138,7 @@ class MockOZTransactionOperations extends OZTransactionOperations {
   @override
   Future<String> fundWallet({
     required String nativeTokenContract,
-    SubmissionMethod? forceMethod,
+    OZSubmissionMethod? forceMethod,
     dio.CancelToken? cancelToken,
   }) async {
     fundWalletCalls.add(FundWalletInvocation(
@@ -169,8 +169,8 @@ class SubmitInvocation {
 
   final XdrHostFunction hostFunction;
   final List<XdrSorobanAuthorizationEntry> auth;
-  final SubmissionMethod? forceMethod;
-  final ResolveContextRuleIds? resolveContextRuleIds;
+  final OZSubmissionMethod? forceMethod;
+  final OZResolveContextRuleIds? resolveContextRuleIds;
   final dio.CancelToken? cancelToken;
 }
 
@@ -187,7 +187,7 @@ class TransferInvocation {
   final String tokenContract;
   final String recipient;
   final String amount;
-  final SubmissionMethod? forceMethod;
+  final OZSubmissionMethod? forceMethod;
   final dio.CancelToken? cancelToken;
 }
 
@@ -205,8 +205,8 @@ class ContractCallInvocation {
   final String target;
   final String targetFn;
   final List<XdrSCVal> targetArgs;
-  final SubmissionMethod? forceMethod;
-  final ResolveContextRuleIds? resolveContextRuleIds;
+  final OZSubmissionMethod? forceMethod;
+  final OZResolveContextRuleIds? resolveContextRuleIds;
   final dio.CancelToken? cancelToken;
 }
 
@@ -224,8 +224,8 @@ class ExecuteAndSubmitInvocation {
   final String target;
   final String targetFn;
   final List<XdrSCVal> targetArgs;
-  final SubmissionMethod? forceMethod;
-  final ResolveContextRuleIds? resolveContextRuleIds;
+  final OZSubmissionMethod? forceMethod;
+  final OZResolveContextRuleIds? resolveContextRuleIds;
   final dio.CancelToken? cancelToken;
 }
 
@@ -238,6 +238,6 @@ class FundWalletInvocation {
   });
 
   final String nativeTokenContract;
-  final SubmissionMethod? forceMethod;
+  final OZSubmissionMethod? forceMethod;
   final dio.CancelToken? cancelToken;
 }

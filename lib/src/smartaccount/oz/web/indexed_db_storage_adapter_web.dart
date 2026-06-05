@@ -41,7 +41,7 @@ import '../oz_storage_adapter.dart';
 ///   under sentinel key `current`.
 //
 // ignore: camel_case_types
-class IndexedDBStorageAdapter implements StorageAdapter {
+class OZIndexedDBStorageAdapter implements OZStorageAdapter {
   /// Default IndexedDB database name.
   static const String defaultDbName = 'stellar_smart_account';
 
@@ -83,15 +83,15 @@ class IndexedDBStorageAdapter implements StorageAdapter {
 
   Future<void> _tail = Future<void>.value();
 
-  /// Constructs an [IndexedDBStorageAdapter] backed by `window.indexedDB`.
-  IndexedDBStorageAdapter({this.dbName = defaultDbName})
+  /// Constructs an [OZIndexedDBStorageAdapter] backed by `window.indexedDB`.
+  OZIndexedDBStorageAdapter({this.dbName = defaultDbName})
       : _injectedFactory = null;
 
-  /// Constructs an [IndexedDBStorageAdapter] backed by an injected
+  /// Constructs an [OZIndexedDBStorageAdapter] backed by an injected
   /// [web.IDBFactory]. Test seam — production code uses the unnamed
   /// constructor.
   @visibleForTesting
-  IndexedDBStorageAdapter.withFactory({
+  OZIndexedDBStorageAdapter.withFactory({
     required web.IDBFactory factory,
     this.dbName = defaultDbName,
   }) : _injectedFactory = factory;
@@ -130,11 +130,11 @@ class IndexedDBStorageAdapter implements StorageAdapter {
     final factory = _resolveFactory();
     if (factory == null) {
       completer.completeError(
-        StorageException.readFailed(
+        SmartAccountStorageException.readFailed(
           'indexedDB',
           cause: Exception(
             'IndexedDB is not available in this environment. '
-            'IndexedDBStorageAdapter requires a browser environment.',
+            'OZIndexedDBStorageAdapter requires a browser environment.',
           ),
         ),
       );
@@ -146,7 +146,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
       request = factory.open(dbName, dbVersion);
     } on Object catch (e) {
       completer.completeError(
-        StorageException.readFailed(
+        SmartAccountStorageException.readFailed(
           'indexedDB:open',
           cause: Exception(
               "Failed to open IndexedDB '$dbName': ${e.toString()}"),
@@ -160,7 +160,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
       final db = request.result;
       if (db is! web.IDBDatabase) {
         completer.completeError(
-          StorageException.readFailed(
+          SmartAccountStorageException.readFailed(
             'indexedDB:open',
             cause: Exception(
                 "Failed to open IndexedDB '$dbName': result is not an IDBDatabase"),
@@ -175,7 +175,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
       if (completer.isCompleted) return;
       final errorMsg = request.error?.message ?? 'Unknown error';
       completer.completeError(
-        StorageException.readFailed(
+        SmartAccountStorageException.readFailed(
           'indexedDB:open',
           cause: Exception(
               "Failed to open IndexedDB '$dbName': $errorMsg"),
@@ -245,7 +245,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
   // ---------------------------------------------------------------------------
 
   @override
-  Future<void> save(StoredCredential credential) {
+  Future<void> save(OZStoredCredential credential) {
     return _withLock<void>(() async {
       final database = await _getDb();
       final obj = _credentialToJs(credential);
@@ -257,7 +257,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
           (store) => store.put(obj),
         );
       } on Object catch (e) {
-        throw StorageException.writeFailed(
+        throw SmartAccountStorageException.writeFailed(
           'credential:${credential.credentialId}',
           cause: e is Exception ? e : Exception(e.toString()),
         );
@@ -266,8 +266,8 @@ class IndexedDBStorageAdapter implements StorageAdapter {
   }
 
   @override
-  Future<StoredCredential?> get(String credentialId) {
-    return _withLock<StoredCredential?>(() async {
+  Future<OZStoredCredential?> get(String credentialId) {
+    return _withLock<OZStoredCredential?>(() async {
       final database = await _getDb();
       final JSAny? result;
       try {
@@ -278,7 +278,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
           (store) => store.get(credentialId.toJS),
         );
       } on Object catch (e) {
-        throw StorageException.readFailed(
+        throw SmartAccountStorageException.readFailed(
           'credential:$credentialId',
           cause: e is Exception ? e : Exception(e.toString()),
         );
@@ -289,8 +289,8 @@ class IndexedDBStorageAdapter implements StorageAdapter {
   }
 
   @override
-  Future<List<StoredCredential>> getByContract(String contractId) {
-    return _withLock<List<StoredCredential>>(() async {
+  Future<List<OZStoredCredential>> getByContract(String contractId) {
+    return _withLock<List<OZStoredCredential>>(() async {
       final database = await _getDb();
       final JSAny? results;
       try {
@@ -302,7 +302,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
           (index) => index.getAll(contractId.toJS),
         );
       } on Object catch (e) {
-        throw StorageException.readFailed(
+        throw SmartAccountStorageException.readFailed(
           'credentials:contractId=$contractId',
           cause: e is Exception ? e : Exception(e.toString()),
         );
@@ -312,8 +312,8 @@ class IndexedDBStorageAdapter implements StorageAdapter {
   }
 
   @override
-  Future<List<StoredCredential>> getAll() {
-    return _withLock<List<StoredCredential>>(() async {
+  Future<List<OZStoredCredential>> getAll() {
+    return _withLock<List<OZStoredCredential>>(() async {
       final database = await _getDb();
       final JSAny? results;
       try {
@@ -324,7 +324,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
           (store) => store.getAll(),
         );
       } on Object catch (e) {
-        throw StorageException.readFailed(
+        throw SmartAccountStorageException.readFailed(
           'credentials:all',
           cause: e is Exception ? e : Exception(e.toString()),
         );
@@ -345,7 +345,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
           (store) => store.delete(credentialId.toJS),
         );
       } on Object catch (e) {
-        throw StorageException.writeFailed(
+        throw SmartAccountStorageException.writeFailed(
           'credential:$credentialId',
           cause: e is Exception ? e : Exception(e.toString()),
         );
@@ -354,7 +354,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
   }
 
   @override
-  Future<void> update(String credentialId, StoredCredentialUpdate updates) {
+  Future<void> update(String credentialId, OZStoredCredentialUpdate updates) {
     return _withLock<void>(() async {
       final database = await _getDb();
       final JSAny? result;
@@ -366,13 +366,13 @@ class IndexedDBStorageAdapter implements StorageAdapter {
           (store) => store.get(credentialId.toJS),
         );
       } on Object catch (e) {
-        throw StorageException.readFailed(
+        throw SmartAccountStorageException.readFailed(
           'credential:$credentialId',
           cause: e is Exception ? e : Exception(e.toString()),
         );
       }
       if (result == null || !result.isA<JSObject>()) {
-        throw CredentialException.notFound(credentialId);
+        throw SmartAccountCredentialException.notFound(credentialId);
       }
       final existing = _jsToCredential(result as JSObject);
       final updated = existing.applyUpdate(updates);
@@ -385,7 +385,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
           (store) => store.put(obj),
         );
       } on Object catch (e) {
-        throw StorageException.writeFailed(
+        throw SmartAccountStorageException.writeFailed(
           'credential:$credentialId',
           cause: e is Exception ? e : Exception(e.toString()),
         );
@@ -405,7 +405,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
           (store) => store.clear(),
         );
       } on Object catch (e) {
-        throw StorageException.writeFailed(
+        throw SmartAccountStorageException.writeFailed(
           'credentials:clear',
           cause: e is Exception ? e : Exception(e.toString()),
         );
@@ -419,7 +419,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
   // ---------------------------------------------------------------------------
 
   @override
-  Future<void> saveSession(StoredSession session) {
+  Future<void> saveSession(OZStoredSession session) {
     return _withLock<void>(() async {
       final database = await _getDb();
       final obj = _sessionToJs(session);
@@ -431,7 +431,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
           (store) => store.put(obj),
         );
       } on Object catch (e) {
-        throw StorageException.writeFailed(
+        throw SmartAccountStorageException.writeFailed(
           'session',
           cause: e is Exception ? e : Exception(e.toString()),
         );
@@ -440,8 +440,8 @@ class IndexedDBStorageAdapter implements StorageAdapter {
   }
 
   @override
-  Future<StoredSession?> getSession() {
-    return _withLock<StoredSession?>(() async {
+  Future<OZStoredSession?> getSession() {
+    return _withLock<OZStoredSession?>(() async {
       final database = await _getDb();
       final JSAny? result;
       try {
@@ -452,7 +452,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
           (store) => store.get(sessionKey.toJS),
         );
       } on Object catch (e) {
-        throw StorageException.readFailed(
+        throw SmartAccountStorageException.readFailed(
           'session',
           cause: e is Exception ? e : Exception(e.toString()),
         );
@@ -486,7 +486,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
         (store) => store.delete(sessionKey.toJS),
       );
     } on Object catch (e) {
-      throw StorageException.writeFailed(
+      throw SmartAccountStorageException.writeFailed(
         'session:clear',
         cause: e is Exception ? e : Exception(e.toString()),
       );
@@ -507,7 +507,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
     final factory = _resolveFactory();
     if (factory == null) {
       completer.completeError(
-        StorageException.writeFailed(
+        SmartAccountStorageException.writeFailed(
           'indexedDB:delete',
           cause: Exception('IndexedDB is not available'),
         ),
@@ -519,7 +519,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
       request = factory.deleteDatabase(target);
     } on Object catch (e) {
       completer.completeError(
-        StorageException.writeFailed(
+        SmartAccountStorageException.writeFailed(
           'indexedDB:delete',
           cause: Exception(
               "Failed to delete database '$target': ${e.toString()}"),
@@ -535,7 +535,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
       if (completer.isCompleted) return;
       final errorMsg = request.error?.message ?? 'Unknown error';
       completer.completeError(
-        StorageException.writeFailed(
+        SmartAccountStorageException.writeFailed(
           'indexedDB:delete',
           cause: Exception(
               "Failed to delete database '$target': $errorMsg"),
@@ -612,7 +612,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
   // JS object conversion
   // ---------------------------------------------------------------------------
 
-  JSObject _credentialToJs(StoredCredential credential) {
+  JSObject _credentialToJs(OZStoredCredential credential) {
     final obj = JSObject();
     obj.setProperty('credentialId'.toJS, credential.credentialId.toJS);
     obj.setProperty('publicKey'.toJS, _byteArrayToJs(credential.publicKey));
@@ -657,7 +657,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
     return obj;
   }
 
-  StoredCredential _jsToCredential(JSObject obj) {
+  OZStoredCredential _jsToCredential(JSObject obj) {
     final credentialId =
         (obj.getProperty<JSString>('credentialId'.toJS)).toDart;
     final publicKey =
@@ -690,7 +690,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
         deviceTypeRaw is JSString ? deviceTypeRaw.toDart : null;
     final backedUpRaw = obj.getProperty<JSAny?>('backedUp'.toJS);
     final backedUp = backedUpRaw is JSBoolean ? backedUpRaw.toDart : null;
-    return StoredCredential(
+    return OZStoredCredential(
       credentialId: credentialId,
       publicKey: publicKey,
       contractId: contractId,
@@ -706,7 +706,7 @@ class IndexedDBStorageAdapter implements StorageAdapter {
     );
   }
 
-  JSObject _sessionToJs(StoredSession session) {
+  JSObject _sessionToJs(OZStoredSession session) {
     final obj = JSObject();
     obj.setProperty('key'.toJS, sessionKey.toJS);
     obj.setProperty('credentialId'.toJS, session.credentialId.toJS);
@@ -716,8 +716,8 @@ class IndexedDBStorageAdapter implements StorageAdapter {
     return obj;
   }
 
-  StoredSession _jsToSession(JSObject obj) {
-    return StoredSession(
+  OZStoredSession _jsToSession(JSObject obj) {
+    return OZStoredSession(
       credentialId:
           (obj.getProperty<JSString>('credentialId'.toJS)).toDart,
       contractId: (obj.getProperty<JSString>('contractId'.toJS)).toDart,
@@ -767,12 +767,12 @@ class IndexedDBStorageAdapter implements StorageAdapter {
     );
   }
 
-  List<StoredCredential> _jsArrayToCredentials(JSAny? value) {
+  List<OZStoredCredential> _jsArrayToCredentials(JSAny? value) {
     if (value == null || !value.isA<JSArray>()) {
-      return const <StoredCredential>[];
+      return const <OZStoredCredential>[];
     }
     final array = (value as JSArray).toDart;
-    final result = List<StoredCredential>.generate(
+    final result = List<OZStoredCredential>.generate(
       array.length,
       (i) => _jsToCredential(array[i] as JSObject),
       growable: false,
@@ -780,14 +780,14 @@ class IndexedDBStorageAdapter implements StorageAdapter {
     return result;
   }
 
-  CredentialDeploymentStatus _statusFromName(String name) {
-    for (final status in CredentialDeploymentStatus.values) {
+  OZCredentialDeploymentStatus _statusFromName(String name) {
+    for (final status in OZCredentialDeploymentStatus.values) {
       if (status.name == name) return status;
     }
     throw ArgumentError.value(
       name,
       'deploymentStatus',
-      'Unknown CredentialDeploymentStatus name',
+      'Unknown OZCredentialDeploymentStatus name',
     );
   }
 
