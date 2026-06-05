@@ -44,56 +44,32 @@ ships:
 
 > `PlatformWebAuthnProvider` and `OZPlatformStorageAdapter` drive a native plugin
 > (AuthenticationServices + Keychain on iOS, Credential Manager on Android).
-> WebAuthn is supported on Android, iOS, and Web only — there is no macOS native
-> plugin, so the platform providers raise `MissingPluginException` on macOS.
+> WebAuthn is supported on Android, iOS, and Web only. macOS and other desktop
+> targets are not supported — the platform providers raise
+> `MissingPluginException` there, a raw Flutter exception that is **not** caught
+> by `on WebAuthnException`. Handle it separately, or guard provider
+> construction on a supported platform.
 
 ### How Flutter selects the implementation
 
-- **Mobile (Android / iOS)** — `PlatformWebAuthnProvider` and
-  `OZPlatformStorageAdapter` dispatch over a Flutter method channel to a native
-  plugin. The Dart class is identical across these targets; only the native
-  handler differs.
-- **Web** — `BrowserWebAuthnProvider`, `OZIndexedDBStorageAdapter`, and
-  `OZLocalStorageAdapter` are public facades wired with a conditional export:
-
-  ```dart
-  // Inside the SDK (browser_webauthn_provider.dart):
-  export 'web/browser_webauthn_provider_stub.dart'
-      if (dart.library.js_interop) 'web/browser_webauthn_provider_web.dart';
-  ```
-
-  On Flutter web the real `navigator.credentials` implementation is compiled
-  in; on every other target a stub with the **same constructor and method
-  signatures** is compiled in. Consumer code constructs the same class name on
-  all targets and never branches at the call site.
-
-```dart
-// WRONG: importing the web/native files directly
-// import 'package:stellar_flutter_sdk/src/smartaccount/core/web/browser_webauthn_provider_web.dart';
-// CORRECT: import only the package barrel; the conditional export picks the impl
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-```
+The web versus native implementation is chosen automatically via a conditional
+export: always import the package barrel and construct the same class name on
+every target — consumer code never branches at the call site.
 
 A `webauthnProvider` is required for every operation that creates or signs
-with a passkey (`createWallet`, `connectWallet(prompt: true)`,
+with a passkey (`createWallet`,
+`connectWallet(options: OZConnectWalletOptions(prompt: true))`,
 `authenticatePasskey`, and any passkey-signing flow). Without one those calls
 throw `WebAuthnNotSupported`. Pure read flows and a silent `connectWallet()`
 with a live session do not need a provider.
-
-```dart
-// WRONG: building a config without a provider, then calling createWallet()
-// Result: WebAuthnNotSupported at the first ceremony
-// CORRECT: set config.webauthnProvider whenever a passkey ceremony can run
-```
 
 ---
 
 ## Common interfaces
 
-All of the following live in `core/web_authn_provider.dart`,
-`core/allow_credential.dart`, and `oz/oz_storage_adapter.dart`, and are
-exported from the package barrel. Custom providers and adapters implement
-these.
+All of the following are exported from the package barrel
+(`package:stellar_flutter_sdk/stellar_flutter_sdk.dart`). Custom providers and
+adapters implement these.
 
 ### `WebAuthnProvider`
 
@@ -114,16 +90,8 @@ abstract class WebAuthnProvider {
 }
 ```
 
-```dart
-// WRONG: provider.register(challenge: 'some-string', ...)  — challenge is Uint8List, not String
-// CORRECT: provider.register(challenge: challengeBytes, userId: userIdBytes, userName: 'Alice')
-
-// WRONG: provider.authenticate(challenge: c, allowCredentialIds: [idBytes])  — no such param
-// CORRECT: provider.authenticate(
-//   challenge: c,
-//   allowCredentials: WebAuthnAllowCredential.fromIds([idBytes]),
-// )
-```
+Build the `allowCredentials` list from raw ID bytes with
+`WebAuthnAllowCredential.fromIds([idBytes])`.
 
 ### `WebAuthnRegistrationResult`
 
@@ -137,15 +105,7 @@ class WebAuthnRegistrationResult {
     this.deviceType,                 // String?  'singleDevice' | 'multiDevice'
     this.backedUp,                   // bool?    true if the passkey is cloud-synced
   });
-  // fields are final and named identically to the constructor params
 }
-```
-
-```dart
-// WRONG: result.publicKey.length == 33  — that is the compressed point form
-// CORRECT: result.publicKey.length == 65 && result.publicKey[0] == 0x04
-//   If the platform returns COSE/SPKI, pass the raw bytes in publicKey and the
-//   SDK's 3-strategy extraction recovers the 65-byte point during deployment.
 ```
 
 ### `WebAuthnAuthenticationResult`
@@ -160,10 +120,6 @@ class WebAuthnAuthenticationResult {
   });
 }
 ```
-
-The kit normalises the DER signature to the 64-byte compact `r || s` low-S form
-that Soroban requires. A provider returns the DER bytes exactly as the platform
-delivers them; it must **not** pre-normalise.
 
 ### `WebAuthnAllowCredential`
 
@@ -180,29 +136,17 @@ class WebAuthnAllowCredential {
 
 Transport hints drive cross-device behaviour. Including `'hybrid'` lets the
 browser/OS offer the "use a passkey on another device" QR flow; `'internal'`
-restricts to the current device's platform authenticator. When `transports` is
-`null` the authenticator picks defaults.
-
-Registration captures transports (`WebAuthnRegistrationResult.transports`), the
-SDK stores them on the `OZStoredCredential`, and a later `authenticate` looks
-them up to build the `WebAuthnAllowCredential` list — so cross-device hints survive
-across sessions automatically.
-
-```dart
-// Build a constrained allow-list with a transport hint:
-final allow = [
-  WebAuthnAllowCredential(id: credentialIdBytes, transports: ['hybrid', 'internal']),
-];
-final result = await provider.authenticate(
-  challenge: payloadHash,
-  allowCredentials: allow,
-);
-```
+restricts to the current device's platform authenticator; `null` lets the
+authenticator pick defaults. Registration captures transports
+(`WebAuthnRegistrationResult.transports`), the SDK stores them on the
+`OZStoredCredential`, and a later `authenticate` looks them up to rebuild the
+`WebAuthnAllowCredential` list — so cross-device hints survive across sessions
+automatically, with no extra wiring at the call site.
 
 ### `OZStorageAdapter`
 
-Method names are short (`save` / `get` / `delete`), not
-`saveCredential` / `getCredential`.
+Credential methods are `save` / `get` / `getByContract` / `getAll` / `delete` /
+`update` / `clear`.
 
 ```dart
 abstract class OZStorageAdapter {
@@ -220,23 +164,6 @@ abstract class OZStorageAdapter {
   Future<void> clearSession();
 }
 ```
-
-```dart
-// WRONG: storage.saveCredential(cred)   — method is save(cred)
-// CORRECT: storage.save(cred)
-// WRONG: storage.getAllCredentials()    — method is getAll()
-// CORRECT: storage.getAll()
-// WRONG: storage.deleteCredential(id)   — method is delete(id)
-// CORRECT: storage.delete(id)
-```
-
-`update` applies a partial `OZStoredCredentialUpdate`: non-null fields overwrite,
-null fields are left unchanged. There is no way to reset a field to null via
-`update` — `save` a full replacement credential for that.
-
-`getSession()` returns null when no session exists **and when a stored session
-has expired** (the adapter auto-clears expired sessions on read). After app
-restart, always check the return value.
 
 ### `OZStoredCredential` and `OZStoredCredentialUpdate`
 
@@ -256,7 +183,7 @@ class OZStoredCredential {
     this.deviceType,              // 'singleDevice' | 'multiDevice'
     this.backedUp,
   });
-  OZStoredCredential applyUpdate(OZStoredCredentialUpdate updates); // null = no change
+  OZStoredCredential applyUpdate(OZStoredCredentialUpdate updates); // per-field null means no change
 }
 
 enum OZCredentialDeploymentStatus { pending, failed }  // success removes the record from storage
@@ -298,16 +225,10 @@ structural equality.
 final storage = OZInMemoryStorageAdapter(); // not persisted; lost on restart
 ```
 
-```dart
-// WRONG: shipping production with OZInMemoryStorageAdapter — credentials lost on restart
-// CORRECT: wire a platform adapter (OZPlatformStorageAdapter / OZIndexedDBStorageAdapter)
-```
-
 ### Injecting into `OZSmartAccountConfig`
 
 The config takes the provider and adapter directly. The provider parameter is
-`webauthnProvider` (all lowercase after `web`); `storage` defaults to a fresh
-`OZInMemoryStorageAdapter` when omitted.
+`webauthnProvider` (all lowercase after `web`).
 
 ```dart
 final config = OZSmartAccountConfig(
@@ -318,11 +239,6 @@ final config = OZSmartAccountConfig(
   webauthnProvider: provider,   // a WebAuthnProvider
   storage: storage,             // an OZStorageAdapter; omit for OZInMemoryStorageAdapter
 );
-```
-
-```dart
-// WRONG: OZSmartAccountConfig(..., webAuthnProvider: provider)  — capital A is wrong
-// CORRECT: OZSmartAccountConfig(..., webauthnProvider: provider)
 ```
 
 ---
@@ -336,8 +252,8 @@ plugin, which uses `androidx.credentials.CredentialManager`.
 
 ### Prerequisites
 
-- Android 9.0 (API 28) or newer. The Credential Manager passkey surface and
-  `EncryptedSharedPreferences` both require API 28+.
+- Android 9.0 (API 28) or newer. The Credential Manager passkey surface
+  requires API 28+.
 - A physical device or an emulator image with **Google Play Services** (a
   "Google APIs" or "Google Play" system image — not bare AOSP).
 - A Google account signed in on the device.
@@ -360,11 +276,6 @@ android {
         minSdk = 28
     }
 }
-```
-
-```kotlin
-// WRONG: minSdk = 24  — Credential Manager passkeys + EncryptedSharedPreferences need 28
-// CORRECT: minSdk = 28  — anything lower fails at the first credential create/read
 ```
 
 No manifest permission is needed for WebAuthn itself. The SDK's RPC traffic
@@ -419,16 +330,6 @@ Copy the line labelled `SHA256:`. If the app ships through Google Play with
 the upload key — add Google's fingerprint from **Play Console → Setup → App
 integrity → App signing key certificate** alongside the upload key's.
 
-```jsonc
-// WRONG: "sha256_cert_fingerprints": ["AABBCCDD..."]   — colons stripped
-// CORRECT: colon-separated uppercase hex exactly as keytool prints it
-```
-
-```dart
-// WRONG: rpId: 'https://app.example.com'   — scheme included
-// CORRECT: rpId: 'app.example.com'         — bare host, no scheme, no path
-```
-
 Verify the statement resolves:
 
 ```
@@ -447,7 +348,7 @@ changes during development.
 PlatformWebAuthnProvider({
   required String rpId,
   required String rpName,
-  int timeout = 60000,                 // ms; forwarded to Credential Manager
+  int timeout = WebAuthnProvider.defaultTimeoutMs, // 60000 ms; forwarded to Credential Manager
   String? authenticatorAttachment,     // 'platform' | 'cross-platform' | null
 });
 ```
@@ -463,7 +364,7 @@ isolate fail with `WebAuthnRegistrationFailed` / `WebAuthnAuthenticationFailed`.
 ### Storage adapters (Android)
 
 - **`OZPlatformStorageAdapter`** — production; `EncryptedSharedPreferences` +
-  Android Keystore. Requires API 28+.
+  Android Keystore.
 - **`OZInMemoryStorageAdapter`** — non-persistent; unit tests only.
 
 ```dart
@@ -522,6 +423,9 @@ final kit = OZSmartAccountKit.create(config: config);
 differs and uses Apple's `AuthenticationServices`. `OZPlatformStorageAdapter`
 stores credentials in the iOS Keychain.
 
+This applies to the iOS mobile target only; macOS desktop is not a supported
+Flutter smart-account target.
+
 ### Prerequisites
 
 - iOS 16.0 or newer (passkey support in `AuthenticationServices`).
@@ -534,18 +438,10 @@ stores credentials in the iOS Keychain.
 
 ### `PlatformWebAuthnProvider`
 
-```dart
-PlatformWebAuthnProvider({
-  required String rpId,
-  required String rpName,
-  int timeout = 60000,                 // ms; forwarded to AuthenticationServices
-  String? authenticatorAttachment,     // ignored on iOS (no Apple equivalent)
-});
-```
-
-`authenticatorAttachment` is accepted but ignored on iOS — Apple's framework
-exposes no equivalent control. Construct the provider on the root isolate;
-method-channel calls anchor system UI to the key window.
+Same constructor as [Android](#platformwebauthnprovider). The only difference:
+`authenticatorAttachment` is honored on Android but accepted-and-ignored on iOS
+(Apple's framework exposes no equivalent control). Construct the provider on the
+root isolate; method-channel calls anchor system UI to the key window.
 
 ### Associated Domains entitlement
 
@@ -577,12 +473,8 @@ CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements
 In Xcode → Signing & Capabilities, add the **Associated Domains** capability
 with the same `webcredentials:` entry. The Associated Domains service must also
 be enabled for the App ID in the Apple Developer portal. With manual signing,
-regenerate the provisioning profile after enabling it.
-
-```xml
-<!-- WRONG: webcredentials:https://app.example.com  — scheme included -->
-<!-- CORRECT: webcredentials:app.example.com         — bare domain -->
-```
+regenerate the provisioning profile after enabling it. The `webcredentials:`
+value is a bare domain — no scheme, no path.
 
 #### `?mode=developer` (Simulator / local builds only)
 
@@ -592,11 +484,6 @@ directly:
 
 ```xml
 <string>webcredentials:app.example.com?mode=developer</string>
-```
-
-```xml
-<!-- WRONG: shipping ?mode=developer to TestFlight / App Store -->
-<!-- CORRECT: strip the suffix for production; release builds rely on Apple's CDN -->
 ```
 
 Enforce removal with a release-config guard (for example, fail the build script
@@ -627,11 +514,6 @@ Serve at `https://app.example.com/.well-known/apple-app-site-association`
 - Serve over **HTTPS** with a valid certificate, `Content-Type: application/json`,
   and **no `.json` extension** in the URL.
 
-```json
-// WRONG: "apps": ["com.example.yourapp"]            — missing the Team ID prefix
-// CORRECT: "apps": ["ABCDE12345.com.example.yourapp"] — TEAM_ID prefix is required
-```
-
 After deploying, Apple's CDN caches the file for hours. Production builds must
 wait for the cache to refresh; `?mode=developer` builds fetch directly each
 time.
@@ -647,11 +529,8 @@ A normally code-signed iOS app needs no extra entitlement to use the Keychain
 through `OZPlatformStorageAdapter`; the Associated Domains entitlement above is
 the only WebAuthn-related entitlement required. A custom keychain access group
 (for sharing storage with an app extension or sibling app) is the only case
-that needs an additional `keychain-access-groups` entitlement.
-
-```dart
-final storage = OZPlatformStorageAdapter(); // no constructor arguments
-```
+that needs an additional `keychain-access-groups` entitlement. Construct it with
+no arguments, the same as on [Android](#storage-adapters-android).
 
 ### Build and test
 
@@ -666,26 +545,9 @@ device for end-to-end testing.
 
 ### Full kit initialization (iOS)
 
-```dart
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-
-final storage = OZPlatformStorageAdapter();
-final webauthnProvider = PlatformWebAuthnProvider(
-  rpId: 'wallet.example.com',
-  rpName: 'My Stellar App',
-);
-
-final config = OZSmartAccountConfig(
-  rpcUrl: 'https://soroban-testnet.stellar.org',
-  networkPassphrase: Network.TESTNET.networkPassphrase,
-  accountWasmHash: '<wasm-hash-hex>',
-  webauthnVerifierAddress: '<verifier-c-address>',
-  webauthnProvider: webauthnProvider,
-  storage: storage,
-);
-
-final kit = OZSmartAccountKit.create(config: config);
-```
+Identical to [Full kit initialization (Android)](#full-kit-initialization-android):
+`OZPlatformStorageAdapter` + `PlatformWebAuthnProvider` wired into
+`OZSmartAccountConfig`, then `OZSmartAccountKit.create(config: config)`.
 
 ### Troubleshooting (iOS)
 
@@ -697,8 +559,9 @@ final kit = OZSmartAccountKit.create(config: config);
   not match the signing identity; `?mode=developer` missing during development
   while Apple's CDN has not picked up the file yet.
 - **`ASAuthorizationError.canceled` (code 1001)** → maps to `WebAuthnCancelled`.
-  Also returned when no credential exists for the `rpId` (the system silently
-  dismisses the picker). Surface as a neutral UI state.
+  Also returned when no credential exists for the `rpId`; iOS does not
+  distinguish the two (see [Troubleshooting (Android)](#troubleshooting-android)).
+  Surface as a neutral UI state.
 - **`Application is not associated with domain`** (logged by `swcd`) → domain
   verification failed. Inspect `Console.app` filtered by `swcd` or `pkd`;
   usually an unreachable AASA URL or an untrusted certificate chain.
@@ -733,14 +596,9 @@ The browser enforces the `rpId` against the page origin:
 | `https://app.example.com` | `app.example.com`, `example.com` | `other.example.com` (different subdomain), `co.uk` (public suffix), `app.example.com:443` (port) |
 | `http://localhost:8080` | `localhost` | `127.0.0.1` (separate origin) |
 
-```dart
-// WRONG: rpId: 'https://app.example.com'   — scheme included
-// CORRECT: rpId: 'app.example.com'
-
-// WRONG: page at https://app.example.com using rpId: 'other.example.com'
-//   — not a registrable suffix → SecurityError at the ceremony
-// CORRECT: rpId is the exact host OR a registrable parent (example.com)
-```
+The `rpId` is the bare host (no scheme, no path) and must be the exact origin
+host or a registrable parent; anything else throws `SecurityError` at the
+ceremony.
 
 ### `BrowserWebAuthnProvider`
 
@@ -748,39 +606,20 @@ The browser enforces the `rpId` against the page origin:
 BrowserWebAuthnProvider({
   required String rpId,
   required String rpName,
-  int timeoutMs = 60000,   // note: timeoutMs here, not timeout
+  int timeoutMs = WebAuthnProvider.defaultTimeoutMs, // 60000
 });
-```
-
-```dart
-// WRONG: BrowserWebAuthnProvider(rpId: 'x', rpName: 'y', timeout: 30000)
-//   — the web provider's param is timeoutMs (the native provider uses timeout)
-// CORRECT: BrowserWebAuthnProvider(rpId: 'x', rpName: 'y', timeoutMs: 30000)
 ```
 
 ### Cross-device passkeys (QR flow via transports)
 
-When `authenticate` receives `WebAuthnAllowCredential`s with transport hints, the
-browser provider forwards them into the `allowCredentials` descriptors of
-`navigator.credentials.get(...)`. Including `'hybrid'` is what makes the
-browser offer the cross-device "use a passkey on another device" QR-code flow.
-The SDK stores transports captured at registration and replays them on later
-authentications, so this works without extra wiring once a passkey is
-registered with hybrid support.
-
-```dart
-// Offer the cross-device QR flow explicitly:
-final result = await provider.authenticate(
-  challenge: payloadHash,
-  allowCredentials: [
-    WebAuthnAllowCredential(id: credentialIdBytes, transports: ['hybrid', 'internal']),
-  ],
-);
-```
-
-An empty `allowCredentials` list and an omitted one behave differently in the
-spec; the provider omits the descriptor field entirely when no hints are
-present, so pass a non-empty list (or `null`) — never `[]`.
+The browser provider forwards transport hints into the `allowCredentials`
+descriptors of `navigator.credentials.get(...)`; including `'hybrid'` is what
+makes the browser offer the cross-device "use a passkey on another device"
+QR-code flow. Transports captured at registration replay automatically on later
+authentications (see
+[`WebAuthnAllowCredential`](#webauthnallowcredential)). Construct the provider,
+hand it to `OZSmartAccountConfig`, and the kit drives register/authenticate
+internally — consumers do not call `provider.authenticate(...)` directly.
 
 ### Storage adapters (Web)
 
@@ -849,47 +688,15 @@ flutter build web \
   --dart-define=RP_NAME='My Stellar Wallet'
 ```
 
-```dart
-// WRONG: visiting http://127.0.0.1:8080 with rpId: 'localhost'
-//   — the browser treats 127.0.0.1 as a different origin and rejects WebAuthn
-// CORRECT: visit http://localhost:8080 so the hostname matches rpId
-```
-
 Passkeys created against `localhost` work only on `localhost`; create separate
 passkeys per environment, or use a real HTTPS domain (mkcert + caddy/nginx)
-locally.
-
-### HTTP vs HTTPS
-
-```dart
-// WRONG: serving the app over plain http:// on a non-localhost origin
-//   — navigator.credentials.create/get reject the insecure context
-//     → WebAuthnException with a message starting "Security error:"
-// CORRECT: serve over HTTPS in production (localhost is the only http exception)
-```
+locally. Visit `http://localhost:<port>`, not `127.0.0.1` — the browser treats
+them as different origins.
 
 ### Full kit initialization (Web)
 
-```dart
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-
-final storage = OZIndexedDBStorageAdapter();
-final webauthnProvider = BrowserWebAuthnProvider(
-  rpId: 'wallet.example.com',
-  rpName: 'My Stellar App',
-);
-
-final config = OZSmartAccountConfig(
-  rpcUrl: 'https://soroban-testnet.stellar.org',
-  networkPassphrase: Network.TESTNET.networkPassphrase,
-  accountWasmHash: '<wasm-hash-hex>',
-  webauthnVerifierAddress: '<verifier-c-address>',
-  webauthnProvider: webauthnProvider,
-  storage: storage,
-);
-
-final kit = OZSmartAccountKit.create(config: config);
-```
+Identical to [Full kit initialization (Android)](#full-kit-initialization-android),
+substituting `OZIndexedDBStorageAdapter` + `BrowserWebAuthnProvider`.
 
 ### Troubleshooting (Web)
 
@@ -898,9 +705,8 @@ final kit = OZSmartAccountKit.create(config: config);
   `WebAuthnException` whose message starts with `Security error:`.
 - **`NotAllowedError`** → maps to `WebAuthnCancelled`. User dismissed the
   prompt, the tab lost focus mid-ceremony, the timeout elapsed, or an extension
-  intercepted the request. On the web this also covers "no credential
-  available" (gate on `Platform.isAndroid` to distinguish, where the native
-  exception is `WebAuthnAuthenticationFailed`).
+  intercepted the request. Also covers "no credential available" (see
+  [Troubleshooting (Android)](#troubleshooting-android)).
 - **Insecure-origin error on HTTP** → serve over HTTPS, or use
   `http://localhost:<port>` with `rpId: 'localhost'` for dev.
 - **`WebAuthnNotSupported` outside the browser** → `BrowserWebAuthnProvider`
@@ -946,8 +752,6 @@ class MyDatabaseStorageAdapter implements OZStorageAdapter {
   MyDatabaseStorageAdapter(this._db);
   final MyDatabase _db;
 
-  // Serialise concurrent calls so an interleaved read-modify-write never
-  // observes a partially-applied update.
   Future<void> _tail = Future<void>.value();
   Future<T> _withLock<T>(Future<T> Function() body) {
     final previous = _tail;
@@ -987,7 +791,7 @@ class MyDatabaseStorageAdapter implements OZStorageAdapter {
         if (existing == null) {
           throw SmartAccountCredentialException.notFound(credentialId);
         }
-        await _db.upsertCredential(existing.applyUpdate(updates)); // partial: null = no change
+        await _db.upsertCredential(existing.applyUpdate(updates));
       });
 
   @override
@@ -1000,7 +804,7 @@ class MyDatabaseStorageAdapter implements OZStorageAdapter {
   Future<OZStoredSession?> getSession() => _withLock(() async {
         final s = await _db.loadSession();
         if (s == null) return null;
-        if (s.isExpired) {           // auto-clear expired sessions on read
+        if (s.isExpired) {
           await _db.deleteSession();
           return null;
         }
@@ -1028,21 +832,26 @@ Contracts to satisfy:
 
 ## Implementing a custom WebAuthnProvider
 
-Most apps use the shipped providers. Implement your own for unusual platforms,
-external FIDO2 middleware, custom hardware tokens, or deterministic CI test
-doubles.
+Most apps use the shipped providers. Implement your own when you need to back
+WebAuthn with a custom credential source.
 
 `register()` and `authenticate()` must produce output the on-chain WebAuthn
-verifier accepts:
+verifier accepts. Beyond the byte formats noted on each result field above, the
+non-obvious requirements are:
 
 | Field | Requirement |
 |-------|-------------|
-| `WebAuthnRegistrationResult.publicKey` | 65 bytes uncompressed secp256r1 (`0x04 + X + Y`). If the platform returns COSE / SPKI, pass the raw bytes and let the SDK's extraction strategies recover the point. |
-| `WebAuthnRegistrationResult.credentialId` | Raw bytes. The SDK Base64URL-encodes for storage. |
-| `WebAuthnRegistrationResult.attestationObject` | Raw CBOR object as delivered by the authenticator. Used by SDK fallback extraction. |
+| `WebAuthnRegistrationResult.publicKey` | If the platform returns COSE / SPKI instead of the raw point, pass the raw bytes and let the SDK's extraction strategies recover it. |
+| `WebAuthnRegistrationResult.credentialId` | The SDK Base64URL-encodes the raw bytes for storage. |
+| `WebAuthnRegistrationResult.attestationObject` | Raw CBOR as delivered by the authenticator; used by SDK fallback extraction. |
 | `WebAuthnAuthenticationResult.signature` | DER-encoded ECDSA P-256. The SDK normalises to compact 64-byte low-S `r \|\| s`. Do **not** pre-normalise. |
-| `WebAuthnAuthenticationResult.authenticatorData` | ≥ 37 bytes; the User-Verified flag must be set or the verifier rejects the assertion. |
-| `WebAuthnAuthenticationResult.clientDataJSON` | Must embed the supplied `challenge` as base64url **without** padding (WebAuthn spec). |
+| `WebAuthnAuthenticationResult.authenticatorData` | The User-Verified flag must be set or the verifier rejects the assertion. |
+
+The zero-filled buffers below are ILLUSTRATIVE placeholders so the skeleton
+compiles; a real provider must return the actual platform-extracted
+`credentialId` / `publicKey` / `attestationObject` (register) and
+`credentialId` / `authenticatorData` / `clientDataJSON` / `signature`
+(authenticate). The zeros are not runnable — the on-chain verifier rejects them.
 
 ```dart
 import 'dart:typed_data';
@@ -1099,17 +908,7 @@ class MyCustomWebAuthnProvider extends WebAuthnProvider {
 }
 ```
 
-```dart
-// WRONG: returning a 33-byte compressed point, or a 64-byte X||Y without 0x04
-// CORRECT: 65 bytes starting 0x04 — or pass raw COSE/SPKI and let the SDK extract
-
-// WRONG: normalising the DER signature to compact form inside the provider
-// CORRECT: return DER as produced by the authenticator; the SDK normalises once
-```
-
-Wrap native errors into `WebAuthnException.registrationFailed` /
-`authenticationFailed` / `cancelled` / `notSupported` so the kit's
-error-handling paths work.
+Wrap native errors into the matching `WebAuthnException.*` factory so the kit's error-handling paths work.
 
 ---
 

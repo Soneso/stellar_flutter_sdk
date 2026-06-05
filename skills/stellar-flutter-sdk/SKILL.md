@@ -6,7 +6,6 @@ compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.0.5
 metadata:
   version: "1.0.2"
   sdk_version: "3.0.5"
-  last_updated: "2026-03-28"
 ---
 
 # Stellar SDK for Flutter
@@ -341,7 +340,7 @@ For contract authorization, multi-auth workflows, and low-level deploy/invoke:
 
 ## 7. Smart Accounts (OpenZeppelin)
 
-Passkey-authenticated Soroban smart accounts: biometric auth, multiple signers (passkey / delegated / Ed25519), context rules, policies, and optional fee sponsoring via a relayer. Entry point: `OZSmartAccountKit.create(config: OZSmartAccountConfig(...))` — requires `rpcUrl`, `networkPassphrase`, `accountWasmHash` (hex), `webauthnVerifierAddress` (C-address), plus a platform `webauthnProvider` and `storage`.
+Passkey-authenticated Soroban smart accounts: biometric auth, multiple signers (passkey / delegated / Ed25519), context rules, policies, and optional fee sponsoring via a relayer. Entry point: `OZSmartAccountKit.create(config:)`.
 
 - [Smart Accounts Guide](./references/smart_accounts.md) — kit config, wallet create/connect, signer types, transactions, credentials, events, `submit` / `fundWallet`, the `externalSigners` manager, indexer
 - [Context Rules & Policies](./references/smart_accounts_policies.md) — signer management, context rules, policies, multi-signer operations, common scenarios (recovery, rotation, `__check_auth` debugging), contract error codes
@@ -457,7 +456,7 @@ For all SEP examples with code: [SEP Implementations Guide](./references/sep.md)
 - [XDR Guide](./references/xdr.md) - XDR encoding/decoding and debugging
 - [Troubleshooting Guide](./references/troubleshooting.md) - Error codes, platform & environment info
 - [Security Guide](./references/security.md) - Platform-specific key storage, production deployment
-- [SEP Implementations](./references/sep.md) - 15 SEP protocols: TOML, Federation, Web Auth, deposits, KYC
+- [SEP Implementations](./references/sep.md) - 18 SEP protocols: TOML, Federation, Web Auth, deposits, KYC
 - [Advanced Features](./references/advanced.md) - Multi-sig, sponsorship, fee bumps, liquidity pools, muxed accounts, async submission
 - [API Reference (Signatures)](./references/api_reference.md) - All public class/method signatures (grep for any class or method not covered above)
 
