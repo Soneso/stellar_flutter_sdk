@@ -6,27 +6,18 @@ import 'dart:typed_data';
 
 import '../../util.dart';
 import '../core/smart_account_constants.dart';
-import '../core/smart_account_errors.dart';
 import 'oz_base64url.dart';
 import 'oz_smart_account_types.dart';
 
-/// Builder utilities for OpenZeppelin Smart Account signers and policy
-/// parameters.
+/// Builder utilities for OpenZeppelin Smart Account signers.
 ///
 /// Provides type-safe constructors and helper functions for creating and
-/// inspecting OpenZeppelin Smart Account signer types, and for creating policy
-/// parameters used by the higher-level managers:
+/// inspecting OpenZeppelin Smart Account signer types:
 ///
 /// - Signer builders for delegated, external, WebAuthn, and Ed25519 signers.
-/// - Signer inspection (type checks, type description, credential and address
-///   extraction).
+/// - Signer inspection (type checks, credential and address extraction).
 /// - Signer matching (by credential ID, by address, equality).
 /// - Signer deduplication.
-/// - Simple threshold policy: at least N signers required.
-/// - Weighted threshold policy: weighted signer set with a total-weight
-///   requirement.
-/// - Spending limit policy: restricts how much can be transferred within a
-///   given period.
 ///
 /// All entry points are pure static functions over their arguments.
 abstract class OZSmartAccountBuilders {
@@ -113,25 +104,6 @@ abstract class OZSmartAccountBuilders {
     return signer is OZExternalSigner;
   }
 
-  /// Returns a human-readable description of the signer type:
-  /// `"Stellar Account"`, `"Passkey (WebAuthn)"`, `"Ed25519"`, or
-  /// `"External Verifier"`.
-  static String describeSignerType(OZSmartAccountSigner signer) {
-    if (signer is OZDelegatedSigner) {
-      return 'Stellar Account';
-    }
-    final external = signer as OZExternalSigner;
-    if (external.keyData.length >
-        SmartAccountConstants.secp256r1PublicKeySize) {
-      return 'Passkey (WebAuthn)';
-    }
-    if (external.keyData.length ==
-        SmartAccountConstants.ed25519PublicKeySize) {
-      return 'Ed25519';
-    }
-    return 'External Verifier';
-  }
-
   // Signer matching
 
   /// Returns `true` when [signer] is a WebAuthn signer whose credential ID
@@ -209,170 +181,4 @@ abstract class OZSmartAccountBuilders {
     }
     return signerMap.values.toList(growable: false);
   }
-
-  // Policy parameter builders
-
-  /// Creates simple threshold policy parameters requiring at least
-  /// [threshold] signers.
-  ///
-  /// Throws [SmartAccountInvalidInput] when [threshold] is less than 1.
-  static OZSimpleThresholdParams createThresholdParams(int threshold) {
-    if (threshold < 1) {
-      throw SmartAccountValidationException.invalidInput(
-        'threshold',
-        'Threshold must be at least 1, got: $threshold',
-      );
-    }
-    return OZSimpleThresholdParams(threshold: threshold);
-  }
-
-  /// Creates weighted threshold policy parameters.
-  ///
-  /// Each signer has a weight; authorisation succeeds when the sum of
-  /// weights of authenticated signers meets or exceeds [threshold].
-  ///
-  /// Throws [SmartAccountInvalidInput] when [threshold] is less than 1, when
-  /// [signerWeights] is empty, when any weight is less than 1, or when
-  /// the total weight is less than [threshold].
-  static OZWeightedThresholdParams createWeightedThresholdParams({
-    required int threshold,
-    required Map<OZSmartAccountSigner, int> signerWeights,
-  }) {
-    if (threshold < 1) {
-      throw SmartAccountValidationException.invalidInput(
-        'threshold',
-        'Threshold must be at least 1, got: $threshold',
-      );
-    }
-    if (signerWeights.isEmpty) {
-      throw SmartAccountValidationException.invalidInput(
-        'signerWeights',
-        'At least one signer weight must be provided',
-      );
-    }
-
-    var totalWeight = 0;
-    for (final weight in signerWeights.values) {
-      if (weight < 1) {
-        throw SmartAccountValidationException.invalidInput(
-          'signerWeights',
-          'All weights must be positive integers, got: $weight',
-        );
-      }
-      totalWeight += weight;
-    }
-
-    if (totalWeight < threshold) {
-      throw SmartAccountValidationException.invalidInput(
-        'signerWeights',
-        'Sum of weights ($totalWeight) must be >= threshold ($threshold)',
-      );
-    }
-
-    return OZWeightedThresholdParams(
-      threshold: threshold,
-      signerWeights: signerWeights,
-    );
-  }
-
-  /// Creates spending limit policy parameters.
-  ///
-  /// Restricts how much can be transferred within the supplied period.
-  /// The [spendingLimit] is a decimal XLM string (for example `"100"` or
-  /// `"10.5"`), converted to stroops via [Util.toXdrInt64Amount].
-  /// The amount must be positive and use no more than seven decimal places.
-  ///
-  /// Common values for [periodLedgers] are
-  /// [Util.ledgersPerHour] and
-  /// [Util.ledgersPerDay].
-  ///
-  /// Throws [SmartAccountInvalidAmount] when the spending limit string is invalid or
-  /// not positive, and [SmartAccountInvalidInput] when [periodLedgers] is less than 1.
-  static OZSpendingLimitParams createSpendingLimitParams({
-    required String spendingLimit,
-    required int periodLedgers,
-  }) {
-    final stroops = Util.toXdrInt64Amount(spendingLimit);
-    if (stroops <= BigInt.zero) {
-      throw SmartAccountValidationException.invalidAmount(
-        spendingLimit,
-        reason: 'must be greater than zero',
-      );
-    }
-    if (periodLedgers < 1) {
-      throw SmartAccountValidationException.invalidInput(
-        'periodLedgers',
-        'Period must be at least 1 ledger, got: $periodLedgers',
-      );
-    }
-    return OZSpendingLimitParams._internal(
-      spendingLimit: stroops,
-      periodLedgers: periodLedgers,
-    );
-  }
-}
-
-// Policy parameter data classes
-
-/// Parameters for a simple threshold policy in the OpenZeppelin Smart Account.
-///
-/// Authorisation succeeds when at least [threshold] signers on the
-/// context rule provide valid signatures.
-class OZSimpleThresholdParams {
-  /// Constructs simple threshold parameters with the given [threshold].
-  const OZSimpleThresholdParams({required this.threshold});
-
-  /// Minimum number of signers required (must be at least 1).
-  final int threshold;
-}
-
-/// Parameters for a weighted threshold policy in the OpenZeppelin Smart Account.
-///
-/// Each signer has an integer weight; authorisation succeeds when the sum
-/// of weights of authenticated signers meets or exceeds [threshold].
-///
-/// Instances expose a [signerWeights] map by reference; the binding is
-/// `final` but the map content is not. Treat instances as immutable in
-/// practice, or take a copy of [signerWeights] before sharing across
-/// isolates.
-class OZWeightedThresholdParams {
-  /// Constructs weighted threshold parameters with the given [threshold]
-  /// and [signerWeights].
-  const OZWeightedThresholdParams({
-    required this.threshold,
-    required this.signerWeights,
-  });
-
-  /// Total weight required for authorisation (at least 1).
-  final int threshold;
-
-  /// Map of signers to their integer weights (each weight at least 1).
-  final Map<OZSmartAccountSigner, int> signerWeights;
-}
-
-/// Parameters for a spending-limit policy in the OpenZeppelin Smart Account.
-///
-/// Restricts how much can be transferred within a given time period.
-/// Construct instances using
-/// [OZSmartAccountBuilders.createSpendingLimitParams], which validates
-/// inputs and converts the spending limit from a decimal XLM string to
-/// stroops.
-class OZSpendingLimitParams {
-  /// Internal constructor invoked by
-  /// [OZSmartAccountBuilders.createSpendingLimitParams] after the spending
-  /// limit has been validated and converted to stroops.
-  ///
-  /// Direct construction is intentionally not part of the public API; use
-  /// the builder method to obtain instances.
-  const OZSpendingLimitParams._internal({
-    required this.spendingLimit,
-    required this.periodLedgers,
-  });
-
-  /// Maximum amount allowed in the period, expressed in stroops.
-  final BigInt spendingLimit;
-
-  /// Number of ledgers in the period (at least 1). On the Stellar network
-  /// a ledger closes approximately every five seconds.
-  final int periodLedgers;
 }

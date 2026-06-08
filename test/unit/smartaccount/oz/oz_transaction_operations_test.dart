@@ -75,15 +75,6 @@ void main() {
       expect(a == 'other', isFalse);
     });
 
-    test('transactionResult_copyWithAllFields', () {
-      const original = OZTransactionResult(success: true, hash: 'h', ledger: 1);
-      final copy = original.copyWith(success: false, hash: 'h2', ledger: 2, error: 'e');
-      expect(copy.success, isFalse);
-      expect(copy.hash, 'h2');
-      expect(copy.ledger, 2);
-      expect(copy.error, 'e');
-    });
-
     test('transactionResult_toString', () {
       const r = OZTransactionResult(success: true, hash: 'h', ledger: 5);
       expect(r.toString(), contains('success: true'));
@@ -100,14 +91,6 @@ void main() {
       expect(a == d, isFalse);
     });
 
-    test('transactionResult_copy', () {
-      const original = OZTransactionResult(success: true, hash: 'h', ledger: 1);
-      final copy = original.copyWith(error: 'err');
-      expect(copy.success, isTrue);
-      expect(copy.hash, equals('h'));
-      expect(copy.ledger, equals(1));
-      expect(copy.error, equals('err'));
-    });
   });
 
   group('OZSubmissionMethod enum behavior', () {
@@ -1397,21 +1380,6 @@ XdrSorobanAuthorizationEntry _makeAddressCredsEntryForOps(String contractAddress
   return XdrSorobanAuthorizationEntry(
     XdrSorobanCredentials.forAddressCredentials(addressCredentials),
     invocation,
-  );
-}
-
-XdrSorobanAuthorizationEntry _makeSimpleSourceAccountEntry() {
-  final args = XdrInvokeContractArgs(
-    Address.forContractId(_contractA).toXdr(),
-    'call',
-    const <XdrSCVal>[],
-  );
-  return XdrSorobanAuthorizationEntry(
-    XdrSorobanCredentials.forSourceAccount(),
-    XdrSorobanAuthorizedInvocation(
-      XdrSorobanAuthorizedFunction.forInvokeContractArgs(args),
-      <XdrSorobanAuthorizedInvocation>[],
-    ),
   );
 }
 

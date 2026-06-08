@@ -535,8 +535,6 @@ class OZCreateWalletResult {
   final String signedTransactionXdr;
   final String? transactionHash;
   final String? nickname;
-
-  OZCreateWalletResult copyWith({...});
 }
 ```
 
@@ -612,8 +610,6 @@ class OZDeployPendingResult {
   final String contractId;
   final String signedTransactionXdr;
   final String? transactionHash;
-
-  OZDeployPendingResult copyWith({...});
 }
 ```
 
@@ -656,19 +652,8 @@ class OZConnectWalletOptions {
   final String? contractId;
   final bool fresh;
   final bool prompt;
-
-  OZConnectWalletOptions copyWith({
-    String? credentialId,
-    bool clearCredentialId = false,
-    String? contractId,
-    bool clearContractId = false,
-    bool? fresh,
-    bool? prompt,
-  });
 }
 ```
-
-`copyWith` uses replace-or-clear semantics for the nullable string fields via the `clear…` flags.
 
 ---
 
@@ -790,13 +775,6 @@ class OZTransactionResult {
   final String? hash;
   final int? ledger;
   final String? error;
-
-  OZTransactionResult copyWith({
-    bool? success,
-    String? hash,
-    int? ledger,
-    String? error,
-  });
 }
 ```
 
@@ -1841,7 +1819,7 @@ final class OZSpendingLimitPolicyParams extends OZPolicyInstallParams {
 }
 ```
 
-`spendingLimit` is expressed in stroops. To construct from a decimal XLM string, use the convenience helper `OZPolicyManager.addSpendingLimit` or the builder `OZSmartAccountBuilders.createSpendingLimitParams`.
+`spendingLimit` is expressed in stroops. To construct from a decimal XLM string, use the convenience helper `OZPolicyManager.addSpendingLimit`.
 
 ---
 
@@ -2064,7 +2042,7 @@ Every smart-account exception lives in `core/smart_account_errors.dart` and is s
 > | 3002 | `credentialAlreadyExists` | `UnvalidatedContext` |
 > | 3003 | `credentialInvalid` | `ExternalVerificationFailed` |
 >
-> SDK-defined contract codes the SDK interprets directly are declared in [`OZContractErrorCodes`](#oz-contract-error-codes).
+> Reference constants for a subset of these on-chain contract codes are declared in [`OZContractErrorCodes`](#oz-contract-error-codes); the SDK surfaces the raw error and callers compare the extracted code against them.
 
 
 ```dart
@@ -2305,7 +2283,7 @@ class OZContractErrorCodes {
 }
 ```
 
-Numeric error codes returned by the OpenZeppelin smart-account contract for failed on-chain calls. Surfaced as the `error` field on `OZTransactionResult` (alongside the SDK's error wrapping).
+Reference constants for a subset of the numeric error codes the OpenZeppelin smart-account contract returns for failed on-chain calls. The raw error is surfaced in the `error` field on `OZTransactionResult`; the SDK does not parse the code, so extract it from the message and compare against these constants.
 
 ### Cancellation semantics
 
@@ -3526,7 +3504,6 @@ abstract class OZSmartAccountBuilders {
   static String? getCredentialIdStringFromSigner(OZSmartAccountSigner signer);
   static bool isDelegatedSigner(OZSmartAccountSigner signer);
   static bool isExternalSigner(OZSmartAccountSigner signer);
-  static String describeSignerType(OZSmartAccountSigner signer);
 
   // Signer matching
   static bool signerMatchesCredential(OZSmartAccountSigner signer, Uint8List credentialId);
@@ -3537,54 +3514,15 @@ abstract class OZSmartAccountBuilders {
   static bool signersEqual(OZSmartAccountSigner a, OZSmartAccountSigner b);
   static String getSignerKey(OZSmartAccountSigner signer);
   static List<OZSmartAccountSigner> collectUniqueSigners(List<OZSmartAccountSigner> signers);
-
-  // Policy parameter builders
-  static OZSimpleThresholdParams createThresholdParams(int threshold);
-  static OZWeightedThresholdParams createWeightedThresholdParams({
-    required int threshold,
-    required Map<OZSmartAccountSigner, int> signerWeights,
-  });
-  static OZSpendingLimitParams createSpendingLimitParams({
-    required String spendingLimit,
-    required int periodLedgers,
-  });
 }
 ```
 
 **Notes on individual helpers:**
 
 - `getCredentialIdStringFromSigner` returns the Base64URL-encoded credential ID without trailing `=` padding, matching the canonical form produced by the connect path.
-- `describeSignerType` returns one of `"Stellar Account"`, `"Passkey (WebAuthn)"`, `"Ed25519"`, or `"External Verifier"`.
 - `signerMatchesCredentialId` ignores trailing `=` padding on either side so padded and unpadded forms compare interchangeably.
 - `signersEqual` compares the address for delegated signers, and the verifier address plus byte-content of the key data for external signers.
 - `collectUniqueSigners` preserves the first occurrence of each duplicate, keyed by `getSignerKey`.
-- The policy-parameter builders validate `threshold > 0`, non-empty weights, and so on; they return `OZSimpleThresholdParams`, `OZWeightedThresholdParams`, and `OZSpendingLimitParams` value types. `OZSpendingLimitParams` is constructed via a private constructor accessible only through `createSpendingLimitParams`.
-
-### Policy parameter value types
-
-```dart
-class OZSimpleThresholdParams {
-  const OZSimpleThresholdParams({required int threshold});
-  final int threshold;
-}
-
-class OZWeightedThresholdParams {
-  const OZWeightedThresholdParams({
-    required int threshold,
-    required Map<OZSmartAccountSigner, int> signerWeights,
-  });
-  final int threshold;
-  final Map<OZSmartAccountSigner, int> signerWeights;
-}
-
-class OZSpendingLimitParams {
-  // Constructed via OZSmartAccountBuilders.createSpendingLimitParams.
-  final BigInt spendingLimit; // stroops
-  final int periodLedgers;
-}
-```
-
-These public value types are distinct from the sealed `OZPolicyInstallParams` hierarchy on `OZPolicyManager`; they exist so consumer code can pass typed policy descriptions through its own layers before reaching the manager-level convenience helpers.
 
 ---
 

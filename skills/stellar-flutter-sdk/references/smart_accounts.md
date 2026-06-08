@@ -554,8 +554,6 @@ final Uint8List? credId =
     OZSmartAccountBuilders.getCredentialIdFromSigner(passkey);
 final String? credIdStr =
     OZSmartAccountBuilders.getCredentialIdStringFromSigner(passkey); // Base64URL
-final String typeLabel =
-    OZSmartAccountBuilders.describeSignerType(passkey); // 'Passkey (WebAuthn)'
 
 // Matching and dedup
 final bool matches =

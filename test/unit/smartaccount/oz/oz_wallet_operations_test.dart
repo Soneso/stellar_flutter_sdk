@@ -162,19 +162,6 @@ void main() {
       expect(a == b, isFalse);
     });
 
-    test('testCreateWalletResult_copy', () {
-      final pk = _bytes(65);
-      final original = OZCreateWalletResult(
-        credentialId: 'cred',
-        contractId: _contractA,
-        publicKey: pk,
-        signedTransactionXdr: 'xdr',
-      );
-      final copy = original.copyWith(transactionHash: 'h');
-      expect(copy.credentialId, equals('cred'));
-      expect(copy.transactionHash, equals('h'));
-    });
-
     test('testCreateWalletResult_equality_notEqualToNull', () {
       final Object? r = OZCreateWalletResult(
         credentialId: 'cred',
@@ -249,15 +236,6 @@ void main() {
       expect(a == c, isFalse);
     });
 
-    test('testDeployPendingResult_copy', () {
-      const original = OZDeployPendingResult(
-        contractId: _contractA,
-        signedTransactionXdr: 'xdr',
-      );
-      final copy = original.copyWith(transactionHash: 'h');
-      expect(copy.transactionHash, equals('h'));
-      expect(copy.contractId, equals(_contractA));
-    });
   });
 
   // -------------------------------------------------------------------------
@@ -404,12 +382,6 @@ void main() {
       expect(a.hashCode, isNot(equals(b.hashCode)));
     });
 
-    test('testConnectWalletOptions_copy', () {
-      const original = OZConnectWalletOptions(fresh: true);
-      final copy = original.copyWith(prompt: true);
-      expect(copy.fresh, isTrue);
-      expect(copy.prompt, isTrue);
-    });
   });
 
   // -------------------------------------------------------------------------
@@ -1089,28 +1061,6 @@ void main() {
         ),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
-    });
-  });
-
-  // -------------------------------------------------------------------------
-  // Above-floor: OZConnectWalletOptions copyWith edge cases
-  // -------------------------------------------------------------------------
-  group('above-floor: OZConnectWalletOptions copyWith', () {
-    test('copyWith_clearsFields_whenClearFlagsTrue', () {
-      const original = OZConnectWalletOptions(
-        credentialId: 'cred',
-        contractId: _contractA,
-        fresh: true,
-        prompt: true,
-      );
-      final cleared = original.copyWith(
-        clearCredentialId: true,
-        clearContractId: true,
-      );
-      expect(cleared.credentialId, isNull);
-      expect(cleared.contractId, isNull);
-      expect(cleared.fresh, isTrue); // preserved
-      expect(cleared.prompt, isTrue); // preserved
     });
   });
 

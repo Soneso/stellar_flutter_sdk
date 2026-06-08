@@ -79,25 +79,6 @@ class OZTransactionResult {
   /// Error message if the transaction failed, `null` on success.
   final String? error;
 
-  /// Returns a copy of this result with the supplied fields replaced.
-  ///
-  /// Each named argument defaults to the current value of the corresponding
-  /// field. There is no explicit `setNull` flag — to clear an optional field
-  /// construct a new [OZTransactionResult] directly.
-  OZTransactionResult copyWith({
-    bool? success,
-    String? hash,
-    int? ledger,
-    String? error,
-  }) {
-    return OZTransactionResult(
-      success: success ?? this.success,
-      hash: hash ?? this.hash,
-      ledger: ledger ?? this.ledger,
-      error: error ?? this.error,
-    );
-  }
-
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;

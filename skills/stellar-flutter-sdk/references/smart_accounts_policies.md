@@ -1170,7 +1170,7 @@ try {
 }
 ```
 
-`OZContractErrorCodes` constants (the codes the SDK interprets directly): `mathOverflow` 3012, `keyDataTooLarge` 3013, `contextRuleIdsLengthMismatch` 3014, `nameTooLong` 3015, `unauthorizedSigner` 3016. All other codes are on-chain-only — parse the message yourself.
+`OZContractErrorCodes` constants are named reference values for the well-known credential errors: `mathOverflow` 3012, `keyDataTooLarge` 3013, `contextRuleIdsLengthMismatch` 3014, `nameTooLong` 3015, `unauthorizedSigner` 3016. The SDK does not parse contract codes — extract the code from the message yourself (as above) and compare against these or any other 3xxx code.
 
 ---
 

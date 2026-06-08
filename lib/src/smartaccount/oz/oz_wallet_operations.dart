@@ -74,25 +74,6 @@ class OZCreateWalletResult {
   /// User display name supplied at wallet-creation time.
   final String? nickname;
 
-  /// Returns a copy of this result with the supplied fields replaced.
-  OZCreateWalletResult copyWith({
-    String? credentialId,
-    String? contractId,
-    Uint8List? publicKey,
-    String? signedTransactionXdr,
-    String? transactionHash,
-    String? nickname,
-  }) {
-    return OZCreateWalletResult(
-      credentialId: credentialId ?? this.credentialId,
-      contractId: contractId ?? this.contractId,
-      publicKey: publicKey ?? this.publicKey,
-      signedTransactionXdr: signedTransactionXdr ?? this.signedTransactionXdr,
-      transactionHash: transactionHash ?? this.transactionHash,
-      nickname: nickname ?? this.nickname,
-    );
-  }
-
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -138,19 +119,6 @@ class OZDeployPendingResult {
   /// Transaction hash when the deployment was auto-submitted, `null` when
   /// `autoSubmit` was false.
   final String? transactionHash;
-
-  /// Returns a copy of this result with the supplied fields replaced.
-  OZDeployPendingResult copyWith({
-    String? contractId,
-    String? signedTransactionXdr,
-    String? transactionHash,
-  }) {
-    return OZDeployPendingResult(
-      contractId: contractId ?? this.contractId,
-      signedTransactionXdr: signedTransactionXdr ?? this.signedTransactionXdr,
-      transactionHash: transactionHash ?? this.transactionHash,
-    );
-  }
 
   @override
   bool operator ==(Object other) {
@@ -343,24 +311,6 @@ class OZConnectWalletOptions {
   /// the absence of a session causes [OZWalletOperations.connectWallet] to
   /// return `null`.
   final bool prompt;
-
-  /// Returns a copy of these options with the supplied fields replaced.
-  OZConnectWalletOptions copyWith({
-    String? credentialId,
-    bool clearCredentialId = false,
-    String? contractId,
-    bool clearContractId = false,
-    bool? fresh,
-    bool? prompt,
-  }) {
-    return OZConnectWalletOptions(
-      credentialId:
-          clearCredentialId ? null : (credentialId ?? this.credentialId),
-      contractId: clearContractId ? null : (contractId ?? this.contractId),
-      fresh: fresh ?? this.fresh,
-      prompt: prompt ?? this.prompt,
-    );
-  }
 
   @override
   bool operator ==(Object other) {
