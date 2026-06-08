@@ -316,10 +316,10 @@ CreateContract  ->  Vec([Symbol("CreateContract"), Bytes(wasmHash)])
 The `OZBuilders` static helpers wrap construction with validation:
 
 ```dart
-final defaultCtx = OZBuilders.createDefaultContext();
-final callCtx    = OZBuilders.createCallContractContext('CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY'); // validates C-address
-final createCtx1 = OZBuilders.createCreateContractContextFromHex('abc123...'); // 64 hex chars, 0x prefix ok
-final createCtx2 = OZBuilders.createCreateContractContextFromBytes(wasmHash32Bytes); // 32 bytes
+final defaultCtx = OZBuilders.createDefaultContextType();
+final callCtx    = OZBuilders.createCallContractContextType('CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY'); // validates C-address
+final createCtx1 = OZBuilders.createCreateContractContextTypeFromHex('abc123...'); // 64 hex chars, 0x prefix ok
+final createCtx2 = OZBuilders.createCreateContractContextTypeFromBytes(wasmHash32Bytes); // 32 bytes
 ```
 
 ### addContextRule

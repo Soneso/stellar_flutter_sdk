@@ -1474,12 +1474,6 @@ void main() {
       final adapter = _MinimalWalletAdapter();
       expect(adapter.getWalletForAddress('G1'), isNull);
     });
-
-    test('reconnect_returnsNullByDefault', () async {
-      final adapter = _MinimalWalletAdapter();
-      final result = await adapter.reconnect('freighter');
-      expect(result, isNull);
-    });
   });
 
   group('OZConnectedWallet equality and hashCode', () {

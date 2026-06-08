@@ -99,15 +99,15 @@ class _Ed25519SignerKey {
   int get hashCode => SmartAccountUtils.hashBytes(verifierAddress.hashCode, publicKey);
 }
 
-// OZExternalSignerType / OZExternalSignerInfo / OZWalletConnectionStorage
+// OZExternalSignerType / OZExternalSignerInfo
 
 /// The type of an external signer managed by [OZExternalSignerManager].
 enum OZExternalSignerType {
   /// Ed25519 keypair-based signer. Stored in memory only, never persisted.
   keypair,
 
-  /// External wallet signer (e.g. Freighter, LOBSTR). Connection metadata
-  /// can be persisted to storage so connections survive app restarts.
+  /// External wallet signer (e.g. Freighter, LOBSTR), connected through the
+  /// supplied [OZExternalWalletAdapter].
   wallet,
 }
 
@@ -136,7 +136,7 @@ class OZExternalSignerInfo {
   /// [OZExternalSignerType.wallet]).
   final String? walletName;
 
-  /// Wallet identifier used for reconnection (only present when [type] is
+  /// Wallet identifier (only present when [type] is
   /// [OZExternalSignerType.wallet]).
   final String? walletId;
 
@@ -159,73 +159,6 @@ class OZExternalSignerInfo {
       'walletName: $walletName, walletId: $walletId)';
 }
 
-/// Simple key-value storage interface for persisting external wallet
-/// connections.
-///
-/// Implementations must be safe for concurrent calls. Platform-specific
-/// implementations can use SharedPreferences (Android), UserDefaults
-/// (iOS), localStorage (Web), or any other persistent key-value store.
-abstract class OZWalletConnectionStorage {
-  /// Constructs a wallet-connection-storage base.
-  const OZWalletConnectionStorage();
-
-  /// Retrieves the value stored under [key], or `null` when no entry
-  /// exists.
-  Future<String?> getItem(String key);
-
-  /// Stores [value] under [key], overwriting any existing value.
-  Future<void> setItem(String key, String value);
-
-  /// Removes the entry stored under [key]. No-ops when the key is absent.
-  Future<void> removeItem(String key);
-}
-
-/// In-memory implementation of [OZWalletConnectionStorage] used as the
-/// default fallback when no storage adapter is supplied. Data is not
-/// retained across app launches.
-class OZInMemoryWalletConnectionStorage extends OZWalletConnectionStorage {
-  /// Constructs an empty in-memory wallet connection storage.
-  OZInMemoryWalletConnectionStorage();
-
-  final Map<String, String> _data = <String, String>{};
-  Future<void> _tail = Future<void>.value();
-
-  Future<T> _withLock<T>(FutureOr<T> Function() body) {
-    final completer = Completer<T>();
-    final previous = _tail;
-    // Lock-tail collapse — see _withLock in OZSmartAccountKit for the full rationale.
-    final next = previous.then((_) async {
-      try {
-        completer.complete(await body());
-      } catch (e, st) {
-        completer.completeError(e, st);
-      }
-    });
-    _tail = next;
-    completer.future.whenComplete(() {
-      if (identical(_tail, next)) {
-        _tail = Future<void>.value();
-      }
-    });
-    return completer.future;
-  }
-
-  @override
-  Future<String?> getItem(String key) =>
-      _withLock<String?>(() => _data[key]);
-
-  @override
-  Future<void> setItem(String key, String value) =>
-      _withLock<void>(() => _data[key] = value);
-
-  @override
-  Future<void> removeItem(String key) =>
-      _withLock<void>(() => _data.remove(key));
-}
-
-/// Storage key for persisted wallet connections.
-const String _walletStorageKey = 'oz_smart_account.connected_wallets';
-
 /// Manager for external (non-passkey) signers used in multi-signature
 /// smart-account operations.
 ///
@@ -238,28 +171,23 @@ const String _walletStorageKey = 'oz_smart_account.connected_wallets';
 ///    secret key material is reachable only through the in-memory
 ///    [KeyPair] instance.
 ///
-/// 2. Wallet signers (via [addFromWallet]) — connected through the
-///    supplied [OZExternalWalletAdapter]. Connection metadata (address,
-///    wallet ID, wallet name) is persisted to [OZWalletConnectionStorage]
-///    so connections can be restored across app launches via
-///    [restoreConnections].
+/// 2. Wallet signers — connected through the supplied
+///    [OZExternalWalletAdapter] and observed via the adapter's
+///    [OZExternalWalletAdapter.getConnectedWallets].
 ///
-/// Concurrency: every mutation of `_keypairSigners` or the `_restored`
-/// flag runs through the hand-rolled FIFO Future-chain `_withLock`
-/// helper. The Dart isolate model ensures non-`await` execution is
-/// already serialised; the lock guarantees serial ordering across
-/// `await` suspension points.
+/// Concurrency: every mutation of `_keypairSigners` runs through the
+/// hand-rolled FIFO Future-chain `_withLock` helper. The Dart isolate
+/// model ensures non-`await` execution is already serialised; the lock
+/// guarantees serial ordering across `await` suspension points.
 ///
 /// Example:
 /// ```dart
 /// final manager = OZExternalSignerManager(
 ///   networkPassphrase: 'Test SDF Network ; September 2015',
 ///   walletAdapter: myWalletAdapter,
-///   walletConnectionStorage: myStorage,
 /// );
 ///
 /// final address = await manager.addFromSecret('SCZANG...');
-/// final wallet = await manager.addFromWallet();
 /// if (await manager.canSignFor('GABC...')) {
 ///   final sig = await manager.signAuthEntry('GABC...', preimageXdr);
 /// }
@@ -273,9 +201,8 @@ class OZExternalSignerManager {
   OZExternalSignerManager({
     required this.networkPassphrase,
     this.walletAdapter,
-    OZWalletConnectionStorage? walletConnectionStorage,
     this.ed25519Adapter,
-  }) : walletConnectionStorage = walletConnectionStorage;
+  });
 
   /// Network passphrase used when delegating to [walletAdapter].
   @internal
@@ -285,11 +212,6 @@ class OZExternalSignerManager {
   /// are supported.
   @internal
   final OZExternalWalletAdapter? walletAdapter;
-
-  /// Optional connection persistence layer. When `null`, wallet
-  /// connections are not restored across app launches.
-  @internal
-  final OZWalletConnectionStorage? walletConnectionStorage;
 
   /// Optional adapter for out-of-process Ed25519 signing.
   ///
@@ -308,7 +230,6 @@ class OZExternalSignerManager {
   final Map<_Ed25519SignerKey, KeyPair> _ed25519Signers =
       <_Ed25519SignerKey, KeyPair>{};
 
-  bool _restored = false;
   Future<void> _tail = Future<void>.value();
 
   Future<T> _withLock<T>(FutureOr<T> Function() body) {
@@ -332,7 +253,7 @@ class OZExternalSignerManager {
   }
 
   /// Whether an external wallet adapter is configured. Wallet operations
-  /// (`addFromWallet`, `restoreConnections`) require this to be `true`.
+  /// require this to be `true`.
   bool get hasWalletAdapter => walletAdapter != null;
 
   // Add signers
@@ -345,9 +266,7 @@ class OZExternalSignerManager {
   ///
   /// When a signer with the same G-address already exists (keypair or
   /// wallet), the keypair signer takes precedence and overwrites the
-  /// existing entry. Any persisted wallet connection for that address is
-  /// removed so it does not resurrect on the next [restoreConnections]
-  /// call.
+  /// existing entry.
   ///
   /// Returns the derived G-address.
   ///
@@ -370,41 +289,7 @@ class OZExternalSignerManager {
       _keypairSigners[address] = keypair;
     });
 
-    // why: keypair signers take precedence at sign time. Without this
-    // cleanup, a previously stored wallet entry for the same address
-    // would resurrect on the next restoreConnections() call and then
-    // appear in getAll() alongside the keypair entry.
-    await _removeWalletFromStorage(address);
-
     return address;
-  }
-
-  /// Connects an external wallet via [walletAdapter] and adds it as a
-  /// signer.
-  ///
-  /// Returns the connected wallet's metadata, or `null` when the user
-  /// cancels the connection prompt. When [walletConnectionStorage] is
-  /// configured the connection is persisted for later restoration.
-  ///
-  /// Throws [SmartAccountMissingConfig] when no wallet adapter is configured.
-  Future<OZConnectedWallet?> addFromWallet() async {
-    final adapter = walletAdapter;
-    if (adapter == null) {
-      throw SmartAccountConfigurationException.missingConfig(
-        'walletAdapter: No wallet adapter configured. Pass an '
-        'OZExternalWalletAdapter to OZExternalSignerManager to enable '
-        'wallet connections.',
-      );
-    }
-
-    final wallet = await adapter.connect();
-    if (wallet == null) return null;
-
-    if (walletConnectionStorage != null) {
-      await _saveWalletToStorage(wallet);
-    }
-
-    return wallet;
   }
 
   // Query signers
@@ -560,10 +445,9 @@ class OZExternalSignerManager {
 
   /// Removes the signer registered for [address].
   ///
-  /// Removes the entry from the keypair map, asks the wallet adapter to
-  /// release any per-address state via [OZExternalWalletAdapter.disconnectByAddress],
-  /// and removes the persisted wallet connection from storage. All three
-  /// steps run unconditionally so a partially registered signer is fully
+  /// Removes the entry from the keypair map and asks the wallet adapter to
+  /// release any per-address state via [OZExternalWalletAdapter.disconnectByAddress].
+  /// Both steps run unconditionally so a partially registered signer is fully
   /// cleaned up.
   Future<void> remove(String address) async {
     await _withLock<void>(() {
@@ -571,15 +455,13 @@ class OZExternalSignerManager {
     });
 
     await walletAdapter?.disconnectByAddress(address);
-    await _removeWalletFromStorage(address);
   }
 
   /// Removes every managed signer.
   ///
-  /// Clears the keypair map, the Ed25519 keypair map, disconnects every
-  /// external wallet connection via [OZExternalWalletAdapter.disconnect], and
-  /// clears the persisted wallet connections from [walletConnectionStorage].
-  /// Failures from `disconnect()` or `removeItem()` propagate to the caller.
+  /// Clears the keypair map, the Ed25519 keypair map, and disconnects every
+  /// external wallet connection via [OZExternalWalletAdapter.disconnect].
+  /// Failures from `disconnect()` propagate to the caller.
   Future<void> removeAll() async {
     await _withLock<void>(() {
       _keypairSigners.clear();
@@ -587,12 +469,10 @@ class OZExternalSignerManager {
     });
 
     await walletAdapter?.disconnect();
-    await walletConnectionStorage?.removeItem(_walletStorageKey);
   }
 
   /// Drops in-memory keypair and Ed25519 signing secrets only. Unlike
-  /// [removeAll], this does NOT disconnect the external-wallet adapter and does
-  /// NOT remove persisted wallet connections from storage. Called by
+  /// [removeAll], this does NOT disconnect the external-wallet adapter. Called by
   /// [OZSmartAccountKit.close] to release sensitive key material on teardown.
   @internal
   Future<void> clearInMemorySigners() async {
@@ -762,52 +642,6 @@ class OZExternalSignerManager {
     _ed25519Signers.remove(storeKey);
   }
 
-  // Wallet connection persistence
-
-  /// Restores previously connected wallets from [walletConnectionStorage].
-  ///
-  /// Reads the persisted connection list and asks
-  /// [OZExternalWalletAdapter.reconnect] to re-establish each one. Wallets
-  /// whose `reconnect` returns `null` or throws are removed from storage.
-  ///
-  /// Idempotent: subsequent calls after the first successful restoration
-  /// return the currently connected wallets without re-reading storage.
-  /// Returns an empty list when [walletConnectionStorage] or
-  /// [walletAdapter] is unset.
-  Future<List<OZConnectedWallet>> restoreConnections() async {
-    final alreadyRestored = await _withLock<bool>(() {
-      final current = _restored;
-      _restored = true;
-      return current;
-    });
-
-    if (alreadyRestored) {
-      return walletAdapter?.getConnectedWallets() ?? const <OZConnectedWallet>[];
-    }
-
-    if (walletConnectionStorage == null || walletAdapter == null) {
-      return const <OZConnectedWallet>[];
-    }
-
-    final stored = await _getStoredWallets();
-    final restored = <OZConnectedWallet>[];
-
-    for (final saved in stored) {
-      try {
-        final wallet = await walletAdapter!.reconnect(saved.walletId);
-        if (wallet != null) {
-          restored.add(wallet);
-        } else {
-          await _removeWalletFromStorage(saved.address);
-        }
-      } catch (_) {
-        await _removeWalletFromStorage(saved.address);
-      }
-    }
-
-    return restored;
-  }
-
   // Private signing helpers
 
   Future<OZSignAuthEntryResult> _signWithKeypair(
@@ -838,128 +672,5 @@ class OZExternalSignerManager {
         cause: e,
       );
     }
-  }
-
-  // Private storage helpers
-
-  Future<List<_StoredWalletConnection>> _getStoredWallets() async {
-    final storage = walletConnectionStorage;
-    if (storage == null) return const <_StoredWalletConnection>[];
-
-    try {
-      final data = await storage.getItem(_walletStorageKey);
-      if (data == null) return const <_StoredWalletConnection>[];
-      return _parseStoredWallets(data);
-    } catch (_) {
-      return const <_StoredWalletConnection>[];
-    }
-  }
-
-  Future<void> _saveWalletToStorage(OZConnectedWallet wallet) async {
-    final storage = walletConnectionStorage;
-    if (storage == null) return;
-
-    // why: the read-modify-write happens under `_withLock` so a
-    // concurrent add/remove cannot interleave between the load and the
-    // setItem and silently drop one of the writes.
-    await _withLock<void>(() async {
-      final stored =
-          List<_StoredWalletConnection>.from(await _getStoredWallets())
-            ..removeWhere((w) => w.address == wallet.address)
-            ..add(
-              _StoredWalletConnection(
-                address: wallet.address,
-                walletId: wallet.walletId,
-                walletName: wallet.walletName,
-                connectedAt: DateTime.now().millisecondsSinceEpoch,
-              ),
-            );
-      await storage.setItem(_walletStorageKey, _serializeWallets(stored));
-    });
-  }
-
-  Future<void> _removeWalletFromStorage(String address) async {
-    final storage = walletConnectionStorage;
-    if (storage == null) return;
-
-    // why: see [_saveWalletToStorage]; the same lock serialises this
-    // mutation against concurrent saves.
-    await _withLock<void>(() async {
-      final stored =
-          List<_StoredWalletConnection>.from(await _getStoredWallets())
-            ..removeWhere((w) => w.address == address);
-      if (stored.isEmpty) {
-        await storage.removeItem(_walletStorageKey);
-      } else {
-        await storage.setItem(_walletStorageKey, _serializeWallets(stored));
-      }
-    });
-  }
-
-  String _serializeWallets(List<_StoredWalletConnection> wallets) {
-    return jsonEncode(wallets.map((w) => w.toJson()).toList(growable: false));
-  }
-
-  List<_StoredWalletConnection> _parseStoredWallets(String jsonString) {
-    final List<dynamic> decoded;
-    try {
-      final raw = jsonDecode(jsonString);
-      if (raw is! List) return const <_StoredWalletConnection>[];
-      decoded = raw;
-    } catch (_) {
-      return const <_StoredWalletConnection>[];
-    }
-    // why: per-entry try/catch so one tampered or shape-mismatched
-    // record does not poison the entire stored set. The bad entry is
-    // skipped silently; the surrounding restore loop will not see it
-    // and the storage will be rewritten without it on the next save.
-    final result = <_StoredWalletConnection>[];
-    for (final m in decoded) {
-      try {
-        if (m is! Map<String, dynamic>) continue;
-        result.add(_StoredWalletConnection.fromJson(m));
-      } catch (_) {
-        // Skip the malformed entry and keep parsing the rest.
-      }
-    }
-    return List<_StoredWalletConnection>.unmodifiable(result);
-  }
-}
-
-/// Returns a default in-memory wallet connection storage implementation
-/// suitable as a fallback when no platform-backed adapter is supplied.
-OZWalletConnectionStorage createInMemoryWalletConnectionStorage() =>
-    OZInMemoryWalletConnectionStorage();
-
-/// Internal serialised wallet connection record. JSON encoding is
-/// hand-rolled against `dart:convert` to avoid taking a runtime
-/// dependency on a code-generation framework.
-class _StoredWalletConnection {
-  const _StoredWalletConnection({
-    required this.address,
-    required this.walletId,
-    required this.walletName,
-    required this.connectedAt,
-  });
-
-  final String address;
-  final String walletId;
-  final String walletName;
-  final int connectedAt;
-
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'address': address,
-        'walletId': walletId,
-        'walletName': walletName,
-        'connectedAt': connectedAt,
-      };
-
-  factory _StoredWalletConnection.fromJson(Map<String, dynamic> json) {
-    return _StoredWalletConnection(
-      address: json['address'] as String,
-      walletId: json['walletId'] as String,
-      walletName: json['walletName'] as String,
-      connectedAt: json['connectedAt'] as int,
-    );
   }
 }

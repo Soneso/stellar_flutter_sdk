@@ -1256,7 +1256,6 @@ The kit constructs one `OZExternalSignerManager` at creation time, injecting the
 OZExternalSignerManager({
   required String networkPassphrase,
   OZExternalWalletAdapter? walletAdapter,
-  OZWalletConnectionStorage? walletConnectionStorage,
   OZExternalEd25519SignerAdapter? ed25519Adapter,
 })
 ```
@@ -1265,7 +1264,6 @@ OZExternalSignerManager({
 
 - `networkPassphrase`: Network passphrase used when delegating to `walletAdapter`.
 - `walletAdapter`: Optional external-wallet adapter. When `null`, only keypair-backed wallet signers are supported.
-- `walletConnectionStorage`: Optional persistence layer for wallet connections.
 - `ed25519Adapter`: Optional adapter for out-of-process Ed25519 signing. Takes adapter-first precedence over in-memory keypairs when set.
 
 #### hasWalletAdapter
@@ -1282,19 +1280,9 @@ bool get hasWalletAdapter
 Future<String> addFromSecret(String secretKey) async
 ```
 
-Adds an Ed25519 keypair signer derived from `secretKey`. The keypair is held in memory only and never persisted. Returns the derived G-address. When a signer with the same address already exists, the keypair entry takes precedence and the persisted wallet connection (if any) is removed.
+Adds an Ed25519 keypair signer derived from `secretKey`. The keypair is held in memory only and never persisted. Returns the derived G-address. When a signer with the same address already exists, the keypair entry takes precedence.
 
 Throws `SmartAccountSignerException.invalid` when the secret key is invalid.
-
-#### addFromWallet
-
-```dart
-Future<OZConnectedWallet?> addFromWallet() async
-```
-
-Connects an external wallet via `walletAdapter` and adds it as a signer. Returns `null` when the user cancels. When `walletConnectionStorage` is configured the connection is persisted for later restoration via `restoreConnections`.
-
-Throws `SmartAccountConfigurationException.missingConfig` when no wallet adapter is configured.
 
 #### canSignFor
 
@@ -1347,7 +1335,7 @@ Throws `SmartAccountSignerException.notFound` when no signer is available for `a
 Future<void> remove(String address) async
 ```
 
-Removes the signer registered for `address`. Removes the keypair entry, asks the wallet adapter to release per-address state via `disconnectByAddress`, and removes the persisted wallet connection from storage.
+Removes the signer registered for `address`. Removes the keypair entry and asks the wallet adapter to release per-address state via `disconnectByAddress`.
 
 #### removeAll
 
@@ -1355,15 +1343,7 @@ Removes the signer registered for `address`. Removes the keypair entry, asks the
 Future<void> removeAll() async
 ```
 
-Removes every managed signer. Clears the keypair map, all Ed25519 keypair registrations, disconnects every external wallet connection via `OZExternalWalletAdapter.disconnect`, and clears the persisted wallet connections from `walletConnectionStorage`. The `ed25519Adapter` is immutable and is not affected by this call.
-
-#### restoreConnections
-
-```dart
-Future<List<OZConnectedWallet>> restoreConnections() async
-```
-
-Restores previously connected wallets from `walletConnectionStorage`. Reads the persisted list and calls `OZExternalWalletAdapter.reconnect` for each entry; wallets whose reconnect returns `null` or throws are removed from storage. Idempotent: subsequent calls return the currently connected wallets without re-reading.
+Removes every managed signer. Clears the keypair map, all Ed25519 keypair registrations, and disconnects every external wallet connection via `OZExternalWalletAdapter.disconnect`. The `ed25519Adapter` is immutable and is not affected by this call.
 
 ---
 
@@ -1594,37 +1574,6 @@ class OZExternalSignerInfo {
 ```dart
 enum OZExternalSignerType { keypair, wallet }
 ```
-
-#### OZWalletConnectionStorage
-
-```dart
-abstract class OZWalletConnectionStorage {
-  const OZWalletConnectionStorage();
-  Future<String?> getItem(String key);
-  Future<void> setItem(String key, String value);
-  Future<void> removeItem(String key);
-}
-```
-
-Simple key-value storage interface for persisting external wallet connections. Implementations must be safe for concurrent calls.
-
-#### OZInMemoryWalletConnectionStorage
-
-```dart
-class OZInMemoryWalletConnectionStorage extends OZWalletConnectionStorage {
-  OZInMemoryWalletConnectionStorage();
-}
-```
-
-Default in-memory implementation. Not persistent.
-
-#### createInMemoryWalletConnectionStorage
-
-```dart
-OZWalletConnectionStorage createInMemoryWalletConnectionStorage()
-```
-
-Top-level factory returning a fresh `OZInMemoryWalletConnectionStorage`.
 
 ---
 
@@ -2792,11 +2741,10 @@ abstract class OZExternalWalletAdapter {
   List<OZConnectedWallet> getConnectedWallets();
   bool canSignFor(String address);
   OZConnectedWallet? getWalletForAddress(String address) => null;
-  Future<OZConnectedWallet?> reconnect(String walletId) async => null;
 }
 ```
 
-Protocol for integrating external wallets (Freighter, LOBSTR, and so on) into the multi-signer pipeline. Concrete adapters extend this class so they inherit the no-op defaults for `disconnectByAddress`, `getWalletForAddress`, and `reconnect`.
+Protocol for integrating external wallets (Freighter, LOBSTR, and so on) into the multi-signer pipeline. Concrete adapters extend this class so they inherit the no-op defaults for `disconnectByAddress` and `getWalletForAddress`.
 
 **signAuthEntry contract:** the SDK supplies a base64-encoded `HashIDPreimage` XDR. The wallet must base64-decode the preimage bytes, SHA-256 hash them, Ed25519-sign the 32-byte hash, and return the 64-byte raw signature base64-encoded. The SDK handles auth-entry construction and signature framing. Adapters that omit the SHA-256 step, sign a different payload, or return a non-canonical encoding produce a signature that the Soroban host rejects at submission time, surfacing as `SmartAccountTransactionException.simulationFailed` during the post-sign re-simulation.
 
@@ -2819,7 +2767,7 @@ class OZConnectedWallet {
 ```
 
 - `address`: Stellar G-address of the connected wallet.
-- `walletId`: Unique wallet identifier (for example `freighter`, `lobstr`). Used for reconnection via `reconnect`.
+- `walletId`: Unique wallet identifier (for example `freighter`, `lobstr`).
 - `walletName`: Human-readable display name.
 
 #### OZSignAuthEntryOptions
@@ -3487,10 +3435,10 @@ Static helpers for `OZContextRuleType` and parsed-rule utilities.
 
 ```dart
 class OZBuilders {
-  static OZContextRuleType createDefaultContext();
-  static OZContextRuleType createCallContractContext(String contractAddress);
-  static OZContextRuleType createCreateContractContextFromHex(String wasmHashHex);
-  static OZContextRuleType createCreateContractContextFromBytes(Uint8List wasmHash);
+  static OZContextRuleType createDefaultContextType();
+  static OZContextRuleType createCallContractContextType(String contractAddress);
+  static OZContextRuleType createCreateContractContextTypeFromHex(String wasmHashHex);
+  static OZContextRuleType createCreateContractContextTypeFromBytes(Uint8List wasmHash);
 
   static List<OZSmartAccountSigner> collectUniqueSignersFromRules(
     List<OZParsedContextRule> rules,
@@ -3498,10 +3446,10 @@ class OZBuilders {
 }
 ```
 
-- `createDefaultContext`: Returns `OZContextRuleTypeDefault`. Matches any operation that does not match a more specific rule.
-- `createCallContractContext`: Returns `OZContextRuleTypeCallContract` for the supplied contract address. Validates the address.
-- `createCreateContractContextFromHex`: Returns `OZContextRuleTypeCreateContract` from a hex-encoded WASM hash (optionally `0x`-prefixed); must decode to 32 bytes.
-- `createCreateContractContextFromBytes`: Returns `OZContextRuleTypeCreateContract` from raw WASM-hash bytes; must be exactly 32 bytes.
+- `createDefaultContextType`: Returns `OZContextRuleTypeDefault`. Matches any operation that does not match a more specific rule.
+- `createCallContractContextType`: Returns `OZContextRuleTypeCallContract` for the supplied contract address. Validates the address.
+- `createCreateContractContextTypeFromHex`: Returns `OZContextRuleTypeCreateContract` from a hex-encoded WASM hash (optionally `0x`-prefixed); must decode to 32 bytes.
+- `createCreateContractContextTypeFromBytes`: Returns `OZContextRuleTypeCreateContract` from raw WASM-hash bytes; must be exactly 32 bytes.
 - `collectUniqueSignersFromRules`: Returns the unique signers from `rules`, removing duplicates across rules. First occurrence wins.
 
 ### OZContextRuleType (sealed)

@@ -894,10 +894,6 @@ final String gAddress = await kit.externalSigners.addFromSecret(
   'SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34REYB6WBMG7CKKFJHYAEGQ',
 );
 
-// Adapter custody: connect a wallet (Freighter/LOBSTR-style) via the configured adapter.
-final OZConnectedWallet? wallet = await kit.externalSigners.addFromWallet();
-// null when the user cancels; throws SmartAccountConfigurationException when no walletAdapter is set.
-
 // Query
 final bool can = await kit.externalSigners.canSignFor(gAddress);
 final List<OZExternalSignerInfo> all = await kit.externalSigners.getAll();
@@ -915,16 +911,6 @@ class OZExternalSignerInfo {
 
 enum OZExternalSignerType { keypair, wallet }
 ```
-
-### restoreConnections — call at app launch
-
-For adapter-custody wallets, reconnect persisted connections before any multi-signer action, or the adapter's `canSignFor` returns false for wallets connected in a previous session:
-
-```dart
-await kit.externalSigners.restoreConnections();
-```
-
-Persistence is controlled by a pluggable `OZWalletConnectionStorage` on the manager (the default is in-memory and lost on process exit). Supply a persistent `OZWalletConnectionStorage` for connections to survive relaunch; `restoreConnections()` is a no-op (returns empty) unless BOTH that store and a wallet adapter are configured.
 
 ### Two Ed25519 custody paths
 
@@ -1001,7 +987,7 @@ try {
 }
 ```
 
-> `removeAll()` is also the teardown counterpart to `restoreConnections()` for a full logout / reset. It is distinct from `kit.disconnect()`, which only clears the connection session and does NOT touch `externalSigners`.
+> `removeAll()` clears all external signers (in-memory keypairs and Ed25519 registrations, plus an adapter disconnect for connected wallets) for a full logout / reset. It is distinct from `kit.disconnect()`, which only clears the connection session and does NOT touch `externalSigners`.
 
 ### signAuthEntry
 
@@ -1023,24 +1009,15 @@ Throws `SmartAccountSignerNotFound` when no signer matches the address, `SmartAc
 
 ### Standalone construction (advanced)
 
-The multi-signer pipeline always uses `kit.externalSigners`. Construct a manager directly only for advanced use outside a kit — for example to supply a custom `OZWalletConnectionStorage` for cross-launch wallet-connection persistence.
+The multi-signer pipeline always uses `kit.externalSigners`. Construct a manager directly only for advanced use outside a kit context.
 
 ```dart
 OZExternalSignerManager({
   required String networkPassphrase,
   OZExternalWalletAdapter? walletAdapter,
-  OZWalletConnectionStorage? walletConnectionStorage,
   OZExternalEd25519SignerAdapter? ed25519Adapter,
 });
-
-abstract class OZWalletConnectionStorage {
-  Future<String?> getItem(String key);
-  Future<void> setItem(String key, String value);
-  Future<void> removeItem(String key);
-}
 ```
-
-`OZInMemoryWalletConnectionStorage` is the default fallback (loses data on process exit). Subclass the abstract `OZWalletConnectionStorage` over `shared_preferences` or secure storage for persistence.
 
 ---
 

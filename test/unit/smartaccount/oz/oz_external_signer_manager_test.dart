@@ -18,33 +18,6 @@ const String _validG1 =
 const String _validG2 =
     'GBVRV25F7XA5I2L3ILSA6XW3OCWLKGGLG4OP2EHKTWC5IHQ3EV26FQLS';
 
-/// In-memory [OZWalletConnectionStorage] with a public map for direct JSON inspection.
-class TestWalletStorage extends OZWalletConnectionStorage {
-  final Map<String, String> data = <String, String>{};
-
-  final List<String> getCalls = <String>[];
-  final List<String> setCalls = <String>[];
-  final List<String> removeCalls = <String>[];
-
-  @override
-  Future<String?> getItem(String key) async {
-    getCalls.add(key);
-    return data[key];
-  }
-
-  @override
-  Future<void> setItem(String key, String value) async {
-    setCalls.add(key);
-    data[key] = value;
-  }
-
-  @override
-  Future<void> removeItem(String key) async {
-    removeCalls.add(key);
-    data.remove(key);
-  }
-}
-
 /// Recording [OZExternalWalletAdapter]. FIFO queues: pop the next pre-configured
 /// outcome per call (value or throwable); exhausted queues return null/default.
 /// Inspect *Calls fields and *Count fields to assert interaction with the manager.
@@ -53,9 +26,6 @@ class RecordingWalletAdapter extends OZExternalWalletAdapter {
 
   final List<Object?> connectResponses = <Object?>[];
   int connectCallCount = 0;
-
-  final List<Object?> reconnectResponses = <Object?>[];
-  final List<String> reconnectCalls = <String>[];
 
   final List<Object> signAuthEntryResponses = <Object>[];
   final List<({String preimageXdr, OZSignAuthEntryOptions? options})>
@@ -79,18 +49,6 @@ class RecordingWalletAdapter extends OZExternalWalletAdapter {
     connectCallCount++;
     if (connectResponses.isEmpty) return null;
     final Object? v = connectResponses.removeAt(0);
-    if (v is Exception) throw v;
-    if (v is Error) throw v;
-    final wallet = v as OZConnectedWallet?;
-    if (wallet != null) connected.add(wallet);
-    return wallet;
-  }
-
-  @override
-  Future<OZConnectedWallet?> reconnect(String walletId) async {
-    reconnectCalls.add(walletId);
-    if (reconnectResponses.isEmpty) return null;
-    final Object? v = reconnectResponses.removeAt(0);
     if (v is Exception) throw v;
     if (v is Error) throw v;
     final wallet = v as OZConnectedWallet?;
@@ -196,12 +154,10 @@ class _NeverSignAdapter extends OZExternalEd25519SignerAdapter {
 
 OZExternalSignerManager _createManager({
   OZExternalWalletAdapter? walletAdapter,
-  OZWalletConnectionStorage? walletConnectionStorage,
 }) {
   return OZExternalSignerManager(
     networkPassphrase: _testNetworkPassphrase,
     walletAdapter: walletAdapter,
-    walletConnectionStorage: walletConnectionStorage,
   );
 }
 
@@ -292,40 +248,6 @@ void main() {
       expect(addresses, contains(k3.accountId));
     });
 
-    test(
-        'addFromSecret removes previously persisted wallet entry for '
-        'the same address', () async {
-      final storage = TestWalletStorage();
-      final adapter = RecordingWalletAdapter();
-      final manager = _createManager(
-        walletAdapter: adapter,
-        walletConnectionStorage: storage,
-      );
-
-      // Pre-seed storage with a wallet entry for an address that we will
-      // shortly add as a keypair signer.
-      final keypair = KeyPair.random();
-      final address = keypair.accountId;
-      storage.data['oz_smart_account.connected_wallets'] = jsonEncode([
-        <String, dynamic>{
-          'address': address,
-          'walletId': 'freighter',
-          'walletName': 'Freighter',
-          'connectedAt': 1700000000000,
-        },
-      ]);
-
-      final secret = keypair.secretSeed;
-      final got = await manager.addFromSecret(secret);
-
-      expect(got, equals(address));
-      // Storage entry must be removed; the only entry was deleted, so
-      // the storage key is removed entirely.
-      expect(storage.data.containsKey('oz_smart_account.connected_wallets'), isFalse);
-      // removeItem must have been called at least once for cleanup.
-      expect(storage.removeCalls, contains('oz_smart_account.connected_wallets'));
-    });
-
     test('concurrent addFromSecret calls are serialised via mutex',
         () async {
       final manager = _createManager();
@@ -346,71 +268,6 @@ void main() {
         expect(info, isNotNull);
         expect(info!.type, equals(OZExternalSignerType.keypair));
       }
-    });
-  });
-  group('addFromWallet', () {
-    test('no adapter throws SmartAccountMissingConfig', () async {
-      final manager = _createManager();
-      await expectLater(
-        () => manager.addFromWallet(),
-        throwsA(isA<SmartAccountMissingConfig>()),
-      );
-    });
-
-    test('user cancels: connect returns null, addFromWallet returns null',
-        () async {
-      final adapter = RecordingWalletAdapter();
-      adapter.connectResponses.add(null);
-      final manager = _createManager(walletAdapter: adapter);
-
-      final result = await manager.addFromWallet();
-      expect(result, isNull);
-      expect(adapter.connectCallCount, equals(1));
-    });
-
-    test('successful connect persists wallet to storage', () async {
-      final adapter = RecordingWalletAdapter();
-      final wallet = OZConnectedWallet(
-        address: _validG1,
-        walletId: 'freighter',
-        walletName: 'Freighter',
-      );
-      adapter.connectResponses.add(wallet);
-      final storage = TestWalletStorage();
-
-      final manager = _createManager(
-        walletAdapter: adapter,
-        walletConnectionStorage: storage,
-      );
-
-      final result = await manager.addFromWallet();
-      expect(result, equals(wallet));
-      expect(storage.data.containsKey('oz_smart_account.connected_wallets'), isTrue);
-      final json = jsonDecode(storage.data['oz_smart_account.connected_wallets']!) as List;
-      expect(json, hasLength(1));
-      expect((json[0] as Map)['address'], equals(_validG1));
-      expect((json[0] as Map)['walletId'], equals('freighter'));
-      expect((json[0] as Map)['walletName'], equals('Freighter'));
-    });
-
-    test('successful connect without storage skips persistence',
-        () async {
-      final adapter = RecordingWalletAdapter();
-      adapter.connectResponses.add(
-        OZConnectedWallet(
-          address: _validG1,
-          walletId: 'lobstr',
-          walletName: 'LOBSTR',
-        ),
-      );
-
-      final manager = _createManager(walletAdapter: adapter);
-
-      final result = await manager.addFromWallet();
-      expect(result, isNotNull);
-      // Manager must still report the wallet via the adapter.
-      final all = await manager.getAll();
-      expect(all.any((s) => s.address == _validG1), isTrue);
     });
   });
   group('canSignFor', () {
@@ -772,307 +629,6 @@ void main() {
       expect(await manager.getAll(), isEmpty);
       expect(await manager.hasSigners(), isFalse);
       expect(adapter.disconnectCount, equals(1));
-    });
-
-    test('removeAll deletes the persisted storage key', () async {
-      final adapter = RecordingWalletAdapter();
-      final storage = TestWalletStorage();
-      // Pre-seed storage so removeAll has something to clear.
-      storage.data['oz_smart_account.connected_wallets'] =
-          '[{"address":"$_validG1","walletId":"w","walletName":"W","connectedAt":1}]';
-
-      final manager = _createManager(
-        walletAdapter: adapter,
-        walletConnectionStorage: storage,
-      );
-
-      await manager.removeAll();
-
-      expect(storage.data.containsKey('oz_smart_account.connected_wallets'), isFalse);
-      expect(storage.removeCalls, contains('oz_smart_account.connected_wallets'));
-    });
-  });
-  group('restoreConnections', () {
-    test('idempotent: second call returns adapter snapshot without '
-        're-reading storage', () async {
-      final adapter = RecordingWalletAdapter();
-      final storage = TestWalletStorage();
-      storage.data['oz_smart_account.connected_wallets'] = jsonEncode([
-        <String, dynamic>{
-          'address': _validG1,
-          'walletId': 'freighter',
-          'walletName': 'Freighter',
-          'connectedAt': 1,
-        },
-      ]);
-      adapter.reconnectResponses.add(
-        OZConnectedWallet(
-          address: _validG1,
-          walletId: 'freighter',
-          walletName: 'Freighter',
-        ),
-      );
-
-      final manager = _createManager(
-        walletAdapter: adapter,
-        walletConnectionStorage: storage,
-      );
-
-      final first = await manager.restoreConnections();
-      expect(first, hasLength(1));
-      // Second call must not consult storage again.
-      final getCallsBefore = storage.getCalls.length;
-      final second = await manager.restoreConnections();
-      expect(second, hasLength(1));
-      expect(storage.getCalls.length, equals(getCallsBefore));
-      // Reconnect must have been called only once total.
-      expect(adapter.reconnectCalls.length, equals(1));
-    });
-
-    test('no storage configured returns empty', () async {
-      final adapter = RecordingWalletAdapter();
-      final manager = _createManager(walletAdapter: adapter);
-      final restored = await manager.restoreConnections();
-      expect(restored, isEmpty);
-    });
-
-    test('reconnect returning null: stale entry is removed from storage',
-        () async {
-      final adapter = RecordingWalletAdapter();
-      final storage = TestWalletStorage();
-      storage.data['oz_smart_account.connected_wallets'] = jsonEncode([
-        <String, dynamic>{
-          'address': _validG1,
-          'walletId': 'gone',
-          'walletName': 'Gone',
-          'connectedAt': 1,
-        },
-      ]);
-      // Adapter returns null on reconnect.
-      adapter.reconnectResponses.add(null);
-
-      final manager = _createManager(
-        walletAdapter: adapter,
-        walletConnectionStorage: storage,
-      );
-
-      final restored = await manager.restoreConnections();
-      expect(restored, isEmpty);
-      // Stale entry must be removed.
-      expect(storage.data.containsKey('oz_smart_account.connected_wallets'), isFalse);
-    });
-
-    test('reconnect succeeds: returned wallet appears in result', () async {
-      final adapter = RecordingWalletAdapter();
-      final storage = TestWalletStorage();
-      storage.data['oz_smart_account.connected_wallets'] = jsonEncode([
-        <String, dynamic>{
-          'address': _validG1,
-          'walletId': 'freighter',
-          'walletName': 'Freighter',
-          'connectedAt': 1,
-        },
-      ]);
-      adapter.reconnectResponses.add(
-        OZConnectedWallet(
-          address: _validG1,
-          walletId: 'freighter',
-          walletName: 'Freighter',
-        ),
-      );
-
-      final manager = _createManager(
-        walletAdapter: adapter,
-        walletConnectionStorage: storage,
-      );
-
-      final restored = await manager.restoreConnections();
-      expect(restored, hasLength(1));
-      expect(restored.single.address, equals(_validG1));
-      expect(restored.single.walletId, equals('freighter'));
-      expect(restored.single.walletName, equals('Freighter'));
-    });
-
-    test('concurrent restoreConnections calls are serialised by mutex',
-        () async {
-      final adapter = RecordingWalletAdapter();
-      final storage = TestWalletStorage();
-      storage.data['oz_smart_account.connected_wallets'] = jsonEncode([
-        <String, dynamic>{
-          'address': _validG1,
-          'walletId': 'freighter',
-          'walletName': 'Freighter',
-          'connectedAt': 1,
-        },
-      ]);
-      adapter.reconnectResponses.add(
-        OZConnectedWallet(
-          address: _validG1,
-          walletId: 'freighter',
-          walletName: 'Freighter',
-        ),
-      );
-
-      final manager = _createManager(
-        walletAdapter: adapter,
-        walletConnectionStorage: storage,
-      );
-
-      // Two parallel calls; both must observe the idempotent contract.
-      final results = await Future.wait([
-        manager.restoreConnections(),
-        manager.restoreConnections(),
-      ]);
-
-      // Reconnect must have been called only once across both
-      // restoreConnections invocations.
-      expect(adapter.reconnectCalls.length, equals(1));
-      expect(results[0], isNotEmpty);
-    });
-  });
-  group('JSON storage', () {
-    test('serialise empty list yields valid JSON array', () async {
-      final adapter = RecordingWalletAdapter();
-      final storage = TestWalletStorage();
-      // Pre-seed with an entry, then remove it via the manager: the
-      // resulting state must clear the storage key entirely.
-      storage.data['oz_smart_account.connected_wallets'] = jsonEncode([
-        <String, dynamic>{
-          'address': _validG1,
-          'walletId': 'w',
-          'walletName': 'W',
-          'connectedAt': 1,
-        },
-      ]);
-      final manager = _createManager(
-        walletAdapter: adapter,
-        walletConnectionStorage: storage,
-      );
-
-      await manager.remove(_validG1);
-
-      // After removal, key is dropped (so "empty list" is represented as
-      // an absent storage entry).
-      expect(storage.data['oz_smart_account.connected_wallets'], isNull);
-    });
-
-    test('serialise multiple connections preserves correct order',
-        () async {
-      final adapter = RecordingWalletAdapter();
-      final storage = TestWalletStorage();
-      final manager = _createManager(
-        walletAdapter: adapter,
-        walletConnectionStorage: storage,
-      );
-
-      // Add three wallets in order; storage must contain them in that
-      // append order.
-      adapter.connectResponses.addAll([
-        OZConnectedWallet(
-          address: _validG1,
-          walletId: 'a',
-          walletName: 'A',
-        ),
-        OZConnectedWallet(
-          address: _validG2,
-          walletId: 'b',
-          walletName: 'B',
-        ),
-      ]);
-      await manager.addFromWallet();
-      await manager.addFromWallet();
-
-      final raw = storage.data['oz_smart_account.connected_wallets']!;
-      final list = jsonDecode(raw) as List;
-      expect(list.length, equals(2));
-      expect((list[0] as Map)['walletId'], equals('a'));
-      expect((list[1] as Map)['walletId'], equals('b'));
-    });
-
-    test(
-        'parse valid JSON: restoreConnections feeds the adapter '
-        'with the stored walletIds in order', () async {
-      final adapter = RecordingWalletAdapter();
-      final storage = TestWalletStorage();
-      storage.data['oz_smart_account.connected_wallets'] = jsonEncode([
-        <String, dynamic>{
-          'address': _validG1,
-          'walletId': 'first',
-          'walletName': 'First',
-          'connectedAt': 1,
-        },
-        <String, dynamic>{
-          'address': _validG2,
-          'walletId': 'second',
-          'walletName': 'Second',
-          'connectedAt': 2,
-        },
-      ]);
-      adapter.reconnectResponses.add(
-        OZConnectedWallet(
-          address: _validG1,
-          walletId: 'first',
-          walletName: 'First',
-        ),
-      );
-      adapter.reconnectResponses.add(
-        OZConnectedWallet(
-          address: _validG2,
-          walletId: 'second',
-          walletName: 'Second',
-        ),
-      );
-
-      final manager = _createManager(
-        walletAdapter: adapter,
-        walletConnectionStorage: storage,
-      );
-
-      final restored = await manager.restoreConnections();
-      expect(restored, hasLength(2));
-      expect(adapter.reconnectCalls, equals(<String>['first', 'second']));
-    });
-
-    test('malformed JSON returns empty list',
-        () async {
-      final adapter = RecordingWalletAdapter();
-      final storage = TestWalletStorage();
-      // Plain garbage in storage; restoreConnections must return empty.
-      storage.data['oz_smart_account.connected_wallets'] = 'not really json {';
-
-      final manager = _createManager(
-        walletAdapter: adapter,
-        walletConnectionStorage: storage,
-      );
-
-      final restored = await manager.restoreConnections();
-      expect(restored, isEmpty);
-      // Adapter should not have been asked to reconnect anything.
-      expect(adapter.reconnectCalls, isEmpty);
-    });
-
-    test('removing the last persisted entry deletes the storage key',
-        () async {
-      final adapter = RecordingWalletAdapter();
-      final storage = TestWalletStorage();
-      storage.data['oz_smart_account.connected_wallets'] = jsonEncode([
-        <String, dynamic>{
-          'address': _validG1,
-          'walletId': 'only',
-          'walletName': 'Only',
-          'connectedAt': 1,
-        },
-      ]);
-
-      final manager = _createManager(
-        walletAdapter: adapter,
-        walletConnectionStorage: storage,
-      );
-
-      await manager.remove(_validG1);
-
-      expect(storage.data.containsKey('oz_smart_account.connected_wallets'), isFalse);
-      expect(storage.removeCalls, contains('oz_smart_account.connected_wallets'));
     });
   });
   group('addEd25519FromRawKey', () {
@@ -1464,81 +1020,6 @@ void main() {
     });
   });
 
-  group('addFromWallet error paths', () {
-    test('noWalletAdapter_throwsMissingConfig', () async {
-      final manager = _createManager(); // no walletAdapter
-      await expectLater(
-        manager.addFromWallet(),
-        throwsA(isA<SmartAccountMissingConfig>()),
-      );
-    });
-
-    test('adapterReturnsNull_returnsNull', () async {
-      final adapter = RecordingWalletAdapter();
-      // connectResponses empty -> connect() returns null
-      final manager = _createManager(walletAdapter: adapter);
-      final result = await manager.addFromWallet();
-      expect(result, isNull);
-    });
-
-    test('adapterReturnsWallet_withStorage_savesConnection', () async {
-      final adapter = RecordingWalletAdapter();
-      const wallet = OZConnectedWallet(
-        address: _validG1,
-        walletId: 'freighter',
-        walletName: 'Freighter',
-      );
-      adapter.connectResponses.add(wallet);
-
-      final storage = TestWalletStorage();
-      final manager = _createManager(
-        walletAdapter: adapter,
-        walletConnectionStorage: storage,
-      );
-
-      final result = await manager.addFromWallet();
-      expect(result, equals(wallet));
-      // Storage should have been written.
-      expect(storage.setCalls, isNotEmpty);
-    });
-  });
-
-  group('restoreConnections', () {
-    test('noStorageAndNoAdapter_returnsEmpty', () async {
-      final manager = _createManager();
-      final restored = await manager.restoreConnections();
-      expect(restored, isEmpty);
-    });
-
-    test('withStorageAndAdapter_restoresConnections', () async {
-      final adapter = RecordingWalletAdapter();
-      const wallet = OZConnectedWallet(
-        address: _validG1,
-        walletId: 'freighter',
-        walletName: 'Freighter',
-      );
-      adapter.connectResponses.add(wallet);
-      final storage = TestWalletStorage();
-      final manager = _createManager(
-        walletAdapter: adapter,
-        walletConnectionStorage: storage,
-      );
-
-      // First add a wallet so it is stored.
-      await manager.addFromWallet();
-      // Now restore (reset manager state by creating fresh instance with same storage).
-      final manager2 = OZExternalSignerManager(
-        networkPassphrase: _testNetworkPassphrase,
-        walletAdapter: adapter,
-        walletConnectionStorage: storage,
-      );
-      adapter.reconnectResponses.add(wallet);
-
-      final restored = await manager2.restoreConnections();
-      expect(restored, isNotEmpty);
-    });
-  });
-
   group('get (getSignerInfo) not-found', () {
     test('unknownAddress_returnsNull', () async {
       final manager = _createManager();
@@ -1549,31 +1030,11 @@ void main() {
     test('keypairAddress_returnsKeypairInfo', () async {
       final manager = _createManager();
       final keypair = KeyPair.random();
-      await manager.addFromSecret(keypair.secretSeed!);
+      await manager.addFromSecret(keypair.secretSeed);
       final info = await manager.get(keypair.accountId);
       expect(info, isNotNull);
       expect(info!.type, OZExternalSignerType.keypair);
     });
   });
 
-  group('OZInMemoryWalletConnectionStorage concurrent ordering', () {
-    test('concurrentWrites_areOrdered', () async {
-      final storage = OZInMemoryWalletConnectionStorage();
-
-      await Future.wait(<Future<void>>[
-        storage.setItem('key1', 'value1'),
-        storage.setItem('key2', 'value2'),
-        storage.setItem('key3', 'value3'),
-      ]);
-
-      expect(await storage.getItem('key1'), 'value1');
-      expect(await storage.getItem('key2'), 'value2');
-      expect(await storage.getItem('key3'), 'value3');
-    });
-
-    test('removeItem_onMissingKey_doesNotThrow', () async {
-      final storage = OZInMemoryWalletConnectionStorage();
-      await expectLater(storage.removeItem('missing'), completes);
-    });
-  });
 }

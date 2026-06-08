@@ -222,7 +222,7 @@ class OZBuilders {
   ///
   /// Default rules apply to any operation that does not match a more
   /// specific call-contract or create-contract rule.
-  static OZContextRuleType createDefaultContext() {
+  static OZContextRuleType createDefaultContextType() {
     return const OZContextRuleTypeDefault();
   }
 
@@ -232,7 +232,7 @@ class OZBuilders {
   ///
   /// Throws an [SmartAccountInvalidAddress] validation exception when [contractAddress]
   /// is not a valid contract address.
-  static OZContextRuleType createCallContractContext(String contractAddress) {
+  static OZContextRuleType createCallContractContextType(String contractAddress) {
     requireContractAddress(contractAddress, fieldName: 'contractAddress');
     return OZContextRuleTypeCallContract(contractAddress);
   }
@@ -245,7 +245,7 @@ class OZBuilders {
   ///
   /// Throws an [SmartAccountInvalidInput] validation exception when [wasmHashHex] is
   /// not the required length.
-  static OZContextRuleType createCreateContractContextFromHex(
+  static OZContextRuleType createCreateContractContextTypeFromHex(
     String wasmHashHex,
   ) {
     final cleanHash =
@@ -266,7 +266,7 @@ class OZBuilders {
   ///
   /// [wasmHash] must be exactly 32 bytes long. Throws an [SmartAccountInvalidInput]
   /// validation exception otherwise.
-  static OZContextRuleType createCreateContractContextFromBytes(
+  static OZContextRuleType createCreateContractContextTypeFromBytes(
     Uint8List wasmHash,
   ) {
     if (wasmHash.length != 32) {

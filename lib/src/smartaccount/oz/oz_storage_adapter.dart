@@ -503,8 +503,7 @@ class OZConnectedWallet {
   /// Stellar G-address of the connected wallet.
   final String address;
 
-  /// Unique wallet identifier (e.g. `freighter`, `lobstr`). Used for
-  /// reconnection via [OZExternalWalletAdapter.reconnect].
+  /// Unique wallet identifier (e.g. `freighter`, `lobstr`).
   final String walletId;
 
   /// Human-readable display name for the wallet (e.g. `Freighter`,
@@ -595,11 +594,10 @@ class OZSignAuthEntryResult {
 ///
 /// External wallet adapters enable signing with external wallets like
 /// Freighter or Albedo for multi-signature smart accounts. They handle
-/// wallet connection, signature collection, and wallet reconnection.
+/// wallet connection and signature collection.
 ///
 /// Concrete adapters extend this class so they can inherit the no-op
-/// defaults for [disconnectByAddress], [getWalletForAddress], and
-/// [reconnect].
+/// defaults for [disconnectByAddress] and [getWalletForAddress].
 abstract class OZExternalWalletAdapter {
   /// Constructs an external wallet adapter base.
   const OZExternalWalletAdapter();
@@ -658,11 +656,4 @@ abstract class OZExternalWalletAdapter {
   /// Returns wallet info for a specific [address] when known. Default
   /// implementation returns `null`.
   OZConnectedWallet? getWalletForAddress(String address) => null;
-
-  /// Reconnects to a previously connected wallet by its [walletId].
-  ///
-  /// Used for restoring wallet connections after page reloads or app
-  /// restarts. The default implementation returns `null`, indicating
-  /// reconnection is not supported by this adapter.
-  Future<OZConnectedWallet?> reconnect(String walletId) async => null;
 }

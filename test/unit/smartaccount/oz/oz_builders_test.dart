@@ -34,16 +34,16 @@ OZParsedContextRule _ruleWith(
 }
 
 void main() {
-  group('createDefaultContext', () {
+  group('createDefaultContextType', () {
     test('testCreateDefaultContext_returnsDefault', () {
-      final result = OZBuilders.createDefaultContext();
+      final result = OZBuilders.createDefaultContextType();
       expect(result, isA<OZContextRuleTypeDefault>());
     });
   });
 
-  group('createCallContractContext', () {
+  group('createCallContractContextType', () {
     test('testCreateCallContractContext_validAddress', () {
-      final result = OZBuilders.createCallContractContext(_kValidContractId);
+      final result = OZBuilders.createCallContractContextType(_kValidContractId);
       expect(result, isA<OZContextRuleTypeCallContract>());
       expect((result as OZContextRuleTypeCallContract).contractAddress,
           _kValidContractId);
@@ -51,56 +51,56 @@ void main() {
 
     test('testCreateCallContractContext_invalidAddress_throws', () {
       expect(
-        () => OZBuilders.createCallContractContext('GABC...'),
+        () => OZBuilders.createCallContractContextType('GABC...'),
         throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
     test('testCreateCallContractContext_emptyAddress_throws', () {
       expect(
-        () => OZBuilders.createCallContractContext(''),
+        () => OZBuilders.createCallContractContextType(''),
         throwsA(isA<SmartAccountValidationException>()),
       );
     });
   });
 
-  group('createCreateContractContext (hex)', () {
+  group('createCreateContractContextType (hex)', () {
     test('testCreateCreateContractContext_validHex', () {
       final hex = 'a' * 64;
-      final result = OZBuilders.createCreateContractContextFromHex(hex);
+      final result = OZBuilders.createCreateContractContextTypeFromHex(hex);
       expect(result, isA<OZContextRuleTypeCreateContract>());
       expect((result as OZContextRuleTypeCreateContract).wasmHash.length, 32);
     });
 
     test('testCreateCreateContractContext_validHexWith0xPrefix', () {
       final hex = '0x${'b' * 64}';
-      final result = OZBuilders.createCreateContractContextFromHex(hex);
+      final result = OZBuilders.createCreateContractContextTypeFromHex(hex);
       expect(result, isA<OZContextRuleTypeCreateContract>());
       expect((result as OZContextRuleTypeCreateContract).wasmHash.length, 32);
     });
 
     test('testCreateCreateContractContext_shortHex_throws', () {
       expect(
-        () => OZBuilders.createCreateContractContextFromHex('abc123'),
+        () => OZBuilders.createCreateContractContextTypeFromHex('abc123'),
         throwsA(isA<SmartAccountValidationException>()),
       );
     });
 
     test('testCreateCreateContractContext_longHex_throws', () {
       expect(
-        () => OZBuilders.createCreateContractContextFromHex('a' * 66),
+        () => OZBuilders.createCreateContractContextTypeFromHex('a' * 66),
         throwsA(isA<SmartAccountValidationException>()),
       );
     });
   });
 
-  group('createCreateContractContext (bytes)', () {
+  group('createCreateContractContextType (bytes)', () {
     test('testCreateCreateContractContext_validBytes', () {
       final bytes = Uint8List(32);
       for (var i = 0; i < 32; i++) {
         bytes[i] = i;
       }
-      final result = OZBuilders.createCreateContractContextFromBytes(bytes);
+      final result = OZBuilders.createCreateContractContextTypeFromBytes(bytes);
       expect(result, isA<OZContextRuleTypeCreateContract>());
       final hash = (result as OZContextRuleTypeCreateContract).wasmHash;
       expect(hash.length, 32);
@@ -111,7 +111,7 @@ void main() {
 
     test('testCreateCreateContractContext_wrongSizeBytes_throws', () {
       expect(
-        () => OZBuilders.createCreateContractContextFromBytes(Uint8List(16)),
+        () => OZBuilders.createCreateContractContextTypeFromBytes(Uint8List(16)),
         throwsA(isA<SmartAccountValidationException>()),
       );
     });

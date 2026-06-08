@@ -448,7 +448,6 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
     final externalSigners = OZExternalSignerManager(
       networkPassphrase: config.networkPassphrase,
       walletAdapter: config.externalWallet,
-      walletConnectionStorage: null,
       ed25519Adapter: config.externalEd25519Adapter,
     );
 
