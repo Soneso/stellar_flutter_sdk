@@ -10,6 +10,9 @@ import '../smartaccount/core/smart_account_utils.dart';
 
 /// Utilities for working with WebAuthn passkeys in Soroban smart contracts.
 ///
+/// Deprecated: use the OpenZeppelin smart-account API (`OZSmartAccountKit` /
+/// `SmartAccountUtils`) instead.
+///
 /// PasskeyUtils provides helper functions for integrating WebAuthn (passkeys) with
 /// Soroban smart contracts, particularly for contract-based account abstraction.
 ///
@@ -53,6 +56,8 @@ import '../smartaccount/core/smart_account_utils.dart';
 /// See also:
 /// - [WebAuthn Specification](https://w3c.github.io/webauthn/)
 /// - [Stellar Account Abstraction](https://developers.stellar.org/docs/smart-contracts/guides/account-abstraction)
+@Deprecated(
+    'Use the OpenZeppelin smart-account API (OZSmartAccountKit / SmartAccountUtils) instead.')
 class PasskeyUtils {
 
   /// Extracts the secp256r1 public key from WebAuthn registration response.
@@ -201,6 +206,8 @@ class PasskeyUtils {
 }
 
 /// https://w3c.github.io/webauthn/#dictdef-authenticatorattestationresponsejson
+@Deprecated(
+    'Use the OpenZeppelin smart-account API (OZSmartAccountKit / SmartAccountUtils) instead.')
 class AuthenticatorAttestationResponse {
   String? clientDataJSON;
   String? authenticatorData;
@@ -253,6 +260,7 @@ class AuthenticatorAttestationResponse {
 ///
 /// Provides efficient subsequence search similar to String.indexOf() but for lists.
 /// Used internally by PasskeyUtils for parsing WebAuthn binary data structures.
+@Deprecated('No longer maintained as public API.')
 extension IndexOfElements<T> on List<T> {
   /// Finds the starting index of a subsequence within this list.
   ///
