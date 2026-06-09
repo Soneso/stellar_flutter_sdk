@@ -12,7 +12,7 @@
 /// against these constants. The numeric range is `3xxx` (credential errors),
 /// aligned with the contract's own `Error` enum.
 class OZContractErrorCodes {
-  OZContractErrorCodes._();
+  OZContractErrorCodes._(); // coverage:ignore-line
 
   /// Integer arithmetic overflow occurred in the contract.
   static const int mathOverflow = 3012;
