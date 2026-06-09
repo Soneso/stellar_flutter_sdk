@@ -27,14 +27,14 @@ import org.json.JSONException
 import org.json.JSONObject
 
 /**
- * Method-channel handler for the Dart `PlatformStorageAdapter` bridge on
+ * Method-channel handler for the Dart `OZPlatformStorageAdapter` bridge on
  * Android.
  *
  * Persists serialised credential and session payloads as
  * `EncryptedSharedPreferences` entries (AES-256-GCM for values,
  * AES-256-SIV for keys, master key in the Android Keystore).
  *
- * Wire contract (matches the Dart `PlatformStorageAdapter` bridge):
+ * Wire contract (matches the Dart `OZPlatformStorageAdapter` bridge):
  *
  * - Channel: `com.soneso.stellar_flutter_sdk/smartaccount/storage`
  * - Methods (10): `storage.save`, `storage.get`, `storage.getByContract`,

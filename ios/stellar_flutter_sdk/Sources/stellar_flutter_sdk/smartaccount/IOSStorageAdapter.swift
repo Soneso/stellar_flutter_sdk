@@ -11,14 +11,14 @@ import Security
 
 // IOSStorageAdapter
 
-/// Method-channel handler for the Dart `PlatformStorageAdapter` bridge on
+/// Method-channel handler for the Dart `OZPlatformStorageAdapter` bridge on
 /// iOS and macOS.
 ///
 /// Persists serialised credential and session payloads as
 /// `kSecClassGenericPassword` items in the platform Keychain, keyed by an
 /// account name composed of a fixed prefix and the credential identifier.
 ///
-/// Wire contract (matches the Dart `PlatformStorageAdapter` bridge):
+/// Wire contract (matches the Dart `OZPlatformStorageAdapter` bridge):
 ///
 /// - Channel: `com.soneso.stellar_flutter_sdk/smartaccount/storage`
 /// - Methods (10): `storage.save`, `storage.get`, `storage.getByContract`,
@@ -178,7 +178,7 @@ import Security
             guard let map = try? decodeJsonMap(bytes) else {
                 // Corrupt / undecodable entries surface as "absent" to the
                 // bridge; the asymmetry with `update` is documented in the
-                // Dart `PlatformStorageAdapter` dartdoc.
+                // Dart `OZPlatformStorageAdapter` dartdoc.
                 result(nil)
                 return
             }
