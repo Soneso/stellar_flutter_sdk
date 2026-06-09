@@ -992,6 +992,7 @@ static OZExternalSigner createExternalSigner(String verifierAddress, Uint8List k
 static OZExternalSigner createWebAuthnSigner({ required String webauthnVerifierAddress, required Uint8List publicKey, required Uint8List credentialId, })
 static OZExternalSigner createEd25519Signer({ required String ed25519VerifierAddress, required Uint8List publicKey, })
 static Uint8List? getCredentialIdFromSigner(OZSmartAccountSigner signer)
+static Uint8List? getPublicKeyFromSigner(OZSmartAccountSigner signer)
 static String? getCredentialIdStringFromSigner(OZSmartAccountSigner signer)
 static bool isDelegatedSigner(OZSmartAccountSigner signer)
 static bool isExternalSigner(OZSmartAccountSigner signer)

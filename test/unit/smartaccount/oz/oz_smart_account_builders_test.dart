@@ -495,6 +495,48 @@ void main() {
     });
   });
 
+  group('public key extraction', () {
+    test('testGetPublicKeyFromSigner_delegatedSigner_returnsNull', () {
+      final s =
+          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+      expect(OZSmartAccountBuilders.getPublicKeyFromSigner(s), isNull);
+    });
+
+    test('testGetPublicKeyFromSigner_ed25519Signer_returnsNull', () {
+      final s = OZSmartAccountBuilders.createEd25519Signer(
+        ed25519VerifierAddress: kValidContractId,
+        publicKey: _ed25519Pub(),
+      );
+      expect(OZSmartAccountBuilders.getPublicKeyFromSigner(s), isNull);
+    });
+
+    test('testGetPublicKeyFromSigner_webAuthnSigner_returnsPublicKeyBytes',
+        () {
+      final pub = _secp256r1Pub();
+      final s = OZSmartAccountBuilders.createWebAuthnSigner(
+        webauthnVerifierAddress: kValidContractId,
+        publicKey: pub,
+        credentialId: _credentialId(),
+      );
+      expect(OZSmartAccountBuilders.getPublicKeyFromSigner(s), equals(pub));
+    });
+
+    test(
+        'testGetPublicKeyFromSigner_webAuthnSigner_returnsOnlyPublicKeyPortion',
+        () {
+      final pub = _secp256r1Pub();
+      final s = OZSmartAccountBuilders.createWebAuthnSigner(
+        webauthnVerifierAddress: kValidContractId,
+        publicKey: pub,
+        credentialId: _credentialId(length: 8),
+      );
+      final extracted = OZSmartAccountBuilders.getPublicKeyFromSigner(s);
+      expect(extracted, isNotNull);
+      expect(extracted!.length, pub.length);
+      expect(extracted, pub);
+    });
+  });
+
   group('builder validation', () {
     test('testCreateExternalSigner_invalidCAddress_throwsInvalidAddress', () {
       expect(

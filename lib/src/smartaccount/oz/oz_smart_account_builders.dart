@@ -84,6 +84,27 @@ abstract class OZSmartAccountBuilders {
     );
   }
 
+  /// Extracts the secp256r1 public key from a WebAuthn signer's key data.
+  ///
+  /// WebAuthn signers store their key data as a 65-byte uncompressed
+  /// secp256r1 public key followed by the credential ID. Returns the
+  /// 65-byte public key, or `null` for non-WebAuthn signers (delegated
+  /// signers, or external signers whose key data is not longer than 65
+  /// bytes).
+  static Uint8List? getPublicKeyFromSigner(OZSmartAccountSigner signer) {
+    if (signer is! OZExternalSigner) return null;
+    if (signer.keyData.length <=
+        SmartAccountConstants.secp256r1PublicKeySize) {
+      return null;
+    }
+    return Uint8List.fromList(
+      signer.keyData.sublist(
+        0,
+        SmartAccountConstants.secp256r1PublicKeySize,
+      ),
+    );
+  }
+
   /// Returns the WebAuthn signer credential ID as a Base64URL-encoded
   /// string without trailing `=` padding, or `null` for non-WebAuthn signers.
   ///

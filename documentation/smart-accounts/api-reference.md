@@ -3538,6 +3538,7 @@ abstract class OZSmartAccountBuilders {
 
   // Signer inspection
   static Uint8List? getCredentialIdFromSigner(OZSmartAccountSigner signer);
+  static Uint8List? getPublicKeyFromSigner(OZSmartAccountSigner signer);
   static String? getCredentialIdStringFromSigner(OZSmartAccountSigner signer);
   static bool isDelegatedSigner(OZSmartAccountSigner signer);
   static bool isExternalSigner(OZSmartAccountSigner signer);
@@ -3557,6 +3558,7 @@ abstract class OZSmartAccountBuilders {
 **Notes on individual helpers:**
 
 - `getCredentialIdStringFromSigner` returns the Base64URL-encoded credential ID without trailing `=` padding, matching the canonical form produced by the connect path.
+- `getPublicKeyFromSigner` returns the 65-byte uncompressed secp256r1 public key for WebAuthn signers, and `null` for delegated or Ed25519 signers.
 - `signerMatchesCredentialId` ignores trailing `=` padding on either side so padded and unpadded forms compare interchangeably.
 - `signersEqual` compares the address for delegated signers, and the verifier address plus byte-content of the key data for external signers.
 - `collectUniqueSigners` preserves the first occurrence of each duplicate, keyed by `getSignerKey`.
