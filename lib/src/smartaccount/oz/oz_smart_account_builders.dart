@@ -26,11 +26,26 @@ abstract class OZSmartAccountBuilders {
   // Signer builders
 
   /// Factory alias for `OZDelegatedSigner(publicKey)`.
+  ///
+  /// Parameters:
+  ///
+  /// - [publicKey]: the delegated account's Stellar address — a Stellar
+  ///   account ID (G-address) or a contract ID (C-address). Despite the
+  ///   parameter name, this is an address, not raw key bytes.
   static OZDelegatedSigner createDelegatedSigner(String publicKey) {
     return OZDelegatedSigner(publicKey);
   }
 
   /// Factory alias for `OZExternalSigner(verifierAddress, keyData)`.
+  ///
+  /// Parameters:
+  ///
+  /// - [verifierAddress]: the signature verifier contract address
+  ///   (C-address).
+  /// - [keyData]: the raw external-signer key data, non-empty. For WebAuthn
+  ///   signers this is the 65-byte uncompressed secp256r1 public key
+  ///   followed by the credential ID; for Ed25519 signers it is the 32-byte
+  ///   public key.
   static OZExternalSigner createExternalSigner(
     String verifierAddress,
     Uint8List keyData,
@@ -39,6 +54,14 @@ abstract class OZSmartAccountBuilders {
   }
 
   /// Factory alias for `OZExternalSigner.webAuthn(...)`.
+  ///
+  /// Parameters:
+  ///
+  /// - [webauthnVerifierAddress]: the WebAuthn (secp256r1) verifier contract
+  ///   address (C-address).
+  /// - [publicKey]: the 65-byte uncompressed secp256r1 public key, starting
+  ///   with `0x04`.
+  /// - [credentialId]: the raw WebAuthn credential ID bytes, non-empty.
   static OZExternalSigner createWebAuthnSigner({
     required String webauthnVerifierAddress,
     required Uint8List publicKey,
@@ -52,6 +75,12 @@ abstract class OZSmartAccountBuilders {
   }
 
   /// Factory alias for `OZExternalSigner.ed25519(...)`.
+  ///
+  /// Parameters:
+  ///
+  /// - [ed25519VerifierAddress]: the Ed25519 verifier contract address
+  ///   (C-address).
+  /// - [publicKey]: the 32-byte Ed25519 public key.
   static OZExternalSigner createEd25519Signer({
     required String ed25519VerifierAddress,
     required Uint8List publicKey,
@@ -117,10 +146,20 @@ abstract class OZSmartAccountBuilders {
     return ozBase64UrlEncode(credentialId);
   }
 
+  /// Returns `true` when [signer] is an [OZDelegatedSigner].
+  ///
+  /// Parameters:
+  ///
+  /// - [signer]: the signer to test.
   static bool isDelegatedSigner(OZSmartAccountSigner signer) {
     return signer is OZDelegatedSigner;
   }
 
+  /// Returns `true` when [signer] is an [OZExternalSigner].
+  ///
+  /// Parameters:
+  ///
+  /// - [signer]: the signer to test.
   static bool isExternalSigner(OZSmartAccountSigner signer) {
     return signer is OZExternalSigner;
   }
@@ -184,6 +223,15 @@ abstract class OZSmartAccountBuilders {
     return false;
   }
 
+  /// Returns the deduplication identity key for [signer].
+  ///
+  /// For delegated signers the key is `"delegated:<address>"`; for external
+  /// signers it is `"external:<verifierAddress>:<keyDataHex>"`. Signers with
+  /// equal keys are treated as the same signer.
+  ///
+  /// Parameters:
+  ///
+  /// - [signer]: the signer to derive the identity key from.
   static String getSignerKey(OZSmartAccountSigner signer) {
     return signer.uniqueKey;
   }

@@ -113,6 +113,14 @@ class OZSignerManager {
   /// credential locally, and adds the passkey signer on-chain via
   /// [addPasskey].
   ///
+  /// Parameters:
+  ///
+  /// - [contextRuleId]: on-chain id of the context rule the signer is added to.
+  /// - [userName]: display name shown in the platform passkey prompt.
+  /// - [selectedSigners]: empty routes the single-signer passkey path;
+  ///   non-empty routes the multi-signer pipeline.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
+  ///
   /// Throws [WebAuthnNotSupported] when no WebAuthn provider is configured,
   /// [SmartAccountWalletNotConnected] when no wallet is connected,
   /// [WebAuthnRegistrationFailed] when the registration ceremony fails or
@@ -192,6 +200,25 @@ class OZSignerManager {
   /// non-empty. Constructs an [OZExternalSigner] for WebAuthn and
   /// delegates to the private [_addSigner] helper.
   ///
+  /// Parameters:
+  ///
+  /// - [contextRuleId]: on-chain id of the context rule the signer is added to.
+  /// - [publicKey]: 65-byte uncompressed secp256r1 public key, prefixed with
+  ///   `0x04`.
+  /// - [credentialId]: WebAuthn credential id bytes returned by the
+  ///   registration ceremony.
+  /// - [selectedSigners]: empty routes the single-signer passkey path;
+  ///   non-empty routes the multi-signer pipeline.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
+  ///
+  /// ```dart
+  /// await kit.signerManager.addPasskey(
+  ///   contextRuleId: 0,
+  ///   publicKey: registration.publicKey, // 65 bytes, 0x04-prefixed
+  ///   credentialId: registration.credentialId,
+  /// );
+  /// ```
+  ///
   /// Throws [SmartAccountInvalidInput] on validation failure and propagates any
   /// transaction failures from the signing pipeline.
   Future<OZTransactionResult> addPasskey({
@@ -244,6 +271,16 @@ class OZSignerManager {
   ///
   /// Builds an [OZDelegatedSigner] for [address] (validation happens in
   /// the signer constructor) and delegates to [_addSigner].
+  ///
+  /// Parameters:
+  ///
+  /// - [contextRuleId]: on-chain id of the context rule the signer is added to.
+  /// - [address]: the delegated account or contract — a Stellar account
+  ///   G-address or a contract C-address. Muxed (M-address) inputs are
+  ///   rejected by the signer constructor.
+  /// - [selectedSigners]: empty routes the single-signer passkey path;
+  ///   non-empty routes the multi-signer pipeline.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
   Future<OZTransactionResult> addDelegated({
     required int contextRuleId,
     required String address,
@@ -266,6 +303,15 @@ class OZSignerManager {
   ///
   /// Constructs an [OZExternalSigner] via the Ed25519 factory
   /// (validation happens in the factory) and delegates to [_addSigner].
+  ///
+  /// Parameters:
+  ///
+  /// - [contextRuleId]: on-chain id of the context rule the signer is added to.
+  /// - [verifierAddress]: Ed25519 verifier contract C-address.
+  /// - [publicKey]: 32-byte Ed25519 public key.
+  /// - [selectedSigners]: empty routes the single-signer passkey path;
+  ///   non-empty routes the multi-signer pipeline.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
   Future<OZTransactionResult> addEd25519({
     required int contextRuleId,
     required String verifierAddress,
@@ -297,6 +343,14 @@ class OZSignerManager {
   /// IMPORTANT: the contract rejects removing the last signer from a
   /// rule that has no policies. Callers must ensure either at least
   /// one signer remains or that policies provide an authorisation path.
+  ///
+  /// Parameters:
+  ///
+  /// - [contextRuleId]: on-chain id of the context rule the signer is on.
+  /// - [signerId]: on-chain id of the signer on the rule.
+  /// - [selectedSigners]: empty routes the single-signer passkey path;
+  ///   non-empty routes the multi-signer pipeline.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
   Future<OZTransactionResult> removeSigner({
     required int contextRuleId,
     required int signerId,
@@ -330,6 +384,15 @@ class OZSignerManager {
   ///
   /// The `BySigner` suffix distinguishes this from the ID-based
   /// [removeSigner] form (Dart has no overload-by-parameter-type).
+  ///
+  /// Parameters:
+  ///
+  /// - [contextRuleId]: on-chain id of the context rule the signer is on.
+  /// - [signer]: the [OZSmartAccountSigner] to remove; matched against the
+  ///   rule's signers.
+  /// - [selectedSigners]: empty routes the single-signer passkey path;
+  ///   non-empty routes the multi-signer pipeline.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
   ///
   /// Throws [SmartAccountInvalidInput] when the signer is not found on the rule or
   /// when the parsed `signerIds` list is shorter than `signers`.

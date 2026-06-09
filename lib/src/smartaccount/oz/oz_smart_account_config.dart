@@ -254,6 +254,19 @@ class OZSmartAccountConfig {
 
   /// Returns a [OZSmartAccountConfigBuilder] for fluent construction. See the
   /// class-level doc for a usage example.
+  ///
+  /// The four required parameters seed the builder; all optional settings are
+  /// applied through the builder's setter methods before [build] runs
+  /// constructor validation.
+  ///
+  /// Parameters:
+  ///
+  /// - [rpcUrl]: Soroban RPC endpoint URL.
+  /// - [networkPassphrase]: Stellar network passphrase.
+  /// - [accountWasmHash]: SHA-256 hash of the smart account contract WASM as
+  ///   a 64-character hex string.
+  /// - [webauthnVerifierAddress]: WebAuthn signature verifier contract
+  ///   address (C-address).
   static OZSmartAccountConfigBuilder builder({
     required String rpcUrl,
     required String networkPassphrase,

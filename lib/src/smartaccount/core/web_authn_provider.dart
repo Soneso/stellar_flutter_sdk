@@ -13,8 +13,16 @@ import 'smart_account_errors.dart';
 /// Contains the complete attestation data required to verify biometric or
 /// security-key authentication. Equality is byte-content based on every field.
 class WebAuthnAuthenticationResult {
+  /// The WebAuthn credential identifier that produced this assertion (raw
+  /// bytes).
   final Uint8List credentialId;
+
+  /// Authenticator data returned by the assertion, signed together with the
+  /// hash of [clientDataJSON].
   final Uint8List authenticatorData;
+
+  /// Serialised WebAuthn `clientDataJSON`, containing the challenge, origin,
+  /// and ceremony type.
   final Uint8List clientDataJSON;
 
   /// ECDSA signature in DER format. Callers normalise this to 64-byte compact
@@ -22,6 +30,7 @@ class WebAuthnAuthenticationResult {
   /// DER bytes returned by the platform authenticator.
   final Uint8List signature;
 
+  /// Constructs a [WebAuthnAuthenticationResult]. All fields are required.
   const WebAuthnAuthenticationResult({
     required this.credentialId,
     required this.authenticatorData,

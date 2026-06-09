@@ -74,8 +74,9 @@ class OZIndexedDBStorageAdapter implements OZStorageAdapter {
   /// cross-target shutdown code.
   Future<void> close() async {}
 
-  /// Deletes the named database. Always throws [UnsupportedError] on
-  /// non-web targets — there is no database to delete, so calling this
-  /// outside the web target indicates a wiring bug worth surfacing.
+  /// Deletes the database identified by [name]. Always throws
+  /// [UnsupportedError] on non-web targets — there is no database to delete,
+  /// so calling this outside the web target indicates a wiring bug worth
+  /// surfacing.
   Future<void> deleteDatabase({String? name}) async => _unsupported(); // coverage:ignore-line
 }

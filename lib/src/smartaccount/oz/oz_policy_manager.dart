@@ -272,6 +272,16 @@ class OZPolicyManager {
 
   /// Adds a simple threshold policy that requires at least [threshold]
   /// signers from the context rule's signer list to authorise.
+  ///
+  /// Parameters:
+  ///
+  /// - [contextRuleId]: on-chain id of the rule the policy is installed on.
+  /// - [policyAddress]: policy contract C-address.
+  /// - [threshold]: the M in M-of-N; must be between 1 and the rule's
+  ///   signer count.
+  /// - [selectedSigners]: empty routes the single-signer passkey path;
+  ///   non-empty routes the multi-signer pipeline.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
   Future<OZTransactionResult> addSimpleThreshold({
     required int contextRuleId,
     required String policyAddress,
@@ -292,6 +302,27 @@ class OZPolicyManager {
   /// Adds a weighted threshold policy. Each signer carries a vote
   /// weight; the sum of approving-signer weights must reach
   /// [threshold].
+  ///
+  /// Parameters:
+  ///
+  /// - [contextRuleId]: on-chain id of the rule the policy is installed on.
+  /// - [policyAddress]: policy contract C-address.
+  /// - [signerWeights]: each signer mapped to its vote weight. Only weights
+  ///   of signers present on the rule count toward [threshold]; a weight for
+  ///   a signer not on the rule has no effect.
+  /// - [threshold]: total approving weight required to authorise.
+  /// - [selectedSigners]: empty routes the single-signer passkey path;
+  ///   non-empty routes the multi-signer pipeline.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
+  ///
+  /// ```dart
+  /// await kit.policyManager.addWeightedThreshold(
+  ///   contextRuleId: 0,
+  ///   policyAddress: policyContractId,
+  ///   signerWeights: {signerA: 2, signerB: 1},
+  ///   threshold: 2,
+  /// );
+  /// ```
   Future<OZTransactionResult> addWeightedThreshold({
     required int contextRuleId,
     required String policyAddress,
@@ -317,6 +348,19 @@ class OZPolicyManager {
   /// decimal string with up to [decimals] fractional digits) to the token's
   /// base units. [decimals] defaults to 7; this method has no token-contract
   /// parameter and therefore does not fetch the scale automatically.
+  ///
+  /// Parameters:
+  ///
+  /// - [contextRuleId]: on-chain id of the rule the policy is installed on.
+  /// - [policyAddress]: policy contract C-address.
+  /// - [spendingLimit]: maximum spend over the window as a positive decimal
+  ///   string with up to [decimals] fractional digits.
+  /// - [periodLedgers]: rolling window length in ledgers.
+  /// - [decimals]: token scale used to convert [spendingLimit] to base
+  ///   units; defaults to 7.
+  /// - [selectedSigners]: empty routes the single-signer passkey path;
+  ///   non-empty routes the multi-signer pipeline.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
   Future<OZTransactionResult> addSpendingLimit({
     required int contextRuleId,
     required String policyAddress,
@@ -362,6 +406,14 @@ class OZPolicyManager {
   ///
   /// Builds a `remove_policy(context_rule_id, policy_id)` invocation
   /// and routes through single-signer or multi-signer submission.
+  ///
+  /// Parameters:
+  ///
+  /// - [contextRuleId]: on-chain id of the rule the policy is on.
+  /// - [policyId]: on-chain id of the policy on the rule.
+  /// - [selectedSigners]: empty routes the single-signer passkey path;
+  ///   non-empty routes the multi-signer pipeline.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
   Future<OZTransactionResult> removePolicy({
     required int contextRuleId,
     required int policyId,
@@ -385,6 +437,15 @@ class OZPolicyManager {
   /// delegates to the ID-based [removePolicy] form. The `ByAddress` suffix
   /// distinguishes this from the ID-based form (Dart has no
   /// overload-by-parameter-type).
+  ///
+  /// Parameters:
+  ///
+  /// - [contextRuleId]: on-chain id of the rule the policy is on.
+  /// - [policyAddress]: policy contract C-address; matched against the
+  ///   rule's installed policies.
+  /// - [selectedSigners]: empty routes the single-signer passkey path;
+  ///   non-empty routes the multi-signer pipeline.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
   Future<OZTransactionResult> removePolicyByAddress({
     required int contextRuleId,
     required String policyAddress,

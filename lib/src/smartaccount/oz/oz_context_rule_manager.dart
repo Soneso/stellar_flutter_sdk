@@ -194,6 +194,10 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// Issues a simulated `get_context_rule(id)` invocation and returns
   /// the raw `ScVal` response. Use [parseContextRule] to translate the
   /// response into a [OZParsedContextRule].
+  ///
+  /// Parameters:
+  ///
+  /// - [id]: on-chain id of the context rule.
   @override
   Future<XdrSCVal> getContextRule(int id) async {
     final connected = await _kit.requireConnected();
@@ -245,6 +249,13 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// soon as the resolved count equals the on-chain reported active
   /// count. Removed-rule gaps are skipped via `try/catch` on simulation
   /// failure.
+  ///
+  /// Parameters:
+  ///
+  /// - [maxScanId]: exclusive ceiling on the rule ids scanned. Ids are
+  ///   monotonic and may have gaps from removed rules, so the scan walks
+  ///   ids until either the ceiling is reached or the active-rule count is
+  ///   collected. Defaults to `config.maxContextRuleScanId`.
   @override
   Future<List<XdrSCVal>> getAllContextRules({int? maxScanId}) async {
     final scanLimit = maxScanId ?? _kit.config.maxContextRuleScanId;
@@ -269,6 +280,13 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// Lists every active context rule, parsed into [OZParsedContextRule]
   /// instances. Fetches the rules via [getAllContextRules] and translates
   /// each one through [parseContextRule].
+  ///
+  /// Parameters:
+  ///
+  /// - [maxScanId]: exclusive ceiling on the rule ids scanned. Ids are
+  ///   monotonic and may have gaps from removed rules, so the scan walks
+  ///   ids until either the ceiling is reached or the active-rule count is
+  ///   collected. Defaults to `config.maxContextRuleScanId`.
   @override
   Future<List<OZParsedContextRule>> listContextRules({int? maxScanId}) async {
     final raw = await getAllContextRules(maxScanId: maxScanId);
@@ -601,6 +619,14 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   // -------------------------------------------------------------------------
 
   /// Updates the human-readable name of a context rule.
+  ///
+  /// Parameters:
+  ///
+  /// - [id]: on-chain id of the context rule.
+  /// - [name]: non-empty human-readable label for the rule.
+  /// - [selectedSigners]: empty routes the single-signer passkey path;
+  ///   non-empty routes the multi-signer pipeline.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
   Future<OZTransactionResult> updateName({
     required int id,
     required String name,
@@ -629,6 +655,15 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
 
   /// Updates the expiration ledger of a context rule. Pass `null` to
   /// remove the expiration (encoded on-chain as `Option::None`).
+  ///
+  /// Parameters:
+  ///
+  /// - [id]: on-chain id of the context rule.
+  /// - [validUntil]: ledger sequence number at which the rule stops
+  ///   applying; null means the rule never expires.
+  /// - [selectedSigners]: empty routes the single-signer passkey path;
+  ///   non-empty routes the multi-signer pipeline.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
   Future<OZTransactionResult> updateValidUntil({
     required int id,
     int? validUntil,
@@ -653,6 +688,13 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   }
 
   /// Removes a context rule.
+  ///
+  /// Parameters:
+  ///
+  /// - [id]: on-chain id of the context rule.
+  /// - [selectedSigners]: empty routes the single-signer passkey path;
+  ///   non-empty routes the multi-signer pipeline.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
   Future<OZTransactionResult> removeContextRule({
     required int id,
     List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],

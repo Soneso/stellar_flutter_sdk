@@ -78,6 +78,20 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   /// [decimals] is the token's decimal scale used to convert [amount]; when
   /// `null` (default) it is fetched on-chain via
   /// [OZTransactionOperations.fetchTokenDecimals].
+  ///
+  /// Parameters:
+  ///
+  /// - [tokenContract]: SEP-41 token contract C-address.
+  /// - [recipient]: destination Stellar account G-address or contract
+  ///   C-address; must differ from the connected smart account.
+  /// - [amount]: transfer amount as a decimal string.
+  /// - [decimals]: token scale used to convert [amount]; when null the
+  ///   scale is fetched from [tokenContract].
+  /// - [selectedSigners]: the explicit signers that authorise the transfer.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
+  /// - [resolveContextRuleIds]: when supplied, this callback resolves the
+  ///   context-rule ids for each auth entry; when null, the ids are
+  ///   resolved automatically from [selectedSigners] and the active rules.
   Future<OZTransactionResult> multiSignerTransfer({
     required String tokenContract,
     required String recipient,
@@ -129,6 +143,26 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   /// The smart account's matching `CallContract(target)` context rule
   /// is used for authorisation, allowing per-contract multi-signer
   /// rules to take effect.
+  ///
+  /// Parameters:
+  ///
+  /// - [target]: contract C-address to call.
+  /// - [targetFn]: name of the function to invoke on [target].
+  /// - [targetArgs]: the call arguments as a pre-encoded [XdrSCVal] list.
+  /// - [selectedSigners]: the explicit signers that authorise the call.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
+  /// - [resolveContextRuleIds]: when supplied, this callback resolves the
+  ///   context-rule ids for each auth entry; when null, the ids are
+  ///   resolved automatically from [selectedSigners] and the active rules.
+  ///
+  /// ```dart
+  /// await kit.multiSignerManager.multiSignerContractCall(
+  ///   target: tokenContractId,
+  ///   targetFn: 'transfer',
+  ///   targetArgs: <XdrSCVal>[fromScVal, toScVal, amountScVal],
+  ///   selectedSigners: selectedSigners,
+  /// );
+  /// ```
   Future<OZTransactionResult> multiSignerContractCall({
     required String target,
     required String targetFn,
@@ -163,6 +197,18 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   /// Executes an arbitrary contract call through the smart account's
   /// `execute(target, target_fn, target_args)` entry point with
   /// multi-signer authorisation.
+  ///
+  /// Parameters:
+  ///
+  /// - [target]: contract C-address to call; routed through the smart
+  ///   account's `execute` entry point.
+  /// - [targetFn]: name of the function to invoke on [target].
+  /// - [targetArgs]: the call arguments as a pre-encoded [XdrSCVal] list.
+  /// - [selectedSigners]: the explicit signers that authorise the call.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
+  /// - [resolveContextRuleIds]: when supplied, this callback resolves the
+  ///   context-rule ids for each auth entry; when null, the ids are
+  ///   resolved automatically from [selectedSigners] and the active rules.
   Future<OZTransactionResult> multiSignerExecuteAndSubmit({
     required String target,
     required String targetFn,
@@ -210,6 +256,16 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   /// pick up accurate resource fees, and routes through
   /// [OZTransactionOperations.submitMultiSignerTransaction] for the
   /// final relayer-or-RPC submission.
+  ///
+  /// Parameters:
+  ///
+  /// - [hostFunction]: the raw [XdrHostFunction] to authorise and submit;
+  ///   the low-level escape hatch the typed multi-signer methods build on.
+  /// - [selectedSigners]: the explicit signers that authorise the call.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
+  /// - [resolveContextRuleIds]: when supplied, this callback resolves the
+  ///   context-rule ids for each auth entry; when null, the ids are
+  ///   resolved automatically from [selectedSigners] and the active rules.
   Future<OZTransactionResult> submitWithMultipleSigners({
     required XdrHostFunction hostFunction,
     required List<OZSelectedSigner> selectedSigners,

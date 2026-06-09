@@ -619,6 +619,10 @@ abstract class OZExternalWalletAdapter {
   /// Override this when the adapter needs to release per-address runtime
   /// state when a single signer is removed. The default implementation is
   /// a no-op.
+  ///
+  /// Parameters:
+  ///
+  /// - [address]: the connected wallet's Stellar G-address.
   Future<void> disconnectByAddress(String address) async {}
 
   /// Signs an authorization preimage with the external wallet.
@@ -651,9 +655,17 @@ abstract class OZExternalWalletAdapter {
   List<OZConnectedWallet> getConnectedWallets();
 
   /// Returns whether a wallet is connected that can sign for [address].
+  ///
+  /// Parameters:
+  ///
+  /// - [address]: the connected wallet's Stellar G-address.
   bool canSignFor(String address);
 
   /// Returns wallet info for a specific [address] when known. Default
   /// implementation returns `null`.
+  ///
+  /// Parameters:
+  ///
+  /// - [address]: the connected wallet's Stellar G-address.
   OZConnectedWallet? getWalletForAddress(String address) => null;
 }
