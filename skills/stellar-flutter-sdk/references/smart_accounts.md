@@ -58,7 +58,7 @@ Smart accounts are part of the main SDK package. Add the dependency:
 ```yaml
 # pubspec.yaml
 dependencies:
-  stellar_flutter_sdk: ^2.x.x   # check pub.dev for the current version
+  stellar_flutter_sdk: ^3.0.5   # check pub.dev for the current version
 ```
 
 ---
@@ -215,8 +215,6 @@ class OZCreateWalletResult {
 | `autoFund` | After deploy, fund the new smart account via Friendbot. Requires `autoSubmit = true` and a `nativeTokenContract` C-address. `nativeTokenContract` must be the native-asset (XLM) Stellar Asset Contract — funding transfers via the native SAC, not an arbitrary token. Testnet-only. |
 
 Idiom: drive `autoFund` from `autoSubmit` (funding only makes sense when the deploy runs) and pass `nativeTokenContract` only when funding (`nativeTokenContract: autoFund ? nativeSac : null`).
-
-`autoFund` funds the new account from the deployer via the native SAC on testnet; testnet-only.
 
 ### Create and deploy in one call
 
@@ -554,6 +552,8 @@ final Uint8List? credId =
     OZSmartAccountBuilders.getCredentialIdFromSigner(passkey);
 final String? credIdStr =
     OZSmartAccountBuilders.getCredentialIdStringFromSigner(passkey); // Base64URL
+final Uint8List? pubKey =
+    OZSmartAccountBuilders.getPublicKeyFromSigner(passkey); // 65-byte secp256r1, null for non-passkey
 
 // Matching and dedup
 final bool matches =
@@ -885,8 +885,6 @@ Most methods are `Future` (await). The synchronous exceptions:
 | `canSignEd25519For({...})` | `bool` — synchronous, no await |
 | `removeEd25519({...})` | `void` — synchronous, no await |
 
-`canSignFor` is async — `await` it. `addEd25519FromRawKey`, `canSignEd25519For`, and `removeEd25519` are synchronous — do not `await` them.
-
 ### Wallet (G-address) signers
 
 ```dart
@@ -946,7 +944,7 @@ abstract class OZExternalEd25519SignerAdapter {
 
 When you register in-memory signing material for a multi-signer submit (`addFromSecret` for a delegated/wallet G-address, `addEd25519FromRawKey` for an Ed25519 slot), you MUST clear it on BOTH success and failure so raw key material never persists across operations. Use `try/finally`.
 
-The straightforward cleanup is `removeAll()` — `Future<void>`, await. It clears the in-memory delegated and Ed25519 keypair registries AND calls `walletAdapter?.disconnect()` (disconnecting connected wallets and clearing their persisted connections), covering everything you registered in one call.
+The straightforward cleanup is `removeAll()` — `Future<void>`, await. It clears the in-memory delegated and Ed25519 keypair registries AND calls `walletAdapter?.disconnect()` (disconnecting connected wallets and clearing their persisted connections), covering everything you registered in one call. It is distinct from `kit.disconnect()`, which only clears the connection session and does NOT touch `externalSigners`.
 
 ```dart
 // Register, submit, then clear on BOTH paths.
@@ -987,8 +985,6 @@ try {
     verifierAddress: ed25519Verifier, publicKey: pub);
 }
 ```
-
-> `removeAll()` clears all external signers (in-memory keypairs and Ed25519 registrations, plus an adapter disconnect for connected wallets) for a full logout / reset. It is distinct from `kit.disconnect()`, which only clears the connection session and does NOT touch `externalSigners`.
 
 ### signAuthEntry
 

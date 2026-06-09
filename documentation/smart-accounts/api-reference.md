@@ -2842,7 +2842,7 @@ The SDK includes an indexer client for reverse lookups from signer credentials t
 ### Using via OZSmartAccountKit (Recommended)
 
 ```dart
-final kit = await OZSmartAccountKit.create(config);
+final kit = OZSmartAccountKit.create(config: config);
 
 // indexerClient is null when no indexer URL is configured
 // (no explicit indexerUrl and no default for the network).
@@ -3152,7 +3152,7 @@ final config = OZSmartAccountConfig(
   // ... other config
   relayerUrl: 'https://my-relayer-proxy.example.com',
 );
-final kit = await OZSmartAccountKit.create(config);
+final kit = OZSmartAccountKit.create(config: config);
 
 // Transactions automatically use the relayer when configured.
 await kit.transactionOperations.transfer(

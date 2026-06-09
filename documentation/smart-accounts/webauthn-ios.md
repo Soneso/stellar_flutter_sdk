@@ -29,16 +29,7 @@ final config = OZSmartAccountConfig(
 );
 ```
 
-## Step 2: Wire `PlatformWebAuthnProvider`
-
-```dart
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-
-final provider = PlatformWebAuthnProvider(
-  rpId: 'app.example.com',
-  rpName: 'My Stellar Wallet',
-);
-```
+## Step 2: `PlatformWebAuthnProvider` parameters
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
@@ -83,7 +74,7 @@ During development you can append `?mode=developer` to the entry so the simulato
 
 Remove `?mode=developer` before submitting to TestFlight or the App Store; production builds must rely on Apple's CDN.
 
-In Xcode (Signing & Capabilities), add the **Associated Domains** capability and add the same `webcredentials:` entry. This also requires the Associated Domains service to be enabled for the App ID in the Apple Developer portal; automatic signing in Xcode usually handles the provisioning profile refresh, but manual signing requires a regenerated profile after enabling the capability.
+In Xcode (Signing & Capabilities), add the **Associated Domains** capability and add the same `webcredentials:` entry. This also requires the Associated Domains service to be enabled for the App ID in the Apple Developer portal.
 
 ## Step 4: Host `apple-app-site-association`
 

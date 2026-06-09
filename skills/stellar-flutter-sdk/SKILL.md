@@ -12,7 +12,7 @@ metadata:
 
 ## Overview
 
-The Stellar Flutter SDK (`stellar_flutter_sdk`) is a comprehensive Dart library for building Stellar blockchain applications on Android, iOS, Web, and Desktop. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), and 18 SEP implementations. All APIs use Dart `Future` (async/await) for asynchronous operations and `Stream` for real-time event subscriptions. Version 3.0.0+ uses `BigInt` for all 64-bit integer types to ensure full web platform compatibility.
+The Stellar Flutter SDK (`stellar_flutter_sdk`) is a full-featured Dart library for building Stellar blockchain applications on Android, iOS, Web, and Desktop. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), and 18 SEP implementations. All APIs use Dart `Future` (async/await) for asynchronous operations and `Stream` for real-time event subscriptions. Version 3.0.0+ uses `BigInt` for all 64-bit integer types to ensure full web platform compatibility.
 
 ## Installation
 
@@ -427,7 +427,7 @@ if (health.status != GetHealthResponse.HEALTHY) { /* server unhealthy */ }
 // Poll: check txResponse.status for STATUS_SUCCESS / STATUS_FAILED
 ```
 
-For comprehensive error catalog and solutions:
+For the full error catalog and solutions:
 [Troubleshooting Guide](./references/troubleshooting.md)
 
 ## 10. Security Best Practices

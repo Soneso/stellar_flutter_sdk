@@ -4,7 +4,7 @@ Platform-specific guide for configuring WebAuthn passkey authentication in Flutt
 
 ## Prerequisites
 
-- Android 9.0 (API level 28) or newer. Credential Manager's passkey surface requires API 28+; the SDK's `OZPlatformStorageAdapter` also requires API 28+ on Android because it uses `EncryptedSharedPreferences`.
+- Android 9.0 (API level 28) or newer, required by Credential Manager's passkey surface.
 - A physical device or an emulator image with Google Play Services (use a "Google APIs" or "Google Play" system image, not the bare AOSP image).
 - A Google account signed in on the device.
 - A domain you control over HTTPS for hosting `assetlinks.json`.
@@ -29,16 +29,7 @@ final config = OZSmartAccountConfig(
 );
 ```
 
-## Step 2: Wire `PlatformWebAuthnProvider`
-
-```dart
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-
-final provider = PlatformWebAuthnProvider(
-  rpId: 'app.example.com',
-  rpName: 'My Stellar Wallet',
-);
-```
+## Step 2: `PlatformWebAuthnProvider` parameters
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
@@ -63,7 +54,7 @@ android {
 }
 ```
 
-API 28 is required by both the Credential Manager passkey path and by `EncryptedSharedPreferences`, which backs the SDK's `OZPlatformStorageAdapter` on Android. Setting `minSdk` lower than 28 will fail at runtime the first time the SDK tries to create or read a credential.
+API 28 is required by the Credential Manager passkey path. Setting `minSdk` lower than 28 will fail at runtime the first time the SDK tries to register or authenticate a passkey.
 
 The native dependencies (Credential Manager, FIDO2 Play Services, security-crypto for `EncryptedSharedPreferences`) ship with the SDK's Android plugin. No additional dependency declarations are required in the consumer app's gradle files.
 
@@ -142,7 +133,7 @@ The first verification done by Credential Manager on a device is cached locally;
 
 ## Storage Adapters
 
-- **`OZPlatformStorageAdapter`**: production storage backed by `EncryptedSharedPreferences` (values encrypted with AES-256-GCM, keys wrapped with AES-256-SIV via the Android Keystore). Read-modify-write sequences are serialised on the native side. Requires API 28+.
+- **`OZPlatformStorageAdapter`**: production storage backed by `EncryptedSharedPreferences` (values encrypted with AES-256-GCM, keys wrapped with AES-256-SIV via the Android Keystore). Read-modify-write sequences are serialised on the native side.
 - **`OZInMemoryStorageAdapter`**: non-persistent, unencrypted process-memory storage. Suitable for unit tests and ephemeral dev sessions. All instances compare equal, so two configs using the default storage remain equal.
 
 ## Common errors

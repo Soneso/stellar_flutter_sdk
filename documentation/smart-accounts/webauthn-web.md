@@ -40,16 +40,7 @@ final config = OZSmartAccountConfig(
 );
 ```
 
-## Step 2: Wire `BrowserWebAuthnProvider`
-
-```dart
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-
-final provider = BrowserWebAuthnProvider(
-  rpId: 'app.example.com',
-  rpName: 'My Stellar Wallet',
-);
-```
+## Step 2: `BrowserWebAuthnProvider` parameters
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
@@ -101,7 +92,7 @@ Passkeys registered against `localhost` are usable only on `localhost`; producti
 
 ## Storage Adapters
 
-- **`OZIndexedDBStorageAdapter`**: recommended for production web. Backed by IndexedDB with a larger quota than `localStorage`, indices on `contractId`, `createdAt`, and `isPrimary`, and an extra `Future<void> close()` and `deleteDatabase()` API beyond the abstract interface.
+- **`OZIndexedDBStorageAdapter`**: recommended for production web. Backed by IndexedDB with a larger quota than `localStorage`.
 - **`OZLocalStorageAdapter`**: web fallback backed by synchronous `window.localStorage`; the adapter exposes the standard `Future`-returning `OZStorageAdapter` interface. Around 5 MB per origin and unencrypted, simpler to reason about than IndexedDB. Use only when the dataset is small and the threat model accepts unencrypted local storage.
 
 ## Common errors
