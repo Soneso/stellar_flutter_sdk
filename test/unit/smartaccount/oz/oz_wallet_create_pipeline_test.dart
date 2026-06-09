@@ -67,12 +67,6 @@ SimulateTransactionResponse _simResponseError(String error) {
   return r;
 }
 
-GetLatestLedgerResponse _latestLedger(int sequence) {
-  final r = GetLatestLedgerResponse(<String, dynamic>{});
-  r.sequence = sequence;
-  return r;
-}
-
 Account _deployerAccount(KeyPair deployer, {int seq = 1}) {
   return Account(deployer.accountId, BigInt.from(seq));
 }
