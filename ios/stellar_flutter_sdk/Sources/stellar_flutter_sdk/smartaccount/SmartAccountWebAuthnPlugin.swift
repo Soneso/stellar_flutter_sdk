@@ -50,7 +50,13 @@ import UIKit
     /// so the delegate must be retained by this handler for the duration of
     /// each authorization operation. Cleared in the delegate callback after
     /// the result has been forwarded to Flutter.
-    private var activeDelegate: AuthorizationDelegate?
+    ///
+    /// Typed as `NSObject?` rather than `AuthorizationDelegate?` so the
+    /// handler class remains instantiable below iOS 16 / macOS 13, where it
+    /// only ever returns `WEBAUTHN_NOT_SUPPORTED`. `AuthorizationDelegate`
+    /// is gated to those versions and is assigned here exclusively from
+    /// inside `#available` blocks.
+    private var activeDelegate: NSObject?
 
     /// Strong reference to the active controller, kept alive for the
     /// duration of an authorization request. The system needs it to display

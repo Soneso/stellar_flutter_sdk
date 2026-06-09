@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "stellar_flutter_sdk",
     platforms: [
-        .iOS("16.0")
+        .iOS("15.0")
     ],
     products: [
         .library(name: "stellar-flutter-sdk", targets: ["stellar_flutter_sdk"])
