@@ -614,30 +614,32 @@ class Util {
   /// (approximately five seconds per ledger).
   static const int ledgersPerDay = 17280;
 
-  /// Converts a decimal amount string to XDR Int64 format.
+  /// Converts a decimal amount string to stroops.
   ///
-  /// Stellar uses 7 decimal places of precision for amounts, storing them
-  /// as integers (stroops). This method converts a decimal string like
-  /// "123.45" to the XDR format: 1234500000.
+  /// Stellar classic asset amounts are stored as integers with 7 decimal
+  /// places of precision (stroops): one unit of an asset equals 10,000,000
+  /// stroops. This converts a decimal string such as "123.45" to its stroop
+  /// value 1234500000. A leading "-" is supported and produces a negative
+  /// stroop value.
   ///
   /// Parameters:
-  /// - [value]: Decimal amount string (e.g., "123.45")
+  /// - [value]: Decimal amount string (e.g. "123.45" or "-0.5")
   ///
-  /// Returns: Amount in stroops (1 XLM = 10000000 stroops)
+  /// Returns: The amount in stroops
   ///
   /// Throws:
-  /// - [Exception]: If decimal places exceed 7 digits
+  /// - [Exception]: If the fractional part has more than 7 digits
   ///
   /// Example:
   /// ```dart
-  /// BigInt stroops = Util.toXdrInt64Amount("100.5");
-  /// // Returns 1005000000 (100.5 * 10000000)
+  /// BigInt stroops = Util.decimalStringToStroops("100.5");
+  /// // Returns 1005000000
   /// ```
-  ///
-  /// See also:
-  /// - [fromXdrInt64Amount] for converting back to decimal format
-  static BigInt toXdrInt64Amount(String value) {
-    List<String> two = value.split(".");
+  static BigInt decimalStringToStroops(String value) {
+    final bool negative = value.startsWith("-");
+    final String unsigned = negative ? value.substring(1) : value;
+
+    List<String> two = unsigned.split(".");
     BigInt amount = BigInt.parse(two[0]) * BigInt.from(stroopsPerXlm);
 
     if (two.length == 2) {
@@ -657,29 +659,30 @@ class Util {
       amount += BigInt.parse(point);
     }
 
-    return amount;
+    return negative ? -amount : amount;
   }
 
-  /// Converts an XDR Int64 amount to decimal string format.
+  /// Converts a stroop amount to a decimal string.
   ///
-  /// Converts an amount from XDR format (stroops) back to a human-readable
-  /// decimal string. Removes trailing zeros from the result.
+  /// Stellar classic asset amounts are stored as integers with 7 decimal
+  /// places of precision (stroops): one unit of an asset equals 10,000,000
+  /// stroops. This converts a stroop value back to a human-readable decimal
+  /// string with trailing zeros removed. Negative values produce a leading
+  /// "-".
   ///
   /// Parameters:
-  /// - [value]: Amount in stroops (1 XLM = 10000000 stroops)
+  /// - [value]: The amount in stroops
   ///
   /// Returns: Decimal amount string with trailing zeros removed
   ///
   /// Example:
   /// ```dart
-  /// String amount = Util.fromXdrInt64Amount(BigInt.from(1005000000));
+  /// String amount = Util.stroopsToDecimalString(BigInt.from(1005000000));
   /// // Returns "100.5"
   /// ```
-  ///
-  /// See also:
-  /// - [toXdrInt64Amount] for converting from decimal format
-  static String fromXdrInt64Amount(BigInt value) {
-    String amountString = value.toString();
+  static String stroopsToDecimalString(BigInt value) {
+    final bool negative = value.isNegative;
+    String amountString = value.abs().toString();
     if (amountString.length > 7) {
       amountString = amountString.substring(0, amountString.length - 7) +
           "." +
@@ -690,8 +693,18 @@ class Util {
       for (; length > 0; length--) point += "0";
       amountString = point + amountString;
     }
-    return removeTailZero(amountString);
+    amountString = removeTailZero(amountString);
+    return (negative && amountString != "0") ? "-" + amountString : amountString;
   }
+
+  /// Converts a decimal amount string to stroops.
+  @Deprecated('Use decimalStringToStroops instead.')
+  static BigInt toXdrInt64Amount(String value) => decimalStringToStroops(value);
+
+  /// Converts a stroop amount to a decimal string.
+  @Deprecated('Use stroopsToDecimalString instead.')
+  static String fromXdrInt64Amount(BigInt value) =>
+      stroopsToDecimalString(value);
 
   /// Encodes a signed 128-bit integer [value] as a Soroban I128 [XdrSCVal].
   ///

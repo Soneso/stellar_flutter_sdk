@@ -1687,8 +1687,8 @@ static XdrHash stringIdToXdrHash(String strId)
 static Future<Uint8List> readFile(String filePath) async
 static String createCryptoRandomString([int length = 32])
 static Uri appendEndpointToUrl(String baseUrl, String endpoint)
-static BigInt toXdrInt64Amount(String value)
-static String fromXdrInt64Amount(BigInt value)
+static BigInt decimalStringToStroops(String value)
+static String stroopsToDecimalString(BigInt value)
 static XdrSCVal bigIntToI128ScVal(BigInt value)
 ## VersionByte
 static const ACCOUNT_ID

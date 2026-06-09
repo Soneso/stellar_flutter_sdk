@@ -307,69 +307,87 @@ void main() {
       });
     });
 
-    group('toXdrInt64Amount and fromXdrInt64Amount', () {
+    group('decimalStringToStroops and stroopsToDecimalString', () {
       test('should convert decimal to stroops', () {
-        var stroops = Util.toXdrInt64Amount("100.5");
+        var stroops = Util.decimalStringToStroops("100.5");
         expect(stroops, equals(BigInt.from(1005000000)));
       });
 
       test('should convert stroops to decimal', () {
-        var amount = Util.fromXdrInt64Amount(BigInt.from(1005000000));
+        var amount = Util.stroopsToDecimalString(BigInt.from(1005000000));
         expect(amount, equals("100.5"));
       });
 
       test('should handle integer amounts', () {
-        var stroops = Util.toXdrInt64Amount("100");
+        var stroops = Util.decimalStringToStroops("100");
         expect(stroops, equals(BigInt.from(1000000000)));
 
-        var amount = Util.fromXdrInt64Amount(BigInt.from(1000000000));
+        var amount = Util.stroopsToDecimalString(BigInt.from(1000000000));
         expect(amount, equals("100"));
       });
 
       test('should handle zero', () {
-        var stroops = Util.toXdrInt64Amount("0");
+        var stroops = Util.decimalStringToStroops("0");
         expect(stroops, equals(BigInt.zero));
 
-        var amount = Util.fromXdrInt64Amount(BigInt.zero);
+        var amount = Util.stroopsToDecimalString(BigInt.zero);
         expect(amount, equals("0"));
       });
 
       test('should handle 7 decimal places', () {
-        var stroops = Util.toXdrInt64Amount("123.4567890");
+        var stroops = Util.decimalStringToStroops("123.4567890");
         expect(stroops, equals(BigInt.from(1234567890)));
       });
 
       test('should throw on more than 7 decimal places', () {
         expect(
-          () => Util.toXdrInt64Amount("123.45678901"),
+          () => Util.decimalStringToStroops("123.45678901"),
           throwsA(isA<Exception>()),
         );
       });
 
       test('should handle small amounts', () {
-        var stroops = Util.toXdrInt64Amount("0.0000001");
+        var stroops = Util.decimalStringToStroops("0.0000001");
         expect(stroops, equals(BigInt.one));
 
-        var amount = Util.fromXdrInt64Amount(BigInt.one);
+        var amount = Util.stroopsToDecimalString(BigInt.one);
         expect(amount, equals("0.0000001"));
       });
 
       test('should remove trailing zeros', () {
-        var amount = Util.fromXdrInt64Amount(BigInt.from(1230000000));
+        var amount = Util.stroopsToDecimalString(BigInt.from(1230000000));
         expect(amount, equals("123"));
+      });
+
+      test('should handle negative amounts', () {
+        expect(Util.decimalStringToStroops("-1.5"),
+            equals(BigInt.from(-15000000)));
+        expect(Util.stroopsToDecimalString(BigInt.from(-15000000)),
+            equals("-1.5"));
+        expect(Util.stroopsToDecimalString(BigInt.from(-5000000)),
+            equals("-0.5"));
+        expect(
+            Util.stroopsToDecimalString(BigInt.from(-1)), equals("-0.0000001"));
       });
 
       test('should be reversible', () {
         var original = "123.456";
-        var stroops = Util.toXdrInt64Amount(original);
-        var restored = Util.fromXdrInt64Amount(stroops);
+        var stroops = Util.decimalStringToStroops(original);
+        var restored = Util.stroopsToDecimalString(stroops);
+        expect(restored, equals(original));
+      });
+
+      test('should be reversible for negative amounts', () {
+        var original = "-123.456";
+        var stroops = Util.decimalStringToStroops(original);
+        var restored = Util.stroopsToDecimalString(stroops);
         expect(restored, equals(original));
       });
 
       test('should handle large amounts', () {
         var largeAmount = "922337203685.4775807";
-        var stroops = Util.toXdrInt64Amount(largeAmount);
-        var restored = Util.fromXdrInt64Amount(stroops);
+        var stroops = Util.decimalStringToStroops(largeAmount);
+        var restored = Util.stroopsToDecimalString(stroops);
         expect(restored, equals(largeAmount));
       });
     });

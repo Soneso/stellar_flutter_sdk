@@ -102,7 +102,7 @@ class ManageBuyOfferOperation extends Operation {
   @override
   XdrOperationBody toOperationBody() {
     XdrInt64 amount =
-        new XdrInt64(Util.toXdrInt64Amount(this.amount));
+        new XdrInt64(Util.decimalStringToStroops(this.amount));
     Price price = Price.fromString(this.price);
     XdrUint64 offerId = XdrUint64(BigInt.parse(this.offerId));
     XdrManageBuyOfferOp op = new XdrManageBuyOfferOp(
@@ -128,7 +128,7 @@ class ManageBuyOfferOperation extends Operation {
     return ManageBuyOfferOperationBuilder(
       Asset.fromXdr(op.selling),
       Asset.fromXdr(op.buying),
-      Util.fromXdrInt64Amount(op.amount.int64),
+      Util.stroopsToDecimalString(op.amount.int64),
       removeTailZero((BigInt.from(n) / BigInt.from(d)).toString()),
     ).setOfferId(op.offerID.uint64.toString());
   }
