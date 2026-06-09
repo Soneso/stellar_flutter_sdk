@@ -230,7 +230,7 @@ void main() {
         () => mgr.addPolicy(
           contextRuleId: 0,
           policyAddress: _validContractId,
-          installParams: XdrSCVal.forVoid(),
+          installParams: OZRawPolicyParams(XdrSCVal.forVoid()),
           selectedSigners: _multiSigners(),
         ),
         throwsA(isA<SmartAccountWalletNotConnected>()),
@@ -245,7 +245,7 @@ void main() {
         () => mgr.addPolicy(
           contextRuleId: 0,
           policyAddress: 'INVALID',
-          installParams: XdrSCVal.forVoid(),
+          installParams: OZRawPolicyParams(XdrSCVal.forVoid()),
           selectedSigners: _multiSigners(),
         ),
         throwsA(isA<SmartAccountInvalidAddress>()),
@@ -385,7 +385,7 @@ void main() {
         () => mgr.addPolicy(
           contextRuleId: 0,
           policyAddress: _validContractId,
-          installParams: XdrSCVal.forVoid(),
+          installParams: OZRawPolicyParams(XdrSCVal.forVoid()),
         ),
         throwsA(isA<SmartAccountWalletNotConnected>()),
       );
@@ -763,7 +763,7 @@ void main() {
       await mgr.addPolicy(
         contextRuleId: 0,
         policyAddress: _validContractId,
-        installParams: XdrSCVal.forVoid(),
+        installParams: OZRawPolicyParams(XdrSCVal.forVoid()),
         selectedSigners: [ed25519Signer],
       );
 

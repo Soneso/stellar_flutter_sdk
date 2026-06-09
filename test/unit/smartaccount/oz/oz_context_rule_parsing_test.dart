@@ -822,7 +822,7 @@ void main() {
           contextType: const OZContextRuleTypeDefault(),
           name: 'EmptyRule',
           signers: const <OZSmartAccountSigner>[],
-          policies: const <String, XdrSCVal>{},
+          policies: const <String, OZPolicyInstallParams>{},
         );
         fail('Expected SmartAccountValidationException');
       } on SmartAccountValidationException catch (e) {
@@ -863,9 +863,9 @@ void main() {
     test('tooManyPolicies_throwsValidationException', () async {
       final manager = _manager(_buildConnectedKit());
       // OZConstants.maxPolicies is 5; supply 6 unique valid C-addresses.
-      final policies = <String, XdrSCVal>{
+      final policies = <String, OZPolicyInstallParams>{
         for (var i = 0; i < 6; i++)
-          _generateContractAddress(i * 10): XdrSCVal.forVoid(),
+          _generateContractAddress(i * 10): OZRawPolicyParams(XdrSCVal.forVoid()),
       };
       expect(policies.length, 6,
           reason: 'Precondition: must have 6 unique policy addresses');
@@ -899,8 +899,8 @@ void main() {
           signers: <OZSmartAccountSigner>[
             OZDelegatedSigner(_validAccountAddress),
           ],
-          policies: <String, XdrSCVal>{
-            'INVALID_ADDRESS': XdrSCVal.forVoid(),
+          policies: <String, OZPolicyInstallParams>{
+            'INVALID_ADDRESS': OZRawPolicyParams(XdrSCVal.forVoid()),
           },
         );
         fail('Expected SmartAccountValidationException');
@@ -925,8 +925,8 @@ void main() {
           signers: <OZSmartAccountSigner>[
             OZDelegatedSigner(_validAccountAddress),
           ],
-          policies: <String, XdrSCVal>{
-            _validAccountAddress: XdrSCVal.forVoid(),
+          policies: <String, OZPolicyInstallParams>{
+            _validAccountAddress: OZRawPolicyParams(XdrSCVal.forVoid()),
           },
         );
         fail('Expected SmartAccountValidationException');

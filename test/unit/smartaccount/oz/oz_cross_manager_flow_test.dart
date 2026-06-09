@@ -209,7 +209,7 @@ void main() {
       await policyManager.addPolicy(
         contextRuleId: 0,
         policyAddress: policyAddress,
-        installParams: XdrSCVal.forVoid(),
+        installParams: OZRawPolicyParams(XdrSCVal.forVoid()),
         selectedSigners: <OZSelectedSigner>[
           OZSelectedSignerPasskey(
             credentialId: 'pk-a',
@@ -318,8 +318,8 @@ void main() {
           contextType: const OZContextRuleTypeDefault(),
           name: 'has-bad-policy',
           signers: <OZSmartAccountSigner>[OZDelegatedSigner(_accountAddressA)],
-          policies: <String, XdrSCVal>{
-            'NOT_A_REAL_C_ADDRESS_XX': XdrSCVal.forVoid(),
+          policies: <String, OZPolicyInstallParams>{
+            'NOT_A_REAL_C_ADDRESS_XX': OZRawPolicyParams(XdrSCVal.forVoid()),
           },
         ),
         throwsA(isA<SmartAccountInvalidAddress>()),

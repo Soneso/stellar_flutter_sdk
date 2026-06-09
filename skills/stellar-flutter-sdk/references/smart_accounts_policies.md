@@ -330,7 +330,7 @@ Future<OZTransactionResult> addContextRule({
   required String name,                              // max 20 UTF-8 bytes
   int? validUntil,                                   // ledger sequence, null = no expiration
   required List<OZSmartAccountSigner> signers,
-  Map<String, XdrSCVal> policies = const <String, XdrSCVal>{}, // C-address -> install params
+  Map<String, OZPolicyInstallParams> policies = const <String, OZPolicyInstallParams>{}, // C-address -> install params
   List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
   OZSubmissionMethod? forceMethod,
 });
@@ -352,22 +352,18 @@ final result = await kit.contextRuleManager.addContextRule(
 if (result.success) print('Rule added, tx ${result.hash}');
 ```
 
-To create a rule **with a policy already attached in one step**, populate the `policies` map — the value is the install-param `XdrSCVal` you build yourself (see [Policies](#policies) for the install-param shapes):
+To create a rule **with a policy already attached in one step**, populate the `policies` map — each value is an `OZPolicyInstallParams` (a typed subclass such as `OZSimpleThresholdPolicyParams`, or `OZRawPolicyParams` to wrap a pre-encoded `XdrSCVal` for a custom policy). The manager encodes it internally (see [Policies](#policies) for the install-param shapes):
 
 ```dart
-// SimpleThreshold install params = map{ Symbol("threshold"): U32 }
-final thresholdParams = XdrSCVal.forMap(<XdrSCMapEntry>[
-  XdrSCMapEntry(XdrSCVal.forSymbol('threshold'), XdrSCVal.forU32(2)),
-]);
-
 await kit.contextRuleManager.addContextRule(
   contextType: OZContextRuleTypeCallContract(
     'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
   ),
   name: 'Guarded',
   signers: <OZSmartAccountSigner>[signerA, signerB],
-  policies: <String, XdrSCVal>{
-    'CAZJ3UVRY3R3S5C5BH32GMYBRSN23N75ZEEXEOLXOUUAHDFIMVP4AXUC': thresholdParams,
+  policies: <String, OZPolicyInstallParams>{
+    'CAZJ3UVRY3R3S5C5BH32GMYBRSN23N75ZEEXEOLXOUUAHDFIMVP4AXUC':
+        OZSimpleThresholdPolicyParams(threshold: 2),
   },
 );
 ```
@@ -492,21 +488,21 @@ Adding a signer, installing a policy, and changing the expiry are each a separat
 
 You need a deployed policy contract C-address before installing it. Sources: published OpenZeppelin addresses for the network you target, or deploy your own policy contract and use its address. A testnet policy address fails on mainnet (and vice-versa) with contract-not-found during simulation. `policyAddress` must be a valid C-address; an invalid strkey throws `SmartAccountInvalidAddress` at input validation.
 
-### Primary path — addPolicy with an install-param XdrSCVal
+### Installing a policy — addPolicy
 
-`addPolicy` is the generic entry point and the production idiom for every policy contract, including the three built-in ones. Build the install-param `XdrSCVal` **once** and feed the same value to both surfaces: `addContextRule(policies: {policyAddr: installParams})` to attach it when the rule is created, and `addPolicy(installParams: installParams)` to attach it to an existing rule later. The convenience methods below are a shortcut for an already-existing rule only — they cannot create a rule and they re-encode params the generic path lets you control directly.
+`addPolicy` is the generic entry point for every policy contract. It takes an `OZPolicyInstallParams`; the manager encodes it internally. Use the same value on both surfaces: `addContextRule(policies: {policyAddr: params})` to attach a policy when the rule is created, and `addPolicy(installParams: params)` to attach it to an existing rule later. For the three built-in policy types use the typed subclasses; for any other policy contract wrap a pre-encoded `XdrSCVal` in `OZRawPolicyParams`. The convenience methods below are shortcuts for the built-in types on an already-existing rule.
 
 ```dart
 Future<OZTransactionResult> addPolicy({
   required int contextRuleId,
   required String policyAddress,
-  required XdrSCVal installParams, // SCVal map with policy-specific keys
+  required OZPolicyInstallParams installParams,
   List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
   OZSubmissionMethod? forceMethod,
 });
 ```
 
-The install-param map shapes. Map keys are `Symbol`s. The convenience methods emit each policy's install-param map in the contract's expected key order for you; for WeightedThreshold the nested `signer_weights` map is XDR-byte sorted by the SDK. When you hand-build the `XdrSCVal` yourself you are responsible for nested-map ordering.
+The install-param map shape each policy encodes. Map keys are `Symbol`s. The built-in typed subclasses emit each map in the contract's expected key order (WeightedThreshold's nested `signer_weights` map is XDR-byte sorted by the SDK). If you hand-build an `XdrSCVal` for a custom policy and wrap it in `OZRawPolicyParams`, you are responsible for nested-map ordering.
 
 ```
 SimpleThreshold    -> map{ Symbol("threshold"): U32 }
@@ -515,35 +511,32 @@ WeightedThreshold  -> map{ Symbol("signer_weights"): map{ <signerScVal>: U32, ..
                            Symbol("threshold"): U32 }
 ```
 
-The `OZPolicyInstallParams` sealed hierarchy (`OZSimpleThresholdPolicyParams`, `OZWeightedThresholdPolicyParams`, `OZSpendingLimitPolicyParams`) is public, but its `toScVal()` method is annotated `@internal`. Prefer the convenience methods, or build the `XdrSCVal` directly as shown — do not rely on `toScVal()` from application code.
+The `OZPolicyInstallParams` sealed hierarchy — `OZSimpleThresholdPolicyParams`, `OZWeightedThresholdPolicyParams`, `OZSpendingLimitPolicyParams`, and `OZRawPolicyParams` — is public. Pass an instance directly; the manager calls `toScVal()` internally. `OZRawPolicyParams` wraps a pre-encoded `XdrSCVal` for policy contracts not modelled by a dedicated subclass.
 
 Compact SimpleThreshold example via the generic path:
 
 ```dart
-// SimpleThreshold install params: map{ Symbol("threshold"): U32 }
-final installParams = XdrSCVal.forMap(<XdrSCMapEntry>[
-  XdrSCMapEntry(XdrSCVal.forSymbol('threshold'), XdrSCVal.forU32(2)),
-]);
-
 await kit.policyManager.addPolicy(
   contextRuleId: 0,
   policyAddress: 'CAZJ3UVRY3R3S5C5BH32GMYBRSN23N75ZEEXEOLXOUUAHDFIMVP4AXUC',
-  installParams: installParams,
+  installParams: OZSimpleThresholdPolicyParams(threshold: 2),
 );
 ```
 
-Custom policy example. The keys (`allowed_contracts`, `max_per_tx`) and the address inside are illustrative of a hypothetical custom policy — only SimpleThreshold, WeightedThreshold, and SpendingLimit are built in, with the install-param shapes shown above.
+Custom policy example. The keys (`allowed_contracts`, `max_per_tx`) and the address inside are illustrative of a hypothetical custom policy — only SimpleThreshold, WeightedThreshold, and SpendingLimit are built in, with the install-param shapes shown above. Wrap the hand-built `XdrSCVal` in `OZRawPolicyParams`:
 
 ```dart
-final installParams = XdrSCVal.forMap(<XdrSCMapEntry>[
-  XdrSCMapEntry(
-    XdrSCVal.forSymbol('allowed_contracts'),
-    XdrSCVal.forVec(<XdrSCVal>[
-      XdrSCVal.forContractAddress('CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC'),
-    ]),
-  ),
-  XdrSCMapEntry(XdrSCVal.forSymbol('max_per_tx'), XdrSCVal.forU32(10)),
-]);
+final installParams = OZRawPolicyParams(
+  XdrSCVal.forMap(<XdrSCMapEntry>[
+    XdrSCMapEntry(
+      XdrSCVal.forSymbol('allowed_contracts'),
+      XdrSCVal.forVec(<XdrSCVal>[
+        XdrSCVal.forContractAddress('CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC'),
+      ]),
+    ),
+    XdrSCMapEntry(XdrSCVal.forSymbol('max_per_tx'), XdrSCVal.forU32(10)),
+  ]),
+);
 await kit.policyManager.addPolicy(
   contextRuleId: 0,
   policyAddress: 'CAZJ3UVRY3R3S5C5BH32GMYBRSN23N75ZEEXEOLXOUUAHDFIMVP4AXUC', // replace with your deployed custom-policy C-address
@@ -553,7 +546,7 @@ await kit.policyManager.addPolicy(
 
 ### Convenience shortcuts — for an already-existing rule only
 
-These three methods encode the install params for you and call `addPolicy` internally. They install onto an **existing** context rule; they cannot create the rule. To create a rule and attach a policy in one transaction, use `addContextRule(policies: ...)` with a hand-built install-param `XdrSCVal`.
+These three methods build the typed params for you and call `addPolicy` internally. They install onto an **existing** context rule; they cannot create the rule. To create a rule and attach a policy in one transaction, use `addContextRule(policies: ...)` with an `OZPolicyInstallParams`.
 
 #### addSimpleThreshold — M-of-N
 
@@ -657,13 +650,18 @@ Internally, `addSpendingLimit` and the underlying `OZSpendingLimitPolicyParams` 
 
 ### Editing an installed policy's params
 
-There is **no in-place policy-update call**. To change a non-threshold policy's install params (e.g. a SpendingLimit's amount or period, a WeightedThreshold's weight map) you MUST `removePolicy` (or `removePolicyByAddress`) then `addPolicy` with the new install-param `XdrSCVal`. The lone exception is a threshold-only change on SimpleThreshold/WeightedThreshold, which uses the `set_threshold` fast-path below.
+There is **no in-place policy-update call**. To change a non-threshold policy's install params (e.g. a SpendingLimit's amount or period, a WeightedThreshold's weight map) you MUST `removePolicy` (or `removePolicyByAddress`) then `addPolicy` with the new `OZPolicyInstallParams`. The lone exception is a threshold-only change on SimpleThreshold/WeightedThreshold, which uses the `set_threshold` fast-path below.
 
 ```dart
 // Remove, then re-add with the new install params.
 await kit.policyManager.removePolicyByAddress(contextRuleId: 1, policyAddress: policyC);
 await kit.policyManager.addPolicy(
-  contextRuleId: 1, policyAddress: policyC, installParams: newInstallParams,
+  contextRuleId: 1,
+  policyAddress: policyC,
+  installParams: OZSpendingLimitPolicyParams(
+    spendingLimit: BigInt.from(5000000000), // base units (500 at 7 decimals)
+    periodLedgers: Util.ledgersPerDay,
+  ),
 );
 ```
 

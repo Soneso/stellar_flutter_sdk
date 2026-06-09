@@ -190,18 +190,20 @@ await kit.policyManager.addWeightedThreshold(
 );
 ```
 
-The policy interface is generic: any Soroban contract that implements the required `can_enforce()` and `enforce()` functions can be used as a policy. Use `addPolicy` to install one:
+The policy interface is generic: any Soroban contract that implements the required `can_enforce()` and `enforce()` functions can be used as a policy. Use `addPolicy` with an `OZRawPolicyParams` wrapping the install parameters:
 
 ```dart
 await kit.policyManager.addPolicy(
   contextRuleId: 0,
   policyAddress: 'CCUSTOMPOLICY...',
-  installParams: XdrSCVal.forMap([
-    XdrSCMapEntry(
-      XdrSCVal.forSymbol('my_param'),
-      XdrSCVal.forU32(42),
-    ),
-  ]),
+  installParams: OZRawPolicyParams(
+    XdrSCVal.forMap([
+      XdrSCMapEntry(
+        XdrSCVal.forSymbol('my_param'),
+        XdrSCVal.forU32(42),
+      ),
+    ]),
+  ),
 );
 ```
 

@@ -107,7 +107,7 @@ void main() {
       final mgr = OZContextRuleManager(h.kit);
       // Build 6 distinct C-addresses by mutating the trailing
       // character of a base contract id.
-      final policies = <String, XdrSCVal>{};
+      final policies = <String, OZPolicyInstallParams>{};
       const seedContractIds = <String>[
         'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
         'CBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
@@ -117,7 +117,7 @@ void main() {
         'CFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       ];
       for (final cid in seedContractIds) {
-        policies[cid] = XdrSCVal.forVoid();
+        policies[cid] = OZRawPolicyParams(XdrSCVal.forVoid());
       }
       await expectLater(
         () => mgr.addContextRule(
@@ -169,8 +169,8 @@ void main() {
           contextType: const OZContextRuleTypeDefault(),
           name: 'bad-policy',
           signers: <OZSmartAccountSigner>[_delegated(_accountAddress)],
-          policies: <String, XdrSCVal>{
-            'NOT_A_C_ADDRESS': XdrSCVal.forVoid(),
+          policies: <String, OZPolicyInstallParams>{
+            'NOT_A_C_ADDRESS': OZRawPolicyParams(XdrSCVal.forVoid()),
           },
         ),
         throwsA(isA<SmartAccountInvalidAddress>()),
@@ -255,12 +255,44 @@ void main() {
         contextType: const OZContextRuleTypeDefault(),
         name: 'policy-rule',
         signers: <OZSmartAccountSigner>[OZDelegatedSigner(_accountAddress)],
-        policies: <String, XdrSCVal>{
-          _verifierContract: XdrSCVal.forVoid(),
+        policies: <String, OZPolicyInstallParams>{
+          _verifierContract: OZRawPolicyParams(XdrSCVal.forVoid()),
         },
       );
 
       expect(h.txOps.submitCalls, hasLength(1));
+    });
+
+    test('addContextRule encodes typed policy params via toScVal', () async {
+      const params = OZSimpleThresholdPolicyParams(threshold: 3);
+
+      final hTyped = _buildHarness();
+      await OZContextRuleManager(hTyped.kit).addContextRule(
+        contextType: const OZContextRuleTypeDefault(),
+        name: 'typed-policy',
+        signers: <OZSmartAccountSigner>[OZDelegatedSigner(_accountAddress)],
+        policies: <String, OZPolicyInstallParams>{_verifierContract: params},
+      );
+      final typedPolicies =
+          hTyped.txOps.submitCalls.single.hostFunction.invokeContract!.args[4];
+
+      final hRaw = _buildHarness();
+      await OZContextRuleManager(hRaw.kit).addContextRule(
+        contextType: const OZContextRuleTypeDefault(),
+        name: 'raw-policy',
+        signers: <OZSmartAccountSigner>[OZDelegatedSigner(_accountAddress)],
+        policies: <String, OZPolicyInstallParams>{
+          _verifierContract: OZRawPolicyParams(params.toScVal()),
+        },
+      );
+      final rawPolicies =
+          hRaw.txOps.submitCalls.single.hostFunction.invokeContract!.args[4];
+
+      expect(
+        OZPolicyManager.scValToXdrBytes(typedPolicies),
+        equals(OZPolicyManager.scValToXdrBytes(rawPolicies)),
+      );
+      expect(typedPolicies.map!.single.val.map!.single.val.u32!.uint32, 3);
     });
   });
 

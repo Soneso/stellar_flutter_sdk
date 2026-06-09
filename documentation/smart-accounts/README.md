@@ -340,18 +340,20 @@ final limitResult = await kit.policyManager.addSpendingLimit(
 ```
 
 For custom policy contracts beyond the built-in types, use `addPolicy`
-with policy-specific install parameters:
+with an `OZRawPolicyParams` wrapping the policy-specific install parameters:
 
 ```dart
 final result = await kit.policyManager.addPolicy(
   contextRuleId: 0,
   policyAddress: '<C-address of the custom policy>',
-  installParams: XdrSCVal.forMap([
-    XdrSCMapEntry(
-      XdrSCVal.forSymbol('my_param'),
-      XdrSCVal.forU32(42),
-    ),
-  ]),
+  installParams: OZRawPolicyParams(
+    XdrSCVal.forMap([
+      XdrSCMapEntry(
+        XdrSCVal.forSymbol('my_param'),
+        XdrSCVal.forU32(42),
+      ),
+    ]),
+  ),
 );
 ```
 

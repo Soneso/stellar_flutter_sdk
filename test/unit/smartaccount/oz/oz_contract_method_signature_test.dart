@@ -127,7 +127,7 @@ void main() {
       await mgr.addPolicy(
         contextRuleId: 0,
         policyAddress: _verifierContract,
-        installParams: XdrSCVal.forVoid(),
+        installParams: OZRawPolicyParams(XdrSCVal.forVoid()),
       );
       expect(_capturedInvocation(h.txOps).functionName, 'add_policy');
     });
@@ -481,7 +481,7 @@ void main() {
       await mgr.addPolicy(
         contextRuleId: 6,
         policyAddress: _verifierContract,
-        installParams: XdrSCVal.forVoid(),
+        installParams: OZRawPolicyParams(XdrSCVal.forVoid()),
       );
       final args = _capturedInvocation(h.txOps).args;
       expect(args.length, 3);

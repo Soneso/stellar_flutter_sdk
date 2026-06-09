@@ -1609,7 +1609,8 @@ Future<OZTransactionResult> addContextRule({
   required String name,
   int? validUntil,
   required List<OZSmartAccountSigner> signers,
-  Map<String, XdrSCVal> policies = const <String, XdrSCVal>{},
+  Map<String, OZPolicyInstallParams> policies =
+      const <String, OZPolicyInstallParams>{},
   List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
   OZSubmissionMethod? forceMethod,
 }) async
@@ -1623,7 +1624,7 @@ Adds a new context rule.
 - `name`: Human-readable rule name. Must be non-empty.
 - `validUntil`: Optional expiration ledger. `null` means no expiration.
 - `signers`: Signers attached to the rule. Must obey the per-rule maximum.
-- `policies`: Map from policy contract address to its installation parameters (XDR-encoded `ScVal`). Validated and ordered deterministically before submission.
+- `policies`: Map from policy contract address to its installation parameters as an `OZPolicyInstallParams`. Use a typed subclass such as `OZSimpleThresholdPolicyParams`, or `OZRawPolicyParams` to wrap a pre-encoded `XdrSCVal` for custom policies. Validated and ordered deterministically before submission.
 
 Throws `SmartAccountValidationException.invalidInput` when the name is empty, when both `signers` and `policies` are empty, when the signer or policy limits are exceeded, or when any policy address is malformed.
 
@@ -1709,7 +1710,7 @@ See [Builder Helpers](#builder-helpers) for `OZContextRuleType` (sealed: `OZCont
 
 Manages policies on context rules. Accessed via `kit.policyManager`.
 
-A context rule may carry up to `OZConstants.maxPolicies` (5) policies. Every policy must be satisfied for the rule to authorise a transaction. Three convenience helpers are provided for the built-in policy types; custom policy contracts use `addPolicy` directly with an XDR-encoded install-params `ScVal`.
+A context rule may carry up to `OZConstants.maxPolicies` (5) policies. Every policy must be satisfied for the rule to authorise a transaction. Three convenience helpers are provided for the built-in policy types; custom policy contracts use `addPolicy` directly with an `OZPolicyInstallParams` (a typed subclass, or `OZRawPolicyParams` wrapping a pre-encoded `XdrSCVal`).
 
 Every state-changing method accepts an optional `List<OZSelectedSigner>` with the same semantics as on [OZSignerManager](#ozsignermanager).
 
@@ -1764,13 +1765,21 @@ Installs an `OZSpendingLimitPolicyParams` policy capping the total amount spent 
 Future<OZTransactionResult> addPolicy({
   required int contextRuleId,
   required String policyAddress,
-  required XdrSCVal installParams,
+  required OZPolicyInstallParams installParams,
   List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
   OZSubmissionMethod? forceMethod,
 }) async
 ```
 
 Adds a policy with custom installation parameters. This is the generic entry point used by `addSimpleThreshold`, `addWeightedThreshold`, and `addSpendingLimit`. Call directly for custom policy contracts whose installation parameters are not covered by the convenience helpers.
+
+**Parameters:**
+
+- `contextRuleId`: On-chain id of the rule the policy is installed on.
+- `policyAddress`: Policy contract C-address.
+- `installParams`: The policy's installation parameters as an `OZPolicyInstallParams`. Use a typed subclass such as `OZSimpleThresholdPolicyParams`, or `OZRawPolicyParams` to wrap a pre-encoded `XdrSCVal` for custom policies.
+- `selectedSigners`: Empty routes the single-signer passkey path; non-empty routes the multi-signer pipeline.
+- `forceMethod`: Overrides direct-vs-relayer submission.
 
 #### removePolicy
 
@@ -1810,7 +1819,7 @@ static List<int> scValToXdrBytes(XdrSCVal scVal)
 
 ### Policy parameter types
 
-The policy parameter classes are exposed as a sealed hierarchy under `OZPolicyInstallParams`. `toScVal()` encodes a parameter set to its on-chain `XdrSCVal` map; pass the result to `OZPolicyManager.addPolicy` to install a policy from pre-built parameters, or use the convenience helpers (`addSimpleThreshold`, `addWeightedThreshold`, `addSpendingLimit`) which encode internally.
+The policy parameter classes are exposed as a sealed hierarchy under `OZPolicyInstallParams`. `toScVal()` encodes a parameter set to its on-chain `XdrSCVal` map. Pass an instance to `OZContextRuleManager.addContextRule` or `OZPolicyManager.addPolicy`; the manager encodes it internally. The convenience helpers (`addSimpleThreshold`, `addWeightedThreshold`, `addSpendingLimit`) build the typed parameters for you.
 
 #### OZPolicyInstallParams (sealed)
 
@@ -1857,6 +1866,17 @@ final class OZSpendingLimitPolicyParams extends OZPolicyInstallParams {
 ```
 
 `spendingLimit` is expressed in the token's base units. To construct from a decimal string, use the convenience helper `OZPolicyManager.addSpendingLimit`.
+
+#### OZRawPolicyParams
+
+```dart
+final class OZRawPolicyParams extends OZPolicyInstallParams {
+  const OZRawPolicyParams(XdrSCVal installParams);
+  final XdrSCVal installParams;
+}
+```
+
+Escape hatch for policy contracts whose install parameters are not modelled by a dedicated subclass. Wraps a pre-encoded `XdrSCVal`, which `toScVal()` returns unchanged.
 
 ---
 

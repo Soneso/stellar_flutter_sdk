@@ -19,13 +19,15 @@ import 'oz_validation.dart';
 /// Policy installation parameters for OpenZeppelin smart-account
 /// context rules.
 ///
-/// Sealed hierarchy of three policy types:
+/// Sealed hierarchy of policy types:
 ///
 /// - [OZSimpleThresholdPolicyParams]: M-of-N authorisation (equal-weight
 ///   signers).
 /// - [OZWeightedThresholdPolicyParams]: weighted voting with a configurable
 ///   threshold.
 /// - [OZSpendingLimitPolicyParams]: maximum spend per ledger window.
+/// - [OZRawPolicyParams]: escape hatch wrapping a pre-encoded [XdrSCVal]
+///   for custom policy contracts not covered by the dedicated subclasses.
 ///
 /// Policies are installed on a context rule and evaluated when matching
 /// transactions request authorisation. For most use cases the
@@ -37,9 +39,8 @@ import 'oz_validation.dart';
 sealed class OZPolicyInstallParams {
   const OZPolicyInstallParams();
 
-  /// Returns the on-chain `ScVal` map encoding of the parameter shape,
-  /// suitable for [OZPolicyManager.addPolicy] when installing a policy from
-  /// pre-built parameters.
+  /// Returns the on-chain `ScVal` map encoding of the parameter shape. The
+  /// managers call this internally when installing the policy.
   XdrSCVal toScVal();
 }
 
@@ -213,6 +214,36 @@ final class OZSpendingLimitPolicyParams extends OZPolicyInstallParams {
   int get hashCode => Object.hash(spendingLimit, periodLedgers);
 }
 
+/// Escape-hatch policy parameters for policy contracts whose install
+/// parameters are not modelled by a dedicated subclass. Wraps a
+/// pre-encoded [XdrSCVal] and returns it unchanged from [toScVal].
+final class OZRawPolicyParams extends OZPolicyInstallParams {
+  /// Constructs raw params from a pre-encoded [installParams] `ScVal`.
+  const OZRawPolicyParams(this.installParams);
+
+  /// The pre-encoded policy installation parameters.
+  final XdrSCVal installParams;
+
+  @override
+  XdrSCVal toScVal() => installParams;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! OZRawPolicyParams) return false;
+    return const ListEquality<int>().equals(
+      OZPolicyManager.scValToXdrBytes(installParams),
+      OZPolicyManager.scValToXdrBytes(other.installParams),
+    );
+  }
+
+  @override
+  int get hashCode =>
+      const ListEquality<int>().hash(
+        OZPolicyManager.scValToXdrBytes(installParams),
+      );
+}
+
 /// Manager for policy operations on OpenZeppelin smart accounts.
 ///
 /// Provides functionality to add and remove policies on context rules.
@@ -224,8 +255,8 @@ final class OZSpendingLimitPolicyParams extends OZPolicyInstallParams {
 /// Three convenience helpers are provided for the built-in policy
 /// types ([addSimpleThreshold], [addWeightedThreshold],
 /// [addSpendingLimit]). For custom policy contracts, call [addPolicy]
-/// directly with the policy-specific installation parameters encoded
-/// as [XdrSCVal].
+/// directly with an [OZPolicyInstallParams] — a typed subclass, or
+/// [OZRawPolicyParams] wrapping a pre-encoded [XdrSCVal].
 class OZPolicyManager {
   /// Constructs a policy manager bound to the supplied kit. Marked
   /// [internal] because consumers access the manager via
@@ -252,7 +283,7 @@ class OZPolicyManager {
     return addPolicy(
       contextRuleId: contextRuleId,
       policyAddress: policyAddress,
-      installParams: params.toScVal(),
+      installParams: params,
       selectedSigners: selectedSigners,
       forceMethod: forceMethod,
     );
@@ -276,7 +307,7 @@ class OZPolicyManager {
     return addPolicy(
       contextRuleId: contextRuleId,
       policyAddress: policyAddress,
-      installParams: params.toScVal(),
+      installParams: params,
       selectedSigners: selectedSigners,
       forceMethod: forceMethod,
     );
@@ -317,7 +348,7 @@ class OZPolicyManager {
     return addPolicy(
       contextRuleId: contextRuleId,
       policyAddress: policyAddress,
-      installParams: params.toScVal(),
+      installParams: params,
       selectedSigners: selectedSigners,
       forceMethod: forceMethod,
     );
@@ -401,10 +432,30 @@ class OZPolicyManager {
   /// [addWeightedThreshold], and [addSpendingLimit] delegate to. Call
   /// directly for custom policy contracts whose installation parameters
   /// are not covered by the convenience helpers.
+  ///
+  /// Parameters:
+  ///
+  /// - [contextRuleId]: on-chain id of the rule the policy is installed on.
+  /// - [policyAddress]: policy contract C-address.
+  /// - [installParams]: the policy's installation parameters as an
+  ///   [OZPolicyInstallParams]. Use a typed subclass such as
+  ///   [OZSimpleThresholdPolicyParams], or [OZRawPolicyParams] to wrap a
+  ///   pre-encoded [XdrSCVal] for custom policies.
+  /// - [selectedSigners]: empty routes the single-signer passkey path;
+  ///   non-empty routes the multi-signer pipeline.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
+  ///
+  /// ```dart
+  /// await kit.policyManager.addPolicy(
+  ///   contextRuleId: 0,
+  ///   policyAddress: policyContractId,
+  ///   installParams: OZSimpleThresholdPolicyParams(threshold: 2),
+  /// );
+  /// ```
   Future<OZTransactionResult> addPolicy({
     required int contextRuleId,
     required String policyAddress,
-    required XdrSCVal installParams,
+    required OZPolicyInstallParams installParams,
     List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
     OZSubmissionMethod? forceMethod,
   }) async {
@@ -415,7 +466,7 @@ class OZPolicyManager {
       contractId: connected.contractId,
       contextRuleId: contextRuleId,
       policyAddress: policyAddress,
-      installParams: installParams,
+      installParams: installParams.toScVal(),
     );
 
     return ozRouteSubmission(_kit as OZSmartAccountWalletKitInterface, hostFunction, selectedSigners, forceMethod);

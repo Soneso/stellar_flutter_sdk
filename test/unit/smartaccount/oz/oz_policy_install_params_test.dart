@@ -295,6 +295,7 @@ void main() {
           OZSimpleThresholdPolicyParams() => 'simple',
           OZWeightedThresholdPolicyParams() => 'weighted',
           OZSpendingLimitPolicyParams() => 'spending',
+          OZRawPolicyParams() => 'raw',
         };
       }
 
@@ -302,6 +303,24 @@ void main() {
         describe(const OZSimpleThresholdPolicyParams(threshold: 1)),
         'simple',
       );
+    });
+
+    test('OZRawPolicyParams is a OZPolicyInstallParams arm', () {
+      final params = OZRawPolicyParams(XdrSCVal.forVoid());
+      expect(params, isA<OZPolicyInstallParams>());
+    });
+
+    test('OZRawPolicyParams.toScVal returns the wrapped value unchanged', () {
+      final wrapped = XdrSCVal.forSymbol('payload');
+      expect(identical(OZRawPolicyParams(wrapped).toScVal(), wrapped), isTrue);
+    });
+
+    test('OZRawPolicyParams equality by wrapped value', () {
+      final a = OZRawPolicyParams(XdrSCVal.forU32(7));
+      final b = OZRawPolicyParams(XdrSCVal.forU32(7));
+      final c = OZRawPolicyParams(XdrSCVal.forU32(8));
+      expect(a, b);
+      expect(a, isNot(c));
     });
 
     test('OZSimpleThresholdPolicyParams equality by threshold', () {

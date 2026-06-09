@@ -565,7 +565,7 @@ void main() {
         () => OZPolicyManager(h.kit).addPolicy(
           contextRuleId: 1,
           policyAddress: 'not-c',
-          installParams: XdrSCVal.forMap(const <XdrSCMapEntry>[]),
+          installParams: OZRawPolicyParams(XdrSCVal.forMap(const <XdrSCMapEntry>[])),
         ),
         throwsA(isA<SmartAccountInvalidAddress>()),
       );
@@ -578,7 +578,7 @@ void main() {
         () => OZPolicyManager(kit).addPolicy(
           contextRuleId: 1,
           policyAddress: _policyContractA,
-          installParams: XdrSCVal.forMap(const <XdrSCMapEntry>[]),
+          installParams: OZRawPolicyParams(XdrSCVal.forMap(const <XdrSCMapEntry>[])),
         ),
         throwsA(isA<SmartAccountWalletNotConnected>()),
       );
@@ -589,7 +589,7 @@ void main() {
       await OZPolicyManager(h.kit).addPolicy(
         contextRuleId: 5,
         policyAddress: _policyContractA,
-        installParams: XdrSCVal.forSymbol('custom-payload'),
+        installParams: OZRawPolicyParams(XdrSCVal.forSymbol('custom-payload')),
       );
       final call = h.recordingOps.submitCalls.single;
       final decoded = _decodeInvoke(call.hostFunction);
@@ -607,7 +607,7 @@ void main() {
       await OZPolicyManager(h.kit).addPolicy(
         contextRuleId: 1,
         policyAddress: _policyContractA,
-        installParams: XdrSCVal.forMap(const <XdrSCMapEntry>[]),
+        installParams: OZRawPolicyParams(XdrSCVal.forMap(const <XdrSCMapEntry>[])),
       );
       expect(h.recordingOps.submitCalls.length, equals(1));
       expect(h.recordingMulti.calls, isEmpty);
@@ -620,11 +620,51 @@ void main() {
       await OZPolicyManager(h.kit).addPolicy(
         contextRuleId: 1,
         policyAddress: _policyContractA,
-        installParams: XdrSCVal.forMap(const <XdrSCMapEntry>[]),
+        installParams: OZRawPolicyParams(XdrSCVal.forMap(const <XdrSCMapEntry>[])),
         selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
       );
       expect(h.recordingMulti.calls.length, equals(1));
       expect(h.recordingOps.submitCalls, isEmpty);
+    });
+  });
+
+  group('OZPolicyInstallParams encoding', () {
+    test('OZRawPolicyParams.toScVal returns the wrapped ScVal unchanged', () {
+      final wrapped = XdrSCVal.forSymbol('custom-payload');
+      expect(identical(OZRawPolicyParams(wrapped).toScVal(), wrapped), isTrue);
+    });
+
+    test('addPolicy encodes typed params identically to their toScVal', () async {
+      final params = const OZSimpleThresholdPolicyParams(threshold: 2);
+
+      final typedKit = _buildKit();
+      await OZPolicyManager(typedKit.kit).addPolicy(
+        contextRuleId: 7,
+        policyAddress: _policyContractA,
+        installParams: params,
+      );
+      final typedArg =
+          _decodeInvoke(typedKit.recordingOps.submitCalls.single.hostFunction)
+              .args[2];
+
+      final rawKit = _buildKit();
+      await OZPolicyManager(rawKit.kit).addPolicy(
+        contextRuleId: 7,
+        policyAddress: _policyContractA,
+        installParams: OZRawPolicyParams(params.toScVal()),
+      );
+      final rawArg =
+          _decodeInvoke(rawKit.recordingOps.submitCalls.single.hostFunction)
+              .args[2];
+
+      expect(
+        OZPolicyManager.scValToXdrBytes(typedArg),
+        equals(OZPolicyManager.scValToXdrBytes(params.toScVal())),
+      );
+      expect(
+        OZPolicyManager.scValToXdrBytes(typedArg),
+        equals(OZPolicyManager.scValToXdrBytes(rawArg)),
+      );
     });
   });
 

@@ -59,6 +59,37 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// policies)` invocation, and routes through the single-signer or
   /// multi-signer pipeline.
   ///
+  /// Parameters:
+  ///
+  /// - [contextType]: the scope the rule applies to — a default rule, a
+  ///   contract call, or a contract deployment.
+  /// - [name]: non-empty human-readable label for the rule.
+  /// - [validUntil]: optional expiry as the ledger sequence number at
+  ///   which the rule stops applying; null means the rule never expires.
+  /// - [signers]: rule signers, at most [OZConstants.maxSigners]. May be
+  ///   empty only when [policies] is non-empty.
+  /// - [policies]: policies keyed by the policy contract C-address. Each
+  ///   value is that policy's install parameters as an
+  ///   [OZPolicyInstallParams] — use a typed subclass such as
+  ///   [OZSimpleThresholdPolicyParams], or [OZRawPolicyParams] to wrap a
+  ///   pre-encoded [XdrSCVal] for custom policies. At most
+  ///   [OZConstants.maxPolicies]. May be empty only when [signers] is
+  ///   non-empty.
+  /// - [selectedSigners]: empty routes the single-signer passkey path;
+  ///   non-empty routes the multi-signer pipeline.
+  /// - [forceMethod]: overrides direct-vs-relayer submission.
+  ///
+  /// ```dart
+  /// await kit.contextRuleManager.addContextRule(
+  ///   contextType: const OZContextRuleTypeDefault(),
+  ///   name: 'recovery',
+  ///   signers: signers,
+  ///   policies: {
+  ///     policyContractId: OZSimpleThresholdPolicyParams(threshold: 2),
+  ///   },
+  /// );
+  /// ```
+  ///
   /// Throws [SmartAccountInvalidInput] when [name] is empty, when [signers] and
   /// [policies] are both empty, when [signers] exceeds
   /// [OZConstants.maxSigners], when [policies] exceeds
@@ -68,7 +99,8 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     required String name,
     int? validUntil,
     required List<OZSmartAccountSigner> signers,
-    Map<String, XdrSCVal> policies = const <String, XdrSCVal>{},
+    Map<String, OZPolicyInstallParams> policies =
+        const <String, OZPolicyInstallParams>{},
     List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
     OZSubmissionMethod? forceMethod,
   }) async {
@@ -126,7 +158,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
           XdrSCVal.forAddress(
             Address.forContractId(entry.key).toXdr(),
           ),
-          entry.value,
+          entry.value.toScVal(),
         ),
       );
     }
