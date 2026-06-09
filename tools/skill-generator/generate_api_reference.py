@@ -923,19 +923,23 @@ _TYPEDEF_RE = re.compile(r'^[ \t]*typedef\s+([^;{]+?)\s*;', re.MULTILINE)
 def _preceded_by_deprecated(text: str, start: int) -> bool:
     """
     True when the declaration starting at `start` is directly preceded by a
-    `@Deprecated` annotation. Walks the contiguous annotation lines immediately
-    above the declaration's line; a blank or non-annotation line ends the walk.
+    `@Deprecated` annotation, including a multi-line `@Deprecated(\n  '...')`
+    form. Runs on comment-stripped text, so the contiguous non-blank lines
+    above a declaration are annotation lines (and their continuations). Walks
+    that block backwards; a blank line, or a prior-declaration boundary
+    (`}`/`;`/`{`), ends the walk.
     """
     line_start = text.rfind('\n', 0, start) + 1
     for ln in reversed(text[:line_start].splitlines()):
         s = ln.strip()
         if not s:
             break
-        if s.startswith('@'):
-            if s.startswith('@Deprecated') or s.startswith('@deprecated'):
-                return True
-            continue
-        break
+        if '@Deprecated' in s or '@deprecated' in s:
+            return True
+        # A line ending in a declaration boundary means we have walked past
+        # this declaration's annotation block into prior code.
+        if s.endswith('}') or s.endswith(';') or s.endswith('{'):
+            break
     return False
 
 
