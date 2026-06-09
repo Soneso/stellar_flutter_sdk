@@ -670,23 +670,58 @@ Future<OZTransactionResult> transfer({
   required String tokenContract,
   required String recipient,
   required String amount,
+  int? decimals,
   OZSubmissionMethod? forceMethod,
   dio.CancelToken? cancelToken,
 }) async
 ```
 
-SEP-41 token transfer from the connected smart account to `recipient`. The decimal `amount` is converted to stroops via `Util.toXdrInt64Amount` and the transaction is built as a direct `transfer(from, to, amount)` invocation on the token contract; authorisation runs against the matching `CallContract(tokenContract)` context rule.
+SEP-41 token transfer from the connected smart account to `recipient`. The decimal `amount` is converted to the token's base units and the transaction is built as a direct `transfer(from, to, amount)` invocation on the token contract; authorisation runs against the matching `CallContract(tokenContract)` context rule.
 
 **Parameters:**
 
 - `tokenContract`: Token contract address (`C…`). Use the SAC address for XLM or the contract address for any SEP-41 custom token.
 - `recipient`: Recipient address (`G…` or `C…`). Validated against Stellar address format.
-- `amount`: Decimal amount, e.g. `"100"` or `"10.5"`. Converted to stroops internally.
+- `amount`: Decimal amount, e.g. `"100"` or `"10.5"`. Converted to the token's base units.
+- `decimals`: Token decimal scale used to convert `amount`. When `null` (default), the token's on-chain `decimals()` is fetched via `fetchTokenDecimals`.
 - `forceMethod`: Optional `OZSubmissionMethod` override.
 
 **Returns:** An `OZTransactionResult` carrying the submission outcome.
 
 **Throws:** `SmartAccountWalletNotConnected`; `SmartAccountValidationException.invalidAddress` for malformed recipients; `SmartAccountValidationException.invalidInput` for self-transfer or invalid amount; downstream `SmartAccountTransactionException`, `WebAuthnException`, `SmartAccountCredentialException`.
+
+#### fetchTokenDecimals
+
+```dart
+Future<int> fetchTokenDecimals(String tokenContract) async
+```
+
+Simulates the SEP-41 token contract's `decimals()` function and returns the reported `u32` scale.
+
+**Parameters:**
+
+- `tokenContract`: Token contract address (`C…`).
+
+**Returns:** The token's decimal scale as an `int`.
+
+**Throws:** `SmartAccountValidationException.invalidAddress` when `tokenContract` is malformed; `SmartAccountTransactionException` when the simulation fails or the contract does not return a valid `u32`.
+
+#### amountToBaseUnits
+
+```dart
+static BigInt amountToBaseUnits(String amount, {required int decimals})
+```
+
+Converts a positive decimal `amount` string to its base-units `BigInt` value scaled by `decimals` decimal places. Rejects scientific notation, empty or non-numeric strings, values less than or equal to zero, and values with more fractional digits than `decimals` allows.
+
+**Parameters:**
+
+- `amount`: Positive decimal string, e.g. `"100"` or `"10.5"`.
+- `decimals`: Token decimal scale, in `0..OZTransactionOperations.maxTokenDecimals` (`38`). A value of `0` accepts only integer amounts.
+
+**Returns:** The amount expressed in base units as a `BigInt`.
+
+**Throws:** `SmartAccountValidationException.invalidAmount` when `amount` is invalid or `decimals` is out of range.
 
 #### contractCall
 
@@ -707,7 +742,7 @@ Invokes an arbitrary function on an external contract directly from the smart ac
 
 - `target`: Target contract address (`C…`).
 - `targetFn`: Function name to invoke on `target`.
-- `targetArgs`: Pre-encoded XDR arguments. Construct via `XdrSCVal.forU32`, `XdrSCVal.forAddress`, `Util.stroopsToI128ScVal`, etc.
+- `targetArgs`: Pre-encoded XDR arguments. Construct via `XdrSCVal.forU32`, `XdrSCVal.forAddress`, `Util.bigIntToI128ScVal`, etc.
 - `forceMethod`: Optional submission-method override.
 - `resolveContextRuleIds`: Optional callback supplying per-entry context-rule IDs when auto-resolution is ambiguous.
 
@@ -1169,13 +1204,14 @@ Future<OZTransactionResult> multiSignerTransfer({
   required String tokenContract,
   required String recipient,
   required String amount,
+  int? decimals,
   required List<OZSelectedSigner> selectedSigners,
   OZSubmissionMethod? forceMethod,
   OZResolveContextRuleIds? resolveContextRuleIds,
 }) async
 ```
 
-SEP-41 transfer signed by the explicit list of signers in `selectedSigners`. Builds the `transfer(from, to, amount)` host function and routes through `submitWithMultipleSigners`.
+SEP-41 transfer signed by the explicit list of signers in `selectedSigners`. The decimal `amount` is converted to the token's base units, then the `transfer(from, to, amount)` host function is built and routed through `submitWithMultipleSigners`. `decimals` is the token decimal scale used to convert `amount`; when `null` (default), the token's on-chain `decimals()` is fetched via `fetchTokenDecimals`.
 
 #### multiSignerContractCall
 
@@ -1714,12 +1750,13 @@ Future<OZTransactionResult> addSpendingLimit({
   required String policyAddress,
   required String spendingLimit,
   required int periodLedgers,
+  int decimals = 7,
   List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
   OZSubmissionMethod? forceMethod,
 }) async
 ```
 
-Installs an `OZSpendingLimitPolicyParams` policy capping the total amount spent within a rolling ledger window. The decimal `spendingLimit` string is converted to stroops via `Util.toXdrInt64Amount`.
+Installs an `OZSpendingLimitPolicyParams` policy capping the total amount spent within a rolling ledger window. The decimal `spendingLimit` string is converted to the token's base units using `decimals`. `decimals` defaults to `7`; this method has no token-contract parameter and does not fetch the scale automatically.
 
 #### addPolicy
 
@@ -1773,14 +1810,14 @@ static List<int> scValToXdrBytes(XdrSCVal scVal)
 
 ### Policy parameter types
 
-The policy parameter classes are exposed as a sealed hierarchy under `OZPolicyInstallParams`. The `toScVal()` method on each is marked `@internal` because consumer flows normally use the convenience helpers on `OZPolicyManager`.
+The policy parameter classes are exposed as a sealed hierarchy under `OZPolicyInstallParams`. `toScVal()` encodes a parameter set to its on-chain `XdrSCVal` map; pass the result to `OZPolicyManager.addPolicy` to install a policy from pre-built parameters, or use the convenience helpers (`addSimpleThreshold`, `addWeightedThreshold`, `addSpendingLimit`) which encode internally.
 
 #### OZPolicyInstallParams (sealed)
 
 ```dart
 sealed class OZPolicyInstallParams {
   const OZPolicyInstallParams();
-  @internal XdrSCVal toScVal();
+  XdrSCVal toScVal();
 }
 ```
 
@@ -1819,7 +1856,7 @@ final class OZSpendingLimitPolicyParams extends OZPolicyInstallParams {
 }
 ```
 
-`spendingLimit` is expressed in stroops. To construct from a decimal XLM string, use the convenience helper `OZPolicyManager.addSpendingLimit`.
+`spendingLimit` is expressed in the token's base units. To construct from a decimal string, use the convenience helper `OZPolicyManager.addSpendingLimit`.
 
 ---
 

@@ -361,6 +361,7 @@ void main() {
         tokenContract: _contractB,
         recipient: 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
         amount: '10',
+        decimals: 7,
         selectedSigners: <OZSelectedSigner>[
           OZSelectedSignerPasskey(keyData: keyData),
         ],

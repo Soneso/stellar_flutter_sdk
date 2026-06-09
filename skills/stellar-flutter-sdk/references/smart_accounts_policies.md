@@ -616,8 +616,9 @@ Caps the total amount transferred by the rule's context within a rolling window 
 Future<OZTransactionResult> addSpendingLimit({
   required int contextRuleId,
   required String policyAddress,
-  required String spendingLimit, // decimal XLM-style string, e.g. "1000" or "10.5"
+  required String spendingLimit, // decimal string, e.g. "1000" or "10.5"
   required int periodLedgers,    // window in ledgers (~5 s each)
+  int decimals = 7,             // scale used to convert spendingLimit to base units
   List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
   OZSubmissionMethod? forceMethod,
 });
@@ -642,7 +643,7 @@ final ruleId = rules.lastWhere((r) => r.contextType == OZContextRuleTypeCallCont
 await kit.policyManager.addSpendingLimit(
   contextRuleId: ruleId,
   policyAddress: 'CBQE7L3UNP5IR4I7IBKLS7NV256WHR5TTH26HTMUIK7WXJC6J64RSE2L',
-  spendingLimit: '1000', // decimal string; SDK converts to stroops internally
+  spendingLimit: '1000', // decimal string; SDK converts to base units (decimals defaults to 7)
   periodLedgers: Util.ledgersPerDay,
 );
 ```
@@ -652,7 +653,7 @@ await kit.policyManager.addSpendingLimit(
 // CORRECT: install on a CallContract(target-token) rule
 ```
 
-Internally, `addSpendingLimit` and the underlying `OZSpendingLimitPolicyParams` carry the limit as a `BigInt` (stroops). See [BigInt for i128 amounts](#bigint-for-i128) — never clamp these to a Dart `int`/JS `Number`.
+Internally, `addSpendingLimit` and the underlying `OZSpendingLimitPolicyParams` carry the limit as a `BigInt` in base units. See [BigInt for i128 amounts](#bigint-for-i128) — never clamp these to a Dart `int`/JS `Number`.
 
 ### Editing an installed policy's params
 
@@ -883,7 +884,8 @@ for (final signer in rule.signers) {
 Future<OZTransactionResult> multiSignerTransfer({
   required String tokenContract,
   required String recipient,
-  required String amount,                 // decimal string, NOT stroops
+  required String amount,                 // decimal string, converted to base units
+  int? decimals,                          // token decimal scale; null fetches decimals() on-chain
   required List<OZSelectedSigner> selectedSigners,
   OZSubmissionMethod? forceMethod,
   OZResolveContextRuleIds? resolveContextRuleIds,
@@ -934,7 +936,9 @@ final expirationLedger = current + Util.ledgersPerHour; // absolute future ledge
 final args = <XdrSCVal>[
   XdrSCVal.forAddress(Address.forContractId(kit.contractId!).toXdr()),
   XdrSCVal.forAddress(Address.forContractId('CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC').toXdr()),
-  Util.stroopsToI128ScVal(Util.toXdrInt64Amount('100')),
+  Util.bigIntToI128ScVal(
+    OZTransactionOperations.amountToBaseUnits('100', decimals: 7),
+  ),
   XdrSCVal.forU32(expirationLedger),
 ];
 await kit.multiSignerManager.multiSignerContractCall(
@@ -1260,6 +1264,6 @@ try {
 
 ### BigInt for i128
 
-i128 amounts (transfer amounts, spending limits) and the stroops they convert to are `BigInt` end-to-end. `Util.toXdrInt64Amount(String)` returns a `BigInt`; `Util.stroopsToI128ScVal(BigInt)` consumes one; `OZSpendingLimitPolicyParams.spendingLimit` is a `BigInt`. On web, a stroops value above 2^53 exceeds JS `Number` range. Never lower a limit or clamp an amount to fit `Number` — keep `BigInt` throughout.
+i128 amounts (transfer amounts, spending limits) and the base units they convert to are `BigInt` end-to-end. `OZTransactionOperations.amountToBaseUnits(String, {required int decimals})` returns a `BigInt`; `Util.bigIntToI128ScVal(BigInt)` consumes one; `OZSpendingLimitPolicyParams.spendingLimit` is a `BigInt`. On web, a base-units value above 2^53 exceeds JS `Number` range. Never lower a limit or clamp an amount to fit `Number` — keep `BigInt` throughout.
 
 See also [smart_accounts.md — Error Handling](./smart_accounts.md#error-handling) for the full SDK exception hierarchy.

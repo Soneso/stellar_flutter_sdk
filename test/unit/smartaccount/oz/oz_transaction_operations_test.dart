@@ -226,6 +226,7 @@ void main() {
           tokenContract: _contractA,
           recipient: _accountA,
           amount: '0',
+          decimals: 7,
         ),
         throwsA(isA<SmartAccountValidationException>()),
       );
@@ -240,6 +241,7 @@ void main() {
           tokenContract: _contractA,
           recipient: _accountA,
           amount: '-1',
+          decimals: 7,
         ),
         throwsA(isA<SmartAccountValidationException>()),
       );
@@ -254,6 +256,7 @@ void main() {
           tokenContract: _contractA,
           recipient: _accountA,
           amount: 'abc',
+          decimals: 7,
         ),
         throwsA(isA<SmartAccountValidationException>()),
       );
@@ -268,6 +271,7 @@ void main() {
           tokenContract: _contractA,
           recipient: _accountA,
           amount: '',
+          decimals: 7,
         ),
         throwsA(isA<SmartAccountValidationException>()),
       );
@@ -282,6 +286,7 @@ void main() {
           tokenContract: _contractA,
           recipient: _accountA,
           amount: '1e5',
+          decimals: 7,
         ),
         throwsA(isA<SmartAccountValidationException>()),
       );
@@ -291,12 +296,13 @@ void main() {
       final kit = FakePipelineKit()
         ..setConnected(credentialId: _credentialId, contractId: _contractA);
       final ops = OZTransactionOperations(kit);
-      // More than 7 decimal places is invalid in Stellar's amount format.
+      // More than 7 fractional digits exceeds the token's 7-decimal scale.
       await expectLater(
         () => ops.transfer(
           tokenContract: _contractA,
           recipient: _accountA,
           amount: '0.00000001',
+          decimals: 7,
         ),
         throwsA(isA<SmartAccountValidationException>()),
       );
@@ -1358,7 +1364,478 @@ void main() {
       );
     });
   });
+
+  group('amountToBaseUnits conversion', () {
+    test('zero decimals accepts whole numbers only', () {
+      expect(
+        OZTransactionOperations.amountToBaseUnits('10', decimals: 0),
+        equals(BigInt.from(10)),
+      );
+    });
+
+    test('whole + fraction padding at 6 decimals', () {
+      expect(
+        OZTransactionOperations.amountToBaseUnits('1.5', decimals: 6),
+        equals(BigInt.from(1500000)),
+      );
+    });
+
+    test('smallest representable unit at 7 decimals', () {
+      expect(
+        OZTransactionOperations.amountToBaseUnits('0.0000001', decimals: 7),
+        equals(BigInt.one),
+      );
+    });
+
+    test('exact-precision fraction at 2 decimals', () {
+      expect(
+        OZTransactionOperations.amountToBaseUnits('12.34', decimals: 2),
+        equals(BigInt.from(1234)),
+      );
+    });
+
+    test('whole number padded at 18 decimals', () {
+      expect(
+        OZTransactionOperations.amountToBaseUnits('3', decimals: 18),
+        equals(BigInt.from(3) * BigInt.from(10).pow(18)),
+      );
+    });
+
+    test('fraction shorter than scale is right-padded', () {
+      expect(
+        OZTransactionOperations.amountToBaseUnits('2.5', decimals: 18),
+        equals(BigInt.from(25) * BigInt.from(10).pow(17)),
+      );
+    });
+
+    test('rejects more fractional digits than decimals', () {
+      expect(
+        () => OZTransactionOperations.amountToBaseUnits('1.234', decimals: 2),
+        throwsA(isA<SmartAccountInvalidAmount>()),
+      );
+    });
+
+    test('rejects scientific notation', () {
+      expect(
+        () => OZTransactionOperations.amountToBaseUnits('1e5', decimals: 7),
+        throwsA(isA<SmartAccountInvalidAmount>()),
+      );
+    });
+
+    test('rejects empty string', () {
+      expect(
+        () => OZTransactionOperations.amountToBaseUnits('', decimals: 7),
+        throwsA(isA<SmartAccountInvalidAmount>()),
+      );
+    });
+
+    test('rejects whitespace-only string', () {
+      expect(
+        () => OZTransactionOperations.amountToBaseUnits('   ', decimals: 7),
+        throwsA(isA<SmartAccountInvalidAmount>()),
+      );
+    });
+
+    test('rejects non-numeric string', () {
+      expect(
+        () => OZTransactionOperations.amountToBaseUnits('abc', decimals: 7),
+        throwsA(isA<SmartAccountInvalidAmount>()),
+      );
+    });
+
+    test('rejects negative amount', () {
+      expect(
+        () => OZTransactionOperations.amountToBaseUnits('-1', decimals: 7),
+        throwsA(isA<SmartAccountInvalidAmount>()),
+      );
+    });
+
+    test('rejects zero amount', () {
+      expect(
+        () => OZTransactionOperations.amountToBaseUnits('0', decimals: 7),
+        throwsA(isA<SmartAccountInvalidAmount>()),
+      );
+    });
+
+    test('rejects zero amount with explicit fraction', () {
+      expect(
+        () => OZTransactionOperations.amountToBaseUnits('0.0', decimals: 7),
+        throwsA(isA<SmartAccountInvalidAmount>()),
+      );
+    });
+
+    test('rejects negative decimals', () {
+      expect(
+        () => OZTransactionOperations.amountToBaseUnits('1', decimals: -1),
+        throwsA(isA<SmartAccountInvalidAmount>()),
+      );
+    });
+
+    test('rejects decimals above the maximum', () {
+      expect(
+        OZTransactionOperations.maxTokenDecimals,
+        equals(38),
+      );
+      expect(
+        () => OZTransactionOperations.amountToBaseUnits(
+          '1',
+          decimals: OZTransactionOperations.maxTokenDecimals + 1,
+        ),
+        throwsA(isA<SmartAccountInvalidAmount>()),
+      );
+    });
+
+    test('accepts amount at the maximum decimals', () {
+      expect(
+        OZTransactionOperations.amountToBaseUnits(
+          '1',
+          decimals: OZTransactionOperations.maxTokenDecimals,
+        ),
+        equals(BigInt.from(10).pow(38)),
+      );
+    });
+
+    test('trims surrounding whitespace before parsing', () {
+      expect(
+        OZTransactionOperations.amountToBaseUnits('  1.5  ', decimals: 6),
+        equals(BigInt.from(1500000)),
+      );
+    });
+  });
+
+  group('baseUnitsToI128ScVal encoding', () {
+    test('encodes an in-range value as SCV_I128', () {
+      final scVal = OZTransactionOperations.baseUnitsToI128ScVal(
+        BigInt.from(1500000),
+        amount: '1.5',
+      );
+      expect(scVal.discriminant, equals(XdrSCValType.SCV_I128));
+      expect(scVal.i128!.lo.uint64, equals(BigInt.from(1500000)));
+    });
+
+    test('out-of-i128-range value throws tagged invalidAmount with cause', () {
+      final tooBig = BigInt.one << 127; // exceeds i128 max.
+      expect(
+        () => OZTransactionOperations.baseUnitsToI128ScVal(
+          tooBig,
+          amount: 'huge',
+        ),
+        throwsA(
+          isA<SmartAccountInvalidAmount>()
+              .having((e) => e.message, 'message', contains('i128'))
+              .having((e) => e.cause, 'cause', isNotNull),
+        ),
+      );
+    });
+  });
+
+  group('fetchTokenDecimals', () {
+    test('returns the u32 decimals reported by the contract', () async {
+      final deployer = KeyPair.random();
+      final mock = MockSorobanServer();
+      mock.getAccountDefault = Account(deployer.accountId, BigInt.from(1));
+      mock.simulateDefault = _u32SimResponse(6);
+
+      final kit = FakePipelineKit(sorobanServer: mock, deployer: deployer)
+        ..setConnected(credentialId: _credentialId, contractId: _contractA);
+      final ops = OZTransactionOperations(kit);
+
+      final decimals = await ops.fetchTokenDecimals(_contractA);
+      expect(decimals, equals(6));
+    });
+
+    test('invalid contract address throws SmartAccountInvalidAddress', () async {
+      final kit = FakePipelineKit()
+        ..setConnected(credentialId: _credentialId, contractId: _contractA);
+      final ops = OZTransactionOperations(kit);
+      await expectLater(
+        () => ops.fetchTokenDecimals('not-a-contract'),
+        throwsA(isA<SmartAccountInvalidAddress>()),
+      );
+    });
+
+    test('non-u32 result throws simulationFailed', () async {
+      final deployer = KeyPair.random();
+      final mock = MockSorobanServer();
+      mock.getAccountDefault = Account(deployer.accountId, BigInt.from(1));
+      // The contract returns a string instead of a u32.
+      mock.simulateDefault =
+          _scValSimResponse(XdrSCVal.forString('not-a-number'));
+
+      final kit = FakePipelineKit(sorobanServer: mock, deployer: deployer)
+        ..setConnected(credentialId: _credentialId, contractId: _contractA);
+      final ops = OZTransactionOperations(kit);
+
+      await expectLater(
+        () => ops.fetchTokenDecimals(_contractA),
+        throwsA(isA<SmartAccountTransactionSimulationFailed>()),
+      );
+    });
+  });
+
+  group('transfer decimals encoding', () {
+    test('supplied decimals: submitted i128 reflects the base units', () async {
+      final kit = FakePipelineKit()
+        ..setConnected(credentialId: _credentialId, contractId: _contractA);
+      final ops = _CapturingContractCallOps(kit);
+
+      await ops.transfer(
+        tokenContract: _contractA,
+        recipient: _accountA,
+        amount: '1.5',
+        decimals: 6,
+      );
+
+      final args = ops.contractCallCalls.single.targetArgs;
+      // targetArgs = [from, to, amount-i128].
+      expect(args[2].discriminant, equals(XdrSCValType.SCV_I128));
+      expect(args[2].i128!.lo.uint64, equals(BigInt.from(1500000)));
+    });
+
+    test('auto-fetch path: decimals() simulate drives the base units', () async {
+      final deployer = KeyPair.random();
+      final mock = MockSorobanServer();
+      mock.getAccountDefault = Account(deployer.accountId, BigInt.from(1));
+      // decimals() simulate returns u32 = 6.
+      mock.simulateDefault = _u32SimResponse(6);
+
+      final kit = FakePipelineKit(sorobanServer: mock, deployer: deployer)
+        ..setConnected(credentialId: _credentialId, contractId: _contractA);
+      final ops = _CapturingContractCallOps(kit);
+
+      await ops.transfer(
+        tokenContract: _contractA,
+        recipient: _accountA,
+        amount: '2.5', // 2.5 at 6 decimals = 2_500_000 base units.
+      );
+
+      final args = ops.contractCallCalls.single.targetArgs;
+      expect(args[2].discriminant, equals(XdrSCValType.SCV_I128));
+      expect(args[2].i128!.lo.uint64, equals(BigInt.from(2500000)));
+      // The decimals() simulate must have run exactly once.
+      expect(mock.simulateCalls.length, equals(1));
+    });
+
+    test('out-of-i128 amount throws tagged invalidAmount', () async {
+      final kit = FakePipelineKit()
+        ..setConnected(credentialId: _credentialId, contractId: _contractA);
+      final ops = _CapturingContractCallOps(kit);
+
+      // 10^30 whole units at 18 decimals => 10^48 base units, far beyond i128.
+      await expectLater(
+        () => ops.transfer(
+          tokenContract: _contractA,
+          recipient: _accountA,
+          amount: '1000000000000000000000000000000',
+          decimals: 18,
+        ),
+        throwsA(
+          isA<SmartAccountInvalidAmount>()
+              .having((e) => e.message, 'message', contains('i128')),
+        ),
+      );
+      expect(ops.contractCallCalls, isEmpty);
+    });
+  });
+
+  group('multiSignerTransfer decimals encoding', () {
+    test('supplied decimals: submitted i128 reflects the base units', () async {
+      final kit = FakePipelineKit()
+        ..setConnected(credentialId: _credentialId, contractId: _contractA);
+      final manager = _CapturingMultiSignerManager(kit);
+
+      await manager.multiSignerTransfer(
+        tokenContract: _contractA,
+        recipient: _accountA,
+        amount: '1.5',
+        decimals: 6,
+        selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
+      );
+
+      final args = manager.contractCallCalls.single.targetArgs;
+      expect(args[2].discriminant, equals(XdrSCValType.SCV_I128));
+      expect(args[2].i128!.lo.uint64, equals(BigInt.from(1500000)));
+    });
+
+    test('auto-fetch path: decimals() simulate drives the base units', () async {
+      final deployer = KeyPair.random();
+      final mock = MockSorobanServer();
+      mock.getAccountDefault = Account(deployer.accountId, BigInt.from(1));
+      mock.simulateDefault = _u32SimResponse(6);
+
+      final kit = FakePipelineKit(sorobanServer: mock, deployer: deployer)
+        ..setConnected(credentialId: _credentialId, contractId: _contractA);
+      // multiSignerTransfer fetches decimals via kit.transactionOperations,
+      // so the kit's bound ops must hit the same mock server.
+      final manager = _CapturingMultiSignerManager(kit);
+
+      await manager.multiSignerTransfer(
+        tokenContract: _contractA,
+        recipient: _accountA,
+        amount: '2.5',
+        selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
+      );
+
+      final args = manager.contractCallCalls.single.targetArgs;
+      expect(args[2].discriminant, equals(XdrSCValType.SCV_I128));
+      expect(args[2].i128!.lo.uint64, equals(BigInt.from(2500000)));
+      expect(mock.simulateCalls.length, equals(1));
+    });
+
+    test('empty amount throws invalidAmount before routing', () async {
+      final kit = FakePipelineKit()
+        ..setConnected(credentialId: _credentialId, contractId: _contractA);
+      final manager = _CapturingMultiSignerManager(kit);
+
+      await expectLater(
+        () => manager.multiSignerTransfer(
+          tokenContract: _contractA,
+          recipient: _accountA,
+          amount: '',
+          decimals: 7,
+          selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
+        ),
+        throwsA(isA<SmartAccountInvalidAmount>()),
+      );
+      expect(manager.contractCallCalls, isEmpty);
+    });
+
+    test('zero amount throws invalidAmount before routing', () async {
+      final kit = FakePipelineKit()
+        ..setConnected(credentialId: _credentialId, contractId: _contractA);
+      final manager = _CapturingMultiSignerManager(kit);
+
+      await expectLater(
+        () => manager.multiSignerTransfer(
+          tokenContract: _contractA,
+          recipient: _accountA,
+          amount: '0',
+          decimals: 7,
+          selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
+        ),
+        throwsA(isA<SmartAccountInvalidAmount>()),
+      );
+      expect(manager.contractCallCalls, isEmpty);
+    });
+
+    test('excess fractional digits throw invalidAmount before routing',
+        () async {
+      final kit = FakePipelineKit()
+        ..setConnected(credentialId: _credentialId, contractId: _contractA);
+      final manager = _CapturingMultiSignerManager(kit);
+
+      await expectLater(
+        () => manager.multiSignerTransfer(
+          tokenContract: _contractA,
+          recipient: _accountA,
+          amount: '1.123', // 3 fractional digits > 2 decimals.
+          decimals: 2,
+          selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
+        ),
+        throwsA(isA<SmartAccountInvalidAmount>()),
+      );
+      expect(manager.contractCallCalls, isEmpty);
+    });
+
+    test('out-of-i128 amount throws tagged invalidAmount', () async {
+      final kit = FakePipelineKit()
+        ..setConnected(credentialId: _credentialId, contractId: _contractA);
+      final manager = _CapturingMultiSignerManager(kit);
+
+      await expectLater(
+        () => manager.multiSignerTransfer(
+          tokenContract: _contractA,
+          recipient: _accountA,
+          amount: '1000000000000000000000000000000',
+          decimals: 18,
+          selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
+        ),
+        throwsA(
+          isA<SmartAccountInvalidAmount>()
+              .having((e) => e.message, 'message', contains('i128')),
+        ),
+      );
+      expect(manager.contractCallCalls, isEmpty);
+    });
+  });
 }
+
+/// Records the [contractCall] arguments produced by [transfer] while letting
+/// [fetchTokenDecimals] run against the kit's (mock) Soroban server. Used to
+/// assert the encoded i128 amount without driving the full submission
+/// pipeline.
+class _CapturingContractCallOps extends OZTransactionOperations {
+  _CapturingContractCallOps(super.kit);
+
+  final List<({String target, String targetFn, List<XdrSCVal> targetArgs})>
+      contractCallCalls =
+      <({String target, String targetFn, List<XdrSCVal> targetArgs})>[];
+
+  @override
+  Future<OZTransactionResult> contractCall({
+    required String target,
+    required String targetFn,
+    List<XdrSCVal> targetArgs = const <XdrSCVal>[],
+    OZSubmissionMethod? forceMethod,
+    OZResolveContextRuleIds? resolveContextRuleIds,
+    dynamic cancelToken,
+  }) async {
+    contractCallCalls.add((
+      target: target,
+      targetFn: targetFn,
+      targetArgs: List<XdrSCVal>.from(targetArgs),
+    ));
+    return const OZTransactionResult(success: true, hash: 'captured');
+  }
+}
+
+/// Records the [multiSignerContractCall] arguments produced by
+/// [multiSignerTransfer] while letting the decimals fetch run against the
+/// kit's (mock) Soroban server through `kit.transactionOperations`.
+class _CapturingMultiSignerManager extends OZMultiSignerManager {
+  _CapturingMultiSignerManager(super.kit);
+
+  final List<({String target, String targetFn, List<XdrSCVal> targetArgs})>
+      contractCallCalls =
+      <({String target, String targetFn, List<XdrSCVal> targetArgs})>[];
+
+  @override
+  Future<OZTransactionResult> multiSignerContractCall({
+    required String target,
+    required String targetFn,
+    List<XdrSCVal> targetArgs = const <XdrSCVal>[],
+    required List<OZSelectedSigner> selectedSigners,
+    OZSubmissionMethod? forceMethod,
+    OZResolveContextRuleIds? resolveContextRuleIds,
+  }) async {
+    contractCallCalls.add((
+      target: target,
+      targetFn: targetFn,
+      targetArgs: List<XdrSCVal>.from(targetArgs),
+    ));
+    return const OZTransactionResult(success: true, hash: 'captured');
+  }
+}
+
+/// Builds a [SimulateTransactionResponse] whose single result decodes to the
+/// supplied [scVal], mirroring the shape an on-chain read-only simulate
+/// returns.
+SimulateTransactionResponse _scValSimResponse(XdrSCVal scVal) {
+  final stream = XdrDataOutputStream();
+  XdrSCVal.encode(stream, scVal);
+  final base64 = base64Encode(stream.bytes);
+  final resp = SimulateTransactionResponse(<String, dynamic>{});
+  resp.results = <SimulateTransactionResult>[
+    SimulateTransactionResult(base64, <String>[]),
+  ];
+  resp.minResourceFee = 100;
+  return resp;
+}
+
+/// Builds a [SimulateTransactionResponse] whose single result decodes to a
+/// `u32` value, used to emulate a token's `decimals()` return.
+SimulateTransactionResponse _u32SimResponse(int value) =>
+    _scValSimResponse(XdrSCVal.forU32(value));
 
 XdrSorobanAuthorizationEntry _makeAddressCredsEntryForOps(String contractAddress) {
   final invokeArgs = XdrInvokeContractArgs(

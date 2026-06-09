@@ -693,35 +693,35 @@ class Util {
     return removeTailZero(amountString);
   }
 
-  /// Converts a stroop amount to a Soroban I128 [XdrSCVal].
+  /// Encodes a signed 128-bit integer [value] as a Soroban I128 [XdrSCVal].
   ///
-  /// Encodes [stroops] into a 128-bit signed integer SCVal suitable for
-  /// use in Soroban contract invocations that accept I128 parameters.
+  /// Suitable for any Soroban contract invocation that accepts an I128
+  /// parameter (for example a token amount in its base units).
   ///
   /// Parameters:
-  /// - [stroops] The stroop value to encode. Must be within the signed
-  ///   128-bit integer range (-(2^127) to 2^127 - 1).
+  /// - [value] The integer to encode. Must be within the signed 128-bit
+  ///   integer range (-(2^127) to 2^127 - 1).
   ///
   /// Returns: [XdrSCVal] with discriminant [XdrSCValType.SCV_I128].
   ///
   /// Throws:
-  /// - [ArgumentError] when [stroops] is outside the I128 range.
+  /// - [ArgumentError] when [value] is outside the I128 range.
   ///
   /// Example:
   /// ```dart
-  /// XdrSCVal val = Util.stroopsToI128ScVal(BigInt.from(10000000));
+  /// XdrSCVal val = Util.bigIntToI128ScVal(BigInt.from(10000000));
   /// ```
-  static XdrSCVal stroopsToI128ScVal(BigInt stroops) {
+  static XdrSCVal bigIntToI128ScVal(BigInt value) {
     final maxI128 = (BigInt.one << 127) - BigInt.one;
     final minI128 = -(BigInt.one << 127);
-    if (stroops < minI128 || stroops > maxI128) {
+    if (value < minI128 || value > maxI128) {
       throw ArgumentError.value(
-        stroops,
-        'stroops',
+        value,
+        'value',
         'value is outside the I128 range',
       );
     }
-    return XdrSCVal.forI128BigInt(stroops);
+    return XdrSCVal.forI128BigInt(value);
   }
 
 }

@@ -173,7 +173,7 @@ final wallet = await kit.walletOperations.createWallet(
 final result = await kit.transactionOperations.transfer(
   tokenContract: '<C-address of token contract>',
   recipient: '<recipient G-address>',
-  amount: '10', // decimal; the SDK converts to stroops
+  amount: '10', // decimal; the SDK converts to the token's base units
 );
 
 if (result.success) {

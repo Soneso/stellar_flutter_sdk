@@ -70,6 +70,7 @@ class MockOZMultiSignerManager extends OZMultiSignerManager {
     required String tokenContract,
     required String recipient,
     required String amount,
+    int? decimals,
     required List<OZSelectedSigner> selectedSigners,
     OZSubmissionMethod? forceMethod,
     OZResolveContextRuleIds? resolveContextRuleIds,
@@ -78,6 +79,7 @@ class MockOZMultiSignerManager extends OZMultiSignerManager {
       tokenContract: tokenContract,
       recipient: recipient,
       amount: amount,
+      decimals: decimals,
       selectedSigners: List<OZSelectedSigner>.unmodifiable(selectedSigners),
       forceMethod: forceMethod,
       resolveContextRuleIds: resolveContextRuleIds,
@@ -147,6 +149,7 @@ class MultiSignerTransferInvocation {
     required this.tokenContract,
     required this.recipient,
     required this.amount,
+    required this.decimals,
     required this.selectedSigners,
     required this.forceMethod,
     required this.resolveContextRuleIds,
@@ -155,6 +158,7 @@ class MultiSignerTransferInvocation {
   final String tokenContract;
   final String recipient;
   final String amount;
+  final int? decimals;
   final List<OZSelectedSigner> selectedSigners;
   final OZSubmissionMethod? forceMethod;
   final OZResolveContextRuleIds? resolveContextRuleIds;

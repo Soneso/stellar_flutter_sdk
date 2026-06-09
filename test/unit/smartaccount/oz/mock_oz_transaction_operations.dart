@@ -82,6 +82,7 @@ class MockOZTransactionOperations extends OZTransactionOperations {
     required String tokenContract,
     required String recipient,
     required String amount,
+    int? decimals,
     OZSubmissionMethod? forceMethod,
     dio.CancelToken? cancelToken,
   }) async {
@@ -89,6 +90,7 @@ class MockOZTransactionOperations extends OZTransactionOperations {
       tokenContract: tokenContract,
       recipient: recipient,
       amount: amount,
+      decimals: decimals,
       forceMethod: forceMethod,
       cancelToken: cancelToken,
     ));
@@ -180,6 +182,7 @@ class TransferInvocation {
     required this.tokenContract,
     required this.recipient,
     required this.amount,
+    required this.decimals,
     required this.forceMethod,
     required this.cancelToken,
   });
@@ -187,6 +190,7 @@ class TransferInvocation {
   final String tokenContract;
   final String recipient;
   final String amount;
+  final int? decimals;
   final OZSubmissionMethod? forceMethod;
   final dio.CancelToken? cancelToken;
 }

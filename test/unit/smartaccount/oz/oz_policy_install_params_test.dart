@@ -248,10 +248,7 @@ void main() {
       expect(scVal.map![1].val.i128, isNotNull);
     });
 
-    test('decimal string converts to stroops (via OZPolicyManager helper)', () {
-      // Verify that OZPolicyManager.addSpendingLimit converts via
-      // Util.toXdrInt64Amount; here we only verify the params class
-      // uses the precomputed BigInt.
+    test('params class stores the precomputed base-units BigInt', () {
       final params = OZSpendingLimitPolicyParams(
         spendingLimit: BigInt.from(100) * BigInt.from(10000000),
         periodLedgers: 1,
@@ -259,13 +256,14 @@ void main() {
       expect(params.spendingLimit, BigInt.from(1000000000));
     });
 
-    test('amountToStroops round-trip preserves value', () {
-      final stroops = Util.toXdrInt64Amount('123.4567890');
+    test('base-units value round-trips through the params class', () {
+      final baseUnits =
+          OZTransactionOperations.amountToBaseUnits('123.4567890', decimals: 7);
       final params = OZSpendingLimitPolicyParams(
-        spendingLimit: stroops,
+        spendingLimit: baseUnits,
         periodLedgers: 1,
       );
-      expect(params.spendingLimit, stroops);
+      expect(params.spendingLimit, baseUnits);
     });
   });
 

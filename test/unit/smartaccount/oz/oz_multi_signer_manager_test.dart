@@ -179,7 +179,7 @@ void main() {
   // multiSignerTransfer — tokenContract validation
   //
   // The Flutter implementation validates the recipient first, then performs
-  // the self-transfer guard, then converts amount to stroops, then routes
+  // the self-transfer guard, then converts amount to base units, then routes
   // into multiSignerContractCall which calls requireContractAddress on the
   // target. The rows below pass a valid recipient that is distinct from the
   // connected contractId so the failure surfaces on the tokenContract leg
@@ -275,6 +275,7 @@ void main() {
           tokenContract: _validTargetContract,
           recipient: _validAccountAddress,
           amount: '10',
+          decimals: 7,
           selectedSigners: const <OZSelectedSigner>[],
         );
         fail('Expected SmartAccountInvalidInput');
@@ -1185,7 +1186,7 @@ void main() {
         networkPassphrase: _testNetworkPassphrase,
       );
       final keypair = KeyPair.random();
-      await extManager.addFromSecret(keypair.secretSeed!);
+      await extManager.addFromSecret(keypair.secretSeed);
 
       final kit = FakePipelineKit(externalSigners: extManager);
       kit.setConnected(
@@ -1216,7 +1217,7 @@ void main() {
         networkPassphrase: _testNetworkPassphrase,
       );
       final keypair = KeyPair.random();
-      await extManager.addFromSecret(keypair.secretSeed!);
+      await extManager.addFromSecret(keypair.secretSeed);
 
       expect(await extManager.canSignFor(keypair.accountId), isTrue);
       // A different address for which no keypair was registered must return false.

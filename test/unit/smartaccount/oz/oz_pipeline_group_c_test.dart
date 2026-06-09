@@ -1296,6 +1296,7 @@ void main() {
         tokenContract: _contractB,
         recipient: recipient,
         amount: '1.5',
+        decimals: 7,
       );
       expect(relayerHarness.adapter.capturedUrls, isNotEmpty);
     });
@@ -1314,6 +1315,7 @@ void main() {
         tokenContract: _contractB,
         recipient: _contractB,
         amount: '1',
+        decimals: 7,
         forceMethod: OZSubmissionMethod.rpc,
       );
       expect(h.soroban.sendCalls.length, equals(1));

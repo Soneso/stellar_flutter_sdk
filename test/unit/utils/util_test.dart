@@ -423,27 +423,39 @@ void main() {
       });
     });
 
-    group('stroopsToI128ScVal', () {
+    group('bigIntToI128ScVal', () {
       test('small positive value produces SCV_I128', () {
-        final scVal = Util.stroopsToI128ScVal(BigInt.from(10000000));
+        final scVal = Util.bigIntToI128ScVal(BigInt.from(10000000));
         expect(scVal.discriminant, XdrSCValType.SCV_I128);
         expect(scVal.i128, isNotNull);
       });
 
       test('zero produces SCV_I128', () {
-        final scVal = Util.stroopsToI128ScVal(BigInt.zero);
+        final scVal = Util.bigIntToI128ScVal(BigInt.zero);
         expect(scVal.discriminant, XdrSCValType.SCV_I128);
       });
 
       test('max I128 value is accepted', () {
         final maxI128 = (BigInt.one << 127) - BigInt.one;
-        final scVal = Util.stroopsToI128ScVal(maxI128);
+        final scVal = Util.bigIntToI128ScVal(maxI128);
         expect(scVal.discriminant, XdrSCValType.SCV_I128);
+      });
+
+      test('min I128 value is accepted', () {
+        final minI128 = -(BigInt.one << 127);
+        final scVal = Util.bigIntToI128ScVal(minI128);
+        expect(scVal.discriminant, XdrSCValType.SCV_I128);
+        expect(scVal.i128, isNotNull);
       });
 
       test('value exceeding I128 max throws ArgumentError', () {
         final tooBig = BigInt.one << 127;
-        expect(() => Util.stroopsToI128ScVal(tooBig), throwsArgumentError);
+        expect(() => Util.bigIntToI128ScVal(tooBig), throwsArgumentError);
+      });
+
+      test('value below I128 min throws ArgumentError', () {
+        final tooSmall = -(BigInt.one << 127) - BigInt.one;
+        expect(() => Util.bigIntToI128ScVal(tooSmall), throwsArgumentError);
       });
     });
 

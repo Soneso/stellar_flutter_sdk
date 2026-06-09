@@ -410,8 +410,7 @@ void main() {
   });
 
   group('addSpendingLimit', () {
-    test('zero amount string throws (Util.toXdrInt64Amount rejects)',
-        () async {
+    test('zero amount string throws field-tagged validation error', () async {
       final h = _buildKit();
       await expectLater(
         () => OZPolicyManager(h.kit).addSpendingLimit(
@@ -420,15 +419,19 @@ void main() {
           spendingLimit: '0',
           periodLedgers: 1,
         ),
-        // Either SmartAccountValidationException (from OZSpendingLimitPolicyParams) or
-        // ArgumentError (from Util.toXdrInt64Amount) is acceptable here;
-        // the important contract is that no submit is dispatched.
-        throwsA(anything),
+        throwsA(
+          isA<SmartAccountInvalidInput>().having(
+            (e) => e.message,
+            'message',
+            contains('spendingLimit'),
+          ),
+        ),
       );
       expect(h.recordingOps.submitCalls, isEmpty);
     });
 
-    test('negative amount string throws', () async {
+    test('negative amount string throws field-tagged validation error',
+        () async {
       final h = _buildKit();
       await expectLater(
         () => OZPolicyManager(h.kit).addSpendingLimit(
@@ -437,7 +440,13 @@ void main() {
           spendingLimit: '-1',
           periodLedgers: 1,
         ),
-        throwsA(anything),
+        throwsA(
+          isA<SmartAccountInvalidInput>().having(
+            (e) => e.message,
+            'message',
+            contains('spendingLimit'),
+          ),
+        ),
       );
       expect(h.recordingOps.submitCalls, isEmpty);
     });
@@ -455,13 +464,13 @@ void main() {
       );
     });
 
-    test('valid input converts decimal amount to stroops via Util',
+    test('valid input converts decimal amount to base units (default decimals)',
         () async {
       final h = _buildKit();
       await OZPolicyManager(h.kit).addSpendingLimit(
         contextRuleId: 4,
         policyAddress: _policyContractA,
-        spendingLimit: '100', // 100 XLM = 1_000_000_000 stroops.
+        spendingLimit: '100', // 100 at 7 decimals = 1_000_000_000 base units.
         periodLedgers: 17280,
       );
       final call = h.recordingOps.submitCalls.single;
@@ -477,8 +486,48 @@ void main() {
         limitEntry.val.discriminant,
         equals(XdrSCValType.SCV_I128),
       );
-      // 100 XLM in stroops fits entirely in the low part.
+      // 100 scaled by 7 decimals fits entirely in the low part.
       expect(limitEntry.val.i128!.lo.uint64, equals(BigInt.from(1000000000)));
+    });
+
+    test('explicit non-7 decimals scales the base-units encoding', () async {
+      final h = _buildKit();
+      await OZPolicyManager(h.kit).addSpendingLimit(
+        contextRuleId: 4,
+        policyAddress: _policyContractA,
+        spendingLimit: '1.5', // 1.5 at 6 decimals = 1_500_000 base units.
+        periodLedgers: 100,
+        decimals: 6,
+      );
+      final call = h.recordingOps.submitCalls.single;
+      final decoded = _decodeInvoke(call.hostFunction);
+      final installParams = decoded.args[2].map!;
+      final limitEntry =
+          installParams.firstWhere((e) => e.key.sym == 'spending_limit');
+      expect(limitEntry.val.discriminant, equals(XdrSCValType.SCV_I128));
+      expect(limitEntry.val.i128!.lo.uint64, equals(BigInt.from(1500000)));
+    });
+
+    test('excess fractional digits for the scale throw field-tagged error',
+        () async {
+      final h = _buildKit();
+      await expectLater(
+        () => OZPolicyManager(h.kit).addSpendingLimit(
+          contextRuleId: 1,
+          policyAddress: _policyContractA,
+          spendingLimit: '1.123', // 3 fractional digits > 2 decimals.
+          periodLedgers: 1,
+          decimals: 2,
+        ),
+        throwsA(
+          isA<SmartAccountInvalidInput>().having(
+            (e) => e.message,
+            'message',
+            contains('spendingLimit'),
+          ),
+        ),
+      );
+      expect(h.recordingOps.submitCalls, isEmpty);
     });
 
     test('invalid policy address throws SmartAccountInvalidAddress', () async {

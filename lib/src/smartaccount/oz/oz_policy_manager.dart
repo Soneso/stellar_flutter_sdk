@@ -37,10 +37,9 @@ import 'oz_validation.dart';
 sealed class OZPolicyInstallParams {
   const OZPolicyInstallParams();
 
-  /// Returns the on-chain `ScVal` map encoding of the parameter shape.
-  /// Marked [internal] because consumer code should prefer the
-  /// convenience helpers on [OZPolicyManager].
-  @internal
+  /// Returns the on-chain `ScVal` map encoding of the parameter shape,
+  /// suitable for [OZPolicyManager.addPolicy] when installing a policy from
+  /// pre-built parameters.
   XdrSCVal toScVal();
 }
 
@@ -171,7 +170,7 @@ final class OZSpendingLimitPolicyParams extends OZPolicyInstallParams {
     required this.periodLedgers,
   });
 
-  /// Maximum amount in stroops (as a [BigInt]).
+  /// Maximum amount in the token's base units (as a [BigInt]).
   final BigInt spendingLimit;
 
   /// Period length in ledgers.
@@ -192,7 +191,7 @@ final class OZSpendingLimitPolicyParams extends OZPolicyInstallParams {
       );
     }
 
-    final limitI128 = Util.stroopsToI128ScVal(spendingLimit);
+    final limitI128 = Util.bigIntToI128ScVal(spendingLimit);
 
     final entries = <XdrSCMapEntry>[
       XdrSCMapEntry(
@@ -283,20 +282,36 @@ class OZPolicyManager {
     );
   }
 
-  /// Adds a spending-limit policy. Converts [spendingLimit] (a decimal
-  /// XLM-style string with up to seven decimal places) to stroops via
-  /// [Util.toXdrInt64Amount].
+  /// Adds a spending-limit policy. Converts [spendingLimit] (a positive
+  /// decimal string with up to [decimals] fractional digits) to the token's
+  /// base units. [decimals] defaults to 7; this method has no token-contract
+  /// parameter and therefore does not fetch the scale automatically.
   Future<OZTransactionResult> addSpendingLimit({
     required int contextRuleId,
     required String policyAddress,
     required String spendingLimit,
     required int periodLedgers,
+    int decimals = 7,
     List<OZSelectedSigner> selectedSigners = const <OZSelectedSigner>[],
     OZSubmissionMethod? forceMethod,
   }) async {
-    final stroops = Util.toXdrInt64Amount(spendingLimit);
+    final BigInt baseUnits;
+    try {
+      baseUnits = OZTransactionOperations.amountToBaseUnits(
+        spendingLimit,
+        decimals: decimals,
+      );
+    } on SmartAccountValidationException catch (e) {
+      // Re-surface as a field-tagged validation error so the message refers
+      // to the policy parameter the caller supplied.
+      throw SmartAccountValidationException.invalidInput(
+        'spendingLimit',
+        'Invalid spending limit: ${e.message}',
+        cause: e,
+      );
+    }
     final params = OZSpendingLimitPolicyParams(
-      spendingLimit: stroops,
+      spendingLimit: baseUnits,
       periodLedgers: periodLedgers,
     );
     return addPolicy(

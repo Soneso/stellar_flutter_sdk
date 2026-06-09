@@ -600,7 +600,8 @@ SEP-41 compatible token transfer (XLM via SAC, or any Soroban token).
 Future<OZTransactionResult> transfer({
   required String tokenContract, // C-address of the token contract
   required String recipient,     // G-address or C-address
-  required String amount,        // decimal string — converted to stroops internally
+  required String amount,        // decimal string — converted to the token's base units
+  int? decimals,                 // token decimal scale; null fetches decimals() on-chain
   OZSubmissionMethod? forceMethod,
   dio.CancelToken? cancelToken,
 });
@@ -649,7 +650,9 @@ final expirationLedger = (latest.sequence ?? 0) + 17280; // ~1 day at 5s/ledger
 final args = <XdrSCVal>[
   XdrSCVal.forAddressStrKey(connected),         // from
   XdrSCVal.forAddressStrKey(spenderContract),   // spender
-  Util.stroopsToI128ScVal(Util.toXdrInt64Amount('100')), // amount as i128
+  Util.bigIntToI128ScVal(
+    OZTransactionOperations.amountToBaseUnits('100', decimals: 7),
+  ), // amount as i128 (base units)
   XdrSCVal.forU32(expirationLedger),            // absolute expiration ledger
 ];
 
@@ -1354,7 +1357,7 @@ OZConstants.friendbotReserveXlm;    // 5
 
 ## Pitfall recap
 
-- BigInt for large amounts: `transfer`/`fundWallet` take decimal `String` amounts; `contractCall` i128 args are `BigInt` via `Util.stroopsToI128ScVal(Util.toXdrInt64Amount(...))`. <a id="bigint-for-large-amounts"></a>
+- BigInt for large amounts: `transfer`/`fundWallet` take decimal `String` amounts; `contractCall` i128 args are `BigInt` via `Util.bigIntToI128ScVal(OZTransactionOperations.amountToBaseUnits(...))`. <a id="bigint-for-large-amounts"></a>
 - C-address alphabet is base32 `A-Z` + `2-7` (RFC 4648) — never use digits `0`, `1`, `8`, `9`. Invalid C-addresses are rejected silently by `StrKey.isValidContractId` and surface as `SmartAccountConfigurationException` / `SmartAccountValidationException`.
 - `await` is required for async external-signer methods, especially `canSignFor` and `removeAll`. `addEd25519FromRawKey`, `canSignEd25519For`, and `removeEd25519` are synchronous — do not `await` them.
 - `autoFund` is testnet/Friendbot-only and requires `autoSubmit: true` plus a `nativeTokenContract`.

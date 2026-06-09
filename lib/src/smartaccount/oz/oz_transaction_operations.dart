@@ -127,7 +127,7 @@ typedef OZResolveContextRuleIds = Future<List<int>> Function(
 /// Provides high-level transaction building, signing, and submission for
 /// smart account operations. Responsibilities include:
 ///
-/// - Token transfers with automatic stroops conversion.
+/// - Token transfers with automatic base-units conversion.
 /// - Transaction simulation and fee estimation.
 /// - Authorization-entry signing with WebAuthn.
 /// - Relayer submission for fee sponsoring.
@@ -173,13 +173,14 @@ class OZTransactionOperations {
   /// Transfers tokens from the connected smart account to a recipient.
   ///
   /// Works with any SEP-41 compatible token (XLM via SAC, custom Soroban
-  /// tokens). [amount] is a decimal string converted to stroops (seven
-  /// decimal places) internally via [Util.toXdrInt64Amount].
+  /// tokens). [amount] is a decimal string converted to the token's base
+  /// units before submission: [decimals] is used when supplied, otherwise the
+  /// token's on-chain `decimals()` is fetched via [fetchTokenDecimals].
   ///
   /// Flow:
   ///
   /// 1. Validate recipient address and prevent self-transfer.
-  /// 2. Convert amount to stroops using arbitrary-precision arithmetic.
+  /// 2. Resolve the token decimals and convert [amount] to base units.
   /// 3. Delegate to [contractCall], which builds the host function,
   ///    simulates it, signs auth entries via WebAuthn, re-simulates, and
   ///    submits.
@@ -188,13 +189,16 @@ class OZTransactionOperations {
   /// prompted for biometric authentication.
   ///
   /// [tokenContract] is the token contract address (C-address). [recipient]
-  /// is the recipient address (G-address or C-address). [forceMethod]
-  /// optionally overrides the auto-detected submission method.
+  /// is the recipient address (G-address or C-address). [decimals] is the
+  /// token's decimal scale used to convert [amount]; when `null` (default) it
+  /// is fetched on-chain via [fetchTokenDecimals]. [forceMethod] optionally
+  /// overrides the auto-detected submission method.
   ///
   /// Throws [SmartAccountWalletNotConnected] when no wallet is connected,
   /// [SmartAccountInvalidAddress] when the recipient address is malformed,
-  /// [SmartAccountInvalidInput] when the recipient is the smart account itself or when
-  /// the amount is invalid, and [SmartAccountTransactionException] /
+  /// [SmartAccountInvalidInput] when the recipient is the smart account itself,
+  /// [SmartAccountInvalidAmount] when the amount is invalid or outside the
+  /// supported i128 range, and [SmartAccountTransactionException] /
   /// [WebAuthnException] for downstream failures.
   ///
   /// The optional [cancelToken] can be cancelled to abort an in-flight
@@ -204,6 +208,7 @@ class OZTransactionOperations {
     required String tokenContract,
     required String recipient,
     required String amount,
+    int? decimals,
     OZSubmissionMethod? forceMethod,
     dio.CancelToken? cancelToken,
   }) async {
@@ -217,28 +222,14 @@ class OZTransactionOperations {
       throw SmartAccountValidationException.invalidInput('recipient', 'Cannot transfer to self');
     }
 
-    final BigInt stroops;
-    try {
-      stroops = Util.toXdrInt64Amount(amount);
-    } catch (e) {
-      throw SmartAccountValidationException.invalidInput(
-        'amount',
-        'Invalid decimal amount: $amount',
-        cause: e,
-      );
-    }
-
-    if (stroops <= BigInt.zero) {
-      throw SmartAccountValidationException.invalidInput(
-        'amount',
-        'Amount must be positive, got: $amount',
-      );
-    }
+    final resolvedDecimals =
+        decimals ?? await fetchTokenDecimals(tokenContract);
+    final baseUnits = amountToBaseUnits(amount, decimals: resolvedDecimals);
 
     final targetArgs = <XdrSCVal>[
       XdrSCVal.forAddress(Address.forContractId(connected.contractId).toXdr()),
       _addressScVal(recipient),
-      Util.stroopsToI128ScVal(stroops),
+      baseUnitsToI128ScVal(baseUnits, amount: amount),
     ];
 
     return contractCall(
@@ -248,6 +239,37 @@ class OZTransactionOperations {
       forceMethod: forceMethod,
       cancelToken: cancelToken,
     );
+  }
+
+  /// Reads the `decimals()` value from a SEP-41 token contract.
+  ///
+  /// Simulates the token contract's `decimals` function and returns the
+  /// reported `u32` scale.
+  ///
+  /// [tokenContract] is the SEP-41 token contract address (C-address).
+  ///
+  /// Throws [SmartAccountInvalidAddress] when [tokenContract] is not a valid
+  /// contract address, and [SmartAccountTransactionException] when the
+  /// simulation fails or the contract does not return a valid `u32` value.
+  Future<int> fetchTokenDecimals(String tokenContract) async {
+    requireContractAddress(tokenContract, fieldName: 'tokenContract');
+
+    final invokeArgs = XdrInvokeContractArgs(
+      Address.forContractId(tokenContract).toXdr(),
+      'decimals',
+      const <XdrSCVal>[],
+    );
+    final hostFunction =
+        XdrHostFunction.forInvokingContractWithArgs(invokeArgs);
+    final result = await simulateAndExtractResult(hostFunction);
+
+    final decimals = _scValToUInt32(result);
+    if (decimals == null) {
+      throw SmartAccountTransactionException.simulationFailed(
+        'Token contract $tokenContract did not return a valid u32 decimals value',
+      );
+    }
+    return decimals;
   }
 
   // Public API: direct contract call
@@ -832,7 +854,7 @@ class OZTransactionOperations {
     final functionArgs = <XdrSCVal>[
       XdrSCVal.forAddress(Address.forAccountId(tempKeypair.accountId).toXdr()),
       XdrSCVal.forAddress(Address.forContractId(connected.contractId).toXdr()),
-      Util.stroopsToI128ScVal(transferStroops),
+      Util.bigIntToI128ScVal(transferStroops),
     ];
     final invokeArgs = XdrInvokeContractArgs(
       Address.forContractId(nativeTokenContract).toXdr(),
@@ -1443,6 +1465,109 @@ class OZTransactionOperations {
     XdrSorobanAuthorizedInvocation.encode(stream, invocation);
     final bytes = Uint8List.fromList(stream.bytes);
     return XdrSorobanAuthorizedInvocation.decode(XdrDataInputStream(bytes));
+  }
+
+  // Static amount helpers
+
+  /// Maximum number of decimal places accepted by [amountToBaseUnits].
+  ///
+  /// `10^38` already exceeds the i128 range used for token amounts, so a
+  /// larger scale could never produce a representable base-units value.
+  static const int maxTokenDecimals = 38;
+
+  /// Converts a positive decimal [amount] string to its base-units value
+  /// scaled by [decimals] decimal places.
+  ///
+  /// Rejects scientific notation, empty or non-numeric strings, values less
+  /// than or equal to zero, and values carrying more fractional digits than
+  /// [decimals] allows. Accepted shape: `^[0-9]+(\.[0-9]+)?$` with at most
+  /// [decimals] fractional digits and a result greater than zero.
+  ///
+  /// [decimals] is the token's decimal scale and must be in
+  /// `0..maxTokenDecimals`; a value of `0` accepts only integer amounts.
+  ///
+  /// Throws [SmartAccountInvalidAmount] when [amount] is invalid or [decimals]
+  /// is out of range.
+  static BigInt amountToBaseUnits(String amount, {required int decimals}) {
+    if (decimals < 0) {
+      throw SmartAccountValidationException.invalidAmount(
+        amount,
+        reason: 'Token decimals must not be negative',
+      );
+    }
+    if (decimals > maxTokenDecimals) {
+      throw SmartAccountValidationException.invalidAmount(
+        amount,
+        reason: 'Token decimals must not exceed $maxTokenDecimals',
+      );
+    }
+
+    final trimmed = amount.trim();
+    if (trimmed.isEmpty) {
+      throw SmartAccountValidationException.invalidAmount(
+        amount,
+        reason: 'Amount must not be empty',
+      );
+    }
+
+    if (!RegExp(r'^[0-9]+(\.[0-9]+)?$').hasMatch(trimmed)) {
+      throw SmartAccountValidationException.invalidAmount(
+        amount,
+        reason: 'Amount must be a positive decimal number',
+      );
+    }
+
+    final parts = trimmed.split('.');
+    final wholePart = parts[0];
+    final fractionPart = parts.length > 1 ? parts[1] : '';
+
+    if (fractionPart.length > decimals) {
+      throw SmartAccountValidationException.invalidAmount(
+        amount,
+        reason: 'Amount has more than $decimals fractional digits',
+      );
+    }
+
+    final paddedFraction = fractionPart.padRight(decimals, '0');
+    final baseUnits = BigInt.parse(wholePart + paddedFraction);
+
+    if (baseUnits <= BigInt.zero) {
+      throw SmartAccountValidationException.invalidAmount(
+        amount,
+        reason: 'Amount must be greater than zero',
+      );
+    }
+    return baseUnits;
+  }
+
+  /// Encodes a [baseUnits] value as an i128 [XdrSCVal], surfacing an
+  /// out-of-range value as a tagged validation error.
+  ///
+  /// [amount] is the original caller-supplied amount, used for the error
+  /// message.
+  @internal
+  static XdrSCVal baseUnitsToI128ScVal(
+    BigInt baseUnits, {
+    required String amount,
+  }) {
+    try {
+      return Util.bigIntToI128ScVal(baseUnits);
+    } catch (e) {
+      throw SmartAccountValidationException.invalidAmount(
+        amount,
+        reason: 'Amount is outside the supported i128 range',
+        cause: e,
+      );
+    }
+  }
+
+  /// Extracts a `u32` from [value], used to parse a token contract's
+  /// `decimals()` return value. Returns `null` when [value] is not a `u32`.
+  static int? _scValToUInt32(XdrSCVal value) {
+    if (value.discriminant != XdrSCValType.SCV_U32) {
+      return null;
+    }
+    return value.u32?.uint32;
   }
 }
 

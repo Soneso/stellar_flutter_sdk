@@ -15,7 +15,6 @@ import '../../memo.dart';
 import '../../soroban/soroban_auth.dart';
 import '../../soroban/soroban_server.dart';
 import '../../transaction.dart';
-import '../../util.dart';
 import '../../xdr/xdr.dart';
 import '../core/allow_credential.dart';
 import '../core/smart_account_constants.dart';
@@ -73,13 +72,17 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   /// signers in [selectedSigners].
   ///
   /// Validates the recipient address, prevents self-transfer, converts
-  /// [amount] to stroops via [Util.toXdrInt64Amount], builds a
-  /// `transfer(from, to, amount)` host function, and routes through the
-  /// multi-signer signing pipeline.
+  /// [amount] to the token's base units, builds a `transfer(from, to, amount)`
+  /// host function, and routes through the multi-signer signing pipeline.
+  ///
+  /// [decimals] is the token's decimal scale used to convert [amount]; when
+  /// `null` (default) it is fetched on-chain via
+  /// [OZTransactionOperations.fetchTokenDecimals].
   Future<OZTransactionResult> multiSignerTransfer({
     required String tokenContract,
     required String recipient,
     required String amount,
+    int? decimals,
     required List<OZSelectedSigner> selectedSigners,
     OZSubmissionMethod? forceMethod,
     OZResolveContextRuleIds? resolveContextRuleIds,
@@ -95,12 +98,15 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       );
     }
 
-    final stroops = Util.toXdrInt64Amount(amount);
+    final resolvedDecimals = decimals ??
+        await _kit.transactionOperations.fetchTokenDecimals(tokenContract);
+    final baseUnits =
+        OZTransactionOperations.amountToBaseUnits(amount, decimals: resolvedDecimals);
 
     final targetArgs = <XdrSCVal>[
       XdrSCVal.forAddress(Address.forContractId(connected.contractId).toXdr()),
       _addressScVal(recipient),
-      Util.stroopsToI128ScVal(stroops),
+      OZTransactionOperations.baseUnitsToI128ScVal(baseUnits, amount: amount),
     ];
 
     return multiSignerContractCall(
