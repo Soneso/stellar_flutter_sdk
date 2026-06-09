@@ -15,5 +15,5 @@
 /// indexed lookups.
 library;
 
-export 'web/local_storage_adapter_stub.dart'
-    if (dart.library.js_interop) 'web/local_storage_adapter_web.dart';
+export 'web/oz_local_storage_adapter_stub.dart'
+    if (dart.library.js_interop) 'web/oz_local_storage_adapter_web.dart';

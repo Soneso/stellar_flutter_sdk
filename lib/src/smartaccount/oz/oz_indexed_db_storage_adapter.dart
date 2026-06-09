@@ -14,5 +14,5 @@
 /// lookups, and does not block the main thread.
 library;
 
-export 'web/indexed_db_storage_adapter_stub.dart'
-    if (dart.library.js_interop) 'web/indexed_db_storage_adapter_web.dart';
+export 'web/oz_indexed_db_storage_adapter_stub.dart'
+    if (dart.library.js_interop) 'web/oz_indexed_db_storage_adapter_web.dart';

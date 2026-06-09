@@ -16,7 +16,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/core/smart_account_errors.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_storage_adapter.dart';
-import 'package:stellar_flutter_sdk/src/smartaccount/oz/web/indexed_db_storage_adapter_web.dart';
+import 'package:stellar_flutter_sdk/src/smartaccount/oz/web/oz_indexed_db_storage_adapter_web.dart';
 import 'package:web/web.dart' as web;
 
 // Minimal in-memory IndexedDB substitute covering the surface area the adapter

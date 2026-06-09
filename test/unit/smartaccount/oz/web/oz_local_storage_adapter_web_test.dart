@@ -18,7 +18,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/core/smart_account_errors.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_storage_adapter.dart';
-import 'package:stellar_flutter_sdk/src/smartaccount/oz/web/local_storage_adapter_web.dart';
+import 'package:stellar_flutter_sdk/src/smartaccount/oz/web/oz_local_storage_adapter_web.dart';
 import 'package:web/web.dart' as web;
 
 /// Builds an in-memory Storage shim that conforms to the

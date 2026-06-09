@@ -2,7 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 //
-// Real-browser integration test for the localStorage-backed adapter.
+// Real-browser integration test for the IndexedDB-backed adapter.
 // Skipped during default CI runs; included in the headless-Chrome web
 // integration suite via the `web-integration` tag.
 
@@ -13,25 +13,25 @@ library;
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stellar_flutter_sdk/src/smartaccount/oz/local_storage_adapter.dart';
+import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_indexed_db_storage_adapter.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_storage_adapter.dart';
 
 void main() {
-  group('OZLocalStorageAdapter (real Chrome)', () {
-    late OZLocalStorageAdapter adapter;
+  group('OZIndexedDBStorageAdapter (real Chrome)', () {
+    late OZIndexedDBStorageAdapter adapter;
 
     setUp(() async {
-      adapter = OZLocalStorageAdapter(keyPrefix: 'integration_test_');
+      adapter = OZIndexedDBStorageAdapter(dbName: 'integration_test_db');
       await adapter.clear();
     });
 
     tearDown(() async {
-      await adapter.clear();
+      await adapter.deleteDatabase();
     });
 
-    test('test_real_localstorage_round_trip', () async {
+    test('test_real_indexeddb_round_trip', () async {
       final cred = OZStoredCredential(
-        credentialId: 'integration-real-1',
+        credentialId: 'integration-real-idb-1',
         publicKey: Uint8List.fromList(<int>[
           0x04, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48,
         ]),
