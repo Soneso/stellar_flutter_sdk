@@ -527,7 +527,12 @@ def _classify_member(line: str, info: ClassInfo, class_name: str) -> None:
     if '@visibleForTesting' in line:
         return
 
-    # Remove annotations like @override, @Deprecated, etc.
+    # Members annotated @Deprecated are excluded so the reference does not
+    # surface superseded API. Detect BEFORE the general annotation strip.
+    if '@Deprecated' in line or '@deprecated' in line:
+        return
+
+    # Remove remaining annotations like @override.
     line = re.sub(r'@\w+(?:\([^)]*\))?\s*', '', line).strip()
     if not line:
         return
@@ -686,8 +691,11 @@ def scan_public_member_count(body: str, type_name: str) -> int:
     count = 0
     for _kind, raw in _split_top_level_declarations(body):
         line = compact_whitespace(raw)
-        # Mirror _classify_member: skip @visibleForTesting members before strip.
+        # Mirror _classify_member: skip @visibleForTesting and @Deprecated
+        # members before strip.
         if '@visibleForTesting' in line:
+            continue
+        if '@Deprecated' in line or '@deprecated' in line:
             continue
         line = re.sub(r'@\w+(?:\([^)]*\))?\s*', '', line).strip()
         if not line:
@@ -889,7 +897,7 @@ def scan_public_declaration_names(filepath: Path) -> set[str]:
     names: set[str] = set()
     for m in _SANITY_DECL_RE.finditer(clean):
         name = m.group('cls') or m.group('ext') or m.group('td')
-        if name and not is_private(name):
+        if name and not is_private(name) and not _preceded_by_deprecated(clean, m.start()):
             names.add(name)
     return names
 
@@ -912,6 +920,25 @@ _EXT_RE = re.compile(
 _TYPEDEF_RE = re.compile(r'^[ \t]*typedef\s+([^;{]+?)\s*;', re.MULTILINE)
 
 
+def _preceded_by_deprecated(text: str, start: int) -> bool:
+    """
+    True when the declaration starting at `start` is directly preceded by a
+    `@Deprecated` annotation. Walks the contiguous annotation lines immediately
+    above the declaration's line; a blank or non-annotation line ends the walk.
+    """
+    line_start = text.rfind('\n', 0, start) + 1
+    for ln in reversed(text[:line_start].splitlines()):
+        s = ln.strip()
+        if not s:
+            break
+        if s.startswith('@'):
+            if s.startswith('@Deprecated') or s.startswith('@deprecated'):
+                return True
+            continue
+        break
+    return False
+
+
 def parse_dart_file(filepath: Path) -> list[ClassInfo]:
     """Parse a Dart file and extract all public classes with their members."""
     content = filepath.read_text(encoding='utf-8')
@@ -928,6 +955,8 @@ def parse_dart_file(filepath: Path) -> list[ClassInfo]:
         implements_str = (m.group(6) or "").strip()
 
         if is_private(class_name):
+            continue
+        if _preceded_by_deprecated(clean, m.start()):
             continue
 
         is_enum = (kind_word == "enum")
@@ -988,6 +1017,8 @@ def parse_dart_file(filepath: Path) -> list[ClassInfo]:
         on_type = compact_whitespace(m.group(2) or "")
         if ext_name and is_private(ext_name):
             continue
+        if _preceded_by_deprecated(clean, m.start()):
+            continue
         brace_pos = m.end() - 1
         body_end = balance_braces(clean, brace_pos)
         body = clean[brace_pos + 1:body_end]
@@ -1006,6 +1037,8 @@ def parse_dart_file(filepath: Path) -> list[ClassInfo]:
     # Modern:  typedef Name<...> = <aliased>;
     # Legacy:  typedef ReturnType Name(args);
     for m in _TYPEDEF_RE.finditer(clean):
+        if _preceded_by_deprecated(clean, m.start()):
+            continue
         decl = compact_whitespace(m.group(1))
         eq = decl.find('=')
         if eq != -1:
