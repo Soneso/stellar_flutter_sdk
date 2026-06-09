@@ -6,6 +6,7 @@ Platform-specific guide for configuring WebAuthn passkey authentication in Flutt
 
 - iOS 16.0 or newer (passkey support in `AuthenticationServices`).
 - Xcode 15 or newer.
+- Swift Package Manager enabled for your Flutter environment (`flutter config --enable-swift-package-manager`); the SDK's iOS component is distributed via SPM. Set the app's iOS deployment target to 15.0 or higher; the passkey features covered in this guide require iOS 16 at runtime.
 - An Apple Developer account with the **Associated Domains** capability enabled for the App ID.
 - A domain you control over HTTPS for hosting `apple-app-site-association`.
 - A physical device with Face ID or Touch ID enrolled. The iOS Simulator does not back passkeys with a secure enclave; ceremonies on the simulator either fail or fall back to a synthetic authenticator depending on the iOS version.

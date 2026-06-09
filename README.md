@@ -18,7 +18,19 @@ dependencies:
 flutter pub get
 ```
 
-Requires Dart SDK >=3.8.0 <4.0.0.
+Requires Dart SDK >=3.8.0 <4.0.0 and Flutter >=3.32.0.
+
+### iOS setup (Swift Package Manager)
+
+The SDK ships a native iOS component (for WebAuthn passkey support) that is distributed through Swift Package Manager (SPM). Enable SPM once per machine:
+
+```bash
+flutter config --enable-swift-package-manager
+```
+
+Then run `flutter pub get`. On Flutter releases where SPM is already enabled this command is a no-op; where it is not enabled, `flutter pub get` fails reporting that the plugin is Swift Package Manager compatible only.
+
+Set your app's iOS deployment target to 15.0 or higher (`platform :ios, '15.0'` in `ios/Podfile`, and the Xcode project's iOS Deployment Target). Passkey-based smart account features additionally require iOS 16 at runtime; on iOS 15 those calls return a not-supported result while the rest of the SDK works normally.
 
 ## Quick examples
 

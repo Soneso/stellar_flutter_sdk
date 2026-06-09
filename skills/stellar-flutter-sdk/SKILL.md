@@ -1,6 +1,6 @@
 ---
 name: stellar-flutter-sdk
-description: Build Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with async/await and Stream patterns across Android, iOS, Web, and Desktop. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing in a Flutter app.
+description: Build Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with async/await and Stream patterns across Android, iOS, and Web. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing in a Flutter app.
 license: Apache 2.0
 compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.0.5
 metadata:
@@ -12,7 +12,7 @@ metadata:
 
 ## Overview
 
-The Stellar Flutter SDK (`stellar_flutter_sdk`) is a full-featured Dart library for building Stellar blockchain applications on Android, iOS, Web, and Desktop. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), and 18 SEP implementations. All APIs use Dart `Future` (async/await) for asynchronous operations and `Stream` for real-time event subscriptions. Version 3.0.0+ uses `BigInt` for all 64-bit integer types to ensure full web platform compatibility.
+The Stellar Flutter SDK (`stellar_flutter_sdk`) is a full-featured Dart library for building Stellar blockchain applications on Android, iOS, and Web. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), and 18 SEP implementations. All APIs use Dart `Future` (async/await) for asynchronous operations and `Stream` for real-time event subscriptions. Version 3.0.0+ uses `BigInt` for all 64-bit integer types to ensure full web platform compatibility.
 
 ## Installation
 
@@ -20,6 +20,8 @@ The Stellar Flutter SDK (`stellar_flutter_sdk`) is a full-featured Dart library 
 dependencies:
   stellar_flutter_sdk: ^3.0.5
 ```
+
+> iOS builds require Swift Package Manager: run `flutter config --enable-swift-package-manager` once, then `flutter pub get`. Set the app's iOS deployment target to 15.0 or higher; passkey smart-account features need iOS 16 at runtime.
 
 > All code examples below assume `import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';`
 >
@@ -513,4 +515,4 @@ List<String?>? opCodes = response.extras?.resultCodes?.operationsResultCodes; //
 
 **Two HTTP clients:** Horizon uses `package:http`, Soroban RPC uses `package:dio`. Custom HTTP client configuration differs between the two.
 
-**Web platform restrictions:** `StellarSDK.httpOverrides` and `SorobanServer.httpOverrides` throw `UnsupportedError` on web. Only use on mobile/desktop.
+**Web platform restrictions:** `StellarSDK.httpOverrides` and `SorobanServer.httpOverrides` throw `UnsupportedError` on web. Only use on non-web platforms.

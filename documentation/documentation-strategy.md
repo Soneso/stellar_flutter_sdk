@@ -8,7 +8,7 @@ All documentation is written for **SDK Users** - developers who want to integrat
 
 **Who are SDK users?**
 - Mobile developers building Stellar integrations with Flutter
-- Dart developers building cross-platform apps (iOS, Android, web, desktop)
+- Dart developers building cross-platform apps (iOS, Android, web)
 - Developers building payment systems, wallets, or anchor services
 - Developers integrating with Stellar anchors via SEP protocols
 - Developers building Soroban smart contract interactions
