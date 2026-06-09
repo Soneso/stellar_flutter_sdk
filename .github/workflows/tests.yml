@@ -29,9 +29,6 @@ jobs:
           flutter-version: ${{ matrix.flutter-version }}
           channel: 'stable'
 
-      - name: Enable Swift Package Manager
-        run: flutter config --enable-swift-package-manager
-
       - name: Install dependencies
         run: flutter pub get
 

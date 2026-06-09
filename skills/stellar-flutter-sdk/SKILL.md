@@ -21,7 +21,7 @@ dependencies:
   stellar_flutter_sdk: ^3.0.5
 ```
 
-> iOS builds require Swift Package Manager: run `flutter config --enable-swift-package-manager` once, then `flutter pub get`. Set the app's iOS deployment target to 15.0 or higher; passkey smart-account features need iOS 16 at runtime.
+> iOS: set the app's deployment target to 15.0 or higher. Passkey smart-account features need iOS 16 at runtime.
 
 > All code examples below assume `import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';`
 >
