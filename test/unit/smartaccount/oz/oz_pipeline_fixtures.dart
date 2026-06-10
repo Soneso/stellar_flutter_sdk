@@ -14,6 +14,7 @@ import 'package:stellar_flutter_sdk/src/smartaccount/core/smart_account_errors.d
 import 'package:stellar_flutter_sdk/src/smartaccount/core/web_authn_provider.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_internal_pipeline_interfaces.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_smart_account_events.dart';
+import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_smart_account_types.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_storage_adapter.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_transaction_operations.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_server.dart';

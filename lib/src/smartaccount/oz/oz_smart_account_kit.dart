@@ -21,6 +21,7 @@ import 'oz_relayer_client.dart';
 import 'oz_signer_manager.dart';
 import 'oz_smart_account_config.dart';
 import 'oz_smart_account_events.dart';
+import 'oz_smart_account_types.dart';
 import 'oz_storage_adapter.dart';
 import 'oz_transaction_operations.dart';
 import 'oz_wallet_operations.dart';

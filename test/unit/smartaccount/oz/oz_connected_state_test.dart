@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_internal_pipeline_interfaces.dart';
+import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_smart_account_types.dart';
 
 void main() {
   group('OZConnectedState equality and hashCode', () {

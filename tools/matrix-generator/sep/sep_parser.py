@@ -49,7 +49,12 @@ class SEPParser:
         '0046': 'Contract Meta',
         '0047': 'Contract Interface Discovery',
         '0048': 'Smart Contract Specifications',
+        '0053': 'Sign and Verify Messages',
     }
+
+    # SEPs defined entirely from an enumerated capability set rather than a
+    # fetched markdown document (cryptographic specifications with no endpoints).
+    HARDCODED_SEPS = {'0053'}
 
     def __init__(self, sep_number: str):
         """
@@ -5635,6 +5640,109 @@ class SEPParser:
 
         return data
 
+    def parse_sep_53(self) -> Dict[str, Any]:
+        """
+        Build the SEP-53 (Sign and Verify Messages) definition.
+
+        SEP-53 is a cryptographic specification with no HTTP endpoints, so the
+        capability set is enumerated here rather than parsed from a fetched
+        markdown document. Preamble, summary, and source URL are set explicitly
+        from the specification.
+
+        Returns:
+            Structured SEP-53 data with message signing capability fields
+        """
+        data = {
+            'sep_number': self.sep_number,
+            'preamble': {
+                'sep': '0053',
+                'title': 'Sign and Verify Messages',
+                'status': 'Final Comment Period (Final)',
+                'version': '0.0.1',
+            },
+            'summary': (
+                'A canonical method for signing and verifying arbitrary messages '
+                'using Stellar key pairs. Messages are prefixed with '
+                '"Stellar Signed Message:\\n", hashed with SHA-256, and signed '
+                'with the Ed25519 private key. Both binary and UTF-8 string '
+                'message variants are supported for signing and verification.'
+            ),
+            'sections': []
+        }
+
+        # Message signing and verification capability fields.
+        message_signing_fields = [
+            {
+                'name': 'message_prefix',
+                'description': 'Uses "Stellar Signed Message:\\n" prefix before hashing',
+                'requirements': 'Message prefix per SEP-53 specification',
+                'required': True,
+                'category': 'Message Signing'
+            },
+            {
+                'name': 'sha256_hashing',
+                'description': 'SHA-256 hash of the prefixed message',
+                'requirements': 'SHA-256 hash computation',
+                'required': True,
+                'category': 'Message Signing'
+            },
+            {
+                'name': 'sign_message_binary',
+                'description': 'Sign a binary message per SEP-53',
+                'requirements': 'signMessage(Uint8List) method',
+                'required': True,
+                'category': 'Message Signing'
+            },
+            {
+                'name': 'sign_message_string',
+                'description': 'Sign a UTF-8 string message per SEP-53',
+                'requirements': 'signMessageString(String) method',
+                'required': True,
+                'category': 'Message Signing'
+            },
+            {
+                'name': 'verify_message_binary',
+                'description': 'Verify a binary message signature per SEP-53',
+                'requirements': 'verifyMessage(Uint8List, Uint8List) method',
+                'required': True,
+                'category': 'Message Signing'
+            },
+            {
+                'name': 'verify_message_string',
+                'description': 'Verify a UTF-8 string message signature per SEP-53',
+                'requirements': 'verifyMessageString(String, Uint8List) method',
+                'required': True,
+                'category': 'Message Signing'
+            },
+            {
+                'name': 'ed25519_signature',
+                'description': '64-byte Ed25519 signature output',
+                'requirements': 'Ed25519 signing via sign method',
+                'required': True,
+                'category': 'Message Signing'
+            },
+            {
+                'name': 'utf8_encoding',
+                'description': 'UTF-8 encoding for string messages',
+                'requirements': 'utf8.encode usage for string encoding',
+                'required': True,
+                'category': 'Message Signing'
+            },
+        ]
+
+        data['sections'].append({
+            'title': 'Message Signing',
+            'key': 'message_signing',
+            'content': 'Signing and verifying arbitrary messages with Stellar key pairs',
+            'message_signing_features': message_signing_fields,
+            'feature_count': len(message_signing_fields)
+        })
+
+        print(f"{Colors.GREEN}  ✓ Found {len(message_signing_fields)} message signing features{Colors.END}")
+        print(f"{Colors.GREEN}  ✓ Total: {len(message_signing_fields)} SEP-53 features{Colors.END}")
+
+        return data
+
     def parse_generic_sep(self) -> Dict[str, Any]:
         """
         Parse a generic SEP structure.
@@ -5663,13 +5771,15 @@ class SEPParser:
         Returns:
             Parsed SEP data dictionary
         """
-        if not self.raw_content:
+        if not self.raw_content and self.sep_number not in self.HARDCODED_SEPS:
             raise ValueError("No content to parse. Call fetch_sep_markdown() first.")
 
         print(f"\n{Colors.CYAN}Parsing SEP-{self.sep_number}...{Colors.END}")
 
         # Use specialized parsers for specific SEPs
-        if self.sep_number == '0001':
+        if self.sep_number == '0053':
+            self.parsed_data = self.parse_sep_53()
+        elif self.sep_number == '0001':
             self.parsed_data = self.parse_sep_01()
         elif self.sep_number == '0002':
             self.parsed_data = self.parse_sep_02()
@@ -5787,10 +5897,12 @@ def main():
     parser = SEPParser(sep_number)
 
     try:
-        # Fetch SEP markdown
-        if not parser.fetch_sep_markdown():
-            print(f"\n{Colors.RED}Failed to fetch SEP-{sep_number}{Colors.END}")
-            return 1
+        # Fetch SEP markdown, except for SEPs defined from an enumerated
+        # capability set (cryptographic specifications with no endpoints).
+        if parser.sep_number not in SEPParser.HARDCODED_SEPS:
+            if not parser.fetch_sep_markdown():
+                print(f"\n{Colors.RED}Failed to fetch SEP-{sep_number}{Colors.END}")
+                return 1
 
         # Parse content
         parser.parse()

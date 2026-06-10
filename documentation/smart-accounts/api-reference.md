@@ -128,6 +128,19 @@ String? get contractId
 
 Smart account contract address (`C…`) of the currently connected wallet, or `null` when no wallet is connected.
 
+#### requireConnected
+
+```dart
+Future<OZConnectedState> requireConnected()
+```
+
+Returns the connected wallet's credential ID and contract address together as an `OZConnectedState`, or throws `SmartAccountWalletException.notConnected` when no wallet is connected. Use this when both values are required non-null; the individual `credentialId` / `contractId` getters return `null` while disconnected.
+
+`OZConnectedState` is an immutable value type with two `String` fields:
+
+- `credentialId`: Base64URL-encoded WebAuthn credential ID.
+- `contractId`: smart account contract address (`C…`).
+
 ### Manager Properties
 
 The kit exposes its managers as identity-preserving properties; every property returns the same instance for the lifetime of the kit. The seven core managers below are lazy `late final` fields; `externalSigners` is a getter over a manager constructed at initialization.

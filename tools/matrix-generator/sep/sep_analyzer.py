@@ -15,7 +15,7 @@ import sys
 import traceback
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Tuple
 
 
 # Add parent dir to path for shared modules
@@ -1338,6 +1338,132 @@ class SEPAnalyzer:
             'total': total_fields,
             'implemented': implemented_count,
             'percentage': round((implemented_count / total_fields * 100) if total_fields > 0 else 0, 2)
+        }
+
+        return implemented
+
+    def analyze_sep_53(self) -> Dict[str, Any]:
+        """
+        Analyze SEP-53 (Sign and Verify Messages) implementation.
+
+        SEP-53 message signing is implemented on the KeyPair class in
+        lib/src/key_pair.dart. Detection is performed against the source of that
+        file rather than a SEP source directory.
+
+        Returns:
+            Analysis results dictionary
+        """
+        keypair_path = self.sdk_path / 'lib' / 'src' / 'key_pair.dart'
+
+        if not keypair_path.exists():
+            return {
+                'implemented': False,
+                'reason': 'No SEP-53 implementation file found (lib/src/key_pair.dart)'
+            }
+
+        # Load SEP-53 definition
+        sep_def_path = self.data_dir / f'sep_{self.sep_number}_definition.json'
+
+        sep_definition = {}
+        if sep_def_path.exists():
+            with open(sep_def_path, 'r', encoding='utf-8') as f:
+                sep_definition = json.load(f)
+
+        content = keypair_path.read_text(encoding='utf-8')
+
+        # Restrict reported classes to the SEP-53 entry point.
+        all_classes = [
+            cls for cls in self.extract_class_info(keypair_path)
+            if cls['name'] == 'KeyPair'
+        ]
+        for cls in all_classes:
+            if cls['name'] == 'KeyPair':
+                cls['documentation'] = (
+                    'Stellar key pair with SEP-53 message signing and verification '
+                    'methods (signMessage, signMessageString, verifyMessage, '
+                    'verifyMessageString)'
+                )
+
+        implemented_features = self.map_sep_53_features(content, sep_definition)
+
+        return {
+            'implemented': True,
+            'files': [str(keypair_path.relative_to(self.sdk_path))],
+            'classes': all_classes,
+            'implemented_features': implemented_features,
+            'total_classes': len(all_classes),
+            'total_methods': sum(len(c['methods']) for c in all_classes),
+            'total_properties': sum(len(c['properties']) for c in all_classes)
+        }
+
+    def map_sep_53_features(self, content: str,
+                            sep_definition: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Map the KeyPair source to SEP-53 message signing capability fields.
+
+        Args:
+            content: Source of lib/src/key_pair.dart
+            sep_definition: SEP-53 specification definition
+
+        Returns:
+            Dictionary mapping message signing features to implementation status
+        """
+        implemented = {
+            'message_signing': {},
+            'coverage': {}
+        }
+
+        def detect(name: str) -> Tuple[bool, str]:
+            if name == 'message_prefix':
+                if "Stellar Signed Message:\\n" in content and '_calculateMessageHash' in content:
+                    return True, '_calculateMessageHash (prefix constant)'
+            elif name == 'sha256_hashing':
+                if 'Util.hash' in content and '_calculateMessageHash' in content:
+                    return True, '_calculateMessageHash (SHA-256 hash)'
+            elif name == 'sign_message_binary':
+                if 'Uint8List signMessage(Uint8List message)' in content:
+                    return True, 'signMessage(Uint8List)'
+            elif name == 'sign_message_string':
+                if 'Uint8List signMessageString(String message)' in content:
+                    return True, 'signMessageString(String)'
+            elif name == 'verify_message_binary':
+                if 'bool verifyMessage(Uint8List message, Uint8List signature)' in content:
+                    return True, 'verifyMessage(Uint8List, Uint8List)'
+            elif name == 'verify_message_string':
+                if 'bool verifyMessageString(String message' in content and 'signature' in content:
+                    return True, 'verifyMessageString(String, Uint8List)'
+            elif name == 'ed25519_signature':
+                if 'Uint8List sign(Uint8List data)' in content and 'Ed25519' in content:
+                    return True, 'sign (Ed25519 64-byte signature)'
+            elif name == 'utf8_encoding':
+                if 'utf8.encode' in content and 'signMessage' in content:
+                    return True, 'signMessageString (UTF-8 encoding)'
+            return False, None
+
+        sections = sep_definition.get('sections', [])
+        for section in sections:
+            if section.get('key') != 'message_signing':
+                continue
+            for feature in section.get('message_signing_features', []):
+                feature_name = feature['name']
+                is_implemented, sdk_property = detect(feature_name)
+                implemented['message_signing'][feature_name] = {
+                    'required': feature.get('required', False),
+                    'implemented': is_implemented,
+                    'sdk_method': sdk_property if is_implemented else None,
+                    'description': feature.get('description', '')
+                }
+
+        total_features = len(implemented['message_signing'])
+        implemented_count = sum(
+            1 for feature in implemented['message_signing'].values()
+            if feature.get('implemented')
+        )
+
+        implemented['coverage'] = {
+            'total': total_features,
+            'implemented': implemented_count,
+            'percentage': round((implemented_count / total_features * 100) if total_features > 0 else 0, 2)
         }
 
         return implemented
@@ -4991,6 +5117,8 @@ class SEPAnalyzer:
             self.analysis_data = self.analyze_sep_47()
         elif self.sep_number == '0048':
             self.analysis_data = self.analyze_sep_48()
+        elif self.sep_number == '0053':
+            self.analysis_data = self.analyze_sep_53()
         else:
             self.analysis_data = self.analyze_generic_sep()
 

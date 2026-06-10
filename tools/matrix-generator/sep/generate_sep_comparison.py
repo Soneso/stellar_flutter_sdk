@@ -186,6 +186,9 @@ class SEPComparator:
             elif 'wasm_section' in features and 'entry_types' in features and 'type_system_primitive' in features:
                 # SEP-48 style: Smart Contract Specifications feature comparison
                 self._compare_sep_48_features()
+            elif 'message_signing' in features:
+                # SEP-53 style: message signing capability comparison
+                self._compare_sep_53_features()
             else:
                 # SEP-02 style: API feature comparison
                 self._compare_sep_02_features()
@@ -1387,6 +1390,36 @@ class SEPComparator:
                 self.comparisons.append(comparison)
 
         print(f"{Colors.GREEN}✓ Compared {len(self.comparisons)} Smart Contract Specification features{Colors.END}")
+
+    def _compare_sep_53_features(self) -> None:
+        """Compare SEP-53 style features (Sign and Verify Messages)"""
+        implemented_features = self.sdk_data.get('implemented_features', {})
+
+        # Single capability section for message signing and verification.
+        section_titles = {
+            'message_signing': 'Message Signing',
+        }
+
+        for category_key, category_title in section_titles.items():
+            category_features = implemented_features.get(category_key, {})
+
+            for feature_name, feature_info in category_features.items():
+                comparison = FieldComparison(
+                    section=category_title,
+                    field_name=feature_name,
+                    required=feature_info.get('required', False),
+                    implemented=feature_info.get('implemented', False),
+                    sdk_property=feature_info.get('sdk_method'),
+                    description=feature_info.get('description', ''),
+                    priority=self.determine_field_priority(
+                        feature_name,
+                        feature_info.get('required', False),
+                        category_key
+                    ) if not feature_info.get('implemented') else None
+                )
+                self.comparisons.append(comparison)
+
+        print(f"{Colors.GREEN}✓ Compared {len(self.comparisons)} message signing features{Colors.END}")
 
     def calculate_statistics(self) -> Dict[str, Any]:
         """Calculate coverage statistics from comparisons (excluding server-side-only features)"""

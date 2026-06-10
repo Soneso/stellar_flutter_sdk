@@ -5,13 +5,13 @@
 [![codecov](https://codecov.io/gh/Soneso/stellar_flutter_sdk/branch/master/graph/badge.svg)](https://codecov.io/gh/Soneso/stellar_flutter_sdk)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar_flutter_sdk)
 
-Build and sign Stellar transactions, query [Horizon](https://developers.stellar.org/docs/data/apis/horizon), and interact with [Soroban](https://developers.stellar.org/docs/build/smart-contracts/overview) smart contracts via RPC. Communicate with anchors and external services using built-in support for 17 SEPs.
+Build and sign Stellar transactions, query [Horizon](https://developers.stellar.org/docs/data/apis/horizon), and interact with [Soroban](https://developers.stellar.org/docs/build/smart-contracts/overview) smart contracts via RPC. Communicate with anchors and external services using built-in support for 18 SEPs.
 
 ## Installation
 
 ```yaml
 dependencies:
-  stellar_flutter_sdk: ^3.0.5
+  stellar_flutter_sdk: ^3.1.0
 ```
 
 ```bash

@@ -79,6 +79,9 @@ class AnalysisOrchestrator:
             ("sep/sep_parser.py 0048", "Parsing SEP-48 (Smart Contract Specifications) specification", "sep"),
             ("sep/sep_analyzer.py 0048", "Analyzing SEP-48 implementation in SDK", "sep"),
             ("sep/generate_sep_comparison.py 0048", "Generating SEP-48 compatibility report", "sep"),
+            ("sep/sep_parser.py 0053", "Parsing SEP-53 (Sign and Verify Messages) specification", "sep"),
+            ("sep/sep_analyzer.py 0053", "Analyzing SEP-53 implementation in SDK", "sep"),
+            ("sep/generate_sep_comparison.py 0053", "Generating SEP-53 compatibility report", "sep"),
         ]
         self.results: List[Tuple[str, bool, str]] = []
 

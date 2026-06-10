@@ -100,33 +100,6 @@ abstract class OZMultiSignerManagerInterface {
   });
 }
 
-/// Connected-wallet state. Carries the Base64URL credential ID and the
-/// smart-account contract address resolved during connection.
-class OZConnectedState {
-  /// Constructs a connected state record.
-  const OZConnectedState({
-    required this.credentialId,
-    required this.contractId,
-  });
-
-  /// Base64URL-encoded WebAuthn credential ID.
-  final String credentialId;
-
-  /// Smart-account contract address (C-address).
-  final String contractId;
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    if (other is! OZConnectedState) return false;
-    return credentialId == other.credentialId &&
-        contractId == other.contractId;
-  }
-
-  @override
-  int get hashCode => Object.hash(credentialId, contractId);
-}
-
 /// Internal interface the transaction and wallet operations expect their
 /// owning kit to satisfy. Concrete implementations are supplied by the
 /// smart-account kit layer; this interface keeps the operations classes

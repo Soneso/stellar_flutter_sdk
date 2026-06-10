@@ -1,3 +1,12 @@
+## [3.1.0] - 10.Jun.2026.
+- Add OpenZeppelin smart account support
+- Package the SDK as a Flutter plugin with native iOS code, distributed for both CocoaPods and Swift Package Manager; minimum iOS deployment target 15.0 (passkey features require iOS 16 at runtime)
+- Declare web as a supported plugin platform
+- Add Util.constantTimeEquals, Util.bigIntToI128ScVal, Util.decimalStringToStroops, and Util.stroopsToDecimalString
+- toXdrInt64Amount and fromXdrInt64Amount now also handle negative amounts; both are deprecated in favor of the new decimal/stroops helpers
+- Add SorobanServer.close for resource cleanup
+- Deprecate the pre-OZ PasskeyUtils and AuthenticatorAttestationResponse in favor of the smart account API
+
 ## [3.0.5] - 28.Mar.2026.
 - Rewrite SEP-0011 TxRep to use generated XDR-based toTxRep/fromTxRep methods
 - Improve TxRep input validation and test coverage
