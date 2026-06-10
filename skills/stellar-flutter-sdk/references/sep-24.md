@@ -1055,7 +1055,7 @@ TransferServerSEP24Service service =
 // WRONG: Util.readFile() is not available on web platforms
 personFields.photoIdFront = await Util.readFile('/path/to/id.jpg');
 
-// CORRECT for native (iOS, Android, Desktop):
+// CORRECT for native (non-web) platforms:
 personFields.photoIdFront = await Util.readFile('/path/to/id.jpg');
 
 // CORRECT for web: use a file picker and pass bytes via customFiles

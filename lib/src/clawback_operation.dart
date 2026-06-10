@@ -78,7 +78,7 @@ class ClawbackOperation extends Operation {
   /// Returns: XDR OperationBody for this clawback operation.
   @override
   XdrOperationBody toOperationBody() {
-    XdrInt64 amount = XdrInt64(Util.toXdrInt64Amount(this.amount));
+    XdrInt64 amount = XdrInt64(Util.decimalStringToStroops(this.amount));
     XdrClawbackOp op = XdrClawbackOp(asset.toXdr(), this._from.toXdr(), amount);
 
     XdrOperationBody body = XdrOperationBody(XdrOperationType.CLAWBACK);
@@ -98,7 +98,7 @@ class ClawbackOperation extends Operation {
     return ClawbackOperationBuilder.forMuxedFromAccount(
         Asset.fromXdr(op.asset),
         MuxedAccount.fromXdr(op.from),
-        Util.fromXdrInt64Amount(op.amount.int64));
+        Util.stroopsToDecimalString(op.amount.int64));
   }
 }
 

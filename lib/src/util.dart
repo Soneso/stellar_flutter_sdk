@@ -473,6 +473,32 @@ class Util {
     return String.fromCharCodes(bytes!).split('\x00')[0];
   }
 
+  /// Constant-time byte array comparison.
+  ///
+  /// Always inspects every byte regardless of where the first mismatch
+  /// occurs, preventing an attacker from inferring how many leading bytes
+  /// match by measuring comparison time. Returns `false` immediately when
+  /// the lengths differ; the length check does not involve secret-data and
+  /// does not leak content information.
+  ///
+  /// Use this when comparing keys, signatures, MACs, or any secret-derived
+  /// byte sequences where a timing side-channel would be a security concern.
+  ///
+  /// Parameters:
+  /// - [a] First byte array.
+  /// - [b] Second byte array.
+  ///
+  /// Returns: `true` if both arrays are equal in length and content,
+  /// `false` otherwise.
+  static bool constantTimeEquals(Uint8List a, Uint8List b) {
+    if (a.length != b.length) return false;
+    var diff = 0;
+    for (var i = 0; i < a.length; i++) {
+      diff |= a[i] ^ b[i];
+    }
+    return diff == 0;
+  }
+
   /// Converts a hex string ID to an XDR hash object.
   ///
   /// Takes a hexadecimal string [strId] and converts it to an XdrHash
@@ -577,31 +603,44 @@ class Util {
     return Uri.parse(completeUrl);
   }
 
-  /// Converts a decimal amount string to XDR Int64 format.
+  /// Number of stroops in one XLM (1 XLM = 10,000,000 stroops).
+  static const int stroopsPerXlm = 10000000;
+
+  /// Average number of ledgers closed per hour on the Stellar network
+  /// (approximately five seconds per ledger).
+  static const int ledgersPerHour = 720;
+
+  /// Average number of ledgers closed per day on the Stellar network
+  /// (approximately five seconds per ledger).
+  static const int ledgersPerDay = 17280;
+
+  /// Converts a decimal amount string to stroops.
   ///
-  /// Stellar uses 7 decimal places of precision for amounts, storing them
-  /// as integers (stroops). This method converts a decimal string like
-  /// "123.45" to the XDR format: 1234500000.
+  /// Stellar classic asset amounts are stored as integers with 7 decimal
+  /// places of precision (stroops): one unit of an asset equals 10,000,000
+  /// stroops. This converts a decimal string such as "123.45" to its stroop
+  /// value 1234500000. A leading "-" is supported and produces a negative
+  /// stroop value.
   ///
   /// Parameters:
-  /// - [value]: Decimal amount string (e.g., "123.45")
+  /// - [value]: Decimal amount string (e.g. "123.45" or "-0.5")
   ///
-  /// Returns: Amount in stroops (1 XLM = 10000000 stroops)
+  /// Returns: The amount in stroops
   ///
   /// Throws:
-  /// - [Exception]: If decimal places exceed 7 digits
+  /// - [Exception]: If the fractional part has more than 7 digits
   ///
   /// Example:
   /// ```dart
-  /// BigInt stroops = Util.toXdrInt64Amount("100.5");
-  /// // Returns 1005000000 (100.5 * 10000000)
+  /// BigInt stroops = Util.decimalStringToStroops("100.5");
+  /// // Returns 1005000000
   /// ```
-  ///
-  /// See also:
-  /// - [fromXdrInt64Amount] for converting back to decimal format
-  static BigInt toXdrInt64Amount(String value) {
-    List<String> two = value.split(".");
-    BigInt amount = BigInt.parse(two[0]) * BigInt.from(10000000);
+  static BigInt decimalStringToStroops(String value) {
+    final bool negative = value.startsWith("-");
+    final String unsigned = negative ? value.substring(1) : value;
+
+    List<String> two = unsigned.split(".");
+    BigInt amount = BigInt.parse(two[0]) * BigInt.from(stroopsPerXlm);
 
     if (two.length == 2) {
       int pos = 0;
@@ -620,29 +659,30 @@ class Util {
       amount += BigInt.parse(point);
     }
 
-    return amount;
+    return negative ? -amount : amount;
   }
 
-  /// Converts an XDR Int64 amount to decimal string format.
+  /// Converts a stroop amount to a decimal string.
   ///
-  /// Converts an amount from XDR format (stroops) back to a human-readable
-  /// decimal string. Removes trailing zeros from the result.
+  /// Stellar classic asset amounts are stored as integers with 7 decimal
+  /// places of precision (stroops): one unit of an asset equals 10,000,000
+  /// stroops. This converts a stroop value back to a human-readable decimal
+  /// string with trailing zeros removed. Negative values produce a leading
+  /// "-".
   ///
   /// Parameters:
-  /// - [value]: Amount in stroops (1 XLM = 10000000 stroops)
+  /// - [value]: The amount in stroops
   ///
   /// Returns: Decimal amount string with trailing zeros removed
   ///
   /// Example:
   /// ```dart
-  /// String amount = Util.fromXdrInt64Amount(BigInt.from(1005000000));
+  /// String amount = Util.stroopsToDecimalString(BigInt.from(1005000000));
   /// // Returns "100.5"
   /// ```
-  ///
-  /// See also:
-  /// - [toXdrInt64Amount] for converting from decimal format
-  static String fromXdrInt64Amount(BigInt value) {
-    String amountString = value.toString();
+  static String stroopsToDecimalString(BigInt value) {
+    final bool negative = value.isNegative;
+    String amountString = value.abs().toString();
     if (amountString.length > 7) {
       amountString = amountString.substring(0, amountString.length - 7) +
           "." +
@@ -653,7 +693,48 @@ class Util {
       for (; length > 0; length--) point += "0";
       amountString = point + amountString;
     }
-    return removeTailZero(amountString);
+    amountString = removeTailZero(amountString);
+    return (negative && amountString != "0") ? "-" + amountString : amountString;
+  }
+
+  /// Converts a decimal amount string to stroops.
+  @Deprecated('Use decimalStringToStroops instead.')
+  static BigInt toXdrInt64Amount(String value) => decimalStringToStroops(value);
+
+  /// Converts a stroop amount to a decimal string.
+  @Deprecated('Use stroopsToDecimalString instead.')
+  static String fromXdrInt64Amount(BigInt value) =>
+      stroopsToDecimalString(value);
+
+  /// Encodes a signed 128-bit integer [value] as a Soroban I128 [XdrSCVal].
+  ///
+  /// Suitable for any Soroban contract invocation that accepts an I128
+  /// parameter (for example a token amount in its base units).
+  ///
+  /// Parameters:
+  /// - [value] The integer to encode. Must be within the signed 128-bit
+  ///   integer range (-(2^127) to 2^127 - 1).
+  ///
+  /// Returns: [XdrSCVal] with discriminant [XdrSCValType.SCV_I128].
+  ///
+  /// Throws:
+  /// - [ArgumentError] when [value] is outside the I128 range.
+  ///
+  /// Example:
+  /// ```dart
+  /// XdrSCVal val = Util.bigIntToI128ScVal(BigInt.from(10000000));
+  /// ```
+  static XdrSCVal bigIntToI128ScVal(BigInt value) {
+    final maxI128 = (BigInt.one << 127) - BigInt.one;
+    final minI128 = -(BigInt.one << 127);
+    if (value < minI128 || value > maxI128) {
+      throw ArgumentError.value(
+        value,
+        'value',
+        'value is outside the I128 range',
+      );
+    }
+    return XdrSCVal.forI128BigInt(value);
   }
 
 }

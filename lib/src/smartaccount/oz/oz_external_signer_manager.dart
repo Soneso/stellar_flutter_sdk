@@ -1,0 +1,676 @@
+// Copyright 2026 The Stellar Flutter SDK Authors. All rights reserved.
+// Use of this source code is governed by a license that can be
+// found in the LICENSE file.
+
+import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:crypto/crypto.dart' as crypto;
+import 'package:meta/meta.dart';
+
+import '../../key_pair.dart';
+import '../../util.dart';
+import '../core/smart_account_constants.dart';
+import '../core/smart_account_errors.dart';
+import '../core/smart_account_utils.dart';
+import 'oz_storage_adapter.dart';
+
+// OZExternalEd25519SignerAdapter
+
+/// Adapter for out-of-process Ed25519 signing sources.
+///
+/// Implement this abstract class to plug in a hardware wallet, remote signing
+/// service, or any other signing backend into the multi-signer pipeline. The
+/// manager consults the adapter before falling back to its in-memory keypair
+/// registry (adapter-first precedence rule).
+///
+/// Example:
+/// ```dart
+/// class MyHardwareAdapter implements OZExternalEd25519SignerAdapter {
+///   @override
+///   bool canSignFor(String verifierAddress, Uint8List publicKey) =>
+///       _wallet.hasSigner(publicKey);
+///
+///   @override
+///   Future<Uint8List> signAuthDigest(
+///       Uint8List authDigest, Uint8List publicKey) async =>
+///       _wallet.sign(authDigest, publicKey);
+/// }
+/// ```
+abstract class OZExternalEd25519SignerAdapter {
+  /// Constructs an Ed25519 signer adapter.
+  const OZExternalEd25519SignerAdapter();
+
+  /// Returns whether this adapter can produce an Ed25519 signature for the
+  /// given verifier-contract address and public-key pair.
+  ///
+  /// Called before the in-memory keypair registry is consulted. When this
+  /// method returns `true`, the adapter must be able to fulfil a subsequent
+  /// [signAuthDigest] call for the same key without error.
+  ///
+  /// [verifierAddress] is the C-strkey of the Ed25519 verifier contract
+  /// identifying the on-chain signer slot. [publicKey] is the 32-byte
+  /// Ed25519 public key identifying the signer slot.
+  bool canSignFor(String verifierAddress, Uint8List publicKey);
+
+  /// Produces a 64-byte Ed25519 signature over [authDigest].
+  ///
+  /// Called by the multi-signer pipeline when
+  /// [canSignFor] returned `true` for the same [publicKey]. The pipeline
+  /// locally verifies the returned signature before incorporating it into
+  /// the authorization payload.
+  ///
+  /// [authDigest] is the 32-byte digest to sign, computed as
+  /// `SHA-256(signaturePayload || contextRuleIds.toXDR())`.
+  /// [publicKey] is the 32-byte Ed25519 public key that identifies which
+  /// key to sign with.
+  ///
+  /// Returns the 64-byte raw Ed25519 signature over [authDigest].
+  Future<Uint8List> signAuthDigest(Uint8List authDigest, Uint8List publicKey);
+}
+
+// Ed25519 storage key
+
+/// Composite key for the Ed25519 signer registry.
+///
+/// Two entries with the same public key but different verifier addresses are
+/// distinct on-chain signers and must be stored as separate entries. The
+/// on-chain `External(verifierAddress, publicKey)` signer entry contains
+/// both fields; this key mirrors that identity.
+class _Ed25519SignerKey {
+  _Ed25519SignerKey({
+    required this.verifierAddress,
+    required this.publicKey,
+  });
+
+  final String verifierAddress;
+  final Uint8List publicKey;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! _Ed25519SignerKey) return false;
+    if (verifierAddress != other.verifierAddress) return false;
+    return Util.constantTimeEquals(publicKey, other.publicKey);
+  }
+
+  @override
+  int get hashCode => SmartAccountUtils.hashBytes(verifierAddress.hashCode, publicKey);
+}
+
+// OZExternalSignerType / OZExternalSignerInfo
+
+/// The type of an external signer managed by [OZExternalSignerManager].
+enum OZExternalSignerType {
+  /// Ed25519 keypair-based signer. Stored in memory only, never persisted.
+  keypair,
+
+  /// External wallet signer (e.g. Freighter, LOBSTR), connected through the
+  /// supplied [OZExternalWalletAdapter].
+  wallet,
+}
+
+/// Information about a managed external signer.
+///
+/// Represents either a keypair-based signer (in-memory Ed25519 key) or a
+/// wallet-based signer (external wallet connection). Returned by
+/// [OZExternalSignerManager.getAll] and the internal `get` helper.
+class OZExternalSignerInfo {
+  /// Constructs a signer info record. [walletName] and [walletId] are
+  /// only meaningful when [type] is [OZExternalSignerType.wallet].
+  const OZExternalSignerInfo({
+    required this.address,
+    required this.type,
+    this.walletName,
+    this.walletId,
+  });
+
+  /// Stellar G-address of the signer.
+  final String address;
+
+  /// Whether this signer is keypair- or wallet-backed.
+  final OZExternalSignerType type;
+
+  /// Human-readable wallet name (only present when [type] is
+  /// [OZExternalSignerType.wallet]).
+  final String? walletName;
+
+  /// Wallet identifier (only present when [type] is
+  /// [OZExternalSignerType.wallet]).
+  final String? walletId;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! OZExternalSignerInfo) return false;
+    return other.address == address &&
+        other.type == type &&
+        other.walletName == walletName &&
+        other.walletId == walletId;
+  }
+
+  @override
+  int get hashCode => Object.hash(address, type, walletName, walletId);
+
+  @override
+  String toString() =>
+      'OZExternalSignerInfo(address: $address, type: $type, '
+      'walletName: $walletName, walletId: $walletId)';
+}
+
+/// Manager for external (non-passkey) signers used in multi-signature
+/// smart-account operations.
+///
+/// Provides a unified interface for managing Stellar account signers that
+/// originate from Ed25519 secret keys or external wallet connections such
+/// as Freighter or LOBSTR. Two methods of adding signers are supported:
+///
+/// 1. Stellar keypair signers (via [addFromSecret]) — created from a Stellar
+///    S-strkey. These are held in memory only and never persisted; the
+///    secret key material is reachable only through the in-memory
+///    [KeyPair] instance.
+///
+/// 2. Wallet signers — connected through the supplied
+///    [OZExternalWalletAdapter] and observed via the adapter's
+///    [OZExternalWalletAdapter.getConnectedWallets].
+///
+/// Concurrency: every mutation of `_keypairSigners` runs through the
+/// hand-rolled FIFO Future-chain `_withLock` helper. The Dart isolate
+/// model ensures non-`await` execution is already serialised; the lock
+/// guarantees serial ordering across `await` suspension points.
+///
+/// Example:
+/// ```dart
+/// final manager = OZExternalSignerManager(
+///   networkPassphrase: 'Test SDF Network ; September 2015',
+///   walletAdapter: myWalletAdapter,
+/// );
+///
+/// final address = await manager.addFromSecret('SCZANG...');
+/// if (await manager.canSignFor('GABC...')) {
+///   final sig = await manager.signAuthEntry('GABC...', preimageXdr);
+/// }
+/// ```
+class OZExternalSignerManager {
+  /// Constructs a standalone external-signer manager.
+  ///
+  /// The manager is independent of any [OZSmartAccountKit] instance; it
+  /// can be instantiated and used directly when signers are managed
+  /// outside the smart-account flow.
+  OZExternalSignerManager({
+    required this.networkPassphrase,
+    this.walletAdapter,
+    this.ed25519Adapter,
+  });
+
+  /// Network passphrase used when delegating to [walletAdapter].
+  @internal
+  final String networkPassphrase;
+
+  /// Optional external wallet adapter. When `null`, only keypair signers
+  /// are supported.
+  @internal
+  final OZExternalWalletAdapter? walletAdapter;
+
+  /// Optional adapter for out-of-process Ed25519 signing.
+  ///
+  /// When set, the adapter is consulted via [OZExternalEd25519SignerAdapter.canSignFor]
+  /// before the in-memory keypair registry (adapter-first precedence rule).
+  @internal
+  final OZExternalEd25519SignerAdapter? ed25519Adapter;
+
+  // Internal state
+
+  final Map<String, KeyPair> _keypairSigners = <String, KeyPair>{};
+
+  /// Ed25519 keypairs keyed by `(verifierAddress, publicKey)`. Memory-only,
+  /// never persisted. The composite key mirrors the on-chain
+  /// `External(verifierAddress, publicKey)` signer identity.
+  final Map<_Ed25519SignerKey, KeyPair> _ed25519Signers =
+      <_Ed25519SignerKey, KeyPair>{};
+
+  Future<void> _tail = Future<void>.value();
+
+  Future<T> _withLock<T>(FutureOr<T> Function() body) {
+    final completer = Completer<T>();
+    final previous = _tail;
+    // Lock-tail collapse — see _withLock in OZSmartAccountKit for the full rationale.
+    final next = previous.then((_) async {
+      try {
+        completer.complete(await body());
+      } catch (e, st) {
+        completer.completeError(e, st);
+      }
+    });
+    _tail = next;
+    completer.future.whenComplete(() {
+      if (identical(_tail, next)) {
+        _tail = Future<void>.value();
+      }
+    });
+    return completer.future;
+  }
+
+  /// Whether an external wallet adapter is configured. Wallet operations
+  /// require this to be `true`.
+  bool get hasWalletAdapter => walletAdapter != null;
+
+  // Add signers
+
+  /// Adds an Ed25519 keypair signer derived from [secretKey].
+  ///
+  /// Validates the secret seed via [KeyPair.fromSecretSeed] and stores
+  /// the resulting [KeyPair] in memory. The keypair is never persisted —
+  /// it is lost when the application terminates.
+  ///
+  /// When a signer with the same G-address already exists (keypair or
+  /// wallet), the keypair signer takes precedence and overwrites the
+  /// existing entry.
+  ///
+  /// Returns the derived G-address.
+  ///
+  /// Throws [SmartAccountSignerInvalid] when the secret key is invalid or keypair
+  /// construction fails.
+  Future<String> addFromSecret(String secretKey) async {
+    final KeyPair keypair;
+    try {
+      keypair = KeyPair.fromSecretSeed(secretKey);
+    } catch (e) {
+      throw SmartAccountSignerException.invalid(
+        'Invalid secret key. Must be a valid Stellar secret key (S...): $e',
+        cause: e,
+      );
+    }
+
+    final address = keypair.accountId;
+
+    await _withLock<void>(() {
+      _keypairSigners[address] = keypair;
+    });
+
+    return address;
+  }
+
+  // Query signers
+
+  /// Returns `true` when any managed signer (keypair or wallet) can sign
+  /// for [address]. Keypair signers are checked first.
+  Future<bool> canSignFor(String address) async {
+    final hasKeypair = await _withLock<bool>(
+      () => _keypairSigners.containsKey(address),
+    );
+    if (hasKeypair) return true;
+
+    if (walletAdapter != null && walletAdapter!.canSignFor(address)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /// Returns the signer info for [address], preferring keypair entries
+  /// over wallet entries when both exist for the same address. Returns
+  /// `null` when no signer is registered.
+  Future<OZExternalSignerInfo?> get(String address) async {
+    final hasKeypair = await _withLock<bool>(
+      () => _keypairSigners.containsKey(address),
+    );
+    if (hasKeypair) {
+      return OZExternalSignerInfo(
+        address: address,
+        type: OZExternalSignerType.keypair,
+      );
+    }
+
+    final adapter = walletAdapter;
+    if (adapter != null) {
+      final wallet = adapter.getWalletForAddress(address);
+      if (wallet != null) {
+        return OZExternalSignerInfo(
+          address: wallet.address,
+          type: OZExternalSignerType.wallet,
+          walletName: wallet.walletName,
+          walletId: wallet.walletId,
+        );
+      }
+    }
+
+    return null;
+  }
+
+  /// Lists every managed signer. Keypair signers come first; wallet
+  /// signers whose addresses are also present as keypair signers are
+  /// skipped because keypair signers take precedence.
+  Future<List<OZExternalSignerInfo>> getAll() async {
+    final signers = <OZExternalSignerInfo>[];
+    final Set<String> keypairAddresses;
+
+    keypairAddresses = await _withLock<Set<String>>(
+      () => _keypairSigners.keys.toSet(),
+    );
+
+    for (final address in keypairAddresses) {
+      signers.add(
+        OZExternalSignerInfo(
+          address: address,
+          type: OZExternalSignerType.keypair,
+        ),
+      );
+    }
+
+    final adapter = walletAdapter;
+    if (adapter != null) {
+      final wallets = adapter.getConnectedWallets();
+      for (final wallet in wallets) {
+        if (!keypairAddresses.contains(wallet.address)) {
+          signers.add(
+            OZExternalSignerInfo(
+              address: wallet.address,
+              type: OZExternalSignerType.wallet,
+              walletName: wallet.walletName,
+              walletId: wallet.walletId,
+            ),
+          );
+        }
+      }
+    }
+
+    return signers;
+  }
+
+  /// Returns `true` when at least one signer (keypair or wallet) is
+  /// registered.
+  Future<bool> hasSigners() async {
+    final hasKeypairs = await _withLock<bool>(
+      () => _keypairSigners.isNotEmpty,
+    );
+    if (hasKeypairs) return true;
+
+    final walletCount = walletAdapter?.getConnectedWallets().length ?? 0;
+    return walletCount > 0;
+  }
+
+  // Sign auth entry
+
+  /// Signs an authorisation-entry preimage for the supplied [address].
+  ///
+  /// For keypair signers the base64-encoded preimage is decoded, hashed
+  /// with SHA-256, and signed with the in-memory Ed25519 keypair. For
+  /// wallet signers the call is delegated to
+  /// [OZExternalWalletAdapter.signAuthEntry]. Keypair signers take
+  /// precedence over wallet signers when both exist for the same address.
+  ///
+  /// Returns a [OZSignAuthEntryResult] carrying the base64-encoded
+  /// signature and the signer's address.
+  ///
+  /// Throws [SmartAccountSignerNotFound] when no signer is available for [address]
+  /// and [SmartAccountTransactionSigningFailed] when the signing operation fails.
+  Future<OZSignAuthEntryResult> signAuthEntry(
+    String address,
+    String authEntry,
+  ) async {
+    final keypair = await _withLock<KeyPair?>(() => _keypairSigners[address]);
+
+    if (keypair != null) {
+      return _signWithKeypair(keypair, authEntry, address);
+    }
+
+    final adapter = walletAdapter;
+    if (adapter != null && adapter.canSignFor(address)) {
+      try {
+        final result = await adapter.signAuthEntry(
+          authEntry,
+          options: OZSignAuthEntryOptions(
+            networkPassphrase: networkPassphrase,
+            address: address,
+          ),
+        );
+        return OZSignAuthEntryResult(
+          signedAuthEntry: result.signedAuthEntry,
+          signerAddress: result.signerAddress ?? address,
+        );
+      } catch (e) {
+        throw SmartAccountTransactionException.signingFailed(
+          'External wallet signing failed for $address: $e',
+          cause: e,
+        );
+      }
+    }
+
+    throw SmartAccountSignerException.notFound(address);
+  }
+
+  // Remove signers
+
+  /// Removes the signer registered for [address].
+  ///
+  /// Removes the entry from the keypair map and asks the wallet adapter to
+  /// release any per-address state via [OZExternalWalletAdapter.disconnectByAddress].
+  /// Both steps run unconditionally so a partially registered signer is fully
+  /// cleaned up.
+  Future<void> remove(String address) async {
+    await _withLock<void>(() {
+      _keypairSigners.remove(address);
+    });
+
+    await walletAdapter?.disconnectByAddress(address);
+  }
+
+  /// Removes every managed signer.
+  ///
+  /// Clears the keypair map, the Ed25519 keypair map, and disconnects every
+  /// external wallet connection via [OZExternalWalletAdapter.disconnect].
+  /// Failures from `disconnect()` propagate to the caller.
+  Future<void> removeAll() async {
+    await _withLock<void>(() {
+      _keypairSigners.clear();
+      _ed25519Signers.clear();
+    });
+
+    await walletAdapter?.disconnect();
+  }
+
+  /// Drops in-memory keypair and Ed25519 signing secrets only. Unlike
+  /// [removeAll], this does NOT disconnect the external-wallet adapter. Called by
+  /// [OZSmartAccountKit.close] to release sensitive key material on teardown.
+  @internal
+  Future<void> clearInMemorySigners() async {
+    await _withLock<void>(() {
+      _keypairSigners.clear();
+      _ed25519Signers.clear();
+    });
+  }
+
+  // Ed25519 methods
+
+  /// Registers an Ed25519 signing keypair derived from raw 32-byte secret key
+  /// material and stores it in memory under the composite
+  /// `(verifierAddress, publicKey)` key. The keypair is never persisted to
+  /// storage and is lost when the application terminates.
+  ///
+  /// If a keypair is already registered for the same
+  /// `(verifierAddress, publicKey)` pair it is silently overwritten.
+  ///
+  /// [secretKeyBytes] must be exactly 32 bytes — the raw Ed25519 seed.
+  /// This is not a Stellar S-strkey; it is the raw seed material.
+  /// For hardware wallets, HSMs, or remote signing services, supply an
+  /// [OZExternalEd25519SignerAdapter] at construction instead — the raw
+  /// secret never enters process memory.
+  ///
+  /// [verifierAddress] is the C-strkey of the Ed25519 verifier contract
+  /// under which the signer is registered on-chain.
+  ///
+  /// Returns the derived 32-byte Ed25519 public key.
+  ///
+  /// Throws [SmartAccountInvalidInput] when [secretKeyBytes] is not exactly 32 bytes.
+  /// Throws [SmartAccountSignerInvalid] when keypair construction fails.
+  Uint8List addEd25519FromRawKey({
+    required Uint8List secretKeyBytes,
+    required String verifierAddress,
+  }) {
+    if (secretKeyBytes.length != SmartAccountConstants.ed25519SecretSeedSize) {
+      throw SmartAccountValidationException.invalidInput(
+        'secretKeyBytes',
+        'Ed25519 secret key must be exactly ${SmartAccountConstants.ed25519SecretSeedSize} bytes, got ${secretKeyBytes.length}',
+      );
+    }
+
+    final KeyPair keypair;
+    try {
+      keypair = KeyPair.fromSecretSeedList(secretKeyBytes);
+    } catch (e) {
+      throw SmartAccountSignerException.invalid(
+        'Failed to construct Ed25519 keypair from provided secret key bytes: $e',
+        cause: e,
+      );
+    }
+
+    final publicKey = Uint8List.fromList(keypair.publicKey);
+    final storeKey = _Ed25519SignerKey(
+      verifierAddress: verifierAddress,
+      publicKey: publicKey,
+    );
+    _ed25519Signers[storeKey] = keypair;
+    return publicKey;
+  }
+
+  /// Returns whether a signing source is available for the given Ed25519 signer.
+  ///
+  /// Checks the adapter first (adapter-first precedence rule). When the adapter
+  /// returns `true` for [OZExternalEd25519SignerAdapter.canSignFor], this method
+  /// returns `true` without consulting the in-memory registry. Falls back to
+  /// checking whether an in-memory keypair is registered for
+  /// `(verifierAddress, publicKey)`.
+  ///
+  /// [verifierAddress] is the C-strkey of the Ed25519 verifier contract.
+  /// [publicKey] is the 32-byte Ed25519 public key identifying the signer slot.
+  bool canSignEd25519For({
+    required String verifierAddress,
+    required Uint8List publicKey,
+  }) {
+    final adapter = ed25519Adapter;
+    if (adapter != null && adapter.canSignFor(verifierAddress, publicKey)) {
+      return true;
+    }
+    final storeKey = _Ed25519SignerKey(
+      verifierAddress: verifierAddress,
+      publicKey: publicKey,
+    );
+    return _ed25519Signers.containsKey(storeKey);
+  }
+
+  /// Produces a 64-byte Ed25519 signature over [authDigest].
+  ///
+  /// Resolves the signing source using the adapter-first precedence rule:
+  /// the adapter is consulted first via
+  /// [OZExternalEd25519SignerAdapter.canSignFor]. If the adapter claims it
+  /// can sign, it is invoked via
+  /// [OZExternalEd25519SignerAdapter.signAuthDigest]. Otherwise the in-memory
+  /// keypair registry is used. Throws when neither source is available.
+  ///
+  /// [verifierAddress] is the C-strkey of the Ed25519 verifier contract.
+  /// [publicKey] is the 32-byte Ed25519 public key identifying the signer
+  /// slot. [authDigest] is the 32-byte auth digest to sign.
+  ///
+  /// Returns the 64-byte raw Ed25519 signature over [authDigest].
+  ///
+  /// Throws [SmartAccountInvalidInput] when no signing source is registered;
+  /// [SmartAccountTransactionSigningFailed] when the adapter or in-memory keypair fails.
+  Future<Uint8List> signEd25519AuthDigest({
+    required String verifierAddress,
+    required Uint8List publicKey,
+    required Uint8List authDigest,
+  }) async {
+    final adapter = ed25519Adapter;
+    if (adapter != null && adapter.canSignFor(verifierAddress, publicKey)) {
+      final Uint8List rawSignature;
+      try {
+        rawSignature = await adapter.signAuthDigest(authDigest, publicKey);
+      } catch (e) {
+        throw SmartAccountTransactionException.signingFailed(
+          'Ed25519 adapter signing failed for verifier $verifierAddress: $e',
+          cause: e,
+        );
+      }
+      return rawSignature;
+    }
+
+    final storeKey = _Ed25519SignerKey(
+      verifierAddress: verifierAddress,
+      publicKey: publicKey,
+    );
+    final keypair = _ed25519Signers[storeKey];
+    if (keypair == null) {
+      final prefix = SmartAccountUtils.truncateForLog(verifierAddress);
+      throw SmartAccountValidationException.invalidInput(
+        'selectedSigners',
+        'Ed25519 signer (verifier=$prefix...) has no registered signing source. '
+            'Register an in-memory key via addEd25519FromRawKey(...), '
+            'or supply an ed25519Adapter at construction.',
+      );
+    }
+
+    if (!keypair.canSign()) {
+      throw SmartAccountTransactionException.signingFailed(
+        'Ed25519 keypair for verifier $verifierAddress is public-only and '
+            'cannot sign',
+      );
+    }
+
+    final signature = keypair.sign(authDigest);
+    return Uint8List.fromList(signature);
+  }
+
+  /// Removes a registered Ed25519 signer from the in-memory registry.
+  ///
+  /// Clears the keypair stored under `(verifierAddress, publicKey)`. No-op
+  /// when no keypair is registered for that pair. The adapter is not
+  /// affected by this call.
+  ///
+  /// [verifierAddress] is the C-strkey of the Ed25519 verifier contract.
+  /// [publicKey] is the 32-byte Ed25519 public key identifying the signer
+  /// slot to remove.
+  void removeEd25519({
+    required String verifierAddress,
+    required Uint8List publicKey,
+  }) {
+    final storeKey = _Ed25519SignerKey(
+      verifierAddress: verifierAddress,
+      publicKey: publicKey,
+    );
+    _ed25519Signers.remove(storeKey);
+  }
+
+  // Private signing helpers
+
+  Future<OZSignAuthEntryResult> _signWithKeypair(
+    KeyPair keypair,
+    String preimageXdrBase64,
+    String address,
+  ) async {
+    // KeyPair built via fromAccountId/fromPublicKey is public-only and yields
+    // an unusable signature; surface a clear error before calling sign().
+    if (!keypair.canSign()) {
+      throw SmartAccountTransactionException.signingFailed(
+        'Keypair for $address is public-only and cannot sign',
+      );
+    }
+    // Single try/catch covers base64 decode + keypair.sign(); SHA-256 cannot throw.
+    try {
+      final preimageBytes = base64Decode(preimageXdrBase64);
+      final payload =
+          Uint8List.fromList(crypto.sha256.convert(preimageBytes).bytes);
+      final signature = keypair.sign(payload);
+      return OZSignAuthEntryResult(
+        signedAuthEntry: base64Encode(signature),
+        signerAddress: address,
+      );
+    } catch (e) {
+      throw SmartAccountTransactionException.signingFailed(
+        'Ed25519 signing failed for $address: $e',
+        cause: e,
+      );
+    }
+  }
+}

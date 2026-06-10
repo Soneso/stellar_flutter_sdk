@@ -182,3 +182,44 @@ export 'src/soroban/soroban_auth.dart';
 export 'src/soroban/soroban_contract_parser.dart';
 export 'src/soroban/soroban_passkey.dart';
 export 'src/soroban/contract_spec.dart';
+
+// Smart Accounts — core
+export 'src/smartaccount/core/allow_credential.dart';
+export 'src/smartaccount/core/smart_account_constants.dart';
+export 'src/smartaccount/core/smart_account_errors.dart';
+export 'src/smartaccount/core/smart_account_utils.dart';
+export 'src/smartaccount/core/web_authn_provider.dart';
+
+// Smart Accounts — OZ
+export 'src/smartaccount/oz/oz_builders.dart';
+export 'src/smartaccount/oz/oz_constants.dart';
+export 'src/smartaccount/oz/oz_context_rule_manager.dart';
+export 'src/smartaccount/oz/oz_contract_error_codes.dart';
+export 'src/smartaccount/oz/oz_credential_manager.dart';
+export 'src/smartaccount/oz/oz_external_signer_manager.dart';
+export 'src/smartaccount/oz/oz_multi_signer_manager.dart';
+export 'src/smartaccount/oz/oz_policy_manager.dart';
+export 'src/smartaccount/oz/oz_selected_signer.dart';
+export 'src/smartaccount/oz/oz_signer_manager.dart';
+export 'src/smartaccount/oz/oz_smart_account_auth.dart';
+export 'src/smartaccount/oz/oz_smart_account_auth_payload.dart';
+export 'src/smartaccount/oz/oz_smart_account_builders.dart';
+export 'src/smartaccount/oz/oz_indexer_client.dart';
+export 'src/smartaccount/oz/oz_relayer_client.dart';
+export 'src/smartaccount/oz/oz_smart_account_config.dart';
+export 'src/smartaccount/oz/oz_smart_account_events.dart';
+export 'src/smartaccount/oz/oz_smart_account_kit.dart';
+export 'src/smartaccount/oz/oz_smart_account_signatures.dart';
+export 'src/smartaccount/oz/oz_smart_account_types.dart';
+export 'src/smartaccount/oz/oz_storage_adapter.dart';
+export 'src/smartaccount/oz/oz_transaction_operations.dart';
+export 'src/smartaccount/oz/oz_wallet_operations.dart';
+
+// Smart Accounts — platform bridges
+export 'src/smartaccount/oz/oz_platform_storage_adapter.dart';
+export 'src/smartaccount/core/platform_webauthn_provider.dart';
+
+// Smart Accounts — web platform facades
+export 'src/smartaccount/core/browser_webauthn_provider.dart';
+export 'src/smartaccount/oz/oz_indexed_db_storage_adapter.dart';
+export 'src/smartaccount/oz/oz_local_storage_adapter.dart';

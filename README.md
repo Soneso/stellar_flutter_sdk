@@ -18,7 +18,11 @@ dependencies:
 flutter pub get
 ```
 
-Requires Dart SDK >=3.8.0 <4.0.0.
+Requires Dart SDK >=3.8.0 <4.0.0 and Flutter >=3.32.0.
+
+### iOS
+
+Set your app's iOS deployment target to 15.0 or higher (`platform :ios, '15.0'` in `ios/Podfile`, and the Xcode project's iOS Deployment Target). Smart account passkey features additionally require iOS 16 at runtime; on iOS 15 those calls return a not-supported result while the rest of the SDK works normally.
 
 ## Quick examples
 
@@ -79,7 +83,14 @@ This repository includes an [Agent Skill](https://agentskills.io) that teaches A
 | [Getting started](documentation/getting-started.md) | Keys, accounts, and fundamentals |
 | [SDK usage](documentation/sdk-usage.md) | Transactions, operations, Horizon queries, streaming |
 | [Soroban](documentation/soroban.md) | Smart contract deployment and interaction |
+| [Smart Accounts](documentation/smart-accounts/README.md) | OpenZeppelin smart account support: passkeys, multi-signer authorization, context rules, policies |
 | [SEPs](documentation/sep/) | Anchor integration, authentication, KYC, etc. |
+
+## Smart Accounts (Passkey) support
+
+This SDK ships first-class support for OpenZeppelin smart accounts on Stellar: WebAuthn passkey authentication on iOS, Android, and Web; multi-signer authorization; on-chain context rules; and policy contracts (threshold, weighted threshold, spending limit). An optional fee-bump relayer and credential indexer integrate transparently.
+
+See the [Smart Accounts documentation](documentation/smart-accounts/README.md) for an overview, the [developer onboarding guide](documentation/smart-accounts/onboarding.md) for conceptual material, the [API reference](documentation/smart-accounts/api-reference.md) for every public symbol, and the per-platform WebAuthn setup guides: [iOS](documentation/smart-accounts/webauthn-ios.md), [Android](documentation/smart-accounts/webauthn-android.md), [Web](documentation/smart-accounts/webauthn-web.md). For a runnable reference implementation, see the [demo app](https://github.com/Soneso/flutter-oz-smartaccount-demo).
 
 ## Web Support
 

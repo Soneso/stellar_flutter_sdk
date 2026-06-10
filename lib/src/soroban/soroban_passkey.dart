@@ -6,7 +6,12 @@ import 'package:stellar_flutter_sdk/src/network.dart';
 import 'package:stellar_flutter_sdk/src/util.dart';
 import 'package:stellar_flutter_sdk/src/xdr/xdr.dart';
 
+import '../smartaccount/core/smart_account_utils.dart';
+
 /// Utilities for working with WebAuthn passkeys in Soroban smart contracts.
+///
+/// Deprecated: use the OpenZeppelin smart-account API (`OZSmartAccountKit` /
+/// `SmartAccountUtils`) instead.
 ///
 /// PasskeyUtils provides helper functions for integrating WebAuthn (passkeys) with
 /// Soroban smart contracts, particularly for contract-based account abstraction.
@@ -51,6 +56,8 @@ import 'package:stellar_flutter_sdk/src/xdr/xdr.dart';
 /// See also:
 /// - [WebAuthn Specification](https://w3c.github.io/webauthn/)
 /// - [Stellar Account Abstraction](https://developers.stellar.org/docs/smart-contracts/guides/account-abstraction)
+@Deprecated(
+    'Use the OpenZeppelin smart-account API (OZSmartAccountKit / SmartAccountUtils) instead.')
 class PasskeyUtils {
 
   /// Extracts the secp256r1 public key from WebAuthn registration response.
@@ -78,55 +85,18 @@ class PasskeyUtils {
   /// }
   /// ```
   static Uint8List? getPublicKey(AuthenticatorAttestationResponse response) {
-    final publicKeyStr = response.publicKey;
+    Uint8List? decode(String? s) =>
+        s != null ? base64Url.decode(base64Url.normalize(s)) : null;
 
-    Uint8List? publicKey = publicKeyStr != null
-        ? base64Url.decode(base64Url.normalize(publicKeyStr))
-        : null;
-
-    if (publicKey == null ||
-        publicKey.isEmpty ||
-        publicKey.first != 0x04 ||
-        publicKey.length != 65) {
-      // see https://www.w3.org/TR/webauthn/#attestation-object
-      final authenticatorDataStr = response.authenticatorData;
-      if (authenticatorDataStr != null) {
-        Uint8List authData =
-            base64Url.decode(base64Url.normalize(authenticatorDataStr));
-        // Get credentialIdLength, which is at offset 53 (and is big-endian)
-        final credentialIdLength = (authData[53] << 8) + authData[54];
-        final x =
-            authData.sublist(65 + credentialIdLength, 97 + credentialIdLength);
-        final y = authData.sublist(
-            100 + credentialIdLength, 132 + credentialIdLength);
-        return Uint8List.fromList([
-          [0x04],
-          x,
-          y
-        ].expand((x) => x).toList());
-      }
-
-      final attestationObjectStr = response.attestationObject;
-      if (attestationObjectStr != null) {
-        Uint8List attestationObject =
-            base64Url.decode(base64Url.normalize(attestationObjectStr));
-        final publicKeyPrefixSlice = Uint8List.fromList(
-            [0xa5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20]);
-        var startIndex =
-            attestationObject.indexOfElements(publicKeyPrefixSlice);
-        if (startIndex != -1) {
-          startIndex = startIndex + publicKeyPrefixSlice.length;
-          final x = attestationObject.sublist(startIndex, 32 + startIndex);
-          final y = attestationObject.sublist(35 + startIndex, 67 + startIndex);
-          return Uint8List.fromList([
-            [0x04],
-            x,
-            y
-          ].expand((x) => x).toList());
-        }
-      }
+    try {
+      return SmartAccountUtils.extractPublicKeyFromRegistration(
+        publicKey: decode(response.publicKey),
+        authenticatorData: decode(response.authenticatorData),
+        attestationObject: decode(response.attestationObject),
+      );
+    } catch (_) {
+      return null;
     }
-    return publicKey;
   }
 
   /// Generates deterministic contract salt from WebAuthn credentials ID.
@@ -148,7 +118,9 @@ class PasskeyUtils {
   /// // Salt will be same for this credentialsId every time
   /// ```
   static Uint8List getContractSalt(String credentialsId) {
-    return Util.hash(base64Url.decode(base64Url.normalize(credentialsId)));
+    return SmartAccountUtils.getContractSalt(
+      base64Url.decode(base64Url.normalize(credentialsId)),
+    );
   }
 
   /// Derives the contract ID for a passkey-controlled account contract.
@@ -166,7 +138,7 @@ class PasskeyUtils {
   /// - [factoryContractId] Contract ID of the factory that will deploy the account
   /// - [network] Network where contracts will be deployed
   ///
-  /// Returns: Hex-encoded contract ID (C... when encoded with StrKey)
+  /// Returns: C-address strkey of the derived contract.
   ///
   /// Example:
   /// ```dart
@@ -180,7 +152,7 @@ class PasskeyUtils {
   /// );
   ///
   /// // Contract will be deployed at this address
-  /// print('Contract ID: ${StrKey.encodeContractIdHex(contractId)}');
+  /// print('Contract ID: $contractId');
   /// ```
   static String deriveContractId(
       {required Uint8List contractSalt,
@@ -229,51 +201,13 @@ class PasskeyUtils {
   /// See also:
   /// - [secp256r1 low-S requirement](https://github.com/stellar/stellar-protocol/discussions/1435)
   static Uint8List compactSignature(Uint8List signature) {
-    // Decode the DER signature
-    var offset = 2;
-    final rLength = signature[offset + 1];
-    final r = signature.sublist(offset + 2, offset + 2 + rLength);
-
-    offset += 2 + rLength;
-
-    final sLength = signature[offset + 1];
-    final s = signature.sublist(offset + 2, offset + 2 + sLength);
-
-    // Convert r and s to BigInt
-    final rHexStr = Util.bytesToHex(r);
-    final sHexStr = Util.bytesToHex(s);
-    final rBigInt = BigInt.parse('0x$rHexStr');
-    var sBigInt = BigInt.parse('0x$sHexStr');
-
-    // Ensure s is in the low-S form
-    // https://github.com/stellar/stellar-protocol/discussions/1435#discussioncomment-8809175
-    // https://discord.com/channels/897514728459468821/1233048618571927693
-    // Define the order of the curve secp256r1
-    // https://github.com/RustCrypto/elliptic-curves/blob/master/p256/src/lib.rs#L72
-    final BigInt n = BigInt.parse('0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551');
-    final BigInt halfN = n ~/ BigInt.from(2);
-
-    if (sBigInt > halfN) {
-      sBigInt = n - sBigInt;
-    }
-
-    // Convert back to buffers and ensure they are 32 bytes
-    final rPadded = rBigInt.toRadixString(16).padLeft(64, '0');
-    final sLowS = sBigInt.toRadixString(16).padLeft(64, '0');
-    final rPaddedBytes = Util.hexToBytes(rPadded);
-    final sLowSBytes = Util.hexToBytes(sLowS);
-
-    // Concatenate r and low-s
-    var b = BytesBuilder();
-    b.add(rPaddedBytes);
-    b.add(sLowSBytes);
-
-    final concatSignature = b.toBytes();
-    return concatSignature;
+    return SmartAccountUtils.normalizeSignature(signature);
   }
 }
 
 /// https://w3c.github.io/webauthn/#dictdef-authenticatorattestationresponsejson
+@Deprecated(
+    'Use the OpenZeppelin smart-account API (OZSmartAccountKit / SmartAccountUtils) instead.')
 class AuthenticatorAttestationResponse {
   String? clientDataJSON;
   String? authenticatorData;
@@ -326,6 +260,7 @@ class AuthenticatorAttestationResponse {
 ///
 /// Provides efficient subsequence search similar to String.indexOf() but for lists.
 /// Used internally by PasskeyUtils for parsing WebAuthn binary data structures.
+@Deprecated('No longer maintained as public API.')
 extension IndexOfElements<T> on List<T> {
   /// Finds the starting index of a subsequence within this list.
   ///

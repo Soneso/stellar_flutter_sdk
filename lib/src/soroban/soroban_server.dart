@@ -983,6 +983,122 @@ class SorobanServer {
     return GetTransactionResponse.fromJson(response.data);
   }
 
+  /// Polls for transaction completion.
+  ///
+  /// Repeatedly invokes [getTransaction] until the transaction reaches a final
+  /// state (`SUCCESS` or `FAILED`) or [maxAttempts] is reached. The default
+  /// configuration polls 30 attempts at 1-second intervals.
+  ///
+  /// Transient RPC errors (network glitches, rate limiting, and other
+  /// temporary failures) are swallowed inside the poll loop so polling
+  /// continues until [maxAttempts] is exhausted. The method returns the most
+  /// recent successful response: this may have status `NOT_FOUND` if the
+  /// transaction was not yet observed before the attempt budget ran out, or
+  /// `SUCCESS` / `FAILED` once a final status was reached. If every poll
+  /// attempt fails to obtain any response from the RPC server the most
+  /// recent caught exception is rethrown.
+  ///
+  /// Parameters:
+  /// - [hash] Transaction hash as a hex string.
+  /// - [maxAttempts] Maximum number of polling attempts. Must be greater than
+  ///   zero. Defaults to `30`.
+  /// - [sleepStrategy] Function mapping the 1-indexed attempt number to the
+  ///   sleep [Duration] applied between attempts. The default strategy waits
+  ///   one second between attempts regardless of attempt number. Pass a custom
+  ///   function (for example, exponential backoff) to change the polling
+  ///   cadence.
+  ///
+  /// Returns the final [GetTransactionResponse] (which may still have status
+  /// `NOT_FOUND` if [maxAttempts] is reached without observing the
+  /// transaction).
+  ///
+  /// Throws:
+  /// - [ArgumentError] when [maxAttempts] is less than or equal to zero.
+  /// - The most recently caught [Exception] when every poll attempt failed
+  ///   without ever obtaining a response from the RPC server.
+  /// - [StateError] as a defensive guard if the loop terminates without
+  ///   producing either a response or an error (this indicates a logic bug
+  ///   and should never be observed in practice).
+  ///
+  /// Example:
+  /// ```dart
+  /// final response = await server.pollTransaction(txHash);
+  /// if (response.status == GetTransactionResponse.STATUS_SUCCESS) {
+  ///   final returnValue = response.getResultValue();
+  ///   print('Success! Return value: $returnValue');
+  /// } else if (response.status == GetTransactionResponse.STATUS_FAILED) {
+  ///   print('Transaction failed: ${response.resultXdr}');
+  /// }
+  ///
+  /// // Custom polling cadence with exponential backoff:
+  /// final fast = await server.pollTransaction(
+  ///   txHash,
+  ///   maxAttempts: 10,
+  ///   sleepStrategy: (attempt) => Duration(milliseconds: attempt * 500),
+  /// );
+  /// ```
+  Future<GetTransactionResponse> pollTransaction(
+    String hash, {
+    int maxAttempts = 30,
+    Duration Function(int attempt) sleepStrategy = _defaultPollSleep,
+  }) async {
+    if (maxAttempts <= 0) {
+      throw ArgumentError.value(
+        maxAttempts,
+        'maxAttempts',
+        'maxAttempts must be greater than 0',
+      );
+    }
+
+    var attempts = 0;
+    GetTransactionResponse? lastResponse;
+    Object? lastError;
+
+    while (attempts < maxAttempts) {
+      try {
+        final response = await getTransaction(hash);
+        lastResponse = response;
+        lastError = null;
+        if (response.status != GetTransactionResponse.STATUS_NOT_FOUND) {
+          return response;
+        }
+      } on Exception catch (e) {
+        lastError = e;
+      }
+
+      attempts++;
+      if (attempts < maxAttempts) {
+        await Future.delayed(sleepStrategy(attempts));
+      }
+    }
+
+    if (lastResponse != null) {
+      return lastResponse;
+    }
+    if (lastError != null) {
+      throw lastError;
+    }
+    throw StateError('pollTransaction terminated without a response');
+  }
+
+  /// Releases the underlying HTTP transport held by this server.
+  ///
+  /// Closes the internal Dio HTTP client so its connection pool and any
+  /// associated keep-alive sockets are torn down. After calling close, this
+  /// SorobanServer instance must not be used for further RPC calls; any
+  /// subsequent request will throw because the transport is shut down.
+  ///
+  /// Idempotent: calling close more than once is safe; the underlying Dio
+  /// client tolerates repeated close invocations.
+  ///
+  /// The forceful close flag is intentionally left at the Dio default
+  /// (`force: false`) so any in-flight requests are allowed to complete
+  /// before sockets are released. Callers that need a hard tear-down should
+  /// cancel in-flight work first via their own cancellation token.
+  void close() {
+    _dio.close(force: false);
+  }
+
   /// Retrieves contract events emitted within a specified ledger range.
   ///
   /// Events are emitted by smart contracts during execution and provide a way to track
@@ -1212,6 +1328,9 @@ class SorobanServer {
     return GetLedgersResponse.fromJson(response.data);
   }
 }
+
+Duration _defaultPollSleep(int attempt) =>
+    const Duration(milliseconds: 1000);
 
 /// Abstract class for soroban rpc responses.
 abstract class SorobanRpcResponse {

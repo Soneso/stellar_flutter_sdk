@@ -353,7 +353,6 @@ transaction.addResourceFee(bufferedFee);
 | Android  | Full   | Native crypto via pinenacl/pointycastle (pure Dart) |
 | iOS      | Full   | Same pure Dart crypto, no platform channels needed |
 | Web      | Full   | Since v3.0.0 with BigInt migration, no dart:io deps |
-| Desktop  | Full   | Flutter desktop supported |
 
 ### Crypto Libraries
 

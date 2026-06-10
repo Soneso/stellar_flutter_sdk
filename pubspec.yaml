@@ -3,16 +3,14 @@ description: A Stellar SDK for Flutter, that can query Horizon and Soroban RPC, 
 version: 3.0.5
 homepage: https://github.com/Soneso/stellar_flutter_sdk
 
-platforms:
-  android:
-  ios:
-  web:
-
 environment:
   sdk: ">=3.8.0 <4.0.0"
+  flutter: ">=3.32.0"
 
 dependencies:
   flutter:
+    sdk: flutter
+  flutter_web_plugins:
     sdk: flutter
 
   meta: ^1.16.0
@@ -28,7 +26,20 @@ dependencies:
   http_parser: ^4.0.2
   dio: ^5.9.0
   archive: ^3.6.1
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.soneso.stellar_flutter_sdk
+        pluginClass: StellarFlutterSdkPlugin
+      ios:
+        pluginClass: StellarFlutterSdkPlugin
+      web:
+        pluginClass: StellarFlutterSdkWeb
+        fileName: stellar_flutter_sdk_web.dart
