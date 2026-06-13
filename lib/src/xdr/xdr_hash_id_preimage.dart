@@ -12,6 +12,7 @@ import 'xdr_hash_id_preimage_contract_id.dart';
 import 'xdr_hash_id_preimage_operation_id.dart';
 import 'xdr_hash_id_preimage_revoke_id.dart';
 import 'xdr_hash_id_preimage_soroban_authorization.dart';
+import 'xdr_hash_id_preimage_soroban_authorization_with_address.dart';
 
 class XdrHashIDPreimage {
   XdrEnvelopeType _type;
@@ -41,6 +42,12 @@ class XdrHashIDPreimage {
   XdrHashIDPreimageSorobanAuthorization? get sorobanAuthorization =>
       this._sorobanAuthorization;
 
+  XdrHashIDPreimageSorobanAuthorizationWithAddress?
+  _sorobanAuthorizationWithAddress;
+
+  XdrHashIDPreimageSorobanAuthorizationWithAddress?
+  get sorobanAuthorizationWithAddress => this._sorobanAuthorizationWithAddress;
+
   XdrHashIDPreimage(this._type);
 
   set operationID(XdrHashIDPreimageOperationID? value) =>
@@ -53,6 +60,10 @@ class XdrHashIDPreimage {
 
   set sorobanAuthorization(XdrHashIDPreimageSorobanAuthorization? value) =>
       this._sorobanAuthorization = value;
+
+  set sorobanAuthorizationWithAddress(
+    XdrHashIDPreimageSorobanAuthorizationWithAddress? value,
+  ) => this._sorobanAuthorizationWithAddress = value;
 
   static void encode(
     XdrDataOutputStream stream,
@@ -84,6 +95,12 @@ class XdrHashIDPreimage {
           encodedHashIDPreimage._sorobanAuthorization!,
         );
         break;
+      case XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS:
+        XdrHashIDPreimageSorobanAuthorizationWithAddress.encode(
+          stream,
+          encodedHashIDPreimage._sorobanAuthorizationWithAddress!,
+        );
+        break;
       default:
         break;
     }
@@ -111,6 +128,10 @@ class XdrHashIDPreimage {
       case XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION:
         decodedHashIDPreimage._sorobanAuthorization =
             XdrHashIDPreimageSorobanAuthorization.decode(stream);
+        break;
+      case XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS:
+        decodedHashIDPreimage._sorobanAuthorizationWithAddress =
+            XdrHashIDPreimageSorobanAuthorizationWithAddress.decode(stream);
         break;
       default:
         break;

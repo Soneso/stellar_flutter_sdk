@@ -1,3 +1,14 @@
+## [Unreleased]
+- Add protocol 27 Soroban authorization credentials (CAP-71): new ADDRESS_V2 and ADDRESS_WITH_DELEGATES arms on SorobanCredentials
+- Add SorobanCredentials.forAddressV2, SorobanCredentials.forAddressWithDelegates, and the innerAddressCredentials getter
+- Add SorobanAuthorizationEntry.withDelegates builder, SorobanDelegateDescriptor, and SorobanAuthorizationEntry.buildPreimage
+- SorobanAuthorizationEntry.sign gains a forAddress parameter that routes a signature into matching top-level or delegate nodes
+- signAuthEntries and needsNonInvokerSigningBy handle all credential arms; needsNonInvokerSigningBy reports every unsigned delegate node
+- Add authV2 flag to SimulateTransactionRequest and MethodOptions to request ADDRESS_V2 entries from simulation; the flag is omitted when false and silently ignored by RPCs that predate support
+- The legacy ADDRESS arm remains the default and stays valid on all protocol versions; the new arms are opt-in and only valid on protocol 27+
+- SEP-45 signing accepts all three credential arms transparently
+- Source compatibility: SorobanCredentials, XdrSorobanCredentialsType, XdrEnvelopeType, and XdrHashIDPreimage gain new union cases; switches over these without a default arm need a default case to keep compiling
+
 ## [3.1.0] - 10.Jun.2026.
 - Add OpenZeppelin smart account support
 - Package the SDK as a Flutter plugin with native iOS code, distributed for both CocoaPods and Swift Package Manager; minimum iOS deployment target 15.0 (passkey features require iOS 16 at runtime)

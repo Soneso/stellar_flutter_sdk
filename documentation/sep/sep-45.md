@@ -431,6 +431,10 @@ final webAuthTestnet = await WebAuthForContracts.fromDomain('testnet.anchor.com'
 final webAuthPubnet = await WebAuthForContracts.fromDomain('anchor.com', Network.PUBLIC);
 ```
 
+## Protocol 27 credentials
+
+The SDK signs whichever credential arm the server returns. `jwtToken()` accepts `ADDRESS`, `ADDRESS_V2`, and `ADDRESS_WITH_DELEGATES` entries (protocol 27, CAP-71) and preserves the arm on write-back, so no flow change is needed when an anchor adopts the V2 or delegated arms. For `ADDRESS_WITH_DELEGATES` entries, every signer registered in the contract's `__check_auth` rules must be supplied in the signers list, including delegate signers.
+
 ## Reference contracts
 
 Your contract account must implement `__check_auth` to define authorization rules. The Stellar Anchor Platform provides a reference implementation:

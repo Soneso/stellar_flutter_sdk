@@ -153,9 +153,12 @@ final tx = TransactionBuilder(account!)
     .build();
 
 // Simulate (optional: add ResourceConfig for instruction leeway)
+// authV2: true requests protocol 27 ADDRESS_V2 auth entries; the key is omitted
+// when false, and RPCs without support silently return legacy ADDRESS entries.
 final simResponse = await server.simulateTransaction(
   SimulateTransactionRequest(tx,
-      resourceConfig: ResourceConfig(200000)), // instruction buffer
+      resourceConfig: ResourceConfig(200000), // instruction buffer
+      authV2: false),
 );
 
 if (simResponse.resultError != null) {

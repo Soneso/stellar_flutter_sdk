@@ -36,6 +36,8 @@ class XdrEnvelopeType {
   static const ENVELOPE_TYPE_CONTRACT_ID = const XdrEnvelopeType._internal(8);
   static const ENVELOPE_TYPE_SOROBAN_AUTHORIZATION =
       const XdrEnvelopeType._internal(9);
+  static const ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS =
+      const XdrEnvelopeType._internal(10);
 
   static XdrEnvelopeType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -60,6 +62,8 @@ class XdrEnvelopeType {
         return ENVELOPE_TYPE_CONTRACT_ID;
       case 9:
         return ENVELOPE_TYPE_SOROBAN_AUTHORIZATION;
+      case 10:
+        return ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -106,6 +110,8 @@ class XdrEnvelopeType {
         return 'ENVELOPE_TYPE_CONTRACT_ID';
       case 9:
         return 'ENVELOPE_TYPE_SOROBAN_AUTHORIZATION';
+      case 10:
+        return 'ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS';
       default:
         return 'XdrEnvelopeType#$_value';
     }
@@ -139,6 +145,8 @@ class XdrEnvelopeType {
         return ENVELOPE_TYPE_CONTRACT_ID;
       case 'ENVELOPE_TYPE_SOROBAN_AUTHORIZATION':
         return ENVELOPE_TYPE_SOROBAN_AUTHORIZATION;
+      case 'ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS':
+        return ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS;
       default:
         if (name.startsWith('XdrEnvelopeType#')) {
           int? val = int.tryParse(name.substring('XdrEnvelopeType#'.length));

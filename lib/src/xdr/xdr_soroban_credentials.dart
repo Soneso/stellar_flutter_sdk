@@ -4,6 +4,7 @@
 
 import 'xdr_data_io.dart';
 import 'xdr_soroban_address_credentials.dart';
+import 'xdr_soroban_address_credentials_with_delegates.dart';
 import 'xdr_soroban_credentials_base.dart';
 import 'xdr_soroban_credentials_type.dart';
 
@@ -28,6 +29,8 @@ class XdrSorobanCredentials extends XdrSorobanCredentialsBase {
     var b = XdrSorobanCredentialsBase.fromTxRep(map, prefix);
     var result = XdrSorobanCredentials(b.discriminant);
     result.address = b.address;
+    result.addressV2 = b.addressV2;
+    result.addressWithDelegates = b.addressWithDelegates;
     return result;
   }
 
@@ -44,6 +47,34 @@ class XdrSorobanCredentials extends XdrSorobanCredentialsBase {
       XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS,
     );
     result.address = addressCredentials;
+    return result;
+  }
+
+  /// Creates credentials for the ADDRESS_V2 arm (protocol 27+).
+  ///
+  /// ADDRESS_V2 uses the same body as ADDRESS but a different preimage type
+  /// (ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS). Emitting this arm on
+  /// a network below protocol 27 invalidates the transaction.
+  static XdrSorobanCredentials forAddressV2Credentials(
+    XdrSorobanAddressCredentials addressCredentials,
+  ) {
+    var result = XdrSorobanCredentials(
+      XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
+    );
+    result.addressV2 = addressCredentials;
+    return result;
+  }
+
+  /// Creates credentials for the ADDRESS_WITH_DELEGATES arm (protocol 27+).
+  ///
+  /// Emitting this arm on a network below protocol 27 invalidates the transaction.
+  static XdrSorobanCredentials forAddressWithDelegatesCredentials(
+    XdrSorobanAddressCredentialsWithDelegates addressWithDelegates,
+  ) {
+    var result = XdrSorobanCredentials(
+      XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
+    );
+    result.addressWithDelegates = addressWithDelegates;
     return result;
   }
 }

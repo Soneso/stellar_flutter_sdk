@@ -176,6 +176,30 @@ GetTransactionResponse response =
     await swapTx.signAndSend(sourceAccountKeyPair: aliceKeyPair);
 ```
 
+### Protocol 27 Credentials (CAP-71)
+
+`SorobanCredentials` arms: source-account, legacy `ADDRESS` (default, valid all protocols), `ADDRESS_V2`, `ADDRESS_WITH_DELEGATES` (V2 and delegates are protocol 27+; emitting below p27 invalidates the tx). `credentials.innerAddressCredentials` returns the inner creds for any address arm (null for source-account); `credentials.arm` is the discriminant.
+
+Request V2 entries from simulation: `MethodOptions(authV2: true)` or `SimulateTransactionRequest(tx, authV2: true)`. The key is omitted when false; RPCs without support silently return legacy `ADDRESS`. Detect by inspecting `arm`, never by error code.
+
+`signAuthEntries` / `needsNonInvokerSigningBy` handle all arms; `needsNonInvokerSigningBy` lists every void node including delegates.
+
+```dart
+// Build a WITH_DELEGATES entry from an ADDRESS/ADDRESS_V2 entry; the builder
+// sorts delegate arrays by XDR-encoded address bytes and rejects duplicates.
+int exp = (await server.getLatestLedger()).sequence! + 100;
+SorobanAuthorizationEntry delegated = SorobanAuthorizationEntry.withDelegates(
+  sourceEntry, // ADDRESS or ADDRESS_V2, from simulation
+  [SorobanDelegateDescriptor(delegateKeyPair.accountId)], // nestedDelegates / signature optional
+  exp,
+);
+delegated.sign(topLevelKeyPair, Network.TESTNET); // optional; skip for delegates-only
+delegated.sign(delegateKeyPair, Network.TESTNET,
+    forAddress: delegateKeyPair.accountId); // routes into matching node depth-first
+```
+
+Delegates share one payload bound to the top-level address; they carry no nonce/expiration. Multiple G-address signatures on one node must be added in ascending public-key order (the SDK appends in call order, no sorting). After `tx.setSorobanAuth([delegated])`, re-simulate and apply the returned resources (`sorobanTransactionData`, `addResourceFee`) before submitting — the first simulation excludes the delegate auth. New union cases on `SorobanCredentials`/`XdrSorobanCredentialsType`/`XdrEnvelopeType`/`XdrHashIDPreimage` need a `default` arm in exhaustive switches.
+
 ---
 
 ## Low-Level: SorobanServer

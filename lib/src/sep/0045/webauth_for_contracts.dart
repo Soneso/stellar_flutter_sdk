@@ -666,15 +666,17 @@ class WebAuthForContracts {
         }
       }
 
-      // Check which entry this is (server, client, or client domain)
+      // Check which entry this is (server, client, or client domain).
+      // All three address credential arms (ADDRESS, ADDRESS_V2,
+      // ADDRESS_WITH_DELEGATES) are accepted here.
       final credentials = entry.credentials;
-      if (credentials.addressCredentials != null) {
-        final credentialsAddress = credentials.addressCredentials!.address;
-        final credentialsAddressStr = _addressToString(credentialsAddress);
+      final innerCreds = credentials.innerAddressCredentials;
+      if (innerCreds != null) {
+        final credentialsAddressStr = _addressToString(innerCreds.address);
 
         if (credentialsAddressStr == _serverSigningKey) {
           serverEntryFound = true;
-          // Verify server signature
+          // Verify server signature; accepts all three address arms.
           if (!_verifyServerSignature(entry)) {
             throw ContractChallengeValidationErrorInvalidServerSignature(
               'Server authorization entry has invalid signature',
@@ -737,16 +739,19 @@ class WebAuthForContracts {
 
     for (final entry in authEntries) {
       final credentials = entry.credentials;
-      if (credentials.addressCredentials != null) {
-        final credentialsAddress = credentials.addressCredentials!.address;
-        final credentialsAddressStr = _addressToString(credentialsAddress);
+      // Use innerAddressCredentials so all three address arms
+      // (ADDRESS, ADDRESS_V2, ADDRESS_WITH_DELEGATES) are handled.
+      // Source-account entries are passed through unsigned.
+      final innerCreds = credentials.innerAddressCredentials;
+      if (innerCreds != null) {
+        final credentialsAddressStr = _addressToString(innerCreds.address);
 
         // Sign client entry
         if (credentialsAddressStr == clientAccountId) {
-          // Set signature expiration ledger if provided
+          // Stamp expiration before signing; innerAddressCredentials mutates
+          // in-place for all three address arms.
           if (signatureExpirationLedger != null) {
-            credentials.addressCredentials!.signatureExpirationLedger =
-                signatureExpirationLedger;
+            innerCreds.signatureExpirationLedger = signatureExpirationLedger;
           }
 
           // Sign with all provided signers
@@ -761,8 +766,7 @@ class WebAuthForContracts {
         if (clientDomainKeyPair != null &&
             credentialsAddressStr == clientDomainKeyPair.accountId) {
           if (signatureExpirationLedger != null) {
-            credentials.addressCredentials!.signatureExpirationLedger =
-                signatureExpirationLedger;
+            innerCreds.signatureExpirationLedger = signatureExpirationLedger;
           }
           entry.sign(clientDomainKeyPair, _network);
           signedEntries.add(entry);
@@ -773,10 +777,9 @@ class WebAuthForContracts {
         if (clientDomainSigningCallback != null &&
             clientDomainAccountId != null &&
             credentialsAddressStr == clientDomainAccountId) {
-          // Set signature expiration ledger before sending to callback
+          // Stamp expiration before handing off to the callback.
           if (signatureExpirationLedger != null) {
-            credentials.addressCredentials!.signatureExpirationLedger =
-                signatureExpirationLedger;
+            innerCreds.signatureExpirationLedger = signatureExpirationLedger;
           }
           final signedEntry = await clientDomainSigningCallback(entry);
           signedEntries.add(signedEntry);
@@ -938,44 +941,42 @@ class WebAuthForContracts {
     }
   }
 
-  /// Verifies server signature on authorization entry.
+  /// Verifies server signature on an authorization entry.
+  ///
+  /// Accepts all three address credential arms (ADDRESS, ADDRESS_V2,
+  /// ADDRESS_WITH_DELEGATES). The preimage is built via
+  /// [SorobanAuthorizationEntry.buildPreimage], which selects the correct
+  /// envelope type for each arm: legacy ADDRESS entries use
+  /// ENVELOPE_TYPE_SOROBAN_AUTHORIZATION; ADDRESS_V2 and WITH_DELEGATES
+  /// entries use ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS.
+  ///
+  /// Source-account credentials do not carry a signature and return false.
   bool _verifyServerSignature(SorobanAuthorizationEntry entry) {
     try {
-      final xdrCredentials = entry.credentials.toXdr();
-      if (entry.credentials.addressCredentials == null ||
-          xdrCredentials.type !=
-              XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS ||
-          xdrCredentials.address == null) {
+      final innerCreds = entry.credentials.innerAddressCredentials;
+      if (innerCreds == null) {
+        // Source-account credentials carry no signature.
         return false;
       }
 
-      // Build authorization preimage
-      final networkId = Util.hash(Uint8List.fromList(
-          _network.networkPassphrase.codeUnits));
-      final authPreimageXdr = XdrHashIDPreimageSorobanAuthorization(
-        XdrHash(networkId),
-        xdrCredentials.address!.nonce,
-        xdrCredentials.address!.signatureExpirationLedger,
-        entry.rootInvocation.toXdr(),
-      );
-      final rootInvocationPreimage = XdrHashIDPreimage(
-        XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION,
-      );
-      rootInvocationPreimage.sorobanAuthorization = authPreimageXdr;
+      // Build the arm-correct preimage via the shared preimage builder.
+      // The preimage must be built from the credentials as-is; the
+      // signatureExpirationLedger is already set by the server.
+      final preimage = entry.buildPreimage(_network);
 
       final xdrOutputStream = XdrDataOutputStream();
-      XdrHashIDPreimage.encode(xdrOutputStream, rootInvocationPreimage);
+      XdrHashIDPreimage.encode(xdrOutputStream, preimage);
       final payload = Util.hash(Uint8List.fromList(xdrOutputStream.bytes));
 
-      // Get signature from credentials
-      final signatureVal = entry.credentials.addressCredentials!.signature;
+      // Get signature from inner credentials (same field for all address arms)
+      final signatureVal = innerCreds.signature;
       if (signatureVal.discriminant != XdrSCValType.SCV_VEC ||
           signatureVal.vec == null ||
           signatureVal.vec!.isEmpty) {
         return false;
       }
 
-      // Extract public key and signature from first signature entry
+      // Extract public key and signature from the first signature entry
       final firstSig = signatureVal.vec![0];
       if (firstSig.discriminant != XdrSCValType.SCV_MAP ||
           firstSig.map == null) {
@@ -1002,14 +1003,14 @@ class WebAuthForContracts {
         return false;
       }
 
-      // Verify that extracted public key matches expected server signing key
+      // Verify that the extracted public key matches the expected server key
       final expectedPublicKey =
           KeyPair.fromAccountId(_serverSigningKey).publicKey;
       if (!_bytesEqual(publicKey, expectedPublicKey)) {
         return false;
       }
 
-      // Verify signature
+      // Verify signature against the arm-correct payload
       final serverKeyPair = KeyPair.fromAccountId(_serverSigningKey);
       return serverKeyPair.verify(payload, signature);
     } catch (e) {

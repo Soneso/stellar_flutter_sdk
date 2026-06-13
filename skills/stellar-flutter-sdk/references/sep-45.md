@@ -184,6 +184,8 @@ final jwtToken = await webAuth.jwtToken(
 
 **Signature expiration:** When signers are provided and `signatureExpirationLedger` is `null`, the SDK calls `SorobanServer.getLatestLedger()` and sets expiration to `sequence + 10` (~50–60 seconds). If the signers array is empty, this Soroban RPC call is skipped entirely.
 
+**Protocol 27 credentials (CAP-71):** signing accepts `ADDRESS`, `ADDRESS_V2`, and `ADDRESS_WITH_DELEGATES` entries transparently and preserves the arm — no flow change. For `ADDRESS_WITH_DELEGATES` entries, supply every signer the contract's `__check_auth` requires, including delegate signers, in the `signers` list.
+
 ---
 
 ## Contracts Without Signature Requirements

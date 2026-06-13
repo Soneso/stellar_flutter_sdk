@@ -2,11 +2,12 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart' as crypto;
 
+import '../../network.dart';
+import '../../soroban/soroban_auth.dart';
 import '../../xdr/xdr.dart';
 import '../core/smart_account_errors.dart';
 import 'oz_smart_account_auth_payload.dart';
@@ -33,6 +34,16 @@ import 'oz_smart_account_signatures.dart';
 /// call concurrently from any isolate. The [signAuthEntry] helper never
 /// mutates its input entry — it clones via XDR round-trip and returns a new
 /// entry.
+///
+/// Credential arm handling:
+/// - ADDRESS: legacy preimage (ENVELOPE_TYPE_SOROBAN_AUTHORIZATION).
+/// - ADDRESS_V2: address-bound preimage
+///   (ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS). Handled identically
+///   to ADDRESS in the signing flow; the arm is preserved on write-back.
+/// - ADDRESS_WITH_DELEGATES: cannot be auto-signed by these flows. Use
+///   [SorobanAuthorizationEntry.sign] with the [forAddress] parameter instead.
+/// - SOURCE_ACCOUNT: not signable; throws on all entry points that require
+///   address credentials.
 abstract class OZSmartAccountAuth {
   OZSmartAccountAuth._();
 
@@ -82,46 +93,47 @@ abstract class OZSmartAccountAuth {
   ///
   /// Computes the hash that must be signed to authorise a Soroban
   /// operation. This hash is used as the WebAuthn challenge when
-  /// collecting biometric signatures. The entry must have address
-  /// credentials.
+  /// collecting biometric signatures.
   ///
-  /// The payload preimage is constructed as
-  /// `HashIDPreimage::SorobanAuthorization { networkId,
-  /// nonce: credentials.nonce, signatureExpirationLedger: expirationLedger,
-  /// invocation: entry.rootInvocation }` and the returned value is
-  /// `SHA-256(XDR_encode(preimage))`.
+  /// Preimage selection follows the credential arm:
+  /// - ADDRESS: ENVELOPE_TYPE_SOROBAN_AUTHORIZATION (legacy).
+  /// - ADDRESS_V2: ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS.
+  /// - ADDRESS_WITH_DELEGATES: not supported by this flow; throws a
+  ///   [SmartAccountTransactionSigningFailed] directing the caller to use
+  ///   [SorobanAuthorizationEntry.sign] with the [forAddress] parameter.
   ///
-  /// Throws [SmartAccountTransactionSigningFailed] when [entry] does not have address
-  /// credentials, or when XDR encoding fails.
+  /// [expirationLedger] is stamped onto the credentials before the preimage
+  /// is built. The returned hash is `SHA-256(XDR_encode(preimage))`.
+  ///
+  /// Throws [SmartAccountTransactionSigningFailed] when the entry does not carry
+  /// address credentials or when XDR encoding fails.
   static Future<Uint8List> buildAuthPayloadHash(
     XdrSorobanAuthorizationEntry entry,
     int expirationLedger,
     String networkPassphrase,
   ) async {
-    final credentials = entry.credentials.address;
-    if (entry.credentials.discriminant !=
-            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS ||
-        credentials == null) {
-      throw SmartAccountTransactionException.signingFailed(
-        'Credentials must be of type address to build auth payload hash',
-      );
-    }
+    _requireAddressOrV2Credentials(entry.credentials);
 
-    return _hashAuthPreimage(
-      nonce: credentials.nonce,
-      expirationLedger: expirationLedger,
-      invocation: entry.rootInvocation,
-      networkPassphrase: networkPassphrase,
+    final inner = _innerAddressCredentials(entry.credentials)!;
+    // Stamp the expiration before building the preimage so the hash covers
+    // the submitted expiration value.
+    final stampedInner = XdrSorobanAddressCredentials(
+      inner.address,
+      inner.nonce,
+      XdrUint32(expirationLedger),
+      inner.signature,
     );
+    final stampedEntry = _rebuildEntry(entry, stampedInner);
+
+    return _hashPreimage(stampedEntry, networkPassphrase);
   }
 
   /// Builds the authorisation payload hash for source-account credentials.
   ///
   /// Used when converting source-account credentials to address
   /// credentials, typically for relayer fee sponsoring. The preimage is
-  /// constructed identically to [buildAuthPayloadHash] but uses the
-  /// supplied [nonce] and [expirationLedger] instead of reading them from
-  /// existing credentials.
+  /// always ENVELOPE_TYPE_SOROBAN_AUTHORIZATION because this flow creates
+  /// new legacy ADDRESS credentials for a temporary keypair.
   ///
   /// Throws [SmartAccountTransactionSigningFailed] when XDR encoding fails.
   static Future<Uint8List> buildSourceAccountAuthPayloadHash(
@@ -153,9 +165,16 @@ abstract class OZSmartAccountAuth {
   /// the payload back, and returns a new authorisation entry with the updated
   /// credentials. The input entry is never mutated.
   ///
+  /// The credential arm is preserved on write-back: an ADDRESS_V2 entry stays
+  /// ADDRESS_V2 after signing.
+  ///
   /// When [contextRuleIds] is non-empty it overrides any existing
   /// context-rule IDs in the payload; otherwise the existing value is
   /// preserved.
+  ///
+  /// ADDRESS_WITH_DELEGATES entries are not supported here; the caller must
+  /// use [SorobanAuthorizationEntry.sign] with the [forAddress] parameter to
+  /// route signatures to the appropriate delegate nodes.
   ///
   /// Throws [SmartAccountTransactionSigningFailed] when credentials are not address
   /// type, when the entry cannot be cloned via XDR, when [signer] cannot
@@ -195,14 +214,9 @@ abstract class OZSmartAccountAuth {
     }
 
     // Step 2: extract the address credentials from the cloned entry.
-    final credentialsCopy = entryCopy.credentials.address;
-    if (entryCopy.credentials.discriminant !=
-            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS ||
-        credentialsCopy == null) {
-      throw SmartAccountTransactionException.signingFailed(
-        'Credentials must be of type address to sign auth entry',
-      );
-    }
+    // ADDRESS_WITH_DELEGATES is not supported in this auto-sign flow.
+    _requireAddressOrV2Credentials(entryCopy.credentials);
+    final credentialsCopy = _innerAddressCredentials(entryCopy.credentials)!;
 
     // Step 3: produce the bytes for the on-wire signers Map. The exact
     // content is verifier-dependent: WebAuthn/Policy XDR-encode their
@@ -246,8 +260,10 @@ abstract class OZSmartAccountAuth {
       payloadScVal,
     );
 
-    final updatedCredsWrapper =
-        XdrSorobanCredentials.forAddressCredentials(updatedCredentials);
+    final updatedCredsWrapper = _rebuildCredentials(
+      entryCopy.credentials,
+      updatedCredentials,
+    );
     return XdrSorobanAuthorizationEntry(
       updatedCredsWrapper,
       entryCopy.rootInvocation,
@@ -266,6 +282,11 @@ abstract class OZSmartAccountAuth {
   /// stored directly; otherwise the value is XDR-encoded and the resulting
   /// bytes are stored.
   ///
+  /// The credential arm is preserved on write-back.
+  ///
+  /// ADDRESS_WITH_DELEGATES entries are not supported here; use
+  /// [SorobanAuthorizationEntry.sign] with the [forAddress] parameter instead.
+  ///
   /// Throws [SmartAccountTransactionSigningFailed] when [entry] does not have address
   /// credentials, or when XDR encoding of the signature value fails.
   static XdrSorobanAuthorizationEntry addRawSignatureMapEntry({
@@ -274,14 +295,9 @@ abstract class OZSmartAccountAuth {
     required XdrSCVal signatureValue,
     List<int> contextRuleIds = const <int>[],
   }) {
-    final credentials = entry.credentials.address;
-    if (entry.credentials.discriminant !=
-            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS ||
-        credentials == null) {
-      throw SmartAccountTransactionException.signingFailed(
-        'Credentials must be of type address to add signature map entry',
-      );
-    }
+    // ADDRESS_WITH_DELEGATES is not supported in this auto-sign flow.
+    _requireAddressOrV2Credentials(entry.credentials);
+    final credentials = _innerAddressCredentials(entry.credentials)!;
 
     final existingPayload =
         OZSmartAccountAuthPayloadCodec.read(credentials.signature);
@@ -322,8 +338,10 @@ abstract class OZSmartAccountAuth {
       payloadScVal,
     );
 
-    final updatedCredsWrapper =
-        XdrSorobanCredentials.forAddressCredentials(updatedCredentials);
+    final updatedCredsWrapper = _rebuildCredentials(
+      entry.credentials,
+      updatedCredentials,
+    );
     return XdrSorobanAuthorizationEntry(
       updatedCredsWrapper,
       entry.rootInvocation,
@@ -332,33 +350,94 @@ abstract class OZSmartAccountAuth {
 
   // Helper functions
 
-  /// Hashes a Soroban authorisation preimage.
+  /// Returns the inner [XdrSorobanAddressCredentials] for any address arm
+  /// (ADDRESS, ADDRESS_V2, or ADDRESS_WITH_DELEGATES), or null for
+  /// SOURCE_ACCOUNT.
+  static XdrSorobanAddressCredentials? _innerAddressCredentials(
+    XdrSorobanCredentials creds,
+  ) {
+    switch (creds.discriminant) {
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
+        return creds.address;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2:
+        return creds.addressV2;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
+        return creds.addressWithDelegates?.addressCredentials;
+      default:
+        return null;
+    }
+  }
+
+  /// Rebuilds a [XdrSorobanCredentials] wrapper from the same discriminant arm,
+  /// replacing the inner [XdrSorobanAddressCredentials] with [updated].
   ///
-  /// Constructs `HashIDPreimage::SorobanAuthorization` from the given
-  /// parameters, XDR-encodes it, and returns `SHA-256(encoded bytes)`.
-  /// Used by both [buildAuthPayloadHash] and
-  /// [buildSourceAccountAuthPayloadHash].
-  static Future<Uint8List> _hashAuthPreimage({
-    required XdrInt64 nonce,
-    required int expirationLedger,
-    required XdrSorobanAuthorizedInvocation invocation,
-    required String networkPassphrase,
-  }) async {
-    final networkId = Uint8List.fromList(
-      crypto.sha256.convert(utf8.encode(networkPassphrase)).bytes,
-    );
+  /// Preserves the credential arm: an ADDRESS_V2 entry stays ADDRESS_V2.
+  /// Throws [SmartAccountTransactionSigningFailed] for SOURCE_ACCOUNT or unknown arms.
+  static XdrSorobanCredentials _rebuildCredentials(
+    XdrSorobanCredentials original,
+    XdrSorobanAddressCredentials updated,
+  ) {
+    switch (original.discriminant) {
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
+        return XdrSorobanCredentials.forAddressCredentials(updated);
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2:
+        return XdrSorobanCredentials.forAddressV2Credentials(updated);
+      default:
+        throw SmartAccountTransactionException.signingFailed(
+          'Cannot rebuild credentials for arm: ${original.discriminant}',
+        );
+    }
+  }
 
-    final authPreimage = XdrHashIDPreimageSorobanAuthorization(
-      XdrHash(networkId),
-      nonce,
-      XdrUint32(expirationLedger),
-      invocation,
-    );
+  /// Validates that [creds] carries ADDRESS or ADDRESS_V2 credentials.
+  ///
+  /// Throws [SmartAccountTransactionSigningFailed] for SOURCE_ACCOUNT (no address
+  /// credentials available) and for ADDRESS_WITH_DELEGATES (delegate routing
+  /// is caller policy; use [SorobanAuthorizationEntry.sign] with the
+  /// [forAddress] parameter to route signatures to specific delegate nodes).
+  static void _requireAddressOrV2Credentials(XdrSorobanCredentials creds) {
+    switch (creds.discriminant) {
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2:
+        return;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
+        throw SmartAccountTransactionException.signingFailed(
+          'ADDRESS_WITH_DELEGATES entries cannot be auto-signed by the OZ auth flow. '
+          'Use SorobanAuthorizationEntry.sign(signer, network, forAddress: address) '
+          'to route signatures to specific delegate nodes before calling these helpers.',
+        );
+      default:
+        throw SmartAccountTransactionException.signingFailed(
+          'Credentials must be of type ADDRESS or ADDRESS_V2 to sign auth entry',
+        );
+    }
+  }
 
-    final preimage = XdrHashIDPreimage(
-      XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION,
-    );
-    preimage.sorobanAuthorization = authPreimage;
+  /// Hashes the authorisation preimage for the given entry.
+  ///
+  /// Promotes the XDR entry to the higher-level [SorobanAuthorizationEntry]
+  /// and delegates preimage construction to
+  /// [SorobanAuthorizationEntry.buildPreimage]. This ensures a single
+  /// canonical preimage-construction path is used for all credential arms:
+  /// - ADDRESS -> ENVELOPE_TYPE_SOROBAN_AUTHORIZATION
+  /// - ADDRESS_V2 -> ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS
+  ///
+  /// Returns `SHA-256(XDR_encode(preimage))`.
+  static Future<Uint8List> _hashPreimage(
+    XdrSorobanAuthorizationEntry xdrEntry,
+    String networkPassphrase,
+  ) async {
+    final entry = SorobanAuthorizationEntry.fromXdr(xdrEntry);
+    final network = Network(networkPassphrase);
+    XdrHashIDPreimage preimage;
+    try {
+      preimage = entry.buildPreimage(network);
+    } catch (e) {
+      throw SmartAccountTransactionException.signingFailed(
+        'Failed to build auth payload preimage',
+        cause: e,
+      );
+    }
 
     Uint8List encodedPreimage;
     try {
@@ -373,5 +452,51 @@ abstract class OZSmartAccountAuth {
     }
 
     return Uint8List.fromList(crypto.sha256.convert(encodedPreimage).bytes);
+  }
+
+  /// Hashes a legacy Soroban authorisation preimage.
+  ///
+  /// Constructs a synthetic legacy ADDRESS entry from the given parameters,
+  /// then delegates to [_hashPreimage] (which uses the canonical
+  /// builder). The credential address field is a placeholder because the
+  /// legacy preimage (ENVELOPE_TYPE_SOROBAN_AUTHORIZATION) does not include
+  /// the address, so its value is irrelevant to the hash.
+  ///
+  /// Used exclusively by [buildSourceAccountAuthPayloadHash] for the
+  /// source-account -> legacy ADDRESS conversion path.
+  static Future<Uint8List> _hashAuthPreimage({
+    required XdrInt64 nonce,
+    required int expirationLedger,
+    required XdrSorobanAuthorizedInvocation invocation,
+    required String networkPassphrase,
+  }) async {
+    // Build a synthetic legacy ADDRESS entry. The address value is a
+    // placeholder (all-zero contract ID) because the legacy preimage type
+    // (ENVELOPE_TYPE_SOROBAN_AUTHORIZATION) does not include the address.
+    const _kPlaceholderContractId =
+        'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4';
+    final addressCreds = XdrSorobanAddressCredentials(
+      XdrSCAddress.forContractId(_kPlaceholderContractId),
+      nonce,
+      XdrUint32(expirationLedger),
+      XdrSCVal.forVoid(),
+    );
+    final syntheticEntry = XdrSorobanAuthorizationEntry(
+      XdrSorobanCredentials.forAddressCredentials(addressCreds),
+      invocation,
+    );
+    return _hashPreimage(syntheticEntry, networkPassphrase);
+  }
+
+  /// Rebuilds an [XdrSorobanAuthorizationEntry] with [stampedInner] as the
+  /// credentials body, preserving the credential arm.
+  static XdrSorobanAuthorizationEntry _rebuildEntry(
+    XdrSorobanAuthorizationEntry original,
+    XdrSorobanAddressCredentials stampedInner,
+  ) {
+    return XdrSorobanAuthorizationEntry(
+      _rebuildCredentials(original.credentials, stampedInner),
+      original.rootInvocation,
+    );
   }
 }

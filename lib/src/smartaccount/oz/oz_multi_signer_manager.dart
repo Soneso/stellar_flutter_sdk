@@ -5,13 +5,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:crypto/crypto.dart' as crypto;
 import 'package:meta/meta.dart';
 
 import '../../account.dart';
 import '../../invoke_host_function_operation.dart';
 import '../../key_pair.dart';
 import '../../memo.dart';
+import '../../network.dart';
 import '../../soroban/soroban_auth.dart';
 import '../../soroban/soroban_server.dart';
 import '../../transaction.dart';
@@ -404,12 +404,36 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     for (var entryIndex = 0; entryIndex < authEntries.length; entryIndex++) {
       final entry = authEntries[entryIndex];
 
-      final addressCreds = entry.credentials.address;
-      if (entry.credentials.discriminant !=
-              XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS ||
-          addressCreds == null) {
+      // Pass SOURCE_ACCOUNT entries through unchanged.
+      if (entry.credentials.discriminant ==
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT) {
         signedAuthEntries.add(entry);
         continue;
+      }
+
+      // ADDRESS_WITH_DELEGATES entries carry a delegate tree that requires
+      // caller-policy routing. The OZ auto-sign flow cannot determine which
+      // delegate node each selected signer should sign. Use
+      // SorobanAuthorizationEntry.sign(signer, network, forAddress: address)
+      // to route signatures to specific nodes before calling this method.
+      if (entry.credentials.discriminant ==
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+        throw SmartAccountTransactionException.signingFailed(
+          'ADDRESS_WITH_DELEGATES auth entries cannot be auto-signed by the '
+          'multi-signer pipeline. Use SorobanAuthorizationEntry.sign with the '
+          'forAddress parameter to sign each delegate node, then pass the '
+          'pre-signed entries via the auth parameter.',
+        );
+      }
+
+      // For ADDRESS and ADDRESS_V2: extract the inner credentials.
+      final addressCreds = _innerAddressCredentialsXdr(entry.credentials);
+      if (addressCreds == null) {
+        // Unknown arm — fail fast rather than passing through unsigned.
+        throw SmartAccountTransactionException.signingFailed(
+          'Unrecognised credential arm '
+          '${entry.credentials.discriminant} in auth entry; cannot sign.',
+        );
       }
 
       final entryAddress = OZAddressStrKey.fromXdr(addressCreds.address);
@@ -833,7 +857,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   }) async {
     final signedEntry = _cloneEntryWithExpiration(entry, expirationLedger);
 
-    final credentials = signedEntry.credentials.address;
+    final credentials = _innerAddressCredentialsXdr(signedEntry.credentials);
     if (credentials == null) {
       throw SmartAccountTransactionException.signingFailed(
         'Expected Address credentials on wallet auth entry for '
@@ -841,17 +865,21 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       );
     }
 
-    final networkId = _sha256(utf8.encode(_kit.config.networkPassphrase));
-
-    final authPreimage = XdrHashIDPreimageSorobanAuthorization(
-      XdrHash(networkId),
-      credentials.nonce,
-      credentials.signatureExpirationLedger,
-      signedEntry.rootInvocation,
-    );
-    final preimage = XdrHashIDPreimage(
-      XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION,
-    )..sorobanAuthorization = authPreimage;
+    // Build the preimage via the canonical preimage builder so the preimage
+    // type matches the credential arm: ADDRESS -> legacy preimage,
+    // ADDRESS_V2 -> address-bound preimage.
+    final highLevelEntry = SorobanAuthorizationEntry.fromXdr(signedEntry);
+    XdrHashIDPreimage preimage;
+    try {
+      preimage = highLevelEntry.buildPreimage(
+        Network(_kit.config.networkPassphrase),
+      );
+    } catch (e) {
+      throw SmartAccountTransactionException.signingFailed(
+        'Failed to build preimage for wallet auth entry',
+        cause: e,
+      );
+    }
 
     final stream = XdrDataOutputStream();
     XdrHashIDPreimage.encode(stream, preimage);
@@ -889,8 +917,9 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       signatureScVal,
     );
 
+    // Preserve the credential arm on write-back.
     return XdrSorobanAuthorizationEntry(
-      XdrSorobanCredentials.forAddressCredentials(updatedCredentials),
+      _rebuildCredentialsXdr(signedEntry.credentials, updatedCredentials),
       signedEntry.rootInvocation,
     );
   }
@@ -905,7 +934,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       XdrDataInputStream(Uint8List.fromList(stream.bytes)),
     );
 
-    final credentials = cloned.credentials.address;
+    final credentials = _innerAddressCredentialsXdr(cloned.credentials);
     if (credentials == null) return cloned;
 
     final updated = XdrSorobanAddressCredentials(
@@ -915,8 +944,9 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       credentials.signature,
     );
 
+    // Preserve the credential arm: an ADDRESS_V2 entry stays ADDRESS_V2.
     return XdrSorobanAuthorizationEntry(
-      XdrSorobanCredentials.forAddressCredentials(updated),
+      _rebuildCredentialsXdr(cloned.credentials, updated),
       cloned.rootInvocation,
     );
   }
@@ -929,17 +959,35 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   }) async {
     final nonce = _generateNonce();
 
-    final networkId = _sha256(utf8.encode(_kit.config.networkPassphrase));
-
-    final authPreimage = XdrHashIDPreimageSorobanAuthorization(
-      XdrHash(networkId),
+    // Build a fresh legacy ADDRESS entry so the canonical preimage
+    // builder can be used. This entry is always ADDRESS (not V2) because it
+    // is a brand-new entry synthesised for the delegated `__check_auth`
+    // invocation, not a simulation-returned entry.
+    final addressCredentials = XdrSorobanAddressCredentials(
+      Address.forAccountId(publicKey).toXdr(),
       nonce,
       XdrUint32(validUntilLedgerSeq),
+      XdrSCVal.forVoid(),
+    );
+    final freshEntry = XdrSorobanAuthorizationEntry(
+      XdrSorobanCredentials.forAddressCredentials(addressCredentials),
       invocation,
     );
-    final preimage = XdrHashIDPreimage(
-      XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION,
-    )..sorobanAuthorization = authPreimage;
+
+    // Build the preimage via the canonical builder so preimage type always
+    // follows the credential arm.
+    final highLevelEntry = SorobanAuthorizationEntry.fromXdr(freshEntry);
+    XdrHashIDPreimage preimage;
+    try {
+      preimage = highLevelEntry.buildPreimage(
+        Network(_kit.config.networkPassphrase),
+      );
+    } catch (e) {
+      throw SmartAccountTransactionException.signingFailed(
+        'Failed to build preimage for __check_auth invocation',
+        cause: e,
+      );
+    }
 
     final result = await signer(preimage);
 
@@ -972,6 +1020,45 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     );
   }
 
+  /// Returns the inner [XdrSorobanAddressCredentials] for ADDRESS or
+  /// ADDRESS_V2 arms, or null for SOURCE_ACCOUNT and unknown arms.
+  ///
+  /// ADDRESS_WITH_DELEGATES is intentionally excluded: the callers that use
+  /// this helper enforce the WITH_DELEGATES restriction before calling.
+  static XdrSorobanAddressCredentials? _innerAddressCredentialsXdr(
+    XdrSorobanCredentials creds,
+  ) {
+    switch (creds.discriminant) {
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
+        return creds.address;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2:
+        return creds.addressV2;
+      default:
+        return null;
+    }
+  }
+
+  /// Rebuilds a [XdrSorobanCredentials] wrapper preserving the original
+  /// credential arm, replacing the inner credentials with [updated].
+  ///
+  /// Only ADDRESS and ADDRESS_V2 arms are supported; other arms throw
+  /// [SmartAccountTransactionSigningFailed].
+  static XdrSorobanCredentials _rebuildCredentialsXdr(
+    XdrSorobanCredentials original,
+    XdrSorobanAddressCredentials updated,
+  ) {
+    switch (original.discriminant) {
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
+        return XdrSorobanCredentials.forAddressCredentials(updated);
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2:
+        return XdrSorobanCredentials.forAddressV2Credentials(updated);
+      default:
+        throw SmartAccountTransactionException.signingFailed(
+          'Cannot rebuild credentials for arm: ${original.discriminant}',
+        );
+    }
+  }
+
   /// Generates an 8-byte cryptographically-random Soroban
   /// address-credentials nonce.
   ///
@@ -984,9 +1071,6 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   XdrInt64 generateNonceForTest() => _generateNonce();
 
   XdrInt64 _generateNonce() => OZSecureNonce.generate();
-
-  Uint8List _sha256(List<int> data) =>
-      Uint8List.fromList(crypto.sha256.convert(data).bytes);
 
   Future<Account> _fetchAccount(String accountId) async {
     final account = await _kit.sorobanServer.getAccount(accountId);

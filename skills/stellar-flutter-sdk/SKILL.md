@@ -337,7 +337,7 @@ XdrSCVal result = await client.invokeMethod(
 );
 ```
 
-For contract authorization, multi-auth workflows, and low-level deploy/invoke:
+For contract authorization, multi-auth workflows, protocol 27 credentials (ADDRESS_V2 / WITH_DELEGATES, `authV2`), and low-level deploy/invoke:
 [Smart Contracts Guide](./references/soroban_contracts.md)
 
 ## 7. Smart Accounts (OpenZeppelin)
