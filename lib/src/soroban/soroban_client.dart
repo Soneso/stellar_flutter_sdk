@@ -1199,18 +1199,10 @@ class AssembledTransaction {
       final topLevelStrKey =
           inner.address.accountId ?? inner.address.contractId ?? '';
 
-      if (authorizeEntryDelegate != null) {
-        // Delegate path: stamp expiration and hand off without arm-specific
-        // matching — caller controls which entries to sign externally.
-        inner.signatureExpirationLedger = expirationLedger;
-        final authorized =
-            await authorizeEntryDelegate(entry, options.clientOptions.network);
-        authEntries[i] = authorized;
-        continue;
-      }
-
       // Determine whether the signer matches the top-level address or any
-      // delegate node (for WITH_DELEGATES entries).
+      // delegate node (for WITH_DELEGATES entries). Only entries the signer is
+      // responsible for are touched; entries for other parties are left intact,
+      // so a signature already applied by another signer is never disturbed.
       final bool matchesTopLevel = topLevelStrKey == signerAddress;
 
       bool matchesDelegate = false;
@@ -1231,19 +1223,23 @@ class AssembledTransaction {
       // current expiration value.
       inner.signatureExpirationLedger = expirationLedger;
 
+      if (authorizeEntryDelegate != null) {
+        // Hand the matching entry off to the external signer.
+        final authorized =
+            await authorizeEntryDelegate(entry, options.clientOptions.network);
+        authEntries[i] = authorized;
+        continue;
+      }
+
       if (matchesTopLevel && !matchesDelegate) {
         // Sign the top-level credentials.
         entry.sign(signerKeyPair, options.clientOptions.network);
-      } else if (matchesDelegate && !matchesTopLevel) {
-        // Sign only the matching delegate node(s) via forAddress routing.
-        entry.sign(signerKeyPair, options.clientOptions.network,
-            forAddress: signerAddress);
       } else {
-        // Signer matches both the top-level address and a delegate node.
-        // forAddress routing already appends to the top-level credential at
-        // depth 0 when the address matches, then walks the delegate tree.
-        // A preceding plain sign() would write a duplicate top-level signature
-        // that the host rejects (ascending-key-order violation).
+        // Signer matches a delegate node (and possibly also the top-level
+        // address). forAddress routing signs the top-level credential when the
+        // address matches and every matching delegate node in one pass, so a
+        // preceding plain sign() would write a duplicate top-level signature the
+        // host rejects.
         entry.sign(signerKeyPair, options.clientOptions.network,
             forAddress: signerAddress);
       }

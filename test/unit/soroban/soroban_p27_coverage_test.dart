@@ -407,7 +407,6 @@ void main() {
   // -------------------------------------------------------------------------
   group('signAuthEntries: missing private key for P27 arms', () {
     test('V2 entry: signing without private key throws', () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -439,7 +438,6 @@ void main() {
     });
 
     test('WITH_DELEGATES entry: signing without private key throws', () async {
-      if (identical(0, 0.0)) return;
 
       final topKp = KeyPair.fromSecretSeed(_kSeed);
       final delegateKp = KeyPair.random();
@@ -479,7 +477,6 @@ void main() {
   // -------------------------------------------------------------------------
   group('signAuthEntries: authorizeEntryDelegate callback path', () {
     test('callback signs a V2 entry and returned entry is used', () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -531,7 +528,6 @@ void main() {
     test(
         'callback signs a WITH_DELEGATES entry; top-level contract, sole delegate matches signer',
         () async {
-      if (identical(0, 0.0)) return;
 
       final delegateKp = KeyPair.fromSecretSeed(_kSeed);
       final delegateId = delegateKp.accountId;
@@ -568,9 +564,89 @@ void main() {
           },
         );
 
-        // Callback is invoked for the WITH_DELEGATES entry since it matches
-        // either top-level or delegate — callback path bypasses the matching logic.
-        expect(callbackCount, greaterThanOrEqualTo(1));
+        // The entry matches the signer as a delegate node, so it is handed to
+        // the callback exactly once (never broadcast to non-matching entries).
+        expect(callbackCount, equals(1));
+      } finally {
+        await server.close();
+      }
+    });
+
+    test(
+        'delegate callback does not modify a sibling entry already signed by another party',
+        () async {
+      // Atomic-swap shape: two legacy ADDRESS entries (Alice and Bob). Alice
+      // signs directly; Bob then signs via a delegate callback. Bob's call must
+      // touch only Bob's entry and leave Alice's signed entry byte-for-byte
+      // intact — a delegate signer must never disturb an entry it does not own.
+      final aliceKp = KeyPair.fromSecretSeed(_kSeed);
+      final bobKp = KeyPair.random();
+      final aliceId = aliceKp.accountId;
+      final bobId = bobKp.accountId;
+      final (server, _) = await _startMockRpcServer(
+          accountId: aliceId, seqNum: BigInt.from(100));
+
+      try {
+        final rpcUrl = 'http://127.0.0.1:${server.port}';
+        final assembled =
+            await _buildAssembledTx(rpcUrl, aliceId, aliceKp, simulate: false);
+
+        SorobanAuthorizationEntry addressEntry(String accountId) =>
+            SorobanAuthorizationEntry(
+                SorobanCredentials(
+                    addressCredentials: SorobanAddressCredentials(
+                        Address.forAccountId(accountId),
+                        _kNonce,
+                        _kExpiration,
+                        XdrSCVal.forVoid())),
+                _buildHelloInvocation());
+
+        final account = Account(aliceId, BigInt.from(100));
+        final invokeOp = InvokeContractHostFunction(_kContractId, 'hello',
+            arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
+        assembled.tx = TransactionBuilder(account)
+            .addOperation(InvokeHostFuncOpBuilder(invokeOp).build())
+            .build();
+        assembled.tx!
+            .setSorobanAuth([addressEntry(aliceId), addressEntry(bobId)]);
+
+        List<SorobanAuthorizationEntry> auth() =>
+            (assembled.tx!.operations.first as InvokeHostFunctionOperation).auth;
+
+        // Alice signs her own entry directly.
+        await assembled.signAuthEntries(
+            signerKeyPair: aliceKp, validUntilLedgerSeq: _kExpiration + 100);
+        expect(
+            auth()[0].credentials.innerAddressCredentials!.signature.discriminant,
+            XdrSCValType.SCV_VEC,
+            reason: "Alice's entry must be signed");
+        expect(
+            auth()[1].credentials.innerAddressCredentials!.signature.discriminant,
+            XdrSCValType.SCV_VOID,
+            reason: "Bob's entry must still be unsigned");
+        final aliceXdr = auth()[0].toBase64EncodedXdrString();
+
+        // Bob signs via a delegate callback that signs with Bob's key.
+        await assembled.signAuthEntries(
+          signerKeyPair: KeyPair.fromAccountId(bobId),
+          validUntilLedgerSeq: _kExpiration + 100,
+          authorizeEntryDelegate: (entry, network) async {
+            final copy = SorobanAuthorizationEntry.fromBase64EncodedXdr(
+                entry.toBase64EncodedXdrString());
+            copy.sign(bobKp, network);
+            return copy;
+          },
+        );
+
+        // Alice's entry must be untouched by Bob's delegate call.
+        expect(auth()[0].toBase64EncodedXdrString(), aliceXdr,
+            reason:
+                'a delegate signer must not modify an entry it does not own');
+        // Bob's entry is now signed.
+        expect(
+            auth()[1].credentials.innerAddressCredentials!.signature.discriminant,
+            XdrSCValType.SCV_VEC,
+            reason: "Bob's entry must be signed by the delegate callback");
       } finally {
         await server.close();
       }
@@ -613,7 +689,7 @@ void main() {
 
       final newInvoc = _buildHelloInvocation().toXdr();
       original.invocation = newInvoc;
-      expect(original.invocation, isNotNull);
+      expect(identical(original.invocation, newInvoc), isTrue);
     });
 
     test('XdrSorobanAddressCredentialsWithDelegates setters work', () {
@@ -676,7 +752,6 @@ void main() {
   group('needsNonInvokerSigningBy includeAlreadySigned path', () {
     test('ADDRESS_V2 signed entry still reported when includeAlreadySigned=true',
         () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -1039,15 +1114,16 @@ void main() {
         null,
       );
 
-      // The key assertion: any entry with an explicit expiration should have
-      // been stamped with stampedExpiration.
-      for (final e in signed) {
-        final inner = e.credentials.innerAddressCredentials;
-        if (inner != null && inner.signatureExpirationLedger > 0) {
-          expect(inner.signatureExpirationLedger, equals(stampedExpiration));
-          break;
-        }
-      }
+      // The client-domain entry must be stamped with stampedExpiration. Locate
+      // it deterministically by its address and assert unconditionally: if the
+      // stamping path regressed, this fails rather than passing vacuously.
+      final clientDomainSigned = signed.firstWhere((e) =>
+          e.credentials.innerAddressCredentials?.address.accountId ==
+          clientDomainAccountId);
+      expect(
+          clientDomainSigned
+              .credentials.innerAddressCredentials!.signatureExpirationLedger,
+          equals(stampedExpiration));
     });
   });
 
@@ -1194,7 +1270,6 @@ void main() {
   group('signAuthEntries — nested delegate matching', () {
     test('signer matching a nested (level 2) delegate signs only that node',
         () async {
-      if (identical(0, 0.0)) return;
 
       final topKp = KeyPair.fromSecretSeed(_kSeed);
       final level1Kp = KeyPair.random();
@@ -1258,7 +1333,6 @@ void main() {
   // -------------------------------------------------------------------------
   group('signAuthEntries — error paths for malformed tx state', () {
     test('signAuthEntries throws when tx has no operations', () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -1314,7 +1388,6 @@ void main() {
     test(
         'sign() throws due to unsigned V2 auth entry (_neededSignersForSend ADDRESS_V2 branch)',
         () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -1347,7 +1420,6 @@ void main() {
     test(
         'sign() succeeds when V2 entry is signed (all signers satisfied)',
         () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -1386,7 +1458,6 @@ void main() {
     test(
         'signAuthEntries without validUntilLedgerSeq uses getLatestLedger (line 1161)',
         () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -1435,7 +1506,6 @@ void main() {
     test(
         'signAuthEntries throws for non-InvokeHostFunction tx via authorizeEntryDelegate',
         () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -1593,7 +1663,6 @@ void main() {
     test(
         'needsNonInvokerSigningBy on 130-deep tree throws depth limit (_collectUnsignedDelegates line 923)',
         () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -1622,10 +1691,8 @@ void main() {
     });
 
     test(
-        'signAuthEntries on 130-deep tree with authorizeEntryDelegate bypasses pre-check',
+        'signAuthEntries with authorizeEntryDelegate enforces the delegate-tree depth guard',
         () async {
-      if (identical(0, 0.0)) return;
-
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
       final (server, _) = await _startMockRpcServer(
@@ -1639,18 +1706,18 @@ void main() {
         final deepEntry = _buildDeepEntry(kp);
         _injectAuthEntry(assembled, accountId, deepEntry);
 
-        // authorizeEntryDelegate bypasses needsNonInvokerSigningBy() pre-check
-        // and also bypasses _delegateListContains (callback path at line 1202).
-        // The entry is handed to the callback without matching.
-        // _delegateListContains line 1262 is never reached via this path;
-        // that guard is unreachable because needsNonInvokerSigningBy() always
-        // throws first for trees deep enough to trigger it.
-        await assembled.signAuthEntries(
-          signerKeyPair: kp,
-          validUntilLedgerSeq: _kExpiration + 100,
-          authorizeEntryDelegate: (entry, network) async => entry,
+        // Even on the callback path, signAuthEntries first determines whether the
+        // signer is responsible for the entry by walking its delegate tree, so the
+        // depth guard (128) fires on a 130-deep tree before the callback runs. The
+        // guard is fail-closed on every signing path, the delegate callback included.
+        await expectLater(
+          assembled.signAuthEntries(
+            signerKeyPair: kp,
+            validUntilLedgerSeq: _kExpiration + 100,
+            authorizeEntryDelegate: (entry, network) async => entry,
+          ),
+          throwsA(isA<Exception>()),
         );
-        // If we reach here the callback path completed without throwing.
       } finally {
         await server.close();
       }
@@ -1659,7 +1726,6 @@ void main() {
     test(
         'sign(force:true) on 130-deep fully-signed tree throws depth limit (_allDelegatesSigned line 1032)',
         () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -1741,7 +1807,6 @@ void main() {
     test(
         'needsNonInvokerSigningBy collects contract-address delegate strkey correctly',
         () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -1787,14 +1852,15 @@ void main() {
 
         _injectAuthEntry(assembled, accountId, entry);
 
-        // needsNonInvokerSigningBy collects unsigned delegate strkeys.
-        // The contract-address delegate fires the second _xdrAddressToStrKey
-        // branch (line 948-950); the returned contractId strkey starts with 'C'
-        // so it IS added to needed.
+        // needsNonInvokerSigningBy collects unsigned delegate strkeys. The
+        // contract-address delegate must be collected as its contract strkey,
+        // proving the contract-address branch returns the right value (not just
+        // that the list is non-empty from the top-level account).
         final needed =
             assembled.needsNonInvokerSigningBy(includeAlreadySigned: true);
-        expect(needed, isNotEmpty,
-            reason: 'contract-address delegate must be collected by needsNonInvokerSigningBy');
+        expect(needed, contains(_kContractId),
+            reason:
+                'contract-address delegate must be collected by its contract strkey');
       } finally {
         await server.close();
       }
@@ -1822,7 +1888,6 @@ void main() {
   // -------------------------------------------------------------------------
   group('sign() — tx==null and empty-ops guards (lines 969 + 973)', () {
     test('sign_throwsWhenTxIsNull', () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -1860,7 +1925,6 @@ void main() {
       // checkArgument(ops.length > 0) and throws.  The test confirms that
       // the exception does NOT come from the "multiple signers required"
       // path (lines 810-813) — i.e., line 973 returned [] successfully.
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;

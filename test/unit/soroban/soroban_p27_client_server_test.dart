@@ -313,7 +313,6 @@ void main() {
   group('MethodOptions.authV2 threads into simulate() request body', () {
     test('authV2: true produces "authV2": true in the wire request', () async {
       // Skip on web: uses HttpServer.bind.
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final (server, captured) = await _startMockRpcServer(
@@ -332,7 +331,6 @@ void main() {
     });
 
     test('default MethodOptions() omits authV2 from the wire request', () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final (server, captured) = await _startMockRpcServer(
@@ -356,7 +354,6 @@ void main() {
   group('needsNonInvokerSigningBy', () {
     test('ADDRESS entry: reports void top-level, omits signed top-level',
         () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -395,7 +392,6 @@ void main() {
     });
 
     test('ADDRESS_V2 entry: reports void top-level', () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -427,7 +423,6 @@ void main() {
 
     test('WITH_DELEGATES entry: reports void top-level AND unsigned delegate',
         () async {
-      if (identical(0, 0.0)) return;
 
       final topKp = KeyPair.fromSecretSeed(_kSeed);
       final delegateKp = KeyPair.random();
@@ -468,7 +463,6 @@ void main() {
     test(
         'WITH_DELEGATES entry: omits signed delegate from unsigned-only report',
         () async {
-      if (identical(0, 0.0)) return;
 
       final topKp = KeyPair.fromSecretSeed(_kSeed);
       final delegateKp = KeyPair.random();
@@ -514,7 +508,6 @@ void main() {
     test(
         'WITH_DELEGATES entry with all delegates signed passes sign() despite '
         'void top-level', () async {
-      if (identical(0, 0.0)) return;
 
       final topKp = KeyPair.fromSecretSeed(_kSeed);
       final delegateKp = KeyPair.random();
@@ -543,14 +536,15 @@ void main() {
         assembled.tx!.setSorobanAuth([wdEntry]);
 
         // sign() with force:true bypasses the read-call check so we can
-        // exercise the precheck specifically. sign() should NOT throw even
-        // though needsNonInvokerSigningBy() reports topId (void top-level),
-        // because every delegate is signed (delegates-only pattern).
-        expect(
-          () => assembled.sign(sourceAccountKeyPair: topKp, force: true),
-          returnsNormally,
-          reason: 'delegates-only pattern must not block sign()',
-        );
+        // exercise the precheck specifically. sign() must NOT throw even though
+        // needsNonInvokerSigningBy() reports topId (void top-level), because
+        // every delegate is signed (delegates-only pattern), and it must
+        // actually produce a signed transaction.
+        assembled.sign(sourceAccountKeyPair: topKp, force: true);
+        expect(assembled.signed, isNotNull,
+            reason:
+                'delegates-only pattern must not block sign() and must produce '
+                'a signed transaction');
       } finally {
         await server.close();
       }
@@ -559,7 +553,6 @@ void main() {
     test(
         'WITH_DELEGATES entry with an unsigned delegate DOES block sign()',
         () async {
-      if (identical(0, 0.0)) return;
 
       final topKp = KeyPair.fromSecretSeed(_kSeed);
       final delegateKp = KeyPair.random();
@@ -604,7 +597,6 @@ void main() {
     test(
         'signs delegate node when signer matches delegate address; '
         'top-level stays void', () async {
-      if (identical(0, 0.0)) return;
 
       final topKp = KeyPair.fromSecretSeed(_kSeed);
       final delegateKp = KeyPair.random();
@@ -669,7 +661,6 @@ void main() {
     });
 
     test('signs top-level when signer matches top-level address', () async {
-      if (identical(0, 0.0)) return;
 
       final topKp = KeyPair.fromSecretSeed(_kSeed);
       final delegateKp = KeyPair.random();
@@ -720,7 +711,6 @@ void main() {
     test(
         'same address as top-level and delegate: exactly one signature each, '
         'no duplicate top-level', () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -796,7 +786,6 @@ void main() {
     });
 
     test('signAuthEntries with no private key throws', () async {
-      if (identical(0, 0.0)) return;
 
       final topKp = KeyPair.fromSecretSeed(_kSeed);
       final topId = topKp.accountId;
@@ -839,7 +828,6 @@ void main() {
   // -------------------------------------------------------------------------
   group('Arm preservation through signAuthEntries', () {
     test('V2 entry stays V2 after signing via signAuthEntries', () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -891,7 +879,6 @@ void main() {
 
     test('WITH_DELEGATES arm is preserved after signing the delegate node',
         () async {
-      if (identical(0, 0.0)) return;
 
       final topKp = KeyPair.fromSecretSeed(_kSeed);
       final delegateKp = KeyPair.random();
@@ -944,7 +931,6 @@ void main() {
   // -------------------------------------------------------------------------
   group('simulate() wires returned auth entries into tx', () {
     test('ADDRESS entry from simulate response appears in tx auth', () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -974,7 +960,6 @@ void main() {
     });
 
     test('ADDRESS_V2 entry from simulate response appears in tx auth', () async {
-      if (identical(0, 0.0)) return;
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
@@ -1005,11 +990,15 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
-  // GROUP 9: Unknown arm fail-fast
+  // GROUP 9: SOURCE_ACCOUNT handling. (The unknown-arm fail-fast guard in
+  // signAuthEntries / needsNonInvokerSigningBy is unreachable defensive code:
+  // XdrSorobanCredentialsType.decode only accepts discriminants 0-3, so a
+  // credential carrying an unknown arm cannot be constructed and the guard is
+  // not unit-testable.)
   // -------------------------------------------------------------------------
-  group('Unknown arm fail-fast', () {
-    test('signAuthEntries throws on unknown credential arm', () async {
-      if (identical(0, 0.0)) return;
+  group('SOURCE_ACCOUNT handling', () {
+    test('SOURCE_ACCOUNT credentials are parsed and skipped by needsNonInvokerSigningBy',
+        () async {
 
       final topKp = KeyPair.fromSecretSeed(_kSeed);
       final topId = topKp.accountId;
@@ -1022,20 +1011,9 @@ void main() {
         final assembled =
             await _buildAssembledTx(rpcUrl, topId, topKp, simulate: false);
 
-        // Build an entry with a raw XDR credential that has an unrecognized
-        // arm discriminant. We do this by constructing SOURCE_ACCOUNT creds
-        // and verifying that signAuthEntries skips it (source-account skipping
-        // is by design). For an unknown arm we confirm needsNonInvokerSigningBy
-        // throws when it encounters it.
-        //
-        // Simulate the unknown-arm case by creating a raw XdrSorobanCredentials
-        // with an unrecognized type value. The Dart XDR layer will throw on
-        // decode; instead we exercise the branch via SorobanCredentials.fromXdr
-        // with a tampered discriminant.
-        //
-        // Since we can't easily inject a raw unknown discriminant at the high
-        // level, we verify that an XdrSorobanCredentials with an invalid type
-        // throws via fromXdr.
+        // SOURCE_ACCOUNT credentials carry no address and need no explicit
+        // signature: fromXdr parses them and needsNonInvokerSigningBy skips
+        // them.
         final rawCreds = XdrSorobanCredentials(
             XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
         // fromXdr of SOURCE_ACCOUNT: no exception — that's the correct path.
