@@ -682,8 +682,8 @@ class AssembledTransaction {
 
     var shouldRestore = restore ?? options.methodOptions.restore;
     _simulationResult = null;
-    simulationResponse =
-        await server.simulateTransaction(SimulateTransactionRequest(tx!));
+    simulationResponse = await server.simulateTransaction(
+        SimulateTransactionRequest(tx!));
     if (shouldRestore && simulationResponse!.restorePreamble != null) {
       if (options.clientOptions.sourceAccountKeyPair.privateKey == null) {
         throw new Exception(
@@ -800,13 +800,12 @@ class AssembledTransaction {
           'Source account keypair has no private key, but needed for signing.');
     }
 
-    final allNeededSigners = needsNonInvokerSigningBy();
-    final neededAccountSigners = List<String>.empty(growable: true);
-    for (String signer in allNeededSigners) {
-      if (!signer.startsWith("C")) {
-        neededAccountSigners.add(signer);
-      }
-    }
+    // Use the send precheck: a WITH_DELEGATES entry whose top-level is void but
+    // every delegate is signed does not block submission (delegates-only
+    // pattern). needsNonInvokerSigningBy() reports the void top-level for
+    // informational purposes, but _neededSignersForSend() omits it when all
+    // delegates are present and signed.
+    final neededAccountSigners = _neededSignersForSend();
     if (neededAccountSigners.isNotEmpty) {
       throw new Exception(
           "Transaction requires signatures from multiple signers. " +
@@ -825,20 +824,30 @@ class AssembledTransaction {
     }
   }
 
-  /// Get a list of accounts, other than the invoker of the simulation, that
-  /// need to sign auth entries in this transaction.
+  /// Get a list of addresses, other than the invoker of the simulation, that
+  /// still need to provide signatures for auth entries in this transaction.
   ///
-  /// Soroban allows multiple people to sign a transaction. Someone needs to
-  /// sign the final transaction envelope; this person/account is called the
-  /// _invoker_, or _source_. Other accounts might need to sign individual auth
-  /// entries in the transaction, if they're not also the invoker.
+  /// Soroban allows multiple parties to authorize different parts of a
+  /// transaction. Someone needs to sign the final transaction envelope; this
+  /// person/account is called the _invoker_, or _source_. Other accounts or
+  /// delegates might need to sign individual auth entries.
   ///
-  /// This function returns a list of accounts that need to sign auth entries,
-  /// assuming that the same invoker/source account will sign the final
-  /// transaction envelope as signed the initial simulation.
+  /// This function returns strkeys for every node whose signature is currently
+  /// void, assuming that the same invoker/source account will sign the final
+  /// transaction envelope. For ADDRESS and ADDRESS_V2 entries the top-level
+  /// credential address is reported when its signature is void. For
+  /// ADDRESS_WITH_DELEGATES entries BOTH the top-level address (when its
+  /// signature is void) AND every unsigned delegate node at any depth are
+  /// reported — a top-level signature alongside delegates is a legal pattern.
   ///
-  /// With [includeAlreadySigned] you can define if the returned list should
-  /// include the needed signers that already signed their auth entries.
+  /// Note: a WITH_DELEGATES entry where the top-level signature is void but
+  /// every delegate node is signed is the legitimate delegates-only pattern;
+  /// this function still lists the void top-level, but the send precheck
+  /// treats such an entry as fully satisfied. Use [sign] (not this function)
+  /// to determine whether the transaction is ready to submit.
+  ///
+  /// With [includeAlreadySigned] set to true, addresses that already have
+  /// signatures are included in the returned list.
   List<String> needsNonInvokerSigningBy({bool includeAlreadySigned = false}) {
     if (tx == null) {
       throw Exception("Transaction has not yet been simulated");
@@ -852,23 +861,184 @@ class AssembledTransaction {
     if (invokeHostFuncOp is InvokeHostFunctionOperation) {
       final authEntries = invokeHostFuncOp.auth;
       for (SorobanAuthorizationEntry entry in authEntries) {
-        final addressCredentials = entry.credentials.addressCredentials;
-        if (addressCredentials != null) {
-          if (includeAlreadySigned ||
-              addressCredentials.signature.discriminant ==
-                  XdrSCValType.SCV_VOID) {
-            final signer = addressCredentials.address.accountId ??
-                addressCredentials.address.contractId;
-            if (signer != null) {
-              needed.add(signer);
-            }
+        final arm = entry.credentials.arm;
+
+        if (arm ==
+            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT) {
+          // Source-account entries: no explicit signing needed.
+          continue;
+        }
+
+        if (arm != XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS &&
+            arm != XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2 &&
+            arm != XdrSorobanCredentialsType
+                .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+          throw Exception(
+              'Unknown credential arm in auth entry: $arm');
+        }
+
+        final inner = entry.credentials.innerAddressCredentials;
+        if (inner == null) {
+          // Should not happen for any of the three address arms.
+          throw Exception(
+              'Address credentials missing for arm $arm');
+        }
+
+        // Report the top-level address when its signature is void (or when
+        // includeAlreadySigned is true).
+        final topSigIsVoid =
+            inner.signature.discriminant == XdrSCValType.SCV_VOID;
+        if (includeAlreadySigned || topSigIsVoid) {
+          final signer =
+              inner.address.accountId ?? inner.address.contractId;
+          if (signer != null) {
+            needed.add(signer);
+          }
+        }
+
+        // For WITH_DELEGATES, also walk every delegate node at any depth.
+        if (arm == XdrSorobanCredentialsType
+            .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+          final withDelegates =
+              entry.credentials.addressWithDelegatesCredentials!;
+          _collectUnsignedDelegates(
+              withDelegates.delegates, needed, includeAlreadySigned, 0);
+        }
+      }
+    }
+    return needed;
+  }
+
+  /// Depth-first walk of a delegate list, appending unsigned addresses to [out].
+  ///
+  /// [depth] guards against pathological nesting; uses the same limit as
+  /// [SorobanAuthorizationEntry._maxDelegateTraversalDepth].
+  static void _collectUnsignedDelegates(
+      List<SorobanDelegateSignature> delegates,
+      List<String> out,
+      bool includeAlreadySigned,
+      int depth) {
+    if (depth > 128) {
+      throw Exception(
+          'Delegate tree traversal depth limit (128) exceeded');
+    }
+    for (final node in delegates) {
+      final isSigned =
+          node.signature.discriminant != XdrSCValType.SCV_VOID;
+      if (includeAlreadySigned || !isSigned) {
+        final nodeAddr = _xdrAddressToStrKey(node.address);
+        if (nodeAddr.isNotEmpty) {
+          out.add(nodeAddr);
+        }
+      }
+      _collectUnsignedDelegates(
+          node.nestedDelegates, out, includeAlreadySigned, depth + 1);
+    }
+  }
+
+  /// Returns the strkey for an [XdrSCAddress].
+  ///
+  /// Returns an empty string for address types that are not valid Soroban
+  /// auth targets (muxed, claimable balance, liquidity pool).
+  static String _xdrAddressToStrKey(XdrSCAddress addr) {
+    if (addr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT &&
+        addr.accountId != null) {
+      return KeyPair.fromXdrPublicKey(addr.accountId!.accountID).accountId;
+    } else if (addr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT &&
+        addr.contractId != null) {
+      return StrKey.encodeContractId(addr.contractId!.hash);
+    }
+    return '';
+  }
+
+  /// Returns true when the auth entries in [tx] require no additional signing
+  /// before the transaction can be submitted.
+  ///
+  /// The logic differs from [needsNonInvokerSigningBy]:
+  /// - A WITH_DELEGATES entry whose top-level signature is void but whose
+  ///   every delegate node (at any depth) carries a signature is treated as
+  ///   satisfied — that is the legitimate delegates-only pattern.
+  /// - Any other entry with a void signature on its top-level address (ADDRESS
+  ///   or ADDRESS_V2) is unsatisfied.
+  ///
+  /// Returns a list of unsatisfied non-invoker G-address signers. An empty
+  /// list means the transaction is ready to submit.
+  List<String> _neededSignersForSend() {
+    if (tx == null) {
+      return [];
+    }
+    final ops = tx!.operations;
+    if (ops.isEmpty) {
+      return [];
+    }
+    final needed = <String>[];
+    final invokeHostFuncOp = ops.first;
+    if (invokeHostFuncOp is! InvokeHostFunctionOperation) {
+      return needed;
+    }
+    for (final entry in invokeHostFuncOp.auth) {
+      final arm = entry.credentials.arm;
+      if (arm ==
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT) {
+        continue;
+      }
+
+      final inner = entry.credentials.innerAddressCredentials;
+      if (inner == null) continue;
+      if (arm == XdrSorobanCredentialsType
+          .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+        // Delegates-only pattern: top-level may be void; entry is satisfied
+        // when every delegate node at any depth carries a non-void signature.
+        final withDelegates =
+            entry.credentials.addressWithDelegatesCredentials!;
+        if (_allDelegatesSigned(withDelegates.delegates, 0)) {
+          // Fully satisfied; skip.
+          continue;
+        }
+        // Some delegate nodes are unsigned — collect them (and top-level if
+        // also void) for reporting.
+        final topSigIsVoid =
+            inner.signature.discriminant == XdrSCValType.SCV_VOID;
+        if (topSigIsVoid) {
+          final signer =
+              inner.address.accountId ?? inner.address.contractId;
+          if (signer != null && !signer.startsWith('C')) {
+            needed.add(signer);
+          }
+        }
+        _collectUnsignedDelegates(withDelegates.delegates, needed, false, 0);
+      } else {
+        // ADDRESS or ADDRESS_V2: top-level must be signed.
+        final topSigIsVoid =
+            inner.signature.discriminant == XdrSCValType.SCV_VOID;
+        if (topSigIsVoid) {
+          final signer =
+              inner.address.accountId ?? inner.address.contractId;
+          if (signer != null && !signer.startsWith('C')) {
+            needed.add(signer);
           }
         }
       }
-    } else {
-      return needed;
     }
     return needed;
+  }
+
+  /// Returns true when every delegate node in [delegates] (depth-first) has a
+  /// non-void signature.
+  static bool _allDelegatesSigned(
+      List<SorobanDelegateSignature> delegates, int depth) {
+    if (depth > 128) {
+      throw Exception('Delegate tree traversal depth limit (128) exceeded');
+    }
+    for (final node in delegates) {
+      if (node.signature.discriminant == XdrSCValType.SCV_VOID) {
+        return false;
+      }
+      if (!_allDelegatesSigned(node.nestedDelegates, depth + 1)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /// Whether this transaction is a read call. This is determined by the
@@ -892,25 +1062,40 @@ class AssembledTransaction {
 
   /// Signs authorization entries for multi-party transactions.
   ///
-  /// Soroban allows multiple parties to authorize different parts of a transaction.
-  /// When a transaction requires authorization from accounts other than the source/invoker,
-  /// those parties must sign their authorization entries before the transaction is submitted.
+  /// Soroban allows multiple parties to authorize different parts of a
+  /// transaction. When a transaction requires authorization from accounts or
+  /// contracts other than the source/invoker, those parties must sign their
+  /// authorization entries before the transaction is submitted.
   ///
-  /// This method:
-  /// - Finds auth entries that need signing by the specified signer
-  /// - Signs them using the provided keypair or custom delegate function
-  /// - Updates the transaction with signed auth entries
-  /// - Sets expiration for signatures
+  /// All three address credential arms are handled:
+  /// - ADDRESS and ADDRESS_V2: matches on the top-level credential address.
+  /// - ADDRESS_WITH_DELEGATES: matches on the top-level address AND on every
+  ///   delegate node at any depth (depth-first). When the signer address
+  ///   matches a delegate node, the expiration is stamped on the top-level
+  ///   credentials and the signature is routed into that delegate node via
+  ///   [SorobanAuthorizationEntry.sign] with `forAddress`. A delegate signer
+  ///   never silently matches no entry — if [signerKeyPair.accountId] appears
+  ///   in [needsNonInvokerSigningBy] but no entry matches during the signing
+  ///   walk, an exception is thrown.
   ///
-  /// Use needsNonInvokerSigningBy() to determine which accounts need to sign.
+  /// SOURCE_ACCOUNT entries are skipped. Unknown/unrecognized arms fail fast.
+  ///
+  /// The credential arm is preserved after signing; V2 entries stay V2.
+  ///
+  /// Use [needsNonInvokerSigningBy] to determine which addresses need to sign.
   ///
   /// Parameters:
-  /// - [signerKeyPair] KeyPair of the signer (must include private key unless using delegate)
-  /// - [authorizeEntryDelegate] Optional custom signing function for remote/HSM signing
-  /// - [validUntilLedgerSeq] Signature expiration ledger (default: current + 100 ledgers)
+  /// - [signerKeyPair] KeyPair of the signer (must include private key unless
+  ///   [authorizeEntryDelegate] is provided)
+  /// - [authorizeEntryDelegate] Optional custom signing function (e.g. for
+  ///   remote or HSM signing). When provided the validation checks are skipped
+  ///   and the returned entry replaces the original.
+  /// - [validUntilLedgerSeq] Signature expiration ledger. Defaults to the
+  ///   latest ledger sequence plus [NetworkConstants.DEFAULT_LEDGER_EXPIRATION_OFFSET].
   ///
   /// Throws:
-  /// - Exception If signer is not needed, keypair lacks private key, or signing fails
+  /// - Exception If no entries need signing, keypair lacks a private key, or
+  ///   the signer address is not found in any entry.
   ///
   /// Example - Local signing:
   /// ```dart
@@ -929,26 +1114,19 @@ class AssembledTransaction {
   ///
   /// Example - Remote signing:
   /// ```dart
-  /// // When signer's private key is on another server
   /// await tx.signAuthEntries(
   ///   signerKeyPair: KeyPair.fromAccountId(bobAccountId),
   ///   authorizeEntryDelegate: (entry, network) async {
-  ///     // Serialize for remote signing
   ///     final base64Entry = entry.toBase64EncodedXdrString();
-  ///
-  ///     // Send to signing server
   ///     final signedBase64 = await sendToSigningServer(base64Entry);
-  ///
-  ///     // Deserialize and return
   ///     return SorobanAuthorizationEntry.fromBase64EncodedXdr(signedBase64);
   ///   },
   /// );
   /// ```
   ///
   /// See also:
-  /// - [needsNonInvokerSigningBy] to check which accounts need to sign
+  /// - [needsNonInvokerSigningBy] to check which addresses need to sign
   /// - [SorobanAuthorizationEntry] for authorization entry details
-  /// - Multi-auth example in [AssembledTransaction] class documentation
   Future<void> signAuthEntries(
       {required KeyPair signerKeyPair,
       Future<SorobanAuthorizationEntry> Function(
@@ -957,7 +1135,7 @@ class AssembledTransaction {
       int? validUntilLedgerSeq}) async {
     final signerAddress = signerKeyPair.accountId;
     if (authorizeEntryDelegate == null) {
-      final neededSigning = await needsNonInvokerSigningBy();
+      final neededSigning = needsNonInvokerSigningBy();
       if (neededSigning.isEmpty) {
         throw Exception(
             "No unsigned non-invoker auth entries; maybe you already signed?");
@@ -979,7 +1157,8 @@ class AssembledTransaction {
       if (getLatestLedgerResponse.sequence == null) {
         throw Exception("Could not fetch latest ledger sequence from server");
       }
-      expirationLedger = getLatestLedgerResponse.sequence! + NetworkConstants.DEFAULT_LEDGER_EXPIRATION_OFFSET;
+      expirationLedger = getLatestLedgerResponse.sequence! +
+          NetworkConstants.DEFAULT_LEDGER_EXPIRATION_OFFSET;
     }
 
     final ops = tx!.operations;
@@ -987,33 +1166,104 @@ class AssembledTransaction {
       throw Exception("Unexpected Transaction type; no operations found.");
     }
     final invokeHostFuncOp = ops.first;
-    if (invokeHostFuncOp is InvokeHostFunctionOperation) {
-      var authEntries = invokeHostFuncOp.auth;
-      for (var i = 0; i < authEntries.length; i++) {
-        final entry = authEntries[i];
-        final addressCredentials = entry.credentials.addressCredentials;
-        if (addressCredentials == null ||
-            addressCredentials.address.accountId == null ||
-            addressCredentials.address.accountId != signerAddress) {
-          continue;
-        }
-        entry.credentials.addressCredentials!.signatureExpirationLedger =
-            expirationLedger;
-        SorobanAuthorizationEntry? authorized;
-        if (authorizeEntryDelegate != null) {
-          authorized = await authorizeEntryDelegate(
-              entry, options.clientOptions.network);
-        } else {
-          entry.sign(signerKeyPair, options.clientOptions.network);
-          authorized = entry;
-        }
-        authEntries[i] = authorized;
-      }
-      tx!.setSorobanAuth(authEntries);
-    } else {
-      throw new Exception(
+    if (invokeHostFuncOp is! InvokeHostFunctionOperation) {
+      throw Exception(
           "Unexpected Transaction type; no invoke host function operations found.");
     }
+
+    var authEntries = invokeHostFuncOp.auth;
+    for (var i = 0; i < authEntries.length; i++) {
+      final entry = authEntries[i];
+      final arm = entry.credentials.arm;
+
+      if (arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT) {
+        // Source-account entries need no explicit signing.
+        continue;
+      }
+
+      if (arm != XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS &&
+          arm != XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2 &&
+          arm != XdrSorobanCredentialsType
+              .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+        throw Exception(
+            'Unknown credential arm in auth entry: $arm');
+      }
+
+      final inner = entry.credentials.innerAddressCredentials;
+      if (inner == null) {
+        // Should not happen for any of the three address arms.
+        throw Exception('Address credentials missing for arm $arm');
+      }
+
+      final topLevelStrKey =
+          inner.address.accountId ?? inner.address.contractId ?? '';
+
+      // Determine whether the signer matches the top-level address or any
+      // delegate node (for WITH_DELEGATES entries). Only entries the signer is
+      // responsible for are touched; entries for other parties are left intact,
+      // so a signature already applied by another signer is never disturbed.
+      final bool matchesTopLevel = topLevelStrKey == signerAddress;
+
+      bool matchesDelegate = false;
+      if (arm == XdrSorobanCredentialsType
+          .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+        final withDelegates =
+            entry.credentials.addressWithDelegatesCredentials!;
+        matchesDelegate =
+            _delegateListContains(withDelegates.delegates, signerAddress, 0);
+      }
+
+      if (!matchesTopLevel && !matchesDelegate) {
+        // This entry does not involve the signer; skip.
+        continue;
+      }
+
+      // Stamp expiration before signing — the preimage is built from the
+      // current expiration value.
+      inner.signatureExpirationLedger = expirationLedger;
+
+      if (authorizeEntryDelegate != null) {
+        // Hand the matching entry off to the external signer.
+        final authorized =
+            await authorizeEntryDelegate(entry, options.clientOptions.network);
+        authEntries[i] = authorized;
+        continue;
+      }
+
+      if (matchesTopLevel && !matchesDelegate) {
+        // Sign the top-level credentials.
+        entry.sign(signerKeyPair, options.clientOptions.network);
+      } else {
+        // Signer matches a delegate node (and possibly also the top-level
+        // address). forAddress routing signs the top-level credential when the
+        // address matches and every matching delegate node in one pass, so a
+        // preceding plain sign() would write a duplicate top-level signature the
+        // host rejects.
+        entry.sign(signerKeyPair, options.clientOptions.network,
+            forAddress: signerAddress);
+      }
+      authEntries[i] = entry;
+    }
+    tx!.setSorobanAuth(authEntries);
+  }
+
+  /// Returns true when [targetStrKey] appears as the address of any delegate
+  /// node in [delegates] or their nested delegates (depth-first).
+  static bool _delegateListContains(
+      List<SorobanDelegateSignature> delegates,
+      String targetStrKey,
+      int depth) {
+    if (depth > 128) {
+      throw Exception('Delegate tree traversal depth limit (128) exceeded');
+    }
+    for (final node in delegates) {
+      final nodeStr = _xdrAddressToStrKey(node.address);
+      if (nodeStr == targetStrKey) return true;
+      if (_delegateListContains(node.nestedDelegates, targetStrKey, depth + 1)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /// Restores the footprint (resource ledger entries that can be read or written)
@@ -1615,7 +1865,7 @@ class DeployRequest {
 ///   print('Transaction requires ${simulationData.auth!.length} authorization(s)');
 ///
 ///   for (var entry in simulationData.auth!) {
-///     final address = entry.credentials.addressCredentials?.address;
+///     final address = entry.credentials.innerAddressCredentials?.address;
 ///     print('Needs signature from: ${address?.accountId ?? address?.contractId}');
 ///   }
 /// }

@@ -576,13 +576,34 @@ class OZTransactionOperations {
       _checkCancellation(cancelToken);
       final entry = simulatedAuthEntries[entryIndex];
 
-      final addressCreds = entry.credentials.address;
-      if (entry.credentials.discriminant !=
-              XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS ||
-          addressCreds == null) {
-        // Source-account or unknown credentials — pass through unchanged.
+      // Pass SOURCE_ACCOUNT entries through unchanged.
+      if (entry.credentials.discriminant ==
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT) {
         signed.add(entry);
         continue;
+      }
+
+      // ADDRESS_WITH_DELEGATES entries cannot be auto-signed by this flow.
+      // Use SorobanAuthorizationEntry.sign with the forAddress parameter to
+      // route signatures to the appropriate delegate nodes.
+      if (entry.credentials.discriminant ==
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+        throw SmartAccountTransactionException.signingFailed(
+          'ADDRESS_WITH_DELEGATES auth entries cannot be auto-signed by the '
+          'single-signer pipeline. Use SorobanAuthorizationEntry.sign with the '
+          'forAddress parameter to sign each delegate node, then pass the '
+          'pre-signed entries via the auth parameter.',
+        );
+      }
+
+      // For ADDRESS and ADDRESS_V2: extract the inner credentials.
+      final addressCreds = _innerAddressCredentialsXdr(entry.credentials);
+      if (addressCreds == null) {
+        // Unknown credential arm — fail fast.
+        throw SmartAccountTransactionException.signingFailed(
+          'Unrecognised credential arm '
+          '${entry.credentials.discriminant} in auth entry; cannot sign.',
+        );
       }
 
       final entryAddress = OZAddressStrKey.fromXdr(addressCreds.address);
@@ -1040,11 +1061,20 @@ class OZTransactionOperations {
           _cloneInvocation(entry.rootInvocation),
         ));
       } else if (entry.credentials.discriminant ==
-              XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS &&
-          entry.credentials.address != null) {
+              XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS ||
+          entry.credentials.discriminant ==
+              XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2) {
         final entryCopy = _cloneAuthEntry(entry);
-        final credentials = entryCopy.credentials.address!;
+        final credentials = _innerAddressCredentialsXdr(entryCopy.credentials);
+        if (credentials == null) {
+          throw SmartAccountTransactionException.signingFailed(
+            'Address credentials unexpectedly null after clone for arm '
+            '${entryCopy.credentials.discriminant}',
+          );
+        }
 
+        // buildAuthPayloadHash handles both ADDRESS and ADDRESS_V2: it stamps
+        // the expiration and selects the preimage type based on the arm.
         final payloadHash = await OZSmartAccountAuth.buildAuthPayloadHash(
           entryCopy,
           expirationLedger,
@@ -1070,13 +1100,26 @@ class OZTransactionOperations {
           XdrUint32(expirationLedger),
           signatureVec,
         );
+        // Preserve the credential arm on write-back.
         result.add(XdrSorobanAuthorizationEntry(
-          XdrSorobanCredentials.forAddressCredentials(updatedCredentials),
+          _rebuildCredentialsXdr(entryCopy.credentials, updatedCredentials),
           entryCopy.rootInvocation,
         ));
+      } else if (entry.credentials.discriminant ==
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+        // ADDRESS_WITH_DELEGATES entries require caller-policy routing.
+        // The fundWallet flow cannot determine which delegate node to sign.
+        throw SmartAccountTransactionException.signingFailed(
+          'ADDRESS_WITH_DELEGATES auth entries cannot be signed by the '
+          'fundWallet flow. Use SorobanAuthorizationEntry.sign with the '
+          'forAddress parameter to sign delegate nodes before calling fundWallet.',
+        );
       } else {
-        // Unknown credential type — pass through unchanged.
-        result.add(entry);
+        // Unknown credential arm — fail fast rather than passing through unsigned.
+        throw SmartAccountTransactionException.signingFailed(
+          'Unrecognised credential arm '
+          '${entry.credentials.discriminant} in auth entry; cannot sign.',
+        );
       }
     }
     return result;
@@ -1465,6 +1508,45 @@ class OZTransactionOperations {
     XdrSorobanAuthorizedInvocation.encode(stream, invocation);
     final bytes = Uint8List.fromList(stream.bytes);
     return XdrSorobanAuthorizedInvocation.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the inner [XdrSorobanAddressCredentials] for ADDRESS or
+  /// ADDRESS_V2 arms, or null for SOURCE_ACCOUNT and unknown arms.
+  ///
+  /// ADDRESS_WITH_DELEGATES is intentionally excluded: the callers that use
+  /// this helper enforce the WITH_DELEGATES restriction before calling.
+  static XdrSorobanAddressCredentials? _innerAddressCredentialsXdr(
+    XdrSorobanCredentials creds,
+  ) {
+    switch (creds.discriminant) {
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
+        return creds.address;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2:
+        return creds.addressV2;
+      default:
+        return null;
+    }
+  }
+
+  /// Rebuilds a [XdrSorobanCredentials] wrapper preserving the original
+  /// credential arm, replacing the inner credentials with [updated].
+  ///
+  /// Only ADDRESS and ADDRESS_V2 arms are supported; other arms throw
+  /// [SmartAccountTransactionSigningFailed].
+  static XdrSorobanCredentials _rebuildCredentialsXdr(
+    XdrSorobanCredentials original,
+    XdrSorobanAddressCredentials updated,
+  ) {
+    switch (original.discriminant) {
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
+        return XdrSorobanCredentials.forAddressCredentials(updated);
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2:
+        return XdrSorobanCredentials.forAddressV2Credentials(updated);
+      default:
+        throw SmartAccountTransactionException.signingFailed(
+          'Cannot rebuild credentials for arm: ${original.discriminant}',
+        );
+    }
   }
 
   // Static amount helpers

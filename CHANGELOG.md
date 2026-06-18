@@ -1,3 +1,6 @@
+## [Unreleased]
+- Add Protocol 27 (CAP-71) Soroban authorization support
+
 ## [3.1.0] - 10.Jun.2026.
 - Add OpenZeppelin smart account support
 - Package the SDK as a Flutter plugin with native iOS code, distributed for both CocoaPods and Swift Package Manager; minimum iOS deployment target 15.0 (passkey features require iOS 16 at runtime)

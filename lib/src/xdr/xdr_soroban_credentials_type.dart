@@ -28,6 +28,10 @@ class XdrSorobanCredentialsType {
       const XdrSorobanCredentialsType._internal(0);
   static const SOROBAN_CREDENTIALS_ADDRESS =
       const XdrSorobanCredentialsType._internal(1);
+  static const SOROBAN_CREDENTIALS_ADDRESS_V2 =
+      const XdrSorobanCredentialsType._internal(2);
+  static const SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES =
+      const XdrSorobanCredentialsType._internal(3);
 
   static XdrSorobanCredentialsType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -36,6 +40,10 @@ class XdrSorobanCredentialsType {
         return SOROBAN_CREDENTIALS_SOURCE_ACCOUNT;
       case 1:
         return SOROBAN_CREDENTIALS_ADDRESS;
+      case 2:
+        return SOROBAN_CREDENTIALS_ADDRESS_V2;
+      case 3:
+        return SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -71,6 +79,10 @@ class XdrSorobanCredentialsType {
         return 'SOROBAN_CREDENTIALS_SOURCE_ACCOUNT';
       case 1:
         return 'SOROBAN_CREDENTIALS_ADDRESS';
+      case 2:
+        return 'SOROBAN_CREDENTIALS_ADDRESS_V2';
+      case 3:
+        return 'SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES';
       default:
         return 'XdrSorobanCredentialsType#$_value';
     }
@@ -91,6 +103,10 @@ class XdrSorobanCredentialsType {
         return SOROBAN_CREDENTIALS_SOURCE_ACCOUNT;
       case 'SOROBAN_CREDENTIALS_ADDRESS':
         return SOROBAN_CREDENTIALS_ADDRESS;
+      case 'SOROBAN_CREDENTIALS_ADDRESS_V2':
+        return SOROBAN_CREDENTIALS_ADDRESS_V2;
+      case 'SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES':
+        return SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES;
       default:
         if (name.startsWith('XdrSorobanCredentialsType#')) {
           int? val = int.tryParse(

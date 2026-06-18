@@ -290,7 +290,34 @@ class DataOutput {
 }
 
 class XdrDataInputStream extends DataInput {
+  /// Maximum recursive XDR decode depth. Prevents stack exhaustion from
+  /// deeply nested structures (e.g. SorobanDelegateSignature nestedDelegates).
+  static const int maxRecursiveDecodeDepth = 128;
+
+  int _recursiveDecodeDepth = 0;
+
   XdrDataInputStream(Uint8List data) : super.fromUint8List(data);
+
+  /// Increments the recursive decode depth counter and throws if the limit
+  /// is exceeded. Call before entering a recursive decode invocation.
+  void enterRecursiveDecode() {
+    _recursiveDecodeDepth++;
+    if (_recursiveDecodeDepth > maxRecursiveDecodeDepth) {
+      throw Exception(
+        'XDR decode depth limit exceeded ($maxRecursiveDecodeDepth). '
+        'The encoded data contains a recursion depth that exceeds the '
+        'safety cap; decoding is aborted to prevent stack exhaustion.',
+      );
+    }
+  }
+
+  /// Decrements the recursive decode depth counter. Call after a recursive
+  /// decode invocation completes (in a finally block).
+  void exitRecursiveDecode() {
+    if (_recursiveDecodeDepth > 0) {
+      _recursiveDecodeDepth--;
+    }
+  }
 
   int read() {
     return readByte();

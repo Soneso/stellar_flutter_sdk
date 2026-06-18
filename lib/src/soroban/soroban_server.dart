@@ -1966,7 +1966,8 @@ class SimulateTransactionRequest {
   /// Creates a SimulateTransactionRequest for transaction simulation.
   ///
   /// Contains transaction to simulate with optional resource config and auth mode.
-  SimulateTransactionRequest(this.transaction, {this.resourceConfig, this.authMode});
+  SimulateTransactionRequest(this.transaction,
+      {this.resourceConfig, this.authMode});
 
   Map<String, dynamic> getRequestArgs() {
     var map = <String, dynamic>{};

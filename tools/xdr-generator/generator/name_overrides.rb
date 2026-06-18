@@ -1,3 +1,13 @@
+require 'set'
+
+# Struct types whose XDR decode is recursive (the struct contains a
+# variable-length array of itself). The generated decode method wraps its body
+# in XdrDataInputStream.enterRecursiveDecode / exitRecursiveDecode calls so
+# that an unbounded nesting depth is rejected before stack exhaustion occurs.
+RECURSIVE_DECODE_TYPES = Set[
+  'XdrSorobanDelegateSignature',
+].freeze
+
 # Maps xdrgen canonical type names to existing Dart class names.
 # Only includes types where the default "Xdr#{canonical_name}" convention
 # does not produce the correct Dart class name.

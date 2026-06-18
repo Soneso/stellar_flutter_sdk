@@ -280,54 +280,142 @@ class SorobanAddressCredentials {
   }
 }
 
+/// A single delegate node in a WITH_DELEGATES authorization tree (protocol 27+).
+///
+/// Each node holds:
+/// - [address] The SCAddress of the delegate (account or contract; never muxed).
+/// - [signature] The delegate's signature as an XdrSCVal (void until signed).
+/// - [nestedDelegates] Child delegates authorized by this delegate.
+///
+/// Sorting invariant: within any [nestedDelegates] list, delegates are ordered
+/// ascending by the lexicographic comparison of their complete XDR-encoded
+/// [XdrSCAddress] bytes. Build trees with [SorobanDelegateDescriptor] and
+/// [SorobanAuthorizationEntry.withDelegates]; that API enforces the sort order.
+///
+/// Signing semantics: all delegates at any depth sign the same preimage hash
+/// as the top-level credentials; delegates carry no nonce or expiration.
+/// Signing the same node twice with the same key appends a duplicate that the
+/// host rejects.
+class SorobanDelegateSignature {
+  /// The SCAddress of this delegate.
+  XdrSCAddress address;
+
+  /// The delegate's signature (void until explicitly signed).
+  XdrSCVal signature;
+
+  /// Child delegates authorized by this delegate. Must be sorted ascending by
+  /// the XDR-encoded bytes of each child's [address]; no duplicates within this list.
+  List<SorobanDelegateSignature> nestedDelegates;
+
+  SorobanDelegateSignature(this.address, this.signature, this.nestedDelegates);
+
+  /// Creates a [SorobanDelegateSignature] from its XDR representation.
+  static SorobanDelegateSignature fromXdr(XdrSorobanDelegateSignature xdr) {
+    final nested = xdr.nestedDelegates
+        .map((d) => SorobanDelegateSignature.fromXdr(d))
+        .toList();
+    return SorobanDelegateSignature(xdr.address, xdr.signature, nested);
+  }
+
+  /// Converts this delegate to its XDR representation.
+  XdrSorobanDelegateSignature toXdr() {
+    return XdrSorobanDelegateSignature(
+      address,
+      signature,
+      nestedDelegates.map((d) => d.toXdr()).toList(),
+    );
+  }
+}
+
+/// Wraps the inner credentials and top-level delegate list for the
+/// SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES arm (protocol 27+).
+///
+/// The [delegates] list must be sorted ascending by the XDR-encoded bytes of
+/// each delegate's address and must not contain duplicate addresses at the
+/// same level. Use [SorobanAuthorizationEntry.withDelegates] to construct
+/// entries with correct sort order.
+class SorobanAddressCredentialsWithDelegates {
+  /// The core address credentials (address, nonce, expiration, top-level signature).
+  SorobanAddressCredentials addressCredentials;
+
+  /// Top-level delegates. Each element may itself carry nested delegates.
+  /// Sorted ascending by XDR-encoded address bytes; no duplicates within this list.
+  List<SorobanDelegateSignature> delegates;
+
+  SorobanAddressCredentialsWithDelegates(this.addressCredentials, this.delegates);
+
+  /// Creates from its XDR representation.
+  static SorobanAddressCredentialsWithDelegates fromXdr(
+      XdrSorobanAddressCredentialsWithDelegates xdr) {
+    return SorobanAddressCredentialsWithDelegates(
+      SorobanAddressCredentials.fromXdr(xdr.addressCredentials),
+      xdr.delegates.map((d) => SorobanDelegateSignature.fromXdr(d)).toList(),
+    );
+  }
+
+  /// Converts to XDR representation.
+  XdrSorobanAddressCredentialsWithDelegates toXdr() {
+    return XdrSorobanAddressCredentialsWithDelegates(
+      addressCredentials.toXdr(),
+      delegates.map((d) => d.toXdr()).toList(),
+    );
+  }
+}
+
 /// Authorization credentials for Soroban contract invocations.
 ///
-/// Soroban supports two authorization modes:
+/// Soroban supports four credential arms:
 ///
 /// 1. Source Account Authorization (implicit):
-///    - Used when the transaction source account authorizes the invocation
-///    - No explicit signature required in the auth entry
-///    - Created via [SorobanCredentials.forSourceAccount]
-///    - The transaction signature itself provides authorization
+///    - Used when the transaction source account authorizes the invocation.
+///    - No explicit signature required.
+///    - Created via [SorobanCredentials.forSourceAccount].
 ///
-/// 2. Address Credentials Authorization (explicit):
-///    - Used for multi-party transactions where accounts other than the source
-///      must authorize specific invocations
-///    - Requires explicit signature in [addressCredentials]
-///    - Created via [SorobanCredentials.forAddress] or [SorobanCredentials.forAddressCredentials]
-///    - Common in token swaps, escrow releases, and multi-sig scenarios
+/// 2. Address Credentials (legacy, all protocol versions):
+///    - Explicit per-address signature; preimage type ENVELOPE_TYPE_SOROBAN_AUTHORIZATION.
+///    - Created via [SorobanCredentials.forAddress] or [SorobanCredentials.forAddressCredentials].
+///    - This is the default and remains valid on all protocol versions.
 ///
-/// Example - Source account authorization:
-/// ```dart
-/// // Transaction source account implicitly authorizes
-/// final credentials = SorobanCredentials.forSourceAccount();
-/// ```
+/// 3. Address V2 Credentials (protocol 27+):
+///    - Same body as Address but preimage type changes to
+///      ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS (address-bound).
+///    - Emitting this arm below protocol 27 invalidates the transaction.
+///    - Created via [SorobanCredentials.forAddressV2].
 ///
-/// Example - Multi-party authorization:
-/// ```dart
-/// // Another party must sign this auth entry
-/// final authEntry = simulationResponse.auth![0];
-/// authEntry.sign(otherPartyKeyPair, network);
-/// ```
+/// 4. Address With Delegates Credentials (protocol 27+):
+///    - Extends V2 with a recursive delegate tree.
+///    - Emitting this arm below protocol 27 invalidates the transaction.
+///    - Created via [SorobanCredentials.forAddressWithDelegates].
+///    - Use [SorobanAuthorizationEntry.withDelegates] to build correctly sorted trees.
 ///
 /// See also:
 /// - [SorobanAuthorizationEntry] for complete authorization entry structure
 /// - [AssembledTransaction.signAuthEntries] for signing workflows
 class SorobanCredentials {
+  // Exactly one of the four fields below is non-null, matching the active arm.
   SorobanAddressCredentials? addressCredentials;
+  SorobanAddressCredentials? addressV2Credentials;
+  SorobanAddressCredentialsWithDelegates? addressWithDelegatesCredentials;
+
+  // null means SOURCE_ACCOUNT; set by the private _arm tracker
+  XdrSorobanCredentialsType _arm;
+
+  SorobanCredentials._(this._arm, {
+    this.addressCredentials,
+    this.addressV2Credentials,
+    this.addressWithDelegatesCredentials,
+  });
 
   /// Creates SorobanCredentials for contract invocation authorization.
   ///
-  /// This constructor creates credentials that determine how an invocation is authorized.
-  /// Two modes are supported based on whether addressCredentials is provided.
+  /// This constructor creates source-account credentials when
+  /// [addressCredentials] is null, or legacy address credentials otherwise.
   ///
-  /// Parameters:
-  /// - [addressCredentials] Optional address credentials for explicit authorization
-  ///
-  /// Authorization modes:
-  /// - If null: Source account authorization (transaction signer authorizes)
-  /// - If provided: Address-based authorization (specified account must sign)
-  SorobanCredentials({SorobanAddressCredentials? addressCredentials}) {
+  /// For the new P27 arms use [forAddressV2] or [forAddressWithDelegates].
+  SorobanCredentials({SorobanAddressCredentials? addressCredentials}) :
+      _arm = addressCredentials != null
+          ? XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS
+          : XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT {
     if (addressCredentials != null) {
       this.addressCredentials = addressCredentials;
     }
@@ -335,16 +423,15 @@ class SorobanCredentials {
 
   /// Creates credentials for source account authorization.
   ///
-  /// Use when the transaction source account authorizes the invocation.
-  /// No explicit signature is required; transaction signature provides authorization.
+  /// The transaction signature provides authorization; no explicit signature is required.
   static SorobanCredentials forSourceAccount() {
     return SorobanCredentials();
   }
 
-  /// Creates credentials for address-based authorization.
+  /// Creates legacy address-based credentials.
   ///
-  /// Use when an account other than the source must authorize the invocation.
-  /// The specified address must sign the authorization entry.
+  /// Preimage type: ENVELOPE_TYPE_SOROBAN_AUTHORIZATION.
+  /// Valid on all protocol versions.
   static SorobanCredentials forAddress(Address address, BigInt nonce,
       int signatureExpirationLedger, XdrSCVal signature) {
     SorobanAddressCredentials addressCredentials = SorobanAddressCredentials(
@@ -357,26 +444,116 @@ class SorobanCredentials {
     return SorobanCredentials(addressCredentials: addressCredentials);
   }
 
-  /// Creates Soroban credentials from their XDR representation.
-  static SorobanCredentials fromXdr(XdrSorobanCredentials xdr) {
-    if (xdr.type == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS &&
-        xdr.address != null) {
-      return SorobanCredentials.forAddressCredentials(
-          SorobanAddressCredentials.fromXdr(xdr.address!));
+  /// Creates ADDRESS_V2 credentials (protocol 27+).
+  ///
+  /// Preimage type: ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS.
+  /// The preimage binds the top-level credential address.
+  /// Emitting this arm on a network below protocol 27 invalidates the transaction.
+  static SorobanCredentials forAddressV2(SorobanAddressCredentials credentials) {
+    return SorobanCredentials._(
+      XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
+      addressV2Credentials: credentials,
+    );
+  }
+
+  /// Creates ADDRESS_WITH_DELEGATES credentials (protocol 27+).
+  ///
+  /// Preimage type: ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS.
+  /// Emitting this arm on a network below protocol 27 invalidates the transaction.
+  /// Prefer [SorobanAuthorizationEntry.withDelegates] which enforces delegate sort order.
+  static SorobanCredentials forAddressWithDelegates(
+      SorobanAddressCredentialsWithDelegates credentials) {
+    return SorobanCredentials._(
+      XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
+      addressWithDelegatesCredentials: credentials,
+    );
+  }
+
+  /// The active credential arm discriminant.
+  XdrSorobanCredentialsType get arm => _arm;
+
+  /// Returns the inner [SorobanAddressCredentials] for any address arm,
+  /// or null for SOURCE_ACCOUNT.
+  SorobanAddressCredentials? get innerAddressCredentials {
+    switch (_arm) {
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
+        return addressCredentials;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2:
+        return addressV2Credentials;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
+        return addressWithDelegatesCredentials?.addressCredentials;
+      default:
+        return null;
     }
-    return SorobanCredentials();
+  }
+
+  /// Creates Soroban credentials from their XDR representation.
+  ///
+  /// Throws if the discriminant is unrecognized.
+  static SorobanCredentials fromXdr(XdrSorobanCredentials xdr) {
+    switch (xdr.type) {
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
+        if (xdr.address == null) {
+          throw Exception('ADDRESS credentials missing address field');
+        }
+        return SorobanCredentials._(
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS,
+          addressCredentials: SorobanAddressCredentials.fromXdr(xdr.address!),
+        );
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2:
+        if (xdr.addressV2 == null) {
+          throw Exception('ADDRESS_V2 credentials missing addressV2 field');
+        }
+        return SorobanCredentials._(
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
+          addressV2Credentials: SorobanAddressCredentials.fromXdr(xdr.addressV2!),
+        );
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
+        if (xdr.addressWithDelegates == null) {
+          throw Exception('ADDRESS_WITH_DELEGATES credentials missing addressWithDelegates field');
+        }
+        return SorobanCredentials._(
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
+          addressWithDelegatesCredentials:
+              SorobanAddressCredentialsWithDelegates.fromXdr(xdr.addressWithDelegates!),
+        );
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT:
+        return SorobanCredentials._(
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT,
+        );
+      default:
+        throw Exception(
+          'Unknown SorobanCredentials discriminant: ${xdr.type}',
+        );
+    }
   }
 
   /// Converts these Soroban credentials to their XDR representation.
   XdrSorobanCredentials toXdr() {
-    if (addressCredentials != null) {
-      XdrSorobanCredentials cred = XdrSorobanCredentials(
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS);
-      cred.address = addressCredentials!.toXdr();
-      return cred;
+    switch (_arm) {
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
+        if (addressCredentials == null) {
+          throw Exception('ADDRESS credentials missing addressCredentials');
+        }
+        return XdrSorobanCredentials.forAddressCredentials(
+            addressCredentials!.toXdr());
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2:
+        if (addressV2Credentials == null) {
+          throw Exception('ADDRESS_V2 credentials missing addressV2Credentials');
+        }
+        return XdrSorobanCredentials.forAddressV2Credentials(
+            addressV2Credentials!.toXdr());
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
+        if (addressWithDelegatesCredentials == null) {
+          throw Exception(
+              'ADDRESS_WITH_DELEGATES credentials missing addressWithDelegatesCredentials');
+        }
+        return XdrSorobanCredentials.forAddressWithDelegatesCredentials(
+            addressWithDelegatesCredentials!.toXdr());
+      default:
+        return XdrSorobanCredentials(
+            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
     }
-    return XdrSorobanCredentials(
-        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
   }
 }
 
@@ -644,6 +821,31 @@ class SorobanAuthorizedInvocation {
   }
 }
 
+/// Descriptor for a single delegate node when building a WITH_DELEGATES entry.
+///
+/// Used with [SorobanAuthorizationEntry.withDelegates] to specify the delegate
+/// tree. The [signature] field defaults to void (the normal pre-signing state).
+/// [nestedDelegates] lists child delegates authorized by this node.
+///
+/// Muxed addresses (M...) are not valid Soroban auth delegate addresses and
+/// will be rejected by [SorobanAuthorizationEntry.withDelegates].
+class SorobanDelegateDescriptor {
+  /// The strkey of this delegate (G... account or C... contract).
+  final String addressStrKey;
+
+  /// Pre-filled signature for this node. Defaults to void.
+  final XdrSCVal? signature;
+
+  /// Child delegates authorized by this node (optional; defaults to none).
+  final List<SorobanDelegateDescriptor> nestedDelegates;
+
+  const SorobanDelegateDescriptor(
+    this.addressStrKey, {
+    this.signature,
+    this.nestedDelegates = const [],
+  });
+}
+
 /// Authorization entry for Soroban contract invocations.
 ///
 /// SorobanAuthorizationEntry represents authorization for a contract function call
@@ -663,9 +865,7 @@ class SorobanAuthorizedInvocation {
 ///
 /// // Sign auth entries for each required signer
 /// for (var entry in authEntries) {
-///   if (entry.credentials.addressCredentials != null) {
-///     final signerAddress = entry.credentials.addressCredentials!.address;
-///     // Get appropriate keypair and sign
+///   if (entry.credentials.innerAddressCredentials != null) {
 ///     entry.sign(signerKeyPair, network);
 ///   }
 /// }
@@ -681,6 +881,10 @@ class SorobanAuthorizedInvocation {
 class SorobanAuthorizationEntry {
   SorobanCredentials credentials;
   SorobanAuthorizedInvocation rootInvocation;
+
+  /// Maximum depth for delegate tree traversal. Guards against pathological
+  /// trees in forAddress routing.
+  static const int _maxDelegateTraversalDepth = 128;
 
   /// Creates a SorobanAuthorizationEntry with credentials and invocation tree.
   ///
@@ -720,39 +924,406 @@ class SorobanAuthorizationEntry {
     return base64Encode(xdrOutputStream.bytes);
   }
 
-  /// Signs the authorization entry.
-  /// The signature will be set to the soroban credentials
-  void sign(KeyPair signer, Network network) {
-    XdrSorobanCredentials xdrCredentials = credentials.toXdr();
-    if (credentials.addressCredentials == null ||
-        xdrCredentials.type !=
-            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS ||
-        xdrCredentials.address == null) {
-      throw Exception("no soroban address credentials found");
+  /// Builds the XdrHashIDPreimage for this entry based on its credential arm.
+  ///
+  /// Arm selection:
+  /// - ADDRESS -> ENVELOPE_TYPE_SOROBAN_AUTHORIZATION (address-independent preimage)
+  /// - ADDRESS_V2 and ADDRESS_WITH_DELEGATES -> ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS
+  ///   The address in the preimage is always the top-level credential address.
+  ///
+  /// [signatureExpirationLedger] must be set on the credentials BEFORE calling this
+  /// method; the network reconstructs the preimage from the submitted credentials.
+  ///
+  /// Throws if the credentials are source-account or have an unknown arm.
+  XdrHashIDPreimage buildPreimage(Network network) {
+    final arm = credentials.arm;
+    final inner = credentials.innerAddressCredentials;
+
+    if (inner == null) {
+      throw Exception(
+          'Cannot build preimage for source-account credentials');
     }
 
-    XdrHashIDPreimageSorobanAuthorization authPreimageXdr =
-        XdrHashIDPreimageSorobanAuthorization(
-            XdrHash(network.networkId!),
-            xdrCredentials.address!.nonce,
-            xdrCredentials.address!.signatureExpirationLedger,
-            rootInvocation.toXdr());
-    XdrHashIDPreimage rootInvocationPreimage =
-        XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION);
-    rootInvocationPreimage.sorobanAuthorization = authPreimageXdr;
-    XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
-    XdrHashIDPreimage.encode(xdrOutputStream, rootInvocationPreimage);
-    Uint8List payload = Util.hash(Uint8List.fromList(xdrOutputStream.bytes));
-    Uint8List signatureBytes = signer.sign(payload);
-    AccountEd25519Signature signature =
-        AccountEd25519Signature(signer.xdrPublicKey, signatureBytes);
-    List<XdrSCVal> signatures = List<XdrSCVal>.empty(growable: true);
-    if (credentials.addressCredentials!.signature.vec != null) {
-      signatures.addAll(credentials.addressCredentials!.signature.vec!);
+    if (arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS) {
+      // Legacy preimage: no address binding
+      final authPreimage = XdrHashIDPreimageSorobanAuthorization(
+        XdrHash(network.networkId!),
+        XdrInt64(inner.nonce),
+        XdrUint32(inner.signatureExpirationLedger),
+        rootInvocation.toXdr(),
+      );
+      final preimage = XdrHashIDPreimage(
+          XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION);
+      preimage.sorobanAuthorization = authPreimage;
+      return preimage;
+    } else if (arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2 ||
+               arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+      // Address-bound preimage; address is always the top-level credential address
+      final authPreimage = XdrHashIDPreimageSorobanAuthorizationWithAddress(
+        XdrHash(network.networkId!),
+        XdrInt64(inner.nonce),
+        XdrUint32(inner.signatureExpirationLedger),
+        inner.address.toXdr(),
+        rootInvocation.toXdr(),
+      );
+      final preimage = XdrHashIDPreimage(
+          XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS);
+      preimage.sorobanAuthorizationWithAddress = authPreimage;
+      return preimage;
+    } else {
+      throw Exception(
+          'Cannot build preimage for unknown credential arm: $arm');
     }
-    signatures.add(signature.toXdrSCVal());
-    credentials.addressCredentials!.signature = XdrSCVal.forVec(signatures);
   }
+
+  /// Encodes [preimage] and returns its SHA-256 hash (the payload to sign).
+  static Uint8List _hashPreimage(XdrHashIDPreimage preimage) {
+    final out = XdrDataOutputStream();
+    XdrHashIDPreimage.encode(out, preimage);
+    return Util.hash(Uint8List.fromList(out.bytes));
+  }
+
+  /// Appends [newSig] to the signature vector of [inner].
+  ///
+  /// If the current signature is void, it is replaced with a one-element vector.
+  /// Otherwise the new element is appended to the existing vector.
+  /// Non-void signatures are never silently overwritten.
+  ///
+  /// Callers are responsible for signing in ascending public-key order when
+  /// G-address verification is required; the SDK appends in call order and does
+  /// not sort. Signing the same node twice with the same key appends a duplicate
+  /// that the host rejects.
+  static void _appendSignature(
+      SorobanAddressCredentials inner, AccountEd25519Signature newSig) {
+    final existing = inner.signature;
+    final List<XdrSCVal> sigs = List<XdrSCVal>.empty(growable: true);
+    if (existing.vec != null) {
+      sigs.addAll(existing.vec!);
+    }
+    sigs.add(newSig.toXdrSCVal());
+    inner.signature = XdrSCVal.forVec(sigs);
+  }
+
+  /// Signs this authorization entry.
+  ///
+  /// [signatureExpirationLedger] must be set on the credentials before calling;
+  /// the preimage is built from the current expiration value.
+  ///
+  /// All three address arms are supported:
+  /// - ADDRESS: legacy preimage (no address binding)
+  /// - ADDRESS_V2 and ADDRESS_WITH_DELEGATES: address-bound preimage
+  ///
+  /// The top-level signer and every delegate at any depth sign the same payload
+  /// hash for a given entry.
+  ///
+  /// [forAddress]: if null, signs the top-level credentials. If non-null
+  /// (strkey of a G... account or C... contract), the signature is routed
+  /// into every node (top-level or delegate, depth-first) whose address matches.
+  /// Throws if no node's address matches [forAddress].
+  /// Muxed addresses (M...) are rejected as Soroban auth delegate targets.
+  ///
+  /// Append semantics: appends to existing signatures; void becomes one-element
+  /// vector. The arm is preserved on write-back.
+  ///
+  /// Signing source-account credentials throws an exception.
+  void sign(KeyPair signer, Network network, {String? forAddress}) {
+    final arm = credentials.arm;
+
+    if (arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT) {
+      throw Exception('Cannot sign source-account credentials');
+    }
+
+    final inner = credentials.innerAddressCredentials;
+    if (inner == null) {
+      throw Exception('No address credentials found for signing');
+    }
+
+    if (forAddress != null && forAddress.startsWith('M')) {
+      throw Exception(
+          'Muxed addresses (M...) are not valid Soroban auth targets; '
+          'use the underlying G... account address instead');
+    }
+
+    // Build the payload once; all nodes (top-level and delegates) sign this same hash.
+    final preimage = buildPreimage(network);
+    final payload = _hashPreimage(preimage);
+    final signatureBytes = signer.sign(payload);
+    final sig = AccountEd25519Signature(signer.xdrPublicKey, signatureBytes);
+
+    if (forAddress == null) {
+      // Sign top-level credentials
+      _appendSignature(inner, sig);
+      _writeBackInnerCredentials(inner);
+    } else {
+      // Route to matching nodes in the delegate tree
+      final matched = _routeSignatureToAddress(
+          forAddress, inner, sig, 0);
+      if (!matched) {
+        throw Exception(
+            'No node with address $forAddress found in this authorization entry');
+      }
+    }
+  }
+
+  /// Writes [inner] back into the credentials preserving the credential arm.
+  void _writeBackInnerCredentials(SorobanAddressCredentials inner) {
+    switch (credentials.arm) {
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
+        credentials.addressCredentials = inner;
+        break;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2:
+        credentials.addressV2Credentials = inner;
+        break;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
+        // The inner credentials live inside the WithDelegates wrapper; they are
+        // mutated in place so no explicit write-back is needed here.
+        break;
+      default:
+        break;
+    }
+  }
+
+  /// Encodes [addr] to XDR bytes for address comparison.
+  static Uint8List _encodeAddress(XdrSCAddress addr) {
+    final out = XdrDataOutputStream();
+    XdrSCAddress.encode(out, addr);
+    return Uint8List.fromList(out.bytes);
+  }
+
+  /// Returns the strkey representation of an [XdrSCAddress] for address matching.
+  ///
+  /// Only account (G...) and contract (C...) addresses are valid delegate targets.
+  static String _xdrAddressToStrKey(XdrSCAddress addr) {
+    if (addr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT &&
+        addr.accountId != null) {
+      return KeyPair.fromXdrPublicKey(addr.accountId!.accountID).accountId;
+    } else if (addr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT &&
+        addr.contractId != null) {
+      return StrKey.encodeContractId(addr.contractId!.hash);
+    }
+    // Other address types (muxed, claimable balance, pool) return empty string
+    // so they never match a forAddress target.
+    return '';
+  }
+
+  /// Depth-first walk over the credential address and delegate tree.
+  ///
+  /// Appends [sig] to every node whose address strkey equals [targetStrKey].
+  /// Returns true if at least one node was signed.
+  ///
+  /// Throws if [depth] exceeds [_maxDelegateTraversalDepth] to prevent
+  /// unbounded recursion on pathological inputs.
+  bool _routeSignatureToAddress(
+      String targetStrKey,
+      SorobanAddressCredentials topLevel,
+      AccountEd25519Signature sig,
+      int depth) {
+    if (depth > _maxDelegateTraversalDepth) {
+      throw Exception(
+          'Delegate tree traversal depth limit ($_maxDelegateTraversalDepth) exceeded');
+    }
+
+    bool matched = false;
+
+    // Check the top-level credential address (only at depth 0)
+    if (depth == 0) {
+      final topStrKey = _xdrAddressToStrKey(topLevel.address.toXdr());
+      if (topStrKey == targetStrKey) {
+        _appendSignature(topLevel, sig);
+        _writeBackInnerCredentials(topLevel);
+        matched = true;
+      }
+
+      // Walk delegates if present
+      if (credentials.arm ==
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+        final withDelegates = credentials.addressWithDelegatesCredentials!;
+        for (final delegate in withDelegates.delegates) {
+          if (_walkDelegate(targetStrKey, delegate, sig, depth + 1)) {
+            matched = true;
+          }
+        }
+      }
+    }
+
+    return matched;
+  }
+
+  /// Recursive walk of a delegate node and its nested delegates.
+  bool _walkDelegate(
+      String targetStrKey,
+      SorobanDelegateSignature node,
+      AccountEd25519Signature sig,
+      int depth) {
+    if (depth > _maxDelegateTraversalDepth) {
+      throw Exception(
+          'Delegate tree traversal depth limit ($_maxDelegateTraversalDepth) exceeded');
+    }
+
+    bool matched = false;
+    final nodeStrKey = _xdrAddressToStrKey(node.address);
+    if (nodeStrKey == targetStrKey) {
+      _appendSignatureToDelegate(node, sig);
+      matched = true;
+    }
+
+    for (final child in node.nestedDelegates) {
+      if (_walkDelegate(targetStrKey, child, sig, depth + 1)) {
+        matched = true;
+      }
+    }
+
+    return matched;
+  }
+
+  /// Appends [sig] to the signature of delegate [node].
+  static void _appendSignatureToDelegate(
+      SorobanDelegateSignature node, AccountEd25519Signature sig) {
+    final existing = node.signature;
+    final List<XdrSCVal> sigs = List<XdrSCVal>.empty(growable: true);
+    if (existing.vec != null) {
+      sigs.addAll(existing.vec!);
+    }
+    sigs.add(sig.toXdrSCVal());
+    node.signature = XdrSCVal.forVec(sigs);
+  }
+
+  /// Constructs a WITH_DELEGATES authorization entry from an existing ADDRESS or
+  /// ADDRESS_V2 entry plus a list of delegate descriptors.
+  ///
+  /// Rules enforced:
+  /// - [source] must be ADDRESS or ADDRESS_V2; throws if it is already WITH_DELEGATES
+  ///   or SOURCE_ACCOUNT.
+  /// - The top-level signature is defaulted to void (delegates-only pattern).
+  /// - Each delegate's [address] must be a G... or C... strkey; M... is rejected.
+  /// - Within each delegate array (top-level and each nestedDelegates), entries are
+  ///   sorted ascending by the lexicographic comparison of the complete XDR-encoded
+  ///   XdrSCAddress bytes. Strkey order is NOT used for sorting.
+  /// - Duplicate addresses within one array (same encoded bytes) throw.
+  ///   The same address appearing at different levels is legal.
+  /// - [signatureExpirationLedger] must be provided; it is stamped onto the inner
+  ///   credentials so the preimage is buildable immediately after this call.
+  ///
+  /// Returns: A new [SorobanAuthorizationEntry] with the ADDRESS_WITH_DELEGATES arm.
+  static SorobanAuthorizationEntry withDelegates(
+    SorobanAuthorizationEntry source,
+    List<SorobanDelegateDescriptor> delegates,
+    int signatureExpirationLedger,
+  ) {
+    final arm = source.credentials.arm;
+    if (arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+      throw ArgumentError(
+          'source entry is already ADDRESS_WITH_DELEGATES; '
+          'cannot nest delegate trees');
+    }
+    if (arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT) {
+      throw ArgumentError(
+          'source entry has source-account credentials; '
+          'delegate trees require address credentials');
+    }
+
+    final sourceInner = source.credentials.innerAddressCredentials!;
+    final innerCreds = SorobanAddressCredentials(
+      sourceInner.address,
+      sourceInner.nonce,
+      signatureExpirationLedger,
+      XdrSCVal.forVoid(), // top-level signature is void (delegates-only)
+    );
+
+    final sortedDelegates = _buildAndSortDelegates(delegates, depth: 0);
+    final withDelegates = SorobanAddressCredentialsWithDelegates(
+        innerCreds, sortedDelegates);
+
+    return SorobanAuthorizationEntry(
+      SorobanCredentials.forAddressWithDelegates(withDelegates),
+      source.rootInvocation,
+    );
+  }
+
+  /// Recursively builds [SorobanDelegateSignature] objects from descriptors,
+  /// sorting each array by XDR-encoded address bytes and checking for duplicates.
+  static List<SorobanDelegateSignature> _buildAndSortDelegates(
+    List<SorobanDelegateDescriptor> descriptors, {
+    required int depth,
+  }) {
+    if (depth > _maxDelegateTraversalDepth) {
+      throw ArgumentError(
+          'Delegate tree depth limit ($_maxDelegateTraversalDepth) exceeded '
+          'during construction');
+    }
+
+    final List<_DelegateSortable> items = [];
+    for (final desc in descriptors) {
+      if (desc.addressStrKey.startsWith('M')) {
+        throw ArgumentError(
+            'Muxed addresses (M...) are not valid Soroban delegate addresses: '
+            '${desc.addressStrKey}');
+      }
+
+      final xdrAddr = _strKeyToXdrAddress(desc.addressStrKey);
+      final encodedAddr = _encodeAddress(xdrAddr);
+      final nested = _buildAndSortDelegates(desc.nestedDelegates,
+          depth: depth + 1);
+
+      items.add(_DelegateSortable(
+        encodedAddr: encodedAddr,
+        delegate: SorobanDelegateSignature(
+          xdrAddr,
+          desc.signature ?? XdrSCVal.forVoid(),
+          nested,
+        ),
+      ));
+    }
+
+    // Sort ascending by XDR-encoded address bytes (lexicographic)
+    items.sort((a, b) {
+      for (int i = 0; i < a.encodedAddr.length && i < b.encodedAddr.length; i++) {
+        final cmp = a.encodedAddr[i].compareTo(b.encodedAddr[i]);
+        if (cmp != 0) return cmp;
+      }
+      return a.encodedAddr.length.compareTo(b.encodedAddr.length);
+    });
+
+    // Check for duplicates within this array
+    for (int i = 1; i < items.length; i++) {
+      if (_bytesEqual(items[i - 1].encodedAddr, items[i].encodedAddr)) {
+        throw ArgumentError(
+            'Duplicate delegate address within one array: '
+            '${descriptors[i].addressStrKey}');
+      }
+    }
+
+    return items.map((e) => e.delegate).toList();
+  }
+
+  /// Converts a strkey (G... or C...) to an [XdrSCAddress].
+  static XdrSCAddress _strKeyToXdrAddress(String strKey) {
+    if (strKey.startsWith('G')) {
+      return XdrSCAddress.forAccountId(strKey);
+    } else if (strKey.startsWith('C')) {
+      return XdrSCAddress.forContractId(strKey);
+    } else {
+      throw ArgumentError(
+          'Invalid delegate address strkey (must start with G or C): $strKey');
+    }
+  }
+
+  /// Returns true if [a] and [b] have identical contents.
+  static bool _bytesEqual(Uint8List a, Uint8List b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+}
+
+/// Internal helper for sorting delegates by their XDR-encoded address bytes.
+class _DelegateSortable {
+  final Uint8List encodedAddr;
+  final SorobanDelegateSignature delegate;
+
+  _DelegateSortable({required this.encodedAddr, required this.delegate});
 }
 
 /// Ed25519 signature for Soroban authorization entries.
@@ -783,7 +1354,7 @@ class SorobanAuthorizationEntry {
 /// authEntry.sign(signerKeyPair, network);
 ///
 /// // The signature is embedded in the auth entry credentials
-/// final credentials = authEntry.credentials.addressCredentials;
+/// final credentials = authEntry.credentials.innerAddressCredentials;
 /// print('Signature embedded in auth entry');
 /// ```
 ///

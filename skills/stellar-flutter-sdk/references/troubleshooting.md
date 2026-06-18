@@ -293,6 +293,12 @@ int bufferedFee = (simResponse.minResourceFee! * 1.15).ceil();
 transaction.addResourceFee(bufferedFee);
 ```
 
+**Delegated auth (WITH_DELEGATES) submission fails:** after `setSorobanAuth`, the initial simulation excluded the delegate authorization, so its resources are understated — re-simulate with the delegated entry attached and apply the returned `sorobanTransactionData` / `addResourceFee` before submitting. Multiple G-address signatures on one node must be added in ascending public-key order (the SDK appends in call order, no sorting).
+
+**V2 entries on an old network:** emitting `ADDRESS_V2` / `WITH_DELEGATES` below protocol 27 invalidates the tx — assemble the V2 arms only when targeting protocol 27+. Simulation returns legacy `ADDRESS` entries; assemble the `ADDRESS_V2` arm client-side and inspect `credentials.arm` to confirm which arm an entry uses.
+
+**Switch no longer compiles after upgrade:** the new union cases on `SorobanCredentials` / `XdrSorobanCredentialsType` / `XdrEnvelopeType` / `XdrHashIDPreimage` require a `default` arm in exhaustive switches.
+
 ---
 
 ## Debugging Techniques

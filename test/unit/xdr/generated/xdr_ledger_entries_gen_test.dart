@@ -1782,6 +1782,7 @@ void main() {
             XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID,
             XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_ID,
             XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION,
+            XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS,
       ];
       for (var member in members) {
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -2855,6 +2856,17 @@ void main() {
       expect(reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
           reason: 'TxRep roundtrip failed for XdrEnvelopeType ENVELOPE_TYPE_SOROBAN_AUTHORIZATION');
+    });
+
+    test('XdrEnvelopeType TxRep roundtrip ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS', () {
+      var original = XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrEnvelopeType.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrEnvelopeType ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS');
     });
 
   });

@@ -271,11 +271,26 @@ class Generator < Xdrgen::Generators::Base
 
   def render_struct_decode(out, struct_name, fields)
     out.puts "  static #{struct_name} decode(XdrDataInputStream stream) {"
-    fields.each do |f|
-      render_decode_field(out, f[:name], f)
+    if RECURSIVE_DECODE_TYPES.include?(struct_name)
+      out.puts "    stream.enterRecursiveDecode();"
+      out.puts "    try {"
+      # Fields are emitted at 4-space indent by render_decode_field.
+      # Capture them and re-emit with 2 extra spaces for the try block.
+      buffer = StringIO.new
+      fields.each { |f| render_decode_field(buffer, f[:name], f) }
+      buffer.string.each_line { |line| out.puts "  #{line.chomp}" }
+      args = fields.map { |f| f[:name] }.join(", ")
+      out.puts "      return #{struct_name}(#{args});"
+      out.puts "    } finally {"
+      out.puts "      stream.exitRecursiveDecode();"
+      out.puts "    }"
+    else
+      fields.each do |f|
+        render_decode_field(out, f[:name], f)
+      end
+      args = fields.map { |f| f[:name] }.join(", ")
+      out.puts "    return #{struct_name}(#{args});"
     end
-    args = fields.map { |f| f[:name] }.join(", ")
-    out.puts "    return #{struct_name}(#{args});"
     out.puts "  }"
   end
 

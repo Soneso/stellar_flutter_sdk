@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_soroban_address_credentials.dart';
+import 'xdr_soroban_address_credentials_with_delegates.dart';
 import 'xdr_soroban_credentials_type.dart';
 
 class XdrSorobanCredentialsBase {
@@ -26,9 +27,23 @@ class XdrSorobanCredentialsBase {
 
   XdrSorobanAddressCredentials? get address => this._address;
 
+  XdrSorobanAddressCredentials? _addressV2;
+
+  XdrSorobanAddressCredentials? get addressV2 => this._addressV2;
+
+  XdrSorobanAddressCredentialsWithDelegates? _addressWithDelegates;
+
+  XdrSorobanAddressCredentialsWithDelegates? get addressWithDelegates =>
+      this._addressWithDelegates;
+
   XdrSorobanCredentialsBase(this._type);
 
   set address(XdrSorobanAddressCredentials? value) => this._address = value;
+
+  set addressV2(XdrSorobanAddressCredentials? value) => this._addressV2 = value;
+
+  set addressWithDelegates(XdrSorobanAddressCredentialsWithDelegates? value) =>
+      this._addressWithDelegates = value;
 
   static void encode(
     XdrDataOutputStream stream,
@@ -42,6 +57,18 @@ class XdrSorobanCredentialsBase {
         XdrSorobanAddressCredentials.encode(
           stream,
           encodedSorobanCredentials._address!,
+        );
+        break;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2:
+        XdrSorobanAddressCredentials.encode(
+          stream,
+          encodedSorobanCredentials._addressV2!,
+        );
+        break;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
+        XdrSorobanAddressCredentialsWithDelegates.encode(
+          stream,
+          encodedSorobanCredentials._addressWithDelegates!,
         );
         break;
       default:
@@ -63,6 +90,13 @@ class XdrSorobanCredentialsBase {
         break;
       case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
         decoded._address = XdrSorobanAddressCredentials.decode(stream);
+        break;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2:
+        decoded._addressV2 = XdrSorobanAddressCredentials.decode(stream);
+        break;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
+        decoded._addressWithDelegates =
+            XdrSorobanAddressCredentialsWithDelegates.decode(stream);
         break;
       default:
         break;
@@ -91,6 +125,12 @@ class XdrSorobanCredentialsBase {
       case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
         _address!.toTxRep('$prefix.address', lines);
         break;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2:
+        _addressV2!.toTxRep('$prefix.addressV2', lines);
+        break;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
+        _addressWithDelegates!.toTxRep('$prefix.addressWithDelegates', lines);
+        break;
       default:
         break;
     }
@@ -112,6 +152,19 @@ class XdrSorobanCredentialsBase {
           map,
           '$prefix.address',
         );
+        break;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2:
+        result._addressV2 = XdrSorobanAddressCredentials.fromTxRep(
+          map,
+          '$prefix.addressV2',
+        );
+        break;
+      case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
+        result._addressWithDelegates =
+            XdrSorobanAddressCredentialsWithDelegates.fromTxRep(
+              map,
+              '$prefix.addressWithDelegates',
+            );
         break;
       default:
         break;

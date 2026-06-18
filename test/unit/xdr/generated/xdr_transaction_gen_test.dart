@@ -857,10 +857,34 @@ void main() {
           expect(base64Decoded.signatureExpirationLedger.uint32, equals(original.signatureExpirationLedger.uint32));
       });
 
+      test('XdrSorobanDelegateSignature struct roundtrip', () {
+        var original = XdrSorobanDelegateSignature((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrSCVal(XdrSCValType.SCV_VOID), [XdrSorobanDelegateSignature((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrSCVal(XdrSCValType.SCV_VOID), [])]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSorobanDelegateSignature.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        XdrSorobanDelegateSignature.decode(input);
+        XdrSorobanDelegateSignature.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+      });
+
+      test('XdrSorobanAddressCredentialsWithDelegates struct roundtrip', () {
+        var original = XdrSorobanAddressCredentialsWithDelegates(XdrSorobanAddressCredentials((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrInt64(BigInt.from(654321)), XdrUint32(42), XdrSCVal(XdrSCValType.SCV_VOID)), [XdrSorobanDelegateSignature((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrSCVal(XdrSCValType.SCV_VOID), [])]);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSorobanAddressCredentialsWithDelegates.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        XdrSorobanAddressCredentialsWithDelegates.decode(input);
+        XdrSorobanAddressCredentialsWithDelegates.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+      });
+
     test('XdrSorobanCredentialsType enum roundtrip', () {
       final members = [
         XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT,
             XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS,
+            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
+            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
       ];
       for (var member in members) {
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -906,6 +930,42 @@ void main() {
         expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(base64Decoded.address, isNotNull);
+      });
+
+      test('XdrSorobanCredentials XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2 arm roundtrip', () {
+        var original = XdrSorobanCredentialsBase(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2);
+        original.addressV2 = (XdrSorobanAddressCredentials((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrInt64(BigInt.from(654321)), XdrUint32(42), XdrSCVal(XdrSCValType.SCV_VOID)));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSorobanCredentialsBase.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSorobanCredentialsBase.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.addressV2, isNotNull);
+        var base64Decoded = XdrSorobanCredentialsBase.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.addressV2, isNotNull);
+      });
+
+      test('XdrSorobanCredentials XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES arm roundtrip', () {
+        var original = XdrSorobanCredentialsBase(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES);
+        original.addressWithDelegates = (XdrSorobanAddressCredentialsWithDelegates(XdrSorobanAddressCredentials((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrInt64(BigInt.from(654321)), XdrUint32(42), XdrSCVal(XdrSCValType.SCV_VOID)), [XdrSorobanDelegateSignature((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrSCVal(XdrSCValType.SCV_VOID), [])]));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSorobanCredentialsBase.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSorobanCredentialsBase.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.addressWithDelegates, isNotNull);
+        var base64Decoded = XdrSorobanCredentialsBase.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.addressWithDelegates, isNotNull);
       });
 
       test('XdrSorobanAuthorizationEntry struct roundtrip', () {
@@ -1512,6 +1572,23 @@ void main() {
           expect(base64Decoded.signatureExpirationLedger.uint32, equals(original.signatureExpirationLedger.uint32));
       });
 
+      test('XdrHashIDPreimageSorobanAuthorizationWithAddress struct roundtrip', () {
+        var original = XdrHashIDPreimageSorobanAuthorizationWithAddress(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrInt64(BigInt.from(654321)), XdrUint32(42), (XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrSorobanAuthorizedInvocation((XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)..contractFn = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', [])), [XdrSorobanAuthorizedInvocation((XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)..contractFn = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', [])), [])]));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrHashIDPreimageSorobanAuthorizationWithAddress.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrHashIDPreimageSorobanAuthorizationWithAddress.decode(input);
+          expect(decoded.networkID.hash, equals(original.networkID.hash));
+          expect(decoded.nonce.int64, equals(original.nonce.int64));
+          expect(decoded.signatureExpirationLedger.uint32, equals(original.signatureExpirationLedger.uint32));
+        var base64Decoded = XdrHashIDPreimageSorobanAuthorizationWithAddress.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.networkID.hash, equals(original.networkID.hash));
+          expect(base64Decoded.nonce.int64, equals(original.nonce.int64));
+          expect(base64Decoded.signatureExpirationLedger.uint32, equals(original.signatureExpirationLedger.uint32));
+      });
+
       test('XdrHashIDPreimage XdrEnvelopeType.ENVELOPE_TYPE_OP_ID arm roundtrip', () {
         var original = XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_OP_ID);
         original.operationID = (XdrHashIDPreimageOperationID(XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))))), XdrSequenceNumber(BigInt.from(1)), XdrUint32(0)));
@@ -1582,6 +1659,24 @@ void main() {
         expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(base64Decoded.sorobanAuthorization, isNotNull);
+      });
+
+      test('XdrHashIDPreimage XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS arm roundtrip', () {
+        var original = XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS);
+        original.sorobanAuthorizationWithAddress = (XdrHashIDPreimageSorobanAuthorizationWithAddress(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrInt64(BigInt.from(654321)), XdrUint32(42), (XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrSorobanAuthorizedInvocation((XdrSorobanAuthorizedFunction(XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN)..contractFn = XdrInvokeContractArgs((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), 'test_fn', [])), [])));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrHashIDPreimage.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrHashIDPreimage.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.sorobanAuthorizationWithAddress, isNotNull);
+        var base64Decoded = XdrHashIDPreimage.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.sorobanAuthorizationWithAddress, isNotNull);
       });
 
     test('XdrMemoType enum roundtrip', () {
@@ -5368,6 +5463,28 @@ void main() {
           reason: 'TxRep roundtrip failed for XdrSorobanAddressCredentials');
     });
 
+    test('XdrSorobanDelegateSignature TxRep roundtrip', () {
+      var original = XdrSorobanDelegateSignature((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrSCVal(XdrSCValType.SCV_VOID), [XdrSorobanDelegateSignature((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrSCVal(XdrSCValType.SCV_VOID), [])]);
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSorobanDelegateSignature.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrSorobanDelegateSignature');
+    });
+
+    test('XdrSorobanAddressCredentialsWithDelegates TxRep roundtrip', () {
+      var original = XdrSorobanAddressCredentialsWithDelegates(XdrSorobanAddressCredentials((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrInt64(BigInt.from(654321)), XdrUint32(42), XdrSCVal(XdrSCValType.SCV_VOID)), [XdrSorobanDelegateSignature((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrSCVal(XdrSCValType.SCV_VOID), [])]);
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSorobanAddressCredentialsWithDelegates.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrSorobanAddressCredentialsWithDelegates');
+    });
+
     test('XdrSorobanCredentialsType TxRep roundtrip SOROBAN_CREDENTIALS_SOURCE_ACCOUNT', () {
       var original = XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT;
       List<String> lines = [];
@@ -5390,6 +5507,28 @@ void main() {
           reason: 'TxRep roundtrip failed for XdrSorobanCredentialsType SOROBAN_CREDENTIALS_ADDRESS');
     });
 
+    test('XdrSorobanCredentialsType TxRep roundtrip SOROBAN_CREDENTIALS_ADDRESS_V2', () {
+      var original = XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSorobanCredentialsType.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrSorobanCredentialsType SOROBAN_CREDENTIALS_ADDRESS_V2');
+    });
+
+    test('XdrSorobanCredentialsType TxRep roundtrip SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES', () {
+      var original = XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSorobanCredentialsType.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrSorobanCredentialsType SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES');
+    });
+
     test('XdrSorobanCredentials TxRep roundtrip XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT', () {
       var original = XdrSorobanCredentialsBase(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
       List<String> lines = [];
@@ -5410,6 +5549,28 @@ void main() {
       expect(reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
           reason: 'TxRep roundtrip failed for XdrSorobanCredentials XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS');
+    });
+
+    test('XdrSorobanCredentials TxRep roundtrip XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2', () {
+      var original = (XdrSorobanCredentialsBase(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2)..addressV2 = (XdrSorobanAddressCredentials((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrInt64(BigInt.from(654321)), XdrUint32(42), XdrSCVal(XdrSCValType.SCV_VOID))));
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSorobanCredentials.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrSorobanCredentials XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2');
+    });
+
+    test('XdrSorobanCredentials TxRep roundtrip XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES', () {
+      var original = (XdrSorobanCredentialsBase(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES)..addressWithDelegates = (XdrSorobanAddressCredentialsWithDelegates(XdrSorobanAddressCredentials((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrInt64(BigInt.from(654321)), XdrUint32(42), XdrSCVal(XdrSCValType.SCV_VOID)), [XdrSorobanDelegateSignature((XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT)..accountId = XdrAccountID((XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))))), XdrSCVal(XdrSCValType.SCV_VOID), [])])));
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSorobanCredentials.fromTxRep(map, 'tx');
+      expect(reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason: 'TxRep roundtrip failed for XdrSorobanCredentials XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES');
     });
 
     test('XdrSorobanAuthorizationEntry TxRep roundtrip', () {
