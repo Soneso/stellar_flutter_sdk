@@ -5,8 +5,7 @@
 // Integration tests for Protocol 27 (CAP-71) ADDRESS_V2 credential arm.
 //
 // These tests require a testnet running Protocol 27 and a deployed Soroban auth
-// contract. They are skipped until the testnet is upgraded (target: 2026-06-18).
-// To run against a live testnet, remove the skip string from each test.
+// contract.
 //
 // Simulation returns legacy ADDRESS entries; the tests assemble the ADDRESS_V2
 // credential arm client-side to exercise the address-bound signing path.
@@ -18,10 +17,6 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import '../tests_util.dart';
-
-/// Remove this skip string once testnet runs Protocol 27.
-const _skipUntilP27 =
-    'Skipped: testnet must run Protocol 27 before these tests can pass';
 
 void main() {
   const testOn = 'testnet';
@@ -50,80 +45,26 @@ void main() {
     }
   }
 
-  Future<GetTransactionResponse> pollUntilDone(
-      SorobanServer server, String transactionId) async {
-    var status = GetTransactionResponse.STATUS_NOT_FOUND;
-    GetTransactionResponse? response;
-    while (status == GetTransactionResponse.STATUS_NOT_FOUND) {
-      await Future.delayed(const Duration(seconds: 3));
-      response = await server.getTransaction(transactionId);
-      assert(response.error == null,
-          'getTransaction returned an error: ${response.error}');
-      status = response.status!;
-      if (status == GetTransactionResponse.STATUS_FAILED) {
-        fail('Transaction $transactionId failed: ${response.resultXdr}');
-      }
-    }
-    return response!;
-  }
-
-  /// Installs and deploys the auth contract; returns contractId.
-  Future<String> deployAuthContract(
-      SorobanServer server, KeyPair submitterKp) async {
+  /// Installs and deploys the auth contract via the high-level client; returns contractId.
+  Future<String> deployAuthContract(KeyPair submitterKp) async {
     final Uint8List wasmBytes = await loadContractCode(authContractPath);
-
-    // --- Upload wasm ---
-    Account? account = await server.getAccount(submitterKp.accountId);
-    assert(account != null);
-
-    InvokeHostFunctionOperation uploadOp =
-        InvokeHostFuncOpBuilder(UploadContractWasmHostFunction(wasmBytes))
-            .build();
-    Transaction uploadTx =
-        TransactionBuilder(account!).addOperation(uploadOp).build();
-
-    var simUpload =
-        await server.simulateTransaction(SimulateTransactionRequest(uploadTx));
-    assert(!simUpload.isErrorResponse);
-    assert(simUpload.transactionData != null);
-
-    uploadTx.sorobanTransactionData = simUpload.transactionData;
-    uploadTx.addResourceFee(simUpload.minResourceFee!);
-    uploadTx.sign(submitterKp, network);
-
-    final sendUpload = await server.sendTransaction(uploadTx);
-    assert(sendUpload.hash != null);
-    final uploadResult = await pollUntilDone(server, sendUpload.hash!);
-    final wasmId = uploadResult.getWasmId();
-    assert(wasmId != null, 'wasm upload did not return a wasmId');
-
-    // --- Deploy contract ---
-    account = await server.getAccount(submitterKp.accountId);
-    assert(account != null);
-
-    final deployFn = CreateContractWithConstructorHostFunction(
-        Address.forAccountId(submitterKp.accountId), wasmId!, []);
-    InvokeHostFunctionOperation deployOp =
-        InvokeHostFuncOpBuilder(deployFn).build();
-    Transaction deployTx =
-        TransactionBuilder(account!).addOperation(deployOp).build();
-
-    var simDeploy =
-        await server.simulateTransaction(SimulateTransactionRequest(deployTx));
-    assert(!simDeploy.isErrorResponse);
-    assert(simDeploy.transactionData != null);
-
-    deployTx.sorobanTransactionData = simDeploy.transactionData;
-    deployTx.addResourceFee(simDeploy.minResourceFee!);
-    deployTx.setSorobanAuth(simDeploy.sorobanAuth);
-    deployTx.sign(submitterKp, network);
-
-    final sendDeploy = await server.sendTransaction(deployTx);
-    assert(sendDeploy.hash != null);
-    final deployResult = await pollUntilDone(server, sendDeploy.hash!);
-    final contractId = deployResult.getCreatedContractId();
-    assert(contractId != null, 'contract deploy did not return a contractId');
-    return contractId!;
+    final wasmHash = await SorobanClient.install(
+      installRequest: InstallRequest(
+        wasmBytes: wasmBytes,
+        sourceAccountKeyPair: submitterKp,
+        network: network,
+        rpcUrl: rpcUrl,
+      ),
+    );
+    final client = await SorobanClient.deploy(
+      deployRequest: DeployRequest(
+        sourceAccountKeyPair: submitterKp,
+        network: network,
+        rpcUrl: rpcUrl,
+        wasmHash: wasmHash,
+      ),
+    );
+    return client.getContractId();
   }
 
   /// Rewrites every ADDRESS auth entry whose credential address matches
@@ -161,15 +102,12 @@ void main() {
   test(
     'ADDRESS_V2 arm round-trip: build, rewrite, sign, submit',
     () async {
-      final server = SorobanServer(rpcUrl);
-      server.enableLogging = true;
-
       final sourceKp = KeyPair.random();
       final invokerKp = KeyPair.random();
       await fundAccount(sourceKp.accountId);
       await fundAccount(invokerKp.accountId);
 
-      final contractId = await deployAuthContract(server, sourceKp);
+      final contractId = await deployAuthContract(sourceKp);
 
       final clientOptions = ClientOptions(
         sourceAccountKeyPair: sourceKp,
@@ -212,7 +150,6 @@ void main() {
       assert(response.status == GetTransactionResponse.STATUS_SUCCESS,
           'Expected SUCCESS, got ${response.status}');
     },
-    skip: _skipUntilP27,
     timeout: const Timeout(Duration(minutes: 5)),
   );
 
@@ -224,13 +161,12 @@ void main() {
   test(
     'ADDRESS_V2 entry uses address-bound preimage (ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS)',
     () async {
-      final server = SorobanServer(rpcUrl);
       final sourceKp = KeyPair.random();
       final invokerKp = KeyPair.random();
       await fundAccount(sourceKp.accountId);
       await fundAccount(invokerKp.accountId);
 
-      final contractId = await deployAuthContract(server, sourceKp);
+      final contractId = await deployAuthContract(sourceKp);
 
       final assembled = await AssembledTransaction.build(
         options: AssembledTransactionOptions(
@@ -280,7 +216,6 @@ void main() {
       assert(checkedV2,
           'Expected an ADDRESS_V2 auth entry to verify the address-bound preimage');
     },
-    skip: _skipUntilP27,
     timeout: const Timeout(Duration(minutes: 5)),
   );
 
@@ -292,13 +227,12 @@ void main() {
   test(
     'ADDRESS_V2 signed entry survives XDR round-trip',
     () async {
-      final server = SorobanServer(rpcUrl);
       final sourceKp = KeyPair.random();
       final invokerKp = KeyPair.random();
       await fundAccount(sourceKp.accountId);
       await fundAccount(invokerKp.accountId);
 
-      final contractId = await deployAuthContract(server, sourceKp);
+      final contractId = await deployAuthContract(sourceKp);
 
       final assembled = await AssembledTransaction.build(
         options: AssembledTransactionOptions(
@@ -351,7 +285,6 @@ void main() {
       assert(roundTripped,
           'Expected a signed ADDRESS_V2 entry to round-trip');
     },
-    skip: _skipUntilP27,
     timeout: const Timeout(Duration(minutes: 5)),
   );
 }
