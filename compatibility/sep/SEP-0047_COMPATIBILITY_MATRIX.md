@@ -1,7 +1,7 @@
 # SEP-0047 (Contract Interface Discovery) Compatibility Matrix
 
-**Generated:** 2026-06-10 11:08:00  
-**SDK Version:** 3.1.0  
+**Generated:** 2026-06-19 00:59:20  
+**SDK Version:** 3.2.0  
 **SEP Version:** 0.1.0  
 **SEP Status:** Draft  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0047.md

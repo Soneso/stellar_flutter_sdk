@@ -1,5 +1,6 @@
-## [Unreleased]
-- Add Protocol 27 (CAP-71) Soroban authorization support
+## [3.2.0] - 19.Jun.2026.
+- Add Protocol 27 (CAP-71) Soroban authorization support: the ADDRESS_V2 and ADDRESS_WITH_DELEGATES credential arms with delegated account authorization
+- Update compatibility matrices to Horizon v27.0.0 and Soroban RPC v27.0.0 (coverage unchanged at 100%)
 
 ## [3.1.0] - 10.Jun.2026.
 - Add OpenZeppelin smart account support
