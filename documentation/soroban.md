@@ -553,7 +553,11 @@ delegated.sign(delegateKeyPair, Network.TESTNET,
 
 `SorobanDelegateDescriptor` supports nesting via `nestedDelegates` and accepts a pre-built `signature` (default void) for nodes signed externally, such as contract addresses.
 
-After attaching a `WITH_DELEGATES` entry to the transaction with `transaction.setSorobanAuth(...)`, re-simulate before submitting: the first simulation did not include the delegate authorization, so its resource fees are understated. Run `server.simulateTransaction(...)` again with the delegated entry attached, then apply the returned `transactionData` (assign it to `transaction.sorobanTransactionData` and add the resource fee via `transaction.addResourceFee(...)`) before signing and sending.
+`SorobanCredentials.forAddressV2` and the delegated arms are built client-side: simulation and the high-level `SorobanClient` / `AssembledTransaction` only ever return legacy `ADDRESS` entries, so the V2 and `WITH_DELEGATES` arms are assembled and submitted at the `SorobanServer` level.
+
+After attaching the signed entries with `transaction.setSorobanAuth(...)`, re-simulate in enforcing mode before submitting. The first (recording) simulation does not run the authorizing account's `__check_auth`, so it understates the resource fee and — for a custom (contract) account whose `__check_auth` reads storage or calls into delegates — omits the footprint entries that authorization touches. Re-simulate with the signed entry attached and `authMode` set to `enforce` (`SimulateTransactionRequest(transaction, authMode: 'enforce')`), then apply the returned data before signing: assign `response.transactionData` to `transaction.sorobanTransactionData` and add `response.minResourceFee` via `transaction.addResourceFee(...)`. The already-signed auth is preserved.
+
+When converting a simulated `ADDRESS` entry to `ADDRESS_V2` in place, reuse its nonce — `SorobanCredentials.forAddressV2(credentials.innerAddressCredentials!)` carries the nonce over; a fresh nonce will not match the recorded footprint and then relies on the enforcing re-simulation above.
 
 #### Source Compatibility
 

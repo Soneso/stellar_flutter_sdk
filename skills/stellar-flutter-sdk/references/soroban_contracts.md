@@ -196,7 +196,7 @@ delegated.sign(delegateKeyPair, Network.TESTNET,
     forAddress: delegateKeyPair.accountId); // routes into matching node depth-first
 ```
 
-Delegates share one payload bound to the top-level address; they carry no nonce/expiration. Multiple G-address signatures on one node must be added in ascending public-key order (the SDK appends in call order, no sorting). After `tx.setSorobanAuth([delegated])`, re-simulate and apply the returned resources (`sorobanTransactionData`, `addResourceFee`) before submitting — the first simulation excludes the delegate auth. New union cases on `SorobanCredentials`/`XdrSorobanCredentialsType`/`XdrEnvelopeType`/`XdrHashIDPreimage` need a `default` arm in exhaustive switches.
+Delegates share one payload bound to the top-level address; they carry no nonce/expiration. Multiple G-address signatures on one node must be added in ascending public-key order (the SDK appends in call order, no sorting). After `tx.setSorobanAuth([delegated])`, re-simulate in enforcing mode (`SimulateTransactionRequest(tx, authMode: 'enforce')`) and apply the returned resources (`sorobanTransactionData`, `addResourceFee`) before submitting: the recording simulation does not run `__check_auth`, so for a custom (contract) account it omits the footprint its authorization reads (and understates the delegate fee). New union cases on `SorobanCredentials`/`XdrSorobanCredentialsType`/`XdrEnvelopeType`/`XdrHashIDPreimage` need a `default` arm in exhaustive switches.
 
 ---
 
