@@ -1963,25 +1963,11 @@ class SimulateTransactionRequest {
   /// Possible values: "enforce" | "record" | "record_allow_nonroot"
   String? authMode;
 
-  /// When true, requests that the RPC server record authorization entries using the
-  /// ADDRESS_V2 credential format (protocol 27+). The key is omitted from the
-  /// request when false (never sent as `"authV2": false`).
-  ///
-  /// RPCs that do not support this flag (all released versions prior to
-  /// stellar-rpc #783) silently ignore it and return legacy ADDRESS entries.
-  /// Whether the server honored the flag is detected by inspecting the
-  /// credential arm of the returned entries, not by any error code.
-  ///
-  /// Emitting V2 entries on a network running below protocol 27 invalidates
-  /// the transaction; set this only when targeting protocol 27+.
-  bool authV2;
-
   /// Creates a SimulateTransactionRequest for transaction simulation.
   ///
-  /// Contains transaction to simulate with optional resource config, auth mode,
-  /// and the optional [authV2] flag (default false; key omitted when false).
+  /// Contains transaction to simulate with optional resource config and auth mode.
   SimulateTransactionRequest(this.transaction,
-      {this.resourceConfig, this.authMode, this.authV2 = false});
+      {this.resourceConfig, this.authMode});
 
   Map<String, dynamic> getRequestArgs() {
     var map = <String, dynamic>{};
@@ -1991,10 +1977,6 @@ class SimulateTransactionRequest {
     }
     if (authMode != null) {
       map['authMode'] = authMode;
-    }
-    // Omit the key entirely when false; never emit "authV2": false.
-    if (authV2) {
-      map['authV2'] = true;
     }
 
     return map;

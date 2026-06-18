@@ -189,7 +189,7 @@ String _buildSorobanTransactionDataXdr() {
 
 Future<AssembledTransaction> _buildAssembledTx(
     String rpcUrl, String accountId, KeyPair kp,
-    {bool simulate = false, bool authV2 = false}) async {
+    {bool simulate = false}) async {
   final clientOptions = ClientOptions(
     sourceAccountKeyPair: kp,
     contractId: _kContractId,
@@ -198,7 +198,7 @@ Future<AssembledTransaction> _buildAssembledTx(
   );
   final options = AssembledTransactionOptions(
     clientOptions: clientOptions,
-    methodOptions: MethodOptions(simulate: simulate, authV2: authV2),
+    methodOptions: MethodOptions(simulate: simulate),
     method: 'hello',
     arguments: [XdrSCVal.forU64(BigInt.from(1234))],
   );

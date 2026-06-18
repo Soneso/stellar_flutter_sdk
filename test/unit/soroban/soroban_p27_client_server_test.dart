@@ -2,8 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-// Protocol 27 simulation and AssembledTransaction unit tests: SimulateTransactionRequest.authV2, MethodOptions.authV2,
-// AssembledTransaction.simulate() thread-through, needsNonInvokerSigningBy,
+// Protocol 27 simulation and AssembledTransaction unit tests:
+// SimulateTransactionRequest / MethodOptions serialization, needsNonInvokerSigningBy,
 // signAuthEntries, and the send precheck for WITH_DELEGATES entries.
 
 import 'dart:convert';
@@ -194,7 +194,6 @@ Future<AssembledTransaction> _buildAssembledTx(
     String accountId,
     KeyPair kp, {
     bool simulate = false,
-    bool authV2 = false,
 }) async {
   final clientOptions = ClientOptions(
     sourceAccountKeyPair: kp,
@@ -204,7 +203,7 @@ Future<AssembledTransaction> _buildAssembledTx(
   );
   final options = AssembledTransactionOptions(
     clientOptions: clientOptions,
-    methodOptions: MethodOptions(simulate: simulate, authV2: authV2),
+    methodOptions: MethodOptions(simulate: simulate),
     method: 'hello',
     arguments: [XdrSCVal.forU64(BigInt.from(1234))],
   );
@@ -217,9 +216,9 @@ Future<AssembledTransaction> _buildAssembledTx(
 
 void main() {
   // -------------------------------------------------------------------------
-  // GROUP 1: SimulateTransactionRequest.getRequestArgs() authV2 key rules
+  // GROUP 1: SimulateTransactionRequest.getRequestArgs()
   // -------------------------------------------------------------------------
-  group('SimulateTransactionRequest.getRequestArgs() authV2 flag', () {
+  group('SimulateTransactionRequest.getRequestArgs()', () {
     late Account sourceAccount;
 
     setUp(() {
@@ -232,124 +231,35 @@ void main() {
         .addOperation(BumpSequenceOperation(BigInt.from(110)))
         .build();
 
-    test('authV2 key is ABSENT when default (false)', () {
-      final req = SimulateTransactionRequest(_buildTx());
-      final args = req.getRequestArgs();
-
-      expect(args.containsKey('authV2'), isFalse,
-          reason: '"authV2" must be omitted entirely when not set');
-    });
-
-    test('authV2 key is ABSENT when explicitly false', () {
-      final req = SimulateTransactionRequest(_buildTx(), authV2: false);
-      final args = req.getRequestArgs();
-
-      expect(args.containsKey('authV2'), isFalse,
-          reason: '"authV2: false" must never be emitted');
-    });
-
-    test('authV2 key is present as boolean true when opted in', () {
-      final req = SimulateTransactionRequest(_buildTx(), authV2: true);
-      final args = req.getRequestArgs();
-
-      expect(args['authV2'], equals(true),
-          reason: '"authV2" must be boolean true when opted in');
-    });
-
-    test('existing params (transaction, resourceConfig, authMode) unaffected', () {
+    test('serializes transaction, resourceConfig, and authMode', () {
       final tx = _buildTx();
       final rc = ResourceConfig(12345);
       final req = SimulateTransactionRequest(tx,
-          resourceConfig: rc, authMode: 'record', authV2: true);
+          resourceConfig: rc, authMode: 'record');
       final args = req.getRequestArgs();
 
       expect(args.containsKey('transaction'), isTrue);
       expect(args['resourceConfig']['instructionLeeway'], equals(12345));
       expect(args['authMode'], equals('record'));
-      expect(args['authV2'], equals(true));
-    });
-
-    test('existing params unaffected when authV2 false', () {
-      final tx = _buildTx();
-      final rc = ResourceConfig(999);
-      final req = SimulateTransactionRequest(tx,
-          resourceConfig: rc, authMode: 'enforce', authV2: false);
-      final args = req.getRequestArgs();
-
-      expect(args.containsKey('authV2'), isFalse);
-      expect(args['resourceConfig']['instructionLeeway'], equals(999));
-      expect(args['authMode'], equals('enforce'));
     });
   });
 
   // -------------------------------------------------------------------------
-  // GROUP 2: MethodOptions.authV2 field
+  // GROUP 2: MethodOptions fields
   // -------------------------------------------------------------------------
-  group('MethodOptions.authV2 field', () {
-    test('defaults to false', () {
-      final opts = MethodOptions();
-      expect(opts.authV2, isFalse);
-    });
-
-    test('can be set to true', () {
-      final opts = MethodOptions(authV2: true);
-      expect(opts.authV2, isTrue);
-    });
-
-    test('existing fields unaffected when authV2 added', () {
+  group('MethodOptions fields', () {
+    test('fields are set from constructor arguments', () {
       final opts = MethodOptions(
           fee: 500, timeoutInSeconds: 120, simulate: false, restore: true);
       expect(opts.fee, equals(500));
       expect(opts.timeoutInSeconds, equals(120));
       expect(opts.simulate, isFalse);
       expect(opts.restore, isTrue);
-      expect(opts.authV2, isFalse);
     });
   });
 
   // -------------------------------------------------------------------------
-  // GROUP 3: MethodOptions.authV2 threads into AssembledTransaction.simulate()
-  // -------------------------------------------------------------------------
-  group('MethodOptions.authV2 threads into simulate() request body', () {
-    test('authV2: true produces "authV2": true in the wire request', () async {
-      // Skip on web: uses HttpServer.bind.
-
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final (server, captured) = await _startMockRpcServer(
-          accountId: kp.accountId, seqNum: BigInt.from(100));
-
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        await _buildAssembledTx(rpcUrl, kp.accountId, kp,
-            simulate: true, authV2: true);
-
-        expect(captured['authV2'], equals(true),
-            reason: '"authV2": true must appear in the simulate request params');
-      } finally {
-        await server.close();
-      }
-    });
-
-    test('default MethodOptions() omits authV2 from the wire request', () async {
-
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final (server, captured) = await _startMockRpcServer(
-          accountId: kp.accountId, seqNum: BigInt.from(100));
-
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        await _buildAssembledTx(rpcUrl, kp.accountId, kp, simulate: true);
-
-        expect(captured.containsKey('authV2'), isFalse,
-            reason: '"authV2" must be absent from the request by default');
-      } finally {
-        await server.close();
-      }
-    });
-  });
-
-  // -------------------------------------------------------------------------
-  // GROUP 4: needsNonInvokerSigningBy — all arm types
+  // GROUP 3: needsNonInvokerSigningBy — all arm types
   // -------------------------------------------------------------------------
   group('needsNonInvokerSigningBy', () {
     test('ADDRESS entry: reports void top-level, omits signed top-level',
@@ -502,7 +412,7 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
-  // GROUP 5: Send precheck — WITH_DELEGATES delegates-only pattern
+  // GROUP 4: Send precheck — WITH_DELEGATES delegates-only pattern
   // -------------------------------------------------------------------------
   group('sign() precheck — delegates-only pattern does not block', () {
     test(
@@ -591,7 +501,7 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
-  // GROUP 6: signAuthEntries — delegate node matching
+  // GROUP 5: signAuthEntries — delegate node matching
   // -------------------------------------------------------------------------
   group('signAuthEntries — delegate and top-level matching', () {
     test(
@@ -663,9 +573,7 @@ void main() {
     test('signs top-level when signer matches top-level address', () async {
 
       final topKp = KeyPair.fromSecretSeed(_kSeed);
-      final delegateKp = KeyPair.random();
       final topId = topKp.accountId;
-      final delegateId = delegateKp.accountId;
 
       final (server, _) = await _startMockRpcServer(
           accountId: topId, seqNum: BigInt.from(100));
@@ -824,7 +732,7 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
-  // GROUP 7: Arm preservation through sign flow
+  // GROUP 6: Arm preservation through sign flow
   // -------------------------------------------------------------------------
   group('Arm preservation through signAuthEntries', () {
     test('V2 entry stays V2 after signing via signAuthEntries', () async {
@@ -927,7 +835,7 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
-  // GROUP 8: simulate() routes auth entries returned by server into tx
+  // GROUP 7: simulate() routes auth entries returned by server into tx
   // -------------------------------------------------------------------------
   group('simulate() wires returned auth entries into tx', () {
     test('ADDRESS entry from simulate response appears in tx auth', () async {
@@ -990,7 +898,7 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
-  // GROUP 9: SOURCE_ACCOUNT handling. (The unknown-arm fail-fast guard in
+  // GROUP 8: SOURCE_ACCOUNT handling. (The unknown-arm fail-fast guard in
   // signAuthEntries / needsNonInvokerSigningBy is unreachable defensive code:
   // XdrSorobanCredentialsType.decode only accepts discriminants 0-3, so a
   // credential carrying an unknown arm cannot be constructed and the guard is

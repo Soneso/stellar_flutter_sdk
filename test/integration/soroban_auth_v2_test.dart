@@ -8,8 +8,8 @@
 // contract. They are skipped until the testnet is upgraded (target: 2026-06-18).
 // To run against a live testnet, remove the skip string from each test.
 //
-// The tests do not require the unreleased RPC 'authV2' flag. When the RPC
-// returns ADDRESS entries (legacy), the arm check accepts both arms.
+// Simulation returns legacy ADDRESS entries; the tests assemble the ADDRESS_V2
+// credential arm client-side to exercise the address-bound signing path.
 //
 // Each test deploys its own contract instance for independence.
 
@@ -126,30 +126,53 @@ void main() {
     return contractId!;
   }
 
+  /// Rewrites every ADDRESS auth entry whose credential address matches
+  /// [signerAccountId] to ADDRESS_V2, assembling the V2 credential arm
+  /// client-side. Simulation returns legacy ADDRESS entries, so this is how a
+  /// client opts into the address-bound V2 signing path.
+  void rewriteAddressToV2(
+      AssembledTransaction assembled, String signerAccountId) {
+    final tx = assembled.tx;
+    if (tx == null) return;
+    final ops = tx.operations;
+    if (ops.isEmpty || ops.first is! InvokeHostFunctionOperation) return;
+    final authEntries = (ops.first as InvokeHostFunctionOperation).auth;
+    for (final entry in authEntries) {
+      final creds = entry.credentials;
+      if (creds.arm ==
+              XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS &&
+          creds.addressCredentials?.address.accountId == signerAccountId) {
+        entry.credentials =
+            SorobanCredentials.forAddressV2(creds.addressCredentials!);
+      }
+    }
+    tx.setSorobanAuth(authEntries);
+  }
+
   // ---------------------------------------------------------------------------
   // Tests
   // ---------------------------------------------------------------------------
 
   // Test 1: ADDRESS_V2 arm round-trip.
   //
-  // Builds an invocation of the auth contract with authV2=true, simulates,
-  // inspects the returned auth entry arm (accepts both ADDRESS and ADDRESS_V2
-  // for compatibility with legacy RPC), signs, and submits.
+  // The required signer (the invoker) differs from the transaction source, so
+  // simulation returns an ADDRESS auth entry for the invoker. That entry is
+  // rewritten to the ADDRESS_V2 arm client-side, signed, and submitted.
   test(
-    'ADDRESS_V2 arm round-trip: simulate, inspect arm, sign, submit',
+    'ADDRESS_V2 arm round-trip: build, rewrite, sign, submit',
     () async {
       final server = SorobanServer(rpcUrl);
       server.enableLogging = true;
 
-      final submitterKp = KeyPair.random();
+      final sourceKp = KeyPair.random();
       final invokerKp = KeyPair.random();
-      await fundAccount(submitterKp.accountId);
+      await fundAccount(sourceKp.accountId);
       await fundAccount(invokerKp.accountId);
 
-      final contractId = await deployAuthContract(server, submitterKp);
+      final contractId = await deployAuthContract(server, sourceKp);
 
       final clientOptions = ClientOptions(
-        sourceAccountKeyPair: invokerKp,
+        sourceAccountKeyPair: sourceKp,
         contractId: contractId,
         network: network,
         rpcUrl: rpcUrl,
@@ -158,40 +181,32 @@ void main() {
       final assembled = await AssembledTransaction.build(
         options: AssembledTransactionOptions(
           clientOptions: clientOptions,
-          methodOptions: MethodOptions(authV2: true),
-          method: 'invoker_auth',
+          methodOptions: MethodOptions(),
+          method: 'increment',
           arguments: [
-            XdrSCVal.forU128Parts(BigInt.zero, BigInt.from(42)),
             Address.forAccountId(invokerKp.accountId).toXdrSCVal(),
+            XdrSCVal.forU32(42),
           ],
         ),
       );
 
-      // Inspect arm of each returned auth entry.
-      final ops = assembled.tx!.operations;
-      if (ops.isNotEmpty && ops.first is InvokeHostFunctionOperation) {
-        for (final entry
-            in (ops.first as InvokeHostFunctionOperation).auth) {
-          final arm = entry.credentials.arm;
-          assert(
-            arm ==
-                    XdrSorobanCredentialsType
-                        .SOROBAN_CREDENTIALS_ADDRESS ||
-                arm ==
-                    XdrSorobanCredentialsType
-                        .SOROBAN_CREDENTIALS_ADDRESS_V2 ||
-                arm ==
-                    XdrSorobanCredentialsType
-                        .SOROBAN_CREDENTIALS_SOURCE_ACCOUNT,
-            'Unexpected credential arm: $arm',
-          );
-        }
-      }
+      // The invoker differs from the source, so simulation returned an ADDRESS
+      // entry for the invoker. Assemble the ADDRESS_V2 arm client-side.
+      rewriteAddressToV2(assembled, invokerKp.accountId);
+
+      final invokeOp =
+          assembled.tx!.operations.first as InvokeHostFunctionOperation;
+      final hasV2 = invokeOp.auth.any((e) =>
+          e.credentials.arm ==
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2);
+      assert(hasV2,
+          'Expected an ADDRESS_V2 auth entry after the client-side rewrite');
 
       final needsSigning = assembled.needsNonInvokerSigningBy();
-      if (needsSigning.isNotEmpty) {
-        await assembled.signAuthEntries(signerKeyPair: invokerKp);
-      }
+      assert(needsSigning.isNotEmpty,
+          'The invoker must be required to sign the ADDRESS_V2 auth entry');
+      await assembled.signAuthEntries(signerKeyPair: invokerKp);
+
       assembled.sign();
       final response = await assembled.send();
       assert(response.status == GetTransactionResponse.STATUS_SUCCESS,
@@ -201,54 +216,56 @@ void main() {
     timeout: const Timeout(Duration(minutes: 5)),
   );
 
-  // Test 2: ADDRESS_V2 entry uses address-bound preimage envelope type.
+  // Test 2: ADDRESS_V2 entry uses the address-bound preimage envelope type.
   //
-  // After simulation with authV2=true, verifies that an ADDRESS_V2 entry uses
-  // ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS (CAP-71) and an ADDRESS
-  // entry uses the legacy ENVELOPE_TYPE_SOROBAN_AUTHORIZATION.
+  // After assembling the ADDRESS_V2 arm client-side, verifies that an ADDRESS_V2
+  // entry uses ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS (CAP-71) and any
+  // remaining ADDRESS entry uses the legacy ENVELOPE_TYPE_SOROBAN_AUTHORIZATION.
   test(
     'ADDRESS_V2 entry uses address-bound preimage (ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS)',
     () async {
       final server = SorobanServer(rpcUrl);
-      final submitterKp = KeyPair.random();
+      final sourceKp = KeyPair.random();
       final invokerKp = KeyPair.random();
-      await fundAccount(submitterKp.accountId);
+      await fundAccount(sourceKp.accountId);
       await fundAccount(invokerKp.accountId);
 
-      final contractId = await deployAuthContract(server, submitterKp);
+      final contractId = await deployAuthContract(server, sourceKp);
 
       final assembled = await AssembledTransaction.build(
         options: AssembledTransactionOptions(
           clientOptions: ClientOptions(
-            sourceAccountKeyPair: invokerKp,
+            sourceAccountKeyPair: sourceKp,
             contractId: contractId,
             network: network,
             rpcUrl: rpcUrl,
           ),
-          methodOptions: MethodOptions(authV2: true),
-          method: 'invoker_auth',
+          methodOptions: MethodOptions(),
+          method: 'increment',
           arguments: [
-            XdrSCVal.forU128Parts(BigInt.zero, BigInt.from(1)),
             Address.forAccountId(invokerKp.accountId).toXdrSCVal(),
+            XdrSCVal.forU32(1),
           ],
         ),
       );
 
-      final ops = assembled.tx!.operations;
-      if (ops.isEmpty || ops.first is! InvokeHostFunctionOperation) {
-        return;
-      }
-      for (final entry
-          in (ops.first as InvokeHostFunctionOperation).auth) {
+      // Assemble the ADDRESS_V2 arm client-side before inspecting the preimage.
+      rewriteAddressToV2(assembled, invokerKp.accountId);
+
+      final invokeOp =
+          assembled.tx!.operations.first as InvokeHostFunctionOperation;
+      var checkedV2 = false;
+      for (final entry in invokeOp.auth) {
         final arm = entry.credentials.arm;
         if (arm ==
             XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2) {
+          checkedV2 = true;
           final preimage = entry.buildPreimage(network);
           assert(
             preimage.discriminant ==
                 XdrEnvelopeType
                     .ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS,
-            'ADDRESS_V2 must use address-bound preimage envelope type',
+            'ADDRESS_V2 must use the address-bound preimage envelope type',
           );
         } else if (arm ==
             XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS) {
@@ -256,78 +273,83 @@ void main() {
           assert(
             preimage.discriminant ==
                 XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION,
-            'ADDRESS must use legacy preimage envelope type',
+            'ADDRESS must use the legacy preimage envelope type',
           );
         }
       }
+      assert(checkedV2,
+          'Expected an ADDRESS_V2 auth entry to verify the address-bound preimage');
     },
     skip: _skipUntilP27,
     timeout: const Timeout(Duration(minutes: 5)),
   );
 
-  // Test 3: Signed ADDRESS_V2 entry survives XDR round-trip intact.
+  // Test 3: Signed ADDRESS_V2 entry survives an XDR round-trip intact.
   //
-  // Signs the returned ADDRESS_V2 entry and verifies that arm and non-void
-  // signature survive a toBase64EncodedXdrString / fromBase64EncodedXdr cycle.
+  // Signs the client-assembled ADDRESS_V2 entry and verifies that the arm and the
+  // non-void signature survive a toBase64EncodedXdrString / fromBase64EncodedXdr
+  // cycle.
   test(
     'ADDRESS_V2 signed entry survives XDR round-trip',
     () async {
       final server = SorobanServer(rpcUrl);
-      final submitterKp = KeyPair.random();
+      final sourceKp = KeyPair.random();
       final invokerKp = KeyPair.random();
-      await fundAccount(submitterKp.accountId);
+      await fundAccount(sourceKp.accountId);
       await fundAccount(invokerKp.accountId);
 
-      final contractId = await deployAuthContract(server, submitterKp);
+      final contractId = await deployAuthContract(server, sourceKp);
 
       final assembled = await AssembledTransaction.build(
         options: AssembledTransactionOptions(
           clientOptions: ClientOptions(
-            sourceAccountKeyPair: invokerKp,
+            sourceAccountKeyPair: sourceKp,
             contractId: contractId,
             network: network,
             rpcUrl: rpcUrl,
           ),
-          methodOptions: MethodOptions(authV2: true),
-          method: 'invoker_auth',
+          methodOptions: MethodOptions(),
+          method: 'increment',
           arguments: [
-            XdrSCVal.forU128Parts(BigInt.zero, BigInt.from(7)),
             Address.forAccountId(invokerKp.accountId).toXdrSCVal(),
+            XdrSCVal.forU32(7),
           ],
         ),
       );
 
-      final ops = assembled.tx!.operations;
-      if (ops.isEmpty || ops.first is! InvokeHostFunctionOperation) {
-        return;
-      }
-
+      // Assemble the ADDRESS_V2 arm client-side, then sign it.
+      rewriteAddressToV2(assembled, invokerKp.accountId);
       await assembled.signAuthEntries(signerKeyPair: invokerKp);
 
-      for (final entry
-          in (ops.first as InvokeHostFunctionOperation).auth) {
+      final invokeOp =
+          assembled.tx!.operations.first as InvokeHostFunctionOperation;
+      var roundTripped = false;
+      for (final entry in invokeOp.auth) {
         if (entry.credentials.arm !=
             XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2) {
           continue;
         }
+        roundTripped = true;
         final b64 = entry.toBase64EncodedXdrString();
         final restored = SorobanAuthorizationEntry.fromBase64EncodedXdr(b64);
 
         assert(
           restored.credentials.arm ==
               XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
-          'Arm must be preserved through XDR round-trip',
+          'Arm must be preserved through the XDR round-trip',
         );
         assert(
           restored.credentials.addressV2Credentials != null,
-          'addressV2Credentials must be non-null after round-trip',
+          'addressV2Credentials must be non-null after the round-trip',
         );
         assert(
           restored.credentials.addressV2Credentials!.signature.discriminant !=
               XdrSCValType.SCV_VOID,
-          'Signature must be non-void after signing and XDR round-trip',
+          'Signature must be non-void after signing and the XDR round-trip',
         );
       }
+      assert(roundTripped,
+          'Expected a signed ADDRESS_V2 entry to round-trip');
     },
     skip: _skipUntilP27,
     timeout: const Timeout(Duration(minutes: 5)),

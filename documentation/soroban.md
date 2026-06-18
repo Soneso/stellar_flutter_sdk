@@ -489,32 +489,6 @@ The legacy `ADDRESS` arm remains the default everywhere and stays fully valid. T
 
 All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntry.sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry. Use `credentials.innerAddressCredentials` to read the inner credentials of any address arm (it returns `null` only for source-account credentials).
 
-#### Requesting V2 Entries from Simulation
-
-Set `authV2` to request `ADDRESS_V2` credential arms in the simulation response. RPC servers without support silently ignore the flag and return legacy `ADDRESS` entries — detect support by inspecting the credential arm of the returned entries, never by expecting an error. When `authV2` is `false` (the default), the key is omitted from the JSON-RPC params entirely.
-
-```dart
-import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-
-// Contract client: opt in via MethodOptions
-AssembledTransaction tx = await client.buildInvokeMethodTx(
-  name: 'swap',
-  args: args,
-  methodOptions: MethodOptions(authV2: true),
-);
-
-// Detect whether the RPC honored the flag
-List<SorobanAuthorizationEntry> entries = tx.simulationResponse?.sorobanAuth ?? [];
-bool gotV2 = entries.any((e) =>
-    e.credentials.arm ==
-    XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2);
-
-// Low-level: opt in on the simulate request
-SimulateTransactionRequest request =
-    SimulateTransactionRequest(transaction, authV2: true);
-SimulateTransactionResponse sim = await server.simulateTransaction(request);
-```
-
 #### Delegated Authorization
 
 A `WITH_DELEGATES` entry lets delegate addresses co-sign a single authorization entry. Simulation never returns `WITH_DELEGATES` entries; clients assemble the tree from an `ADDRESS` or `ADDRESS_V2` entry using `SorobanAuthorizationEntry.withDelegates`.
