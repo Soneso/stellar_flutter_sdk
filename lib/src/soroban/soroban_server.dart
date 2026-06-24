@@ -1963,11 +1963,24 @@ class SimulateTransactionRequest {
   /// Possible values: "enforce" | "record" | "record_allow_nonroot"
   String? authMode;
 
+  /// When true, requests that the RPC server record authorization entries using the
+  /// ADDRESS_V2 credential format (protocol 27+). The key is omitted from the
+  /// request when false (never sent as `"useUpgradedAuth": false`).
+  ///
+  /// RPCs that do not support this flag silently ignore it and return legacy
+  /// ADDRESS entries. Whether the server honored the flag is detected by
+  /// inspecting the credential arm of the returned entries, not by any error code.
+  ///
+  /// Emitting V2 entries on a network running below protocol 27 invalidates
+  /// the transaction; set this only when targeting protocol 27+.
+  bool useUpgradedAuth;
+
   /// Creates a SimulateTransactionRequest for transaction simulation.
   ///
-  /// Contains transaction to simulate with optional resource config and auth mode.
+  /// Contains transaction to simulate with optional resource config, auth mode,
+  /// and the optional [useUpgradedAuth] flag (default false; key omitted when false).
   SimulateTransactionRequest(this.transaction,
-      {this.resourceConfig, this.authMode});
+      {this.resourceConfig, this.authMode, this.useUpgradedAuth = false});
 
   Map<String, dynamic> getRequestArgs() {
     var map = <String, dynamic>{};
@@ -1977,6 +1990,10 @@ class SimulateTransactionRequest {
     }
     if (authMode != null) {
       map['authMode'] = authMode;
+    }
+    // Omit the key entirely when false; never emit "useUpgradedAuth": false.
+    if (useUpgradedAuth) {
+      map['useUpgradedAuth'] = true;
     }
 
     return map;

@@ -180,6 +180,8 @@ GetTransactionResponse response =
 
 `SorobanCredentials` arms: source-account, legacy `ADDRESS` (default, valid all protocols), `ADDRESS_V2`, `ADDRESS_WITH_DELEGATES` (V2 and delegates are protocol 27+; emitting below p27 invalidates the tx). `credentials.innerAddressCredentials` returns the inner creds for any address arm (null for source-account); `credentials.arm` is the discriminant.
 
+Request V2 entries from simulation: `MethodOptions(useUpgradedAuth: true)` or `SimulateTransactionRequest(tx, useUpgradedAuth: true)`. The key is omitted when false; RPCs without support silently return legacy `ADDRESS`. Detect by inspecting `arm`, never by error code.
+
 `signAuthEntries` / `needsNonInvokerSigningBy` handle all arms; `needsNonInvokerSigningBy` lists every void node including delegates.
 
 ```dart
@@ -187,7 +189,7 @@ GetTransactionResponse response =
 // sorts delegate arrays by XDR-encoded address bytes and rejects duplicates.
 int exp = (await server.getLatestLedger()).sequence! + 100;
 SorobanAuthorizationEntry delegated = SorobanAuthorizationEntry.withDelegates(
-  sourceEntry, // ADDRESS from simulation, or ADDRESS_V2 assembled client-side
+  sourceEntry, // ADDRESS or ADDRESS_V2, from simulation
   [SorobanDelegateDescriptor(delegateKeyPair.accountId)], // nestedDelegates / signature optional
   exp,
 );

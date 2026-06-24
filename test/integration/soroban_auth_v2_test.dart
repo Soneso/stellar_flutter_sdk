@@ -4,11 +4,12 @@
 
 // Integration tests for Protocol 27 (CAP-71) ADDRESS_V2 credential arm.
 //
-// These tests require a testnet running Protocol 27 and a deployed Soroban auth
-// contract.
+// These tests require a testnet running Protocol 27 with a stellar-rpc that
+// honors useUpgradedAuth (v27.1.0+), and a deployed Soroban auth contract.
 //
-// Simulation returns legacy ADDRESS entries; the tests assemble the ADDRESS_V2
-// credential arm client-side to exercise the address-bound signing path.
+// Simulation with useUpgradedAuth set returns ADDRESS_V2 credential entries;
+// each test hard-asserts that the server returned the V2 arm before exercising
+// the address-bound signing path.
 //
 // Each test deploys its own contract instance for independence.
 
@@ -68,27 +69,26 @@ void main() {
     return client.getContractId();
   }
 
-  /// Rewrites every ADDRESS auth entry whose credential address matches
-  /// [signerAccountId] to ADDRESS_V2, assembling the V2 credential arm
-  /// client-side. Simulation returns legacy ADDRESS entries, so this is how a
-  /// client opts into the address-bound V2 signing path.
-  void rewriteAddressToV2(
+  /// Hard-asserts that simulation returned at least one ADDRESS_V2 auth entry
+  /// for [signerAccountId] — proving the useUpgradedAuth flag was sent on the
+  /// wire and honored by the server (requires stellar-rpc v27.1.0+).
+  void assertSimulationReturnedAddressV2(
       AssembledTransaction assembled, String signerAccountId) {
     final tx = assembled.tx;
-    if (tx == null) return;
-    final ops = tx.operations;
-    if (ops.isEmpty || ops.first is! InvokeHostFunctionOperation) return;
+    assert(tx != null, 'Expected an assembled transaction');
+    final ops = tx!.operations;
+    assert(ops.isNotEmpty && ops.first is InvokeHostFunctionOperation,
+        'Expected an InvokeHostFunctionOperation');
     final authEntries = (ops.first as InvokeHostFunctionOperation).auth;
-    for (final entry in authEntries) {
-      final creds = entry.credentials;
-      if (creds.arm ==
-              XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS &&
-          creds.addressCredentials?.address.accountId == signerAccountId) {
-        entry.credentials =
-            SorobanCredentials.forAddressV2(creds.addressCredentials!);
-      }
-    }
-    tx.setSorobanAuth(authEntries);
+    final hasV2 = authEntries.any((e) =>
+        e.credentials.arm ==
+            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2 &&
+        e.credentials.addressV2Credentials?.address.accountId ==
+            signerAccountId);
+    assert(
+        hasV2,
+        'Simulation must return an ADDRESS_V2 auth entry for the invoker when '
+        'useUpgradedAuth is set (requires stellar-rpc v27.1.0+)');
   }
 
   // ---------------------------------------------------------------------------
@@ -98,10 +98,10 @@ void main() {
   // Test 1: ADDRESS_V2 arm round-trip.
   //
   // The required signer (the invoker) differs from the transaction source, so
-  // simulation returns an ADDRESS auth entry for the invoker. That entry is
-  // rewritten to the ADDRESS_V2 arm client-side, signed, and submitted.
+  // simulation with useUpgradedAuth returns an ADDRESS_V2 auth entry for the
+  // invoker, which is then signed with the address-bound preimage and submitted.
   test(
-    'ADDRESS_V2 arm round-trip: build, rewrite, sign, submit',
+    'ADDRESS_V2 arm round-trip: build, sign, submit',
     () async {
       final sourceKp = KeyPair.random();
       final invokerKp = KeyPair.random();
@@ -121,7 +121,9 @@ void main() {
       final assembled = await AssembledTransaction.build(
         options: AssembledTransactionOptions(
           clientOptions: clientOptions,
-          methodOptions: MethodOptions(),
+          // useUpgradedAuth requests ADDRESS_V2 credential entries; stellar-rpc
+          // v27.1.0+ honors the flag in recording mode.
+          methodOptions: MethodOptions(useUpgradedAuth: true),
           method: 'increment',
           arguments: [
             Address.forAccountId(invokerKp.accountId).toXdrSCVal(),
@@ -130,17 +132,10 @@ void main() {
         ),
       );
 
-      // The invoker differs from the source, so simulation returned an ADDRESS
-      // entry for the invoker. Assemble the ADDRESS_V2 arm client-side.
-      rewriteAddressToV2(assembled, invokerKp.accountId);
-
-      final invokeOp =
-          assembled.tx!.operations.first as InvokeHostFunctionOperation;
-      final hasV2 = invokeOp.auth.any((e) =>
-          e.credentials.arm ==
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2);
-      assert(hasV2,
-          'Expected an ADDRESS_V2 auth entry after the client-side rewrite');
+      // The invoker differs from the source, so simulation must return the
+      // invoker's entry with the ADDRESS_V2 arm already set — this proves the
+      // flag was sent on the wire and honored by the server.
+      assertSimulationReturnedAddressV2(assembled, invokerKp.accountId);
 
       final needsSigning = assembled.needsNonInvokerSigningBy();
       assert(needsSigning.isNotEmpty,
@@ -157,9 +152,10 @@ void main() {
 
   // Test 2: ADDRESS_V2 entry uses the address-bound preimage envelope type.
   //
-  // After assembling the ADDRESS_V2 arm client-side, verifies that an ADDRESS_V2
-  // entry uses ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS (CAP-71) and any
-  // remaining ADDRESS entry uses the legacy ENVELOPE_TYPE_SOROBAN_AUTHORIZATION.
+  // Simulation with useUpgradedAuth returns the invoker's entry as ADDRESS_V2;
+  // verifies that an ADDRESS_V2 entry uses
+  // ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS (CAP-71) and any remaining
+  // ADDRESS entry uses the legacy ENVELOPE_TYPE_SOROBAN_AUTHORIZATION.
   test(
     'ADDRESS_V2 entry uses address-bound preimage (ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS)',
     () async {
@@ -179,7 +175,9 @@ void main() {
             rpcUrl: rpcUrl,
             server: sorobanServer,
           ),
-          methodOptions: MethodOptions(),
+          // useUpgradedAuth requests ADDRESS_V2 credential entries; stellar-rpc
+          // v27.1.0+ honors the flag in recording mode.
+          methodOptions: MethodOptions(useUpgradedAuth: true),
           method: 'increment',
           arguments: [
             Address.forAccountId(invokerKp.accountId).toXdrSCVal(),
@@ -188,8 +186,9 @@ void main() {
         ),
       );
 
-      // Assemble the ADDRESS_V2 arm client-side before inspecting the preimage.
-      rewriteAddressToV2(assembled, invokerKp.accountId);
+      // Simulation must return the invoker's entry as ADDRESS_V2 before the
+      // preimage is inspected.
+      assertSimulationReturnedAddressV2(assembled, invokerKp.accountId);
 
       final invokeOp =
           assembled.tx!.operations.first as InvokeHostFunctionOperation;
@@ -224,9 +223,9 @@ void main() {
 
   // Test 3: Signed ADDRESS_V2 entry survives an XDR round-trip intact.
   //
-  // Signs the client-assembled ADDRESS_V2 entry and verifies that the arm and the
-  // non-void signature survive a toBase64EncodedXdrString / fromBase64EncodedXdr
-  // cycle.
+  // Signs the simulation-returned ADDRESS_V2 entry and verifies that the arm and
+  // the non-void signature survive a toBase64EncodedXdrString /
+  // fromBase64EncodedXdr cycle.
   test(
     'ADDRESS_V2 signed entry survives XDR round-trip',
     () async {
@@ -246,7 +245,9 @@ void main() {
             rpcUrl: rpcUrl,
             server: sorobanServer,
           ),
-          methodOptions: MethodOptions(),
+          // useUpgradedAuth requests ADDRESS_V2 credential entries; stellar-rpc
+          // v27.1.0+ honors the flag in recording mode.
+          methodOptions: MethodOptions(useUpgradedAuth: true),
           method: 'increment',
           arguments: [
             Address.forAccountId(invokerKp.accountId).toXdrSCVal(),
@@ -255,8 +256,9 @@ void main() {
         ),
       );
 
-      // Assemble the ADDRESS_V2 arm client-side, then sign it.
-      rewriteAddressToV2(assembled, invokerKp.accountId);
+      // Simulation must return the invoker's entry as ADDRESS_V2; sign it with
+      // the address-bound preimage.
+      assertSimulationReturnedAddressV2(assembled, invokerKp.accountId);
       await assembled.signAuthEntries(signerKeyPair: invokerKp);
 
       final invokeOp =

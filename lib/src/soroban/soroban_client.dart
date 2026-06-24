@@ -700,7 +700,8 @@ class AssembledTransaction {
     var shouldRestore = restore ?? options.methodOptions.restore;
     _simulationResult = null;
     simulationResponse = await server.simulateTransaction(
-        SimulateTransactionRequest(tx!));
+        SimulateTransactionRequest(tx!,
+            useUpgradedAuth: options.methodOptions.useUpgradedAuth));
     if (shouldRestore && simulationResponse!.restorePreamble != null) {
       if (options.clientOptions.sourceAccountKeyPair.privateKey == null) {
         throw new Exception(
@@ -1538,6 +1539,18 @@ class MethodOptions {
   /// Default: false.
   bool restore = false;
 
+  /// When true, the simulation request includes `"useUpgradedAuth": true`,
+  /// asking the RPC server to return ADDRESS_V2 credential entries (protocol 27+).
+  ///
+  /// The key is omitted from the request entirely when false (never sent as
+  /// `"useUpgradedAuth": false`). RPCs that do not support this flag silently
+  /// ignore it and return legacy ADDRESS entries; support is detected by
+  /// inspecting the credential arm of the returned entries, not by an error code.
+  ///
+  /// Emitting V2 entries on a network below protocol 27 invalidates the
+  /// transaction; set this only when targeting protocol 27+. Default: false.
+  bool useUpgradedAuth = false;
+
   /// Creates MethodOptions for contract method invocation.
   ///
   /// Parameters:
@@ -1545,6 +1558,7 @@ class MethodOptions {
   /// - [timeoutInSeconds] Transaction timeout (default: 300 seconds)
   /// - [simulate] Auto-simulate transaction (default: true)
   /// - [restore] Auto-restore archived entries (default: false)
+  /// - [useUpgradedAuth] Request ADDRESS_V2 credential entries (default: false)
   ///
   /// Example:
   /// ```dart
@@ -1558,7 +1572,8 @@ class MethodOptions {
       {this.fee = NetworkConstants.DEFAULT_SOROBAN_BASE_FEE,
       this.timeoutInSeconds = NetworkConstants.DEFAULT_TIMEOUT_SECONDS,
       this.simulate = true,
-      this.restore = false});
+      this.restore = false,
+      this.useUpgradedAuth = false});
 }
 
 /// Configuration options for constructing an AssembledTransaction.
