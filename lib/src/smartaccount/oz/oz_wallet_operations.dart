@@ -22,6 +22,7 @@ import '../core/smart_account_errors.dart';
 import '../core/smart_account_utils.dart';
 import '../core/web_authn_provider.dart';
 import 'oz_base64url.dart';
+import 'oz_constants.dart';
 import 'oz_internal_pipeline_interfaces.dart';
 import 'oz_relayer_client.dart';
 import 'oz_secure_nonce.dart';
@@ -529,13 +530,13 @@ class OZWalletOperations {
             'nativeTokenContract is required when autoFund is true',
           );
         }
-        // why: Friendbot's HTTP confirmation precedes Soroban RPC state
-        // visibility by one ledger close (~5s on testnet). Without the delay
-        // the subsequent fundWallet simulation observes "account not found".
-        await _cancellableDelay(
-          const Duration(milliseconds: 5000),
-          cancelToken,
-        );
+        // why: the deploy transaction confirms once the network applies it,
+        // but the Soroban RPC simulation endpoint can lag behind by one or
+        // more ledger closes under testnet congestion. fundWallet simulates
+        // against the smart-account contract, so wait until the RPC sees the
+        // deployed contract instance rather than sleeping a fixed, optimistic
+        // interval that fails when propagation runs long.
+        await waitForContractVisibleToRpc(contractId, cancelToken);
         await _kit.transactionOperations.fundWallet(
           nativeTokenContract: tokenContract,
           forceMethod: forceMethod,
@@ -1015,10 +1016,13 @@ class OZWalletOperations {
     );
 
     if (autoFund) {
-      await _cancellableDelay(
-        const Duration(milliseconds: 5000),
-        cancelToken,
-      );
+      // why: the deploy transaction confirms once the network applies it,
+      // but the Soroban RPC simulation endpoint can lag behind by one or
+      // more ledger closes under testnet congestion. fundWallet simulates
+      // against the smart-account contract, so wait until the RPC sees the
+      // deployed contract instance rather than sleeping a fixed, optimistic
+      // interval that fails when propagation runs long.
+      await waitForContractVisibleToRpc(contractId, cancelToken);
       await _kit.transactionOperations.fundWallet(
         nativeTokenContract: nativeTokenContract!,
         forceMethod: forceMethod,
@@ -1640,6 +1644,81 @@ class OZWalletOperations {
     }
 
     return transactionHash;
+  }
+
+  // Private: post-deploy contract visibility wait
+
+  /// Polls the Soroban RPC until the deployed smart-account contract instance
+  /// identified by [contractId] is visible as a persistent contract-data
+  /// ledger entry, then returns.
+  ///
+  /// The deploy transaction confirms once the network applies it, but the
+  /// Soroban RPC simulation endpoint can lag behind by one or more ledger
+  /// closes under testnet congestion. Simulating against the contract (as the
+  /// autoFund flow does via `fundWallet`) before the RPC has applied the deploy
+  /// ledger fails because the contract instance is not yet in the RPC's view,
+  /// so callers must wait until the RPC sees the instance entry.
+  ///
+  /// [SorobanServer.getContractData] queries the RPC's `getLedgerEntries` for
+  /// the contract's instance ledger key (the contract-data entry keyed by
+  /// [XdrSCVal.forLedgerKeyContractInstance] under
+  /// [XdrContractDataDurability.PERSISTENT]). It returns `null` while the entry
+  /// is not yet present; a non-null result is the visibility signal polled
+  /// here. The poll runs every [pollInterval] up to [timeout]; both default to
+  /// the [OZConstants.rpcVisibilityPollIntervalMs] /
+  /// [OZConstants.rpcVisibilityTimeoutSeconds] budgets and are overridable so
+  /// the behaviour can be exercised in tests. Transient RPC errors are retried
+  /// until the deadline and the most recent one is attached to the timeout
+  /// error as its cause.
+  ///
+  /// [cancelToken] is observed before each poll and during each inter-poll
+  /// sleep so the caller can abort in flight. Throws
+  /// [SmartAccountTransactionException.timeout] when the contract does
+  /// not become visible within [timeout].
+  @visibleForTesting
+  Future<void> waitForContractVisibleToRpc(
+    String contractId,
+    dio.CancelToken? cancelToken, {
+    Duration pollInterval = const Duration(
+        milliseconds: OZConstants.rpcVisibilityPollIntervalMs),
+    Duration timeout = const Duration(
+        seconds: OZConstants.rpcVisibilityTimeoutSeconds),
+  }) async {
+    final deadline = DateTime.now().add(timeout);
+    Object? lastError;
+    while (true) {
+      _checkCancellation(cancelToken);
+      try {
+        final entry = await _kit.sorobanServer.getContractData(
+          contractId,
+          XdrSCVal.forLedgerKeyContractInstance(),
+          XdrContractDataDurability.PERSISTENT,
+        );
+        if (entry != null) {
+          return;
+        }
+      } catch (e) {
+        // Any error raised during the lookup is treated as transient and
+        // retried until the deadline; the most recent one is surfaced on
+        // timeout. The production caller always passes a freshly-deployed
+        // contractId, so in practice these are RPC-level failures
+        // (congestion, 5xx).
+        lastError = e;
+      }
+      if (!DateTime.now().isBefore(deadline)) {
+        break;
+      }
+      await _cancellableDelay(pollInterval, cancelToken);
+    }
+    final timeoutLabel = timeout.inSeconds >= 1
+        ? '${timeout.inSeconds}s'
+        : '${timeout.inMilliseconds}ms';
+    throw SmartAccountTransactionException.timeout(
+      details: 'Smart-account contract $contractId not visible to the Soroban '
+          'RPC within $timeoutLabel after deployment; testnet propagation may '
+          'be delayed. Retry shortly.',
+      cause: lastError,
+    );
   }
 
   // Private: cancellation plumbing

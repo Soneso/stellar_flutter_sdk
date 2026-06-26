@@ -112,7 +112,7 @@ void main() {
           timeout: const Duration(milliseconds: 40),
         ),
         throwsA(
-          isA<SmartAccountTransactionSubmissionFailed>()
+          isA<SmartAccountTransactionTimeout>()
               .having(
                 (e) => e.message,
                 'message',
@@ -165,7 +165,7 @@ void main() {
           timeout: const Duration(milliseconds: 40),
         ),
         throwsA(
-          isA<SmartAccountTransactionSubmissionFailed>().having(
+          isA<SmartAccountTransactionTimeout>().having(
             (e) => e.cause,
             'cause',
             same(boom),

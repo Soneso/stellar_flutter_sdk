@@ -22,12 +22,12 @@ void main() {
       expect(OZConstants.friendbotReserveXlm, 5);
     });
 
-    test('test_FRIENDBOT_VISIBILITY_POLL_INTERVAL_MS_equals_1500', () {
-      expect(OZConstants.friendbotVisibilityPollIntervalMs, 1500);
+    test('test_RPC_VISIBILITY_POLL_INTERVAL_MS_equals_1500', () {
+      expect(OZConstants.rpcVisibilityPollIntervalMs, 1500);
     });
 
-    test('test_FRIENDBOT_VISIBILITY_TIMEOUT_SECONDS_equals_45', () {
-      expect(OZConstants.friendbotVisibilityTimeoutSeconds, 45);
+    test('test_RPC_VISIBILITY_TIMEOUT_SECONDS_equals_45', () {
+      expect(OZConstants.rpcVisibilityTimeoutSeconds, 45);
     });
 
     test('test_DEFAULT_TIMEOUT_SECONDS_equals_30', () {
@@ -65,8 +65,8 @@ void main() {
         OZConstants.defaultIndexerTimeoutMs,
         OZConstants.defaultRelayerTimeoutMs,
         OZConstants.friendbotReserveXlm,
-        OZConstants.friendbotVisibilityPollIntervalMs,
-        OZConstants.friendbotVisibilityTimeoutSeconds,
+        OZConstants.rpcVisibilityPollIntervalMs,
+        OZConstants.rpcVisibilityTimeoutSeconds,
         OZConstants.defaultTimeoutSeconds,
         OZConstants.maxSigners,
         OZConstants.maxPolicies,

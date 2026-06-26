@@ -1367,24 +1367,24 @@ class OZTransactionOperations {
   /// account ledger key and returns `null` while the entry is not yet
   /// present; a non-null result is the visibility signal polled here. The
   /// poll runs every [pollInterval] up to [timeout]; both default to the
-  /// [OZConstants.friendbotVisibilityPollIntervalMs] /
-  /// [OZConstants.friendbotVisibilityTimeoutSeconds] budgets and are
+  /// [OZConstants.rpcVisibilityPollIntervalMs] /
+  /// [OZConstants.rpcVisibilityTimeoutSeconds] budgets and are
   /// overridable so the behaviour can be exercised in tests. Transient RPC
   /// errors are retried until the deadline and the most recent one is
   /// attached to the timeout error as its cause.
   ///
   /// [cancelToken] is observed before each poll and during each inter-poll
   /// sleep so the caller can abort in flight. Throws
-  /// [SmartAccountTransactionException.submissionFailed] when the account does
+  /// [SmartAccountTransactionException.timeout] when the account does
   /// not become visible within [timeout].
   @visibleForTesting
   Future<void> waitForAccountVisibleToRpc(
     String accountId,
     dio.CancelToken? cancelToken, {
     Duration pollInterval = const Duration(
-        milliseconds: OZConstants.friendbotVisibilityPollIntervalMs),
+        milliseconds: OZConstants.rpcVisibilityPollIntervalMs),
     Duration timeout = const Duration(
-        seconds: OZConstants.friendbotVisibilityTimeoutSeconds),
+        seconds: OZConstants.rpcVisibilityTimeoutSeconds),
   }) async {
     final deadline = DateTime.now().add(timeout);
     Object? lastError;
@@ -1410,10 +1410,10 @@ class OZTransactionOperations {
     final timeoutLabel = timeout.inSeconds >= 1
         ? '${timeout.inSeconds}s'
         : '${timeout.inMilliseconds}ms';
-    throw SmartAccountTransactionException.submissionFailed(
-      'Funding account $accountId not visible to the Soroban RPC within '
-      '$timeoutLabel after Friendbot funding; testnet propagation may be '
-      'delayed. Retry shortly.',
+    throw SmartAccountTransactionException.timeout(
+      details: 'Funding account $accountId not visible to the Soroban RPC '
+          'within $timeoutLabel after Friendbot funding; testnet propagation '
+          'may be delayed. Retry shortly.',
       cause: lastError,
     );
   }
