@@ -808,7 +808,8 @@ class OZTransactionOperations {
   ///
   /// The optional [cancelToken] can be cancelled to abort the operation;
   /// cancellation is observed before/after each major awaitable step,
-  /// including the 5-second Friendbot-propagation delay.
+  /// including the Soroban RPC account-visibility poll that follows
+  /// Friendbot funding (see [waitForAccountVisibleToRpc]).
   Future<String> fundWallet({
     required String nativeTokenContract,
     OZSubmissionMethod? forceMethod,
@@ -829,14 +830,13 @@ class OZTransactionOperations {
       throw SmartAccountTransactionException.submissionFailed('Friendbot funding failed');
     }
 
-    // why: Friendbot returns once Horizon has confirmed the deposit but
-    // the Soroban RPC simulation endpoint can lag by one ledger close
-    // (~5s on testnet). Submitting too eagerly results in "account not
-    // found" failures from simulate.
-    await _cancellableDelay(
-      const Duration(milliseconds: 5000),
-      cancelToken,
-    );
+    // why: Friendbot returns once Horizon has confirmed the deposit but the
+    // Soroban RPC simulation endpoint can lag behind by one or more ledger
+    // closes under testnet congestion. Simulating the native SAC balance read
+    // before the RPC has applied the funding ledger fails with an opaque
+    // "account entry is missing" contract error, so poll the RPC until it
+    // sees the account rather than waiting a fixed, optimistic interval.
+    await waitForAccountVisibleToRpc(tempKeypair.accountId, cancelToken);
 
     final tempAccount = await _fetchAccount(tempKeypair.accountId);
 
@@ -1351,6 +1351,71 @@ class OZTransactionOperations {
         cause: cancelToken.cancelError,
       );
     }
+  }
+
+  /// Polls the Soroban RPC until the account identified by [accountId] is
+  /// visible as a classic account ledger entry, then returns.
+  ///
+  /// Friendbot returns once Horizon has confirmed the deposit, but the
+  /// Soroban RPC simulation endpoint can lag behind by one or more ledger
+  /// closes under testnet congestion. Simulating a contract call that reads
+  /// the account entry before the RPC has applied the funding ledger fails
+  /// with an opaque "account entry is missing" contract error, so callers
+  /// must wait until the RPC sees the account.
+  ///
+  /// [SorobanServer.getAccount] queries the RPC's `getLedgerEntries` for the
+  /// account ledger key and returns `null` while the entry is not yet
+  /// present; a non-null result is the visibility signal polled here. The
+  /// poll runs every [pollInterval] up to [timeout]; both default to the
+  /// [OZConstants.friendbotVisibilityPollIntervalMs] /
+  /// [OZConstants.friendbotVisibilityTimeoutSeconds] budgets and are
+  /// overridable so the behaviour can be exercised in tests. Transient RPC
+  /// errors are retried until the deadline and the most recent one is
+  /// attached to the timeout error as its cause.
+  ///
+  /// [cancelToken] is observed before each poll and during each inter-poll
+  /// sleep so the caller can abort in flight. Throws
+  /// [SmartAccountTransactionException.submissionFailed] when the account does
+  /// not become visible within [timeout].
+  @visibleForTesting
+  Future<void> waitForAccountVisibleToRpc(
+    String accountId,
+    dio.CancelToken? cancelToken, {
+    Duration pollInterval = const Duration(
+        milliseconds: OZConstants.friendbotVisibilityPollIntervalMs),
+    Duration timeout = const Duration(
+        seconds: OZConstants.friendbotVisibilityTimeoutSeconds),
+  }) async {
+    final deadline = DateTime.now().add(timeout);
+    Object? lastError;
+    while (true) {
+      _checkCancellation(cancelToken);
+      try {
+        final account = await _kit.sorobanServer.getAccount(accountId);
+        if (account != null) {
+          return;
+        }
+      } catch (e) {
+        // Any error raised during the lookup is treated as transient and
+        // retried until the deadline; the most recent one is surfaced on
+        // timeout. The production caller always passes a valid accountId, so
+        // in practice these are RPC-level failures (congestion, 5xx).
+        lastError = e;
+      }
+      if (!DateTime.now().isBefore(deadline)) {
+        break;
+      }
+      await _cancellableDelay(pollInterval, cancelToken);
+    }
+    final timeoutLabel = timeout.inSeconds >= 1
+        ? '${timeout.inSeconds}s'
+        : '${timeout.inMilliseconds}ms';
+    throw SmartAccountTransactionException.submissionFailed(
+      'Funding account $accountId not visible to the Soroban RPC within '
+      '$timeoutLabel after Friendbot funding; testnet propagation may be '
+      'delayed. Retry shortly.',
+      cause: lastError,
+    );
   }
 
   /// Fetches an account from Soroban RPC, throwing

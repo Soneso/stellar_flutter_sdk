@@ -22,6 +22,14 @@ void main() {
       expect(OZConstants.friendbotReserveXlm, 5);
     });
 
+    test('test_FRIENDBOT_VISIBILITY_POLL_INTERVAL_MS_equals_1500', () {
+      expect(OZConstants.friendbotVisibilityPollIntervalMs, 1500);
+    });
+
+    test('test_FRIENDBOT_VISIBILITY_TIMEOUT_SECONDS_equals_45', () {
+      expect(OZConstants.friendbotVisibilityTimeoutSeconds, 45);
+    });
+
     test('test_DEFAULT_TIMEOUT_SECONDS_equals_30', () {
       expect(OZConstants.defaultTimeoutSeconds, 30);
     });
@@ -48,8 +56,8 @@ void main() {
       expect(OZConstants.clientName, 'flutter-stellar-sdk');
     });
 
-    test('test_OZConstants_exposes_exactly_14_public_constants', () {
-      // Inventory check: the fourteen values below must all be present and
+    test('test_OZConstants_exposes_exactly_16_public_constants', () {
+      // Inventory check: the sixteen values below must all be present and
       // surfacing the correct constants. If a new constant is added or one is
       // removed/renamed, this list will fall out of date and force review.
       final values = <Object>[
@@ -57,6 +65,8 @@ void main() {
         OZConstants.defaultIndexerTimeoutMs,
         OZConstants.defaultRelayerTimeoutMs,
         OZConstants.friendbotReserveXlm,
+        OZConstants.friendbotVisibilityPollIntervalMs,
+        OZConstants.friendbotVisibilityTimeoutSeconds,
         OZConstants.defaultTimeoutSeconds,
         OZConstants.maxSigners,
         OZConstants.maxPolicies,
@@ -68,7 +78,7 @@ void main() {
         OZConstants.maxIndexerConnectTimeoutMs,
         OZConstants.maxRelayerConnectTimeoutMs,
       ];
-      expect(values.length, 14);
+      expect(values.length, 16);
       expect(values, everyElement(isNotNull));
     });
   });

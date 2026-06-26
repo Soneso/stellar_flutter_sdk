@@ -24,6 +24,20 @@ class OZConstants {
   /// wallet.
   static const int friendbotReserveXlm = 5;
 
+  /// Interval in milliseconds between successive Soroban RPC visibility polls
+  /// of a freshly Friendbot-funded account. Friendbot returns once Horizon
+  /// has confirmed the deposit, but the RPC simulation endpoint can lag by
+  /// one or more ledger closes, so the SDK polls until the account ledger
+  /// entry is visible to the RPC before simulating against it.
+  static const int friendbotVisibilityPollIntervalMs = 1500;
+
+  /// Overall timeout in seconds for the Soroban RPC account-visibility poll
+  /// performed after Friendbot funding. When the funded account does not
+  /// become visible to the RPC within this budget the funding flow fails
+  /// with a clear error rather than the opaque "account entry is missing"
+  /// contract error from simulation.
+  static const int friendbotVisibilityTimeoutSeconds = 45;
+
   /// Default timeout for transaction submission and polling in seconds.
   static const int defaultTimeoutSeconds = 30;
 
