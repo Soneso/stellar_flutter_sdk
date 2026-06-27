@@ -406,6 +406,18 @@ class OZTransactionOperations {
     final credentialId = connected.credentialId;
     final contractId = connected.contractId;
 
+    // Reject the headless sentinel before any decode, ceremony, or network
+    // call. A kit connected via connectToContract has no passkey credential,
+    // so the single-passkey submit path cannot sign; headless operations must
+    // use the multi-signer / external-signer pipeline.
+    if (credentialId == OZConstants.headlessCredentialSentinel) {
+      throw SmartAccountValidationException.invalidInput(
+        'credentialId',
+        'This kit is connected headlessly (no passkey); use the multi-signer '
+            'pipeline with explicit selectedSigners for headless operations.',
+      );
+    }
+
     final deployer = await _kit.getDeployer();
     final deployerAccount = await _fetchAccount(deployer.accountId);
 

@@ -32,6 +32,7 @@ import 'oz_smart_account_types.dart';
 import 'oz_storage_adapter.dart';
 import 'oz_submission_routing.dart';
 import 'oz_transaction_timeout.dart';
+import 'oz_validation.dart';
 
 // Public result types
 
@@ -230,6 +231,30 @@ final class OZConnectWalletAmbiguous extends OZConnectWalletResult {
 
   @override
   int get hashCode => Object.hash(credentialId, Object.hashAll(candidates));
+}
+
+/// Result of a successful headless [OZWalletOperations.connectToContract].
+///
+/// Carries only the connected contract address. Unlike
+/// [OZConnectWalletConnected] there is no credential field — a headless
+/// connection holds no passkey credential, only an internal sentinel — so
+/// nothing here can leak the sentinel to callers.
+class OZConnectToContractResult {
+  /// Constructs a headless connect result for [contractId].
+  const OZConnectToContractResult({required this.contractId});
+
+  /// Smart-account contract address now connected (C-address).
+  final String contractId;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! OZConnectToContractResult) return false;
+    return contractId == other.contractId;
+  }
+
+  @override
+  int get hashCode => contractId.hashCode;
 }
 
 /// Result of standalone passkey authentication.
@@ -709,6 +734,85 @@ class OZWalletOperations {
       credentialIdBase64url: credentialIdBase64url,
       finalContractId: contractId,
     );
+  }
+
+  /// Connects to an existing smart account by contract address alone, with no
+  /// passkey credential.
+  ///
+  /// Intended for autonomous signers (a reference agent) and backend services
+  /// that operate a smart account through the multi-signer / external-signer
+  /// path. Unlike [connectWallet], this method performs no WebAuthn ceremony,
+  /// consults no indexer, and persists no session — it sets the in-memory
+  /// connected state and returns.
+  ///
+  /// The resulting connection supports ONLY the multi-signer / external-signer
+  /// pipeline (calls made with an explicit, non-empty `selectedSigners` list).
+  /// The single-passkey operations — [OZTransactionOperations.submit],
+  /// [OZTransactionOperations.executeAndSubmit],
+  /// [OZTransactionOperations.transfer], [OZTransactionOperations.contractCall],
+  /// and any manager call left at the default empty `selectedSigners` — throw
+  /// [SmartAccountValidationException] because there is no passkey credential
+  /// to sign with.
+  ///
+  /// Behaviour:
+  /// 1. Validates [contractId] is a Stellar contract address (C-address).
+  /// 2. Verifies the contract exists on-chain via the same instance-ledger
+  ///    check used by [connectWallet].
+  /// 3. Clears any persisted session (best-effort) so a later silent
+  ///    reconnect does not resurrect a stale passkey session. Clearing is
+  ///    best-effort: a persistent-storage write failure is swallowed rather
+  ///    than failing the connect, so on such a failure a stale session may
+  ///    survive and a later [connectWallet] could still restore it.
+  /// 4. Sets the connected state to [contractId] with an internal sentinel
+  ///    credential ID (preserving the non-null `OZConnectedState` invariant).
+  /// 5. Emits [OZSmartAccountEventHeadlessConnected] (carrying only the
+  ///    contract address — no credential).
+  ///
+  /// Does NOT save a session and does NOT touch the credential manager.
+  ///
+  /// The optional [cancelToken] can be cancelled to abort before the on-chain
+  /// verification; cancellation surfaces as a [SmartAccountTransactionException].
+  ///
+  /// Throws [SmartAccountInvalidAddress] when [contractId] is not a valid
+  /// C-address, and [SmartAccountWalletException.notFound] when no contract
+  /// exists at [contractId].
+  Future<OZConnectToContractResult> connectToContract(
+    String contractId, {
+    dio.CancelToken? cancelToken,
+  }) async {
+    _checkCancellation(cancelToken);
+
+    // 1. Validate the address shape (CRC16-checked C-address).
+    requireContractAddress(contractId, fieldName: 'contractId');
+
+    // 2. Verify the contract exists on-chain (reuse the existing check).
+    await _verifyContractExists(contractId);
+
+    // 3. Clear any persisted session so a later silent connectWallet() restore
+    //    cannot resurrect a stale passkey session that contradicts this
+    //    headless in-memory state. Best-effort; a storage failure must not
+    //    leave the kit unconnected.
+    try {
+      await _kit.getStorage().clearSession();
+    } catch (_) {
+      // Non-critical — clearing is best-effort.
+    }
+
+    // 4. Set connected state with the real contractId and a sentinel
+    //    credential, preserving the non-null OZConnectedState invariant.
+    await _kit.setConnectedState(
+      credentialId: OZConstants.headlessCredentialSentinel,
+      contractId: contractId,
+    );
+
+    // 5. Emit the dedicated headless event. No WalletConnected (which would
+    //    leak the sentinel onto its non-null credentialId field), no session
+    //    save, no credential manager.
+    _kit.events.emit(
+      OZSmartAccountEventHeadlessConnected(contractId: contractId),
+    );
+
+    return OZConnectToContractResult(contractId: contractId);
   }
 
   /// Performs the post-cascade verify, credential cleanup, state set,
