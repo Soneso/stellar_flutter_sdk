@@ -547,21 +547,31 @@ class WebAuth {
       }
     }
 
-    // check timebounds
-    final timeBounds = transaction.cond.timeBounds;
-    if (timeBounds != null) {
-      int grace = 0;
-      if (timeBoundsGracePeriod != null) {
-        grace = timeBoundsGracePeriod;
-      }
-      final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      final minTime = timeBounds.minTime.uint64.toInt();
-      final maxTime = timeBounds.maxTime.uint64.toInt();
-      if (currentTime < minTime - grace ||
-          currentTime > maxTime + grace) {
-        throw ChallengeValidationErrorInvalidTimeBounds(
-            "Invalid transaction, invalid time bounds");
-      }
+    // check timebounds: a challenge with no time bounds, or with an infinite
+    // (zero) max time, is never time-limited and could be replayed
+    // indefinitely, so reject it instead of skipping the check. Resolving the
+    // preconditions yields the bounds whether they are carried as a v1 time
+    // precondition or inside a v2 precondition.
+    final timeBounds =
+        TransactionPreconditions.fromXdr(transaction.cond).timeBounds;
+    if (timeBounds == null) {
+      throw ChallengeValidationErrorInvalidTimeBounds(
+          "Invalid transaction, missing time bounds");
+    }
+    int grace = 0;
+    if (timeBoundsGracePeriod != null) {
+      grace = timeBoundsGracePeriod;
+    }
+    final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final minTime = timeBounds.minTime;
+    final maxTime = timeBounds.maxTime;
+    if (maxTime == 0) {
+      throw ChallengeValidationErrorInvalidTimeBounds(
+          "Invalid transaction, requires non-infinite time bounds");
+    }
+    if (currentTime < minTime - grace || currentTime > maxTime + grace) {
+      throw ChallengeValidationErrorInvalidTimeBounds(
+          "Invalid transaction, invalid time bounds");
     }
 
     // the envelope must have one signature and it must be valid: transaction signed by the server
