@@ -47,6 +47,8 @@ void main() {
       int? memo,
       bool includeWebAuthDomain = true,
       TimeBounds? timeBounds,
+      bool includeTimeBounds = true,
+      bool useV2Preconditions = false,
       String? clientDomainAccountId,
     }) {
       final actualClientAccountId = clientAccountId ?? clientKeyPair.accountId;
@@ -87,11 +89,22 @@ void main() {
         txBuilder.addOperation(op);
       }
 
-      if (timeBounds != null) {
-        txBuilder.addTimeBounds(timeBounds);
-      } else {
-        final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        txBuilder.addTimeBounds(TimeBounds(now, now + 300));
+      if (useV2Preconditions) {
+        // minSeqAge forces a PRECOND_V2 envelope so the time bounds are
+        // carried inside cond.v2.timeBounds rather than cond.timeBounds.
+        final preconditions = TransactionPreconditions()..minSeqAge = 1;
+        if (includeTimeBounds) {
+          final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+          preconditions.timeBounds = timeBounds ?? TimeBounds(now, now + 300);
+        }
+        txBuilder.addPreconditions(preconditions);
+      } else if (includeTimeBounds) {
+        if (timeBounds != null) {
+          txBuilder.addTimeBounds(timeBounds);
+        } else {
+          final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+          txBuilder.addTimeBounds(TimeBounds(now, now + 300));
+        }
       }
 
       if (memo != null) {
@@ -168,6 +181,117 @@ void main() {
             200,
           ),
           returnsNormally,
+        );
+      });
+    });
+
+    group('validateChallenge - Time Bounds', () {
+      test('throws when the challenge has no time bounds', () {
+        final challenge = buildValidChallenge(includeTimeBounds: false);
+
+        expect(
+          () => webAuth.validateChallenge(
+            challenge,
+            clientKeyPair.accountId,
+            null,
+          ),
+          throwsA(isA<ChallengeValidationErrorInvalidTimeBounds>().having(
+            (e) => e.toString(),
+            'message',
+            contains('missing time bounds'),
+          )),
+        );
+      });
+
+      test('throws when the challenge has an infinite (zero) max time', () {
+        final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        final challenge = buildValidChallenge(timeBounds: TimeBounds(now, 0));
+
+        expect(
+          () => webAuth.validateChallenge(
+            challenge,
+            clientKeyPair.accountId,
+            null,
+          ),
+          throwsA(isA<ChallengeValidationErrorInvalidTimeBounds>().having(
+            (e) => e.toString(),
+            'message',
+            contains('non-infinite time bounds'),
+          )),
+        );
+      });
+
+      test('throws when the challenge is expired beyond the grace period', () {
+        final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        final challenge = buildValidChallenge(
+          timeBounds: TimeBounds(now - 1000, now - 500),
+        );
+
+        expect(
+          () => webAuth.validateChallenge(
+            challenge,
+            clientKeyPair.accountId,
+            null,
+          ),
+          throwsA(isA<ChallengeValidationErrorInvalidTimeBounds>().having(
+            (e) => e.toString(),
+            'message',
+            contains('invalid time bounds'),
+          )),
+        );
+      });
+
+      test('accepts a v2-precondition challenge with valid time bounds', () {
+        final challenge = buildValidChallenge(useV2Preconditions: true);
+
+        expect(
+          () => webAuth.validateChallenge(
+            challenge,
+            clientKeyPair.accountId,
+            null,
+          ),
+          returnsNormally,
+        );
+      });
+
+      test('throws for a v2-precondition challenge with infinite max time', () {
+        final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        final challenge = buildValidChallenge(
+          useV2Preconditions: true,
+          timeBounds: TimeBounds(now, 0),
+        );
+
+        expect(
+          () => webAuth.validateChallenge(
+            challenge,
+            clientKeyPair.accountId,
+            null,
+          ),
+          throwsA(isA<ChallengeValidationErrorInvalidTimeBounds>().having(
+            (e) => e.toString(),
+            'message',
+            contains('non-infinite time bounds'),
+          )),
+        );
+      });
+
+      test('throws for a v2-precondition challenge with no time bounds', () {
+        final challenge = buildValidChallenge(
+          useV2Preconditions: true,
+          includeTimeBounds: false,
+        );
+
+        expect(
+          () => webAuth.validateChallenge(
+            challenge,
+            clientKeyPair.accountId,
+            null,
+          ),
+          throwsA(isA<ChallengeValidationErrorInvalidTimeBounds>().having(
+            (e) => e.toString(),
+            'message',
+            contains('missing time bounds'),
+          )),
         );
       });
     });
