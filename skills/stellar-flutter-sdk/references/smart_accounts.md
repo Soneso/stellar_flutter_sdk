@@ -58,7 +58,7 @@ Smart accounts are part of the main SDK package. Add the dependency:
 ```yaml
 # pubspec.yaml
 dependencies:
-  stellar_flutter_sdk: ^3.2.0   # check pub.dev for the current version
+  stellar_flutter_sdk: ^3.2.1   # check pub.dev for the current version
 ```
 
 ---
@@ -145,9 +145,10 @@ final OZSmartAccountKit kit = OZSmartAccountKit.create(config: config);
 Read-only properties reflecting in-memory state only:
 
 ```dart
-final bool connected     = kit.isConnected;
-final String? credId     = kit.credentialId; // Base64URL, no padding
+final bool connected     = kit.isConnected;  // true once a contract is bound
+final String? credId     = kit.credentialId; // Base64URL, no padding; null when headless
 final String? contractId = kit.contractId;   // C-address
+final bool headless      = kit.isHeadless;    // connected via connectToContract (no credential)
 ```
 
 After an app restart `isConnected` is always `false`. Call `kit.walletOperations.connectWallet()` to restore the session from storage.
@@ -437,6 +438,18 @@ When resolving via `credentialId` (or after WebAuthn) without an explicit `contr
    - N > 1: return `OZConnectWalletAmbiguous`; kit state is NOT set.
 
 When an explicit `contractId` is supplied the cascade is bypassed and only on-chain verification runs.
+
+### Connecting to a contract (headless)
+
+`walletOperations.connectToContract(contractId)` connects by contract address alone — no WebAuthn, no saved session — for autonomous signers and backend services that drive the account through the multi-signer / external-signer path.
+
+```dart
+final OZConnectToContractResult result =
+    await kit.walletOperations.connectToContract(contractId);
+// Emits OZSmartAccountEventHeadlessConnected; afterwards isHeadless == true, credentialId == null.
+```
+
+The connection holds no credential, so single-passkey operations (`submit`, `transfer`, `contractCall`, `executeAndSubmit`, and any call left at the default empty `selectedSigners`) throw `SmartAccountValidationException`; pass an explicit signer instead. Throws `SmartAccountInvalidAddress` for a malformed `C…` address and `SmartAccountWalletNotFound` when no contract exists at `contractId`.
 
 ---
 
@@ -1030,6 +1043,7 @@ sealed class OZSmartAccountEvent {
 }
 
 final class OZSmartAccountEventWalletConnected      // contractId, credentialId
+final class OZSmartAccountEventHeadlessConnected    // contractId (connectToContract)
 final class OZSmartAccountEventWalletDisconnected   // contractId
 final class OZSmartAccountEventCredentialCreated    // credential (OZStoredCredential)
 final class OZSmartAccountEventCredentialDeleted    // credentialId

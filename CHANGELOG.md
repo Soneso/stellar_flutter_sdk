@@ -1,8 +1,8 @@
-## [Unreleased]
-- Add headless `connectToContract` to connect an OpenZeppelin smart account by its contract address alone, with no passkey credential, for autonomous signing processes and backend services that operate through the multi-signer / external-signer path. Adds `OZConnectToContractResult`, the `OZSmartAccountEventHeadlessConnected` event, and the `OZSmartAccountKit.isHeadless` / `OZConnectedState.isHeadless` getters.
-- `OZConnectedState.credentialId` is now nullable (`String?`); a `null` value indicates a headless connection. This is a minor breaking change for code that reads `credentialId` as a non-null `String`.
-- Poll the Soroban RPC for funding-account and contract-instance visibility instead of waiting a fixed delay, improving the reliability of wallet creation and contract connection.
-- Reject SEP-10 challenge transactions that have no time bounds or an infinite maximum time, as required by the spec.
+## [3.2.1] - 28.Jun.2026.
+- OpenZeppelin smart accounts: add headless `connectToContract` to connect by contract address alone, with no passkey credential. Adds `OZConnectToContractResult`, the `OZSmartAccountEventHeadlessConnected` event, and `isHeadless` on `OZSmartAccountKit` and `OZConnectedState`.
+- OpenZeppelin smart accounts: `OZConnectedState.credentialId` is now nullable (`String?`); `null` indicates a headless connection. Minor breaking change for code that reads it as a non-null `String`.
+- OpenZeppelin smart accounts: poll the Soroban RPC for account and contract visibility during wallet creation and connection, instead of a fixed delay, for more reliable setup.
+- SEP-10: reject challenge transactions with no time bounds or an infinite maximum time, as required by the spec.
 
 ## [3.2.0] - 19.Jun.2026.
 - Add Protocol 27 (CAP-71) Soroban authorization support: the ADDRESS_V2 and ADDRESS_WITH_DELEGATES credential arms with delegated account authorization

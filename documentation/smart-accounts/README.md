@@ -262,6 +262,21 @@ final direct = await kit.walletOperations.connectWallet(
 );
 ```
 
+### Connecting Headlessly
+
+Connect to an existing smart account by contract address alone, with no
+passkey credential -- for autonomous signers and backend services that
+drive the account through the multi-signer / external-signer path. No
+WebAuthn, no saved session; single-passkey operations are rejected, so
+calls must pass an explicit signer.
+
+```dart
+final headless =
+    await kit.walletOperations.connectToContract('<C-address>');
+// Emits OZSmartAccountEventHeadlessConnected; afterwards
+// kit.isHeadless == true and kit.credentialId == null.
+```
+
 ### Retrying Failed Deployments
 
 When `createWallet(autoSubmit: false)` is used, or if a deployment fails

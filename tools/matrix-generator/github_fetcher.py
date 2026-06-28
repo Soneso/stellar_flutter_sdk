@@ -38,6 +38,7 @@ Example usage:
 
 import json
 import os
+import re
 import urllib.request
 import urllib.error
 from dataclasses import dataclass
@@ -413,34 +414,91 @@ def fetch_latest_rpc_source() -> Tuple[RPCRelease, str]:
     return release, source
 
 
-def fetch_rpc_response_file(tag: str, method_name: str) -> str:
-    """
-    Fetch response struct source file from go-stellar-sdk for a specific method.
+# Cache of resolved go-stellar-sdk refs, keyed by the stellar-rpc tag, so the
+# dependency is read from go.mod at most once per analysis run.
+_GO_STELLAR_SDK_REF_CACHE: Dict[str, str] = {}
 
-    Response structs are defined in the go-stellar-sdk repository:
-    protocols/rpc/get_<method_name>.go
+
+def _resolve_go_stellar_sdk_ref(rpc_tag: str) -> str:
+    """
+    Resolve the go-stellar-sdk git ref pinned by stellar-rpc at a given tag.
+
+    The RPC response structs (protocols/rpc/get_<method>.go) live in
+    go-stellar-sdk, which versions independently of stellar-rpc. Reading them
+    from the ref that stellar-rpc@<rpc_tag> depends on (per its go.mod) keeps the
+    field comparison matched to the RPC release under review rather than drifting
+    with go-stellar-sdk master.
 
     Args:
-        tag: Git tag name (e.g., 'v21.5.0' for RPC). We'll use master/main branch
-             since go-stellar-sdk uses different versioning
-        method_name: Method name in snake_case (e.g., 'latest_ledger' for getLatestLedger)
+        rpc_tag: stellar-rpc release tag (e.g. 'v27.0.0').
 
     Returns:
-        Content of the response file as string
+        A git ref usable on raw.githubusercontent.com: the release tag for a
+        normal version (e.g. 'v0.6.0'), or the commit hash for a pseudo-version.
 
     Raises:
-        SourceFileNotFoundError: If source file cannot be fetched
-        GitHubFetchError: If request fails
+        SourceFileNotFoundError: If go.mod or the dependency cannot be read.
     """
+    if rpc_tag in _GO_STELLAR_SDK_REF_CACHE:
+        return _GO_STELLAR_SDK_REF_CACHE[rpc_tag]
+
+    go_mod_url = (
+        f"https://raw.githubusercontent.com/stellar/stellar-rpc/"
+        f"{rpc_tag}/go.mod"
+    )
+    try:
+        content = _make_request(go_mod_url).decode('utf-8')
+    except GitHubFetchError as e:
+        raise SourceFileNotFoundError(
+            f"Failed to fetch go.mod for stellar-rpc tag {rpc_tag}: {e}"
+        ) from e
+
+    match = re.search(r'github\.com/stellar/go-stellar-sdk\s+(\S+)', content)
+    if not match:
+        raise SourceFileNotFoundError(
+            f"go-stellar-sdk dependency not found in stellar-rpc@{rpc_tag} go.mod"
+        )
+
+    version = match.group(1)
+    # A Go pseudo-version (vX.Y.Z-YYYYMMDDHHMMSS-<12 hex>) is not a git tag; its
+    # git ref is the trailing commit hash. A normal release tag is used as-is.
+    pseudo = re.match(r'^v.*-\d{14}-([0-9a-f]{12})$', version)
+    ref = pseudo.group(1) if pseudo else version
+
+    _GO_STELLAR_SDK_REF_CACHE[rpc_tag] = ref
+    return ref
+
+
+def fetch_rpc_response_file(tag: str, method_name: str) -> str:
+    """
+    Fetch a response-struct source file from go-stellar-sdk for a method.
+
+    Response structs are defined in go-stellar-sdk at
+    protocols/rpc/get_<method_name>.go. go-stellar-sdk versions independently of
+    stellar-rpc, so the ref is resolved from stellar-rpc@<tag>'s go.mod
+    (see _resolve_go_stellar_sdk_ref) to match the RPC release under review.
+
+    Args:
+        tag: stellar-rpc release tag (e.g. 'v27.0.0').
+        method_name: Method name in snake_case without the get_ prefix
+            (e.g. 'latest_ledger' for getLatestLedger).
+
+    Returns:
+        Content of the response file as string.
+
+    Raises:
+        SourceFileNotFoundError: If the source file cannot be fetched.
+        GitHubFetchError: If a request fails.
+    """
+    if not tag:
+        raise ValueError("Tag parameter cannot be empty")
     if not method_name:
         raise ValueError("method_name parameter cannot be empty")
 
-    # Construct raw GitHub URL for the response file in go-stellar-sdk
-    # Note: go-stellar-sdk uses different versioning, so we use master branch
-    # which contains the latest protocol definitions
+    sdk_ref = _resolve_go_stellar_sdk_ref(tag)
     source_url = (
         f"https://raw.githubusercontent.com/stellar/go-stellar-sdk/"
-        f"master/protocols/rpc/get_{method_name}.go"
+        f"{sdk_ref}/protocols/rpc/get_{method_name}.go"
     )
 
     try:
@@ -448,7 +506,8 @@ def fetch_rpc_response_file(tag: str, method_name: str) -> str:
         return response_data.decode('utf-8')
     except GitHubFetchError as e:
         raise SourceFileNotFoundError(
-            f"Failed to fetch get_{method_name}.go from master branch: {e}"
+            f"Failed to fetch get_{method_name}.go from "
+            f"go-stellar-sdk@{sdk_ref}: {e}"
         ) from e
 
 

@@ -2,8 +2,8 @@
 
 **RPC Version:** v27.0.0 (released 2026-06-11)  
 **RPC Source:** [https://github.com/stellar/stellar-rpc/releases/tag/v27.0.0](https://github.com/stellar/stellar-rpc/releases/tag/v27.0.0)  
-**SDK Version:** 3.2.0  
-**Generated:** 2026-06-19 00:59:12
+**SDK Version:** 3.2.1  
+**Generated:** 2026-06-28 19:10:40
 
 ## Overall Coverage
 

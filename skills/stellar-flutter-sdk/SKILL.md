@@ -2,10 +2,10 @@
 name: stellar-flutter-sdk
 description: Build Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with async/await and Stream patterns across Android, iOS, and Web. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing in a Flutter app.
 license: Apache 2.0
-compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.2.0
+compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.2.1
 metadata:
-  version: "1.1.0"
-  sdk_version: "3.2.0"
+  version: "1.1.1"
+  sdk_version: "3.2.1"
 ---
 
 # Stellar SDK for Flutter
@@ -18,7 +18,7 @@ The Stellar Flutter SDK (`stellar_flutter_sdk`) is a full-featured Dart library 
 
 ```yaml
 dependencies:
-  stellar_flutter_sdk: ^3.2.0
+  stellar_flutter_sdk: ^3.2.1
 ```
 
 > iOS: set the app's deployment target to 15.0 or higher. Passkey smart-account features need iOS 16 at runtime.

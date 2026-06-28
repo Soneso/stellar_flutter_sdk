@@ -110,7 +110,7 @@ The shared event emitter. Subscribers receive lifecycle events for wallet connec
 bool get isConnected
 ```
 
-`true` when both `credentialId` and `contractId` are set. `false` after `disconnect()` or before any wallet has been created or connected.
+`true` when a contract address is bound — covering both a passkey connection and a headless connection (see [`connectToContract`](#connecttocontract)). `false` after `disconnect()` or before any wallet has been created or connected.
 
 #### credentialId
 
@@ -118,7 +118,7 @@ bool get isConnected
 String? get credentialId
 ```
 
-Base64URL-encoded WebAuthn credential ID (no padding) of the currently connected wallet, or `null` when no wallet is connected.
+Base64URL-encoded WebAuthn credential ID (no padding) of the currently connected wallet, or `null` when no wallet is connected or the wallet is connected headlessly via [`connectToContract`](#connecttocontract). Use [`isHeadless`](#isheadless) to tell a headless connection from no connection.
 
 #### contractId
 
@@ -128,18 +128,27 @@ String? get contractId
 
 Smart account contract address (`C…`) of the currently connected wallet, or `null` when no wallet is connected.
 
+#### isHeadless
+
+```dart
+bool get isHeadless
+```
+
+`true` when a contract address is bound but no passkey credential is present — a connection established via [`connectToContract`](#connecttocontract). A headless connection supports only the multi-signer / external-signer pipeline; the single-passkey operations reject it.
+
 #### requireConnected
 
 ```dart
 Future<OZConnectedState> requireConnected()
 ```
 
-Returns the connected wallet's credential ID and contract address together as an `OZConnectedState`, or throws `SmartAccountWalletException.notConnected` when no wallet is connected. Use this when both values are required non-null; the individual `credentialId` / `contractId` getters return `null` while disconnected.
+Returns the connected wallet's contract address and, for a passkey connection, its credential ID together as an `OZConnectedState`, or throws `SmartAccountWalletException.notConnected` when no wallet is connected.
 
-`OZConnectedState` is an immutable value type with two `String` fields:
+`OZConnectedState` is an immutable value type:
 
-- `credentialId`: Base64URL-encoded WebAuthn credential ID.
-- `contractId`: smart account contract address (`C…`).
+- `credentialId` (`String?`): Base64URL-encoded WebAuthn credential ID, or `null` for a headless connection.
+- `contractId` (`String`): smart account contract address (`C…`).
+- `isHeadless` (`bool`): `true` when `credentialId` is `null`.
 
 ### Manager Properties
 
@@ -477,6 +486,23 @@ Connection cascade (when a credential ID is available, either supplied or freshl
 
 **Throws:** `SmartAccountValidationException.invalidInput` when `contractId` is supplied without `credentialId`; `WebAuthnException` family on WebAuthn failures; `SmartAccountWalletException.notFound` when no on-chain contract is resolved; `SmartAccountTransactionException` on XDR or simulation failures during derivation / verification.
 
+#### connectToContract
+
+```dart
+Future<OZConnectToContractResult> connectToContract(
+  String contractId, {
+  dio.CancelToken? cancelToken,
+}) async
+```
+
+Connects to an existing smart account by its contract address alone, with no passkey credential — no WebAuthn ceremony and no saved session. Sets the in-memory connected state and emits `OZSmartAccountEventHeadlessConnected`. Intended for autonomous signing processes and backend services that operate the account through the multi-signer / external-signer path.
+
+A headless connection holds no credential, so the single-passkey operations (`submit`, `transfer`, `contractCall`, `executeAndSubmit`, and any manager call left at the default empty `selectedSigners`) throw `SmartAccountValidationException`; calls must pass an explicit signer. After connecting, `isHeadless` is `true` and `credentialId` is `null`.
+
+**Returns:** `OZConnectToContractResult`, carrying the connected `contractId`.
+
+**Throws:** `SmartAccountInvalidAddress` for a malformed `C…` address; `SmartAccountWalletException.notFound` when no contract exists at `contractId`; `SmartAccountTransactionException` on cancellation or contract-verification failure.
+
 #### authenticatePasskey
 
 ```dart
@@ -667,6 +693,17 @@ class OZConnectWalletOptions {
   final bool prompt;
 }
 ```
+
+#### OZConnectToContractResult
+
+```dart
+class OZConnectToContractResult {
+  const OZConnectToContractResult({required String contractId});
+  final String contractId;
+}
+```
+
+- `contractId`: the smart account the headless connection is bound to.
 
 ---
 
@@ -1968,6 +2005,18 @@ final class OZSmartAccountEventWalletConnected extends OZSmartAccountEvent {
 ```
 
 Emitted by wallet creation, connection, and deploy-pending paths after the kit's state is set.
+
+#### OZSmartAccountEventHeadlessConnected
+
+```dart
+final class OZSmartAccountEventHeadlessConnected extends OZSmartAccountEvent {
+  const OZSmartAccountEventHeadlessConnected({required String contractId});
+  final String contractId;
+  // eventTypeName: 'HeadlessConnected'
+}
+```
+
+Emitted by `connectToContract` after a headless connection is established. Carries only the contract address; a headless connection has no credential.
 
 #### OZSmartAccountEventWalletDisconnected
 
