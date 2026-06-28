@@ -728,6 +728,27 @@ void main() {
       expect(copied.credentialId, 'cr-new');
     });
 
+    test('testHeadlessConnected_equalityAndHashCode', () {
+      // Non-const instances so the identical() short-circuit in operator== does
+      // not fire and the contractId field comparison is exercised.
+      final event1 =
+          OZSmartAccountEventHeadlessConnected(contractId: 'C-HEADLESS');
+      final event2 =
+          OZSmartAccountEventHeadlessConnected(contractId: 'C-HEADLESS');
+      final event3 =
+          OZSmartAccountEventHeadlessConnected(contractId: 'C-OTHER');
+
+      expect(event1, equals(event2),
+          reason: 'Same contractId must be equal');
+      expect(event1.hashCode, equals(event2.hashCode));
+      expect(event1, isNot(equals(event3)),
+          reason: 'Different contractId must not be equal');
+      expect(event1, equals(event1),
+          reason: 'Identical instance short-circuits to equal');
+      expect(event1 == 'not-an-event', isFalse);
+      expect(event1.eventTypeName, 'HeadlessConnected');
+    });
+
     test('testWalletDisconnected_equalityAndCopy', () {
       const event1 = OZSmartAccountEventWalletDisconnected(contractId: 'C1');
       const event2 = OZSmartAccountEventWalletDisconnected(contractId: 'C1');

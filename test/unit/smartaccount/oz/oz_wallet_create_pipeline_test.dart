@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import 'mock_oz_transaction_operations.dart';
 import 'oz_pipeline_fixtures.dart';
 
 const String _contractA =
@@ -70,6 +71,24 @@ SimulateTransactionResponse _simResponseError(String error) {
 Account _deployerAccount(KeyPair deployer, {int seq = 1}) {
   return Account(deployer.accountId, BigInt.from(seq));
 }
+
+SendTransactionResponse _sendPending({required String hash}) {
+  final r = SendTransactionResponse(<String, dynamic>{});
+  r.hash = hash;
+  r.status = SendTransactionResponse.STATUS_PENDING;
+  return r;
+}
+
+GetTransactionResponse _txSuccess({int ledger = 12345}) {
+  final r = GetTransactionResponse(<String, dynamic>{});
+  r.status = GetTransactionResponse.STATUS_SUCCESS;
+  r.ledger = ledger;
+  return r;
+}
+
+/// A minimal non-null [LedgerEntry] standing in for a visible contract
+/// instance; only its non-null presence matters to the visibility poll.
+LedgerEntry _visibleInstanceEntry() => LedgerEntry('', '', 0, null, null);
 
 void main() {
   group('OZWalletOperations.createWallet pipeline', () {
@@ -385,6 +404,150 @@ void main() {
         () => ops.createWallet(autoSubmit: false),
         throwsA(isA<SmartAccountException>()),
       );
+    });
+  });
+
+  group('OZWalletOperations.createWallet autoFund wiring', () {
+    test('autoFund_pollsContractInstanceVisibility_beforeFunding', () async {
+      // Drives the full createWallet autoSubmit + autoFund happy path and
+      // proves the deploy/fund flow waits for the deployed contract instance to
+      // become visible to the Soroban RPC before invoking fundWallet. fundWallet
+      // itself is stubbed via MockOZTransactionOperations so the assertion
+      // isolates the visibility poll wiring.
+      final deployer = KeyPair.random();
+      final mock = MockSorobanServer();
+      final provider = RecordingWebAuthnProvider();
+      final credIdBytes = base64Url.decode(
+        base64Url.normalize(_credentialIdB64),
+      );
+      final pubKey = _validSecp256r1PublicKey();
+
+      provider.registerResponses.add(WebAuthnRegistrationResult(
+        credentialId: credIdBytes,
+        publicKey: pubKey,
+        attestationObject: _bytes(37, 0xCC),
+      ));
+
+      // _buildDeployTransaction: getAccount + simulate.
+      mock.getAccountResponses.add(_deployerAccount(deployer));
+      mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 500));
+      // _submitDeployTransaction (RPC path): send pending, then confirm.
+      mock.sendResponses.add(_sendPending(hash: 'deploy-hash'));
+      mock.getTransactionResponses.add(_txSuccess(ledger: 4242));
+      // waitForContractVisibleToRpc: the contract instance is visible on the
+      // first poll so the wiring test does not incur a poll-interval sleep.
+      mock.getContractDataDefault = _visibleInstanceEntry();
+
+      final config = OZSmartAccountConfig(
+        rpcUrl: 'https://soroban-testnet.stellar.org',
+        networkPassphrase: Network.TESTNET.networkPassphrase,
+        accountWasmHash: '0' * 64,
+        webauthnVerifierAddress: _contractA,
+        webauthnProvider: provider,
+      );
+      final kit = FakePipelineKit(
+        config: config,
+        sorobanServer: mock,
+        deployer: deployer,
+      );
+      final mockTxOps = MockOZTransactionOperations(kit);
+      kit.setTransactionOperations(mockTxOps);
+
+      final ops = OZWalletOperations(kit);
+      final result = await ops.createWallet(
+        autoSubmit: true,
+        autoFund: true,
+        nativeTokenContract: _contractA,
+      );
+
+      // The poll queried the deployed contract's instance ledger key under
+      // persistent durability before funding.
+      expect(mock.getContractDataCalls, hasLength(1));
+      final probedCall = mock.getContractDataCalls.single;
+      expect(probedCall.contractId, equals(result.contractId));
+      expect(
+        probedCall.key.discriminant,
+        equals(XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE),
+      );
+      expect(probedCall.durability, equals(XdrContractDataDurability.PERSISTENT));
+
+      // fundWallet was reached exactly once, after the visibility poll resolved.
+      expect(mockTxOps.fundWalletCalls, hasLength(1));
+      expect(mockTxOps.fundWalletCalls.single.nativeTokenContract,
+          equals(_contractA));
+    });
+  });
+
+  group('OZWalletOperations.deployPendingCredential autoFund wiring', () {
+    test('autoFund_pollsContractInstanceVisibility_beforeFunding', () async {
+      // Drives the deployPendingCredential autoSubmit + autoFund happy path and
+      // proves the deploy/fund flow waits for the deployed contract instance to
+      // become visible to the Soroban RPC before invoking fundWallet. fundWallet
+      // itself is stubbed via MockOZTransactionOperations so the assertion
+      // isolates the visibility poll wiring.
+      final deployer = KeyPair.random();
+      final mock = MockSorobanServer();
+      final credentialManager = StubCredentialManager();
+
+      // A pending credential already in local storage (e.g. from a prior
+      // createWallet(autoSubmit: false)): it carries the smart-account contract
+      // address and a valid P-256 public key, the two fields
+      // deployPendingCredential requires before it will build the deploy.
+      credentialManager.inject(OZStoredCredential(
+        credentialId: _credentialIdB64,
+        publicKey: _validSecp256r1PublicKey(),
+        contractId: _contractA,
+      ));
+
+      // _buildDeployTransaction: getAccount + simulate.
+      mock.getAccountResponses.add(_deployerAccount(deployer));
+      mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 500));
+      // _submitDeployTransaction (RPC path): send pending, then confirm.
+      mock.sendResponses.add(_sendPending(hash: 'deploy-hash'));
+      mock.getTransactionResponses.add(_txSuccess(ledger: 4242));
+      // waitForContractVisibleToRpc: the contract instance is visible on the
+      // first poll so the wiring test does not incur a poll-interval sleep.
+      mock.getContractDataDefault = _visibleInstanceEntry();
+
+      final config = OZSmartAccountConfig(
+        rpcUrl: 'https://soroban-testnet.stellar.org',
+        networkPassphrase: Network.TESTNET.networkPassphrase,
+        accountWasmHash: '0' * 64,
+        webauthnVerifierAddress: _contractA,
+      );
+      final kit = FakePipelineKit(
+        config: config,
+        sorobanServer: mock,
+        deployer: deployer,
+        credentialManager: credentialManager,
+      );
+      final mockTxOps = MockOZTransactionOperations(kit);
+      kit.setTransactionOperations(mockTxOps);
+
+      final ops = OZWalletOperations(kit);
+      final result = await ops.deployPendingCredential(
+        credentialId: _credentialIdB64,
+        autoSubmit: true,
+        autoFund: true,
+        nativeTokenContract: _contractA,
+      );
+
+      // The poll queried the deployed contract's instance ledger key under
+      // persistent durability before funding.
+      expect(mock.getContractDataCalls, hasLength(1));
+      final probedCall = mock.getContractDataCalls.single;
+      expect(probedCall.contractId, equals(result.contractId));
+      expect(probedCall.contractId, equals(_contractA));
+      expect(
+        probedCall.key.discriminant,
+        equals(XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE),
+      );
+      expect(probedCall.durability, equals(XdrContractDataDurability.PERSISTENT));
+
+      // fundWallet was reached exactly once, after the visibility poll resolved.
+      expect(mockTxOps.fundWalletCalls, hasLength(1));
+      expect(mockTxOps.fundWalletCalls.single.nativeTokenContract,
+          equals(_contractA));
     });
   });
 }

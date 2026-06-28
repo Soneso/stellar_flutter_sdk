@@ -22,6 +22,14 @@ void main() {
       expect(OZConstants.friendbotReserveXlm, 5);
     });
 
+    test('test_RPC_VISIBILITY_POLL_INTERVAL_MS_equals_1500', () {
+      expect(OZConstants.rpcVisibilityPollIntervalMs, 1500);
+    });
+
+    test('test_RPC_VISIBILITY_TIMEOUT_SECONDS_equals_45', () {
+      expect(OZConstants.rpcVisibilityTimeoutSeconds, 45);
+    });
+
     test('test_DEFAULT_TIMEOUT_SECONDS_equals_30', () {
       expect(OZConstants.defaultTimeoutSeconds, 30);
     });
@@ -48,15 +56,19 @@ void main() {
       expect(OZConstants.clientName, 'flutter-stellar-sdk');
     });
 
-    test('test_OZConstants_exposes_exactly_14_public_constants', () {
-      // Inventory check: the fourteen values below must all be present and
-      // surfacing the correct constants. If a new constant is added or one is
-      // removed/renamed, this list will fall out of date and force review.
+    test('test_OZConstants_publicConstants_areNonNull_inventoryGuard', () {
+      // Inventory guard against renames and removals: every constant below is
+      // referenced by name, so renaming or removing one breaks the reference
+      // and fails compilation. Additions are NOT detected automatically — a
+      // newly added constant stays absent from this list until an author adds
+      // it, so keeping the inventory complete relies on author discipline.
       final values = <Object>[
         OZConstants.defaultSessionExpiryMs,
         OZConstants.defaultIndexerTimeoutMs,
         OZConstants.defaultRelayerTimeoutMs,
         OZConstants.friendbotReserveXlm,
+        OZConstants.rpcVisibilityPollIntervalMs,
+        OZConstants.rpcVisibilityTimeoutSeconds,
         OZConstants.defaultTimeoutSeconds,
         OZConstants.maxSigners,
         OZConstants.maxPolicies,
@@ -68,7 +80,6 @@ void main() {
         OZConstants.maxIndexerConnectTimeoutMs,
         OZConstants.maxRelayerConnectTimeoutMs,
       ];
-      expect(values.length, 14);
       expect(values, everyElement(isNotNull));
     });
   });

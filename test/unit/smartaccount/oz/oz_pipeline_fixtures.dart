@@ -146,11 +146,9 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
   }
 
   /// Test-only `disconnect()`. Clears the connected state, emits the
-  /// `WalletDisconnected` event when a wallet was connected at call time,
-  /// and clears the session entry from storage.
+  /// `WalletDisconnected` event whenever a contract was bound at call time
+  /// (independent of credential), and clears the session entry from storage.
   Future<void> disconnect() async {
-    final wasConnected =
-        _connectedCredentialId != null && _connectedContractId != null;
     final priorContractId = _connectedContractId;
     _connectedCredentialId = null;
     _connectedContractId = null;
@@ -159,7 +157,7 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
     } catch (_) {
       // Non-critical — clearing is best-effort.
     }
-    if (wasConnected && priorContractId != null) {
+    if (priorContractId != null) {
       _events.emit(
         OZSmartAccountEventWalletDisconnected(contractId: priorContractId),
       );
@@ -197,7 +195,7 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
   Future<OZConnectedState> requireConnected() async {
     final cid = _connectedCredentialId;
     final ctr = _connectedContractId;
-    if (cid == null || ctr == null) {
+    if (ctr == null) {
       throw SmartAccountWalletException.notConnected();
     }
     return OZConnectedState(credentialId: cid, contractId: ctr);
@@ -213,10 +211,31 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
   }
 
   @override
+  Future<void> setHeadlessConnectedState({required String contractId}) async {
+    _connectedCredentialId = null;
+    _connectedContractId = contractId;
+  }
+
+  @override
   OZTransactionOperations get transactionOperations => _transactionOperations;
 
   @override
   String? get contractId => _connectedContractId;
+
+  /// Mirrors the real kit's connection-state surface so headless-connect
+  /// tests can assert it directly. `true` when a contract address is bound,
+  /// covering both a passkey and a headless connection.
+  bool get isConnected => _connectedContractId != null;
+
+  /// Mirrors the real kit's [OZSmartAccountKit.credentialId]: the bound
+  /// passkey credential ID, or `null` when disconnected or connected
+  /// headlessly.
+  String? get credentialId => _connectedCredentialId;
+
+  /// Mirrors the real kit's [OZSmartAccountKit.isHeadless]: `true` exactly
+  /// when a contract address is bound while no passkey credential is present.
+  bool get isHeadless =>
+      _connectedContractId != null && _connectedCredentialId == null;
 
   @override
   OZExternalSignerManager get externalSigners => _externalSigners;
@@ -321,6 +340,9 @@ class StubCredentialManager implements OZWalletCredentialManagerInterface {
   /// Test-only: returns the credential currently stored under
   /// [credentialId], or `null`.
   OZStoredCredential? peek(String credentialId) => _store[credentialId];
+
+  /// Test-only: every credential ID currently held in the store.
+  Iterable<String> get storedCredentialIds => _store.keys;
 }
 
 /// Stub context-rule manager exposed for tests that need to inject

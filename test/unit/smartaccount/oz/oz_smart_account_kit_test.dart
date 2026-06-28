@@ -448,6 +448,50 @@ void main() {
       expect(state.credentialId, equals(_credentialIdB64));
       expect(state.contractId, equals(_validContractId));
     });
+
+    test('setHeadlessConnectedState_marksHeadlessConnection_withoutCredential',
+        () async {
+      final kit = OZSmartAccountKit.create(config: _validConfig());
+
+      await kit.setHeadlessConnectedState(contractId: _validContractId);
+
+      expect(kit.isConnected, isTrue);
+      expect(kit.isHeadless, isTrue);
+      expect(kit.credentialId, isNull);
+      expect(kit.contractId, equals(_validContractId));
+
+      // A headless connection still satisfies requireConnected, but the
+      // returned state carries no credential and reports isHeadless.
+      final state = await kit.requireConnected();
+      expect(state.credentialId, isNull);
+      expect(state.isHeadless, isTrue);
+      expect(state.contractId, equals(_validContractId));
+    });
+
+    test('connectionState_passkeyToHeadlessToPasskey_flipsFlags', () async {
+      final kit = OZSmartAccountKit.create(config: _validConfig());
+
+      await kit.setConnectedState(
+        credentialId: _credentialIdB64,
+        contractId: _validContractId,
+      );
+      expect(kit.isConnected, isTrue);
+      expect(kit.isHeadless, isFalse);
+      expect(kit.credentialId, equals(_credentialIdB64));
+
+      await kit.setHeadlessConnectedState(contractId: _validContractId);
+      expect(kit.isConnected, isTrue);
+      expect(kit.isHeadless, isTrue);
+      expect(kit.credentialId, isNull);
+
+      await kit.setConnectedState(
+        credentialId: _credentialIdB64,
+        contractId: _validContractId,
+      );
+      expect(kit.isConnected, isTrue);
+      expect(kit.isHeadless, isFalse);
+      expect(kit.credentialId, equals(_credentialIdB64));
+    });
   });
 
   group('default deployer', () {
@@ -664,15 +708,18 @@ void main() {
         () async {
       final kit = OZSmartAccountKit.create(config: _validConfig());
 
-      // why: drive 10 parallel callers each performing a connect +
-      // disconnect pair. The kit's lock serialises the state writes
-      // against the storage I/O so the futures must all complete
-      // without any caller deadlocking on the previous tail.
+      // why: drive 10 parallel callers, each performing a passkey connect, a
+      // headless re-connect, and a disconnect. The kit's lock serialises every
+      // state write, including setHeadlessConnectedState, against the storage
+      // I/O so the futures must all complete without any caller deadlocking on
+      // the previous tail, and each write the headless setter makes stays
+      // coherent under contention.
       final futures = List<Future<void>>.generate(10, (i) async {
         await kit.setConnectedState(
           credentialId: 'cred-$i',
           contractId: _validContractId,
         );
+        await kit.setHeadlessConnectedState(contractId: _validContractId);
         await kit.disconnect();
       });
 

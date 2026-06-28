@@ -22,6 +22,7 @@ import '../core/smart_account_errors.dart';
 import '../core/smart_account_utils.dart';
 import '../core/web_authn_provider.dart';
 import 'oz_base64url.dart';
+import 'oz_constants.dart';
 import 'oz_internal_pipeline_interfaces.dart';
 import 'oz_relayer_client.dart';
 import 'oz_secure_nonce.dart';
@@ -31,6 +32,7 @@ import 'oz_smart_account_types.dart';
 import 'oz_storage_adapter.dart';
 import 'oz_submission_routing.dart';
 import 'oz_transaction_timeout.dart';
+import 'oz_validation.dart';
 
 // Public result types
 
@@ -229,6 +231,29 @@ final class OZConnectWalletAmbiguous extends OZConnectWalletResult {
 
   @override
   int get hashCode => Object.hash(credentialId, Object.hashAll(candidates));
+}
+
+/// Result of a successful headless [OZWalletOperations.connectToContract].
+///
+/// Carries only the connected contract address. Unlike
+/// [OZConnectWalletConnected] there is no credential field: a headless
+/// connection holds no passkey credential.
+class OZConnectToContractResult {
+  /// Constructs a headless connect result for [contractId].
+  const OZConnectToContractResult({required this.contractId});
+
+  /// Smart-account contract address now connected (C-address).
+  final String contractId;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! OZConnectToContractResult) return false;
+    return contractId == other.contractId;
+  }
+
+  @override
+  int get hashCode => contractId.hashCode;
 }
 
 /// Result of standalone passkey authentication.
@@ -529,13 +554,9 @@ class OZWalletOperations {
             'nativeTokenContract is required when autoFund is true',
           );
         }
-        // why: Friendbot's HTTP confirmation precedes Soroban RPC state
-        // visibility by one ledger close (~5s on testnet). Without the delay
-        // the subsequent fundWallet simulation observes "account not found".
-        await _cancellableDelay(
-          const Duration(milliseconds: 5000),
-          cancelToken,
-        );
+        // Wait for RPC visibility of the deployed instance before fundWallet
+        // simulates against it (see waitForContractVisibleToRpc).
+        await waitForContractVisibleToRpc(contractId, cancelToken);
         await _kit.transactionOperations.fundWallet(
           nativeTokenContract: tokenContract,
           forceMethod: forceMethod,
@@ -708,6 +729,84 @@ class OZWalletOperations {
       credentialIdBase64url: credentialIdBase64url,
       finalContractId: contractId,
     );
+  }
+
+  /// Connects to an existing smart account by contract address alone, with no
+  /// passkey credential.
+  ///
+  /// Intended for autonomous signing processes and backend services
+  /// that operate a smart account through the multi-signer / external-signer
+  /// path. Unlike [connectWallet], this method performs no WebAuthn ceremony,
+  /// consults no indexer, and persists no session — it sets the in-memory
+  /// connected state and returns.
+  ///
+  /// The resulting connection supports ONLY the multi-signer / external-signer
+  /// pipeline (calls made with an explicit, non-empty `selectedSigners` list).
+  /// The single-passkey operations — [OZTransactionOperations.submit],
+  /// [OZTransactionOperations.executeAndSubmit],
+  /// [OZTransactionOperations.transfer], [OZTransactionOperations.contractCall],
+  /// and any manager call left at the default empty `selectedSigners` — throw
+  /// [SmartAccountValidationException] because there is no passkey credential
+  /// to sign with.
+  ///
+  /// Behaviour:
+  /// 1. Validates [contractId] is a Stellar contract address (C-address).
+  /// 2. Verifies the contract exists on-chain via the same instance-ledger
+  ///    check used by [connectWallet].
+  /// 3. Clears any persisted session (best-effort) so a later silent
+  ///    reconnect does not resurrect a stale passkey session. Clearing is
+  ///    best-effort: a persistent-storage write failure is swallowed rather
+  ///    than failing the connect, so on such a failure a stale session may
+  ///    survive and a later [connectWallet] could still restore it.
+  /// 4. Sets the headless connected state: [contractId] is bound but no
+  ///    passkey credential is present, so [OZSmartAccountKit.credentialId]
+  ///    and [OZConnectedState.credentialId] read as `null` and
+  ///    [OZSmartAccountKit.isHeadless] reads as `true`.
+  /// 5. Emits [OZSmartAccountEventHeadlessConnected] (carrying only the
+  ///    contract address — no credential).
+  ///
+  /// Does NOT save a session and does NOT touch the credential manager.
+  ///
+  /// The optional [cancelToken] can be cancelled to abort before the on-chain
+  /// verification; cancellation surfaces as a [SmartAccountTransactionException].
+  ///
+  /// Throws [SmartAccountInvalidAddress] when [contractId] is not a valid
+  /// C-address, and [SmartAccountWalletException.notFound] when no contract
+  /// exists at [contractId].
+  Future<OZConnectToContractResult> connectToContract(
+    String contractId, {
+    dio.CancelToken? cancelToken,
+  }) async {
+    _checkCancellation(cancelToken);
+
+    // 1. Validate the address shape (CRC16-checked C-address).
+    requireContractAddress(contractId, fieldName: 'contractId');
+
+    // 2. Verify the contract exists on-chain (reuse the existing check).
+    await _verifyContractExists(contractId);
+
+    // 3. Clear any persisted session so a later silent connectWallet() restore
+    //    cannot resurrect a stale passkey session that contradicts this
+    //    headless in-memory state. Best-effort; a storage failure must not
+    //    leave the kit unconnected.
+    try {
+      await _kit.getStorage().clearSession();
+    } catch (_) {
+      // Non-critical — clearing is best-effort.
+    }
+
+    // 4. Set the headless connected state: the contract address is bound but
+    //    no passkey credential is present, so credentialId reads as null.
+    await _kit.setHeadlessConnectedState(contractId: contractId);
+
+    // 5. Emit the dedicated headless event. No WalletConnected event (its
+    //    credentialId field is for passkey connections), no session save, no
+    //    credential manager write.
+    _kit.events.emit(
+      OZSmartAccountEventHeadlessConnected(contractId: contractId),
+    );
+
+    return OZConnectToContractResult(contractId: contractId);
   }
 
   /// Performs the post-cascade verify, credential cleanup, state set,
@@ -1015,10 +1114,9 @@ class OZWalletOperations {
     );
 
     if (autoFund) {
-      await _cancellableDelay(
-        const Duration(milliseconds: 5000),
-        cancelToken,
-      );
+      // Wait for RPC visibility of the deployed instance before fundWallet
+      // simulates against it (see waitForContractVisibleToRpc).
+      await waitForContractVisibleToRpc(contractId, cancelToken);
       await _kit.transactionOperations.fundWallet(
         nativeTokenContract: nativeTokenContract!,
         forceMethod: forceMethod,
@@ -1640,6 +1738,89 @@ class OZWalletOperations {
     }
 
     return transactionHash;
+  }
+
+  // Private: post-deploy contract visibility wait
+
+  /// Polls the Soroban RPC until the deployed smart-account contract instance
+  /// identified by [contractId] is visible as a persistent contract-data
+  /// ledger entry, then returns.
+  ///
+  /// The deploy transaction confirms once the network applies it, but the
+  /// Soroban RPC simulation endpoint can lag behind by one or more ledger
+  /// closes under testnet congestion. Simulating against the contract (as the
+  /// autoFund flow does via `fundWallet`) before the RPC has applied the deploy
+  /// ledger fails because the contract instance is not yet in the RPC's view,
+  /// so callers must wait until the RPC sees the instance entry.
+  ///
+  /// [SorobanServer.getContractData] queries the RPC's `getLedgerEntries` for
+  /// the contract's instance ledger key (the contract-data entry keyed by
+  /// [XdrSCVal.forLedgerKeyContractInstance] under
+  /// [XdrContractDataDurability.PERSISTENT]). It returns `null` while the entry
+  /// is not yet present; a non-null result is the visibility signal polled
+  /// here. The poll runs every [pollInterval] up to [timeout]; both default to
+  /// the [OZConstants.rpcVisibilityPollIntervalMs] /
+  /// [OZConstants.rpcVisibilityTimeoutSeconds] budgets and are overridable so
+  /// the behaviour can be exercised in tests.
+  ///
+  /// A thrown RPC error (transport failure, 5xx) is treated as transient and
+  /// retried until the deadline, and the most recent one is attached to the
+  /// timeout error as its cause. An in-band JSON-RPC error envelope (HTTP 200
+  /// with an `error` member) is instead returned by
+  /// [SorobanServer.getContractData] as a `null` result, indistinguishable
+  /// from a not-yet-visible instance, so it is retried the same way and the
+  /// timeout error then carries no cause.
+  ///
+  /// [cancelToken] is observed before each poll and during each inter-poll
+  /// sleep so the caller can abort in flight. Throws
+  /// [SmartAccountTransactionException.timeout] when the contract does
+  /// not become visible within [timeout].
+  @visibleForTesting
+  Future<void> waitForContractVisibleToRpc(
+    String contractId,
+    dio.CancelToken? cancelToken, {
+    Duration pollInterval = const Duration(
+        milliseconds: OZConstants.rpcVisibilityPollIntervalMs),
+    Duration timeout = const Duration(
+        seconds: OZConstants.rpcVisibilityTimeoutSeconds),
+  }) async {
+    final deadline = DateTime.now().add(timeout);
+    Object? lastError;
+    while (true) {
+      _checkCancellation(cancelToken);
+      try {
+        final entry = await _kit.sorobanServer.getContractData(
+          contractId,
+          XdrSCVal.forLedgerKeyContractInstance(),
+          XdrContractDataDurability.PERSISTENT,
+        );
+        if (entry != null) {
+          return;
+        }
+      } on Exception catch (e) {
+        // Transient RPC exceptions are treated as "not yet visible" and
+        // retried until the deadline; the most recent one is surfaced as the
+        // timeout cause. The production caller always passes a freshly-deployed
+        // contractId, so in practice these are RPC-level failures (congestion,
+        // 5xx). Error subclasses (programmer/RPC-client bugs) are not caught
+        // here, so they propagate immediately instead of being masked for the
+        // full timeout budget.
+        lastError = e;
+      }
+      if (!DateTime.now().isBefore(deadline)) {
+        break;
+      }
+      await _cancellableDelay(pollInterval, cancelToken);
+    }
+    final timeoutLabel = timeout.inSeconds >= 1
+        ? '${timeout.inSeconds}s'
+        : '${timeout.inMilliseconds}ms';
+    throw SmartAccountTransactionException.timeout(
+      details: 'Smart-account contract $contractId not visible to the Soroban '
+          'RPC within $timeoutLabel after deployment; testnet propagation may '
+          'be delayed. Retry shortly.',
+      cause: lastError,
+    );
   }
 
   // Private: cancellation plumbing

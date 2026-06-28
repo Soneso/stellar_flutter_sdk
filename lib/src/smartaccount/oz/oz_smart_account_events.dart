@@ -66,6 +66,30 @@ final class OZSmartAccountEventWalletConnected extends OZSmartAccountEvent {
   int get hashCode => Object.hash(contractId, credentialId);
 }
 
+/// Emitted when the kit connects headlessly to a smart account by contract
+/// address alone, via [OZWalletOperations.connectToContract].
+///
+/// Unlike [OZSmartAccountEventWalletConnected] there is no passkey credential,
+/// so the event carries only the contract address.
+final class OZSmartAccountEventHeadlessConnected extends OZSmartAccountEvent {
+  const OZSmartAccountEventHeadlessConnected({required this.contractId});
+
+  final String contractId;
+
+  @override
+  String get eventTypeName => 'HeadlessConnected';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is OZSmartAccountEventHeadlessConnected &&
+        other.contractId == contractId;
+  }
+
+  @override
+  int get hashCode => contractId.hashCode;
+}
+
 /// Emitted when a wallet is disconnected.
 ///
 /// This event is fired when `disconnect()` is called. The session is cleared,
@@ -505,6 +529,9 @@ class OZSmartAccountEventEmitter {
   static String _eventTypeNameFor<E extends OZSmartAccountEvent>() {
     if (E == OZSmartAccountEventWalletConnected) {
       return 'WalletConnected';
+    }
+    if (E == OZSmartAccountEventHeadlessConnected) {
+      return 'HeadlessConnected';
     }
     if (E == OZSmartAccountEventWalletDisconnected) {
       return 'WalletDisconnected';

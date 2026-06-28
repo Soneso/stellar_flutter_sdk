@@ -24,6 +24,21 @@ class OZConstants {
   /// wallet.
   static const int friendbotReserveXlm = 5;
 
+  /// Interval in milliseconds between successive Soroban RPC visibility polls.
+  /// The RPC simulation endpoint can lag the rest of the network by one or
+  /// more ledger closes, so the SDK polls until a target ledger entry is
+  /// visible to the RPC before simulating against it. Shared by the
+  /// post-Friendbot account-entry wait and the post-deploy contract-instance
+  /// wait.
+  static const int rpcVisibilityPollIntervalMs = 1500;
+
+  /// Overall timeout in seconds for a Soroban RPC visibility poll. When the
+  /// target ledger entry (a freshly funded account or a freshly deployed
+  /// contract instance) does not become visible to the RPC within this budget
+  /// the flow fails with a clear error rather than the opaque "entry is
+  /// missing" contract error from simulation.
+  static const int rpcVisibilityTimeoutSeconds = 45;
+
   /// Default timeout for transaction submission and polling in seconds.
   static const int defaultTimeoutSeconds = 30;
 
