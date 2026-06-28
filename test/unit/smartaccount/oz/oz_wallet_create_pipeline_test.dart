@@ -86,8 +86,8 @@ GetTransactionResponse _txSuccess({int ledger = 12345}) {
   return r;
 }
 
-/// A populated [LedgerEntry] standing in for a visible contract instance; only
-/// its non-null presence matters to the visibility poll.
+/// A minimal non-null [LedgerEntry] standing in for a visible contract
+/// instance; only its non-null presence matters to the visibility poll.
 LedgerEntry _visibleInstanceEntry() => LedgerEntry('', '', 0, null, null);
 
 void main() {

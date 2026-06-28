@@ -406,11 +406,12 @@ class OZTransactionOperations {
     final credentialId = connected.credentialId;
     final contractId = connected.contractId;
 
-    // Reject the headless sentinel before any decode, ceremony, or network
-    // call. A kit connected via connectToContract has no passkey credential,
-    // so the single-passkey submit path cannot sign; headless operations must
-    // use the multi-signer / external-signer pipeline.
-    if (credentialId == OZConstants.headlessCredentialSentinel) {
+    // Reject a headless connection before any decode, ceremony, or network
+    // call. A kit connected via connectToContract has no passkey credential
+    // (credentialId is null), so the single-passkey submit path cannot sign;
+    // headless operations must use the multi-signer / external-signer
+    // pipeline.
+    if (credentialId == null) {
       throw SmartAccountValidationException.invalidInput(
         'credentialId',
         'This kit is connected headlessly (no passkey); use the multi-signer '
@@ -842,12 +843,8 @@ class OZTransactionOperations {
       throw SmartAccountTransactionException.submissionFailed('Friendbot funding failed');
     }
 
-    // why: Friendbot returns once Horizon has confirmed the deposit but the
-    // Soroban RPC simulation endpoint can lag behind by one or more ledger
-    // closes under testnet congestion. Simulating the native SAC balance read
-    // before the RPC has applied the funding ledger fails with an opaque
-    // "account entry is missing" contract error, so poll the RPC until it
-    // sees the account rather than waiting a fixed, optimistic interval.
+    // Wait for RPC visibility of the funded account before the native SAC
+    // balance read simulates against it (see waitForAccountVisibleToRpc).
     await waitForAccountVisibleToRpc(tempKeypair.accountId, cancelToken);
 
     final tempAccount = await _fetchAccount(tempKeypair.accountId);
@@ -1381,9 +1378,14 @@ class OZTransactionOperations {
   /// poll runs every [pollInterval] up to [timeout]; both default to the
   /// [OZConstants.rpcVisibilityPollIntervalMs] /
   /// [OZConstants.rpcVisibilityTimeoutSeconds] budgets and are
-  /// overridable so the behaviour can be exercised in tests. Transient RPC
-  /// errors are retried until the deadline and the most recent one is
-  /// attached to the timeout error as its cause.
+  /// overridable so the behaviour can be exercised in tests.
+  ///
+  /// A thrown RPC error (transport failure, 5xx) is treated as transient and
+  /// retried until the deadline, and the most recent one is attached to the
+  /// timeout error as its cause. An in-band JSON-RPC error envelope (HTTP 200
+  /// with an `error` member) is instead returned by [SorobanServer.getAccount]
+  /// as a `null` result, indistinguishable from a not-yet-visible account, so
+  /// it is retried the same way and the timeout error then carries no cause.
   ///
   /// [cancelToken] is observed before each poll and during each inter-poll
   /// sleep so the caller can abort in flight. Throws
@@ -1407,11 +1409,14 @@ class OZTransactionOperations {
         if (account != null) {
           return;
         }
-      } catch (e) {
-        // Any error raised during the lookup is treated as transient and
-        // retried until the deadline; the most recent one is surfaced on
-        // timeout. The production caller always passes a valid accountId, so
-        // in practice these are RPC-level failures (congestion, 5xx).
+      } on Exception catch (e) {
+        // Transient RPC exceptions are treated as "not yet visible" and
+        // retried until the deadline; the most recent one is surfaced as the
+        // timeout cause. The production caller always passes a valid accountId,
+        // so in practice these are RPC-level failures (congestion, 5xx). Error
+        // subclasses (programmer/RPC-client bugs) are not caught here, so they
+        // propagate immediately instead of being masked for the full timeout
+        // budget.
         lastError = e;
       }
       if (!DateTime.now().isBefore(deadline)) {

@@ -122,7 +122,10 @@ void main() {
                 (e) => e.message,
                 'message',
                 contains('Retry shortly'),
-              ),
+              )
+              // A pure timeout (no transient errors observed) carries no
+              // spurious "last error" cause.
+              .having((e) => e.cause, 'cause', isNull),
         ),
       );
 

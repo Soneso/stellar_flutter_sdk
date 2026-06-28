@@ -4,6 +4,7 @@
 
 import 'dart:typed_data';
 
+import 'package:dio/dio.dart' as dio;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -66,13 +67,14 @@ void main() {
 
       final result = await ops.connectToContract(_contractA);
 
+      expect(kit.isConnected, isTrue);
       expect(kit.contractId, equals(_contractA));
+      expect(kit.credentialId, isNull);
+      expect(kit.isHeadless, isTrue);
       final state = await kit.requireConnected();
       expect(state.contractId, equals(_contractA));
-      expect(
-        state.credentialId,
-        equals(OZConstants.headlessCredentialSentinel),
-      );
+      expect(state.credentialId, isNull);
+      expect(state.isHeadless, isTrue);
       expect(result.contractId, equals(_contractA));
     });
 
@@ -105,7 +107,7 @@ void main() {
 
       expect(headlessEvents.length, equals(1));
       expect(headlessEvents.single.contractId, equals(_contractA));
-      // No credential-bearing event — the sentinel must never leak.
+      // No credential-bearing event — a headless connection carries no credential.
       expect(walletEvents, isEmpty);
     });
 
@@ -145,6 +147,51 @@ void main() {
       expect(await kit.getStorage().getSession(), isNull);
     });
 
+    test('testConnectToContract_clearSessionFailure_stillConnects', () async {
+      final soroban = MockSorobanServer();
+      soroban.getContractDataResponses.add(_existingInstanceEntry());
+      final kit = FakePipelineKit(
+        sorobanServer: soroban,
+        storage: _ClearSessionFaultStorage(),
+      );
+      final ops = OZWalletOperations(kit);
+
+      // A stale passkey session is present before the headless connect.
+      final now = DateTime.now().millisecondsSinceEpoch;
+      await kit.getStorage().saveSession(
+            OZStoredSession(
+              credentialId: 'real-passkey-credential',
+              contractId:
+                  'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM',
+              connectedAt: now,
+              expiresAt: now + 60_000,
+            ),
+          );
+
+      final headlessEvents = <OZSmartAccountEventHeadlessConnected>[];
+      kit.events.on<OZSmartAccountEventHeadlessConnected>(headlessEvents.add);
+
+      // Clearing the persisted session is best-effort: a storage write
+      // failure is swallowed rather than failing the connect, so the call
+      // still resolves and the headless state is set.
+      final result = await ops.connectToContract(_contractA);
+
+      expect(result.contractId, equals(_contractA));
+      expect(kit.contractId, equals(_contractA));
+      final state = await kit.requireConnected();
+      expect(state.contractId, equals(_contractA));
+      expect(state.credentialId, isNull);
+      expect(state.isHeadless, isTrue);
+
+      // The dedicated headless event is emitted despite the clear failure.
+      expect(headlessEvents.length, equals(1));
+      expect(headlessEvents.single.contractId, equals(_contractA));
+
+      // The clear failed and was swallowed, so the stale session survives —
+      // the documented consequence of best-effort clearing.
+      expect(await kit.getStorage().getSession(), isNotNull);
+    });
+
     test('testConnectToContract_doesNotTouchCredentialManager', () async {
       final soroban = MockSorobanServer();
       soroban.getContractDataResponses.add(_existingInstanceEntry());
@@ -160,12 +207,10 @@ void main() {
 
       await ops.connectToContract(_contractA);
 
-      // No credential is created, deleted, or stored for the sentinel.
+      // connectToContract performs no WebAuthn ceremony and writes nothing to
+      // the credential store: no credential is created, deleted, or stored.
+      expect(credentialManager.storedCredentialIds, isEmpty);
       expect(credentialManager.deletedCredentialIds, isEmpty);
-      expect(
-        credentialManager.peek(OZConstants.headlessCredentialSentinel),
-        isNull,
-      );
       expect(deletedEvents, isEmpty);
     });
 
@@ -184,14 +229,15 @@ void main() {
 
       await ops.connectToContract(_contractA);
 
-      // After: connected with the sentinel credential.
+      // After: connected headlessly (contract bound, no passkey credential).
+      expect(kit.isConnected, isTrue);
       expect(kit.contractId, equals(_contractA));
+      expect(kit.credentialId, isNull);
+      expect(kit.isHeadless, isTrue);
       final state = await kit.requireConnected();
       expect(state.contractId, equals(_contractA));
-      expect(
-        state.credentialId,
-        equals(OZConstants.headlessCredentialSentinel),
-      );
+      expect(state.credentialId, isNull);
+      expect(state.isHeadless, isTrue);
     });
   });
 
@@ -231,6 +277,45 @@ void main() {
       );
 
       // Validation precedes any network call and leaves the state unset.
+      expect(soroban.getContractDataCalls, isEmpty);
+      expect(kit.contractId, isNull);
+      await expectLater(
+        () => kit.requireConnected(),
+        throwsA(isA<SmartAccountWalletNotConnected>()),
+      );
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // connectToContract: cancellation
+  // -------------------------------------------------------------------------
+  group('connectToContract cancellation', () {
+    test('testConnectToContract_cancelledBeforeAwait_throwsSubmissionFailed',
+        () async {
+      final soroban = MockSorobanServer();
+      // Seed an existing-contract entry that must never be consumed: the
+      // entry-time cancellation check runs before the on-chain verify, so a
+      // pre-cancelled token aborts before getContractData is ever reached.
+      soroban.getContractDataResponses.add(_existingInstanceEntry());
+      final kit = FakePipelineKit(sorobanServer: soroban);
+      final ops = OZWalletOperations(kit);
+
+      final token = dio.CancelToken();
+      token.cancel('test');
+
+      await expectLater(
+        () => ops.connectToContract(_contractA, cancelToken: token),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>().having(
+          (e) => e.message,
+          'message',
+          contains('Operation cancelled'),
+        )),
+      );
+
+      // Cancellation preceded the on-chain verify and the state set: the
+      // queued instance entry is untouched, no getContractData lookup ran,
+      // and the connection state was never established.
+      expect(soroban.getContractDataResponses.length, equals(1));
       expect(soroban.getContractDataCalls, isEmpty);
       expect(kit.contractId, isNull);
       await expectLater(
@@ -341,9 +426,10 @@ void main() {
       // A real manager call carrying a NON-empty selectedSigners list routes
       // through the production ozRouteSubmission. Its non-empty branch must
       // reach submitWithMultipleSigners and never enter the guarded submit()
-      // path. removeSigner mirrors the default-empty guard sub-case in test 9,
-      // which routes the empty list into submit() and throws the headless
-      // guard; here the non-empty list takes the multi-signer branch instead.
+      // path. removeSigner mirrors the default-empty guard sub-case covered
+      // by testConnectToContract_thenSinglePasskeySubmit_throwsGuard, which
+      // routes the empty list into submit() and throws the headless guard;
+      // here the non-empty list takes the multi-signer branch instead.
       final result = await OZSignerManager(kit).removeSigner(
         contextRuleId: 0,
         signerId: 0,
@@ -367,4 +453,17 @@ void main() {
       expect(soroban.getAccountCalls, isEmpty);
     });
   });
+}
+
+/// Storage double whose [clearSession] always fails with the documented
+/// [SmartAccountStorageWriteFailed]. Drives the best-effort session-clear
+/// branch of [OZWalletOperations.connectToContract]: the failure must be
+/// swallowed so the connect still completes. Save/read operations delegate to
+/// the in-memory base so a pre-seeded session can be observed to survive the
+/// failed clear.
+class _ClearSessionFaultStorage extends OZInMemoryStorageAdapter {
+  @override
+  Future<void> clearSession() async {
+    throw SmartAccountStorageException.writeFailed('session');
+  }
 }

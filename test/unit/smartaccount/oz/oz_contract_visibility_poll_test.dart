@@ -11,7 +11,7 @@ import 'oz_pipeline_fixtures.dart';
 const String _contractA =
     'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK';
 
-/// Builds a populated [LedgerEntry] standing in for a visible contract
+/// Builds a minimal non-null [LedgerEntry] standing in for a visible contract
 /// instance. Only its non-null presence matters to the poll; the encoded
 /// payload is never inspected.
 LedgerEntry _visibleInstanceEntry() => LedgerEntry('', '', 0, null, null);
@@ -27,7 +27,7 @@ class _ContractDataCall {
 }
 
 /// Scriptable [SorobanServer] double whose `getContractData` faithfully
-/// returns `null` (the real RPC's "not yet visible" signal), a populated
+/// returns `null` (the real RPC's "not yet visible" signal), a non-null
 /// [LedgerEntry] (visible), or a thrown error (transient RPC failure).
 ///
 /// The shared [MockSorobanServer] cannot represent `getContractData` returning

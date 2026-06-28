@@ -339,8 +339,11 @@ enum OZSubmissionMethod {
   rpc,
 }
 
-/// Connected-wallet state. Carries the Base64URL credential ID and the
-/// smart-account contract address resolved during connection.
+/// Connected-wallet state. Carries the smart-account contract address and,
+/// for a passkey connection, the Base64URL credential ID resolved during
+/// connection. A headless connection established via
+/// [OZWalletOperations.connectToContract] holds no passkey credential:
+/// [credentialId] is `null` and [isHeadless] is `true`.
 class OZConnectedState {
   /// Constructs a connected state record.
   const OZConnectedState({
@@ -348,11 +351,16 @@ class OZConnectedState {
     required this.contractId,
   });
 
-  /// Base64URL-encoded WebAuthn credential ID.
-  final String credentialId;
+  /// Base64URL-encoded WebAuthn credential ID, or `null` for a headless
+  /// connection that holds no passkey credential.
+  final String? credentialId;
 
   /// Smart-account contract address (C-address).
   final String contractId;
+
+  /// Whether this is a headless connection that holds no passkey credential.
+  /// `true` exactly when [credentialId] is `null`.
+  bool get isHeadless => credentialId == null;
 
   @override
   bool operator ==(Object other) {

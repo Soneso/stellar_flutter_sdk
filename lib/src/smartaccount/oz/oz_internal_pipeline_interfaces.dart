@@ -153,6 +153,15 @@ abstract class OZSmartAccountKitInterface {
     required String contractId,
   });
 
+  /// Sets the kit's connected state to a headless connection bound to
+  /// [contractId] with no passkey credential.
+  ///
+  /// Implementations route the field writes through their state-mutation
+  /// lock so concurrent [requireConnected] / `disconnect` / `close` calls
+  /// observe a coherent state in which a contract is bound but no credential
+  /// is present.
+  Future<void> setHeadlessConnectedState({required String contractId});
+
   /// The currently connected smart-account contract address, or `null`
   /// when no wallet is connected. Distinct from [requireConnected]: the
   /// throwing path is for state-changing flows that cannot proceed

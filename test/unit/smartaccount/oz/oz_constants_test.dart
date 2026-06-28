@@ -56,10 +56,12 @@ void main() {
       expect(OZConstants.clientName, 'flutter-stellar-sdk');
     });
 
-    test('test_OZConstants_exposes_exactly_16_public_constants', () {
-      // Inventory check: the sixteen values below must all be present and
-      // surfacing the correct constants. If a new constant is added or one is
-      // removed/renamed, this list will fall out of date and force review.
+    test('test_OZConstants_publicConstants_areNonNull_inventoryGuard', () {
+      // Inventory guard against renames and removals: every constant below is
+      // referenced by name, so renaming or removing one breaks the reference
+      // and fails compilation. Additions are NOT detected automatically — a
+      // newly added constant stays absent from this list until an author adds
+      // it, so keeping the inventory complete relies on author discipline.
       final values = <Object>[
         OZConstants.defaultSessionExpiryMs,
         OZConstants.defaultIndexerTimeoutMs,
@@ -78,7 +80,6 @@ void main() {
         OZConstants.maxIndexerConnectTimeoutMs,
         OZConstants.maxRelayerConnectTimeoutMs,
       ];
-      expect(values.length, 16);
       expect(values, everyElement(isNotNull));
     });
   });

@@ -217,15 +217,30 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
 
   /// Whether a wallet is currently connected.
   ///
-  /// Returns `true` when both the credential ID and contract ID are
-  /// non-null. Reflects in-memory state only; after an app restart a
-  /// previously-saved session must be restored via
-  /// [OZWalletOperations.connectWallet] before [isConnected] reads as
-  /// `true` again.
-  bool get isConnected => _credentialId != null && _contractId != null;
+  /// Returns `true` when a contract address is bound, covering both a
+  /// passkey connection and a headless connection established via
+  /// [OZWalletOperations.connectToContract]. Reflects in-memory state only;
+  /// after an app restart a previously-saved session must be restored via
+  /// [OZWalletOperations.connectWallet] before [isConnected] reads as `true`
+  /// again.
+  bool get isConnected => _contractId != null;
 
-  /// Connected credential ID (Base64URL-encoded, no padding), or `null` when no wallet is connected.
+  /// Connected credential ID (Base64URL-encoded, no padding), or `null` when
+  /// no wallet is connected or the wallet is connected headlessly via
+  /// [OZWalletOperations.connectToContract] (which holds no passkey
+  /// credential). Use [isHeadless] to tell a headless connection apart from
+  /// no connection.
   String? get credentialId => _credentialId;
+
+  /// Whether the current connection is headless — a connection established
+  /// via [OZWalletOperations.connectToContract] that binds a contract address
+  /// but holds no passkey credential.
+  ///
+  /// `true` exactly when a contract address is bound while [credentialId] is
+  /// `null`. A headless connection supports only the multi-signer /
+  /// external-signer pipeline; the single-passkey operations
+  /// (e.g. [OZTransactionOperations.submit]) reject it.
+  bool get isHeadless => _contractId != null && _credentialId == null;
 
   /// Connected smart-account contract address (C-address), or `null`
   /// when no wallet is connected.
@@ -234,13 +249,14 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
 
   // Connection management
 
-  /// Updates the connected state to the supplied [credentialId] /
-  /// [contractId] pair.
+  /// Updates the connected state to bind the passkey [credentialId] to the
+  /// [contractId].
   ///
   /// Called by [walletOperations] after wallet creation and after a
-  /// successful connect or reconnect. The write is routed through
-  /// [_withLock]; both scalar field writes happen inside the same lock
-  /// acquisition so observers always see a coherent
+  /// successful passkey connect or reconnect. For a headless connection that
+  /// carries no credential use [setHeadlessConnectedState]. The write is
+  /// routed through [_withLock]; both scalar field writes happen inside the
+  /// same lock acquisition so observers always see a coherent
   /// (`credentialId`, `contractId`) pair.
   @override
   Future<void> setConnectedState({
@@ -253,14 +269,34 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
     });
   }
 
-  /// Returns the connected credential ID and contract address, or throws
-  /// [SmartAccountWalletNotConnected] when no wallet is connected.
+  /// Updates the connected state to a headless connection bound to
+  /// [contractId] with no passkey credential.
+  ///
+  /// Called by [walletOperations] after a successful
+  /// [OZWalletOperations.connectToContract]. The write is routed through
+  /// [_withLock]; clearing the credential and setting the contract happen
+  /// inside the same lock acquisition so observers always see a coherent
+  /// state in which a contract is bound and [credentialId] is `null`
+  /// (i.e. [isHeadless] is `true`).
+  @override
+  Future<void> setHeadlessConnectedState({required String contractId}) async {
+    await _withLock<void>(() {
+      _credentialId = null;
+      _contractId = contractId;
+    });
+  }
+
+  /// Returns the connected contract address and, for a passkey connection,
+  /// the credential ID, or throws [SmartAccountWalletNotConnected] when no
+  /// wallet is connected. For a headless connection the returned
+  /// [OZConnectedState.credentialId] is `null` and
+  /// [OZConnectedState.isHeadless] is `true`.
   @override
   Future<OZConnectedState> requireConnected() async {
     return _withLock<OZConnectedState>(() {
       final cId = _credentialId;
       final ctId = _contractId;
-      if (cId == null || ctId == null) {
+      if (ctId == null) {
         throw SmartAccountWalletException.notConnected(
           details:
               'No wallet connected. Call createWallet() or connectWallet() first.',

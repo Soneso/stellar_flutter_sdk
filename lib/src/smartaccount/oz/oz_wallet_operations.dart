@@ -236,9 +236,8 @@ final class OZConnectWalletAmbiguous extends OZConnectWalletResult {
 /// Result of a successful headless [OZWalletOperations.connectToContract].
 ///
 /// Carries only the connected contract address. Unlike
-/// [OZConnectWalletConnected] there is no credential field — a headless
-/// connection holds no passkey credential, only an internal sentinel — so
-/// nothing here can leak the sentinel to callers.
+/// [OZConnectWalletConnected] there is no credential field: a headless
+/// connection holds no passkey credential.
 class OZConnectToContractResult {
   /// Constructs a headless connect result for [contractId].
   const OZConnectToContractResult({required this.contractId});
@@ -555,12 +554,8 @@ class OZWalletOperations {
             'nativeTokenContract is required when autoFund is true',
           );
         }
-        // why: the deploy transaction confirms once the network applies it,
-        // but the Soroban RPC simulation endpoint can lag behind by one or
-        // more ledger closes under testnet congestion. fundWallet simulates
-        // against the smart-account contract, so wait until the RPC sees the
-        // deployed contract instance rather than sleeping a fixed, optimistic
-        // interval that fails when propagation runs long.
+        // Wait for RPC visibility of the deployed instance before fundWallet
+        // simulates against it (see waitForContractVisibleToRpc).
         await waitForContractVisibleToRpc(contractId, cancelToken);
         await _kit.transactionOperations.fundWallet(
           nativeTokenContract: tokenContract,
@@ -739,7 +734,7 @@ class OZWalletOperations {
   /// Connects to an existing smart account by contract address alone, with no
   /// passkey credential.
   ///
-  /// Intended for autonomous signers (a reference agent) and backend services
+  /// Intended for autonomous signing processes and backend services
   /// that operate a smart account through the multi-signer / external-signer
   /// path. Unlike [connectWallet], this method performs no WebAuthn ceremony,
   /// consults no indexer, and persists no session — it sets the in-memory
@@ -763,8 +758,10 @@ class OZWalletOperations {
   ///    best-effort: a persistent-storage write failure is swallowed rather
   ///    than failing the connect, so on such a failure a stale session may
   ///    survive and a later [connectWallet] could still restore it.
-  /// 4. Sets the connected state to [contractId] with an internal sentinel
-  ///    credential ID (preserving the non-null `OZConnectedState` invariant).
+  /// 4. Sets the headless connected state: [contractId] is bound but no
+  ///    passkey credential is present, so [OZSmartAccountKit.credentialId]
+  ///    and [OZConnectedState.credentialId] read as `null` and
+  ///    [OZSmartAccountKit.isHeadless] reads as `true`.
   /// 5. Emits [OZSmartAccountEventHeadlessConnected] (carrying only the
   ///    contract address — no credential).
   ///
@@ -798,16 +795,13 @@ class OZWalletOperations {
       // Non-critical — clearing is best-effort.
     }
 
-    // 4. Set connected state with the real contractId and a sentinel
-    //    credential, preserving the non-null OZConnectedState invariant.
-    await _kit.setConnectedState(
-      credentialId: OZConstants.headlessCredentialSentinel,
-      contractId: contractId,
-    );
+    // 4. Set the headless connected state: the contract address is bound but
+    //    no passkey credential is present, so credentialId reads as null.
+    await _kit.setHeadlessConnectedState(contractId: contractId);
 
-    // 5. Emit the dedicated headless event. No WalletConnected (which would
-    //    leak the sentinel onto its non-null credentialId field), no session
-    //    save, no credential manager.
+    // 5. Emit the dedicated headless event. No WalletConnected event (its
+    //    credentialId field is for passkey connections), no session save, no
+    //    credential manager write.
     _kit.events.emit(
       OZSmartAccountEventHeadlessConnected(contractId: contractId),
     );
@@ -1120,12 +1114,8 @@ class OZWalletOperations {
     );
 
     if (autoFund) {
-      // why: the deploy transaction confirms once the network applies it,
-      // but the Soroban RPC simulation endpoint can lag behind by one or
-      // more ledger closes under testnet congestion. fundWallet simulates
-      // against the smart-account contract, so wait until the RPC sees the
-      // deployed contract instance rather than sleeping a fixed, optimistic
-      // interval that fails when propagation runs long.
+      // Wait for RPC visibility of the deployed instance before fundWallet
+      // simulates against it (see waitForContractVisibleToRpc).
       await waitForContractVisibleToRpc(contractId, cancelToken);
       await _kit.transactionOperations.fundWallet(
         nativeTokenContract: nativeTokenContract!,
@@ -1771,9 +1761,15 @@ class OZWalletOperations {
   /// here. The poll runs every [pollInterval] up to [timeout]; both default to
   /// the [OZConstants.rpcVisibilityPollIntervalMs] /
   /// [OZConstants.rpcVisibilityTimeoutSeconds] budgets and are overridable so
-  /// the behaviour can be exercised in tests. Transient RPC errors are retried
-  /// until the deadline and the most recent one is attached to the timeout
-  /// error as its cause.
+  /// the behaviour can be exercised in tests.
+  ///
+  /// A thrown RPC error (transport failure, 5xx) is treated as transient and
+  /// retried until the deadline, and the most recent one is attached to the
+  /// timeout error as its cause. An in-band JSON-RPC error envelope (HTTP 200
+  /// with an `error` member) is instead returned by
+  /// [SorobanServer.getContractData] as a `null` result, indistinguishable
+  /// from a not-yet-visible instance, so it is retried the same way and the
+  /// timeout error then carries no cause.
   ///
   /// [cancelToken] is observed before each poll and during each inter-poll
   /// sleep so the caller can abort in flight. Throws
@@ -1801,12 +1797,14 @@ class OZWalletOperations {
         if (entry != null) {
           return;
         }
-      } catch (e) {
-        // Any error raised during the lookup is treated as transient and
-        // retried until the deadline; the most recent one is surfaced on
-        // timeout. The production caller always passes a freshly-deployed
-        // contractId, so in practice these are RPC-level failures
-        // (congestion, 5xx).
+      } on Exception catch (e) {
+        // Transient RPC exceptions are treated as "not yet visible" and
+        // retried until the deadline; the most recent one is surfaced as the
+        // timeout cause. The production caller always passes a freshly-deployed
+        // contractId, so in practice these are RPC-level failures (congestion,
+        // 5xx). Error subclasses (programmer/RPC-client bugs) are not caught
+        // here, so they propagate immediately instead of being masked for the
+        // full timeout budget.
         lastError = e;
       }
       if (!DateTime.now().isBefore(deadline)) {

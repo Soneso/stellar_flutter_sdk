@@ -48,14 +48,6 @@ class OZConstants {
   /// Maximum policies per context rule (OpenZeppelin contract limit).
   static const int maxPolicies = 5;
 
-  /// Sentinel credential ID stored in the connected state by
-  /// [OZWalletOperations.connectToContract]. The headless operate path
-  /// (multi-signer / external-signer) never reads `connected.credentialId`;
-  /// this value only preserves the non-null `OZConnectedState.credentialId`
-  /// invariant. The single-passkey `submit()` path guards on this exact value
-  /// and throws a clear error rather than attempting a ceremony with it.
-  static const String headlessCredentialSentinel = '';
-
   /// HTTP header identifying the SDK name sent with indexer and relayer
   /// requests.
   static const String clientNameHeader = 'X-Client-Name';
