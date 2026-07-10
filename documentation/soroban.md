@@ -1012,7 +1012,7 @@ Use [stellar-contract-bindings](https://github.com/lightsail-network/stellar-con
 ```bash
 pip install stellar-contract-bindings
 
-stellar-contract-bindings dart \
+stellar-contract-bindings flutter \
   --contract-id YOUR_CONTRACT_ID \
   --rpc-url https://soroban-testnet.stellar.org \
   --output ./generated \

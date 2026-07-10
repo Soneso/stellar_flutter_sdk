@@ -1,5 +1,8 @@
 ## [Unreleased]
 - Fix XDR decoding of `unsigned int` (uint32) values: values of 2^31 or greater decoded as negative numbers. Decoding now uses an unsigned 32-bit read, correct across native and web (dart2js) platforms.
+- Regenerate the contract-bindings test fixtures (hello, auth, token, atomic swap) with the updated community bindings generator: convenience methods now forward their options into MethodOptions and 64-bit types map to BigInt. The convenience methods no longer accept signer or submitTimeout parameters, and restore defaults to false.
+- Add a full-surface fixture (BindingsSpecTestContract) and a gated testnet integration test covering u64, i64, u128, i128, u256, i256, timepoint, duration, bytes, map, vec, tuple, option, struct, union (including a payload arm and the RoyalCard integer-discriminant enum), and address round-trips.
+- Give the atomic swap integration tests the same two-minute timeout as their contract-binding variant.
 
 ## [3.2.1] - 28.Jun.2026.
 - OpenZeppelin smart accounts: add headless `connectToContract` to connect by contract address alone, with no passkey credential. Adds `OZConnectToContractResult`, the `OZSmartAccountEventHeadlessConnected` event, and `isHeadless` on `OZSmartAccountKit` and `OZConnectedState`.
