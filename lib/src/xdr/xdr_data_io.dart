@@ -102,6 +102,12 @@ class DataInput {
     return view!.getInt32(oldOffset!, endian);
   }
 
+  int readUint32([Endian endian = Endian.big]) {
+    var oldOffset = _offset;
+    _offset = _offset! + 4;
+    return view!.getUint32(oldOffset!, endian);
+  }
+
   BigInt readBigInt64([Endian endian = Endian.big]) {
     var oldOffset = _offset;
     _offset = _offset! + 8;

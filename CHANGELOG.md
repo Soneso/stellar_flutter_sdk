@@ -1,3 +1,6 @@
+## [Unreleased]
+- Fix XDR decoding of `unsigned int` (uint32) values: values of 2^31 or greater decoded as negative numbers. Decoding now uses an unsigned 32-bit read, correct across native and web (dart2js) platforms.
+
 ## [3.2.1] - 28.Jun.2026.
 - OpenZeppelin smart accounts: add headless `connectToContract` to connect by contract address alone, with no passkey credential. Adds `OZConnectToContractResult`, the `OZSmartAccountEventHeadlessConnected` event, and `isHeadless` on `OZSmartAccountKit` and `OZConnectedState`.
 - OpenZeppelin smart accounts: `OZConnectedState.credentialId` is now nullable (`String?`); `null` indicates a headless connection. Minor breaking change for code that reads it as a non-null `String`.

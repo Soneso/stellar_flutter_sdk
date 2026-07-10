@@ -21,7 +21,7 @@ class XdrUint32 {
   }
 
   static XdrUint32 decode(XdrDataInputStream stream) {
-    return XdrUint32(stream.readInt());
+    return XdrUint32(stream.readUint32());
   }
 
   String toBase64EncodedXdrString() {

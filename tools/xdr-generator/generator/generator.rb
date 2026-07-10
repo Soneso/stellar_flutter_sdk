@@ -2288,7 +2288,7 @@ class Generator < Xdrgen::Generators::Base
         dart_type: "int",
         imports: ["xdr_data_io.dart"],
         encode: ->(param, field) { "stream.writeInt(#{param}.#{field})" },
-        decode: -> { "stream.readInt()" },
+        decode: -> { "stream.readUint32()" },
       }
     when AST::Typespecs::Hyper
       {
