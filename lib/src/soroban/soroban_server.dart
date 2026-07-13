@@ -126,6 +126,10 @@ class SorobanServer {
   /// - ledgerRetentionWindow: Maximum number of ledgers retained by this node
   /// - latestLedger: Most recent ledger sequence number known to the server
   /// - oldestLedger: Oldest ledger sequence number stored by the server
+  /// - latestLedgerCloseTime: Unix timestamp (seconds, as string) of the latest
+  ///   ledger close; null on servers below RPC v27.1.0
+  /// - oldestLedgerCloseTime: Unix timestamp (seconds, as string) of the oldest
+  ///   ledger close; null on servers below RPC v27.1.0
   ///
   /// The retention window indicates how far back in history you can query. If you need to access
   /// ledgers outside this window, you may need to use a different data source like Horizon.
@@ -1362,6 +1366,16 @@ class GetHealthResponse extends SorobanRpcResponse {
   /// Oldest ledger sequence kept in history.
   int? oldestLedger;
 
+  /// The unix timestamp (seconds) of the close time of the latest known
+  /// ledger, as a string. Returned by RPC servers from v27.1.0; null when the
+  /// server does not provide it.
+  String? latestLedgerCloseTime;
+
+  /// The unix timestamp (seconds) of the close time of the oldest ledger kept
+  /// in history, as a string. Returned by RPC servers from v27.1.0; null when
+  /// the server does not provide it.
+  String? oldestLedgerCloseTime;
+
   static const String HEALTHY = "healthy";
 
   /// Creates a GetHealthResponse from JSON-RPC response.
@@ -1384,6 +1398,14 @@ class GetHealthResponse extends SorobanRpcResponse {
       }
       if (json['result']['oldestLedger'] != null) {
         response.oldestLedger = json['result']['oldestLedger'];
+      }
+      if (json['result']['latestLedgerCloseTime'] != null) {
+        response.latestLedgerCloseTime =
+            json['result']['latestLedgerCloseTime'];
+      }
+      if (json['result']['oldestLedgerCloseTime'] != null) {
+        response.oldestLedgerCloseTime =
+            json['result']['oldestLedgerCloseTime'];
       }
     } else if (json['error'] != null) {
       response.error = SorobanRpcErrorResponse.fromJson(json);

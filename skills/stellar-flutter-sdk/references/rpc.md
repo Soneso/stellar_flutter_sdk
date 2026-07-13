@@ -32,7 +32,7 @@ if (health.status == GetHealthResponse.HEALTHY) {
 }
 ```
 
-**Response fields:** `status`, `ledgerRetentionWindow`, `latestLedger`, `oldestLedger`.
+**Response fields:** `status`, `ledgerRetentionWindow`, `latestLedger`, `oldestLedger`, `latestLedgerCloseTime`, `oldestLedgerCloseTime` (the close times are unix-second strings, returned by RPC v27.1.0+; null on older servers).
 
 ---
 

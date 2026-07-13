@@ -30,6 +30,32 @@ class MockDioAdapter implements dio.HttpClientAdapter {
 void main() {
   group('GetHealthResponse', () {
     test('fromJson parses complete response', () {
+      // Full v27.1.0+ response shape: the ledger close times are int64 values
+      // serialized as JSON strings.
+      final json = {
+        'result': {
+          'status': 'healthy',
+          'ledgerRetentionWindow': 17280,
+          'latestLedger': 123456,
+          'latestLedgerCloseTime': '1783951566',
+          'oldestLedger': 106176,
+          'oldestLedgerCloseTime': '1783345758',
+        }
+      };
+
+      final response = GetHealthResponse.fromJson(json);
+
+      expect(response.status, equals('healthy'));
+      expect(response.ledgerRetentionWindow, equals(17280));
+      expect(response.latestLedger, equals(123456));
+      expect(response.oldestLedger, equals(106176));
+      expect(response.latestLedgerCloseTime, equals('1783951566'));
+      expect(response.oldestLedgerCloseTime, equals('1783345758'));
+      expect(response.error, isNull);
+    });
+
+    test('fromJson leaves close times null when absent', () {
+      // RPC servers below v27.1.0 do not return the ledger close-time fields.
       final json = {
         'result': {
           'status': 'healthy',
@@ -42,10 +68,8 @@ void main() {
       final response = GetHealthResponse.fromJson(json);
 
       expect(response.status, equals('healthy'));
-      expect(response.ledgerRetentionWindow, equals(17280));
-      expect(response.latestLedger, equals(123456));
-      expect(response.oldestLedger, equals(106176));
-      expect(response.error, isNull);
+      expect(response.latestLedgerCloseTime, isNull);
+      expect(response.oldestLedgerCloseTime, isNull);
     });
 
     test('fromJson handles partial response', () {

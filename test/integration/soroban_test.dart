@@ -242,6 +242,9 @@ void main() {
       assert(healthResponse.ledgerRetentionWindow != null);
       assert(healthResponse.latestLedger != null);
       assert(healthResponse.oldestLedger != null);
+      // Testnet runs stellar-rpc v27.1.0+, which returns the ledger close times.
+      assert(healthResponse.latestLedgerCloseTime != null);
+      assert(healthResponse.oldestLedgerCloseTime != null);
     });
 
     test('test server version info ', () async {
