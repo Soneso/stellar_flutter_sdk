@@ -37,13 +37,8 @@ void main() {
     try {
       await sdk.accounts.account(accountAId);
     } catch (e) {
-      if (testOn == 'testnet') {
-        await FriendBot.fundTestAccount(accountAId);
-      } else if (testOn == 'futurenet') {
-        await FuturenetFriendBot.fundTestAccount(accountAId);
-      }
-
-      await Future.delayed(const Duration(seconds: 3), () {});
+      await fundTestAccountAndWaitForRpc(sorobanServer, accountAId,
+          useFuturenet: testOn != 'testnet');
     }
   });
 
@@ -822,11 +817,8 @@ void main() {
     });
 
     test('test SAC with asset', () async {
-      if (testOn == 'testnet') {
-        await FriendBot.fundTestAccount(accountBId);
-      } else if (testOn == 'futurenet') {
-        await FuturenetFriendBot.fundTestAccount(accountBId);
-      }
+      await fundTestAccountAndWaitForRpc(sorobanServer, accountBId,
+          useFuturenet: testOn != 'testnet');
       await Future.delayed(Duration(seconds: 5));
 
       // prepare trustline

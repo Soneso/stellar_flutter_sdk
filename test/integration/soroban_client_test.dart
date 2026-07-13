@@ -13,6 +13,8 @@ void main() {
   final TESTNET_SERVER_URL = testOn == 'testnet'
       ? "https://soroban-testnet.stellar.org"
       : "https://rpc-futurenet.stellar.org";
+  final sorobanServer = SorobanServer(TESTNET_SERVER_URL);
+  sorobanServer.enableLogging = true;
   final HELLO_CONTRACT_PATH = 'test/wasm/soroban_hello_world_contract.wasm';
   final AUTH_CONTRACT_PATH = 'test/wasm/soroban_auth_contract.wasm';
   final SWAP_CONTRACT_PATH = 'test/wasm/soroban_atomic_swap_contract.wasm';
@@ -22,11 +24,9 @@ void main() {
   final sourceAccountKeyPair = KeyPair.random();
 
   setUp(() async {
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(sourceAccountKeyPair.accountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(sourceAccountKeyPair.accountId);
-    }
+    await fundTestAccountAndWaitForRpc(
+        sorobanServer, sourceAccountKeyPair.accountId,
+        useFuturenet: testOn != 'testnet');
   });
 
   Future<String> installContract(String path) async {
@@ -36,6 +36,7 @@ void main() {
         sourceAccountKeyPair: sourceAccountKeyPair,
         network: network,
         rpcUrl: TESTNET_SERVER_URL,
+        server: sorobanServer,
         enableSorobanServerLogging: true);
     return await SorobanClient.install(installRequest: installRequest);
   }
@@ -48,6 +49,7 @@ void main() {
         rpcUrl: TESTNET_SERVER_URL,
         wasmHash: wasmHash,
         constructorArgs: constructorArgs,
+        server: sorobanServer,
         enableSorobanServerLogging: true);
     return await SorobanClient.deploy(deployRequest: deployRequest);
   }
@@ -196,6 +198,7 @@ void main() {
             contractId: deployedClient.getContractId(),
             network: network,
             rpcUrl: TESTNET_SERVER_URL,
+            server: sorobanServer,
             enableServerLogging: true));
 
     assert(client.getContractId() == deployedClient.getContractId());
@@ -219,11 +222,8 @@ void main() {
     // we need to sign the auth entry
 
     final invokerKeyPair = KeyPair.random();
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(invokerKeyPair.accountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(invokerKeyPair.accountId);
-    }
+    await fundTestAccountAndWaitForRpc(sorobanServer, invokerKeyPair.accountId,
+        useFuturenet: testOn != 'testnet');
 
     invokerAddress = Address.forAccountId(invokerKeyPair.accountId);
     args = [invokerAddress.toXdrSCVal(), XdrSCVal.forU32(4)];
@@ -308,15 +308,12 @@ void main() {
     final bobKeyPair = KeyPair.random();
     final bobId = bobKeyPair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(adminKeyPair.accountId);
-      await FriendBot.fundTestAccount(aliceId);
-      await FriendBot.fundTestAccount(bobId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(adminKeyPair.accountId);
-      await FuturenetFriendBot.fundTestAccount(aliceId);
-      await FuturenetFriendBot.fundTestAccount(bobId);
-    }
+    await fundTestAccountAndWaitForRpc(sorobanServer, adminKeyPair.accountId,
+        useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndWaitForRpc(sorobanServer, aliceId,
+        useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndWaitForRpc(sorobanServer, bobId,
+        useFuturenet: testOn != 'testnet');
 
     final atomicSwapClient = await deployContract(swapContractWasmHash);
     print(
@@ -424,15 +421,12 @@ void main() {
     final bobKeyPair = KeyPair.random();
     final bobId = bobKeyPair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(adminKeyPair.accountId);
-      await FriendBot.fundTestAccount(aliceId);
-      await FriendBot.fundTestAccount(bobId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(adminKeyPair.accountId);
-      await FuturenetFriendBot.fundTestAccount(aliceId);
-      await FuturenetFriendBot.fundTestAccount(bobId);
-    }
+    await fundTestAccountAndWaitForRpc(sorobanServer, adminKeyPair.accountId,
+        useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndWaitForRpc(sorobanServer, aliceId,
+        useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndWaitForRpc(sorobanServer, bobId,
+        useFuturenet: testOn != 'testnet');
 
     final atomicSwapClient = await deployContract(swapContractWasmHash);
     print(
@@ -594,11 +588,8 @@ void main() {
 
     // Test 2: submitter and invoker are NOT the same (need to sign auth entry)
     final invokerKeyPair = KeyPair.random();
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(invokerKeyPair.accountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(invokerKeyPair.accountId);
-    }
+    await fundTestAccountAndWaitForRpc(sorobanServer, invokerKeyPair.accountId,
+        useFuturenet: testOn != 'testnet');
 
     invokerAddress = Address.forAccountId(invokerKeyPair.accountId);
 
@@ -644,15 +635,12 @@ void main() {
     final bobKeyPair = KeyPair.random();
     final bobId = bobKeyPair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(adminKeyPair.accountId);
-      await FriendBot.fundTestAccount(aliceId);
-      await FriendBot.fundTestAccount(bobId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(adminKeyPair.accountId);
-      await FuturenetFriendBot.fundTestAccount(aliceId);
-      await FuturenetFriendBot.fundTestAccount(bobId);
-    }
+    await fundTestAccountAndWaitForRpc(sorobanServer, adminKeyPair.accountId,
+        useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndWaitForRpc(sorobanServer, aliceId,
+        useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndWaitForRpc(sorobanServer, bobId,
+        useFuturenet: testOn != 'testnet');
 
     // Deploy atomic swap contract
     final atomicSwapDeployedClient = await deployContract(swapContractWasmHash);

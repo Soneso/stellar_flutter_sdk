@@ -24,6 +24,8 @@ void main() {
   final rpcUrl = testOn == 'testnet'
       ? 'https://soroban-testnet.stellar.org'
       : 'https://rpc-futurenet.stellar.org';
+  final sorobanServer = SorobanServer(rpcUrl);
+  sorobanServer.enableLogging = true;
   final sdk =
       testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
 
@@ -37,11 +39,8 @@ void main() {
     try {
       await sdk.accounts.account(accountId);
     } catch (_) {
-      if (testOn == 'testnet') {
-        await FriendBot.fundTestAccount(accountId);
-      } else {
-        await FuturenetFriendBot.fundTestAccount(accountId);
-      }
+      await fundTestAccountAndWaitForRpc(sorobanServer, accountId,
+          useFuturenet: testOn != 'testnet');
     }
   }
 
@@ -54,6 +53,7 @@ void main() {
         sourceAccountKeyPair: submitterKp,
         network: network,
         rpcUrl: rpcUrl,
+        server: sorobanServer,
       ),
     );
     final client = await SorobanClient.deploy(
@@ -62,6 +62,7 @@ void main() {
         network: network,
         rpcUrl: rpcUrl,
         wasmHash: wasmHash,
+        server: sorobanServer,
       ),
     );
     return client.getContractId();
@@ -114,6 +115,7 @@ void main() {
         contractId: contractId,
         network: network,
         rpcUrl: rpcUrl,
+        server: sorobanServer,
         enableServerLogging: true,
       );
       final assembled = await AssembledTransaction.build(
@@ -175,6 +177,7 @@ void main() {
             contractId: contractId,
             network: network,
             rpcUrl: rpcUrl,
+            server: sorobanServer,
           ),
           methodOptions: MethodOptions(),
           method: 'increment',
@@ -241,6 +244,7 @@ void main() {
             contractId: contractId,
             network: network,
             rpcUrl: rpcUrl,
+            server: sorobanServer,
           ),
           methodOptions: MethodOptions(),
           method: 'increment',

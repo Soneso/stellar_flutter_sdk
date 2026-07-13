@@ -31,21 +31,15 @@ void main() {
     try {
       await sdk.accounts.account(submitterId);
     } catch (e) {
-      if (testOn == 'testnet') {
-        await FriendBot.fundTestAccount(submitterId);
-      } else if (testOn == 'futurenet') {
-        await FuturenetFriendBot.fundTestAccount(submitterId);
-      }
+      await fundTestAccountAndWaitForRpc(sorobanServer, submitterId,
+          useFuturenet: testOn != 'testnet');
     }
 
     try {
       await sdk.accounts.account(invokerId);
     } catch (e) {
-      if (testOn == 'testnet') {
-        await FriendBot.fundTestAccount(invokerId);
-      } else if (testOn == 'futurenet') {
-        await FuturenetFriendBot.fundTestAccount(invokerId);
-      }
+      await fundTestAccountAndWaitForRpc(sorobanServer, invokerId,
+          useFuturenet: testOn != 'testnet');
     }
   });
 
