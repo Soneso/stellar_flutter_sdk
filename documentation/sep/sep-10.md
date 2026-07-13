@@ -414,10 +414,12 @@ void main() {
 
   const successJwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
 
-  Uint8List generateNonce([int length = 64]) {
+  // SEP-10 requires the first operation's value to be the 64-byte base64
+  // encoding of 48 bytes of random data.
+  Uint8List generateNonce([int length = 48]) {
     final random = Random.secure();
     final values = List<int>.generate(length, (_) => random.nextInt(256));
-    return Uint8List.fromList(base64Url.encode(values).codeUnits);
+    return Uint8List.fromList(base64.encode(values).codeUnits);
   }
 
   // Build a valid challenge transaction (mimics what the server would produce)

@@ -50,12 +50,15 @@ void main() {
       bool includeTimeBounds = true,
       bool useV2Preconditions = false,
       String? clientDomainAccountId,
+      Uint8List? nonceValue,
+      bool omitNonceValue = false,
+      bool omitWebAuthDomainValue = false,
     }) {
       final actualClientAccountId = clientAccountId ?? clientKeyPair.accountId;
       final actualServerAccountId = serverAccountId ?? serverKeyPair.accountId;
       final actualHomeDomain = homeDomain ?? serverHomeDomain;
 
-      final nonce = _generateNonce();
+      final nonce = omitNonceValue ? null : (nonceValue ?? _generateNonce());
       final sourceAccount = Account(actualServerAccountId, BigInt.from(-1));
 
       final ops = <Operation>[];
@@ -70,7 +73,9 @@ void main() {
         final uri = Uri.parse(authEndpoint);
         final webAuthDomainOp = ManageDataOperationBuilder(
           'web_auth_domain',
-          Uint8List.fromList(uri.host.codeUnits),
+          omitWebAuthDomainValue
+              ? null
+              : Uint8List.fromList(uri.host.codeUnits),
         ).setSourceAccount(actualServerAccountId).build();
         ops.add(webAuthDomainOp);
       }
@@ -181,6 +186,83 @@ void main() {
             200,
           ),
           returnsNormally,
+        );
+      });
+    });
+
+    group('validateChallenge - Nonce', () {
+      test('throws when the first operation has no data value', () {
+        final challenge = buildValidChallenge(omitNonceValue: true);
+
+        expect(
+          () => webAuth.validateChallenge(
+              challenge, clientKeyPair.accountId, null),
+          throwsA(isA<ChallengeValidationError>().having(
+            (e) => e.toString(),
+            'message',
+            contains('value is missing'),
+          )),
+        );
+      });
+
+      test('throws when the data value is not 64 bytes long', () {
+        final shortValue =
+            Uint8List.fromList(base64.encode(Uint8List(24)).codeUnits);
+        expect(shortValue.length, 32);
+        final challenge = buildValidChallenge(nonceValue: shortValue);
+
+        expect(
+          () => webAuth.validateChallenge(
+              challenge, clientKeyPair.accountId, null),
+          throwsA(isA<ChallengeValidationError>().having(
+            (e) => e.toString(),
+            'message',
+            contains('expected a 64 byte base64-encoded value'),
+          )),
+        );
+      });
+
+      test('throws when the data value is not base64-encoded', () {
+        final invalidValue = Uint8List.fromList(List.filled(64, 33)); // "!"
+        final challenge = buildValidChallenge(nonceValue: invalidValue);
+
+        expect(
+          () => webAuth.validateChallenge(
+              challenge, clientKeyPair.accountId, null),
+          throwsA(isA<ChallengeValidationError>().having(
+            (e) => e.toString(),
+            'message',
+            contains('not base64-encoded'),
+          )),
+        );
+      });
+
+      test('throws when the decoded nonce is not 48 bytes long', () {
+        // 64 base64 characters with two padding characters decode to 46 bytes.
+        final paddedValue =
+            Uint8List.fromList(('A' * 62 + '==').codeUnits);
+        final challenge = buildValidChallenge(nonceValue: paddedValue);
+
+        expect(
+          () => webAuth.validateChallenge(
+              challenge, clientKeyPair.accountId, null),
+          throwsA(isA<ChallengeValidationError>().having(
+            (e) => e.toString(),
+            'message',
+            contains('expected a 48 byte nonce'),
+          )),
+        );
+      });
+
+      test(
+          'throws a validation error when the web_auth_domain operation has no value',
+          () {
+        final challenge = buildValidChallenge(omitWebAuthDomainValue: true);
+
+        expect(
+          () => webAuth.validateChallenge(
+              challenge, clientKeyPair.accountId, null),
+          throwsA(isA<ChallengeValidationErrorInvalidWebAuthDomain>()),
         );
       });
     });
@@ -1011,7 +1093,7 @@ void main() {
       );
 
       final sourceAccount = Account(serverKeyPair.accountId, BigInt.from(-1));
-      final nonce = Uint8List(48);
+      final nonce = _generateNonce();
 
       final op = ManageDataOperationBuilder(
         '$serverHomeDomain auth',
@@ -1044,7 +1126,7 @@ void main() {
       );
 
       final sourceAccount = Account(serverKeyPair.accountId, BigInt.from(-1));
-      final nonce = Uint8List(48);
+      final nonce = _generateNonce();
 
       final op = ManageDataOperationBuilder(
         '$serverHomeDomain auth',

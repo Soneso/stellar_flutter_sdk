@@ -408,13 +408,14 @@ class WebAuth {
 
   /// Validates a challenge transaction according to SEP-0010 requirements.
   ///
-  /// Performs comprehensive validation of the challenge transaction to ensure it
-  /// is safe to sign. This includes checking:
+  /// Validates the challenge transaction to ensure it is safe to sign.
+  /// This includes checking:
   /// - Transaction type must be ENVELOPE_TYPE_TX
   /// - Sequence number must be 0
   /// - Memo validation for muxed accounts
   /// - All operations must be ManageData operations with correct source accounts
   /// - First operation must contain "{home_domain} auth" data name
+  /// - First operation's value must be a 64-byte base64 encoding of a 48-byte nonce
   /// - web_auth_domain must match the auth endpoint's domain
   /// - Transaction time bounds must be valid (within grace period)
   /// - Transaction must have exactly one signature from the server
@@ -537,10 +538,33 @@ class WebAuth {
         throw ChallengeValidationErrorInvalidHomeDomain(
             "invalid home domain in operation $i");
       }
-      final dataValue = op.body.manageDataOp!.dataValue!.dataValue;
-      if (i > 0 && dataName == "web_auth_domain") {
+      final dataValue = op.body.manageDataOp!.dataValue?.dataValue;
+      if (i == 0) {
+        // The first operation's value must be a 64-byte base64 encoding of a
+        // 48-byte cryptographic nonce, as required by SEP-10.
+        if (dataValue == null) {
+          throw ChallengeValidationError(
+              "invalid data value in operation $i: value is missing");
+        }
+        if (dataValue.length != 64) {
+          throw ChallengeValidationError(
+              "invalid data value in operation $i: expected a 64 byte base64-encoded value, got ${dataValue.length} bytes");
+        }
+        List<int> nonce;
+        try {
+          nonce = base64Decode(String.fromCharCodes(dataValue));
+        } on FormatException {
+          throw ChallengeValidationError(
+              "invalid data value in operation $i: value is not base64-encoded");
+        }
+        if (nonce.length != 48) {
+          throw ChallengeValidationError(
+              "invalid data value in operation $i: expected a 48 byte nonce, got ${nonce.length} bytes");
+        }
+      } else if (dataName == "web_auth_domain") {
         final uri = Uri.parse(_authEndpoint);
-        if (uri.host != String.fromCharCodes(dataValue)) {
+        if (dataValue == null ||
+            uri.host != String.fromCharCodes(dataValue)) {
           throw ChallengeValidationErrorInvalidWebAuthDomain(
               "invalid web auth domain in operation $i");
         }
