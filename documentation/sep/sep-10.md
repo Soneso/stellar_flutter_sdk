@@ -319,6 +319,7 @@ try {
 | `NoWebAuthServerSigningKeyFoundException` | stellar.toml missing SIGNING_KEY | Check domain supports SEP-10 |
 | `NoMemoForMuxedAccountsException` | Memo provided with M... account | Use memo OR muxed, not both |
 | `ChallengeRequestErrorResponse` | Server rejected challenge request | Check account ID format, server status |
+| `ChallengeValidationError` | Invalid transaction structure or first-operation nonce (missing value, not 64 bytes, not base64, not a 48-byte nonce) | **Security risk** - server may be malicious |
 | `ChallengeValidationErrorInvalidSeqNr` | Sequence number != 0 | **Security risk** - do not proceed |
 | `ChallengeValidationErrorInvalidSignature` | Bad server signature | Verify stellar.toml SIGNING_KEY |
 | `ChallengeValidationErrorInvalidTimeBounds` | Challenge expired | Request a new challenge |
@@ -414,10 +415,12 @@ void main() {
 
   const successJwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
 
-  Uint8List generateNonce([int length = 64]) {
+  // SEP-10 requires the first operation's value to be the 64-byte base64
+  // encoding of 48 bytes of random data.
+  Uint8List generateNonce([int length = 48]) {
     final random = Random.secure();
     final values = List<int>.generate(length, (_) => random.nextInt(256));
-    return Uint8List.fromList(base64Url.encode(values).codeUnits);
+    return Uint8List.fromList(base64.encode(values).codeUnits);
   }
 
   // Build a valid challenge transaction (mimics what the server would produce)

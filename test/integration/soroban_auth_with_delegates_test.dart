@@ -32,6 +32,8 @@ void main() {
   final rpcUrl = testOn == 'testnet'
       ? 'https://soroban-testnet.stellar.org'
       : 'https://rpc-futurenet.stellar.org';
+  final sorobanServer = SorobanServer(rpcUrl);
+  sorobanServer.enableLogging = true;
   final sdk = testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
 
   const modularAccountPath = 'test/wasm/soroban_modular_account_contract.wasm';
@@ -41,11 +43,8 @@ void main() {
     try {
       await sdk.accounts.account(accountId);
     } catch (_) {
-      if (testOn == 'testnet') {
-        await FriendBot.fundTestAccount(accountId);
-      } else {
-        await FuturenetFriendBot.fundTestAccount(accountId);
-      }
+      await fundTestAccountAndWaitForRpc(sorobanServer, accountId,
+          useFuturenet: testOn != 'testnet');
     }
   }
 
@@ -74,9 +73,6 @@ void main() {
   test(
     'ADDRESS_WITH_DELEGATES round-trip: deploy modular account, delegate-sign, enforce re-simulate, submit',
     () async {
-      final server = SorobanServer(rpcUrl);
-      server.enableLogging = true;
-
       final submitterKp = KeyPair.random();
       final delegateKp = KeyPair.random();
       await fundAccount(submitterKp.accountId);
@@ -92,6 +88,7 @@ void main() {
           sourceAccountKeyPair: submitterKp,
           network: network,
           rpcUrl: rpcUrl,
+          server: sorobanServer,
         ),
       );
       final signersArg = XdrSCVal.forVec(
@@ -103,6 +100,7 @@ void main() {
           rpcUrl: rpcUrl,
           wasmHash: modularWasmHash,
           constructorArgs: [signersArg],
+          server: sorobanServer,
         ),
       );
       final modularAccountId = modularClient.getContractId();
@@ -114,6 +112,7 @@ void main() {
           sourceAccountKeyPair: submitterKp,
           network: network,
           rpcUrl: rpcUrl,
+          server: sorobanServer,
         ),
       );
       final authClient = await SorobanClient.deploy(
@@ -122,6 +121,7 @@ void main() {
           network: network,
           rpcUrl: rpcUrl,
           wasmHash: authWasmHash,
+          server: sorobanServer,
         ),
       );
       final authContractId = authClient.getContractId();
@@ -129,7 +129,7 @@ void main() {
       // increment(user = modular account, value = 1) requires the modular
       // account's authorization, so the host invokes its __check_auth, which
       // delegates to the registered G-account.
-      Account? account = await server.getAccount(submitterKp.accountId);
+      Account? account = await sorobanServer.getAccount(submitterKp.accountId);
       assert(account != null);
       final invokeFn = InvokeContractHostFunction(
         authContractId,
@@ -145,7 +145,7 @@ void main() {
       // Recording-mode simulation: returns the legacy ADDRESS authorization entry
       // for the modular account (with the RPC-assigned nonce). __check_auth is not
       // executed in this pass.
-      final sim = await server.simulateTransaction(SimulateTransactionRequest(tx));
+      final sim = await sorobanServer.simulateTransaction(SimulateTransactionRequest(tx));
       assert(!sim.isErrorResponse, 'simulation error: ${sim.error}');
       final auth = sim.sorobanAuth;
       assert(auth != null && auth.isNotEmpty,
@@ -153,7 +153,7 @@ void main() {
       assert(auth!.length == 1,
           'increment should require exactly one authorization (the modular account)');
 
-      final latest = await server.getLatestLedger();
+      final latest = await sorobanServer.getLatestLedger();
       final expirationLedger = latest.sequence! + 100;
 
       // Convert each address-based entry to the ADDRESS_WITH_DELEGATES arm
@@ -206,7 +206,7 @@ void main() {
       // account entry) are captured. The recording-mode simulation above could not
       // have captured them.
       tx.setSorobanAuth(signedAuth);
-      final reSim = await server
+      final reSim = await sorobanServer
           .simulateTransaction(SimulateTransactionRequest(tx, authMode: 'enforce'));
       assert(!reSim.isErrorResponse, 're-simulation error: ${reSim.error}');
       assert(reSim.transactionData != null);
@@ -217,9 +217,9 @@ void main() {
       tx.addResourceFee(reSim.minResourceFee!);
       tx.sign(submitterKp, network);
 
-      final send = await server.sendTransaction(tx);
+      final send = await sorobanServer.sendTransaction(tx);
       assert(send.hash != null);
-      final result = await pollUntilDone(server, send.hash!);
+      final result = await pollUntilDone(sorobanServer, send.hash!);
       assert(result.status == GetTransactionResponse.STATUS_SUCCESS,
           'Expected SUCCESS, got ${result.status}');
 

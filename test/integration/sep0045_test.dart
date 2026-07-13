@@ -23,6 +23,7 @@ void main() {
       'CA7A3N2BB35XMTFPAYWVZEF4TEYXW7DAEWDXJNQGUPR5SWSM2UVZCJM2';
   const successJWTToken =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJDRFpKSURRVzVXVFBBWjY0UEdJSkdWRUlETks3MkxMM0xLVVpXRzNHNkdXWFlRS0kySkFJVkZOViIsImlzcyI6ImV4YW1wbGUuc3RlbGxhci5vcmciLCJpYXQiOjE3Mzc3NjAwMDAsImV4cCI6MTczNzc2MzYwMH0.test';
+  final sorobanServer = SorobanServer('https://soroban-testnet.stellar.org');
 
   setUp(() {
     serverKeyPair = KeyPair.fromSecretSeed(serverSecretSeed);
@@ -1351,8 +1352,7 @@ void main() {
       final sourceKeyPair = KeyPair.random();
       print('Created test account: ${sourceKeyPair.accountId}');
 
-      final funded = await FriendBot.fundTestAccount(sourceKeyPair.accountId);
-      expect(funded, isTrue);
+      await fundTestAccountAndWaitForRpc(sorobanServer, sourceKeyPair.accountId);
       print('Funded test account via Friendbot');
 
       // Step 2: Create signer keypair (used for both constructor and authentication)
@@ -1368,6 +1368,7 @@ void main() {
         sourceAccountKeyPair: sourceKeyPair,
         network: Network.TESTNET,
         rpcUrl: rpcUrl,
+        server: sorobanServer,
       );
       final wasmHash = await SorobanClient.install(installRequest: installRequest);
       print('Uploaded wasm, hash: $wasmHash');
@@ -1384,6 +1385,7 @@ void main() {
         rpcUrl: rpcUrl,
         wasmHash: wasmHash,
         constructorArgs: constructorArgs,
+        server: sorobanServer,
       );
       final client = await SorobanClient.deploy(deployRequest: deployRequest);
       final contractId = client.getContractId();
@@ -1433,8 +1435,7 @@ void main() {
       final sourceKeyPair = KeyPair.random();
       print('Created test account: ${sourceKeyPair.accountId}');
 
-      final funded = await FriendBot.fundTestAccount(sourceKeyPair.accountId);
-      expect(funded, isTrue);
+      await fundTestAccountAndWaitForRpc(sorobanServer, sourceKeyPair.accountId);
       print('Funded test account via Friendbot');
 
       // Step 2: Create signer keypair (used for both constructor and authentication)
@@ -1450,6 +1451,7 @@ void main() {
         sourceAccountKeyPair: sourceKeyPair,
         network: Network.TESTNET,
         rpcUrl: rpcUrl,
+        server: sorobanServer,
       );
       final wasmHash = await SorobanClient.install(installRequest: installRequest);
       print('Uploaded wasm, hash: $wasmHash');
@@ -1466,6 +1468,7 @@ void main() {
         rpcUrl: rpcUrl,
         wasmHash: wasmHash,
         constructorArgs: constructorArgs,
+        server: sorobanServer,
       );
       final client = await SorobanClient.deploy(deployRequest: deployRequest);
       final contractId = client.getContractId();

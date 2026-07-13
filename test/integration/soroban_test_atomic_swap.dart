@@ -38,33 +38,24 @@ void main() {
     try {
       await sdk.accounts.account(adminId);
     } catch (e) {
-      if (testOn == 'testnet') {
-        await FriendBot.fundTestAccount(adminId);
-      } else if (testOn == 'futurenet') {
-        await FuturenetFriendBot.fundTestAccount(adminId);
-      }
+      await fundTestAccountAndWaitForRpc(sorobanServer, adminId,
+          useFuturenet: testOn != 'testnet');
       print("admin " + adminId + " : " + adminKeypair.secretSeed);
     }
 
     try {
       await sdk.accounts.account(aliceId);
     } catch (e) {
-      if (testOn == 'testnet') {
-        await FriendBot.fundTestAccount(aliceId);
-      } else if (testOn == 'futurenet') {
-        await FuturenetFriendBot.fundTestAccount(aliceId);
-      }
+      await fundTestAccountAndWaitForRpc(sorobanServer, aliceId,
+          useFuturenet: testOn != 'testnet');
       print("alice " + aliceId + " : " + aliceKeypair.secretSeed);
     }
 
     try {
       await sdk.accounts.account(bobId);
     } catch (e) {
-      if (testOn == 'testnet') {
-        await FriendBot.fundTestAccount(bobId);
-      } else if (testOn == 'futurenet') {
-        await FuturenetFriendBot.fundTestAccount(bobId);
-      }
+      await fundTestAccountAndWaitForRpc(sorobanServer, bobId,
+          useFuturenet: testOn != 'testnet');
       print("bob " + bobId + " : " + bobKeypair.secretSeed);
     }
   });

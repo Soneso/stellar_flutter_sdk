@@ -657,7 +657,8 @@ class TransactionBuilder {
 ///
 /// Fee requirements:
 /// - Fee must be >= inner transaction fee
-/// - Fee must be >= MIN_BASE_FEE * (inner operations + 1)
+/// - Fee must be >= MIN_BASE_FEE * (inner operations + 1), plus the inner
+///   transaction's Soroban resource fee, if any
 /// - Fee account must have sufficient balance
 ///
 /// Protocol specification:
@@ -857,8 +858,13 @@ class FeeBumpTransactionBuilder {
 
   /// Sets the base fee per operation in stroops.
   ///
-  /// The total fee is calculated as: baseFee * (operations + 1)
-  /// The +1 accounts for the fee bump operation itself.
+  /// The total fee is calculated as: baseFee * (operations + 1) plus the
+  /// inner transaction's Soroban resource fee, if any. The +1 accounts for
+  /// the fee bump operation itself.
+  ///
+  /// The base fee must cover the inner transaction's inclusion fee rate,
+  /// i.e. the inner fee excluding any Soroban resource fee, divided by the
+  /// number of operations.
   ///
   /// Parameters:
   /// - [baseFee] Fee per operation in stroops (minimum 100)
@@ -868,7 +874,7 @@ class FeeBumpTransactionBuilder {
   /// Throws:
   /// - [Exception] If base fee already set
   /// - [Exception] If base fee < MIN_BASE_FEE (100)
-  /// - [Exception] If base fee < inner transaction's base fee
+  /// - [Exception] If base fee < inner transaction's inclusion fee rate
   /// - [Exception] If total fee would overflow 64-bit integer
   ///
   /// Example:
@@ -886,10 +892,16 @@ class FeeBumpTransactionBuilder {
           baseFee.toString());
     }
 
-    int innerBaseFee = _mInner.fee;
+    // The fee-bump rate only has to match the inner transaction's inclusion
+    // fee; a Soroban resource fee is not part of the per-operation rate and
+    // is re-added to the total below.
+    final int resourceFee =
+        _mInner.sorobanTransactionData?.resourceFee.int64.toInt() ?? 0;
+
+    int innerBaseFee = _mInner.fee - resourceFee;
     int numOperations = _mInner.operations.length;
     if (numOperations > 0) {
-      innerBaseFee = (innerBaseFee / numOperations).round();
+      innerBaseFee = (innerBaseFee / numOperations).ceil();
     }
 
     if (baseFee < innerBaseFee) {
@@ -897,7 +909,7 @@ class FeeBumpTransactionBuilder {
           "base fee cannot be lower than provided inner transaction base fee");
     }
 
-    int maxFee = baseFee * (numOperations + 1);
+    int maxFee = baseFee * (numOperations + 1) + resourceFee;
     if (maxFee < 0) {
       throw new Exception("fee overflows 64 bit int");
     }

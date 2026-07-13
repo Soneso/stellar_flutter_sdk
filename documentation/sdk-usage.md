@@ -323,8 +323,10 @@ innerTransaction.sign(userKeyPair, Network.TESTNET);
 KeyPair feePayerKeyPair = KeyPair.fromSecretSeed("SFEEPAYER...");
 
 // Build fee bump transaction
-// Base fee must be >= (inner tx base fee * number of operations) + 100
-// Inner tx: 100 * 2 ops = 200, plus 100 for fee bump = 300 minimum
+// The base fee is per operation. It must be at least 100 stroops and at
+// least the inner transaction's per-operation fee rate (excluding any
+// Soroban resource fee). The total fee is baseFee * (operations + 1),
+// plus the inner transaction's Soroban resource fee, if any.
 FeeBumpTransaction feeBumpTx = FeeBumpTransactionBuilder(innerTransaction)
     .setBaseFee(300)
     .setFeeAccount(feePayerKeyPair.accountId)

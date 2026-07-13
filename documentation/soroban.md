@@ -228,6 +228,27 @@ List<String> methodNames = client.getMethodNames();
 ContractSpec spec = client.getContractSpec();
 ```
 
+`ClientOptions`, `InstallRequest` and `DeployRequest` also accept an optional
+`server` parameter with a preconfigured `SorobanServer`. When provided, it is
+used for all RPC calls instead of constructing a server from `rpcUrl`. This
+allows reusing a single RPC connection across operations (for example to
+guarantee that all calls hit the same backend node of a load-balanced RPC
+endpoint) or supplying a server with a custom HTTP client configuration.
+
+```dart
+SorobanServer server = SorobanServer(rpcUrl);
+
+SorobanClient client = await SorobanClient.forClientOptions(
+  options: ClientOptions(
+    sourceAccountKeyPair: keyPair,
+    contractId: 'CCXYZ...',
+    network: Network.TESTNET,
+    rpcUrl: rpcUrl,
+    server: server,
+  ),
+);
+```
+
 ### Invoking Methods
 
 Call contract functions to read data or submit state changes.

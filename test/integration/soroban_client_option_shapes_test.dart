@@ -20,17 +20,17 @@ void main() {
   final rpcUrl = testOn == 'testnet'
       ? "https://soroban-testnet.stellar.org"
       : "https://rpc-futurenet.stellar.org";
+  final sorobanServer = SorobanServer(rpcUrl);
+  sorobanServer.enableLogging = true;
   final OPTION_SHAPES_CONTRACT_PATH =
       'test/wasm/soroban_bindings_option_shapes_contract.wasm';
 
   final sourceAccountKeyPair = KeyPair.random();
 
   setUp(() async {
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(sourceAccountKeyPair.accountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(sourceAccountKeyPair.accountId);
-    }
+    await fundTestAccountAndWaitForRpc(
+        sorobanServer, sourceAccountKeyPair.accountId,
+        useFuturenet: testOn != 'testnet');
   });
 
   Future<String> installContract(String path) async {
@@ -40,6 +40,7 @@ void main() {
         sourceAccountKeyPair: sourceAccountKeyPair,
         network: network,
         rpcUrl: rpcUrl,
+        server: sorobanServer,
         enableSorobanServerLogging: true);
     return await SorobanClient.install(installRequest: installRequest);
   }
@@ -50,6 +51,7 @@ void main() {
         network: network,
         rpcUrl: rpcUrl,
         wasmHash: wasmHash,
+        server: sorobanServer,
         enableSorobanServerLogging: true);
     return await SorobanClient.deploy(deployRequest: deployRequest);
   }
