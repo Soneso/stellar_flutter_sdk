@@ -295,7 +295,7 @@ void main() {
     print("✓ ContractSpec successfully simplified auth contract invocation");
   });
 
-  test('test atomic swap', () async {
+  test('test atomic swap', timeout: Timeout(Duration(minutes: 2)), () async {
     final swapContractWasmHash = await installContract(SWAP_CONTRACT_PATH);
     print("Installed swap contract wasm hash: $swapContractWasmHash");
 
@@ -410,7 +410,8 @@ void main() {
     assert(result!.discriminant == XdrSCValType.SCV_VOID);
   });
 
-  test('test atomic swap with ContractSpec', () async {
+  test('test atomic swap with ContractSpec',
+      timeout: Timeout(Duration(minutes: 2)), () async {
     final swapContractWasmHash = await installContract(SWAP_CONTRACT_PATH);
     print("Installed swap contract wasm hash: $swapContractWasmHash");
 

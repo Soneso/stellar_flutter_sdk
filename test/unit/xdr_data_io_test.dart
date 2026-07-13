@@ -1326,4 +1326,54 @@ void main() {
       expect(ledgerKey.discriminant, equals(XdrLedgerEntryType.TRUSTLINE));
     });
   });
+
+  group('DataInput - readUint32', () {
+    test('reads 0xFFFFFFFF as 4294967295, not -1', () {
+      XdrDataInputStream inp = XdrDataInputStream(
+        Uint8List.fromList([0xFF, 0xFF, 0xFF, 0xFF]),
+      );
+      expect(inp.readUint32(), equals(4294967295));
+    });
+
+    test('reads 0x80000000 as 2147483648, not a negative number', () {
+      XdrDataInputStream inp = XdrDataInputStream(
+        Uint8List.fromList([0x80, 0x00, 0x00, 0x00]),
+      );
+      expect(inp.readUint32(), equals(2147483648));
+    });
+
+    test('reads values below 2^31 the same as readInt', () {
+      Uint8List bytes = Uint8List.fromList([0x00, 0x00, 0x04, 0xD2]);
+      expect(XdrDataInputStream(bytes).readUint32(), equals(1234));
+      expect(XdrDataInputStream(bytes).readInt(), equals(1234));
+    });
+  });
+
+  group('XdrUint32 unsigned round-trip', () {
+    test('encode/decode roundtrip for max uint32 (4294967295)', () {
+      XdrDataOutputStream out = XdrDataOutputStream();
+      XdrUint32.encode(out, XdrUint32(4294967295));
+      expect(out.bytes, equals([0xFF, 0xFF, 0xFF, 0xFF]));
+
+      XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      expect(XdrUint32.decode(inp).uint32, equals(4294967295));
+    });
+
+    test('encode/decode roundtrip for 2^31 (2147483648)', () {
+      XdrDataOutputStream out = XdrDataOutputStream();
+      XdrUint32.encode(out, XdrUint32(2147483648));
+      expect(out.bytes, equals([0x80, 0x00, 0x00, 0x00]));
+
+      XdrDataInputStream inp = XdrDataInputStream(Uint8List.fromList(out.bytes));
+      expect(XdrUint32.decode(inp).uint32, equals(2147483648));
+    });
+
+    test('base64 roundtrip for max uint32', () {
+      String encoded = XdrUint32(4294967295).toBase64EncodedXdrString();
+      expect(
+        XdrUint32.fromBase64EncodedXdrString(encoded).uint32,
+        equals(4294967295),
+      );
+    });
+  });
 }

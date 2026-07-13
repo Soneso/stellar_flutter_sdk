@@ -10,6 +10,28 @@ void main() {
   // Tests for XDR Contract/SCVal types that go beyond simple roundtrip encode/decode.
   // Simple roundtrips are covered by auto-generated tests in test/unit/xdr/generated/.
 
+  group('XdrSCVal unsigned value edge cases', () {
+    test('XdrSCVal SCV_U32 at max (4294967295) base64 roundtrip', () {
+      var original = XdrSCVal.forU32(4294967295);
+
+      String encoded = original.toBase64EncodedXdrString();
+      var decoded = XdrSCVal.fromBase64EncodedXdrString(encoded);
+
+      expect(decoded.discriminant, equals(XdrSCValType.SCV_U32));
+      expect(decoded.u32!.uint32, equals(4294967295));
+    });
+
+    test('XdrSCVal SCV_U32 at 2^31 (2147483648) base64 roundtrip', () {
+      var original = XdrSCVal.forU32(2147483648);
+
+      String encoded = original.toBase64EncodedXdrString();
+      var decoded = XdrSCVal.fromBase64EncodedXdrString(encoded);
+
+      expect(decoded.discriminant, equals(XdrSCValType.SCV_U32));
+      expect(decoded.u32!.uint32, equals(2147483648));
+    });
+  });
+
   group('XdrSCVal negative value edge cases', () {
     test('XdrSCVal SCV_I32 negative encode/decode', () {
       var original = XdrSCVal(XdrSCValType.SCV_I32);
