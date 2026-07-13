@@ -1,7 +1,7 @@
 # SEP-0048 (Contract Interface Specification) Compatibility Matrix
 
-**Generated:** 2026-06-28 18:46:21  
-**SDK Version:** 3.2.1  
+**Generated:** 2026-07-13 21:51:01  
+**SDK Version:** 3.3.0  
 **SEP Version:** 1.1.0  
 **SEP Status:** Active  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0048.md

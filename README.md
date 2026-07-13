@@ -11,7 +11,7 @@ Build and sign Stellar transactions, query [Horizon](https://developers.stellar.
 
 ```yaml
 dependencies:
-  stellar_flutter_sdk: ^3.2.1
+  stellar_flutter_sdk: ^3.3.0
 ```
 
 ```bash

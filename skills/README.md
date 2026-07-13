@@ -14,10 +14,10 @@ Download [stellar-flutter-sdk.zip](stellar-flutter-sdk.zip) and extract it into 
 
 ```bash
 # Claude Code
-unzip stellar-flutter-sdk.zip -d .claude/skills/
+unzip stellar-flutter-sdk.zip -d .claude/skills/stellar-flutter-sdk/
 
 # Codex CLI
-unzip stellar-flutter-sdk.zip -d .codex/skills/
+unzip stellar-flutter-sdk.zip -d .codex/skills/stellar-flutter-sdk/
 ```
 
 ### Claude Code (via marketplace)
