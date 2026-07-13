@@ -150,7 +150,7 @@ class SorobanClient {
   /// and then constructs a SorobanClient by using the loaded contract info.
   static Future<SorobanClient> forClientOptions(
       {required ClientOptions options}) async {
-    final server = SorobanServer(options.rpcUrl);
+    final server = options.server ?? SorobanServer(options.rpcUrl);
     final info = await server.loadContractInfoForContractId(options.contractId);
     if (info != null) {
       return SorobanClient._(info.specEntries, options);
@@ -178,6 +178,7 @@ class SorobanClient {
         contractId: "ignored",
         network: deployRequest.network,
         rpcUrl: deployRequest.rpcUrl,
+        server: deployRequest.server,
         enableServerLogging: deployRequest.enableSorobanServerLogging);
     final options = AssembledTransactionOptions(
         clientOptions: clientOptions,
@@ -208,6 +209,7 @@ class SorobanClient {
         contractId: "ignored",
         network: installRequest.network,
         rpcUrl: installRequest.rpcUrl,
+        server: installRequest.server,
         enableServerLogging: installRequest.enableSorobanServerLogging);
     final options = AssembledTransactionOptions(
         clientOptions: clientOptions,
@@ -610,7 +612,8 @@ class AssembledTransaction {
   /// To receive this you can call `tx.getSimulationData()`.
   SimulateHostFunctionResult? _simulationResult = null;
 
-  /// The Soroban server to use for all RPC calls. This is constructed from the
+  /// The Soroban server to use for all RPC calls. Taken from
+  /// `ClientOptions.server` if provided, otherwise constructed from the
   /// `rpcUrl` in the constructor arguments.
   late SorobanServer server;
 
@@ -620,11 +623,21 @@ class AssembledTransaction {
   /// The options for constructing and managing this AssembledTransaction.
   AssembledTransactionOptions options;
 
+  /// The operation this transaction was built with. Reused when the
+  /// transaction is rebuilt after an automatic footprint restore, so that
+  /// transactions built via `buildWithOp` keep their original operation.
+  InvokeHostFunctionOperation? _originalOp;
+
   /// Private constructor. Use `AssembledTransaction.build` or `AssembledTransaction.buildWithOp`
   /// to construct an AssembledTransaction.
   AssembledTransaction._(this.options) {
-    this.server = SorobanServer(this.options.clientOptions.rpcUrl);
-    this.server.enableLogging = this.options.enableSorobanServerLogging;
+    final providedServer = this.options.clientOptions.server;
+    if (providedServer != null) {
+      this.server = providedServer;
+    } else {
+      this.server = SorobanServer(this.options.clientOptions.rpcUrl);
+      this.server.enableLogging = this.options.enableSorobanServerLogging;
+    }
   }
 
   /// Construct a new AssembledTransaction. This is the main way to create a new
@@ -652,6 +665,7 @@ class AssembledTransaction {
       {required InvokeHostFunctionOperation operation,
       required AssembledTransactionOptions options}) async {
     final tx = AssembledTransaction._(options);
+    tx._originalOp = operation;
     final account = await tx._getSourceAccount();
     tx.raw = TransactionBuilder(account);
     final timeBounds = TimeBounds(
@@ -692,6 +706,8 @@ class AssembledTransaction {
       final result = await restoreFootprint(
           restorePreamble: simulationResponse!.restorePreamble!);
       if (result.status == GetTransactionResponse.STATUS_SUCCESS) {
+        // Rebuild the transaction with the bumped account sequence number,
+        // reusing the operation this transaction was originally built with.
         final sourceAccount = await _getSourceAccount();
         raw = TransactionBuilder(sourceAccount);
         final timeBounds = TimeBounds(
@@ -701,12 +717,20 @@ class AssembledTransaction {
         final preconditions = TransactionPreconditions();
         preconditions.timeBounds = timeBounds;
         raw!.addPreconditions(preconditions);
-        final invokeContractHostFunction = InvokeContractHostFunction(
-            options.clientOptions.contractId, options.method,
-            arguments: options.arguments);
-        final builder = InvokeHostFuncOpBuilder(invokeContractHostFunction);
-        raw!.addOperation(builder.build());
+        InvokeHostFunctionOperation op;
+        if (_originalOp != null) {
+          op = _originalOp!;
+        } else {
+          final invokeContractHostFunction = InvokeContractHostFunction(
+              options.clientOptions.contractId, options.method,
+              arguments: options.arguments);
+          op = InvokeHostFuncOpBuilder(invokeContractHostFunction).build();
+        }
+        raw!.addOperation(op);
+        raw!.setMaxOperationFee(options.methodOptions.fee);
+        tx = null; // force the rebuilt `raw` to be built on re-simulation
         await simulate();
+        return;
       }
       throw new Exception(
           "Automatic restore failed! You set 'restore: true' but the attempted "
@@ -1340,7 +1364,7 @@ class AssembledTransaction {
         .addPreconditions(preconditions);
     restoreTx.tx = restoreTx.raw!.build();
     restoreTx.tx!.sorobanTransactionData = transactionData;
-    restoreTx.simulate(restore: false);
+    await restoreTx.simulate(restore: false);
     return restoreTx;
   }
 
@@ -1468,6 +1492,18 @@ class ClientOptions {
   /// Useful for debugging contract interactions. Default: false.
   bool enableServerLogging = false;
 
+  /// Optional: A preconfigured [SorobanServer] to use for all RPC calls
+  /// instead of constructing one from [rpcUrl].
+  ///
+  /// Provide this to reuse a single RPC connection across operations
+  /// (e.g. to guarantee that all calls hit the same backend node of a
+  /// load-balanced RPC endpoint) or to supply a server with a custom
+  /// HTTP client configuration.
+  ///
+  /// When provided, the server is used as configured; [enableServerLogging]
+  /// does not modify its logging setting.
+  SorobanServer? server;
+
   /// Creates ClientOptions for SorobanClient initialization.
   ///
   /// Parameters:
@@ -1476,12 +1512,14 @@ class ClientOptions {
   /// - [network]: Network where contract is deployed
   /// - [rpcUrl]: Soroban RPC server URL
   /// - [enableServerLogging]: Enable debug logging (default: false)
+  /// - [server]: Preconfigured SorobanServer to use instead of constructing one from [rpcUrl]
   ClientOptions(
       {required this.sourceAccountKeyPair,
       required this.contractId,
       required this.network,
       required this.rpcUrl,
-      this.enableServerLogging = false});
+      this.enableServerLogging = false,
+      this.server});
 }
 
 /// Options for fine-tuning contract method invocation behavior.
@@ -1712,6 +1750,12 @@ class InstallRequest {
   /// Optional: Enable soroban server logging (helpful for debugging). Default: false.
   bool enableSorobanServerLogging = false;
 
+  /// Optional: A preconfigured [SorobanServer] to use for all RPC calls
+  /// instead of constructing one from [rpcUrl]. When provided, the server
+  /// is used as configured; [enableSorobanServerLogging] does not modify
+  /// its logging setting.
+  SorobanServer? server;
+
   /// Creates an InstallRequest for uploading contract WASM code to Soroban.
   ///
   /// This request configuration is used with SorobanClient.install to upload and store
@@ -1723,6 +1767,7 @@ class InstallRequest {
   /// - [network] Stellar network for installation (TESTNET, PUBLIC, etc.)
   /// - [rpcUrl] Soroban RPC server URL
   /// - [enableSorobanServerLogging] Enable debug logging (default: false)
+  /// - [server] Preconfigured SorobanServer to use instead of constructing one from [rpcUrl]
   ///
   /// Example:
   /// ```dart
@@ -1739,7 +1784,8 @@ class InstallRequest {
       required this.sourceAccountKeyPair,
       required this.network,
       required this.rpcUrl,
-      this.enableSorobanServerLogging = false});
+      this.enableSorobanServerLogging = false,
+      this.server});
 }
 
 /// Request configuration for deploying a Soroban smart contract.
@@ -1775,6 +1821,12 @@ class DeployRequest {
   /// Optional: Enable soroban server logging (helpful for debugging). Default: false.
   bool enableSorobanServerLogging = false;
 
+  /// Optional: A preconfigured [SorobanServer] to use for all RPC calls
+  /// instead of constructing one from [rpcUrl]. When provided, the server
+  /// is used as configured; [enableSorobanServerLogging] does not modify
+  /// its logging setting.
+  SorobanServer? server;
+
   /// Creates a DeployRequest for deploying a contract instance from installed WASM.
   ///
   /// This request configuration is used with SorobanClient.deploy to create a new
@@ -1790,6 +1842,7 @@ class DeployRequest {
   /// - [salt] Optional salt for deterministic contract ID (random if not provided)
   /// - [methodOptions] Optional transaction tuning options (fee, timeout, etc.)
   /// - [enableSorobanServerLogging] Enable debug logging (default: false)
+  /// - [server] Preconfigured SorobanServer to use instead of constructing one from [rpcUrl]
   ///
   /// Example:
   /// ```dart
@@ -1810,7 +1863,8 @@ class DeployRequest {
       this.constructorArgs,
       this.salt,
       MethodOptions? methodOptions,
-      this.enableSorobanServerLogging = false}) {
+      this.enableSorobanServerLogging = false,
+      this.server}) {
     this.methodOptions = methodOptions ?? MethodOptions();
   }
 }
