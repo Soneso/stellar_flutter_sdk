@@ -626,6 +626,9 @@ class AssembledTransaction {
   /// The operation this transaction was built with. Reused when the
   /// transaction is rebuilt after an automatic footprint restore, so that
   /// transactions built via `buildWithOp` keep their original operation.
+  /// Set by `buildWithOp` for every publicly constructible transaction;
+  /// null only for internally built footprint-restore transactions, which
+  /// simulate with `restore: false` and never enter the restore rebuild.
   InvokeHostFunctionOperation? _originalOp;
 
   /// Private constructor. Use `AssembledTransaction.build` or `AssembledTransaction.buildWithOp`
@@ -717,16 +720,7 @@ class AssembledTransaction {
         final preconditions = TransactionPreconditions();
         preconditions.timeBounds = timeBounds;
         raw!.addPreconditions(preconditions);
-        InvokeHostFunctionOperation op;
-        if (_originalOp != null) {
-          op = _originalOp!;
-        } else {
-          final invokeContractHostFunction = InvokeContractHostFunction(
-              options.clientOptions.contractId, options.method,
-              arguments: options.arguments);
-          op = InvokeHostFuncOpBuilder(invokeContractHostFunction).build();
-        }
-        raw!.addOperation(op);
+        raw!.addOperation(_originalOp!);
         raw!.setMaxOperationFee(options.methodOptions.fee);
         tx = null; // force the rebuilt `raw` to be built on re-simulation
         await simulate();

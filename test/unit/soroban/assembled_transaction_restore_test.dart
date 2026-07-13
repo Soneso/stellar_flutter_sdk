@@ -112,6 +112,70 @@ void main() {
     );
   }
 
+  /// Serves the full automatic-restore flow: account fetches with an
+  /// increasing sequence number per fetch (1000, 2000, ...), an initial
+  /// simulation that requires restore, the restore transaction submission
+  /// (with the outcome selected by [restoreSucceeds]), and successful
+  /// follow-up simulations. Every simulated envelope is appended to
+  /// [simulateEnvelopes] when provided.
+  SorobanServer restoreFlowMockServer(
+    KeyPair keyPair,
+    XdrSorobanTransactionData txData, {
+    bool restoreSucceeds = true,
+    List<String>? simulateEnvelopes,
+  }) {
+    var ledgerEntriesCalls = 0;
+    var simulateCalls = 0;
+
+    final mockDio = dio.Dio();
+    mockDio.httpClientAdapter = MockDioAdapter((options) {
+      final requestBody = jsonDecode(options.data);
+      switch (requestBody['method']) {
+        case 'getLedgerEntries':
+          // A fresh sequence number per fetch, emulating the sequence bump
+          // consumed by the restore transaction: 1000, 2000, 3000.
+          ledgerEntriesCalls++;
+          return accountEntryResponse(
+              requestBody, keyPair, BigInt.from(1000 * ledgerEntriesCalls));
+        case 'simulateTransaction':
+          simulateCalls++;
+          simulateEnvelopes?.add(requestBody['params']['transaction']);
+          if (simulateCalls == 1) {
+            // The initial simulation of the invocation: state is archived.
+            return jsonRpcResponse(requestBody['id'], {
+              'restorePreamble': {
+                'transactionData': txData.toBase64EncodedXdrString(),
+                'minResourceFee': '50000',
+              },
+              'latestLedger': 100000,
+            });
+          }
+          // The restore transaction simulation and the re-simulation of
+          // the rebuilt invocation both succeed.
+          return jsonRpcResponse(
+              requestBody['id'], successfulSimulation(txData));
+        case 'sendTransaction':
+          return jsonRpcResponse(requestBody['id'], {
+            'status': 'PENDING',
+            'hash': txHash,
+            'latestLedger': 100000,
+            'latestLedgerCloseTime': '1234567890',
+          });
+        case 'getTransaction':
+          return jsonRpcResponse(requestBody['id'], {
+            'status': restoreSucceeds ? 'SUCCESS' : 'FAILED',
+            'ledger': 99999,
+            'createdAt': '1234567890',
+            'applicationOrder': 1,
+            'feeBump': false,
+          });
+        default:
+          fail('Unexpected RPC method: ${requestBody['method']}');
+      }
+    });
+    return SorobanServer.withDio(rpcUrl, mockDio);
+  }
+
   group('ClientOptions.server injection', () {
     test('AssembledTransaction uses the injected server for RPC calls',
         () async {
@@ -139,57 +203,9 @@ void main() {
     test('succeeds and re-simulates the rebuilt transaction', () async {
       final keyPair = KeyPair.random();
       final txData = transactionDataWithWrites(keyPair);
-      var ledgerEntriesCalls = 0;
-      var simulateCalls = 0;
       final simulateEnvelopes = <String>[];
-
-      final mockDio = dio.Dio();
-      mockDio.httpClientAdapter = MockDioAdapter((options) {
-        final requestBody = jsonDecode(options.data);
-        switch (requestBody['method']) {
-          case 'getLedgerEntries':
-            // A fresh sequence number per fetch, emulating the sequence bump
-            // consumed by the restore transaction: 1000, 2000, 3000.
-            ledgerEntriesCalls++;
-            return accountEntryResponse(
-                requestBody, keyPair, BigInt.from(1000 * ledgerEntriesCalls));
-          case 'simulateTransaction':
-            simulateCalls++;
-            simulateEnvelopes.add(requestBody['params']['transaction']);
-            if (simulateCalls == 1) {
-              // The initial simulation of the invocation: state is archived.
-              return jsonRpcResponse(requestBody['id'], {
-                'restorePreamble': {
-                  'transactionData': txData.toBase64EncodedXdrString(),
-                  'minResourceFee': '50000',
-                },
-                'latestLedger': 100000,
-              });
-            }
-            // The restore transaction simulation and the re-simulation of
-            // the rebuilt invocation both succeed.
-            return jsonRpcResponse(
-                requestBody['id'], successfulSimulation(txData));
-          case 'sendTransaction':
-            return jsonRpcResponse(requestBody['id'], {
-              'status': 'PENDING',
-              'hash': txHash,
-              'latestLedger': 100000,
-              'latestLedgerCloseTime': '1234567890',
-            });
-          case 'getTransaction':
-            return jsonRpcResponse(requestBody['id'], {
-              'status': 'SUCCESS',
-              'ledger': 99999,
-              'createdAt': '1234567890',
-              'applicationOrder': 1,
-              'feeBump': false,
-            });
-          default:
-            fail('Unexpected RPC method: ${requestBody['method']}');
-        }
-      });
-      final server = SorobanServer.withDio(rpcUrl, mockDio);
+      final server = restoreFlowMockServer(keyPair, txData,
+          simulateEnvelopes: simulateEnvelopes);
 
       final tx = await AssembledTransaction.build(
           options: buildOptions(
@@ -202,7 +218,7 @@ void main() {
 
       // Simulations: initial (restore needed), restore transaction, rebuilt
       // invocation.
-      expect(simulateCalls, 3);
+      expect(simulateEnvelopes.length, 3);
 
       final initial = AbstractTransaction.fromEnvelopeXdrString(
           simulateEnvelopes[0]) as Transaction;
@@ -232,52 +248,9 @@ void main() {
         () async {
       final keyPair = KeyPair.random();
       final txData = transactionDataWithWrites(keyPair);
-      var ledgerEntriesCalls = 0;
-      var simulateCalls = 0;
       final simulateEnvelopes = <String>[];
-
-      final mockDio = dio.Dio();
-      mockDio.httpClientAdapter = MockDioAdapter((options) {
-        final requestBody = jsonDecode(options.data);
-        switch (requestBody['method']) {
-          case 'getLedgerEntries':
-            ledgerEntriesCalls++;
-            return accountEntryResponse(
-                requestBody, keyPair, BigInt.from(1000 * ledgerEntriesCalls));
-          case 'simulateTransaction':
-            simulateCalls++;
-            simulateEnvelopes.add(requestBody['params']['transaction']);
-            if (simulateCalls == 1) {
-              return jsonRpcResponse(requestBody['id'], {
-                'restorePreamble': {
-                  'transactionData': txData.toBase64EncodedXdrString(),
-                  'minResourceFee': '50000',
-                },
-                'latestLedger': 100000,
-              });
-            }
-            return jsonRpcResponse(
-                requestBody['id'], successfulSimulation(txData));
-          case 'sendTransaction':
-            return jsonRpcResponse(requestBody['id'], {
-              'status': 'PENDING',
-              'hash': txHash,
-              'latestLedger': 100000,
-              'latestLedgerCloseTime': '1234567890',
-            });
-          case 'getTransaction':
-            return jsonRpcResponse(requestBody['id'], {
-              'status': 'SUCCESS',
-              'ledger': 99999,
-              'createdAt': '1234567890',
-              'applicationOrder': 1,
-              'feeBump': false,
-            });
-          default:
-            fail('Unexpected RPC method: ${requestBody['method']}');
-        }
-      });
-      final server = SorobanServer.withDio(rpcUrl, mockDio);
+      final server = restoreFlowMockServer(keyPair, txData,
+          simulateEnvelopes: simulateEnvelopes);
 
       final uploadFunction =
           UploadContractWasmHostFunction(Uint8List.fromList([0, 1, 2, 3]));
@@ -288,7 +261,7 @@ void main() {
           options: buildOptions(keyPair, server, MethodOptions(restore: true)));
 
       expect(tx.tx, isNotNull);
-      expect(simulateCalls, 3);
+      expect(simulateEnvelopes.length, 3);
 
       // The rebuilt transaction carries the original upload operation, not a
       // reconstructed invoke-contract operation.
@@ -303,50 +276,8 @@ void main() {
     test('throws when the restore transaction fails', () async {
       final keyPair = KeyPair.random();
       final txData = transactionDataWithWrites(keyPair);
-      var ledgerEntriesCalls = 0;
-      var simulateCalls = 0;
-
-      final mockDio = dio.Dio();
-      mockDio.httpClientAdapter = MockDioAdapter((options) {
-        final requestBody = jsonDecode(options.data);
-        switch (requestBody['method']) {
-          case 'getLedgerEntries':
-            ledgerEntriesCalls++;
-            return accountEntryResponse(
-                requestBody, keyPair, BigInt.from(1000 * ledgerEntriesCalls));
-          case 'simulateTransaction':
-            simulateCalls++;
-            if (simulateCalls == 1) {
-              return jsonRpcResponse(requestBody['id'], {
-                'restorePreamble': {
-                  'transactionData': txData.toBase64EncodedXdrString(),
-                  'minResourceFee': '50000',
-                },
-                'latestLedger': 100000,
-              });
-            }
-            return jsonRpcResponse(
-                requestBody['id'], successfulSimulation(txData));
-          case 'sendTransaction':
-            return jsonRpcResponse(requestBody['id'], {
-              'status': 'PENDING',
-              'hash': txHash,
-              'latestLedger': 100000,
-              'latestLedgerCloseTime': '1234567890',
-            });
-          case 'getTransaction':
-            return jsonRpcResponse(requestBody['id'], {
-              'status': 'FAILED',
-              'ledger': 99999,
-              'createdAt': '1234567890',
-              'applicationOrder': 1,
-              'feeBump': false,
-            });
-          default:
-            fail('Unexpected RPC method: ${requestBody['method']}');
-        }
-      });
-      final server = SorobanServer.withDio(rpcUrl, mockDio);
+      final server =
+          restoreFlowMockServer(keyPair, txData, restoreSucceeds: false);
 
       await expectLater(
         AssembledTransaction.build(

@@ -319,6 +319,7 @@ try {
 | `NoWebAuthServerSigningKeyFoundException` | stellar.toml missing SIGNING_KEY | Check domain supports SEP-10 |
 | `NoMemoForMuxedAccountsException` | Memo provided with M... account | Use memo OR muxed, not both |
 | `ChallengeRequestErrorResponse` | Server rejected challenge request | Check account ID format, server status |
+| `ChallengeValidationError` | Invalid transaction structure or first-operation nonce (missing value, not 64 bytes, not base64, not a 48-byte nonce) | **Security risk** - server may be malicious |
 | `ChallengeValidationErrorInvalidSeqNr` | Sequence number != 0 | **Security risk** - do not proceed |
 | `ChallengeValidationErrorInvalidSignature` | Bad server signature | Verify stellar.toml SIGNING_KEY |
 | `ChallengeValidationErrorInvalidTimeBounds` | Challenge expired | Request a new challenge |
