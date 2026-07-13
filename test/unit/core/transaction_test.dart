@@ -1796,6 +1796,103 @@ void main() {
         );
       });
 
+      test('setBaseFee computes total fee as baseFee * (operations + 1)', () {
+        final innerTx = TransactionBuilder(testAccount)
+            .addOperation(
+              PaymentOperationBuilder(
+                KeyPair.random().accountId,
+                Asset.NATIVE,
+                '10',
+              ).build(),
+            )
+            .build();
+
+        final feeBumpTx = FeeBumpTransactionBuilder(innerTx)
+            .setBaseFee(200)
+            .setFeeAccount(KeyPair.random().accountId)
+            .build();
+
+        expect(feeBumpTx.fee, 400);
+      });
+
+      test('setBaseFee requires at least the ceiled inner fee rate', () {
+        // 3 operations with a total fee of 400: the inclusion fee rate is
+        // 400 / 3 = 133.33, so the fee bump base fee must be at least 134.
+        final destination = KeyPair.random().accountId;
+        final builder = TransactionBuilder(testAccount);
+        for (var i = 0; i < 3; i++) {
+          builder.addOperation(
+              PaymentOperationBuilder(destination, Asset.NATIVE, '10').build());
+        }
+        final innerTx = builder.build();
+        innerTx.fee = 400;
+
+        expect(
+          () => FeeBumpTransactionBuilder(innerTx).setBaseFee(133),
+          throwsA(isA<Exception>()),
+        );
+
+        final feeBumpTx = FeeBumpTransactionBuilder(innerTx)
+            .setBaseFee(134)
+            .setFeeAccount(KeyPair.random().accountId)
+            .build();
+        expect(feeBumpTx.fee, 134 * 4);
+      });
+
+      test('setBaseFee excludes the Soroban resource fee from the fee rate',
+          () {
+        const resourceFee = 500000;
+        final innerTx = TransactionBuilder(testAccount)
+            .addOperation(InvokeHostFuncOpBuilder(
+                    UploadContractWasmHostFunction(
+                        Uint8List.fromList([0, 1, 2, 3])))
+                .build())
+            .build();
+        innerTx.sorobanTransactionData = XdrSorobanTransactionData(
+            XdrSorobanTransactionDataExt(0),
+            XdrSorobanResources(XdrLedgerFootprint([], []), XdrUint32(0),
+                XdrUint32(0), XdrUint32(0)),
+            XdrInt64(BigInt.from(resourceFee)));
+        innerTx.addResourceFee(resourceFee);
+        expect(innerTx.fee, 100 + resourceFee);
+
+        // The base fee only has to cover the inclusion fee rate (100), not
+        // the resource fee.
+        final feeBumpTx = FeeBumpTransactionBuilder(innerTx)
+            .setBaseFee(200)
+            .setFeeAccount(KeyPair.random().accountId)
+            .build();
+
+        // Total: baseFee * (operations + 1) + resource fee.
+        expect(feeBumpTx.fee, 200 * 2 + resourceFee);
+      });
+
+      test(
+          'setBaseFee enforces the inclusion fee rate of a Soroban transaction',
+          () {
+        const resourceFee = 500000;
+        final innerTx = TransactionBuilder(testAccount)
+            .setMaxOperationFee(300)
+            .addOperation(InvokeHostFuncOpBuilder(
+                    UploadContractWasmHostFunction(
+                        Uint8List.fromList([0, 1, 2, 3])))
+                .build())
+            .build();
+        innerTx.sorobanTransactionData = XdrSorobanTransactionData(
+            XdrSorobanTransactionDataExt(0),
+            XdrSorobanResources(XdrLedgerFootprint([], []), XdrUint32(0),
+                XdrUint32(0), XdrUint32(0)),
+            XdrInt64(BigInt.from(resourceFee)));
+        innerTx.addResourceFee(resourceFee);
+
+        // The inclusion fee rate is 300, so 200 is too low even though the
+        // resource fee is excluded.
+        expect(
+          () => FeeBumpTransactionBuilder(innerTx).setBaseFee(200),
+          throwsA(isA<Exception>()),
+        );
+      });
+
       test('setFeeAccount throws when already set', () {
         final innerTx = TransactionBuilder(testAccount)
             .addOperation(
