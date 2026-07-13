@@ -460,9 +460,12 @@ def _resolve_go_stellar_sdk_ref(rpc_tag: str) -> str:
         )
 
     version = match.group(1)
-    # A Go pseudo-version (vX.Y.Z-YYYYMMDDHHMMSS-<12 hex>) is not a git tag; its
-    # git ref is the trailing commit hash. A normal release tag is used as-is.
-    pseudo = re.match(r'^v.*-\d{14}-([0-9a-f]{12})$', version)
+    # A Go pseudo-version is not a git tag; its git ref is the trailing commit
+    # hash. Both pseudo-version forms carry a 14-digit UTC timestamp directly
+    # before the final hash segment: vX.Y.Z-yyyymmddhhmmss-<12 hex> (no base
+    # release) and vX.Y.Z-0.yyyymmddhhmmss-<12 hex> / -pre.0.yyyymmddhhmmss-
+    # (base-incremented). A normal release tag is used as-is.
+    pseudo = re.match(r'^v\S*\d{14}-([0-9a-f]{12})$', version)
     ref = pseudo.group(1) if pseudo else version
 
     _GO_STELLAR_SDK_REF_CACHE[rpc_tag] = ref
@@ -474,14 +477,14 @@ def fetch_rpc_response_file(tag: str, method_name: str) -> str:
     Fetch a response-struct source file from go-stellar-sdk for a method.
 
     Response structs are defined in go-stellar-sdk at
-    protocols/rpc/get_<method_name>.go. go-stellar-sdk versions independently of
+    protocols/rpc/<method_name>.go. go-stellar-sdk versions independently of
     stellar-rpc, so the ref is resolved from stellar-rpc@<tag>'s go.mod
     (see _resolve_go_stellar_sdk_ref) to match the RPC release under review.
 
     Args:
         tag: stellar-rpc release tag (e.g. 'v27.0.0').
-        method_name: Method name in snake_case without the get_ prefix
-            (e.g. 'latest_ledger' for getLatestLedger).
+        method_name: Full method name in snake_case (e.g. 'get_latest_ledger'
+            for getLatestLedger, 'send_transaction' for sendTransaction).
 
     Returns:
         Content of the response file as string.
@@ -498,7 +501,7 @@ def fetch_rpc_response_file(tag: str, method_name: str) -> str:
     sdk_ref = _resolve_go_stellar_sdk_ref(tag)
     source_url = (
         f"https://raw.githubusercontent.com/stellar/go-stellar-sdk/"
-        f"{sdk_ref}/protocols/rpc/get_{method_name}.go"
+        f"{sdk_ref}/protocols/rpc/{method_name}.go"
     )
 
     try:
@@ -506,7 +509,7 @@ def fetch_rpc_response_file(tag: str, method_name: str) -> str:
         return response_data.decode('utf-8')
     except GitHubFetchError as e:
         raise SourceFileNotFoundError(
-            f"Failed to fetch get_{method_name}.go from "
+            f"Failed to fetch {method_name}.go from "
             f"go-stellar-sdk@{sdk_ref}: {e}"
         ) from e
 
@@ -529,13 +532,10 @@ def fetch_all_rpc_response_files(tag: str, method_names: List[str]) -> Dict[str,
     results = {}
 
     for method_name in method_names:
-        # Convert camelCase to snake_case
-        # getLatestLedger -> latest_ledger
+        # Convert camelCase to snake_case: the response file is named after the
+        # full method name (getLatestLedger -> get_latest_ledger.go,
+        # sendTransaction -> send_transaction.go).
         snake_case = _camel_to_snake(method_name)
-
-        # Remove 'get_' prefix if present (we'll add it in the fetch function)
-        if snake_case.startswith('get_'):
-            snake_case = snake_case[4:]
 
         try:
             content = fetch_rpc_response_file(tag, snake_case)

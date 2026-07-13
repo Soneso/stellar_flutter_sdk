@@ -234,13 +234,24 @@ class RPCAnalysisPipeline:
 
                 self.progress.log(f"Found {len(response_files)} response struct files", force=True)
 
+                # Every method has a response struct in go-stellar-sdk. Zero
+                # fetched files means the source resolution is broken (not that
+                # the methods have no responses) — fail loudly instead of
+                # emitting a matrix with an empty Response Field Coverage table.
+                if method_names and not response_files:
+                    raise GitHubFetchError(
+                        "No response struct files could be fetched for any of "
+                        f"the {len(method_names)} RPC methods; refusing to "
+                        "generate a matrix without response field data"
+                    )
+
                 # Parse response fields for each method
                 for method_name, response_content in response_files.items():
                     parser.add_response_fields_to_method(method_name, response_content)
 
             except GitHubFetchError as e:
-                self.progress.log(f"Warning: Could not fetch response files: {e}", force=True)
-                self.progress.log("Continuing without response field analysis", force=True)
+                self.progress.log(f"Error: Could not fetch response files: {e}", force=True)
+                raise
 
         # Save results
         parser.save_json(str(self.rpc_methods_file))

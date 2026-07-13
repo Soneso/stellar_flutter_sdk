@@ -373,26 +373,22 @@ class SorobanSDKAnalyzer:
         """
         # Pattern to match response class definitions
         # Look for class definition and extract everything until we hit a constructor or factory
-        class_pattern = r'class\s+((?:Get|Send)\w+Response)\s+extends\s+SorobanRpcResponse\s*\{'
+        class_pattern = r'class\s+(\w+Response)\s+extends\s+SorobanRpcResponse\s*\{'
 
         for class_match in re.finditer(class_pattern, content):
             class_name = class_match.group(1)
             class_start = class_match.end()
 
-            # Find the end of the field declarations (before constructor/factory methods)
-            # Look for first occurrence of constructor or factory methods (but NOT static)
-            end_markers = [
-                content.find(f'\n  {class_name}(', class_start),
-                content.find('\n  factory ', class_start),
-            ]
-
-            # Filter out -1 (not found) and get the minimum
-            end_markers = [pos for pos in end_markers if pos != -1]
-            if not end_markers:
-                # If no markers found, look for class end
+            # Scan the class body up to the factory (fields may be declared
+            # after the plain constructor, e.g. SimulateTransactionResponse
+            # declares resultError between the constructor and the factory).
+            # Constructor and method lines contain parentheses, which the field
+            # pattern below cannot match, so scanning past the constructor is
+            # safe.
+            class_end = content.find('\n  factory ', class_start)
+            if class_end == -1:
+                # If no factory found, look for class end
                 class_end = content.find('\n}', class_start)
-            else:
-                class_end = min(end_markers)
 
             if class_end == -1:
                 continue
@@ -450,6 +446,27 @@ class RPCComparisonAnalyzer:
     #   The SDK uses PaginationOptions object which adds cursor/limit to request args,
     #   but the simple regex analysis doesn't detect this pattern
     IGNORED_OPTIONAL_PARAMS = {"xdrFormat", "cursor", "limit"}
+
+    # Response fields to ignore in compatibility checks. These are the JSON-format
+    # variants the server returns only when the request sets xdrFormat=json; the
+    # SDK does not support the JSON format (by design, see IGNORED_OPTIONAL_PARAMS),
+    # so the XDR-variant fields are the supported surface.
+    IGNORED_RESPONSE_FIELDS = {
+        "errorResultJson",
+        "diagnosticEventsJson",
+        "transactionDataJson",
+        "eventsJson",
+    }
+
+    # Wire-key -> SDK-field aliases: the SDK parses these response keys into
+    # fields whose Dart names differ from the JSON name.
+    # - sendTransaction.diagnosticEventsXdr is decoded into `diagnosticEvents`
+    #   (List<XdrDiagnosticEvent>).
+    # - simulateTransaction.error is exposed as `resultError`.
+    RESPONSE_FIELD_ALIASES = {
+        "sendTransaction": {"diagnosticEventsXdr": "diagnosticEvents"},
+        "simulateTransaction": {"error": "resultError"},
+    }
 
     def __init__(self, rpc_data: Dict[str, Any], flutter_data: Dict[str, Any]):
         """
@@ -551,6 +568,7 @@ class RPCComparisonAnalyzer:
         rpc_response_fields = rpc_method.get("response_fields", [])
         if rpc_response_fields:
             comparison.response_fields = self._compare_response_fields(
+                method_name,
                 rpc_response_fields,
                 flutter_response_fields
             )
@@ -597,13 +615,19 @@ class RPCComparisonAnalyzer:
 
     def _compare_response_fields(
         self,
+        method_name: str,
         rpc_response_fields: List[Dict[str, str]],
         flutter_response_fields: List[str]
     ) -> ResponseFieldComparison:
         """
         Compare RPC response fields with Flutter SDK response class fields.
 
+        Fields in IGNORED_RESPONSE_FIELDS (xdrFormat=json variants) are excluded
+        from the comparison; RESPONSE_FIELD_ALIASES maps wire keys the SDK parses
+        into differently named Dart fields.
+
         Args:
+            method_name: RPC method name (e.g. 'sendTransaction')
             rpc_response_fields: List of dicts with field_name and json_name from RPC
             flutter_response_fields: List of field names from Flutter SDK response class
 
@@ -613,19 +637,24 @@ class RPCComparisonAnalyzer:
         # Convert Flutter field names to lowercase for case-insensitive comparison
         flutter_field_map = {name.lower(): name for name in flutter_response_fields}
 
-        # Create mapping of JSON name to Go field name for better error reporting
-        json_to_go_field = {f["json_name"]: f["field_name"] for f in rpc_response_fields}
+        aliases = self.RESPONSE_FIELD_ALIASES.get(method_name, {})
 
-        total = len(rpc_response_fields)
+        compared_fields = [
+            f for f in rpc_response_fields
+            if f["json_name"] not in self.IGNORED_RESPONSE_FIELDS
+        ]
+
+        total = len(compared_fields)
         supported_fields = []
         missing_fields = []
 
-        for rpc_field in rpc_response_fields:
+        for rpc_field in compared_fields:
             json_name = rpc_field["json_name"]
 
-            # Check if this field exists in Flutter SDK (case-insensitive)
-            # Try both camelCase and the original JSON name
-            if json_name.lower() in flutter_field_map:
+            # Check if this field exists in Flutter SDK (case-insensitive),
+            # either under its wire name or its aliased Dart field name.
+            sdk_name = aliases.get(json_name, json_name)
+            if sdk_name.lower() in flutter_field_map:
                 supported_fields.append(json_name)
             else:
                 missing_fields.append(json_name)
