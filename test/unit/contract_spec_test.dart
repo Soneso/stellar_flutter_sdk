@@ -87,6 +87,34 @@ void main() {
         expect(i64Result.i64!.int64, equals(BigInt.from(-12345678901234)));
       });
 
+      test('should accept integral double for integer types', () {
+        final u32Result = spec.nativeToXdrSCVal(2.0, XdrSCSpecTypeDef.forU32());
+        expect(u32Result.discriminant, equals(XdrSCValType.SCV_U32));
+        expect(u32Result.u32!.uint32, equals(2));
+      });
+
+      test('should reject non-integral double for integer types', () {
+        expect(
+          () => spec.nativeToXdrSCVal(1.9, XdrSCSpecTypeDef.forU32()),
+          throwsA(isA<ContractSpecException>()),
+        );
+        expect(
+          () => spec.nativeToXdrSCVal(-0.5, XdrSCSpecTypeDef.forI64()),
+          throwsA(isA<ContractSpecException>()),
+        );
+      });
+
+      test('should reject non-finite double for integer types', () {
+        expect(
+          () => spec.nativeToXdrSCVal(double.nan, XdrSCSpecTypeDef.forU64()),
+          throwsA(isA<ContractSpecException>()),
+        );
+        expect(
+          () => spec.nativeToXdrSCVal(double.infinity, XdrSCSpecTypeDef.forI32()),
+          throwsA(isA<ContractSpecException>()),
+        );
+      });
+
       test('should convert 128-bit integer types with BigInt', () {
         // u128 with BigInt
         final u128Value = BigInt.from(2).pow(100);
@@ -377,9 +405,14 @@ void main() {
       });
 
       test('should handle double to int conversion', () {
-        final result = spec.nativeToXdrSCVal(42.7, XdrSCSpecTypeDef.forU32());
+        final result = spec.nativeToXdrSCVal(42.0, XdrSCSpecTypeDef.forU32());
         expect(result.discriminant, equals(XdrSCValType.SCV_U32));
         expect(result.u32!.uint32, equals(42));
+
+        expect(
+          () => spec.nativeToXdrSCVal(42.7, XdrSCSpecTypeDef.forU32()),
+          throwsA(isA<ContractSpecException>()),
+        );
       });
     });
   });
