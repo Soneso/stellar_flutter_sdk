@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'dart:async';
+import 'dart:convert';
 
 void main() {
   group('OrderBookRequestBuilder', () {
@@ -428,6 +430,51 @@ void main() {
 
         await subscription1.cancel();
         await subscription2.cancel();
+      });
+
+      test('stream parses an SSE data frame into an order book', () async {
+        final orderBook = {
+          'bids': [
+            {
+              'price': '0.5000000',
+              'amount': '100.0000000',
+              'price_r': {'n': 1, 'd': 2}
+            }
+          ],
+          'asks': [
+            {
+              'price': '2.0000000',
+              'amount': '50.0000000',
+              'price_r': {'n': 2, 'd': 1}
+            }
+          ],
+          'base': {'asset_type': 'native'},
+          'counter': {'asset_type': 'native'}
+        };
+
+        final client = MockClient.streaming((request, bodyStream) async {
+          final controller = StreamController<List<int>>();
+          controller.add(utf8.encode('event: open\ndata: "hello"\n\n'));
+          controller.add(utf8.encode('data: ${json.encode(orderBook)}\n\n'));
+          return http.StreamedResponse(controller.stream, 200,
+              headers: {'content-type': 'text/event-stream'});
+        });
+
+        final builder = OrderBookRequestBuilder(client, serverUri);
+        final completer = Completer<OrderBookResponse>();
+        final subscription = builder.stream().listen((event) {
+          if (!completer.isCompleted) {
+            completer.complete(event);
+          }
+        });
+
+        final event =
+            await completer.future.timeout(const Duration(seconds: 10));
+        await subscription.cancel();
+
+        expect(event, isA<OrderBookResponse>());
+        expect(event.bids.first.amount, equals('100.0000000'));
+        expect(event.asks.first.amount, equals('50.0000000'));
       });
     });
   });

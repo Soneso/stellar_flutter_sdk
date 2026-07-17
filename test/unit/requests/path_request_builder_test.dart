@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'dart:convert';
 
 void main() {
   group('StrictReceivePathsRequestBuilder', () {
@@ -186,6 +187,51 @@ void main() {
         expect(uri.queryParameters['destination_asset_code'], equals('USD'));
       });
     });
+
+    group('execute', () {
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+
+      test('returns a page of strict receive paths', () async {
+        final page = {
+          '_links': {
+            'self': {'href': 'x'}
+          },
+          '_embedded': {
+            'records': [
+              {
+                'source_asset_type': 'native',
+                'source_amount': '50.0000000',
+                'destination_asset_type': 'credit_alphanum4',
+                'destination_asset_code': 'USD',
+                'destination_asset_issuer': issuerAccountId,
+                'destination_amount': '100.0000000',
+                'path': []
+              }
+            ]
+          }
+        };
+
+        final client = MockClient((request) async {
+          expect(request.url.path, contains('/paths/strict-receive'));
+          return http.Response(json.encode(page), 200);
+        });
+
+        final destAsset = AssetTypeCreditAlphaNum4('USD', issuerAccountId);
+        final builder = StrictReceivePathsRequestBuilder(client, serverUri);
+        final result = await builder
+            .destinationAsset(destAsset)
+            .destinationAmount('100.0')
+            .execute();
+
+        expect(result.records.length, equals(1));
+        expect(result.records.first, isA<PathResponse>());
+        expect(result.records.first.destinationAmount, equals('100.0000000'));
+        expect(result.records.first.sourceAmount, equals('50.0000000'));
+        expect(
+            result.records.first.destinationAssetCode, equals('USD'));
+      });
+    });
   });
 
   group('StrictSendPathsRequestBuilder', () {
@@ -368,6 +414,50 @@ void main() {
         expect(uri.queryParameters['destination_assets'], contains('native'));
         expect(uri.queryParameters['source_amount'], equals('50.0'));
         expect(uri.queryParameters['source_asset_code'], equals('USD'));
+      });
+    });
+
+    group('execute', () {
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+
+      test('returns a page of strict send paths', () async {
+        final page = {
+          '_links': {
+            'self': {'href': 'x'}
+          },
+          '_embedded': {
+            'records': [
+              {
+                'source_asset_type': 'credit_alphanum4',
+                'source_asset_code': 'USD',
+                'source_asset_issuer': issuerAccountId,
+                'source_amount': '100.0000000',
+                'destination_asset_type': 'native',
+                'destination_amount': '95.0000000',
+                'path': []
+              }
+            ]
+          }
+        };
+
+        final client = MockClient((request) async {
+          expect(request.url.path, contains('/paths/strict-send'));
+          return http.Response(json.encode(page), 200);
+        });
+
+        final srcAsset = AssetTypeCreditAlphaNum4('USD', issuerAccountId);
+        final builder = StrictSendPathsRequestBuilder(client, serverUri);
+        final result = await builder
+            .sourceAsset(srcAsset)
+            .sourceAmount('100.0')
+            .execute();
+
+        expect(result.records.length, equals(1));
+        expect(result.records.first, isA<PathResponse>());
+        expect(result.records.first.sourceAmount, equals('100.0000000'));
+        expect(result.records.first.destinationAmount, equals('95.0000000'));
+        expect(result.records.first.sourceAssetCode, equals('USD'));
       });
     });
   });

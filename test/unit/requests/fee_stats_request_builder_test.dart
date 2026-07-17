@@ -301,5 +301,63 @@ void main() {
         expect(uri.hasAuthority, isTrue);
       });
     });
+
+    group('execute', () {
+      test('parses fee statistics from the response', () async {
+        final client = MockClient((request) async {
+          expect(request.url.pathSegments, contains('fee_stats'));
+          return http.Response('''
+          {
+            "last_ledger": "50",
+            "last_ledger_base_fee": "100",
+            "ledger_capacity_usage": "0.97",
+            "fee_charged": {
+              "min": "100",
+              "mode": "150",
+              "p10": "100",
+              "p20": "110",
+              "p30": "120",
+              "p40": "130",
+              "p50": "140",
+              "p60": "150",
+              "p70": "160",
+              "p80": "170",
+              "p90": "180",
+              "p95": "190",
+              "p99": "200",
+              "max": "250"
+            },
+            "max_fee": {
+              "min": "100",
+              "mode": "100",
+              "p10": "100",
+              "p20": "100",
+              "p30": "100",
+              "p40": "100",
+              "p50": "100",
+              "p60": "100",
+              "p70": "100",
+              "p80": "100",
+              "p90": "100",
+              "p95": "100",
+              "p99": "100",
+              "max": "10000"
+            }
+          }
+          ''', 200);
+        });
+
+        final builder = FeeStatsRequestBuilder(client, serverUri);
+        final feeStats = await builder.execute();
+
+        expect(feeStats.lastLedger, equals('50'));
+        expect(feeStats.lastLedgerBaseFee, equals('100'));
+        expect(feeStats.lastLedgerCapacityUsage, equals('0.97'));
+        expect(feeStats.feeCharged.min, equals('100'));
+        expect(feeStats.feeCharged.p50, equals('140'));
+        expect(feeStats.feeCharged.max, equals('250'));
+        expect(feeStats.maxFee.max, equals('10000'));
+      });
+    });
   });
 }

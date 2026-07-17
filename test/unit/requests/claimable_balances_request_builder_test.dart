@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'dart:convert';
 
 void main() {
   group('ClaimableBalancesRequestBuilder', () {
@@ -359,6 +360,73 @@ void main() {
             .forBalanceId('BINVALIDBALANCEID'),
         throwsArgumentError,
       );
+    });
+  });
+
+  group('ClaimableBalancesRequestBuilder fetch and execute', () {
+    final serverUri = Uri.parse('https://horizon-testnet.stellar.org');
+    final balanceId =
+        '000000000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c';
+    final issuer = 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5';
+    final claimant =
+        'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+    final balanceRecord = {
+      '_links': {
+        'self': {'href': 'x'}
+      },
+      'id': balanceId,
+      'asset': 'USD:$issuer',
+      'amount': '100.0000000',
+      'sponsor': issuer,
+      'last_modified_ledger': 12345,
+      'last_modified_time': '2024-01-01T00:00:00Z',
+      'claimants': [
+        {
+          'destination': claimant,
+          'predicate': {'unconditional': true}
+        }
+      ],
+      'flags': {'clawback_enabled': false}
+    };
+
+    test('forBalanceId fetches a single claimable balance', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.url.path, contains('/claimable_balances/$balanceId'));
+        return http.Response(json.encode(balanceRecord), 200);
+      });
+
+      final builder = ClaimableBalancesRequestBuilder(mockClient, serverUri);
+      final balance = await builder.forBalanceId(balanceId);
+
+      expect(balance, isA<ClaimableBalanceResponse>());
+      expect(balance.balanceId, equals(balanceId));
+      expect(balance.amount, equals('100.0000000'));
+      expect(balance.claimants.length, equals(1));
+      expect(balance.claimants.first.destination, equals(claimant));
+    });
+
+    test('execute returns a page of claimable balances', () async {
+      final page = {
+        '_links': {
+          'self': {'href': 'x'},
+          'next': {'href': 'x'},
+          'prev': {'href': 'x'}
+        },
+        '_embedded': {
+          'records': [balanceRecord]
+        }
+      };
+
+      final mockClient = MockClient((request) async {
+        return http.Response(json.encode(page), 200);
+      });
+
+      final builder = ClaimableBalancesRequestBuilder(mockClient, serverUri);
+      final result = await builder.forClaimant(claimant).limit(10).execute();
+
+      expect(result.records.length, equals(1));
+      expect(result.records.first, isA<ClaimableBalanceResponse>());
+      expect(result.records.first.amount, equals('100.0000000'));
     });
   });
 

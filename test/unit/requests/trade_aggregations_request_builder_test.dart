@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'dart:convert';
 
 void main() {
   group('TradeAggregationsRequestBuilder', () {
@@ -672,6 +673,60 @@ void main() {
         final uri = builder.buildUri();
 
         expect(uri.queryParameters['resolution'], equals('7200000'));
+      });
+    });
+
+    group('execute', () {
+      test('returns a page of trade aggregations', () async {
+        final page = {
+          '_links': {
+            'self': {'href': 'x'}
+          },
+          '_embedded': {
+            'records': [
+              {
+                'timestamp': '1633024800000',
+                'trade_count': '25',
+                'base_volume': '1000.0000000',
+                'counter_volume': '500.0000000',
+                'avg': '0.5000000',
+                'high': '0.6000000',
+                'high_r': {'n': 3, 'd': 5},
+                'low': '0.4000000',
+                'low_r': {'n': 2, 'd': 5},
+                'open': '0.4500000',
+                'open_r': {'n': 9, 'd': 20},
+                'close': '0.5500000',
+                'close_r': {'n': 11, 'd': 20}
+              }
+            ]
+          }
+        };
+
+        final client = MockClient((request) async {
+          expect(request.url.pathSegments, contains('trade_aggregations'));
+          return http.Response(json.encode(page), 200);
+        });
+
+        final builder = TradeAggregationsRequestBuilder(
+          client,
+          serverUri,
+          baseAsset,
+          counterAsset,
+          startTime,
+          endTime,
+          resolution,
+          offset,
+        );
+        final result = await builder.execute();
+
+        expect(result.records.length, equals(1));
+        expect(result.records.first, isA<TradeAggregationResponse>());
+        expect(result.records.first.timestamp, equals('1633024800000'));
+        expect(result.records.first.tradeCount, equals('25'));
+        expect(result.records.first.baseVolume, equals('1000.0000000'));
+        expect(result.records.first.high, equals('0.6000000'));
+        expect(result.records.first.close, equals('0.5500000'));
       });
     });
   });

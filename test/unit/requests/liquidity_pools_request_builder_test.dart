@@ -200,4 +200,122 @@ void main() {
     });
   });
 
+  group('LiquidityPoolsRequestBuilder single fetch', () {
+    final serverUri = Uri.parse('https://horizon-testnet.stellar.org');
+    final poolHexId =
+        'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
+    final issuer = 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5';
+    final poolRecord = {
+      '_links': {
+        'self': {'href': 'x'},
+        'operations': {'href': 'x'},
+        'transactions': {'href': 'x'}
+      },
+      'id': poolHexId,
+      'paging_token': poolHexId,
+      'fee_bp': 30,
+      'type': 'constant_product',
+      'total_trustlines': '100',
+      'total_shares': '1000.0000000',
+      'reserves': [
+        {'asset': 'native', 'amount': '500.0000000'},
+        {'asset': 'USD:$issuer', 'amount': '400.0000000'}
+      ],
+      'last_modified_ledger': 12345,
+      'last_modified_time': '2024-01-01T00:00:00Z'
+    };
+
+    test('forPoolId fetches a single liquidity pool', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.url.path, contains('/liquidity_pools/$poolHexId'));
+        return http.Response(json.encode(poolRecord), 200);
+      });
+
+      final builder = LiquidityPoolsRequestBuilder(mockClient, serverUri);
+      final pool = await builder.forPoolId(poolHexId);
+
+      expect(pool, isA<LiquidityPoolResponse>());
+      expect(pool.poolId, equals(poolHexId));
+      expect(pool.fee, equals(30));
+      expect(pool.totalShares, equals('1000.0000000'));
+      expect(pool.reserves.length, equals(2));
+    });
+  });
+
+  group('LiquidityPoolTradesRequestBuilder execute', () {
+    final serverUri = Uri.parse('https://horizon-testnet.stellar.org');
+    final poolHexId =
+        'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
+    final issuer = 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5';
+    final counter =
+        'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+    final tradeRecord = {
+      '_links': {
+        'base': {'href': 'x'},
+        'counter': {'href': 'x'},
+        'operation': {'href': 'x'}
+      },
+      'id': '123456789-0',
+      'paging_token': '123456789-0',
+      'ledger_close_time': '2024-01-01T00:00:00Z',
+      'offer_id': '0',
+      'trade_type': 'liquidity_pool',
+      'base_is_seller': true,
+      'base_liquidity_pool_id': poolHexId,
+      'base_amount': '100.0000000',
+      'base_asset_type': 'native',
+      'counter_account': counter,
+      'counter_offer_id': '9',
+      'counter_amount': '50.0000000',
+      'counter_asset_type': 'credit_alphanum4',
+      'counter_asset_code': 'USD',
+      'counter_asset_issuer': issuer,
+      'liquidity_pool_fee_bp': 30,
+      'price': {'n': 1, 'd': 2}
+    };
+
+    test('liquidityPoolTrades fetches a single trade for a uri', () async {
+      final mockClient = MockClient((request) async {
+        return http.Response(json.encode(tradeRecord), 200);
+      });
+
+      final builder =
+          LiquidityPoolTradesRequestBuilder(mockClient, serverUri);
+      final trade = await builder.liquidityPoolTrades(
+          Uri.parse('https://horizon-testnet.stellar.org/trades/1'));
+
+      expect(trade, isA<TradeResponse>());
+      expect(trade.tradeType, equals('liquidity_pool'));
+      expect(trade.baseAmount, equals('100.0000000'));
+      expect(trade.counterAmount, equals('50.0000000'));
+    });
+
+    test('execute returns a page of pool trades', () async {
+      final page = {
+        '_links': {
+          'self': {'href': 'x'},
+          'next': {'href': 'x'},
+          'prev': {'href': 'x'}
+        },
+        '_embedded': {
+          'records': [tradeRecord]
+        }
+      };
+
+      final mockClient = MockClient((request) async {
+        expect(request.url.path,
+            contains('/liquidity_pools/$poolHexId/trades'));
+        return http.Response(json.encode(page), 200);
+      });
+
+      final builder =
+          LiquidityPoolTradesRequestBuilder(mockClient, serverUri);
+      final result = await builder.forPoolId(poolHexId).limit(10).execute();
+
+      expect(result.records.length, equals(1));
+      expect(result.records.first, isA<TradeResponse>());
+      expect(result.records.first.baseAmount, equals('100.0000000'));
+    });
+  });
+
 }

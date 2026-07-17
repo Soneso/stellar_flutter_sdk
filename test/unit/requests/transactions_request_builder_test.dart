@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'dart:async';
 import 'dart:convert';
 
 void main() {
@@ -191,6 +192,76 @@ void main() {
             .forClaimableBalance('BINVALIDBALANCEID'),
         throwsArgumentError,
       );
+    });
+  });
+
+  group('TransactionsRequestBuilder single fetch and stream', () {
+    final serverUri = Uri.parse('https://horizon-testnet.stellar.org');
+    final sourceAccount =
+        'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+    final transactionRecord = {
+      '_links': {},
+      'id': 'abc123def456',
+      'paging_token': '12345-123',
+      'successful': true,
+      'hash': 'abc123def456',
+      'ledger': 12345,
+      'created_at': '2024-01-01T00:00:00Z',
+      'source_account': sourceAccount,
+      'fee_account': sourceAccount,
+      'source_account_sequence': '123456789',
+      'fee_charged': '100',
+      'max_fee': '1000',
+      'operation_count': 1,
+      'envelope_xdr': 'AAAAAAAA...',
+      'result_xdr': 'AAAAAAA...',
+      'result_meta_xdr': 'AAAAAAA...',
+      'fee_meta_xdr': 'AAAAAAA...',
+      'memo_type': 'none',
+      'signatures': ['sig1', 'sig2']
+    };
+
+    test('transaction(id) fetches a single transaction', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.url.path, contains('/transactions/abc123def456'));
+        return http.Response(json.encode(transactionRecord), 200);
+      });
+
+      final builder = TransactionsRequestBuilder(mockClient, serverUri);
+      final tx = await builder.transaction('abc123def456');
+
+      expect(tx, isA<TransactionResponse>());
+      expect(tx.hash, equals('abc123def456'));
+      expect(tx.ledger, equals(12345));
+      expect(tx.successful, isTrue);
+      expect(tx.sourceAccount, equals(sourceAccount));
+    });
+
+    test('stream parses an SSE data frame into a transaction', () async {
+      final mockClient = MockClient.streaming((request, bodyStream) async {
+        final controller = StreamController<List<int>>();
+        controller.add(utf8.encode('event: open\ndata: "hello"\n\n'));
+        controller
+            .add(utf8.encode('data: ${json.encode(transactionRecord)}\n\n'));
+        return http.StreamedResponse(controller.stream, 200,
+            headers: {'content-type': 'text/event-stream'});
+      });
+
+      final builder = TransactionsRequestBuilder(mockClient, serverUri);
+      final completer = Completer<TransactionResponse>();
+      final subscription = builder.stream().listen((event) {
+        if (!completer.isCompleted) {
+          completer.complete(event);
+        }
+      });
+
+      final event = await completer.future.timeout(const Duration(seconds: 10));
+      await subscription.cancel();
+
+      expect(event, isA<TransactionResponse>());
+      expect(event.successful, isTrue);
+      expect(event.hash, equals('abc123def456'));
+      expect(event.ledger, equals(12345));
     });
   });
 
