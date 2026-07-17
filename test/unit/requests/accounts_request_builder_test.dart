@@ -175,4 +175,30 @@ void main() {
       expect(stream, isA<Stream<AccountResponse>>());
     });
   });
+
+  group('AccountsRequestBuilder strkey id validation', () {
+    final serverUri = Uri.parse('https://horizon-testnet.stellar.org');
+
+    test('forLiquidityPool converts L strkey id to hex', () {
+      final poolHexId =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
+      final strKeyId =
+          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+
+      final builder =
+          AccountsRequestBuilder(http.Client(), serverUri).forLiquidityPool(strKeyId);
+
+      expect(builder.buildUri().queryParameters['liquidity_pool'],
+          equals(poolHexId));
+    });
+
+    test('forLiquidityPool throws on invalid L-prefixed id', () {
+      expect(
+        () => AccountsRequestBuilder(http.Client(), serverUri)
+            .forLiquidityPool('LINVALIDPOOLID'),
+        throwsArgumentError,
+      );
+    });
+  });
+
 }

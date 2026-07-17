@@ -69,7 +69,9 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
     if (id.startsWith("L")) {
       try {
         id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(poolId));
-      } catch (_) {}
+      } catch (_) {
+        throw ArgumentError("invalid liquidity pool id: $poolId");
+      }
     }
     this.setSegments(["liquidity_pools", id]);
     return this.liquidityPool(this.buildUri());
@@ -191,9 +193,11 @@ class LiquidityPoolTradesRequestBuilder extends RequestBuilder {
     if (id.startsWith("L")) {
       try {
         id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(poolId));
-      } catch (_) {}
+      } catch (_) {
+        throw ArgumentError("invalid liquidity pool id: $poolId");
+      }
     }
-    this.setSegments(["liquidity_pools", poolId, "trades"]);
+    this.setSegments(["liquidity_pools", id, "trades"]);
     return this;
   }
 

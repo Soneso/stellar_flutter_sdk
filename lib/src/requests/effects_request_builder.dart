@@ -97,7 +97,9 @@ class EffectsRequestBuilder extends RequestBuilder {
     if (id.startsWith("L")) {
       try {
         id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(poolId));
-      } catch (_) {}
+      } catch (_) {
+        throw ArgumentError("invalid liquidity pool id: $poolId");
+      }
     }
     this.setSegments(["liquidity_pools", id, "effects"]);
     return this;

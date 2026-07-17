@@ -89,7 +89,10 @@ class OperationsRequestBuilder extends RequestBuilder {
       try {
         id = Util.bytesToHex(
             StrKey.decodeClaimableBalanceId(claimableBalanceId));
-      } catch (_) {}
+      } catch (_) {
+        throw ArgumentError(
+            "invalid claimable balance id: $claimableBalanceId");
+      }
     }
     this.setSegments(["claimable_balances", id, "operations"]);
     return this;
@@ -117,7 +120,9 @@ class OperationsRequestBuilder extends RequestBuilder {
     if (id.startsWith("L")) {
       try {
         id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(liquidityPoolId));
-      } catch (_) {}
+      } catch (_) {
+        throw ArgumentError("invalid liquidity pool id: $liquidityPoolId");
+      }
     }
     this.setSegments(["liquidity_pools", id, "operations"]);
     return this;

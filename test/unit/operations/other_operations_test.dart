@@ -1401,4 +1401,66 @@ void main() {
       });
     });
   });
-}
+
+  group('LiquidityPool operation builders strkey id validation', () {
+    test('deposit builder converts L strkey id to hex', () {
+      final poolHexId =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
+      final strKeyId =
+          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+
+      final operation = LiquidityPoolDepositOperationBuilder(
+        liquidityPoolId: strKeyId,
+        maxAmountA: '1000.0',
+        maxAmountB: '500.0',
+        minPrice: '0.49',
+        maxPrice: '0.51',
+      ).build();
+
+      final body = operation.toOperationBody();
+      expect(Util.bytesToHex(body.liquidityPoolDepositOp!.liquidityPoolID.hash),
+          equals(poolHexId));
+    });
+
+    test('deposit builder throws on invalid L-prefixed id', () {
+      final operation = LiquidityPoolDepositOperationBuilder(
+        liquidityPoolId: 'LINVALIDPOOLID',
+        maxAmountA: '1000.0',
+        maxAmountB: '500.0',
+        minPrice: '0.49',
+        maxPrice: '0.51',
+      ).build();
+
+      expect(() => operation.toOperationBody(), throwsArgumentError);
+    });
+
+    test('withdraw builder converts L strkey id to hex', () {
+      final poolHexId =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
+      final strKeyId =
+          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+
+      final operation = LiquidityPoolWithdrawOperationBuilder(
+        liquidityPoolId: strKeyId,
+        amount: '100.0',
+        minAmountA: '990.0',
+        minAmountB: '490.0',
+      ).build();
+
+      final body = operation.toOperationBody();
+      expect(
+          Util.bytesToHex(body.liquidityPoolWithdrawOp!.liquidityPoolID.hash),
+          equals(poolHexId));
+    });
+
+    test('withdraw builder throws on invalid L-prefixed id', () {
+      final operation = LiquidityPoolWithdrawOperationBuilder(
+        liquidityPoolId: 'LINVALIDPOOLID',
+        amount: '100.0',
+        minAmountA: '990.0',
+        minAmountB: '490.0',
+      ).build();
+
+      expect(() => operation.toOperationBody(), throwsArgumentError);
+    });
+  });}

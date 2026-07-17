@@ -70,7 +70,9 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
     if (id.startsWith("B")) {
       try {
         id = Util.bytesToHex(StrKey.decodeClaimableBalanceId(balanceId));
-      } catch (_) {}
+      } catch (_) {
+        throw ArgumentError("invalid claimable balance id: $balanceId");
+      }
     }
     this.setSegments(["claimable_balances", id]);
     return this.claimableBalance(this.buildUri());

@@ -169,4 +169,48 @@ void main() {
       expect(stream, isA<Stream<OperationResponse>>());
     });
   });
+
+  group('OperationsRequestBuilder strkey id validation', () {
+    final serverUri = Uri.parse('https://horizon-testnet.stellar.org');
+
+    test('forLiquidityPool converts L strkey id to hex', () {
+      final poolHexId =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
+      final strKeyId =
+          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+
+      final builder =
+          OperationsRequestBuilder(http.Client(), serverUri).forLiquidityPool(strKeyId);
+
+      expect(builder.buildUri().path, contains('/liquidity_pools/$poolHexId'));
+    });
+
+    test('forLiquidityPool throws on invalid L-prefixed id', () {
+      expect(
+        () => OperationsRequestBuilder(http.Client(), serverUri)
+            .forLiquidityPool('LINVALIDPOOLID'),
+        throwsArgumentError,
+      );
+    });
+
+    test('forClaimableBalance converts B strkey id to hex', () {
+      final cbHexId =
+          '000000000a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
+      final strKeyId = StrKey.encodeClaimableBalanceIdHex(cbHexId);
+
+      final builder =
+          OperationsRequestBuilder(http.Client(), serverUri).forClaimableBalance(strKeyId);
+
+      expect(builder.buildUri().path, contains('/claimable_balances/$cbHexId'));
+    });
+
+    test('forClaimableBalance throws on invalid B-prefixed id', () {
+      expect(
+        () => OperationsRequestBuilder(http.Client(), serverUri)
+            .forClaimableBalance('BINVALIDBALANCEID'),
+        throwsArgumentError,
+      );
+    });
+  });
+
 }

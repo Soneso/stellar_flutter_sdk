@@ -349,4 +349,17 @@ void main() {
       });
     });
   });
+
+  group('ClaimableBalancesRequestBuilder strkey id validation', () {
+    final serverUri = Uri.parse('https://horizon-testnet.stellar.org');
+
+    test('forBalanceId throws on invalid B-prefixed id', () {
+      expect(
+        () => ClaimableBalancesRequestBuilder(http.Client(), serverUri)
+            .forBalanceId('BINVALIDBALANCEID'),
+        throwsArgumentError,
+      );
+    });
+  });
+
 }

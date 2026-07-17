@@ -166,4 +166,38 @@ void main() {
       expect(result4, same(builder));
     });
   });
+
+  group('LiquidityPoolTradesRequestBuilder strkey id validation', () {
+    final serverUri = Uri.parse('https://horizon-testnet.stellar.org');
+
+    test('forPoolId converts L strkey id to hex', () {
+      final poolHexId =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
+      final strKeyId =
+          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+
+      final builder =
+          LiquidityPoolTradesRequestBuilder(http.Client(), serverUri).forPoolId(strKeyId);
+
+      expect(builder.buildUri().path,
+          contains('/liquidity_pools/$poolHexId/trades'));
+    });
+
+    test('forPoolId throws on invalid L-prefixed id', () {
+      expect(
+        () => LiquidityPoolTradesRequestBuilder(http.Client(), serverUri)
+            .forPoolId('LINVALIDPOOLID'),
+        throwsArgumentError,
+      );
+    });
+
+    test('LiquidityPoolsRequestBuilder.forPoolId throws on invalid L id', () {
+      expect(
+        () => LiquidityPoolsRequestBuilder(http.Client(), serverUri)
+            .forPoolId('LINVALIDPOOLID'),
+        throwsArgumentError,
+      );
+    });
+  });
+
 }

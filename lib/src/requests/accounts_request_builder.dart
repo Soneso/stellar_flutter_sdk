@@ -222,7 +222,9 @@ class AccountsRequestBuilder extends RequestBuilder {
     if (id.startsWith("L")) {
       try {
         id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(poolId));
-      } catch (_) {}
+      } catch (_) {
+        throw ArgumentError("invalid liquidity pool id: $poolId");
+      }
     }
     queryParameters.addAll({LIQUIDITY_POOL_PARAMETER_NAME: id});
     return this;

@@ -104,9 +104,10 @@ class LiquidityPoolWithdrawOperation extends Operation {
     var id = liquidityPoolId;
     if (id.startsWith("L")) {
       try {
-        id = Util.bytesToHex(
-            StrKey.decodeLiquidityPoolId(liquidityPoolId));
-      } catch (_) {}
+        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(liquidityPoolId));
+      } catch (_) {
+        throw ArgumentError("invalid liquidity pool id: $liquidityPoolId");
+      }
     }
     XdrHash xLiquidityPoolID = Util.stringIdToXdrHash(id);
     XdrInt64 amountA = XdrInt64(Util.decimalStringToStroops(this.minAmountA));

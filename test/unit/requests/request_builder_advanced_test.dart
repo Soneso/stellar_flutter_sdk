@@ -735,15 +735,16 @@ void main() {
       );
     });
 
-    test('forLiquidityPool with L-prefixed pool ID attempts decode', () {
+    test('forLiquidityPool decodes L-prefixed pool ID to hex', () {
       final builder = AccountsRequestBuilder(httpClient, serverUri);
+      final poolHexId =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final poolIdWithPrefix =
-          'LAQHPQVZ5EYYDWUOIJLPQZFQIBZSNBBRMUNX4UPWWKJXWMHJXP4D3WGU';
+          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
       builder.forLiquidityPool(poolIdWithPrefix);
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['liquidity_pool'], isNotNull);
-      // If decode fails, it falls back to the original ID
+      expect(uri.queryParameters['liquidity_pool'], equals(poolHexId));
     });
 
     test('forLiquidityPool with hex pool ID', () {
@@ -897,13 +898,14 @@ void main() {
 
     test('forPoolId with L-prefixed ID', () {
       final builder = LiquidityPoolTradesRequestBuilder(httpClient, serverUri);
+      final poolHexId =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final poolIdWithPrefix =
-          'LAQHPQVZ5EYYDWUOIJLPQZFQIBZSNBBRMUNX4UPWWKJXWMHJXP4D3WGU';
+          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
       builder.forPoolId(poolIdWithPrefix);
       final uri = builder.buildUri();
 
-      expect(uri.path, contains('/liquidity_pools/'));
-      expect(uri.path, contains('/trades'));
+      expect(uri.path, contains('/liquidity_pools/$poolHexId/trades'));
     });
 
     test('cursor returns builder instance for chaining', () {
@@ -1076,8 +1078,10 @@ void main() {
 
     test('forClaimableBalance with B-prefixed ID', () {
       final builder = OperationsRequestBuilder(httpClient, serverUri);
+      final cbHexId =
+          '000000000a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final claimableBalanceId =
-          'B00000000000000000000000000000000000000000000000000000000000000000000001';
+          StrKey.encodeClaimableBalanceIdHex(cbHexId);
       builder.forClaimableBalance(claimableBalanceId);
       final uri = builder.buildUri();
 
@@ -1116,8 +1120,10 @@ void main() {
 
     test('forLiquidityPool with L-prefixed ID', () {
       final builder = OperationsRequestBuilder(httpClient, serverUri);
+      final poolHexId =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final poolIdWithPrefix =
-          'LAQHPQVZ5EYYDWUOIJLPQZFQIBZSNBBRMUNX4UPWWKJXWMHJXP4D3WGU';
+          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
       builder.forLiquidityPool(poolIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -1190,8 +1196,10 @@ void main() {
 
     test('forClaimableBalance with B-prefixed ID', () {
       final builder = TransactionsRequestBuilder(httpClient, serverUri);
+      final cbHexId =
+          '000000000a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final claimableBalanceId =
-          'B00000000000000000000000000000000000000000000000000000000000000000000002';
+          StrKey.encodeClaimableBalanceIdHex(cbHexId);
       builder.forClaimableBalance(claimableBalanceId);
       final uri = builder.buildUri();
 
@@ -1219,8 +1227,10 @@ void main() {
 
     test('forLiquidityPool with L-prefixed ID', () {
       final builder = TransactionsRequestBuilder(httpClient, serverUri);
+      final poolHexId =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final poolIdWithPrefix =
-          'LAQHPQVZ5EYYDWUOIJLPQZFQIBZSNBBRMUNX4UPWWKJXWMHJXP4D3WGU';
+          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
       builder.forLiquidityPool(poolIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -1399,10 +1409,12 @@ void main() {
       expect(uri.path, contains('/trades'));
     });
 
-    test('forPoolId with L-prefixed ID attempts decode', () {
+    test('forPoolId decodes L-prefixed ID to hex', () {
       final builder = LiquidityPoolTradesRequestBuilder(httpClient, serverUri);
+      final poolHexId =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final poolIdWithPrefix =
-          'LAQHPQVZ5EYYDWUOIJLPQZFQIBZSNBBRMUNX4UPWWKJXWMHJXP4D3WGU';
+          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
       builder.forPoolId(poolIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -1553,10 +1565,12 @@ void main() {
       expect(uri.path, contains('/operations'));
     });
 
-    test('forClaimableBalance with B-prefixed ID attempts decode', () {
+    test('forClaimableBalance decodes B-prefixed ID to hex', () {
       final builder = OperationsRequestBuilder(httpClient, serverUri);
+      final cbHexId =
+          '000000000a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final balanceIdWithPrefix =
-          'B00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072';
+          StrKey.encodeClaimableBalanceIdHex(cbHexId);
       builder.forClaimableBalance(balanceIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -1594,10 +1608,12 @@ void main() {
       expect(uri.path, contains('/operations'));
     });
 
-    test('forLiquidityPool with L-prefixed ID attempts decode', () {
+    test('forLiquidityPool decodes L-prefixed ID to hex', () {
       final builder = OperationsRequestBuilder(httpClient, serverUri);
+      final poolHexId =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final poolIdWithPrefix =
-          'LAQHPQVZ5EYYDWUOIJLPQZFQIBZSNBBRMUNX4UPWWKJXWMHJXP4D3WGU';
+          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
       builder.forLiquidityPool(poolIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -1664,10 +1680,12 @@ void main() {
       expect(uri.path, contains('/transactions'));
     });
 
-    test('forClaimableBalance with B-prefixed ID attempts decode', () {
+    test('forClaimableBalance decodes B-prefixed ID to hex', () {
       final builder = TransactionsRequestBuilder(httpClient, serverUri);
+      final cbHexId =
+          '000000000a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final balanceIdWithPrefix =
-          'B00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072';
+          StrKey.encodeClaimableBalanceIdHex(cbHexId);
       builder.forClaimableBalance(balanceIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -1695,10 +1713,12 @@ void main() {
       expect(uri.path, contains('/transactions'));
     });
 
-    test('forLiquidityPool with L-prefixed ID attempts decode', () {
+    test('forLiquidityPool decodes L-prefixed ID to hex', () {
       final builder = TransactionsRequestBuilder(httpClient, serverUri);
+      final poolHexId =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final poolIdWithPrefix =
-          'LAQHPQVZ5EYYDWUOIJLPQZFQIBZSNBBRMUNX4UPWWKJXWMHJXP4D3WGU';
+          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
       builder.forLiquidityPool(poolIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -1825,10 +1845,12 @@ void main() {
       expect(uri.queryParameters['liquidity_pool_id'], equals(testLiquidityPoolId));
     });
 
-    test('liquidityPoolId with L-prefixed ID attempts decode', () {
+    test('liquidityPoolId decodes L-prefixed ID to hex', () {
       final builder = TradesRequestBuilder(httpClient, serverUri);
+      final poolHexId =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final poolIdWithPrefix =
-          'LAQHPQVZ5EYYDWUOIJLPQZFQIBZSNBBRMUNX4UPWWKJXWMHJXP4D3WGU';
+          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
       builder.liquidityPoolId(poolIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -1908,10 +1930,12 @@ void main() {
       expect(uri.path, contains('/effects'));
     });
 
-    test('forLiquidityPool with L-prefixed ID attempts decode', () {
+    test('forLiquidityPool decodes L-prefixed ID to hex', () {
       final builder = EffectsRequestBuilder(httpClient, serverUri);
+      final poolHexId =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final poolIdWithPrefix =
-          'LAQHPQVZ5EYYDWUOIJLPQZFQIBZSNBBRMUNX4UPWWKJXWMHJXP4D3WGU';
+          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
       builder.forLiquidityPool(poolIdWithPrefix);
       final uri = builder.buildUri();
 
