@@ -567,6 +567,66 @@ void main() {
         expect(response.events![1], 'event2xdr');
       });
 
+      test('decodes diagnostic events from JSON response', () {
+        final topic = XdrSCVal(XdrSCValType.SCV_SYMBOL);
+        topic.sym = 'transfer';
+        final data = XdrSCVal(XdrSCValType.SCV_U32);
+        data.u32 = XdrUint32(777);
+
+        final body = XdrContractEventBody(0);
+        body.v0 = XdrContractEventV0([topic], data);
+        final contractEvent = XdrContractEvent(XdrExtensionPoint(0), null,
+            XdrContractEventType.DIAGNOSTIC, body);
+        final diagnosticEvent = XdrDiagnosticEvent(true, contractEvent);
+
+        final json = {
+          'result': {
+            'events': [diagnosticEvent.toBase64EncodedXdrString()],
+            'latestLedger': 100000,
+          }
+        };
+
+        final response = SimulateTransactionResponse.fromJson(json);
+
+        expect(response.diagnosticEvents, isNotNull);
+        expect(response.diagnosticEvents!.length, 1);
+        final decoded = response.diagnosticEvents![0];
+        expect(decoded.inSuccessfulContractCall, isTrue);
+        expect(decoded.event.type.value,
+            equals(XdrContractEventType.DIAGNOSTIC.value));
+        expect(decoded.event.body.v0!.topics.length, 1);
+        expect(decoded.event.body.v0!.topics[0].sym, equals('transfer'));
+        expect(decoded.event.body.v0!.data.u32!.uint32, equals(777));
+      });
+
+      test('diagnostic events are null when no events present', () {
+        final json = {
+          'result': {
+            'latestLedger': 100000,
+          }
+        };
+
+        final response = SimulateTransactionResponse.fromJson(json);
+
+        expect(response.events, isNull);
+        expect(response.diagnosticEvents, isNull);
+      });
+
+      test('diagnostic events are null when events list is empty', () {
+        final json = {
+          'result': {
+            'events': [],
+            'latestLedger': 100000,
+          }
+        };
+
+        final response = SimulateTransactionResponse.fromJson(json);
+
+        expect(response.events, isNotNull);
+        expect(response.events!.length, 0);
+        expect(response.diagnosticEvents, isNull);
+      });
+
       test('handles missing events field', () {
         final json = {
           'result': {

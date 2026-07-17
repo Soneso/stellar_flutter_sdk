@@ -2078,6 +2078,7 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
   int? minResourceFee;
 
   /// Array of the events emitted during the contract invocation(s). The events are ordered by their emission time. (an array of serialized base64 strings representing XdrDiagnosticEvent)
+  /// Use [diagnosticEvents] for the decoded representation.
   List<String>? events;
 
   /// It can only present on successful simulation (i.e. no error) of InvokeHostFunction operations. If present, it indicates
@@ -2166,6 +2167,23 @@ class SimulateTransactionResponse extends SorobanRpcResponse {
   }
 
   List<SorobanAuthorizationEntry>? get sorobanAuth => getSorobanAuth();
+
+  /// Returns the events emitted during the contract invocation(s) decoded
+  /// from the base64 strings in [events], ordered by their emission time.
+  /// Returns null if the simulation reported no events.
+  List<XdrDiagnosticEvent>? getDiagnosticEvents() {
+    if (events != null && events!.length > 0) {
+      List<XdrDiagnosticEvent> result =
+          List<XdrDiagnosticEvent>.empty(growable: true);
+      for (String nextXdr in events!) {
+        result.add(XdrDiagnosticEvent.fromBase64EncodedXdrString(nextXdr));
+      }
+      return result;
+    }
+    return null;
+  }
+
+  List<XdrDiagnosticEvent>? get diagnosticEvents => getDiagnosticEvents();
 }
 
 /// Used as a part of simulate transaction.
