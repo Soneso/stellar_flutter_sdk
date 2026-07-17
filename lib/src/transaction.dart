@@ -1013,8 +1013,8 @@ class TimeBounds {
     if (maxTime < 0) {
       throw new Exception("maxTime cannot be negative");
     }
-    if (maxTime != 0 && minTime >= maxTime) {
-      throw Exception("minTime must be >= maxTime");
+    if (maxTime != 0 && minTime > maxTime) {
+      throw Exception("minTime cannot be greater than maxTime");
     }
 
     _mMinTime = minTime;
@@ -1071,14 +1071,14 @@ class LedgerBounds {
   /// Constructor [_minLedger] and [_maxLedger] are 64bit Unix timestamps.
   LedgerBounds(this._minLedger, this._maxLedger) {
     if (_minLedger < 0) {
-      throw Exception("minLdeger cannot be negative");
+      throw Exception("minLedger cannot be negative");
     }
 
     if (_maxLedger < 0) {
       throw new Exception("maxLedger cannot be negative");
     }
-    if (_maxLedger != 0 && _minLedger >= _maxLedger) {
-      throw Exception("minLedger must be >= maxLedger");
+    if (_maxLedger != 0 && _minLedger > _maxLedger) {
+      throw Exception("minLedger cannot be greater than maxLedger");
     }
   }
 

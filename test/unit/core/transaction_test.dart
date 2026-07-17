@@ -926,11 +926,18 @@ void main() {
     });
 
     group('TimeBounds', () {
-      test('TimeBounds validation minTime >= maxTime throws', () {
+      test('TimeBounds validation minTime > maxTime throws', () {
         expect(
           () => TimeBounds(2000, 1000),
-          throwsA(isA<Exception>())
+          throwsA(isA<Exception>().having((e) => e.toString(), 'message',
+              contains('minTime cannot be greater than maxTime'))),
         );
+      });
+
+      test('TimeBounds allows minTime equal to maxTime', () {
+        final timeBounds = TimeBounds(1000, 1000);
+        expect(timeBounds.minTime, equals(1000));
+        expect(timeBounds.maxTime, equals(1000));
       });
 
       test('TimeBounds validation negative minTime throws', () {
@@ -973,11 +980,18 @@ void main() {
     });
 
     group('LedgerBounds', () {
-      test('LedgerBounds validation minLedger >= maxLedger throws', () {
+      test('LedgerBounds validation minLedger > maxLedger throws', () {
         expect(
           () => LedgerBounds(2000, 1000),
-          throwsA(isA<Exception>())
+          throwsA(isA<Exception>().having((e) => e.toString(), 'message',
+              contains('minLedger cannot be greater than maxLedger'))),
         );
+      });
+
+      test('LedgerBounds allows minLedger equal to maxLedger', () {
+        final ledgerBounds = LedgerBounds(1000, 1000);
+        expect(ledgerBounds.minLedger, equals(1000));
+        expect(ledgerBounds.maxLedger, equals(1000));
       });
 
       test('LedgerBounds validation negative minLedger throws', () {
@@ -1990,11 +2004,17 @@ void main() {
         );
       });
 
-      test('constructor throws when minTime >= maxTime', () {
+      test('constructor throws when minTime > maxTime', () {
         expect(
-          () => TimeBounds(1000, 1000),
+          () => TimeBounds(1001, 1000),
           throwsA(isA<Exception>()),
         );
+      });
+
+      test('constructor allows minTime equal to maxTime', () {
+        final timeBounds = TimeBounds(1000, 1000);
+        expect(timeBounds.minTime, equals(1000));
+        expect(timeBounds.maxTime, equals(1000));
       });
 
       test('equality compares TimeBounds correctly', () {
@@ -2026,11 +2046,17 @@ void main() {
         );
       });
 
-      test('constructor throws when minLedger >= maxLedger', () {
+      test('constructor throws when minLedger > maxLedger', () {
         expect(
-          () => LedgerBounds(1000, 1000),
+          () => LedgerBounds(1001, 1000),
           throwsA(isA<Exception>()),
         );
+      });
+
+      test('constructor allows minLedger equal to maxLedger', () {
+        final ledgerBounds = LedgerBounds(1000, 1000);
+        expect(ledgerBounds.minLedger, equals(1000));
+        expect(ledgerBounds.maxLedger, equals(1000));
       });
 
       test('equality compares LedgerBounds correctly', () {
