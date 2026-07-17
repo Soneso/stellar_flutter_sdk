@@ -3,11 +3,9 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-import "../eventsource/eventsource.dart";
 import '../responses/ledger_response.dart';
 import '../responses/response.dart';
 import 'request_builder.dart';
@@ -61,15 +59,7 @@ class LedgersRequestBuilder extends RequestBuilder {
   /// Requests specific uri and returns LedgerResponse.
   /// This method is helpful for getting the links.
   Future<LedgerResponse> ledgerURI(Uri uri) async {
-    TypeToken<LedgerResponse> type = new TypeToken<LedgerResponse>();
-    ResponseHandler<LedgerResponse> responseHandler =
-        new ResponseHandler<LedgerResponse>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<LedgerResponse>(httpClient, uri);
   }
 
   /// Provides information on a specific ledger given by [ledgerSeq].
@@ -83,16 +73,7 @@ class LedgersRequestBuilder extends RequestBuilder {
   /// This method is helpful for getting the next set of results.
   static Future<Page<LedgerResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    TypeToken<Page<LedgerResponse>> type =
-        new TypeToken<Page<LedgerResponse>>();
-    ResponseHandler<Page<LedgerResponse>> responseHandler =
-        new ResponseHandler<Page<LedgerResponse>>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<Page<LedgerResponse>>(httpClient, uri);
   }
 
   /// Allows to stream SSE events from horizon.
@@ -101,58 +82,8 @@ class LedgersRequestBuilder extends RequestBuilder {
   /// responses as ledgers close.
   /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<LedgerResponse> stream() {
-    StreamController<LedgerResponse> listener = StreamController.broadcast();
-
-    bool cancelled = false;
-    EventSource? source;
-
-    /// Creates a new EventSource connection to stream ledger updates from Horizon.
-    /// Automatically reconnects when the connection closes to maintain continuous streaming.
-    Future<void> createNewEventSource() async {
-      if (cancelled) {
-        return;
-      }
-      source?.close();
-      source = await EventSource.connect(
-        this.buildUri(),
-        client: httpClient,
-      );
-      source!.listen((Event event) async {
-        if (cancelled) {
-          return null;
-        }
-        if (event.event == "open") {
-          return null;
-        }
-        if (event.event == "close") {
-          // Reconnect on close to stream infinitely
-          createNewEventSource();
-          return null;
-        }
-        try {
-          LedgerResponse operationResponse = LedgerResponse.fromJson(
-            json.decode(event.data!),
-          );
-          listener.add(operationResponse);
-        } catch (e, stackTrace) {
-          listener.addError(e, stackTrace);
-          createNewEventSource();
-        }
-      });
-    }
-
-    listener.onListen = () {
-      cancelled = false;
-      createNewEventSource();
-    };
-    listener.onCancel = () {
-      if (!listener.hasListener) {
-        cancelled = true;
-        source?.close();
-      }
-    };
-
-    return listener.stream;
+    return streamEvents<LedgerResponse>(
+        (json) => LedgerResponse.fromJson(json));
   }
 
   /// Build and execute the request.

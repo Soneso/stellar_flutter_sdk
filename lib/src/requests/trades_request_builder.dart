@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
@@ -11,7 +10,6 @@ import 'package:stellar_flutter_sdk/src/util.dart';
 
 import '../asset_type_credit_alphanum.dart';
 import '../assets.dart';
-import "../eventsource/eventsource.dart";
 import '../responses/response.dart';
 import '../responses/trade_response.dart';
 import 'request_builder.dart';
@@ -185,15 +183,7 @@ class TradesRequestBuilder extends RequestBuilder {
   /// Returns: Page of TradeResponse objects
   static Future<Page<TradeResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    TypeToken<Page<TradeResponse>> type = TypeToken<Page<TradeResponse>>();
-    ResponseHandler<Page<TradeResponse>> responseHandler =
-        ResponseHandler<Page<TradeResponse>>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<Page<TradeResponse>>(httpClient, uri);
   }
 
   /// Builds and executes the request.
@@ -294,57 +284,6 @@ class TradesRequestBuilder extends RequestBuilder {
   /// responses as ledgers close.
   /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<TradeResponse> stream() {
-    StreamController<TradeResponse> listener = StreamController.broadcast();
-
-    bool cancelled = false;
-    EventSource? source;
-
-    /// Creates a new EventSource connection to stream trade updates from Horizon.
-    /// Automatically reconnects when the connection closes to maintain continuous streaming.
-    Future<void> createNewEventSource() async {
-      if (cancelled) {
-        return;
-      }
-      source?.close();
-      source = await EventSource.connect(
-        this.buildUri(),
-        client: httpClient,
-      );
-      source!.listen((Event event) async {
-        if (cancelled) {
-          return null;
-        }
-        if (event.event == "open") {
-          return null;
-        }
-        if (event.event == "close") {
-          // Reconnect on close to stream infinitely
-          createNewEventSource();
-          return null;
-        }
-        try {
-          TradeResponse operationResponse = TradeResponse.fromJson(
-            json.decode(event.data!),
-          );
-          listener.add(operationResponse);
-        } catch (e, stackTrace) {
-          listener.addError(e, stackTrace);
-          createNewEventSource();
-        }
-      });
-    }
-
-    listener.onListen = () {
-      cancelled = false;
-      createNewEventSource();
-    };
-    listener.onCancel = () {
-      if (!listener.hasListener) {
-        cancelled = true;
-        source?.close();
-      }
-    };
-
-    return listener.stream;
+    return streamEvents<TradeResponse>((json) => TradeResponse.fromJson(json));
   }
 }

@@ -110,16 +110,8 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
   /// Returns a page of trade aggregation responses for navigation.
   static Future<Page<TradeAggregationResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    TypeToken<Page<TradeAggregationResponse>> type =
-        new TypeToken<Page<TradeAggregationResponse>>();
-    ResponseHandler<Page<TradeAggregationResponse>> responseHandler =
-        new ResponseHandler<Page<TradeAggregationResponse>>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<Page<TradeAggregationResponse>>(
+        httpClient, uri);
   }
 
   /// Builds and executes the request.

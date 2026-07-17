@@ -97,6 +97,13 @@ void main() {
         );
       });
 
+      test('throws on invalid source account id', () {
+        expect(
+          () => SetOptionsOperationBuilder().setSourceAccount('INVALID'),
+          throwsException
+        );
+      });
+
       test('creates with signer', () {
         final signerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
         signerKey.ed25519 = XdrUint256(StrKey.decodeStellarAccountId(signerKeyPair.accountId));
@@ -1009,6 +1016,13 @@ void main() {
 
         expect(operation.ledgerKey, isNotNull);
         expect(operation.ledgerKey!.discriminant, equals(XdrLedgerEntryType.ACCOUNT));
+      });
+
+      test('throws on invalid source account id', () {
+        expect(
+          () => RevokeSponsorshipOperationBuilder().setSourceAccount('INVALID'),
+          throwsException
+        );
       });
 
       test('creates revoke trustline sponsorship', () {

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:stellar_flutter_sdk/src/muxed_account.dart';
-
 import 'operation.dart';
 import 'key_pair.dart';
 import 'util.dart';
@@ -109,10 +107,10 @@ class CreateAccountOperation extends Operation {
 ///   "10.0"
 /// ).setSourceAccount(sourceAccountId).build();
 /// ```
-class CreateAccountOperationBuilder {
+class CreateAccountOperationBuilder
+    extends OperationBuilder<CreateAccountOperationBuilder> {
   String _destination;
   String _startingBalance;
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a CreateAccount operation builder.
   ///
@@ -121,39 +119,12 @@ class CreateAccountOperationBuilder {
   /// - [_startingBalance] Starting balance in XLM (must meet minimum reserve).
   CreateAccountOperationBuilder(this._destination, this._startingBalance);
 
-  /// Sets the source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId] Account ID of the operation source.
-  ///
-  /// Returns: This builder instance for method chaining.
-  CreateAccountOperationBuilder setSourceAccount(String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount] Muxed account to use as operation source.
-  ///
-  /// Returns: This builder instance for method chaining.
-  CreateAccountOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the CreateAccount operation.
   ///
   /// Returns: Configured CreateAccountOperation instance.
   CreateAccountOperation build() {
     CreateAccountOperation operation =
         CreateAccountOperation(_destination, _startingBalance);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

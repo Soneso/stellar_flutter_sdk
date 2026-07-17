@@ -2,11 +2,8 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:stellar_flutter_sdk/src/muxed_account.dart';
-
 import 'operation.dart';
 import 'dart:typed_data';
-import 'util.dart';
 import 'xdr/xdr.dart';
 
 /// Sets, modifies, or deletes a data entry on an account.
@@ -125,10 +122,10 @@ class ManageDataOperation extends Operation {
 /// // Delete data
 /// var deleteData = ManageDataOperationBuilder("myKey", null).build();
 /// ```
-class ManageDataOperationBuilder {
+class ManageDataOperationBuilder
+    extends OperationBuilder<ManageDataOperationBuilder> {
   String _name;
   Uint8List? _value;
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a ManageData operation builder.
   ///
@@ -139,37 +136,11 @@ class ManageDataOperationBuilder {
     this._value = value;
   }
 
-  /// Sets the source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId] Account ID of the operation source
-  ///
-  /// Returns: This builder instance for method chaining
-  ManageDataOperationBuilder setSourceAccount(String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount] Muxed account to use as operation source
-  ///
-  /// Returns: This builder instance for method chaining
-  ManageDataOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the ManageData operation.
   ///
   /// Returns: Configured ManageDataOperation instance
   ManageDataOperation build() {
     ManageDataOperation operation = new ManageDataOperation(_name, _value);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

@@ -3,13 +3,11 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
 import '../asset_type_credit_alphanum.dart';
 import '../assets.dart';
-import "../eventsource/eventsource.dart";
 import '../responses/offer_response.dart';
 import '../responses/response.dart';
 import 'request_builder.dart';
@@ -66,15 +64,7 @@ class OffersRequestBuilder extends RequestBuilder {
   /// Requests specific [uri] and returns OfferResponse.
   /// This method is helpful for getting the links.
   Future<OfferResponse> offersURI(Uri uri) async {
-    TypeToken<OfferResponse> type = new TypeToken<OfferResponse>();
-    ResponseHandler<OfferResponse> responseHandler =
-        ResponseHandler<OfferResponse>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<OfferResponse>(httpClient, uri);
   }
 
   /// The offer details endpoint provides information on a single offer given by [offerId].
@@ -145,15 +135,7 @@ class OffersRequestBuilder extends RequestBuilder {
   /// This method is helpful for getting the next set of results.
   static Future<Page<OfferResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    TypeToken<Page<OfferResponse>> type = new TypeToken<Page<OfferResponse>>();
-    ResponseHandler<Page<OfferResponse>> responseHandler =
-        new ResponseHandler<Page<OfferResponse>>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<Page<OfferResponse>>(httpClient, uri);
   }
 
   /// Allows to stream SSE events from horizon.
@@ -162,58 +144,7 @@ class OffersRequestBuilder extends RequestBuilder {
   /// responses as ledgers close.
   /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<OfferResponse> stream() {
-    StreamController<OfferResponse> listener = StreamController.broadcast();
-
-    bool cancelled = false;
-    EventSource? source;
-
-    /// Creates a new EventSource connection to stream offer updates from Horizon.
-    /// Automatically reconnects when the connection closes to maintain continuous streaming.
-    Future<void> createNewEventSource() async {
-      if (cancelled) {
-        return;
-      }
-      source?.close();
-      source = await EventSource.connect(
-        this.buildUri(),
-        client: httpClient,
-      );
-      source!.listen((Event event) async {
-        if (cancelled) {
-          return null;
-        }
-        if (event.event == "open") {
-          return null;
-        }
-        if (event.event == "close") {
-          // Reconnect on close to stream infinitely
-          createNewEventSource();
-          return null;
-        }
-        try {
-          OfferResponse operationResponse = OfferResponse.fromJson(
-            json.decode(event.data!),
-          );
-          listener.add(operationResponse);
-        } catch (e, stackTrace) {
-          listener.addError(e, stackTrace);
-          createNewEventSource();
-        }
-      });
-    }
-
-    listener.onListen = () {
-      cancelled = false;
-      createNewEventSource();
-    };
-    listener.onCancel = () {
-      if (!listener.hasListener) {
-        cancelled = true;
-        source?.close();
-      }
-    };
-
-    return listener.stream;
+    return streamEvents<OfferResponse>((json) => OfferResponse.fromJson(json));
   }
 
   /// Build and execute the request.

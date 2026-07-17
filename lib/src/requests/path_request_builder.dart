@@ -70,15 +70,7 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
   /// Returns a page of path responses for navigation.
   static Future<Page<PathResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    TypeToken<Page<PathResponse>> type = new TypeToken<Page<PathResponse>>();
-    ResponseHandler<Page<PathResponse>> responseHandler =
-        new ResponseHandler<Page<PathResponse>>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<Page<PathResponse>>(httpClient, uri);
   }
 
   /// Builds and executes the request, returning strict receive payment paths.
@@ -151,15 +143,7 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
   /// Returns a page of path responses for navigation.
   static Future<Page<PathResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    TypeToken<Page<PathResponse>> type = new TypeToken<Page<PathResponse>>();
-    ResponseHandler<Page<PathResponse>> responseHandler =
-        new ResponseHandler<Page<PathResponse>>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<Page<PathResponse>>(httpClient, uri);
   }
 
   /// Builds and executes the request, returning strict send payment paths.

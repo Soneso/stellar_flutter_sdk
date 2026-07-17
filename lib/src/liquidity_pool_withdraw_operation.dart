@@ -4,7 +4,6 @@
 
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
 
-import 'muxed_account.dart';
 import 'operation.dart';
 import 'util.dart';
 import 'xdr/xdr.dart';
@@ -152,7 +151,8 @@ class LiquidityPoolWithdrawOperation extends Operation {
 ///   minAmountB: "490.0"
 /// ).setSourceAccount(providerId).build();
 /// ```
-class LiquidityPoolWithdrawOperationBuilder {
+class LiquidityPoolWithdrawOperationBuilder
+    extends OperationBuilder<LiquidityPoolWithdrawOperationBuilder> {
   /// The hex-encoded liquidity pool ID or StrKey L format.
   String liquidityPoolId;
 
@@ -164,8 +164,6 @@ class LiquidityPoolWithdrawOperationBuilder {
 
   /// Amount of pool shares to burn (decimal string format).
   String amount;
-
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a LiquidityPoolWithdrawOperationBuilder.
   ///
@@ -180,31 +178,6 @@ class LiquidityPoolWithdrawOperationBuilder {
       required this.minAmountA,
       required this.minAmountB});
 
-  /// Sets the source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId] The account ID of the liquidity provider.
-  ///
-  /// Returns: This builder instance for method chaining.
-  LiquidityPoolWithdrawOperationBuilder setSourceAccount(
-      String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount] The muxed source account (liquidity provider).
-  ///
-  /// Returns: This builder instance for method chaining.
-  LiquidityPoolWithdrawOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the liquidity pool withdraw operation.
   ///
   /// Returns: A configured [LiquidityPoolWithdrawOperation] instance.
@@ -214,9 +187,6 @@ class LiquidityPoolWithdrawOperationBuilder {
         amount: amount,
         minAmountA: minAmountA,
         minAmountB: minAmountB);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

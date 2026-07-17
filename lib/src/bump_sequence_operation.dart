@@ -2,10 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:stellar_flutter_sdk/src/muxed_account.dart';
-
 import 'operation.dart';
-import 'util.dart';
 import 'xdr/xdr.dart';
 
 /// Bumps the sequence number of the source account.
@@ -94,9 +91,9 @@ class BumpSequenceOperation extends Operation {
 ///   BigInt.from(99999)
 /// ).setSourceAccount(accountId).build();
 /// ```
-class BumpSequenceOperationBuilder {
+class BumpSequenceOperationBuilder
+    extends OperationBuilder<BumpSequenceOperationBuilder> {
   BigInt _bumpTo;
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a BumpSequence operation builder.
   ///
@@ -104,38 +101,11 @@ class BumpSequenceOperationBuilder {
   /// - [_bumpTo] New sequence number (must be greater than current).
   BumpSequenceOperationBuilder(this._bumpTo);
 
-  /// Sets the source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId] Account ID of the operation source
-  ///
-  /// Returns: This builder instance for method chaining
-  BumpSequenceOperationBuilder setSourceAccount(String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount] Muxed account to use as operation source
-  ///
-  /// Returns: This builder instance for method chaining
-  BumpSequenceOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the BumpSequence operation.
   ///
   /// Returns: Configured BumpSequenceOperation instance
   BumpSequenceOperation build() {
     BumpSequenceOperation operation = new BumpSequenceOperation(_bumpTo);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

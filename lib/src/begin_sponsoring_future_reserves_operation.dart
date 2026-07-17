@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 import 'key_pair.dart';
-import 'muxed_account.dart';
 import 'operation.dart';
-import 'util.dart';
 import 'xdr/xdr.dart';
 
 /// Begins sponsoring the base reserves and future reserve requirements of another account.
@@ -111,9 +109,9 @@ class BeginSponsoringFutureReservesOperation extends Operation {
 ///   sponsoredAccountId
 /// ).setSourceAccount(sponsorAccountId).build();
 /// ```
-class BeginSponsoringFutureReservesOperationBuilder {
+class BeginSponsoringFutureReservesOperationBuilder
+    extends OperationBuilder<BeginSponsoringFutureReservesOperationBuilder> {
   String _sponsoredId;
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a BeginSponsoringFutureReservesOperationBuilder.
   ///
@@ -121,42 +119,12 @@ class BeginSponsoringFutureReservesOperationBuilder {
   /// - [_sponsoredId] The account ID of the account to be sponsored.
   BeginSponsoringFutureReservesOperationBuilder(this._sponsoredId);
 
-  /// Sets the source account for this operation.
-  ///
-  /// The source account will be the sponsor paying for the reserves.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId] The account ID of the sponsoring account.
-  ///
-  /// Returns: This builder instance for method chaining.
-  BeginSponsoringFutureReservesOperationBuilder setSourceAccount(
-      String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount] The muxed source account (sponsor).
-  ///
-  /// Returns: This builder instance for method chaining.
-  BeginSponsoringFutureReservesOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the begin sponsoring future reserves operation.
   ///
   /// Returns: A configured [BeginSponsoringFutureReservesOperation] instance.
   BeginSponsoringFutureReservesOperation build() {
     BeginSponsoringFutureReservesOperation operation =
         BeginSponsoringFutureReservesOperation(_sponsoredId);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

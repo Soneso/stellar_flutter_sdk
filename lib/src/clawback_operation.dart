@@ -115,11 +115,11 @@ class ClawbackOperation extends Operation {
 ///   "50.25"
 /// ).setSourceAccount(issuerAccountId).build();
 /// ```
-class ClawbackOperationBuilder {
+class ClawbackOperationBuilder
+    extends OperationBuilder<ClawbackOperationBuilder> {
   Asset _asset;
   late MuxedAccount _from;
   String _amount;
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a ClawbackOperationBuilder.
   ///
@@ -141,39 +141,11 @@ class ClawbackOperationBuilder {
   ClawbackOperationBuilder.forMuxedFromAccount(
       this._asset, this._from, this._amount);
 
-  /// Sets the source account for this operation.
-  ///
-  /// The source account must be the issuer of the asset being clawed back.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId]: The account ID of the operation source (asset issuer).
-  ///
-  /// Returns: This builder instance for method chaining.
-  ClawbackOperationBuilder setSourceAccount(String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount]: The muxed source account (asset issuer).
-  ///
-  /// Returns: This builder instance for method chaining.
-  ClawbackOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the clawback operation.
   ///
   /// Returns: A configured [ClawbackOperation] instance.
   ClawbackOperation build() {
     ClawbackOperation operation = ClawbackOperation(_from, _asset, _amount);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

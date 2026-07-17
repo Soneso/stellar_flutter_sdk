@@ -3,13 +3,11 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'package:stellar_flutter_sdk/src/util.dart';
 
-import "../eventsource/eventsource.dart";
 import '../responses/response.dart';
 import '../responses/transaction_response.dart';
 import 'request_builder.dart';
@@ -220,15 +218,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   ///
   /// Returns: TransactionResponse containing transaction details
   Future<TransactionResponse> transactionURI(Uri uri) async {
-    TypeToken<TransactionResponse> type = TypeToken<TransactionResponse>();
-    ResponseHandler<TransactionResponse> responseHandler =
-        ResponseHandler<TransactionResponse>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<TransactionResponse>(httpClient, uri);
   }
 
   /// Executes an HTTP request to fetch transactions from a specific URI.
@@ -243,16 +233,8 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Returns: Page of TransactionResponse objects
   static Future<Page<TransactionResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    TypeToken<Page<TransactionResponse>> type =
-        TypeToken<Page<TransactionResponse>>();
-    ResponseHandler<Page<TransactionResponse>> responseHandler =
-        ResponseHandler<Page<TransactionResponse>>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<Page<TransactionResponse>>(
+        httpClient, uri);
   }
 
   /// Opens a stream to listen for transactions in real-time.
@@ -279,59 +261,8 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// See also:
   /// - [Stellar developer docs](https://developers.stellar.org)
   Stream<TransactionResponse> stream() {
-    StreamController<TransactionResponse> listener =
-        StreamController.broadcast();
-
-    bool cancelled = false;
-    EventSource? source;
-
-    /// Creates a new EventSource connection to stream transaction updates from Horizon.
-    /// Automatically reconnects when the connection closes to maintain continuous streaming.
-    Future<void> createNewEventSource() async {
-      if (cancelled) {
-        return;
-      }
-      source?.close();
-      source = await EventSource.connect(
-        this.buildUri(),
-        client: httpClient,
-      );
-      source!.listen((Event event) async {
-        if (cancelled) {
-          return null;
-        }
-        if (event.event == "open") {
-          return null;
-        }
-        if (event.event == "close") {
-          // Reconnect on close to stream infinitely
-          createNewEventSource();
-          return null;
-        }
-        try {
-          TransactionResponse operationResponse = TransactionResponse.fromJson(
-            json.decode(event.data!),
-          );
-          listener.add(operationResponse);
-        } catch (e, stackTrace) {
-          listener.addError(e, stackTrace);
-          createNewEventSource();
-        }
-      });
-    }
-
-    listener.onListen = () {
-      cancelled = false;
-      createNewEventSource();
-    };
-    listener.onCancel = () {
-      if (!listener.hasListener) {
-        cancelled = true;
-        source?.close();
-      }
-    };
-
-    return listener.stream;
+    return streamEvents<TransactionResponse>(
+        (json) => TransactionResponse.fromJson(json));
   }
 
   /// Builds and executes the request.

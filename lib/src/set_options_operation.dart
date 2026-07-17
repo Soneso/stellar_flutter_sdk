@@ -2,8 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:stellar_flutter_sdk/src/muxed_account.dart';
-
 import 'operation.dart';
 import 'key_pair.dart';
 import 'xdr/xdr.dart';
@@ -347,7 +345,8 @@ class SetOptionsOperation extends Operation {
 ///   .setSourceAccount(accountId)
 ///   .build();
 /// ```
-class SetOptionsOperationBuilder {
+class SetOptionsOperationBuilder
+    extends OperationBuilder<SetOptionsOperationBuilder> {
   String? _inflationDestination;
   int? _clearFlags;
   int? _setFlags;
@@ -358,7 +357,6 @@ class SetOptionsOperationBuilder {
   String? _homeDomain;
   XdrSignerKey? _signer;
   int? _signerWeight;
-  MuxedAccount? _sourceAccount;
 
   /// Creates a SetOptionsOperationBuilder.
   ///
@@ -506,28 +504,6 @@ class SetOptionsOperationBuilder {
     return this;
   }
 
-  /// Sets the source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId] The account ID that will perform this operation.
-  ///
-  /// Returns: This builder instance for method chaining.
-  SetOptionsOperationBuilder setSourceAccount(String sourceAccountId) {
-    _sourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount] The muxed source account.
-  ///
-  /// Returns: This builder instance for method chaining.
-  SetOptionsOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
-    _sourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the set options operation.
   ///
   /// Returns: A configured [SetOptionsOperation] instance.
@@ -543,9 +519,6 @@ class SetOptionsOperationBuilder {
         _homeDomain,
         _signer,
         _signerWeight);
-    if (_sourceAccount != null) {
-      operation.sourceAccount = _sourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

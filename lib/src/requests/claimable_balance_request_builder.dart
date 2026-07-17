@@ -59,16 +59,8 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   /// Requests specific [uri] and returns ClaimableBalancesResponse.
   /// This method is helpful for getting the links.
   Future<ClaimableBalanceResponse> claimableBalance(Uri uri) async {
-    TypeToken<ClaimableBalanceResponse> type =
-        new TypeToken<ClaimableBalanceResponse>();
-    ResponseHandler<ClaimableBalanceResponse> responseHandler =
-        ResponseHandler<ClaimableBalanceResponse>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<ClaimableBalanceResponse>(
+        httpClient, uri);
   }
 
   /// Requests details about the claimable balance to fetch by [balanceId].
@@ -109,16 +101,8 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   /// This method is helpful for getting the next set of results.
   static Future<Page<ClaimableBalanceResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    TypeToken<Page<ClaimableBalanceResponse>> type =
-        new TypeToken<Page<ClaimableBalanceResponse>>();
-    ResponseHandler<Page<ClaimableBalanceResponse>> responseHandler =
-        new ResponseHandler<Page<ClaimableBalanceResponse>>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<Page<ClaimableBalanceResponse>>(
+        httpClient, uri);
   }
 
   /// Build and execute request.

@@ -5,7 +5,6 @@
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'request_builder.dart';
-import '../responses/response.dart';
 import '../responses/fee_stats_response.dart';
 
 /// Builds requests for fee statistics.
@@ -94,14 +93,7 @@ class FeeStatsRequestBuilder extends RequestBuilder {
   /// - [FeeStatsResponse] for response structure
   /// - [Stellar developer docs](https://developers.stellar.org)
   Future<FeeStatsResponse> execute() async {
-    TypeToken<FeeStatsResponse> type = new TypeToken<FeeStatsResponse>();
-    ResponseHandler<FeeStatsResponse> responseHandler =
-        new ResponseHandler<FeeStatsResponse>(type);
-
-    return await httpClient
-        .get(this.buildUri(), headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<FeeStatsResponse>(
+        httpClient, this.buildUri());
   }
 }

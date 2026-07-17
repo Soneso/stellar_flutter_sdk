@@ -6,7 +6,6 @@ import 'dart:typed_data';
 import 'package:pinenacl/tweetnacl.dart';
 import 'xdr/xdr.dart';
 import 'operation.dart';
-import 'muxed_account.dart';
 import 'util.dart';
 import 'assets.dart';
 import 'soroban/soroban_auth.dart';
@@ -651,9 +650,8 @@ class InvokeContractHostFunction extends HostFunction {
 /// - [InvokeHostFunctionOperation] for the resulting operation
 /// - [SorobanAuthorizationEntry] for authorization details
 /// - [HostFunction] for different function types
-class InvokeHostFuncOpBuilder {
-  MuxedAccount? _mSourceAccount;
-
+class InvokeHostFuncOpBuilder
+    extends OperationBuilder<InvokeHostFuncOpBuilder> {
   HostFunction _function;
 
   /// The host function to execute (invoke, deploy, upload, etc.).
@@ -701,37 +699,13 @@ class InvokeHostFuncOpBuilder {
     return this;
   }
 
-  /// Sets the source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId]: The account ID paying for operation execution.
-  ///
-  /// Returns: This builder instance for method chaining.
-  InvokeHostFuncOpBuilder setSourceAccount(String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount]: The muxed source account.
-  ///
-  /// Returns: This builder instance for method chaining.
-  InvokeHostFuncOpBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the invoke host function operation.
   ///
   /// Returns: A configured [InvokeHostFunctionOperation] instance.
   InvokeHostFunctionOperation build() {
     InvokeHostFunctionOperation op =
         InvokeHostFunctionOperation(function, auth: auth);
-    op.sourceAccount = _mSourceAccount;
-    return op;
+    return applySourceAccount(op);
   }
 }
 

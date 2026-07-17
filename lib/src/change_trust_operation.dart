@@ -2,8 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:stellar_flutter_sdk/src/muxed_account.dart';
-
 import 'operation.dart';
 import 'assets.dart';
 import 'util.dart';
@@ -154,7 +152,8 @@ class ChangeTrustOperation extends Operation {
 ///   ChangeTrustOperationBuilder.MAX_LIMIT
 /// ).setSourceAccount(accountId).build();
 /// ```
-class ChangeTrustOperationBuilder {
+class ChangeTrustOperationBuilder
+    extends OperationBuilder<ChangeTrustOperationBuilder> {
 
   /// Maximum possible trustline limit.
   ///
@@ -163,7 +162,6 @@ class ChangeTrustOperationBuilder {
 
   Asset _asset;
   String _limit;
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a ChangeTrustOperationBuilder.
   ///
@@ -172,40 +170,11 @@ class ChangeTrustOperationBuilder {
   /// - [_limit] The trust limit. Use MAX_LIMIT for maximum or "0" to remove.
   ChangeTrustOperationBuilder(this._asset, this._limit);
 
-  /// Sets the source account for this operation.
-  ///
-  /// The source account will establish or modify the trustline.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId]: The account ID that will create/modify the trustline.
-  ///
-  /// Returns: This builder instance for method chaining.
-  ChangeTrustOperationBuilder setSourceAccount(String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount]: The muxed source account.
-  ///
-  /// Returns: This builder instance for method chaining.
-  ChangeTrustOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the change trust operation.
   ///
   /// Returns: A configured [ChangeTrustOperation] instance.
   ChangeTrustOperation build() {
     ChangeTrustOperation operation = new ChangeTrustOperation(_asset, _limit);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount!;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

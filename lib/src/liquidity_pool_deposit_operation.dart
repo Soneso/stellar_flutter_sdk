@@ -4,7 +4,6 @@
 
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
 
-import 'muxed_account.dart';
 import 'operation.dart';
 import 'util.dart';
 import 'xdr/xdr.dart';
@@ -179,7 +178,8 @@ class LiquidityPoolDepositOperation extends Operation {
 ///   maxPrice: "0.51"
 /// ).setSourceAccount(providerId).build();
 /// ```
-class LiquidityPoolDepositOperationBuilder {
+class LiquidityPoolDepositOperationBuilder
+    extends OperationBuilder<LiquidityPoolDepositOperationBuilder> {
   /// The hex-encoded liquidity pool ID or StrKey L format.
   String liquidityPoolId;
 
@@ -194,8 +194,6 @@ class LiquidityPoolDepositOperationBuilder {
 
   /// Maximum acceptable price (A/B ratio) as decimal string.
   String maxPrice;
-
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a LiquidityPoolDepositOperationBuilder.
   ///
@@ -212,31 +210,6 @@ class LiquidityPoolDepositOperationBuilder {
       required this.minPrice,
       required this.maxPrice});
 
-  /// Sets the source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId] The account ID of the liquidity provider.
-  ///
-  /// Returns: This builder instance for method chaining.
-  LiquidityPoolDepositOperationBuilder setSourceAccount(
-      String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount] The muxed source account (liquidity provider).
-  ///
-  /// Returns: This builder instance for method chaining.
-  LiquidityPoolDepositOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the liquidity pool deposit operation.
   ///
   /// Returns: A configured [LiquidityPoolDepositOperation] instance.
@@ -247,9 +220,6 @@ class LiquidityPoolDepositOperationBuilder {
         maxAmountB: maxAmountB,
         minPrice: minPrice,
         maxPrice: maxPrice);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

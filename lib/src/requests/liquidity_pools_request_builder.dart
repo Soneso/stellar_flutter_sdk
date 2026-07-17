@@ -58,16 +58,8 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
   /// Requests specific [uri] and returns LiquidityPoolResponse.
   /// This method is helpful for getting the links.
   Future<LiquidityPoolResponse> liquidityPool(Uri uri) async {
-    TypeToken<LiquidityPoolResponse> type =
-        new TypeToken<LiquidityPoolResponse>();
-    ResponseHandler<LiquidityPoolResponse> responseHandler =
-        ResponseHandler<LiquidityPoolResponse>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<LiquidityPoolResponse>(
+        httpClient, uri);
   }
 
   /// Requests details about the liquidity pool to fetch by [poolId].
@@ -106,16 +98,8 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
   /// This method is helpful for getting the next set of results.
   static Future<Page<LiquidityPoolResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    TypeToken<Page<LiquidityPoolResponse>> type =
-        new TypeToken<Page<LiquidityPoolResponse>>();
-    ResponseHandler<Page<LiquidityPoolResponse>> responseHandler =
-        new ResponseHandler<Page<LiquidityPoolResponse>>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<Page<LiquidityPoolResponse>>(
+        httpClient, uri);
   }
 
   /// Build and execute request.
@@ -191,15 +175,7 @@ class LiquidityPoolTradesRequestBuilder extends RequestBuilder {
   /// Requests specific [uri] and returns TradeResponse.
   /// This method is helpful for getting the links.
   Future<TradeResponse> liquidityPoolTrades(Uri uri) async {
-    TypeToken<TradeResponse> type = new TypeToken<TradeResponse>();
-    ResponseHandler<TradeResponse> responseHandler =
-        ResponseHandler<TradeResponse>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<TradeResponse>(httpClient, uri);
   }
 
   /// Sets the liquidity pool to retrieve trades for by [poolId].
@@ -225,15 +201,7 @@ class LiquidityPoolTradesRequestBuilder extends RequestBuilder {
   /// This method is helpful for getting the next set of results.
   static Future<Page<TradeResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    TypeToken<Page<TradeResponse>> type = new TypeToken<Page<TradeResponse>>();
-    ResponseHandler<Page<TradeResponse>> responseHandler =
-        new ResponseHandler<Page<TradeResponse>>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<Page<TradeResponse>>(httpClient, uri);
   }
 
   /// Build and execute request.
