@@ -494,7 +494,7 @@ class OZSmartAccountKit implements OZSmartAccountWalletKitInterface {
       relayerClient: relayerClient,
       indexerClient: indexerClient,
       externalSigners: externalSigners,
-      sorobanServer: SorobanServer(config.rpcUrl),
+      sorobanServer: config.sorobanServer ?? SorobanServer(config.rpcUrl),
     );
   }
 }

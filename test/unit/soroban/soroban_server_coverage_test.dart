@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter_test/flutter_test.dart';
@@ -638,6 +639,51 @@ void main() {
 
         expect(response.events, isNull);
       });
+    });
+  });
+
+  group('SorobanServer httpClient injection', () {
+    dio.Dio buildMockDio(void Function() onRequest) {
+      final mockDio = dio.Dio();
+      mockDio.httpClientAdapter = MockDioAdapter((options) {
+        onRequest();
+        return dio.ResponseBody.fromString(
+          json.encode({
+            'jsonrpc': '2.0',
+            'result': {'status': 'healthy'},
+            'id': 1,
+          }),
+          200,
+          headers: {
+            dio.Headers.contentTypeHeader: ['application/json'],
+          },
+        );
+      });
+      return mockDio;
+    }
+
+    test('requests go through the injected Dio instance', () async {
+      var requestCount = 0;
+      final server = SorobanServer('https://rpc.example.org',
+          httpClient: buildMockDio(() => requestCount++));
+
+      final health = await server.getHealth();
+
+      expect(requestCount, 1);
+      expect(health.status, GetHealthResponse.HEALTHY);
+    });
+
+    test('httpOverrides keeps the injected Dio instance', () async {
+      var requestCount = 0;
+      final server = SorobanServer('https://rpc.example.org',
+          httpClient: buildMockDio(() => requestCount++));
+
+      server.httpOverrides = true;
+
+      final health = await server.getHealth();
+
+      expect(requestCount, 1);
+      expect(health.status, GetHealthResponse.HEALTHY);
     });
   });
 }

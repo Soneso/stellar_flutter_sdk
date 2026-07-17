@@ -56,7 +56,8 @@ class MockDioAdapter implements dio.HttpClientAdapter {
 SorobanServer createMockServer(Function(dio.RequestOptions) onRequest) {
   var mockDio = dio.Dio();
   mockDio.httpClientAdapter = MockDioAdapter(onRequest);
-  return SorobanServer.withDio('https://soroban-testnet.stellar.org', mockDio);
+  return SorobanServer('https://soroban-testnet.stellar.org',
+      httpClient: mockDio);
 }
 
 void main() {
@@ -73,8 +74,7 @@ void main() {
       expect(options.sourceAccountKeyPair, equals(keyPair));
       expect(options.contractId, equals('CABC123'));
       expect(options.network, equals(Network.TESTNET));
-      expect(options.rpcUrl,
-          equals('https://soroban-testnet.stellar.org:443'));
+      expect(options.rpcUrl, equals('https://soroban-testnet.stellar.org:443'));
       expect(options.enableServerLogging, equals(false));
     });
 
@@ -306,8 +306,7 @@ void main() {
       expect(request.wasmBytes, equals(wasmBytes));
       expect(request.sourceAccountKeyPair, equals(keyPair));
       expect(request.network, equals(Network.TESTNET));
-      expect(request.rpcUrl,
-          equals('https://soroban-testnet.stellar.org:443'));
+      expect(request.rpcUrl, equals('https://soroban-testnet.stellar.org:443'));
       expect(request.enableSorobanServerLogging, equals(false));
     });
 
@@ -371,8 +370,7 @@ void main() {
 
       expect(request.sourceAccountKeyPair, equals(keyPair));
       expect(request.network, equals(Network.TESTNET));
-      expect(request.rpcUrl,
-          equals('https://soroban-testnet.stellar.org:443'));
+      expect(request.rpcUrl, equals('https://soroban-testnet.stellar.org:443'));
       expect(request.wasmHash, equals('abc123def456'));
       expect(request.constructorArgs, isNull);
       expect(request.salt, isNull);
@@ -529,14 +527,14 @@ void main() {
         XdrInt64(BigInt.zero),
       );
 
-      final resultU32 = SimulateHostFunctionResult(
-          null, txData, XdrSCVal.forU32(123));
+      final resultU32 =
+          SimulateHostFunctionResult(null, txData, XdrSCVal.forU32(123));
       expect(resultU32.returnedValue.u32, isNotNull);
 
       final resultVoid =
           SimulateHostFunctionResult(null, txData, XdrSCVal.forVoid());
-      expect(resultVoid.returnedValue.discriminant,
-          equals(XdrSCValType.SCV_VOID));
+      expect(
+          resultVoid.returnedValue.discriminant, equals(XdrSCValType.SCV_VOID));
 
       final resultBool =
           SimulateHostFunctionResult(null, txData, XdrSCVal.forBool(true));
@@ -614,7 +612,8 @@ void main() {
 
         // Test that install fails with invalid configuration
         expect(
-          () async => await SorobanClient.install(installRequest: installRequest),
+          () async =>
+              await SorobanClient.install(installRequest: installRequest),
           throwsA(isA<Exception>()),
         );
       });
@@ -884,15 +883,18 @@ void main() {
         expect(assembledOptions.arguments!.length, 1);
       });
 
-      test('needsNonInvokerSigningBy returns empty list for non-InvokeHostFunction op', () async {
+      test(
+          'needsNonInvokerSigningBy returns empty list for non-InvokeHostFunction op',
+          () async {
         // Skip on web: uses HttpServer.bind which is unsupported in browser
-        if (identical(0, 0.0)) return; // dart2js identity check for web platform
+        if (identical(0, 0.0))
+          return; // dart2js identity check for web platform
 
         final keyPair = KeyPair.random();
 
         // Build a valid XDR ledger entry for the mock account response
-        final xdrAccountId = XdrAccountID(
-            KeyPair.fromAccountId(keyPair.accountId).xdrPublicKey);
+        final xdrAccountId =
+            XdrAccountID(KeyPair.fromAccountId(keyPair.accountId).xdrPublicKey);
         final accountEntry = XdrAccountEntry(
             xdrAccountId,
             XdrInt64(BigInt.from(100000000)),
@@ -921,7 +923,11 @@ void main() {
               "id": 1,
               "result": {
                 "entries": [
-                  {"key": "AAAAAAAAAA==", "xdr": entryXdr, "lastModifiedLedgerSeq": 100}
+                  {
+                    "key": "AAAAAAAAAA==",
+                    "xdr": entryXdr,
+                    "lastModifiedLedgerSeq": 100
+                  }
                 ],
                 "latestLedger": 1000
               }
@@ -943,15 +949,14 @@ void main() {
             method: 'test_method',
           );
 
-          final assembledTx = await AssembledTransaction.build(
-              options: assembledOptions);
+          final assembledTx =
+              await AssembledTransaction.build(options: assembledOptions);
 
           // Replace tx with a RestoreFootprintOperation transaction
           final account = Account(keyPair.accountId, BigInt.from(12345));
           final restoreOp = RestoreFootprintOperation();
-          assembledTx.tx = TransactionBuilder(account)
-              .addOperation(restoreOp)
-              .build();
+          assembledTx.tx =
+              TransactionBuilder(account).addOperation(restoreOp).build();
 
           final signers = assembledTx.needsNonInvokerSigningBy();
           expect(signers, isEmpty);
@@ -977,7 +982,8 @@ void main() {
 
         // Transaction build should fail with invalid server
         expect(
-          () async => await AssembledTransaction.build(options: assembledOptions),
+          () async =>
+              await AssembledTransaction.build(options: assembledOptions),
           throwsA(isA<Exception>()),
         );
       });

@@ -26,6 +26,26 @@ SIGNING_KEY="GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345"
       expect(webAuth, isNotNull);
     });
 
+    test('passes sorobanServer through to the created instance', () async {
+      final mockClient = MockClient((request) async {
+        return http.Response('''
+WEB_AUTH_FOR_CONTRACTS_ENDPOINT="https://testanchor.stellar.org/auth"
+WEB_AUTH_CONTRACT_ID="CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE"
+SIGNING_KEY="GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345"
+        ''', 200);
+      });
+      final server = SorobanServer('https://custom-soroban.example.com');
+
+      final webAuth = await WebAuthForContracts.fromDomain(
+        'testanchor.stellar.org',
+        Network.TESTNET,
+        httpClient: mockClient,
+        sorobanServer: server,
+      );
+
+      expect(webAuth.sorobanServer, same(server));
+    });
+
     test('throws NoWebAuthForContractsEndpointFoundException when endpoint missing', () async {
       final mockClient = MockClient((request) async {
         return http.Response('''

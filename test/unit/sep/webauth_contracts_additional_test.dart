@@ -43,6 +43,22 @@ void main() {
       expect(webAuth.sorobanRpcUrl, 'https://custom-soroban.example.com');
     });
 
+    test('stores injected sorobanServer instance', () {
+      final server = SorobanServer('https://custom-soroban.example.com');
+      final webAuth = WebAuthForContracts(
+        'https://testanchor.stellar.org/auth',
+        'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
+        'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
+        'testanchor.stellar.org',
+        Network.TESTNET,
+        sorobanServer: server,
+      );
+
+      expect(webAuth.sorobanServer, same(server));
+      // The rpc url default is still derived for the network.
+      expect(webAuth.sorobanRpcUrl, 'https://soroban-testnet.stellar.org');
+    });
+
     test('accepts custom HTTP client', () {
       final mockClient = MockClient((request) async {
         return http.Response('{}', 200);

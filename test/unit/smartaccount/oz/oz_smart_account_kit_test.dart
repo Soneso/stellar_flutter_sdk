@@ -43,6 +43,7 @@ OZSmartAccountConfig _validConfig({
   OZStorageAdapter? storage,
   KeyPair? deployerKeypair,
   OZExternalWalletAdapter? externalWallet,
+  SorobanServer? sorobanServer,
 }) {
   return OZSmartAccountConfig(
     rpcUrl: _validRpcUrl,
@@ -54,6 +55,7 @@ OZSmartAccountConfig _validConfig({
     storage: storage,
     deployerKeypair: deployerKeypair,
     externalWallet: externalWallet,
+    sorobanServer: sorobanServer,
   );
 }
 
@@ -143,6 +145,20 @@ void main() {
       expect(kit.isConnected, isFalse);
       expect(kit.credentialId, isNull);
       expect(kit.contractId, isNull);
+    });
+
+    test('factory_usesPreconfiguredSorobanServerFromConfig', () {
+      final server = SorobanServer(_validRpcUrl);
+      final config = _validConfig(sorobanServer: server);
+      final kit = OZSmartAccountKit.create(config: config);
+
+      expect(kit.sorobanServer, same(server));
+    });
+
+    test('factory_createsSorobanServerFromRpcUrlWhenNotConfigured', () {
+      final kit = OZSmartAccountKit.create(config: _validConfig());
+
+      expect(kit.sorobanServer, isNotNull);
     });
 
     test('factory_emptyRpcUrl_throwsConfigurationException', () {

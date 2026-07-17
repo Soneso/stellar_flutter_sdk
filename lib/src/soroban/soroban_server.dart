@@ -4,7 +4,6 @@
 
 import 'dart:convert';
 import 'package:dio/dio.dart' as dio;
-import 'package:meta/meta.dart';
 import 'soroban_http_stub.dart' if (dart.library.io) 'soroban_http_io.dart';
 import 'package:stellar_flutter_sdk/src/account.dart';
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
@@ -75,17 +74,27 @@ class SorobanServer {
   ///
   /// Parameters:
   /// - [_serverUrl] URL of the Soroban RPC server endpoint
+  /// - [httpClient] Optional preconfigured Dio instance used for all requests.
+  ///   Provide one to customize networking, e.g. proxies, interceptors,
+  ///   timeouts or certificate pinning. If omitted, a default instance is
+  ///   created. The SDK request headers are applied per request either way.
   ///
   /// Initializes the client with default HTTP headers for JSON-RPC communication.
   /// For most use cases, this is the primary constructor for connecting to Soroban RPC endpoints.
-  SorobanServer(this._serverUrl) {
-    _headers = {...RequestBuilder.headers};
-    _headers.putIfAbsent("Content-Type", () => "application/json");
-  }
-
-  /// Constructor for testing with a custom Dio instance.
-  @visibleForTesting
-  SorobanServer.withDio(this._serverUrl, this._dio) {
+  ///
+  /// Example:
+  /// ```dart
+  /// final customDio = dio.Dio()
+  ///   ..options.connectTimeout = const Duration(seconds: 5);
+  /// final server = SorobanServer(
+  ///   'https://soroban-testnet.stellar.org:443',
+  ///   httpClient: customDio,
+  /// );
+  /// ```
+  SorobanServer(this._serverUrl, {dio.Dio? httpClient}) {
+    if (httpClient != null) {
+      _dio = httpClient;
+    }
     _headers = {...RequestBuilder.headers};
     _headers.putIfAbsent("Content-Type", () => "application/json");
   }
@@ -107,6 +116,11 @@ class SorobanServer {
   ///
   /// This setting should ONLY be used when testing against local Soroban RPC
   /// servers with self-signed certificates during development.
+  ///
+  /// The overrides are applied to the Dio instance in use, including one
+  /// injected via the constructor's httpClient parameter; the instance is
+  /// kept, not replaced. Instances with a non-IO HTTP client adapter are
+  /// left unchanged.
   set httpOverrides(bool setOverrides) {
     if (!kIsWeb && setOverrides) {
       print('');
@@ -118,9 +132,7 @@ class SorobanServer {
       print('================================================================');
       print('');
 
-      dio.Dio dioOverrides = dio.Dio();
-      configureHttpOverrides(dioOverrides, setOverrides);
-      _dio = dioOverrides;
+      configureHttpOverrides(_dio, setOverrides);
     }
   }
 

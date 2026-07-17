@@ -262,6 +262,11 @@ class WebAuthForContracts {
   bool useFormUrlEncoded = true;
   String? sorobanRpcUrl;
 
+  /// Optional preconfigured Soroban RPC server, e.g. one created with a
+  /// custom Dio httpClient. When omitted, a server is created from
+  /// [sorobanRpcUrl] on demand.
+  SorobanServer? sorobanServer;
+
   /// Creates a WebAuthForContracts instance with explicit configuration.
   ///
   /// Parameters:
@@ -273,6 +278,8 @@ class WebAuthForContracts {
   /// - [httpClient] Optional custom HTTP client
   /// - [httpRequestHeaders] Optional custom HTTP headers
   /// - [sorobanRpcUrl] Optional Soroban RPC URL (defaults based on network)
+  /// - [sorobanServer] Optional preconfigured Soroban RPC server; takes
+  ///   precedence over [sorobanRpcUrl] when both are set
   WebAuthForContracts(
     this._authEndpoint,
     this._webAuthContractId,
@@ -282,6 +289,7 @@ class WebAuthForContracts {
     http.Client? httpClient,
     this.httpRequestHeaders,
     this.sorobanRpcUrl,
+    this.sorobanServer,
   }) {
     if (!_webAuthContractId.startsWith('C')) {
       throw ArgumentError(
@@ -330,6 +338,7 @@ class WebAuthForContracts {
     Network network, {
     http.Client? httpClient,
     Map<String, String>? httpRequestHeaders,
+    SorobanServer? sorobanServer,
   }) async {
     final stellarToml = await StellarToml.fromDomain(
       domain,
@@ -361,6 +370,7 @@ class WebAuthForContracts {
       network,
       httpClient: httpClient,
       httpRequestHeaders: httpRequestHeaders,
+      sorobanServer: sorobanServer,
     );
   }
 
@@ -463,7 +473,7 @@ class WebAuthForContracts {
     // Auto-fill signatureExpirationLedger if not provided and signers are present
     int? effectiveExpirationLedger = signatureExpirationLedger;
     if (signers.isNotEmpty && effectiveExpirationLedger == null) {
-      final sorobanServer = SorobanServer(sorobanRpcUrl!);
+      final sorobanServer = this.sorobanServer ?? SorobanServer(sorobanRpcUrl!);
       final latestLedgerResponse = await sorobanServer.getLatestLedger();
       if (latestLedgerResponse.sequence == null) {
         throw Exception('Failed to get current ledger from Soroban RPC');

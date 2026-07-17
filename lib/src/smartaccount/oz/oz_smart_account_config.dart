@@ -11,6 +11,7 @@ import '../core/smart_account_errors.dart';
 import '../core/web_authn_provider.dart';
 import 'oz_constants.dart';
 import 'oz_external_signer_manager.dart';
+import '../../soroban/soroban_server.dart';
 import 'oz_indexer_client.dart';
 import 'oz_storage_adapter.dart';
 
@@ -74,6 +75,7 @@ class OZSmartAccountConfig {
     this.externalWallet,
     this.externalEd25519Adapter,
     this.maxContextRuleScanId = 50,
+    this.sorobanServer,
   }) : storage = storage ?? OZInMemoryStorageAdapter() {
     if (rpcUrl.trim().isEmpty) {
       throw SmartAccountConfigurationException.missingConfig('rpcUrl');
@@ -223,6 +225,11 @@ class OZSmartAccountConfig {
   /// has had many add/remove cycles. Default: 50.
   final int maxContextRuleScanId;
 
+  /// Optional preconfigured Soroban RPC server used by the kit, e.g. one
+  /// created with a custom Dio httpClient for proxies or interceptors.
+  /// When omitted, the kit creates a server from [rpcUrl].
+  final SorobanServer? sorobanServer;
+
   /// Creates a deterministic deployer keypair for smart account deployment.
   ///
   /// Derives an Ed25519 keypair from
@@ -307,8 +314,8 @@ class OZSmartAccountConfig {
   /// Each named argument defaults to the current value of the corresponding
   /// field. Pass [setDeployerKeypair] / [setRelayerUrl] /
   /// [setIndexerUrl] / [setWebauthnProvider] / [setExternalWallet] /
-  /// [setExternalEd25519Adapter] as `true` together with the corresponding
-  /// `null` argument to clear an optional field.
+  /// [setExternalEd25519Adapter] / [setSorobanServer] as `true` together
+  /// with the corresponding `null` argument to clear an optional field.
   OZSmartAccountConfig copyWith({
     String? rpcUrl,
     String? networkPassphrase,
@@ -331,6 +338,8 @@ class OZSmartAccountConfig {
     OZExternalEd25519SignerAdapter? externalEd25519Adapter,
     bool setExternalEd25519Adapter = false,
     int? maxContextRuleScanId,
+    SorobanServer? sorobanServer,
+    bool setSorobanServer = false,
   }) {
     return OZSmartAccountConfig(
       rpcUrl: rpcUrl ?? this.rpcUrl,
@@ -356,6 +365,9 @@ class OZSmartAccountConfig {
           ? externalEd25519Adapter
           : (externalEd25519Adapter ?? this.externalEd25519Adapter),
       maxContextRuleScanId: maxContextRuleScanId ?? this.maxContextRuleScanId,
+      sorobanServer: setSorobanServer
+          ? sorobanServer
+          : (sorobanServer ?? this.sorobanServer),
     );
   }
 
@@ -381,6 +393,10 @@ class OZSmartAccountConfig {
         // reference the same adapter instance compare equal, while different
         // instances do not.
         identical(externalEd25519Adapter, other.externalEd25519Adapter) &&
+        // why: SorobanServer is a stateful client object; value equality is
+        // meaningless. Use identity so two configs referencing the same
+        // server instance compare equal, while different instances do not.
+        identical(sorobanServer, other.sorobanServer) &&
         maxContextRuleScanId == other.maxContextRuleScanId;
   }
 
@@ -400,6 +416,7 @@ class OZSmartAccountConfig {
         storage,
         externalWallet,
         identityHashCode(externalEd25519Adapter),
+        identityHashCode(sorobanServer),
         maxContextRuleScanId,
       ]);
 }
@@ -445,6 +462,7 @@ class OZSmartAccountConfigBuilder {
   OZExternalWalletAdapter? _externalWallet;
   OZExternalEd25519SignerAdapter? _externalEd25519Adapter;
   int _maxContextRuleScanId = 50;
+  SorobanServer? _sorobanServer;
 
   /// Sets the deployer keypair. Pass `null` to use the deterministic
   /// default.
@@ -516,6 +534,14 @@ class OZSmartAccountConfigBuilder {
     return this;
   }
 
+  /// Sets a preconfigured Soroban RPC server, e.g. one created with a
+  /// custom Dio httpClient. Pass `null` to let the kit create a server
+  /// from the rpcUrl.
+  OZSmartAccountConfigBuilder sorobanServer(SorobanServer? value) {
+    _sorobanServer = value;
+    return this;
+  }
+
   /// Builds the [OZSmartAccountConfig], running constructor validation.
   ///
   /// Throws [SmartAccountConfigurationException] when validation fails.
@@ -536,6 +562,7 @@ class OZSmartAccountConfigBuilder {
       externalWallet: _externalWallet,
       externalEd25519Adapter: _externalEd25519Adapter,
       maxContextRuleScanId: _maxContextRuleScanId,
+      sorobanServer: _sorobanServer,
     );
   }
 }

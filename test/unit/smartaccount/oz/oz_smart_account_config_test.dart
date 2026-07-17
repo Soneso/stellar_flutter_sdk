@@ -741,6 +741,128 @@ void main() {
       expect(a == b, isTrue);
       expect(a.hashCode, equals(b.hashCode));
     });
+
+    // -------------------------------------------------------------------------
+    // sorobanServer — same identity-equality and copyWith sentinel-flag
+    // contract as externalEd25519Adapter.
+    // -------------------------------------------------------------------------
+
+    test('testCopyWith_sorobanServer_withoutFlag_preservesOriginalServer', () {
+      final server = SorobanServer(_validRpcUrl);
+      final original = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        sorobanServer: server,
+      );
+
+      final copied = original.copyWith(sessionExpiryMs: 999000);
+
+      expect(
+        identical(copied.sorobanServer, server),
+        isTrue,
+        reason: 'sorobanServer must be preserved when setSorobanServer is false',
+      );
+    });
+
+    test('testCopyWith_sorobanServer_withFlagAndNull_clearsServer', () {
+      final server = SorobanServer(_validRpcUrl);
+      final original = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        sorobanServer: server,
+      );
+
+      final cleared = original.copyWith(
+        setSorobanServer: true,
+        sorobanServer: null,
+      );
+
+      expect(
+        cleared.sorobanServer,
+        isNull,
+        reason:
+            'sorobanServer must be null when setSorobanServer is true and server is null',
+      );
+    });
+
+    test('testCopyWith_sorobanServer_withFlagAndNonNull_replacesServer', () {
+      final original = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+      );
+      final server = SorobanServer(_validRpcUrl);
+
+      final updated = original.copyWith(
+        setSorobanServer: true,
+        sorobanServer: server,
+      );
+
+      expect(
+        identical(updated.sorobanServer, server),
+        isTrue,
+        reason: 'copyWith with flag true must install the supplied server',
+      );
+    });
+
+    test('testBuilder_sorobanServer_setsServer', () {
+      final server = SorobanServer(_validRpcUrl);
+      final config = OZSmartAccountConfig.builder(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+      ).sorobanServer(server).build();
+
+      expect(identical(config.sorobanServer, server), isTrue);
+    });
+
+    test('testEquality_differentSorobanServerInstance_notEqual', () {
+      final a = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        sorobanServer: SorobanServer(_validRpcUrl),
+      );
+      final b = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        sorobanServer: SorobanServer(_validRpcUrl),
+      );
+
+      // Two distinct server instances must break equality (identical() check).
+      expect(a == b, isFalse);
+    });
+
+    test('testEquality_sameSorobanServerInstance_equal', () {
+      final server = SorobanServer(_validRpcUrl);
+      final a = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        sorobanServer: server,
+      );
+      final b = OZSmartAccountConfig(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+        sorobanServer: server,
+      );
+
+      // Same instance must produce equal configs.
+      expect(a == b, isTrue);
+      expect(a.hashCode, equals(b.hashCode));
+    });
   });
 }
 
