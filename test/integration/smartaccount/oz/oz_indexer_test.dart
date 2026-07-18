@@ -105,9 +105,13 @@ void main() {
       } catch (e) {
         thrown = e;
       }
-      expect(thrown, isA<SmartAccountIndexerException>(),
+      expect(thrown, isA<SmartAccountIndexerRequestFailed>(),
           reason: 'an unindexed contract must surface the typed indexer '
               'failure, got: $thrown');
+      expect((thrown as SmartAccountIndexerRequestFailed).message,
+          contains('404'),
+          reason: 'the failure must be the service not-found, not a '
+              'transport error');
     } finally {
       await indexer.close();
     }

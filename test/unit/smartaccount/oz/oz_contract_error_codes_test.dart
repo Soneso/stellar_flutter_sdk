@@ -116,8 +116,13 @@ void main() {
     });
 
     test('testDecode_fullTableMatchesContractEnums', () {
-      // Independent transcription of the contract enums; a transposed name
-      // or wrong contract in the production table fails here.
+      // Transcription of the OpenZeppelin stellar-contracts error enums in
+      // the accounts package (SmartAccountError in the smart_account module;
+      // WebAuthnError in the verifiers module; SimpleThresholdError,
+      // WeightedThresholdError, and SpendingLimitError in the policies
+      // module). A transposed name or wrong contract in the production table
+      // fails here; re-verify against those enums, not against the
+      // production table.
       const expected = <int, (String, String)>{
         3000: ('SmartAccountError', 'ContextRuleNotFound'),
         3002: ('SmartAccountError', 'UnvalidatedContext'),

@@ -128,17 +128,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
 
     requireValidSigners(signers);
 
-    if (policies.length > OZConstants.maxPolicies) {
-      throw SmartAccountValidationException.invalidInput(
-        'policies',
-        'Context rule cannot have more than ${OZConstants.maxPolicies} '
-            'policies, got: ${policies.length}',
-      );
-    }
-
-    for (final address in policies.keys) {
-      requireContractAddress(address, fieldName: 'contractAddress');
-    }
+    requireValidPolicies(policies);
 
     final contextTypeScVal = contextType.toScVal();
     final nameScVal = XdrSCVal.forString(name);

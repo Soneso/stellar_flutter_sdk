@@ -609,8 +609,9 @@ class OZPolicyManager {
     return XdrSCVal.forMap(sortMapByKeyXdr(entries));
   }
 
-  /// Encodes a single [XdrSCVal] to its XDR byte representation.
-  /// Exposed for tests verifying deterministic key ordering.
+  /// Encodes a single [XdrSCVal] to its XDR byte representation. Backs
+  /// [OZRawPolicyParams] value equality and hashing, and is used by tests
+  /// comparing encoded key order.
   static List<int> scValToXdrBytes(XdrSCVal scVal) {
     final stream = XdrDataOutputStream();
     XdrSCVal.encode(stream, scVal);

@@ -402,8 +402,9 @@ class OZWalletOperations {
   /// parameters as the value. When `null`,
   /// [OZSmartAccountConfig.defaultPolicies] applies; pass a map (including
   /// an empty one) to override it. At most [OZConstants.maxPolicies].
-  /// Validated before the passkey ceremony, so an invalid policy
-  /// configuration fails without creating an orphaned credential.
+  /// Validated and encoded before the passkey ceremony, so an invalid
+  /// policy configuration (including structurally invalid install
+  /// parameters) fails without creating an orphaned credential.
   ///
   /// The optional [cancelToken] can be cancelled to abort an in-flight
   /// network request; cancellation surfaces as a [SmartAccountTransactionException].
@@ -431,11 +432,16 @@ class OZWalletOperations {
       );
     }
 
-    // Resolve and validate constructor policies before the passkey ceremony,
-    // so an invalid policy configuration never orphans a freshly created
-    // credential.
+    // Resolve, validate, and encode constructor policies before the passkey
+    // ceremony, so an invalid policy configuration never orphans a freshly
+    // created credential. Encoding runs here because the install params
+    // validate their own structure in toScVal.
     final effectivePolicies = policies ?? _kit.config.defaultPolicies;
     requireValidPolicies(effectivePolicies);
+    final encodedPolicies = <String, XdrSCVal>{
+      for (final entry in effectivePolicies.entries)
+        entry.key: entry.value.toScVal(),
+    };
 
     _checkCancellation(cancelToken);
 
@@ -534,7 +540,7 @@ class OZWalletOperations {
       deployTransaction = await _buildDeployTransaction(
         publicKey: publicKey,
         credentialId: registrationResult.credentialId,
-        policies: effectivePolicies,
+        policies: encodedPolicies,
         forceMethod: forceMethod,
       );
     } catch (e) {
@@ -1051,10 +1057,15 @@ class OZWalletOperations {
       );
     }
 
-    // Resolve and validate constructor policies early, before any storage
-    // or network access.
+    // Resolve, validate, and encode constructor policies early, before any
+    // storage or network access. Encoding runs here because the install
+    // params validate their own structure in toScVal.
     final effectivePolicies = policies ?? _kit.config.defaultPolicies;
     requireValidPolicies(effectivePolicies);
+    final encodedPolicies = <String, XdrSCVal>{
+      for (final entry in effectivePolicies.entries)
+        entry.key: entry.value.toScVal(),
+    };
 
     // Normalise to the canonical unpadded Base64URL form; see
     // ozStripBase64UrlPadding.
@@ -1110,7 +1121,7 @@ class OZWalletOperations {
       deployTransaction = await _buildDeployTransaction(
         publicKey: publicKey,
         credentialId: credentialIdBytes,
-        policies: effectivePolicies,
+        policies: encodedPolicies,
         forceMethod: forceMethod,
       );
     } catch (e) {
@@ -1450,13 +1461,14 @@ class OZWalletOperations {
   /// fee is set to the resource fee only — the relayer wraps the
   /// transaction in a fee-bump with the outer fee.
   ///
-  /// [policies] carries the pre-validated constructor policies for the
-  /// default context rule, keyed by policy contract address; an empty map
+  /// [policies] carries the pre-validated and pre-encoded constructor
+  /// policies for the default context rule (policy contract address to
+  /// encoded install-param ScVal); an empty map
   /// installs none.
   Future<Transaction> _buildDeployTransaction({
     required Uint8List publicKey,
     required Uint8List credentialId,
-    required Map<String, OZPolicyInstallParams> policies,
+    required Map<String, XdrSCVal> policies,
     OZSubmissionMethod? forceMethod,
   }) async {
     final keyData = Uint8List(publicKey.length + credentialId.length)
@@ -1488,18 +1500,9 @@ class OZWalletOperations {
     }
 
     // Policies installed on the default context rule, keyed by policy
-    // contract address and sorted into the host's ScMap key order.
-    final XdrSCVal policiesScVal;
-    try {
-      policiesScVal = OZPolicyManager.policiesToScVal(<String, XdrSCVal>{
-        for (final entry in policies.entries) entry.key: entry.value.toScVal(),
-      });
-    } catch (e) {
-      throw SmartAccountTransactionException.signingFailed(
-        'Failed to encode constructor policies: $e',
-        cause: e,
-      );
-    }
+    // contract address and sorted into the host's ScMap key order. The keys
+    // were validated and the values encoded before this method runs.
+    final policiesScVal = OZPolicyManager.policiesToScVal(policies);
 
     final constructorArgs = <XdrSCVal>[signersScVal, policiesScVal];
 

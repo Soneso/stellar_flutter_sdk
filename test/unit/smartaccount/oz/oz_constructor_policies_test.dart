@@ -214,6 +214,24 @@ void main() {
       expect(provider.registerCalls, isEmpty);
     });
 
+    test('testCreateWallet_structurallyInvalidParams_throwsBeforeCeremony',
+        () async {
+      final provider = RecordingWebAuthnProvider();
+      final kit = FakePipelineKit(config: _config(provider: provider));
+      final ops = OZWalletOperations(kit);
+
+      await expectLater(
+        () => ops.createWallet(policies: <String, OZPolicyInstallParams>{
+          _policyAddress(0):
+              const OZSimpleThresholdPolicyParams(threshold: 0),
+        }),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
+      expect(provider.registerCalls, isEmpty,
+          reason: 'install params are encoded before the passkey ceremony, '
+              'so a structurally invalid value must not orphan a credential');
+    });
+
     test('testCreateWallet_usesConfigDefaultWhenNoOverride', () async {
       // No per-call policies -> the invalid config default is used ->
       // throws before the ceremony.
