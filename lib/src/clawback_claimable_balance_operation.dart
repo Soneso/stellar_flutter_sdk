@@ -2,7 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'muxed_account.dart';
 import 'xdr/xdr.dart';
 import 'operation.dart';
 import 'util.dart';
@@ -96,9 +95,9 @@ class ClawbackClaimableBalanceOperation extends Operation {
 ///   balanceId
 /// ).setSourceAccount(issuerAccountId).build();
 /// ```
-class ClawbackClaimableBalanceOperationBuilder {
+class ClawbackClaimableBalanceOperationBuilder
+    extends OperationBuilder<ClawbackClaimableBalanceOperationBuilder> {
   String _balanceId;
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a ClawbackClaimableBalanceOperationBuilder.
   ///
@@ -106,42 +105,12 @@ class ClawbackClaimableBalanceOperationBuilder {
   /// - [_balanceId] The hex-encoded claimable balance ID to claw back.
   ClawbackClaimableBalanceOperationBuilder(this._balanceId);
 
-  /// Sets the source account for this operation.
-  ///
-  /// The source account must be the issuer of the asset in the claimable balance.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId]: The account ID of the asset issuer.
-  ///
-  /// Returns: This builder instance for method chaining.
-  ClawbackClaimableBalanceOperationBuilder setSourceAccount(
-      String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount]: The muxed source account (asset issuer).
-  ///
-  /// Returns: This builder instance for method chaining.
-  ClawbackClaimableBalanceOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the clawback claimable balance operation.
   ///
   /// Returns: A configured [ClawbackClaimableBalanceOperation] instance.
   ClawbackClaimableBalanceOperation build() {
     ClawbackClaimableBalanceOperation operation =
         ClawbackClaimableBalanceOperation(_balanceId);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

@@ -97,15 +97,7 @@ class AssetsRequestBuilder extends RequestBuilder {
   /// Internal method that performs the actual HTTP GET request to the Horizon server.
   static Future<Page<AssetResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    TypeToken<Page<AssetResponse>> type = new TypeToken<Page<AssetResponse>>();
-    ResponseHandler<Page<AssetResponse>> responseHandler =
-        new ResponseHandler<Page<AssetResponse>>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<Page<AssetResponse>>(httpClient, uri);
   }
 
   /// Build and execute the request.

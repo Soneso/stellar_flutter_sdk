@@ -3,15 +3,12 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
 import '../asset_type_credit_alphanum.dart';
 import '../assets.dart';
-import "../eventsource/eventsource.dart";
 import '../responses/order_book_response.dart';
-import '../responses/response.dart';
 import 'request_builder.dart';
 
 /// Builds requests for the order book.
@@ -144,15 +141,7 @@ class OrderBookRequestBuilder extends RequestBuilder {
   /// This method is helpful for getting the next set of results.
   static Future<OrderBookResponse> requestExecute(
       http.Client httpClient, Uri uri) async {
-    TypeToken<OrderBookResponse> type = new TypeToken<OrderBookResponse>();
-    ResponseHandler<OrderBookResponse> responseHandler =
-        new ResponseHandler<OrderBookResponse>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<OrderBookResponse>(httpClient, uri);
   }
 
   /// Allows to stream SSE events from horizon.
@@ -161,58 +150,8 @@ class OrderBookRequestBuilder extends RequestBuilder {
   /// responses as ledgers close.
   /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<OrderBookResponse> stream() {
-    StreamController<OrderBookResponse> listener = StreamController.broadcast();
-
-    bool cancelled = false;
-    EventSource? source;
-
-    /// Creates a new EventSource connection to stream order book updates from Horizon.
-    /// Automatically reconnects when the connection closes to maintain continuous streaming.
-    Future<void> createNewEventSource() async {
-      if (cancelled) {
-        return;
-      }
-      source?.close();
-      source = await EventSource.connect(
-        this.buildUri(),
-        client: httpClient,
-      );
-      source!.listen((Event event) async {
-        if (cancelled) {
-          return null;
-        }
-        if (event.event == "open") {
-          return null;
-        }
-        if (event.event == "close") {
-          // Reconnect on close to stream infinitely
-          createNewEventSource();
-          return null;
-        }
-        try {
-          OrderBookResponse operationResponse = OrderBookResponse.fromJson(
-            json.decode(event.data!),
-          );
-          listener.add(operationResponse);
-        } catch (e, stackTrace) {
-          listener.addError(e, stackTrace);
-          createNewEventSource();
-        }
-      });
-    }
-
-    listener.onListen = () {
-      cancelled = false;
-      createNewEventSource();
-    };
-    listener.onCancel = () {
-      if (!listener.hasListener) {
-        cancelled = true;
-        source?.close();
-      }
-    };
-
-    return listener.stream;
+    return streamEvents<OrderBookResponse>(
+        (json) => OrderBookResponse.fromJson(json));
   }
 
   /// Builds and executes the request.

@@ -3,14 +3,12 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'package:stellar_flutter_sdk/src/util.dart';
 
 import '../assets.dart';
-import "../eventsource/eventsource.dart";
 import '../responses/account_response.dart';
 import '../responses/account_data_response.dart';
 import '../responses/response.dart';
@@ -67,15 +65,7 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// Requests specific [uri] and returns AccountResponse.
   /// This method is helpful for getting the links.
   Future<AccountResponse> accountURI(Uri uri) async {
-    TypeToken<AccountResponse> type = new TypeToken<AccountResponse>();
-    ResponseHandler<AccountResponse> responseHandler =
-        ResponseHandler<AccountResponse>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<AccountResponse>(httpClient, uri);
   }
 
   /// Retrieves detailed information about a specific account.
@@ -124,15 +114,8 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// - [Stellar developer docs](https://developers.stellar.org)
   Future<AccountDataResponse> accountData(String accountId, String key) async {
     this.setSegments(["accounts", accountId, "data", key]);
-    TypeToken<AccountDataResponse> type = new TypeToken<AccountDataResponse>();
-    ResponseHandler<AccountDataResponse> responseHandler =
-        ResponseHandler<AccountDataResponse>(type);
-
-    return await httpClient
-        .get(this.buildUri(), headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<AccountDataResponse>(
+        httpClient, this.buildUri());
   }
 
   /// Filters accounts by signer.
@@ -239,7 +222,9 @@ class AccountsRequestBuilder extends RequestBuilder {
     if (id.startsWith("L")) {
       try {
         id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(poolId));
-      } catch (_) {}
+      } catch (_) {
+        throw ArgumentError("invalid liquidity pool id: $poolId");
+      }
     }
     queryParameters.addAll({LIQUIDITY_POOL_PARAMETER_NAME: id});
     return this;
@@ -249,16 +234,8 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// This method is helpful for getting the next set of results.
   static Future<Page<AccountResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    TypeToken<Page<AccountResponse>> type =
-        new TypeToken<Page<AccountResponse>>();
-    ResponseHandler<Page<AccountResponse>> responseHandler =
-        new ResponseHandler<Page<AccountResponse>>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<Page<AccountResponse>>(
+        httpClient, uri);
   }
 
   /// Opens a stream to listen for account updates in real-time.
@@ -291,59 +268,8 @@ class AccountsRequestBuilder extends RequestBuilder {
   /// See also:
   /// - [Stellar developer docs](https://developers.stellar.org)
   Stream<AccountResponse> stream() {
-    StreamController<AccountResponse> listener = StreamController.broadcast();
-
-    bool cancelled = false;
-    EventSource? source;
-
-    /// Creates a new EventSource connection for streaming account updates.
-    ///
-    /// Automatically reconnects on connection close to maintain continuous streaming.
-    Future<void> createNewEventSource() async {
-      if (cancelled) {
-        return;
-      }
-      source?.close();
-      source = await EventSource.connect(
-        this.buildUri(),
-        client: httpClient,
-      );
-      source!.listen((Event event) async {
-        if (cancelled) {
-          return null;
-        }
-        if (event.event == "open") {
-          return null;
-        }
-        if (event.event == "close") {
-          // Reconnect on close to stream infinitely
-          createNewEventSource();
-          return null;
-        }
-        try {
-          AccountResponse operationResponse = AccountResponse.fromJson(
-            json.decode(event.data!),
-          );
-          listener.add(operationResponse);
-        } catch (e, stackTrace) {
-          listener.addError(e, stackTrace);
-          createNewEventSource();
-        }
-      });
-    }
-
-    listener.onListen = () {
-      cancelled = false;
-      createNewEventSource();
-    };
-    listener.onCancel = () {
-      if (!listener.hasListener) {
-        cancelled = true;
-        source?.close();
-      }
-    };
-
-    return listener.stream;
+    return streamEvents<AccountResponse>(
+        (json) => AccountResponse.fromJson(json));
   }
 
   /// Builds and executes the request.

@@ -177,14 +177,14 @@ class PathPaymentStrictReceiveOperation extends Operation {
 ///   "100.0"
 /// ).setPath([intermediateAsset]).build();
 /// ```
-class PathPaymentStrictReceiveOperationBuilder {
+class PathPaymentStrictReceiveOperationBuilder
+    extends OperationBuilder<PathPaymentStrictReceiveOperationBuilder> {
   Asset _sendAsset;
   String _sendMax;
   late MuxedAccount _destination;
   Asset _destAsset;
   String _destAmount;
   List<Asset> _path = List<Asset>.empty(growable: true);
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a PathPaymentStrictReceive operation builder with an account ID destination.
   ///
@@ -229,31 +229,6 @@ class PathPaymentStrictReceiveOperationBuilder {
     return this;
   }
 
-  /// Sets the source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId] Account ID of the operation source
-  ///
-  /// Returns: This builder instance for method chaining
-  PathPaymentStrictReceiveOperationBuilder setSourceAccount(
-      String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount] Muxed account to use as operation source
-  ///
-  /// Returns: This builder instance for method chaining
-  PathPaymentStrictReceiveOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the PathPaymentStrictReceive operation.
   ///
   /// Returns: Configured PathPaymentStrictReceiveOperation instance
@@ -261,9 +236,6 @@ class PathPaymentStrictReceiveOperationBuilder {
     PathPaymentStrictReceiveOperation operation =
         PathPaymentStrictReceiveOperation(
             _sendAsset, _sendMax, _destination, _destAsset, _destAmount, _path);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

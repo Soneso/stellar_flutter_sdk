@@ -173,7 +173,7 @@ void main() {
           fail('Unexpected RPC method: ${requestBody['method']}');
       }
     });
-    return SorobanServer.withDio(rpcUrl, mockDio);
+    return SorobanServer(rpcUrl, httpClient: mockDio);
   }
 
   group('ClientOptions.server injection', () {
@@ -189,10 +189,11 @@ void main() {
         ledgerEntriesCalls++;
         return accountEntryResponse(requestBody, keyPair, BigInt.from(1000));
       });
-      final server = SorobanServer.withDio(rpcUrl, mockDio);
+      final server = SorobanServer(rpcUrl, httpClient: mockDio);
 
       final tx = await AssembledTransaction.build(
-          options: buildOptions(keyPair, server, MethodOptions(simulate: false)));
+          options:
+              buildOptions(keyPair, server, MethodOptions(simulate: false)));
 
       expect(identical(tx.server, server), isTrue);
       expect(ledgerEntriesCalls, 1);
@@ -220,12 +221,15 @@ void main() {
       // invocation.
       expect(simulateEnvelopes.length, 3);
 
-      final initial = AbstractTransaction.fromEnvelopeXdrString(
-          simulateEnvelopes[0]) as Transaction;
-      final restore = AbstractTransaction.fromEnvelopeXdrString(
-          simulateEnvelopes[1]) as Transaction;
-      final rebuilt = AbstractTransaction.fromEnvelopeXdrString(
-          simulateEnvelopes[2]) as Transaction;
+      final initial =
+          AbstractTransaction.fromEnvelopeXdrString(simulateEnvelopes[0])
+              as Transaction;
+      final restore =
+          AbstractTransaction.fromEnvelopeXdrString(simulateEnvelopes[1])
+              as Transaction;
+      final rebuilt =
+          AbstractTransaction.fromEnvelopeXdrString(simulateEnvelopes[2])
+              as Transaction;
 
       // The restore transaction contains a RestoreFootprint operation.
       expect(restore.operations.first, isA<RestoreFootprintOperation>());
@@ -265,8 +269,9 @@ void main() {
 
       // The rebuilt transaction carries the original upload operation, not a
       // reconstructed invoke-contract operation.
-      final rebuilt = AbstractTransaction.fromEnvelopeXdrString(
-          simulateEnvelopes[2]) as Transaction;
+      final rebuilt =
+          AbstractTransaction.fromEnvelopeXdrString(simulateEnvelopes[2])
+              as Transaction;
       final rebuiltOp = rebuilt.operations.first;
       expect(rebuiltOp, isA<InvokeHostFunctionOperation>());
       expect((rebuiltOp as InvokeHostFunctionOperation).function,
@@ -281,7 +286,8 @@ void main() {
 
       await expectLater(
         AssembledTransaction.build(
-            options: buildOptions(keyPair, server, MethodOptions(restore: true))),
+            options:
+                buildOptions(keyPair, server, MethodOptions(restore: true))),
         throwsA(isA<Exception>().having((e) => e.toString(), 'message',
             contains('Automatic restore failed'))),
       );
@@ -312,14 +318,14 @@ void main() {
             fail('Unexpected RPC method: ${requestBody['method']}');
         }
       });
-      final server = SorobanServer.withDio(rpcUrl, mockDio);
+      final server = SorobanServer(rpcUrl, httpClient: mockDio);
 
       await expectLater(
         AssembledTransaction.build(
             options:
                 buildOptions(publicOnly, server, MethodOptions(restore: true))),
-        throwsA(isA<Exception>().having((e) => e.toString(), 'message',
-            contains('no private key'))),
+        throwsA(isA<Exception>().having(
+            (e) => e.toString(), 'message', contains('no private key'))),
       );
     });
   });

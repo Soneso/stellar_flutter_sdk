@@ -2,8 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:stellar_flutter_sdk/src/muxed_account.dart';
-
 import 'operation.dart';
 import 'assets.dart';
 import 'util.dart';
@@ -131,12 +129,12 @@ class CreatePassiveSellOfferOperation extends Operation {
 ///   "2.5"
 /// ).setSourceAccount(sourceAccountId).build();
 /// ```
-class CreatePassiveSellOfferOperationBuilder {
+class CreatePassiveSellOfferOperationBuilder
+    extends OperationBuilder<CreatePassiveSellOfferOperationBuilder> {
   Asset _selling;
   Asset _buying;
   String _amount;
   String _price;
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a CreatePassiveSellOffer operation builder.
   ///
@@ -148,40 +146,12 @@ class CreatePassiveSellOfferOperationBuilder {
   CreatePassiveSellOfferOperationBuilder(
       this._selling, this._buying, this._amount, this._price);
 
-  /// Sets the source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId] Account ID of the operation source.
-  ///
-  /// Returns: This builder instance for method chaining.
-  CreatePassiveSellOfferOperationBuilder setSourceAccount(
-      String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount] Muxed account to use as operation source.
-  ///
-  /// Returns: This builder instance for method chaining.
-  CreatePassiveSellOfferOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the CreatePassiveSellOffer operation.
   ///
   /// Returns: Configured CreatePassiveSellOfferOperation instance.
   CreatePassiveSellOfferOperation build() {
     CreatePassiveSellOfferOperation operation =
         new CreatePassiveSellOfferOperation(_selling, _buying, _amount, _price);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

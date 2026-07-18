@@ -2,15 +2,18 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:meta/meta.dart';
 import 'package:stellar_flutter_sdk/src/asset_type_credit_alphanum.dart';
 import 'package:stellar_flutter_sdk/src/asset_type_native.dart';
 import 'package:stellar_flutter_sdk/src/constants/network_constants.dart';
 import 'package:stellar_flutter_sdk/src/stellar_sdk.dart';
 
 import '../assets.dart';
+import '../eventsource/eventsource.dart';
 import '../responses/response.dart';
 
 /// Exception thrown when a request returns a non-success HTTP code.
@@ -351,6 +354,83 @@ abstract class RequestBuilder {
       encodedAssets.add(encodeAsset(next));
     }
     return encodedAssets.join(",");
+  }
+
+  /// Executes a GET request to [uri] and converts the JSON response to [T].
+  ///
+  /// [T] must be a response type known to [ResponseConverter], either a
+  /// single response object (e.g. `TransactionResponse`) or a page of
+  /// records (e.g. `Page<TransactionResponse>`).
+  ///
+  /// Throws:
+  /// - [TooManyRequestsException] When HTTP status is 429
+  /// - [ErrorResponse] When HTTP status is 400 or higher
+  static Future<T> requestExecute<T>(http.Client httpClient, Uri uri) async {
+    ResponseHandler<T> responseHandler = ResponseHandler<T>(TypeToken<T>());
+
+    return await httpClient.get(uri, headers: headers).then((response) {
+      return responseHandler.handleResponse(response);
+    });
+  }
+
+  /// Opens a stream of Server-Sent Events on the URI built by this builder
+  /// and emits one [T] per received record, parsed with [fromJson].
+  ///
+  /// The connection is re-established whenever Horizon closes it or an
+  /// event fails to parse, so the stream continues until the last listener
+  /// cancels.
+  @protected
+  Stream<T> streamEvents<T>(T Function(dynamic json) fromJson) {
+    StreamController<T> listener = StreamController.broadcast();
+
+    bool cancelled = false;
+    EventSource? source;
+
+    // Creates a new EventSource connection to stream updates from Horizon.
+    // Automatically reconnects when the connection closes to maintain
+    // continuous streaming.
+    Future<void> createNewEventSource() async {
+      if (cancelled) {
+        return;
+      }
+      source?.close();
+      source = await EventSource.connect(
+        this.buildUri(),
+        client: httpClient,
+      );
+      source!.listen((Event event) async {
+        if (cancelled) {
+          return null;
+        }
+        if (event.event == "open") {
+          return null;
+        }
+        if (event.event == "close") {
+          // Reconnect on close to stream infinitely
+          createNewEventSource();
+          return null;
+        }
+        try {
+          listener.add(fromJson(json.decode(event.data!)));
+        } catch (e, stackTrace) {
+          listener.addError(e, stackTrace);
+          createNewEventSource();
+        }
+      });
+    }
+
+    listener.onListen = () {
+      cancelled = false;
+      createNewEventSource();
+    };
+    listener.onCancel = () {
+      if (!listener.hasListener) {
+        cancelled = true;
+        source?.close();
+      }
+    };
+
+    return listener.stream;
   }
 }
 

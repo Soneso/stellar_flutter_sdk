@@ -177,14 +177,14 @@ class PathPaymentStrictSendOperation extends Operation {
 ///   "90.0"
 /// ).setPath([intermediateAsset]).build();
 /// ```
-class PathPaymentStrictSendOperationBuilder {
+class PathPaymentStrictSendOperationBuilder
+    extends OperationBuilder<PathPaymentStrictSendOperationBuilder> {
   Asset _sendAsset;
   String _sendAmount;
   late MuxedAccount _destination;
   Asset _destAsset;
   String _destMin;
   List<Asset> _path = List<Asset>.empty(growable: true);
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a PathPaymentStrictSend operation builder with an account ID destination.
   ///
@@ -229,40 +229,12 @@ class PathPaymentStrictSendOperationBuilder {
     return this;
   }
 
-  /// Sets the source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId] Account ID of the operation source
-  ///
-  /// Returns: This builder instance for method chaining
-  PathPaymentStrictSendOperationBuilder setSourceAccount(
-      String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount] Muxed account to use as operation source
-  ///
-  /// Returns: This builder instance for method chaining
-  PathPaymentStrictSendOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the PathPaymentStrictSend operation.
   ///
   /// Returns: Configured PathPaymentStrictSendOperation instance
   PathPaymentStrictSendOperation build() {
     PathPaymentStrictSendOperation operation = PathPaymentStrictSendOperation(
         _sendAsset, _sendAmount, _destination, _destAsset, _destMin, _path);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

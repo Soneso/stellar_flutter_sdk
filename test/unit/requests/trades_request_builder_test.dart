@@ -207,20 +207,21 @@ void main() {
       test('converts L-prefixed pool ID to hex', () {
         final builder = TradesRequestBuilder(mockClient, serverUri);
         final poolId = 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
-        final lPrefixedId = 'L' + poolId;
+        final lPrefixedId =
+            StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolId));
         builder.liquidityPoolId(lPrefixedId);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['liquidity_pool_id'], isNotEmpty);
+        expect(uri.queryParameters['liquidity_pool_id'], equals(poolId));
       });
 
-      test('handles invalid L-prefixed ID gracefully', () {
+      test('throws on invalid L-prefixed ID', () {
         final builder = TradesRequestBuilder(mockClient, serverUri);
-        final invalidLId = 'LINVALID';
-        builder.liquidityPoolId(invalidLId);
-        final uri = builder.buildUri();
 
-        expect(uri.queryParameters['liquidity_pool_id'], equals(invalidLId));
+        expect(
+          () => builder.liquidityPoolId('LINVALID'),
+          throwsArgumentError,
+        );
       });
     });
 

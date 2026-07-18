@@ -85,10 +85,8 @@ void main() {
         return _jsonResponseBody(body['id'] as int, _notFoundResult());
       });
 
-      final server = SorobanServer.withDio(
-        'https://soroban-testnet.stellar.org',
-        mockDio,
-      );
+      final server = SorobanServer('https://soroban-testnet.stellar.org',
+          httpClient: mockDio);
 
       final response = await server.pollTransaction(
         _txHash,
@@ -128,10 +126,8 @@ void main() {
         return _jsonResponseBody(body['id'] as int, _successResult());
       });
 
-      final server = SorobanServer.withDio(
-        'https://soroban-testnet.stellar.org',
-        mockDio,
-      );
+      final server = SorobanServer('https://soroban-testnet.stellar.org',
+          httpClient: mockDio);
 
       final response = await server.pollTransaction(
         _txHash,
@@ -142,7 +138,8 @@ void main() {
       expect(requestCount, 1);
     });
 
-    test('test_pollTransaction_returns_failed_status_without_continuing_polling',
+    test(
+        'test_pollTransaction_returns_failed_status_without_continuing_polling',
         () async {
       var requestCount = 0;
       final mockDio = dio.Dio();
@@ -152,10 +149,8 @@ void main() {
         return _jsonResponseBody(body['id'] as int, _failedResult());
       });
 
-      final server = SorobanServer.withDio(
-        'https://soroban-testnet.stellar.org',
-        mockDio,
-      );
+      final server = SorobanServer('https://soroban-testnet.stellar.org',
+          httpClient: mockDio);
 
       final response = await server.pollTransaction(
         _txHash,
@@ -186,10 +181,8 @@ void main() {
         return _jsonResponseBody(body['id'] as int, _successResult());
       });
 
-      final server = SorobanServer.withDio(
-        'https://soroban-testnet.stellar.org',
-        mockDio,
-      );
+      final server = SorobanServer('https://soroban-testnet.stellar.org',
+          httpClient: mockDio);
 
       final response = await server.pollTransaction(
         _txHash,
@@ -213,10 +206,8 @@ void main() {
         return _jsonResponseBody(body['id'] as int, _successResult());
       });
 
-      final server = SorobanServer.withDio(
-        'https://soroban-testnet.stellar.org',
-        mockDio,
-      );
+      final server = SorobanServer('https://soroban-testnet.stellar.org',
+          httpClient: mockDio);
 
       final response = await server.pollTransaction(
         _txHash,
@@ -237,10 +228,8 @@ void main() {
         return _jsonResponseBody(body['id'] as int, _notFoundResult());
       });
 
-      final server = SorobanServer.withDio(
-        'https://soroban-testnet.stellar.org',
-        mockDio,
-      );
+      final server = SorobanServer('https://soroban-testnet.stellar.org',
+          httpClient: mockDio);
 
       final response = await server.pollTransaction(
         _txHash,
@@ -251,7 +240,8 @@ void main() {
       expect(requestCount, 1);
     });
 
-    test('test_pollTransaction_default_sleep_strategy_is_one_second_per_attempt',
+    test(
+        'test_pollTransaction_default_sleep_strategy_is_one_second_per_attempt',
         () async {
       // Exercise the production default sleepStrategy end-to-end. Force
       // exactly one inter-attempt sleep by returning NOT_FOUND on the first
@@ -263,20 +253,16 @@ void main() {
       mockDio.httpClientAdapter = MockDioAdapter((options) {
         final body = jsonDecode(options.data as String) as Map<String, dynamic>;
         requestCount++;
-        final result =
-            requestCount == 1 ? _notFoundResult() : _successResult();
+        final result = requestCount == 1 ? _notFoundResult() : _successResult();
         return _jsonResponseBody(body['id'] as int, result);
       });
 
-      final server = SorobanServer.withDio(
-        'https://soroban-testnet.stellar.org',
-        mockDio,
-      );
+      final server = SorobanServer('https://soroban-testnet.stellar.org',
+          httpClient: mockDio);
 
       final stopwatch = Stopwatch()..start();
       // Intentionally omit sleepStrategy to invoke the production default.
-      final response =
-          await server.pollTransaction(_txHash, maxAttempts: 2);
+      final response = await server.pollTransaction(_txHash, maxAttempts: 2);
       stopwatch.stop();
 
       expect(response.status, GetTransactionResponse.STATUS_SUCCESS);
@@ -291,8 +277,7 @@ void main() {
       );
     });
 
-    test('rethrows last RPC error when every attempt fails',
-        () async {
+    test('rethrows last RPC error when every attempt fails', () async {
       var requestCount = 0;
       final mockDio = dio.Dio();
       mockDio.httpClientAdapter = MockDioAdapter((options) {
@@ -307,10 +292,8 @@ void main() {
         );
       });
 
-      final server = SorobanServer.withDio(
-        'https://soroban-testnet.stellar.org',
-        mockDio,
-      );
+      final server = SorobanServer('https://soroban-testnet.stellar.org',
+          httpClient: mockDio);
 
       await expectLater(
         server.pollTransaction(
@@ -335,10 +318,8 @@ void main() {
         return _jsonResponseBody(body['id'] as int, _notFoundResult());
       });
 
-      final server = SorobanServer.withDio(
-        'https://soroban-testnet.stellar.org',
-        mockDio,
-      );
+      final server = SorobanServer('https://soroban-testnet.stellar.org',
+          httpClient: mockDio);
 
       await server.pollTransaction(
         _txHash,

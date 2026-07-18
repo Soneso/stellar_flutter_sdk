@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'dart:async';
 import 'dart:convert';
 
 void main() {
@@ -175,4 +176,106 @@ void main() {
       expect(stream, isA<Stream<AccountResponse>>());
     });
   });
+
+  group('AccountsRequestBuilder strkey id validation', () {
+    final serverUri = Uri.parse('https://horizon-testnet.stellar.org');
+
+    test('forLiquidityPool converts L strkey id to hex', () {
+      final poolHexId =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
+      final strKeyId =
+          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+
+      final builder =
+          AccountsRequestBuilder(http.Client(), serverUri).forLiquidityPool(strKeyId);
+
+      expect(builder.buildUri().queryParameters['liquidity_pool'],
+          equals(poolHexId));
+    });
+
+    test('forLiquidityPool throws on invalid L-prefixed id', () {
+      expect(
+        () => AccountsRequestBuilder(http.Client(), serverUri)
+            .forLiquidityPool('LINVALIDPOOLID'),
+        throwsArgumentError,
+      );
+    });
+  });
+
+  group('AccountsRequestBuilder stream event delivery', () {
+    final serverUri = Uri.parse('https://horizon-testnet.stellar.org');
+    final accountId =
+        'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+    final accountRecord = {
+      '_links': {
+        'self': {'href': 'https://horizon-testnet.stellar.org/accounts/GABC'},
+        'transactions': {'href': 'x'},
+        'operations': {'href': 'x'},
+        'payments': {'href': 'x'},
+        'effects': {'href': 'x'},
+        'offers': {'href': 'x'},
+        'trades': {'href': 'x'},
+        'data': {'href': 'x'}
+      },
+      'id': accountId,
+      'account_id': accountId,
+      'sequence': '123456789',
+      'subentry_count': 3,
+      'last_modified_ledger': 12345,
+      'last_modified_time': '2024-01-01T00:00:00Z',
+      'thresholds': {
+        'low_threshold': 0,
+        'med_threshold': 0,
+        'high_threshold': 0
+      },
+      'flags': {
+        'auth_required': false,
+        'auth_revocable': false,
+        'auth_immutable': false,
+        'auth_clawback_enabled': false
+      },
+      'balances': [
+        {
+          'balance': '1000.0000000',
+          'buying_liabilities': '0.0000000',
+          'selling_liabilities': '0.0000000',
+          'asset_type': 'native'
+        }
+      ],
+      'signers': [
+        {'weight': 1, 'key': accountId, 'type': 'ed25519_public_key'}
+      ],
+      'data': {},
+      'num_sponsoring': 0,
+      'num_sponsored': 0,
+      'paging_token': accountId
+    };
+
+    test('stream parses an SSE data frame into a typed account', () async {
+      final mockClient = MockClient.streaming((request, bodyStream) async {
+        final controller = StreamController<List<int>>();
+        controller.add(utf8.encode('event: open\ndata: "hello"\n\n'));
+        controller.add(utf8.encode('data: ${json.encode(accountRecord)}\n\n'));
+        return http.StreamedResponse(controller.stream, 200,
+            headers: {'content-type': 'text/event-stream'});
+      });
+
+      final builder = AccountsRequestBuilder(mockClient, serverUri);
+      final completer = Completer<AccountResponse>();
+      final subscription = builder.stream().listen((event) {
+        if (!completer.isCompleted) {
+          completer.complete(event);
+        }
+      });
+
+      final event = await completer.future.timeout(const Duration(seconds: 10));
+      await subscription.cancel();
+
+      expect(event, isA<AccountResponse>());
+      expect(event.accountId, equals(accountId));
+      expect(event.sequenceNumber, equals(BigInt.from(123456789)));
+      expect(event.subentryCount, equals(3));
+    });
+  });
+
 }

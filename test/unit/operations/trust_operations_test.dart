@@ -451,6 +451,18 @@ void main() {
         expect(operation.setFlags, equals(1));
       });
 
+      test('throws on invalid source account id', () {
+        expect(
+          () => SetTrustLineFlagsOperationBuilder(
+            trustorKeyPair.accountId,
+            usdAsset,
+            0, // clearFlags
+            1  // setFlags: AUTHORIZED_FLAG
+          ).setSourceAccount('INVALID'),
+          throwsException
+        );
+      });
+
       test('creates with clear authorize flag', () {
         final operation = SetTrustLineFlagsOperationBuilder(
           trustorKeyPair.accountId,

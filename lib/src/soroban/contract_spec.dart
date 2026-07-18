@@ -440,7 +440,13 @@ class ContractSpec {
   /// Parse integer from various input types
   int _parseInteger(dynamic val, String typeName) {
     if (val is int) return val;
-    if (val is double) return val.toInt();
+    if (val is double) {
+      if (!val.isFinite || val.truncateToDouble() != val) {
+        throw ContractSpecException.invalidType(
+            'Cannot convert non-integral double $val to integer for $typeName');
+      }
+      return val.toInt();
+    }
     if (val is String) {
       final parsed = int.tryParse(val);
       if (parsed == null) {

@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'dart:async';
 import 'dart:convert';
 
 void main() {
@@ -152,6 +153,60 @@ void main() {
       final stream = builder.stream();
 
       expect(stream, isA<Stream<OperationResponse>>());
+    });
+  });
+
+  group('PaymentsRequestBuilder stream event delivery', () {
+    final serverUri = Uri.parse('https://horizon-testnet.stellar.org');
+    final from = 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5';
+    final to = 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+    final paymentRecord = {
+      '_links': {
+        'self': {'href': 'x'},
+        'transaction': {'href': 'x'},
+        'effects': {'href': 'x'},
+        'succeeds': {'href': 'x'},
+        'precedes': {'href': 'x'}
+      },
+      'id': '123456789',
+      'paging_token': '123456789',
+      'transaction_successful': true,
+      'source_account': from,
+      'type': 'payment',
+      'type_i': 1,
+      'created_at': '2024-01-01T00:00:00Z',
+      'transaction_hash': 'abc123def456',
+      'asset_type': 'native',
+      'from': from,
+      'to': to,
+      'amount': '100.0000000'
+    };
+
+    test('stream parses an SSE data frame into a payment', () async {
+      final mockClient = MockClient.streaming((request, bodyStream) async {
+        final controller = StreamController<List<int>>();
+        controller.add(utf8.encode('event: open\ndata: "hello"\n\n'));
+        controller.add(utf8.encode('data: ${json.encode(paymentRecord)}\n\n'));
+        return http.StreamedResponse(controller.stream, 200,
+            headers: {'content-type': 'text/event-stream'});
+      });
+
+      final builder = PaymentsRequestBuilder(mockClient, serverUri);
+      final completer = Completer<OperationResponse>();
+      final subscription = builder.stream().listen((event) {
+        if (!completer.isCompleted) {
+          completer.complete(event);
+        }
+      });
+
+      final event = await completer.future.timeout(const Duration(seconds: 10));
+      await subscription.cancel();
+
+      expect(event, isA<PaymentOperationResponse>());
+      final payment = event as PaymentOperationResponse;
+      expect(payment.amount, equals('100.0000000'));
+      expect(payment.from, equals(from));
+      expect(payment.to, equals(to));
     });
   });
 }

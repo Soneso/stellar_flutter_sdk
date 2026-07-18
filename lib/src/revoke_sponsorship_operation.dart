@@ -4,7 +4,6 @@
 
 import 'xdr/xdr.dart';
 import 'key_pair.dart';
-import 'muxed_account.dart';
 import 'operation.dart';
 import 'assets.dart';
 
@@ -151,11 +150,11 @@ class RevokeSponsorshipOperation extends Operation {
 ///   .setSourceAccount(sponsorAccountId)
 ///   .build();
 /// ```
-class RevokeSponsorshipOperationBuilder {
+class RevokeSponsorshipOperationBuilder
+    extends OperationBuilder<RevokeSponsorshipOperationBuilder> {
   XdrLedgerKey? _ledgerKey;
   String? _signerAccountId;
   XdrSignerKey? _signerKey;
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a RevokeSponsorshipOperationBuilder for building revoke sponsorship operations.
   ///
@@ -350,40 +349,12 @@ class RevokeSponsorshipOperationBuilder {
     return this;
   }
 
-  /// Sets the source account for this operation.
-  ///
-  /// The source account must be the current sponsor of the entry or signer.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId] The account ID of the current sponsor.
-  ///
-  /// Returns: This builder instance for method chaining.
-  RevokeSponsorshipOperationBuilder setSourceAccount(String sourceAccountId) {
-    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount] The muxed source account (current sponsor).
-  ///
-  /// Returns: This builder instance for method chaining.
-  RevokeSponsorshipOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the revoke sponsorship operation.
   ///
   /// Returns: A configured [RevokeSponsorshipOperation] instance.
   RevokeSponsorshipOperation build() {
     RevokeSponsorshipOperation operation =
         RevokeSponsorshipOperation(_ledgerKey, _signerAccountId, _signerKey);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

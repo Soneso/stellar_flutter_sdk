@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'dart:async';
 import 'dart:convert';
 
 void main() {
@@ -147,6 +148,62 @@ void main() {
       expect(result1, same(builder));
       expect(result2, same(builder));
       expect(result3, same(builder));
+    });
+  });
+
+  group('LedgersRequestBuilder stream event delivery', () {
+    final serverUri = Uri.parse('https://horizon-testnet.stellar.org');
+    final ledgerRecord = {
+      '_links': {
+        'self': {'href': 'x'},
+        'transactions': {'href': 'x'},
+        'operations': {'href': 'x'},
+        'payments': {'href': 'x'},
+        'effects': {'href': 'x'}
+      },
+      'id': 'ledger-hash-12345',
+      'paging_token': '12345',
+      'hash': 'abc123def456',
+      'prev_hash': 'prev123hash456',
+      'sequence': 12345,
+      'successful_transaction_count': 10,
+      'failed_transaction_count': 0,
+      'operation_count': 25,
+      'tx_set_operation_count': 25,
+      'closed_at': '2024-01-01T00:00:00Z',
+      'total_coins': '105443902087.3472865',
+      'fee_pool': '1524638386.7985412',
+      'base_fee_in_stroops': 100,
+      'base_reserve_in_stroops': 5000000,
+      'max_tx_set_size': 1000,
+      'protocol_version': 20,
+      'header_xdr': 'AAAAAAAA...'
+    };
+
+    test('stream parses an SSE data frame into a typed ledger', () async {
+      final mockClient = MockClient.streaming((request, bodyStream) async {
+        final controller = StreamController<List<int>>();
+        controller.add(utf8.encode('event: open\ndata: "hello"\n\n'));
+        controller.add(utf8.encode('data: ${json.encode(ledgerRecord)}\n\n'));
+        return http.StreamedResponse(controller.stream, 200,
+            headers: {'content-type': 'text/event-stream'});
+      });
+
+      final builder = LedgersRequestBuilder(mockClient, serverUri);
+      final completer = Completer<LedgerResponse>();
+      final subscription = builder.stream().listen((event) {
+        if (!completer.isCompleted) {
+          completer.complete(event);
+        }
+      });
+
+      final event = await completer.future.timeout(const Duration(seconds: 10));
+      await subscription.cancel();
+
+      expect(event, isA<LedgerResponse>());
+      expect(event.sequence, equals(12345));
+      expect(event.hash, equals('abc123def456'));
+      expect(event.successfulTransactionCount, equals(10));
     });
   });
 }

@@ -128,11 +128,11 @@ class PaymentOperation extends Operation {
 ///   "50.0"
 /// ).build();
 /// ```
-class PaymentOperationBuilder {
+class PaymentOperationBuilder
+    extends OperationBuilder<PaymentOperationBuilder> {
   late MuxedAccount _destination;
   Asset _asset;
   String _amount;
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a Payment operation builder with an account ID destination.
   ///
@@ -155,38 +155,10 @@ class PaymentOperationBuilder {
   PaymentOperationBuilder.forMuxedDestinationAccount(
       this._destination, this._asset, this._amount);
 
-  /// Sets the source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId] Account ID of the operation source
-  ///
-  /// Returns: This builder instance for method chaining
-  PaymentOperationBuilder setSourceAccount(String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount] Muxed account to use as operation source
-  ///
-  /// Returns: This builder instance for method chaining
-  PaymentOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the Payment operation.
   ///
   /// Returns: Configured PaymentOperation instance
   PaymentOperation build() {
-    PaymentOperation operation =
-        PaymentOperation(_destination, _asset, _amount);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(PaymentOperation(_destination, _asset, _amount));
   }
 }

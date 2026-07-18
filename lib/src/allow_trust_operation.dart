@@ -9,7 +9,6 @@ import 'dart:convert';
 import 'key_pair.dart';
 import 'util.dart';
 import 'xdr/xdr.dart';
-import 'muxed_account.dart';
 
 /// Updates the authorized flag of an existing trustline.
 ///
@@ -204,12 +203,11 @@ class AllowTrustOperation extends Operation {
 /// ).setSourceAccount(issuerAccountId).build();
 /// ```
 @Deprecated('Use SetTrustLineFlagsOperationBuilder instead. This operation is deprecated as of Protocol 17.')
-class AllowTrustOperationBuilder {
+class AllowTrustOperationBuilder
+    extends OperationBuilder<AllowTrustOperationBuilder> {
   String _trustor;
   String _assetCode;
   int _authorize;
-
-  MuxedAccount? _mSourceAccount;
 
   /// Creates an AllowTrustOperationBuilder.
   ///
@@ -218,31 +216,6 @@ class AllowTrustOperationBuilder {
   /// - [_assetCode] Asset code string (4 or 12 characters max)
   /// - [_authorize] Authorization flag value (0=none, 1=authorized, 2=maintain liabilities)
   AllowTrustOperationBuilder(this._trustor, this._assetCode, this._authorize);
-
-  /// Sets the source account for this operation.
-  ///
-  /// The source account must be the asset issuer.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId] The account ID of the asset issuer
-  ///
-  /// Returns: This builder instance for method chaining
-  AllowTrustOperationBuilder setSourceAccount(String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount] The muxed source account (asset issuer)
-  ///
-  /// Returns: This builder instance for method chaining
-  AllowTrustOperationBuilder setMuxedSourceAccount(MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
 
   /// Builds the allow trust operation.
   ///
@@ -253,9 +226,6 @@ class AllowTrustOperationBuilder {
         XdrTrustLineFlags.AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG.value;
     AllowTrustOperation operation = new AllowTrustOperation(
         _trustor, _assetCode, tAuthorized, tAuthorizedToMaintain);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

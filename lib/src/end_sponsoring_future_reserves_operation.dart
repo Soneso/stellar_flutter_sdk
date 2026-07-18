@@ -2,9 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'muxed_account.dart';
 import 'operation.dart';
-import 'util.dart';
 import 'xdr/xdr.dart';
 
 /// Ends the sponsorship established by BeginSponsoringFutureReservesOperation.
@@ -92,46 +90,21 @@ class EndSponsoringFutureReservesOperation extends Operation {
 /// Provides a fluent interface for constructing the operation that completes
 /// a sponsorship sandwich.
 ///
+/// The source account set via [setSourceAccount] must be the sponsored
+/// account (not the sponsor).
+///
 /// Example:
 /// ```dart
 /// var operation = EndSponsoringFutureReservesOperationBuilder()
 ///   .setSourceAccount(sponsoredAccountId).build();
 /// ```
-class EndSponsoringFutureReservesOperationBuilder {
-  MuxedAccount? _mSourceAccount;
-
+class EndSponsoringFutureReservesOperationBuilder
+    extends OperationBuilder<EndSponsoringFutureReservesOperationBuilder> {
   /// Creates an EndSponsoringFutureReservesOperationBuilder.
   ///
   /// This operation has no parameters but requires the source account
   /// to be set to the sponsored account.
   EndSponsoringFutureReservesOperationBuilder();
-
-  /// Sets the source account for this operation.
-  ///
-  /// The source account must be the sponsored account (not the sponsor).
-  ///
-  /// Parameters:
-  /// - [sourceAccountId]: The account ID of the sponsored account.
-  ///
-  /// Returns: This builder instance for method chaining.
-  EndSponsoringFutureReservesOperationBuilder setSourceAccount(
-      String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount]: The muxed source account (sponsored account).
-  ///
-  /// Returns: This builder instance for method chaining.
-  EndSponsoringFutureReservesOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
 
   /// Builds the end sponsoring future reserves operation.
   ///
@@ -139,9 +112,6 @@ class EndSponsoringFutureReservesOperationBuilder {
   EndSponsoringFutureReservesOperation build() {
     EndSponsoringFutureReservesOperation operation =
         EndSponsoringFutureReservesOperation();
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

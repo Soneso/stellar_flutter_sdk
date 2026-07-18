@@ -2,7 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:stellar_flutter_sdk/src/muxed_account.dart';
 import 'xdr/xdr.dart';
 
 import 'operation.dart';
@@ -162,11 +161,11 @@ class CreateClaimableBalanceOperation extends Operation {
 ///   "100.0"
 /// ).setSourceAccount(sourceAccountId).build();
 /// ```
-class CreateClaimableBalanceOperationBuilder {
+class CreateClaimableBalanceOperationBuilder
+    extends OperationBuilder<CreateClaimableBalanceOperationBuilder> {
   List<Claimant> _claimants;
   Asset _asset;
   String _amount;
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a CreateClaimableBalanceOperationBuilder.
   ///
@@ -177,42 +176,12 @@ class CreateClaimableBalanceOperationBuilder {
   CreateClaimableBalanceOperationBuilder(
       this._claimants, this._asset, this._amount);
 
-  /// Sets the source account for this operation.
-  ///
-  /// The source account will fund the claimable balance.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId]: The account ID that will create and fund the balance.
-  ///
-  /// Returns: This builder instance for method chaining.
-  CreateClaimableBalanceOperationBuilder setSourceAccount(
-      String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount]: The muxed source account.
-  ///
-  /// Returns: This builder instance for method chaining.
-  CreateClaimableBalanceOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the create claimable balance operation.
   ///
   /// Returns: A configured [CreateClaimableBalanceOperation] instance.
   CreateClaimableBalanceOperation build() {
     CreateClaimableBalanceOperation operation =
         CreateClaimableBalanceOperation(_claimants, _asset, _amount);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'dart:convert';
 
 void main() {
   group('AssetsRequestBuilder', () {
@@ -296,6 +297,71 @@ void main() {
         final uri = builder.buildUri();
 
         expect(uri.queryParameters['limit'], equals('1000'));
+      });
+    });
+
+    group('execute', () {
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+
+      test('returns a page of assets', () async {
+        final page = {
+          '_links': {
+            'self': {'href': 'x'}
+          },
+          '_embedded': {
+            'records': [
+              {
+                '_links': {
+                  'toml': {'href': 'https://example.com/.well-known/toml'}
+                },
+                'asset_type': 'credit_alphanum4',
+                'asset_code': 'USD',
+                'asset_issuer': issuerAccountId,
+                'accounts': {
+                  'authorized': 100,
+                  'authorized_to_maintain_liabilities': 0,
+                  'unauthorized': 0
+                },
+                'num_claimable_balances': 5,
+                'balances': {
+                  'authorized': '1000.0000000',
+                  'authorized_to_maintain_liabilities': '0.0000000',
+                  'unauthorized': '0.0000000'
+                },
+                'claimable_balances_amount': '10.0000000',
+                'paging_token': 'USD_$issuerAccountId',
+                'num_liquidity_pools': 2,
+                'liquidity_pools_amount': '50.0000000',
+                'flags': {
+                  'auth_required': false,
+                  'auth_revocable': false,
+                  'auth_immutable': false,
+                  'auth_clawback_enabled': false
+                },
+                'num_contracts': 1,
+                'contracts_amount': '5.0000000',
+                'contract_id': null
+              }
+            ]
+          }
+        };
+
+        final client = MockClient((request) async {
+          expect(request.url.pathSegments, contains('assets'));
+          return http.Response(json.encode(page), 200);
+        });
+
+        final builder = AssetsRequestBuilder(client, serverUri);
+        final result = await builder.assetCode('USD').limit(10).execute();
+
+        expect(result.records.length, equals(1));
+        expect(result.records.first, isA<AssetResponse>());
+        expect(result.records.first.assetType, equals('credit_alphanum4'));
+        expect(result.records.first.assetCode, equals('USD'));
+        expect(result.records.first.assetIssuer, equals(issuerAccountId));
+        expect(result.records.first.accounts.authorized, equals(100));
+        expect(result.records.first.numClaimableBalances, equals(5));
       });
     });
   });

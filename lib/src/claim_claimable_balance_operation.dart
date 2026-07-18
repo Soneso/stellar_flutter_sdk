@@ -2,7 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'muxed_account.dart';
 import 'xdr/xdr.dart';
 import 'operation.dart';
 import 'util.dart';
@@ -116,9 +115,9 @@ class ClaimClaimableBalanceOperation extends Operation {
 ///   balanceId
 /// ).setSourceAccount(claimantAccountId).build();
 /// ```
-class ClaimClaimableBalanceOperationBuilder {
+class ClaimClaimableBalanceOperationBuilder
+    extends OperationBuilder<ClaimClaimableBalanceOperationBuilder> {
   String _balanceId;
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a ClaimClaimableBalanceOperationBuilder.
   ///
@@ -126,42 +125,12 @@ class ClaimClaimableBalanceOperationBuilder {
   /// - [_balanceId] The hex-encoded ID of the claimable balance to claim.
   ClaimClaimableBalanceOperationBuilder(this._balanceId);
 
-  /// Sets the source account for this operation.
-  ///
-  /// The source account must be listed as a claimant of the balance.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId]: The account ID of the claimant.
-  ///
-  /// Returns: This builder instance for method chaining.
-  ClaimClaimableBalanceOperationBuilder setSourceAccount(
-      String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount]: The muxed source account (claimant).
-  ///
-  /// Returns: This builder instance for method chaining.
-  ClaimClaimableBalanceOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the claim claimable balance operation.
   ///
   /// Returns: A configured [ClaimClaimableBalanceOperation] instance.
   ClaimClaimableBalanceOperation build() {
     ClaimClaimableBalanceOperation operation =
         ClaimClaimableBalanceOperation(_balanceId);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

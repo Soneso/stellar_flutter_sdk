@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
+import 'package:meta/meta.dart';
 import 'muxed_account.dart';
+import 'util.dart';
 import 'xdr/xdr.dart';
 import 'create_account_operation.dart';
 import 'payment_operation.dart';
@@ -262,4 +264,54 @@ abstract class Operation {
   ///
   /// Returns: XDR operation body for this specific operation type.
   XdrOperationBody toOperationBody();
+}
+
+/// Base class for all operation builders.
+///
+/// Holds the optional operation source account and provides the fluent
+/// setters shared by every operation type. [B] is the concrete builder
+/// type, so the setters return the subclass for typed method chaining:
+///
+/// ```dart
+/// PaymentOperation operation = PaymentOperationBuilder(
+///   destinationAccountId,
+///   Asset.NATIVE,
+///   "100",
+/// ).setSourceAccount(sourceAccountId).build();
+/// ```
+abstract class OperationBuilder<B extends OperationBuilder<B>> {
+  MuxedAccount? _mSourceAccount;
+
+  /// Sets the source account for this operation.
+  ///
+  /// Parameters:
+  /// - [sourceAccountId] Account ID of the operation source
+  ///
+  /// Returns: This builder instance for method chaining
+  B setSourceAccount(String sourceAccountId) {
+    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
+    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
+    return this as B;
+  }
+
+  /// Sets the muxed source account for this operation.
+  ///
+  /// Parameters:
+  /// - [sourceAccount] Muxed account to use as operation source
+  ///
+  /// Returns: This builder instance for method chaining
+  B setMuxedSourceAccount(MuxedAccount sourceAccount) {
+    _mSourceAccount = sourceAccount;
+    return this as B;
+  }
+
+  /// Applies the configured source account, if any, to [operation] and
+  /// returns it. Called by subclasses at the end of their build() method.
+  @protected
+  T applySourceAccount<T extends Operation>(T operation) {
+    if (_mSourceAccount != null) {
+      operation.sourceAccount = _mSourceAccount;
+    }
+    return operation;
+  }
 }

@@ -37,7 +37,6 @@ typedef RetryIndicator = void Function(Duration retry);
 ///
 /// See also:
 /// - [EventSource] which uses this decoder internally
-/// - [EventSourceEncoder] for encoding events
 class EventSourceDecoder implements StreamTransformer<List<int>, Event> {
   /// Optional callback invoked when retry delay is received.
   RetryIndicator? retryIndicator;

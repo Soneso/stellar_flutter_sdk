@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'key_pair.dart';
-import 'muxed_account.dart';
 import 'operation.dart';
 import 'xdr/xdr.dart';
 import 'assets.dart';
@@ -153,12 +152,12 @@ class SetTrustLineFlagsOperation extends Operation {
 ///   1   // setFlags: AUTHORIZED_FLAG
 /// ).setSourceAccount(issuerAccountId).build();
 /// ```
-class SetTrustLineFlagsOperationBuilder {
+class SetTrustLineFlagsOperationBuilder
+    extends OperationBuilder<SetTrustLineFlagsOperationBuilder> {
   String _trustorId;
   Asset _asset;
   int _clearFlags;
   int _setFlags;
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a SetTrustLineFlagsOperationBuilder.
   ///
@@ -170,40 +169,12 @@ class SetTrustLineFlagsOperationBuilder {
   SetTrustLineFlagsOperationBuilder(
       this._trustorId, this._asset, this._clearFlags, this._setFlags);
 
-  /// Sets the source account for this operation.
-  ///
-  /// The source account must be the asset issuer.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId] The account ID of the asset issuer.
-  ///
-  /// Returns: This builder instance for method chaining.
-  SetTrustLineFlagsOperationBuilder setSourceAccount(String sourceAccountId) {
-    _mSourceAccount = MuxedAccount.fromAccountId(sourceAccountId);
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount] The muxed source account (asset issuer).
-  ///
-  /// Returns: This builder instance for method chaining.
-  SetTrustLineFlagsOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the set trustline flags operation.
   ///
   /// Returns: A configured [SetTrustLineFlagsOperation] instance.
   SetTrustLineFlagsOperation build() {
     SetTrustLineFlagsOperation operation =
         SetTrustLineFlagsOperation(_trustorId, _asset, _clearFlags, _setFlags);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

@@ -5,7 +5,6 @@
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'request_builder.dart';
-import '../responses/response.dart';
 import '../responses/health_response.dart';
 
 /// Builds requests connected to the health endpoint of the Horizon server.
@@ -43,14 +42,7 @@ class HealthRequestBuilder extends RequestBuilder {
   /// }
   /// ```
   Future<HealthResponse> execute() async {
-    TypeToken<HealthResponse> type = TypeToken<HealthResponse>();
-    ResponseHandler<HealthResponse> responseHandler =
-        ResponseHandler<HealthResponse>(type);
-
-    return await httpClient
-        .get(this.buildUri(), headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<HealthResponse>(
+        httpClient, this.buildUri());
   }
 }

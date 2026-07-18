@@ -4,9 +4,7 @@
 
 import 'xdr/xdr.dart';
 
-import 'muxed_account.dart';
 import 'operation.dart';
-import 'util.dart';
 
 /// Extends the time-to-live (TTL) of Soroban contract state entries.
 ///
@@ -115,9 +113,9 @@ class ExtendFootprintTTLOperation extends Operation {
 ///   .setSourceAccount(accountId)
 ///   .build();
 /// ```
-class ExtendFootprintTTLOperationBuilder {
+class ExtendFootprintTTLOperationBuilder
+    extends OperationBuilder<ExtendFootprintTTLOperationBuilder> {
   int _extendTo;
-  MuxedAccount? _mSourceAccount;
 
   /// Creates an ExtendFootprintTTLOperationBuilder.
   ///
@@ -125,39 +123,12 @@ class ExtendFootprintTTLOperationBuilder {
   /// - [_extendTo] Number of ledgers to extend TTL to.
   ExtendFootprintTTLOperationBuilder(this._extendTo);
 
-  /// Sets the source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId]: The account ID that will pay for TTL extension.
-  ///
-  /// Returns: This builder instance for method chaining.
-  ExtendFootprintTTLOperationBuilder setSourceAccount(String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount]: The muxed source account.
-  ///
-  /// Returns: This builder instance for method chaining.
-  ExtendFootprintTTLOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the extend footprint TTL operation.
   ///
   /// Returns: A configured [ExtendFootprintTTLOperation] instance.
   ExtendFootprintTTLOperation build() {
     ExtendFootprintTTLOperation operation =
         ExtendFootprintTTLOperation(_extendTo);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

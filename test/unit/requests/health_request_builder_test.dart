@@ -317,6 +317,41 @@ void main() {
       });
     });
 
+    group('execute', () {
+      test('parses a healthy response', () async {
+        final client = MockClient((request) async {
+          expect(request.url.pathSegments, contains('health'));
+          return http.Response(
+              '{"database_connected": true, "core_up": true, '
+              '"core_synced": true}',
+              200);
+        });
+
+        final builder = HealthRequestBuilder(client, serverUri);
+        final health = await builder.execute();
+
+        expect(health.databaseConnected, isTrue);
+        expect(health.coreUp, isTrue);
+        expect(health.coreSynced, isTrue);
+        expect(health.isHealthy, isTrue);
+      });
+
+      test('parses an unhealthy response', () async {
+        final client = MockClient((request) async {
+          return http.Response(
+              '{"database_connected": true, "core_up": true, '
+              '"core_synced": false}',
+              200);
+        });
+
+        final builder = HealthRequestBuilder(client, serverUri);
+        final health = await builder.execute();
+
+        expect(health.coreSynced, isFalse);
+        expect(health.isHealthy, isFalse);
+      });
+    });
+
     group('path construction', () {
       test('appends health to empty path', () {
         final simpleUri = Uri.parse('https://horizon.stellar.org');

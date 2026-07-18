@@ -3,13 +3,11 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'package:stellar_flutter_sdk/src/util.dart';
 
-import "../eventsource/eventsource.dart";
 import '../responses/effects/effect_responses.dart';
 import '../responses/response.dart';
 import 'request_builder.dart';
@@ -99,7 +97,9 @@ class EffectsRequestBuilder extends RequestBuilder {
     if (id.startsWith("L")) {
       try {
         id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(poolId));
-      } catch (_) {}
+      } catch (_) {
+        throw ArgumentError("invalid liquidity pool id: $poolId");
+      }
     }
     this.setSegments(["liquidity_pools", id, "effects"]);
     return this;
@@ -109,16 +109,7 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// This method is helpful for getting the next set of results.
   static Future<Page<EffectResponse>> requestExecute(
       http.Client httpClient, Uri uri) async {
-    TypeToken<Page<EffectResponse>> type =
-        new TypeToken<Page<EffectResponse>>();
-    ResponseHandler<Page<EffectResponse>> responseHandler =
-        new ResponseHandler<Page<EffectResponse>>(type);
-
-    return await httpClient
-        .get(uri, headers: RequestBuilder.headers)
-        .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+    return RequestBuilder.requestExecute<Page<EffectResponse>>(httpClient, uri);
   }
 
   /// Allows to stream SSE events from horizon.
@@ -127,58 +118,8 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// responses as ledgers close.
   /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<EffectResponse> stream() {
-    StreamController<EffectResponse> listener = StreamController.broadcast();
-
-    bool cancelled = false;
-    EventSource? source;
-
-    /// Creates a new EventSource connection to stream effect updates from Horizon.
-    /// Automatically reconnects when the connection closes to maintain continuous streaming.
-    Future<void> createNewEventSource() async {
-      if (cancelled) {
-        return;
-      }
-      source?.close();
-      source = await EventSource.connect(
-        this.buildUri(),
-        client: httpClient,
-      );
-      source!.listen((Event event) async {
-        if (cancelled) {
-          return null;
-        }
-        if (event.event == "open") {
-          return null;
-        }
-        if (event.event == "close") {
-          // Reconnect on close to stream infinitely
-          createNewEventSource();
-          return null;
-        }
-        try {
-          EffectResponse operationResponse = EffectResponse.fromJson(
-            json.decode(event.data!),
-          );
-          listener.add(operationResponse);
-        } catch (e, stackTrace) {
-          listener.addError(e, stackTrace);
-          createNewEventSource();
-        }
-      });
-    }
-
-    listener.onListen = () {
-      cancelled = false;
-      createNewEventSource();
-    };
-    listener.onCancel = () {
-      if (!listener.hasListener) {
-        cancelled = true;
-        source?.close();
-      }
-    };
-
-    return listener.stream;
+    return streamEvents<EffectResponse>(
+        (json) => EffectResponse.fromJson(json));
   }
 
   /// Build and execute the request.

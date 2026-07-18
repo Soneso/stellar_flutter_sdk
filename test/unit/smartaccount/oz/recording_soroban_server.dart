@@ -10,9 +10,9 @@ import 'noop_http_adapter.dart';
 /// Recording [SorobanServer] subclass used by lifecycle tests to assert close() is called exactly once per kit close.
 class RecordingSorobanServer extends SorobanServer {
   RecordingSorobanServer()
-      : super.withDio(
+      : super(
           'https://soroban.test/',
-          dio.Dio()..httpClientAdapter = NoopHttpAdapter(),
+          httpClient: dio.Dio()..httpClientAdapter = NoopHttpAdapter(),
         );
 
   /// Increments on every invocation; the underlying Dio client tolerates repeated close calls without error.

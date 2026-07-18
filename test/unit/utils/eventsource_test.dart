@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/src/eventsource/event.dart';
-import 'package:stellar_flutter_sdk/src/eventsource/encoder.dart';
 import 'package:stellar_flutter_sdk/src/eventsource/decoder.dart';
 
 void main() {
@@ -60,102 +58,6 @@ void main() {
     });
   });
 
-  group('EventSourceEncoder Tests', () {
-    late EventSourceEncoder encoder;
-
-    setUp(() {
-      encoder = EventSourceEncoder(compressed: false);
-    });
-
-    test('should encode event with all fields', () {
-      var event = Event(
-        id: "123",
-        event: "message",
-        data: "test data",
-      );
-
-      var encoded = encoder.convertToString(event);
-
-      expect(encoded, contains("id: 123"));
-      expect(encoded, contains("event: message"));
-      expect(encoded, contains("data: test data"));
-    });
-
-    test('should terminate event with double newline', () {
-      var event = Event(id: "1", event: "test", data: "data");
-      var encoded = encoder.convertToString(event);
-
-      expect(encoded, endsWith("\n\n"));
-    });
-
-    test('should skip null fields', () {
-      var event = Event(data: "only data");
-      var encoded = encoder.convertToString(event);
-
-      expect(encoded, contains("data: only data"));
-      expect(encoded, isNot(contains("id:")));
-      expect(encoded, isNot(contains("event:")));
-    });
-
-    test('should skip empty fields', () {
-      var event = Event(id: "", event: "", data: "data");
-      var encoded = encoder.convertToString(event);
-
-      expect(encoded, contains("data: data"));
-      expect(encoded, isNot(contains("id: ")));
-      expect(encoded, isNot(contains("event: ")));
-    });
-
-    test('should handle multi-line data', () {
-      var event = Event(data: "line1\nline2\nline3");
-      var encoded = encoder.convertToString(event);
-
-      expect(encoded, contains("data: line1\ndata: line2\ndata: line3"));
-    });
-
-    test('should convert to bytes', () {
-      var event = Event(data: "test");
-      var bytes = encoder.convert(event);
-
-      expect(bytes, isA<List<int>>());
-      expect(bytes.isNotEmpty, isTrue);
-    });
-
-    test('should produce valid UTF-8', () {
-      var event = Event(data: "test data");
-      var bytes = encoder.convert(event);
-      var decoded = utf8.decode(bytes);
-
-      expect(decoded, contains("data: test data"));
-    });
-
-    test('should throw on chunked compression', () {
-      var compressedEncoder = EventSourceEncoder(compressed: true);
-      var sink = StreamController<List<int>>();
-
-      expect(
-        () => compressedEncoder.startChunkedConversion(sink.sink),
-        throwsA(isA<UnsupportedError>()),
-      );
-
-      sink.close();
-    });
-
-    test('should handle empty event', () {
-      var event = Event();
-      var encoded = encoder.convertToString(event);
-
-      expect(encoded, equals("\n"));
-    });
-
-    test('should preserve special characters in data', () {
-      var event = Event(data: "special: chars & symbols!");
-      var encoded = encoder.convertToString(event);
-
-      expect(encoded, contains("special: chars & symbols!"));
-    });
-  });
-
   group('EventSourceDecoder Tests', () {
     test('should create decoder instance', () {
       var decoder = EventSourceDecoder();
@@ -179,52 +81,6 @@ void main() {
       var decoder = EventSourceDecoder();
       var casted = decoder.cast<List<int>, Event>();
       expect(casted, isA<StreamTransformer>());
-    });
-  });
-
-  group('EventSource Format Validation', () {
-    test('encoder should produce valid SSE format', () {
-      var encoder = EventSourceEncoder(compressed: false);
-      var event = Event(id: "123", event: "message", data: "test");
-      var encoded = encoder.convertToString(event);
-
-      expect(encoded, contains("id: 123\n"));
-      expect(encoded, contains("event: message\n"));
-      expect(encoded, contains("data: test\n"));
-      expect(encoded, endsWith("\n\n"));
-    });
-
-    test('encoder should handle multi-line data correctly', () {
-      var encoder = EventSourceEncoder(compressed: false);
-      var event = Event(data: "line1\nline2");
-      var encoded = encoder.convertToString(event);
-
-      expect(encoded, contains("data: line1\ndata: line2\n"));
-    });
-
-    test('encoder should skip empty fields', () {
-      var encoder = EventSourceEncoder(compressed: false);
-      var event = Event(data: "only data");
-      var encoded = encoder.convertToString(event);
-
-      expect(encoded.split('\n').where((line) => line.startsWith('id:')).length, equals(0));
-      expect(encoded.split('\n').where((line) => line.startsWith('event:')).length, equals(0));
-    });
-
-    test('encoder output should be UTF-8 encodable', () {
-      var encoder = EventSourceEncoder(compressed: false);
-      var event = Event(data: "test");
-      var bytes = encoder.convert(event);
-
-      expect(() => utf8.decode(bytes), returnsNormally);
-    });
-
-    test('decoder should handle retry indicator callback', () {
-      var decoder = EventSourceDecoder(
-        retryIndicator: (retry) {},
-      );
-
-      expect(decoder.retryIndicator, isNotNull);
     });
   });
 }

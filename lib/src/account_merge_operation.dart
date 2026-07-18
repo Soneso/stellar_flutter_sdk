@@ -155,9 +155,9 @@ class AccountMergeOperation extends Operation {
 ///   destinationAccountId
 /// ).setSourceAccount(sourceAccountId).build();
 /// ```
-class AccountMergeOperationBuilder {
+class AccountMergeOperationBuilder
+    extends OperationBuilder<AccountMergeOperationBuilder> {
   late MuxedAccount _destination;
-  MuxedAccount? _mSourceAccount;
 
   /// Creates an AccountMergeOperationBuilder.
   ///
@@ -176,41 +176,11 @@ class AccountMergeOperationBuilder {
   /// - [_destination] The muxed destination account
   AccountMergeOperationBuilder.forMuxedDestinationAccount(this._destination);
 
-  /// Sets the source account for this operation.
-  ///
-  /// The source account will be permanently deleted and all its XLM transferred
-  /// to the destination account.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId] The account ID to be merged and deleted
-  ///
-  /// Returns: This builder instance for method chaining
-  AccountMergeOperationBuilder setSourceAccount(String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount] The muxed source account to be merged and deleted
-  ///
-  /// Returns: This builder instance for method chaining
-  AccountMergeOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the account merge operation.
   ///
   /// Returns: A configured [AccountMergeOperation] instance
   AccountMergeOperation build() {
     AccountMergeOperation operation = new AccountMergeOperation(_destination);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

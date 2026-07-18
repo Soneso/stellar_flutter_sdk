@@ -2,9 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'muxed_account.dart';
 import 'operation.dart';
-import 'util.dart';
 import 'xdr/xdr.dart';
 
 /// Restores archived Soroban contract state entries back to active storage.
@@ -105,47 +103,19 @@ class RestoreFootprintOperation extends Operation {
 ///   .setSourceAccount(accountId)
 ///   .build();
 /// ```
-class RestoreFootprintOperationBuilder {
-  MuxedAccount? _mSourceAccount;
-
+class RestoreFootprintOperationBuilder
+    extends OperationBuilder<RestoreFootprintOperationBuilder> {
   /// Creates a RestoreFootprintOperationBuilder.
   ///
   /// The operation requires no parameters - archived entries are specified
   /// in the transaction's Soroban footprint.
   RestoreFootprintOperationBuilder();
 
-  /// Sets the source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId] The account ID that will pay for restoration.
-  ///
-  /// Returns: This builder instance for method chaining.
-  RestoreFootprintOperationBuilder setSourceAccount(String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount] The muxed source account.
-  ///
-  /// Returns: This builder instance for method chaining.
-  RestoreFootprintOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the restore footprint operation.
   ///
   /// Returns: A configured [RestoreFootprintOperation] instance.
   RestoreFootprintOperation build() {
     RestoreFootprintOperation operation = RestoreFootprintOperation();
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }

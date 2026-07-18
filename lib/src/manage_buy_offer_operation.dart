@@ -7,7 +7,6 @@ import 'assets.dart';
 import 'util.dart';
 import 'xdr/xdr.dart';
 import 'price.dart';
-import 'muxed_account.dart';
 
 /// Creates, updates, or deletes a buy offer on the Stellar DEX.
 ///
@@ -157,13 +156,13 @@ class ManageBuyOfferOperation extends Operation {
 ///   "1.15"
 /// ).setOfferId("12345").build();
 /// ```
-class ManageBuyOfferOperationBuilder {
+class ManageBuyOfferOperationBuilder
+    extends OperationBuilder<ManageBuyOfferOperationBuilder> {
   Asset _selling;
   Asset _buying;
   String _amount;
   String _price;
   String _offerId = "0";
-  MuxedAccount? _mSourceAccount;
 
   /// Creates a ManageBuyOffer operation builder.
   ///
@@ -188,39 +187,12 @@ class ManageBuyOfferOperationBuilder {
     return this;
   }
 
-  /// Sets the source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccountId] Account ID of the operation source
-  ///
-  /// Returns: This builder instance for method chaining
-  ManageBuyOfferOperationBuilder setSourceAccount(String sourceAccountId) {
-    MuxedAccount? sa = MuxedAccount.fromAccountId(sourceAccountId);
-    _mSourceAccount = checkNotNull(sa, "invalid sourceAccountId");
-    return this;
-  }
-
-  /// Sets the muxed source account for this operation.
-  ///
-  /// Parameters:
-  /// - [sourceAccount] Muxed account to use as operation source
-  ///
-  /// Returns: This builder instance for method chaining
-  ManageBuyOfferOperationBuilder setMuxedSourceAccount(
-      MuxedAccount sourceAccount) {
-    _mSourceAccount = sourceAccount;
-    return this;
-  }
-
   /// Builds the ManageBuyOffer operation.
   ///
   /// Returns: Configured ManageBuyOfferOperation instance
   ManageBuyOfferOperation build() {
     ManageBuyOfferOperation operation = new ManageBuyOfferOperation(
         _selling, _buying, _amount, _price, _offerId);
-    if (_mSourceAccount != null) {
-      operation.sourceAccount = _mSourceAccount;
-    }
-    return operation;
+    return applySourceAccount(operation);
   }
 }
