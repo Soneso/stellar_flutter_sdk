@@ -283,7 +283,7 @@ for (final rule in rules) {
 
 ### The Default rule
 
-Every smart account is deployed with one rule at `id = 0`: context type `OZContextRuleTypeDefault`, name `"DefaultRule"`, signers `[initial passkey]`, policies `[]` unless constructor policies were supplied (see [Installing policies at deploy](#installing-policies-at-deploy)). The Default rule is the fallback for any operation that does not match a more specific rule. Add signers/policies to it freely, but do not remove it unless you have added a rule of equivalent or greater coverage — otherwise the account becomes unusable.
+Every smart account is deployed with one rule at `id = 0`: context type `OZContextRuleTypeDefault`, name `"multisig"` (assigned by the account contract's constructor), signers `[initial passkey]`, policies `[]` unless constructor policies were supplied (see [Installing policies at deploy](#installing-policies-at-deploy)). The Default rule is the fallback for any operation that does not match a more specific rule. Add signers/policies to it freely, but do not remove it unless you have added a rule of equivalent or greater coverage — otherwise the account becomes unusable.
 
 ### OZContextRuleType
 
