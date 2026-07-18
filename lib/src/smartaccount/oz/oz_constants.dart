@@ -56,16 +56,16 @@ class OZConstants {
   /// limit).
   static const int maxExternalKeySize = 256;
 
-  /// HTTP header identifying the SDK name sent with indexer and relayer
-  /// requests.
+  /// HTTP header identifying the SDK name sent with relayer requests. Not
+  /// sent to the indexer: custom headers force a CORS preflight in browsers,
+  /// and indexer providers only allowlist standard headers.
   static const String clientNameHeader = 'X-Client-Name';
 
-  /// HTTP header identifying the SDK version sent with indexer and relayer
-  /// requests.
+  /// HTTP header identifying the SDK version sent with relayer requests.
   static const String clientVersionHeader = 'X-Client-Version';
 
   /// SDK name sent in client-identification headers. Identifies this SDK to
-  /// the OpenZeppelin indexer and relayer services.
+  /// the relayer service.
   static const String clientName = 'flutter-stellar-sdk';
 
   /// Maximum size in bytes of an indexer HTTP response body. Responses

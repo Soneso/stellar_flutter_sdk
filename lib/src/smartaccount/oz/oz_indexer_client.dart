@@ -9,7 +9,6 @@ import 'package:collection/collection.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:meta/meta.dart';
 
-import '../../stellar_sdk.dart';
 import '../../util.dart';
 import '../core/smart_account_errors.dart';
 import 'oz_constants.dart';
@@ -882,11 +881,14 @@ class OZIndexerClient {
   /// Builds the immutable [dio.Options] applied to every outgoing
   /// request. Captures the headers, response type, status validator,
   /// and redirect-suppression flags expected by every endpoint.
+  ///
+  /// No client-identification headers here: custom headers force a CORS
+  /// preflight in browsers, and indexer providers (including the default
+  /// Mercury endpoints) only allowlist standard headers, which would block
+  /// every request from the web target.
   dio.Options _buildRequestOptions() {
     return dio.Options(
       headers: <String, dynamic>{
-        OZConstants.clientNameHeader: OZConstants.clientName,
-        OZConstants.clientVersionHeader: StellarSDK.versionNumber,
         'Accept': 'application/json',
       },
       responseType: dio.ResponseType.plain,
