@@ -118,6 +118,29 @@ void requireValidContextRuleName(String name) {
   }
 }
 
+/// Validates a policies map (policy contract address -> install
+/// parameters): at most [OZConstants.maxPolicies] entries, each keyed by a
+/// valid contract address (C...). The map values are the policies' install
+/// parameters and are not inspected, so the check performs no encoding
+/// work and is safe to run before a passkey ceremony or network access.
+///
+/// Throws a [SmartAccountValidationException] (`invalidInput`) on
+/// `policies` when the map has too many entries, and a
+/// [SmartAccountInvalidAddress] validation exception when a key is not a
+/// valid contract address.
+void requireValidPolicies<V>(Map<String, V> policies) {
+  if (policies.length > OZConstants.maxPolicies) {
+    throw SmartAccountValidationException.invalidInput(
+      'policies',
+      'Cannot install more than ${OZConstants.maxPolicies} policies, '
+          'got: ${policies.length}',
+    );
+  }
+  for (final address in policies.keys) {
+    requireContractAddress(address, fieldName: 'policyAddress');
+  }
+}
+
 /// Validates that no external signer's key data exceeds the OpenZeppelin
 /// contract's [OZConstants.maxExternalKeySize]-byte limit. Delegated signers
 /// carry no key data and are skipped.

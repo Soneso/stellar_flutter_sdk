@@ -292,6 +292,7 @@ OZSmartAccountConfig({
   OZExternalWalletAdapter? externalWallet,
   OZExternalEd25519SignerAdapter? externalEd25519Adapter,
   int maxContextRuleScanId = 50,
+  Map<String, OZPolicyInstallParams> defaultPolicies = const {},
 })
 ```
 
@@ -315,6 +316,7 @@ OZSmartAccountConfig({
 - `externalWallet`: Optional adapter for out-of-process wallet signing (for example WalletConnect). The kit injects this into the internally-constructed `OZExternalSignerManager`. In-memory G-address keypairs can also be registered at runtime via `kit.externalSigners.addFromSecret(secretKey)` without an adapter.
 - `externalEd25519Adapter`: Optional adapter for out-of-process Ed25519 signing (for example hardware wallets and remote signing services). The kit injects this into the internally-constructed `OZExternalSignerManager`. In-memory Ed25519 keys can also be registered at runtime via `kit.externalSigners.addEd25519FromRawKey(...)` without an adapter.
 - `maxContextRuleScanId`: Upper bound on rule IDs to scan when iterating context rules. Default `50`. Increase if the account has had many add / remove cycles. Must be non-negative.
+- `defaultPolicies`: Policies installed on a new wallet's default context rule at deploy time, keyed by policy contract address (`C…`) with the policy's install parameters (an [OZPolicyInstallParams](#ozpolicyinstallparams-sealed)) as the value. Applied through the account constructor by `createWallet` and `deployPendingCredential`; a per-call `policies` argument overrides this default. Defaults to no policies. Maximum 5 (`OZConstants.maxPolicies`); validated when a wallet operation resolves the map, not at configuration time. See the `createWallet` `policies` parameter for the built-in policies' install constraints at deploy time.
 
 Throws `SmartAccountConfigurationException.missingConfig` when a required parameter is blank, and `SmartAccountConfigurationException.invalidConfig` when `accountWasmHash`, `webauthnVerifierAddress`, `signatureExpirationLedgers`, `timeoutInSeconds`, or `maxContextRuleScanId` fails validation.
 
@@ -395,6 +397,7 @@ Setter methods (each returns the builder for chaining):
 - `externalWallet(OZExternalWalletAdapter? value)`
 - `externalEd25519Adapter(OZExternalEd25519SignerAdapter? value)`
 - `maxContextRuleScanId(int value)`
+- `defaultPolicies(Map<String, OZPolicyInstallParams> value)`
 
 #### build
 
@@ -425,6 +428,7 @@ Future<OZCreateWalletResult> createWallet({
   bool autoFund = false,
   String? nativeTokenContract,
   OZSubmissionMethod? forceMethod,
+  Map<String, OZPolicyInstallParams>? policies,
   dio.CancelToken? cancelToken,
 }) async
 ```
@@ -433,7 +437,7 @@ Creates a new smart-account wallet with a fresh WebAuthn passkey.
 
 Flow:
 
-1. Require a configured `WebAuthnProvider` and validate auto-fund preconditions.
+1. Require a configured `WebAuthnProvider`, validate auto-fund preconditions, and resolve + validate the constructor policies (per-call `policies`, else `defaultPolicies`).
 2. Generate a 32-byte random challenge and a 32-byte random user ID; trigger the WebAuthn registration ceremony.
 3. Extract the uncompressed secp256r1 public key from the registration result via `SmartAccountUtils.extractPublicKeyFromRegistration`.
 4. Derive the deterministic smart-account contract address from the credential ID and the effective deployer.
@@ -449,11 +453,12 @@ Flow:
 - `autoFund`: When `true`, fund the deployed wallet via Friendbot after a 5 s ledger-close delay. Requires `autoSubmit == true`, `nativeTokenContract != null`, and testnet.
 - `nativeTokenContract`: Native-token Soroban contract address required when `autoFund` is `true`.
 - `forceMethod`: Optional submission-method override. Defaults to auto-detection (relayer when configured, otherwise direct RPC).
+- `policies`: Policies to install on the new wallet's default context rule at deploy time (through the account constructor), keyed by policy contract address (`C…`) with the policy's install parameters as the value. When `null` (default), `OZSmartAccountConfig.defaultPolicies` is used; pass a map (including an empty one) to override that default. Validated before the passkey ceremony, so an invalid policy configuration fails without creating an orphaned credential. Maximum 5 policies. Note the built-in policies' own install rules apply against this default rule and its single initial signer: a spending-limit policy installs only on call-contract rules and cannot be installed here, and a threshold must not exceed the signer count. A threshold of 1 installs and keeps the rule at 1-of-N as more signers are added; beyond that, constructor policies are primarily useful for custom policies.
 - `cancelToken`: Optional Dio cancel token. Cancellation surfaces as `SmartAccountTransactionException.submissionFailed` with the underlying `DioException.cancel` preserved as the cause.
 
 **Returns:** An `OZCreateWalletResult` carrying the credential ID, contract address, 65-byte public key, signed transaction XDR (always populated), optional transaction hash, and the nickname used for the credential.
 
-**Throws:** `WebAuthnException.notSupported` when no provider is configured; `SmartAccountValidationException.invalidInput` for missing auto-fund prerequisites; `WebAuthnException.registrationFailed` when the ceremony fails or is cancelled; `SmartAccountCredentialException.alreadyExists` when a duplicate credential ID is encountered; `SmartAccountStorageException.writeFailed` on persistence failures; `SmartAccountTransactionException` for build, sign, simulation, or submission failures.
+**Throws:** `WebAuthnException.notSupported` when no provider is configured; `SmartAccountValidationException.invalidInput` for missing auto-fund prerequisites or an over-limit `policies` map; `SmartAccountInvalidAddress` for an invalid policy contract address; `WebAuthnException.registrationFailed` when the ceremony fails or is cancelled; `SmartAccountCredentialException.alreadyExists` when a duplicate credential ID is encountered; `SmartAccountStorageException.writeFailed` on persistence failures; `SmartAccountTransactionException` for build, sign, simulation, or submission failures.
 
 #### connectWallet
 
@@ -533,6 +538,7 @@ Future<OZDeployPendingResult> deployPendingCredential({
   bool autoFund = false,
   String? nativeTokenContract,
   OZSubmissionMethod? forceMethod,
+  Map<String, OZPolicyInstallParams>? policies,
   dio.CancelToken? cancelToken,
 }) async
 ```
@@ -548,10 +554,11 @@ Sets the kit's connected state on success so the kit is ready immediately after 
 - `autoFund`: When `true`, fund the wallet via Friendbot after submission. Requires `nativeTokenContract != null`.
 - `nativeTokenContract`: Native-token Soroban contract address required when `autoFund` is `true`.
 - `forceMethod`: Optional submission-method override.
+- `policies`: Policies to install on the wallet's default context rule at deploy time (through the account constructor), keyed by policy contract address (`C…`). When `null` (default), `OZSmartAccountConfig.defaultPolicies` is used; pass a map (including an empty one) to override it. Maximum 5 policies. Constructor arguments are not part of the contract-address preimage, so the derived address is unchanged. See the `createWallet` `policies` parameter for the built-in policies' install constraints at deploy time.
 
 **Returns:** An `OZDeployPendingResult` carrying the contract address, the signed transaction XDR, and the optional transaction hash when submitted.
 
-**Throws:** `SmartAccountValidationException.invalidInput` when the auto-fund prerequisites are unmet; `SmartAccountCredentialException.notFound` when the credential is missing from storage; `SmartAccountCredentialException.invalid` when required fields are absent; `SmartAccountTransactionException` on build, sign, simulation, or submission failure.
+**Throws:** `SmartAccountValidationException.invalidInput` when the auto-fund prerequisites are unmet or the `policies` map is over the limit; `SmartAccountInvalidAddress` for an invalid policy contract address; `SmartAccountCredentialException.notFound` when the credential is missing from storage; `SmartAccountCredentialException.invalid` when required fields are absent; `SmartAccountTransactionException` on build, sign, simulation, or submission failure.
 
 ### Result Types
 

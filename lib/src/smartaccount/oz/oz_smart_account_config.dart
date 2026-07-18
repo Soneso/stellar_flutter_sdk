@@ -5,6 +5,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
+
 import '../../key_pair.dart';
 import '../../util.dart';
 import '../core/smart_account_errors.dart';
@@ -13,6 +15,7 @@ import 'oz_constants.dart';
 import 'oz_external_signer_manager.dart';
 import '../../soroban/soroban_server.dart';
 import 'oz_indexer_client.dart';
+import 'oz_policy_manager.dart';
 import 'oz_storage_adapter.dart';
 
 /// Configuration for OpenZeppelin Smart Account operations.
@@ -75,6 +78,7 @@ class OZSmartAccountConfig {
     this.externalWallet,
     this.externalEd25519Adapter,
     this.maxContextRuleScanId = 50,
+    this.defaultPolicies = const <String, OZPolicyInstallParams>{},
     this.sorobanServer,
   }) : storage = storage ?? OZInMemoryStorageAdapter() {
     if (rpcUrl.trim().isEmpty) {
@@ -225,6 +229,16 @@ class OZSmartAccountConfig {
   /// has had many add/remove cycles. Default: 50.
   final int maxContextRuleScanId;
 
+  /// Policies installed on a new wallet's default context rule at deploy
+  /// time, keyed by policy contract address (C...) with the policy's
+  /// install parameters as the value. Applied through the account
+  /// constructor by [OZWalletOperations.createWallet] and
+  /// [OZWalletOperations.deployPendingCredential]; a per-call `policies`
+  /// argument overrides this default. Defaults to no policies. At most
+  /// [OZConstants.maxPolicies]; validated when a wallet operation resolves
+  /// the map, not at configuration time.
+  final Map<String, OZPolicyInstallParams> defaultPolicies;
+
   /// Optional preconfigured Soroban RPC server used by the kit, e.g. one
   /// created with a custom Dio httpClient for proxies or interceptors.
   /// When omitted, the kit creates a server from [rpcUrl].
@@ -338,6 +352,7 @@ class OZSmartAccountConfig {
     OZExternalEd25519SignerAdapter? externalEd25519Adapter,
     bool setExternalEd25519Adapter = false,
     int? maxContextRuleScanId,
+    Map<String, OZPolicyInstallParams>? defaultPolicies,
     SorobanServer? sorobanServer,
     bool setSorobanServer = false,
   }) {
@@ -365,6 +380,7 @@ class OZSmartAccountConfig {
           ? externalEd25519Adapter
           : (externalEd25519Adapter ?? this.externalEd25519Adapter),
       maxContextRuleScanId: maxContextRuleScanId ?? this.maxContextRuleScanId,
+      defaultPolicies: defaultPolicies ?? this.defaultPolicies,
       sorobanServer: setSorobanServer
           ? sorobanServer
           : (sorobanServer ?? this.sorobanServer),
@@ -397,7 +413,9 @@ class OZSmartAccountConfig {
         // meaningless. Use identity so two configs referencing the same
         // server instance compare equal, while different instances do not.
         identical(sorobanServer, other.sorobanServer) &&
-        maxContextRuleScanId == other.maxContextRuleScanId;
+        maxContextRuleScanId == other.maxContextRuleScanId &&
+        const MapEquality<String, OZPolicyInstallParams>()
+            .equals(defaultPolicies, other.defaultPolicies);
   }
 
   @override
@@ -418,6 +436,8 @@ class OZSmartAccountConfig {
         identityHashCode(externalEd25519Adapter),
         identityHashCode(sorobanServer),
         maxContextRuleScanId,
+        const MapEquality<String, OZPolicyInstallParams>()
+            .hash(defaultPolicies),
       ]);
 }
 
@@ -462,6 +482,8 @@ class OZSmartAccountConfigBuilder {
   OZExternalWalletAdapter? _externalWallet;
   OZExternalEd25519SignerAdapter? _externalEd25519Adapter;
   int _maxContextRuleScanId = 50;
+  Map<String, OZPolicyInstallParams> _defaultPolicies =
+      const <String, OZPolicyInstallParams>{};
   SorobanServer? _sorobanServer;
 
   /// Sets the deployer keypair. Pass `null` to use the deterministic
@@ -534,6 +556,16 @@ class OZSmartAccountConfigBuilder {
     return this;
   }
 
+  /// Sets the policies installed on a new wallet's default context rule at
+  /// deploy time, keyed by policy contract address (C...). A per-call
+  /// `policies` argument to `createWallet` / `deployPendingCredential`
+  /// overrides this default.
+  OZSmartAccountConfigBuilder defaultPolicies(
+      Map<String, OZPolicyInstallParams> value) {
+    _defaultPolicies = value;
+    return this;
+  }
+
   /// Sets a preconfigured Soroban RPC server, e.g. one created with a
   /// custom Dio httpClient. Pass `null` to let the kit create a server
   /// from the rpcUrl.
@@ -562,6 +594,7 @@ class OZSmartAccountConfigBuilder {
       externalWallet: _externalWallet,
       externalEd25519Adapter: _externalEd25519Adapter,
       maxContextRuleScanId: _maxContextRuleScanId,
+      defaultPolicies: _defaultPolicies,
       sorobanServer: _sorobanServer,
     );
   }

@@ -170,6 +170,68 @@ void main() {
     });
   });
 
+  group('requireValidPolicies', () {
+    Map<String, OZPolicyInstallParams> policies(int n) {
+      final map = <String, OZPolicyInstallParams>{};
+      for (var i = 0; i < n; i++) {
+        final bytes = Uint8List.fromList(
+          List<int>.generate(32, (j) => (i + j) & 0xFF),
+        );
+        map[StrKey.encodeContractId(bytes)] =
+            const OZSimpleThresholdPolicyParams(threshold: 1);
+      }
+      return map;
+    }
+
+    test('testPolicies_emptyAndAtMax_ok', () {
+      expect(
+        () => requireValidPolicies(const <String, OZPolicyInstallParams>{}),
+        returnsNormally,
+      );
+      expect(
+        () => requireValidPolicies(policies(OZConstants.maxPolicies)),
+        returnsNormally,
+      );
+    });
+
+    test('testPolicies_tooMany_throwsInvalidInput', () {
+      SmartAccountInvalidInput? captured;
+      try {
+        requireValidPolicies(policies(OZConstants.maxPolicies + 1));
+        fail('Expected SmartAccountInvalidInput to be thrown');
+      } on SmartAccountInvalidInput catch (e) {
+        captured = e;
+      }
+      expect(
+        captured.message,
+        'Invalid input for policies: Cannot install more than '
+        '${OZConstants.maxPolicies} policies, '
+        'got: ${OZConstants.maxPolicies + 1}',
+      );
+    });
+
+    test('testPolicies_invalidAddress_throwsInvalidAddress', () {
+      expect(
+        () => requireValidPolicies(<String, OZPolicyInstallParams>{
+          'not-a-contract-address':
+              const OZSimpleThresholdPolicyParams(threshold: 1),
+        }),
+        throwsA(isA<SmartAccountInvalidAddress>()),
+      );
+    });
+
+    test('testPolicies_valuesNotInspected', () {
+      // The check validates only the map size and keys; an install-params
+      // value that would fail its own encoding (threshold 0) passes here.
+      expect(
+        () => requireValidPolicies(<String, OZPolicyInstallParams>{
+          _kValidContractId: const OZSimpleThresholdPolicyParams(threshold: 0),
+        }),
+        returnsNormally,
+      );
+    });
+  });
+
   group('requireValidSigners', () {
     test('testExternalSigner_at256Bytes_ok', () {
       final signer = OZExternalSigner(
