@@ -178,7 +178,7 @@ try {
 
 ## Creating a Wallet
 
-`walletOperations.createWallet(...)` runs a WebAuthn registration ceremony, derives a deterministic contract address, and optionally deploys (and funds on testnet) the smart account contract.
+`walletOperations.createWallet(...)` runs a WebAuthn registration ceremony, derives a deterministic contract address, and optionally deploys (and funds on testnet) the smart account contract. Policies for the Default rule can be installed at deploy via the `policies` parameter or `OZSmartAccountConfig.defaultPolicies`; see [Context Rules, Policies, and Multi-Signer](./smart_accounts_policies.md).
 
 > Account-loss risk — add a backup signer before funding. A freshly-created wallet has exactly one signer: the passkey on the device that ran `createWallet`. If that device is lost and passkey sync is unavailable, the account and its funds become permanently inaccessible. Add a backup signer (second-device passkey, a recovery G-address, or an Ed25519 key) before funding a production wallet. See [Context Rules, Policies, and Multi-Signer](./smart_accounts_policies.md).
 
