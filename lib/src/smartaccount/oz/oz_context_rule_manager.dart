@@ -63,7 +63,8 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   ///
   /// - [contextType]: the scope the rule applies to — a default rule, a
   ///   contract call, or a contract deployment.
-  /// - [name]: non-empty human-readable label for the rule.
+  /// - [name]: non-empty human-readable label for the rule, at most
+  ///   [OZConstants.maxNameSize] UTF-8 bytes.
   /// - [validUntil]: optional expiry as the ledger sequence number at
   ///   which the rule stops applying; null means the rule never expires.
   /// - [signers]: rule signers, at most [OZConstants.maxSigners]. May be
@@ -90,10 +91,12 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// );
   /// ```
   ///
-  /// Throws [SmartAccountInvalidInput] when [name] is empty, when [signers] and
-  /// [policies] are both empty, when [signers] exceeds
-  /// [OZConstants.maxSigners], when [policies] exceeds
-  /// [OZConstants.maxPolicies], or when any policy address is invalid.
+  /// Throws [SmartAccountInvalidInput] when [name] is empty or exceeds
+  /// [OZConstants.maxNameSize] UTF-8 bytes, when [signers] and [policies]
+  /// are both empty, when [signers] exceeds [OZConstants.maxSigners], when
+  /// an external signer's key data exceeds [OZConstants.maxExternalKeySize]
+  /// bytes, when [policies] exceeds [OZConstants.maxPolicies], or when any
+  /// policy address is invalid.
   Future<OZTransactionResult> addContextRule({
     required OZContextRuleType contextType,
     required String name,
@@ -106,12 +109,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   }) async {
     final connected = await _kit.requireConnected();
 
-    if (name.isEmpty) {
-      throw SmartAccountValidationException.invalidInput(
-        'name',
-        'Context rule name cannot be empty',
-      );
-    }
+    requireValidContextRuleName(name);
 
     if (signers.isEmpty && policies.isEmpty) {
       throw SmartAccountValidationException.invalidInput(
@@ -127,6 +125,8 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
             'signers, got: ${signers.length}',
       );
     }
+
+    requireValidSigners(signers);
 
     if (policies.length > OZConstants.maxPolicies) {
       throw SmartAccountValidationException.invalidInput(
@@ -151,20 +151,9 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
       signers.map((s) => s.toScVal()).toList(growable: false),
     );
 
-    final policiesEntries = <XdrSCMapEntry>[];
-    for (final entry in policies.entries) {
-      policiesEntries.add(
-        XdrSCMapEntry(
-          XdrSCVal.forAddress(
-            Address.forContractId(entry.key).toXdr(),
-          ),
-          entry.value.toScVal(),
-        ),
-      );
-    }
-    final sortedPoliciesEntries =
-        OZPolicyManager.sortMapByKeyXdr(policiesEntries);
-    final policiesScVal = XdrSCVal.forMap(sortedPoliciesEntries);
+    final policiesScVal = OZPolicyManager.policiesToScVal(<String, XdrSCVal>{
+      for (final entry in policies.entries) entry.key: entry.value.toScVal(),
+    });
 
     final functionArgs = <XdrSCVal>[
       contextTypeScVal,
@@ -623,7 +612,8 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   /// Parameters:
   ///
   /// - [id]: on-chain id of the context rule.
-  /// - [name]: non-empty human-readable label for the rule.
+  /// - [name]: non-empty human-readable label for the rule, at most
+  ///   [OZConstants.maxNameSize] UTF-8 bytes.
   /// - [selectedSigners]: empty routes the single-signer passkey path;
   ///   non-empty routes the multi-signer pipeline.
   /// - [forceMethod]: overrides direct-vs-relayer submission.
@@ -635,12 +625,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   }) async {
     final connected = await _kit.requireConnected();
 
-    if (name.isEmpty) {
-      throw SmartAccountValidationException.invalidInput(
-        'name',
-        'Context rule name cannot be empty',
-      );
-    }
+    requireValidContextRuleName(name);
 
     final hostFunction = XdrHostFunction.forInvokingContractWithArgs(
       XdrInvokeContractArgs(

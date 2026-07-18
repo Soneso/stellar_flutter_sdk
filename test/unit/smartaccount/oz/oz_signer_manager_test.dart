@@ -626,6 +626,28 @@ void main() {
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
+
+    test('oversizedCredentialId_throwsInvalidInput', () async {
+      final h = _buildHarness();
+      final mgr = OZSignerManager(h.kit);
+
+      final validKey = Uint8List(65);
+      validKey[0] = 0x04;
+      // keyData = publicKey (65) + credentialId (192) = 257 bytes, one over
+      // the OZConstants.maxExternalKeySize limit.
+      final credentialId =
+          Uint8List(OZConstants.maxExternalKeySize + 1 - validKey.length);
+
+      await expectLater(
+        () => mgr.addPasskey(
+          contextRuleId: 0,
+          publicKey: validKey,
+          credentialId: credentialId,
+        ),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
+      expect(h.txOps.submitCalls, isEmpty);
+    });
   });
 
   group('OZSignerManager multi-signer routing', () {

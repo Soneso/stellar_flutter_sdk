@@ -21,6 +21,7 @@ import 'oz_smart_account_events.dart';
 import 'oz_smart_account_types.dart';
 import 'oz_submission_routing.dart';
 import 'oz_transaction_operations.dart';
+import 'oz_validation.dart';
 
 /// Result of the [OZSignerManager.addNewPasskeySigner] end-to-end flow.
 ///
@@ -449,6 +450,8 @@ class OZSignerManager {
     required OZSubmissionMethod? forceMethod,
   }) async {
     final connected = await _kit.requireConnected();
+
+    requireValidSigners(<OZSmartAccountSigner>[signer]);
 
     final signerScVal = signer.toScVal();
 

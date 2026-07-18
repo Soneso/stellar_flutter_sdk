@@ -656,9 +656,9 @@ int _asInt(Object? value, String field) {
 
 const Map<String, String> _defaultIndexerUrls = <String, String>{
   'Test SDF Network ; September 2015':
-      'https://smart-account-indexer.sdf-ecosystem.workers.dev',
+      'https://testnet.mercurydata.app/rest/smart-account-indexer',
   'Public Global Stellar Network ; September 2015':
-      'https://smart-account-indexer-mainnet.sdf-ecosystem.workers.dev',
+      'https://mainnet.mercurydata.app/rest/smart-account-indexer',
 };
 
 /// Client for interacting with the OpenZeppelin Smart Account indexer service.

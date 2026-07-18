@@ -2,8 +2,12 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
+
 import '../../key_pair.dart';
 import '../core/smart_account_errors.dart';
+import 'oz_constants.dart';
+import 'oz_smart_account_types.dart';
 
 /// Validates that [address] is a Stellar contract address (C-address).
 ///
@@ -87,5 +91,49 @@ void requireNonBlankFunctionName(String targetFn) {
       'targetFn',
       'Function name cannot be empty',
     );
+  }
+}
+
+/// Validates a context rule name: non-empty and within the OpenZeppelin
+/// contract's [OZConstants.maxNameSize]-byte (UTF-8) limit. Rejecting
+/// oversized names client-side turns an opaque on-chain failure into a clear
+/// error before submission.
+///
+/// Throws a [SmartAccountValidationException] (`invalidInput`) on `name` when
+/// the name is empty or exceeds the byte limit.
+void requireValidContextRuleName(String name) {
+  if (name.isEmpty) {
+    throw SmartAccountValidationException.invalidInput(
+      'name',
+      'Context rule name cannot be empty',
+    );
+  }
+  final byteLength = utf8.encode(name).length;
+  if (byteLength > OZConstants.maxNameSize) {
+    throw SmartAccountValidationException.invalidInput(
+      'name',
+      'Context rule name cannot exceed ${OZConstants.maxNameSize} bytes, '
+          'got: $byteLength',
+    );
+  }
+}
+
+/// Validates that no external signer's key data exceeds the OpenZeppelin
+/// contract's [OZConstants.maxExternalKeySize]-byte limit. Delegated signers
+/// carry no key data and are skipped.
+///
+/// Throws a [SmartAccountValidationException] (`invalidInput`) on `keyData`
+/// when any external signer's key data is too large.
+void requireValidSigners(List<OZSmartAccountSigner> signers) {
+  for (final signer in signers) {
+    if (signer is OZExternalSigner &&
+        signer.keyData.length > OZConstants.maxExternalKeySize) {
+      throw SmartAccountValidationException.invalidInput(
+        'keyData',
+        'External signer key data cannot exceed '
+            '${OZConstants.maxExternalKeySize} bytes, '
+            'got: ${signer.keyData.length}',
+      );
+    }
   }
 }

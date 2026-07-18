@@ -48,6 +48,14 @@ class OZConstants {
   /// Maximum policies per context rule (OpenZeppelin contract limit).
   static const int maxPolicies = 5;
 
+  /// Maximum context rule name length in UTF-8 bytes (OpenZeppelin contract
+  /// limit).
+  static const int maxNameSize = 20;
+
+  /// Maximum external signer key data length in bytes (OpenZeppelin contract
+  /// limit).
+  static const int maxExternalKeySize = 256;
+
   /// HTTP header identifying the SDK name sent with indexer and relayer
   /// requests.
   static const String clientNameHeader = 'X-Client-Name';

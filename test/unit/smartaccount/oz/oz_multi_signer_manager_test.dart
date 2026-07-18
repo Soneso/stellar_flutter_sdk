@@ -1046,7 +1046,7 @@ void main() {
       final ctxMgr = OZContextRuleManager(h.kit);
       await ctxMgr.updateName(
         id: 1,
-        name: 'mixed-ed25519-passkey',
+        name: 'mixed-ed25519-pk',
         selectedSigners: selected,
       );
 

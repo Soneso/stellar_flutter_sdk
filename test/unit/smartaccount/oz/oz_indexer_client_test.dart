@@ -98,8 +98,13 @@ void main() {
     test('testDefaultIndexerUrls_testnetHasUrl', () {
       final url =
           OZIndexerClient.defaultIndexerUrls[Network.TESTNET.networkPassphrase];
-      expect(url, isNotNull);
-      expect(url!.startsWith('https://'), isTrue);
+      expect(url, 'https://testnet.mercurydata.app/rest/smart-account-indexer');
+    });
+
+    test('testDefaultIndexerUrls_mainnetHasUrl', () {
+      final url =
+          OZIndexerClient.defaultIndexerUrls[Network.PUBLIC.networkPassphrase];
+      expect(url, 'https://mainnet.mercurydata.app/rest/smart-account-indexer');
     });
 
     test('testDefaultIndexerUrls_unknownNetworkReturnsNull', () {
