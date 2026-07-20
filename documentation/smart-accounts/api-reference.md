@@ -292,6 +292,7 @@ OZSmartAccountConfig({
   OZExternalWalletAdapter? externalWallet,
   OZExternalEd25519SignerAdapter? externalEd25519Adapter,
   int maxContextRuleScanId = 50,
+  Map<String, OZPolicyInstallParams> defaultPolicies = const {},
 })
 ```
 
@@ -315,6 +316,7 @@ OZSmartAccountConfig({
 - `externalWallet`: Optional adapter for out-of-process wallet signing (for example WalletConnect). The kit injects this into the internally-constructed `OZExternalSignerManager`. In-memory G-address keypairs can also be registered at runtime via `kit.externalSigners.addFromSecret(secretKey)` without an adapter.
 - `externalEd25519Adapter`: Optional adapter for out-of-process Ed25519 signing (for example hardware wallets and remote signing services). The kit injects this into the internally-constructed `OZExternalSignerManager`. In-memory Ed25519 keys can also be registered at runtime via `kit.externalSigners.addEd25519FromRawKey(...)` without an adapter.
 - `maxContextRuleScanId`: Upper bound on rule IDs to scan when iterating context rules. Default `50`. Increase if the account has had many add / remove cycles. Must be non-negative.
+- `defaultPolicies`: Policies installed on a new wallet's default context rule at deploy time, keyed by policy contract address (`C…`) with the policy's install parameters (an [OZPolicyInstallParams](#ozpolicyinstallparams-sealed)) as the value. Applied through the account constructor by `createWallet` and `deployPendingCredential`; a per-call `policies` argument overrides this default. Defaults to no policies. Maximum 5 (`OZConstants.maxPolicies`); validated when a wallet operation resolves the map, not at configuration time. See the `createWallet` `policies` parameter for the built-in policies' install constraints at deploy time.
 
 Throws `SmartAccountConfigurationException.missingConfig` when a required parameter is blank, and `SmartAccountConfigurationException.invalidConfig` when `accountWasmHash`, `webauthnVerifierAddress`, `signatureExpirationLedgers`, `timeoutInSeconds`, or `maxContextRuleScanId` fails validation.
 
@@ -395,6 +397,7 @@ Setter methods (each returns the builder for chaining):
 - `externalWallet(OZExternalWalletAdapter? value)`
 - `externalEd25519Adapter(OZExternalEd25519SignerAdapter? value)`
 - `maxContextRuleScanId(int value)`
+- `defaultPolicies(Map<String, OZPolicyInstallParams> value)`
 
 #### build
 
@@ -425,6 +428,7 @@ Future<OZCreateWalletResult> createWallet({
   bool autoFund = false,
   String? nativeTokenContract,
   OZSubmissionMethod? forceMethod,
+  Map<String, OZPolicyInstallParams>? policies,
   dio.CancelToken? cancelToken,
 }) async
 ```
@@ -433,7 +437,7 @@ Creates a new smart-account wallet with a fresh WebAuthn passkey.
 
 Flow:
 
-1. Require a configured `WebAuthnProvider` and validate auto-fund preconditions.
+1. Require a configured `WebAuthnProvider`, validate auto-fund preconditions, and resolve + validate the constructor policies (per-call `policies`, else `defaultPolicies`).
 2. Generate a 32-byte random challenge and a 32-byte random user ID; trigger the WebAuthn registration ceremony.
 3. Extract the uncompressed secp256r1 public key from the registration result via `SmartAccountUtils.extractPublicKeyFromRegistration`.
 4. Derive the deterministic smart-account contract address from the credential ID and the effective deployer.
@@ -449,11 +453,12 @@ Flow:
 - `autoFund`: When `true`, fund the deployed wallet via Friendbot after a 5 s ledger-close delay. Requires `autoSubmit == true`, `nativeTokenContract != null`, and testnet.
 - `nativeTokenContract`: Native-token Soroban contract address required when `autoFund` is `true`.
 - `forceMethod`: Optional submission-method override. Defaults to auto-detection (relayer when configured, otherwise direct RPC).
+- `policies`: Policies to install on the new wallet's default context rule at deploy time (through the account constructor), keyed by policy contract address (`C…`) with the policy's install parameters as the value. When `null` (default), `OZSmartAccountConfig.defaultPolicies` is used; pass a map (including an empty one) to override that default. Validated and encoded before the passkey ceremony, so an invalid policy configuration (including structurally invalid install parameters) fails without creating an orphaned credential. Maximum 5 policies. Note the built-in policies' own install rules apply against this default rule and its single initial signer: a spending-limit policy installs only on call-contract rules and cannot be installed here, and a threshold must not exceed the signer count. A threshold of 1 installs and keeps the rule at 1-of-N as more signers are added; beyond that, constructor policies are primarily useful for custom policies.
 - `cancelToken`: Optional Dio cancel token. Cancellation surfaces as `SmartAccountTransactionException.submissionFailed` with the underlying `DioException.cancel` preserved as the cause.
 
 **Returns:** An `OZCreateWalletResult` carrying the credential ID, contract address, 65-byte public key, signed transaction XDR (always populated), optional transaction hash, and the nickname used for the credential.
 
-**Throws:** `WebAuthnException.notSupported` when no provider is configured; `SmartAccountValidationException.invalidInput` for missing auto-fund prerequisites; `WebAuthnException.registrationFailed` when the ceremony fails or is cancelled; `SmartAccountCredentialException.alreadyExists` when a duplicate credential ID is encountered; `SmartAccountStorageException.writeFailed` on persistence failures; `SmartAccountTransactionException` for build, sign, simulation, or submission failures.
+**Throws:** `WebAuthnException.notSupported` when no provider is configured; `SmartAccountValidationException.invalidInput` for missing auto-fund prerequisites, an over-limit `policies` map, or structurally invalid policy install parameters (thrown before the passkey ceremony); `SmartAccountInvalidAddress` for an invalid policy contract address; `WebAuthnException.registrationFailed` when the ceremony fails or is cancelled; `SmartAccountCredentialException.alreadyExists` when a duplicate credential ID is encountered; `SmartAccountStorageException.writeFailed` on persistence failures; `SmartAccountTransactionException` for build, sign, simulation, or submission failures.
 
 #### connectWallet
 
@@ -533,6 +538,7 @@ Future<OZDeployPendingResult> deployPendingCredential({
   bool autoFund = false,
   String? nativeTokenContract,
   OZSubmissionMethod? forceMethod,
+  Map<String, OZPolicyInstallParams>? policies,
   dio.CancelToken? cancelToken,
 }) async
 ```
@@ -548,10 +554,11 @@ Sets the kit's connected state on success so the kit is ready immediately after 
 - `autoFund`: When `true`, fund the wallet via Friendbot after submission. Requires `nativeTokenContract != null`.
 - `nativeTokenContract`: Native-token Soroban contract address required when `autoFund` is `true`.
 - `forceMethod`: Optional submission-method override.
+- `policies`: Policies to install on the wallet's default context rule at deploy time (through the account constructor), keyed by policy contract address (`C…`). When `null` (default), `OZSmartAccountConfig.defaultPolicies` is used; pass a map (including an empty one) to override it. Maximum 5 policies. Constructor arguments are not part of the contract-address preimage, so the derived address is unchanged. See the `createWallet` `policies` parameter for the built-in policies' install constraints at deploy time.
 
 **Returns:** An `OZDeployPendingResult` carrying the contract address, the signed transaction XDR, and the optional transaction hash when submitted.
 
-**Throws:** `SmartAccountValidationException.invalidInput` when the auto-fund prerequisites are unmet; `SmartAccountCredentialException.notFound` when the credential is missing from storage; `SmartAccountCredentialException.invalid` when required fields are absent; `SmartAccountTransactionException` on build, sign, simulation, or submission failure.
+**Throws:** `SmartAccountValidationException.invalidInput` when the auto-fund prerequisites are unmet, the `policies` map is over the limit, or a policy install parameter is structurally invalid (thrown before any storage or network access); `SmartAccountInvalidAddress` for an invalid policy contract address; `SmartAccountCredentialException.notFound` when the credential is missing from storage; `SmartAccountCredentialException.invalid` when required fields are absent; `SmartAccountTransactionException` on build, sign, simulation, or submission failure.
 
 ### Result Types
 
@@ -1125,7 +1132,7 @@ The unnamed constructor throws `SmartAccountValidationException.invalidAddress` 
 
 Manages signers attached to context rules. Accessed via `kit.signerManager`. See [Signer Types](#signer-types) for the `OZSmartAccountSigner` hierarchy these methods operate on.
 
-Each context rule may carry up to `OZConstants.maxSigners` signers (15). The signer manager supports three signer kinds:
+Each context rule may carry up to `OZConstants.maxSigners` signers (15), and each external signer's key data (for a passkey: the 65-byte public key plus the credential ID) may be at most `OZConstants.maxExternalKeySize` (256) bytes; both limits are validated client-side before submission. The signer manager supports three signer kinds:
 
 - WebAuthn passkeys (secp256r1 via the WebAuthn verifier contract).
 - Delegated signers (Stellar accounts or contracts authorising via Soroban's native `require_auth`).
@@ -1647,7 +1654,7 @@ enum OZExternalSignerType { keypair, wallet }
 
 Manages context rules on the connected smart account. Accessed via `kit.contextRuleManager`.
 
-A context rule pairs an `OZContextRuleType` match (default, call-contract, or create-contract) with a signer list and a policy list. When a transaction matches a rule, the smart account authorises it only if the rule's signer and policy requirements are met. Per-rule limits: at most `OZConstants.maxSigners` (15) signers, at most `OZConstants.maxPolicies` (5) policies.
+A context rule pairs an `OZContextRuleType` match (default, call-contract, or create-contract) with a signer list and a policy list. When a transaction matches a rule, the smart account authorises it only if the rule's signer and policy requirements are met. Per-rule limits (validated client-side before submission): at most `OZConstants.maxSigners` (15) signers, at most `OZConstants.maxPolicies` (5) policies, a rule name of at most `OZConstants.maxNameSize` (20) UTF-8 bytes, and at most `OZConstants.maxExternalKeySize` (256) bytes of key data per external signer.
 
 Every state-changing method accepts an optional `List<OZSelectedSigner>` with the same semantics as on [OZSignerManager](#ozsignermanager): an empty list (the default) authorises with the connected passkey; a non-empty list routes through `OZMultiSignerManager.submitWithMultipleSigners`.
 
@@ -1671,12 +1678,12 @@ Adds a new context rule.
 **Parameters:**
 
 - `contextType`: The `OZContextRuleType` (default, call-contract, or create-contract).
-- `name`: Human-readable rule name. Must be non-empty.
+- `name`: Human-readable rule name. Must be non-empty and at most `OZConstants.maxNameSize` (20) UTF-8 bytes.
 - `validUntil`: Optional expiration ledger. `null` means no expiration.
-- `signers`: Signers attached to the rule. Must obey the per-rule maximum.
+- `signers`: Signers attached to the rule. Must obey the per-rule maximum; each external signer's key data must be at most `OZConstants.maxExternalKeySize` (256) bytes.
 - `policies`: Map from policy contract address to its installation parameters as an `OZPolicyInstallParams`. Use a typed subclass such as `OZSimpleThresholdPolicyParams`, or `OZRawPolicyParams` to wrap a pre-encoded `XdrSCVal` for custom policies. Validated and ordered deterministically before submission.
 
-Throws `SmartAccountValidationException.invalidInput` when the name is empty, when both `signers` and `policies` are empty, when the signer or policy limits are exceeded, or when any policy address is malformed.
+Throws `SmartAccountValidationException.invalidInput` when the name is empty or exceeds the byte limit, when both `signers` and `policies` are empty, when the signer, key-data, or policy limits are exceeded, or when any policy address is malformed.
 
 #### getContextRule
 
@@ -1721,7 +1728,7 @@ Future<OZTransactionResult> updateName({
 }) async
 ```
 
-Updates the human-readable name of a context rule. Throws `SmartAccountValidationException.invalidInput` for an empty name.
+Updates the human-readable name of a context rule. Throws `SmartAccountValidationException.invalidInput` for an empty name or one exceeding `OZConstants.maxNameSize` (20) UTF-8 bytes.
 
 #### updateValidUntil
 
@@ -1861,11 +1868,12 @@ Removes a policy by matching the policy contract address. Fetches the rule, pars
 
 ```dart
 static List<XdrSCMapEntry> sortMapByKeyXdr(List<XdrSCMapEntry> entries)
+static XdrSCVal policiesToScVal(Map<String, XdrSCVal> policies)
 // Test utility; consumer flows typically do not need this.
 static List<int> scValToXdrBytes(XdrSCVal scVal)
 ```
 
-`sortMapByKeyXdr` sorts a list of `XdrSCMapEntry` lexicographically by the XDR-byte representation of their keys, matching the Soroban deterministic-encoding requirement. `scValToXdrBytes` encodes an `XdrSCVal` to its raw XDR byte representation; exposed for tests verifying deterministic ordering.
+`sortMapByKeyXdr` sorts a list of `XdrSCMapEntry` into the Soroban host's ScMap key order — semantic content order with length only a tiebreaker on a common prefix, the order the host validates when it materializes a map from an `SCVal` contract argument. `policiesToScVal` encodes a policies map (policy contract address to install-param `XdrSCVal`) into the ScMap `XdrSCVal` the smart-account contract expects, with keys sorted the same way. `scValToXdrBytes` encodes an `XdrSCVal` to its raw XDR byte representation; exposed for tests verifying deterministic ordering.
 
 ### Policy parameter types
 
@@ -2161,7 +2169,7 @@ Every smart-account exception lives in `core/smart_account_errors.dart` and is s
 > | 3002 | `credentialAlreadyExists` | `UnvalidatedContext` |
 > | 3003 | `credentialInvalid` | `ExternalVerificationFailed` |
 >
-> Reference constants for a subset of these on-chain contract codes are declared in [`OZContractErrorCodes`](#oz-contract-error-codes); the SDK surfaces the raw error and callers compare the extracted code against them.
+> The full catalog of these on-chain contract codes is declared in [`OZContractErrorCodes`](#oz-contract-error-codes); the SDK surfaces the raw error and callers compare the extracted code against the constants or resolve it with `OZContractErrorCodes.decode` / `decodeFromMessage`.
 
 
 ```dart
@@ -2394,15 +2402,53 @@ final class SmartAccountIndexerTimeout extends SmartAccountIndexerException { }
 
 ```dart
 class OZContractErrorCodes {
+  // SmartAccountError (3000-3016; 3001 is unused)
+  static const int contextRuleNotFound = 3000;
+  static const int unvalidatedContext = 3002;
+  static const int externalVerificationFailed = 3003;
+  static const int noSignersAndPolicies = 3004;
+  static const int pastValidUntil = 3005;
+  static const int signerNotFound = 3006;
+  static const int duplicateSigner = 3007;
+  static const int policyNotFound = 3008;
+  static const int duplicatePolicy = 3009;
+  static const int tooManySigners = 3010;
+  static const int tooManyPolicies = 3011;
   static const int mathOverflow = 3012;
   static const int keyDataTooLarge = 3013;
   static const int contextRuleIdsLengthMismatch = 3014;
   static const int nameTooLong = 3015;
   static const int unauthorizedSigner = 3016;
+
+  static OZContractError? decode(int code);
+  static OZContractError? decodeFromMessage(String? message);
 }
 ```
 
-Reference constants for a subset of the numeric error codes the OpenZeppelin smart-account contract returns for failed on-chain calls. The raw error is surfaced in the `error` field on `OZTransactionResult`; the SDK does not parse the code, so extract it from the message and compare against these constants.
+The full catalog of the numeric error codes the OpenZeppelin smart account, WebAuthn verifier, and policy contracts return for failed on-chain calls. The raw error is surfaced in the `error` field on `OZTransactionResult`; the SDK itself does not parse or map contract codes — the helpers are consumer-side. The named constants cover the smart account contract's own error enum (the codes a caller is most likely to branch on); `decode` resolves any known code from the table below.
+
+| Contract enum | Codes | Variants |
+|---|---|---|
+| `SmartAccountError` | 3000, 3002-3016 | `ContextRuleNotFound`, `UnvalidatedContext`, `ExternalVerificationFailed`, `NoSignersAndPolicies`, `PastValidUntil`, `SignerNotFound`, `DuplicateSigner`, `PolicyNotFound`, `DuplicatePolicy`, `TooManySigners`, `TooManyPolicies`, `MathOverflow`, `KeyDataTooLarge`, `ContextRuleIdsLengthMismatch`, `NameTooLong`, `UnauthorizedSigner` |
+| `WebAuthnError` | 3110-3119 | `SignaturePayloadInvalid`, `ClientDataTooLong`, `JsonParseError`, `TypeFieldInvalid`, `ChallengeInvalid`, `AuthDataFormatInvalid`, `PresentBitNotSet`, `VerifiedBitNotSet`, `BackupEligibilityAndStateNotSet`, `KeyDataInvalid` |
+| `SimpleThresholdError` | 3200-3203 | `SmartAccountNotInstalled`, `InvalidThreshold`, `NotAllowed`, `AlreadyInstalled` |
+| `WeightedThresholdError` | 3210-3214 | `SmartAccountNotInstalled`, `InvalidThreshold`, `MathOverflow`, `NotAllowed`, `AlreadyInstalled` |
+| `SpendingLimitError` | 3220-3227 | `SmartAccountNotInstalled`, `SpendingLimitExceeded`, `InvalidLimitOrPeriod`, `NotAllowed`, `HistoryCapacityExceeded`, `AlreadyInstalled`, `LessThanZero`, `OnlyCallContractAllowed` |
+
+`decode(int code)` returns the `OZContractError` for a known code, or `null`. `decodeFromMessage(String? message)` scans a message for `Error(Contract, #NNNN)` markers (whitespace-tolerant) and returns the first marker whose code is known, or `null` when the message is null, carries no marker, or carries only unknown codes.
+
+#### OZContractError
+
+```dart
+class OZContractError {
+  const OZContractError(this.code, this.contract, this.name);
+  final int code;       // e.g. 3016 (globally unique)
+  final String contract; // e.g. 'SmartAccountError'
+  final String name;     // e.g. 'UnauthorizedSigner'
+}
+```
+
+The decoded result type returned by `decode` and `decodeFromMessage`. Variant names repeat across the policy enums (for example `NotAllowed`), so `contract` disambiguates; `code` is globally unique. Implements value equality.
 
 ### Cancellation semantics
 
@@ -2439,6 +2485,8 @@ class OZConstants {
   static const int defaultTimeoutSeconds = 30;
   static const int maxSigners = 15;                             // per context rule
   static const int maxPolicies = 5;                             // per context rule
+  static const int maxNameSize = 20;                            // context rule name, UTF-8 bytes
+  static const int maxExternalKeySize = 256;                    // external signer key data, bytes
   static const String clientNameHeader = 'X-Client-Name';
   static const String clientVersionHeader = 'X-Client-Version';
   static const String clientName = 'flutter-stellar-sdk';
@@ -2455,8 +2503,8 @@ Tuning constants for HTTP timeouts, response-size caps, client identification he
 
 `OZIndexerClient.defaultIndexerUrls` ships well-known indexer URLs for the two standard Stellar networks:
 
-- Testnet (`Test SDF Network ; September 2015`): `https://smart-account-indexer.sdf-ecosystem.workers.dev`
-- Mainnet (`Public Global Stellar Network ; September 2015`): `https://smart-account-indexer-mainnet.sdf-ecosystem.workers.dev`
+- Testnet (`Test SDF Network ; September 2015`): `https://testnet.mercurydata.app/rest/smart-account-indexer`
+- Mainnet (`Public Global Stellar Network ; September 2015`): `https://mainnet.mercurydata.app/rest/smart-account-indexer`
 
 No default relayer URL ships; the relayer is opt-in via `config.relayerUrl`.
 
@@ -2933,7 +2981,7 @@ final indexer =
 
 // Or with a custom URL
 final custom = OZIndexerClient(
-  'https://smart-account-indexer.sdf-ecosystem.workers.dev',
+  'https://testnet.mercurydata.app/rest/smart-account-indexer',
   timeout: Duration(seconds: 10),
 );
 ```
@@ -3438,7 +3486,7 @@ abstract class OZSmartAccountAuthPayloadCodec {
 }
 ```
 
-Codec for reading and writing `OZSmartAccountAuthPayload` to and from `XdrSCVal`. Inner signer entries are sorted by lowercase-hex of their XDR-encoded keys for deterministic encoding.
+Codec for reading and writing `OZSmartAccountAuthPayload` to and from `XdrSCVal`. Inner signer entries are sorted in the Soroban host's ScMap key order (semantic content order), matching how the contract materializes the signers map.
 
 - `read`: Accepts `SCV_VOID` (returns an empty payload) and `SCV_MAP` (the full payload).
 - `write`: Encodes the payload with alphabetically ordered outer keys and sorted inner signer entries.

@@ -325,7 +325,7 @@ void main() {
       expect(topKeys, equals(<String>['signer_weights', 'threshold']));
     });
 
-    test('signer_weights inner map is sorted by XDR key bytes', () async {
+    test('signer_weights inner map is sorted in host key order', () async {
       final h = _buildKit();
       await OZPolicyManager(h.kit).addWeightedThreshold(
         contextRuleId: 1,
@@ -341,10 +341,10 @@ void main() {
       final call = h.recordingOps.submitCalls.single;
       final decoded = _decodeInvoke(call.hostFunction);
       final innerMap = decoded.args[2].map![0].val.map!;
-      // Two keys -> sorted by encoded XDR bytes.
+      // Two same-shape delegated-signer keys: fixed-width payloads, so the
+      // host content order equals the raw byte order of their encodings.
       final firstBytes = OZPolicyManager.scValToXdrBytes(innerMap[0].key);
       final secondBytes = OZPolicyManager.scValToXdrBytes(innerMap[1].key);
-      // Lexicographic compare.
       var less = false;
       final minLen = firstBytes.length < secondBytes.length
           ? firstBytes.length
@@ -897,38 +897,21 @@ void main() {
       expect(sorted.first.val.u32!.uint32, equals(1));
     });
 
-    test('sortMapByKeyXdr: multi-entry sorted by raw XDR bytes', () {
-      // Build entries with keys that, when XDR-encoded as Symbols, sort
-      // in a predictable lexicographic order.
+    test('sortMapByKeyXdr: multi-entry sorted in host key order', () {
+      // Symbol keys sort by content, byte for byte, with length only a
+      // tiebreaker on a common prefix — not by the length-major XDR
+      // encoding. So "mu" (length 2) sorts between "alpha" and "zeta" on
+      // its first byte, despite being the shortest.
       final entries = <XdrSCMapEntry>[
         XdrSCMapEntry(XdrSCVal.forSymbol('zeta'), XdrSCVal.forU32(3)),
         XdrSCMapEntry(XdrSCVal.forSymbol('alpha'), XdrSCVal.forU32(1)),
         XdrSCMapEntry(XdrSCVal.forSymbol('mu'), XdrSCVal.forU32(2)),
       ];
       final sorted = OZPolicyManager.sortMapByKeyXdr(entries);
-      // The XDR encoding of a Symbol ScVal includes a length prefix,
-      // so "mu" (length 2) sorts before "alpha"/"zeta" (length 5/4)
-      // by raw bytes — verify against actual bytes rather than the
-      // alphabetical order of the symbol names.
-      for (var i = 0; i < sorted.length - 1; i++) {
-        final a = OZPolicyManager.scValToXdrBytes(sorted[i].key);
-        final b = OZPolicyManager.scValToXdrBytes(sorted[i + 1].key);
-        final minLen = a.length < b.length ? a.length : b.length;
-        var compared = false;
-        for (var j = 0; j < minLen; j++) {
-          final av = a[j] & 0xFF;
-          final bv = b[j] & 0xFF;
-          if (av != bv) {
-            expect(av < bv, isTrue,
-                reason: 'index $i not less than index ${i + 1}');
-            compared = true;
-            break;
-          }
-        }
-        if (!compared) {
-          expect(a.length <= b.length, isTrue);
-        }
-      }
+      expect(
+        sorted.map((e) => e.key.sym).toList(),
+        <String>['alpha', 'mu', 'zeta'],
+      );
     });
 
     test('sortMapByKeyXdr: values are preserved alongside keys', () {

@@ -283,7 +283,7 @@ for (final rule in rules) {
 
 ### The Default rule
 
-Every smart account is deployed with one rule at `id = 0`: context type `OZContextRuleTypeDefault`, name `"DefaultRule"`, signers `[initial passkey]`, policies `[]`. The Default rule is the fallback for any operation that does not match a more specific rule. Add signers/policies to it freely, but do not remove it unless you have added a rule of equivalent or greater coverage — otherwise the account becomes unusable.
+Every smart account is deployed with one rule at `id = 0`: context type `OZContextRuleTypeDefault`, name `"multisig"` (assigned by the account contract's constructor), signers `[initial passkey]`, policies `[]` unless constructor policies were supplied (see [Installing policies at deploy](#installing-policies-at-deploy)). The Default rule is the fallback for any operation that does not match a more specific rule. Add signers/policies to it freely, but do not remove it unless you have added a rule of equivalent or greater coverage — otherwise the account becomes unusable.
 
 ### OZContextRuleType
 
@@ -487,6 +487,32 @@ Adding a signer, installing a policy, and changing the expiry are each a separat
 ### Policy address discovery
 
 You need a deployed policy contract C-address before installing it. Sources: published OpenZeppelin addresses for the network you target, or deploy your own policy contract and use its address. A testnet policy address fails on mainnet (and vice-versa) with contract-not-found during simulation. `policyAddress` must be a valid C-address; an invalid strkey throws `SmartAccountInvalidAddress` at input validation.
+
+### Installing policies at deploy
+
+Policies can be installed on the Default rule when the wallet is created, via the
+contract constructor: pass `policies` to `createWallet` or
+`deployPendingCredential`, or set `OZSmartAccountConfig.defaultPolicies` as a
+kit-wide default (a per-call `policies` value overrides it; an explicit empty
+map suppresses it). The map is validated before the passkey ceremony starts, so
+an invalid configuration never orphans a fresh credential.
+
+```dart
+final result = await kit.walletOperations.createWallet(
+  policies: {
+    thresholdPolicyAddress: OZSimpleThresholdPolicyParams(threshold: 1),
+  },
+);
+```
+
+Constraints at deploy time: a spending-limit policy installs only on
+call-contract rules, so it can never be a constructor policy (the Default rule
+is not a call-contract rule; on-chain error 3227). A threshold must not exceed
+the rule's signer count, and the freshly created rule has exactly one signer
+(the creating passkey), so only `threshold: 1` is valid (error 3201 otherwise).
+Threshold 1 stays meaningful as signers are added later: the rule remains
+1-of-N, the backup-passkey pattern, instead of the no-policy default of
+N-of-N.
 
 ### Installing a policy — addPolicy
 
@@ -1172,7 +1198,15 @@ try {
 }
 ```
 
-`OZContractErrorCodes` constants are named reference values for the well-known credential errors: `mathOverflow` 3012, `keyDataTooLarge` 3013, `contextRuleIdsLengthMismatch` 3014, `nameTooLong` 3015, `unauthorizedSigner` 3016. The SDK does not parse contract codes — extract the code from the message yourself (as above) and compare against these or any other 3xxx code.
+`OZContractErrorCodes` carries named constants for the smart-account
+contract's own error enum (3000, 3002-3016) and a decode table covering all
+known codes of the five contract error enums (account, WebAuthn verification,
+simple threshold, weighted threshold, spending limit). `decode(code)` and
+`decodeFromMessage(message)` resolve a code — or the first known code inside a
+failure message — to an `OZContractError` with the defining contract enum and
+variant name. The SDK never parses or maps contract codes on its own; these
+helpers are consumer-side, for use on the message of a failed transaction (as
+above).
 
 ---
 

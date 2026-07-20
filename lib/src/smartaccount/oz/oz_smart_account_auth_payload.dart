@@ -4,8 +4,8 @@
 
 import 'dart:typed_data';
 
-import '../../util.dart';
 import '../../xdr/xdr.dart';
+import '../core/sc_val_host_order.dart';
 import '../core/smart_account_errors.dart';
 import 'oz_address_strkey.dart';
 import 'oz_smart_account_builders.dart';
@@ -138,13 +138,9 @@ abstract class OZSmartAccountAuthPayloadCodec {
   /// Builds the outer map with exactly two entries in alphabetical
   /// insertion order (`context_rule_ids`, then `signers`), matching the
   /// Soroban Rust `#[contracttype]` derive ordering for the contract's
-  /// `AuthPayload` struct. Inner signer entries are sorted by the
-  /// lowercase-hex of their XDR-encoded keys so the encoding is
-  /// deterministic and the host-side dynamic-Map ordering check is
-  /// satisfied.
-  ///
-  /// Throws [SmartAccountTransactionSigningFailed] when XDR encoding of a signer key
-  /// fails.
+  /// `AuthPayload` struct. Inner signer entries are sorted in the Soroban
+  /// host's ScMap key order (semantic content order), matching how the
+  /// contract materializes the signers map.
   static XdrSCVal write(OZSmartAccountAuthPayload payload) {
     // Build signer map entries, wrapping each raw signature byte array in
     // an XdrSCVal.forBytes value.
@@ -158,22 +154,10 @@ abstract class OZSmartAccountAuthPayloadCodec {
       );
     }
 
-    // Sort signer entries by lowercase-hex of their XDR-encoded key bytes.
-    // Lowercase-hex(byte sequence) is monotone in the underlying byte
-    // sequence, so the resulting order is identical to a raw byte
-    // lexicographic sort.
-    signerEntries.sort((a, b) {
-      try {
-        final keyA = _xdrHexOfScVal(a.key);
-        final keyB = _xdrHexOfScVal(b.key);
-        return keyA.compareTo(keyB);
-      } catch (e) {
-        throw SmartAccountTransactionException.signingFailed(
-          'Failed to XDR-encode signer key for sorting: $e',
-          cause: e,
-        );
-      }
-    });
+    // Sort signer entries in the Soroban host's ScMap key order (semantic
+    // content order, not the length-major XDR-byte order), matching how the
+    // contract materializes the signers map.
+    signerEntries.sort((a, b) => compareScValHostOrder(a.key, b.key));
 
     final signersMapScVal = XdrSCVal.forMap(signerEntries);
 
@@ -184,7 +168,7 @@ abstract class OZSmartAccountAuthPayloadCodec {
 
     // Outer struct map keys insert in alphabetical order to match the
     // Soroban Rust `#[contracttype]` derive convention. Inner dynamic-map
-    // keys are sorted above by XDR-byte order.
+    // keys are sorted above into the host's ScMap key order.
     return XdrSCVal.forMap([
       XdrSCMapEntry(
         XdrSCVal.forSymbol('context_rule_ids'),
@@ -304,15 +288,6 @@ abstract class OZSmartAccountAuthPayloadCodec {
           "Unknown signer type tag: '$tag'",
         );
     }
-  }
-
-  /// Returns the lowercase-hex of the XDR-encoded byte representation of a
-  /// signer key ScVal. Used by [write] to obtain a deterministic ordering
-  /// key.
-  static String _xdrHexOfScVal(XdrSCVal value) {
-    final stream = XdrDataOutputStream();
-    XdrSCVal.encode(stream, value);
-    return Util.bytesToHex(Uint8List.fromList(stream.bytes));
   }
 
   /// Decodes an [XdrSCAddress] back to its strkey representation. Used to

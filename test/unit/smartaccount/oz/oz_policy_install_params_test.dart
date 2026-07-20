@@ -104,9 +104,11 @@ void main() {
       expect(innerMap.length, 2);
     });
 
-    test('signer_weights map sorted by XDR bytes', () {
-      // Build with two signers; the inner map must be sorted by XDR
-      // byte order regardless of insertion order.
+    test('signer_weights map sorted in host key order', () {
+      // Build with two signers; the inner map must come out in the host's
+      // ScMap key order regardless of insertion order. The two same-shape
+      // delegated-signer keys are fixed-width, so the host content order
+      // equals the raw byte order of their encodings.
       final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{
           _delegated('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'): 1,

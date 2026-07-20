@@ -8,6 +8,7 @@ import 'package:meta/meta.dart';
 import '../../soroban/soroban_auth.dart';
 import '../../util.dart';
 import '../../xdr/xdr.dart';
+import '../core/sc_val_host_order.dart';
 import '../core/smart_account_errors.dart';
 import 'oz_internal_pipeline_interfaces.dart';
 import 'oz_selected_signer.dart';
@@ -149,8 +150,8 @@ final class OZWeightedThresholdPolicyParams extends OZPolicyInstallParams {
   @override
   int get hashCode {
     // why: the order of entries in `signerWeights` is not part of the
-    // logical identity (the contract sorts entries by XDR before
-    // hashing). Folding through a sorted (key.hashCode, value)
+    // logical identity (the encoder sorts entries into the host's ScMap
+    // key order). Folding through a sorted (key.hashCode, value)
     // projection keeps `hashCode` consistent with `==` regardless of
     // iteration order.
     final folded = signerWeights.entries
@@ -574,42 +575,46 @@ class OZPolicyManager {
   }
 
   // -------------------------------------------------------------------------
-  // Static ScMap key-sort helper
+  // Static ScMap key-sort helpers
   // -------------------------------------------------------------------------
 
-  /// Sorts a list of [XdrSCMapEntry] entries lexicographically by the
-  /// XDR-byte representation of their keys.
+  /// Sorts a list of [XdrSCMapEntry] entries into the Soroban host's ScMap
+  /// key order.
   ///
-  /// Soroban mandates ScMap keys are ordered lexicographically by their
-  /// XDR encoding — this is a deterministic-encoding requirement, not
-  /// stylistic. Used by [OZWeightedThresholdPolicyParams.toScVal] and by
-  /// `OZContextRuleManager.addContextRule` when sorting the policies
-  /// map.
+  /// The host stores and validates ScMap keys in a semantic order (see
+  /// `compareScValHostOrder`) and rejects a map materialized from an
+  /// out-of-order `SCVal` argument. Used by
+  /// [OZWeightedThresholdPolicyParams.toScVal] and by [policiesToScVal]
+  /// when sorting the policies map.
   static List<XdrSCMapEntry> sortMapByKeyXdr(List<XdrSCMapEntry> entries) {
     final sorted = List<XdrSCMapEntry>.from(entries);
-    sorted.sort((a, b) {
-      final aBytes = scValToXdrBytes(a.key);
-      final bBytes = scValToXdrBytes(b.key);
-      return _compareBytes(aBytes, bBytes);
-    });
+    sorted.sort((a, b) => compareScValHostOrder(a.key, b.key));
     return sorted;
   }
 
-  /// Encodes a single [XdrSCVal] to its XDR byte representation.
-  /// Exposed for tests verifying deterministic key ordering.
+  /// Encodes a policies map (policy contract address -> install-param
+  /// `ScVal`) into the ScMap [XdrSCVal] the smart-account contract expects:
+  /// keys become contract Addresses and entries are sorted into the host's
+  /// ScMap key order.
+  static XdrSCVal policiesToScVal(Map<String, XdrSCVal> policies) {
+    final entries = <XdrSCMapEntry>[];
+    for (final entry in policies.entries) {
+      entries.add(
+        XdrSCMapEntry(
+          XdrSCVal.forAddress(Address.forContractId(entry.key).toXdr()),
+          entry.value,
+        ),
+      );
+    }
+    return XdrSCVal.forMap(sortMapByKeyXdr(entries));
+  }
+
+  /// Encodes a single [XdrSCVal] to its XDR byte representation. Backs
+  /// [OZRawPolicyParams] value equality and hashing, and is used by tests
+  /// comparing encoded key order.
   static List<int> scValToXdrBytes(XdrSCVal scVal) {
     final stream = XdrDataOutputStream();
     XdrSCVal.encode(stream, scVal);
     return stream.bytes;
-  }
-
-  static int _compareBytes(List<int> a, List<int> b) {
-    final minLength = a.length < b.length ? a.length : b.length;
-    for (var i = 0; i < minLength; i++) {
-      final aByte = a[i] & 0xFF;
-      final bByte = b[i] & 0xFF;
-      if (aByte != bByte) return aByte - bByte;
-    }
-    return a.length - b.length;
   }
 }

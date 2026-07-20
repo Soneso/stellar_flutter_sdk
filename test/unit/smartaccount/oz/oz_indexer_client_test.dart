@@ -98,8 +98,13 @@ void main() {
     test('testDefaultIndexerUrls_testnetHasUrl', () {
       final url =
           OZIndexerClient.defaultIndexerUrls[Network.TESTNET.networkPassphrase];
-      expect(url, isNotNull);
-      expect(url!.startsWith('https://'), isTrue);
+      expect(url, 'https://testnet.mercurydata.app/rest/smart-account-indexer');
+    });
+
+    test('testDefaultIndexerUrls_mainnetHasUrl', () {
+      final url =
+          OZIndexerClient.defaultIndexerUrls[Network.PUBLIC.networkPassphrase];
+      expect(url, 'https://mainnet.mercurydata.app/rest/smart-account-indexer');
     });
 
     test('testDefaultIndexerUrls_unknownNetworkReturnsNull', () {
@@ -955,7 +960,7 @@ void main() {
   });
 
   group('OZIndexerClient - client headers', () {
-    test('testRequest_carriesClientNameAndVersionHeaders', () async {
+    test('testRequest_sendsNoClientIdentificationHeaders', () async {
       final adapter = MockDioAdapter.json(
         '{"credentialId": "aabbccdd", "contracts": [], "count": 0}',
       );
@@ -967,14 +972,12 @@ void main() {
             headers[OZConstants.clientNameHeader.toLowerCase()];
         final versionHeader = headers[OZConstants.clientVersionHeader] ??
             headers[OZConstants.clientVersionHeader.toLowerCase()];
-        expect(nameHeader, isNotNull,
-            reason: 'X-Client-Name header must be present on every request');
-        expect(nameHeader!.first.isNotEmpty, isTrue,
-            reason: 'X-Client-Name header value must be non-empty');
-        expect(versionHeader, isNotNull,
-            reason: 'X-Client-Version header must be present on every request');
-        expect(versionHeader!.first.isNotEmpty, isTrue,
-            reason: 'X-Client-Version header value must be non-empty');
+        expect(nameHeader, isNull,
+            reason: 'Custom headers force a CORS preflight in browsers and '
+                'indexer providers only allowlist standard headers, so the '
+                'indexer client must not send X-Client-Name');
+        expect(versionHeader, isNull,
+            reason: 'The indexer client must not send X-Client-Version');
       } finally {
         await indexer.close();
       }

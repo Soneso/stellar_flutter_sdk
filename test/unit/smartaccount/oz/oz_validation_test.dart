@@ -2,12 +2,23 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/src/smartaccount/oz/oz_validation.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 const String _kValidContractId =
     'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM';
+
+const String _kVerifierContract =
+    'CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY';
+
+const String _kAccountAddress =
+    'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ';
+
+Uint8List _keyData(int length) =>
+    Uint8List.fromList(List<int>.filled(length, 0x01));
 
 void main() {
   group('requireContractAddress', () {
@@ -121,6 +132,152 @@ void main() {
           reason: 'IPv6 loopback should be accepted');
       expect(isLocalhostUrl('http://[::1]:8080'), isTrue,
           reason: 'IPv6 loopback with port should be accepted');
+    });
+  });
+
+  group('requireValidContextRuleName', () {
+    test('testContextRuleName_empty_throws', () {
+      expect(
+        () => requireValidContextRuleName(''),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
+    });
+
+    test('testContextRuleName_at20Bytes_ok', () {
+      // 20 ASCII characters == 20 UTF-8 bytes: at the limit, accepted.
+      expect(
+        () => requireValidContextRuleName('a' * OZConstants.maxNameSize),
+        returnsNormally,
+      );
+    });
+
+    test('testContextRuleName_21Bytes_throws', () {
+      expect(
+        () => requireValidContextRuleName('a' * (OZConstants.maxNameSize + 1)),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
+    });
+
+    test('testContextRuleName_multiByteUtf8_measuredInBytesNotChars', () {
+      // "ä" is 2 UTF-8 bytes. 10 chars == 20 bytes: at the limit, accepted.
+      expect(() => requireValidContextRuleName('ä' * 10), returnsNormally);
+      // 11 chars == 22 bytes: over the byte limit even though the character
+      // count is <= 20.
+      expect(
+        () => requireValidContextRuleName('ä' * 11),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
+    });
+  });
+
+  group('requireValidPolicies', () {
+    Map<String, OZPolicyInstallParams> policies(int n) {
+      final map = <String, OZPolicyInstallParams>{};
+      for (var i = 0; i < n; i++) {
+        final bytes = Uint8List.fromList(
+          List<int>.generate(32, (j) => (i + j) & 0xFF),
+        );
+        map[StrKey.encodeContractId(bytes)] =
+            const OZSimpleThresholdPolicyParams(threshold: 1);
+      }
+      return map;
+    }
+
+    test('testPolicies_emptyAndAtMax_ok', () {
+      expect(
+        () => requireValidPolicies(const <String, OZPolicyInstallParams>{}),
+        returnsNormally,
+      );
+      expect(
+        () => requireValidPolicies(policies(OZConstants.maxPolicies)),
+        returnsNormally,
+      );
+    });
+
+    test('testPolicies_tooMany_throwsInvalidInput', () {
+      SmartAccountInvalidInput? captured;
+      try {
+        requireValidPolicies(policies(OZConstants.maxPolicies + 1));
+        fail('Expected SmartAccountInvalidInput to be thrown');
+      } on SmartAccountInvalidInput catch (e) {
+        captured = e;
+      }
+      expect(
+        captured.message,
+        'Invalid input for policies: Cannot install more than '
+        '${OZConstants.maxPolicies} policies, '
+        'got: ${OZConstants.maxPolicies + 1}',
+      );
+    });
+
+    test('testPolicies_invalidAddress_throwsInvalidAddress', () {
+      expect(
+        () => requireValidPolicies(<String, OZPolicyInstallParams>{
+          'not-a-contract-address':
+              const OZSimpleThresholdPolicyParams(threshold: 1),
+        }),
+        throwsA(isA<SmartAccountInvalidAddress>()),
+      );
+    });
+
+    test('testPolicies_valuesNotInspected', () {
+      // The check validates only the map size and keys; an install-params
+      // value that would fail its own encoding (threshold 0) passes here.
+      expect(
+        () => requireValidPolicies(<String, OZPolicyInstallParams>{
+          _kValidContractId: const OZSimpleThresholdPolicyParams(threshold: 0),
+        }),
+        returnsNormally,
+      );
+    });
+  });
+
+  group('requireValidSigners', () {
+    test('testExternalSigner_at256Bytes_ok', () {
+      final signer = OZExternalSigner(
+        _kVerifierContract,
+        _keyData(OZConstants.maxExternalKeySize),
+      );
+      expect(
+        () => requireValidSigners(<OZSmartAccountSigner>[signer]),
+        returnsNormally,
+      );
+    });
+
+    test('testExternalSigner_257Bytes_throws', () {
+      final signer = OZExternalSigner(
+        _kVerifierContract,
+        _keyData(OZConstants.maxExternalKeySize + 1),
+      );
+      expect(
+        () => requireValidSigners(<OZSmartAccountSigner>[signer]),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
+    });
+
+    test('testDelegatedSigner_hasNoKeyData_skipped', () {
+      // Delegated signers carry no key data and must never trip the
+      // external-key check.
+      expect(
+        () => requireValidSigners(
+          <OZSmartAccountSigner>[OZDelegatedSigner(_kAccountAddress)],
+        ),
+        returnsNormally,
+      );
+    });
+
+    test('testMixedSigners_oversizedExternal_throws', () {
+      final delegated = OZDelegatedSigner(_kAccountAddress);
+      final oversized = OZExternalSigner(
+        _kVerifierContract,
+        _keyData(OZConstants.maxExternalKeySize + 1),
+      );
+      expect(
+        () => requireValidSigners(
+          <OZSmartAccountSigner>[delegated, oversized],
+        ),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
   });
 }

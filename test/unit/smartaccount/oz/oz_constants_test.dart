@@ -42,6 +42,14 @@ void main() {
       expect(OZConstants.maxPolicies, 5);
     });
 
+    test('test_MAX_NAME_SIZE_equals_20', () {
+      expect(OZConstants.maxNameSize, 20);
+    });
+
+    test('test_MAX_EXTERNAL_KEY_SIZE_equals_256', () {
+      expect(OZConstants.maxExternalKeySize, 256);
+    });
+
     test('test_CLIENT_NAME_HEADER_equals_X_Client_Name', () {
       expect(OZConstants.clientNameHeader, 'X-Client-Name');
     });
@@ -72,6 +80,8 @@ void main() {
         OZConstants.defaultTimeoutSeconds,
         OZConstants.maxSigners,
         OZConstants.maxPolicies,
+        OZConstants.maxNameSize,
+        OZConstants.maxExternalKeySize,
         OZConstants.clientNameHeader,
         OZConstants.clientVersionHeader,
         OZConstants.clientName,

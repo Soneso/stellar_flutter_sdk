@@ -5,6 +5,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stellar_flutter_sdk/src/smartaccount/core/sc_val_host_order.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 // ---------------------------------------------------------------------------
@@ -33,18 +34,17 @@ String _xdrHex(XdrSCVal value) =>
 /// Builds a one-byte [Uint8List] from the supplied integer.
 Uint8List _byte(int value) => Uint8List.fromList(<int>[value & 0xFF]);
 
-/// Asserts that [entries] are strictly sorted by their XDR-byte key
-/// representation (i.e. each key's hex compares strictly less than the
-/// next key's hex).
+/// Asserts that [entries] are strictly sorted in the Soroban host's ScMap
+/// key order (each key compares strictly less than the next under
+/// `compareScValHostOrder`).
 void _assertKeysSortedAscending(List<XdrSCMapEntry> entries) {
   for (var i = 0; i < entries.length - 1; i++) {
-    final currentHex = _xdrHex(entries[i].key);
-    final nextHex = _xdrHex(entries[i + 1].key);
     expect(
-      currentHex.compareTo(nextHex) < 0,
+      compareScValHostOrder(entries[i].key, entries[i + 1].key) < 0,
       isTrue,
-      reason: 'Key at index $i (hex=$currentHex) must be < key at '
-          'index ${i + 1} (hex=$nextHex)',
+      reason: 'Key at index $i (hex=${_xdrHex(entries[i].key)}) must precede '
+          'key at index ${i + 1} (hex=${_xdrHex(entries[i + 1].key)}) '
+          'in host order',
     );
   }
 }
@@ -54,10 +54,17 @@ void main() {
   // Single-key-type entries (4 cases): Symbol, Address, U32, Bytes
   // -------------------------------------------------------------------------
   group('OZPolicyManager.sortMapByKeyXdr — single key types', () {
-    test('symbol keys sort by XDR-byte length-prefix then bytes', () {
-      // XDR symbol encoding: [4-byte type][4-byte length][string][padding].
-      // Length prefix dominates, so 5-char symbols precede 6-char symbols.
-      // "alpha" (5) < "zebra" (5) < "middle" (6)
+    test('symbol keys sort by content, not by length', () {
+      // Symbol keys sort in the Soroban host's order: by content, byte for
+      // byte, with length only a tiebreaker on a common prefix — not by the
+      // length-major XDR encoding. So "middle" sorts between "alpha" and
+      // "zebra" on its first byte (0x6d), regardless of being longer.
+      //
+      // "alpha"  -> 0x61 6c 70 68 61
+      // "middle" -> 0x6d 69 64 64 6c 65
+      // "zebra"  -> 0x7a 65 62 72 61
+      //
+      // Host sort order: alpha (0x61) < middle (0x6d) < zebra (0x7a)
       final unsorted = <XdrSCMapEntry>[
         XdrSCMapEntry(XdrSCVal.forSymbol('zebra'), XdrSCVal.forU32(1)),
         XdrSCMapEntry(XdrSCVal.forSymbol('alpha'), XdrSCVal.forU32(2)),
@@ -68,11 +75,11 @@ void main() {
 
       expect(sorted.length, 3);
       expect(sorted[0].key.sym, 'alpha');
-      expect(sorted[1].key.sym, 'zebra');
-      expect(sorted[2].key.sym, 'middle');
+      expect(sorted[1].key.sym, 'middle');
+      expect(sorted[2].key.sym, 'zebra');
     });
 
-    test('address keys sort by their XDR byte representation', () {
+    test('address keys sort by content (fixed-width, order-stable)', () {
       final unsorted = <XdrSCMapEntry>[
         XdrSCMapEntry(
           XdrSCVal.forAddress(Address.forContractId(_addr1).toXdr()),
@@ -94,7 +101,7 @@ void main() {
       _assertKeysSortedAscending(sorted);
     });
 
-    test('U32 keys sort by their big-endian XDR encoding', () {
+    test('U32 keys sort by numeric value', () {
       final unsorted = <XdrSCMapEntry>[
         XdrSCMapEntry(XdrSCVal.forU32(65536), XdrSCVal.forU32(1)),
         XdrSCMapEntry(XdrSCVal.forU32(1), XdrSCVal.forU32(2)),
@@ -104,15 +111,18 @@ void main() {
       final sorted = OZPolicyManager.sortMapByKeyXdr(unsorted);
 
       expect(sorted.length, 3);
-      // Big-endian U32: 1 < 256 < 65536.
+      // 1 < 256 < 65536.
       expect(sorted[0].key.u32!.uint32, 1);
       expect(sorted[1].key.u32!.uint32, 256);
       expect(sorted[2].key.u32!.uint32, 65536);
       _assertKeysSortedAscending(sorted);
     });
 
-    test('Bytes keys sort by their XDR length-prefix then byte content',
+    test('Bytes keys sort by content with length only a prefix tiebreaker',
         () {
+      // Host order: [0x01] < [0x01,0x02] (prefix, shorter first) < [0xFF]
+      // (content decides; the one-byte [0xFF] sorts last despite being the
+      // shortest).
       final unsorted = <XdrSCMapEntry>[
         XdrSCMapEntry(
           XdrSCVal.forBytes(Uint8List.fromList(<int>[0xFF])),
@@ -131,17 +141,21 @@ void main() {
       final sorted = OZPolicyManager.sortMapByKeyXdr(unsorted);
 
       expect(sorted.length, 3);
+      expect(sorted[0].key.bytes!.sCBytes, <int>[0x01]);
+      expect(sorted[1].key.bytes!.sCBytes, <int>[0x01, 0x02]);
+      expect(sorted[2].key.bytes!.sCBytes, <int>[0xFF]);
       _assertKeysSortedAscending(sorted);
     });
   });
 
   // -------------------------------------------------------------------------
-  // Mixed-key-type entries (6 cases): XDR discriminant byte ordering
+  // Mixed-key-type entries (6 cases): type-discriminant-major ordering
   // -------------------------------------------------------------------------
   group('OZPolicyManager.sortMapByKeyXdr — mixed key types', () {
-    test('mixed Symbol, U32, and Bytes keys sort by XDR bytes', () {
-      // SCValType discriminants encode as 4-byte big-endian ints. Different
-      // key types thus naturally separate by their discriminant value first.
+    test('mixed Symbol, U32, and Bytes keys sort by type discriminant', () {
+      // Keys of different types compare by their SCValType discriminant
+      // first, so different key types naturally separate before any content
+      // comparison.
       final unsorted = <XdrSCMapEntry>[
         XdrSCMapEntry(
           XdrSCVal.forSymbol('symbol_key'),
@@ -274,10 +288,10 @@ void main() {
       expect(allValues, <int>{100, 200, 300});
     });
 
-    test('deep-nested map keys are sorted by XDR bytes of nested ScVal', () {
+    test('deep-nested Vec keys are sorted element-wise (recursively)', () {
       // Use Vec keys that themselves embed sortable ScVal payloads. The
-      // outer sort sees the full XDR byte stream of each Vec, including the
-      // inner-element discriminants and payloads.
+      // sort recurses into each Vec element-wise, so the first differing
+      // inner element decides the order.
       final entries = <XdrSCMapEntry>[
         XdrSCMapEntry(
           XdrSCVal.forVec(
@@ -312,7 +326,8 @@ void main() {
   group('OZPolicyManager.sortMapByKeyXdr — policy round-trips', () {
     test('OZWeightedThresholdPolicyParams inner signer_weights map is sorted', () {
       // Pass signers in a deliberately unsorted order; the inner ScVal
-      // map for `signer_weights` must come out sorted by XDR bytes.
+      // map for `signer_weights` must come out in the host's ScMap key
+      // order.
       final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{
           OZDelegatedSigner(_gAddr3): 20,
@@ -354,7 +369,7 @@ void main() {
       expect(hexA, hexB);
     });
 
-    test('policies map (Address keys) is sorted by XDR bytes', () {
+    test('policies map (Address keys) is sorted in host key order', () {
       // Mirrors the policies-map construction inside
       // `OZContextRuleManager.addContextRule`: address-keyed map with void
       // values, sorted via the same OZPolicyManager helper.
@@ -370,6 +385,39 @@ void main() {
 
       expect(sorted.length, 3);
       _assertKeysSortedAscending(sorted);
+    });
+
+    test('policiesToScVal builds a sorted address-keyed ScMap', () {
+      // policiesToScVal turns an address-keyed policies map into the ScMap
+      // the contract expects: Address keys in the host's ScMap key order,
+      // install params preserved per address.
+      final policies = <String, XdrSCVal>{
+        _addr1: XdrSCVal.forU32(1),
+        _addr2: XdrSCVal.forU32(2),
+        _addr3: XdrSCVal.forU32(3),
+      };
+
+      final scVal = OZPolicyManager.policiesToScVal(policies);
+      final entries = scVal.map!;
+
+      expect(entries.length, 3);
+      _assertKeysSortedAscending(entries);
+
+      // Every entry's key encodes one of the input addresses and carries
+      // that address's install param.
+      final expectedByKeyHex = <String, XdrSCVal>{
+        for (final entry in policies.entries)
+          _xdrHex(
+            XdrSCVal.forAddress(Address.forContractId(entry.key).toXdr()),
+          ): entry.value,
+      };
+      for (final entry in entries) {
+        final expectedParam = expectedByKeyHex[_xdrHex(entry.key)];
+        expect(expectedParam, isNotNull,
+            reason: 'entry key must encode one of the input policy addresses');
+        expect(entry.val.u32!.uint32, expectedParam!.u32!.uint32,
+            reason: 'install param must stay attached to its address');
+      }
     });
 
     test('policies-map sorting is order-insensitive (deterministic)', () {

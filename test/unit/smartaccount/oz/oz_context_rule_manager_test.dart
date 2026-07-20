@@ -171,6 +171,55 @@ void main() {
       expect(h.txOps.submitCalls, isEmpty);
     });
 
+    test('addContextRule_nameOverByteLimit_throws', () async {
+      final h = _buildHarness();
+      final mgr = OZContextRuleManager(h.kit);
+      await expectLater(
+        () => mgr.addContextRule(
+          contextType: const OZContextRuleTypeDefault(),
+          name: 'a' * (OZConstants.maxNameSize + 1),
+          signers: <OZSmartAccountSigner>[_delegated(_accountAddress)],
+        ),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
+      expect(h.txOps.submitCalls, isEmpty);
+    });
+
+    test('addContextRule_multiByteNameOverByteLimit_throws', () async {
+      // 11 x "ä" is 22 UTF-8 bytes with a character count below the limit.
+      final h = _buildHarness();
+      final mgr = OZContextRuleManager(h.kit);
+      await expectLater(
+        () => mgr.addContextRule(
+          contextType: const OZContextRuleTypeDefault(),
+          name: 'ä' * 11,
+          signers: <OZSmartAccountSigner>[_delegated(_accountAddress)],
+        ),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
+      expect(h.txOps.submitCalls, isEmpty);
+    });
+
+    test('addContextRule_oversizedExternalSigner_throws', () async {
+      final h = _buildHarness();
+      final mgr = OZContextRuleManager(h.kit);
+      final oversized = OZExternalSigner(
+        _verifierContract,
+        Uint8List.fromList(
+          List<int>.filled(OZConstants.maxExternalKeySize + 1, 0x01),
+        ),
+      );
+      await expectLater(
+        () => mgr.addContextRule(
+          contextType: const OZContextRuleTypeDefault(),
+          name: 'rule',
+          signers: <OZSmartAccountSigner>[oversized],
+        ),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
+      expect(h.txOps.submitCalls, isEmpty);
+    });
+
     test('addContextRule_zeroSignersAndPolicies_throws', () async {
       final h = _buildHarness();
       final mgr = OZContextRuleManager(h.kit);
@@ -291,6 +340,17 @@ void main() {
       final mgr = OZContextRuleManager(h.kit);
       await expectLater(
         () => mgr.updateName(id: 0, name: ''),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
+      expect(h.txOps.submitCalls, isEmpty);
+    });
+
+    test('updateName rejects a name over the UTF-8 byte limit', () async {
+      // 11 x "ä" is 22 UTF-8 bytes with a character count below the limit.
+      final h = _buildHarness();
+      final mgr = OZContextRuleManager(h.kit);
+      await expectLater(
+        () => mgr.updateName(id: 0, name: 'ä' * 11),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
       expect(h.txOps.submitCalls, isEmpty);

@@ -24,6 +24,7 @@ import '../core/web_authn_provider.dart';
 import 'oz_base64url.dart';
 import 'oz_constants.dart';
 import 'oz_internal_pipeline_interfaces.dart';
+import 'oz_policy_manager.dart';
 import 'oz_relayer_client.dart';
 import 'oz_secure_nonce.dart';
 import 'oz_smart_account_events.dart';
@@ -395,6 +396,16 @@ class OZWalletOperations {
   /// [autoFund] requires [autoSubmit] to be `true` and a non-null
   /// [nativeTokenContract]; funding uses Friendbot and is testnet-only.
   ///
+  /// The optional [policies] map installs policies on the new wallet's
+  /// default context rule at deploy time (through the account constructor),
+  /// keyed by policy contract address (C...) with the policy's install
+  /// parameters as the value. When `null`,
+  /// [OZSmartAccountConfig.defaultPolicies] applies; pass a map (including
+  /// an empty one) to override it. At most [OZConstants.maxPolicies].
+  /// Validated and encoded before the passkey ceremony, so an invalid
+  /// policy configuration (including structurally invalid install
+  /// parameters) fails without creating an orphaned credential.
+  ///
   /// The optional [cancelToken] can be cancelled to abort an in-flight
   /// network request; cancellation surfaces as a [SmartAccountTransactionException].
   Future<OZCreateWalletResult> createWallet({
@@ -403,6 +414,7 @@ class OZWalletOperations {
     bool autoFund = false,
     String? nativeTokenContract,
     OZSubmissionMethod? forceMethod,
+    Map<String, OZPolicyInstallParams>? policies,
     dio.CancelToken? cancelToken,
   }) async {
     final webauthnProvider = _kit.config.webauthnProvider;
@@ -419,6 +431,17 @@ class OZWalletOperations {
         'nativeTokenContract is required when autoFund is true',
       );
     }
+
+    // Resolve, validate, and encode constructor policies before the passkey
+    // ceremony, so an invalid policy configuration never orphans a freshly
+    // created credential. Encoding runs here because the install params
+    // validate their own structure in toScVal.
+    final effectivePolicies = policies ?? _kit.config.defaultPolicies;
+    requireValidPolicies(effectivePolicies);
+    final encodedPolicies = <String, XdrSCVal>{
+      for (final entry in effectivePolicies.entries)
+        entry.key: entry.value.toScVal(),
+    };
 
     _checkCancellation(cancelToken);
 
@@ -517,6 +540,7 @@ class OZWalletOperations {
       deployTransaction = await _buildDeployTransaction(
         publicKey: publicKey,
         credentialId: registrationResult.credentialId,
+        policies: encodedPolicies,
         forceMethod: forceMethod,
       );
     } catch (e) {
@@ -1009,12 +1033,21 @@ class OZWalletOperations {
   ///
   /// Sets the kit's connected state on success, in line with [createWallet],
   /// so the kit is ready immediately after a successful deployment.
+  ///
+  /// The optional [policies] map installs policies on the wallet's default
+  /// context rule at deploy time (through the account constructor), keyed
+  /// by policy contract address (C...). When `null`,
+  /// [OZSmartAccountConfig.defaultPolicies] applies; pass a map (including
+  /// an empty one) to override it. At most [OZConstants.maxPolicies].
+  /// Constructor arguments are not part of the contract-address preimage,
+  /// so the derived address is unchanged by the policies.
   Future<OZDeployPendingResult> deployPendingCredential({
     required String credentialId,
     bool autoSubmit = true,
     bool autoFund = false,
     String? nativeTokenContract,
     OZSubmissionMethod? forceMethod,
+    Map<String, OZPolicyInstallParams>? policies,
     dio.CancelToken? cancelToken,
   }) async {
     if (autoFund && nativeTokenContract == null) {
@@ -1023,6 +1056,16 @@ class OZWalletOperations {
         'nativeTokenContract is required when autoFund is true',
       );
     }
+
+    // Resolve, validate, and encode constructor policies early, before any
+    // storage or network access. Encoding runs here because the install
+    // params validate their own structure in toScVal.
+    final effectivePolicies = policies ?? _kit.config.defaultPolicies;
+    requireValidPolicies(effectivePolicies);
+    final encodedPolicies = <String, XdrSCVal>{
+      for (final entry in effectivePolicies.entries)
+        entry.key: entry.value.toScVal(),
+    };
 
     // Normalise to the canonical unpadded Base64URL form; see
     // ozStripBase64UrlPadding.
@@ -1078,6 +1121,7 @@ class OZWalletOperations {
       deployTransaction = await _buildDeployTransaction(
         publicKey: publicKey,
         credentialId: credentialIdBytes,
+        policies: encodedPolicies,
         forceMethod: forceMethod,
       );
     } catch (e) {
@@ -1416,9 +1460,15 @@ class OZWalletOperations {
   /// When a relayer is configured (and [forceMethod] does not override) the
   /// fee is set to the resource fee only — the relayer wraps the
   /// transaction in a fee-bump with the outer fee.
+  ///
+  /// [policies] carries the pre-validated and pre-encoded constructor
+  /// policies for the default context rule (policy contract address to
+  /// encoded install-param ScVal); an empty map
+  /// installs none.
   Future<Transaction> _buildDeployTransaction({
     required Uint8List publicKey,
     required Uint8List credentialId,
+    required Map<String, XdrSCVal> policies,
     OZSubmissionMethod? forceMethod,
   }) async {
     final keyData = Uint8List(publicKey.length + credentialId.length)
@@ -1449,7 +1499,11 @@ class OZWalletOperations {
       );
     }
 
-    final policiesScVal = XdrSCVal.forMap(const <XdrSCMapEntry>[]);
+    // Policies installed on the default context rule, keyed by policy
+    // contract address and sorted into the host's ScMap key order. The keys
+    // were validated and the values encoded before this method runs.
+    final policiesScVal = OZPolicyManager.policiesToScVal(policies);
+
     final constructorArgs = <XdrSCVal>[signersScVal, policiesScVal];
 
     final deployer = await _kit.getDeployer();

@@ -5,6 +5,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stellar_flutter_sdk/src/smartaccount/core/sc_val_host_order.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 const String kValidGAddress =
@@ -524,7 +525,7 @@ void main() {
       );
     });
 
-    test('testCodecWrite_signersSortedByXdrKey', () {
+    test('testCodecWrite_signersSortedInHostKeyOrder', () {
       final s1 = _del(kValidGAddress);
       final s2 = _del(kValidGAddress2);
       final p = OZSmartAccountAuthPayload(
@@ -533,15 +534,13 @@ void main() {
       );
       final encoded = OZSmartAccountAuthPayloadCodec.write(p);
       final entries = encoded.map![1].val.map!;
-      // Verify the XDR-encoded keys are in ascending order.
-      String keyHex(int i) {
-        final stream = XdrDataOutputStream();
-        XdrSCVal.encode(stream, entries[i].key);
-        return Util.bytesToHex(Uint8List.fromList(stream.bytes));
-      }
-
+      // Verify the keys are strictly ascending in the host's ScMap key
+      // order.
       for (var i = 1; i < entries.length; i++) {
-        expect(keyHex(i - 1).compareTo(keyHex(i)) <= 0, isTrue);
+        expect(
+          compareScValHostOrder(entries[i - 1].key, entries[i].key) < 0,
+          isTrue,
+        );
       }
     });
   });

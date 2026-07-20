@@ -6,6 +6,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:stellar_flutter_sdk/src/smartaccount/core/sc_val_host_order.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 const String kValidGAddress =
@@ -42,29 +43,40 @@ List<String> _signerKeyHexes(XdrSCVal payloadScVal) {
   return entries.map((e) => _xdrHex(e.key)).toList(growable: false);
 }
 
+List<XdrSCVal> _signerKeys(XdrSCVal payloadScVal) {
+  final entries = payloadScVal.map![1].val.map!;
+  return entries.map((e) => e.key).toList(growable: false);
+}
+
+/// Asserts that [keys] are strictly ascending in the Soroban host's ScMap
+/// key order.
+void _assertKeysInHostOrder(List<XdrSCVal> keys) {
+  for (var i = 1; i < keys.length; i++) {
+    expect(compareScValHostOrder(keys[i - 1], keys[i]) < 0, isTrue,
+        reason: 'key at index ${i - 1} must precede key at index $i '
+            'in host order');
+  }
+}
+
 void main() {
   group('ScMap key sorting', () {
-    test('testCompareByteArraysLexicographically', () {
-      // The codec sorts inner map keys by lowercase-hex of XDR-encoded
-      // key bytes. Validate the underlying byte ordering on a controlled
-      // input.
-      final a = _xdrHex(XdrSCVal.forU32(0x00000001));
-      final b = _xdrHex(XdrSCVal.forU32(0x00000002));
-      expect(a.compareTo(b) < 0, isTrue);
+    test('testCompareScValHostOrder_u32NumericOrder', () {
+      // The codec sorts inner map keys in the host's ScMap key order.
+      // Validate the underlying comparator on a controlled scalar input.
+      final a = XdrSCVal.forU32(0x00000001);
+      final b = XdrSCVal.forU32(0x00000002);
+      expect(compareScValHostOrder(a, b) < 0, isTrue);
     });
 
     test('testSortMapByKeyXdrWithSymbolKeys', () {
-      // Symbols with different lengths and byte ordering inside the inner
-      // signers Map: build via the codec and assert the result is sorted.
+      // Signer keys with different Vec shapes inside the inner signers Map:
+      // build via the codec and assert the result is in host key order.
       final s1 = OZDelegatedSigner(kValidGAddress);
       final s2 = OZExternalSigner(kValidContractId, _bytes(8, 1));
       final out = _writePayloadWithSigners(
         <OZSmartAccountSigner, Uint8List>{s2: _bytes(4, 0), s1: _bytes(4, 0)},
       );
-      final hexes = _signerKeyHexes(out);
-      for (var i = 1; i < hexes.length; i++) {
-        expect(hexes[i - 1].compareTo(hexes[i]) <= 0, isTrue);
-      }
+      _assertKeysInHostOrder(_signerKeys(out));
     });
 
     test('testSortMapByKeyXdrWithAddressKeys', () {
@@ -73,9 +85,9 @@ void main() {
       final out = _writePayloadWithSigners(
         <OZSmartAccountSigner, Uint8List>{s1: _bytes(4, 0), s2: _bytes(4, 0)},
       );
-      final hexes = _signerKeyHexes(out);
-      expect(hexes.length, 2);
-      expect(hexes[0].compareTo(hexes[1]) <= 0, isTrue);
+      final keys = _signerKeys(out);
+      expect(keys.length, 2);
+      _assertKeysInHostOrder(keys);
     });
 
     test('testSimpleThresholdMapHasSingleKey', () {
@@ -96,10 +108,7 @@ void main() {
       final out = _writePayloadWithSigners(
         <OZSmartAccountSigner, Uint8List>{del: _bytes(4, 0), ext: _bytes(4, 0)},
       );
-      final hexes = _signerKeyHexes(out);
-      for (var i = 1; i < hexes.length; i++) {
-        expect(hexes[i - 1].compareTo(hexes[i]) <= 0, isTrue);
-      }
+      _assertKeysInHostOrder(_signerKeys(out));
     });
 
     test('testSortEmptyMap', () {
@@ -171,6 +180,16 @@ void main() {
 
     test('ScVal-key sort property: 1000 random key sets match reference',
         () {
+      // The production comparator over Bytes keys must agree with a
+      // reference implementation of the host's content order (Rust slice
+      // `Ord`: element-wise unsigned bytes, shorter first on a prefix tie).
+      int referenceHostCompare(Uint8List a, Uint8List b) {
+        for (var i = 0; i < a.length && i < b.length; i++) {
+          if (a[i] != b[i]) return a[i] - b[i];
+        }
+        return a.length - b.length;
+      }
+
       final rng = Random(0xCAFEBABE);
       for (var iter = 0; iter < 1000; iter++) {
         final n = (rng.nextInt(6)) + 1;
@@ -186,59 +205,51 @@ void main() {
           ));
         }
 
-        final hexes = entries.map((e) => _xdrHex(e.key)).toList();
-        final sorted = List<XdrSCMapEntry>.from(entries)
-          ..sort((a, b) => _xdrHex(a.key).compareTo(_xdrHex(b.key)));
+        final sorted = OZPolicyManager.sortMapByKeyXdr(entries);
         final sortedHexes = sorted.map((e) => _xdrHex(e.key)).toList();
-        for (var i = 1; i < sortedHexes.length; i++) {
-          expect(sortedHexes[i - 1].compareTo(sortedHexes[i]) <= 0, isTrue);
-        }
-        // Reference comparison: byte-wise sort produces the same ordering.
-        final byteSorted = List<XdrSCMapEntry>.from(entries)
-          ..sort((a, b) {
-            final aBytes = Util.hexToBytes(_xdrHex(a.key));
-            final bBytes = Util.hexToBytes(_xdrHex(b.key));
-            for (var i = 0; i < aBytes.length && i < bBytes.length; i++) {
-              if (aBytes[i] != bBytes[i]) return aBytes[i] - bBytes[i];
-            }
-            return aBytes.length - bBytes.length;
-          });
-        final byteSortedHexes =
-            byteSorted.map((e) => _xdrHex(e.key)).toList();
-        expect(sortedHexes, byteSortedHexes,
-            reason: 'iteration $iter produced different orderings via '
-                'hex-string sort vs byte-lexicographic sort');
-        expect(hexes, isA<List<String>>());
+        final referenceSorted = List<XdrSCMapEntry>.from(entries)
+          ..sort((a, b) => referenceHostCompare(
+              a.key.bytes!.sCBytes, b.key.bytes!.sCBytes));
+        final referenceHexes =
+            referenceSorted.map((e) => _xdrHex(e.key)).toList();
+        expect(sortedHexes, referenceHexes,
+            reason: 'iteration $iter produced an ordering that differs '
+                'from the reference host content order');
       }
     });
 
-    test('golden cases: alphabetical-vs-XDR-hex-order divergence', () {
-      // Symbol("a") (XDR-bytes: type=0x0F, length=1, "a", padding) vs
-      // Symbol("ab") (length=2, "ab", padding) — both encode with the
-      // length first, so the shorter one sorts first under XDR-hex.
+    test('golden case: prefix tie sorts the shorter symbol first', () {
+      // Symbol("a") is a prefix of Symbol("ab"); on a prefix tie the
+      // shorter value sorts first in host order.
       final a = XdrSCVal.forSymbol('a');
       final ab = XdrSCVal.forSymbol('ab');
-      expect(_xdrHex(a).compareTo(_xdrHex(ab)) < 0, isTrue);
+      expect(compareScValHostOrder(a, ab) < 0, isTrue);
+      expect(compareScValHostOrder(ab, a) > 0, isTrue);
     });
 
-    test('golden case: zebra vs middle XDR-hex order', () {
+    test('golden case: middle vs zebra host order diverges from length-major',
+        () {
       final zebra = XdrSCVal.forSymbol('zebra');
       final middle = XdrSCVal.forSymbol('middle');
-      // XDR symbol encoding starts with a 4-byte length prefix. "zebra"
-      // is length 5; "middle" is length 6; the length prefix dominates
-      // the ordering, so "zebra" sorts before "middle" under XDR-hex
-      // sort even though "middle" comes before "zebra" alphabetically.
-      // This is an instance of the "alphabetical != XDR-byte" divergence
-      // described in the spec.
-      expect(_xdrHex(zebra).compareTo(_xdrHex(middle)) < 0, isTrue);
+      // Host order compares symbol content byte for byte: "middle" (0x6d)
+      // sorts before "zebra" (0x7a) despite being longer. A length-major
+      // XDR-byte sort would order the 5-char "zebra" before the 6-char
+      // "middle" via the length prefix — the exact divergence the host
+      // rejects. Pin both directions.
+      expect(compareScValHostOrder(middle, zebra) < 0, isTrue);
+      expect(_xdrHex(zebra).compareTo(_xdrHex(middle)) < 0, isTrue,
+          reason: 'the length-major XDR-hex order disagrees with the host '
+              'order for these symbols');
     });
 
-    test('golden case: U32 keys ordered by big-endian XDR encoding', () {
+    test('golden case: U32 keys ordered by numeric value', () {
+      // For unsigned fixed-width scalars the host order equals the
+      // big-endian XDR encoding order.
       final u1 = XdrSCVal.forU32(1);
       final u2 = XdrSCVal.forU32(256);
       final u3 = XdrSCVal.forU32(65536);
-      expect(_xdrHex(u1).compareTo(_xdrHex(u2)) < 0, isTrue);
-      expect(_xdrHex(u2).compareTo(_xdrHex(u3)) < 0, isTrue);
+      expect(compareScValHostOrder(u1, u2) < 0, isTrue);
+      expect(compareScValHostOrder(u2, u3) < 0, isTrue);
     });
 
     test('golden case: ordering stable across writes', () {
