@@ -184,12 +184,34 @@ class SorobanSDKAnalyzer:
         self.methods: Dict[str, Dict] = {}
         self.response_classes: Dict[str, List[str]] = {}
 
+    def _read_sources(self) -> str:
+        """
+        Read the Soroban source set as one string.
+
+        The RPC surface spans several files in the soroban directory: the server
+        holds the method implementations, while the request and response classes
+        the methods reference live alongside it. The extractors below resolve
+        those references by name within a single buffer, so every Dart file in
+        the directory is concatenated. Files that define none of the scanned
+        constructs contribute no matches. The server is placed first so its
+        method offsets are stable, and the remainder is sorted for determinism.
+        """
+        sources = [self.server_path.read_text()]
+
+        siblings = sorted(
+            p for p in self.server_path.parent.glob("*.dart")
+            if p != self.server_path
+        )
+        sources.extend(p.read_text() for p in siblings)
+
+        return "\n".join(sources)
+
     def analyze(self) -> Dict[str, Any]:
         """Analyze Soroban SDK implementation"""
         if not self.server_path.exists():
             raise FileNotFoundError(f"Soroban server file not found: {self.server_path}")
 
-        content = self.server_path.read_text()
+        content = self._read_sources()
 
         # Extract implemented methods
         self._extract_methods(content)
@@ -245,8 +267,11 @@ class SorobanSDKAnalyzer:
             # Find method body by counting braces
             method_body = self._extract_method_body(content, method_start)
 
-            # Look for JsonRpcMethod call
-            rpc_call_match = re.search(r'JsonRpcMethod\s*\(\s*"([^"]+)"', method_body)
+            # Identify the JSON-RPC method name the body dispatches on, either
+            # by constructing a JsonRpcMethod directly or by naming it in the
+            # call to the shared request helper.
+            rpc_call_match = re.search(
+                r'(?:JsonRpcMethod|_postRequest)\s*\(\s*"([^"]+)"', method_body)
             if rpc_call_match:
                 rpc_method = rpc_call_match.group(1)
 

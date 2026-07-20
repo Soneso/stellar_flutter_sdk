@@ -1,7 +1,7 @@
 # SEP-0053 (Sign and Verify Messages) Compatibility Matrix
 
-**Generated:** 2026-07-13 21:51:01  
-**SDK Version:** 3.3.0  
+**Generated:** 2026-07-20 14:57:24  
+**SDK Version:** 3.4.0  
 **SEP Version:** 0.0.1  
 **SEP Status:** Final Comment Period (Final)  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md
