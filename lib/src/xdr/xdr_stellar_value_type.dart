@@ -25,6 +25,9 @@ class XdrStellarValueType {
 
   static const STELLAR_VALUE_BASIC = const XdrStellarValueType._internal(0);
   static const STELLAR_VALUE_SIGNED = const XdrStellarValueType._internal(1);
+  static const STELLAR_VALUE_EMPTY_TX_SET = const XdrStellarValueType._internal(
+    2,
+  );
 
   static XdrStellarValueType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -33,6 +36,8 @@ class XdrStellarValueType {
         return STELLAR_VALUE_BASIC;
       case 1:
         return STELLAR_VALUE_SIGNED;
+      case 2:
+        return STELLAR_VALUE_EMPTY_TX_SET;
       default:
         throw Exception("Unknown enum value: $value");
     }

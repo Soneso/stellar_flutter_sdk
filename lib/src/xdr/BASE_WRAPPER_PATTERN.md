@@ -70,6 +70,11 @@ For types extending `XdrAsset`:
 - Regenerate only `*_base.dart` files.
 - Never modify wrapper files.
 - Base files must keep the same class name, field names, and `decodeAs` signature.
+- When a base union gains an arm, every wrapper whose `fromTxRep` copies base
+  fields one by one (`result.x = b.x`) must gain a copy line for the new arm's
+  field. The analyzer cannot detect the omission; the missed field silently
+  stays null and `encode` throws at runtime. Wrappers that reconstruct through
+  their constructor are immune.
 - `XdrSCValBase` has a circular import to `xdr_sc_val.dart` — this is required
   for self-referencing `List<XdrSCVal>` fields.
 

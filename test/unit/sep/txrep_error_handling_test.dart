@@ -14,7 +14,8 @@ void main() {
 
     group('Fee Bump Transaction Error Cases', () {
       test('Invalid feeBump.tx.fee - not parseable', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX_FEE_BUMP
 feeBump.tx.feeSource: $sourceAccountId
 feeBump.tx.fee: invalid_fee
@@ -30,12 +31,15 @@ feeBump.tx.innerTx.signatures.len: 0
 feeBump.tx.ext.v: 0
 feeBump.signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('Invalid feeBump.tx.fee - null after parsing', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX_FEE_BUMP
 feeBump.tx.feeSource: $sourceAccountId
 feeBump.tx.fee: abc
@@ -51,12 +55,15 @@ feeBump.tx.innerTx.signatures.len: 0
 feeBump.tx.ext.v: 0
 feeBump.signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('Invalid feeBump.tx.feeSource', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX_FEE_BUMP
 feeBump.tx.feeSource: INVALID_ACCOUNT
 feeBump.tx.fee: 200
@@ -72,11 +79,14 @@ feeBump.tx.innerTx.signatures.len: 0
 feeBump.tx.ext.v: 0
 feeBump.signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
       test('Unsupported feeBump.tx.ext.v', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX_FEE_BUMP
 feeBump.tx.feeSource: $sourceAccountId
 feeBump.tx.fee: 200
@@ -92,14 +102,17 @@ feeBump.tx.innerTx.signatures.len: 0
 feeBump.tx.ext.v: 1
 feeBump.signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
     });
 
     group('Transaction Fee Error Cases', () {
       test('Invalid tx.fee - not parseable', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: invalid_fee
@@ -110,12 +123,15 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('Invalid tx.fee - null after parsing', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: abc
@@ -126,14 +142,17 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
     });
 
     group('Memo Error Cases', () {
       test('Invalid MEMO_RETURN', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -145,12 +164,15 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('Invalid memo - catch block', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -162,15 +184,18 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
     });
 
     group('Signatures Error Cases', () {
       test('Invalid signatures.len - greater than 20', () {
         final destKeyPair = KeyPair.random();
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -186,13 +211,16 @@ tx.operations[0].body.paymentOp.amount: 1000000000 (100.0000000 XLM)
 tx.ext.v: 0
 signatures.len: 21
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('Invalid signatures.len - not a number', () {
         final destKeyPair = KeyPair.random();
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -208,13 +236,16 @@ tx.operations[0].body.paymentOp.amount: 1000000000 (100.0000000 XLM)
 tx.ext.v: 0
 signatures.len: not_a_number
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('Invalid feeBump.signatures.len - not a number', () {
         final destKeyPair = KeyPair.random();
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX_FEE_BUMP
 feeBump.tx.feeSource: $sourceAccountId
 feeBump.tx.fee: 200
@@ -235,13 +266,16 @@ feeBump.tx.innerTx.signatures.len: 0
 feeBump.tx.ext.v: 0
 feeBump.signatures.len: not_a_number
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('Invalid feeBump.signatures.len - greater than 20', () {
         final destKeyPair = KeyPair.random();
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX_FEE_BUMP
 feeBump.tx.feeSource: $sourceAccountId
 feeBump.tx.fee: 200
@@ -262,14 +296,17 @@ feeBump.tx.innerTx.signatures.len: 0
 feeBump.tx.ext.v: 0
 feeBump.signatures.len: 25
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
     });
 
     group('Preconditions Error Cases', () {
       test('Invalid timeBounds in PRECOND_TIME', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -282,12 +319,15 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('Invalid minSeqNum in PRECOND_V2', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -303,12 +343,15 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('Missing minSeqNum when _present is true', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -323,12 +366,15 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('Missing minSeqAge', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -342,12 +388,15 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('Missing minSeqLedgerGap', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -361,12 +410,15 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('Missing extraSigners.len', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -386,7 +438,8 @@ signatures.len: 0
       });
 
       test('Invalid extraSigners.len - not a number', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -401,12 +454,15 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('Invalid extraSigners.len - greater than 2', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -421,12 +477,15 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('Missing extraSigner when len > 0', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -441,14 +500,18 @@ tx.operations.len: 0
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('Valid extraSigners with T (pre-auth tx) key', () {
         final destKeyPair = KeyPair.random();
-        final preAuthKey = 'TAQCSRX2RIDJNHFIFHWD63X7D7D6TRT5Y2S6E3TEMXTG5W3OECHZ2OG4';
-        final txRep = '''
+        final preAuthKey =
+            'TAQCSRX2RIDJNHFIFHWD63X7D7D6TRT5Y2S6E3TEMXTG5W3OECHZ2OG4';
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -475,8 +538,10 @@ signatures.len: 0
 
       test('Invalid extraSigners with X (hash) key - error case', () {
         final destKeyPair = KeyPair.random();
-        final hashKey = 'XBU5MG2VJGZFZ62W7JNSDD7YW5IXVHPJVBK4SWQ4GBML6FKWKJYJMQR4';
-        final txRep = '''
+        final hashKey =
+            'XBU5MG2VJGZFZ62W7JNSDD7YW5IXVHPJVBK4SWQ4GBML6FKWKJYJMQR4';
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -497,14 +562,18 @@ tx.operations[0].body.paymentOp.amount: 1000000000 (100.0000000 XLM)
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
 
       test('Valid extraSigners with P (payload) key', () {
         final destKeyPair = KeyPair.random();
-        final payloadKey = 'PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAQACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IBZGM';
-        final txRep = '''
+        final payloadKey =
+            'PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAQACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IBZGM';
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -552,9 +621,9 @@ signatures.len: 0
             XdrLedgerFootprint([], []),
             XdrUint32(0),
             XdrUint32(0),
-            XdrUint32(0)
+            XdrUint32(0),
           ),
-          XdrInt64(BigInt.zero)
+          XdrInt64(BigInt.zero),
         );
 
         final xdr = tx.toEnvelopeXdrBase64();
@@ -607,7 +676,16 @@ signatures.len: 0
         final account = Account(sourceAccountId, BigInt.from(100));
         final txBuilder = TransactionBuilder(account);
 
-        final wasmBytes = Uint8List.fromList([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]);
+        final wasmBytes = Uint8List.fromList([
+          0x00,
+          0x61,
+          0x73,
+          0x6d,
+          0x01,
+          0x00,
+          0x00,
+          0x00,
+        ]);
         final function = UploadContractWasmHostFunction(wasmBytes);
         final invokeOp = InvokeHostFunctionOperation(function);
 
@@ -637,8 +715,8 @@ signatures.len: 0
         final setTrustOp = SetTrustLineFlagsOperationBuilder(
           trustor.accountId,
           asset,
-          0,  // clearFlags
-          XdrTrustLineFlags.AUTHORIZED_FLAG.value  // setFlags
+          0, // clearFlags
+          XdrTrustLineFlags.AUTHORIZED_FLAG.value, // setFlags
         ).build();
 
         txBuilder.addOperation(setTrustOp);
@@ -656,7 +734,8 @@ signatures.len: 0
 
       test('LIQUIDITY_POOL_DEPOSIT operation', () {
         final account = Account(sourceAccountId, BigInt.from(100));
-        final poolId = 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
+        final poolId =
+            'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
 
         final txBuilder = TransactionBuilder(account);
         final depositOp = LiquidityPoolDepositOperation(
@@ -664,7 +743,7 @@ signatures.len: 0
           maxAmountA: '1000.0',
           maxAmountB: '2000.0',
           minPrice: '0.5',
-          maxPrice: '0.5'
+          maxPrice: '0.5',
         );
         txBuilder.addOperation(depositOp);
 
@@ -681,14 +760,15 @@ signatures.len: 0
 
       test('LIQUIDITY_POOL_WITHDRAW operation', () {
         final account = Account(sourceAccountId, BigInt.from(100));
-        final poolId = 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
+        final poolId =
+            'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
 
         final txBuilder = TransactionBuilder(account);
         final withdrawOp = LiquidityPoolWithdrawOperation(
           liquidityPoolId: poolId,
           amount: '500.0',
           minAmountA: '200.0',
-          minAmountB: '100.0'
+          minAmountB: '100.0',
         );
         txBuilder.addOperation(withdrawOp);
 
@@ -706,7 +786,8 @@ signatures.len: 0
 
     group('Invalid Operation Type', () {
       test('Unsupported operation type', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -719,8 +800,10 @@ tx.operations[0].body.type: UNSUPPORTED_OP_TYPE
 tx.ext.v: 0
 signatures.len: 0
 ''';
-        expect(() => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-            throwsException);
+        expect(
+          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          throwsException,
+        );
       });
     });
 
@@ -773,7 +856,7 @@ signatures.len: 0
       test('SCVal SCV_U128', () {
         final parts = XdrUInt128Parts(
           XdrUint64(BigInt.from(100)),
-          XdrUint64(BigInt.from(200))
+          XdrUint64(BigInt.from(200)),
         );
         final scVal = XdrSCVal.forU128(parts);
         expect(scVal.u128?.hi.uint64, equals(BigInt.from(100)));
@@ -790,21 +873,27 @@ signatures.len: 0
       });
 
       test('SCAddress SC_ADDRESS_TYPE_CONTRACT', () {
-        final contractId = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
+        final contractId =
+            'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
         final scAddress = XdrSCAddress.forContractId(contractId);
         expect(scAddress, isNotNull);
         expect(scAddress.contractId, isNotNull);
       });
 
       test('SCAddress SC_ADDRESS_TYPE_CLAIMABLE_BALANCE', () {
-        final balanceId = '000000006d6f6e657900000000000000000000000000000000000000000000000000000000';
+        final balanceId =
+            '000000006d6f6e657900000000000000000000000000000000000000000000000000000000';
         final scAddress = XdrSCAddress.forClaimableBalanceId(balanceId);
-        expect(scAddress.discriminant, equals(XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE));
+        expect(
+          scAddress.discriminant,
+          equals(XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE),
+        );
         expect(scAddress.claimableBalanceId, isNotNull);
       });
 
       test('SCAddress SC_ADDRESS_TYPE_LIQUIDITY_POOL', () {
-        final poolId = 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
+        final poolId =
+            'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
         final scAddress = XdrSCAddress.forLiquidityPoolId(poolId);
         expect(scAddress, isNotNull);
       });
@@ -822,6 +911,24 @@ signatures.len: 0
         final executable = XdrContractExecutable.forAsset();
         expect(executable, isNotNull);
       });
+
+      test('CONTRACT_EXECUTABLE_EXTERNAL_REF txrep roundtrip', () {
+        final owner = XdrSCAddress.forAccountId(KeyPair.random().accountId);
+        final executable = XdrContractExecutable.forExternalRef(owner, 'tag-1');
+        final lines = <String>[];
+        executable.toTxRep('x', lines);
+        final map = <String, String>{};
+        for (final line in lines) {
+          final idx = line.indexOf(':');
+          map[line.substring(0, idx).trim()] = line.substring(idx + 1).trim();
+        }
+        final reconstructed = XdrContractExecutable.fromTxRep(map, 'x');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
+          executable.toBase64EncodedXdrString(),
+        );
+        expect(reconstructed.externalRef!.tag, 'tag-1');
+      });
     });
 
     group('SorobanCredentials Type Tests', () {
@@ -837,9 +944,11 @@ signatures.len: 0
           address,
           XdrInt64(BigInt.from(123)),
           XdrUint32(1000),
-          signature
+          signature,
         );
-        final credentials = XdrSorobanCredentials.forAddressCredentials(addressCreds);
+        final credentials = XdrSorobanCredentials.forAddressCredentials(
+          addressCreds,
+        );
         expect(credentials, isNotNull);
         expect(credentials.address, isNotNull);
       });
@@ -862,7 +971,8 @@ signatures.len: 0
       });
 
       test('CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0', () {
-        final id = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0;
+        final id =
+            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0;
         expect(id, isNotNull);
       });
 
@@ -877,22 +987,26 @@ signatures.len: 0
       });
 
       test('CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS', () {
-        final id = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS;
+        final id = XdrConfigSettingID
+            .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS;
         expect(id, isNotNull);
       });
 
       test('CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES', () {
-        final id = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES;
+        final id =
+            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES;
         expect(id, isNotNull);
       });
 
       test('CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES', () {
-        final id = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES;
+        final id =
+            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES;
         expect(id, isNotNull);
       });
 
       test('CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES', () {
-        final id = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES;
+        final id =
+            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES;
         expect(id, isNotNull);
       });
 
@@ -907,7 +1021,8 @@ signatures.len: 0
       });
 
       test('CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW', () {
-        final id = XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW;
+        final id =
+            XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW;
         expect(id, isNotNull);
       });
 
@@ -917,12 +1032,14 @@ signatures.len: 0
       });
 
       test('CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0', () {
-        final id = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0;
+        final id =
+            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0;
         expect(id, isNotNull);
       });
 
       test('CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0', () {
-        final id = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0;
+        final id =
+            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0;
         expect(id, isNotNull);
       });
 

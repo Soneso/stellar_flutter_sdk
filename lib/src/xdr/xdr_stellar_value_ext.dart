@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_ledger_close_value_signature.dart';
+import 'xdr_stellar_value_proposed_value.dart';
 import 'xdr_stellar_value_type.dart';
 
 class XdrStellarValueExt {
@@ -25,10 +26,17 @@ class XdrStellarValueExt {
 
   XdrLedgerCloseValueSignature? get lcValueSignature => this._lcValueSignature;
 
+  XdrStellarValueProposedValue? _proposedValue;
+
+  XdrStellarValueProposedValue? get proposedValue => this._proposedValue;
+
   XdrStellarValueExt(this._v);
 
   set lcValueSignature(XdrLedgerCloseValueSignature? value) =>
       this._lcValueSignature = value;
+
+  set proposedValue(XdrStellarValueProposedValue? value) =>
+      this._proposedValue = value;
 
   static void encode(
     XdrDataOutputStream stream,
@@ -42,6 +50,12 @@ class XdrStellarValueExt {
         XdrLedgerCloseValueSignature.encode(
           stream,
           encodedStellarValueExt._lcValueSignature!,
+        );
+        break;
+      case XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET:
+        XdrStellarValueProposedValue.encode(
+          stream,
+          encodedStellarValueExt._proposedValue!,
         );
         break;
       default:
@@ -59,6 +73,10 @@ class XdrStellarValueExt {
       case XdrStellarValueType.STELLAR_VALUE_SIGNED:
         decodedStellarValueExt._lcValueSignature =
             XdrLedgerCloseValueSignature.decode(stream);
+        break;
+      case XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET:
+        decodedStellarValueExt._proposedValue =
+            XdrStellarValueProposedValue.decode(stream);
         break;
       default:
         break;

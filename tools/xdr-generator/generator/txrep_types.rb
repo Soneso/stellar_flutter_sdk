@@ -30,6 +30,7 @@ TXREP_TYPES = Set[
   'XdrConfigSettingID',
   'XdrContractDataDurability',
   'XdrContractExecutable',
+  'XdrContractExecutableExternalRef',
   'XdrContractExecutableType',
   'XdrContractIDPreimage',
   'XdrContractIDPreimageFromAddress',

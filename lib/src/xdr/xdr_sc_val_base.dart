@@ -116,6 +116,10 @@ class XdrSCValBase {
 
   XdrSCNonceKey? get nonce_key => this._nonce_key;
 
+  String? _executableTag;
+
+  String? get executableTag => this._executableTag;
+
   XdrSCValBase(this._type);
 
   set b(bool? value) => this._b = value;
@@ -157,6 +161,8 @@ class XdrSCValBase {
   set instance(XdrSCContractInstance? value) => this._instance = value;
 
   set nonce_key(XdrSCNonceKey? value) => this._nonce_key = value;
+
+  set executableTag(String? value) => this._executableTag = value;
 
   static void encode(XdrDataOutputStream stream, XdrSCValBase encodedSCVal) {
     stream.writeInt(encodedSCVal.discriminant.value);
@@ -240,6 +246,9 @@ class XdrSCValBase {
         break;
       case XdrSCValType.SCV_LEDGER_KEY_NONCE:
         XdrSCNonceKey.encode(stream, encodedSCVal._nonce_key!);
+        break;
+      case XdrSCValType.SCV_EXECUTABLE_TAG:
+        stream.writeString(encodedSCVal._executableTag!);
         break;
       default:
         break;
@@ -333,6 +342,9 @@ class XdrSCValBase {
         break;
       case XdrSCValType.SCV_LEDGER_KEY_NONCE:
         decoded._nonce_key = XdrSCNonceKey.decode(stream);
+        break;
+      case XdrSCValType.SCV_EXECUTABLE_TAG:
+        decoded._executableTag = stream.readString();
         break;
       default:
         break;
@@ -434,6 +446,11 @@ class XdrSCValBase {
       case XdrSCValType.SCV_LEDGER_KEY_NONCE:
         _nonce_key!.toTxRep('$prefix.nonce_key', lines);
         break;
+      case XdrSCValType.SCV_EXECUTABLE_TAG:
+        lines.add(
+          '$prefix.executable_tag: ${TxRepHelper.escapeString(_executableTag!)}',
+        );
+        break;
       default:
         break;
     }
@@ -534,6 +551,11 @@ class XdrSCValBase {
         break;
       case XdrSCValType.SCV_LEDGER_KEY_NONCE:
         result._nonce_key = XdrSCNonceKey.fromTxRep(map, '$prefix.nonce_key');
+        break;
+      case XdrSCValType.SCV_EXECUTABLE_TAG:
+        result._executableTag = TxRepHelper.unescapeString(
+          TxRepHelper.getValue(map, '$prefix.executable_tag') ?? '',
+        );
         break;
       default:
         break;
