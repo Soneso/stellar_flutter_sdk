@@ -9,10 +9,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 void main() {
   group('XDR Ledger Types - Deep Branch Testing Round 3', () {
     test('XdrLedgerSCPMessages with empty messages encode/decode', () {
-      var original = XdrLedgerSCPMessages(
-        XdrUint32(100),
-        [],
-      );
+      var original = XdrLedgerSCPMessages(XdrUint32(100), []);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrLedgerSCPMessages.encode(output, original);
@@ -25,24 +22,24 @@ void main() {
       expect(decoded.messages.length, equals(0));
     });
 
-    test('XdrInvokeHostFunctionSuccessPreImage with empty events encode/decode', () {
-      var returnValue = XdrSCVal.forU32(12345);
+    test(
+      'XdrInvokeHostFunctionSuccessPreImage with empty events encode/decode',
+      () {
+        var returnValue = XdrSCVal.forU32(12345);
 
-      var original = XdrInvokeHostFunctionSuccessPreImage(
-        returnValue,
-        [],
-      );
+        var original = XdrInvokeHostFunctionSuccessPreImage(returnValue, []);
 
-      XdrDataOutputStream output = XdrDataOutputStream();
-      XdrInvokeHostFunctionSuccessPreImage.encode(output, original);
-      Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrInvokeHostFunctionSuccessPreImage.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
 
-      XdrDataInputStream input = XdrDataInputStream(encoded);
-      var decoded = XdrInvokeHostFunctionSuccessPreImage.decode(input);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrInvokeHostFunctionSuccessPreImage.decode(input);
 
-      expect(decoded.returnValue.u32!.uint32, equals(12345));
-      expect(decoded.events.length, equals(0));
-    });
+        expect(decoded.returnValue.u32!.uint32, equals(12345));
+        expect(decoded.events.length, equals(0));
+      },
+    );
 
     test('XdrStellarValue with empty upgrades encode/decode', () {
       var original = XdrStellarValue(
@@ -61,6 +58,64 @@ void main() {
 
       expect(decoded.closeTime.uint64, equals(BigInt.from(123456)));
       expect(decoded.upgrades.length, equals(0));
+    });
+
+    test('XdrStellarValue with proposed value ext encode/decode', () {
+      var pk = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
+      pk.setEd25519(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAA))));
+      var signature = XdrLedgerCloseValueSignature(
+        XdrNodeID(pk),
+        XdrSignature(Uint8List.fromList(List<int>.filled(64, 0xCC))),
+      );
+      var proposed = XdrStellarValueProposedValue(
+        XdrHash(Uint8List.fromList(List<int>.filled(32, 0x11))),
+        XdrHash(Uint8List.fromList(List<int>.filled(32, 0x22))),
+        XdrUint32(26),
+        signature,
+      );
+      // The proposed value is mutable after construction.
+      proposed.txSetHash = XdrHash(
+        Uint8List.fromList(List<int>.filled(32, 0x33)),
+      );
+      proposed.previousLedgerHash = XdrHash(
+        Uint8List.fromList(List<int>.filled(32, 0x44)),
+      );
+      proposed.previousLedgerVersion = XdrUint32(27);
+      proposed.lcValueSignature = signature;
+
+      var ext = XdrStellarValueExt(
+        XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET,
+      );
+      ext.proposedValue = proposed;
+      var original = XdrStellarValue(
+        XdrHash(Uint8List.fromList(List<int>.filled(32, 0x88))),
+        XdrUint64(BigInt.from(123456)),
+        [],
+        ext,
+      );
+
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrStellarValue.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrStellarValue.decode(input);
+
+      expect(
+        decoded.ext.discriminant,
+        equals(XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET),
+      );
+      var decodedProposed = decoded.ext.proposedValue!;
+      expect(decodedProposed.txSetHash.hash, equals(proposed.txSetHash.hash));
+      expect(
+        decodedProposed.previousLedgerHash.hash,
+        equals(proposed.previousLedgerHash.hash),
+      );
+      expect(decodedProposed.previousLedgerVersion.uint32, equals(27));
+      expect(
+        decodedProposed.lcValueSignature.signature.signature,
+        equals(signature.signature.signature),
+      );
     });
 
     test('XdrAccountEntryV2 with empty signerSponsoringIDs encode/decode', () {
@@ -86,29 +141,38 @@ void main() {
     // Note: XDR SponsorshipDescriptor is AccountID* (optional), but the
     // generated XdrAccountEntryV2 does not yet support per-element optionality.
     // This test uses an empty list until the generator is updated.
-    test('XdrAccountEntryV2 with non-zero sponsored but empty signerSponsoringIDs encode/decode', () {
-      var original = XdrAccountEntryV2(
-        XdrUint32(1),
-        XdrUint32(0),
-        [],
-        XdrAccountEntryV2Ext(0),
-      );
+    test(
+      'XdrAccountEntryV2 with non-zero sponsored but empty signerSponsoringIDs encode/decode',
+      () {
+        var original = XdrAccountEntryV2(
+          XdrUint32(1),
+          XdrUint32(0),
+          [],
+          XdrAccountEntryV2Ext(0),
+        );
 
-      XdrDataOutputStream output = XdrDataOutputStream();
-      XdrAccountEntryV2.encode(output, original);
-      Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrAccountEntryV2.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
 
-      XdrDataInputStream input = XdrDataInputStream(encoded);
-      var decoded = XdrAccountEntryV2.decode(input);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrAccountEntryV2.decode(input);
 
-      expect(decoded.numSponsored.uint32, equals(1));
-      expect(decoded.signerSponsoringIDs.length, equals(0));
-    });
+        expect(decoded.numSponsored.uint32, equals(1));
+        expect(decoded.signerSponsoringIDs.length, equals(0));
+      },
+    );
 
     test('XdrAccountEntry with full v2 extension encode/decode', () {
-      var accountId = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      var accountId = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       var signerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
-      signerKey.ed25519 = XdrUint256(KeyPair.fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H').publicKey);
+      signerKey.ed25519 = XdrUint256(
+        KeyPair.fromAccountId(
+          'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+        ).publicKey,
+      );
       var signer = XdrSigner(signerKey, XdrUint32(1));
 
       var liabilities = XdrLiabilities(
@@ -116,13 +180,12 @@ void main() {
         XdrInt64(BigInt.from(3000)),
       );
 
-      var sponsor = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
-      var v2 = XdrAccountEntryV2(
-        XdrUint32(1),
-        XdrUint32(1),
-        [sponsor],
-        XdrAccountEntryV2Ext(0),
+      var sponsor = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
       );
+      var v2 = XdrAccountEntryV2(XdrUint32(1), XdrUint32(1), [
+        sponsor,
+      ], XdrAccountEntryV2Ext(0));
 
       var v1Ext = XdrAccountEntryV1Ext(2);
       v1Ext.v2 = v2;
@@ -159,8 +222,12 @@ void main() {
     });
 
     test('XdrTrustLineEntry with full v2 extension encode/decode', () {
-      var accountId = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
-      var asset = XdrTrustlineAsset.fromXdrAsset(XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE));
+      var accountId = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
+      var asset = XdrTrustlineAsset.fromXdrAsset(
+        XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
+      );
 
       var liabilities = XdrLiabilities(
         XdrInt64(BigInt.from(4000)),
@@ -203,9 +270,13 @@ void main() {
     });
 
     test('XdrLedgerEntryChanges with all change types encode/decode', () {
-      var accountId = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      var accountId = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
 
-      var change1 = XdrLedgerEntryChange(XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED);
+      var change1 = XdrLedgerEntryChange(
+        XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED,
+      );
       var data1 = XdrLedgerEntryData(XdrLedgerEntryType.DATA);
       var dataEntry1 = XdrDataEntry(
         accountId,
@@ -214,9 +285,15 @@ void main() {
         XdrDataEntryExt(0),
       );
       data1.data = dataEntry1;
-      change1.created = XdrLedgerEntry(XdrUint32(100), data1, XdrLedgerEntryExt(0));
+      change1.created = XdrLedgerEntry(
+        XdrUint32(100),
+        data1,
+        XdrLedgerEntryExt(0),
+      );
 
-      var change2 = XdrLedgerEntryChange(XdrLedgerEntryChangeType.LEDGER_ENTRY_UPDATED);
+      var change2 = XdrLedgerEntryChange(
+        XdrLedgerEntryChangeType.LEDGER_ENTRY_UPDATED,
+      );
       var data2 = XdrLedgerEntryData(XdrLedgerEntryType.DATA);
       var dataEntry2 = XdrDataEntry(
         accountId,
@@ -225,15 +302,23 @@ void main() {
         XdrDataEntryExt(0),
       );
       data2.data = dataEntry2;
-      change2.updated = XdrLedgerEntry(XdrUint32(101), data2, XdrLedgerEntryExt(0));
+      change2.updated = XdrLedgerEntry(
+        XdrUint32(101),
+        data2,
+        XdrLedgerEntryExt(0),
+      );
 
-      var change3 = XdrLedgerEntryChange(XdrLedgerEntryChangeType.LEDGER_ENTRY_REMOVED);
+      var change3 = XdrLedgerEntryChange(
+        XdrLedgerEntryChangeType.LEDGER_ENTRY_REMOVED,
+      );
       var keyData = XdrLedgerKeyData(accountId, XdrString64('test'));
       var key = XdrLedgerKey(XdrLedgerEntryType.DATA);
       key.data = keyData;
       change3.removed = key;
 
-      var change4 = XdrLedgerEntryChange(XdrLedgerEntryChangeType.LEDGER_ENTRY_STATE);
+      var change4 = XdrLedgerEntryChange(
+        XdrLedgerEntryChangeType.LEDGER_ENTRY_STATE,
+      );
       var data4 = XdrLedgerEntryData(XdrLedgerEntryType.DATA);
       var dataEntry4 = XdrDataEntry(
         accountId,
@@ -242,9 +327,15 @@ void main() {
         XdrDataEntryExt(0),
       );
       data4.data = dataEntry4;
-      change4.state = XdrLedgerEntry(XdrUint32(102), data4, XdrLedgerEntryExt(0));
+      change4.state = XdrLedgerEntry(
+        XdrUint32(102),
+        data4,
+        XdrLedgerEntryExt(0),
+      );
 
-      var change5 = XdrLedgerEntryChange(XdrLedgerEntryChangeType.LEDGER_ENTRY_RESTORED);
+      var change5 = XdrLedgerEntryChange(
+        XdrLedgerEntryChangeType.LEDGER_ENTRY_RESTORED,
+      );
       var data5 = XdrLedgerEntryData(XdrLedgerEntryType.DATA);
       var dataEntry5 = XdrDataEntry(
         accountId,
@@ -253,9 +344,19 @@ void main() {
         XdrDataEntryExt(0),
       );
       data5.data = dataEntry5;
-      change5.restored = XdrLedgerEntry(XdrUint32(103), data5, XdrLedgerEntryExt(0));
+      change5.restored = XdrLedgerEntry(
+        XdrUint32(103),
+        data5,
+        XdrLedgerEntryExt(0),
+      );
 
-      var original = XdrLedgerEntryChanges([change1, change2, change3, change4, change5]);
+      var original = XdrLedgerEntryChanges([
+        change1,
+        change2,
+        change3,
+        change4,
+        change5,
+      ]);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrLedgerEntryChanges.encode(output, original);
@@ -265,11 +366,26 @@ void main() {
       var decoded = XdrLedgerEntryChanges.decode(input);
 
       expect(decoded.ledgerEntryChanges.length, equals(5));
-      expect(decoded.ledgerEntryChanges[0].discriminant.value, equals(XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED.value));
-      expect(decoded.ledgerEntryChanges[1].discriminant.value, equals(XdrLedgerEntryChangeType.LEDGER_ENTRY_UPDATED.value));
-      expect(decoded.ledgerEntryChanges[2].discriminant.value, equals(XdrLedgerEntryChangeType.LEDGER_ENTRY_REMOVED.value));
-      expect(decoded.ledgerEntryChanges[3].discriminant.value, equals(XdrLedgerEntryChangeType.LEDGER_ENTRY_STATE.value));
-      expect(decoded.ledgerEntryChanges[4].discriminant.value, equals(XdrLedgerEntryChangeType.LEDGER_ENTRY_RESTORED.value));
+      expect(
+        decoded.ledgerEntryChanges[0].discriminant.value,
+        equals(XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED.value),
+      );
+      expect(
+        decoded.ledgerEntryChanges[1].discriminant.value,
+        equals(XdrLedgerEntryChangeType.LEDGER_ENTRY_UPDATED.value),
+      );
+      expect(
+        decoded.ledgerEntryChanges[2].discriminant.value,
+        equals(XdrLedgerEntryChangeType.LEDGER_ENTRY_REMOVED.value),
+      );
+      expect(
+        decoded.ledgerEntryChanges[3].discriminant.value,
+        equals(XdrLedgerEntryChangeType.LEDGER_ENTRY_STATE.value),
+      );
+      expect(
+        decoded.ledgerEntryChanges[4].discriminant.value,
+        equals(XdrLedgerEntryChangeType.LEDGER_ENTRY_RESTORED.value),
+      );
     });
   });
 }

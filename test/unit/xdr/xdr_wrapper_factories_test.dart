@@ -882,6 +882,18 @@ void main() {
       );
       expect(v.externalRef!.tag, 'my-tag');
       _roundtrip(v);
+
+      // The external reference is mutable after construction.
+      var otherOwner = XdrSCAddress.forContractId(
+        StrKey.encodeContractId(Uint8List.fromList(List.filled(32, 7))),
+      );
+      v.externalRef!.executableOwner = otherOwner;
+      v.externalRef!.tag = 'other-tag';
+      expect(
+        v.externalRef!.executableOwner.contractId!.hash,
+        otherOwner.contractId!.hash,
+      );
+      expect(v.externalRef!.tag, 'other-tag');
     });
   });
 
