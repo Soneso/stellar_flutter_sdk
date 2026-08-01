@@ -7,8 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 // A valid ED25519 account ID for testing.
-final _testAccountId =
-    KeyPair.random().accountId;
+final _testAccountId = KeyPair.random().accountId;
 
 void main() {
   // =========================================================================
@@ -113,7 +112,11 @@ void main() {
 
     test('forU256', () {
       var parts = XdrUInt256Parts.forHiHiHiLoLoHiLoLo(
-        BigInt.from(1), BigInt.from(2), BigInt.from(3), BigInt.from(4));
+        BigInt.from(1),
+        BigInt.from(2),
+        BigInt.from(3),
+        BigInt.from(4),
+      );
       var v = XdrSCVal.forU256(parts);
       expect(v.discriminant, XdrSCValType.SCV_U256);
       _roundtrip(v);
@@ -121,14 +124,22 @@ void main() {
 
     test('forU256Parts', () {
       var v = XdrSCVal.forU256Parts(
-        BigInt.from(1), BigInt.from(2), BigInt.from(3), BigInt.from(4));
+        BigInt.from(1),
+        BigInt.from(2),
+        BigInt.from(3),
+        BigInt.from(4),
+      );
       expect(v.discriminant, XdrSCValType.SCV_U256);
       _roundtrip(v);
     });
 
     test('forI256', () {
       var parts = XdrInt256Parts.forHiHiHiLoLoHiLoLo(
-        BigInt.from(-1), BigInt.from(0), BigInt.from(0), BigInt.from(0));
+        BigInt.from(-1),
+        BigInt.from(0),
+        BigInt.from(0),
+        BigInt.from(0),
+      );
       var v = XdrSCVal.forI256(parts);
       expect(v.discriminant, XdrSCValType.SCV_I256);
       _roundtrip(v);
@@ -136,7 +147,11 @@ void main() {
 
     test('forI256Parts', () {
       var v = XdrSCVal.forI256Parts(
-        BigInt.from(-1), BigInt.from(0), BigInt.from(0), BigInt.from(0));
+        BigInt.from(-1),
+        BigInt.from(0),
+        BigInt.from(0),
+        BigInt.from(0),
+      );
       expect(v.discriminant, XdrSCValType.SCV_I256);
       _roundtrip(v);
     });
@@ -159,6 +174,13 @@ void main() {
       var v = XdrSCVal.forSymbol('transfer');
       expect(v.discriminant, XdrSCValType.SCV_SYMBOL);
       expect(v.sym, 'transfer');
+      _roundtrip(v);
+    });
+
+    test('forExecutableTag', () {
+      var v = XdrSCVal.forExecutableTag('my-tag');
+      expect(v.discriminant, XdrSCValType.SCV_EXECUTABLE_TAG);
+      expect(v.executableTag, 'my-tag');
       _roundtrip(v);
     });
 
@@ -192,7 +214,8 @@ void main() {
 
     test('forContractAddress', () {
       var contractId = StrKey.encodeContractId(
-          Uint8List.fromList(List<int>.filled(32, 0xAB)));
+        Uint8List.fromList(List<int>.filled(32, 0xAB)),
+      );
       var v = XdrSCVal.forContractAddress(contractId);
       expect(v.discriminant, XdrSCValType.SCV_ADDRESS);
       _roundtrip(v);
@@ -206,7 +229,8 @@ void main() {
 
     test('forAddressStrKey with contract', () {
       var contractId = StrKey.encodeContractId(
-          Uint8List.fromList(List<int>.filled(32, 0xCD)));
+        Uint8List.fromList(List<int>.filled(32, 0xCD)),
+      );
       var v = XdrSCVal.forAddressStrKey(contractId);
       expect(v.discriminant, XdrSCValType.SCV_ADDRESS);
       _roundtrip(v);
@@ -226,8 +250,11 @@ void main() {
 
     test('forContractInstance', () {
       var instance = XdrSCContractInstance(
-          XdrContractExecutable(XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET),
-          null);
+        XdrContractExecutable(
+          XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET,
+        ),
+        null,
+      );
       var v = XdrSCVal.forContractInstance(instance);
       expect(v.discriminant, XdrSCValType.SCV_CONTRACT_INSTANCE);
       _roundtrip(v);
@@ -471,7 +498,9 @@ void main() {
 
     test('forResult', () {
       var result = XdrSCSpecTypeResult(
-          XdrSCSpecTypeDef.forU32(), XdrSCSpecTypeDef.forError());
+        XdrSCSpecTypeDef.forU32(),
+        XdrSCSpecTypeDef.forError(),
+      );
       var v = XdrSCSpecTypeDef.forResult(result);
       expect(v.discriminant, XdrSCSpecType.SC_SPEC_TYPE_RESULT);
       _roundtrip(v);
@@ -486,15 +515,19 @@ void main() {
 
     test('forMap', () {
       var map = XdrSCSpecTypeMap(
-          XdrSCSpecTypeDef.forSymbol(), XdrSCSpecTypeDef.forU32());
+        XdrSCSpecTypeDef.forSymbol(),
+        XdrSCSpecTypeDef.forU32(),
+      );
       var v = XdrSCSpecTypeDef.forMap(map);
       expect(v.discriminant, XdrSCSpecType.SC_SPEC_TYPE_MAP);
       _roundtrip(v);
     });
 
     test('forTuple', () {
-      var tuple = XdrSCSpecTypeTuple(
-          [XdrSCSpecTypeDef.forU32(), XdrSCSpecTypeDef.forBool()]);
+      var tuple = XdrSCSpecTypeTuple([
+        XdrSCSpecTypeDef.forU32(),
+        XdrSCSpecTypeDef.forBool(),
+      ]);
       var v = XdrSCSpecTypeDef.forTuple(tuple);
       expect(v.discriminant, XdrSCSpecType.SC_SPEC_TYPE_TUPLE);
       _roundtrip(v);
@@ -522,41 +555,63 @@ void main() {
     test('forUploadContractWasm', () {
       var wasm = Uint8List.fromList([0, 97, 115, 109]); // WASM magic
       var v = XdrHostFunction.forUploadContractWasm(wasm);
-      expect(v.discriminant, XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM);
+      expect(
+        v.discriminant,
+        XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM,
+      );
       _roundtrip(v);
     });
 
     test('forCreatingContract', () {
       var addr = XdrSCAddress.forAccountId(_testAccountId);
       var salt = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)));
-      var wasmId = '0000000000000000000000000000000000000000000000000000000000000000';
+      var wasmId =
+          '0000000000000000000000000000000000000000000000000000000000000000';
       var v = XdrHostFunction.forCreatingContract(addr, salt, wasmId);
-      expect(v.discriminant, XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
+      expect(
+        v.discriminant,
+        XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT,
+      );
       _roundtrip(v);
     });
 
     test('forCreatingContractV2', () {
       var addr = XdrSCAddress.forAccountId(_testAccountId);
       var salt = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)));
-      var wasmId = '0000000000000000000000000000000000000000000000000000000000000000';
-      var v = XdrHostFunction.forCreatingContractV2(
-          addr, salt, wasmId, [XdrSCVal.forU32(1)]);
-      expect(v.discriminant, XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2);
+      var wasmId =
+          '0000000000000000000000000000000000000000000000000000000000000000';
+      var v = XdrHostFunction.forCreatingContractV2(addr, salt, wasmId, [
+        XdrSCVal.forU32(1),
+      ]);
+      expect(
+        v.discriminant,
+        XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2,
+      );
       _roundtrip(v);
     });
 
     test('forDeploySACWithAsset', () {
       var v = XdrHostFunction.forDeploySACWithAsset(
-          XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE));
-      expect(v.discriminant, XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT);
+        XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
+      );
+      expect(
+        v.discriminant,
+        XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT,
+      );
       _roundtrip(v);
     });
 
     test('forInvokingContractWithArgs', () {
       var args = XdrInvokeContractArgs(
-          XdrSCAddress.forAccountId(_testAccountId), 'transfer', []);
+        XdrSCAddress.forAccountId(_testAccountId),
+        'transfer',
+        [],
+      );
       var v = XdrHostFunction.forInvokingContractWithArgs(args);
-      expect(v.discriminant, XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT);
+      expect(
+        v.discriminant,
+        XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT,
+      );
       _roundtrip(v);
     });
   });
@@ -574,7 +629,9 @@ void main() {
 
     test('forTrustLine', () {
       var v = XdrLedgerKey.forTrustLine(
-          _testAccountId, XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE));
+        _testAccountId,
+        XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
+      );
       expect(v.discriminant, XdrLedgerEntryType.TRUSTLINE);
       expect(v.getTrustlineAccountId(), _testAccountId);
       _roundtrip(v);
@@ -597,7 +654,9 @@ void main() {
 
     test('forClaimableBalance', () {
       var hash = Uint8List.fromList(List<int>.filled(32, 0xAB));
-      var hexId = '00000000' + hash.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+      var hexId =
+          '00000000' +
+          hash.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
       var v = XdrLedgerKey.forClaimableBalance(hexId);
       expect(v.discriminant, XdrLedgerEntryType.CLAIMABLE_BALANCE);
       expect(v.getClaimableBalanceId(), isNotNull);
@@ -608,7 +667,10 @@ void main() {
       var addr = XdrSCAddress.forAccountId(_testAccountId);
       var key = XdrSCVal.forSymbol('counter');
       var v = XdrLedgerKey.forContractData(
-          addr, key, XdrContractDataDurability.PERSISTENT);
+        addr,
+        key,
+        XdrContractDataDurability.PERSISTENT,
+      );
       expect(v.discriminant, XdrLedgerEntryType.CONTRACT_DATA);
       _roundtrip(v);
     });
@@ -622,7 +684,8 @@ void main() {
 
     test('forConfigSetting', () {
       var v = XdrLedgerKey.forConfigSetting(
-          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES);
+        XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES,
+      );
       expect(v.discriminant, XdrLedgerEntryType.CONFIG_SETTING);
       _roundtrip(v);
     });
@@ -643,7 +706,9 @@ void main() {
 
     test('balanceID compatibility getter/setter', () {
       var hash = Uint8List.fromList(List<int>.filled(32, 0xAB));
-      var hexId = '00000000' + hash.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+      var hexId =
+          '00000000' +
+          hash.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
       var key = XdrLedgerKey.forClaimableBalance(hexId);
       expect(key.balanceID, isNotNull);
     });
@@ -662,7 +727,8 @@ void main() {
 
     test('forContractId', () {
       var contractId = StrKey.encodeContractId(
-          Uint8List.fromList(List<int>.filled(32, 0xAB)));
+        Uint8List.fromList(List<int>.filled(32, 0xAB)),
+      );
       var v = XdrSCAddress.forContractId(contractId);
       expect(v.discriminant, XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT);
       expect(v.toStrKey(), contractId);
@@ -678,8 +744,10 @@ void main() {
       var addr = XdrSCAddress.forAccountId(_testAccountId);
       var salt = Uint8List.fromList(List<int>.filled(32, 0xAB));
       var v = XdrContractIDPreimage.forAddress(addr, salt);
-      expect(v.discriminant,
-          XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
+      expect(
+        v.discriminant,
+        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+      );
       expect(v.address, isNotNull);
       expect(v.salt, isNotNull);
       _roundtrip(v);
@@ -687,16 +755,20 @@ void main() {
 
     test('forAsset', () {
       var v = XdrContractIDPreimage.forAsset(
-          XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE));
-      expect(v.discriminant,
-          XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET);
+        XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
+      );
+      expect(
+        v.discriminant,
+        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET,
+      );
       _roundtrip(v);
     });
 
     test('address getter/setter', () {
       var addr = XdrSCAddress.forAccountId(_testAccountId);
       var preimage = XdrContractIDPreimage(
-          XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
+        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+      );
       preimage.address = addr;
       expect(preimage.address, isNotNull);
     });
@@ -704,7 +776,8 @@ void main() {
     test('salt getter/setter', () {
       var salt = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)));
       var preimage = XdrContractIDPreimage(
-          XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
+        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+      );
       preimage.salt = salt;
       expect(preimage.salt, isNotNull);
     });
@@ -718,12 +791,15 @@ void main() {
       var hash = Uint8List.fromList(List<int>.filled(32, 0xAB));
       // claimableBalanceIdString uses 1-byte discriminant prefix (matching StrKey payload format)
       var hashHex = hash.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
-      var expectedHex = '00' + hashHex; // 1-byte V0 discriminant (0) + 32-byte hash
+      var expectedHex =
+          '00' + hashHex; // 1-byte V0 discriminant (0) + 32-byte hash
       // forId accepts Horizon format (4-byte prefix) — stringIdToXdrHash takes last 32 bytes
       var horizonHex = '00000000' + hashHex;
       var v = XdrClaimableBalanceID.forId(horizonHex);
-      expect(v.discriminant,
-          XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
+      expect(
+        v.discriminant,
+        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0,
+      );
       expect(v.claimableBalanceIdString, expectedHex);
       _roundtrip(v);
     });
@@ -732,8 +808,10 @@ void main() {
       var hash = Uint8List.fromList(List<int>.filled(32, 0xCD));
       var strKey = StrKey.encodeClaimableBalanceId(hash);
       var v = XdrClaimableBalanceID.forId(strKey);
-      expect(v.discriminant,
-          XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
+      expect(
+        v.discriminant,
+        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0,
+      );
       // v0 hash should contain the original hash bytes
       expect(v.v0!.hash, hash);
       _roundtrip(v);
@@ -754,8 +832,9 @@ void main() {
     test('fromXdrAsset credit4', () {
       var asset = XdrAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4);
       asset.alphaNum4 = XdrAssetAlphaNum4(
-          Uint8List.fromList([85, 83, 68, 0]),
-          XdrAccountID.forAccountId(_testAccountId));
+        Uint8List.fromList([85, 83, 68, 0]),
+        XdrAccountID.forAccountId(_testAccountId),
+      );
       var v = XdrChangeTrustAsset.fromXdrAsset(asset);
       expect(v.discriminant, XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4);
       _roundtrip(v);
@@ -778,16 +857,43 @@ void main() {
     test('forWasm', () {
       var hash = Uint8List.fromList(List<int>.filled(32, 0xAB));
       var v = XdrContractExecutable.forWasm(hash);
-      expect(v.discriminant,
-          XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM);
+      expect(
+        v.discriminant,
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,
+      );
       _roundtrip(v);
     });
 
     test('forAsset', () {
       var v = XdrContractExecutable.forAsset();
-      expect(v.discriminant,
-          XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET);
+      expect(
+        v.discriminant,
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET,
+      );
       _roundtrip(v);
+    });
+
+    test('forExternalRef', () {
+      var owner = XdrSCAddress.forAccountId(_testAccountId);
+      var v = XdrContractExecutable.forExternalRef(owner, 'my-tag');
+      expect(
+        v.discriminant,
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF,
+      );
+      expect(v.externalRef!.tag, 'my-tag');
+      _roundtrip(v);
+
+      // The external reference is mutable after construction.
+      var otherOwner = XdrSCAddress.forContractId(
+        StrKey.encodeContractId(Uint8List.fromList(List.filled(32, 7))),
+      );
+      v.externalRef!.executableOwner = otherOwner;
+      v.externalRef!.tag = 'other-tag';
+      expect(
+        v.externalRef!.executableOwner.contractId!.hash,
+        otherOwner.contractId!.hash,
+      );
+      expect(v.externalRef!.tag, 'other-tag');
     });
   });
 
@@ -797,10 +903,16 @@ void main() {
   group('XdrSorobanAuthorizedFunction factories', () {
     test('forInvokeContractArgs', () {
       var args = XdrInvokeContractArgs(
-          XdrSCAddress.forAccountId(_testAccountId), 'transfer', []);
+        XdrSCAddress.forAccountId(_testAccountId),
+        'transfer',
+        [],
+      );
       var v = XdrSorobanAuthorizedFunction.forInvokeContractArgs(args);
-      expect(v.discriminant,
-          XdrSorobanAuthorizedFunctionType.SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN);
+      expect(
+        v.discriminant,
+        XdrSorobanAuthorizedFunctionType
+            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
+      );
       _roundtrip(v);
     });
   });
@@ -811,20 +923,25 @@ void main() {
   group('XdrSorobanCredentials factories', () {
     test('forSourceAccount', () {
       var v = XdrSorobanCredentials.forSourceAccount();
-      expect(v.discriminant,
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
+      expect(
+        v.discriminant,
+        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT,
+      );
       _roundtrip(v);
     });
 
     test('forAddressCredentials', () {
       var creds = XdrSorobanAddressCredentials(
-          XdrSCAddress.forAccountId(_testAccountId),
-          XdrInt64(BigInt.from(1)),
-          XdrUint32(100),
-          XdrSCVal.forVoid());
+        XdrSCAddress.forAccountId(_testAccountId),
+        XdrInt64(BigInt.from(1)),
+        XdrUint32(100),
+        XdrSCVal.forVoid(),
+      );
       var v = XdrSorobanCredentials.forAddressCredentials(creds);
-      expect(v.discriminant,
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS);
+      expect(
+        v.discriminant,
+        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS,
+      );
       _roundtrip(v);
     });
   });
@@ -835,8 +952,10 @@ void main() {
   group('XdrAccountID factories', () {
     test('forAccountId', () {
       var v = XdrAccountID.forAccountId(_testAccountId);
-      expect(v.accountID.discriminant,
-          XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
+      expect(
+        v.accountID.discriminant,
+        XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519,
+      );
       _roundtrip(v);
     });
   });
@@ -866,7 +985,8 @@ void main() {
       var account = Account(kp.accountId, BigInt.from(100));
       var builder = TransactionBuilder(account);
       builder.addOperation(
-          BumpSequenceOperationBuilder(BigInt.from(200)).build());
+        BumpSequenceOperationBuilder(BigInt.from(200)).build(),
+      );
       var tx = builder.build();
       tx.sign(kp, Network.TESTNET);
       var envelope = tx.toEnvelopeXdr();
@@ -906,8 +1026,7 @@ void main() {
     test('accountId getter', () {
       var kp = KeyPair.random();
       var id = XdrUint64(BigInt.from(42));
-      var ed25519 = XdrUint256(
-          Uint8List.fromList(kp.publicKey));
+      var ed25519 = XdrUint256(Uint8List.fromList(kp.publicKey));
       var med = XdrMuxedAccountMed25519(id, ed25519);
       var accountId = med.accountId;
       expect(accountId, isNotEmpty);
@@ -920,11 +1039,20 @@ void main() {
   group('ConfigSettingContractLedgerCostV0 setters', () {
     test('all setters update fields', () {
       var v = XdrConfigSettingContractLedgerCostV0(
-        XdrUint32(1), XdrUint32(2), XdrUint32(3), XdrUint32(4),
-        XdrUint32(5), XdrUint32(6), XdrUint32(7), XdrUint32(8),
-        XdrInt64(BigInt.from(9)), XdrInt64(BigInt.from(10)),
-        XdrInt64(BigInt.from(11)), XdrInt64(BigInt.from(12)),
-        XdrInt64(BigInt.from(13)), XdrInt64(BigInt.from(14)),
+        XdrUint32(1),
+        XdrUint32(2),
+        XdrUint32(3),
+        XdrUint32(4),
+        XdrUint32(5),
+        XdrUint32(6),
+        XdrUint32(7),
+        XdrUint32(8),
+        XdrInt64(BigInt.from(9)),
+        XdrInt64(BigInt.from(10)),
+        XdrInt64(BigInt.from(11)),
+        XdrInt64(BigInt.from(12)),
+        XdrInt64(BigInt.from(13)),
+        XdrInt64(BigInt.from(14)),
         XdrUint32(15),
       );
       // Exercise every setter
@@ -951,20 +1079,33 @@ void main() {
 
   group('PeerStats setters', () {
     test('all setters update fields', () {
-      var nodeId = XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)
-        ..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+      var nodeId = XdrNodeID(
+        XdrPublicKey(
+          XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519,
+        )..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))),
+      );
       var v = XdrPeerStats(
-        nodeId, 'v20',
-        XdrUint64(BigInt.zero), XdrUint64(BigInt.zero),
-        XdrUint64(BigInt.zero), XdrUint64(BigInt.zero),
-        XdrUint64(BigInt.zero), XdrUint64(BigInt.zero),
-        XdrUint64(BigInt.zero), XdrUint64(BigInt.zero),
-        XdrUint64(BigInt.zero), XdrUint64(BigInt.zero),
-        XdrUint64(BigInt.zero), XdrUint64(BigInt.zero),
+        nodeId,
+        'v20',
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.zero),
         XdrUint64(BigInt.zero),
       );
-      v.id = XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)
-        ..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xCD))));
+      v.id = XdrNodeID(
+        XdrPublicKey(
+          XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519,
+        )..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xCD))),
+      );
       v.versionStr = 'v21';
       v.messagesRead = XdrUint64(BigInt.from(1));
       v.messagesWritten = XdrUint64(BigInt.from(2));
@@ -987,9 +1128,16 @@ void main() {
   group('TimeSlicedNodeData setters', () {
     test('all setters update fields', () {
       var v = XdrTimeSlicedNodeData(
-        XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrUint32(0),
-        XdrUint32(0), XdrUint32(0), XdrUint32(0), false,
-        XdrUint32(0), XdrUint32(0),
+        XdrUint32(0),
+        XdrUint32(0),
+        XdrUint32(0),
+        XdrUint32(0),
+        XdrUint32(0),
+        XdrUint32(0),
+        XdrUint32(0),
+        false,
+        XdrUint32(0),
+        XdrUint32(0),
       );
       v.addedAuthenticatedPeers = XdrUint32(1);
       v.droppedAuthenticatedPeers = XdrUint32(2);
@@ -1010,9 +1158,16 @@ void main() {
   group('StateArchivalSettings setters', () {
     test('all setters update fields', () {
       var v = XdrStateArchivalSettings(
-        XdrUint32(0), XdrUint32(0), XdrUint32(0), XdrInt64(BigInt.zero),
-        XdrInt64(BigInt.zero), XdrUint32(0), XdrUint32(0), XdrUint32(0),
-        XdrUint32(0), XdrUint32(0),
+        XdrUint32(0),
+        XdrUint32(0),
+        XdrUint32(0),
+        XdrInt64(BigInt.zero),
+        XdrInt64(BigInt.zero),
+        XdrUint32(0),
+        XdrUint32(0),
+        XdrUint32(0),
+        XdrUint32(0),
+        XdrUint32(0),
       );
       v.maxEntryTTL = XdrUint32(100);
       v.minTemporaryTTL = XdrUint32(200);

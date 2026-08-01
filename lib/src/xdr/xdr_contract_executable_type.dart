@@ -28,6 +28,8 @@ class XdrContractExecutableType {
       const XdrContractExecutableType._internal(0);
   static const CONTRACT_EXECUTABLE_STELLAR_ASSET =
       const XdrContractExecutableType._internal(1);
+  static const CONTRACT_EXECUTABLE_EXTERNAL_REF =
+      const XdrContractExecutableType._internal(2);
 
   static XdrContractExecutableType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -36,6 +38,8 @@ class XdrContractExecutableType {
         return CONTRACT_EXECUTABLE_WASM;
       case 1:
         return CONTRACT_EXECUTABLE_STELLAR_ASSET;
+      case 2:
+        return CONTRACT_EXECUTABLE_EXTERNAL_REF;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -71,6 +75,8 @@ class XdrContractExecutableType {
         return 'CONTRACT_EXECUTABLE_WASM';
       case 1:
         return 'CONTRACT_EXECUTABLE_STELLAR_ASSET';
+      case 2:
+        return 'CONTRACT_EXECUTABLE_EXTERNAL_REF';
       default:
         return 'XdrContractExecutableType#$_value';
     }
@@ -91,6 +97,8 @@ class XdrContractExecutableType {
         return CONTRACT_EXECUTABLE_WASM;
       case 'CONTRACT_EXECUTABLE_STELLAR_ASSET':
         return CONTRACT_EXECUTABLE_STELLAR_ASSET;
+      case 'CONTRACT_EXECUTABLE_EXTERNAL_REF':
+        return CONTRACT_EXECUTABLE_EXTERNAL_REF;
       default:
         if (name.startsWith('XdrContractExecutableType#')) {
           int? val = int.tryParse(

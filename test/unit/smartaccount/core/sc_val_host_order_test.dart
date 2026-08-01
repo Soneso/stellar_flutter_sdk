@@ -41,9 +41,11 @@ void main() {
     int pubFirstByte,
     int credIdLen, {
     String verifierAddress = verifier,
-  }) =>
-      externalSigner(pubFirstByte, credIdLen, verifierAddress: verifierAddress)
-          .toScVal();
+  }) => externalSigner(
+    pubFirstByte,
+    credIdLen,
+    verifierAddress: verifierAddress,
+  ).toScVal();
 
   /// Length-major comparison of raw XDR encodings, used to pin where the two
   /// orders diverge.
@@ -63,8 +65,11 @@ void main() {
       // Bytes compare by content, not length: [0x01,0x02] < [0xFF].
       final a = bytes(const <int>[0xFF]);
       final b = bytes(const <int>[0x01, 0x02]);
-      expect(compareScValHostOrder(b, a) < 0, isTrue,
-          reason: 'b (0x01..) must sort before a (0xFF)');
+      expect(
+        compareScValHostOrder(b, a) < 0,
+        isTrue,
+        reason: 'b (0x01..) must sort before a (0xFF)',
+      );
       expect(compareScValHostOrder(a, b) > 0, isTrue);
     });
 
@@ -93,10 +98,16 @@ void main() {
       final xdrA = xdrBytes(signerA);
       final xdrB = xdrBytes(signerB);
       expect(xdrA.length < xdrB.length, isTrue);
-      expect(compareRawBytes(xdrA, xdrB) < 0, isTrue,
-          reason: 'length-major XDR-byte order puts signerA first');
-      expect(compareScValHostOrder(signerA, signerB) > 0, isTrue,
-          reason: 'host order puts signerA last');
+      expect(
+        compareRawBytes(xdrA, xdrB) < 0,
+        isTrue,
+        reason: 'length-major XDR-byte order puts signerA first',
+      );
+      expect(
+        compareScValHostOrder(signerA, signerB) > 0,
+        isTrue,
+        reason: 'host order puts signerA last',
+      );
     });
 
     test('testSignerWeightsMap_hostOrder', () {
@@ -166,11 +177,18 @@ void main() {
         XdrSCVal.forAddress(Address.forContractId(verifierOther).toXdr()),
       );
       final signerCmp = compareScValHostOrder(signerX, signerY);
-      expect(addrCmp != 0, isTrue,
-          reason: 'the two verifier addresses must differ');
-      expect((signerCmp < 0) == (addrCmp < 0), isTrue,
-          reason: 'signer order must follow the verifier Address element, '
-              'not the identical keyData');
+      expect(
+        addrCmp != 0,
+        isTrue,
+        reason: 'the two verifier addresses must differ',
+      );
+      expect(
+        (signerCmp < 0) == (addrCmp < 0),
+        isTrue,
+        reason:
+            'signer order must follow the verifier Address element, '
+            'not the identical keyData',
+      );
     });
 
     test('testStringComparands_contentOrder', () {
@@ -182,17 +200,38 @@ void main() {
       expect(compareScValHostOrder(b, a) > 0, isTrue);
 
       final prefix = XdrSCVal.forString('app');
-      expect(compareScValHostOrder(prefix, a) < 0, isTrue,
-          reason: 'a prefix sorts before its extension');
+      expect(
+        compareScValHostOrder(prefix, a) < 0,
+        isTrue,
+        reason: 'a prefix sorts before its extension',
+      );
       expect(compareScValHostOrder(a, XdrSCVal.forString('apple')), 0);
+    });
+
+    test('testExecutableTagComparands_contentOrder', () {
+      // ExecutableTag comparands carry an SCString and compare by content,
+      // byte for byte, with the shorter value first on a prefix tie.
+      final a = XdrSCVal.forExecutableTag('apple');
+      final b = XdrSCVal.forExecutableTag('banana');
+      expect(compareScValHostOrder(a, b) < 0, isTrue);
+      expect(compareScValHostOrder(b, a) > 0, isTrue);
+
+      final prefix = XdrSCVal.forExecutableTag('app');
+      expect(
+        compareScValHostOrder(prefix, a) < 0,
+        isTrue,
+        reason: 'a prefix sorts before its extension',
+      );
+      expect(compareScValHostOrder(a, XdrSCVal.forExecutableTag('apple')), 0);
     });
 
     test('testVecComparands_prefixShorterFirst', () {
       // Vec comparands: on a shared prefix, the shorter vec sorts first.
       final shortVec = XdrSCVal.forVec(<XdrSCVal>[XdrSCVal.forSymbol('a')]);
-      final longVec = XdrSCVal.forVec(
-        <XdrSCVal>[XdrSCVal.forSymbol('a'), XdrSCVal.forSymbol('b')],
-      );
+      final longVec = XdrSCVal.forVec(<XdrSCVal>[
+        XdrSCVal.forSymbol('a'),
+        XdrSCVal.forSymbol('b'),
+      ]);
       expect(compareScValHostOrder(shortVec, longVec) < 0, isTrue);
       expect(compareScValHostOrder(longVec, shortVec) > 0, isTrue);
     });
@@ -256,8 +295,9 @@ void main() {
 
       final written = OZSmartAccountAuthPayloadCodec.write(payload);
       final outerEntries = written.map!;
-      final signersEntry =
-          outerEntries.firstWhere((e) => e.key.sym == 'signers');
+      final signersEntry = outerEntries.firstWhere(
+        (e) => e.key.sym == 'signers',
+      );
       final signerKeys = signersEntry.val.map!
           .map((e) => e.key)
           .toList(growable: false);
@@ -265,9 +305,11 @@ void main() {
       expect(signerKeys.length, 2);
       // Signer ScVal instances carry byte payloads without value equality,
       // so compare the XDR encodings instead of the instances.
-      expect(xdrBytes(signerKeys[0]), xdrBytes(signerB.toScVal()),
-          reason:
-              'smaller pubkey content must sort first despite longer keyData');
+      expect(
+        xdrBytes(signerKeys[0]),
+        xdrBytes(signerB.toScVal()),
+        reason: 'smaller pubkey content must sort first despite longer keyData',
+      );
       expect(xdrBytes(signerKeys[1]), xdrBytes(signerA.toScVal()));
     });
   });

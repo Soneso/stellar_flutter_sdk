@@ -693,6 +693,7 @@ tx.operations[0].body.invokeHostFunctionOp.auth.len: 0
 | contract instance | `SCV_CONTRACT_INSTANCE` | `contractInstance.executable.type: ...` |
 | ledger key contract instance | `SCV_LEDGER_KEY_CONTRACT_INSTANCE` | _(no value field)_ |
 | ledger key nonce | `SCV_LEDGER_KEY_NONCE` | `nonce_key.nonce: 0` |
+| executable tag | `SCV_EXECUTABLE_TAG` | `executable_tag: "tag"` |
 
 ---
 

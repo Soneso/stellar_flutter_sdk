@@ -161,7 +161,12 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
       ),
     );
 
-    return ozRouteSubmission(_kit as OZSmartAccountWalletKitInterface, hostFunction, selectedSigners, forceMethod);
+    return ozRouteSubmission(
+      _kit as OZSmartAccountWalletKitInterface,
+      hostFunction,
+      selectedSigners,
+      forceMethod,
+    );
   }
 
   // -------------------------------------------------------------------------
@@ -269,9 +274,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   @override
   Future<List<OZParsedContextRule>> listContextRules({int? maxScanId}) async {
     final raw = await getAllContextRules(maxScanId: maxScanId);
-    return raw
-        .map((scVal) => parseContextRule(scVal))
-        .toList(growable: false);
+    return raw.map((scVal) => parseContextRule(scVal)).toList(growable: false);
   }
 
   // -------------------------------------------------------------------------
@@ -340,9 +343,18 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     final contextType = _parseContextRuleType(contextTypeField);
 
     final signers = _parseSignersVec(fields['signers']);
-    final signerIds = _parseU32Vec(fields['signer_ids'], fieldName: 'signer_ids');
-    final policies = _parseAddressVec(fields['policies'], fieldName: 'policies');
-    final policyIds = _parseU32Vec(fields['policy_ids'], fieldName: 'policy_ids');
+    final signerIds = _parseU32Vec(
+      fields['signer_ids'],
+      fieldName: 'signer_ids',
+    );
+    final policies = _parseAddressVec(
+      fields['policies'],
+      fieldName: 'policies',
+    );
+    final policyIds = _parseU32Vec(
+      fields['policy_ids'],
+      fieldName: 'policy_ids',
+    );
 
     int? validUntil;
     final validUntilField = fields['valid_until'];
@@ -468,9 +480,7 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
             'Expected Address for Delegated signer',
           );
         }
-        return OZDelegatedSigner(
-          OZAddressStrKey.fromXdrOrEmpty(addressXdr),
-        );
+        return OZDelegatedSigner(OZAddressStrKey.fromXdrOrEmpty(addressXdr));
       case 'External':
         if (vec.length < 3) {
           throw SmartAccountValidationException.invalidInput(
@@ -544,16 +554,18 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
         'Expected Vec for $fieldName, got: $field',
       );
     }
-    return vec.map((entry) {
-      final addressXdr = entry.address;
-      if (addressXdr == null) {
-        throw SmartAccountValidationException.invalidInput(
-          fieldName,
-          'Expected Address entries in $fieldName',
-        );
-      }
-      return OZAddressStrKey.fromXdrOrEmpty(addressXdr);
-    }).toList(growable: false);
+    return vec
+        .map((entry) {
+          final addressXdr = entry.address;
+          if (addressXdr == null) {
+            throw SmartAccountValidationException.invalidInput(
+              fieldName,
+              'Expected Address entries in $fieldName',
+            );
+          }
+          return OZAddressStrKey.fromXdrOrEmpty(addressXdr);
+        })
+        .toList(growable: false);
   }
 
   int _expectU32(XdrSCVal scVal, {required String fieldName}) {
@@ -625,7 +637,12 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
       ),
     );
 
-    return ozRouteSubmission(_kit as OZSmartAccountWalletKitInterface, hostFunction, selectedSigners, forceMethod);
+    return ozRouteSubmission(
+      _kit as OZSmartAccountWalletKitInterface,
+      hostFunction,
+      selectedSigners,
+      forceMethod,
+    );
   }
 
   /// Updates the expiration ledger of a context rule. Pass `null` to
@@ -659,7 +676,12 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
       ),
     );
 
-    return ozRouteSubmission(_kit as OZSmartAccountWalletKitInterface, hostFunction, selectedSigners, forceMethod);
+    return ozRouteSubmission(
+      _kit as OZSmartAccountWalletKitInterface,
+      hostFunction,
+      selectedSigners,
+      forceMethod,
+    );
   }
 
   /// Removes a context rule.
@@ -685,7 +707,12 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
       ),
     );
 
-    return ozRouteSubmission(_kit as OZSmartAccountWalletKitInterface, hostFunction, selectedSigners, forceMethod);
+    return ozRouteSubmission(
+      _kit as OZSmartAccountWalletKitInterface,
+      hostFunction,
+      selectedSigners,
+      forceMethod,
+    );
   }
 
   // -------------------------------------------------------------------------
@@ -737,8 +764,10 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
   ) {
     final contexts = _buildInvocationContextTypes(entry);
     return contexts
-        .map((contextType) =>
-            _resolveSingleContext(contextType, selectedSigners, rules))
+        .map(
+          (contextType) =>
+              _resolveSingleContext(contextType, selectedSigners, rules),
+        )
         .toList(growable: false);
   }
 
@@ -778,8 +807,10 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     // Multiple candidates still contain all selected signers but none
     // matched the tiered constraints unambiguously — surface their ids
     // so the caller can pick a forced resolution.
-    final allMatching =
-        _candidatesContainingAllSelected(candidates, selectedSigners);
+    final allMatching = _candidatesContainingAllSelected(
+      candidates,
+      selectedSigners,
+    );
     if (allMatching.length > 1) {
       final ids = allMatching.map((r) => r.id.toString()).join(', ');
       throw SmartAccountValidationException.invalidInput(
@@ -800,11 +831,13 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     List<OZParsedContextRule> candidates,
     List<OZSmartAccountSigner> selectedSigners,
   ) {
-    final matches = candidates.where((rule) {
-      if (rule.signers.length != selectedSigners.length) return false;
-      return _everySelectedInRule(rule, selectedSigners) &&
-          _everyRuleSignerInSelected(rule, selectedSigners);
-    }).toList(growable: false);
+    final matches = candidates
+        .where((rule) {
+          if (rule.signers.length != selectedSigners.length) return false;
+          return _everySelectedInRule(rule, selectedSigners) &&
+              _everyRuleSignerInSelected(rule, selectedSigners);
+        })
+        .toList(growable: false);
     return matches.length == 1 ? matches.first.id : null;
   }
 
@@ -814,10 +847,12 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     List<OZParsedContextRule> candidates,
     List<OZSmartAccountSigner> selectedSigners,
   ) {
-    final matches = candidates.where((rule) {
-      if (rule.policies.isNotEmpty) return false;
-      return _everyRuleSignerInSelected(rule, selectedSigners);
-    }).toList(growable: false);
+    final matches = candidates
+        .where((rule) {
+          if (rule.policies.isNotEmpty) return false;
+          return _everyRuleSignerInSelected(rule, selectedSigners);
+        })
+        .toList(growable: false);
     return matches.length == 1 ? matches.first.id : null;
   }
 
@@ -827,7 +862,10 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     List<OZParsedContextRule> candidates,
     List<OZSmartAccountSigner> selectedSigners,
   ) {
-    final matches = _candidatesContainingAllSelected(candidates, selectedSigners);
+    final matches = _candidatesContainingAllSelected(
+      candidates,
+      selectedSigners,
+    );
     return matches.length == 1 ? matches.first.id : null;
   }
 
@@ -837,9 +875,12 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     OZParsedContextRule rule,
     List<OZSmartAccountSigner> selectedSigners,
   ) {
-    return selectedSigners.every((selected) => rule.signers.any(
+    return selectedSigners.every(
+      (selected) => rule.signers.any(
         (ruleSigner) =>
-            OZSmartAccountBuilders.signersEqual(ruleSigner, selected)));
+            OZSmartAccountBuilders.signersEqual(ruleSigner, selected),
+      ),
+    );
   }
 
   /// Predicate: every signer on the rule is present in
@@ -848,9 +889,11 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     OZParsedContextRule rule,
     List<OZSmartAccountSigner> selectedSigners,
   ) {
-    return rule.signers.every((ruleSigner) => selectedSigners.any(
-        (selected) =>
-            OZSmartAccountBuilders.signersEqual(ruleSigner, selected)));
+    return rule.signers.every(
+      (ruleSigner) => selectedSigners.any(
+        (selected) => OZSmartAccountBuilders.signersEqual(ruleSigner, selected),
+      ),
+    );
   }
 
   List<OZParsedContextRule> _candidatesContainingAllSelected(
@@ -885,22 +928,24 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
     final discriminant = function.discriminant;
     switch (discriminant) {
       case XdrSorobanAuthorizedFunctionType
-            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
+          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN:
         final contractFn = function.contractFn;
         if (contractFn == null) return;
-        result.add(OZContextRuleTypeCallContract(
-          OZAddressStrKey.fromXdrOrEmpty(contractFn.contractAddress),
-        ));
+        result.add(
+          OZContextRuleTypeCallContract(
+            OZAddressStrKey.fromXdrOrEmpty(contractFn.contractAddress),
+          ),
+        );
         break;
       case XdrSorobanAuthorizedFunctionType
-            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
+          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN:
         final createFn = function.createContractHostFn;
         if (createFn == null) return;
         final wasmHash = _extractWasmHash(createFn.executable);
         result.add(OZContextRuleTypeCreateContract(wasmHash));
         break;
       case XdrSorobanAuthorizedFunctionType
-            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
+          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN:
         final createV2Fn = function.createContractV2HostFn;
         if (createV2Fn == null) return;
         final wasmHash = _extractWasmHash(createV2Fn.executable);
@@ -936,6 +981,12 @@ class OZContextRuleManager implements OZContextRuleManagerInterface {
           'executable',
           'CreateContract invocation references a Stellar Asset '
               'Contract, not a WASM contract',
+        );
+      case XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF:
+        throw SmartAccountValidationException.invalidInput(
+          'executable',
+          'CreateContract invocation references an external executable, '
+              'not a WASM contract',
         );
       default:
         throw SmartAccountValidationException.invalidInput(

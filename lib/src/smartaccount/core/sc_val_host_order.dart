@@ -23,9 +23,9 @@ import '../../xdr/xdr.dart';
 ///   on a prefix tie.
 /// - `Map` compares entry-wise (key, then value, recursively); the map with
 ///   fewer entries sorts first on a prefix tie.
-/// - `Bytes`, `String`, and `Symbol` compare by content, byte for byte
-///   (unsigned); the shorter value sorts first on a prefix tie (length is
-///   the tiebreaker, never the primary key).
+/// - `Bytes`, `String`, `Symbol`, and `ExecutableTag` compare by content,
+///   byte for byte (unsigned); the shorter value sorts first on a prefix tie
+///   (length is the tiebreaker, never the primary key).
 /// - All remaining values compare by their XDR encoding. For the fixed-width
 ///   types that can appear in smart-account map keys (addresses, unsigned
 ///   scalars) this equals a content comparison. Signed integer scalars would
@@ -41,8 +41,9 @@ int compareScValHostOrder(XdrSCVal a, XdrSCVal b) {
   if (a.discriminant == XdrSCValType.SCV_VEC) {
     final elementsA = a.vec ?? const <XdrSCVal>[];
     final elementsB = b.vec ?? const <XdrSCVal>[];
-    final shared =
-        elementsA.length < elementsB.length ? elementsA.length : elementsB.length;
+    final shared = elementsA.length < elementsB.length
+        ? elementsA.length
+        : elementsB.length;
     for (var i = 0; i < shared; i++) {
       final cmp = compareScValHostOrder(elementsA[i], elementsB[i]);
       if (cmp != 0) return cmp;
@@ -52,8 +53,9 @@ int compareScValHostOrder(XdrSCVal a, XdrSCVal b) {
   if (a.discriminant == XdrSCValType.SCV_MAP) {
     final entriesA = a.map ?? const <XdrSCMapEntry>[];
     final entriesB = b.map ?? const <XdrSCMapEntry>[];
-    final shared =
-        entriesA.length < entriesB.length ? entriesA.length : entriesB.length;
+    final shared = entriesA.length < entriesB.length
+        ? entriesA.length
+        : entriesB.length;
     for (var i = 0; i < shared; i++) {
       final keyCmp = compareScValHostOrder(entriesA[i].key, entriesB[i].key);
       if (keyCmp != 0) return keyCmp;
@@ -78,6 +80,12 @@ int compareScValHostOrder(XdrSCVal a, XdrSCVal b) {
     return _compareBytesUnsigned(
       utf8.encode(a.sym ?? ''),
       utf8.encode(b.sym ?? ''),
+    );
+  }
+  if (a.discriminant == XdrSCValType.SCV_EXECUTABLE_TAG) {
+    return _compareBytesUnsigned(
+      utf8.encode(a.executableTag ?? ''),
+      utf8.encode(b.executableTag ?? ''),
     );
   }
   return _compareBytesUnsigned(

@@ -61,6 +61,7 @@ class XdrSCVal extends XdrSCValBase {
     result.address = b.address;
     result.instance = b.instance;
     result.nonce_key = b.nonce_key;
+    result.executableTag = b.executableTag;
     return result;
   }
 
@@ -278,6 +279,12 @@ class XdrSCVal extends XdrSCValBase {
 
   static XdrSCVal forLedgerKeyContractInstance() {
     return XdrSCVal(XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE);
+  }
+
+  static XdrSCVal forExecutableTag(String executableTag) {
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_EXECUTABLE_TAG);
+    val.executableTag = executableTag;
+    return val;
   }
 
   /// Splits a BigInt into hi/lo 64-bit parts for 128-bit representation.

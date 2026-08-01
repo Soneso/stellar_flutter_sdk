@@ -26,6 +26,15 @@ FIELD_OVERRIDES = {
   # ContractExecutable: XDR wasm_hash → SDK wasmHash (camelCase)
   "XdrContractExecutable" => {
     "wasm_hash" => "wasmHash",
+    "external_ref" => "externalRef",
+  },
+  # ContractExecutableExternalRef: XDR executable_owner → SDK camelCase
+  "XdrContractExecutableExternalRef" => {
+    "executable_owner" => "executableOwner",
+  },
+  # SCVal: XDR executable_tag → SDK camelCase
+  "XdrSCVal" => {
+    "executable_tag" => "executableTag",
   },
   # RevokeSponsorshipSigner: XDR accountID → SDK accountId (lowercase d)
   "XdrRevokeSponsorshipSigner" => {

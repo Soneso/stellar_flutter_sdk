@@ -47,6 +47,7 @@ class XdrSCValType {
     20,
   );
   static const SCV_LEDGER_KEY_NONCE = const XdrSCValType._internal(21);
+  static const SCV_EXECUTABLE_TAG = const XdrSCValType._internal(22);
 
   static XdrSCValType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -95,6 +96,8 @@ class XdrSCValType {
         return SCV_LEDGER_KEY_CONTRACT_INSTANCE;
       case 21:
         return SCV_LEDGER_KEY_NONCE;
+      case 22:
+        return SCV_EXECUTABLE_TAG;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -165,6 +168,8 @@ class XdrSCValType {
         return 'SCV_LEDGER_KEY_CONTRACT_INSTANCE';
       case 21:
         return 'SCV_LEDGER_KEY_NONCE';
+      case 22:
+        return 'SCV_EXECUTABLE_TAG';
       default:
         return 'XdrSCValType#$_value';
     }
@@ -222,6 +227,8 @@ class XdrSCValType {
         return SCV_LEDGER_KEY_CONTRACT_INSTANCE;
       case 'SCV_LEDGER_KEY_NONCE':
         return SCV_LEDGER_KEY_NONCE;
+      case 'SCV_EXECUTABLE_TAG':
+        return SCV_EXECUTABLE_TAG;
       default:
         if (name.startsWith('XdrSCValType#')) {
           int? val = int.tryParse(name.substring('XdrSCValType#'.length));

@@ -5,9 +5,11 @@
 import 'dart:typed_data';
 
 import 'xdr_contract_executable_base.dart';
+import 'xdr_contract_executable_external_ref.dart';
 import 'xdr_contract_executable_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_sc_address.dart';
 
 class XdrContractExecutable extends XdrContractExecutableBase {
   XdrContractExecutable(super.type);
@@ -30,6 +32,7 @@ class XdrContractExecutable extends XdrContractExecutableBase {
     var b = XdrContractExecutableBase.fromTxRep(map, prefix);
     var result = XdrContractExecutable(b.discriminant);
     result.wasmHash = b.wasmHash;
+    result.externalRef = b.externalRef;
     return result;
   }
 
@@ -45,5 +48,16 @@ class XdrContractExecutable extends XdrContractExecutableBase {
     return XdrContractExecutable(
       XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET,
     );
+  }
+
+  static XdrContractExecutable forExternalRef(
+    XdrSCAddress executableOwner,
+    String tag,
+  ) {
+    var result = XdrContractExecutable(
+      XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF,
+    );
+    result.externalRef = XdrContractExecutableExternalRef(executableOwner, tag);
+    return result;
   }
 }

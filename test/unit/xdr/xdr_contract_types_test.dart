@@ -32,6 +32,10 @@ void main() {
       expect(XdrSCValType.SCV_VEC.value, equals(16));
       expect(XdrSCValType.SCV_MAP.value, equals(17));
       expect(XdrSCValType.SCV_ADDRESS.value, equals(18));
+      expect(XdrSCValType.SCV_CONTRACT_INSTANCE.value, equals(19));
+      expect(XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE.value, equals(20));
+      expect(XdrSCValType.SCV_LEDGER_KEY_NONCE.value, equals(21));
+      expect(XdrSCValType.SCV_EXECUTABLE_TAG.value, equals(22));
     });
 
     test('XdrSCAddressType enum values', () {
@@ -40,8 +44,18 @@ void main() {
     });
 
     test('XdrContractExecutableType enum values', () {
-      expect(XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM.value, equals(0));
-      expect(XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET.value, equals(1));
+      expect(
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM.value,
+        equals(0),
+      );
+      expect(
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET.value,
+        equals(1),
+      );
+      expect(
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF.value,
+        equals(2),
+      );
     });
 
     test('XdrContractDataDurability enum values', () {
@@ -88,7 +102,10 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrContractExecutable.decode(input);
 
-      expect(decoded.type.value, equals(XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM.value));
+      expect(
+        decoded.type.value,
+        equals(XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM.value),
+      );
       expect(decoded.wasmHash!.hash, equals(wasmHash));
     });
 
@@ -102,7 +119,12 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrContractExecutable.decode(input);
 
-      expect(decoded.type.value, equals(XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET.value));
+      expect(
+        decoded.type.value,
+        equals(
+          XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET.value,
+        ),
+      );
       expect(decoded.wasmHash, isNull);
     });
 
@@ -146,37 +168,59 @@ void main() {
 
     test('XdrSCVal.forTimepoint factory', () {
       var original = XdrSCVal.forTimepoint(BigInt.from(1640000000));
-      expect(original.discriminant.value, equals(XdrSCValType.SCV_TIMEPOINT.value));
+      expect(
+        original.discriminant.value,
+        equals(XdrSCValType.SCV_TIMEPOINT.value),
+      );
       expect(original.timepoint!.uint64, equals(BigInt.from(1640000000)));
     });
 
     test('XdrSCVal.forDuration factory', () {
       var original = XdrSCVal.forDuration(BigInt.from(3600));
-      expect(original.discriminant.value, equals(XdrSCValType.SCV_DURATION.value));
+      expect(
+        original.discriminant.value,
+        equals(XdrSCValType.SCV_DURATION.value),
+      );
       expect(original.duration!.uint64, equals(BigInt.from(3600)));
     });
 
     test('XdrSCVal.forU128Parts factory', () {
-      var original = XdrSCVal.forU128Parts(BigInt.from(123456789), BigInt.from(987654321));
+      var original = XdrSCVal.forU128Parts(
+        BigInt.from(123456789),
+        BigInt.from(987654321),
+      );
       expect(original.discriminant.value, equals(XdrSCValType.SCV_U128.value));
       expect(original.u128!.hi.uint64, equals(BigInt.from(123456789)));
       expect(original.u128!.lo.uint64, equals(BigInt.from(987654321)));
     });
 
     test('XdrSCVal.forI128Parts factory', () {
-      var original = XdrSCVal.forI128Parts(BigInt.from(-123456789), BigInt.from(987654321));
+      var original = XdrSCVal.forI128Parts(
+        BigInt.from(-123456789),
+        BigInt.from(987654321),
+      );
       expect(original.discriminant.value, equals(XdrSCValType.SCV_I128.value));
       expect(original.i128!.hi.int64, equals(BigInt.from(-123456789)));
     });
 
     test('XdrSCVal.forU256Parts factory', () {
-      var original = XdrSCVal.forU256Parts(BigInt.from(111), BigInt.from(222), BigInt.from(333), BigInt.from(444));
+      var original = XdrSCVal.forU256Parts(
+        BigInt.from(111),
+        BigInt.from(222),
+        BigInt.from(333),
+        BigInt.from(444),
+      );
       expect(original.discriminant.value, equals(XdrSCValType.SCV_U256.value));
       expect(original.u256!.hiHi.uint64, equals(BigInt.from(111)));
     });
 
     test('XdrSCVal.forI256Parts factory', () {
-      var original = XdrSCVal.forI256Parts(BigInt.from(-111), BigInt.from(222), BigInt.from(333), BigInt.from(444));
+      var original = XdrSCVal.forI256Parts(
+        BigInt.from(-111),
+        BigInt.from(222),
+        BigInt.from(333),
+        BigInt.from(444),
+      );
       expect(original.discriminant.value, equals(XdrSCValType.SCV_I256.value));
       expect(original.i256!.hiHi.int64, equals(BigInt.from(-111)));
     });
@@ -190,13 +234,19 @@ void main() {
 
     test('XdrSCVal.forString factory', () {
       var original = XdrSCVal.forString('Hello Stellar');
-      expect(original.discriminant.value, equals(XdrSCValType.SCV_STRING.value));
+      expect(
+        original.discriminant.value,
+        equals(XdrSCValType.SCV_STRING.value),
+      );
       expect(original.str, equals('Hello Stellar'));
     });
 
     test('XdrSCVal.forSymbol factory', () {
       var original = XdrSCVal.forSymbol('my_symbol');
-      expect(original.discriminant.value, equals(XdrSCValType.SCV_SYMBOL.value));
+      expect(
+        original.discriminant.value,
+        equals(XdrSCValType.SCV_SYMBOL.value),
+      );
       expect(original.sym, equals('my_symbol'));
     });
 
@@ -218,14 +268,22 @@ void main() {
 
     test('XdrSCVal.forAddress factory', () {
       var publicKey = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
-      publicKey.setEd25519(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x99))));
+      publicKey.setEd25519(
+        XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x99))),
+      );
       var accountId = XdrAccountID(publicKey);
       var address = XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT);
       address.accountId = accountId;
 
       var original = XdrSCVal.forAddress(address);
-      expect(original.discriminant.value, equals(XdrSCValType.SCV_ADDRESS.value));
-      expect(original.address!.discriminant.value, equals(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT.value));
+      expect(
+        original.discriminant.value,
+        equals(XdrSCValType.SCV_ADDRESS.value),
+      );
+      expect(
+        original.address!.discriminant.value,
+        equals(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT.value),
+      );
     });
 
     test('XdrSCVal.forError factory', () {
@@ -238,7 +296,10 @@ void main() {
     });
 
     test('XdrInt128Parts.forHiLo factory', () {
-      var original = XdrInt128Parts.forHiLo(BigInt.from(-12345), BigInt.from(67890));
+      var original = XdrInt128Parts.forHiLo(
+        BigInt.from(-12345),
+        BigInt.from(67890),
+      );
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrInt128Parts.encode(output, original);
@@ -253,7 +314,11 @@ void main() {
 
     test('XdrInt256Parts.forHiHiHiLoLoHiLoLo factory', () {
       var original = XdrInt256Parts.forHiHiHiLoLoHiLoLo(
-        BigInt.from(-999), BigInt.from(111), BigInt.from(222), BigInt.from(333));
+        BigInt.from(-999),
+        BigInt.from(111),
+        BigInt.from(222),
+        BigInt.from(333),
+      );
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrInt256Parts.encode(output, original);
@@ -346,10 +411,7 @@ void main() {
           XdrSCVal.forSymbol('balance'),
           XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(1000000)),
         ),
-        XdrSCMapEntry(
-          XdrSCVal.forSymbol('decimals'),
-          XdrSCVal.forU32(7),
-        ),
+        XdrSCMapEntry(XdrSCVal.forSymbol('decimals'), XdrSCVal.forU32(7)),
         XdrSCMapEntry(
           XdrSCVal.forSymbol('name'),
           XdrSCVal.forString('Test Token'),

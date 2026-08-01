@@ -25,6 +25,7 @@ void main() {
       final members = [
         XdrStellarValueType.STELLAR_VALUE_BASIC,
             XdrStellarValueType.STELLAR_VALUE_SIGNED,
+            XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET,
       ];
       for (var member in members) {
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -50,6 +51,23 @@ void main() {
         XdrLedgerCloseValueSignature.decode(input);
         XdrLedgerCloseValueSignature.fromBase64EncodedXdrString(
                 original.toBase64EncodedXdrString());
+      });
+
+      test('XdrStellarValueProposedValue struct roundtrip', () {
+        var original = XdrStellarValueProposedValue(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint32(42), XdrLedgerCloseValueSignature(XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrSignature(Uint8List.fromList([4, 5, 6]))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrStellarValueProposedValue.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrStellarValueProposedValue.decode(input);
+          expect(decoded.txSetHash.hash, equals(original.txSetHash.hash));
+          expect(decoded.previousLedgerHash.hash, equals(original.previousLedgerHash.hash));
+          expect(decoded.previousLedgerVersion.uint32, equals(original.previousLedgerVersion.uint32));
+        var base64Decoded = XdrStellarValueProposedValue.fromBase64EncodedXdrString(
+                original.toBase64EncodedXdrString());
+          expect(base64Decoded.txSetHash.hash, equals(original.txSetHash.hash));
+          expect(base64Decoded.previousLedgerHash.hash, equals(original.previousLedgerHash.hash));
+          expect(base64Decoded.previousLedgerVersion.uint32, equals(original.previousLedgerVersion.uint32));
       });
 
     test('XdrStellarValueExt XdrStellarValueType.STELLAR_VALUE_BASIC void arm roundtrip', () {
@@ -81,6 +99,24 @@ void main() {
         expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
           // Verify arm field is not null
           expect(base64Decoded.lcValueSignature, isNotNull);
+      });
+
+      test('XdrStellarValueExt XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET arm roundtrip', () {
+        var original = XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET);
+        original.proposedValue = (XdrStellarValueProposedValue(XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))), XdrUint32(42), XdrLedgerCloseValueSignature(XdrNodeID(XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)))), XdrSignature(Uint8List.fromList([4, 5, 6])))));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrStellarValueExt.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrStellarValueExt.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(decoded.proposedValue, isNotNull);
+        var base64Decoded = XdrStellarValueExt.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString());
+        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
+          // Verify arm field is not null
+          expect(base64Decoded.proposedValue, isNotNull);
       });
 
       test('XdrStellarValue struct roundtrip', () {

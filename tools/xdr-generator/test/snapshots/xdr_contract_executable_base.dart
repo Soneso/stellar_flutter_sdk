@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'txrep_helper.dart';
+import 'xdr_contract_executable_external_ref.dart';
 import 'xdr_contract_executable_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
@@ -26,9 +27,15 @@ class XdrContractExecutableBase {
 
   XdrHash? get wasmHash => this._wasmHash;
 
+  XdrContractExecutableExternalRef? _externalRef;
+
+  XdrContractExecutableExternalRef? get externalRef => this._externalRef;
+
   XdrContractExecutableBase(this._type);
 
   set wasmHash(XdrHash? value) => this._wasmHash = value;
+
+  set externalRef(XdrContractExecutableExternalRef? value) => this._externalRef = value;
 
   static void encode(XdrDataOutputStream stream, XdrContractExecutableBase encodedContractExecutable) {
     stream.writeInt(encodedContractExecutable.discriminant.value);
@@ -37,6 +44,9 @@ class XdrContractExecutableBase {
         XdrHash.encode(stream, encodedContractExecutable._wasmHash!);
         break;
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET:
+        break;
+      case XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF:
+        XdrContractExecutableExternalRef.encode(stream, encodedContractExecutable._externalRef!);
         break;
       default:
         break;
@@ -57,6 +67,9 @@ class XdrContractExecutableBase {
         decoded._wasmHash = XdrHash.decode(stream);
         break;
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET:
+        break;
+      case XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF:
+        decoded._externalRef = XdrContractExecutableExternalRef.decode(stream);
         break;
       default:
         break;
@@ -83,6 +96,9 @@ class XdrContractExecutableBase {
         break;
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET:
         break;
+      case XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF:
+        _externalRef!.toTxRep('$prefix.external_ref', lines);
+        break;
       default:
         break;
     }
@@ -96,6 +112,9 @@ class XdrContractExecutableBase {
         result._wasmHash = XdrHash.fromTxRep(map, '$prefix.wasm_hash');
         break;
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET:
+        break;
+      case XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF:
+        result._externalRef = XdrContractExecutableExternalRef.fromTxRep(map, '$prefix.external_ref');
         break;
       default:
         break;
