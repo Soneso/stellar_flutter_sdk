@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrErrorCode {
   final _value;
@@ -59,5 +60,54 @@ class XdrErrorCode {
   static XdrErrorCode fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrErrorCode.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrErrorCode');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrErrorCode.
+  static XdrErrorCode fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrErrorCode'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'misc';
+      case 1:
+        return 'data';
+      case 2:
+        return 'conf';
+      case 3:
+        return 'auth';
+      case 4:
+        return 'load';
+      default:
+        XdrJsonHelper.fail('XdrErrorCode', 'holds the unknown value $_value');
+    }
+  }
+
+  /// Reads a XdrErrorCode from its SEP-0051 name.
+  static XdrErrorCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'misc':
+          return XdrErrorCode.ERR_MISC;
+        case 'data':
+          return XdrErrorCode.ERR_DATA;
+        case 'conf':
+          return XdrErrorCode.ERR_CONF;
+        case 'auth':
+          return XdrErrorCode.ERR_AUTH;
+        case 'load':
+          return XdrErrorCode.ERR_LOAD;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrErrorCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_account_entry_v3.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrAccountEntryV2Ext {
   int _v;
@@ -69,5 +70,58 @@ class XdrAccountEntryV2Ext {
   static XdrAccountEntryV2Ext fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountEntryV2Ext.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrAccountEntryV2Ext',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAccountEntryV2Ext.
+  static XdrAccountEntryV2Ext fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrAccountEntryV2Ext'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrAccountEntryV2Ext.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return 'v0';
+      case 3:
+        return <String, Object?>{'v3': _v3!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrAccountEntryV2Ext',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrAccountEntryV2Ext from its SEP-0051 rendering.
+  static XdrAccountEntryV2Ext fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'v0':
+          return XdrAccountEntryV2Ext(0);
+      }
+      XdrJsonHelper.fail(
+        'XdrAccountEntryV2Ext',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrAccountEntryV2Ext',
+    );
+    switch (arm.key) {
+      case 'v3':
+        final XdrAccountEntryV2Ext arm0 = XdrAccountEntryV2Ext(3);
+        arm0.v3 = XdrAccountEntryV3.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrAccountEntryV2Ext',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

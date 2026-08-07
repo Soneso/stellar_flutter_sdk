@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_contract_event.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_val.dart';
 
 class XdrInvokeHostFunctionSuccessPreImage {
@@ -66,6 +67,63 @@ class XdrInvokeHostFunctionSuccessPreImage {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInvokeHostFunctionSuccessPreImage.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrInvokeHostFunctionSuccessPreImage',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrInvokeHostFunctionSuccessPreImage.
+  static XdrInvokeHostFunctionSuccessPreImage fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrInvokeHostFunctionSuccessPreImage',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrInvokeHostFunctionSuccessPreImage.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'return_value': _returnValue.toXdrJsonValue(),
+    'events': XdrJsonHelper.array<XdrContractEvent>(
+      _events,
+      (XdrContractEvent v) => v.toXdrJsonValue(),
+      type: 'XdrInvokeHostFunctionSuccessPreImage',
+      key: 'events',
+    ),
+  };
+
+  /// Reads a XdrInvokeHostFunctionSuccessPreImage from its SEP-0051 rendering.
+  static XdrInvokeHostFunctionSuccessPreImage fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrInvokeHostFunctionSuccessPreImage',
+      allowedKeys: const <String>{'return_value', 'events'},
+    );
+    final Object? jsonReturnValue = XdrJsonHelper.readField(
+      object,
+      'return_value',
+      type: 'XdrInvokeHostFunctionSuccessPreImage',
+    );
+    final Object? jsonEvents = XdrJsonHelper.readField(
+      object,
+      'events',
+      type: 'XdrInvokeHostFunctionSuccessPreImage',
+    );
+    return XdrInvokeHostFunctionSuccessPreImage(
+      XdrSCVal.fromXdrJsonValue(jsonReturnValue),
+      XdrJsonHelper.readArray(
+            jsonEvents,
+            type: 'XdrInvokeHostFunctionSuccessPreImage',
+            key: 'events',
+          )
+          .map<XdrContractEvent>(
+            (Object? e) => XdrContractEvent.fromXdrJsonValue(e),
+          )
+          .toList(),
     );
   }
 }

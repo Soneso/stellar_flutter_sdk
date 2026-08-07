@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_signature.dart';
 import 'xdr_time_sliced_survey_response_message.dart';
 
@@ -64,6 +65,52 @@ class XdrSignedTimeSlicedSurveyResponseMessage {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSignedTimeSlicedSurveyResponseMessage.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSignedTimeSlicedSurveyResponseMessage',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSignedTimeSlicedSurveyResponseMessage.
+  static XdrSignedTimeSlicedSurveyResponseMessage fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrSignedTimeSlicedSurveyResponseMessage',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrSignedTimeSlicedSurveyResponseMessage.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'response_signature': _responseSignature.toXdrJsonValue(),
+    'response': _response.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSignedTimeSlicedSurveyResponseMessage from its SEP-0051 rendering.
+  static XdrSignedTimeSlicedSurveyResponseMessage fromXdrJsonValue(
+    Object? value,
+  ) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSignedTimeSlicedSurveyResponseMessage',
+      allowedKeys: const <String>{'response_signature', 'response'},
+    );
+    final Object? jsonResponseSignature = XdrJsonHelper.readField(
+      object,
+      'response_signature',
+      type: 'XdrSignedTimeSlicedSurveyResponseMessage',
+    );
+    final Object? jsonResponse = XdrJsonHelper.readField(
+      object,
+      'response',
+      type: 'XdrSignedTimeSlicedSurveyResponseMessage',
+    );
+    return XdrSignedTimeSlicedSurveyResponseMessage(
+      XdrSignature.fromXdrJsonValue(jsonResponseSignature),
+      XdrTimeSlicedSurveyResponseMessage.fromXdrJsonValue(jsonResponse),
     );
   }
 }

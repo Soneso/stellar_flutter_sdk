@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSCEnvMetaKind {
   final _value;
@@ -49,5 +50,41 @@ class XdrSCEnvMetaKind {
   static XdrSCEnvMetaKind fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCEnvMetaKind.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCEnvMetaKind');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCEnvMetaKind.
+  static XdrSCEnvMetaKind fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCEnvMetaKind'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'sc_env_meta_kind_interface_version';
+      default:
+        XdrJsonHelper.fail(
+          'XdrSCEnvMetaKind',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrSCEnvMetaKind from its SEP-0051 name.
+  static XdrSCEnvMetaKind fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'sc_env_meta_kind_interface_version':
+          return XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrSCEnvMetaKind',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_create_account_result_code.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrCreateAccountResult {
   XdrCreateAccountResultCode _code;
@@ -59,5 +60,72 @@ class XdrCreateAccountResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCreateAccountResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrCreateAccountResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrCreateAccountResult.
+  static XdrCreateAccountResult fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrCreateAccountResult'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrCreateAccountResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'underfunded';
+      case -3:
+        return 'low_reserve';
+      case -4:
+        return 'already_exist';
+    }
+    XdrJsonHelper.fail(
+      'XdrCreateAccountResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrCreateAccountResult from its SEP-0051 rendering.
+  static XdrCreateAccountResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrCreateAccountResult(
+            XdrCreateAccountResultCode.CREATE_ACCOUNT_SUCCESS,
+          );
+        case 'malformed':
+          return XdrCreateAccountResult(
+            XdrCreateAccountResultCode.CREATE_ACCOUNT_MALFORMED,
+          );
+        case 'underfunded':
+          return XdrCreateAccountResult(
+            XdrCreateAccountResultCode.CREATE_ACCOUNT_UNDERFUNDED,
+          );
+        case 'low_reserve':
+          return XdrCreateAccountResult(
+            XdrCreateAccountResultCode.CREATE_ACCOUNT_LOW_RESERVE,
+          );
+        case 'already_exist':
+          return XdrCreateAccountResult(
+            XdrCreateAccountResultCode.CREATE_ACCOUNT_ALREADY_EXIST,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrCreateAccountResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrCreateAccountResult',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

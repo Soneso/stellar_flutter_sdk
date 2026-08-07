@@ -10,6 +10,7 @@ import 'txrep_helper.dart';
 import 'xdr_contract_executable.dart';
 import 'xdr_contract_id_preimage.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_val.dart';
 
 class XdrCreateContractArgsV2 {
@@ -116,6 +117,66 @@ class XdrCreateContractArgsV2 {
       contractIDPreimage,
       executable,
       constructorArgs,
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrCreateContractArgsV2',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrCreateContractArgsV2.
+  static XdrCreateContractArgsV2 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrCreateContractArgsV2'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrCreateContractArgsV2.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'contract_id_preimage': _contractIDPreimage.toXdrJsonValue(),
+    'executable': _executable.toXdrJsonValue(),
+    'constructor_args': XdrJsonHelper.array<XdrSCVal>(
+      _constructorArgs,
+      (XdrSCVal v) => v.toXdrJsonValue(),
+      type: 'XdrCreateContractArgsV2',
+      key: 'constructor_args',
+    ),
+  };
+
+  /// Reads a XdrCreateContractArgsV2 from its SEP-0051 rendering.
+  static XdrCreateContractArgsV2 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrCreateContractArgsV2',
+      allowedKeys: const <String>{
+        'contract_id_preimage',
+        'executable',
+        'constructor_args',
+      },
+    );
+    final Object? jsonContractIDPreimage = XdrJsonHelper.readField(
+      object,
+      'contract_id_preimage',
+      type: 'XdrCreateContractArgsV2',
+    );
+    final Object? jsonExecutable = XdrJsonHelper.readField(
+      object,
+      'executable',
+      type: 'XdrCreateContractArgsV2',
+    );
+    final Object? jsonConstructorArgs = XdrJsonHelper.readField(
+      object,
+      'constructor_args',
+      type: 'XdrCreateContractArgsV2',
+    );
+    return XdrCreateContractArgsV2(
+      XdrContractIDPreimage.fromXdrJsonValue(jsonContractIDPreimage),
+      XdrContractExecutable.fromXdrJsonValue(jsonExecutable),
+      XdrJsonHelper.readArray(
+        jsonConstructorArgs,
+        type: 'XdrCreateContractArgsV2',
+        key: 'constructor_args',
+      ).map<XdrSCVal>((Object? e) => XdrSCVal.fromXdrJsonValue(e)).toList(),
     );
   }
 }

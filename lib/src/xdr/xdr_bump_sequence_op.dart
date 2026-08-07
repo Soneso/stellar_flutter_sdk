@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sequence_number.dart';
 
 class XdrBumpSequenceOp {
@@ -49,5 +50,34 @@ class XdrBumpSequenceOp {
       '$prefix.bumpTo',
     );
     return XdrBumpSequenceOp(bumpTo);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrBumpSequenceOp');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrBumpSequenceOp.
+  static XdrBumpSequenceOp fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrBumpSequenceOp'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrBumpSequenceOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'bump_to': _bumpTo.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrBumpSequenceOp from its SEP-0051 rendering.
+  static XdrBumpSequenceOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrBumpSequenceOp',
+      allowedKeys: const <String>{'bump_to'},
+    );
+    final Object? jsonBumpTo = XdrJsonHelper.readField(
+      object,
+      'bump_to',
+      type: 'XdrBumpSequenceOp',
+    );
+    return XdrBumpSequenceOp(XdrSequenceNumber.fromXdrJsonValue(jsonBumpTo));
   }
 }

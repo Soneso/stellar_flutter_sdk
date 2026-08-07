@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrPaymentResultCode {
   final _value;
@@ -80,5 +81,79 @@ class XdrPaymentResultCode {
   static XdrPaymentResultCode fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPaymentResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrPaymentResultCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPaymentResultCode.
+  static XdrPaymentResultCode fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrPaymentResultCode'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'underfunded';
+      case -3:
+        return 'src_no_trust';
+      case -4:
+        return 'src_not_authorized';
+      case -5:
+        return 'no_destination';
+      case -6:
+        return 'no_trust';
+      case -7:
+        return 'not_authorized';
+      case -8:
+        return 'line_full';
+      case -9:
+        return 'no_issuer';
+      default:
+        XdrJsonHelper.fail(
+          'XdrPaymentResultCode',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrPaymentResultCode from its SEP-0051 name.
+  static XdrPaymentResultCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrPaymentResultCode.PAYMENT_SUCCESS;
+        case 'malformed':
+          return XdrPaymentResultCode.PAYMENT_MALFORMED;
+        case 'underfunded':
+          return XdrPaymentResultCode.PAYMENT_UNDERFUNDED;
+        case 'src_no_trust':
+          return XdrPaymentResultCode.PAYMENT_SRC_NO_TRUST;
+        case 'src_not_authorized':
+          return XdrPaymentResultCode.PAYMENT_SRC_NOT_AUTHORIZED;
+        case 'no_destination':
+          return XdrPaymentResultCode.PAYMENT_NO_DESTINATION;
+        case 'no_trust':
+          return XdrPaymentResultCode.PAYMENT_NO_TRUST;
+        case 'not_authorized':
+          return XdrPaymentResultCode.PAYMENT_NOT_AUTHORIZED;
+        case 'line_full':
+          return XdrPaymentResultCode.PAYMENT_LINE_FULL;
+        case 'no_issuer':
+          return XdrPaymentResultCode.PAYMENT_NO_ISSUER;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrPaymentResultCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

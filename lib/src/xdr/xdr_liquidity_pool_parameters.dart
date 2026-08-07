@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_liquidity_pool_constant_product_parameters.dart';
 import 'xdr_liquidity_pool_type.dart';
 
@@ -107,5 +108,54 @@ class XdrLiquidityPoolParameters {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLiquidityPoolParameters',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLiquidityPoolParameters.
+  static XdrLiquidityPoolParameters fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrLiquidityPoolParameters'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrLiquidityPoolParameters.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{
+          'liquidity_pool_constant_product': _constantProduct!.toXdrJsonValue(),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrLiquidityPoolParameters',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrLiquidityPoolParameters from its SEP-0051 rendering.
+  static XdrLiquidityPoolParameters fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrLiquidityPoolParameters',
+    );
+    switch (arm.key) {
+      case 'liquidity_pool_constant_product':
+        final XdrLiquidityPoolParameters arm0 = XdrLiquidityPoolParameters(
+          XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT,
+        );
+        arm0.constantProduct =
+            XdrLiquidityPoolConstantProductParameters.fromXdrJsonValue(
+              arm.value,
+            );
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrLiquidityPoolParameters',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

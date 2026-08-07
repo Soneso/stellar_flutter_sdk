@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 
 class XdrConfigSettingContractHistoricalDataV0 {
   XdrInt64 _feeHistorical1KB;
@@ -46,6 +47,45 @@ class XdrConfigSettingContractHistoricalDataV0 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigSettingContractHistoricalDataV0.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrConfigSettingContractHistoricalDataV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrConfigSettingContractHistoricalDataV0.
+  static XdrConfigSettingContractHistoricalDataV0 fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrConfigSettingContractHistoricalDataV0',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrConfigSettingContractHistoricalDataV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'fee_historical1_kb': _feeHistorical1KB.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrConfigSettingContractHistoricalDataV0 from its SEP-0051 rendering.
+  static XdrConfigSettingContractHistoricalDataV0 fromXdrJsonValue(
+    Object? value,
+  ) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrConfigSettingContractHistoricalDataV0',
+      allowedKeys: const <String>{'fee_historical1_kb'},
+    );
+    final Object? jsonFeeHistorical1KB = XdrJsonHelper.readField(
+      object,
+      'fee_historical1_kb',
+      type: 'XdrConfigSettingContractHistoricalDataV0',
+    );
+    return XdrConfigSettingContractHistoricalDataV0(
+      XdrInt64.fromXdrJsonValue(jsonFeeHistorical1KB),
     );
   }
 }

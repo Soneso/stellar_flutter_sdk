@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_memo.dart';
 import 'xdr_muxed_account.dart';
 import 'xdr_operation.dart';
@@ -148,6 +149,100 @@ class XdrTransaction {
       memo,
       operations,
       ext,
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrTransaction');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransaction.
+  static XdrTransaction fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTransaction'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTransaction.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'source_account': _sourceAccount.toXdrJsonValue(),
+    'fee': _fee.toXdrJsonValue(),
+    'seq_num': _seqNum.toXdrJsonValue(),
+    'cond': _cond.toXdrJsonValue(),
+    'memo': _memo.toXdrJsonValue(),
+    'operations': XdrJsonHelper.array<XdrOperation>(
+      _operations,
+      (XdrOperation v) => v.toXdrJsonValue(),
+      type: 'XdrTransaction',
+      key: 'operations',
+      maxLength: 100,
+    ),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTransaction from its SEP-0051 rendering.
+  static XdrTransaction fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTransaction',
+      allowedKeys: const <String>{
+        'source_account',
+        'fee',
+        'seq_num',
+        'cond',
+        'memo',
+        'operations',
+        'ext',
+      },
+    );
+    final Object? jsonSourceAccount = XdrJsonHelper.readField(
+      object,
+      'source_account',
+      type: 'XdrTransaction',
+    );
+    final Object? jsonFee = XdrJsonHelper.readField(
+      object,
+      'fee',
+      type: 'XdrTransaction',
+    );
+    final Object? jsonSeqNum = XdrJsonHelper.readField(
+      object,
+      'seq_num',
+      type: 'XdrTransaction',
+    );
+    final Object? jsonCond = XdrJsonHelper.readField(
+      object,
+      'cond',
+      type: 'XdrTransaction',
+    );
+    final Object? jsonMemo = XdrJsonHelper.readField(
+      object,
+      'memo',
+      type: 'XdrTransaction',
+    );
+    final Object? jsonOperations = XdrJsonHelper.readField(
+      object,
+      'operations',
+      type: 'XdrTransaction',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrTransaction',
+    );
+    return XdrTransaction(
+      XdrMuxedAccount.fromXdrJsonValue(jsonSourceAccount),
+      XdrUint32.fromXdrJsonValue(jsonFee),
+      XdrSequenceNumber.fromXdrJsonValue(jsonSeqNum),
+      XdrPreconditions.fromXdrJsonValue(jsonCond),
+      XdrMemo.fromXdrJsonValue(jsonMemo),
+      XdrJsonHelper.readArray(
+            jsonOperations,
+            type: 'XdrTransaction',
+            key: 'operations',
+            maxLength: 100,
+          )
+          .map<XdrOperation>((Object? e) => XdrOperation.fromXdrJsonValue(e))
+          .toList(),
+      XdrTransactionExt.fromXdrJsonValue(jsonExt),
     );
   }
 }

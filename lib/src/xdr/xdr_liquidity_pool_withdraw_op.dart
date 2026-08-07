@@ -6,9 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../key_pair.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 
 class XdrLiquidityPoolWithdrawOp {
   XdrHash _liquidityPoolID;
@@ -90,6 +92,74 @@ class XdrLiquidityPoolWithdrawOp {
       amount,
       minAmountA,
       minAmountB,
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLiquidityPoolWithdrawOp',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLiquidityPoolWithdrawOp.
+  static XdrLiquidityPoolWithdrawOp fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrLiquidityPoolWithdrawOp'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrLiquidityPoolWithdrawOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'liquidity_pool_id': StrKey.encodeLiquidityPoolId(_liquidityPoolID.hash),
+    'amount': _amount.toXdrJsonValue(),
+    'min_amount_a': _minAmountA.toXdrJsonValue(),
+    'min_amount_b': _minAmountB.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLiquidityPoolWithdrawOp from its SEP-0051 rendering.
+  static XdrLiquidityPoolWithdrawOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLiquidityPoolWithdrawOp',
+      allowedKeys: const <String>{
+        'liquidity_pool_id',
+        'amount',
+        'min_amount_a',
+        'min_amount_b',
+      },
+    );
+    final Object? jsonLiquidityPoolID = XdrJsonHelper.readField(
+      object,
+      'liquidity_pool_id',
+      type: 'XdrLiquidityPoolWithdrawOp',
+    );
+    final Object? jsonAmount = XdrJsonHelper.readField(
+      object,
+      'amount',
+      type: 'XdrLiquidityPoolWithdrawOp',
+    );
+    final Object? jsonMinAmountA = XdrJsonHelper.readField(
+      object,
+      'min_amount_a',
+      type: 'XdrLiquidityPoolWithdrawOp',
+    );
+    final Object? jsonMinAmountB = XdrJsonHelper.readField(
+      object,
+      'min_amount_b',
+      type: 'XdrLiquidityPoolWithdrawOp',
+    );
+    return XdrLiquidityPoolWithdrawOp(
+      XdrHash(
+        XdrJsonHelper.readStrKey(
+          jsonLiquidityPoolID,
+          type: 'XdrLiquidityPoolWithdrawOp',
+          key: 'liquidity_pool_id',
+          decode: StrKey.decodeLiquidityPoolId,
+          expectedLength: 32,
+        ),
+      ),
+      XdrInt64.fromXdrJsonValue(jsonAmount),
+      XdrInt64.fromXdrJsonValue(jsonMinAmountA),
+      XdrInt64.fromXdrJsonValue(jsonMinAmountB),
     );
   }
 }

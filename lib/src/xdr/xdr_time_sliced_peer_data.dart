@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_peer_stats.dart';
 import 'xdr_uint32.dart';
 
@@ -46,5 +47,45 @@ class XdrTimeSlicedPeerData {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTimeSlicedPeerData.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTimeSlicedPeerData',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTimeSlicedPeerData.
+  static XdrTimeSlicedPeerData fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTimeSlicedPeerData'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTimeSlicedPeerData.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'peer_stats': _peerStats.toXdrJsonValue(),
+    'average_latency_ms': _averageLatencyMs.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTimeSlicedPeerData from its SEP-0051 rendering.
+  static XdrTimeSlicedPeerData fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTimeSlicedPeerData',
+      allowedKeys: const <String>{'peer_stats', 'average_latency_ms'},
+    );
+    final Object? jsonPeerStats = XdrJsonHelper.readField(
+      object,
+      'peer_stats',
+      type: 'XdrTimeSlicedPeerData',
+    );
+    final Object? jsonAverageLatencyMs = XdrJsonHelper.readField(
+      object,
+      'average_latency_ms',
+      type: 'XdrTimeSlicedPeerData',
+    );
+    return XdrTimeSlicedPeerData(
+      XdrPeerStats.fromXdrJsonValue(jsonPeerStats),
+      XdrUint32.fromXdrJsonValue(jsonAverageLatencyMs),
+    );
   }
 }

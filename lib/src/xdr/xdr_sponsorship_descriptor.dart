@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_public_key.dart';
 
 class XdrSponsorshipDescriptor {
@@ -43,4 +44,22 @@ class XdrSponsorshipDescriptor {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSponsorshipDescriptor.decode(XdrDataInputStream(bytes));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSponsorshipDescriptor',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSponsorshipDescriptor.
+  static XdrSponsorshipDescriptor fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSponsorshipDescriptor'),
+  );
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() => _sponsorshipDescriptor.toXdrJsonValue();
+
+  /// Reads a XdrSponsorshipDescriptor from the SEP-0051 rendering of its value.
+  static XdrSponsorshipDescriptor fromXdrJsonValue(Object? value) =>
+      XdrSponsorshipDescriptor(XdrPublicKey.fromXdrJsonValue(value));
 }

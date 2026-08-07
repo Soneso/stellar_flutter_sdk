@@ -10,6 +10,7 @@ import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_price.dart';
 import 'xdr_uint64.dart';
 
@@ -92,5 +93,72 @@ class XdrManageBuyOfferOp {
     XdrPrice price = XdrPrice.fromTxRep(map, '$prefix.price');
     XdrUint64 offerID = XdrUint64.fromTxRep(map, '$prefix.offerID');
     return XdrManageBuyOfferOp(selling, buying, amount, price, offerID);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrManageBuyOfferOp',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrManageBuyOfferOp.
+  static XdrManageBuyOfferOp fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrManageBuyOfferOp'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrManageBuyOfferOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'selling': _selling.toXdrJsonValue(),
+    'buying': _buying.toXdrJsonValue(),
+    'buy_amount': _amount.toXdrJsonValue(),
+    'price': _price.toXdrJsonValue(),
+    'offer_id': _offerID.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrManageBuyOfferOp from its SEP-0051 rendering.
+  static XdrManageBuyOfferOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrManageBuyOfferOp',
+      allowedKeys: const <String>{
+        'selling',
+        'buying',
+        'buy_amount',
+        'price',
+        'offer_id',
+      },
+    );
+    final Object? jsonSelling = XdrJsonHelper.readField(
+      object,
+      'selling',
+      type: 'XdrManageBuyOfferOp',
+    );
+    final Object? jsonBuying = XdrJsonHelper.readField(
+      object,
+      'buying',
+      type: 'XdrManageBuyOfferOp',
+    );
+    final Object? jsonAmount = XdrJsonHelper.readField(
+      object,
+      'buy_amount',
+      type: 'XdrManageBuyOfferOp',
+    );
+    final Object? jsonPrice = XdrJsonHelper.readField(
+      object,
+      'price',
+      type: 'XdrManageBuyOfferOp',
+    );
+    final Object? jsonOfferID = XdrJsonHelper.readField(
+      object,
+      'offer_id',
+      type: 'XdrManageBuyOfferOp',
+    );
+    return XdrManageBuyOfferOp(
+      XdrAsset.fromXdrJsonValue(jsonSelling),
+      XdrAsset.fromXdrJsonValue(jsonBuying),
+      XdrInt64.fromXdrJsonValue(jsonAmount),
+      XdrPrice.fromXdrJsonValue(jsonPrice),
+      XdrUint64.fromXdrJsonValue(jsonOfferID),
+    );
   }
 }

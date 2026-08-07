@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_key.dart';
 
 class XdrLedgerFootprint {
@@ -89,5 +90,67 @@ class XdrLedgerFootprint {
       readWrite.add(XdrLedgerKey.fromTxRep(map, '$prefix.readWrite[$i]'));
     }
     return XdrLedgerFootprint(readOnly, readWrite);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerFootprint',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerFootprint.
+  static XdrLedgerFootprint fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerFootprint'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerFootprint.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'read_only': XdrJsonHelper.array<XdrLedgerKey>(
+      _readOnly,
+      (XdrLedgerKey v) => v.toXdrJsonValue(),
+      type: 'XdrLedgerFootprint',
+      key: 'read_only',
+    ),
+    'read_write': XdrJsonHelper.array<XdrLedgerKey>(
+      _readWrite,
+      (XdrLedgerKey v) => v.toXdrJsonValue(),
+      type: 'XdrLedgerFootprint',
+      key: 'read_write',
+    ),
+  };
+
+  /// Reads a XdrLedgerFootprint from its SEP-0051 rendering.
+  static XdrLedgerFootprint fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerFootprint',
+      allowedKeys: const <String>{'read_only', 'read_write'},
+    );
+    final Object? jsonReadOnly = XdrJsonHelper.readField(
+      object,
+      'read_only',
+      type: 'XdrLedgerFootprint',
+    );
+    final Object? jsonReadWrite = XdrJsonHelper.readField(
+      object,
+      'read_write',
+      type: 'XdrLedgerFootprint',
+    );
+    return XdrLedgerFootprint(
+      XdrJsonHelper.readArray(
+            jsonReadOnly,
+            type: 'XdrLedgerFootprint',
+            key: 'read_only',
+          )
+          .map<XdrLedgerKey>((Object? e) => XdrLedgerKey.fromXdrJsonValue(e))
+          .toList(),
+      XdrJsonHelper.readArray(
+            jsonReadWrite,
+            type: 'XdrLedgerFootprint',
+            key: 'read_write',
+          )
+          .map<XdrLedgerKey>((Object? e) => XdrLedgerKey.fromXdrJsonValue(e))
+          .toList(),
+    );
   }
 }

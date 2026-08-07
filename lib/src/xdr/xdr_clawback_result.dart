@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_clawback_result_code.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClawbackResult {
   XdrClawbackResultCode _code;
@@ -57,5 +58,62 @@ class XdrClawbackResult {
   static XdrClawbackResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClawbackResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrClawbackResult');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClawbackResult.
+  static XdrClawbackResult fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrClawbackResult'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrClawbackResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'not_clawback_enabled';
+      case -3:
+        return 'no_trust';
+      case -4:
+        return 'underfunded';
+    }
+    XdrJsonHelper.fail(
+      'XdrClawbackResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrClawbackResult from its SEP-0051 rendering.
+  static XdrClawbackResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrClawbackResult(XdrClawbackResultCode.CLAWBACK_SUCCESS);
+        case 'malformed':
+          return XdrClawbackResult(XdrClawbackResultCode.CLAWBACK_MALFORMED);
+        case 'not_clawback_enabled':
+          return XdrClawbackResult(
+            XdrClawbackResultCode.CLAWBACK_NOT_CLAWBACK_ENABLED,
+          );
+        case 'no_trust':
+          return XdrClawbackResult(XdrClawbackResultCode.CLAWBACK_NO_TRUST);
+        case 'underfunded':
+          return XdrClawbackResult(XdrClawbackResultCode.CLAWBACK_UNDERFUNDED);
+      }
+      XdrJsonHelper.fail(
+        'XdrClawbackResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrClawbackResult',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

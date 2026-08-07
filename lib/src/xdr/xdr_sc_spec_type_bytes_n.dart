@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrSCSpecTypeBytesN {
@@ -37,5 +38,34 @@ class XdrSCSpecTypeBytesN {
   static XdrSCSpecTypeBytesN fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecTypeBytesN.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCSpecTypeBytesN',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecTypeBytesN.
+  static XdrSCSpecTypeBytesN fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecTypeBytesN'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCSpecTypeBytesN.
+  Object? toXdrJsonValue() => <String, Object?>{'n': _n.toXdrJsonValue()};
+
+  /// Reads a XdrSCSpecTypeBytesN from its SEP-0051 rendering.
+  static XdrSCSpecTypeBytesN fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCSpecTypeBytesN',
+      allowedKeys: const <String>{'n'},
+    );
+    final Object? jsonN = XdrJsonHelper.readField(
+      object,
+      'n',
+      type: 'XdrSCSpecTypeBytesN',
+    );
+    return XdrSCSpecTypeBytesN(XdrUint32.fromXdrJsonValue(jsonN));
   }
 }

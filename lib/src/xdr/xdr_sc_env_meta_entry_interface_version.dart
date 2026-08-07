@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrSCEnvMetaEntryInterfaceVersion {
@@ -45,5 +46,49 @@ class XdrSCEnvMetaEntryInterfaceVersion {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCEnvMetaEntryInterfaceVersion.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCEnvMetaEntryInterfaceVersion',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCEnvMetaEntryInterfaceVersion.
+  static XdrSCEnvMetaEntryInterfaceVersion fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrSCEnvMetaEntryInterfaceVersion',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrSCEnvMetaEntryInterfaceVersion.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'protocol': _protocol.toXdrJsonValue(),
+    'pre_release': _preRelease.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSCEnvMetaEntryInterfaceVersion from its SEP-0051 rendering.
+  static XdrSCEnvMetaEntryInterfaceVersion fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCEnvMetaEntryInterfaceVersion',
+      allowedKeys: const <String>{'protocol', 'pre_release'},
+    );
+    final Object? jsonProtocol = XdrJsonHelper.readField(
+      object,
+      'protocol',
+      type: 'XdrSCEnvMetaEntryInterfaceVersion',
+    );
+    final Object? jsonPreRelease = XdrJsonHelper.readField(
+      object,
+      'pre_release',
+      type: 'XdrSCEnvMetaEntryInterfaceVersion',
+    );
+    return XdrSCEnvMetaEntryInterfaceVersion(
+      XdrUint32.fromXdrJsonValue(jsonProtocol),
+      XdrUint32.fromXdrJsonValue(jsonPreRelease),
+    );
   }
 }

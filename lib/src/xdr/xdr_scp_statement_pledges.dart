@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_scp_nomination.dart';
 import 'xdr_scp_statement_confirm.dart';
 import 'xdr_scp_statement_externalize.dart';
@@ -122,5 +123,74 @@ class XdrSCPStatementPledges {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPStatementPledges.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCPStatementPledges',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCPStatementPledges.
+  static XdrSCPStatementPledges fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCPStatementPledges'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCPStatementPledges.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'prepare': _prepare!.toXdrJsonValue()};
+      case 1:
+        return <String, Object?>{'confirm': _confirm!.toXdrJsonValue()};
+      case 2:
+        return <String, Object?>{'externalize': _externalize!.toXdrJsonValue()};
+      case 3:
+        return <String, Object?>{'nominate': _nominate!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrSCPStatementPledges',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrSCPStatementPledges from its SEP-0051 rendering.
+  static XdrSCPStatementPledges fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrSCPStatementPledges',
+    );
+    switch (arm.key) {
+      case 'prepare':
+        final XdrSCPStatementPledges arm0 = XdrSCPStatementPledges(
+          XdrSCPStatementType.SCP_ST_PREPARE,
+        );
+        arm0.prepare = XdrSCPStatementPrepare.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'confirm':
+        final XdrSCPStatementPledges arm1 = XdrSCPStatementPledges(
+          XdrSCPStatementType.SCP_ST_CONFIRM,
+        );
+        arm1.confirm = XdrSCPStatementConfirm.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'externalize':
+        final XdrSCPStatementPledges arm2 = XdrSCPStatementPledges(
+          XdrSCPStatementType.SCP_ST_EXTERNALIZE,
+        );
+        arm2.externalize = XdrSCPStatementExternalize.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm2;
+      case 'nominate':
+        final XdrSCPStatementPledges arm3 = XdrSCPStatementPledges(
+          XdrSCPStatementType.SCP_ST_NOMINATE,
+        );
+        arm3.nominate = XdrSCPNomination.fromXdrJsonValue(arm.value);
+        return arm3;
+    }
+    XdrJsonHelper.fail(
+      'XdrSCPStatementPledges',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

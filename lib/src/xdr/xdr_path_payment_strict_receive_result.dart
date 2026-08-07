@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_path_payment_result_success.dart';
 import 'xdr_path_payment_strict_receive_result_code.dart';
 
@@ -96,5 +97,149 @@ class XdrPathPaymentStrictReceiveResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPathPaymentStrictReceiveResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrPathPaymentStrictReceiveResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPathPaymentStrictReceiveResult.
+  static XdrPathPaymentStrictReceiveResult fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrPathPaymentStrictReceiveResult',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrPathPaymentStrictReceiveResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'success': _success!.toXdrJsonValue()};
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'underfunded';
+      case -3:
+        return 'src_no_trust';
+      case -4:
+        return 'src_not_authorized';
+      case -5:
+        return 'no_destination';
+      case -6:
+        return 'no_trust';
+      case -7:
+        return 'not_authorized';
+      case -8:
+        return 'line_full';
+      case -9:
+        return <String, Object?>{'no_issuer': _noIssuer!.toXdrJsonValue()};
+      case -10:
+        return 'too_few_offers';
+      case -11:
+        return 'offer_cross_self';
+      case -12:
+        return 'over_sendmax';
+    }
+    XdrJsonHelper.fail(
+      'XdrPathPaymentStrictReceiveResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrPathPaymentStrictReceiveResult from its SEP-0051 rendering.
+  static XdrPathPaymentStrictReceiveResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'malformed':
+          return XdrPathPaymentStrictReceiveResult(
+            XdrPathPaymentStrictReceiveResultCode
+                .PATH_PAYMENT_STRICT_RECEIVE_MALFORMED,
+          );
+        case 'underfunded':
+          return XdrPathPaymentStrictReceiveResult(
+            XdrPathPaymentStrictReceiveResultCode
+                .PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED,
+          );
+        case 'src_no_trust':
+          return XdrPathPaymentStrictReceiveResult(
+            XdrPathPaymentStrictReceiveResultCode
+                .PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST,
+          );
+        case 'src_not_authorized':
+          return XdrPathPaymentStrictReceiveResult(
+            XdrPathPaymentStrictReceiveResultCode
+                .PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED,
+          );
+        case 'no_destination':
+          return XdrPathPaymentStrictReceiveResult(
+            XdrPathPaymentStrictReceiveResultCode
+                .PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION,
+          );
+        case 'no_trust':
+          return XdrPathPaymentStrictReceiveResult(
+            XdrPathPaymentStrictReceiveResultCode
+                .PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST,
+          );
+        case 'not_authorized':
+          return XdrPathPaymentStrictReceiveResult(
+            XdrPathPaymentStrictReceiveResultCode
+                .PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED,
+          );
+        case 'line_full':
+          return XdrPathPaymentStrictReceiveResult(
+            XdrPathPaymentStrictReceiveResultCode
+                .PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL,
+          );
+        case 'too_few_offers':
+          return XdrPathPaymentStrictReceiveResult(
+            XdrPathPaymentStrictReceiveResultCode
+                .PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS,
+          );
+        case 'offer_cross_self':
+          return XdrPathPaymentStrictReceiveResult(
+            XdrPathPaymentStrictReceiveResultCode
+                .PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF,
+          );
+        case 'over_sendmax':
+          return XdrPathPaymentStrictReceiveResult(
+            XdrPathPaymentStrictReceiveResultCode
+                .PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrPathPaymentStrictReceiveResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrPathPaymentStrictReceiveResult',
+    );
+    switch (arm.key) {
+      case 'success':
+        final XdrPathPaymentStrictReceiveResult arm0 =
+            XdrPathPaymentStrictReceiveResult(
+              XdrPathPaymentStrictReceiveResultCode
+                  .PATH_PAYMENT_STRICT_RECEIVE_SUCCESS,
+            );
+        arm0.success = XdrPathPaymentResultSuccess.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'no_issuer':
+        final XdrPathPaymentStrictReceiveResult arm1 =
+            XdrPathPaymentStrictReceiveResult(
+              XdrPathPaymentStrictReceiveResultCode
+                  .PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER,
+            );
+        arm1.noIssuer = XdrAsset.fromXdrJsonValue(arm.value);
+        return arm1;
+    }
+    XdrJsonHelper.fail(
+      'XdrPathPaymentStrictReceiveResult',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_entry_changes.dart';
 import 'xdr_operation_meta.dart';
 
@@ -74,5 +75,69 @@ class XdrTransactionMetaV2 {
   static XdrTransactionMetaV2 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionMetaV2.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionMetaV2',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionMetaV2.
+  static XdrTransactionMetaV2 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionMetaV2'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionMetaV2.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'tx_changes_before': _txChangesBefore.toXdrJsonValue(),
+    'operations': XdrJsonHelper.array<XdrOperationMeta>(
+      _operations,
+      (XdrOperationMeta v) => v.toXdrJsonValue(),
+      type: 'XdrTransactionMetaV2',
+      key: 'operations',
+    ),
+    'tx_changes_after': _txChangesAfter.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTransactionMetaV2 from its SEP-0051 rendering.
+  static XdrTransactionMetaV2 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTransactionMetaV2',
+      allowedKeys: const <String>{
+        'tx_changes_before',
+        'operations',
+        'tx_changes_after',
+      },
+    );
+    final Object? jsonTxChangesBefore = XdrJsonHelper.readField(
+      object,
+      'tx_changes_before',
+      type: 'XdrTransactionMetaV2',
+    );
+    final Object? jsonOperations = XdrJsonHelper.readField(
+      object,
+      'operations',
+      type: 'XdrTransactionMetaV2',
+    );
+    final Object? jsonTxChangesAfter = XdrJsonHelper.readField(
+      object,
+      'tx_changes_after',
+      type: 'XdrTransactionMetaV2',
+    );
+    return XdrTransactionMetaV2(
+      XdrLedgerEntryChanges.fromXdrJsonValue(jsonTxChangesBefore),
+      XdrJsonHelper.readArray(
+            jsonOperations,
+            type: 'XdrTransactionMetaV2',
+            key: 'operations',
+          )
+          .map<XdrOperationMeta>(
+            (Object? e) => XdrOperationMeta.fromXdrJsonValue(e),
+          )
+          .toList(),
+      XdrLedgerEntryChanges.fromXdrJsonValue(jsonTxChangesAfter),
+    );
   }
 }

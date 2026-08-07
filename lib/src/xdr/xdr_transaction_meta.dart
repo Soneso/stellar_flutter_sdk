@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_operation_meta.dart';
 import 'xdr_transaction_meta_v1.dart';
 import 'xdr_transaction_meta_v2.dart';
@@ -132,5 +133,86 @@ class XdrTransactionMeta {
   static XdrTransactionMeta fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionMeta.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionMeta',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionMeta.
+  static XdrTransactionMeta fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionMeta'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionMeta.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return <String, Object?>{
+          'v0': XdrJsonHelper.array<XdrOperationMeta>(
+            _operations!,
+            (XdrOperationMeta v) => v.toXdrJsonValue(),
+            type: 'XdrTransactionMeta',
+            key: 'v0',
+          ),
+        };
+      case 1:
+        return <String, Object?>{'v1': _v1!.toXdrJsonValue()};
+      case 2:
+        return <String, Object?>{'v2': _v2!.toXdrJsonValue()};
+      case 3:
+        return <String, Object?>{'v3': _v3!.toXdrJsonValue()};
+      case 4:
+        return <String, Object?>{'v4': _v4!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrTransactionMeta',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrTransactionMeta from its SEP-0051 rendering.
+  static XdrTransactionMeta fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrTransactionMeta',
+    );
+    switch (arm.key) {
+      case 'v0':
+        final XdrTransactionMeta arm0 = XdrTransactionMeta(0);
+        arm0.operations =
+            XdrJsonHelper.readArray(
+                  arm.value,
+                  type: 'XdrTransactionMeta',
+                  key: 'v0',
+                )
+                .map<XdrOperationMeta>(
+                  (Object? e) => XdrOperationMeta.fromXdrJsonValue(e),
+                )
+                .toList();
+        return arm0;
+      case 'v1':
+        final XdrTransactionMeta arm1 = XdrTransactionMeta(1);
+        arm1.v1 = XdrTransactionMetaV1.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'v2':
+        final XdrTransactionMeta arm2 = XdrTransactionMeta(2);
+        arm2.v2 = XdrTransactionMetaV2.fromXdrJsonValue(arm.value);
+        return arm2;
+      case 'v3':
+        final XdrTransactionMeta arm3 = XdrTransactionMeta(3);
+        arm3.v3 = XdrTransactionMetaV3.fromXdrJsonValue(arm.value);
+        return arm3;
+      case 'v4':
+        final XdrTransactionMeta arm4 = XdrTransactionMeta(4);
+        arm4.v4 = XdrTransactionMetaV4.fromXdrJsonValue(arm.value);
+        return arm4;
+    }
+    XdrJsonHelper.fail(
+      'XdrTransactionMeta',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

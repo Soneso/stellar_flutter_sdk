@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrHash {
   XdrHash(this._hash);
@@ -45,4 +46,19 @@ class XdrHash {
     if (raw == null) throw Exception('missing $prefix');
     return XdrHash(TxRepHelper.hexToBytes(raw));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrHash');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrHash.
+  static XdrHash fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrHash'));
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() => XdrJsonHelper.hex(_hash, type: 'XdrHash');
+
+  /// Reads a XdrHash from the SEP-0051 rendering of its value.
+  static XdrHash fromXdrJsonValue(Object? value) =>
+      XdrHash(XdrJsonHelper.readHex(value, type: 'XdrHash', expectedLength: 32));
 }

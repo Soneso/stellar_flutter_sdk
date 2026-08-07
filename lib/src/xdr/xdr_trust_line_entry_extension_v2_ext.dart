@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrTrustLineEntryExtensionV2Ext {
   int _v;
@@ -57,5 +58,50 @@ class XdrTrustLineEntryExtensionV2Ext {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTrustLineEntryExtensionV2Ext.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTrustLineEntryExtensionV2Ext',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTrustLineEntryExtensionV2Ext.
+  static XdrTrustLineEntryExtensionV2Ext fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrTrustLineEntryExtensionV2Ext',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrTrustLineEntryExtensionV2Ext.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return 'v0';
+    }
+    XdrJsonHelper.fail(
+      'XdrTrustLineEntryExtensionV2Ext',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrTrustLineEntryExtensionV2Ext from its SEP-0051 rendering.
+  static XdrTrustLineEntryExtensionV2Ext fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'v0':
+          return XdrTrustLineEntryExtensionV2Ext(0);
+      }
+      XdrJsonHelper.fail(
+        'XdrTrustLineEntryExtensionV2Ext',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrTrustLineEntryExtensionV2Ext',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

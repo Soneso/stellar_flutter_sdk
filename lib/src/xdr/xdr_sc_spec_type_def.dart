@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_spec_type.dart';
 import 'xdr_sc_spec_type_bytes_n.dart';
 import 'xdr_sc_spec_type_def_base.dart';
@@ -137,4 +138,15 @@ class XdrSCSpecTypeDef extends XdrSCSpecTypeDefBase {
     def.udt = udt;
     return def;
   }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecTypeDef.
+  ///
+  /// Dart does not inherit statics, so this narrows the base class rendering to
+  /// this type rather than relying on the one the base declares.
+  static XdrSCSpecTypeDef fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecTypeDef'),
+  );
+
+  static XdrSCSpecTypeDef fromXdrJsonValue(Object? value) =>
+      XdrSCSpecTypeDefBase.fromXdrJsonValueAs(value, XdrSCSpecTypeDef.new);
 }

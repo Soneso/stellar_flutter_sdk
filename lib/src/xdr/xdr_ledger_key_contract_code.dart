@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 
 class XdrLedgerKeyContractCode {
   XdrHash _hash;
@@ -51,5 +52,34 @@ class XdrLedgerKeyContractCode {
   ) {
     XdrHash hash = XdrHash.fromTxRep(map, '$prefix.hash');
     return XdrLedgerKeyContractCode(hash);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerKeyContractCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerKeyContractCode.
+  static XdrLedgerKeyContractCode fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerKeyContractCode'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerKeyContractCode.
+  Object? toXdrJsonValue() => <String, Object?>{'hash': _hash.toXdrJsonValue()};
+
+  /// Reads a XdrLedgerKeyContractCode from its SEP-0051 rendering.
+  static XdrLedgerKeyContractCode fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerKeyContractCode',
+      allowedKeys: const <String>{'hash'},
+    );
+    final Object? jsonHash = XdrJsonHelper.readField(
+      object,
+      'hash',
+      type: 'XdrLedgerKeyContractCode',
+    );
+    return XdrLedgerKeyContractCode(XdrHash.fromXdrJsonValue(jsonHash));
   }
 }

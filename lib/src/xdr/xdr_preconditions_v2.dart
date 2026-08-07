@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_bounds.dart';
 import 'xdr_sequence_number.dart';
 import 'xdr_signer_key.dart';
@@ -201,6 +202,102 @@ class XdrPreconditionsV2 {
       minSeqAge,
       minSeqLedgerGap,
       extraSigners,
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrPreconditionsV2',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPreconditionsV2.
+  static XdrPreconditionsV2 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrPreconditionsV2'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrPreconditionsV2.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'time_bounds': _timeBounds == null ? null : _timeBounds!.toXdrJsonValue(),
+    'ledger_bounds': _ledgerBounds == null
+        ? null
+        : _ledgerBounds!.toXdrJsonValue(),
+    'min_seq_num': _minSeqNum == null ? null : _minSeqNum!.toXdrJsonValue(),
+    'min_seq_age': _minSeqAge.toXdrJsonValue(),
+    'min_seq_ledger_gap': _minSeqLedgerGap.toXdrJsonValue(),
+    'extra_signers': XdrJsonHelper.array<XdrSignerKey>(
+      _extraSigners,
+      (XdrSignerKey v) => v.toXdrJsonValue(),
+      type: 'XdrPreconditionsV2',
+      key: 'extra_signers',
+      maxLength: 2,
+    ),
+  };
+
+  /// Reads a XdrPreconditionsV2 from its SEP-0051 rendering.
+  static XdrPreconditionsV2 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrPreconditionsV2',
+      allowedKeys: const <String>{
+        'time_bounds',
+        'ledger_bounds',
+        'min_seq_num',
+        'min_seq_age',
+        'min_seq_ledger_gap',
+        'extra_signers',
+      },
+    );
+    final Object? jsonTimeBounds = XdrJsonHelper.readField(
+      object,
+      'time_bounds',
+      type: 'XdrPreconditionsV2',
+    );
+    final Object? jsonLedgerBounds = XdrJsonHelper.readField(
+      object,
+      'ledger_bounds',
+      type: 'XdrPreconditionsV2',
+    );
+    final Object? jsonMinSeqNum = XdrJsonHelper.readField(
+      object,
+      'min_seq_num',
+      type: 'XdrPreconditionsV2',
+    );
+    final Object? jsonMinSeqAge = XdrJsonHelper.readField(
+      object,
+      'min_seq_age',
+      type: 'XdrPreconditionsV2',
+    );
+    final Object? jsonMinSeqLedgerGap = XdrJsonHelper.readField(
+      object,
+      'min_seq_ledger_gap',
+      type: 'XdrPreconditionsV2',
+    );
+    final Object? jsonExtraSigners = XdrJsonHelper.readField(
+      object,
+      'extra_signers',
+      type: 'XdrPreconditionsV2',
+    );
+    return XdrPreconditionsV2(
+      jsonTimeBounds == null
+          ? null
+          : XdrTimeBounds.fromXdrJsonValue(jsonTimeBounds),
+      jsonLedgerBounds == null
+          ? null
+          : XdrLedgerBounds.fromXdrJsonValue(jsonLedgerBounds),
+      jsonMinSeqNum == null
+          ? null
+          : XdrSequenceNumber.fromXdrJsonValue(jsonMinSeqNum),
+      XdrUint64.fromXdrJsonValue(jsonMinSeqAge),
+      XdrUint32.fromXdrJsonValue(jsonMinSeqLedgerGap),
+      XdrJsonHelper.readArray(
+            jsonExtraSigners,
+            type: 'XdrPreconditionsV2',
+            key: 'extra_signers',
+            maxLength: 2,
+          )
+          .map<XdrSignerKey>((Object? e) => XdrSignerKey.fromXdrJsonValue(e))
+          .toList(),
     );
   }
 }

@@ -8,253 +8,471 @@ import 'xdr_test_helpers.dart';
 
 void main() {
   group('XDR contract_config generated tests', () {
-      test('XdrEncodedLedgerKey typedef roundtrip', () {
-        var original = XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3, 4]));
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrEncodedLedgerKey.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrEncodedLedgerKey.decode(input);
-          expect(decoded.encodedLedgerKey, equals(original.encodedLedgerKey));
-        var base64Decoded = XdrEncodedLedgerKey.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-          expect(base64Decoded.encodedLedgerKey, equals(original.encodedLedgerKey));
-      });
+    test('XdrEncodedLedgerKey typedef roundtrip', () {
+      var original = XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3, 4]));
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrEncodedLedgerKey.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrEncodedLedgerKey.decode(input);
+      expect(decoded.encodedLedgerKey, equals(original.encodedLedgerKey));
+      var base64Decoded = XdrEncodedLedgerKey.fromBase64EncodedXdrString(
+        original.toBase64EncodedXdrString(),
+      );
+      expect(base64Decoded.encodedLedgerKey, equals(original.encodedLedgerKey));
+    });
 
-      test('XdrConfigSettingContractExecutionLanesV0 struct roundtrip', () {
-        var original = XdrConfigSettingContractExecutionLanesV0(XdrUint32(42));
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrConfigSettingContractExecutionLanesV0.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrConfigSettingContractExecutionLanesV0.decode(input);
-          expect(decoded.ledgerMaxTxCount.uint32, equals(original.ledgerMaxTxCount.uint32));
-        var base64Decoded = XdrConfigSettingContractExecutionLanesV0.fromBase64EncodedXdrString(
-                original.toBase64EncodedXdrString());
-          expect(base64Decoded.ledgerMaxTxCount.uint32, equals(original.ledgerMaxTxCount.uint32));
-      });
+    test('XdrConfigSettingContractExecutionLanesV0 struct roundtrip', () {
+      var original = XdrConfigSettingContractExecutionLanesV0(XdrUint32(42));
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrConfigSettingContractExecutionLanesV0.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrConfigSettingContractExecutionLanesV0.decode(input);
+      expect(
+        decoded.ledgerMaxTxCount.uint32,
+        equals(original.ledgerMaxTxCount.uint32),
+      );
+      var base64Decoded =
+          XdrConfigSettingContractExecutionLanesV0.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString(),
+          );
+      expect(
+        base64Decoded.ledgerMaxTxCount.uint32,
+        equals(original.ledgerMaxTxCount.uint32),
+      );
+    });
 
-      test('XdrConfigSettingContractComputeV0 struct roundtrip', () {
-        var original = XdrConfigSettingContractComputeV0(XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrUint32(42));
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrConfigSettingContractComputeV0.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrConfigSettingContractComputeV0.decode(input);
-          expect(decoded.ledgerMaxInstructions.int64, equals(original.ledgerMaxInstructions.int64));
-          expect(decoded.txMaxInstructions.int64, equals(original.txMaxInstructions.int64));
-          expect(decoded.feeRatePerInstructionsIncrement.int64, equals(original.feeRatePerInstructionsIncrement.int64));
-          expect(decoded.txMemoryLimit.uint32, equals(original.txMemoryLimit.uint32));
-        var base64Decoded = XdrConfigSettingContractComputeV0.fromBase64EncodedXdrString(
-                original.toBase64EncodedXdrString());
-          expect(base64Decoded.ledgerMaxInstructions.int64, equals(original.ledgerMaxInstructions.int64));
-          expect(base64Decoded.txMaxInstructions.int64, equals(original.txMaxInstructions.int64));
-          expect(base64Decoded.feeRatePerInstructionsIncrement.int64, equals(original.feeRatePerInstructionsIncrement.int64));
-          expect(base64Decoded.txMemoryLimit.uint32, equals(original.txMemoryLimit.uint32));
-      });
+    test('XdrConfigSettingContractComputeV0 struct roundtrip', () {
+      var original = XdrConfigSettingContractComputeV0(
+        XdrInt64(BigInt.from(654321)),
+        XdrInt64(BigInt.from(654321)),
+        XdrInt64(BigInt.from(654321)),
+        XdrUint32(42),
+      );
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrConfigSettingContractComputeV0.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrConfigSettingContractComputeV0.decode(input);
+      expect(
+        decoded.ledgerMaxInstructions.int64,
+        equals(original.ledgerMaxInstructions.int64),
+      );
+      expect(
+        decoded.txMaxInstructions.int64,
+        equals(original.txMaxInstructions.int64),
+      );
+      expect(
+        decoded.feeRatePerInstructionsIncrement.int64,
+        equals(original.feeRatePerInstructionsIncrement.int64),
+      );
+      expect(
+        decoded.txMemoryLimit.uint32,
+        equals(original.txMemoryLimit.uint32),
+      );
+      var base64Decoded =
+          XdrConfigSettingContractComputeV0.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString(),
+          );
+      expect(
+        base64Decoded.ledgerMaxInstructions.int64,
+        equals(original.ledgerMaxInstructions.int64),
+      );
+      expect(
+        base64Decoded.txMaxInstructions.int64,
+        equals(original.txMaxInstructions.int64),
+      );
+      expect(
+        base64Decoded.feeRatePerInstructionsIncrement.int64,
+        equals(original.feeRatePerInstructionsIncrement.int64),
+      );
+      expect(
+        base64Decoded.txMemoryLimit.uint32,
+        equals(original.txMemoryLimit.uint32),
+      );
+    });
 
-      test('XdrConfigSettingContractParallelComputeV0 struct roundtrip', () {
-        var original = XdrConfigSettingContractParallelComputeV0(XdrUint32(42));
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrConfigSettingContractParallelComputeV0.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrConfigSettingContractParallelComputeV0.decode(input);
-          expect(decoded.ledgerMaxDependentTxClusters.uint32, equals(original.ledgerMaxDependentTxClusters.uint32));
-        var base64Decoded = XdrConfigSettingContractParallelComputeV0.fromBase64EncodedXdrString(
-                original.toBase64EncodedXdrString());
-          expect(base64Decoded.ledgerMaxDependentTxClusters.uint32, equals(original.ledgerMaxDependentTxClusters.uint32));
-      });
+    test('XdrConfigSettingContractParallelComputeV0 struct roundtrip', () {
+      var original = XdrConfigSettingContractParallelComputeV0(XdrUint32(42));
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrConfigSettingContractParallelComputeV0.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrConfigSettingContractParallelComputeV0.decode(input);
+      expect(
+        decoded.ledgerMaxDependentTxClusters.uint32,
+        equals(original.ledgerMaxDependentTxClusters.uint32),
+      );
+      var base64Decoded =
+          XdrConfigSettingContractParallelComputeV0.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString(),
+          );
+      expect(
+        base64Decoded.ledgerMaxDependentTxClusters.uint32,
+        equals(original.ledgerMaxDependentTxClusters.uint32),
+      );
+    });
 
-      test('XdrConfigSettingContractLedgerCostV0 struct roundtrip', () {
-        var original = XdrConfigSettingContractLedgerCostV0(XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrUint32(42));
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrConfigSettingContractLedgerCostV0.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrConfigSettingContractLedgerCostV0.decode(input);
-          expect(decoded.ledgerMaxDiskReadEntries.uint32, equals(original.ledgerMaxDiskReadEntries.uint32));
-          expect(decoded.ledgerMaxDiskReadBytes.uint32, equals(original.ledgerMaxDiskReadBytes.uint32));
-          expect(decoded.ledgerMaxWriteLedgerEntries.uint32, equals(original.ledgerMaxWriteLedgerEntries.uint32));
-          expect(decoded.ledgerMaxWriteBytes.uint32, equals(original.ledgerMaxWriteBytes.uint32));
-          expect(decoded.txMaxDiskReadEntries.uint32, equals(original.txMaxDiskReadEntries.uint32));
-          expect(decoded.txMaxDiskReadBytes.uint32, equals(original.txMaxDiskReadBytes.uint32));
-          expect(decoded.txMaxWriteLedgerEntries.uint32, equals(original.txMaxWriteLedgerEntries.uint32));
-          expect(decoded.txMaxWriteBytes.uint32, equals(original.txMaxWriteBytes.uint32));
-          expect(decoded.feeDiskReadLedgerEntry.int64, equals(original.feeDiskReadLedgerEntry.int64));
-          expect(decoded.feeWriteLedgerEntry.int64, equals(original.feeWriteLedgerEntry.int64));
-          expect(decoded.feeDiskRead1KB.int64, equals(original.feeDiskRead1KB.int64));
-          expect(decoded.sorobanStateTargetSizeBytes.int64, equals(original.sorobanStateTargetSizeBytes.int64));
-          expect(decoded.rentFee1KBSorobanStateSizeLow.int64, equals(original.rentFee1KBSorobanStateSizeLow.int64));
-          expect(decoded.rentFee1KBSorobanStateSizeHigh.int64, equals(original.rentFee1KBSorobanStateSizeHigh.int64));
-          expect(decoded.sorobanStateRentFeeGrowthFactor.uint32, equals(original.sorobanStateRentFeeGrowthFactor.uint32));
-        var base64Decoded = XdrConfigSettingContractLedgerCostV0.fromBase64EncodedXdrString(
-                original.toBase64EncodedXdrString());
-          expect(base64Decoded.ledgerMaxDiskReadEntries.uint32, equals(original.ledgerMaxDiskReadEntries.uint32));
-          expect(base64Decoded.ledgerMaxDiskReadBytes.uint32, equals(original.ledgerMaxDiskReadBytes.uint32));
-          expect(base64Decoded.ledgerMaxWriteLedgerEntries.uint32, equals(original.ledgerMaxWriteLedgerEntries.uint32));
-          expect(base64Decoded.ledgerMaxWriteBytes.uint32, equals(original.ledgerMaxWriteBytes.uint32));
-          expect(base64Decoded.txMaxDiskReadEntries.uint32, equals(original.txMaxDiskReadEntries.uint32));
-          expect(base64Decoded.txMaxDiskReadBytes.uint32, equals(original.txMaxDiskReadBytes.uint32));
-          expect(base64Decoded.txMaxWriteLedgerEntries.uint32, equals(original.txMaxWriteLedgerEntries.uint32));
-          expect(base64Decoded.txMaxWriteBytes.uint32, equals(original.txMaxWriteBytes.uint32));
-          expect(base64Decoded.feeDiskReadLedgerEntry.int64, equals(original.feeDiskReadLedgerEntry.int64));
-          expect(base64Decoded.feeWriteLedgerEntry.int64, equals(original.feeWriteLedgerEntry.int64));
-          expect(base64Decoded.feeDiskRead1KB.int64, equals(original.feeDiskRead1KB.int64));
-          expect(base64Decoded.sorobanStateTargetSizeBytes.int64, equals(original.sorobanStateTargetSizeBytes.int64));
-          expect(base64Decoded.rentFee1KBSorobanStateSizeLow.int64, equals(original.rentFee1KBSorobanStateSizeLow.int64));
-          expect(base64Decoded.rentFee1KBSorobanStateSizeHigh.int64, equals(original.rentFee1KBSorobanStateSizeHigh.int64));
-          expect(base64Decoded.sorobanStateRentFeeGrowthFactor.uint32, equals(original.sorobanStateRentFeeGrowthFactor.uint32));
-      });
+    test('XdrConfigSettingContractLedgerCostV0 struct roundtrip', () {
+      var original = XdrConfigSettingContractLedgerCostV0(
+        XdrUint32(42),
+        XdrUint32(42),
+        XdrUint32(42),
+        XdrUint32(42),
+        XdrUint32(42),
+        XdrUint32(42),
+        XdrUint32(42),
+        XdrUint32(42),
+        XdrInt64(BigInt.from(654321)),
+        XdrInt64(BigInt.from(654321)),
+        XdrInt64(BigInt.from(654321)),
+        XdrInt64(BigInt.from(654321)),
+        XdrInt64(BigInt.from(654321)),
+        XdrInt64(BigInt.from(654321)),
+        XdrUint32(42),
+      );
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrConfigSettingContractLedgerCostV0.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrConfigSettingContractLedgerCostV0.decode(input);
+      expect(
+        decoded.ledgerMaxDiskReadEntries.uint32,
+        equals(original.ledgerMaxDiskReadEntries.uint32),
+      );
+      expect(
+        decoded.ledgerMaxDiskReadBytes.uint32,
+        equals(original.ledgerMaxDiskReadBytes.uint32),
+      );
+      expect(
+        decoded.ledgerMaxWriteLedgerEntries.uint32,
+        equals(original.ledgerMaxWriteLedgerEntries.uint32),
+      );
+      expect(
+        decoded.ledgerMaxWriteBytes.uint32,
+        equals(original.ledgerMaxWriteBytes.uint32),
+      );
+      expect(
+        decoded.txMaxDiskReadEntries.uint32,
+        equals(original.txMaxDiskReadEntries.uint32),
+      );
+      expect(
+        decoded.txMaxDiskReadBytes.uint32,
+        equals(original.txMaxDiskReadBytes.uint32),
+      );
+      expect(
+        decoded.txMaxWriteLedgerEntries.uint32,
+        equals(original.txMaxWriteLedgerEntries.uint32),
+      );
+      expect(
+        decoded.txMaxWriteBytes.uint32,
+        equals(original.txMaxWriteBytes.uint32),
+      );
+      expect(
+        decoded.feeDiskReadLedgerEntry.int64,
+        equals(original.feeDiskReadLedgerEntry.int64),
+      );
+      expect(
+        decoded.feeWriteLedgerEntry.int64,
+        equals(original.feeWriteLedgerEntry.int64),
+      );
+      expect(
+        decoded.feeDiskRead1KB.int64,
+        equals(original.feeDiskRead1KB.int64),
+      );
+      expect(
+        decoded.sorobanStateTargetSizeBytes.int64,
+        equals(original.sorobanStateTargetSizeBytes.int64),
+      );
+      expect(
+        decoded.rentFee1KBSorobanStateSizeLow.int64,
+        equals(original.rentFee1KBSorobanStateSizeLow.int64),
+      );
+      expect(
+        decoded.rentFee1KBSorobanStateSizeHigh.int64,
+        equals(original.rentFee1KBSorobanStateSizeHigh.int64),
+      );
+      expect(
+        decoded.sorobanStateRentFeeGrowthFactor.uint32,
+        equals(original.sorobanStateRentFeeGrowthFactor.uint32),
+      );
+      var base64Decoded =
+          XdrConfigSettingContractLedgerCostV0.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString(),
+          );
+      expect(
+        base64Decoded.ledgerMaxDiskReadEntries.uint32,
+        equals(original.ledgerMaxDiskReadEntries.uint32),
+      );
+      expect(
+        base64Decoded.ledgerMaxDiskReadBytes.uint32,
+        equals(original.ledgerMaxDiskReadBytes.uint32),
+      );
+      expect(
+        base64Decoded.ledgerMaxWriteLedgerEntries.uint32,
+        equals(original.ledgerMaxWriteLedgerEntries.uint32),
+      );
+      expect(
+        base64Decoded.ledgerMaxWriteBytes.uint32,
+        equals(original.ledgerMaxWriteBytes.uint32),
+      );
+      expect(
+        base64Decoded.txMaxDiskReadEntries.uint32,
+        equals(original.txMaxDiskReadEntries.uint32),
+      );
+      expect(
+        base64Decoded.txMaxDiskReadBytes.uint32,
+        equals(original.txMaxDiskReadBytes.uint32),
+      );
+      expect(
+        base64Decoded.txMaxWriteLedgerEntries.uint32,
+        equals(original.txMaxWriteLedgerEntries.uint32),
+      );
+      expect(
+        base64Decoded.txMaxWriteBytes.uint32,
+        equals(original.txMaxWriteBytes.uint32),
+      );
+      expect(
+        base64Decoded.feeDiskReadLedgerEntry.int64,
+        equals(original.feeDiskReadLedgerEntry.int64),
+      );
+      expect(
+        base64Decoded.feeWriteLedgerEntry.int64,
+        equals(original.feeWriteLedgerEntry.int64),
+      );
+      expect(
+        base64Decoded.feeDiskRead1KB.int64,
+        equals(original.feeDiskRead1KB.int64),
+      );
+      expect(
+        base64Decoded.sorobanStateTargetSizeBytes.int64,
+        equals(original.sorobanStateTargetSizeBytes.int64),
+      );
+      expect(
+        base64Decoded.rentFee1KBSorobanStateSizeLow.int64,
+        equals(original.rentFee1KBSorobanStateSizeLow.int64),
+      );
+      expect(
+        base64Decoded.rentFee1KBSorobanStateSizeHigh.int64,
+        equals(original.rentFee1KBSorobanStateSizeHigh.int64),
+      );
+      expect(
+        base64Decoded.sorobanStateRentFeeGrowthFactor.uint32,
+        equals(original.sorobanStateRentFeeGrowthFactor.uint32),
+      );
+    });
 
-      test('XdrConfigSettingContractLedgerCostExtV0 struct roundtrip', () {
-        var original = XdrConfigSettingContractLedgerCostExtV0(XdrUint32(42), XdrInt64(BigInt.from(654321)));
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrConfigSettingContractLedgerCostExtV0.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrConfigSettingContractLedgerCostExtV0.decode(input);
-          expect(decoded.txMaxFootprintEntries.uint32, equals(original.txMaxFootprintEntries.uint32));
-          expect(decoded.feeWrite1KB.int64, equals(original.feeWrite1KB.int64));
-        var base64Decoded = XdrConfigSettingContractLedgerCostExtV0.fromBase64EncodedXdrString(
-                original.toBase64EncodedXdrString());
-          expect(base64Decoded.txMaxFootprintEntries.uint32, equals(original.txMaxFootprintEntries.uint32));
-          expect(base64Decoded.feeWrite1KB.int64, equals(original.feeWrite1KB.int64));
-      });
+    test('XdrConfigSettingContractLedgerCostExtV0 struct roundtrip', () {
+      var original = XdrConfigSettingContractLedgerCostExtV0(
+        XdrUint32(42),
+        XdrInt64(BigInt.from(654321)),
+      );
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrConfigSettingContractLedgerCostExtV0.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrConfigSettingContractLedgerCostExtV0.decode(input);
+      expect(
+        decoded.txMaxFootprintEntries.uint32,
+        equals(original.txMaxFootprintEntries.uint32),
+      );
+      expect(decoded.feeWrite1KB.int64, equals(original.feeWrite1KB.int64));
+      var base64Decoded =
+          XdrConfigSettingContractLedgerCostExtV0.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString(),
+          );
+      expect(
+        base64Decoded.txMaxFootprintEntries.uint32,
+        equals(original.txMaxFootprintEntries.uint32),
+      );
+      expect(
+        base64Decoded.feeWrite1KB.int64,
+        equals(original.feeWrite1KB.int64),
+      );
+    });
 
-      test('XdrConfigSettingContractHistoricalDataV0 struct roundtrip', () {
-        var original = XdrConfigSettingContractHistoricalDataV0(XdrInt64(BigInt.from(654321)));
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrConfigSettingContractHistoricalDataV0.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrConfigSettingContractHistoricalDataV0.decode(input);
-          expect(decoded.feeHistorical1KB.int64, equals(original.feeHistorical1KB.int64));
-        var base64Decoded = XdrConfigSettingContractHistoricalDataV0.fromBase64EncodedXdrString(
-                original.toBase64EncodedXdrString());
-          expect(base64Decoded.feeHistorical1KB.int64, equals(original.feeHistorical1KB.int64));
-      });
+    test('XdrConfigSettingContractHistoricalDataV0 struct roundtrip', () {
+      var original = XdrConfigSettingContractHistoricalDataV0(
+        XdrInt64(BigInt.from(654321)),
+      );
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrConfigSettingContractHistoricalDataV0.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrConfigSettingContractHistoricalDataV0.decode(input);
+      expect(
+        decoded.feeHistorical1KB.int64,
+        equals(original.feeHistorical1KB.int64),
+      );
+      var base64Decoded =
+          XdrConfigSettingContractHistoricalDataV0.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString(),
+          );
+      expect(
+        base64Decoded.feeHistorical1KB.int64,
+        equals(original.feeHistorical1KB.int64),
+      );
+    });
 
-      test('XdrConfigSettingContractEventsV0 struct roundtrip', () {
-        var original = XdrConfigSettingContractEventsV0(XdrUint32(42), XdrInt64(BigInt.from(654321)));
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrConfigSettingContractEventsV0.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrConfigSettingContractEventsV0.decode(input);
-          expect(decoded.txMaxContractEventsSizeBytes.uint32, equals(original.txMaxContractEventsSizeBytes.uint32));
-          expect(decoded.feeContractEvents1KB.int64, equals(original.feeContractEvents1KB.int64));
-        var base64Decoded = XdrConfigSettingContractEventsV0.fromBase64EncodedXdrString(
-                original.toBase64EncodedXdrString());
-          expect(base64Decoded.txMaxContractEventsSizeBytes.uint32, equals(original.txMaxContractEventsSizeBytes.uint32));
-          expect(base64Decoded.feeContractEvents1KB.int64, equals(original.feeContractEvents1KB.int64));
-      });
+    test('XdrConfigSettingContractEventsV0 struct roundtrip', () {
+      var original = XdrConfigSettingContractEventsV0(
+        XdrUint32(42),
+        XdrInt64(BigInt.from(654321)),
+      );
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrConfigSettingContractEventsV0.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrConfigSettingContractEventsV0.decode(input);
+      expect(
+        decoded.txMaxContractEventsSizeBytes.uint32,
+        equals(original.txMaxContractEventsSizeBytes.uint32),
+      );
+      expect(
+        decoded.feeContractEvents1KB.int64,
+        equals(original.feeContractEvents1KB.int64),
+      );
+      var base64Decoded =
+          XdrConfigSettingContractEventsV0.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString(),
+          );
+      expect(
+        base64Decoded.txMaxContractEventsSizeBytes.uint32,
+        equals(original.txMaxContractEventsSizeBytes.uint32),
+      );
+      expect(
+        base64Decoded.feeContractEvents1KB.int64,
+        equals(original.feeContractEvents1KB.int64),
+      );
+    });
 
-      test('XdrConfigSettingContractBandwidthV0 struct roundtrip', () {
-        var original = XdrConfigSettingContractBandwidthV0(XdrUint32(42), XdrUint32(42), XdrInt64(BigInt.from(654321)));
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrConfigSettingContractBandwidthV0.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrConfigSettingContractBandwidthV0.decode(input);
-          expect(decoded.ledgerMaxTxsSizeBytes.uint32, equals(original.ledgerMaxTxsSizeBytes.uint32));
-          expect(decoded.txMaxSizeBytes.uint32, equals(original.txMaxSizeBytes.uint32));
-          expect(decoded.feeTxSize1KB.int64, equals(original.feeTxSize1KB.int64));
-        var base64Decoded = XdrConfigSettingContractBandwidthV0.fromBase64EncodedXdrString(
-                original.toBase64EncodedXdrString());
-          expect(base64Decoded.ledgerMaxTxsSizeBytes.uint32, equals(original.ledgerMaxTxsSizeBytes.uint32));
-          expect(base64Decoded.txMaxSizeBytes.uint32, equals(original.txMaxSizeBytes.uint32));
-          expect(base64Decoded.feeTxSize1KB.int64, equals(original.feeTxSize1KB.int64));
-      });
+    test('XdrConfigSettingContractBandwidthV0 struct roundtrip', () {
+      var original = XdrConfigSettingContractBandwidthV0(
+        XdrUint32(42),
+        XdrUint32(42),
+        XdrInt64(BigInt.from(654321)),
+      );
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrConfigSettingContractBandwidthV0.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrConfigSettingContractBandwidthV0.decode(input);
+      expect(
+        decoded.ledgerMaxTxsSizeBytes.uint32,
+        equals(original.ledgerMaxTxsSizeBytes.uint32),
+      );
+      expect(
+        decoded.txMaxSizeBytes.uint32,
+        equals(original.txMaxSizeBytes.uint32),
+      );
+      expect(decoded.feeTxSize1KB.int64, equals(original.feeTxSize1KB.int64));
+      var base64Decoded =
+          XdrConfigSettingContractBandwidthV0.fromBase64EncodedXdrString(
+            original.toBase64EncodedXdrString(),
+          );
+      expect(
+        base64Decoded.ledgerMaxTxsSizeBytes.uint32,
+        equals(original.ledgerMaxTxsSizeBytes.uint32),
+      );
+      expect(
+        base64Decoded.txMaxSizeBytes.uint32,
+        equals(original.txMaxSizeBytes.uint32),
+      );
+      expect(
+        base64Decoded.feeTxSize1KB.int64,
+        equals(original.feeTxSize1KB.int64),
+      );
+    });
 
     test('XdrContractCostType enum roundtrip', () {
       final members = [
         XdrContractCostType.WasmInsnExec,
-            XdrContractCostType.MemAlloc,
-            XdrContractCostType.MemCpy,
-            XdrContractCostType.MemCmp,
-            XdrContractCostType.DispatchHostFunction,
-            XdrContractCostType.VisitObject,
-            XdrContractCostType.ValSer,
-            XdrContractCostType.ValDeser,
-            XdrContractCostType.ComputeSha256Hash,
-            XdrContractCostType.ComputeEd25519PubKey,
-            XdrContractCostType.VerifyEd25519Sig,
-            XdrContractCostType.VmInstantiation,
-            XdrContractCostType.VmCachedInstantiation,
-            XdrContractCostType.InvokeVmFunction,
-            XdrContractCostType.ComputeKeccak256Hash,
-            XdrContractCostType.DecodeEcdsaCurve256Sig,
-            XdrContractCostType.RecoverEcdsaSecp256k1Key,
-            XdrContractCostType.Int256AddSub,
-            XdrContractCostType.Int256Mul,
-            XdrContractCostType.Int256Div,
-            XdrContractCostType.Int256Pow,
-            XdrContractCostType.Int256Shift,
-            XdrContractCostType.ChaCha20DrawBytes,
-            XdrContractCostType.ParseWasmInstructions,
-            XdrContractCostType.ParseWasmFunctions,
-            XdrContractCostType.ParseWasmGlobals,
-            XdrContractCostType.ParseWasmTableEntries,
-            XdrContractCostType.ParseWasmTypes,
-            XdrContractCostType.ParseWasmDataSegments,
-            XdrContractCostType.ParseWasmElemSegments,
-            XdrContractCostType.ParseWasmImports,
-            XdrContractCostType.ParseWasmExports,
-            XdrContractCostType.ParseWasmDataSegmentBytes,
-            XdrContractCostType.InstantiateWasmInstructions,
-            XdrContractCostType.InstantiateWasmFunctions,
-            XdrContractCostType.InstantiateWasmGlobals,
-            XdrContractCostType.InstantiateWasmTableEntries,
-            XdrContractCostType.InstantiateWasmTypes,
-            XdrContractCostType.InstantiateWasmDataSegments,
-            XdrContractCostType.InstantiateWasmElemSegments,
-            XdrContractCostType.InstantiateWasmImports,
-            XdrContractCostType.InstantiateWasmExports,
-            XdrContractCostType.InstantiateWasmDataSegmentBytes,
-            XdrContractCostType.Sec1DecodePointUncompressed,
-            XdrContractCostType.VerifyEcdsaSecp256r1Sig,
-            XdrContractCostType.Bls12381EncodeFp,
-            XdrContractCostType.Bls12381DecodeFp,
-            XdrContractCostType.Bls12381G1CheckPointOnCurve,
-            XdrContractCostType.Bls12381G1CheckPointInSubgroup,
-            XdrContractCostType.Bls12381G2CheckPointOnCurve,
-            XdrContractCostType.Bls12381G2CheckPointInSubgroup,
-            XdrContractCostType.Bls12381G1ProjectiveToAffine,
-            XdrContractCostType.Bls12381G2ProjectiveToAffine,
-            XdrContractCostType.Bls12381G1Add,
-            XdrContractCostType.Bls12381G1Mul,
-            XdrContractCostType.Bls12381G1Msm,
-            XdrContractCostType.Bls12381MapFpToG1,
-            XdrContractCostType.Bls12381HashToG1,
-            XdrContractCostType.Bls12381G2Add,
-            XdrContractCostType.Bls12381G2Mul,
-            XdrContractCostType.Bls12381G2Msm,
-            XdrContractCostType.Bls12381MapFp2ToG2,
-            XdrContractCostType.Bls12381HashToG2,
-            XdrContractCostType.Bls12381Pairing,
-            XdrContractCostType.Bls12381FrFromU256,
-            XdrContractCostType.Bls12381FrToU256,
-            XdrContractCostType.Bls12381FrAddSub,
-            XdrContractCostType.Bls12381FrMul,
-            XdrContractCostType.Bls12381FrPow,
-            XdrContractCostType.Bls12381FrInv,
-            XdrContractCostType.Bn254EncodeFp,
-            XdrContractCostType.Bn254DecodeFp,
-            XdrContractCostType.Bn254G1CheckPointOnCurve,
-            XdrContractCostType.Bn254G2CheckPointOnCurve,
-            XdrContractCostType.Bn254G2CheckPointInSubgroup,
-            XdrContractCostType.Bn254G1ProjectiveToAffine,
-            XdrContractCostType.Bn254G1Add,
-            XdrContractCostType.Bn254G1Mul,
-            XdrContractCostType.Bn254Pairing,
-            XdrContractCostType.Bn254FrFromU256,
-            XdrContractCostType.Bn254FrToU256,
-            XdrContractCostType.Bn254FrAddSub,
-            XdrContractCostType.Bn254FrMul,
-            XdrContractCostType.Bn254FrPow,
-            XdrContractCostType.Bn254FrInv,
-            XdrContractCostType.Bn254G1Msm,
+        XdrContractCostType.MemAlloc,
+        XdrContractCostType.MemCpy,
+        XdrContractCostType.MemCmp,
+        XdrContractCostType.DispatchHostFunction,
+        XdrContractCostType.VisitObject,
+        XdrContractCostType.ValSer,
+        XdrContractCostType.ValDeser,
+        XdrContractCostType.ComputeSha256Hash,
+        XdrContractCostType.ComputeEd25519PubKey,
+        XdrContractCostType.VerifyEd25519Sig,
+        XdrContractCostType.VmInstantiation,
+        XdrContractCostType.VmCachedInstantiation,
+        XdrContractCostType.InvokeVmFunction,
+        XdrContractCostType.ComputeKeccak256Hash,
+        XdrContractCostType.DecodeEcdsaCurve256Sig,
+        XdrContractCostType.RecoverEcdsaSecp256k1Key,
+        XdrContractCostType.Int256AddSub,
+        XdrContractCostType.Int256Mul,
+        XdrContractCostType.Int256Div,
+        XdrContractCostType.Int256Pow,
+        XdrContractCostType.Int256Shift,
+        XdrContractCostType.ChaCha20DrawBytes,
+        XdrContractCostType.ParseWasmInstructions,
+        XdrContractCostType.ParseWasmFunctions,
+        XdrContractCostType.ParseWasmGlobals,
+        XdrContractCostType.ParseWasmTableEntries,
+        XdrContractCostType.ParseWasmTypes,
+        XdrContractCostType.ParseWasmDataSegments,
+        XdrContractCostType.ParseWasmElemSegments,
+        XdrContractCostType.ParseWasmImports,
+        XdrContractCostType.ParseWasmExports,
+        XdrContractCostType.ParseWasmDataSegmentBytes,
+        XdrContractCostType.InstantiateWasmInstructions,
+        XdrContractCostType.InstantiateWasmFunctions,
+        XdrContractCostType.InstantiateWasmGlobals,
+        XdrContractCostType.InstantiateWasmTableEntries,
+        XdrContractCostType.InstantiateWasmTypes,
+        XdrContractCostType.InstantiateWasmDataSegments,
+        XdrContractCostType.InstantiateWasmElemSegments,
+        XdrContractCostType.InstantiateWasmImports,
+        XdrContractCostType.InstantiateWasmExports,
+        XdrContractCostType.InstantiateWasmDataSegmentBytes,
+        XdrContractCostType.Sec1DecodePointUncompressed,
+        XdrContractCostType.VerifyEcdsaSecp256r1Sig,
+        XdrContractCostType.Bls12381EncodeFp,
+        XdrContractCostType.Bls12381DecodeFp,
+        XdrContractCostType.Bls12381G1CheckPointOnCurve,
+        XdrContractCostType.Bls12381G1CheckPointInSubgroup,
+        XdrContractCostType.Bls12381G2CheckPointOnCurve,
+        XdrContractCostType.Bls12381G2CheckPointInSubgroup,
+        XdrContractCostType.Bls12381G1ProjectiveToAffine,
+        XdrContractCostType.Bls12381G2ProjectiveToAffine,
+        XdrContractCostType.Bls12381G1Add,
+        XdrContractCostType.Bls12381G1Mul,
+        XdrContractCostType.Bls12381G1Msm,
+        XdrContractCostType.Bls12381MapFpToG1,
+        XdrContractCostType.Bls12381HashToG1,
+        XdrContractCostType.Bls12381G2Add,
+        XdrContractCostType.Bls12381G2Mul,
+        XdrContractCostType.Bls12381G2Msm,
+        XdrContractCostType.Bls12381MapFp2ToG2,
+        XdrContractCostType.Bls12381HashToG2,
+        XdrContractCostType.Bls12381Pairing,
+        XdrContractCostType.Bls12381FrFromU256,
+        XdrContractCostType.Bls12381FrToU256,
+        XdrContractCostType.Bls12381FrAddSub,
+        XdrContractCostType.Bls12381FrMul,
+        XdrContractCostType.Bls12381FrPow,
+        XdrContractCostType.Bls12381FrInv,
+        XdrContractCostType.Bn254EncodeFp,
+        XdrContractCostType.Bn254DecodeFp,
+        XdrContractCostType.Bn254G1CheckPointOnCurve,
+        XdrContractCostType.Bn254G2CheckPointOnCurve,
+        XdrContractCostType.Bn254G2CheckPointInSubgroup,
+        XdrContractCostType.Bn254G1ProjectiveToAffine,
+        XdrContractCostType.Bn254G1Add,
+        XdrContractCostType.Bn254G1Mul,
+        XdrContractCostType.Bn254Pairing,
+        XdrContractCostType.Bn254FrFromU256,
+        XdrContractCostType.Bn254FrToU256,
+        XdrContractCostType.Bn254FrAddSub,
+        XdrContractCostType.Bn254FrMul,
+        XdrContractCostType.Bn254FrPow,
+        XdrContractCostType.Bn254FrInv,
+        XdrContractCostType.Bn254G1Msm,
       ];
       for (var member in members) {
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -262,179 +480,339 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrContractCostType.decode(input);
-        expect(decoded.value, equals(member.value),
-            reason: 'Failed roundtrip for ${member}');
+        expect(
+          decoded.value,
+          equals(member.value),
+          reason: 'Failed roundtrip for ${member}',
+        );
         var base64Decoded = XdrContractCostType.fromBase64EncodedXdrString(
-            member.toBase64EncodedXdrString());
-        expect(base64Decoded.value, equals(member.value),
-            reason: 'Failed base64 roundtrip for ${member}');
+          member.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.value,
+          equals(member.value),
+          reason: 'Failed base64 roundtrip for ${member}',
+        );
       }
     });
 
-      test('XdrContractCostParamEntry struct roundtrip', () {
-        var original = XdrContractCostParamEntry(XdrExtensionPoint(0), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)));
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrContractCostParamEntry.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrContractCostParamEntry.decode(input);
-          expect(decoded.constTerm.int64, equals(original.constTerm.int64));
-          expect(decoded.linearTerm.int64, equals(original.linearTerm.int64));
-        var base64Decoded = XdrContractCostParamEntry.fromBase64EncodedXdrString(
-                original.toBase64EncodedXdrString());
-          expect(base64Decoded.constTerm.int64, equals(original.constTerm.int64));
-          expect(base64Decoded.linearTerm.int64, equals(original.linearTerm.int64));
-      });
+    test('XdrContractCostParamEntry struct roundtrip', () {
+      var original = XdrContractCostParamEntry(
+        XdrExtensionPoint(0),
+        XdrInt64(BigInt.from(654321)),
+        XdrInt64(BigInt.from(654321)),
+      );
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrContractCostParamEntry.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrContractCostParamEntry.decode(input);
+      expect(decoded.constTerm.int64, equals(original.constTerm.int64));
+      expect(decoded.linearTerm.int64, equals(original.linearTerm.int64));
+      var base64Decoded = XdrContractCostParamEntry.fromBase64EncodedXdrString(
+        original.toBase64EncodedXdrString(),
+      );
+      expect(base64Decoded.constTerm.int64, equals(original.constTerm.int64));
+      expect(base64Decoded.linearTerm.int64, equals(original.linearTerm.int64));
+    });
 
-      test('XdrStateArchivalSettings struct roundtrip', () {
-        var original = XdrStateArchivalSettings(XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42));
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrStateArchivalSettings.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrStateArchivalSettings.decode(input);
-          expect(decoded.maxEntryTTL.uint32, equals(original.maxEntryTTL.uint32));
-          expect(decoded.minTemporaryTTL.uint32, equals(original.minTemporaryTTL.uint32));
-          expect(decoded.minPersistentTTL.uint32, equals(original.minPersistentTTL.uint32));
-          expect(decoded.persistentRentRateDenominator.int64, equals(original.persistentRentRateDenominator.int64));
-          expect(decoded.tempRentRateDenominator.int64, equals(original.tempRentRateDenominator.int64));
-          expect(decoded.maxEntriesToArchive.uint32, equals(original.maxEntriesToArchive.uint32));
-          expect(decoded.liveSorobanStateSizeWindowSampleSize.uint32, equals(original.liveSorobanStateSizeWindowSampleSize.uint32));
-          expect(decoded.liveSorobanStateSizeWindowSamplePeriod.uint32, equals(original.liveSorobanStateSizeWindowSamplePeriod.uint32));
-          expect(decoded.evictionScanSize.uint32, equals(original.evictionScanSize.uint32));
-          expect(decoded.startingEvictionScanLevel.uint32, equals(original.startingEvictionScanLevel.uint32));
-        var base64Decoded = XdrStateArchivalSettings.fromBase64EncodedXdrString(
-                original.toBase64EncodedXdrString());
-          expect(base64Decoded.maxEntryTTL.uint32, equals(original.maxEntryTTL.uint32));
-          expect(base64Decoded.minTemporaryTTL.uint32, equals(original.minTemporaryTTL.uint32));
-          expect(base64Decoded.minPersistentTTL.uint32, equals(original.minPersistentTTL.uint32));
-          expect(base64Decoded.persistentRentRateDenominator.int64, equals(original.persistentRentRateDenominator.int64));
-          expect(base64Decoded.tempRentRateDenominator.int64, equals(original.tempRentRateDenominator.int64));
-          expect(base64Decoded.maxEntriesToArchive.uint32, equals(original.maxEntriesToArchive.uint32));
-          expect(base64Decoded.liveSorobanStateSizeWindowSampleSize.uint32, equals(original.liveSorobanStateSizeWindowSampleSize.uint32));
-          expect(base64Decoded.liveSorobanStateSizeWindowSamplePeriod.uint32, equals(original.liveSorobanStateSizeWindowSamplePeriod.uint32));
-          expect(base64Decoded.evictionScanSize.uint32, equals(original.evictionScanSize.uint32));
-          expect(base64Decoded.startingEvictionScanLevel.uint32, equals(original.startingEvictionScanLevel.uint32));
-      });
+    test('XdrStateArchivalSettings struct roundtrip', () {
+      var original = XdrStateArchivalSettings(
+        XdrUint32(42),
+        XdrUint32(42),
+        XdrUint32(42),
+        XdrInt64(BigInt.from(654321)),
+        XdrInt64(BigInt.from(654321)),
+        XdrUint32(42),
+        XdrUint32(42),
+        XdrUint32(42),
+        XdrUint32(42),
+        XdrUint32(42),
+      );
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrStateArchivalSettings.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrStateArchivalSettings.decode(input);
+      expect(decoded.maxEntryTTL.uint32, equals(original.maxEntryTTL.uint32));
+      expect(
+        decoded.minTemporaryTTL.uint32,
+        equals(original.minTemporaryTTL.uint32),
+      );
+      expect(
+        decoded.minPersistentTTL.uint32,
+        equals(original.minPersistentTTL.uint32),
+      );
+      expect(
+        decoded.persistentRentRateDenominator.int64,
+        equals(original.persistentRentRateDenominator.int64),
+      );
+      expect(
+        decoded.tempRentRateDenominator.int64,
+        equals(original.tempRentRateDenominator.int64),
+      );
+      expect(
+        decoded.maxEntriesToArchive.uint32,
+        equals(original.maxEntriesToArchive.uint32),
+      );
+      expect(
+        decoded.liveSorobanStateSizeWindowSampleSize.uint32,
+        equals(original.liveSorobanStateSizeWindowSampleSize.uint32),
+      );
+      expect(
+        decoded.liveSorobanStateSizeWindowSamplePeriod.uint32,
+        equals(original.liveSorobanStateSizeWindowSamplePeriod.uint32),
+      );
+      expect(
+        decoded.evictionScanSize.uint32,
+        equals(original.evictionScanSize.uint32),
+      );
+      expect(
+        decoded.startingEvictionScanLevel.uint32,
+        equals(original.startingEvictionScanLevel.uint32),
+      );
+      var base64Decoded = XdrStateArchivalSettings.fromBase64EncodedXdrString(
+        original.toBase64EncodedXdrString(),
+      );
+      expect(
+        base64Decoded.maxEntryTTL.uint32,
+        equals(original.maxEntryTTL.uint32),
+      );
+      expect(
+        base64Decoded.minTemporaryTTL.uint32,
+        equals(original.minTemporaryTTL.uint32),
+      );
+      expect(
+        base64Decoded.minPersistentTTL.uint32,
+        equals(original.minPersistentTTL.uint32),
+      );
+      expect(
+        base64Decoded.persistentRentRateDenominator.int64,
+        equals(original.persistentRentRateDenominator.int64),
+      );
+      expect(
+        base64Decoded.tempRentRateDenominator.int64,
+        equals(original.tempRentRateDenominator.int64),
+      );
+      expect(
+        base64Decoded.maxEntriesToArchive.uint32,
+        equals(original.maxEntriesToArchive.uint32),
+      );
+      expect(
+        base64Decoded.liveSorobanStateSizeWindowSampleSize.uint32,
+        equals(original.liveSorobanStateSizeWindowSampleSize.uint32),
+      );
+      expect(
+        base64Decoded.liveSorobanStateSizeWindowSamplePeriod.uint32,
+        equals(original.liveSorobanStateSizeWindowSamplePeriod.uint32),
+      );
+      expect(
+        base64Decoded.evictionScanSize.uint32,
+        equals(original.evictionScanSize.uint32),
+      );
+      expect(
+        base64Decoded.startingEvictionScanLevel.uint32,
+        equals(original.startingEvictionScanLevel.uint32),
+      );
+    });
 
-      test('XdrEvictionIterator struct roundtrip', () {
-        var original = XdrEvictionIterator(XdrUint32(42), true, XdrUint64(BigInt.from(123456)));
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrEvictionIterator.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrEvictionIterator.decode(input);
-          expect(decoded.bucketListLevel.uint32, equals(original.bucketListLevel.uint32));
-          expect(decoded.isCurrBucket, equals(original.isCurrBucket));
-          expect(decoded.bucketFileOffset.uint64, equals(original.bucketFileOffset.uint64));
-        var base64Decoded = XdrEvictionIterator.fromBase64EncodedXdrString(
-                original.toBase64EncodedXdrString());
-          expect(base64Decoded.bucketListLevel.uint32, equals(original.bucketListLevel.uint32));
-          expect(base64Decoded.isCurrBucket, equals(original.isCurrBucket));
-          expect(base64Decoded.bucketFileOffset.uint64, equals(original.bucketFileOffset.uint64));
-      });
+    test('XdrEvictionIterator struct roundtrip', () {
+      var original = XdrEvictionIterator(
+        XdrUint32(42),
+        true,
+        XdrUint64(BigInt.from(123456)),
+      );
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrEvictionIterator.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrEvictionIterator.decode(input);
+      expect(
+        decoded.bucketListLevel.uint32,
+        equals(original.bucketListLevel.uint32),
+      );
+      expect(decoded.isCurrBucket, equals(original.isCurrBucket));
+      expect(
+        decoded.bucketFileOffset.uint64,
+        equals(original.bucketFileOffset.uint64),
+      );
+      var base64Decoded = XdrEvictionIterator.fromBase64EncodedXdrString(
+        original.toBase64EncodedXdrString(),
+      );
+      expect(
+        base64Decoded.bucketListLevel.uint32,
+        equals(original.bucketListLevel.uint32),
+      );
+      expect(base64Decoded.isCurrBucket, equals(original.isCurrBucket));
+      expect(
+        base64Decoded.bucketFileOffset.uint64,
+        equals(original.bucketFileOffset.uint64),
+      );
+    });
 
-      test('XdrConfigSettingSCPTiming struct roundtrip', () {
-        var original = XdrConfigSettingSCPTiming(XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42));
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrConfigSettingSCPTiming.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrConfigSettingSCPTiming.decode(input);
-          expect(decoded.ledgerTargetCloseTimeMilliseconds.uint32, equals(original.ledgerTargetCloseTimeMilliseconds.uint32));
-          expect(decoded.nominationTimeoutInitialMilliseconds.uint32, equals(original.nominationTimeoutInitialMilliseconds.uint32));
-          expect(decoded.nominationTimeoutIncrementMilliseconds.uint32, equals(original.nominationTimeoutIncrementMilliseconds.uint32));
-          expect(decoded.ballotTimeoutInitialMilliseconds.uint32, equals(original.ballotTimeoutInitialMilliseconds.uint32));
-          expect(decoded.ballotTimeoutIncrementMilliseconds.uint32, equals(original.ballotTimeoutIncrementMilliseconds.uint32));
-        var base64Decoded = XdrConfigSettingSCPTiming.fromBase64EncodedXdrString(
-                original.toBase64EncodedXdrString());
-          expect(base64Decoded.ledgerTargetCloseTimeMilliseconds.uint32, equals(original.ledgerTargetCloseTimeMilliseconds.uint32));
-          expect(base64Decoded.nominationTimeoutInitialMilliseconds.uint32, equals(original.nominationTimeoutInitialMilliseconds.uint32));
-          expect(base64Decoded.nominationTimeoutIncrementMilliseconds.uint32, equals(original.nominationTimeoutIncrementMilliseconds.uint32));
-          expect(base64Decoded.ballotTimeoutInitialMilliseconds.uint32, equals(original.ballotTimeoutInitialMilliseconds.uint32));
-          expect(base64Decoded.ballotTimeoutIncrementMilliseconds.uint32, equals(original.ballotTimeoutIncrementMilliseconds.uint32));
-      });
+    test('XdrConfigSettingSCPTiming struct roundtrip', () {
+      var original = XdrConfigSettingSCPTiming(
+        XdrUint32(42),
+        XdrUint32(42),
+        XdrUint32(42),
+        XdrUint32(42),
+        XdrUint32(42),
+      );
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrConfigSettingSCPTiming.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrConfigSettingSCPTiming.decode(input);
+      expect(
+        decoded.ledgerTargetCloseTimeMilliseconds.uint32,
+        equals(original.ledgerTargetCloseTimeMilliseconds.uint32),
+      );
+      expect(
+        decoded.nominationTimeoutInitialMilliseconds.uint32,
+        equals(original.nominationTimeoutInitialMilliseconds.uint32),
+      );
+      expect(
+        decoded.nominationTimeoutIncrementMilliseconds.uint32,
+        equals(original.nominationTimeoutIncrementMilliseconds.uint32),
+      );
+      expect(
+        decoded.ballotTimeoutInitialMilliseconds.uint32,
+        equals(original.ballotTimeoutInitialMilliseconds.uint32),
+      );
+      expect(
+        decoded.ballotTimeoutIncrementMilliseconds.uint32,
+        equals(original.ballotTimeoutIncrementMilliseconds.uint32),
+      );
+      var base64Decoded = XdrConfigSettingSCPTiming.fromBase64EncodedXdrString(
+        original.toBase64EncodedXdrString(),
+      );
+      expect(
+        base64Decoded.ledgerTargetCloseTimeMilliseconds.uint32,
+        equals(original.ledgerTargetCloseTimeMilliseconds.uint32),
+      );
+      expect(
+        base64Decoded.nominationTimeoutInitialMilliseconds.uint32,
+        equals(original.nominationTimeoutInitialMilliseconds.uint32),
+      );
+      expect(
+        base64Decoded.nominationTimeoutIncrementMilliseconds.uint32,
+        equals(original.nominationTimeoutIncrementMilliseconds.uint32),
+      );
+      expect(
+        base64Decoded.ballotTimeoutInitialMilliseconds.uint32,
+        equals(original.ballotTimeoutInitialMilliseconds.uint32),
+      );
+      expect(
+        base64Decoded.ballotTimeoutIncrementMilliseconds.uint32,
+        equals(original.ballotTimeoutIncrementMilliseconds.uint32),
+      );
+    });
 
-      test('XdrFrozenLedgerKeys struct roundtrip', () {
-        var original = XdrFrozenLedgerKeys([XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3]))]);
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrFrozenLedgerKeys.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        XdrFrozenLedgerKeys.decode(input);
-        XdrFrozenLedgerKeys.fromBase64EncodedXdrString(
-                original.toBase64EncodedXdrString());
-      });
+    test('XdrFrozenLedgerKeys struct roundtrip', () {
+      var original = XdrFrozenLedgerKeys([
+        XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3])),
+      ]);
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrFrozenLedgerKeys.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      XdrFrozenLedgerKeys.decode(input);
+      XdrFrozenLedgerKeys.fromBase64EncodedXdrString(
+        original.toBase64EncodedXdrString(),
+      );
+    });
 
-      test('XdrFrozenLedgerKeysDelta struct roundtrip', () {
-        var original = XdrFrozenLedgerKeysDelta([XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3]))], [XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3]))]);
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrFrozenLedgerKeysDelta.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        XdrFrozenLedgerKeysDelta.decode(input);
-        XdrFrozenLedgerKeysDelta.fromBase64EncodedXdrString(
-                original.toBase64EncodedXdrString());
-      });
+    test('XdrFrozenLedgerKeysDelta struct roundtrip', () {
+      var original = XdrFrozenLedgerKeysDelta(
+        [
+          XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3])),
+        ],
+        [
+          XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3])),
+        ],
+      );
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrFrozenLedgerKeysDelta.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      XdrFrozenLedgerKeysDelta.decode(input);
+      XdrFrozenLedgerKeysDelta.fromBase64EncodedXdrString(
+        original.toBase64EncodedXdrString(),
+      );
+    });
 
-      test('XdrFreezeBypassTxs struct roundtrip', () {
-        var original = XdrFreezeBypassTxs([XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))]);
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrFreezeBypassTxs.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        XdrFreezeBypassTxs.decode(input);
-        XdrFreezeBypassTxs.fromBase64EncodedXdrString(
-                original.toBase64EncodedXdrString());
-      });
+    test('XdrFreezeBypassTxs struct roundtrip', () {
+      var original = XdrFreezeBypassTxs([
+        XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))),
+      ]);
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrFreezeBypassTxs.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      XdrFreezeBypassTxs.decode(input);
+      XdrFreezeBypassTxs.fromBase64EncodedXdrString(
+        original.toBase64EncodedXdrString(),
+      );
+    });
 
-      test('XdrFreezeBypassTxsDelta struct roundtrip', () {
-        var original = XdrFreezeBypassTxsDelta([XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))], [XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))]);
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrFreezeBypassTxsDelta.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        XdrFreezeBypassTxsDelta.decode(input);
-        XdrFreezeBypassTxsDelta.fromBase64EncodedXdrString(
-                original.toBase64EncodedXdrString());
-      });
+    test('XdrFreezeBypassTxsDelta struct roundtrip', () {
+      var original = XdrFreezeBypassTxsDelta(
+        [XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))],
+        [XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))],
+      );
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrFreezeBypassTxsDelta.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      XdrFreezeBypassTxsDelta.decode(input);
+      XdrFreezeBypassTxsDelta.fromBase64EncodedXdrString(
+        original.toBase64EncodedXdrString(),
+      );
+    });
 
-      test('XdrContractCostParams typedef roundtrip', () {
-        var original = XdrContractCostParams([XdrContractCostParamEntry(XdrExtensionPoint(0), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)))]);
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrContractCostParams.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrContractCostParams.decode(input);
-          expect(decoded.contractCostParams, isNotNull);
-        var base64Decoded = XdrContractCostParams.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-          expect(base64Decoded.contractCostParams, isNotNull);
-      });
+    test('XdrContractCostParams typedef roundtrip', () {
+      var original = XdrContractCostParams([
+        XdrContractCostParamEntry(
+          XdrExtensionPoint(0),
+          XdrInt64(BigInt.from(654321)),
+          XdrInt64(BigInt.from(654321)),
+        ),
+      ]);
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrContractCostParams.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrContractCostParams.decode(input);
+      expect(decoded.contractCostParams, isNotNull);
+      var base64Decoded = XdrContractCostParams.fromBase64EncodedXdrString(
+        original.toBase64EncodedXdrString(),
+      );
+      expect(base64Decoded.contractCostParams, isNotNull);
+    });
 
     test('XdrConfigSettingID enum roundtrip', () {
       final members = [
         XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES,
-            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0,
-            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0,
-            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0,
-            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0,
-            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0,
-            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS,
-            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES,
-            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES,
-            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES,
-            XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL,
-            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES,
-            XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW,
-            XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR,
-            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0,
-            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0,
-            XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING,
-            XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS,
-            XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA,
-            XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS,
-            XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA,
+        XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0,
+        XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0,
+        XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0,
+        XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0,
+        XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0,
+        XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS,
+        XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES,
+        XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES,
+        XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES,
+        XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL,
+        XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES,
+        XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW,
+        XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR,
+        XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0,
+        XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0,
+        XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING,
+        XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS,
+        XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA,
+        XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS,
+        XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA,
       ];
       for (var member in members) {
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -442,17 +820,28 @@ void main() {
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingID.decode(input);
-        expect(decoded.value, equals(member.value),
-            reason: 'Failed roundtrip for ${member}');
+        expect(
+          decoded.value,
+          equals(member.value),
+          reason: 'Failed roundtrip for ${member}',
+        );
         var base64Decoded = XdrConfigSettingID.fromBase64EncodedXdrString(
-            member.toBase64EncodedXdrString());
-        expect(base64Decoded.value, equals(member.value),
-            reason: 'Failed base64 roundtrip for ${member}');
+          member.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.value,
+          equals(member.value),
+          reason: 'Failed base64 roundtrip for ${member}',
+        );
       }
     });
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES);
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES,
+        );
         original.contractMaxSizeBytes = XdrUint32(42);
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
@@ -460,141 +849,263 @@ void main() {
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          expect(decoded.contractMaxSizeBytes!.uint32, equals(original.contractMaxSizeBytes!.uint32));
+        expect(
+          decoded.contractMaxSizeBytes!.uint32,
+          equals(original.contractMaxSizeBytes!.uint32),
+        );
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          expect(base64Decoded.contractMaxSizeBytes!.uint32, equals(original.contractMaxSizeBytes!.uint32));
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        expect(
+          base64Decoded.contractMaxSizeBytes!.uint32,
+          equals(original.contractMaxSizeBytes!.uint32),
+        );
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0 arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0);
-        original.contractCompute = XdrConfigSettingContractComputeV0(XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrUint32(42));
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0 arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0,
+        );
+        original.contractCompute = XdrConfigSettingContractComputeV0(
+          XdrInt64(BigInt.from(654321)),
+          XdrInt64(BigInt.from(654321)),
+          XdrInt64(BigInt.from(654321)),
+          XdrUint32(42),
+        );
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.contractCompute, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.contractCompute, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.contractCompute, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.contractCompute, isNotNull);
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0 arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0);
-        original.contractLedgerCost = XdrConfigSettingContractLedgerCostV0(XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrUint32(42));
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0 arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0,
+        );
+        original.contractLedgerCost = XdrConfigSettingContractLedgerCostV0(
+          XdrUint32(42),
+          XdrUint32(42),
+          XdrUint32(42),
+          XdrUint32(42),
+          XdrUint32(42),
+          XdrUint32(42),
+          XdrUint32(42),
+          XdrUint32(42),
+          XdrInt64(BigInt.from(654321)),
+          XdrInt64(BigInt.from(654321)),
+          XdrInt64(BigInt.from(654321)),
+          XdrInt64(BigInt.from(654321)),
+          XdrInt64(BigInt.from(654321)),
+          XdrInt64(BigInt.from(654321)),
+          XdrUint32(42),
+        );
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.contractLedgerCost, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.contractLedgerCost, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.contractLedgerCost, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.contractLedgerCost, isNotNull);
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0 arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0);
-        original.contractHistoricalData = XdrConfigSettingContractHistoricalDataV0(XdrInt64(BigInt.from(654321)));
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0 arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0,
+        );
+        original.contractHistoricalData =
+            XdrConfigSettingContractHistoricalDataV0(
+              XdrInt64(BigInt.from(654321)),
+            );
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.contractHistoricalData, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.contractHistoricalData, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.contractHistoricalData, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.contractHistoricalData, isNotNull);
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0 arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0);
-        original.contractEvents = XdrConfigSettingContractEventsV0(XdrUint32(42), XdrInt64(BigInt.from(654321)));
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0 arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0,
+        );
+        original.contractEvents = XdrConfigSettingContractEventsV0(
+          XdrUint32(42),
+          XdrInt64(BigInt.from(654321)),
+        );
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.contractEvents, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.contractEvents, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.contractEvents, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.contractEvents, isNotNull);
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0 arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0);
-        original.contractBandwidth = XdrConfigSettingContractBandwidthV0(XdrUint32(42), XdrUint32(42), XdrInt64(BigInt.from(654321)));
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0 arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0,
+        );
+        original.contractBandwidth = XdrConfigSettingContractBandwidthV0(
+          XdrUint32(42),
+          XdrUint32(42),
+          XdrInt64(BigInt.from(654321)),
+        );
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.contractBandwidth, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.contractBandwidth, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.contractBandwidth, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.contractBandwidth, isNotNull);
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS);
-        original.contractCostParamsCpuInsns = XdrContractCostParams([XdrContractCostParamEntry(XdrExtensionPoint(0), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)))]);
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID
+              .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS,
+        );
+        original.contractCostParamsCpuInsns = XdrContractCostParams([
+          XdrContractCostParamEntry(
+            XdrExtensionPoint(0),
+            XdrInt64(BigInt.from(654321)),
+            XdrInt64(BigInt.from(654321)),
+          ),
+        ]);
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.contractCostParamsCpuInsns, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.contractCostParamsCpuInsns, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.contractCostParamsCpuInsns, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.contractCostParamsCpuInsns, isNotNull);
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES);
-        original.contractCostParamsMemBytes = XdrContractCostParams([XdrContractCostParamEntry(XdrExtensionPoint(0), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)))]);
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES,
+        );
+        original.contractCostParamsMemBytes = XdrContractCostParams([
+          XdrContractCostParamEntry(
+            XdrExtensionPoint(0),
+            XdrInt64(BigInt.from(654321)),
+            XdrInt64(BigInt.from(654321)),
+          ),
+        ]);
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.contractCostParamsMemBytes, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.contractCostParamsMemBytes, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.contractCostParamsMemBytes, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.contractCostParamsMemBytes, isNotNull);
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES);
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES,
+        );
         original.contractDataKeySizeBytes = XdrUint32(42);
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
@@ -602,15 +1113,30 @@ void main() {
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          expect(decoded.contractDataKeySizeBytes!.uint32, equals(original.contractDataKeySizeBytes!.uint32));
+        expect(
+          decoded.contractDataKeySizeBytes!.uint32,
+          equals(original.contractDataKeySizeBytes!.uint32),
+        );
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          expect(base64Decoded.contractDataKeySizeBytes!.uint32, equals(original.contractDataKeySizeBytes!.uint32));
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        expect(
+          base64Decoded.contractDataKeySizeBytes!.uint32,
+          equals(original.contractDataKeySizeBytes!.uint32),
+        );
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES);
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES,
+        );
         original.contractDataEntrySizeBytes = XdrUint32(42);
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
@@ -618,51 +1144,96 @@ void main() {
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          expect(decoded.contractDataEntrySizeBytes!.uint32, equals(original.contractDataEntrySizeBytes!.uint32));
+        expect(
+          decoded.contractDataEntrySizeBytes!.uint32,
+          equals(original.contractDataEntrySizeBytes!.uint32),
+        );
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          expect(base64Decoded.contractDataEntrySizeBytes!.uint32, equals(original.contractDataEntrySizeBytes!.uint32));
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        expect(
+          base64Decoded.contractDataEntrySizeBytes!.uint32,
+          equals(original.contractDataEntrySizeBytes!.uint32),
+        );
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL);
-        original.stateArchivalSettings = XdrStateArchivalSettings(XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrInt64(BigInt.from(654321)), XdrInt64(BigInt.from(654321)), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42));
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL,
+        );
+        original.stateArchivalSettings = XdrStateArchivalSettings(
+          XdrUint32(42),
+          XdrUint32(42),
+          XdrUint32(42),
+          XdrInt64(BigInt.from(654321)),
+          XdrInt64(BigInt.from(654321)),
+          XdrUint32(42),
+          XdrUint32(42),
+          XdrUint32(42),
+          XdrUint32(42),
+          XdrUint32(42),
+        );
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.stateArchivalSettings, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.stateArchivalSettings, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.stateArchivalSettings, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.stateArchivalSettings, isNotNull);
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES);
-        original.contractExecutionLanes = XdrConfigSettingContractExecutionLanesV0(XdrUint32(42));
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES,
+        );
+        original.contractExecutionLanes =
+            XdrConfigSettingContractExecutionLanesV0(XdrUint32(42));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.contractExecutionLanes, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.contractExecutionLanes, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.contractExecutionLanes, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.contractExecutionLanes, isNotNull);
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW);
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW,
+        );
         original.liveSorobanStateSizeWindow = [XdrUint64(BigInt.from(123456))];
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
@@ -670,268 +1241,441 @@ void main() {
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.liveSorobanStateSizeWindow, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.liveSorobanStateSizeWindow, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.liveSorobanStateSizeWindow, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.liveSorobanStateSizeWindow, isNotNull);
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR);
-        original.evictionIterator = XdrEvictionIterator(XdrUint32(42), true, XdrUint64(BigInt.from(123456)));
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR,
+        );
+        original.evictionIterator = XdrEvictionIterator(
+          XdrUint32(42),
+          true,
+          XdrUint64(BigInt.from(123456)),
+        );
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.evictionIterator, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.evictionIterator, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.evictionIterator, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.evictionIterator, isNotNull);
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0 arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0);
-        original.contractParallelCompute = XdrConfigSettingContractParallelComputeV0(XdrUint32(42));
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0 arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0,
+        );
+        original.contractParallelCompute =
+            XdrConfigSettingContractParallelComputeV0(XdrUint32(42));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.contractParallelCompute, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.contractParallelCompute, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.contractParallelCompute, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.contractParallelCompute, isNotNull);
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0 arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0);
-        original.contractLedgerCostExt = XdrConfigSettingContractLedgerCostExtV0(XdrUint32(42), XdrInt64(BigInt.from(654321)));
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0 arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0,
+        );
+        original.contractLedgerCostExt =
+            XdrConfigSettingContractLedgerCostExtV0(
+              XdrUint32(42),
+              XdrInt64(BigInt.from(654321)),
+            );
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.contractLedgerCostExt, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.contractLedgerCostExt, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.contractLedgerCostExt, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.contractLedgerCostExt, isNotNull);
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING);
-        original.contractSCPTiming = XdrConfigSettingSCPTiming(XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42), XdrUint32(42));
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING,
+        );
+        original.contractSCPTiming = XdrConfigSettingSCPTiming(
+          XdrUint32(42),
+          XdrUint32(42),
+          XdrUint32(42),
+          XdrUint32(42),
+          XdrUint32(42),
+        );
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.contractSCPTiming, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.contractSCPTiming, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.contractSCPTiming, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.contractSCPTiming, isNotNull);
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS);
-        original.frozenLedgerKeys = XdrFrozenLedgerKeys([XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3]))]);
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS,
+        );
+        original.frozenLedgerKeys = XdrFrozenLedgerKeys([
+          XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3])),
+        ]);
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.frozenLedgerKeys, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.frozenLedgerKeys, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.frozenLedgerKeys, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.frozenLedgerKeys, isNotNull);
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA);
-        original.frozenLedgerKeysDelta = XdrFrozenLedgerKeysDelta([XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3]))], [XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3]))]);
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA,
+        );
+        original.frozenLedgerKeysDelta = XdrFrozenLedgerKeysDelta(
+          [
+            XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3])),
+          ],
+          [
+            XdrEncodedLedgerKey(Uint8List.fromList([1, 2, 3])),
+          ],
+        );
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.frozenLedgerKeysDelta, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.frozenLedgerKeysDelta, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.frozenLedgerKeysDelta, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.frozenLedgerKeysDelta, isNotNull);
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS);
-        original.freezeBypassTxs = XdrFreezeBypassTxs([XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))]);
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS,
+        );
+        original.freezeBypassTxs = XdrFreezeBypassTxs([
+          XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))),
+        ]);
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.freezeBypassTxs, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.freezeBypassTxs, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.freezeBypassTxs, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.freezeBypassTxs, isNotNull);
+      },
+    );
 
-      test('XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA arm roundtrip', () {
-        var original = XdrConfigSettingEntry(XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA);
-        original.freezeBypassTxsDelta = XdrFreezeBypassTxsDelta([XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))], [XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))]);
+    test(
+      'XdrConfigSettingEntry XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA arm roundtrip',
+      () {
+        var original = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA,
+        );
+        original.freezeBypassTxsDelta = XdrFreezeBypassTxsDelta(
+          [XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))],
+          [XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)))],
+        );
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrConfigSettingEntry.encode(output, original);
         Uint8List encoded = Uint8List.fromList(output.bytes);
         XdrDataInputStream input = XdrDataInputStream(encoded);
         var decoded = XdrConfigSettingEntry.decode(input);
         expect(decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(decoded.freezeBypassTxsDelta, isNotNull);
+        // Verify arm field is not null
+        expect(decoded.freezeBypassTxsDelta, isNotNull);
         var base64Decoded = XdrConfigSettingEntry.fromBase64EncodedXdrString(
-            original.toBase64EncodedXdrString());
-        expect(base64Decoded.discriminant.value, equals(original.discriminant.value));
-          // Verify arm field is not null
-          expect(base64Decoded.freezeBypassTxsDelta, isNotNull);
-      });
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.freezeBypassTxsDelta, isNotNull);
+      },
+    );
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES',
+      () {
+        var original =
+            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES',
+        );
+      },
+    );
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_COMPUTE_V0', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_COMPUTE_V0',
+      () {
+        var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_COMPUTE_V0');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_COMPUTE_V0',
+        );
+      },
+    );
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_LEDGER_COST_V0', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_LEDGER_COST_V0',
+      () {
+        var original =
+            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_LEDGER_COST_V0');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_LEDGER_COST_V0',
+        );
+      },
+    );
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0',
+      () {
+        var original =
+            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0',
+        );
+      },
+    );
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_EVENTS_V0', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_EVENTS_V0',
+      () {
+        var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_EVENTS_V0');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_EVENTS_V0',
+        );
+      },
+    );
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_BANDWIDTH_V0', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_BANDWIDTH_V0',
+      () {
+        var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_BANDWIDTH_V0');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_BANDWIDTH_V0',
+        );
+      },
+    );
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS',
+      () {
+        var original = XdrConfigSettingID
+            .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS',
+        );
+      },
+    );
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES',
+      () {
+        var original =
+            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES',
+        );
+      },
+    );
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES',
+      () {
+        var original =
+            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES',
+        );
+      },
+    );
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES',
+      () {
+        var original =
+            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES',
+        );
+      },
+    );
 
     test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_STATE_ARCHIVAL', () {
       var original = XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL;
@@ -939,65 +1683,102 @@ void main() {
       original.toTxRep('tx', lines);
       Map<String, String> map = parseTxRepLines(lines);
       var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
-          equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_STATE_ARCHIVAL');
+      expect(
+        reconstructed.toBase64EncodedXdrString(),
+        equals(original.toBase64EncodedXdrString()),
+        reason:
+            'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_STATE_ARCHIVAL',
+      );
     });
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_EXECUTION_LANES', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_EXECUTION_LANES',
+      () {
+        var original =
+            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_EXECUTION_LANES');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_EXECUTION_LANES',
+        );
+      },
+    );
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW',
+      () {
+        var original =
+            XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW',
+        );
+      },
+    );
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_EVICTION_ITERATOR', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_EVICTION_ITERATOR',
+      () {
+        var original = XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_EVICTION_ITERATOR');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_EVICTION_ITERATOR',
+        );
+      },
+    );
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0',
+      () {
+        var original =
+            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0',
+        );
+      },
+    );
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0',
+      () {
+        var original =
+            XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0',
+        );
+      },
+    );
 
     test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_SCP_TIMING', () {
       var original = XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING;
@@ -1005,54 +1786,82 @@ void main() {
       original.toTxRep('tx', lines);
       Map<String, String> map = parseTxRepLines(lines);
       var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
-          equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_SCP_TIMING');
+      expect(
+        reconstructed.toBase64EncodedXdrString(),
+        equals(original.toBase64EncodedXdrString()),
+        reason:
+            'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_SCP_TIMING',
+      );
     });
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_FROZEN_LEDGER_KEYS', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_FROZEN_LEDGER_KEYS',
+      () {
+        var original = XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_FROZEN_LEDGER_KEYS');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_FROZEN_LEDGER_KEYS',
+        );
+      },
+    );
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA',
+      () {
+        var original =
+            XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA',
+        );
+      },
+    );
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_FREEZE_BYPASS_TXS', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_FREEZE_BYPASS_TXS',
+      () {
+        var original = XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_FREEZE_BYPASS_TXS');
-    });
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_FREEZE_BYPASS_TXS',
+        );
+      },
+    );
 
-    test('XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA', () {
-      var original = XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA;
-      List<String> lines = [];
-      original.toTxRep('tx', lines);
-      Map<String, String> map = parseTxRepLines(lines);
-      var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
-      expect(reconstructed.toBase64EncodedXdrString(),
+    test(
+      'XdrConfigSettingID TxRep roundtrip CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA',
+      () {
+        var original =
+            XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA;
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrConfigSettingID.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
           equals(original.toBase64EncodedXdrString()),
-          reason: 'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA');
-    });
-
+          reason:
+              'TxRep roundtrip failed for XdrConfigSettingID CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA',
+        );
+      },
+    );
   });
 }

@@ -11,6 +11,7 @@ import 'xdr_asset_alpha_num12.dart';
 import 'xdr_asset_alpha_num4.dart';
 import 'xdr_asset_type.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrAsset {
   XdrAssetType _type;
@@ -113,5 +114,53 @@ class XdrAsset {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrAsset');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAsset.
+  static XdrAsset fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrAsset'));
+
+  /// Returns the SEP-0051 rendering of this XdrAsset.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'native';
+      case 1:
+        return <String, Object?>{'credit_alphanum4': _alphaNum4!.toXdrJsonValue()};
+      case 2:
+        return <String, Object?>{'credit_alphanum12': _alphaNum12!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+        'XdrAsset', 'holds the unknown discriminant ${discriminant.value}');
+  }
+
+  /// Reads a XdrAsset from its SEP-0051 rendering.
+  static XdrAsset fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'native':
+          return XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
+      }
+      XdrJsonHelper.fail('XdrAsset',
+          'has no arm named ${XdrJsonHelper.preview(value)}');
+    }
+    final MapEntry<String, Object?> arm =
+        XdrJsonHelper.readSingleKeyObject(value, type: 'XdrAsset');
+    switch (arm.key) {
+      case 'credit_alphanum4':
+        final XdrAsset arm0 = XdrAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4);
+        arm0.alphaNum4 = XdrAssetAlphaNum4.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'credit_alphanum12':
+        final XdrAsset arm1 = XdrAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12);
+        arm1.alphaNum12 = XdrAssetAlphaNum12.fromXdrJsonValue(arm.value);
+        return arm1;
+    }
+    XdrJsonHelper.fail('XdrAsset',
+        'has no arm named ${XdrJsonHelper.preview(arm.key)}');
   }
 }

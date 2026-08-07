@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_data_value.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_string64.dart';
 
 class XdrManageDataOp {
@@ -77,5 +78,45 @@ class XdrManageDataOp {
       dataValue = XdrDataValue.fromTxRep(map, '$prefix.dataValue');
     }
     return XdrManageDataOp(dataName, dataValue);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrManageDataOp');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrManageDataOp.
+  static XdrManageDataOp fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrManageDataOp'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrManageDataOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'data_name': _dataName.toXdrJsonValue(),
+    'data_value': _dataValue == null ? null : _dataValue!.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrManageDataOp from its SEP-0051 rendering.
+  static XdrManageDataOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrManageDataOp',
+      allowedKeys: const <String>{'data_name', 'data_value'},
+    );
+    final Object? jsonDataName = XdrJsonHelper.readField(
+      object,
+      'data_name',
+      type: 'XdrManageDataOp',
+    );
+    final Object? jsonDataValue = XdrJsonHelper.readField(
+      object,
+      'data_value',
+      type: 'XdrManageDataOp',
+    );
+    return XdrManageDataOp(
+      XdrString64.fromXdrJsonValue(jsonDataName),
+      jsonDataValue == null
+          ? null
+          : XdrDataValue.fromXdrJsonValue(jsonDataValue),
+    );
   }
 }

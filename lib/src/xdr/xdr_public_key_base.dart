@@ -6,8 +6,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../key_pair.dart';
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_public_key_type.dart';
 import 'xdr_uint256.dart';
 
@@ -98,5 +100,55 @@ class XdrPublicKeyBase {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrPublicKey');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPublicKey.
+  static XdrPublicKeyBase fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrPublicKey'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrPublicKey.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519:
+        return StrKey.encodeStellarAccountId(_ed25519!.uint256);
+    }
+    XdrJsonHelper.fail(
+      'XdrPublicKey',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrPublicKey from its SEP-0051 rendering.
+  static XdrPublicKeyBase fromXdrJsonValue(Object? value) =>
+      fromXdrJsonValueAs(value, XdrPublicKeyBase.new);
+
+  /// Reads a subclass of XdrPublicKeyBase from its SEP-0051 rendering.
+  static T fromXdrJsonValueAs<T extends XdrPublicKeyBase>(
+    Object? value,
+    T Function(XdrPublicKeyType) constructor,
+  ) {
+    switch (XdrJsonHelper.readStrKeyPrefix(value, type: 'XdrPublicKey')) {
+      case 'G':
+        final T arm0 = constructor(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
+        arm0.ed25519 = XdrUint256(
+          XdrJsonHelper.readStrKey(
+            value,
+            type: 'XdrPublicKey',
+            key: null,
+            decode: StrKey.decodeStellarAccountId,
+            expectedLength: 32,
+          ),
+        );
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrPublicKey',
+      'expects a G strkey but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

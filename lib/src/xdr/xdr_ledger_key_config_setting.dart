@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_config_setting_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrLedgerKeyConfigSetting {
   XdrConfigSettingID _configSettingID;
@@ -58,5 +59,38 @@ class XdrLedgerKeyConfigSetting {
       '$prefix.configSettingID',
     );
     return XdrLedgerKeyConfigSetting(configSettingID);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerKeyConfigSetting',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerKeyConfigSetting.
+  static XdrLedgerKeyConfigSetting fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerKeyConfigSetting'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerKeyConfigSetting.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'config_setting_id': _configSettingID.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLedgerKeyConfigSetting from its SEP-0051 rendering.
+  static XdrLedgerKeyConfigSetting fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerKeyConfigSetting',
+      allowedKeys: const <String>{'config_setting_id'},
+    );
+    final Object? jsonConfigSettingID = XdrJsonHelper.readField(
+      object,
+      'config_setting_id',
+      type: 'XdrLedgerKeyConfigSetting',
+    );
+    return XdrLedgerKeyConfigSetting(
+      XdrConfigSettingID.fromXdrJsonValue(jsonConfigSettingID),
+    );
   }
 }

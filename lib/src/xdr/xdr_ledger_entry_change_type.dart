@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrLedgerEntryChangeType {
   final _value;
@@ -73,5 +74,59 @@ class XdrLedgerEntryChangeType {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntryChangeType.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerEntryChangeType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerEntryChangeType.
+  static XdrLedgerEntryChangeType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerEntryChangeType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'created';
+      case 1:
+        return 'updated';
+      case 2:
+        return 'removed';
+      case 3:
+        return 'state';
+      case 4:
+        return 'restored';
+      default:
+        XdrJsonHelper.fail(
+          'XdrLedgerEntryChangeType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrLedgerEntryChangeType from its SEP-0051 name.
+  static XdrLedgerEntryChangeType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'created':
+          return XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED;
+        case 'updated':
+          return XdrLedgerEntryChangeType.LEDGER_ENTRY_UPDATED;
+        case 'removed':
+          return XdrLedgerEntryChangeType.LEDGER_ENTRY_REMOVED;
+        case 'state':
+          return XdrLedgerEntryChangeType.LEDGER_ENTRY_STATE;
+        case 'restored':
+          return XdrLedgerEntryChangeType.LEDGER_ENTRY_RESTORED;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerEntryChangeType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

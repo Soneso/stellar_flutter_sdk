@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 
 class XdrLedgerCloseMetaExtV1 {
   XdrExtensionPoint _ext;
@@ -46,5 +47,45 @@ class XdrLedgerCloseMetaExtV1 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerCloseMetaExtV1.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerCloseMetaExtV1',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerCloseMetaExtV1.
+  static XdrLedgerCloseMetaExtV1 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerCloseMetaExtV1'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerCloseMetaExtV1.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'soroban_fee_write1_kb': _sorobanFeeWrite1KB.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLedgerCloseMetaExtV1 from its SEP-0051 rendering.
+  static XdrLedgerCloseMetaExtV1 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerCloseMetaExtV1',
+      allowedKeys: const <String>{'ext', 'soroban_fee_write1_kb'},
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrLedgerCloseMetaExtV1',
+    );
+    final Object? jsonSorobanFeeWrite1KB = XdrJsonHelper.readField(
+      object,
+      'soroban_fee_write1_kb',
+      type: 'XdrLedgerCloseMetaExtV1',
+    );
+    return XdrLedgerCloseMetaExtV1(
+      XdrExtensionPoint.fromXdrJsonValue(jsonExt),
+      XdrInt64.fromXdrJsonValue(jsonSorobanFeeWrite1KB),
+    );
   }
 }

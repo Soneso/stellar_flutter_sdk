@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_data_io.dart';
 import 'xdr_envelope_type.dart';
 import 'xdr_fee_bump_transaction.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_transaction.dart';
 
 class XdrTransactionSignaturePayloadTaggedTransaction {
@@ -99,6 +100,66 @@ class XdrTransactionSignaturePayloadTaggedTransaction {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionSignaturePayloadTaggedTransaction.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionSignaturePayloadTaggedTransaction',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionSignaturePayloadTaggedTransaction.
+  static XdrTransactionSignaturePayloadTaggedTransaction fromXdrJson(
+    String json,
+  ) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(
+      json,
+      type: 'XdrTransactionSignaturePayloadTaggedTransaction',
+    ),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionSignaturePayloadTaggedTransaction.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 2:
+        return <String, Object?>{'tx': _tx!.toXdrJsonValue()};
+      case 5:
+        return <String, Object?>{'tx_fee_bump': _feeBump!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrTransactionSignaturePayloadTaggedTransaction',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrTransactionSignaturePayloadTaggedTransaction from its SEP-0051 rendering.
+  static XdrTransactionSignaturePayloadTaggedTransaction fromXdrJsonValue(
+    Object? value,
+  ) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrTransactionSignaturePayloadTaggedTransaction',
+    );
+    switch (arm.key) {
+      case 'tx':
+        final XdrTransactionSignaturePayloadTaggedTransaction arm0 =
+            XdrTransactionSignaturePayloadTaggedTransaction(
+              XdrEnvelopeType.ENVELOPE_TYPE_TX,
+            );
+        arm0.tx = XdrTransaction.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'tx_fee_bump':
+        final XdrTransactionSignaturePayloadTaggedTransaction arm1 =
+            XdrTransactionSignaturePayloadTaggedTransaction(
+              XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP,
+            );
+        arm1.feeBump = XdrFeeBumpTransaction.fromXdrJsonValue(arm.value);
+        return arm1;
+    }
+    XdrJsonHelper.fail(
+      'XdrTransactionSignaturePayloadTaggedTransaction',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
     );
   }
 }

@@ -1,6 +1,6 @@
 .PHONY: xdr-generate xdr-clean-generated xdr-clean-all xdr-update \
         xdr-generator-test xdr-generator-update-snapshots \
-        xdr-generator-validate xdr-generate-tests help
+        xdr-generator-validate xdr-generate-tests sep51-generate-tests help
 
 .DEFAULT_GOAL := help
 
@@ -64,12 +64,28 @@ xdr-generator-validate: ## Validate generated types against XDR definitions
 		bundle install --quiet && \
 		bundle exec ruby test/validate_generated_types.rb'
 
+XDR_EMITTED_TESTS = test/unit/xdr/generated/
+
 xdr-generate-tests: ## Regenerate XDR unit tests
 	docker run --rm -v $(CURDIR):/wd -w /wd $(RUBY_IMAGE) /bin/bash -c '\
 		cd tools/xdr-generator && \
 		bundle config set --local path vendor/bundle && \
 		bundle install --quiet && \
 		bundle exec ruby test/generate_tests.rb'
+	@command -v dart >/dev/null 2>&1 && dart format $(XDR_EMITTED_TESTS) || \
+		echo "Note: dart not found, skipping format. Run 'dart format $(XDR_EMITTED_TESTS)' manually."
+
+SEP51_EMITTED = test/unit/xdr/json_generated/ test/unit/sep/sep51_corpus_data.dart
+
+sep51-generate-tests: ## Regenerate the SEP-0051 emitted tests and corpus test data
+	docker run --rm -v $(CURDIR):/wd -w /wd $(RUBY_IMAGE) /bin/bash -c '\
+		cd tools/xdr-generator && \
+		bundle config set --local path vendor/bundle && \
+		bundle install --quiet && \
+		bundle exec ruby test/generate_json_tests.rb'
+	python3 tools/sep-51-corpus/emit_dart_corpus.py
+	@command -v dart >/dev/null 2>&1 && dart format $(SEP51_EMITTED) || \
+		echo "Note: dart not found, skipping format. Run 'dart format $(SEP51_EMITTED)' manually."
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \

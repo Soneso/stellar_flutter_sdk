@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_persisted_scp_state_v0.dart';
 import 'xdr_persisted_scp_state_v1.dart';
 
@@ -78,5 +79,52 @@ class XdrPersistedSCPState {
   static XdrPersistedSCPState fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPersistedSCPState.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrPersistedSCPState',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPersistedSCPState.
+  static XdrPersistedSCPState fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrPersistedSCPState'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrPersistedSCPState.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return <String, Object?>{'v0': _v0!.toXdrJsonValue()};
+      case 1:
+        return <String, Object?>{'v1': _v1!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrPersistedSCPState',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrPersistedSCPState from its SEP-0051 rendering.
+  static XdrPersistedSCPState fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrPersistedSCPState',
+    );
+    switch (arm.key) {
+      case 'v0':
+        final XdrPersistedSCPState arm0 = XdrPersistedSCPState(0);
+        arm0.v0 = XdrPersistedSCPStateV0.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'v1':
+        final XdrPersistedSCPState arm1 = XdrPersistedSCPState(1);
+        arm1.v1 = XdrPersistedSCPStateV1.fromXdrJsonValue(arm.value);
+        return arm1;
+    }
+    XdrJsonHelper.fail(
+      'XdrPersistedSCPState',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

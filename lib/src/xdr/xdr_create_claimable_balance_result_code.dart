@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrCreateClaimableBalanceResultCode {
   final _value;
@@ -75,6 +76,74 @@ class XdrCreateClaimableBalanceResultCode {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCreateClaimableBalanceResultCode.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrCreateClaimableBalanceResultCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrCreateClaimableBalanceResultCode.
+  static XdrCreateClaimableBalanceResultCode fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrCreateClaimableBalanceResultCode',
+        ),
+      );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'low_reserve';
+      case -3:
+        return 'no_trust';
+      case -4:
+        return 'not_authorized';
+      case -5:
+        return 'underfunded';
+      default:
+        XdrJsonHelper.fail(
+          'XdrCreateClaimableBalanceResultCode',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrCreateClaimableBalanceResultCode from its SEP-0051 name.
+  static XdrCreateClaimableBalanceResultCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrCreateClaimableBalanceResultCode
+              .CREATE_CLAIMABLE_BALANCE_SUCCESS;
+        case 'malformed':
+          return XdrCreateClaimableBalanceResultCode
+              .CREATE_CLAIMABLE_BALANCE_MALFORMED;
+        case 'low_reserve':
+          return XdrCreateClaimableBalanceResultCode
+              .CREATE_CLAIMABLE_BALANCE_LOW_RESERVE;
+        case 'no_trust':
+          return XdrCreateClaimableBalanceResultCode
+              .CREATE_CLAIMABLE_BALANCE_NO_TRUST;
+        case 'not_authorized':
+          return XdrCreateClaimableBalanceResultCode
+              .CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED;
+        case 'underfunded':
+          return XdrCreateClaimableBalanceResultCode
+              .CREATE_CLAIMABLE_BALANCE_UNDERFUNDED;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrCreateClaimableBalanceResultCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
     );
   }
 }

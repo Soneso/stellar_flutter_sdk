@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_authenticated_message_v0.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrAuthenticatedMessage {
   int _v;
@@ -71,5 +72,46 @@ class XdrAuthenticatedMessage {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAuthenticatedMessage.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrAuthenticatedMessage',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAuthenticatedMessage.
+  static XdrAuthenticatedMessage fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrAuthenticatedMessage'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrAuthenticatedMessage.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return <String, Object?>{'v0': _v0!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrAuthenticatedMessage',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrAuthenticatedMessage from its SEP-0051 rendering.
+  static XdrAuthenticatedMessage fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrAuthenticatedMessage',
+    );
+    switch (arm.key) {
+      case 'v0':
+        final XdrAuthenticatedMessage arm0 = XdrAuthenticatedMessage(0);
+        arm0.v0 = XdrAuthenticatedMessageV0.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrAuthenticatedMessage',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_liabilities.dart';
 import 'xdr_trust_line_entry_v1_ext.dart';
 
@@ -44,5 +45,45 @@ class XdrTrustLineEntryV1 {
   static XdrTrustLineEntryV1 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTrustLineEntryV1.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTrustLineEntryV1',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTrustLineEntryV1.
+  static XdrTrustLineEntryV1 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTrustLineEntryV1'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTrustLineEntryV1.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'liabilities': _liabilities.toXdrJsonValue(),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTrustLineEntryV1 from its SEP-0051 rendering.
+  static XdrTrustLineEntryV1 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTrustLineEntryV1',
+      allowedKeys: const <String>{'liabilities', 'ext'},
+    );
+    final Object? jsonLiabilities = XdrJsonHelper.readField(
+      object,
+      'liabilities',
+      type: 'XdrTrustLineEntryV1',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrTrustLineEntryV1',
+    );
+    return XdrTrustLineEntryV1(
+      XdrLiabilities.fromXdrJsonValue(jsonLiabilities),
+      XdrTrustLineEntryV1Ext.fromXdrJsonValue(jsonExt),
+    );
   }
 }

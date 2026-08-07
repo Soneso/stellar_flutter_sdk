@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 
 class XdrFreezeBypassTxs {
   List<XdrHash> _txHashes;
@@ -45,5 +46,47 @@ class XdrFreezeBypassTxs {
   static XdrFreezeBypassTxs fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFreezeBypassTxs.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrFreezeBypassTxs',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrFreezeBypassTxs.
+  static XdrFreezeBypassTxs fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrFreezeBypassTxs'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrFreezeBypassTxs.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'tx_hashes': XdrJsonHelper.array<XdrHash>(
+      _txHashes,
+      (XdrHash v) => v.toXdrJsonValue(),
+      type: 'XdrFreezeBypassTxs',
+      key: 'tx_hashes',
+    ),
+  };
+
+  /// Reads a XdrFreezeBypassTxs from its SEP-0051 rendering.
+  static XdrFreezeBypassTxs fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrFreezeBypassTxs',
+      allowedKeys: const <String>{'tx_hashes'},
+    );
+    final Object? jsonTxHashes = XdrJsonHelper.readField(
+      object,
+      'tx_hashes',
+      type: 'XdrFreezeBypassTxs',
+    );
+    return XdrFreezeBypassTxs(
+      XdrJsonHelper.readArray(
+        jsonTxHashes,
+        type: 'XdrFreezeBypassTxs',
+        key: 'tx_hashes',
+      ).map<XdrHash>((Object? e) => XdrHash.fromXdrJsonValue(e)).toList(),
+    );
   }
 }

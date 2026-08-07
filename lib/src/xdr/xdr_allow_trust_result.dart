@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_allow_trust_result_code.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrAllowTrustResult {
   XdrAllowTrustResultCode _code;
@@ -57,5 +58,84 @@ class XdrAllowTrustResult {
   static XdrAllowTrustResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAllowTrustResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrAllowTrustResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAllowTrustResult.
+  static XdrAllowTrustResult fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrAllowTrustResult'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrAllowTrustResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'no_trust_line';
+      case -3:
+        return 'trust_not_required';
+      case -4:
+        return 'cant_revoke';
+      case -5:
+        return 'self_not_allowed';
+      case -6:
+        return 'low_reserve';
+    }
+    XdrJsonHelper.fail(
+      'XdrAllowTrustResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrAllowTrustResult from its SEP-0051 rendering.
+  static XdrAllowTrustResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrAllowTrustResult(
+            XdrAllowTrustResultCode.ALLOW_TRUST_SUCCESS,
+          );
+        case 'malformed':
+          return XdrAllowTrustResult(
+            XdrAllowTrustResultCode.ALLOW_TRUST_MALFORMED,
+          );
+        case 'no_trust_line':
+          return XdrAllowTrustResult(
+            XdrAllowTrustResultCode.ALLOW_TRUST_NO_TRUST_LINE,
+          );
+        case 'trust_not_required':
+          return XdrAllowTrustResult(
+            XdrAllowTrustResultCode.ALLOW_TRUST_TRUST_NOT_REQUIRED,
+          );
+        case 'cant_revoke':
+          return XdrAllowTrustResult(
+            XdrAllowTrustResultCode.ALLOW_TRUST_CANT_REVOKE,
+          );
+        case 'self_not_allowed':
+          return XdrAllowTrustResult(
+            XdrAllowTrustResultCode.ALLOW_TRUST_SELF_NOT_ALLOWED,
+          );
+        case 'low_reserve':
+          return XdrAllowTrustResult(
+            XdrAllowTrustResultCode.ALLOW_TRUST_LOW_RESERVE,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrAllowTrustResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrAllowTrustResult',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

@@ -10,6 +10,7 @@ import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_claim_predicate.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClaimantV0 {
   XdrAccountID _destination;
@@ -63,5 +64,43 @@ class XdrClaimantV0 {
       '$prefix.predicate',
     );
     return XdrClaimantV0(destination, predicate);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrClaimantV0');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClaimantV0.
+  static XdrClaimantV0 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrClaimantV0'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrClaimantV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'destination': _destination.toXdrJsonValue(),
+    'predicate': _predicate.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrClaimantV0 from its SEP-0051 rendering.
+  static XdrClaimantV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrClaimantV0',
+      allowedKeys: const <String>{'destination', 'predicate'},
+    );
+    final Object? jsonDestination = XdrJsonHelper.readField(
+      object,
+      'destination',
+      type: 'XdrClaimantV0',
+    );
+    final Object? jsonPredicate = XdrJsonHelper.readField(
+      object,
+      'predicate',
+      type: 'XdrClaimantV0',
+    );
+    return XdrClaimantV0(
+      XdrAccountID.fromXdrJsonValue(jsonDestination),
+      XdrClaimPredicate.fromXdrJsonValue(jsonPredicate),
+    );
   }
 }

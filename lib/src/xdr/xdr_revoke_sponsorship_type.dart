@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrRevokeSponsorshipType {
   final _value;
@@ -100,5 +101,47 @@ class XdrRevokeSponsorshipType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrRevokeSponsorshipType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrRevokeSponsorshipType.
+  static XdrRevokeSponsorshipType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrRevokeSponsorshipType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'ledger_entry';
+      case 1:
+        return 'signer';
+      default:
+        XdrJsonHelper.fail(
+          'XdrRevokeSponsorshipType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrRevokeSponsorshipType from its SEP-0051 name.
+  static XdrRevokeSponsorshipType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'ledger_entry':
+          return XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_LEDGER_ENTRY;
+        case 'signer':
+          return XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_SIGNER;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrRevokeSponsorshipType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

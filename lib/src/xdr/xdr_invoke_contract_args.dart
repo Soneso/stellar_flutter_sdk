@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_address.dart';
 import 'xdr_sc_val.dart';
 
@@ -93,5 +94,69 @@ class XdrInvokeContractArgs {
       args.add(XdrSCVal.fromTxRep(map, '$prefix.args[$i]'));
     }
     return XdrInvokeContractArgs(contractAddress, functionName, args);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrInvokeContractArgs',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrInvokeContractArgs.
+  static XdrInvokeContractArgs fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrInvokeContractArgs'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrInvokeContractArgs.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'contract_address': _contractAddress.toXdrJsonValue(),
+    'function_name': XdrJsonHelper.escapedString(
+      _functionName,
+      type: 'XdrInvokeContractArgs',
+      key: 'function_name',
+    ),
+    'args': XdrJsonHelper.array<XdrSCVal>(
+      _args,
+      (XdrSCVal v) => v.toXdrJsonValue(),
+      type: 'XdrInvokeContractArgs',
+      key: 'args',
+    ),
+  };
+
+  /// Reads a XdrInvokeContractArgs from its SEP-0051 rendering.
+  static XdrInvokeContractArgs fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrInvokeContractArgs',
+      allowedKeys: const <String>{'contract_address', 'function_name', 'args'},
+    );
+    final Object? jsonContractAddress = XdrJsonHelper.readField(
+      object,
+      'contract_address',
+      type: 'XdrInvokeContractArgs',
+    );
+    final Object? jsonFunctionName = XdrJsonHelper.readField(
+      object,
+      'function_name',
+      type: 'XdrInvokeContractArgs',
+    );
+    final Object? jsonArgs = XdrJsonHelper.readField(
+      object,
+      'args',
+      type: 'XdrInvokeContractArgs',
+    );
+    return XdrInvokeContractArgs(
+      XdrSCAddress.fromXdrJsonValue(jsonContractAddress),
+      XdrJsonHelper.readEscapedString(
+        jsonFunctionName,
+        type: 'XdrInvokeContractArgs',
+        key: 'function_name',
+      ),
+      XdrJsonHelper.readArray(
+        jsonArgs,
+        type: 'XdrInvokeContractArgs',
+        key: 'args',
+      ).map<XdrSCVal>((Object? e) => XdrSCVal.fromXdrJsonValue(e)).toList(),
+    );
   }
 }

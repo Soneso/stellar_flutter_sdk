@@ -6,8 +6,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../key_pair.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 
 class XdrConfigUpgradeSetKey {
   XdrHash _contractID;
@@ -45,5 +47,53 @@ class XdrConfigUpgradeSetKey {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigUpgradeSetKey.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrConfigUpgradeSetKey',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrConfigUpgradeSetKey.
+  static XdrConfigUpgradeSetKey fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrConfigUpgradeSetKey'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrConfigUpgradeSetKey.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'contract_id': StrKey.encodeContractId(_contractID.hash),
+    'content_hash': _contentHash.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrConfigUpgradeSetKey from its SEP-0051 rendering.
+  static XdrConfigUpgradeSetKey fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrConfigUpgradeSetKey',
+      allowedKeys: const <String>{'contract_id', 'content_hash'},
+    );
+    final Object? jsonContractID = XdrJsonHelper.readField(
+      object,
+      'contract_id',
+      type: 'XdrConfigUpgradeSetKey',
+    );
+    final Object? jsonContentHash = XdrJsonHelper.readField(
+      object,
+      'content_hash',
+      type: 'XdrConfigUpgradeSetKey',
+    );
+    return XdrConfigUpgradeSetKey(
+      XdrHash(
+        XdrJsonHelper.readStrKey(
+          jsonContractID,
+          type: 'XdrConfigUpgradeSetKey',
+          key: 'contract_id',
+          decode: StrKey.decodeContractId,
+          expectedLength: 32,
+        ),
+      ),
+      XdrHash.fromXdrJsonValue(jsonContentHash),
+    );
   }
 }

@@ -23,6 +23,7 @@ import 'xdr_freeze_bypass_txs.dart';
 import 'xdr_freeze_bypass_txs_delta.dart';
 import 'xdr_frozen_ledger_keys.dart';
 import 'xdr_frozen_ledger_keys_delta.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_state_archival_settings.dart';
 import 'xdr_uint32.dart';
 import 'xdr_uint64.dart';
@@ -461,5 +462,296 @@ class XdrConfigSettingEntry {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigSettingEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrConfigSettingEntry',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrConfigSettingEntry.
+  static XdrConfigSettingEntry fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrConfigSettingEntry'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrConfigSettingEntry.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{
+          'contract_max_size_bytes': _contractMaxSizeBytes!.toXdrJsonValue(),
+        };
+      case 1:
+        return <String, Object?>{
+          'contract_compute_v0': _contractCompute!.toXdrJsonValue(),
+        };
+      case 2:
+        return <String, Object?>{
+          'contract_ledger_cost_v0': _contractLedgerCost!.toXdrJsonValue(),
+        };
+      case 3:
+        return <String, Object?>{
+          'contract_historical_data_v0': _contractHistoricalData!
+              .toXdrJsonValue(),
+        };
+      case 4:
+        return <String, Object?>{
+          'contract_events_v0': _contractEvents!.toXdrJsonValue(),
+        };
+      case 5:
+        return <String, Object?>{
+          'contract_bandwidth_v0': _contractBandwidth!.toXdrJsonValue(),
+        };
+      case 6:
+        return <String, Object?>{
+          'contract_cost_params_cpu_instructions': _contractCostParamsCpuInsns!
+              .toXdrJsonValue(),
+        };
+      case 7:
+        return <String, Object?>{
+          'contract_cost_params_memory_bytes': _contractCostParamsMemBytes!
+              .toXdrJsonValue(),
+        };
+      case 8:
+        return <String, Object?>{
+          'contract_data_key_size_bytes': _contractDataKeySizeBytes!
+              .toXdrJsonValue(),
+        };
+      case 9:
+        return <String, Object?>{
+          'contract_data_entry_size_bytes': _contractDataEntrySizeBytes!
+              .toXdrJsonValue(),
+        };
+      case 10:
+        return <String, Object?>{
+          'state_archival': _stateArchivalSettings!.toXdrJsonValue(),
+        };
+      case 11:
+        return <String, Object?>{
+          'contract_execution_lanes': _contractExecutionLanes!.toXdrJsonValue(),
+        };
+      case 12:
+        return <String, Object?>{
+          'live_soroban_state_size_window': XdrJsonHelper.array<XdrUint64>(
+            _liveSorobanStateSizeWindow!,
+            (XdrUint64 v) => v.toXdrJsonValue(),
+            type: 'XdrConfigSettingEntry',
+            key: 'live_soroban_state_size_window',
+          ),
+        };
+      case 13:
+        return <String, Object?>{
+          'eviction_iterator': _evictionIterator!.toXdrJsonValue(),
+        };
+      case 14:
+        return <String, Object?>{
+          'contract_parallel_compute_v0': _contractParallelCompute!
+              .toXdrJsonValue(),
+        };
+      case 15:
+        return <String, Object?>{
+          'contract_ledger_cost_ext_v0': _contractLedgerCostExt!
+              .toXdrJsonValue(),
+        };
+      case 16:
+        return <String, Object?>{
+          'scp_timing': _contractSCPTiming!.toXdrJsonValue(),
+        };
+      case 17:
+        return <String, Object?>{
+          'frozen_ledger_keys': _frozenLedgerKeys!.toXdrJsonValue(),
+        };
+      case 18:
+        return <String, Object?>{
+          'frozen_ledger_keys_delta': _frozenLedgerKeysDelta!.toXdrJsonValue(),
+        };
+      case 19:
+        return <String, Object?>{
+          'freeze_bypass_txs': _freezeBypassTxs!.toXdrJsonValue(),
+        };
+      case 20:
+        return <String, Object?>{
+          'freeze_bypass_txs_delta': _freezeBypassTxsDelta!.toXdrJsonValue(),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrConfigSettingEntry',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrConfigSettingEntry from its SEP-0051 rendering.
+  static XdrConfigSettingEntry fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrConfigSettingEntry',
+    );
+    switch (arm.key) {
+      case 'contract_max_size_bytes':
+        final XdrConfigSettingEntry arm0 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES,
+        );
+        arm0.contractMaxSizeBytes = XdrUint32.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'contract_compute_v0':
+        final XdrConfigSettingEntry arm1 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0,
+        );
+        arm1.contractCompute =
+            XdrConfigSettingContractComputeV0.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'contract_ledger_cost_v0':
+        final XdrConfigSettingEntry arm2 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0,
+        );
+        arm2.contractLedgerCost =
+            XdrConfigSettingContractLedgerCostV0.fromXdrJsonValue(arm.value);
+        return arm2;
+      case 'contract_historical_data_v0':
+        final XdrConfigSettingEntry arm3 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0,
+        );
+        arm3.contractHistoricalData =
+            XdrConfigSettingContractHistoricalDataV0.fromXdrJsonValue(
+              arm.value,
+            );
+        return arm3;
+      case 'contract_events_v0':
+        final XdrConfigSettingEntry arm4 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0,
+        );
+        arm4.contractEvents = XdrConfigSettingContractEventsV0.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm4;
+      case 'contract_bandwidth_v0':
+        final XdrConfigSettingEntry arm5 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0,
+        );
+        arm5.contractBandwidth =
+            XdrConfigSettingContractBandwidthV0.fromXdrJsonValue(arm.value);
+        return arm5;
+      case 'contract_cost_params_cpu_instructions':
+        final XdrConfigSettingEntry arm6 = XdrConfigSettingEntry(
+          XdrConfigSettingID
+              .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS,
+        );
+        arm6.contractCostParamsCpuInsns =
+            XdrContractCostParams.fromXdrJsonValue(arm.value);
+        return arm6;
+      case 'contract_cost_params_memory_bytes':
+        final XdrConfigSettingEntry arm7 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES,
+        );
+        arm7.contractCostParamsMemBytes =
+            XdrContractCostParams.fromXdrJsonValue(arm.value);
+        return arm7;
+      case 'contract_data_key_size_bytes':
+        final XdrConfigSettingEntry arm8 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES,
+        );
+        arm8.contractDataKeySizeBytes = XdrUint32.fromXdrJsonValue(arm.value);
+        return arm8;
+      case 'contract_data_entry_size_bytes':
+        final XdrConfigSettingEntry arm9 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES,
+        );
+        arm9.contractDataEntrySizeBytes = XdrUint32.fromXdrJsonValue(arm.value);
+        return arm9;
+      case 'state_archival':
+        final XdrConfigSettingEntry arm10 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL,
+        );
+        arm10.stateArchivalSettings = XdrStateArchivalSettings.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm10;
+      case 'contract_execution_lanes':
+        final XdrConfigSettingEntry arm11 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES,
+        );
+        arm11.contractExecutionLanes =
+            XdrConfigSettingContractExecutionLanesV0.fromXdrJsonValue(
+              arm.value,
+            );
+        return arm11;
+      case 'live_soroban_state_size_window':
+        final XdrConfigSettingEntry arm12 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW,
+        );
+        arm12.liveSorobanStateSizeWindow = XdrJsonHelper.readArray(
+          arm.value,
+          type: 'XdrConfigSettingEntry',
+          key: 'live_soroban_state_size_window',
+        ).map<XdrUint64>((Object? e) => XdrUint64.fromXdrJsonValue(e)).toList();
+        return arm12;
+      case 'eviction_iterator':
+        final XdrConfigSettingEntry arm13 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR,
+        );
+        arm13.evictionIterator = XdrEvictionIterator.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm13;
+      case 'contract_parallel_compute_v0':
+        final XdrConfigSettingEntry arm14 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0,
+        );
+        arm14.contractParallelCompute =
+            XdrConfigSettingContractParallelComputeV0.fromXdrJsonValue(
+              arm.value,
+            );
+        return arm14;
+      case 'contract_ledger_cost_ext_v0':
+        final XdrConfigSettingEntry arm15 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0,
+        );
+        arm15.contractLedgerCostExt =
+            XdrConfigSettingContractLedgerCostExtV0.fromXdrJsonValue(arm.value);
+        return arm15;
+      case 'scp_timing':
+        final XdrConfigSettingEntry arm16 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING,
+        );
+        arm16.contractSCPTiming = XdrConfigSettingSCPTiming.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm16;
+      case 'frozen_ledger_keys':
+        final XdrConfigSettingEntry arm17 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS,
+        );
+        arm17.frozenLedgerKeys = XdrFrozenLedgerKeys.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm17;
+      case 'frozen_ledger_keys_delta':
+        final XdrConfigSettingEntry arm18 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA,
+        );
+        arm18.frozenLedgerKeysDelta = XdrFrozenLedgerKeysDelta.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm18;
+      case 'freeze_bypass_txs':
+        final XdrConfigSettingEntry arm19 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS,
+        );
+        arm19.freezeBypassTxs = XdrFreezeBypassTxs.fromXdrJsonValue(arm.value);
+        return arm19;
+      case 'freeze_bypass_txs_delta':
+        final XdrConfigSettingEntry arm20 = XdrConfigSettingEntry(
+          XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA,
+        );
+        arm20.freezeBypassTxsDelta = XdrFreezeBypassTxsDelta.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm20;
+    }
+    XdrJsonHelper.fail(
+      'XdrConfigSettingEntry',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

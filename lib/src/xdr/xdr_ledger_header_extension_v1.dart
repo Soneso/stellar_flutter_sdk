@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_header_extension_v1_ext.dart';
 import 'xdr_uint32.dart';
 
@@ -51,5 +52,46 @@ class XdrLedgerHeaderExtensionV1 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerHeaderExtensionV1.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerHeaderExtensionV1',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerHeaderExtensionV1.
+  static XdrLedgerHeaderExtensionV1 fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerHeaderExtensionV1'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerHeaderExtensionV1.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'flags': _flags.toXdrJsonValue(),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLedgerHeaderExtensionV1 from its SEP-0051 rendering.
+  static XdrLedgerHeaderExtensionV1 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerHeaderExtensionV1',
+      allowedKeys: const <String>{'flags', 'ext'},
+    );
+    final Object? jsonFlags = XdrJsonHelper.readField(
+      object,
+      'flags',
+      type: 'XdrLedgerHeaderExtensionV1',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrLedgerHeaderExtensionV1',
+    );
+    return XdrLedgerHeaderExtensionV1(
+      XdrUint32.fromXdrJsonValue(jsonFlags),
+      XdrLedgerHeaderExtensionV1Ext.fromXdrJsonValue(jsonExt),
+    );
   }
 }

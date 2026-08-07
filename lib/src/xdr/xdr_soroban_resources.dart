@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_footprint.dart';
 import 'xdr_uint32.dart';
 
@@ -88,6 +89,65 @@ class XdrSorobanResources {
       instructions,
       diskReadBytes,
       writeBytes,
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSorobanResources',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanResources.
+  static XdrSorobanResources fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSorobanResources'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSorobanResources.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'footprint': _footprint.toXdrJsonValue(),
+    'instructions': _instructions.toXdrJsonValue(),
+    'disk_read_bytes': _diskReadBytes.toXdrJsonValue(),
+    'write_bytes': _writeBytes.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSorobanResources from its SEP-0051 rendering.
+  static XdrSorobanResources fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSorobanResources',
+      allowedKeys: const <String>{
+        'footprint',
+        'instructions',
+        'disk_read_bytes',
+        'write_bytes',
+      },
+    );
+    final Object? jsonFootprint = XdrJsonHelper.readField(
+      object,
+      'footprint',
+      type: 'XdrSorobanResources',
+    );
+    final Object? jsonInstructions = XdrJsonHelper.readField(
+      object,
+      'instructions',
+      type: 'XdrSorobanResources',
+    );
+    final Object? jsonDiskReadBytes = XdrJsonHelper.readField(
+      object,
+      'disk_read_bytes',
+      type: 'XdrSorobanResources',
+    );
+    final Object? jsonWriteBytes = XdrJsonHelper.readField(
+      object,
+      'write_bytes',
+      type: 'XdrSorobanResources',
+    );
+    return XdrSorobanResources(
+      XdrLedgerFootprint.fromXdrJsonValue(jsonFootprint),
+      XdrUint32.fromXdrJsonValue(jsonInstructions),
+      XdrUint32.fromXdrJsonValue(jsonDiskReadBytes),
+      XdrUint32.fromXdrJsonValue(jsonWriteBytes),
     );
   }
 }

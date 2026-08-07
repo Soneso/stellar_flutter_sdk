@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_transaction_envelope.dart';
 
 class XdrTxSetComponentTxsMaybeDiscountedFee {
@@ -75,6 +76,65 @@ class XdrTxSetComponentTxsMaybeDiscountedFee {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTxSetComponentTxsMaybeDiscountedFee.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTxSetComponentTxsMaybeDiscountedFee',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTxSetComponentTxsMaybeDiscountedFee.
+  static XdrTxSetComponentTxsMaybeDiscountedFee fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrTxSetComponentTxsMaybeDiscountedFee',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrTxSetComponentTxsMaybeDiscountedFee.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'base_fee': _baseFee == null ? null : _baseFee!.toXdrJsonValue(),
+    'txs': XdrJsonHelper.array<XdrTransactionEnvelope>(
+      _txs,
+      (XdrTransactionEnvelope v) => v.toXdrJsonValue(),
+      type: 'XdrTxSetComponentTxsMaybeDiscountedFee',
+      key: 'txs',
+    ),
+  };
+
+  /// Reads a XdrTxSetComponentTxsMaybeDiscountedFee from its SEP-0051 rendering.
+  static XdrTxSetComponentTxsMaybeDiscountedFee fromXdrJsonValue(
+    Object? value,
+  ) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTxSetComponentTxsMaybeDiscountedFee',
+      allowedKeys: const <String>{'base_fee', 'txs'},
+    );
+    final Object? jsonBaseFee = XdrJsonHelper.readField(
+      object,
+      'base_fee',
+      type: 'XdrTxSetComponentTxsMaybeDiscountedFee',
+    );
+    final Object? jsonTxs = XdrJsonHelper.readField(
+      object,
+      'txs',
+      type: 'XdrTxSetComponentTxsMaybeDiscountedFee',
+    );
+    return XdrTxSetComponentTxsMaybeDiscountedFee(
+      jsonBaseFee == null ? null : XdrInt64.fromXdrJsonValue(jsonBaseFee),
+      XdrJsonHelper.readArray(
+            jsonTxs,
+            type: 'XdrTxSetComponentTxsMaybeDiscountedFee',
+            key: 'txs',
+          )
+          .map<XdrTransactionEnvelope>(
+            (Object? e) => XdrTransactionEnvelope.fromXdrJsonValue(e),
+          )
+          .toList(),
     );
   }
 }

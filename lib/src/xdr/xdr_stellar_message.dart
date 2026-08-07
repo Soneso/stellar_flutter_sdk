@@ -14,6 +14,7 @@ import 'xdr_flood_advert.dart';
 import 'xdr_flood_demand.dart';
 import 'xdr_generalized_transaction_set.dart';
 import 'xdr_hello.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_message_type.dart';
 import 'xdr_peer_address.dart';
 import 'xdr_scp_envelope.dart';
@@ -387,5 +388,256 @@ class XdrStellarMessage {
   static XdrStellarMessage fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrStellarMessage.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrStellarMessage');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrStellarMessage.
+  static XdrStellarMessage fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrStellarMessage'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrStellarMessage.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'error_msg': _error!.toXdrJsonValue()};
+      case 13:
+        return <String, Object?>{'hello': _hello!.toXdrJsonValue()};
+      case 2:
+        return <String, Object?>{'auth': _auth!.toXdrJsonValue()};
+      case 3:
+        return <String, Object?>{'dont_have': _dontHave!.toXdrJsonValue()};
+      case 5:
+        return <String, Object?>{
+          'peers': XdrJsonHelper.array<XdrPeerAddress>(
+            _peers!,
+            (XdrPeerAddress v) => v.toXdrJsonValue(),
+            type: 'XdrStellarMessage',
+            key: 'peers',
+            maxLength: 100,
+          ),
+        };
+      case 6:
+        return <String, Object?>{'get_tx_set': _txSetHash!.toXdrJsonValue()};
+      case 7:
+        return <String, Object?>{'tx_set': _txSet!.toXdrJsonValue()};
+      case 17:
+        return <String, Object?>{
+          'generalized_tx_set': _generalizedTxSet!.toXdrJsonValue(),
+        };
+      case 8:
+        return <String, Object?>{'transaction': _transaction!.toXdrJsonValue()};
+      case 21:
+        return <String, Object?>{
+          'time_sliced_survey_request': _signedTimeSlicedSurveyRequestMessage!
+              .toXdrJsonValue(),
+        };
+      case 22:
+        return <String, Object?>{
+          'time_sliced_survey_response': _signedTimeSlicedSurveyResponseMessage!
+              .toXdrJsonValue(),
+        };
+      case 23:
+        return <String, Object?>{
+          'time_sliced_survey_start_collecting':
+              _signedTimeSlicedSurveyStartCollectingMessage!.toXdrJsonValue(),
+        };
+      case 24:
+        return <String, Object?>{
+          'time_sliced_survey_stop_collecting':
+              _signedTimeSlicedSurveyStopCollectingMessage!.toXdrJsonValue(),
+        };
+      case 9:
+        return <String, Object?>{
+          'get_scp_quorumset': _qSetHash!.toXdrJsonValue(),
+        };
+      case 10:
+        return <String, Object?>{'scp_quorumset': _qSet!.toXdrJsonValue()};
+      case 11:
+        return <String, Object?>{'scp_message': _envelope!.toXdrJsonValue()};
+      case 12:
+        return <String, Object?>{
+          'get_scp_state': _getSCPLedgerSeq!.toXdrJsonValue(),
+        };
+      case 16:
+        return <String, Object?>{
+          'send_more': _sendMoreMessage!.toXdrJsonValue(),
+        };
+      case 20:
+        return <String, Object?>{
+          'send_more_extended': _sendMoreExtendedMessage!.toXdrJsonValue(),
+        };
+      case 18:
+        return <String, Object?>{
+          'flood_advert': _floodAdvert!.toXdrJsonValue(),
+        };
+      case 19:
+        return <String, Object?>{
+          'flood_demand': _floodDemand!.toXdrJsonValue(),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrStellarMessage',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrStellarMessage from its SEP-0051 rendering.
+  static XdrStellarMessage fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrStellarMessage',
+    );
+    switch (arm.key) {
+      case 'error_msg':
+        final XdrStellarMessage arm0 = XdrStellarMessage(
+          XdrMessageType.ERROR_MSG,
+        );
+        arm0.error = XdrError.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'hello':
+        final XdrStellarMessage arm1 = XdrStellarMessage(XdrMessageType.HELLO);
+        arm1.hello = XdrHello.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'auth':
+        final XdrStellarMessage arm2 = XdrStellarMessage(XdrMessageType.AUTH);
+        arm2.auth = XdrAuth.fromXdrJsonValue(arm.value);
+        return arm2;
+      case 'dont_have':
+        final XdrStellarMessage arm3 = XdrStellarMessage(
+          XdrMessageType.DONT_HAVE,
+        );
+        arm3.dontHave = XdrDontHave.fromXdrJsonValue(arm.value);
+        return arm3;
+      case 'peers':
+        final XdrStellarMessage arm4 = XdrStellarMessage(XdrMessageType.PEERS);
+        arm4.peers =
+            XdrJsonHelper.readArray(
+                  arm.value,
+                  type: 'XdrStellarMessage',
+                  key: 'peers',
+                  maxLength: 100,
+                )
+                .map<XdrPeerAddress>(
+                  (Object? e) => XdrPeerAddress.fromXdrJsonValue(e),
+                )
+                .toList();
+        return arm4;
+      case 'get_tx_set':
+        final XdrStellarMessage arm5 = XdrStellarMessage(
+          XdrMessageType.GET_TX_SET,
+        );
+        arm5.txSetHash = XdrUint256.fromXdrJsonValue(arm.value);
+        return arm5;
+      case 'tx_set':
+        final XdrStellarMessage arm6 = XdrStellarMessage(XdrMessageType.TX_SET);
+        arm6.txSet = XdrTransactionSet.fromXdrJsonValue(arm.value);
+        return arm6;
+      case 'generalized_tx_set':
+        final XdrStellarMessage arm7 = XdrStellarMessage(
+          XdrMessageType.GENERALIZED_TX_SET,
+        );
+        arm7.generalizedTxSet = XdrGeneralizedTransactionSet.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm7;
+      case 'transaction':
+        final XdrStellarMessage arm8 = XdrStellarMessage(
+          XdrMessageType.TRANSACTION,
+        );
+        arm8.transaction = XdrTransactionEnvelope.fromXdrJsonValue(arm.value);
+        return arm8;
+      case 'time_sliced_survey_request':
+        final XdrStellarMessage arm9 = XdrStellarMessage(
+          XdrMessageType.TIME_SLICED_SURVEY_REQUEST,
+        );
+        arm9.signedTimeSlicedSurveyRequestMessage =
+            XdrSignedTimeSlicedSurveyRequestMessage.fromXdrJsonValue(arm.value);
+        return arm9;
+      case 'time_sliced_survey_response':
+        final XdrStellarMessage arm10 = XdrStellarMessage(
+          XdrMessageType.TIME_SLICED_SURVEY_RESPONSE,
+        );
+        arm10.signedTimeSlicedSurveyResponseMessage =
+            XdrSignedTimeSlicedSurveyResponseMessage.fromXdrJsonValue(
+              arm.value,
+            );
+        return arm10;
+      case 'time_sliced_survey_start_collecting':
+        final XdrStellarMessage arm11 = XdrStellarMessage(
+          XdrMessageType.TIME_SLICED_SURVEY_START_COLLECTING,
+        );
+        arm11.signedTimeSlicedSurveyStartCollectingMessage =
+            XdrSignedTimeSlicedSurveyStartCollectingMessage.fromXdrJsonValue(
+              arm.value,
+            );
+        return arm11;
+      case 'time_sliced_survey_stop_collecting':
+        final XdrStellarMessage arm12 = XdrStellarMessage(
+          XdrMessageType.TIME_SLICED_SURVEY_STOP_COLLECTING,
+        );
+        arm12.signedTimeSlicedSurveyStopCollectingMessage =
+            XdrSignedTimeSlicedSurveyStopCollectingMessage.fromXdrJsonValue(
+              arm.value,
+            );
+        return arm12;
+      case 'get_scp_quorumset':
+        final XdrStellarMessage arm13 = XdrStellarMessage(
+          XdrMessageType.GET_SCP_QUORUMSET,
+        );
+        arm13.qSetHash = XdrUint256.fromXdrJsonValue(arm.value);
+        return arm13;
+      case 'scp_quorumset':
+        final XdrStellarMessage arm14 = XdrStellarMessage(
+          XdrMessageType.SCP_QUORUMSET,
+        );
+        arm14.qSet = XdrSCPQuorumSet.fromXdrJsonValue(arm.value);
+        return arm14;
+      case 'scp_message':
+        final XdrStellarMessage arm15 = XdrStellarMessage(
+          XdrMessageType.SCP_MESSAGE,
+        );
+        arm15.envelope = XdrSCPEnvelope.fromXdrJsonValue(arm.value);
+        return arm15;
+      case 'get_scp_state':
+        final XdrStellarMessage arm16 = XdrStellarMessage(
+          XdrMessageType.GET_SCP_STATE,
+        );
+        arm16.getSCPLedgerSeq = XdrUint32.fromXdrJsonValue(arm.value);
+        return arm16;
+      case 'send_more':
+        final XdrStellarMessage arm17 = XdrStellarMessage(
+          XdrMessageType.SEND_MORE,
+        );
+        arm17.sendMoreMessage = XdrSendMore.fromXdrJsonValue(arm.value);
+        return arm17;
+      case 'send_more_extended':
+        final XdrStellarMessage arm18 = XdrStellarMessage(
+          XdrMessageType.SEND_MORE_EXTENDED,
+        );
+        arm18.sendMoreExtendedMessage = XdrSendMoreExtended.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm18;
+      case 'flood_advert':
+        final XdrStellarMessage arm19 = XdrStellarMessage(
+          XdrMessageType.FLOOD_ADVERT,
+        );
+        arm19.floodAdvert = XdrFloodAdvert.fromXdrJsonValue(arm.value);
+        return arm19;
+      case 'flood_demand':
+        final XdrStellarMessage arm20 = XdrStellarMessage(
+          XdrMessageType.FLOOD_DEMAND,
+        );
+        arm20.floodDemand = XdrFloodDemand.fromXdrJsonValue(arm.value);
+        return arm20;
+    }
+    XdrJsonHelper.fail(
+      'XdrStellarMessage',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

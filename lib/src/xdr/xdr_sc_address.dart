@@ -10,6 +10,7 @@ import 'package:stellar_flutter_sdk/src/util.dart';
 import 'xdr_account_id.dart';
 import 'xdr_claimable_balance_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_hash.dart';
 import 'xdr_muxed_account_med25519.dart';
 import 'xdr_sc_address_base.dart';
@@ -113,4 +114,15 @@ class XdrSCAddress extends XdrSCAddressBase {
     }
     throw Exception("unknown address type: $discriminant");
   }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCAddress.
+  ///
+  /// Dart does not inherit statics, so this narrows the base class rendering to
+  /// this type rather than relying on the one the base declares.
+  static XdrSCAddress fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCAddress'),
+  );
+
+  static XdrSCAddress fromXdrJsonValue(Object? value) =>
+      XdrSCAddressBase.fromXdrJsonValueAs(value, XdrSCAddress.new);
 }

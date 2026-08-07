@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSCValType {
   final _value;
@@ -236,5 +237,126 @@ class XdrSCValType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCValType');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCValType.
+  static XdrSCValType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCValType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'bool';
+      case 1:
+        return 'void';
+      case 2:
+        return 'error';
+      case 3:
+        return 'u32';
+      case 4:
+        return 'i32';
+      case 5:
+        return 'u64';
+      case 6:
+        return 'i64';
+      case 7:
+        return 'timepoint';
+      case 8:
+        return 'duration';
+      case 9:
+        return 'u128';
+      case 10:
+        return 'i128';
+      case 11:
+        return 'u256';
+      case 12:
+        return 'i256';
+      case 13:
+        return 'bytes';
+      case 14:
+        return 'string';
+      case 15:
+        return 'symbol';
+      case 16:
+        return 'vec';
+      case 17:
+        return 'map';
+      case 18:
+        return 'address';
+      case 19:
+        return 'contract_instance';
+      case 20:
+        return 'ledger_key_contract_instance';
+      case 21:
+        return 'ledger_key_nonce';
+      case 22:
+        return 'executable_tag';
+      default:
+        XdrJsonHelper.fail('XdrSCValType', 'holds the unknown value $_value');
+    }
+  }
+
+  /// Reads a XdrSCValType from its SEP-0051 name.
+  static XdrSCValType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'bool':
+          return XdrSCValType.SCV_BOOL;
+        case 'void':
+          return XdrSCValType.SCV_VOID;
+        case 'error':
+          return XdrSCValType.SCV_ERROR;
+        case 'u32':
+          return XdrSCValType.SCV_U32;
+        case 'i32':
+          return XdrSCValType.SCV_I32;
+        case 'u64':
+          return XdrSCValType.SCV_U64;
+        case 'i64':
+          return XdrSCValType.SCV_I64;
+        case 'timepoint':
+          return XdrSCValType.SCV_TIMEPOINT;
+        case 'duration':
+          return XdrSCValType.SCV_DURATION;
+        case 'u128':
+          return XdrSCValType.SCV_U128;
+        case 'i128':
+          return XdrSCValType.SCV_I128;
+        case 'u256':
+          return XdrSCValType.SCV_U256;
+        case 'i256':
+          return XdrSCValType.SCV_I256;
+        case 'bytes':
+          return XdrSCValType.SCV_BYTES;
+        case 'string':
+          return XdrSCValType.SCV_STRING;
+        case 'symbol':
+          return XdrSCValType.SCV_SYMBOL;
+        case 'vec':
+          return XdrSCValType.SCV_VEC;
+        case 'map':
+          return XdrSCValType.SCV_MAP;
+        case 'address':
+          return XdrSCValType.SCV_ADDRESS;
+        case 'contract_instance':
+          return XdrSCValType.SCV_CONTRACT_INSTANCE;
+        case 'ledger_key_contract_instance':
+          return XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE;
+        case 'ledger_key_nonce':
+          return XdrSCValType.SCV_LEDGER_KEY_NONCE;
+        case 'executable_tag':
+          return XdrSCValType.SCV_EXECUTABLE_TAG;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrSCValType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

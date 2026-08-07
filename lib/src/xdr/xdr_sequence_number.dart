@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSequenceNumber {
   XdrSequenceNumber(this._sequenceNumber);
@@ -47,4 +48,22 @@ class XdrSequenceNumber {
     if (raw == null) throw Exception('missing $prefix');
     return XdrSequenceNumber(TxRepHelper.parseBigInt(raw));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSequenceNumber');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSequenceNumber.
+  static XdrSequenceNumber fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSequenceNumber'),
+  );
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() =>
+      XdrJsonHelper.int64(_sequenceNumber, type: 'XdrSequenceNumber');
+
+  /// Reads a XdrSequenceNumber from the SEP-0051 rendering of its value.
+  static XdrSequenceNumber fromXdrJsonValue(Object? value) => XdrSequenceNumber(
+    XdrJsonHelper.readInt64(value, type: 'XdrSequenceNumber'),
+  );
 }

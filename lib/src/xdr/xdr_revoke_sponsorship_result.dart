@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_revoke_sponsorship_result_code.dart';
 
 class XdrRevokeSponsorshipResult {
@@ -60,5 +61,79 @@ class XdrRevokeSponsorshipResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrRevokeSponsorshipResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrRevokeSponsorshipResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrRevokeSponsorshipResult.
+  static XdrRevokeSponsorshipResult fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrRevokeSponsorshipResult'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrRevokeSponsorshipResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'does_not_exist';
+      case -2:
+        return 'not_sponsor';
+      case -3:
+        return 'low_reserve';
+      case -4:
+        return 'only_transferable';
+      case -5:
+        return 'malformed';
+    }
+    XdrJsonHelper.fail(
+      'XdrRevokeSponsorshipResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrRevokeSponsorshipResult from its SEP-0051 rendering.
+  static XdrRevokeSponsorshipResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrRevokeSponsorshipResult(
+            XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_SUCCESS,
+          );
+        case 'does_not_exist':
+          return XdrRevokeSponsorshipResult(
+            XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_DOES_NOT_EXIST,
+          );
+        case 'not_sponsor':
+          return XdrRevokeSponsorshipResult(
+            XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_NOT_SPONSOR,
+          );
+        case 'low_reserve':
+          return XdrRevokeSponsorshipResult(
+            XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_LOW_RESERVE,
+          );
+        case 'only_transferable':
+          return XdrRevokeSponsorshipResult(
+            XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE,
+          );
+        case 'malformed':
+          return XdrRevokeSponsorshipResult(
+            XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_MALFORMED,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrRevokeSponsorshipResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrRevokeSponsorshipResult',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

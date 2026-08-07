@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_curve25519_public.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_signature.dart';
 import 'xdr_uint64.dart';
 
@@ -48,5 +49,49 @@ class XdrAuthCert {
   static XdrAuthCert fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAuthCert.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrAuthCert');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAuthCert.
+  static XdrAuthCert fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrAuthCert'));
+
+  /// Returns the SEP-0051 rendering of this XdrAuthCert.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'pubkey': _pubkey.toXdrJsonValue(),
+    'expiration': _expiration.toXdrJsonValue(),
+    'sig': _sig.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrAuthCert from its SEP-0051 rendering.
+  static XdrAuthCert fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrAuthCert',
+      allowedKeys: const <String>{'pubkey', 'expiration', 'sig'},
+    );
+    final Object? jsonPubkey = XdrJsonHelper.readField(
+      object,
+      'pubkey',
+      type: 'XdrAuthCert',
+    );
+    final Object? jsonExpiration = XdrJsonHelper.readField(
+      object,
+      'expiration',
+      type: 'XdrAuthCert',
+    );
+    final Object? jsonSig = XdrJsonHelper.readField(
+      object,
+      'sig',
+      type: 'XdrAuthCert',
+    );
+    return XdrAuthCert(
+      XdrCurve25519Public.fromXdrJsonValue(jsonPubkey),
+      XdrUint64.fromXdrJsonValue(jsonExpiration),
+      XdrSignature.fromXdrJsonValue(jsonSig),
+    );
   }
 }

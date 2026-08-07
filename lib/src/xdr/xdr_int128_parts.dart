@@ -5,6 +5,7 @@
 import 'xdr_data_io.dart';
 import 'xdr_int128_parts_base.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint64.dart';
 
 class XdrInt128Parts extends XdrInt128PartsBase {
@@ -21,6 +22,17 @@ class XdrInt128Parts extends XdrInt128PartsBase {
 
   static XdrInt128Parts fromTxRep(Map<String, String> map, String prefix) {
     var b = XdrInt128PartsBase.fromTxRep(map, prefix);
+    return XdrInt128Parts(b.hi, b.lo);
+  }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrInt128Parts.
+  static XdrInt128Parts fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrInt128Parts'),
+  );
+
+  /// Reads a XdrInt128Parts from its SEP-0051 rendering.
+  static XdrInt128Parts fromXdrJsonValue(Object? value) {
+    var b = XdrInt128PartsBase.fromXdrJsonValue(value);
     return XdrInt128Parts(b.hi, b.lo);
   }
 

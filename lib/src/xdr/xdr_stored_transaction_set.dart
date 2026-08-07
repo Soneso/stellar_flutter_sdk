@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_generalized_transaction_set.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_transaction_set.dart';
 
 class XdrStoredTransactionSet {
@@ -84,5 +85,54 @@ class XdrStoredTransactionSet {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrStoredTransactionSet.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrStoredTransactionSet',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrStoredTransactionSet.
+  static XdrStoredTransactionSet fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrStoredTransactionSet'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrStoredTransactionSet.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return <String, Object?>{'v0': _txSet!.toXdrJsonValue()};
+      case 1:
+        return <String, Object?>{'v1': _generalizedTxSet!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrStoredTransactionSet',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrStoredTransactionSet from its SEP-0051 rendering.
+  static XdrStoredTransactionSet fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrStoredTransactionSet',
+    );
+    switch (arm.key) {
+      case 'v0':
+        final XdrStoredTransactionSet arm0 = XdrStoredTransactionSet(0);
+        arm0.txSet = XdrTransactionSet.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'v1':
+        final XdrStoredTransactionSet arm1 = XdrStoredTransactionSet(1);
+        arm1.generalizedTxSet = XdrGeneralizedTransactionSet.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm1;
+    }
+    XdrJsonHelper.fail(
+      'XdrStoredTransactionSet',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

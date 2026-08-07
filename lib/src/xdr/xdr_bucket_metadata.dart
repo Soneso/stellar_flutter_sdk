@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_bucket_metadata_ext.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrBucketMetadata {
@@ -44,5 +45,43 @@ class XdrBucketMetadata {
   static XdrBucketMetadata fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBucketMetadata.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrBucketMetadata');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrBucketMetadata.
+  static XdrBucketMetadata fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrBucketMetadata'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrBucketMetadata.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ledger_version': _ledgerVersion.toXdrJsonValue(),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrBucketMetadata from its SEP-0051 rendering.
+  static XdrBucketMetadata fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrBucketMetadata',
+      allowedKeys: const <String>{'ledger_version', 'ext'},
+    );
+    final Object? jsonLedgerVersion = XdrJsonHelper.readField(
+      object,
+      'ledger_version',
+      type: 'XdrBucketMetadata',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrBucketMetadata',
+    );
+    return XdrBucketMetadata(
+      XdrUint32.fromXdrJsonValue(jsonLedgerVersion),
+      XdrBucketMetadataExt.fromXdrJsonValue(jsonExt),
+    );
   }
 }

@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingContractLedgerCostExtV0 {
@@ -63,6 +64,52 @@ class XdrConfigSettingContractLedgerCostExtV0 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigSettingContractLedgerCostExtV0.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrConfigSettingContractLedgerCostExtV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrConfigSettingContractLedgerCostExtV0.
+  static XdrConfigSettingContractLedgerCostExtV0 fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrConfigSettingContractLedgerCostExtV0',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrConfigSettingContractLedgerCostExtV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'tx_max_footprint_entries': _txMaxFootprintEntries.toXdrJsonValue(),
+    'fee_write1_kb': _feeWrite1KB.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrConfigSettingContractLedgerCostExtV0 from its SEP-0051 rendering.
+  static XdrConfigSettingContractLedgerCostExtV0 fromXdrJsonValue(
+    Object? value,
+  ) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrConfigSettingContractLedgerCostExtV0',
+      allowedKeys: const <String>{'tx_max_footprint_entries', 'fee_write1_kb'},
+    );
+    final Object? jsonTxMaxFootprintEntries = XdrJsonHelper.readField(
+      object,
+      'tx_max_footprint_entries',
+      type: 'XdrConfigSettingContractLedgerCostExtV0',
+    );
+    final Object? jsonFeeWrite1KB = XdrJsonHelper.readField(
+      object,
+      'fee_write1_kb',
+      type: 'XdrConfigSettingContractLedgerCostExtV0',
+    );
+    return XdrConfigSettingContractLedgerCostExtV0(
+      XdrUint32.fromXdrJsonValue(jsonTxMaxFootprintEntries),
+      XdrInt64.fromXdrJsonValue(jsonFeeWrite1KB),
     );
   }
 }

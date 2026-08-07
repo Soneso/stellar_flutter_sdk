@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrAllowTrustResultCode {
   final _value;
@@ -78,5 +79,67 @@ class XdrAllowTrustResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAllowTrustResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrAllowTrustResultCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAllowTrustResultCode.
+  static XdrAllowTrustResultCode fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrAllowTrustResultCode'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'no_trust_line';
+      case -3:
+        return 'trust_not_required';
+      case -4:
+        return 'cant_revoke';
+      case -5:
+        return 'self_not_allowed';
+      case -6:
+        return 'low_reserve';
+      default:
+        XdrJsonHelper.fail(
+          'XdrAllowTrustResultCode',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrAllowTrustResultCode from its SEP-0051 name.
+  static XdrAllowTrustResultCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrAllowTrustResultCode.ALLOW_TRUST_SUCCESS;
+        case 'malformed':
+          return XdrAllowTrustResultCode.ALLOW_TRUST_MALFORMED;
+        case 'no_trust_line':
+          return XdrAllowTrustResultCode.ALLOW_TRUST_NO_TRUST_LINE;
+        case 'trust_not_required':
+          return XdrAllowTrustResultCode.ALLOW_TRUST_TRUST_NOT_REQUIRED;
+        case 'cant_revoke':
+          return XdrAllowTrustResultCode.ALLOW_TRUST_CANT_REVOKE;
+        case 'self_not_allowed':
+          return XdrAllowTrustResultCode.ALLOW_TRUST_SELF_NOT_ALLOWED;
+        case 'low_reserve':
+          return XdrAllowTrustResultCode.ALLOW_TRUST_LOW_RESERVE;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrAllowTrustResultCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

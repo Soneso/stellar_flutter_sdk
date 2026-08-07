@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_account_entry_v2_ext.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrAccountEntryV2 {
@@ -20,9 +21,9 @@ class XdrAccountEntryV2 {
   XdrUint32 get numSponsoring => this._numSponsoring;
   set numSponsoring(XdrUint32 value) => this._numSponsoring = value;
 
-  List<XdrAccountID> _signerSponsoringIDs;
-  List<XdrAccountID> get signerSponsoringIDs => this._signerSponsoringIDs;
-  set signerSponsoringIDs(List<XdrAccountID> value) =>
+  List<XdrAccountID?> _signerSponsoringIDs;
+  List<XdrAccountID?> get signerSponsoringIDs => this._signerSponsoringIDs;
+  set signerSponsoringIDs(List<XdrAccountID?> value) =>
       this._signerSponsoringIDs = value;
 
   XdrAccountEntryV2Ext _ext;
@@ -46,7 +47,15 @@ class XdrAccountEntryV2 {
         encodedAccountEntryV2.signerSponsoringIDs.length;
     stream.writeInt(signerSponsoringIDssize);
     for (int i = 0; i < signerSponsoringIDssize; i++) {
-      XdrAccountID.encode(stream, encodedAccountEntryV2.signerSponsoringIDs[i]);
+      if (encodedAccountEntryV2.signerSponsoringIDs[i] != null) {
+        stream.writeInt(1);
+        XdrAccountID.encode(
+          stream,
+          encodedAccountEntryV2.signerSponsoringIDs[i]!,
+        );
+      } else {
+        stream.writeInt(0);
+      }
     }
     XdrAccountEntryV2Ext.encode(stream, encodedAccountEntryV2.ext);
   }
@@ -55,11 +64,16 @@ class XdrAccountEntryV2 {
     XdrUint32 numSponsored = XdrUint32.decode(stream);
     XdrUint32 numSponsoring = XdrUint32.decode(stream);
     int signerSponsoringIDssize = stream.readInt();
-    List<XdrAccountID> signerSponsoringIDs = List<XdrAccountID>.empty(
+    List<XdrAccountID?> signerSponsoringIDs = List<XdrAccountID?>.empty(
       growable: true,
     );
     for (int i = 0; i < signerSponsoringIDssize; i++) {
-      signerSponsoringIDs.add(XdrAccountID.decode(stream));
+      int signerSponsoringIDsPresent = stream.readInt();
+      if (signerSponsoringIDsPresent != 0) {
+        signerSponsoringIDs.add(XdrAccountID.decode(stream));
+      } else {
+        signerSponsoringIDs.add(null);
+      }
     }
     XdrAccountEntryV2Ext ext = XdrAccountEntryV2Ext.decode(stream);
     return XdrAccountEntryV2(
@@ -79,5 +93,77 @@ class XdrAccountEntryV2 {
   static XdrAccountEntryV2 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountEntryV2.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrAccountEntryV2');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAccountEntryV2.
+  static XdrAccountEntryV2 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrAccountEntryV2'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrAccountEntryV2.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'num_sponsored': _numSponsored.toXdrJsonValue(),
+    'num_sponsoring': _numSponsoring.toXdrJsonValue(),
+    'signer_sponsoring_i_ds': XdrJsonHelper.array<XdrAccountID?>(
+      _signerSponsoringIDs,
+      (XdrAccountID? v) => v == null ? null : v.toXdrJsonValue(),
+      type: 'XdrAccountEntryV2',
+      key: 'signer_sponsoring_i_ds',
+      maxLength: 20,
+    ),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrAccountEntryV2 from its SEP-0051 rendering.
+  static XdrAccountEntryV2 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrAccountEntryV2',
+      allowedKeys: const <String>{
+        'num_sponsored',
+        'num_sponsoring',
+        'signer_sponsoring_i_ds',
+        'ext',
+      },
+    );
+    final Object? jsonNumSponsored = XdrJsonHelper.readField(
+      object,
+      'num_sponsored',
+      type: 'XdrAccountEntryV2',
+    );
+    final Object? jsonNumSponsoring = XdrJsonHelper.readField(
+      object,
+      'num_sponsoring',
+      type: 'XdrAccountEntryV2',
+    );
+    final Object? jsonSignerSponsoringIDs = XdrJsonHelper.readField(
+      object,
+      'signer_sponsoring_i_ds',
+      type: 'XdrAccountEntryV2',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrAccountEntryV2',
+    );
+    return XdrAccountEntryV2(
+      XdrUint32.fromXdrJsonValue(jsonNumSponsored),
+      XdrUint32.fromXdrJsonValue(jsonNumSponsoring),
+      XdrJsonHelper.readArray(
+            jsonSignerSponsoringIDs,
+            type: 'XdrAccountEntryV2',
+            key: 'signer_sponsoring_i_ds',
+            maxLength: 20,
+          )
+          .map<XdrAccountID?>(
+            (Object? e) => e == null ? null : XdrAccountID.fromXdrJsonValue(e),
+          )
+          .toList(),
+      XdrAccountEntryV2Ext.fromXdrJsonValue(jsonExt),
+    );
   }
 }

@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_contract_data_durability.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_address.dart';
 import 'xdr_sc_val.dart';
 
@@ -77,5 +78,52 @@ class XdrLedgerKeyContractData {
       '$prefix.durability',
     );
     return XdrLedgerKeyContractData(contract, key, durability);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerKeyContractData',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerKeyContractData.
+  static XdrLedgerKeyContractData fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerKeyContractData'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerKeyContractData.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'contract': _contract.toXdrJsonValue(),
+    'key': _key.toXdrJsonValue(),
+    'durability': _durability.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLedgerKeyContractData from its SEP-0051 rendering.
+  static XdrLedgerKeyContractData fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerKeyContractData',
+      allowedKeys: const <String>{'contract', 'key', 'durability'},
+    );
+    final Object? jsonContract = XdrJsonHelper.readField(
+      object,
+      'contract',
+      type: 'XdrLedgerKeyContractData',
+    );
+    final Object? jsonKey = XdrJsonHelper.readField(
+      object,
+      'key',
+      type: 'XdrLedgerKeyContractData',
+    );
+    final Object? jsonDurability = XdrJsonHelper.readField(
+      object,
+      'durability',
+      type: 'XdrLedgerKeyContractData',
+    );
+    return XdrLedgerKeyContractData(
+      XdrSCAddress.fromXdrJsonValue(jsonContract),
+      XdrSCVal.fromXdrJsonValue(jsonKey),
+      XdrContractDataDurability.fromXdrJsonValue(jsonDurability),
+    );
   }
 }

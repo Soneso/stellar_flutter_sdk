@@ -49,6 +49,7 @@ class SEPParser:
         '0046': 'Contract Meta',
         '0047': 'Contract Interface Discovery',
         '0048': 'Smart Contract Specifications',
+        '0051': 'XDR-JSON',
         '0053': 'Sign and Verify Messages',
     }
 
@@ -5640,6 +5641,320 @@ class SEPParser:
 
         return data
 
+    def parse_sep_51(self) -> Dict[str, Any]:
+        """
+        Parse SEP-51 (XDR-JSON) specific structure.
+
+        SEP-51 defines a mapping between XDR structures and JSON rather than an
+        HTTP API, so the capability set is one entry per mapping rule the
+        specification states. Preamble and summary come from the fetched
+        document.
+
+        Two rules are recommendations rather than requirements and are recorded
+        as optional: accepting a JSON number for the two Hyper types, which the
+        specification asks for "where possible" to stay readable to XDR-JSON v1
+        producers, and allowing a `$schema` property on JSON objects, which the
+        specification requires be allowed but not required.
+
+        Returns:
+            Structured SEP-51 data with XDR-JSON mapping features
+        """
+        data = {
+            'sep_number': self.sep_number,
+            'preamble': self.extract_preamble(),
+            'summary': self.extract_summary(),
+            'sections': []
+        }
+
+        xdr_json_features = {
+            'xdr_data_types': [],
+            'stellar_specific_types': [],
+            'json_schema': []
+        }
+
+        # XDR data type mappings (SEP-51 Specification -> XDR Data Types).
+        xdr_json_features['xdr_data_types'] = [
+            {
+                'name': 'integer_32',
+                'description': '32-bit signed integer maps to a JSON number',
+                'required': True,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'unsigned_integer_32',
+                'description': '32-bit unsigned integer maps to a JSON number',
+                'required': True,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'hyper_integer',
+                'description': '64-bit signed integer maps to a base-10 JSON string',
+                'required': True,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'unsigned_hyper_integer',
+                'description': '64-bit unsigned integer maps to a base-10 JSON string',
+                'required': True,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'hyper_number_input',
+                'description': 'Deserializes a JSON number for Hyper, for XDR-JSON v1 compatibility',
+                'required': False,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'unsigned_hyper_number_input',
+                'description': 'Deserializes a JSON number for Unsigned Hyper, for XDR-JSON v1 compatibility',
+                'required': False,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'boolean',
+                'description': 'Boolean maps to a JSON boolean',
+                'required': True,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'opaque_fixed',
+                'description': 'Fixed-length opaque data maps to a hexadecimal string',
+                'required': True,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'opaque_variable',
+                'description': 'Variable-length opaque data maps to a hexadecimal string',
+                'required': True,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'string_escaping',
+                'description': 'String is escaped per the specification ladder: \\0, \\t, \\n, \\r, \\\\, printable ASCII verbatim, \\xNN otherwise',
+                'required': True,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'array_fixed',
+                'description': 'Fixed-length array maps to a JSON array',
+                'required': True,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'array_variable',
+                'description': 'Variable-length array maps to a JSON array',
+                'required': True,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'enum',
+                'description': 'Enum maps to a snake_case string with any shared prefix removed',
+                'required': True,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'struct',
+                'description': 'Struct maps to a JSON object keyed by the snake_case field name',
+                'required': True,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'union_void_arm',
+                'description': 'Union with a void arm maps to a bare discriminant string',
+                'required': True,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'union_value_arm',
+                'description': 'Union with a value arm maps to a single-key object keyed by the discriminant',
+                'required': True,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'union_integer_cases',
+                'description': 'Union with integer cases keys on the discriminant name suffixed by the integer',
+                'required': True,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'void',
+                'description': 'Void is omitted in JSON',
+                'required': True,
+                'category': 'XDR Data Types'
+            },
+            {
+                'name': 'optional',
+                'description': 'Optional data maps to null when unset and to the value when set',
+                'required': True,
+                'category': 'XDR Data Types'
+            },
+        ]
+
+        # Stellar-specific renderings (SEP-51 Stellar-Specific Types).
+        xdr_json_features['stellar_specific_types'] = [
+            {
+                'name': 'sc_address',
+                'description': 'ScAddress renders as a G, C, M, B or L strkey by arm',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'account_id',
+                'description': 'AccountID renders as a G strkey',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'contract_id',
+                'description': 'ContractID renders as a C strkey',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'muxed_account',
+                'description': 'MuxedAccount renders as a G strkey (ed25519) or an M strkey (muxed ed25519)',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'muxed_account_med25519',
+                'description': 'MuxedAccountMed25519 renders as an M strkey',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'muxed_ed25519_account',
+                'description': 'MuxedEd25519Account renders as an M strkey',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'pool_id',
+                'description': 'PoolID renders as an L strkey',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'claimable_balance_id',
+                'description': 'ClaimableBalanceID renders as a B strkey',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'public_key',
+                'description': 'PublicKey renders as a G strkey',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'node_id',
+                'description': 'NodeID renders as a G strkey',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'signer_key',
+                'description': 'SignerKey renders as a G, T, X or P strkey by arm',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'signer_key_ed25519_signed_payload',
+                'description': 'SignerKeyEd25519SignedPayload renders as a P strkey',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'asset_code',
+                'description': 'AssetCode renders as the string of its AssetCode4 or AssetCode12 arm',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'asset_code_4',
+                'description': 'AssetCode4 drops trailing zero bytes, then takes the string escape ladder',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'asset_code_12',
+                'description': 'AssetCode12 drops trailing zero bytes down to five, then takes the string escape ladder',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'int128_parts',
+                'description': 'Int128Parts renders as one base-10 string of the reassembled integer',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'uint128_parts',
+                'description': 'UInt128Parts renders as one base-10 string of the reassembled integer',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'int256_parts',
+                'description': 'Int256Parts renders as one base-10 string of the reassembled integer',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+            {
+                'name': 'uint256_parts',
+                'description': 'UInt256Parts renders as one base-10 string of the reassembled integer',
+                'required': True,
+                'category': 'Stellar-Specific Types'
+            },
+        ]
+
+        # JSON Schema property (SEP-51 JSON Schema).
+        xdr_json_features['json_schema'] = [
+            {
+                'name': 'schema_property',
+                'description': 'JSON objects allow, but do not require, a $schema property',
+                'required': False,
+                'category': 'JSON Schema'
+            },
+        ]
+
+        data['sections'].append({
+            'title': 'XDR Data Types',
+            'key': 'xdr_data_types',
+            'content': 'Mapping of the XDR data types to their JSON representation',
+            'xdr_json_features': xdr_json_features['xdr_data_types'],
+            'feature_count': len(xdr_json_features['xdr_data_types'])
+        })
+
+        data['sections'].append({
+            'title': 'Stellar-Specific Types',
+            'key': 'stellar_specific_types',
+            'content': 'Strkey, asset code and multi-limb integer renderings',
+            'xdr_json_features': xdr_json_features['stellar_specific_types'],
+            'feature_count': len(xdr_json_features['stellar_specific_types'])
+        })
+
+        data['sections'].append({
+            'title': 'JSON Schema',
+            'key': 'json_schema',
+            'content': 'Optional $schema property on JSON objects',
+            'xdr_json_features': xdr_json_features['json_schema'],
+            'feature_count': len(xdr_json_features['json_schema'])
+        })
+
+        total_features = (
+            len(xdr_json_features['xdr_data_types']) +
+            len(xdr_json_features['stellar_specific_types']) +
+            len(xdr_json_features['json_schema'])
+        )
+
+        print(f"{Colors.GREEN}  ✓ Found {len(xdr_json_features['xdr_data_types'])} XDR data type features{Colors.END}")
+        print(f"{Colors.GREEN}  ✓ Found {len(xdr_json_features['stellar_specific_types'])} Stellar-specific type features{Colors.END}")
+        print(f"{Colors.GREEN}  ✓ Found {len(xdr_json_features['json_schema'])} JSON schema features{Colors.END}")
+        print(f"{Colors.GREEN}  ✓ Total: {total_features} SEP-51 features{Colors.END}")
+
+        return data
+
     def parse_sep_53(self) -> Dict[str, Any]:
         """
         Build the SEP-53 (Sign and Verify Messages) definition.
@@ -5813,6 +6128,8 @@ class SEPParser:
             self.parsed_data = self.parse_sep_47()
         elif self.sep_number == '0048':
             self.parsed_data = self.parse_sep_48()
+        elif self.sep_number == '0051':
+            self.parsed_data = self.parse_sep_51()
         else:
             self.parsed_data = self.parse_generic_sep()
 

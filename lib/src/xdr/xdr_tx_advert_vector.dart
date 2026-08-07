@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 
 class XdrTxAdvertVector {
   XdrTxAdvertVector(this._txAdvertVector);
@@ -46,4 +47,30 @@ class XdrTxAdvertVector {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTxAdvertVector.decode(XdrDataInputStream(bytes));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrTxAdvertVector');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTxAdvertVector.
+  static XdrTxAdvertVector fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTxAdvertVector'),
+  );
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() => XdrJsonHelper.array<XdrHash>(
+    _txAdvertVector,
+    (XdrHash v) => v.toXdrJsonValue(),
+    type: 'XdrTxAdvertVector',
+    maxLength: 1000,
+  );
+
+  /// Reads a XdrTxAdvertVector from the SEP-0051 rendering of its value.
+  static XdrTxAdvertVector fromXdrJsonValue(Object? value) => XdrTxAdvertVector(
+    XdrJsonHelper.readArray(
+      value,
+      type: 'XdrTxAdvertVector',
+      maxLength: 1000,
+    ).map<XdrHash>((Object? e) => XdrHash.fromXdrJsonValue(e)).toList(),
+  );
 }

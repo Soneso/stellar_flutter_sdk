@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_signature.dart';
 import 'xdr_time_sliced_survey_stop_collecting_message.dart';
 
@@ -67,6 +68,55 @@ class XdrSignedTimeSlicedSurveyStopCollectingMessage {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSignedTimeSlicedSurveyStopCollectingMessage.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSignedTimeSlicedSurveyStopCollectingMessage',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSignedTimeSlicedSurveyStopCollectingMessage.
+  static XdrSignedTimeSlicedSurveyStopCollectingMessage fromXdrJson(
+    String json,
+  ) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(
+      json,
+      type: 'XdrSignedTimeSlicedSurveyStopCollectingMessage',
+    ),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSignedTimeSlicedSurveyStopCollectingMessage.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'signature': _signature.toXdrJsonValue(),
+    'stop_collecting': _stopCollecting.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSignedTimeSlicedSurveyStopCollectingMessage from its SEP-0051 rendering.
+  static XdrSignedTimeSlicedSurveyStopCollectingMessage fromXdrJsonValue(
+    Object? value,
+  ) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSignedTimeSlicedSurveyStopCollectingMessage',
+      allowedKeys: const <String>{'signature', 'stop_collecting'},
+    );
+    final Object? jsonSignature = XdrJsonHelper.readField(
+      object,
+      'signature',
+      type: 'XdrSignedTimeSlicedSurveyStopCollectingMessage',
+    );
+    final Object? jsonStopCollecting = XdrJsonHelper.readField(
+      object,
+      'stop_collecting',
+      type: 'XdrSignedTimeSlicedSurveyStopCollectingMessage',
+    );
+    return XdrSignedTimeSlicedSurveyStopCollectingMessage(
+      XdrSignature.fromXdrJsonValue(jsonSignature),
+      XdrTimeSlicedSurveyStopCollectingMessage.fromXdrJsonValue(
+        jsonStopCollecting,
+      ),
     );
   }
 }

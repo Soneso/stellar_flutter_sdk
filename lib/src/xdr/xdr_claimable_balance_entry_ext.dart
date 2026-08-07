@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_claimable_balance_entry_ext_v1.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClaimableBalanceEntryExt {
   int _v;
@@ -74,5 +75,59 @@ class XdrClaimableBalanceEntryExt {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimableBalanceEntryExt.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrClaimableBalanceEntryExt',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClaimableBalanceEntryExt.
+  static XdrClaimableBalanceEntryExt fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrClaimableBalanceEntryExt'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrClaimableBalanceEntryExt.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return 'v0';
+      case 1:
+        return <String, Object?>{'v1': _v1!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrClaimableBalanceEntryExt',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrClaimableBalanceEntryExt from its SEP-0051 rendering.
+  static XdrClaimableBalanceEntryExt fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'v0':
+          return XdrClaimableBalanceEntryExt(0);
+      }
+      XdrJsonHelper.fail(
+        'XdrClaimableBalanceEntryExt',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrClaimableBalanceEntryExt',
+    );
+    switch (arm.key) {
+      case 'v1':
+        final XdrClaimableBalanceEntryExt arm0 = XdrClaimableBalanceEntryExt(1);
+        arm0.v1 = XdrClaimableBalanceEntryExtV1.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrClaimableBalanceEntryExt',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

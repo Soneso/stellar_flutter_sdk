@@ -5,6 +5,7 @@
 import 'xdr_data_io.dart';
 import 'xdr_int256_parts_base.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint64.dart';
 
 class XdrInt256Parts extends XdrInt256PartsBase {
@@ -21,6 +22,17 @@ class XdrInt256Parts extends XdrInt256PartsBase {
 
   static XdrInt256Parts fromTxRep(Map<String, String> map, String prefix) {
     var b = XdrInt256PartsBase.fromTxRep(map, prefix);
+    return XdrInt256Parts(b.hiHi, b.hiLo, b.loHi, b.loLo);
+  }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrInt256Parts.
+  static XdrInt256Parts fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrInt256Parts'),
+  );
+
+  /// Reads a XdrInt256Parts from its SEP-0051 rendering.
+  static XdrInt256Parts fromXdrJsonValue(Object? value) {
+    var b = XdrInt256PartsBase.fromXdrJsonValue(value);
     return XdrInt256Parts(b.hiHi, b.hiLo, b.loHi, b.loLo);
   }
 

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_restore_footprint_result_code.dart';
 
 class XdrRestoreFootprintResult {
@@ -58,5 +59,68 @@ class XdrRestoreFootprintResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrRestoreFootprintResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrRestoreFootprintResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrRestoreFootprintResult.
+  static XdrRestoreFootprintResult fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrRestoreFootprintResult'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrRestoreFootprintResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'resource_limit_exceeded';
+      case -3:
+        return 'insufficient_refundable_fee';
+    }
+    XdrJsonHelper.fail(
+      'XdrRestoreFootprintResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrRestoreFootprintResult from its SEP-0051 rendering.
+  static XdrRestoreFootprintResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrRestoreFootprintResult(
+            XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS,
+          );
+        case 'malformed':
+          return XdrRestoreFootprintResult(
+            XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_MALFORMED,
+          );
+        case 'resource_limit_exceeded':
+          return XdrRestoreFootprintResult(
+            XdrRestoreFootprintResultCode
+                .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED,
+          );
+        case 'insufficient_refundable_fee':
+          return XdrRestoreFootprintResult(
+            XdrRestoreFootprintResultCode
+                .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrRestoreFootprintResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrRestoreFootprintResult',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

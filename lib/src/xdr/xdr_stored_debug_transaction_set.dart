@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_stellar_value.dart';
 import 'xdr_stored_transaction_set.dart';
 import 'xdr_uint32.dart';
@@ -56,5 +57,56 @@ class XdrStoredDebugTransactionSet {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrStoredDebugTransactionSet.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrStoredDebugTransactionSet',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrStoredDebugTransactionSet.
+  static XdrStoredDebugTransactionSet fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrStoredDebugTransactionSet',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrStoredDebugTransactionSet.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'tx_set': _txSet.toXdrJsonValue(),
+    'ledger_seq': _ledgerSeq.toXdrJsonValue(),
+    'scp_value': _scpValue.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrStoredDebugTransactionSet from its SEP-0051 rendering.
+  static XdrStoredDebugTransactionSet fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrStoredDebugTransactionSet',
+      allowedKeys: const <String>{'tx_set', 'ledger_seq', 'scp_value'},
+    );
+    final Object? jsonTxSet = XdrJsonHelper.readField(
+      object,
+      'tx_set',
+      type: 'XdrStoredDebugTransactionSet',
+    );
+    final Object? jsonLedgerSeq = XdrJsonHelper.readField(
+      object,
+      'ledger_seq',
+      type: 'XdrStoredDebugTransactionSet',
+    );
+    final Object? jsonScpValue = XdrJsonHelper.readField(
+      object,
+      'scp_value',
+      type: 'XdrStoredDebugTransactionSet',
+    );
+    return XdrStoredDebugTransactionSet(
+      XdrStoredTransactionSet.fromXdrJsonValue(jsonTxSet),
+      XdrUint32.fromXdrJsonValue(jsonLedgerSeq),
+      XdrStellarValue.fromXdrJsonValue(jsonScpValue),
+    );
   }
 }

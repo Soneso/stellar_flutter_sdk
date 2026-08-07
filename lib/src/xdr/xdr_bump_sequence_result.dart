@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_bump_sequence_result_code.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrBumpSequenceResult {
   XdrBumpSequenceResultCode _code;
@@ -63,5 +64,54 @@ class XdrBumpSequenceResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBumpSequenceResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrBumpSequenceResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrBumpSequenceResult.
+  static XdrBumpSequenceResult fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrBumpSequenceResult'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrBumpSequenceResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'bad_seq';
+    }
+    XdrJsonHelper.fail(
+      'XdrBumpSequenceResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrBumpSequenceResult from its SEP-0051 rendering.
+  static XdrBumpSequenceResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrBumpSequenceResult(
+            XdrBumpSequenceResultCode.BUMP_SEQUENCE_SUCCESS,
+          );
+        case 'bad_seq':
+          return XdrBumpSequenceResult(
+            XdrBumpSequenceResultCode.BUMP_SEQUENCE_BAD_SEQ,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrBumpSequenceResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrBumpSequenceResult',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_spec_udt_union_case_tuple_v0.dart';
 import 'xdr_sc_spec_udt_union_case_v0_kind.dart';
 import 'xdr_sc_spec_udt_union_case_void_v0.dart';
@@ -88,5 +89,58 @@ class XdrSCSpecUDTUnionCaseV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecUDTUnionCaseV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCSpecUDTUnionCaseV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecUDTUnionCaseV0.
+  static XdrSCSpecUDTUnionCaseV0 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecUDTUnionCaseV0'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCSpecUDTUnionCaseV0.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'void_v0': _voidCase!.toXdrJsonValue()};
+      case 1:
+        return <String, Object?>{'tuple_v0': _tupleCase!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrSCSpecUDTUnionCaseV0',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrSCSpecUDTUnionCaseV0 from its SEP-0051 rendering.
+  static XdrSCSpecUDTUnionCaseV0 fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrSCSpecUDTUnionCaseV0',
+    );
+    switch (arm.key) {
+      case 'void_v0':
+        final XdrSCSpecUDTUnionCaseV0 arm0 = XdrSCSpecUDTUnionCaseV0(
+          XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_VOID_V0,
+        );
+        arm0.voidCase = XdrSCSpecUDTUnionCaseVoidV0.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'tuple_v0':
+        final XdrSCSpecUDTUnionCaseV0 arm1 = XdrSCSpecUDTUnionCaseV0(
+          XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_TUPLE_V0,
+        );
+        arm1.tupleCase = XdrSCSpecUDTUnionCaseTupleV0.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm1;
+    }
+    XdrJsonHelper.fail(
+      'XdrSCSpecUDTUnionCaseV0',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

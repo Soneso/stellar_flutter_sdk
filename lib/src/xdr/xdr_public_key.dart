@@ -5,6 +5,7 @@
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_public_key_base.dart';
 import 'xdr_public_key_type.dart';
 import 'xdr_uint256.dart';
@@ -41,4 +42,15 @@ class XdrPublicKey extends XdrPublicKeyBase {
     pk.setEd25519(XdrUint256(keyPair.publicKey));
     return pk;
   }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPublicKey.
+  ///
+  /// Dart does not inherit statics, so this narrows the base class rendering to
+  /// this type rather than relying on the one the base declares.
+  static XdrPublicKey fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrPublicKey'),
+  );
+
+  static XdrPublicKey fromXdrJsonValue(Object? value) =>
+      XdrPublicKeyBase.fromXdrJsonValueAs(value, XdrPublicKey.new);
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrInvokeHostFunctionResultCode {
   final _value;
@@ -74,5 +75,70 @@ class XdrInvokeHostFunctionResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInvokeHostFunctionResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrInvokeHostFunctionResultCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrInvokeHostFunctionResultCode.
+  static XdrInvokeHostFunctionResultCode fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrInvokeHostFunctionResultCode',
+        ),
+      );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'trapped';
+      case -3:
+        return 'resource_limit_exceeded';
+      case -4:
+        return 'entry_archived';
+      case -5:
+        return 'insufficient_refundable_fee';
+      default:
+        XdrJsonHelper.fail(
+          'XdrInvokeHostFunctionResultCode',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrInvokeHostFunctionResultCode from its SEP-0051 name.
+  static XdrInvokeHostFunctionResultCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS;
+        case 'malformed':
+          return XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED;
+        case 'trapped':
+          return XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED;
+        case 'resource_limit_exceeded':
+          return XdrInvokeHostFunctionResultCode
+              .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED;
+        case 'entry_archived':
+          return XdrInvokeHostFunctionResultCode
+              .INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED;
+        case 'insufficient_refundable_fee':
+          return XdrInvokeHostFunctionResultCode
+              .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrInvokeHostFunctionResultCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

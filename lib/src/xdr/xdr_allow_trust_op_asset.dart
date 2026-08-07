@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'txrep_helper.dart';
 import 'xdr_asset_type.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrAllowTrustOpAsset {
   XdrAssetType _type;
@@ -125,5 +126,70 @@ class XdrAllowTrustOpAsset {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrAllowTrustOpAsset',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAllowTrustOpAsset.
+  static XdrAllowTrustOpAsset fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrAllowTrustOpAsset'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrAllowTrustOpAsset.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+        return XdrJsonHelper.assetCode4(
+          _assetCode4!,
+          type: 'XdrAllowTrustOpAsset',
+          key: null,
+        );
+      case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+        return XdrJsonHelper.assetCode12(
+          _assetCode12!,
+          type: 'XdrAllowTrustOpAsset',
+          key: null,
+        );
+    }
+    XdrJsonHelper.fail(
+      'XdrAllowTrustOpAsset',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrAllowTrustOpAsset from its SEP-0051 rendering.
+  static XdrAllowTrustOpAsset fromXdrJsonValue(Object? value) {
+    // The width is read before the code so that the arm is chosen by the
+    // same measure the writer rendered it to. Reading it through the arm
+    // readers below would need the arm already known.
+    final int width = XdrJsonHelper.readEscapedBytes(
+      value,
+      type: 'XdrAllowTrustOpAsset',
+      maxLength: 12,
+    ).length;
+    if (width <= 4) {
+      final XdrAllowTrustOpAsset arm0 = XdrAllowTrustOpAsset(
+        XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4,
+      );
+      arm0.assetCode4 = XdrJsonHelper.readAssetCode4(
+        value,
+        type: 'XdrAllowTrustOpAsset',
+        key: null,
+      );
+      return arm0;
+    }
+    final XdrAllowTrustOpAsset arm1 = XdrAllowTrustOpAsset(
+      XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12,
+    );
+    arm1.assetCode12 = XdrJsonHelper.readAssetCode12(
+      value,
+      type: 'XdrAllowTrustOpAsset',
+      key: null,
+    );
+    return arm1;
   }
 }

@@ -6,8 +6,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../key_pair.dart';
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_signed_payload.dart';
 import 'xdr_signer_key_type.dart';
 import 'xdr_uint256.dart';
@@ -151,5 +153,90 @@ class XdrSignerKey {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSignerKey');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSignerKey.
+  static XdrSignerKey fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSignerKey'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSignerKey.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519:
+        return StrKey.encodeStellarAccountId(_ed25519!.uint256);
+      case XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX:
+        return StrKey.encodePreAuthTx(_preAuthTx!.uint256);
+      case XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X:
+        return StrKey.encodeSha256Hash(_hashX!.uint256);
+      case XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD:
+        return _signedPayload!.toXdrJsonValue();
+    }
+    XdrJsonHelper.fail(
+      'XdrSignerKey',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrSignerKey from its SEP-0051 rendering.
+  static XdrSignerKey fromXdrJsonValue(Object? value) {
+    switch (XdrJsonHelper.readStrKeyPrefix(value, type: 'XdrSignerKey')) {
+      case 'G':
+        final XdrSignerKey arm0 = XdrSignerKey(
+          XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519,
+        );
+        arm0.ed25519 = XdrUint256(
+          XdrJsonHelper.readStrKey(
+            value,
+            type: 'XdrSignerKey',
+            key: null,
+            decode: StrKey.decodeStellarAccountId,
+            expectedLength: 32,
+          ),
+        );
+        return arm0;
+      case 'T':
+        final XdrSignerKey arm1 = XdrSignerKey(
+          XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX,
+        );
+        arm1.preAuthTx = XdrUint256(
+          XdrJsonHelper.readStrKey(
+            value,
+            type: 'XdrSignerKey',
+            key: null,
+            decode: StrKey.decodePreAuthTx,
+            expectedLength: 32,
+          ),
+        );
+        return arm1;
+      case 'X':
+        final XdrSignerKey arm2 = XdrSignerKey(
+          XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X,
+        );
+        arm2.hashX = XdrUint256(
+          XdrJsonHelper.readStrKey(
+            value,
+            type: 'XdrSignerKey',
+            key: null,
+            decode: StrKey.decodeSha256Hash,
+            expectedLength: 32,
+          ),
+        );
+        return arm2;
+      case 'P':
+        final XdrSignerKey arm3 = XdrSignerKey(
+          XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD,
+        );
+        arm3.signedPayload = XdrSignedPayload.fromXdrJsonValue(value);
+        return arm3;
+    }
+    XdrJsonHelper.fail(
+      'XdrSignerKey',
+      'expects a G, T, X or P strkey but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

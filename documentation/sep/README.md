@@ -28,6 +28,7 @@ Think of SEPs as the "rules of the road" that let different Stellar applications
 | SEP-30 | Account Recovery | [sep-30.md](sep-30.md) |
 | SEP-38 | Anchor RFQ API | [sep-38.md](sep-38.md) |
 | SEP-45 | Contract Account Authentication | [sep-45.md](sep-45.md) |
+| SEP-51 | XDR-JSON | [sep-51.md](sep-51.md) |
 | SEP-53 | Message Signing | [sep-53.md](sep-53.md) |
 
 ## Which SEP Do I Need?
@@ -65,6 +66,7 @@ The issuer's approval server reviews each transaction and either approves, rejec
 | Address encoding and validation | SEP-23 |
 | Require memo on incoming payments | SEP-29 |
 | Account recovery via custodians | SEP-30 |
+| JSON rendering of XDR structures | SEP-51 |
 | Message signing and verification | SEP-53 |
 
 ## Learning More

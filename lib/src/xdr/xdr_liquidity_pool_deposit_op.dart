@@ -6,9 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../key_pair.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_price.dart';
 
 class XdrLiquidityPoolDepositOp {
@@ -102,6 +104,81 @@ class XdrLiquidityPoolDepositOp {
       maxAmountB,
       minPrice,
       maxPrice,
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLiquidityPoolDepositOp',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLiquidityPoolDepositOp.
+  static XdrLiquidityPoolDepositOp fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLiquidityPoolDepositOp'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLiquidityPoolDepositOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'liquidity_pool_id': StrKey.encodeLiquidityPoolId(_liquidityPoolID.hash),
+    'max_amount_a': _maxAmountA.toXdrJsonValue(),
+    'max_amount_b': _maxAmountB.toXdrJsonValue(),
+    'min_price': _minPrice.toXdrJsonValue(),
+    'max_price': _maxPrice.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLiquidityPoolDepositOp from its SEP-0051 rendering.
+  static XdrLiquidityPoolDepositOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLiquidityPoolDepositOp',
+      allowedKeys: const <String>{
+        'liquidity_pool_id',
+        'max_amount_a',
+        'max_amount_b',
+        'min_price',
+        'max_price',
+      },
+    );
+    final Object? jsonLiquidityPoolID = XdrJsonHelper.readField(
+      object,
+      'liquidity_pool_id',
+      type: 'XdrLiquidityPoolDepositOp',
+    );
+    final Object? jsonMaxAmountA = XdrJsonHelper.readField(
+      object,
+      'max_amount_a',
+      type: 'XdrLiquidityPoolDepositOp',
+    );
+    final Object? jsonMaxAmountB = XdrJsonHelper.readField(
+      object,
+      'max_amount_b',
+      type: 'XdrLiquidityPoolDepositOp',
+    );
+    final Object? jsonMinPrice = XdrJsonHelper.readField(
+      object,
+      'min_price',
+      type: 'XdrLiquidityPoolDepositOp',
+    );
+    final Object? jsonMaxPrice = XdrJsonHelper.readField(
+      object,
+      'max_price',
+      type: 'XdrLiquidityPoolDepositOp',
+    );
+    return XdrLiquidityPoolDepositOp(
+      XdrHash(
+        XdrJsonHelper.readStrKey(
+          jsonLiquidityPoolID,
+          type: 'XdrLiquidityPoolDepositOp',
+          key: 'liquidity_pool_id',
+          decode: StrKey.decodeLiquidityPoolId,
+          expectedLength: 32,
+        ),
+      ),
+      XdrInt64.fromXdrJsonValue(jsonMaxAmountA),
+      XdrInt64.fromXdrJsonValue(jsonMaxAmountB),
+      XdrPrice.fromXdrJsonValue(jsonMinPrice),
+      XdrPrice.fromXdrJsonValue(jsonMaxPrice),
     );
   }
 }

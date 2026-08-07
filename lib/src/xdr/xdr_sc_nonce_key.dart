@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSCNonceKey {
   XdrInt64 _nonce;
@@ -46,5 +47,34 @@ class XdrSCNonceKey {
   static XdrSCNonceKey fromTxRep(Map<String, String> map, String prefix) {
     XdrInt64 nonce = XdrInt64.fromTxRep(map, '$prefix.nonce');
     return XdrSCNonceKey(nonce);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCNonceKey');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCNonceKey.
+  static XdrSCNonceKey fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCNonceKey'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCNonceKey.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'nonce': _nonce.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSCNonceKey from its SEP-0051 rendering.
+  static XdrSCNonceKey fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCNonceKey',
+      allowedKeys: const <String>{'nonce'},
+    );
+    final Object? jsonNonce = XdrJsonHelper.readField(
+      object,
+      'nonce',
+      type: 'XdrSCNonceKey',
+    );
+    return XdrSCNonceKey(XdrInt64.fromXdrJsonValue(jsonNonce));
   }
 }

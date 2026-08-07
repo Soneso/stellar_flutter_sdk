@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_claimable_balance_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrLedgerKeyClaimableBalance {
   XdrClaimableBalanceID _balanceID;
@@ -57,5 +58,42 @@ class XdrLedgerKeyClaimableBalance {
       '$prefix.balanceID',
     );
     return XdrLedgerKeyClaimableBalance(balanceID);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerKeyClaimableBalance',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerKeyClaimableBalance.
+  static XdrLedgerKeyClaimableBalance fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrLedgerKeyClaimableBalance',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerKeyClaimableBalance.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'balance_id': _balanceID.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLedgerKeyClaimableBalance from its SEP-0051 rendering.
+  static XdrLedgerKeyClaimableBalance fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerKeyClaimableBalance',
+      allowedKeys: const <String>{'balance_id'},
+    );
+    final Object? jsonBalanceID = XdrJsonHelper.readField(
+      object,
+      'balance_id',
+      type: 'XdrLedgerKeyClaimableBalance',
+    );
+    return XdrLedgerKeyClaimableBalance(
+      XdrClaimableBalanceID.fromXdrJsonValue(jsonBalanceID),
+    );
   }
 }

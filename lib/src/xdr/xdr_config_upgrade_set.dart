@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_config_setting_entry.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrConfigUpgradeSet {
   List<XdrConfigSettingEntry> _updatedEntry;
@@ -50,5 +51,51 @@ class XdrConfigUpgradeSet {
   static XdrConfigUpgradeSet fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigUpgradeSet.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrConfigUpgradeSet',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrConfigUpgradeSet.
+  static XdrConfigUpgradeSet fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrConfigUpgradeSet'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrConfigUpgradeSet.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'updated_entry': XdrJsonHelper.array<XdrConfigSettingEntry>(
+      _updatedEntry,
+      (XdrConfigSettingEntry v) => v.toXdrJsonValue(),
+      type: 'XdrConfigUpgradeSet',
+      key: 'updated_entry',
+    ),
+  };
+
+  /// Reads a XdrConfigUpgradeSet from its SEP-0051 rendering.
+  static XdrConfigUpgradeSet fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrConfigUpgradeSet',
+      allowedKeys: const <String>{'updated_entry'},
+    );
+    final Object? jsonUpdatedEntry = XdrJsonHelper.readField(
+      object,
+      'updated_entry',
+      type: 'XdrConfigUpgradeSet',
+    );
+    return XdrConfigUpgradeSet(
+      XdrJsonHelper.readArray(
+            jsonUpdatedEntry,
+            type: 'XdrConfigUpgradeSet',
+            key: 'updated_entry',
+          )
+          .map<XdrConfigSettingEntry>(
+            (Object? e) => XdrConfigSettingEntry.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

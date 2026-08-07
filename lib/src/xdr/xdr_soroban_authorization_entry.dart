@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_soroban_authorized_invocation.dart';
 import 'xdr_soroban_credentials.dart';
 
@@ -72,5 +73,49 @@ class XdrSorobanAuthorizationEntry {
     XdrSorobanAuthorizedInvocation rootInvocation =
         XdrSorobanAuthorizedInvocation.fromTxRep(map, '$prefix.rootInvocation');
     return XdrSorobanAuthorizationEntry(credentials, rootInvocation);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSorobanAuthorizationEntry',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanAuthorizationEntry.
+  static XdrSorobanAuthorizationEntry fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrSorobanAuthorizationEntry',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrSorobanAuthorizationEntry.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'credentials': _credentials.toXdrJsonValue(),
+    'root_invocation': _rootInvocation.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSorobanAuthorizationEntry from its SEP-0051 rendering.
+  static XdrSorobanAuthorizationEntry fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSorobanAuthorizationEntry',
+      allowedKeys: const <String>{'credentials', 'root_invocation'},
+    );
+    final Object? jsonCredentials = XdrJsonHelper.readField(
+      object,
+      'credentials',
+      type: 'XdrSorobanAuthorizationEntry',
+    );
+    final Object? jsonRootInvocation = XdrJsonHelper.readField(
+      object,
+      'root_invocation',
+      type: 'XdrSorobanAuthorizationEntry',
+    );
+    return XdrSorobanAuthorizationEntry(
+      XdrSorobanCredentials.fromXdrJsonValue(jsonCredentials),
+      XdrSorobanAuthorizedInvocation.fromXdrJsonValue(jsonRootInvocation),
+    );
   }
 }

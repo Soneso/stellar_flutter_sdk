@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrEncryptedBody {
   XdrEncryptedBody(this._encryptedBody);
@@ -39,4 +40,25 @@ class XdrEncryptedBody {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrEncryptedBody.decode(XdrDataInputStream(bytes));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrEncryptedBody');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrEncryptedBody.
+  static XdrEncryptedBody fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrEncryptedBody'),
+  );
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() => XdrJsonHelper.hex(
+    _encryptedBody,
+    type: 'XdrEncryptedBody',
+    maxLength: 64000,
+  );
+
+  /// Reads a XdrEncryptedBody from the SEP-0051 rendering of its value.
+  static XdrEncryptedBody fromXdrJsonValue(Object? value) => XdrEncryptedBody(
+    XdrJsonHelper.readHex(value, type: 'XdrEncryptedBody', maxLength: 64000),
+  );
 }

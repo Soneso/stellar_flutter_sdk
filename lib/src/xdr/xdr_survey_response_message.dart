@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_encrypted_body.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_node_id.dart';
 import 'xdr_survey_message_command_type.dart';
 import 'xdr_uint32.dart';
@@ -83,5 +84,72 @@ class XdrSurveyResponseMessage {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSurveyResponseMessage.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSurveyResponseMessage',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSurveyResponseMessage.
+  static XdrSurveyResponseMessage fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSurveyResponseMessage'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSurveyResponseMessage.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'surveyor_peer_id': _surveyorPeerID.toXdrJsonValue(),
+    'surveyed_peer_id': _surveyedPeerID.toXdrJsonValue(),
+    'ledger_num': _ledgerNum.toXdrJsonValue(),
+    'command_type': _commandType.toXdrJsonValue(),
+    'encrypted_body': _encryptedBody.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSurveyResponseMessage from its SEP-0051 rendering.
+  static XdrSurveyResponseMessage fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSurveyResponseMessage',
+      allowedKeys: const <String>{
+        'surveyor_peer_id',
+        'surveyed_peer_id',
+        'ledger_num',
+        'command_type',
+        'encrypted_body',
+      },
+    );
+    final Object? jsonSurveyorPeerID = XdrJsonHelper.readField(
+      object,
+      'surveyor_peer_id',
+      type: 'XdrSurveyResponseMessage',
+    );
+    final Object? jsonSurveyedPeerID = XdrJsonHelper.readField(
+      object,
+      'surveyed_peer_id',
+      type: 'XdrSurveyResponseMessage',
+    );
+    final Object? jsonLedgerNum = XdrJsonHelper.readField(
+      object,
+      'ledger_num',
+      type: 'XdrSurveyResponseMessage',
+    );
+    final Object? jsonCommandType = XdrJsonHelper.readField(
+      object,
+      'command_type',
+      type: 'XdrSurveyResponseMessage',
+    );
+    final Object? jsonEncryptedBody = XdrJsonHelper.readField(
+      object,
+      'encrypted_body',
+      type: 'XdrSurveyResponseMessage',
+    );
+    return XdrSurveyResponseMessage(
+      XdrNodeID.fromXdrJsonValue(jsonSurveyorPeerID),
+      XdrNodeID.fromXdrJsonValue(jsonSurveyedPeerID),
+      XdrUint32.fromXdrJsonValue(jsonLedgerNum),
+      XdrSurveyMessageCommandType.fromXdrJsonValue(jsonCommandType),
+      XdrEncryptedBody.fromXdrJsonValue(jsonEncryptedBody),
+    );
   }
 }

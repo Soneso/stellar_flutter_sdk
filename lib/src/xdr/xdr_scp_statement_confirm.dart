@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_scp_ballot.dart';
 import 'xdr_uint32.dart';
 
@@ -77,5 +78,72 @@ class XdrSCPStatementConfirm {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPStatementConfirm.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCPStatementConfirm',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCPStatementConfirm.
+  static XdrSCPStatementConfirm fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCPStatementConfirm'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCPStatementConfirm.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ballot': _ballot.toXdrJsonValue(),
+    'n_prepared': _nPrepared.toXdrJsonValue(),
+    'n_commit': _nCommit.toXdrJsonValue(),
+    'n_h': _nH.toXdrJsonValue(),
+    'quorum_set_hash': _quorumSetHash.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSCPStatementConfirm from its SEP-0051 rendering.
+  static XdrSCPStatementConfirm fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCPStatementConfirm',
+      allowedKeys: const <String>{
+        'ballot',
+        'n_prepared',
+        'n_commit',
+        'n_h',
+        'quorum_set_hash',
+      },
+    );
+    final Object? jsonBallot = XdrJsonHelper.readField(
+      object,
+      'ballot',
+      type: 'XdrSCPStatementConfirm',
+    );
+    final Object? jsonNPrepared = XdrJsonHelper.readField(
+      object,
+      'n_prepared',
+      type: 'XdrSCPStatementConfirm',
+    );
+    final Object? jsonNCommit = XdrJsonHelper.readField(
+      object,
+      'n_commit',
+      type: 'XdrSCPStatementConfirm',
+    );
+    final Object? jsonNH = XdrJsonHelper.readField(
+      object,
+      'n_h',
+      type: 'XdrSCPStatementConfirm',
+    );
+    final Object? jsonQuorumSetHash = XdrJsonHelper.readField(
+      object,
+      'quorum_set_hash',
+      type: 'XdrSCPStatementConfirm',
+    );
+    return XdrSCPStatementConfirm(
+      XdrSCPBallot.fromXdrJsonValue(jsonBallot),
+      XdrUint32.fromXdrJsonValue(jsonNPrepared),
+      XdrUint32.fromXdrJsonValue(jsonNCommit),
+      XdrUint32.fromXdrJsonValue(jsonNH),
+      XdrHash.fromXdrJsonValue(jsonQuorumSetHash),
+    );
   }
 }

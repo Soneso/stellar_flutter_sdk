@@ -11,6 +11,7 @@ import 'xdr_claim_liquidity_atom.dart';
 import 'xdr_claim_offer_atom.dart';
 import 'xdr_claim_offer_atom_v0.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClaimAtom {
   XdrClaimAtomType _type;
@@ -93,5 +94,64 @@ class XdrClaimAtom {
   static XdrClaimAtom fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimAtom.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrClaimAtom');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClaimAtom.
+  static XdrClaimAtom fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrClaimAtom'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrClaimAtom.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'v0': _v0!.toXdrJsonValue()};
+      case 1:
+        return <String, Object?>{'order_book': _orderBook!.toXdrJsonValue()};
+      case 2:
+        return <String, Object?>{
+          'liquidity_pool': _liquidityPool!.toXdrJsonValue(),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrClaimAtom',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrClaimAtom from its SEP-0051 rendering.
+  static XdrClaimAtom fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrClaimAtom',
+    );
+    switch (arm.key) {
+      case 'v0':
+        final XdrClaimAtom arm0 = XdrClaimAtom(
+          XdrClaimAtomType.CLAIM_ATOM_TYPE_V0,
+        );
+        arm0.v0 = XdrClaimOfferAtomV0.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'order_book':
+        final XdrClaimAtom arm1 = XdrClaimAtom(
+          XdrClaimAtomType.CLAIM_ATOM_TYPE_ORDER_BOOK,
+        );
+        arm1.orderBook = XdrClaimOfferAtom.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'liquidity_pool':
+        final XdrClaimAtom arm2 = XdrClaimAtom(
+          XdrClaimAtomType.CLAIM_ATOM_TYPE_LIQUIDITY_POOL,
+        );
+        arm2.liquidityPool = XdrClaimLiquidityAtom.fromXdrJsonValue(arm.value);
+        return arm2;
+    }
+    XdrJsonHelper.fail(
+      'XdrClaimAtom',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

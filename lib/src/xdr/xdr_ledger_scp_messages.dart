@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_scp_envelope.dart';
 import 'xdr_uint32.dart';
 
@@ -52,5 +53,58 @@ class XdrLedgerSCPMessages {
   static XdrLedgerSCPMessages fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerSCPMessages.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerSCPMessages',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerSCPMessages.
+  static XdrLedgerSCPMessages fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerSCPMessages'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerSCPMessages.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ledger_seq': _ledgerSeq.toXdrJsonValue(),
+    'messages': XdrJsonHelper.array<XdrSCPEnvelope>(
+      _messages,
+      (XdrSCPEnvelope v) => v.toXdrJsonValue(),
+      type: 'XdrLedgerSCPMessages',
+      key: 'messages',
+    ),
+  };
+
+  /// Reads a XdrLedgerSCPMessages from its SEP-0051 rendering.
+  static XdrLedgerSCPMessages fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerSCPMessages',
+      allowedKeys: const <String>{'ledger_seq', 'messages'},
+    );
+    final Object? jsonLedgerSeq = XdrJsonHelper.readField(
+      object,
+      'ledger_seq',
+      type: 'XdrLedgerSCPMessages',
+    );
+    final Object? jsonMessages = XdrJsonHelper.readField(
+      object,
+      'messages',
+      type: 'XdrLedgerSCPMessages',
+    );
+    return XdrLedgerSCPMessages(
+      XdrUint32.fromXdrJsonValue(jsonLedgerSeq),
+      XdrJsonHelper.readArray(
+            jsonMessages,
+            type: 'XdrLedgerSCPMessages',
+            key: 'messages',
+          )
+          .map<XdrSCPEnvelope>(
+            (Object? e) => XdrSCPEnvelope.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

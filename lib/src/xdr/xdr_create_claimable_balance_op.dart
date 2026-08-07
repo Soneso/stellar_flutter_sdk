@@ -11,6 +11,7 @@ import 'xdr_asset.dart';
 import 'xdr_claimant.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 
 class XdrCreateClaimableBalanceOp {
   XdrAsset _asset;
@@ -89,5 +90,66 @@ class XdrCreateClaimableBalanceOp {
       claimants.add(XdrClaimant.fromTxRep(map, '$prefix.claimants[$i]'));
     }
     return XdrCreateClaimableBalanceOp(asset, amount, claimants);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrCreateClaimableBalanceOp',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrCreateClaimableBalanceOp.
+  static XdrCreateClaimableBalanceOp fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrCreateClaimableBalanceOp'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrCreateClaimableBalanceOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'asset': _asset.toXdrJsonValue(),
+    'amount': _amount.toXdrJsonValue(),
+    'claimants': XdrJsonHelper.array<XdrClaimant>(
+      _claimants,
+      (XdrClaimant v) => v.toXdrJsonValue(),
+      type: 'XdrCreateClaimableBalanceOp',
+      key: 'claimants',
+      maxLength: 10,
+    ),
+  };
+
+  /// Reads a XdrCreateClaimableBalanceOp from its SEP-0051 rendering.
+  static XdrCreateClaimableBalanceOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrCreateClaimableBalanceOp',
+      allowedKeys: const <String>{'asset', 'amount', 'claimants'},
+    );
+    final Object? jsonAsset = XdrJsonHelper.readField(
+      object,
+      'asset',
+      type: 'XdrCreateClaimableBalanceOp',
+    );
+    final Object? jsonAmount = XdrJsonHelper.readField(
+      object,
+      'amount',
+      type: 'XdrCreateClaimableBalanceOp',
+    );
+    final Object? jsonClaimants = XdrJsonHelper.readField(
+      object,
+      'claimants',
+      type: 'XdrCreateClaimableBalanceOp',
+    );
+    return XdrCreateClaimableBalanceOp(
+      XdrAsset.fromXdrJsonValue(jsonAsset),
+      XdrInt64.fromXdrJsonValue(jsonAmount),
+      XdrJsonHelper.readArray(
+            jsonClaimants,
+            type: 'XdrCreateClaimableBalanceOp',
+            key: 'claimants',
+            maxLength: 10,
+          )
+          .map<XdrClaimant>((Object? e) => XdrClaimant.fromXdrJsonValue(e))
+          .toList(),
+    );
   }
 }

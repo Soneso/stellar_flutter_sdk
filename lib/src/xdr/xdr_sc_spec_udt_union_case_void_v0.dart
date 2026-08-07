@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSCSpecUDTUnionCaseVoidV0 {
   String _doc;
@@ -44,5 +45,66 @@ class XdrSCSpecUDTUnionCaseVoidV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecUDTUnionCaseVoidV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCSpecUDTUnionCaseVoidV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecUDTUnionCaseVoidV0.
+  static XdrSCSpecUDTUnionCaseVoidV0 fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecUDTUnionCaseVoidV0'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrSCSpecUDTUnionCaseVoidV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'doc': XdrJsonHelper.escapedString(
+      _doc,
+      type: 'XdrSCSpecUDTUnionCaseVoidV0',
+      key: 'doc',
+      maxBytes: 1024,
+    ),
+    'name': XdrJsonHelper.escapedString(
+      _name,
+      type: 'XdrSCSpecUDTUnionCaseVoidV0',
+      key: 'name',
+      maxBytes: 60,
+    ),
+  };
+
+  /// Reads a XdrSCSpecUDTUnionCaseVoidV0 from its SEP-0051 rendering.
+  static XdrSCSpecUDTUnionCaseVoidV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCSpecUDTUnionCaseVoidV0',
+      allowedKeys: const <String>{'doc', 'name'},
+    );
+    final Object? jsonDoc = XdrJsonHelper.readField(
+      object,
+      'doc',
+      type: 'XdrSCSpecUDTUnionCaseVoidV0',
+    );
+    final Object? jsonName = XdrJsonHelper.readField(
+      object,
+      'name',
+      type: 'XdrSCSpecUDTUnionCaseVoidV0',
+    );
+    return XdrSCSpecUDTUnionCaseVoidV0(
+      XdrJsonHelper.readEscapedString(
+        jsonDoc,
+        type: 'XdrSCSpecUDTUnionCaseVoidV0',
+        key: 'doc',
+        maxBytes: 1024,
+      ),
+      XdrJsonHelper.readEscapedString(
+        jsonName,
+        type: 'XdrSCSpecUDTUnionCaseVoidV0',
+        key: 'name',
+        maxBytes: 60,
+      ),
+    );
   }
 }

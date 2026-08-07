@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_stellar_value_ext.dart';
 import 'xdr_uint64.dart';
 import 'xdr_upgrade_type.dart';
@@ -66,5 +67,77 @@ class XdrStellarValue {
   static XdrStellarValue fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrStellarValue.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrStellarValue');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrStellarValue.
+  static XdrStellarValue fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrStellarValue'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrStellarValue.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'tx_set_hash': _txSetHash.toXdrJsonValue(),
+    'close_time': _closeTime.toXdrJsonValue(),
+    'upgrades': XdrJsonHelper.array<XdrUpgradeType>(
+      _upgrades,
+      (XdrUpgradeType v) => v.toXdrJsonValue(),
+      type: 'XdrStellarValue',
+      key: 'upgrades',
+      maxLength: 6,
+    ),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrStellarValue from its SEP-0051 rendering.
+  static XdrStellarValue fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrStellarValue',
+      allowedKeys: const <String>{
+        'tx_set_hash',
+        'close_time',
+        'upgrades',
+        'ext',
+      },
+    );
+    final Object? jsonTxSetHash = XdrJsonHelper.readField(
+      object,
+      'tx_set_hash',
+      type: 'XdrStellarValue',
+    );
+    final Object? jsonCloseTime = XdrJsonHelper.readField(
+      object,
+      'close_time',
+      type: 'XdrStellarValue',
+    );
+    final Object? jsonUpgrades = XdrJsonHelper.readField(
+      object,
+      'upgrades',
+      type: 'XdrStellarValue',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrStellarValue',
+    );
+    return XdrStellarValue(
+      XdrHash.fromXdrJsonValue(jsonTxSetHash),
+      XdrUint64.fromXdrJsonValue(jsonCloseTime),
+      XdrJsonHelper.readArray(
+            jsonUpgrades,
+            type: 'XdrStellarValue',
+            key: 'upgrades',
+            maxLength: 6,
+          )
+          .map<XdrUpgradeType>(
+            (Object? e) => XdrUpgradeType.fromXdrJsonValue(e),
+          )
+          .toList(),
+      XdrStellarValueExt.fromXdrJsonValue(jsonExt),
+    );
   }
 }

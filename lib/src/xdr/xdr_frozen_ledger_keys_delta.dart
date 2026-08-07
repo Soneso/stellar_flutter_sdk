@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_encoded_ledger_key.dart';
+import 'xdr_json_helper.dart';
 
 class XdrFrozenLedgerKeysDelta {
   List<XdrEncodedLedgerKey> _keysToFreeze;
@@ -73,5 +74,71 @@ class XdrFrozenLedgerKeysDelta {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFrozenLedgerKeysDelta.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrFrozenLedgerKeysDelta',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrFrozenLedgerKeysDelta.
+  static XdrFrozenLedgerKeysDelta fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrFrozenLedgerKeysDelta'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrFrozenLedgerKeysDelta.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'keys_to_freeze': XdrJsonHelper.array<XdrEncodedLedgerKey>(
+      _keysToFreeze,
+      (XdrEncodedLedgerKey v) => v.toXdrJsonValue(),
+      type: 'XdrFrozenLedgerKeysDelta',
+      key: 'keys_to_freeze',
+    ),
+    'keys_to_unfreeze': XdrJsonHelper.array<XdrEncodedLedgerKey>(
+      _keysToUnfreeze,
+      (XdrEncodedLedgerKey v) => v.toXdrJsonValue(),
+      type: 'XdrFrozenLedgerKeysDelta',
+      key: 'keys_to_unfreeze',
+    ),
+  };
+
+  /// Reads a XdrFrozenLedgerKeysDelta from its SEP-0051 rendering.
+  static XdrFrozenLedgerKeysDelta fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrFrozenLedgerKeysDelta',
+      allowedKeys: const <String>{'keys_to_freeze', 'keys_to_unfreeze'},
+    );
+    final Object? jsonKeysToFreeze = XdrJsonHelper.readField(
+      object,
+      'keys_to_freeze',
+      type: 'XdrFrozenLedgerKeysDelta',
+    );
+    final Object? jsonKeysToUnfreeze = XdrJsonHelper.readField(
+      object,
+      'keys_to_unfreeze',
+      type: 'XdrFrozenLedgerKeysDelta',
+    );
+    return XdrFrozenLedgerKeysDelta(
+      XdrJsonHelper.readArray(
+            jsonKeysToFreeze,
+            type: 'XdrFrozenLedgerKeysDelta',
+            key: 'keys_to_freeze',
+          )
+          .map<XdrEncodedLedgerKey>(
+            (Object? e) => XdrEncodedLedgerKey.fromXdrJsonValue(e),
+          )
+          .toList(),
+      XdrJsonHelper.readArray(
+            jsonKeysToUnfreeze,
+            type: 'XdrFrozenLedgerKeysDelta',
+            key: 'keys_to_unfreeze',
+          )
+          .map<XdrEncodedLedgerKey>(
+            (Object? e) => XdrEncodedLedgerKey.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

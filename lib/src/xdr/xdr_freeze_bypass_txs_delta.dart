@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 
 class XdrFreezeBypassTxsDelta {
   List<XdrHash> _addTxs;
@@ -61,5 +62,63 @@ class XdrFreezeBypassTxsDelta {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFreezeBypassTxsDelta.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrFreezeBypassTxsDelta',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrFreezeBypassTxsDelta.
+  static XdrFreezeBypassTxsDelta fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrFreezeBypassTxsDelta'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrFreezeBypassTxsDelta.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'add_txs': XdrJsonHelper.array<XdrHash>(
+      _addTxs,
+      (XdrHash v) => v.toXdrJsonValue(),
+      type: 'XdrFreezeBypassTxsDelta',
+      key: 'add_txs',
+    ),
+    'remove_txs': XdrJsonHelper.array<XdrHash>(
+      _removeTxs,
+      (XdrHash v) => v.toXdrJsonValue(),
+      type: 'XdrFreezeBypassTxsDelta',
+      key: 'remove_txs',
+    ),
+  };
+
+  /// Reads a XdrFreezeBypassTxsDelta from its SEP-0051 rendering.
+  static XdrFreezeBypassTxsDelta fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrFreezeBypassTxsDelta',
+      allowedKeys: const <String>{'add_txs', 'remove_txs'},
+    );
+    final Object? jsonAddTxs = XdrJsonHelper.readField(
+      object,
+      'add_txs',
+      type: 'XdrFreezeBypassTxsDelta',
+    );
+    final Object? jsonRemoveTxs = XdrJsonHelper.readField(
+      object,
+      'remove_txs',
+      type: 'XdrFreezeBypassTxsDelta',
+    );
+    return XdrFreezeBypassTxsDelta(
+      XdrJsonHelper.readArray(
+        jsonAddTxs,
+        type: 'XdrFreezeBypassTxsDelta',
+        key: 'add_txs',
+      ).map<XdrHash>((Object? e) => XdrHash.fromXdrJsonValue(e)).toList(),
+      XdrJsonHelper.readArray(
+        jsonRemoveTxs,
+        type: 'XdrFreezeBypassTxsDelta',
+        key: 'remove_txs',
+      ).map<XdrHash>((Object? e) => XdrHash.fromXdrJsonValue(e)).toList(),
+    );
   }
 }

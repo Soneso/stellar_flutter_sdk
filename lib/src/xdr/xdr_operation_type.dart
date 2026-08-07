@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrOperationType {
   final _value;
@@ -269,5 +270,145 @@ class XdrOperationType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrOperationType');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrOperationType.
+  static XdrOperationType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrOperationType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'create_account';
+      case 1:
+        return 'payment';
+      case 2:
+        return 'path_payment_strict_receive';
+      case 3:
+        return 'manage_sell_offer';
+      case 4:
+        return 'create_passive_sell_offer';
+      case 5:
+        return 'set_options';
+      case 6:
+        return 'change_trust';
+      case 7:
+        return 'allow_trust';
+      case 8:
+        return 'account_merge';
+      case 9:
+        return 'inflation';
+      case 10:
+        return 'manage_data';
+      case 11:
+        return 'bump_sequence';
+      case 12:
+        return 'manage_buy_offer';
+      case 13:
+        return 'path_payment_strict_send';
+      case 14:
+        return 'create_claimable_balance';
+      case 15:
+        return 'claim_claimable_balance';
+      case 16:
+        return 'begin_sponsoring_future_reserves';
+      case 17:
+        return 'end_sponsoring_future_reserves';
+      case 18:
+        return 'revoke_sponsorship';
+      case 19:
+        return 'clawback';
+      case 20:
+        return 'clawback_claimable_balance';
+      case 21:
+        return 'set_trust_line_flags';
+      case 22:
+        return 'liquidity_pool_deposit';
+      case 23:
+        return 'liquidity_pool_withdraw';
+      case 24:
+        return 'invoke_host_function';
+      case 25:
+        return 'extend_footprint_ttl';
+      case 26:
+        return 'restore_footprint';
+      default:
+        XdrJsonHelper.fail(
+          'XdrOperationType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrOperationType from its SEP-0051 name.
+  static XdrOperationType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'create_account':
+          return XdrOperationType.CREATE_ACCOUNT;
+        case 'payment':
+          return XdrOperationType.PAYMENT;
+        case 'path_payment_strict_receive':
+          return XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE;
+        case 'manage_sell_offer':
+          return XdrOperationType.MANAGE_SELL_OFFER;
+        case 'create_passive_sell_offer':
+          return XdrOperationType.CREATE_PASSIVE_SELL_OFFER;
+        case 'set_options':
+          return XdrOperationType.SET_OPTIONS;
+        case 'change_trust':
+          return XdrOperationType.CHANGE_TRUST;
+        case 'allow_trust':
+          return XdrOperationType.ALLOW_TRUST;
+        case 'account_merge':
+          return XdrOperationType.ACCOUNT_MERGE;
+        case 'inflation':
+          return XdrOperationType.INFLATION;
+        case 'manage_data':
+          return XdrOperationType.MANAGE_DATA;
+        case 'bump_sequence':
+          return XdrOperationType.BUMP_SEQUENCE;
+        case 'manage_buy_offer':
+          return XdrOperationType.MANAGE_BUY_OFFER;
+        case 'path_payment_strict_send':
+          return XdrOperationType.PATH_PAYMENT_STRICT_SEND;
+        case 'create_claimable_balance':
+          return XdrOperationType.CREATE_CLAIMABLE_BALANCE;
+        case 'claim_claimable_balance':
+          return XdrOperationType.CLAIM_CLAIMABLE_BALANCE;
+        case 'begin_sponsoring_future_reserves':
+          return XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES;
+        case 'end_sponsoring_future_reserves':
+          return XdrOperationType.END_SPONSORING_FUTURE_RESERVES;
+        case 'revoke_sponsorship':
+          return XdrOperationType.REVOKE_SPONSORSHIP;
+        case 'clawback':
+          return XdrOperationType.CLAWBACK;
+        case 'clawback_claimable_balance':
+          return XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE;
+        case 'set_trust_line_flags':
+          return XdrOperationType.SET_TRUST_LINE_FLAGS;
+        case 'liquidity_pool_deposit':
+          return XdrOperationType.LIQUIDITY_POOL_DEPOSIT;
+        case 'liquidity_pool_withdraw':
+          return XdrOperationType.LIQUIDITY_POOL_WITHDRAW;
+        case 'invoke_host_function':
+          return XdrOperationType.INVOKE_HOST_FUNCTION;
+        case 'extend_footprint_ttl':
+          return XdrOperationType.EXTEND_FOOTPRINT_TTL;
+        case 'restore_footprint':
+          return XdrOperationType.RESTORE_FOOTPRINT;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrOperationType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

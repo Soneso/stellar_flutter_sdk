@@ -11,6 +11,7 @@ import 'xdr_create_contract_args.dart';
 import 'xdr_create_contract_args_v2.dart';
 import 'xdr_data_io.dart';
 import 'xdr_invoke_contract_args.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_soroban_authorized_function_type.dart';
 
 class XdrSorobanAuthorizedFunctionBase {
@@ -183,5 +184,87 @@ class XdrSorobanAuthorizedFunctionBase {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSorobanAuthorizedFunction',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanAuthorizedFunction.
+  static XdrSorobanAuthorizedFunctionBase fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrSorobanAuthorizedFunction',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrSorobanAuthorizedFunctionBase.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'contract_fn': _contractFn!.toXdrJsonValue()};
+      case 1:
+        return <String, Object?>{
+          'create_contract_host_fn': _createContractHostFn!.toXdrJsonValue(),
+        };
+      case 2:
+        return <String, Object?>{
+          'create_contract_v2_host_fn': _createContractV2HostFn!
+              .toXdrJsonValue(),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrSorobanAuthorizedFunction',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrSorobanAuthorizedFunctionBase from its SEP-0051 rendering.
+  static XdrSorobanAuthorizedFunctionBase fromXdrJsonValue(Object? value) =>
+      fromXdrJsonValueAs(value, XdrSorobanAuthorizedFunctionBase.new);
+
+  /// Reads a subclass of XdrSorobanAuthorizedFunctionBase from its SEP-0051 rendering.
+  static T fromXdrJsonValueAs<T extends XdrSorobanAuthorizedFunctionBase>(
+    Object? value,
+    T Function(XdrSorobanAuthorizedFunctionType) constructor,
+  ) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrSorobanAuthorizedFunction',
+    );
+    switch (arm.key) {
+      case 'contract_fn':
+        final T arm0 = constructor(
+          XdrSorobanAuthorizedFunctionType
+              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
+        );
+        arm0.contractFn = XdrInvokeContractArgs.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'create_contract_host_fn':
+        final T arm1 = constructor(
+          XdrSorobanAuthorizedFunctionType
+              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN,
+        );
+        arm1.createContractHostFn = XdrCreateContractArgs.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm1;
+      case 'create_contract_v2_host_fn':
+        final T arm2 = constructor(
+          XdrSorobanAuthorizedFunctionType
+              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN,
+        );
+        arm2.createContractV2HostFn = XdrCreateContractArgsV2.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm2;
+    }
+    XdrJsonHelper.fail(
+      'XdrSorobanAuthorizedFunction',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

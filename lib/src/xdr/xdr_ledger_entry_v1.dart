@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_entry_v1_ext.dart';
 
 class XdrLedgerEntryV1 {
@@ -53,5 +54,47 @@ class XdrLedgerEntryV1 {
   static XdrLedgerEntryV1 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntryV1.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrLedgerEntryV1');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerEntryV1.
+  static XdrLedgerEntryV1 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerEntryV1'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerEntryV1.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'sponsoring_id': _sponsoringID == null
+        ? null
+        : _sponsoringID!.toXdrJsonValue(),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLedgerEntryV1 from its SEP-0051 rendering.
+  static XdrLedgerEntryV1 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerEntryV1',
+      allowedKeys: const <String>{'sponsoring_id', 'ext'},
+    );
+    final Object? jsonSponsoringID = XdrJsonHelper.readField(
+      object,
+      'sponsoring_id',
+      type: 'XdrLedgerEntryV1',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrLedgerEntryV1',
+    );
+    return XdrLedgerEntryV1(
+      jsonSponsoringID == null
+          ? null
+          : XdrAccountID.fromXdrJsonValue(jsonSponsoringID),
+      XdrLedgerEntryV1Ext.fromXdrJsonValue(jsonExt),
+    );
   }
 }

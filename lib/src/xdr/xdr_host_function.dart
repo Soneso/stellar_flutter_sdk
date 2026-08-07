@@ -14,6 +14,7 @@ import 'xdr_contract_id_preimage_type.dart';
 import 'xdr_create_contract_args.dart';
 import 'xdr_create_contract_args_v2.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_data_value.dart';
 import 'xdr_hash.dart';
 import 'xdr_host_function_base.dart';
@@ -143,4 +144,15 @@ class XdrHostFunction extends XdrHostFunctionBase {
     result.createContractV2 = args;
     return result;
   }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrHostFunction.
+  ///
+  /// Dart does not inherit statics, so this narrows the base class rendering to
+  /// this type rather than relying on the one the base declares.
+  static XdrHostFunction fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrHostFunction'),
+  );
+
+  static XdrHostFunction fromXdrJsonValue(Object? value) =>
+      XdrHostFunctionBase.fromXdrJsonValueAs(value, XdrHostFunction.new);
 }

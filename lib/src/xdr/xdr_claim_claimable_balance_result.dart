@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_claim_claimable_balance_result_code.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClaimClaimableBalanceResult {
   XdrClaimClaimableBalanceResultCode _code;
@@ -61,5 +62,93 @@ class XdrClaimClaimableBalanceResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimClaimableBalanceResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrClaimClaimableBalanceResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClaimClaimableBalanceResult.
+  static XdrClaimClaimableBalanceResult fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrClaimClaimableBalanceResult',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrClaimClaimableBalanceResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'does_not_exist';
+      case -2:
+        return 'cannot_claim';
+      case -3:
+        return 'line_full';
+      case -4:
+        return 'no_trust';
+      case -5:
+        return 'not_authorized';
+      case -6:
+        return 'trustline_frozen';
+    }
+    XdrJsonHelper.fail(
+      'XdrClaimClaimableBalanceResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrClaimClaimableBalanceResult from its SEP-0051 rendering.
+  static XdrClaimClaimableBalanceResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrClaimClaimableBalanceResult(
+            XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_SUCCESS,
+          );
+        case 'does_not_exist':
+          return XdrClaimClaimableBalanceResult(
+            XdrClaimClaimableBalanceResultCode
+                .CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST,
+          );
+        case 'cannot_claim':
+          return XdrClaimClaimableBalanceResult(
+            XdrClaimClaimableBalanceResultCode
+                .CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM,
+          );
+        case 'line_full':
+          return XdrClaimClaimableBalanceResult(
+            XdrClaimClaimableBalanceResultCode
+                .CLAIM_CLAIMABLE_BALANCE_LINE_FULL,
+          );
+        case 'no_trust':
+          return XdrClaimClaimableBalanceResult(
+            XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_NO_TRUST,
+          );
+        case 'not_authorized':
+          return XdrClaimClaimableBalanceResult(
+            XdrClaimClaimableBalanceResultCode
+                .CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED,
+          );
+        case 'trustline_frozen':
+          return XdrClaimClaimableBalanceResult(
+            XdrClaimClaimableBalanceResultCode
+                .CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrClaimClaimableBalanceResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrClaimClaimableBalanceResult',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_contract_event.dart';
 import 'xdr_data_io.dart';
 import 'xdr_diagnostic_event.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_val.dart';
 import 'xdr_soroban_transaction_meta_ext.dart';
 
@@ -100,5 +101,90 @@ class XdrSorobanTransactionMeta {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanTransactionMeta.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSorobanTransactionMeta',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanTransactionMeta.
+  static XdrSorobanTransactionMeta fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSorobanTransactionMeta'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSorobanTransactionMeta.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'events': XdrJsonHelper.array<XdrContractEvent>(
+      _events,
+      (XdrContractEvent v) => v.toXdrJsonValue(),
+      type: 'XdrSorobanTransactionMeta',
+      key: 'events',
+    ),
+    'return_value': _returnValue.toXdrJsonValue(),
+    'diagnostic_events': XdrJsonHelper.array<XdrDiagnosticEvent>(
+      _diagnosticEvents,
+      (XdrDiagnosticEvent v) => v.toXdrJsonValue(),
+      type: 'XdrSorobanTransactionMeta',
+      key: 'diagnostic_events',
+    ),
+  };
+
+  /// Reads a XdrSorobanTransactionMeta from its SEP-0051 rendering.
+  static XdrSorobanTransactionMeta fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSorobanTransactionMeta',
+      allowedKeys: const <String>{
+        'ext',
+        'events',
+        'return_value',
+        'diagnostic_events',
+      },
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrSorobanTransactionMeta',
+    );
+    final Object? jsonEvents = XdrJsonHelper.readField(
+      object,
+      'events',
+      type: 'XdrSorobanTransactionMeta',
+    );
+    final Object? jsonReturnValue = XdrJsonHelper.readField(
+      object,
+      'return_value',
+      type: 'XdrSorobanTransactionMeta',
+    );
+    final Object? jsonDiagnosticEvents = XdrJsonHelper.readField(
+      object,
+      'diagnostic_events',
+      type: 'XdrSorobanTransactionMeta',
+    );
+    return XdrSorobanTransactionMeta(
+      XdrSorobanTransactionMetaExt.fromXdrJsonValue(jsonExt),
+      XdrJsonHelper.readArray(
+            jsonEvents,
+            type: 'XdrSorobanTransactionMeta',
+            key: 'events',
+          )
+          .map<XdrContractEvent>(
+            (Object? e) => XdrContractEvent.fromXdrJsonValue(e),
+          )
+          .toList(),
+      XdrSCVal.fromXdrJsonValue(jsonReturnValue),
+      XdrJsonHelper.readArray(
+            jsonDiagnosticEvents,
+            type: 'XdrSorobanTransactionMeta',
+            key: 'diagnostic_events',
+          )
+          .map<XdrDiagnosticEvent>(
+            (Object? e) => XdrDiagnosticEvent.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_spec_event_param_location_v0.dart';
 import 'xdr_sc_spec_type_def.dart';
 
@@ -62,5 +63,80 @@ class XdrSCSpecEventParamV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecEventParamV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCSpecEventParamV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecEventParamV0.
+  static XdrSCSpecEventParamV0 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecEventParamV0'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCSpecEventParamV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'doc': XdrJsonHelper.escapedString(
+      _doc,
+      type: 'XdrSCSpecEventParamV0',
+      key: 'doc',
+      maxBytes: 1024,
+    ),
+    'name': XdrJsonHelper.escapedString(
+      _name,
+      type: 'XdrSCSpecEventParamV0',
+      key: 'name',
+      maxBytes: 30,
+    ),
+    'type': _type.toXdrJsonValue(),
+    'location': _location.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSCSpecEventParamV0 from its SEP-0051 rendering.
+  static XdrSCSpecEventParamV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCSpecEventParamV0',
+      allowedKeys: const <String>{'doc', 'name', 'type', 'type_', 'location'},
+    );
+    final Object? jsonDoc = XdrJsonHelper.readField(
+      object,
+      'doc',
+      type: 'XdrSCSpecEventParamV0',
+    );
+    final Object? jsonName = XdrJsonHelper.readField(
+      object,
+      'name',
+      type: 'XdrSCSpecEventParamV0',
+    );
+    final Object? jsonType = XdrJsonHelper.readField(
+      object,
+      'type',
+      type: 'XdrSCSpecEventParamV0',
+      alias: 'type_',
+    );
+    final Object? jsonLocation = XdrJsonHelper.readField(
+      object,
+      'location',
+      type: 'XdrSCSpecEventParamV0',
+    );
+    return XdrSCSpecEventParamV0(
+      XdrJsonHelper.readEscapedString(
+        jsonDoc,
+        type: 'XdrSCSpecEventParamV0',
+        key: 'doc',
+        maxBytes: 1024,
+      ),
+      XdrJsonHelper.readEscapedString(
+        jsonName,
+        type: 'XdrSCSpecEventParamV0',
+        key: 'name',
+        maxBytes: 30,
+      ),
+      XdrSCSpecTypeDef.fromXdrJsonValue(jsonType),
+      XdrSCSpecEventParamLocationV0.fromXdrJsonValue(jsonLocation),
+    );
   }
 }

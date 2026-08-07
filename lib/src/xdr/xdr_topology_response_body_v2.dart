@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_time_sliced_node_data.dart';
 import 'xdr_time_sliced_peer_data_list.dart';
 
@@ -71,5 +72,56 @@ class XdrTopologyResponseBodyV2 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTopologyResponseBodyV2.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTopologyResponseBodyV2',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTopologyResponseBodyV2.
+  static XdrTopologyResponseBodyV2 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTopologyResponseBodyV2'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTopologyResponseBodyV2.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'inbound_peers': _inboundPeers.toXdrJsonValue(),
+    'outbound_peers': _outboundPeers.toXdrJsonValue(),
+    'node_data': _nodeData.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTopologyResponseBodyV2 from its SEP-0051 rendering.
+  static XdrTopologyResponseBodyV2 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTopologyResponseBodyV2',
+      allowedKeys: const <String>{
+        'inbound_peers',
+        'outbound_peers',
+        'node_data',
+      },
+    );
+    final Object? jsonInboundPeers = XdrJsonHelper.readField(
+      object,
+      'inbound_peers',
+      type: 'XdrTopologyResponseBodyV2',
+    );
+    final Object? jsonOutboundPeers = XdrJsonHelper.readField(
+      object,
+      'outbound_peers',
+      type: 'XdrTopologyResponseBodyV2',
+    );
+    final Object? jsonNodeData = XdrJsonHelper.readField(
+      object,
+      'node_data',
+      type: 'XdrTopologyResponseBodyV2',
+    );
+    return XdrTopologyResponseBodyV2(
+      XdrTimeSlicedPeerDataList.fromXdrJsonValue(jsonInboundPeers),
+      XdrTimeSlicedPeerDataList.fromXdrJsonValue(jsonOutboundPeers),
+      XdrTimeSlicedNodeData.fromXdrJsonValue(jsonNodeData),
+    );
   }
 }

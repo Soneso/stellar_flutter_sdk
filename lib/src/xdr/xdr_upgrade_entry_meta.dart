@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_entry_changes.dart';
 import 'xdr_ledger_upgrade.dart';
 
@@ -44,5 +45,45 @@ class XdrUpgradeEntryMeta {
   static XdrUpgradeEntryMeta fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrUpgradeEntryMeta.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrUpgradeEntryMeta',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrUpgradeEntryMeta.
+  static XdrUpgradeEntryMeta fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrUpgradeEntryMeta'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrUpgradeEntryMeta.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'upgrade': _upgrade.toXdrJsonValue(),
+    'changes': _changes.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrUpgradeEntryMeta from its SEP-0051 rendering.
+  static XdrUpgradeEntryMeta fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrUpgradeEntryMeta',
+      allowedKeys: const <String>{'upgrade', 'changes'},
+    );
+    final Object? jsonUpgrade = XdrJsonHelper.readField(
+      object,
+      'upgrade',
+      type: 'XdrUpgradeEntryMeta',
+    );
+    final Object? jsonChanges = XdrJsonHelper.readField(
+      object,
+      'changes',
+      type: 'XdrUpgradeEntryMeta',
+    );
+    return XdrUpgradeEntryMeta(
+      XdrLedgerUpgrade.fromXdrJsonValue(jsonUpgrade),
+      XdrLedgerEntryChanges.fromXdrJsonValue(jsonChanges),
+    );
   }
 }

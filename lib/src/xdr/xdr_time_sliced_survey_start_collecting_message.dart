@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_node_id.dart';
 import 'xdr_uint32.dart';
 
@@ -73,6 +74,59 @@ class XdrTimeSlicedSurveyStartCollectingMessage {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTimeSlicedSurveyStartCollectingMessage.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTimeSlicedSurveyStartCollectingMessage',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTimeSlicedSurveyStartCollectingMessage.
+  static XdrTimeSlicedSurveyStartCollectingMessage fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrTimeSlicedSurveyStartCollectingMessage',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrTimeSlicedSurveyStartCollectingMessage.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'surveyor_id': _surveyorID.toXdrJsonValue(),
+    'nonce': _nonce.toXdrJsonValue(),
+    'ledger_num': _ledgerNum.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTimeSlicedSurveyStartCollectingMessage from its SEP-0051 rendering.
+  static XdrTimeSlicedSurveyStartCollectingMessage fromXdrJsonValue(
+    Object? value,
+  ) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTimeSlicedSurveyStartCollectingMessage',
+      allowedKeys: const <String>{'surveyor_id', 'nonce', 'ledger_num'},
+    );
+    final Object? jsonSurveyorID = XdrJsonHelper.readField(
+      object,
+      'surveyor_id',
+      type: 'XdrTimeSlicedSurveyStartCollectingMessage',
+    );
+    final Object? jsonNonce = XdrJsonHelper.readField(
+      object,
+      'nonce',
+      type: 'XdrTimeSlicedSurveyStartCollectingMessage',
+    );
+    final Object? jsonLedgerNum = XdrJsonHelper.readField(
+      object,
+      'ledger_num',
+      type: 'XdrTimeSlicedSurveyStartCollectingMessage',
+    );
+    return XdrTimeSlicedSurveyStartCollectingMessage(
+      XdrNodeID.fromXdrJsonValue(jsonSurveyorID),
+      XdrUint32.fromXdrJsonValue(jsonNonce),
+      XdrUint32.fromXdrJsonValue(jsonLedgerNum),
     );
   }
 }

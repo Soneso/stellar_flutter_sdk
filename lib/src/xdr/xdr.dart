@@ -183,6 +183,7 @@ export 'xdr_invoke_host_function_result.dart';
 export 'xdr_invoke_host_function_result_code.dart';
 export 'xdr_invoke_host_function_success_pre_image.dart';
 export 'xdr_ip_addr_type.dart';
+export 'xdr_json_helper.dart';
 export 'xdr_ledger_bounds.dart';
 export 'xdr_ledger_close_meta_ext.dart';
 export 'xdr_ledger_close_meta_ext_v1.dart';

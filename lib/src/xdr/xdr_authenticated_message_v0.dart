@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hmac_sha256_mac.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_stellar_message.dart';
 import 'xdr_uint64.dart';
 
@@ -53,5 +54,52 @@ class XdrAuthenticatedMessageV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAuthenticatedMessageV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrAuthenticatedMessageV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAuthenticatedMessageV0.
+  static XdrAuthenticatedMessageV0 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrAuthenticatedMessageV0'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrAuthenticatedMessageV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'sequence': _sequence.toXdrJsonValue(),
+    'message': _message.toXdrJsonValue(),
+    'mac': _mac.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrAuthenticatedMessageV0 from its SEP-0051 rendering.
+  static XdrAuthenticatedMessageV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrAuthenticatedMessageV0',
+      allowedKeys: const <String>{'sequence', 'message', 'mac'},
+    );
+    final Object? jsonSequence = XdrJsonHelper.readField(
+      object,
+      'sequence',
+      type: 'XdrAuthenticatedMessageV0',
+    );
+    final Object? jsonMessage = XdrJsonHelper.readField(
+      object,
+      'message',
+      type: 'XdrAuthenticatedMessageV0',
+    );
+    final Object? jsonMac = XdrJsonHelper.readField(
+      object,
+      'mac',
+      type: 'XdrAuthenticatedMessageV0',
+    );
+    return XdrAuthenticatedMessageV0(
+      XdrUint64.fromXdrJsonValue(jsonSequence),
+      XdrStellarMessage.fromXdrJsonValue(jsonMessage),
+      XdrHmacSha256Mac.fromXdrJsonValue(jsonMac),
+    );
   }
 }

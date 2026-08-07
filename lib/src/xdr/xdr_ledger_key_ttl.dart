@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 
 class XdrLedgerKeyTTL {
   XdrHash _keyHash;
@@ -46,5 +47,34 @@ class XdrLedgerKeyTTL {
   static XdrLedgerKeyTTL fromTxRep(Map<String, String> map, String prefix) {
     XdrHash keyHash = XdrHash.fromTxRep(map, '$prefix.keyHash');
     return XdrLedgerKeyTTL(keyHash);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrLedgerKeyTTL');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerKeyTTL.
+  static XdrLedgerKeyTTL fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerKeyTTL'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerKeyTTL.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'key_hash': _keyHash.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLedgerKeyTTL from its SEP-0051 rendering.
+  static XdrLedgerKeyTTL fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerKeyTTL',
+      allowedKeys: const <String>{'key_hash'},
+    );
+    final Object? jsonKeyHash = XdrJsonHelper.readField(
+      object,
+      'key_hash',
+      type: 'XdrLedgerKeyTTL',
+    );
+    return XdrLedgerKeyTTL(XdrHash.fromXdrJsonValue(jsonKeyHash));
   }
 }

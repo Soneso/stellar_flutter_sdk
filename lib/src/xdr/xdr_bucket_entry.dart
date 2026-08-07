@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_bucket_entry_type.dart';
 import 'xdr_bucket_metadata.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_entry.dart';
 import 'xdr_ledger_key.dart';
 
@@ -94,5 +95,70 @@ class XdrBucketEntry {
   static XdrBucketEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBucketEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrBucketEntry');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrBucketEntry.
+  static XdrBucketEntry fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrBucketEntry'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrBucketEntry.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'liveentry': _liveEntry!.toXdrJsonValue()};
+      case 2:
+        return <String, Object?>{'initentry': _liveEntry!.toXdrJsonValue()};
+      case 1:
+        return <String, Object?>{'deadentry': _deadEntry!.toXdrJsonValue()};
+      case -1:
+        return <String, Object?>{'metaentry': _metaEntry!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrBucketEntry',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrBucketEntry from its SEP-0051 rendering.
+  static XdrBucketEntry fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrBucketEntry',
+    );
+    switch (arm.key) {
+      case 'liveentry':
+        final XdrBucketEntry arm0 = XdrBucketEntry(
+          XdrBucketEntryType.LIVEENTRY,
+        );
+        arm0.liveEntry = XdrLedgerEntry.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'initentry':
+        final XdrBucketEntry arm1 = XdrBucketEntry(
+          XdrBucketEntryType.INITENTRY,
+        );
+        arm1.liveEntry = XdrLedgerEntry.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'deadentry':
+        final XdrBucketEntry arm2 = XdrBucketEntry(
+          XdrBucketEntryType.DEADENTRY,
+        );
+        arm2.deadEntry = XdrLedgerKey.fromXdrJsonValue(arm.value);
+        return arm2;
+      case 'metaentry':
+        final XdrBucketEntry arm3 = XdrBucketEntry(
+          XdrBucketEntryType.METAENTRY,
+        );
+        arm3.metaEntry = XdrBucketMetadata.fromXdrJsonValue(arm.value);
+        return arm3;
+    }
+    XdrJsonHelper.fail(
+      'XdrBucketEntry',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

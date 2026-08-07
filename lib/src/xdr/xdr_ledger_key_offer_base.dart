@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint64.dart';
 
 class XdrLedgerKeyOfferBase {
@@ -63,5 +64,43 @@ class XdrLedgerKeyOfferBase {
     );
     XdrUint64 offerID = XdrUint64.fromTxRep(map, '$prefix.offerID');
     return XdrLedgerKeyOfferBase(sellerID, offerID);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrLedgerKeyOffer');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerKeyOffer.
+  static XdrLedgerKeyOfferBase fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerKeyOffer'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerKeyOfferBase.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'seller_id': _sellerID.toXdrJsonValue(),
+    'offer_id': _offerID.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLedgerKeyOfferBase from its SEP-0051 rendering.
+  static XdrLedgerKeyOfferBase fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerKeyOffer',
+      allowedKeys: const <String>{'seller_id', 'offer_id'},
+    );
+    final Object? jsonSellerID = XdrJsonHelper.readField(
+      object,
+      'seller_id',
+      type: 'XdrLedgerKeyOffer',
+    );
+    final Object? jsonOfferID = XdrJsonHelper.readField(
+      object,
+      'offer_id',
+      type: 'XdrLedgerKeyOffer',
+    );
+    return XdrLedgerKeyOfferBase(
+      XdrAccountID.fromXdrJsonValue(jsonSellerID),
+      XdrUint64.fromXdrJsonValue(jsonOfferID),
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_spec_entry_kind.dart';
 import 'xdr_sc_spec_event_v0.dart';
 import 'xdr_sc_spec_function_v0.dart';
@@ -137,5 +138,92 @@ class XdrSCSpecEntry {
   static XdrSCSpecEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCSpecEntry');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecEntry.
+  static XdrSCSpecEntry fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecEntry'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCSpecEntry.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'function_v0': _functionV0!.toXdrJsonValue()};
+      case 1:
+        return <String, Object?>{
+          'udt_struct_v0': _udtStructV0!.toXdrJsonValue(),
+        };
+      case 2:
+        return <String, Object?>{'udt_union_v0': _udtUnionV0!.toXdrJsonValue()};
+      case 3:
+        return <String, Object?>{'udt_enum_v0': _udtEnumV0!.toXdrJsonValue()};
+      case 4:
+        return <String, Object?>{
+          'udt_error_enum_v0': _udtErrorEnumV0!.toXdrJsonValue(),
+        };
+      case 5:
+        return <String, Object?>{'event_v0': _eventV0!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrSCSpecEntry',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrSCSpecEntry from its SEP-0051 rendering.
+  static XdrSCSpecEntry fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrSCSpecEntry',
+    );
+    switch (arm.key) {
+      case 'function_v0':
+        final XdrSCSpecEntry arm0 = XdrSCSpecEntry(
+          XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0,
+        );
+        arm0.functionV0 = XdrSCSpecFunctionV0.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'udt_struct_v0':
+        final XdrSCSpecEntry arm1 = XdrSCSpecEntry(
+          XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0,
+        );
+        arm1.udtStructV0 = XdrSCSpecUDTStructV0.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'udt_union_v0':
+        final XdrSCSpecEntry arm2 = XdrSCSpecEntry(
+          XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0,
+        );
+        arm2.udtUnionV0 = XdrSCSpecUDTUnionV0.fromXdrJsonValue(arm.value);
+        return arm2;
+      case 'udt_enum_v0':
+        final XdrSCSpecEntry arm3 = XdrSCSpecEntry(
+          XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0,
+        );
+        arm3.udtEnumV0 = XdrSCSpecUDTEnumV0.fromXdrJsonValue(arm.value);
+        return arm3;
+      case 'udt_error_enum_v0':
+        final XdrSCSpecEntry arm4 = XdrSCSpecEntry(
+          XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0,
+        );
+        arm4.udtErrorEnumV0 = XdrSCSpecUDTErrorEnumV0.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm4;
+      case 'event_v0':
+        final XdrSCSpecEntry arm5 = XdrSCSpecEntry(
+          XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0,
+        );
+        arm5.eventV0 = XdrSCSpecEventV0.fromXdrJsonValue(arm.value);
+        return arm5;
+    }
+    XdrJsonHelper.fail(
+      'XdrSCSpecEntry',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

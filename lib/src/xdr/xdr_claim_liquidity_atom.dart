@@ -6,10 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../key_pair.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClaimLiquidityAtom {
   XdrHash _liquidityPoolID;
@@ -77,5 +79,80 @@ class XdrClaimLiquidityAtom {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimLiquidityAtom.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrClaimLiquidityAtom',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClaimLiquidityAtom.
+  static XdrClaimLiquidityAtom fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrClaimLiquidityAtom'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrClaimLiquidityAtom.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'liquidity_pool_id': StrKey.encodeLiquidityPoolId(_liquidityPoolID.hash),
+    'asset_sold': _assetSold.toXdrJsonValue(),
+    'amount_sold': _amountSold.toXdrJsonValue(),
+    'asset_bought': _assetBought.toXdrJsonValue(),
+    'amount_bought': _amountBought.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrClaimLiquidityAtom from its SEP-0051 rendering.
+  static XdrClaimLiquidityAtom fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrClaimLiquidityAtom',
+      allowedKeys: const <String>{
+        'liquidity_pool_id',
+        'asset_sold',
+        'amount_sold',
+        'asset_bought',
+        'amount_bought',
+      },
+    );
+    final Object? jsonLiquidityPoolID = XdrJsonHelper.readField(
+      object,
+      'liquidity_pool_id',
+      type: 'XdrClaimLiquidityAtom',
+    );
+    final Object? jsonAssetSold = XdrJsonHelper.readField(
+      object,
+      'asset_sold',
+      type: 'XdrClaimLiquidityAtom',
+    );
+    final Object? jsonAmountSold = XdrJsonHelper.readField(
+      object,
+      'amount_sold',
+      type: 'XdrClaimLiquidityAtom',
+    );
+    final Object? jsonAssetBought = XdrJsonHelper.readField(
+      object,
+      'asset_bought',
+      type: 'XdrClaimLiquidityAtom',
+    );
+    final Object? jsonAmountBought = XdrJsonHelper.readField(
+      object,
+      'amount_bought',
+      type: 'XdrClaimLiquidityAtom',
+    );
+    return XdrClaimLiquidityAtom(
+      XdrHash(
+        XdrJsonHelper.readStrKey(
+          jsonLiquidityPoolID,
+          type: 'XdrClaimLiquidityAtom',
+          key: 'liquidity_pool_id',
+          decode: StrKey.decodeLiquidityPoolId,
+          expectedLength: 32,
+        ),
+      ),
+      XdrAsset.fromXdrJsonValue(jsonAssetSold),
+      XdrInt64.fromXdrJsonValue(jsonAmountSold),
+      XdrAsset.fromXdrJsonValue(jsonAssetBought),
+      XdrInt64.fromXdrJsonValue(jsonAmountBought),
+    );
   }
 }

@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_invoke_host_function_result_code.dart';
+import 'xdr_json_helper.dart';
 
 class XdrInvokeHostFunctionResult {
   XdrInvokeHostFunctionResultCode _code;
@@ -69,5 +70,89 @@ class XdrInvokeHostFunctionResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInvokeHostFunctionResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrInvokeHostFunctionResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrInvokeHostFunctionResult.
+  static XdrInvokeHostFunctionResult fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrInvokeHostFunctionResult'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrInvokeHostFunctionResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'success': _success!.toXdrJsonValue()};
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'trapped';
+      case -3:
+        return 'resource_limit_exceeded';
+      case -4:
+        return 'entry_archived';
+      case -5:
+        return 'insufficient_refundable_fee';
+    }
+    XdrJsonHelper.fail(
+      'XdrInvokeHostFunctionResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrInvokeHostFunctionResult from its SEP-0051 rendering.
+  static XdrInvokeHostFunctionResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'malformed':
+          return XdrInvokeHostFunctionResult(
+            XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED,
+          );
+        case 'trapped':
+          return XdrInvokeHostFunctionResult(
+            XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED,
+          );
+        case 'resource_limit_exceeded':
+          return XdrInvokeHostFunctionResult(
+            XdrInvokeHostFunctionResultCode
+                .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED,
+          );
+        case 'entry_archived':
+          return XdrInvokeHostFunctionResult(
+            XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED,
+          );
+        case 'insufficient_refundable_fee':
+          return XdrInvokeHostFunctionResult(
+            XdrInvokeHostFunctionResultCode
+                .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrInvokeHostFunctionResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrInvokeHostFunctionResult',
+    );
+    switch (arm.key) {
+      case 'success':
+        final XdrInvokeHostFunctionResult arm0 = XdrInvokeHostFunctionResult(
+          XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS,
+        );
+        arm0.success = XdrHash.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrInvokeHostFunctionResult',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

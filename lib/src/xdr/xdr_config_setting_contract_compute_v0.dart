@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingContractComputeV0 {
@@ -83,5 +84,69 @@ class XdrConfigSettingContractComputeV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigSettingContractComputeV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrConfigSettingContractComputeV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrConfigSettingContractComputeV0.
+  static XdrConfigSettingContractComputeV0 fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrConfigSettingContractComputeV0',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrConfigSettingContractComputeV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ledger_max_instructions': _ledgerMaxInstructions.toXdrJsonValue(),
+    'tx_max_instructions': _txMaxInstructions.toXdrJsonValue(),
+    'fee_rate_per_instructions_increment': _feeRatePerInstructionsIncrement
+        .toXdrJsonValue(),
+    'tx_memory_limit': _txMemoryLimit.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrConfigSettingContractComputeV0 from its SEP-0051 rendering.
+  static XdrConfigSettingContractComputeV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrConfigSettingContractComputeV0',
+      allowedKeys: const <String>{
+        'ledger_max_instructions',
+        'tx_max_instructions',
+        'fee_rate_per_instructions_increment',
+        'tx_memory_limit',
+      },
+    );
+    final Object? jsonLedgerMaxInstructions = XdrJsonHelper.readField(
+      object,
+      'ledger_max_instructions',
+      type: 'XdrConfigSettingContractComputeV0',
+    );
+    final Object? jsonTxMaxInstructions = XdrJsonHelper.readField(
+      object,
+      'tx_max_instructions',
+      type: 'XdrConfigSettingContractComputeV0',
+    );
+    final Object? jsonFeeRatePerInstructionsIncrement = XdrJsonHelper.readField(
+      object,
+      'fee_rate_per_instructions_increment',
+      type: 'XdrConfigSettingContractComputeV0',
+    );
+    final Object? jsonTxMemoryLimit = XdrJsonHelper.readField(
+      object,
+      'tx_memory_limit',
+      type: 'XdrConfigSettingContractComputeV0',
+    );
+    return XdrConfigSettingContractComputeV0(
+      XdrInt64.fromXdrJsonValue(jsonLedgerMaxInstructions),
+      XdrInt64.fromXdrJsonValue(jsonTxMaxInstructions),
+      XdrInt64.fromXdrJsonValue(jsonFeeRatePerInstructionsIncrement),
+      XdrUint32.fromXdrJsonValue(jsonTxMemoryLimit),
+    );
   }
 }

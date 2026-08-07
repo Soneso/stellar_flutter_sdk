@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_entry_change.dart';
 
 class XdrLedgerEntryChanges {
@@ -54,4 +55,32 @@ class XdrLedgerEntryChanges {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntryChanges.decode(XdrDataInputStream(bytes));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerEntryChanges',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerEntryChanges.
+  static XdrLedgerEntryChanges fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerEntryChanges'),
+  );
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() => XdrJsonHelper.array<XdrLedgerEntryChange>(
+    _ledgerEntryChanges,
+    (XdrLedgerEntryChange v) => v.toXdrJsonValue(),
+    type: 'XdrLedgerEntryChanges',
+  );
+
+  /// Reads a XdrLedgerEntryChanges from the SEP-0051 rendering of its value.
+  static XdrLedgerEntryChanges fromXdrJsonValue(Object? value) =>
+      XdrLedgerEntryChanges(
+        XdrJsonHelper.readArray(value, type: 'XdrLedgerEntryChanges')
+            .map<XdrLedgerEntryChange>(
+              (Object? e) => XdrLedgerEntryChange.fromXdrJsonValue(e),
+            )
+            .toList(),
+      );
 }

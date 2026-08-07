@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_entry_changes.dart';
 import 'xdr_operation_meta.dart';
 import 'xdr_soroban_transaction_meta.dart';
@@ -109,5 +110,89 @@ class XdrTransactionMetaV3 {
   static XdrTransactionMetaV3 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionMetaV3.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionMetaV3',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionMetaV3.
+  static XdrTransactionMetaV3 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionMetaV3'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionMetaV3.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'tx_changes_before': _txChangesBefore.toXdrJsonValue(),
+    'operations': XdrJsonHelper.array<XdrOperationMeta>(
+      _operations,
+      (XdrOperationMeta v) => v.toXdrJsonValue(),
+      type: 'XdrTransactionMetaV3',
+      key: 'operations',
+    ),
+    'tx_changes_after': _txChangesAfter.toXdrJsonValue(),
+    'soroban_meta': _sorobanMeta == null
+        ? null
+        : _sorobanMeta!.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTransactionMetaV3 from its SEP-0051 rendering.
+  static XdrTransactionMetaV3 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTransactionMetaV3',
+      allowedKeys: const <String>{
+        'ext',
+        'tx_changes_before',
+        'operations',
+        'tx_changes_after',
+        'soroban_meta',
+      },
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrTransactionMetaV3',
+    );
+    final Object? jsonTxChangesBefore = XdrJsonHelper.readField(
+      object,
+      'tx_changes_before',
+      type: 'XdrTransactionMetaV3',
+    );
+    final Object? jsonOperations = XdrJsonHelper.readField(
+      object,
+      'operations',
+      type: 'XdrTransactionMetaV3',
+    );
+    final Object? jsonTxChangesAfter = XdrJsonHelper.readField(
+      object,
+      'tx_changes_after',
+      type: 'XdrTransactionMetaV3',
+    );
+    final Object? jsonSorobanMeta = XdrJsonHelper.readField(
+      object,
+      'soroban_meta',
+      type: 'XdrTransactionMetaV3',
+    );
+    return XdrTransactionMetaV3(
+      XdrExtensionPoint.fromXdrJsonValue(jsonExt),
+      XdrLedgerEntryChanges.fromXdrJsonValue(jsonTxChangesBefore),
+      XdrJsonHelper.readArray(
+            jsonOperations,
+            type: 'XdrTransactionMetaV3',
+            key: 'operations',
+          )
+          .map<XdrOperationMeta>(
+            (Object? e) => XdrOperationMeta.fromXdrJsonValue(e),
+          )
+          .toList(),
+      XdrLedgerEntryChanges.fromXdrJsonValue(jsonTxChangesAfter),
+      jsonSorobanMeta == null
+          ? null
+          : XdrSorobanTransactionMeta.fromXdrJsonValue(jsonSorobanMeta),
+    );
   }
 }

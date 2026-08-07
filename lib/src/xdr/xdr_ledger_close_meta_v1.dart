@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_generalized_transaction_set.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_close_meta_ext.dart';
 import 'xdr_ledger_entry.dart';
 import 'xdr_ledger_header_history_entry.dart';
@@ -178,5 +179,168 @@ class XdrLedgerCloseMetaV1 {
   static XdrLedgerCloseMetaV1 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerCloseMetaV1.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerCloseMetaV1',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerCloseMetaV1.
+  static XdrLedgerCloseMetaV1 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerCloseMetaV1'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerCloseMetaV1.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'ledger_header': _ledgerHeader.toXdrJsonValue(),
+    'tx_set': _txSet.toXdrJsonValue(),
+    'tx_processing': XdrJsonHelper.array<XdrTransactionResultMeta>(
+      _txProcessing,
+      (XdrTransactionResultMeta v) => v.toXdrJsonValue(),
+      type: 'XdrLedgerCloseMetaV1',
+      key: 'tx_processing',
+    ),
+    'upgrades_processing': XdrJsonHelper.array<XdrUpgradeEntryMeta>(
+      _upgradesProcessing,
+      (XdrUpgradeEntryMeta v) => v.toXdrJsonValue(),
+      type: 'XdrLedgerCloseMetaV1',
+      key: 'upgrades_processing',
+    ),
+    'scp_info': XdrJsonHelper.array<XdrSCPHistoryEntry>(
+      _scpInfo,
+      (XdrSCPHistoryEntry v) => v.toXdrJsonValue(),
+      type: 'XdrLedgerCloseMetaV1',
+      key: 'scp_info',
+    ),
+    'total_byte_size_of_live_soroban_state': _totalByteSizeOfLiveSorobanState
+        .toXdrJsonValue(),
+    'evicted_keys': XdrJsonHelper.array<XdrLedgerKey>(
+      _evictedKeys,
+      (XdrLedgerKey v) => v.toXdrJsonValue(),
+      type: 'XdrLedgerCloseMetaV1',
+      key: 'evicted_keys',
+    ),
+    'unused': XdrJsonHelper.array<XdrLedgerEntry>(
+      _unused,
+      (XdrLedgerEntry v) => v.toXdrJsonValue(),
+      type: 'XdrLedgerCloseMetaV1',
+      key: 'unused',
+    ),
+  };
+
+  /// Reads a XdrLedgerCloseMetaV1 from its SEP-0051 rendering.
+  static XdrLedgerCloseMetaV1 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerCloseMetaV1',
+      allowedKeys: const <String>{
+        'ext',
+        'ledger_header',
+        'tx_set',
+        'tx_processing',
+        'upgrades_processing',
+        'scp_info',
+        'total_byte_size_of_live_soroban_state',
+        'evicted_keys',
+        'unused',
+      },
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrLedgerCloseMetaV1',
+    );
+    final Object? jsonLedgerHeader = XdrJsonHelper.readField(
+      object,
+      'ledger_header',
+      type: 'XdrLedgerCloseMetaV1',
+    );
+    final Object? jsonTxSet = XdrJsonHelper.readField(
+      object,
+      'tx_set',
+      type: 'XdrLedgerCloseMetaV1',
+    );
+    final Object? jsonTxProcessing = XdrJsonHelper.readField(
+      object,
+      'tx_processing',
+      type: 'XdrLedgerCloseMetaV1',
+    );
+    final Object? jsonUpgradesProcessing = XdrJsonHelper.readField(
+      object,
+      'upgrades_processing',
+      type: 'XdrLedgerCloseMetaV1',
+    );
+    final Object? jsonScpInfo = XdrJsonHelper.readField(
+      object,
+      'scp_info',
+      type: 'XdrLedgerCloseMetaV1',
+    );
+    final Object? jsonTotalByteSizeOfLiveSorobanState = XdrJsonHelper.readField(
+      object,
+      'total_byte_size_of_live_soroban_state',
+      type: 'XdrLedgerCloseMetaV1',
+    );
+    final Object? jsonEvictedKeys = XdrJsonHelper.readField(
+      object,
+      'evicted_keys',
+      type: 'XdrLedgerCloseMetaV1',
+    );
+    final Object? jsonUnused = XdrJsonHelper.readField(
+      object,
+      'unused',
+      type: 'XdrLedgerCloseMetaV1',
+    );
+    return XdrLedgerCloseMetaV1(
+      XdrLedgerCloseMetaExt.fromXdrJsonValue(jsonExt),
+      XdrLedgerHeaderHistoryEntry.fromXdrJsonValue(jsonLedgerHeader),
+      XdrGeneralizedTransactionSet.fromXdrJsonValue(jsonTxSet),
+      XdrJsonHelper.readArray(
+            jsonTxProcessing,
+            type: 'XdrLedgerCloseMetaV1',
+            key: 'tx_processing',
+          )
+          .map<XdrTransactionResultMeta>(
+            (Object? e) => XdrTransactionResultMeta.fromXdrJsonValue(e),
+          )
+          .toList(),
+      XdrJsonHelper.readArray(
+            jsonUpgradesProcessing,
+            type: 'XdrLedgerCloseMetaV1',
+            key: 'upgrades_processing',
+          )
+          .map<XdrUpgradeEntryMeta>(
+            (Object? e) => XdrUpgradeEntryMeta.fromXdrJsonValue(e),
+          )
+          .toList(),
+      XdrJsonHelper.readArray(
+            jsonScpInfo,
+            type: 'XdrLedgerCloseMetaV1',
+            key: 'scp_info',
+          )
+          .map<XdrSCPHistoryEntry>(
+            (Object? e) => XdrSCPHistoryEntry.fromXdrJsonValue(e),
+          )
+          .toList(),
+      XdrUint64.fromXdrJsonValue(jsonTotalByteSizeOfLiveSorobanState),
+      XdrJsonHelper.readArray(
+            jsonEvictedKeys,
+            type: 'XdrLedgerCloseMetaV1',
+            key: 'evicted_keys',
+          )
+          .map<XdrLedgerKey>((Object? e) => XdrLedgerKey.fromXdrJsonValue(e))
+          .toList(),
+      XdrJsonHelper.readArray(
+            jsonUnused,
+            type: 'XdrLedgerCloseMetaV1',
+            key: 'unused',
+          )
+          .map<XdrLedgerEntry>(
+            (Object? e) => XdrLedgerEntry.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

@@ -8,6 +8,7 @@ import 'xdr_contract_executable_base.dart';
 import 'xdr_contract_executable_external_ref.dart';
 import 'xdr_contract_executable_type.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_hash.dart';
 import 'xdr_sc_address.dart';
 
@@ -60,4 +61,18 @@ class XdrContractExecutable extends XdrContractExecutableBase {
     result.externalRef = XdrContractExecutableExternalRef(executableOwner, tag);
     return result;
   }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractExecutable.
+  ///
+  /// Dart does not inherit statics, so this narrows the base class rendering to
+  /// this type rather than relying on the one the base declares.
+  static XdrContractExecutable fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractExecutable'),
+  );
+
+  static XdrContractExecutable fromXdrJsonValue(Object? value) =>
+      XdrContractExecutableBase.fromXdrJsonValueAs(
+        value,
+        XdrContractExecutable.new,
+      );
 }

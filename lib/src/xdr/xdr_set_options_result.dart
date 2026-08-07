@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_set_options_result_code.dart';
 
 class XdrSetOptionsResult {
@@ -57,5 +58,108 @@ class XdrSetOptionsResult {
   static XdrSetOptionsResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSetOptionsResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSetOptionsResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSetOptionsResult.
+  static XdrSetOptionsResult fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSetOptionsResult'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSetOptionsResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'low_reserve';
+      case -2:
+        return 'too_many_signers';
+      case -3:
+        return 'bad_flags';
+      case -4:
+        return 'invalid_inflation';
+      case -5:
+        return 'cant_change';
+      case -6:
+        return 'unknown_flag';
+      case -7:
+        return 'threshold_out_of_range';
+      case -8:
+        return 'bad_signer';
+      case -9:
+        return 'invalid_home_domain';
+      case -10:
+        return 'auth_revocable_required';
+    }
+    XdrJsonHelper.fail(
+      'XdrSetOptionsResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrSetOptionsResult from its SEP-0051 rendering.
+  static XdrSetOptionsResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrSetOptionsResult(
+            XdrSetOptionsResultCode.SET_OPTIONS_SUCCESS,
+          );
+        case 'low_reserve':
+          return XdrSetOptionsResult(
+            XdrSetOptionsResultCode.SET_OPTIONS_LOW_RESERVE,
+          );
+        case 'too_many_signers':
+          return XdrSetOptionsResult(
+            XdrSetOptionsResultCode.SET_OPTIONS_TOO_MANY_SIGNERS,
+          );
+        case 'bad_flags':
+          return XdrSetOptionsResult(
+            XdrSetOptionsResultCode.SET_OPTIONS_BAD_FLAGS,
+          );
+        case 'invalid_inflation':
+          return XdrSetOptionsResult(
+            XdrSetOptionsResultCode.SET_OPTIONS_INVALID_INFLATION,
+          );
+        case 'cant_change':
+          return XdrSetOptionsResult(
+            XdrSetOptionsResultCode.SET_OPTIONS_CANT_CHANGE,
+          );
+        case 'unknown_flag':
+          return XdrSetOptionsResult(
+            XdrSetOptionsResultCode.SET_OPTIONS_UNKNOWN_FLAG,
+          );
+        case 'threshold_out_of_range':
+          return XdrSetOptionsResult(
+            XdrSetOptionsResultCode.SET_OPTIONS_THRESHOLD_OUT_OF_RANGE,
+          );
+        case 'bad_signer':
+          return XdrSetOptionsResult(
+            XdrSetOptionsResultCode.SET_OPTIONS_BAD_SIGNER,
+          );
+        case 'invalid_home_domain':
+          return XdrSetOptionsResult(
+            XdrSetOptionsResultCode.SET_OPTIONS_INVALID_HOME_DOMAIN,
+          );
+        case 'auth_revocable_required':
+          return XdrSetOptionsResult(
+            XdrSetOptionsResultCode.SET_OPTIONS_AUTH_REVOCABLE_REQUIRED,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrSetOptionsResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrSetOptionsResult',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingSCPTiming {
@@ -100,5 +101,82 @@ class XdrConfigSettingSCPTiming {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigSettingSCPTiming.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrConfigSettingSCPTiming',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrConfigSettingSCPTiming.
+  static XdrConfigSettingSCPTiming fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrConfigSettingSCPTiming'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrConfigSettingSCPTiming.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ledger_target_close_time_milliseconds': _ledgerTargetCloseTimeMilliseconds
+        .toXdrJsonValue(),
+    'nomination_timeout_initial_milliseconds':
+        _nominationTimeoutInitialMilliseconds.toXdrJsonValue(),
+    'nomination_timeout_increment_milliseconds':
+        _nominationTimeoutIncrementMilliseconds.toXdrJsonValue(),
+    'ballot_timeout_initial_milliseconds': _ballotTimeoutInitialMilliseconds
+        .toXdrJsonValue(),
+    'ballot_timeout_increment_milliseconds': _ballotTimeoutIncrementMilliseconds
+        .toXdrJsonValue(),
+  };
+
+  /// Reads a XdrConfigSettingSCPTiming from its SEP-0051 rendering.
+  static XdrConfigSettingSCPTiming fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrConfigSettingSCPTiming',
+      allowedKeys: const <String>{
+        'ledger_target_close_time_milliseconds',
+        'nomination_timeout_initial_milliseconds',
+        'nomination_timeout_increment_milliseconds',
+        'ballot_timeout_initial_milliseconds',
+        'ballot_timeout_increment_milliseconds',
+      },
+    );
+    final Object? jsonLedgerTargetCloseTimeMilliseconds =
+        XdrJsonHelper.readField(
+          object,
+          'ledger_target_close_time_milliseconds',
+          type: 'XdrConfigSettingSCPTiming',
+        );
+    final Object? jsonNominationTimeoutInitialMilliseconds =
+        XdrJsonHelper.readField(
+          object,
+          'nomination_timeout_initial_milliseconds',
+          type: 'XdrConfigSettingSCPTiming',
+        );
+    final Object? jsonNominationTimeoutIncrementMilliseconds =
+        XdrJsonHelper.readField(
+          object,
+          'nomination_timeout_increment_milliseconds',
+          type: 'XdrConfigSettingSCPTiming',
+        );
+    final Object? jsonBallotTimeoutInitialMilliseconds =
+        XdrJsonHelper.readField(
+          object,
+          'ballot_timeout_initial_milliseconds',
+          type: 'XdrConfigSettingSCPTiming',
+        );
+    final Object? jsonBallotTimeoutIncrementMilliseconds =
+        XdrJsonHelper.readField(
+          object,
+          'ballot_timeout_increment_milliseconds',
+          type: 'XdrConfigSettingSCPTiming',
+        );
+    return XdrConfigSettingSCPTiming(
+      XdrUint32.fromXdrJsonValue(jsonLedgerTargetCloseTimeMilliseconds),
+      XdrUint32.fromXdrJsonValue(jsonNominationTimeoutInitialMilliseconds),
+      XdrUint32.fromXdrJsonValue(jsonNominationTimeoutIncrementMilliseconds),
+      XdrUint32.fromXdrJsonValue(jsonBallotTimeoutInitialMilliseconds),
+      XdrUint32.fromXdrJsonValue(jsonBallotTimeoutIncrementMilliseconds),
+    );
   }
 }

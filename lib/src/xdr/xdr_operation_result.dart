@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_operation_result_code.dart';
 import 'xdr_operation_result_tr.dart';
 
@@ -66,5 +67,86 @@ class XdrOperationResult {
   static XdrOperationResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrOperationResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrOperationResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrOperationResult.
+  static XdrOperationResult fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrOperationResult'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrOperationResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'op_inner': _tr!.toXdrJsonValue()};
+      case -1:
+        return 'op_bad_auth';
+      case -2:
+        return 'op_no_account';
+      case -3:
+        return 'op_not_supported';
+      case -4:
+        return 'op_too_many_subentries';
+      case -5:
+        return 'op_exceeded_work_limit';
+      case -6:
+        return 'op_too_many_sponsoring';
+    }
+    XdrJsonHelper.fail(
+      'XdrOperationResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrOperationResult from its SEP-0051 rendering.
+  static XdrOperationResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'op_bad_auth':
+          return XdrOperationResult(XdrOperationResultCode.opBAD_AUTH);
+        case 'op_no_account':
+          return XdrOperationResult(XdrOperationResultCode.opNO_ACCOUNT);
+        case 'op_not_supported':
+          return XdrOperationResult(XdrOperationResultCode.opNOT_SUPPORTED);
+        case 'op_too_many_subentries':
+          return XdrOperationResult(
+            XdrOperationResultCode.opTOO_MANY_SUBENTRIES,
+          );
+        case 'op_exceeded_work_limit':
+          return XdrOperationResult(
+            XdrOperationResultCode.opEXCEEDED_WORK_LIMIT,
+          );
+        case 'op_too_many_sponsoring':
+          return XdrOperationResult(
+            XdrOperationResultCode.opTOO_MANY_SPONSORING,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrOperationResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrOperationResult',
+    );
+    switch (arm.key) {
+      case 'op_inner':
+        final XdrOperationResult arm0 = XdrOperationResult(
+          XdrOperationResultCode.opINNER,
+        );
+        arm0.tr = XdrOperationResultTr.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrOperationResult',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

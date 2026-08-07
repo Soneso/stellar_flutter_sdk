@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_transaction_set_v1.dart';
 
 class XdrGeneralizedTransactionSet {
@@ -71,5 +72,52 @@ class XdrGeneralizedTransactionSet {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrGeneralizedTransactionSet.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrGeneralizedTransactionSet',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrGeneralizedTransactionSet.
+  static XdrGeneralizedTransactionSet fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrGeneralizedTransactionSet',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrGeneralizedTransactionSet.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 1:
+        return <String, Object?>{'v1': _v1TxSet!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrGeneralizedTransactionSet',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrGeneralizedTransactionSet from its SEP-0051 rendering.
+  static XdrGeneralizedTransactionSet fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrGeneralizedTransactionSet',
+    );
+    switch (arm.key) {
+      case 'v1':
+        final XdrGeneralizedTransactionSet arm0 = XdrGeneralizedTransactionSet(
+          1,
+        );
+        arm0.v1TxSet = XdrTransactionSetV1.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrGeneralizedTransactionSet',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

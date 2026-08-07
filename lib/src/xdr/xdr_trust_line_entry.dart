@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_trust_line_entry_ext.dart';
 import 'xdr_trustline_asset.dart';
 import 'xdr_uint32.dart';
@@ -78,5 +79,78 @@ class XdrTrustLineEntry {
   static XdrTrustLineEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTrustLineEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrTrustLineEntry');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTrustLineEntry.
+  static XdrTrustLineEntry fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTrustLineEntry'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTrustLineEntry.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'account_id': _accountID.toXdrJsonValue(),
+    'asset': _asset.toXdrJsonValue(),
+    'balance': _balance.toXdrJsonValue(),
+    'limit': _limit.toXdrJsonValue(),
+    'flags': _flags.toXdrJsonValue(),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTrustLineEntry from its SEP-0051 rendering.
+  static XdrTrustLineEntry fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTrustLineEntry',
+      allowedKeys: const <String>{
+        'account_id',
+        'asset',
+        'balance',
+        'limit',
+        'flags',
+        'ext',
+      },
+    );
+    final Object? jsonAccountID = XdrJsonHelper.readField(
+      object,
+      'account_id',
+      type: 'XdrTrustLineEntry',
+    );
+    final Object? jsonAsset = XdrJsonHelper.readField(
+      object,
+      'asset',
+      type: 'XdrTrustLineEntry',
+    );
+    final Object? jsonBalance = XdrJsonHelper.readField(
+      object,
+      'balance',
+      type: 'XdrTrustLineEntry',
+    );
+    final Object? jsonLimit = XdrJsonHelper.readField(
+      object,
+      'limit',
+      type: 'XdrTrustLineEntry',
+    );
+    final Object? jsonFlags = XdrJsonHelper.readField(
+      object,
+      'flags',
+      type: 'XdrTrustLineEntry',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrTrustLineEntry',
+    );
+    return XdrTrustLineEntry(
+      XdrAccountID.fromXdrJsonValue(jsonAccountID),
+      XdrTrustlineAsset.fromXdrJsonValue(jsonAsset),
+      XdrInt64.fromXdrJsonValue(jsonBalance),
+      XdrInt64.fromXdrJsonValue(jsonLimit),
+      XdrUint32.fromXdrJsonValue(jsonFlags),
+      XdrTrustLineEntryExt.fromXdrJsonValue(jsonExt),
+    );
   }
 }

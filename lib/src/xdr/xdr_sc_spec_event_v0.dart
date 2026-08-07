@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_spec_event_data_format.dart';
 import 'xdr_sc_spec_event_param_v0.dart';
 
@@ -95,5 +96,142 @@ class XdrSCSpecEventV0 {
   static XdrSCSpecEventV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecEventV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCSpecEventV0');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecEventV0.
+  static XdrSCSpecEventV0 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecEventV0'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCSpecEventV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'doc': XdrJsonHelper.escapedString(
+      _doc,
+      type: 'XdrSCSpecEventV0',
+      key: 'doc',
+      maxBytes: 1024,
+    ),
+    'lib': XdrJsonHelper.escapedString(
+      _lib,
+      type: 'XdrSCSpecEventV0',
+      key: 'lib',
+      maxBytes: 80,
+    ),
+    'name': XdrJsonHelper.escapedString(
+      _name,
+      type: 'XdrSCSpecEventV0',
+      key: 'name',
+    ),
+    'prefix_topics': XdrJsonHelper.array<String>(
+      _prefixTopics,
+      (String v) => XdrJsonHelper.escapedString(
+        v,
+        type: 'XdrSCSpecEventV0',
+        key: 'prefix_topics',
+      ),
+      type: 'XdrSCSpecEventV0',
+      key: 'prefix_topics',
+      maxLength: 2,
+    ),
+    'params': XdrJsonHelper.array<XdrSCSpecEventParamV0>(
+      _params,
+      (XdrSCSpecEventParamV0 v) => v.toXdrJsonValue(),
+      type: 'XdrSCSpecEventV0',
+      key: 'params',
+    ),
+    'data_format': _dataFormat.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSCSpecEventV0 from its SEP-0051 rendering.
+  static XdrSCSpecEventV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCSpecEventV0',
+      allowedKeys: const <String>{
+        'doc',
+        'lib',
+        'name',
+        'prefix_topics',
+        'params',
+        'data_format',
+      },
+    );
+    final Object? jsonDoc = XdrJsonHelper.readField(
+      object,
+      'doc',
+      type: 'XdrSCSpecEventV0',
+    );
+    final Object? jsonLib = XdrJsonHelper.readField(
+      object,
+      'lib',
+      type: 'XdrSCSpecEventV0',
+    );
+    final Object? jsonName = XdrJsonHelper.readField(
+      object,
+      'name',
+      type: 'XdrSCSpecEventV0',
+    );
+    final Object? jsonPrefixTopics = XdrJsonHelper.readField(
+      object,
+      'prefix_topics',
+      type: 'XdrSCSpecEventV0',
+    );
+    final Object? jsonParams = XdrJsonHelper.readField(
+      object,
+      'params',
+      type: 'XdrSCSpecEventV0',
+    );
+    final Object? jsonDataFormat = XdrJsonHelper.readField(
+      object,
+      'data_format',
+      type: 'XdrSCSpecEventV0',
+    );
+    return XdrSCSpecEventV0(
+      XdrJsonHelper.readEscapedString(
+        jsonDoc,
+        type: 'XdrSCSpecEventV0',
+        key: 'doc',
+        maxBytes: 1024,
+      ),
+      XdrJsonHelper.readEscapedString(
+        jsonLib,
+        type: 'XdrSCSpecEventV0',
+        key: 'lib',
+        maxBytes: 80,
+      ),
+      XdrJsonHelper.readEscapedString(
+        jsonName,
+        type: 'XdrSCSpecEventV0',
+        key: 'name',
+      ),
+      XdrJsonHelper.readArray(
+            jsonPrefixTopics,
+            type: 'XdrSCSpecEventV0',
+            key: 'prefix_topics',
+            maxLength: 2,
+          )
+          .map<String>(
+            (Object? e) => XdrJsonHelper.readEscapedString(
+              e,
+              type: 'XdrSCSpecEventV0',
+              key: 'prefix_topics',
+            ),
+          )
+          .toList(),
+      XdrJsonHelper.readArray(
+            jsonParams,
+            type: 'XdrSCSpecEventV0',
+            key: 'params',
+          )
+          .map<XdrSCSpecEventParamV0>(
+            (Object? e) => XdrSCSpecEventParamV0.fromXdrJsonValue(e),
+          )
+          .toList(),
+      XdrSCSpecEventDataFormat.fromXdrJsonValue(jsonDataFormat),
+    );
   }
 }

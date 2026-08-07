@@ -12,6 +12,8 @@ require_relative 'name_overrides'
 require_relative 'field_overrides'
 require_relative 'type_overrides'
 require_relative 'txrep_types'
+require_relative 'json_names'
+require_relative 'sep51_overrides'
 
 # Types that have compact TxRep representations handled by TxRepHelper.
 # When a field's resolved Dart type is listed here, TxRep emission calls the
@@ -42,7 +44,11 @@ class Generator < Xdrgen::Generators::Base
 
   def generate
     @generated_files = Set.new
+    @sep51_emitted = Set.new
+    @sep51_constants = sep51_collect_constants(@top)
+    verify_sep51_typedef_registry!(@top)
     render_definitions(@top)
+    verify_sep51_type_registry!(@sep51_emitted)
   end
 
   private
@@ -115,6 +121,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
     out.puts "import 'txrep_helper.dart';" if gen_txrep && needs_txrep_helper?(txrep_ctx)
     out.puts "import 'xdr_data_io.dart';"
+    out.puts "import '#{SEP51_HELPER_IMPORT}';"
     out.puts ""
     out.puts "class #{dart_name} {"
     out.puts "  final _value;"
@@ -160,6 +167,7 @@ class Generator < Xdrgen::Generators::Base
 
     render_base64_methods(out, dart_name)
     render_txrep_methods(out, dart_name, { kind: :enum, enum_defn: enum_defn }) if gen_txrep
+    render_enum_sep51_methods(out, dart_name, enum_defn)
 
     out.puts "}"
     out.close
@@ -255,6 +263,7 @@ class Generator < Xdrgen::Generators::Base
 
     render_base64_methods(out, class_name)
     render_txrep_methods(out, class_name, { kind: :struct, fields: fields }) if gen_txrep
+    render_struct_sep51_methods(out, class_name, fields)
 
     out.puts "}"
     out.close
@@ -408,6 +417,7 @@ class Generator < Xdrgen::Generators::Base
 
     render_base64_methods(out, actual_class_name)
     render_txrep_methods(out, actual_class_name, { kind: :union, disc_info: disc_info, arms: arms }) if gen_txrep
+    render_union_sep51_methods(out, actual_class_name, union, disc_info, arms)
 
     out.puts "}"
     out.close
@@ -606,6 +616,7 @@ class Generator < Xdrgen::Generators::Base
     gen_txrep = should_generate_txrep?(dart_name)
     txrep_ctx = { kind: :simple_typedef, dart_type: dart_type, field_name: field_name }
     base_imports = Set.new(import_lines) + ["dart:convert", "dart:typed_data"]
+    base_imports.add(SEP51_HELPER_IMPORT)
     base_imports.add("txrep_helper.dart") if gen_txrep && needs_txrep_helper?(txrep_ctx)
     out.puts COPYRIGHT_HEADER
     all_imports = sort_imports(base_imports)
@@ -631,6 +642,7 @@ class Generator < Xdrgen::Generators::Base
 
     render_base64_methods(out, class_name)
     render_txrep_methods(out, class_name, { kind: :simple_typedef, dart_type: dart_type, field_name: field_name }) if gen_txrep
+    render_typedef_sep51_methods(out, class_name, decl, field_name)
 
     out.puts "}"
     out.close
@@ -652,6 +664,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
     out.puts "import 'txrep_helper.dart';" if gen_txrep && needs_txrep_helper?(txrep_ctx)
     out.puts "import 'xdr_data_io.dart';"
+    out.puts "import '#{SEP51_HELPER_IMPORT}';"
     out.puts ""
     out.puts "class #{dart_name} {"
     out.puts "  #{dart_name}(this._#{field_name});"
@@ -671,6 +684,7 @@ class Generator < Xdrgen::Generators::Base
 
     render_base64_methods(out, dart_name)
     render_txrep_methods(out, dart_name, { kind: :fixed_opaque_typedef }) if gen_txrep
+    render_typedef_sep51_methods(out, dart_name, decl, field_name)
 
     out.puts "}"
     out.close
@@ -691,6 +705,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
     out.puts "import 'txrep_helper.dart';" if gen_txrep && needs_txrep_helper?(txrep_ctx)
     out.puts "import 'xdr_data_io.dart';"
+    out.puts "import '#{SEP51_HELPER_IMPORT}';"
     out.puts ""
     out.puts "class #{dart_name} {"
     out.puts "  #{dart_name}(this._#{field_name});"
@@ -712,6 +727,7 @@ class Generator < Xdrgen::Generators::Base
 
     render_base64_methods(out, dart_name)
     render_txrep_methods(out, dart_name, { kind: :variable_opaque_typedef }) if gen_txrep
+    render_typedef_sep51_methods(out, dart_name, decl, field_name)
 
     out.puts "}"
     out.close
@@ -732,6 +748,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts ""
     out.puts "import 'txrep_helper.dart';" if gen_txrep && needs_txrep_helper?(txrep_ctx)
     out.puts "import 'xdr_data_io.dart';"
+    out.puts "import '#{SEP51_HELPER_IMPORT}';"
     out.puts ""
     out.puts "class #{dart_name} {"
     out.puts "  #{dart_name}(this._#{field_name});"
@@ -750,6 +767,7 @@ class Generator < Xdrgen::Generators::Base
 
     render_base64_methods(out, dart_name)
     render_txrep_methods(out, dart_name, { kind: :string_typedef }) if gen_txrep
+    render_typedef_sep51_methods(out, dart_name, decl, field_name)
 
     out.puts "}"
     out.close
@@ -775,6 +793,7 @@ class Generator < Xdrgen::Generators::Base
     imports = Set.new(collect_type_imports(element_type))
     imports.add("dart:convert")
     imports.add("dart:typed_data")
+    imports.add(SEP51_HELPER_IMPORT)
     imports.add("txrep_helper.dart") if gen_txrep && needs_txrep_helper?(txrep_ctx)
     imports.add("xdr_data_io.dart")
     imports = sort_imports(imports)
@@ -821,6 +840,7 @@ class Generator < Xdrgen::Generators::Base
 
     render_base64_methods(out, class_name)
     render_txrep_methods(out, class_name, txrep_ctx) if gen_txrep
+    render_typedef_sep51_methods(out, class_name, decl, field_name)
 
     out.puts "}"
     out.close
@@ -855,21 +875,21 @@ class Generator < Xdrgen::Generators::Base
 
     case decl
     when AST::Declarations::Array
-      if decl.fixed?
-        size = resolve_size(decl)
-        element_type = dart_type_for_typespec(decl.type)
-        out.puts "    int #{field_info[:name]}size = #{accessor}.length;"
-        out.puts "    for (int i = 0; i < #{field_info[:name]}size; i++) {"
-        out.puts "      #{encode_type_call(element_type, "#{accessor}[i]")};"
-        out.puts "    }"
+      element_type = dart_type_for_typespec(decl.type)
+      out.puts "    int #{field_info[:name]}size = #{accessor}.length;"
+      out.puts "    stream.writeInt(#{field_info[:name]}size);" unless decl.fixed?
+      out.puts "    for (int i = 0; i < #{field_info[:name]}size; i++) {"
+      if array_element_optional?(decl)
+        out.puts "      if (#{accessor}[i] != null) {"
+        out.puts "        stream.writeInt(1);"
+        out.puts "        #{encode_type_call(element_type, "#{accessor}[i]!")};"
+        out.puts "      } else {"
+        out.puts "        stream.writeInt(0);"
+        out.puts "      }"
       else
-        element_type = dart_type_for_typespec(decl.type)
-        out.puts "    int #{field_info[:name]}size = #{accessor}.length;"
-        out.puts "    stream.writeInt(#{field_info[:name]}size);"
-        out.puts "    for (int i = 0; i < #{field_info[:name]}size; i++) {"
         out.puts "      #{encode_type_call(element_type, "#{accessor}[i]")};"
-        out.puts "    }"
       end
+      out.puts "    }"
     when AST::Declarations::Opaque
       if decl.fixed?
         out.puts "    stream.write(#{accessor});"
@@ -927,19 +947,27 @@ class Generator < Xdrgen::Generators::Base
     case decl
     when AST::Declarations::Array
       element_type = dart_type_for_typespec(decl.type)
+      element_optional = array_element_optional?(decl)
+      declared_type = element_optional ? "#{element_type}?" : element_type
       if decl.fixed?
-        size = resolve_size(decl)
-        out.puts "    List<#{element_type}> #{local_name} = List<#{element_type}>.empty(growable: true);"
-        out.puts "    for (int i = 0; i < #{size}; i++) {"
-        out.puts "      #{local_name}.add(#{decode_type_call(element_type)});"
-        out.puts "    }"
+        count = resolve_size(decl).to_s
       else
         out.puts "    int #{local_name}size = stream.readInt();"
-        out.puts "    List<#{element_type}> #{local_name} = List<#{element_type}>.empty(growable: true);"
-        out.puts "    for (int i = 0; i < #{local_name}size; i++) {"
-        out.puts "      #{local_name}.add(#{decode_type_call(element_type)});"
-        out.puts "    }"
+        count = "#{local_name}size"
       end
+      out.puts "    List<#{declared_type}> #{local_name} = List<#{declared_type}>.empty(growable: true);"
+      out.puts "    for (int i = 0; i < #{count}; i++) {"
+      if element_optional
+        out.puts "      int #{local_name}Present = stream.readInt();"
+        out.puts "      if (#{local_name}Present != 0) {"
+        out.puts "        #{local_name}.add(#{decode_type_call(element_type)});"
+        out.puts "      } else {"
+        out.puts "        #{local_name}.add(null);"
+        out.puts "      }"
+      else
+        out.puts "      #{local_name}.add(#{decode_type_call(element_type)});"
+      end
+      out.puts "    }"
     when AST::Declarations::Opaque
       if decl.fixed?
         size = resolve_size(decl)
@@ -1090,6 +1118,7 @@ class Generator < Xdrgen::Generators::Base
         labels = arm.cases.map { |c| format_case_label(c.value, disc_info) }
         arms << {
           case_labels: labels,
+          cases: arm.cases,
           void: true,
           is_default: false,
         }
@@ -1104,6 +1133,8 @@ class Generator < Xdrgen::Generators::Base
 
         arms << {
           case_labels: labels,
+          cases: arm.cases,
+          decl: arm.declaration,
           void: false,
           field_name: field_name,
           xdr_field_name: xdr_arm_field_name,
@@ -1167,6 +1198,12 @@ class Generator < Xdrgen::Generators::Base
 
     case decl
     when AST::Declarations::Array
+      # The arm encoders write one value per element and no presence flag, so an
+      # optional element would be written without the flag the wire requires.
+      if array_element_optional?(decl)
+        raise "#{union_name}: an arm declaring an array of an optional type has no " \
+              "emitted form; each element needs a presence flag the arm encoders do not write"
+      end
       element_type = dart_type_for_typespec(decl.type)
       {
         dart_type: "List<#{element_type}>",
@@ -1304,6 +1341,7 @@ class Generator < Xdrgen::Generators::Base
     case decl
     when AST::Declarations::Array
       element_type = dart_type_for_typespec(decl.type)
+      element_type = "#{element_type}?" if array_element_optional?(decl)
       "List<#{element_type}>"
     when AST::Declarations::Opaque
       "Uint8List"
@@ -1456,6 +1494,9 @@ class Generator < Xdrgen::Generators::Base
     imports.add("dart:convert")
     imports.add("dart:typed_data")
     imports.add("xdr_data_io.dart")
+    imports.add(SEP51_HELPER_IMPORT)
+    sep51_registry_imports(fields.map { |f| f[:decl] }).each { |imp| imports.add(imp) }
+    sep51_type_renderer_imports(struct_name).each { |imp| imports.add(imp) }
     imports.add("txrep_helper.dart") if needs_txrep
 
     fields.each do |f|
@@ -1479,6 +1520,9 @@ class Generator < Xdrgen::Generators::Base
     imports.add("dart:convert")
     imports.add("dart:typed_data")
     imports.add("xdr_data_io.dart")
+    imports.add(SEP51_HELPER_IMPORT)
+    sep51_registry_imports(arms.map { |a| a[:decl] }).each { |imp| imports.add(imp) }
+    sep51_type_renderer_imports(class_name).each { |imp| imports.add(imp) }
     imports.add("txrep_helper.dart") if needs_txrep
 
     if disc_info[:kind] == :enum
@@ -1525,6 +1569,727 @@ class Generator < Xdrgen::Generators::Base
     dart_imports = imports.select { |i| i.start_with?("dart:") }.sort
     pkg_imports = imports.reject { |i| i.start_with?("dart:") }.sort
     dart_imports + (dart_imports.empty? || pkg_imports.empty? ? [] : [""]) + pkg_imports
+  end
+
+  # ---------------------------------------------------------------------------
+  # SEP-0051 (XDR-JSON) emission
+  #
+  # Emitted for every type, beside the TxRep methods and at the same seam. Every
+  # rule lives in XdrJsonHelper; what is emitted here is one expression per field
+  # naming the rule that applies to it.
+  #
+  # JSON names are derived from the .x identifiers through Sep51JsonNames, never
+  # from the generated Dart names: NAME_OVERRIDES renames 24 types and
+  # FIELD_OVERRIDES renames individual members, so a name taken from the Dart
+  # side would carry those renames onto the wire.
+  # ---------------------------------------------------------------------------
+
+  SEP51_HELPER_IMPORT = "xdr_json_helper.dart".freeze
+
+  # The pre-override generated name of the typedef a declaration resolves to, or
+  # nil when the declaration is not a typedef. This is the key SEP51_TYPEDEF_RENDERERS
+  # is looked up by, and it is read from the AST so that it survives both
+  # TYPE_OVERRIDES (which rewrites the emitted type string) and FIELD_OVERRIDES
+  # (which renames the Dart member).
+  def sep51_typedef_identity(typespec)
+    return nil unless typespec.is_a?(AST::Typespecs::Simple)
+    return nil unless typespec.respond_to?(:resolved_type)
+
+    resolved = typespec.resolved_type
+    return nil unless resolved.is_a?(AST::Definitions::Typedef)
+
+    name(resolved)
+  end
+
+  # Looks the registry up for a declaration, or nil.
+  def sep51_typedef_renderer(decl)
+    return nil unless decl.respond_to?(:type)
+
+    identity = sep51_typedef_identity(decl.type)
+    identity && SEP51_TYPEDEF_RENDERERS[identity]
+  end
+
+  # Every registered key must name a typedef the .x actually declares, so a
+  # rename upstream fails the run rather than silently dropping a rendering.
+  def verify_sep51_typedef_registry!(top)
+    declared = Set.new
+    collect = lambda do |node|
+      node.definitions.each do |defn|
+        declared.add(name(defn)) if defn.is_a?(AST::Definitions::Typedef)
+      end
+      node.namespaces.each { |ns| collect.call(ns) }
+    end
+    collect.call(top)
+
+    missing = SEP51_TYPEDEF_RENDERERS.keys.reject { |key| declared.include?(key) }
+    return if missing.empty?
+
+    raise "SEP51_TYPEDEF_RENDERERS names #{missing.join(', ')}, which the .x sources " \
+          "no longer declare as typedefs; update the registry"
+  end
+
+  # Named .x constants, so a declared bound written as a constant becomes a
+  # literal in the emitted Dart rather than an identifier Dart cannot resolve.
+  def sep51_collect_constants(node, table = {})
+    node.definitions.each do |defn|
+      table[defn.name.to_s] = defn.value if defn.is_a?(AST::Definitions::Const)
+    end
+    node.namespaces.each { |ns| sep51_collect_constants(ns, table) }
+    table
+  end
+
+  # A declared bound as a Dart integer literal, or nil where the .x leaves the
+  # length unbounded.
+  def sep51_bound(size)
+    return nil if size.nil?
+
+    text = size.to_s
+    return text if text.match?(/\A\d+\z/)
+
+    value = @sep51_constants[text]
+    raise "SEP-0051 bound #{text.inspect} names no constant in the .x sources" if value.nil?
+
+    value.to_s
+  end
+
+  def sep51_args(type_q, key_q)
+    key_q == 'null' ? "type: #{type_q}" : "type: #{type_q}, key: #{key_q}"
+  end
+
+  # The rendering of one value, dispatched on its XDR declaration. The registry
+  # is consulted first, so a collapsed typedef keeps the rendering its identity
+  # calls for rather than the one its collapsed Dart type would imply.
+  def sep51_decl_to(decl, accessor, type_q, key_q, override_type = nil)
+    renderer = sep51_typedef_renderer(decl)
+    return renderer[:to].call(accessor, type_q, key_q) if renderer
+
+    # FIELD_TYPE_OVERRIDES substitutes the emitted Dart type without rewriting
+    # the AST. Where the substitute is a generated class it carries its own
+    # rendering, and the declaration's shape no longer describes the field.
+    if override_type
+      return "#{accessor}.toXdrJsonValue()" if override_type.start_with?('Xdr')
+
+      return sep51_typespec_to(sep51_resolve_typedef_chain(decl.type), accessor, type_q, key_q)
+    end
+
+    args = sep51_args(type_q, key_q)
+
+    case decl
+    when AST::Declarations::Opaque
+      bound = decl.fixed? ? nil : sep51_bound(decl.size)
+      "XdrJsonHelper.hex(#{accessor}, #{args}#{bound ? ", maxLength: #{bound}" : ''})"
+    when AST::Declarations::String
+      bound = sep51_bound(decl.size)
+      "XdrJsonHelper.escapedString(#{accessor}, #{args}#{bound ? ", maxBytes: #{bound}" : ''})"
+    when AST::Declarations::Array
+      element = dart_type_for_typespec(decl.type)
+      bound = decl.fixed? ? nil : sep51_bound(resolve_size(decl))
+      if array_element_optional?(decl)
+        # The null test promotes v, so the rendering names it without an assertion.
+        inner = sep51_typespec_to(decl.type, 'v', type_q, key_q)
+        "XdrJsonHelper.array<#{element}?>(#{accessor}, " \
+          "(#{element}? v) => v == null ? null : #{inner}, " \
+          "#{args}#{bound ? ", maxLength: #{bound}" : ''})"
+      else
+        inner = sep51_typespec_to(decl.type, 'v', type_q, key_q)
+        "XdrJsonHelper.array<#{element}>(#{accessor}, (#{element} v) => #{inner}, " \
+          "#{args}#{bound ? ", maxLength: #{bound}" : ''})"
+      end
+    else
+      sep51_typespec_to(decl.type, accessor, type_q, key_q)
+    end
+  end
+
+  def sep51_decl_from(decl, value, type_q, key_q, override_type = nil)
+    renderer = sep51_typedef_renderer(decl)
+    return renderer[:from].call(value, type_q, key_q) if renderer
+
+    if override_type
+      return "#{override_type}.fromXdrJsonValue(#{value})" if override_type.start_with?('Xdr')
+
+      return sep51_typespec_from(sep51_resolve_typedef_chain(decl.type), value, type_q, key_q)
+    end
+
+    args = sep51_args(type_q, key_q)
+
+    case decl
+    when AST::Declarations::Opaque
+      if decl.fixed?
+        "XdrJsonHelper.readHex(#{value}, #{args}, expectedLength: #{resolve_size(decl)})"
+      else
+        bound = sep51_bound(decl.size)
+        "XdrJsonHelper.readHex(#{value}, #{args}#{bound ? ", maxLength: #{bound}" : ''})"
+      end
+    when AST::Declarations::String
+      bound = sep51_bound(decl.size)
+      "XdrJsonHelper.readEscapedString(#{value}, #{args}#{bound ? ", maxBytes: #{bound}" : ''})"
+    when AST::Declarations::Array
+      element = dart_type_for_typespec(decl.type)
+      length =
+        if decl.fixed?
+          ", fixedLength: #{resolve_size(decl)}"
+        else
+          bound = sep51_bound(resolve_size(decl))
+          bound ? ", maxLength: #{bound}" : ''
+        end
+      inner = sep51_typespec_from(decl.type, 'e', type_q, key_q)
+      if array_element_optional?(decl)
+        "XdrJsonHelper.readArray(#{value}, #{args}#{length})" \
+          ".map<#{element}?>((Object? e) => e == null ? null : #{inner}).toList()"
+      else
+        "XdrJsonHelper.readArray(#{value}, #{args}#{length})" \
+          ".map<#{element}>((Object? e) => #{inner}).toList()"
+      end
+    else
+      sep51_typespec_from(decl.type, value, type_q, key_q)
+    end
+  end
+
+  # The rendering of a value whose shape comes from a typespec rather than a
+  # declaration. A named type renders itself; everything else names the rule in
+  # the helper that applies to its width.
+  def sep51_typespec_to(typespec, accessor, type_q, key_q)
+    args = sep51_args(type_q, key_q)
+
+    case typespec
+    when AST::Typespecs::Bool then "XdrJsonHelper.boolean(#{accessor})"
+    when AST::Typespecs::Int then "XdrJsonHelper.int32(#{accessor}, #{args})"
+    when AST::Typespecs::UnsignedInt then "XdrJsonHelper.uint32(#{accessor}, #{args})"
+    when AST::Typespecs::Hyper then "XdrJsonHelper.int64(#{accessor}, #{args})"
+    when AST::Typespecs::UnsignedHyper then "XdrJsonHelper.uint64(#{accessor}, #{args})"
+    when AST::Typespecs::String then "XdrJsonHelper.escapedString(#{accessor}, #{args})"
+    when AST::Typespecs::Opaque then "XdrJsonHelper.hex(#{accessor}, #{args})"
+    when AST::Typespecs::Float, AST::Typespecs::Double, AST::Typespecs::Quadruple
+      raise "SEP-0051 defines no rendering for #{typespec.class.name.split('::').last}"
+    else
+      sep51_named_to(typespec, accessor, type_q, key_q)
+    end
+  end
+
+  def sep51_typespec_from(typespec, value, type_q, key_q)
+    args = sep51_args(type_q, key_q)
+
+    case typespec
+    when AST::Typespecs::Bool then "XdrJsonHelper.readBoolean(#{value}, #{args})"
+    when AST::Typespecs::Int then "XdrJsonHelper.readInt32(#{value}, #{args})"
+    when AST::Typespecs::UnsignedInt then "XdrJsonHelper.readUint32(#{value}, #{args})"
+    when AST::Typespecs::Hyper then "XdrJsonHelper.readInt64(#{value}, #{args})"
+    when AST::Typespecs::UnsignedHyper then "XdrJsonHelper.readUint64(#{value}, #{args})"
+    when AST::Typespecs::String then "XdrJsonHelper.readEscapedString(#{value}, #{args})"
+    when AST::Typespecs::Opaque then "XdrJsonHelper.readHex(#{value}, #{args})"
+    when AST::Typespecs::Float, AST::Typespecs::Double, AST::Typespecs::Quadruple
+      raise "SEP-0051 defines no rendering for #{typespec.class.name.split('::').last}"
+    else
+      sep51_named_from(typespec, value, type_q, key_q)
+    end
+  end
+
+  # The registry entry for a typespec naming a registered typedef, or nil.
+  # Consulted before any chain resolution, because resolving through a typedef
+  # is exactly what loses the identity the registry keys on.
+  def sep51_registered_renderer(typespec)
+    return nil unless typespec.is_a?(AST::Typespecs::Simple)
+    return nil unless typespec.respond_to?(:resolved_type)
+
+    resolved = typespec.resolved_type
+    return nil unless resolved.is_a?(AST::Definitions::Typedef)
+
+    SEP51_TYPEDEF_RENDERERS[name(resolved)]
+  end
+
+  # Follows a chain of typedefs to the type it ultimately names, mirroring
+  # resolve_typedef_type so the rule chosen here matches the Dart the generator
+  # emits: SequenceNumber resolves through Int64 to hyper, whose field is a
+  # BigInt, not an XdrInt64. A leaf typedef -- opaque, string or array -- keeps
+  # its own class and is not followed. Nor is a registered one, whose identity
+  # is the whole point of the registry.
+  def sep51_resolve_typedef_chain(typespec)
+    return typespec unless typespec.is_a?(AST::Typespecs::Simple)
+    return typespec unless typespec.respond_to?(:resolved_type)
+
+    resolved = typespec.resolved_type
+    return typespec unless resolved.is_a?(AST::Definitions::Typedef)
+    return typespec if SEP51_TYPEDEF_RENDERERS.key?(name(resolved))
+
+    inner = resolved.declaration
+    return typespec unless inner.respond_to?(:type)
+    return typespec if inner.is_a?(AST::Declarations::Opaque) ||
+                       inner.is_a?(AST::Declarations::String) ||
+                       inner.is_a?(AST::Declarations::Array)
+
+    sep51_resolve_typedef_chain(inner.type)
+  end
+
+  # A named type usually renders itself. Where TYPE_OVERRIDES has collapsed it
+  # onto a bare Dart type there is no such member, so the rule its collapsed
+  # representation calls for is named instead.
+  def sep51_named_to(typespec, accessor, type_q, key_q)
+    renderer = sep51_registered_renderer(typespec)
+    return renderer[:to].call(accessor, type_q, key_q) if renderer
+
+    args = sep51_args(type_q, key_q)
+
+    case dart_type_for_typespec(typespec)
+    when 'String' then "XdrJsonHelper.escapedString(#{accessor}, #{args})"
+    when 'Uint8List' then "XdrJsonHelper.hex(#{accessor}, #{args})"
+    when /\AList<(.+)>\z/
+      element = Regexp.last_match(1)
+      "XdrJsonHelper.array<#{element}>(#{accessor}, " \
+        "(#{element} v) => v.toXdrJsonValue(), #{args})"
+    else "#{accessor}.toXdrJsonValue()"
+    end
+  end
+
+  def sep51_named_from(typespec, value, type_q, key_q)
+    renderer = sep51_registered_renderer(typespec)
+    return renderer[:from].call(value, type_q, key_q) if renderer
+
+    args = sep51_args(type_q, key_q)
+    dart = dart_type_for_typespec(typespec)
+
+    case dart
+    when 'String' then "XdrJsonHelper.readEscapedString(#{value}, #{args})"
+    when 'Uint8List' then "XdrJsonHelper.readHex(#{value}, #{args})"
+    when /\AList<(.+)>\z/
+      element = Regexp.last_match(1)
+      "XdrJsonHelper.readArray(#{value}, #{args})" \
+        ".map<#{element}>((Object? e) => #{element}.fromXdrJsonValue(e)).toList()"
+    else "#{dart}.fromXdrJsonValue(#{value})"
+    end
+  end
+
+  # True when a field may be absent, in which case its JSON value is null and
+  # its key is still present.
+  def sep51_optional?(field)
+    member = field[:member]
+    decl = field[:decl]
+    return false if decl.is_a?(AST::Declarations::Array) || decl.is_a?(AST::Declarations::Opaque)
+
+    !!(member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type)))
+  end
+
+  # True for an arm whose body the .x declares optional, which is a distinct
+  # shape from a void arm: the arm is present and names its key, and the body
+  # behind that key is the value or null. The recursive types are declared this
+  # way, so `{"vec":null}` is a value the binary codec round-trips and the
+  # rendering has to carry.
+  def sep51_optional_arm?(arm)
+    !arm[:void] && arm[:decl].is_a?(AST::Declarations::Optional)
+  end
+
+  # A struct renders as an object keyed by its field names in declaration order.
+  #
+  # The declared-key set and the field reads come from one walk of the same
+  # field list, so the set cannot name a key the reads do not consume, nor miss
+  # one they do.
+  def render_struct_sep51_methods(out, class_name, fields)
+    return if render_sep51_type_override(out, class_name)
+
+    quoted = "'#{sep51_public_name(class_name)}'"
+
+    keys = []
+    entries = []
+    reads = []
+
+    fields.each do |field|
+      xdr_name = field[:member].name.to_s
+      json = Sep51JsonNames.struct_field_json_name(xdr_name)
+      key_q = "'#{json}'"
+      accessor = "_#{field[:name]}"
+      optional = sep51_optional?(field)
+
+      keys << json
+      # A field named `type` is spelled `type_` by implementations that escape
+      # the keyword. SEP-0051 requires `type`, so that is what is emitted, and
+      # the other spelling is accepted on input only.
+      alias_key = json == 'type' ? 'type_' : nil
+      keys << alias_key if alias_key
+
+      override = field[:type_overridden] ? field[:type].sub(/\?\z/, '') : nil
+      value = sep51_decl_to(field[:decl], optional ? "#{accessor}!" : accessor, quoted, key_q, override)
+      entries << [key_q, optional ? "#{accessor} == null ? null : #{value}" : value]
+
+      local = "json#{field[:name][0].upcase}#{field[:name][1..]}"
+      read = "XdrJsonHelper.readField(object, #{key_q}, type: #{quoted}" \
+             "#{alias_key ? ", alias: '#{alias_key}'" : ''})"
+      parsed = sep51_decl_from(field[:decl], local, quoted, key_q, override)
+      reads << { local: local, read: read, parsed: parsed, optional: optional }
+    end
+
+    render_sep51_document_methods(out, class_name)
+
+    out.puts ""
+    out.puts "  /// Returns the SEP-0051 rendering of this #{class_name}."
+    out.puts "  Object? toXdrJsonValue() => <String, Object?>{"
+    entries.each { |key, value| out.puts "        #{key}: #{value}," }
+    out.puts "      };"
+
+    out.puts ""
+    out.puts "  /// Reads a #{class_name} from its SEP-0051 rendering."
+    out.puts "  static #{class_name} fromXdrJsonValue(Object? value) {"
+    out.puts "    final Map<String, dynamic> object = XdrJsonHelper.readObject("
+    out.puts "        value, type: #{quoted}, allowedKeys: #{sep51_key_set(keys)});"
+    reads.each do |read|
+      out.puts "    final Object? #{read[:local]} = #{read[:read]};"
+    end
+    out.puts "    return #{class_name}("
+    reads.each do |read|
+      value = read[:optional] ? "#{read[:local]} == null ? null : #{read[:parsed]}" : read[:parsed]
+      out.puts "        #{value},"
+    end
+    out.puts "    );"
+    out.puts "  }"
+  end
+
+  # The numeric discriminant a case carries, which is what the emitted switch
+  # keys on. An enum member is matched by identifier so the value comes from the
+  # .x rather than from the order the arms happen to be declared in.
+  def sep51_case_number(kase, disc_info)
+    value = kase.value
+
+    if disc_info[:kind] == :enum
+      identifier = value.is_a?(AST::Identifier) ? value.name.to_s : value.to_s
+      member = disc_info[:enum_defn].members.find { |m| m.name.to_s == identifier }
+      raise "union case #{identifier} names no member of its discriminant enum" if member.nil?
+
+      return member.value
+    end
+
+    value.is_a?(AST::Identifier) ? value.name.to_s : value.value
+  end
+
+  # A union renders as the bare key of its arm when that arm carries nothing,
+  # and as a single-key object when it does. The key is the discriminant
+  # member's own JSON name, so an arm can never disagree with the enum's
+  # rendering of the same member.
+  def render_union_sep51_methods(out, class_name, union, disc_info, arms)
+    is_base = class_name.end_with?('Base')
+    disc_param = disc_info[:kind] == :int ? 'int' : disc_info[:dart_name]
+    return if render_sep51_type_override(
+      out, class_name, base_discriminant: is_base ? disc_param : nil
+    )
+
+    quoted = "'#{sep51_public_name(class_name)}'"
+    discriminant = disc_info[:kind] == :enum ? 'discriminant.value' : 'discriminant'
+
+    if arms.any? { |arm| arm[:is_default] }
+      raise "#{class_name} has a default arm, whose SEP-0051 key cannot be derived from a " \
+            'declared case; no union in the current .x has one'
+    end
+
+    branches = arms.flat_map do |arm|
+      arm[:cases].each_with_index.map do |kase, index|
+        {
+          number: sep51_case_number(kase, disc_info),
+          key: Sep51JsonNames.union_arm_json_key(kase, union),
+          arm: arm,
+          label: arm[:case_labels][index],
+        }
+      end
+    end
+
+    render_sep51_document_methods(out, class_name)
+
+    out.puts ""
+    out.puts "  /// Returns the SEP-0051 rendering of this #{class_name}."
+    out.puts "  Object? toXdrJsonValue() {"
+    out.puts "    switch (#{discriminant}) {"
+    branches.each do |branch|
+      arm = branch[:arm]
+      out.puts "      case #{branch[:number]}:"
+      if arm[:void]
+        out.puts "        return '#{branch[:key]}';"
+      else
+        accessor = "_#{arm[:field_name]}!#{sep51_arm_unwrap(arm)}"
+        value = sep51_decl_to(arm[:decl], accessor, quoted, "'#{branch[:key]}'")
+        value = "_#{arm[:field_name]} == null ? null : #{value}" if sep51_optional_arm?(arm)
+        out.puts "        return <String, Object?>{'#{branch[:key]}': #{value}};"
+      end
+    end
+    out.puts "    }"
+    out.puts "    XdrJsonHelper.fail("
+    out.puts "        #{quoted}, 'holds the unknown discriminant ${#{discriminant}}');"
+    out.puts "  }"
+
+    out.puts ""
+    if is_base
+      out.puts "  /// Reads a #{class_name} from its SEP-0051 rendering."
+      out.puts "  static #{class_name} fromXdrJsonValue(Object? value) =>"
+      out.puts "      fromXdrJsonValueAs(value, #{class_name}.new);"
+      out.puts ""
+      out.puts "  /// Reads a subclass of #{class_name} from its SEP-0051 rendering."
+      out.puts "  static T fromXdrJsonValueAs<T extends #{class_name}>("
+      out.puts "    Object? value,"
+      out.puts "    T Function(#{disc_param}) constructor,"
+      out.puts "  ) {"
+    else
+      out.puts "  /// Reads a #{class_name} from its SEP-0051 rendering."
+      out.puts "  static #{class_name} fromXdrJsonValue(Object? value) {"
+    end
+
+    void_branches = branches.select { |branch| branch[:arm][:void] }
+    valued_branches = branches.reject { |branch| branch[:arm][:void] }
+
+    unless void_branches.empty?
+      out.puts "    if (value is String) {"
+      out.puts "      switch (value) {"
+      void_branches.each do |branch|
+        out.puts "        case '#{branch[:key]}':"
+        out.puts "          return #{is_base ? 'constructor' : class_name}(#{branch[:label]});"
+      end
+      out.puts "      }"
+      out.puts "      XdrJsonHelper.fail(#{quoted},"
+      out.puts "          'has no arm named ${XdrJsonHelper.preview(value)}');"
+      out.puts "    }"
+    end
+
+    if valued_branches.empty?
+      out.puts "    XdrJsonHelper.fail(#{quoted},"
+      out.puts "        'expects one of its arm names but found ${XdrJsonHelper.preview(value)}');"
+    else
+      out.puts "    final MapEntry<String, Object?> arm ="
+      out.puts "        XdrJsonHelper.readSingleKeyObject(value, type: #{quoted});"
+      out.puts "    switch (arm.key) {"
+      valued_branches.each_with_index do |branch, index|
+        arm = branch[:arm]
+        parsed = sep51_arm_rewrap(arm,
+                                  sep51_decl_from(arm[:decl], 'arm.value', quoted, "'#{branch[:key]}'"))
+        parsed = "arm.value == null ? null : #{parsed}" if sep51_optional_arm?(arm)
+        local = "arm#{index}"
+        out.puts "      case '#{branch[:key]}':"
+        out.puts "        final #{is_base ? 'T' : class_name} #{local} = " \
+                 "#{is_base ? 'constructor' : class_name}(#{branch[:label]});"
+        out.puts "        #{local}.#{arm[:field_name]} = #{parsed};"
+        out.puts "        return #{local};"
+      end
+      out.puts "    }"
+      out.puts "    XdrJsonHelper.fail(#{quoted},"
+      out.puts "        'has no arm named ${XdrJsonHelper.preview(arm.key)}');"
+    end
+    out.puts "  }"
+  end
+
+  # Emits the rendering SEP-0051 gives a type in place of its XDR shape, and
+  # reports whether it did.
+  #
+  # base_discriminant is the discriminant type of a union whose class is a base
+  # a hand-written wrapper extends. Such a base declares the reader twice: once
+  # narrowed to itself, and once generic over the subclass, because Dart does
+  # not inherit statics and the wrapper's own reader delegates to the generic
+  # one. It is nil for every other type, which needs only the narrow reader.
+  def render_sep51_type_override(out, class_name, base_discriminant: nil)
+    public_name = sep51_public_name(class_name)
+    @sep51_emitted.add(public_name)
+    renderer = SEP51_TYPE_RENDERERS[public_name]
+    return false if renderer.nil?
+
+    render_sep51_document_methods(out, class_name)
+
+    out.puts ""
+    out.puts "  /// Returns the SEP-0051 rendering of this #{public_name}."
+    body = renderer[:to].call(public_name)
+    if body.is_a?(String)
+      out.puts "  Object? toXdrJsonValue() => #{body};"
+    else
+      out.puts "  Object? toXdrJsonValue() {"
+      body.each { |line| out.puts "    #{line}" }
+      out.puts "  }"
+    end
+
+    out.puts ""
+    if base_discriminant
+      out.puts "  /// Reads a #{public_name} from its SEP-0051 rendering."
+      out.puts "  static #{class_name} fromXdrJsonValue(Object? value) =>"
+      out.puts "      fromXdrJsonValueAs(value, #{class_name}.new);"
+      out.puts ""
+      out.puts "  /// Reads a subclass of #{class_name} from its SEP-0051 rendering."
+      out.puts "  static T fromXdrJsonValueAs<T extends #{class_name}>("
+      out.puts "    Object? value,"
+      out.puts "    T Function(#{base_discriminant}) constructor,"
+      out.puts "  ) {"
+      result_type = 'T'
+      build = ->(arguments) { "constructor(#{arguments})" }
+    else
+      out.puts "  /// Reads a #{public_name} from its SEP-0051 rendering."
+      out.puts "  static #{class_name} fromXdrJsonValue(Object? value) {"
+      result_type = class_name
+      build = ->(arguments) { "#{class_name}(#{arguments})" }
+    end
+
+    context = {
+      class_name: class_name,
+      public_name: public_name,
+      result_type: result_type,
+      build: build,
+    }
+    renderer[:from].call(context).each { |line| out.puts "    #{line}" }
+    out.puts "  }"
+    true
+  end
+
+  # Every registered type-level rendering must reach a generated class, so a
+  # rename cannot quietly drop one.
+  def verify_sep51_type_registry!(emitted)
+    missing = SEP51_TYPE_RENDERERS.keys.reject { |key| emitted.include?(key) }
+    return if missing.empty?
+
+    raise "SEP51_TYPE_RENDERERS names #{missing.join(', ')}, which no generated type " \
+          "matches; update the registry"
+  end
+
+  # The public spelling of a generated class. A *Base class exists only so a
+  # hand-written wrapper can extend it, and its name never reaches a caller, so
+  # errors name the type the caller used.
+  def sep51_public_name(class_name)
+    stripped = class_name.sub(/Base\z/, '')
+    BASE_WRAPPER_TYPES.include?(stripped) ? stripped : class_name
+  end
+
+  # Some union arms are declared as raw opaque in the .x but emitted as a
+  # wrapper class. The rendering follows the declaration -- including its
+  # declared bound, which the wrapper's own typedef bound would otherwise
+  # replace -- so the wrapper is opened on the way out and restored on the way
+  # in.
+  def sep51_arm_wrapper(arm)
+    return nil if arm[:void]
+    return nil unless arm[:decl].is_a?(AST::Declarations::Opaque) && !arm[:decl].fixed?
+    return nil unless arm[:dart_type].to_s.start_with?('Xdr')
+
+    arm[:dart_type]
+  end
+
+  def sep51_arm_unwrap(arm)
+    wrapper = sep51_arm_wrapper(arm)
+    wrapper ? ".#{underscore_field(wrapper)}" : ''
+  end
+
+  def sep51_arm_rewrap(arm, expression)
+    wrapper = sep51_arm_wrapper(arm)
+    wrapper ? "#{wrapper}(#{expression})" : expression
+  end
+
+  # The imports every registered rendering reachable from these declarations
+  # needs, so a strkey rendering brings its codec with it.
+  def sep51_registry_imports(decls)
+    decls.compact.flat_map do |decl|
+      renderer = sep51_typedef_renderer(decl)
+      renderer ? renderer[:imports] : []
+    end.uniq
+  end
+
+  # The imports a type-level rendering needs, looked up by the same key the
+  # rendering itself is.
+  def sep51_type_renderer_imports(class_name)
+    renderer = SEP51_TYPE_RENDERERS[sep51_public_name(class_name)]
+    renderer ? renderer[:imports] : []
+  end
+
+  # A const set literal, which Dart canonicalises, so the keys sit beside the
+  # reads that consume them without costing an allocation per decode.
+  def sep51_key_set(keys)
+    return "const <String>{}" if keys.empty?
+
+    "const <String>{#{keys.map { |key| "'#{key}'" }.join(', ')}}"
+  end
+
+  # A typedef renders as the value it wraps, so its JSON form is the wrapped
+  # form with no envelope of its own.
+  def render_typedef_sep51_methods(out, class_name, decl, field_name)
+    quoted = "'#{sep51_public_name(class_name)}'"
+
+    # A simple typedef's field holds the type resolve_typedef_type arrived at,
+    # which follows a chain of typedefs to the primitive underneath. Rendering
+    # dispatches on the same resolved typespec so the two agree.
+    to_expr =
+      if sep51_chainable_decl?(decl)
+        sep51_typespec_to(sep51_resolve_typedef_chain(decl.type), "_#{field_name}", quoted, 'null')
+      else
+        sep51_decl_to(decl, "_#{field_name}", quoted, 'null')
+      end
+
+    from_expr =
+      if sep51_chainable_decl?(decl)
+        sep51_typespec_from(sep51_resolve_typedef_chain(decl.type), 'value', quoted, 'null')
+      else
+        sep51_decl_from(decl, 'value', quoted, 'null')
+      end
+
+    render_sep51_document_methods(out, class_name)
+
+    out.puts ""
+    out.puts "  /// Returns the SEP-0051 rendering of the wrapped value."
+    out.puts "  Object? toXdrJsonValue() => #{to_expr};"
+    out.puts ""
+    out.puts "  /// Reads a #{class_name} from the SEP-0051 rendering of its value."
+    out.puts "  static #{class_name} fromXdrJsonValue(Object? value) =>"
+    out.puts "      #{class_name}(#{from_expr});"
+  end
+
+  # True for the simple typedef shape, the only one whose Dart field type comes
+  # from following a typedef chain rather than from the declaration itself.
+  def sep51_chainable_decl?(decl)
+    return false unless decl.respond_to?(:type)
+    return false if decl.is_a?(AST::Declarations::Opaque) ||
+                    decl.is_a?(AST::Declarations::String) ||
+                    decl.is_a?(AST::Declarations::Array)
+    return false if sep51_typedef_renderer(decl)
+
+    true
+  end
+
+  # The document-level pair, identical on every type.
+  def render_sep51_document_methods(out, class_name)
+    public_name = sep51_public_name(class_name)
+
+    out.puts ""
+    out.puts "  /// Returns the SEP-0051 XDR-JSON rendering of this value."
+    out.puts "  String toXdrJson() =>"
+    out.puts "      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: '#{public_name}');"
+    out.puts ""
+    out.puts "  /// Parses the SEP-0051 XDR-JSON rendering of a #{public_name}."
+    out.puts "  static #{class_name} fromXdrJson(String json) =>"
+    out.puts "      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: '#{public_name}'));"
+  end
+
+  # An enum renders as the JSON name of its member, and reads back from it. The
+  # numeric value is what the switch keys on, so the mapping cannot drift from
+  # the wire format the binary codec uses.
+  def render_enum_sep51_methods(out, class_name, enum_defn)
+    identifiers = enum_defn.members.map { |m| m.name.to_s }
+    quoted = "'#{class_name}'"
+
+    render_sep51_document_methods(out, class_name)
+
+    out.puts ""
+    out.puts "  /// Returns this member's SEP-0051 name."
+    out.puts "  Object? toXdrJsonValue() {"
+    out.puts "    switch (_value) {"
+    enum_defn.members.each do |m|
+      json = Sep51JsonNames.enum_member_json_name(m.name.to_s, identifiers)
+      out.puts "      case #{m.value}:"
+      out.puts "        return '#{json}';"
+    end
+    out.puts "      default:"
+    out.puts "        XdrJsonHelper.fail("
+    out.puts "            #{quoted}, 'holds the unknown value $_value');"
+    out.puts "    }"
+    out.puts "  }"
+
+    out.puts ""
+    out.puts "  /// Reads a #{class_name} from its SEP-0051 name."
+    out.puts "  static #{class_name} fromXdrJsonValue(Object? value) {"
+    out.puts "    if (value is String) {"
+    out.puts "      switch (value) {"
+    enum_defn.members.each do |m|
+      json = Sep51JsonNames.enum_member_json_name(m.name.to_s, identifiers)
+      out.puts "        case '#{json}':"
+      out.puts "          return #{class_name}.#{m.name};"
+    end
+    out.puts "      }"
+    out.puts "    }"
+    out.puts "    XdrJsonHelper.fail(#{quoted},"
+    out.puts "        'expects one of its member names but found ${XdrJsonHelper.preview(value)}');"
+    out.puts "  }"
   end
 
   # ---------------------------------------------------------------------------
@@ -2271,6 +3036,15 @@ class Generator < Xdrgen::Generators::Base
     resolved.declaration.type.sub_type == :optional
   rescue
     false
+  end
+
+  # True for an array whose elements the .x declares optional. Each such element
+  # carries its own four-byte presence flag on the wire, ahead of the value, and
+  # its Dart type is nullable. The grammar admits no optional element inside an
+  # array declaration, so the only way to declare one is through a typedef whose
+  # own declaration is optional.
+  def array_element_optional?(decl)
+    decl.is_a?(AST::Declarations::Array) && typedef_is_optional?(decl.type)
   end
 
   # Resolve typedef to Dart type info for simple typedefs

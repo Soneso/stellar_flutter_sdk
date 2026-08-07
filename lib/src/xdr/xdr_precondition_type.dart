@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrPreconditionType {
   final _value;
@@ -97,5 +98,51 @@ class XdrPreconditionType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrPreconditionType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPreconditionType.
+  static XdrPreconditionType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrPreconditionType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'none';
+      case 1:
+        return 'time';
+      case 2:
+        return 'v2';
+      default:
+        XdrJsonHelper.fail(
+          'XdrPreconditionType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrPreconditionType from its SEP-0051 name.
+  static XdrPreconditionType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'none':
+          return XdrPreconditionType.PRECOND_NONE;
+        case 'time':
+          return XdrPreconditionType.PRECOND_TIME;
+        case 'v2':
+          return XdrPreconditionType.PRECOND_V2;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrPreconditionType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

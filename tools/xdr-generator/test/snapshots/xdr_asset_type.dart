@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrAssetType {
   final _value;
@@ -92,5 +93,48 @@ class XdrAssetType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrAssetType');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAssetType.
+  static XdrAssetType fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrAssetType'));
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'native';
+      case 1:
+        return 'credit_alphanum4';
+      case 2:
+        return 'credit_alphanum12';
+      case 3:
+        return 'pool_share';
+      default:
+        XdrJsonHelper.fail(
+            'XdrAssetType', 'holds the unknown value $_value');
+    }
+  }
+
+  /// Reads a XdrAssetType from its SEP-0051 name.
+  static XdrAssetType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'native':
+          return XdrAssetType.ASSET_TYPE_NATIVE;
+        case 'credit_alphanum4':
+          return XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4;
+        case 'credit_alphanum12':
+          return XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12;
+        case 'pool_share':
+          return XdrAssetType.ASSET_TYPE_POOL_SHARE;
+      }
+    }
+    XdrJsonHelper.fail('XdrAssetType',
+        'expects one of its member names but found ${XdrJsonHelper.preview(value)}');
   }
 }

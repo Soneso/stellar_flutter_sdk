@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_transaction_envelope.dart';
 
 class XdrDependentTxCluster {
@@ -55,4 +56,32 @@ class XdrDependentTxCluster {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrDependentTxCluster.decode(XdrDataInputStream(bytes));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrDependentTxCluster',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrDependentTxCluster.
+  static XdrDependentTxCluster fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrDependentTxCluster'),
+  );
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() => XdrJsonHelper.array<XdrTransactionEnvelope>(
+    _dependentTxCluster,
+    (XdrTransactionEnvelope v) => v.toXdrJsonValue(),
+    type: 'XdrDependentTxCluster',
+  );
+
+  /// Reads a XdrDependentTxCluster from the SEP-0051 rendering of its value.
+  static XdrDependentTxCluster fromXdrJsonValue(Object? value) =>
+      XdrDependentTxCluster(
+        XdrJsonHelper.readArray(value, type: 'XdrDependentTxCluster')
+            .map<XdrTransactionEnvelope>(
+              (Object? e) => XdrTransactionEnvelope.fromXdrJsonValue(e),
+            )
+            .toList(),
+      );
 }

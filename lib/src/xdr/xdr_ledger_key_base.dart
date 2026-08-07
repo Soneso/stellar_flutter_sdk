@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_entry_type.dart';
 import 'xdr_ledger_key_account.dart';
 import 'xdr_ledger_key_claimable_balance.dart';
@@ -307,5 +308,125 @@ class XdrLedgerKeyBase {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrLedgerKey');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerKey.
+  static XdrLedgerKeyBase fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerKey'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerKeyBase.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'account': _account!.toXdrJsonValue()};
+      case 1:
+        return <String, Object?>{'trustline': _trustLine!.toXdrJsonValue()};
+      case 2:
+        return <String, Object?>{'offer': _offer!.toXdrJsonValue()};
+      case 3:
+        return <String, Object?>{'data': _data!.toXdrJsonValue()};
+      case 4:
+        return <String, Object?>{
+          'claimable_balance': _claimableBalance!.toXdrJsonValue(),
+        };
+      case 5:
+        return <String, Object?>{
+          'liquidity_pool': _liquidityPool!.toXdrJsonValue(),
+        };
+      case 6:
+        return <String, Object?>{
+          'contract_data': _contractData!.toXdrJsonValue(),
+        };
+      case 7:
+        return <String, Object?>{
+          'contract_code': _contractCode!.toXdrJsonValue(),
+        };
+      case 8:
+        return <String, Object?>{
+          'config_setting': _configSetting!.toXdrJsonValue(),
+        };
+      case 9:
+        return <String, Object?>{'ttl': _ttl!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerKey',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrLedgerKeyBase from its SEP-0051 rendering.
+  static XdrLedgerKeyBase fromXdrJsonValue(Object? value) =>
+      fromXdrJsonValueAs(value, XdrLedgerKeyBase.new);
+
+  /// Reads a subclass of XdrLedgerKeyBase from its SEP-0051 rendering.
+  static T fromXdrJsonValueAs<T extends XdrLedgerKeyBase>(
+    Object? value,
+    T Function(XdrLedgerEntryType) constructor,
+  ) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrLedgerKey',
+    );
+    switch (arm.key) {
+      case 'account':
+        final T arm0 = constructor(XdrLedgerEntryType.ACCOUNT);
+        arm0.account = XdrLedgerKeyAccount.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'trustline':
+        final T arm1 = constructor(XdrLedgerEntryType.TRUSTLINE);
+        arm1.trustLine = XdrLedgerKeyTrustLine.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'offer':
+        final T arm2 = constructor(XdrLedgerEntryType.OFFER);
+        arm2.offer = XdrLedgerKeyOffer.fromXdrJsonValue(arm.value);
+        return arm2;
+      case 'data':
+        final T arm3 = constructor(XdrLedgerEntryType.DATA);
+        arm3.data = XdrLedgerKeyData.fromXdrJsonValue(arm.value);
+        return arm3;
+      case 'claimable_balance':
+        final T arm4 = constructor(XdrLedgerEntryType.CLAIMABLE_BALANCE);
+        arm4.claimableBalance = XdrLedgerKeyClaimableBalance.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm4;
+      case 'liquidity_pool':
+        final T arm5 = constructor(XdrLedgerEntryType.LIQUIDITY_POOL);
+        arm5.liquidityPool = XdrLedgerKeyLiquidityPool.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm5;
+      case 'contract_data':
+        final T arm6 = constructor(XdrLedgerEntryType.CONTRACT_DATA);
+        arm6.contractData = XdrLedgerKeyContractData.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm6;
+      case 'contract_code':
+        final T arm7 = constructor(XdrLedgerEntryType.CONTRACT_CODE);
+        arm7.contractCode = XdrLedgerKeyContractCode.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm7;
+      case 'config_setting':
+        final T arm8 = constructor(XdrLedgerEntryType.CONFIG_SETTING);
+        arm8.configSetting = XdrLedgerKeyConfigSetting.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm8;
+      case 'ttl':
+        final T arm9 = constructor(XdrLedgerEntryType.TTL);
+        arm9.ttl = XdrLedgerKeyTTL.fromXdrJsonValue(arm.value);
+        return arm9;
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerKey',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrUpgradeType {
   XdrUpgradeType(this._upgradeType);
@@ -39,4 +40,22 @@ class XdrUpgradeType {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrUpgradeType.decode(XdrDataInputStream(bytes));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrUpgradeType');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrUpgradeType.
+  static XdrUpgradeType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrUpgradeType'),
+  );
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() =>
+      XdrJsonHelper.hex(_upgradeType, type: 'XdrUpgradeType', maxLength: 128);
+
+  /// Reads a XdrUpgradeType from the SEP-0051 rendering of its value.
+  static XdrUpgradeType fromXdrJsonValue(Object? value) => XdrUpgradeType(
+    XdrJsonHelper.readHex(value, type: 'XdrUpgradeType', maxLength: 128),
+  );
 }

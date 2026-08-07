@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_spec_type_def.dart';
 
 class XdrSCSpecTypeMap {
@@ -43,5 +44,43 @@ class XdrSCSpecTypeMap {
   static XdrSCSpecTypeMap fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecTypeMap.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCSpecTypeMap');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecTypeMap.
+  static XdrSCSpecTypeMap fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecTypeMap'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCSpecTypeMap.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'key_type': _keyType.toXdrJsonValue(),
+    'value_type': _valueType.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSCSpecTypeMap from its SEP-0051 rendering.
+  static XdrSCSpecTypeMap fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCSpecTypeMap',
+      allowedKeys: const <String>{'key_type', 'value_type'},
+    );
+    final Object? jsonKeyType = XdrJsonHelper.readField(
+      object,
+      'key_type',
+      type: 'XdrSCSpecTypeMap',
+    );
+    final Object? jsonValueType = XdrJsonHelper.readField(
+      object,
+      'value_type',
+      type: 'XdrSCSpecTypeMap',
+    );
+    return XdrSCSpecTypeMap(
+      XdrSCSpecTypeDef.fromXdrJsonValue(jsonKeyType),
+      XdrSCSpecTypeDef.fromXdrJsonValue(jsonValueType),
+    );
   }
 }

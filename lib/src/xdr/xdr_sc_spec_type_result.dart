@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_spec_type_def.dart';
 
 class XdrSCSpecTypeResult {
@@ -43,5 +44,45 @@ class XdrSCSpecTypeResult {
   static XdrSCSpecTypeResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecTypeResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCSpecTypeResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecTypeResult.
+  static XdrSCSpecTypeResult fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecTypeResult'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCSpecTypeResult.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ok_type': _okType.toXdrJsonValue(),
+    'error_type': _errorType.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSCSpecTypeResult from its SEP-0051 rendering.
+  static XdrSCSpecTypeResult fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCSpecTypeResult',
+      allowedKeys: const <String>{'ok_type', 'error_type'},
+    );
+    final Object? jsonOkType = XdrJsonHelper.readField(
+      object,
+      'ok_type',
+      type: 'XdrSCSpecTypeResult',
+    );
+    final Object? jsonErrorType = XdrJsonHelper.readField(
+      object,
+      'error_type',
+      type: 'XdrSCSpecTypeResult',
+    );
+    return XdrSCSpecTypeResult(
+      XdrSCSpecTypeDef.fromXdrJsonValue(jsonOkType),
+      XdrSCSpecTypeDef.fromXdrJsonValue(jsonErrorType),
+    );
   }
 }

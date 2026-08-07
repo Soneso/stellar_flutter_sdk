@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_node_id.dart';
 import 'xdr_uint32.dart';
 
@@ -68,5 +69,72 @@ class XdrSCPQuorumSet {
   static XdrSCPQuorumSet fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPQuorumSet.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCPQuorumSet');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCPQuorumSet.
+  static XdrSCPQuorumSet fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCPQuorumSet'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCPQuorumSet.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'threshold': _threshold.toXdrJsonValue(),
+    'validators': XdrJsonHelper.array<XdrNodeID>(
+      _validators,
+      (XdrNodeID v) => v.toXdrJsonValue(),
+      type: 'XdrSCPQuorumSet',
+      key: 'validators',
+    ),
+    'inner_sets': XdrJsonHelper.array<XdrSCPQuorumSet>(
+      _innerSets,
+      (XdrSCPQuorumSet v) => v.toXdrJsonValue(),
+      type: 'XdrSCPQuorumSet',
+      key: 'inner_sets',
+    ),
+  };
+
+  /// Reads a XdrSCPQuorumSet from its SEP-0051 rendering.
+  static XdrSCPQuorumSet fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCPQuorumSet',
+      allowedKeys: const <String>{'threshold', 'validators', 'inner_sets'},
+    );
+    final Object? jsonThreshold = XdrJsonHelper.readField(
+      object,
+      'threshold',
+      type: 'XdrSCPQuorumSet',
+    );
+    final Object? jsonValidators = XdrJsonHelper.readField(
+      object,
+      'validators',
+      type: 'XdrSCPQuorumSet',
+    );
+    final Object? jsonInnerSets = XdrJsonHelper.readField(
+      object,
+      'inner_sets',
+      type: 'XdrSCPQuorumSet',
+    );
+    return XdrSCPQuorumSet(
+      XdrUint32.fromXdrJsonValue(jsonThreshold),
+      XdrJsonHelper.readArray(
+        jsonValidators,
+        type: 'XdrSCPQuorumSet',
+        key: 'validators',
+      ).map<XdrNodeID>((Object? e) => XdrNodeID.fromXdrJsonValue(e)).toList(),
+      XdrJsonHelper.readArray(
+            jsonInnerSets,
+            type: 'XdrSCPQuorumSet',
+            key: 'inner_sets',
+          )
+          .map<XdrSCPQuorumSet>(
+            (Object? e) => XdrSCPQuorumSet.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

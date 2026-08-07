@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClawbackResultCode {
   final _value;
@@ -63,5 +64,59 @@ class XdrClawbackResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClawbackResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrClawbackResultCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClawbackResultCode.
+  static XdrClawbackResultCode fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrClawbackResultCode'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'not_clawback_enabled';
+      case -3:
+        return 'no_trust';
+      case -4:
+        return 'underfunded';
+      default:
+        XdrJsonHelper.fail(
+          'XdrClawbackResultCode',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrClawbackResultCode from its SEP-0051 name.
+  static XdrClawbackResultCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrClawbackResultCode.CLAWBACK_SUCCESS;
+        case 'malformed':
+          return XdrClawbackResultCode.CLAWBACK_MALFORMED;
+        case 'not_clawback_enabled':
+          return XdrClawbackResultCode.CLAWBACK_NOT_CLAWBACK_ENABLED;
+        case 'no_trust':
+          return XdrClawbackResultCode.CLAWBACK_NO_TRUST;
+        case 'underfunded':
+          return XdrClawbackResultCode.CLAWBACK_UNDERFUNDED;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrClawbackResultCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

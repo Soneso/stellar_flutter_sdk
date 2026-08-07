@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrContractEventType {
   final _value;
@@ -54,5 +55,51 @@ class XdrContractEventType {
   static XdrContractEventType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractEventType.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrContractEventType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractEventType.
+  static XdrContractEventType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractEventType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'system';
+      case 1:
+        return 'contract';
+      case 2:
+        return 'diagnostic';
+      default:
+        XdrJsonHelper.fail(
+          'XdrContractEventType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrContractEventType from its SEP-0051 name.
+  static XdrContractEventType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'system':
+          return XdrContractEventType.SYSTEM;
+        case 'contract':
+          return XdrContractEventType.CONTRACT;
+        case 'diagnostic':
+          return XdrContractEventType.DIAGNOSTIC;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrContractEventType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

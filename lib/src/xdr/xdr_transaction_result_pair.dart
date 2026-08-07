@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_transaction_result.dart';
 
 class XdrTransactionResultPair {
@@ -46,5 +47,45 @@ class XdrTransactionResultPair {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionResultPair.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionResultPair',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionResultPair.
+  static XdrTransactionResultPair fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionResultPair'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionResultPair.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'transaction_hash': _transactionHash.toXdrJsonValue(),
+    'result': _result.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTransactionResultPair from its SEP-0051 rendering.
+  static XdrTransactionResultPair fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTransactionResultPair',
+      allowedKeys: const <String>{'transaction_hash', 'result'},
+    );
+    final Object? jsonTransactionHash = XdrJsonHelper.readField(
+      object,
+      'transaction_hash',
+      type: 'XdrTransactionResultPair',
+    );
+    final Object? jsonResult = XdrJsonHelper.readField(
+      object,
+      'result',
+      type: 'XdrTransactionResultPair',
+    );
+    return XdrTransactionResultPair(
+      XdrHash.fromXdrJsonValue(jsonTransactionHash),
+      XdrTransactionResult.fromXdrJsonValue(jsonResult),
+    );
   }
 }

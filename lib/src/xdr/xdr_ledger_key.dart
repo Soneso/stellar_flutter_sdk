@@ -14,6 +14,7 @@ import 'xdr_claimable_balance_id.dart';
 import 'xdr_config_setting_id.dart';
 import 'xdr_contract_data_durability.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_hash.dart';
 import 'xdr_ledger_entry_type.dart';
 import 'xdr_ledger_key_account.dart';
@@ -214,4 +215,15 @@ class XdrLedgerKey extends XdrLedgerKeyBase {
     result.ttl = XdrLedgerKeyTTL(XdrHash(keyHash));
     return result;
   }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerKey.
+  ///
+  /// Dart does not inherit statics, so this narrows the base class rendering to
+  /// this type rather than relying on the one the base declares.
+  static XdrLedgerKey fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerKey'),
+  );
+
+  static XdrLedgerKey fromXdrJsonValue(Object? value) =>
+      XdrLedgerKeyBase.fromXdrJsonValueAs(value, XdrLedgerKey.new);
 }

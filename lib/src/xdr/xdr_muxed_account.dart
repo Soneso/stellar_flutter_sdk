@@ -6,9 +6,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../key_pair.dart';
 import 'txrep_helper.dart';
 import 'xdr_crypto_key_type.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_muxed_account_med25519.dart';
 import 'xdr_uint256.dart';
 
@@ -115,5 +117,58 @@ class XdrMuxedAccount {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrMuxedAccount');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrMuxedAccount.
+  static XdrMuxedAccount fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrMuxedAccount'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrMuxedAccount.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case XdrCryptoKeyType.KEY_TYPE_ED25519:
+        return StrKey.encodeStellarAccountId(_ed25519!.uint256);
+      case XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519:
+        return _med25519!.toXdrJsonValue();
+    }
+    XdrJsonHelper.fail(
+      'XdrMuxedAccount',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrMuxedAccount from its SEP-0051 rendering.
+  static XdrMuxedAccount fromXdrJsonValue(Object? value) {
+    switch (XdrJsonHelper.readStrKeyPrefix(value, type: 'XdrMuxedAccount')) {
+      case 'G':
+        final XdrMuxedAccount arm0 = XdrMuxedAccount(
+          XdrCryptoKeyType.KEY_TYPE_ED25519,
+        );
+        arm0.ed25519 = XdrUint256(
+          XdrJsonHelper.readStrKey(
+            value,
+            type: 'XdrMuxedAccount',
+            key: null,
+            decode: StrKey.decodeStellarAccountId,
+            expectedLength: 32,
+          ),
+        );
+        return arm0;
+      case 'M':
+        final XdrMuxedAccount arm1 = XdrMuxedAccount(
+          XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519,
+        );
+        arm1.med25519 = XdrMuxedAccountMed25519.fromXdrJsonValue(value);
+        return arm1;
+    }
+    XdrJsonHelper.fail(
+      'XdrMuxedAccount',
+      'expects a G or M strkey but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

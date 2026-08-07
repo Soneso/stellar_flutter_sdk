@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrTrustLineFlags {
   final _value;
@@ -56,5 +57,49 @@ class XdrTrustLineFlags {
   static XdrTrustLineFlags fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTrustLineFlags.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrTrustLineFlags');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTrustLineFlags.
+  static XdrTrustLineFlags fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTrustLineFlags'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 1:
+        return 'authorized_flag';
+      case 2:
+        return 'authorized_to_maintain_liabilities_flag';
+      case 4:
+        return 'trustline_clawback_enabled_flag';
+      default:
+        XdrJsonHelper.fail(
+          'XdrTrustLineFlags',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrTrustLineFlags from its SEP-0051 name.
+  static XdrTrustLineFlags fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'authorized_flag':
+          return XdrTrustLineFlags.AUTHORIZED_FLAG;
+        case 'authorized_to_maintain_liabilities_flag':
+          return XdrTrustLineFlags.AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG;
+        case 'trustline_clawback_enabled_flag':
+          return XdrTrustLineFlags.TRUSTLINE_CLAWBACK_ENABLED_FLAG;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrTrustLineFlags',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

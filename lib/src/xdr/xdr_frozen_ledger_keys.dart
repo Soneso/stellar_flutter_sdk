@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_encoded_ledger_key.dart';
+import 'xdr_json_helper.dart';
 
 class XdrFrozenLedgerKeys {
   List<XdrEncodedLedgerKey> _keys;
@@ -47,5 +48,51 @@ class XdrFrozenLedgerKeys {
   static XdrFrozenLedgerKeys fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFrozenLedgerKeys.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrFrozenLedgerKeys',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrFrozenLedgerKeys.
+  static XdrFrozenLedgerKeys fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrFrozenLedgerKeys'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrFrozenLedgerKeys.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'keys': XdrJsonHelper.array<XdrEncodedLedgerKey>(
+      _keys,
+      (XdrEncodedLedgerKey v) => v.toXdrJsonValue(),
+      type: 'XdrFrozenLedgerKeys',
+      key: 'keys',
+    ),
+  };
+
+  /// Reads a XdrFrozenLedgerKeys from its SEP-0051 rendering.
+  static XdrFrozenLedgerKeys fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrFrozenLedgerKeys',
+      allowedKeys: const <String>{'keys'},
+    );
+    final Object? jsonKeys = XdrJsonHelper.readField(
+      object,
+      'keys',
+      type: 'XdrFrozenLedgerKeys',
+    );
+    return XdrFrozenLedgerKeys(
+      XdrJsonHelper.readArray(
+            jsonKeys,
+            type: 'XdrFrozenLedgerKeys',
+            key: 'keys',
+          )
+          .map<XdrEncodedLedgerKey>(
+            (Object? e) => XdrEncodedLedgerKey.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

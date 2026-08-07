@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrCreateAccountResultCode {
   final _value;
@@ -70,5 +71,60 @@ class XdrCreateAccountResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCreateAccountResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrCreateAccountResultCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrCreateAccountResultCode.
+  static XdrCreateAccountResultCode fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrCreateAccountResultCode'),
+      );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'underfunded';
+      case -3:
+        return 'low_reserve';
+      case -4:
+        return 'already_exist';
+      default:
+        XdrJsonHelper.fail(
+          'XdrCreateAccountResultCode',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrCreateAccountResultCode from its SEP-0051 name.
+  static XdrCreateAccountResultCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrCreateAccountResultCode.CREATE_ACCOUNT_SUCCESS;
+        case 'malformed':
+          return XdrCreateAccountResultCode.CREATE_ACCOUNT_MALFORMED;
+        case 'underfunded':
+          return XdrCreateAccountResultCode.CREATE_ACCOUNT_UNDERFUNDED;
+        case 'low_reserve':
+          return XdrCreateAccountResultCode.CREATE_ACCOUNT_LOW_RESERVE;
+        case 'already_exist':
+          return XdrCreateAccountResultCode.CREATE_ACCOUNT_ALREADY_EXIST;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrCreateAccountResultCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

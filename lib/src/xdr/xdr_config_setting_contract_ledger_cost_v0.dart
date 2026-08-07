@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingContractLedgerCostV0 {
@@ -219,6 +220,162 @@ class XdrConfigSettingContractLedgerCostV0 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigSettingContractLedgerCostV0.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrConfigSettingContractLedgerCostV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrConfigSettingContractLedgerCostV0.
+  static XdrConfigSettingContractLedgerCostV0 fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrConfigSettingContractLedgerCostV0',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrConfigSettingContractLedgerCostV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ledger_max_disk_read_entries': _ledgerMaxDiskReadEntries.toXdrJsonValue(),
+    'ledger_max_disk_read_bytes': _ledgerMaxDiskReadBytes.toXdrJsonValue(),
+    'ledger_max_write_ledger_entries': _ledgerMaxWriteLedgerEntries
+        .toXdrJsonValue(),
+    'ledger_max_write_bytes': _ledgerMaxWriteBytes.toXdrJsonValue(),
+    'tx_max_disk_read_entries': _txMaxDiskReadEntries.toXdrJsonValue(),
+    'tx_max_disk_read_bytes': _txMaxDiskReadBytes.toXdrJsonValue(),
+    'tx_max_write_ledger_entries': _txMaxWriteLedgerEntries.toXdrJsonValue(),
+    'tx_max_write_bytes': _txMaxWriteBytes.toXdrJsonValue(),
+    'fee_disk_read_ledger_entry': _feeDiskReadLedgerEntry.toXdrJsonValue(),
+    'fee_write_ledger_entry': _feeWriteLedgerEntry.toXdrJsonValue(),
+    'fee_disk_read1_kb': _feeDiskRead1KB.toXdrJsonValue(),
+    'soroban_state_target_size_bytes': _sorobanStateTargetSizeBytes
+        .toXdrJsonValue(),
+    'rent_fee1_kb_soroban_state_size_low': _rentFee1KBSorobanStateSizeLow
+        .toXdrJsonValue(),
+    'rent_fee1_kb_soroban_state_size_high': _rentFee1KBSorobanStateSizeHigh
+        .toXdrJsonValue(),
+    'soroban_state_rent_fee_growth_factor': _sorobanStateRentFeeGrowthFactor
+        .toXdrJsonValue(),
+  };
+
+  /// Reads a XdrConfigSettingContractLedgerCostV0 from its SEP-0051 rendering.
+  static XdrConfigSettingContractLedgerCostV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrConfigSettingContractLedgerCostV0',
+      allowedKeys: const <String>{
+        'ledger_max_disk_read_entries',
+        'ledger_max_disk_read_bytes',
+        'ledger_max_write_ledger_entries',
+        'ledger_max_write_bytes',
+        'tx_max_disk_read_entries',
+        'tx_max_disk_read_bytes',
+        'tx_max_write_ledger_entries',
+        'tx_max_write_bytes',
+        'fee_disk_read_ledger_entry',
+        'fee_write_ledger_entry',
+        'fee_disk_read1_kb',
+        'soroban_state_target_size_bytes',
+        'rent_fee1_kb_soroban_state_size_low',
+        'rent_fee1_kb_soroban_state_size_high',
+        'soroban_state_rent_fee_growth_factor',
+      },
+    );
+    final Object? jsonLedgerMaxDiskReadEntries = XdrJsonHelper.readField(
+      object,
+      'ledger_max_disk_read_entries',
+      type: 'XdrConfigSettingContractLedgerCostV0',
+    );
+    final Object? jsonLedgerMaxDiskReadBytes = XdrJsonHelper.readField(
+      object,
+      'ledger_max_disk_read_bytes',
+      type: 'XdrConfigSettingContractLedgerCostV0',
+    );
+    final Object? jsonLedgerMaxWriteLedgerEntries = XdrJsonHelper.readField(
+      object,
+      'ledger_max_write_ledger_entries',
+      type: 'XdrConfigSettingContractLedgerCostV0',
+    );
+    final Object? jsonLedgerMaxWriteBytes = XdrJsonHelper.readField(
+      object,
+      'ledger_max_write_bytes',
+      type: 'XdrConfigSettingContractLedgerCostV0',
+    );
+    final Object? jsonTxMaxDiskReadEntries = XdrJsonHelper.readField(
+      object,
+      'tx_max_disk_read_entries',
+      type: 'XdrConfigSettingContractLedgerCostV0',
+    );
+    final Object? jsonTxMaxDiskReadBytes = XdrJsonHelper.readField(
+      object,
+      'tx_max_disk_read_bytes',
+      type: 'XdrConfigSettingContractLedgerCostV0',
+    );
+    final Object? jsonTxMaxWriteLedgerEntries = XdrJsonHelper.readField(
+      object,
+      'tx_max_write_ledger_entries',
+      type: 'XdrConfigSettingContractLedgerCostV0',
+    );
+    final Object? jsonTxMaxWriteBytes = XdrJsonHelper.readField(
+      object,
+      'tx_max_write_bytes',
+      type: 'XdrConfigSettingContractLedgerCostV0',
+    );
+    final Object? jsonFeeDiskReadLedgerEntry = XdrJsonHelper.readField(
+      object,
+      'fee_disk_read_ledger_entry',
+      type: 'XdrConfigSettingContractLedgerCostV0',
+    );
+    final Object? jsonFeeWriteLedgerEntry = XdrJsonHelper.readField(
+      object,
+      'fee_write_ledger_entry',
+      type: 'XdrConfigSettingContractLedgerCostV0',
+    );
+    final Object? jsonFeeDiskRead1KB = XdrJsonHelper.readField(
+      object,
+      'fee_disk_read1_kb',
+      type: 'XdrConfigSettingContractLedgerCostV0',
+    );
+    final Object? jsonSorobanStateTargetSizeBytes = XdrJsonHelper.readField(
+      object,
+      'soroban_state_target_size_bytes',
+      type: 'XdrConfigSettingContractLedgerCostV0',
+    );
+    final Object? jsonRentFee1KBSorobanStateSizeLow = XdrJsonHelper.readField(
+      object,
+      'rent_fee1_kb_soroban_state_size_low',
+      type: 'XdrConfigSettingContractLedgerCostV0',
+    );
+    final Object? jsonRentFee1KBSorobanStateSizeHigh = XdrJsonHelper.readField(
+      object,
+      'rent_fee1_kb_soroban_state_size_high',
+      type: 'XdrConfigSettingContractLedgerCostV0',
+    );
+    final Object? jsonSorobanStateRentFeeGrowthFactor = XdrJsonHelper.readField(
+      object,
+      'soroban_state_rent_fee_growth_factor',
+      type: 'XdrConfigSettingContractLedgerCostV0',
+    );
+    return XdrConfigSettingContractLedgerCostV0(
+      XdrUint32.fromXdrJsonValue(jsonLedgerMaxDiskReadEntries),
+      XdrUint32.fromXdrJsonValue(jsonLedgerMaxDiskReadBytes),
+      XdrUint32.fromXdrJsonValue(jsonLedgerMaxWriteLedgerEntries),
+      XdrUint32.fromXdrJsonValue(jsonLedgerMaxWriteBytes),
+      XdrUint32.fromXdrJsonValue(jsonTxMaxDiskReadEntries),
+      XdrUint32.fromXdrJsonValue(jsonTxMaxDiskReadBytes),
+      XdrUint32.fromXdrJsonValue(jsonTxMaxWriteLedgerEntries),
+      XdrUint32.fromXdrJsonValue(jsonTxMaxWriteBytes),
+      XdrInt64.fromXdrJsonValue(jsonFeeDiskReadLedgerEntry),
+      XdrInt64.fromXdrJsonValue(jsonFeeWriteLedgerEntry),
+      XdrInt64.fromXdrJsonValue(jsonFeeDiskRead1KB),
+      XdrInt64.fromXdrJsonValue(jsonSorobanStateTargetSizeBytes),
+      XdrInt64.fromXdrJsonValue(jsonRentFee1KBSorobanStateSizeLow),
+      XdrInt64.fromXdrJsonValue(jsonRentFee1KBSorobanStateSizeHigh),
+      XdrUint32.fromXdrJsonValue(jsonSorobanStateRentFeeGrowthFactor),
     );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_parallel_txs_component.dart';
 import 'xdr_tx_set_component.dart';
 
@@ -100,5 +101,70 @@ class XdrTransactionPhase {
   static XdrTransactionPhase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionPhase.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionPhase',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionPhase.
+  static XdrTransactionPhase fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionPhase'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionPhase.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return <String, Object?>{
+          'v0': XdrJsonHelper.array<XdrTxSetComponent>(
+            _v0Components!,
+            (XdrTxSetComponent v) => v.toXdrJsonValue(),
+            type: 'XdrTransactionPhase',
+            key: 'v0',
+          ),
+        };
+      case 1:
+        return <String, Object?>{'v1': _parallelTxsComponent!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrTransactionPhase',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrTransactionPhase from its SEP-0051 rendering.
+  static XdrTransactionPhase fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrTransactionPhase',
+    );
+    switch (arm.key) {
+      case 'v0':
+        final XdrTransactionPhase arm0 = XdrTransactionPhase(0);
+        arm0.v0Components =
+            XdrJsonHelper.readArray(
+                  arm.value,
+                  type: 'XdrTransactionPhase',
+                  key: 'v0',
+                )
+                .map<XdrTxSetComponent>(
+                  (Object? e) => XdrTxSetComponent.fromXdrJsonValue(e),
+                )
+                .toList();
+        return arm0;
+      case 'v1':
+        final XdrTransactionPhase arm1 = XdrTransactionPhase(1);
+        arm1.parallelTxsComponent = XdrParallelTxsComponent.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm1;
+    }
+    XdrJsonHelper.fail(
+      'XdrTransactionPhase',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

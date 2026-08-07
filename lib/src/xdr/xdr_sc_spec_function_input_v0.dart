@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_spec_type_def.dart';
 
 class XdrSCSpecFunctionInputV0 {
@@ -51,5 +52,73 @@ class XdrSCSpecFunctionInputV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecFunctionInputV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCSpecFunctionInputV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecFunctionInputV0.
+  static XdrSCSpecFunctionInputV0 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecFunctionInputV0'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCSpecFunctionInputV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'doc': XdrJsonHelper.escapedString(
+      _doc,
+      type: 'XdrSCSpecFunctionInputV0',
+      key: 'doc',
+      maxBytes: 1024,
+    ),
+    'name': XdrJsonHelper.escapedString(
+      _name,
+      type: 'XdrSCSpecFunctionInputV0',
+      key: 'name',
+      maxBytes: 30,
+    ),
+    'type': _type.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSCSpecFunctionInputV0 from its SEP-0051 rendering.
+  static XdrSCSpecFunctionInputV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCSpecFunctionInputV0',
+      allowedKeys: const <String>{'doc', 'name', 'type', 'type_'},
+    );
+    final Object? jsonDoc = XdrJsonHelper.readField(
+      object,
+      'doc',
+      type: 'XdrSCSpecFunctionInputV0',
+    );
+    final Object? jsonName = XdrJsonHelper.readField(
+      object,
+      'name',
+      type: 'XdrSCSpecFunctionInputV0',
+    );
+    final Object? jsonType = XdrJsonHelper.readField(
+      object,
+      'type',
+      type: 'XdrSCSpecFunctionInputV0',
+      alias: 'type_',
+    );
+    return XdrSCSpecFunctionInputV0(
+      XdrJsonHelper.readEscapedString(
+        jsonDoc,
+        type: 'XdrSCSpecFunctionInputV0',
+        key: 'doc',
+        maxBytes: 1024,
+      ),
+      XdrJsonHelper.readEscapedString(
+        jsonName,
+        type: 'XdrSCSpecFunctionInputV0',
+        key: 'name',
+        maxBytes: 30,
+      ),
+      XdrSCSpecTypeDef.fromXdrJsonValue(jsonType),
+    );
   }
 }

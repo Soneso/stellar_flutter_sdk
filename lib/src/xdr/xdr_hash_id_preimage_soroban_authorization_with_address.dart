@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_address.dart';
 import 'xdr_soroban_authorized_invocation.dart';
 import 'xdr_uint32.dart';
@@ -104,6 +105,80 @@ class XdrHashIDPreimageSorobanAuthorizationWithAddress {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHashIDPreimageSorobanAuthorizationWithAddress.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrHashIDPreimageSorobanAuthorizationWithAddress',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrHashIDPreimageSorobanAuthorizationWithAddress.
+  static XdrHashIDPreimageSorobanAuthorizationWithAddress fromXdrJson(
+    String json,
+  ) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(
+      json,
+      type: 'XdrHashIDPreimageSorobanAuthorizationWithAddress',
+    ),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrHashIDPreimageSorobanAuthorizationWithAddress.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'network_id': _networkID.toXdrJsonValue(),
+    'nonce': _nonce.toXdrJsonValue(),
+    'signature_expiration_ledger': _signatureExpirationLedger.toXdrJsonValue(),
+    'address': _address.toXdrJsonValue(),
+    'invocation': _invocation.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrHashIDPreimageSorobanAuthorizationWithAddress from its SEP-0051 rendering.
+  static XdrHashIDPreimageSorobanAuthorizationWithAddress fromXdrJsonValue(
+    Object? value,
+  ) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrHashIDPreimageSorobanAuthorizationWithAddress',
+      allowedKeys: const <String>{
+        'network_id',
+        'nonce',
+        'signature_expiration_ledger',
+        'address',
+        'invocation',
+      },
+    );
+    final Object? jsonNetworkID = XdrJsonHelper.readField(
+      object,
+      'network_id',
+      type: 'XdrHashIDPreimageSorobanAuthorizationWithAddress',
+    );
+    final Object? jsonNonce = XdrJsonHelper.readField(
+      object,
+      'nonce',
+      type: 'XdrHashIDPreimageSorobanAuthorizationWithAddress',
+    );
+    final Object? jsonSignatureExpirationLedger = XdrJsonHelper.readField(
+      object,
+      'signature_expiration_ledger',
+      type: 'XdrHashIDPreimageSorobanAuthorizationWithAddress',
+    );
+    final Object? jsonAddress = XdrJsonHelper.readField(
+      object,
+      'address',
+      type: 'XdrHashIDPreimageSorobanAuthorizationWithAddress',
+    );
+    final Object? jsonInvocation = XdrJsonHelper.readField(
+      object,
+      'invocation',
+      type: 'XdrHashIDPreimageSorobanAuthorizationWithAddress',
+    );
+    return XdrHashIDPreimageSorobanAuthorizationWithAddress(
+      XdrHash.fromXdrJsonValue(jsonNetworkID),
+      XdrInt64.fromXdrJsonValue(jsonNonce),
+      XdrUint32.fromXdrJsonValue(jsonSignatureExpirationLedger),
+      XdrSCAddress.fromXdrJsonValue(jsonAddress),
+      XdrSorobanAuthorizedInvocation.fromXdrJsonValue(jsonInvocation),
     );
   }
 }

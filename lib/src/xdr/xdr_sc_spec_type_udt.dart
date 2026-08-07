@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSCSpecTypeUDT {
   String _name;
@@ -36,5 +37,46 @@ class XdrSCSpecTypeUDT {
   static XdrSCSpecTypeUDT fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecTypeUDT.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCSpecTypeUDT');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecTypeUDT.
+  static XdrSCSpecTypeUDT fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecTypeUDT'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCSpecTypeUDT.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'name': XdrJsonHelper.escapedString(
+      _name,
+      type: 'XdrSCSpecTypeUDT',
+      key: 'name',
+      maxBytes: 60,
+    ),
+  };
+
+  /// Reads a XdrSCSpecTypeUDT from its SEP-0051 rendering.
+  static XdrSCSpecTypeUDT fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCSpecTypeUDT',
+      allowedKeys: const <String>{'name'},
+    );
+    final Object? jsonName = XdrJsonHelper.readField(
+      object,
+      'name',
+      type: 'XdrSCSpecTypeUDT',
+    );
+    return XdrSCSpecTypeUDT(
+      XdrJsonHelper.readEscapedString(
+        jsonName,
+        type: 'XdrSCSpecTypeUDT',
+        key: 'name',
+        maxBytes: 60,
+      ),
+    );
   }
 }

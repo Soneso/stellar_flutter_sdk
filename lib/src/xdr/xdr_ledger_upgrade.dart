@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_config_upgrade_set_key.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_upgrade_type.dart';
 import 'xdr_uint32.dart';
 
@@ -140,5 +141,102 @@ class XdrLedgerUpgrade {
   static XdrLedgerUpgrade fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerUpgrade.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrLedgerUpgrade');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerUpgrade.
+  static XdrLedgerUpgrade fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerUpgrade'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerUpgrade.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 1:
+        return <String, Object?>{
+          'version': _newLedgerVersion!.toXdrJsonValue(),
+        };
+      case 2:
+        return <String, Object?>{'base_fee': _newBaseFee!.toXdrJsonValue()};
+      case 3:
+        return <String, Object?>{
+          'max_tx_set_size': _newMaxTxSetSize!.toXdrJsonValue(),
+        };
+      case 4:
+        return <String, Object?>{
+          'base_reserve': _newBaseReserve!.toXdrJsonValue(),
+        };
+      case 5:
+        return <String, Object?>{'flags': _newFlags!.toXdrJsonValue()};
+      case 6:
+        return <String, Object?>{'config': _newConfig!.toXdrJsonValue()};
+      case 7:
+        return <String, Object?>{
+          'max_soroban_tx_set_size': _newMaxSorobanTxSetSize!.toXdrJsonValue(),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerUpgrade',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrLedgerUpgrade from its SEP-0051 rendering.
+  static XdrLedgerUpgrade fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrLedgerUpgrade',
+    );
+    switch (arm.key) {
+      case 'version':
+        final XdrLedgerUpgrade arm0 = XdrLedgerUpgrade(
+          XdrLedgerUpgradeType.LEDGER_UPGRADE_VERSION,
+        );
+        arm0.newLedgerVersion = XdrUint32.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'base_fee':
+        final XdrLedgerUpgrade arm1 = XdrLedgerUpgrade(
+          XdrLedgerUpgradeType.LEDGER_UPGRADE_BASE_FEE,
+        );
+        arm1.newBaseFee = XdrUint32.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'max_tx_set_size':
+        final XdrLedgerUpgrade arm2 = XdrLedgerUpgrade(
+          XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_TX_SET_SIZE,
+        );
+        arm2.newMaxTxSetSize = XdrUint32.fromXdrJsonValue(arm.value);
+        return arm2;
+      case 'base_reserve':
+        final XdrLedgerUpgrade arm3 = XdrLedgerUpgrade(
+          XdrLedgerUpgradeType.LEDGER_UPGRADE_BASE_RESERVE,
+        );
+        arm3.newBaseReserve = XdrUint32.fromXdrJsonValue(arm.value);
+        return arm3;
+      case 'flags':
+        final XdrLedgerUpgrade arm4 = XdrLedgerUpgrade(
+          XdrLedgerUpgradeType.LEDGER_UPGRADE_FLAGS,
+        );
+        arm4.newFlags = XdrUint32.fromXdrJsonValue(arm.value);
+        return arm4;
+      case 'config':
+        final XdrLedgerUpgrade arm5 = XdrLedgerUpgrade(
+          XdrLedgerUpgradeType.LEDGER_UPGRADE_CONFIG,
+        );
+        arm5.newConfig = XdrConfigUpgradeSetKey.fromXdrJsonValue(arm.value);
+        return arm5;
+      case 'max_soroban_tx_set_size':
+        final XdrLedgerUpgrade arm6 = XdrLedgerUpgrade(
+          XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE,
+        );
+        arm6.newMaxSorobanTxSetSize = XdrUint32.fromXdrJsonValue(arm.value);
+        return arm6;
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerUpgrade',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

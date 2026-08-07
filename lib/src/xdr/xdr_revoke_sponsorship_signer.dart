@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_signer_key.dart';
 
 class XdrRevokeSponsorshipSigner {
@@ -65,5 +66,46 @@ class XdrRevokeSponsorshipSigner {
       TxRepHelper.getValue(map, '$prefix.signerKey') ?? '',
     );
     return XdrRevokeSponsorshipSigner(accountId, signerKey);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrRevokeSponsorshipSigner',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrRevokeSponsorshipSigner.
+  static XdrRevokeSponsorshipSigner fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrRevokeSponsorshipSigner'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrRevokeSponsorshipSigner.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'account_id': _accountId.toXdrJsonValue(),
+    'signer_key': _signerKey.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrRevokeSponsorshipSigner from its SEP-0051 rendering.
+  static XdrRevokeSponsorshipSigner fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrRevokeSponsorshipSigner',
+      allowedKeys: const <String>{'account_id', 'signer_key'},
+    );
+    final Object? jsonAccountId = XdrJsonHelper.readField(
+      object,
+      'account_id',
+      type: 'XdrRevokeSponsorshipSigner',
+    );
+    final Object? jsonSignerKey = XdrJsonHelper.readField(
+      object,
+      'signer_key',
+      type: 'XdrRevokeSponsorshipSigner',
+    );
+    return XdrRevokeSponsorshipSigner(
+      XdrAccountID.fromXdrJsonValue(jsonAccountId),
+      XdrSignerKey.fromXdrJsonValue(jsonSignerKey),
+    );
   }
 }

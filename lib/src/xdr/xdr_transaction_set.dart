@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_transaction_envelope.dart';
 
 class XdrTransactionSet {
@@ -54,5 +55,52 @@ class XdrTransactionSet {
   static XdrTransactionSet fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionSet.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrTransactionSet');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionSet.
+  static XdrTransactionSet fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionSet'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionSet.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'previous_ledger_hash': _previousLedgerHash.toXdrJsonValue(),
+    'txs': XdrJsonHelper.array<XdrTransactionEnvelope>(
+      _txs,
+      (XdrTransactionEnvelope v) => v.toXdrJsonValue(),
+      type: 'XdrTransactionSet',
+      key: 'txs',
+    ),
+  };
+
+  /// Reads a XdrTransactionSet from its SEP-0051 rendering.
+  static XdrTransactionSet fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTransactionSet',
+      allowedKeys: const <String>{'previous_ledger_hash', 'txs'},
+    );
+    final Object? jsonPreviousLedgerHash = XdrJsonHelper.readField(
+      object,
+      'previous_ledger_hash',
+      type: 'XdrTransactionSet',
+    );
+    final Object? jsonTxs = XdrJsonHelper.readField(
+      object,
+      'txs',
+      type: 'XdrTransactionSet',
+    );
+    return XdrTransactionSet(
+      XdrHash.fromXdrJsonValue(jsonPreviousLedgerHash),
+      XdrJsonHelper.readArray(jsonTxs, type: 'XdrTransactionSet', key: 'txs')
+          .map<XdrTransactionEnvelope>(
+            (Object? e) => XdrTransactionEnvelope.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

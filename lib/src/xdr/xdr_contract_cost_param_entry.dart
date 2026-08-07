@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 
 class XdrContractCostParamEntry {
   XdrExtensionPoint _ext;
@@ -52,5 +53,52 @@ class XdrContractCostParamEntry {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractCostParamEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrContractCostParamEntry',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractCostParamEntry.
+  static XdrContractCostParamEntry fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractCostParamEntry'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrContractCostParamEntry.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'const_term': _constTerm.toXdrJsonValue(),
+    'linear_term': _linearTerm.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrContractCostParamEntry from its SEP-0051 rendering.
+  static XdrContractCostParamEntry fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrContractCostParamEntry',
+      allowedKeys: const <String>{'ext', 'const_term', 'linear_term'},
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrContractCostParamEntry',
+    );
+    final Object? jsonConstTerm = XdrJsonHelper.readField(
+      object,
+      'const_term',
+      type: 'XdrContractCostParamEntry',
+    );
+    final Object? jsonLinearTerm = XdrJsonHelper.readField(
+      object,
+      'linear_term',
+      type: 'XdrContractCostParamEntry',
+    );
+    return XdrContractCostParamEntry(
+      XdrExtensionPoint.fromXdrJsonValue(jsonExt),
+      XdrInt64.fromXdrJsonValue(jsonConstTerm),
+      XdrInt64.fromXdrJsonValue(jsonLinearTerm),
+    );
   }
 }

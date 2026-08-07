@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrCurve25519Secret {
   Uint8List _key;
@@ -36,5 +37,43 @@ class XdrCurve25519Secret {
   static XdrCurve25519Secret fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrCurve25519Secret.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrCurve25519Secret',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrCurve25519Secret.
+  static XdrCurve25519Secret fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrCurve25519Secret'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrCurve25519Secret.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'key': XdrJsonHelper.hex(_key, type: 'XdrCurve25519Secret', key: 'key'),
+  };
+
+  /// Reads a XdrCurve25519Secret from its SEP-0051 rendering.
+  static XdrCurve25519Secret fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrCurve25519Secret',
+      allowedKeys: const <String>{'key'},
+    );
+    final Object? jsonKey = XdrJsonHelper.readField(
+      object,
+      'key',
+      type: 'XdrCurve25519Secret',
+    );
+    return XdrCurve25519Secret(
+      XdrJsonHelper.readHex(
+        jsonKey,
+        type: 'XdrCurve25519Secret',
+        key: 'key',
+        expectedLength: 32,
+      ),
+    );
   }
 }

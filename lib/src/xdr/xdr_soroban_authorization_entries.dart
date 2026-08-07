@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_soroban_authorization_entry.dart';
 
 class XdrSorobanAuthorizationEntries {
@@ -77,4 +78,36 @@ class XdrSorobanAuthorizationEntries {
     }
     return XdrSorobanAuthorizationEntries(items);
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSorobanAuthorizationEntries',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanAuthorizationEntries.
+  static XdrSorobanAuthorizationEntries fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrSorobanAuthorizationEntries',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() => XdrJsonHelper.array<XdrSorobanAuthorizationEntry>(
+    _sorobanAuthorizationEntries,
+    (XdrSorobanAuthorizationEntry v) => v.toXdrJsonValue(),
+    type: 'XdrSorobanAuthorizationEntries',
+  );
+
+  /// Reads a XdrSorobanAuthorizationEntries from the SEP-0051 rendering of its value.
+  static XdrSorobanAuthorizationEntries fromXdrJsonValue(Object? value) =>
+      XdrSorobanAuthorizationEntries(
+        XdrJsonHelper.readArray(value, type: 'XdrSorobanAuthorizationEntries')
+            .map<XdrSorobanAuthorizationEntry>(
+              (Object? e) => XdrSorobanAuthorizationEntry.fromXdrJsonValue(e),
+            )
+            .toList(),
+      );
 }

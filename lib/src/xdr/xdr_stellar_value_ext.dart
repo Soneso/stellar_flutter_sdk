@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_close_value_signature.dart';
 import 'xdr_stellar_value_proposed_value.dart';
 import 'xdr_stellar_value_type.dart';
@@ -93,5 +94,74 @@ class XdrStellarValueExt {
   static XdrStellarValueExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrStellarValueExt.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrStellarValueExt',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrStellarValueExt.
+  static XdrStellarValueExt fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrStellarValueExt'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrStellarValueExt.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'basic';
+      case 1:
+        return <String, Object?>{'signed': _lcValueSignature!.toXdrJsonValue()};
+      case 2:
+        return <String, Object?>{
+          'empty_tx_set': _proposedValue!.toXdrJsonValue(),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrStellarValueExt',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrStellarValueExt from its SEP-0051 rendering.
+  static XdrStellarValueExt fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'basic':
+          return XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC);
+      }
+      XdrJsonHelper.fail(
+        'XdrStellarValueExt',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrStellarValueExt',
+    );
+    switch (arm.key) {
+      case 'signed':
+        final XdrStellarValueExt arm0 = XdrStellarValueExt(
+          XdrStellarValueType.STELLAR_VALUE_SIGNED,
+        );
+        arm0.lcValueSignature = XdrLedgerCloseValueSignature.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm0;
+      case 'empty_tx_set':
+        final XdrStellarValueExt arm1 = XdrStellarValueExt(
+          XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET,
+        );
+        arm1.proposedValue = XdrStellarValueProposedValue.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm1;
+    }
+    XdrJsonHelper.fail(
+      'XdrStellarValueExt',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

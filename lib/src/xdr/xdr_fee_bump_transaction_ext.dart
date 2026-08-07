@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrFeeBumpTransactionExt {
   int _v;
@@ -85,5 +86,46 @@ class XdrFeeBumpTransactionExt {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrFeeBumpTransactionExt',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrFeeBumpTransactionExt.
+  static XdrFeeBumpTransactionExt fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrFeeBumpTransactionExt'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrFeeBumpTransactionExt.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return 'v0';
+    }
+    XdrJsonHelper.fail(
+      'XdrFeeBumpTransactionExt',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrFeeBumpTransactionExt from its SEP-0051 rendering.
+  static XdrFeeBumpTransactionExt fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'v0':
+          return XdrFeeBumpTransactionExt(0);
+      }
+      XdrJsonHelper.fail(
+        'XdrFeeBumpTransactionExt',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrFeeBumpTransactionExt',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

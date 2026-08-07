@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingContractExecutionLanesV0 {
@@ -46,6 +47,45 @@ class XdrConfigSettingContractExecutionLanesV0 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigSettingContractExecutionLanesV0.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrConfigSettingContractExecutionLanesV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrConfigSettingContractExecutionLanesV0.
+  static XdrConfigSettingContractExecutionLanesV0 fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrConfigSettingContractExecutionLanesV0',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrConfigSettingContractExecutionLanesV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ledger_max_tx_count': _ledgerMaxTxCount.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrConfigSettingContractExecutionLanesV0 from its SEP-0051 rendering.
+  static XdrConfigSettingContractExecutionLanesV0 fromXdrJsonValue(
+    Object? value,
+  ) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrConfigSettingContractExecutionLanesV0',
+      allowedKeys: const <String>{'ledger_max_tx_count'},
+    );
+    final Object? jsonLedgerMaxTxCount = XdrJsonHelper.readField(
+      object,
+      'ledger_max_tx_count',
+      type: 'XdrConfigSettingContractExecutionLanesV0',
+    );
+    return XdrConfigSettingContractExecutionLanesV0(
+      XdrUint32.fromXdrJsonValue(jsonLedgerMaxTxCount),
     );
   }
 }

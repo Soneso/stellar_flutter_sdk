@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrContractCostType {
   final _value;
@@ -330,5 +331,383 @@ class XdrContractCostType {
   static XdrContractCostType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractCostType.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrContractCostType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractCostType.
+  static XdrContractCostType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractCostType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'wasm_insn_exec';
+      case 1:
+        return 'mem_alloc';
+      case 2:
+        return 'mem_cpy';
+      case 3:
+        return 'mem_cmp';
+      case 4:
+        return 'dispatch_host_function';
+      case 5:
+        return 'visit_object';
+      case 6:
+        return 'val_ser';
+      case 7:
+        return 'val_deser';
+      case 8:
+        return 'compute_sha256_hash';
+      case 9:
+        return 'compute_ed25519_pub_key';
+      case 10:
+        return 'verify_ed25519_sig';
+      case 11:
+        return 'vm_instantiation';
+      case 12:
+        return 'vm_cached_instantiation';
+      case 13:
+        return 'invoke_vm_function';
+      case 14:
+        return 'compute_keccak256_hash';
+      case 15:
+        return 'decode_ecdsa_curve256_sig';
+      case 16:
+        return 'recover_ecdsa_secp256k1_key';
+      case 17:
+        return 'int256_add_sub';
+      case 18:
+        return 'int256_mul';
+      case 19:
+        return 'int256_div';
+      case 20:
+        return 'int256_pow';
+      case 21:
+        return 'int256_shift';
+      case 22:
+        return 'cha_cha20_draw_bytes';
+      case 23:
+        return 'parse_wasm_instructions';
+      case 24:
+        return 'parse_wasm_functions';
+      case 25:
+        return 'parse_wasm_globals';
+      case 26:
+        return 'parse_wasm_table_entries';
+      case 27:
+        return 'parse_wasm_types';
+      case 28:
+        return 'parse_wasm_data_segments';
+      case 29:
+        return 'parse_wasm_elem_segments';
+      case 30:
+        return 'parse_wasm_imports';
+      case 31:
+        return 'parse_wasm_exports';
+      case 32:
+        return 'parse_wasm_data_segment_bytes';
+      case 33:
+        return 'instantiate_wasm_instructions';
+      case 34:
+        return 'instantiate_wasm_functions';
+      case 35:
+        return 'instantiate_wasm_globals';
+      case 36:
+        return 'instantiate_wasm_table_entries';
+      case 37:
+        return 'instantiate_wasm_types';
+      case 38:
+        return 'instantiate_wasm_data_segments';
+      case 39:
+        return 'instantiate_wasm_elem_segments';
+      case 40:
+        return 'instantiate_wasm_imports';
+      case 41:
+        return 'instantiate_wasm_exports';
+      case 42:
+        return 'instantiate_wasm_data_segment_bytes';
+      case 43:
+        return 'sec1_decode_point_uncompressed';
+      case 44:
+        return 'verify_ecdsa_secp256r1_sig';
+      case 45:
+        return 'bls12381_encode_fp';
+      case 46:
+        return 'bls12381_decode_fp';
+      case 47:
+        return 'bls12381_g1_check_point_on_curve';
+      case 48:
+        return 'bls12381_g1_check_point_in_subgroup';
+      case 49:
+        return 'bls12381_g2_check_point_on_curve';
+      case 50:
+        return 'bls12381_g2_check_point_in_subgroup';
+      case 51:
+        return 'bls12381_g1_projective_to_affine';
+      case 52:
+        return 'bls12381_g2_projective_to_affine';
+      case 53:
+        return 'bls12381_g1_add';
+      case 54:
+        return 'bls12381_g1_mul';
+      case 55:
+        return 'bls12381_g1_msm';
+      case 56:
+        return 'bls12381_map_fp_to_g1';
+      case 57:
+        return 'bls12381_hash_to_g1';
+      case 58:
+        return 'bls12381_g2_add';
+      case 59:
+        return 'bls12381_g2_mul';
+      case 60:
+        return 'bls12381_g2_msm';
+      case 61:
+        return 'bls12381_map_fp2_to_g2';
+      case 62:
+        return 'bls12381_hash_to_g2';
+      case 63:
+        return 'bls12381_pairing';
+      case 64:
+        return 'bls12381_fr_from_u256';
+      case 65:
+        return 'bls12381_fr_to_u256';
+      case 66:
+        return 'bls12381_fr_add_sub';
+      case 67:
+        return 'bls12381_fr_mul';
+      case 68:
+        return 'bls12381_fr_pow';
+      case 69:
+        return 'bls12381_fr_inv';
+      case 70:
+        return 'bn254_encode_fp';
+      case 71:
+        return 'bn254_decode_fp';
+      case 72:
+        return 'bn254_g1_check_point_on_curve';
+      case 73:
+        return 'bn254_g2_check_point_on_curve';
+      case 74:
+        return 'bn254_g2_check_point_in_subgroup';
+      case 75:
+        return 'bn254_g1_projective_to_affine';
+      case 76:
+        return 'bn254_g1_add';
+      case 77:
+        return 'bn254_g1_mul';
+      case 78:
+        return 'bn254_pairing';
+      case 79:
+        return 'bn254_fr_from_u256';
+      case 80:
+        return 'bn254_fr_to_u256';
+      case 81:
+        return 'bn254_fr_add_sub';
+      case 82:
+        return 'bn254_fr_mul';
+      case 83:
+        return 'bn254_fr_pow';
+      case 84:
+        return 'bn254_fr_inv';
+      case 85:
+        return 'bn254_g1_msm';
+      default:
+        XdrJsonHelper.fail(
+          'XdrContractCostType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrContractCostType from its SEP-0051 name.
+  static XdrContractCostType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'wasm_insn_exec':
+          return XdrContractCostType.WasmInsnExec;
+        case 'mem_alloc':
+          return XdrContractCostType.MemAlloc;
+        case 'mem_cpy':
+          return XdrContractCostType.MemCpy;
+        case 'mem_cmp':
+          return XdrContractCostType.MemCmp;
+        case 'dispatch_host_function':
+          return XdrContractCostType.DispatchHostFunction;
+        case 'visit_object':
+          return XdrContractCostType.VisitObject;
+        case 'val_ser':
+          return XdrContractCostType.ValSer;
+        case 'val_deser':
+          return XdrContractCostType.ValDeser;
+        case 'compute_sha256_hash':
+          return XdrContractCostType.ComputeSha256Hash;
+        case 'compute_ed25519_pub_key':
+          return XdrContractCostType.ComputeEd25519PubKey;
+        case 'verify_ed25519_sig':
+          return XdrContractCostType.VerifyEd25519Sig;
+        case 'vm_instantiation':
+          return XdrContractCostType.VmInstantiation;
+        case 'vm_cached_instantiation':
+          return XdrContractCostType.VmCachedInstantiation;
+        case 'invoke_vm_function':
+          return XdrContractCostType.InvokeVmFunction;
+        case 'compute_keccak256_hash':
+          return XdrContractCostType.ComputeKeccak256Hash;
+        case 'decode_ecdsa_curve256_sig':
+          return XdrContractCostType.DecodeEcdsaCurve256Sig;
+        case 'recover_ecdsa_secp256k1_key':
+          return XdrContractCostType.RecoverEcdsaSecp256k1Key;
+        case 'int256_add_sub':
+          return XdrContractCostType.Int256AddSub;
+        case 'int256_mul':
+          return XdrContractCostType.Int256Mul;
+        case 'int256_div':
+          return XdrContractCostType.Int256Div;
+        case 'int256_pow':
+          return XdrContractCostType.Int256Pow;
+        case 'int256_shift':
+          return XdrContractCostType.Int256Shift;
+        case 'cha_cha20_draw_bytes':
+          return XdrContractCostType.ChaCha20DrawBytes;
+        case 'parse_wasm_instructions':
+          return XdrContractCostType.ParseWasmInstructions;
+        case 'parse_wasm_functions':
+          return XdrContractCostType.ParseWasmFunctions;
+        case 'parse_wasm_globals':
+          return XdrContractCostType.ParseWasmGlobals;
+        case 'parse_wasm_table_entries':
+          return XdrContractCostType.ParseWasmTableEntries;
+        case 'parse_wasm_types':
+          return XdrContractCostType.ParseWasmTypes;
+        case 'parse_wasm_data_segments':
+          return XdrContractCostType.ParseWasmDataSegments;
+        case 'parse_wasm_elem_segments':
+          return XdrContractCostType.ParseWasmElemSegments;
+        case 'parse_wasm_imports':
+          return XdrContractCostType.ParseWasmImports;
+        case 'parse_wasm_exports':
+          return XdrContractCostType.ParseWasmExports;
+        case 'parse_wasm_data_segment_bytes':
+          return XdrContractCostType.ParseWasmDataSegmentBytes;
+        case 'instantiate_wasm_instructions':
+          return XdrContractCostType.InstantiateWasmInstructions;
+        case 'instantiate_wasm_functions':
+          return XdrContractCostType.InstantiateWasmFunctions;
+        case 'instantiate_wasm_globals':
+          return XdrContractCostType.InstantiateWasmGlobals;
+        case 'instantiate_wasm_table_entries':
+          return XdrContractCostType.InstantiateWasmTableEntries;
+        case 'instantiate_wasm_types':
+          return XdrContractCostType.InstantiateWasmTypes;
+        case 'instantiate_wasm_data_segments':
+          return XdrContractCostType.InstantiateWasmDataSegments;
+        case 'instantiate_wasm_elem_segments':
+          return XdrContractCostType.InstantiateWasmElemSegments;
+        case 'instantiate_wasm_imports':
+          return XdrContractCostType.InstantiateWasmImports;
+        case 'instantiate_wasm_exports':
+          return XdrContractCostType.InstantiateWasmExports;
+        case 'instantiate_wasm_data_segment_bytes':
+          return XdrContractCostType.InstantiateWasmDataSegmentBytes;
+        case 'sec1_decode_point_uncompressed':
+          return XdrContractCostType.Sec1DecodePointUncompressed;
+        case 'verify_ecdsa_secp256r1_sig':
+          return XdrContractCostType.VerifyEcdsaSecp256r1Sig;
+        case 'bls12381_encode_fp':
+          return XdrContractCostType.Bls12381EncodeFp;
+        case 'bls12381_decode_fp':
+          return XdrContractCostType.Bls12381DecodeFp;
+        case 'bls12381_g1_check_point_on_curve':
+          return XdrContractCostType.Bls12381G1CheckPointOnCurve;
+        case 'bls12381_g1_check_point_in_subgroup':
+          return XdrContractCostType.Bls12381G1CheckPointInSubgroup;
+        case 'bls12381_g2_check_point_on_curve':
+          return XdrContractCostType.Bls12381G2CheckPointOnCurve;
+        case 'bls12381_g2_check_point_in_subgroup':
+          return XdrContractCostType.Bls12381G2CheckPointInSubgroup;
+        case 'bls12381_g1_projective_to_affine':
+          return XdrContractCostType.Bls12381G1ProjectiveToAffine;
+        case 'bls12381_g2_projective_to_affine':
+          return XdrContractCostType.Bls12381G2ProjectiveToAffine;
+        case 'bls12381_g1_add':
+          return XdrContractCostType.Bls12381G1Add;
+        case 'bls12381_g1_mul':
+          return XdrContractCostType.Bls12381G1Mul;
+        case 'bls12381_g1_msm':
+          return XdrContractCostType.Bls12381G1Msm;
+        case 'bls12381_map_fp_to_g1':
+          return XdrContractCostType.Bls12381MapFpToG1;
+        case 'bls12381_hash_to_g1':
+          return XdrContractCostType.Bls12381HashToG1;
+        case 'bls12381_g2_add':
+          return XdrContractCostType.Bls12381G2Add;
+        case 'bls12381_g2_mul':
+          return XdrContractCostType.Bls12381G2Mul;
+        case 'bls12381_g2_msm':
+          return XdrContractCostType.Bls12381G2Msm;
+        case 'bls12381_map_fp2_to_g2':
+          return XdrContractCostType.Bls12381MapFp2ToG2;
+        case 'bls12381_hash_to_g2':
+          return XdrContractCostType.Bls12381HashToG2;
+        case 'bls12381_pairing':
+          return XdrContractCostType.Bls12381Pairing;
+        case 'bls12381_fr_from_u256':
+          return XdrContractCostType.Bls12381FrFromU256;
+        case 'bls12381_fr_to_u256':
+          return XdrContractCostType.Bls12381FrToU256;
+        case 'bls12381_fr_add_sub':
+          return XdrContractCostType.Bls12381FrAddSub;
+        case 'bls12381_fr_mul':
+          return XdrContractCostType.Bls12381FrMul;
+        case 'bls12381_fr_pow':
+          return XdrContractCostType.Bls12381FrPow;
+        case 'bls12381_fr_inv':
+          return XdrContractCostType.Bls12381FrInv;
+        case 'bn254_encode_fp':
+          return XdrContractCostType.Bn254EncodeFp;
+        case 'bn254_decode_fp':
+          return XdrContractCostType.Bn254DecodeFp;
+        case 'bn254_g1_check_point_on_curve':
+          return XdrContractCostType.Bn254G1CheckPointOnCurve;
+        case 'bn254_g2_check_point_on_curve':
+          return XdrContractCostType.Bn254G2CheckPointOnCurve;
+        case 'bn254_g2_check_point_in_subgroup':
+          return XdrContractCostType.Bn254G2CheckPointInSubgroup;
+        case 'bn254_g1_projective_to_affine':
+          return XdrContractCostType.Bn254G1ProjectiveToAffine;
+        case 'bn254_g1_add':
+          return XdrContractCostType.Bn254G1Add;
+        case 'bn254_g1_mul':
+          return XdrContractCostType.Bn254G1Mul;
+        case 'bn254_pairing':
+          return XdrContractCostType.Bn254Pairing;
+        case 'bn254_fr_from_u256':
+          return XdrContractCostType.Bn254FrFromU256;
+        case 'bn254_fr_to_u256':
+          return XdrContractCostType.Bn254FrToU256;
+        case 'bn254_fr_add_sub':
+          return XdrContractCostType.Bn254FrAddSub;
+        case 'bn254_fr_mul':
+          return XdrContractCostType.Bn254FrMul;
+        case 'bn254_fr_pow':
+          return XdrContractCostType.Bn254FrPow;
+        case 'bn254_fr_inv':
+          return XdrContractCostType.Bn254FrInv;
+        case 'bn254_g1_msm':
+          return XdrContractCostType.Bn254G1Msm;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrContractCostType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

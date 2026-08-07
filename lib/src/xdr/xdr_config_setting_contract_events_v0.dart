@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingContractEventsV0 {
@@ -61,5 +62,53 @@ class XdrConfigSettingContractEventsV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigSettingContractEventsV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrConfigSettingContractEventsV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrConfigSettingContractEventsV0.
+  static XdrConfigSettingContractEventsV0 fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrConfigSettingContractEventsV0',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrConfigSettingContractEventsV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'tx_max_contract_events_size_bytes': _txMaxContractEventsSizeBytes
+        .toXdrJsonValue(),
+    'fee_contract_events1_kb': _feeContractEvents1KB.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrConfigSettingContractEventsV0 from its SEP-0051 rendering.
+  static XdrConfigSettingContractEventsV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrConfigSettingContractEventsV0',
+      allowedKeys: const <String>{
+        'tx_max_contract_events_size_bytes',
+        'fee_contract_events1_kb',
+      },
+    );
+    final Object? jsonTxMaxContractEventsSizeBytes = XdrJsonHelper.readField(
+      object,
+      'tx_max_contract_events_size_bytes',
+      type: 'XdrConfigSettingContractEventsV0',
+    );
+    final Object? jsonFeeContractEvents1KB = XdrJsonHelper.readField(
+      object,
+      'fee_contract_events1_kb',
+      type: 'XdrConfigSettingContractEventsV0',
+    );
+    return XdrConfigSettingContractEventsV0(
+      XdrUint32.fromXdrJsonValue(jsonTxMaxContractEventsSizeBytes),
+      XdrInt64.fromXdrJsonValue(jsonFeeContractEvents1KB),
+    );
   }
 }

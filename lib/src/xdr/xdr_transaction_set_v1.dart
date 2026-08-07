@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_transaction_phase.dart';
 
 class XdrTransactionSetV1 {
@@ -54,5 +55,58 @@ class XdrTransactionSetV1 {
   static XdrTransactionSetV1 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionSetV1.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionSetV1',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionSetV1.
+  static XdrTransactionSetV1 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionSetV1'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionSetV1.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'previous_ledger_hash': _previousLedgerHash.toXdrJsonValue(),
+    'phases': XdrJsonHelper.array<XdrTransactionPhase>(
+      _phases,
+      (XdrTransactionPhase v) => v.toXdrJsonValue(),
+      type: 'XdrTransactionSetV1',
+      key: 'phases',
+    ),
+  };
+
+  /// Reads a XdrTransactionSetV1 from its SEP-0051 rendering.
+  static XdrTransactionSetV1 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTransactionSetV1',
+      allowedKeys: const <String>{'previous_ledger_hash', 'phases'},
+    );
+    final Object? jsonPreviousLedgerHash = XdrJsonHelper.readField(
+      object,
+      'previous_ledger_hash',
+      type: 'XdrTransactionSetV1',
+    );
+    final Object? jsonPhases = XdrJsonHelper.readField(
+      object,
+      'phases',
+      type: 'XdrTransactionSetV1',
+    );
+    return XdrTransactionSetV1(
+      XdrHash.fromXdrJsonValue(jsonPreviousLedgerHash),
+      XdrJsonHelper.readArray(
+            jsonPhases,
+            type: 'XdrTransactionSetV1',
+            key: 'phases',
+          )
+          .map<XdrTransactionPhase>(
+            (Object? e) => XdrTransactionPhase.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

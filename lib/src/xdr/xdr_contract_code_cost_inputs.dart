@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrContractCodeCostInputs {
@@ -124,5 +125,120 @@ class XdrContractCodeCostInputs {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractCodeCostInputs.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrContractCodeCostInputs',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractCodeCostInputs.
+  static XdrContractCodeCostInputs fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractCodeCostInputs'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrContractCodeCostInputs.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'n_instructions': _nInstructions.toXdrJsonValue(),
+    'n_functions': _nFunctions.toXdrJsonValue(),
+    'n_globals': _nGlobals.toXdrJsonValue(),
+    'n_table_entries': _nTableEntries.toXdrJsonValue(),
+    'n_types': _nTypes.toXdrJsonValue(),
+    'n_data_segments': _nDataSegments.toXdrJsonValue(),
+    'n_elem_segments': _nElemSegments.toXdrJsonValue(),
+    'n_imports': _nImports.toXdrJsonValue(),
+    'n_exports': _nExports.toXdrJsonValue(),
+    'n_data_segment_bytes': _nDataSegmentBytes.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrContractCodeCostInputs from its SEP-0051 rendering.
+  static XdrContractCodeCostInputs fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrContractCodeCostInputs',
+      allowedKeys: const <String>{
+        'ext',
+        'n_instructions',
+        'n_functions',
+        'n_globals',
+        'n_table_entries',
+        'n_types',
+        'n_data_segments',
+        'n_elem_segments',
+        'n_imports',
+        'n_exports',
+        'n_data_segment_bytes',
+      },
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrContractCodeCostInputs',
+    );
+    final Object? jsonNInstructions = XdrJsonHelper.readField(
+      object,
+      'n_instructions',
+      type: 'XdrContractCodeCostInputs',
+    );
+    final Object? jsonNFunctions = XdrJsonHelper.readField(
+      object,
+      'n_functions',
+      type: 'XdrContractCodeCostInputs',
+    );
+    final Object? jsonNGlobals = XdrJsonHelper.readField(
+      object,
+      'n_globals',
+      type: 'XdrContractCodeCostInputs',
+    );
+    final Object? jsonNTableEntries = XdrJsonHelper.readField(
+      object,
+      'n_table_entries',
+      type: 'XdrContractCodeCostInputs',
+    );
+    final Object? jsonNTypes = XdrJsonHelper.readField(
+      object,
+      'n_types',
+      type: 'XdrContractCodeCostInputs',
+    );
+    final Object? jsonNDataSegments = XdrJsonHelper.readField(
+      object,
+      'n_data_segments',
+      type: 'XdrContractCodeCostInputs',
+    );
+    final Object? jsonNElemSegments = XdrJsonHelper.readField(
+      object,
+      'n_elem_segments',
+      type: 'XdrContractCodeCostInputs',
+    );
+    final Object? jsonNImports = XdrJsonHelper.readField(
+      object,
+      'n_imports',
+      type: 'XdrContractCodeCostInputs',
+    );
+    final Object? jsonNExports = XdrJsonHelper.readField(
+      object,
+      'n_exports',
+      type: 'XdrContractCodeCostInputs',
+    );
+    final Object? jsonNDataSegmentBytes = XdrJsonHelper.readField(
+      object,
+      'n_data_segment_bytes',
+      type: 'XdrContractCodeCostInputs',
+    );
+    return XdrContractCodeCostInputs(
+      XdrExtensionPoint.fromXdrJsonValue(jsonExt),
+      XdrUint32.fromXdrJsonValue(jsonNInstructions),
+      XdrUint32.fromXdrJsonValue(jsonNFunctions),
+      XdrUint32.fromXdrJsonValue(jsonNGlobals),
+      XdrUint32.fromXdrJsonValue(jsonNTableEntries),
+      XdrUint32.fromXdrJsonValue(jsonNTypes),
+      XdrUint32.fromXdrJsonValue(jsonNDataSegments),
+      XdrUint32.fromXdrJsonValue(jsonNElemSegments),
+      XdrUint32.fromXdrJsonValue(jsonNImports),
+      XdrUint32.fromXdrJsonValue(jsonNExports),
+      XdrUint32.fromXdrJsonValue(jsonNDataSegmentBytes),
+    );
   }
 }

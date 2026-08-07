@@ -10,6 +10,7 @@ import 'package:stellar_flutter_sdk/src/util.dart';
 import 'xdr_claimable_balance_id_base.dart';
 import 'xdr_claimable_balance_id_type.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClaimableBalanceID extends XdrClaimableBalanceIDBase {
   XdrClaimableBalanceID(super.type);
@@ -61,4 +62,18 @@ class XdrClaimableBalanceID extends XdrClaimableBalanceIDBase {
       Uint8List.fromList([discriminant.value, ...v0!.hash]),
     );
   }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClaimableBalanceID.
+  ///
+  /// Dart does not inherit statics, so this narrows the base class rendering to
+  /// this type rather than relying on the one the base declares.
+  static XdrClaimableBalanceID fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrClaimableBalanceID'),
+  );
+
+  static XdrClaimableBalanceID fromXdrJsonValue(Object? value) =>
+      XdrClaimableBalanceIDBase.fromXdrJsonValueAs(
+        value,
+        XdrClaimableBalanceID.new,
+      );
 }

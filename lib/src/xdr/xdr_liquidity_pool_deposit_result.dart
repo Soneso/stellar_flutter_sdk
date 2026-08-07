@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_liquidity_pool_deposit_result_code.dart';
 
 class XdrLiquidityPoolDepositResult {
@@ -61,5 +62,103 @@ class XdrLiquidityPoolDepositResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolDepositResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLiquidityPoolDepositResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLiquidityPoolDepositResult.
+  static XdrLiquidityPoolDepositResult fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrLiquidityPoolDepositResult',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrLiquidityPoolDepositResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'no_trust';
+      case -3:
+        return 'not_authorized';
+      case -4:
+        return 'underfunded';
+      case -5:
+        return 'line_full';
+      case -6:
+        return 'bad_price';
+      case -7:
+        return 'pool_full';
+      case -8:
+        return 'trustline_frozen';
+    }
+    XdrJsonHelper.fail(
+      'XdrLiquidityPoolDepositResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrLiquidityPoolDepositResult from its SEP-0051 rendering.
+  static XdrLiquidityPoolDepositResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrLiquidityPoolDepositResult(
+            XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_SUCCESS,
+          );
+        case 'malformed':
+          return XdrLiquidityPoolDepositResult(
+            XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_MALFORMED,
+          );
+        case 'no_trust':
+          return XdrLiquidityPoolDepositResult(
+            XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_NO_TRUST,
+          );
+        case 'not_authorized':
+          return XdrLiquidityPoolDepositResult(
+            XdrLiquidityPoolDepositResultCode
+                .LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED,
+          );
+        case 'underfunded':
+          return XdrLiquidityPoolDepositResult(
+            XdrLiquidityPoolDepositResultCode
+                .LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED,
+          );
+        case 'line_full':
+          return XdrLiquidityPoolDepositResult(
+            XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_LINE_FULL,
+          );
+        case 'bad_price':
+          return XdrLiquidityPoolDepositResult(
+            XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_BAD_PRICE,
+          );
+        case 'pool_full':
+          return XdrLiquidityPoolDepositResult(
+            XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_POOL_FULL,
+          );
+        case 'trustline_frozen':
+          return XdrLiquidityPoolDepositResult(
+            XdrLiquidityPoolDepositResultCode
+                .LIQUIDITY_POOL_DEPOSIT_TRUSTLINE_FROZEN,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrLiquidityPoolDepositResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrLiquidityPoolDepositResult',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

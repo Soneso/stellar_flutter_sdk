@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_key.dart';
 import 'xdr_revoke_sponsorship_signer.dart';
 import 'xdr_revoke_sponsorship_type.dart';
@@ -125,5 +126,56 @@ class XdrRevokeSponsorshipOp {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrRevokeSponsorshipOp',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrRevokeSponsorshipOp.
+  static XdrRevokeSponsorshipOp fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrRevokeSponsorshipOp'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrRevokeSponsorshipOp.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'ledger_entry': _ledgerKey!.toXdrJsonValue()};
+      case 1:
+        return <String, Object?>{'signer': _signer!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrRevokeSponsorshipOp',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrRevokeSponsorshipOp from its SEP-0051 rendering.
+  static XdrRevokeSponsorshipOp fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrRevokeSponsorshipOp',
+    );
+    switch (arm.key) {
+      case 'ledger_entry':
+        final XdrRevokeSponsorshipOp arm0 = XdrRevokeSponsorshipOp(
+          XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_LEDGER_ENTRY,
+        );
+        arm0.ledgerKey = XdrLedgerKey.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'signer':
+        final XdrRevokeSponsorshipOp arm1 = XdrRevokeSponsorshipOp(
+          XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_SIGNER,
+        );
+        arm1.signer = XdrRevokeSponsorshipSigner.fromXdrJsonValue(arm.value);
+        return arm1;
+    }
+    XdrJsonHelper.fail(
+      'XdrRevokeSponsorshipOp',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

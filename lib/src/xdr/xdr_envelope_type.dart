@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrEnvelopeType {
   final _value;
@@ -154,5 +155,82 @@ class XdrEnvelopeType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrEnvelopeType');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrEnvelopeType.
+  static XdrEnvelopeType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrEnvelopeType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'tx_v0';
+      case 1:
+        return 'scp';
+      case 2:
+        return 'tx';
+      case 3:
+        return 'auth';
+      case 4:
+        return 'scpvalue';
+      case 5:
+        return 'tx_fee_bump';
+      case 6:
+        return 'op_id';
+      case 7:
+        return 'pool_revoke_op_id';
+      case 8:
+        return 'contract_id';
+      case 9:
+        return 'soroban_authorization';
+      case 10:
+        return 'soroban_authorization_with_address';
+      default:
+        XdrJsonHelper.fail(
+          'XdrEnvelopeType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrEnvelopeType from its SEP-0051 name.
+  static XdrEnvelopeType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'tx_v0':
+          return XdrEnvelopeType.ENVELOPE_TYPE_TX_V0;
+        case 'scp':
+          return XdrEnvelopeType.ENVELOPE_TYPE_SCP;
+        case 'tx':
+          return XdrEnvelopeType.ENVELOPE_TYPE_TX;
+        case 'auth':
+          return XdrEnvelopeType.ENVELOPE_TYPE_AUTH;
+        case 'scpvalue':
+          return XdrEnvelopeType.ENVELOPE_TYPE_SCPVALUE;
+        case 'tx_fee_bump':
+          return XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP;
+        case 'op_id':
+          return XdrEnvelopeType.ENVELOPE_TYPE_OP_ID;
+        case 'pool_revoke_op_id':
+          return XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID;
+        case 'contract_id':
+          return XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_ID;
+        case 'soroban_authorization':
+          return XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION;
+        case 'soroban_authorization_with_address':
+          return XdrEnvelopeType
+              .ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrEnvelopeType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

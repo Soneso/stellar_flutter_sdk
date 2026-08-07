@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_close_meta.dart';
 import 'xdr_uint32.dart';
 
@@ -75,5 +76,69 @@ class XdrLedgerCloseMetaBatch {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerCloseMetaBatch.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerCloseMetaBatch',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerCloseMetaBatch.
+  static XdrLedgerCloseMetaBatch fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerCloseMetaBatch'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerCloseMetaBatch.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'start_sequence': _startSequence.toXdrJsonValue(),
+    'end_sequence': _endSequence.toXdrJsonValue(),
+    'ledger_close_metas': XdrJsonHelper.array<XdrLedgerCloseMeta>(
+      _ledgerCloseMetas,
+      (XdrLedgerCloseMeta v) => v.toXdrJsonValue(),
+      type: 'XdrLedgerCloseMetaBatch',
+      key: 'ledger_close_metas',
+    ),
+  };
+
+  /// Reads a XdrLedgerCloseMetaBatch from its SEP-0051 rendering.
+  static XdrLedgerCloseMetaBatch fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerCloseMetaBatch',
+      allowedKeys: const <String>{
+        'start_sequence',
+        'end_sequence',
+        'ledger_close_metas',
+      },
+    );
+    final Object? jsonStartSequence = XdrJsonHelper.readField(
+      object,
+      'start_sequence',
+      type: 'XdrLedgerCloseMetaBatch',
+    );
+    final Object? jsonEndSequence = XdrJsonHelper.readField(
+      object,
+      'end_sequence',
+      type: 'XdrLedgerCloseMetaBatch',
+    );
+    final Object? jsonLedgerCloseMetas = XdrJsonHelper.readField(
+      object,
+      'ledger_close_metas',
+      type: 'XdrLedgerCloseMetaBatch',
+    );
+    return XdrLedgerCloseMetaBatch(
+      XdrUint32.fromXdrJsonValue(jsonStartSequence),
+      XdrUint32.fromXdrJsonValue(jsonEndSequence),
+      XdrJsonHelper.readArray(
+            jsonLedgerCloseMetas,
+            type: 'XdrLedgerCloseMetaBatch',
+            key: 'ledger_close_metas',
+          )
+          .map<XdrLedgerCloseMeta>(
+            (Object? e) => XdrLedgerCloseMeta.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

@@ -4,6 +4,7 @@
 
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_key_data_base.dart';
 import 'xdr_string64.dart';
 
@@ -21,6 +22,17 @@ class XdrLedgerKeyData extends XdrLedgerKeyDataBase {
 
   static XdrLedgerKeyData fromTxRep(Map<String, String> map, String prefix) {
     var b = XdrLedgerKeyDataBase.fromTxRep(map, prefix);
+    return XdrLedgerKeyData(b.accountID, b.dataName);
+  }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerKeyData.
+  static XdrLedgerKeyData fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerKeyData'),
+  );
+
+  /// Reads a XdrLedgerKeyData from its SEP-0051 rendering.
+  static XdrLedgerKeyData fromXdrJsonValue(Object? value) {
+    var b = XdrLedgerKeyDataBase.fromXdrJsonValue(value);
     return XdrLedgerKeyData(b.accountID, b.dataName);
   }
 

@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_soroban_address_credentials.dart';
 import 'xdr_soroban_delegate_signature.dart';
 
@@ -109,6 +110,65 @@ class XdrSorobanAddressCredentialsWithDelegates {
     return XdrSorobanAddressCredentialsWithDelegates(
       addressCredentials,
       delegates,
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSorobanAddressCredentialsWithDelegates',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanAddressCredentialsWithDelegates.
+  static XdrSorobanAddressCredentialsWithDelegates fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrSorobanAddressCredentialsWithDelegates',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrSorobanAddressCredentialsWithDelegates.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'address_credentials': _addressCredentials.toXdrJsonValue(),
+    'delegates': XdrJsonHelper.array<XdrSorobanDelegateSignature>(
+      _delegates,
+      (XdrSorobanDelegateSignature v) => v.toXdrJsonValue(),
+      type: 'XdrSorobanAddressCredentialsWithDelegates',
+      key: 'delegates',
+    ),
+  };
+
+  /// Reads a XdrSorobanAddressCredentialsWithDelegates from its SEP-0051 rendering.
+  static XdrSorobanAddressCredentialsWithDelegates fromXdrJsonValue(
+    Object? value,
+  ) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSorobanAddressCredentialsWithDelegates',
+      allowedKeys: const <String>{'address_credentials', 'delegates'},
+    );
+    final Object? jsonAddressCredentials = XdrJsonHelper.readField(
+      object,
+      'address_credentials',
+      type: 'XdrSorobanAddressCredentialsWithDelegates',
+    );
+    final Object? jsonDelegates = XdrJsonHelper.readField(
+      object,
+      'delegates',
+      type: 'XdrSorobanAddressCredentialsWithDelegates',
+    );
+    return XdrSorobanAddressCredentialsWithDelegates(
+      XdrSorobanAddressCredentials.fromXdrJsonValue(jsonAddressCredentials),
+      XdrJsonHelper.readArray(
+            jsonDelegates,
+            type: 'XdrSorobanAddressCredentialsWithDelegates',
+            key: 'delegates',
+          )
+          .map<XdrSorobanDelegateSignature>(
+            (Object? e) => XdrSorobanDelegateSignature.fromXdrJsonValue(e),
+          )
+          .toList(),
     );
   }
 }

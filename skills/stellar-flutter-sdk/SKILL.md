@@ -1,10 +1,10 @@
 ---
 name: stellar-flutter-sdk
-description: Build Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with async/await and Stream patterns across Android, iOS, and Web. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing in a Flutter app.
+description: Build Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, XDR-JSON, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with async/await and Stream patterns across Android, iOS, and Web. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing in a Flutter app.
 license: Apache 2.0
 compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.4.0
 metadata:
-  version: "1.2.1"
+  version: "1.3.0"
   sdk_version: "3.4.0"
 ---
 
@@ -383,10 +383,27 @@ String base64 = u32Val.toBase64EncodedXdrString();
 XdrSCVal decoded = XdrSCVal.fromBase64EncodedXdrString(base64);
 ```
 
+### XDR-JSON (SEP-51)
+
+Every generated `Xdr*` type also renders as readable JSON and reads back to the same bytes:
+
+```dart
+XdrTransactionEnvelope envelope =
+    XdrTransactionEnvelope.fromBase64EncodedXdrString(xdrBase64);
+
+String json = envelope.toXdrJson();           // canonical, compact, single line
+Object? tree = envelope.toXdrJsonValue();     // the same document as a Dart tree
+
+XdrTransactionEnvelope back = XdrTransactionEnvelope.fromXdrJson(json);
+print(back.toBase64EncodedXdrString() == xdrBase64);  // true
+```
+
+64-bit integers are base-10 strings, opaque fields are lowercase hex, addresses are strkeys, and every rejection is a `FormatException`. Use it for debugging and tooling, not as a network format.
+
 To submit a pre-signed XDR envelope: `sdk.submitTransactionEnvelopeXdrBase64(signedXdrBase64)`.
 
 For all XdrSCVal factory methods and type mapping:
-[XDR Reference](./references/xdr.md) | [Contract Arguments](./references/soroban_contracts.md)
+[XDR Reference](./references/xdr.md) | [SEP-51 XDR-JSON](./references/sep-51.md) | [Contract Arguments](./references/soroban_contracts.md)
 
 ## 9. Error Handling & Troubleshooting
 
@@ -441,7 +458,7 @@ For complete security patterns and platform-specific key storage:
 
 ## 11. SEP Implementations
 
-The Flutter SDK implements 18 Stellar Ecosystem Proposals (SEPs) — authentication, deposit/withdrawal, federation, KYC, and more.
+The Flutter SDK implements 18 Stellar Ecosystem Proposals (SEPs) — authentication, deposit/withdrawal, federation, KYC, XDR-JSON, and more. Sixteen have a reference page; SEP-23 (StrKey) and SEP-29 (memo requirements) are covered inside other topics.
 
 For all SEP examples with code: [SEP Implementations Guide](./references/sep.md)
 

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrAccountFlags {
   final _value;
@@ -57,5 +58,53 @@ class XdrAccountFlags {
   static XdrAccountFlags fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountFlags.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrAccountFlags');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAccountFlags.
+  static XdrAccountFlags fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrAccountFlags'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 1:
+        return 'required_flag';
+      case 2:
+        return 'revocable_flag';
+      case 4:
+        return 'immutable_flag';
+      case 8:
+        return 'clawback_enabled_flag';
+      default:
+        XdrJsonHelper.fail(
+          'XdrAccountFlags',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrAccountFlags from its SEP-0051 name.
+  static XdrAccountFlags fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'required_flag':
+          return XdrAccountFlags.AUTH_REQUIRED_FLAG;
+        case 'revocable_flag':
+          return XdrAccountFlags.AUTH_REVOCABLE_FLAG;
+        case 'immutable_flag':
+          return XdrAccountFlags.AUTH_IMMUTABLE_FLAG;
+        case 'clawback_enabled_flag':
+          return XdrAccountFlags.AUTH_CLAWBACK_ENABLED_FLAG;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrAccountFlags',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

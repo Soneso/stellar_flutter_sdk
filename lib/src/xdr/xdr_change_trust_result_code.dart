@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrChangeTrustResultCode {
   final _value;
@@ -87,5 +88,76 @@ class XdrChangeTrustResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrChangeTrustResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrChangeTrustResultCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrChangeTrustResultCode.
+  static XdrChangeTrustResultCode fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrChangeTrustResultCode'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'no_issuer';
+      case -3:
+        return 'invalid_limit';
+      case -4:
+        return 'low_reserve';
+      case -5:
+        return 'self_not_allowed';
+      case -6:
+        return 'trust_line_missing';
+      case -7:
+        return 'cannot_delete';
+      case -8:
+        return 'not_auth_maintain_liabilities';
+      default:
+        XdrJsonHelper.fail(
+          'XdrChangeTrustResultCode',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrChangeTrustResultCode from its SEP-0051 name.
+  static XdrChangeTrustResultCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrChangeTrustResultCode.CHANGE_TRUST_SUCCESS;
+        case 'malformed':
+          return XdrChangeTrustResultCode.CHANGE_TRUST_MALFORMED;
+        case 'no_issuer':
+          return XdrChangeTrustResultCode.CHANGE_TRUST_NO_ISSUER;
+        case 'invalid_limit':
+          return XdrChangeTrustResultCode.CHANGE_TRUST_INVALID_LIMIT;
+        case 'low_reserve':
+          return XdrChangeTrustResultCode.CHANGE_TRUST_LOW_RESERVE;
+        case 'self_not_allowed':
+          return XdrChangeTrustResultCode.CHANGE_TRUST_SELF_NOT_ALLOWED;
+        case 'trust_line_missing':
+          return XdrChangeTrustResultCode.CHANGE_TRUST_TRUST_LINE_MISSING;
+        case 'cannot_delete':
+          return XdrChangeTrustResultCode.CHANGE_TRUST_CANNOT_DELETE;
+        case 'not_auth_maintain_liabilities':
+          return XdrChangeTrustResultCode
+              .CHANGE_TRUST_NOT_AUTH_MAINTAIN_LIABILITIES;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrChangeTrustResultCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

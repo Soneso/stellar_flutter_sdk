@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSCSpecEventDataFormat {
   final _value;
@@ -62,5 +63,52 @@ class XdrSCSpecEventDataFormat {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecEventDataFormat.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCSpecEventDataFormat',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecEventDataFormat.
+  static XdrSCSpecEventDataFormat fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecEventDataFormat'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'single_value';
+      case 1:
+        return 'vec';
+      case 2:
+        return 'map';
+      default:
+        XdrJsonHelper.fail(
+          'XdrSCSpecEventDataFormat',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrSCSpecEventDataFormat from its SEP-0051 name.
+  static XdrSCSpecEventDataFormat fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'single_value':
+          return XdrSCSpecEventDataFormat
+              .SC_SPEC_EVENT_DATA_FORMAT_SINGLE_VALUE;
+        case 'vec':
+          return XdrSCSpecEventDataFormat.SC_SPEC_EVENT_DATA_FORMAT_VEC;
+        case 'map':
+          return XdrSCSpecEventDataFormat.SC_SPEC_EVENT_DATA_FORMAT_MAP;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrSCSpecEventDataFormat',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

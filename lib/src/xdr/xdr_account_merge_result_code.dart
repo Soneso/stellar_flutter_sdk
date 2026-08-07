@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrAccountMergeResultCode {
   final _value;
@@ -82,5 +83,71 @@ class XdrAccountMergeResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountMergeResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrAccountMergeResultCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAccountMergeResultCode.
+  static XdrAccountMergeResultCode fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrAccountMergeResultCode'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'no_account';
+      case -3:
+        return 'immutable_set';
+      case -4:
+        return 'has_sub_entries';
+      case -5:
+        return 'seqnum_too_far';
+      case -6:
+        return 'dest_full';
+      case -7:
+        return 'is_sponsor';
+      default:
+        XdrJsonHelper.fail(
+          'XdrAccountMergeResultCode',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrAccountMergeResultCode from its SEP-0051 name.
+  static XdrAccountMergeResultCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrAccountMergeResultCode.ACCOUNT_MERGE_SUCCESS;
+        case 'malformed':
+          return XdrAccountMergeResultCode.ACCOUNT_MERGE_MALFORMED;
+        case 'no_account':
+          return XdrAccountMergeResultCode.ACCOUNT_MERGE_NO_ACCOUNT;
+        case 'immutable_set':
+          return XdrAccountMergeResultCode.ACCOUNT_MERGE_IMMUTABLE_SET;
+        case 'has_sub_entries':
+          return XdrAccountMergeResultCode.ACCOUNT_MERGE_HAS_SUB_ENTRIES;
+        case 'seqnum_too_far':
+          return XdrAccountMergeResultCode.ACCOUNT_MERGE_SEQNUM_TOO_FAR;
+        case 'dest_full':
+          return XdrAccountMergeResultCode.ACCOUNT_MERGE_DEST_FULL;
+        case 'is_sponsor':
+          return XdrAccountMergeResultCode.ACCOUNT_MERGE_IS_SPONSOR;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrAccountMergeResultCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

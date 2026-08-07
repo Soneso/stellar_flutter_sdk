@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_error_code.dart';
+import 'xdr_json_helper.dart';
 
 class XdrError {
   XdrErrorCode _code;
@@ -40,5 +41,52 @@ class XdrError {
   static XdrError fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrError.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrError');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrError.
+  static XdrError fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrError'));
+
+  /// Returns the SEP-0051 rendering of this XdrError.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'code': _code.toXdrJsonValue(),
+    'msg': XdrJsonHelper.escapedString(
+      _msg,
+      type: 'XdrError',
+      key: 'msg',
+      maxBytes: 100,
+    ),
+  };
+
+  /// Reads a XdrError from its SEP-0051 rendering.
+  static XdrError fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrError',
+      allowedKeys: const <String>{'code', 'msg'},
+    );
+    final Object? jsonCode = XdrJsonHelper.readField(
+      object,
+      'code',
+      type: 'XdrError',
+    );
+    final Object? jsonMsg = XdrJsonHelper.readField(
+      object,
+      'msg',
+      type: 'XdrError',
+    );
+    return XdrError(
+      XdrErrorCode.fromXdrJsonValue(jsonCode),
+      XdrJsonHelper.readEscapedString(
+        jsonMsg,
+        type: 'XdrError',
+        key: 'msg',
+        maxBytes: 100,
+      ),
+    );
   }
 }

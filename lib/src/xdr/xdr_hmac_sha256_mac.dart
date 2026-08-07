@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrHmacSha256Mac {
   Uint8List _mac;
@@ -36,5 +37,41 @@ class XdrHmacSha256Mac {
   static XdrHmacSha256Mac fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHmacSha256Mac.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrHmacSha256Mac');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrHmacSha256Mac.
+  static XdrHmacSha256Mac fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrHmacSha256Mac'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrHmacSha256Mac.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'mac': XdrJsonHelper.hex(_mac, type: 'XdrHmacSha256Mac', key: 'mac'),
+  };
+
+  /// Reads a XdrHmacSha256Mac from its SEP-0051 rendering.
+  static XdrHmacSha256Mac fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrHmacSha256Mac',
+      allowedKeys: const <String>{'mac'},
+    );
+    final Object? jsonMac = XdrJsonHelper.readField(
+      object,
+      'mac',
+      type: 'XdrHmacSha256Mac',
+    );
+    return XdrHmacSha256Mac(
+      XdrJsonHelper.readHex(
+        jsonMac,
+        type: 'XdrHmacSha256Mac',
+        key: 'mac',
+        expectedLength: 32,
+      ),
+    );
   }
 }

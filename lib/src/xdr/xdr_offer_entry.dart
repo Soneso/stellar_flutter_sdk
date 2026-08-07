@@ -10,6 +10,7 @@ import 'xdr_account_id.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_offer_entry_ext.dart';
 import 'xdr_price.dart';
 import 'xdr_uint32.dart';
@@ -103,5 +104,94 @@ class XdrOfferEntry {
   static XdrOfferEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrOfferEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrOfferEntry');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrOfferEntry.
+  static XdrOfferEntry fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrOfferEntry'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrOfferEntry.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'seller_id': _sellerID.toXdrJsonValue(),
+    'offer_id': _offerID.toXdrJsonValue(),
+    'selling': _selling.toXdrJsonValue(),
+    'buying': _buying.toXdrJsonValue(),
+    'amount': _amount.toXdrJsonValue(),
+    'price': _price.toXdrJsonValue(),
+    'flags': _flags.toXdrJsonValue(),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrOfferEntry from its SEP-0051 rendering.
+  static XdrOfferEntry fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrOfferEntry',
+      allowedKeys: const <String>{
+        'seller_id',
+        'offer_id',
+        'selling',
+        'buying',
+        'amount',
+        'price',
+        'flags',
+        'ext',
+      },
+    );
+    final Object? jsonSellerID = XdrJsonHelper.readField(
+      object,
+      'seller_id',
+      type: 'XdrOfferEntry',
+    );
+    final Object? jsonOfferID = XdrJsonHelper.readField(
+      object,
+      'offer_id',
+      type: 'XdrOfferEntry',
+    );
+    final Object? jsonSelling = XdrJsonHelper.readField(
+      object,
+      'selling',
+      type: 'XdrOfferEntry',
+    );
+    final Object? jsonBuying = XdrJsonHelper.readField(
+      object,
+      'buying',
+      type: 'XdrOfferEntry',
+    );
+    final Object? jsonAmount = XdrJsonHelper.readField(
+      object,
+      'amount',
+      type: 'XdrOfferEntry',
+    );
+    final Object? jsonPrice = XdrJsonHelper.readField(
+      object,
+      'price',
+      type: 'XdrOfferEntry',
+    );
+    final Object? jsonFlags = XdrJsonHelper.readField(
+      object,
+      'flags',
+      type: 'XdrOfferEntry',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrOfferEntry',
+    );
+    return XdrOfferEntry(
+      XdrAccountID.fromXdrJsonValue(jsonSellerID),
+      XdrUint64.fromXdrJsonValue(jsonOfferID),
+      XdrAsset.fromXdrJsonValue(jsonSelling),
+      XdrAsset.fromXdrJsonValue(jsonBuying),
+      XdrInt64.fromXdrJsonValue(jsonAmount),
+      XdrPrice.fromXdrJsonValue(jsonPrice),
+      XdrUint32.fromXdrJsonValue(jsonFlags),
+      XdrOfferEntryExt.fromXdrJsonValue(jsonExt),
+    );
   }
 }

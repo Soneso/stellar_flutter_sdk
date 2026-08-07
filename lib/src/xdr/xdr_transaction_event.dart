@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_contract_event.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_transaction_event_stage.dart';
 
 class XdrTransactionEvent {
@@ -44,5 +45,45 @@ class XdrTransactionEvent {
   static XdrTransactionEvent fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionEvent.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionEvent',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionEvent.
+  static XdrTransactionEvent fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionEvent'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionEvent.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'stage': _stage.toXdrJsonValue(),
+    'event': _event.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTransactionEvent from its SEP-0051 rendering.
+  static XdrTransactionEvent fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTransactionEvent',
+      allowedKeys: const <String>{'stage', 'event'},
+    );
+    final Object? jsonStage = XdrJsonHelper.readField(
+      object,
+      'stage',
+      type: 'XdrTransactionEvent',
+    );
+    final Object? jsonEvent = XdrJsonHelper.readField(
+      object,
+      'event',
+      type: 'XdrTransactionEvent',
+    );
+    return XdrTransactionEvent(
+      XdrTransactionEventStage.fromXdrJsonValue(jsonStage),
+      XdrContractEvent.fromXdrJsonValue(jsonEvent),
+    );
   }
 }

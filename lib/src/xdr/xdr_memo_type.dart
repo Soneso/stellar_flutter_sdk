@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrMemoType {
   final _value;
@@ -108,5 +109,53 @@ class XdrMemoType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrMemoType');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrMemoType.
+  static XdrMemoType fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrMemoType'));
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'none';
+      case 1:
+        return 'text';
+      case 2:
+        return 'id';
+      case 3:
+        return 'hash';
+      case 4:
+        return 'return';
+      default:
+        XdrJsonHelper.fail('XdrMemoType', 'holds the unknown value $_value');
+    }
+  }
+
+  /// Reads a XdrMemoType from its SEP-0051 name.
+  static XdrMemoType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'none':
+          return XdrMemoType.MEMO_NONE;
+        case 'text':
+          return XdrMemoType.MEMO_TEXT;
+        case 'id':
+          return XdrMemoType.MEMO_ID;
+        case 'hash':
+          return XdrMemoType.MEMO_HASH;
+        case 'return':
+          return XdrMemoType.MEMO_RETURN;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrMemoType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

@@ -118,6 +118,16 @@ void main() {
       );
     });
 
+    // SponsorshipDescriptor is `AccountID*`, so every element of
+    // signerSponsoringIDs carries a four-byte presence flag ahead of its value
+    // and an unsponsored signer is written as the flag alone. The base64 in
+    // these cases is the encoding the XDR-JSON reference implementation named
+    // by SEP-0051 produces for the same value.
+    const String sponsorA =
+        'GAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQDZ7H';
+    const String sponsorB =
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
+
     test('XdrAccountEntryV2 with empty signerSponsoringIDs encode/decode', () {
       var original = XdrAccountEntryV2(
         XdrUint32(0),
@@ -126,42 +136,92 @@ void main() {
         XdrAccountEntryV2Ext(0),
       );
 
-      XdrDataOutputStream output = XdrDataOutputStream();
-      XdrAccountEntryV2.encode(output, original);
-      Uint8List encoded = Uint8List.fromList(output.bytes);
+      expect(
+        original.toBase64EncodedXdrString(),
+        equals('AAAAAAAAAAAAAAAAAAAAAA=='),
+      );
 
-      XdrDataInputStream input = XdrDataInputStream(encoded);
-      var decoded = XdrAccountEntryV2.decode(input);
+      var decoded = XdrAccountEntryV2.fromBase64EncodedXdrString(
+        'AAAAAAAAAAAAAAAAAAAAAA==',
+      );
 
       expect(decoded.numSponsored.uint32, equals(0));
       expect(decoded.numSponsoring.uint32, equals(0));
-      expect(decoded.signerSponsoringIDs.length, equals(0));
+      expect(decoded.signerSponsoringIDs, isEmpty);
     });
 
-    // Note: XDR SponsorshipDescriptor is AccountID* (optional), but the
-    // generated XdrAccountEntryV2 does not yet support per-element optionality.
-    // This test uses an empty list until the generator is updated.
-    test(
-      'XdrAccountEntryV2 with non-zero sponsored but empty signerSponsoringIDs encode/decode',
-      () {
-        var original = XdrAccountEntryV2(
-          XdrUint32(1),
-          XdrUint32(0),
-          [],
-          XdrAccountEntryV2Ext(0),
-        );
+    test('XdrAccountEntryV2 writes an absent sponsor as a presence flag', () {
+      var original = XdrAccountEntryV2(XdrUint32(0), XdrUint32(1), [
+        null,
+      ], XdrAccountEntryV2Ext(0));
 
-        XdrDataOutputStream output = XdrDataOutputStream();
-        XdrAccountEntryV2.encode(output, original);
-        Uint8List encoded = Uint8List.fromList(output.bytes);
+      expect(
+        original.toBase64EncodedXdrString(),
+        equals('AAAAAAAAAAEAAAABAAAAAAAAAAA='),
+      );
 
-        XdrDataInputStream input = XdrDataInputStream(encoded);
-        var decoded = XdrAccountEntryV2.decode(input);
+      var decoded = XdrAccountEntryV2.fromBase64EncodedXdrString(
+        'AAAAAAAAAAEAAAABAAAAAAAAAAA=',
+      );
 
-        expect(decoded.numSponsored.uint32, equals(1));
-        expect(decoded.signerSponsoringIDs.length, equals(0));
-      },
-    );
+      expect(decoded.numSponsoring.uint32, equals(1));
+      expect(decoded.signerSponsoringIDs, equals([null]));
+    });
+
+    test('XdrAccountEntryV2 writes a present sponsor behind its flag', () {
+      var original = XdrAccountEntryV2(XdrUint32(0), XdrUint32(1), [
+        XdrAccountID.forAccountId(sponsorA),
+      ], XdrAccountEntryV2Ext(0));
+
+      expect(
+        original.toBase64EncodedXdrString(),
+        equals(
+          'AAAAAAAAAAEAAAABAAAAAQAAAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEB'
+          'AQEBAQEBAQEBAQAAAAA=',
+        ),
+      );
+
+      var decoded = XdrAccountEntryV2.fromBase64EncodedXdrString(
+        'AAAAAAAAAAEAAAABAAAAAQAAAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEB'
+        'AQEBAQEBAQEBAQAAAAA=',
+      );
+
+      expect(decoded.signerSponsoringIDs.length, equals(1));
+      expect(
+        decoded.signerSponsoringIDs.single!.accountID.getEd25519()!.uint256,
+        equals(KeyPair.fromAccountId(sponsorA).publicKey),
+      );
+    });
+
+    test('XdrAccountEntryV2 mixes present and absent sponsors', () {
+      const String encoded =
+          'AAAAAgAAAAMAAAADAAAAAQAAAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEB'
+          'AQEBAQAAAAAAAAABAAAAAGL8HQvQkbK2HA3WVjRrKmjX00fG8sLI7m0ERwJW/AX3'
+          'AAAAAA==';
+
+      var original = XdrAccountEntryV2(XdrUint32(2), XdrUint32(3), [
+        XdrAccountID.forAccountId(sponsorA),
+        null,
+        XdrAccountID.forAccountId(sponsorB),
+      ], XdrAccountEntryV2Ext(0));
+
+      expect(original.toBase64EncodedXdrString(), equals(encoded));
+
+      var decoded = XdrAccountEntryV2.fromBase64EncodedXdrString(encoded);
+
+      expect(decoded.numSponsored.uint32, equals(2));
+      expect(decoded.numSponsoring.uint32, equals(3));
+      expect(decoded.signerSponsoringIDs.length, equals(3));
+      expect(
+        decoded.signerSponsoringIDs[0]!.accountID.getEd25519()!.uint256,
+        equals(KeyPair.fromAccountId(sponsorA).publicKey),
+      );
+      expect(decoded.signerSponsoringIDs[1], isNull);
+      expect(
+        decoded.signerSponsoringIDs[2]!.accountID.getEd25519()!.uint256,
+        equals(KeyPair.fromAccountId(sponsorB).publicKey),
+      );
+    });
 
     test('XdrAccountEntry with full v2 extension encode/decode', () {
       var accountId = XdrAccountID.forAccountId(

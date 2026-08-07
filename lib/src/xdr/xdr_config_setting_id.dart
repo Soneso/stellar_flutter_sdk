@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrConfigSettingID {
   final _value;
@@ -243,5 +244,127 @@ class XdrConfigSettingID {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrConfigSettingID',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrConfigSettingID.
+  static XdrConfigSettingID fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrConfigSettingID'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'contract_max_size_bytes';
+      case 1:
+        return 'contract_compute_v0';
+      case 2:
+        return 'contract_ledger_cost_v0';
+      case 3:
+        return 'contract_historical_data_v0';
+      case 4:
+        return 'contract_events_v0';
+      case 5:
+        return 'contract_bandwidth_v0';
+      case 6:
+        return 'contract_cost_params_cpu_instructions';
+      case 7:
+        return 'contract_cost_params_memory_bytes';
+      case 8:
+        return 'contract_data_key_size_bytes';
+      case 9:
+        return 'contract_data_entry_size_bytes';
+      case 10:
+        return 'state_archival';
+      case 11:
+        return 'contract_execution_lanes';
+      case 12:
+        return 'live_soroban_state_size_window';
+      case 13:
+        return 'eviction_iterator';
+      case 14:
+        return 'contract_parallel_compute_v0';
+      case 15:
+        return 'contract_ledger_cost_ext_v0';
+      case 16:
+        return 'scp_timing';
+      case 17:
+        return 'frozen_ledger_keys';
+      case 18:
+        return 'frozen_ledger_keys_delta';
+      case 19:
+        return 'freeze_bypass_txs';
+      case 20:
+        return 'freeze_bypass_txs_delta';
+      default:
+        XdrJsonHelper.fail(
+          'XdrConfigSettingID',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrConfigSettingID from its SEP-0051 name.
+  static XdrConfigSettingID fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'contract_max_size_bytes':
+          return XdrConfigSettingID.CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES;
+        case 'contract_compute_v0':
+          return XdrConfigSettingID.CONFIG_SETTING_CONTRACT_COMPUTE_V0;
+        case 'contract_ledger_cost_v0':
+          return XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_V0;
+        case 'contract_historical_data_v0':
+          return XdrConfigSettingID.CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0;
+        case 'contract_events_v0':
+          return XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EVENTS_V0;
+        case 'contract_bandwidth_v0':
+          return XdrConfigSettingID.CONFIG_SETTING_CONTRACT_BANDWIDTH_V0;
+        case 'contract_cost_params_cpu_instructions':
+          return XdrConfigSettingID
+              .CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS;
+        case 'contract_cost_params_memory_bytes':
+          return XdrConfigSettingID
+              .CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES;
+        case 'contract_data_key_size_bytes':
+          return XdrConfigSettingID.CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES;
+        case 'contract_data_entry_size_bytes':
+          return XdrConfigSettingID
+              .CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES;
+        case 'state_archival':
+          return XdrConfigSettingID.CONFIG_SETTING_STATE_ARCHIVAL;
+        case 'contract_execution_lanes':
+          return XdrConfigSettingID.CONFIG_SETTING_CONTRACT_EXECUTION_LANES;
+        case 'live_soroban_state_size_window':
+          return XdrConfigSettingID
+              .CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW;
+        case 'eviction_iterator':
+          return XdrConfigSettingID.CONFIG_SETTING_EVICTION_ITERATOR;
+        case 'contract_parallel_compute_v0':
+          return XdrConfigSettingID.CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0;
+        case 'contract_ledger_cost_ext_v0':
+          return XdrConfigSettingID.CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0;
+        case 'scp_timing':
+          return XdrConfigSettingID.CONFIG_SETTING_SCP_TIMING;
+        case 'frozen_ledger_keys':
+          return XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS;
+        case 'frozen_ledger_keys_delta':
+          return XdrConfigSettingID.CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA;
+        case 'freeze_bypass_txs':
+          return XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS;
+        case 'freeze_bypass_txs_delta':
+          return XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrConfigSettingID',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

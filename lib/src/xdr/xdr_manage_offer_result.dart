@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_manage_offer_result_code.dart';
 import 'xdr_manage_offer_success_result.dart';
 
@@ -71,5 +72,128 @@ class XdrManageOfferResult {
   static XdrManageOfferResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrManageOfferResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrManageOfferResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrManageOfferResult.
+  static XdrManageOfferResult fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrManageOfferResult'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrManageOfferResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'success': _success!.toXdrJsonValue()};
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'sell_no_trust';
+      case -3:
+        return 'buy_no_trust';
+      case -4:
+        return 'sell_not_authorized';
+      case -5:
+        return 'buy_not_authorized';
+      case -6:
+        return 'line_full';
+      case -7:
+        return 'underfunded';
+      case -8:
+        return 'cross_self';
+      case -9:
+        return 'sell_no_issuer';
+      case -10:
+        return 'buy_no_issuer';
+      case -11:
+        return 'not_found';
+      case -12:
+        return 'low_reserve';
+    }
+    XdrJsonHelper.fail(
+      'XdrManageOfferResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrManageOfferResult from its SEP-0051 rendering.
+  static XdrManageOfferResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'malformed':
+          return XdrManageOfferResult(
+            XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED,
+          );
+        case 'sell_no_trust':
+          return XdrManageOfferResult(
+            XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NO_TRUST,
+          );
+        case 'buy_no_trust':
+          return XdrManageOfferResult(
+            XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NO_TRUST,
+          );
+        case 'sell_not_authorized':
+          return XdrManageOfferResult(
+            XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NOT_AUTHORIZED,
+          );
+        case 'buy_not_authorized':
+          return XdrManageOfferResult(
+            XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NOT_AUTHORIZED,
+          );
+        case 'line_full':
+          return XdrManageOfferResult(
+            XdrManageOfferResultCode.MANAGE_SELL_OFFER_LINE_FULL,
+          );
+        case 'underfunded':
+          return XdrManageOfferResult(
+            XdrManageOfferResultCode.MANAGE_SELL_OFFER_UNDERFUNDED,
+          );
+        case 'cross_self':
+          return XdrManageOfferResult(
+            XdrManageOfferResultCode.MANAGE_SELL_OFFER_CROSS_SELF,
+          );
+        case 'sell_no_issuer':
+          return XdrManageOfferResult(
+            XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NO_ISSUER,
+          );
+        case 'buy_no_issuer':
+          return XdrManageOfferResult(
+            XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NO_ISSUER,
+          );
+        case 'not_found':
+          return XdrManageOfferResult(
+            XdrManageOfferResultCode.MANAGE_SELL_OFFER_NOT_FOUND,
+          );
+        case 'low_reserve':
+          return XdrManageOfferResult(
+            XdrManageOfferResultCode.MANAGE_SELL_OFFER_LOW_RESERVE,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrManageOfferResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrManageOfferResult',
+    );
+    switch (arm.key) {
+      case 'success':
+        final XdrManageOfferResult arm0 = XdrManageOfferResult(
+          XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS,
+        );
+        arm0.success = XdrManageOfferSuccessResult.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrManageOfferResult',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

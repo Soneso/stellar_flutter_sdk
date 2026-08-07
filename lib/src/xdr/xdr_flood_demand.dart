@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_tx_demand_vector.dart';
 
 class XdrFloodDemand {
@@ -37,5 +38,34 @@ class XdrFloodDemand {
   static XdrFloodDemand fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrFloodDemand.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrFloodDemand');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrFloodDemand.
+  static XdrFloodDemand fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrFloodDemand'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrFloodDemand.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'tx_hashes': _txHashes.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrFloodDemand from its SEP-0051 rendering.
+  static XdrFloodDemand fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrFloodDemand',
+      allowedKeys: const <String>{'tx_hashes'},
+    );
+    final Object? jsonTxHashes = XdrJsonHelper.readField(
+      object,
+      'tx_hashes',
+      type: 'XdrFloodDemand',
+    );
+    return XdrFloodDemand(XdrTxDemandVector.fromXdrJsonValue(jsonTxHashes));
   }
 }

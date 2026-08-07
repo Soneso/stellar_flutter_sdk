@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_soroban_resources.dart';
 import 'xdr_soroban_transaction_data_ext.dart';
 
@@ -80,5 +81,52 @@ class XdrSorobanTransactionData {
     );
     XdrInt64 resourceFee = XdrInt64.fromTxRep(map, '$prefix.resourceFee');
     return XdrSorobanTransactionData(ext, resources, resourceFee);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSorobanTransactionData',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanTransactionData.
+  static XdrSorobanTransactionData fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSorobanTransactionData'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSorobanTransactionData.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'resources': _resources.toXdrJsonValue(),
+    'resource_fee': _resourceFee.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSorobanTransactionData from its SEP-0051 rendering.
+  static XdrSorobanTransactionData fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSorobanTransactionData',
+      allowedKeys: const <String>{'ext', 'resources', 'resource_fee'},
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrSorobanTransactionData',
+    );
+    final Object? jsonResources = XdrJsonHelper.readField(
+      object,
+      'resources',
+      type: 'XdrSorobanTransactionData',
+    );
+    final Object? jsonResourceFee = XdrJsonHelper.readField(
+      object,
+      'resource_fee',
+      type: 'XdrSorobanTransactionData',
+    );
+    return XdrSorobanTransactionData(
+      XdrSorobanTransactionDataExt.fromXdrJsonValue(jsonExt),
+      XdrSorobanResources.fromXdrJsonValue(jsonResources),
+      XdrInt64.fromXdrJsonValue(jsonResourceFee),
+    );
   }
 }

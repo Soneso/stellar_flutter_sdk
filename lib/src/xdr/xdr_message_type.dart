@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrMessageType {
   final _value;
@@ -110,5 +111,118 @@ class XdrMessageType {
   static XdrMessageType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrMessageType.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrMessageType');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrMessageType.
+  static XdrMessageType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrMessageType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'error_msg';
+      case 2:
+        return 'auth';
+      case 3:
+        return 'dont_have';
+      case 5:
+        return 'peers';
+      case 6:
+        return 'get_tx_set';
+      case 7:
+        return 'tx_set';
+      case 17:
+        return 'generalized_tx_set';
+      case 8:
+        return 'transaction';
+      case 9:
+        return 'get_scp_quorumset';
+      case 10:
+        return 'scp_quorumset';
+      case 11:
+        return 'scp_message';
+      case 12:
+        return 'get_scp_state';
+      case 13:
+        return 'hello';
+      case 16:
+        return 'send_more';
+      case 20:
+        return 'send_more_extended';
+      case 18:
+        return 'flood_advert';
+      case 19:
+        return 'flood_demand';
+      case 21:
+        return 'time_sliced_survey_request';
+      case 22:
+        return 'time_sliced_survey_response';
+      case 23:
+        return 'time_sliced_survey_start_collecting';
+      case 24:
+        return 'time_sliced_survey_stop_collecting';
+      default:
+        XdrJsonHelper.fail('XdrMessageType', 'holds the unknown value $_value');
+    }
+  }
+
+  /// Reads a XdrMessageType from its SEP-0051 name.
+  static XdrMessageType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'error_msg':
+          return XdrMessageType.ERROR_MSG;
+        case 'auth':
+          return XdrMessageType.AUTH;
+        case 'dont_have':
+          return XdrMessageType.DONT_HAVE;
+        case 'peers':
+          return XdrMessageType.PEERS;
+        case 'get_tx_set':
+          return XdrMessageType.GET_TX_SET;
+        case 'tx_set':
+          return XdrMessageType.TX_SET;
+        case 'generalized_tx_set':
+          return XdrMessageType.GENERALIZED_TX_SET;
+        case 'transaction':
+          return XdrMessageType.TRANSACTION;
+        case 'get_scp_quorumset':
+          return XdrMessageType.GET_SCP_QUORUMSET;
+        case 'scp_quorumset':
+          return XdrMessageType.SCP_QUORUMSET;
+        case 'scp_message':
+          return XdrMessageType.SCP_MESSAGE;
+        case 'get_scp_state':
+          return XdrMessageType.GET_SCP_STATE;
+        case 'hello':
+          return XdrMessageType.HELLO;
+        case 'send_more':
+          return XdrMessageType.SEND_MORE;
+        case 'send_more_extended':
+          return XdrMessageType.SEND_MORE_EXTENDED;
+        case 'flood_advert':
+          return XdrMessageType.FLOOD_ADVERT;
+        case 'flood_demand':
+          return XdrMessageType.FLOOD_DEMAND;
+        case 'time_sliced_survey_request':
+          return XdrMessageType.TIME_SLICED_SURVEY_REQUEST;
+        case 'time_sliced_survey_response':
+          return XdrMessageType.TIME_SLICED_SURVEY_RESPONSE;
+        case 'time_sliced_survey_start_collecting':
+          return XdrMessageType.TIME_SLICED_SURVEY_START_COLLECTING;
+        case 'time_sliced_survey_stop_collecting':
+          return XdrMessageType.TIME_SLICED_SURVEY_STOP_COLLECTING;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrMessageType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

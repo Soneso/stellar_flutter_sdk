@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'txrep_helper.dart';
 import 'xdr_contract_executable.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_map_entry.dart';
 
 class XdrSCContractInstance {
@@ -101,5 +102,62 @@ class XdrSCContractInstance {
       }
     }
     return XdrSCContractInstance(executable, storage);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCContractInstance',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCContractInstance.
+  static XdrSCContractInstance fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCContractInstance'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCContractInstance.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'executable': _executable.toXdrJsonValue(),
+    'storage': _storage == null
+        ? null
+        : XdrJsonHelper.array<XdrSCMapEntry>(
+            _storage!,
+            (XdrSCMapEntry v) => v.toXdrJsonValue(),
+            type: 'XdrSCContractInstance',
+            key: 'storage',
+          ),
+  };
+
+  /// Reads a XdrSCContractInstance from its SEP-0051 rendering.
+  static XdrSCContractInstance fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCContractInstance',
+      allowedKeys: const <String>{'executable', 'storage'},
+    );
+    final Object? jsonExecutable = XdrJsonHelper.readField(
+      object,
+      'executable',
+      type: 'XdrSCContractInstance',
+    );
+    final Object? jsonStorage = XdrJsonHelper.readField(
+      object,
+      'storage',
+      type: 'XdrSCContractInstance',
+    );
+    return XdrSCContractInstance(
+      XdrContractExecutable.fromXdrJsonValue(jsonExecutable),
+      jsonStorage == null
+          ? null
+          : XdrJsonHelper.readArray(
+                  jsonStorage,
+                  type: 'XdrSCContractInstance',
+                  key: 'storage',
+                )
+                .map<XdrSCMapEntry>(
+                  (Object? e) => XdrSCMapEntry.fromXdrJsonValue(e),
+                )
+                .toList(),
+    );
   }
 }

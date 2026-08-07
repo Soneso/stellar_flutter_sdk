@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrManageOfferResultCode {
   final _value;
@@ -102,5 +103,91 @@ class XdrManageOfferResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrManageOfferResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrManageOfferResultCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrManageOfferResultCode.
+  static XdrManageOfferResultCode fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrManageOfferResultCode'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'sell_no_trust';
+      case -3:
+        return 'buy_no_trust';
+      case -4:
+        return 'sell_not_authorized';
+      case -5:
+        return 'buy_not_authorized';
+      case -6:
+        return 'line_full';
+      case -7:
+        return 'underfunded';
+      case -8:
+        return 'cross_self';
+      case -9:
+        return 'sell_no_issuer';
+      case -10:
+        return 'buy_no_issuer';
+      case -11:
+        return 'not_found';
+      case -12:
+        return 'low_reserve';
+      default:
+        XdrJsonHelper.fail(
+          'XdrManageOfferResultCode',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrManageOfferResultCode from its SEP-0051 name.
+  static XdrManageOfferResultCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS;
+        case 'malformed':
+          return XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED;
+        case 'sell_no_trust':
+          return XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NO_TRUST;
+        case 'buy_no_trust':
+          return XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NO_TRUST;
+        case 'sell_not_authorized':
+          return XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NOT_AUTHORIZED;
+        case 'buy_not_authorized':
+          return XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NOT_AUTHORIZED;
+        case 'line_full':
+          return XdrManageOfferResultCode.MANAGE_SELL_OFFER_LINE_FULL;
+        case 'underfunded':
+          return XdrManageOfferResultCode.MANAGE_SELL_OFFER_UNDERFUNDED;
+        case 'cross_self':
+          return XdrManageOfferResultCode.MANAGE_SELL_OFFER_CROSS_SELF;
+        case 'sell_no_issuer':
+          return XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NO_ISSUER;
+        case 'buy_no_issuer':
+          return XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NO_ISSUER;
+        case 'not_found':
+          return XdrManageOfferResultCode.MANAGE_SELL_OFFER_NOT_FOUND;
+        case 'low_reserve':
+          return XdrManageOfferResultCode.MANAGE_SELL_OFFER_LOW_RESERVE;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrManageOfferResultCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

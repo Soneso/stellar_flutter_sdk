@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_soroban_address_credentials.dart';
 import 'xdr_soroban_address_credentials_with_delegates.dart';
 import 'xdr_soroban_credentials_type.dart';
@@ -170,5 +171,92 @@ class XdrSorobanCredentialsBase {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSorobanCredentials',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanCredentials.
+  static XdrSorobanCredentialsBase fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSorobanCredentials'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSorobanCredentialsBase.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'source_account';
+      case 1:
+        return <String, Object?>{'address': _address!.toXdrJsonValue()};
+      case 2:
+        return <String, Object?>{'address_v2': _addressV2!.toXdrJsonValue()};
+      case 3:
+        return <String, Object?>{
+          'address_with_delegates': _addressWithDelegates!.toXdrJsonValue(),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrSorobanCredentials',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrSorobanCredentialsBase from its SEP-0051 rendering.
+  static XdrSorobanCredentialsBase fromXdrJsonValue(Object? value) =>
+      fromXdrJsonValueAs(value, XdrSorobanCredentialsBase.new);
+
+  /// Reads a subclass of XdrSorobanCredentialsBase from its SEP-0051 rendering.
+  static T fromXdrJsonValueAs<T extends XdrSorobanCredentialsBase>(
+    Object? value,
+    T Function(XdrSorobanCredentialsType) constructor,
+  ) {
+    if (value is String) {
+      switch (value) {
+        case 'source_account':
+          return constructor(
+            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrSorobanCredentials',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrSorobanCredentials',
+    );
+    switch (arm.key) {
+      case 'address':
+        final T arm0 = constructor(
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS,
+        );
+        arm0.address = XdrSorobanAddressCredentials.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'address_v2':
+        final T arm1 = constructor(
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
+        );
+        arm1.addressV2 = XdrSorobanAddressCredentials.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm1;
+      case 'address_with_delegates':
+        final T arm2 = constructor(
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
+        );
+        arm2.addressWithDelegates =
+            XdrSorobanAddressCredentialsWithDelegates.fromXdrJsonValue(
+              arm.value,
+            );
+        return arm2;
+    }
+    XdrJsonHelper.fail(
+      'XdrSorobanCredentials',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

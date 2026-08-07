@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrContractIDPreimageType {
   final _value;
@@ -100,5 +101,47 @@ class XdrContractIDPreimageType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrContractIDPreimageType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractIDPreimageType.
+  static XdrContractIDPreimageType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractIDPreimageType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'address';
+      case 1:
+        return 'asset';
+      default:
+        XdrJsonHelper.fail(
+          'XdrContractIDPreimageType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrContractIDPreimageType from its SEP-0051 name.
+  static XdrContractIDPreimageType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'address':
+          return XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS;
+        case 'asset':
+          return XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrContractIDPreimageType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

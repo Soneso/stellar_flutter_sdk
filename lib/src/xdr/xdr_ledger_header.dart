@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_header_ext.dart';
 import 'xdr_stellar_value.dart';
 import 'xdr_uint32.dart';
@@ -164,5 +165,160 @@ class XdrLedgerHeader {
   static XdrLedgerHeader fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerHeader.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrLedgerHeader');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerHeader.
+  static XdrLedgerHeader fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerHeader'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerHeader.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ledger_version': _ledgerVersion.toXdrJsonValue(),
+    'previous_ledger_hash': _previousLedgerHash.toXdrJsonValue(),
+    'scp_value': _scpValue.toXdrJsonValue(),
+    'tx_set_result_hash': _txSetResultHash.toXdrJsonValue(),
+    'bucket_list_hash': _bucketListHash.toXdrJsonValue(),
+    'ledger_seq': _ledgerSeq.toXdrJsonValue(),
+    'total_coins': _totalCoins.toXdrJsonValue(),
+    'fee_pool': _feePool.toXdrJsonValue(),
+    'inflation_seq': _inflationSeq.toXdrJsonValue(),
+    'id_pool': _idPool.toXdrJsonValue(),
+    'base_fee': _baseFee.toXdrJsonValue(),
+    'base_reserve': _baseReserve.toXdrJsonValue(),
+    'max_tx_set_size': _maxTxSetSize.toXdrJsonValue(),
+    'skip_list': XdrJsonHelper.array<XdrHash>(
+      _skipList,
+      (XdrHash v) => v.toXdrJsonValue(),
+      type: 'XdrLedgerHeader',
+      key: 'skip_list',
+    ),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLedgerHeader from its SEP-0051 rendering.
+  static XdrLedgerHeader fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerHeader',
+      allowedKeys: const <String>{
+        'ledger_version',
+        'previous_ledger_hash',
+        'scp_value',
+        'tx_set_result_hash',
+        'bucket_list_hash',
+        'ledger_seq',
+        'total_coins',
+        'fee_pool',
+        'inflation_seq',
+        'id_pool',
+        'base_fee',
+        'base_reserve',
+        'max_tx_set_size',
+        'skip_list',
+        'ext',
+      },
+    );
+    final Object? jsonLedgerVersion = XdrJsonHelper.readField(
+      object,
+      'ledger_version',
+      type: 'XdrLedgerHeader',
+    );
+    final Object? jsonPreviousLedgerHash = XdrJsonHelper.readField(
+      object,
+      'previous_ledger_hash',
+      type: 'XdrLedgerHeader',
+    );
+    final Object? jsonScpValue = XdrJsonHelper.readField(
+      object,
+      'scp_value',
+      type: 'XdrLedgerHeader',
+    );
+    final Object? jsonTxSetResultHash = XdrJsonHelper.readField(
+      object,
+      'tx_set_result_hash',
+      type: 'XdrLedgerHeader',
+    );
+    final Object? jsonBucketListHash = XdrJsonHelper.readField(
+      object,
+      'bucket_list_hash',
+      type: 'XdrLedgerHeader',
+    );
+    final Object? jsonLedgerSeq = XdrJsonHelper.readField(
+      object,
+      'ledger_seq',
+      type: 'XdrLedgerHeader',
+    );
+    final Object? jsonTotalCoins = XdrJsonHelper.readField(
+      object,
+      'total_coins',
+      type: 'XdrLedgerHeader',
+    );
+    final Object? jsonFeePool = XdrJsonHelper.readField(
+      object,
+      'fee_pool',
+      type: 'XdrLedgerHeader',
+    );
+    final Object? jsonInflationSeq = XdrJsonHelper.readField(
+      object,
+      'inflation_seq',
+      type: 'XdrLedgerHeader',
+    );
+    final Object? jsonIdPool = XdrJsonHelper.readField(
+      object,
+      'id_pool',
+      type: 'XdrLedgerHeader',
+    );
+    final Object? jsonBaseFee = XdrJsonHelper.readField(
+      object,
+      'base_fee',
+      type: 'XdrLedgerHeader',
+    );
+    final Object? jsonBaseReserve = XdrJsonHelper.readField(
+      object,
+      'base_reserve',
+      type: 'XdrLedgerHeader',
+    );
+    final Object? jsonMaxTxSetSize = XdrJsonHelper.readField(
+      object,
+      'max_tx_set_size',
+      type: 'XdrLedgerHeader',
+    );
+    final Object? jsonSkipList = XdrJsonHelper.readField(
+      object,
+      'skip_list',
+      type: 'XdrLedgerHeader',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrLedgerHeader',
+    );
+    return XdrLedgerHeader(
+      XdrUint32.fromXdrJsonValue(jsonLedgerVersion),
+      XdrHash.fromXdrJsonValue(jsonPreviousLedgerHash),
+      XdrStellarValue.fromXdrJsonValue(jsonScpValue),
+      XdrHash.fromXdrJsonValue(jsonTxSetResultHash),
+      XdrHash.fromXdrJsonValue(jsonBucketListHash),
+      XdrUint32.fromXdrJsonValue(jsonLedgerSeq),
+      XdrInt64.fromXdrJsonValue(jsonTotalCoins),
+      XdrInt64.fromXdrJsonValue(jsonFeePool),
+      XdrUint32.fromXdrJsonValue(jsonInflationSeq),
+      XdrUint64.fromXdrJsonValue(jsonIdPool),
+      XdrUint32.fromXdrJsonValue(jsonBaseFee),
+      XdrUint32.fromXdrJsonValue(jsonBaseReserve),
+      XdrUint32.fromXdrJsonValue(jsonMaxTxSetSize),
+      XdrJsonHelper.readArray(
+        jsonSkipList,
+        type: 'XdrLedgerHeader',
+        key: 'skip_list',
+        fixedLength: 4,
+      ).map<XdrHash>((Object? e) => XdrHash.fromXdrJsonValue(e)).toList(),
+      XdrLedgerHeaderExt.fromXdrJsonValue(jsonExt),
+    );
   }
 }

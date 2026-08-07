@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_data_io.dart';
 import 'xdr_inflation_payout.dart';
 import 'xdr_inflation_result_code.dart';
+import 'xdr_json_helper.dart';
 
 class XdrInflationResult {
   XdrInflationResultCode _code;
@@ -85,5 +86,76 @@ class XdrInflationResult {
   static XdrInflationResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInflationResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrInflationResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrInflationResult.
+  static XdrInflationResult fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrInflationResult'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrInflationResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{
+          'success': XdrJsonHelper.array<XdrInflationPayout>(
+            _payouts!,
+            (XdrInflationPayout v) => v.toXdrJsonValue(),
+            type: 'XdrInflationResult',
+            key: 'success',
+          ),
+        };
+      case -1:
+        return 'not_time';
+    }
+    XdrJsonHelper.fail(
+      'XdrInflationResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrInflationResult from its SEP-0051 rendering.
+  static XdrInflationResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'not_time':
+          return XdrInflationResult(XdrInflationResultCode.INFLATION_NOT_TIME);
+      }
+      XdrJsonHelper.fail(
+        'XdrInflationResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrInflationResult',
+    );
+    switch (arm.key) {
+      case 'success':
+        final XdrInflationResult arm0 = XdrInflationResult(
+          XdrInflationResultCode.INFLATION_SUCCESS,
+        );
+        arm0.payouts =
+            XdrJsonHelper.readArray(
+                  arm.value,
+                  type: 'XdrInflationResult',
+                  key: 'success',
+                )
+                .map<XdrInflationPayout>(
+                  (Object? e) => XdrInflationPayout.fromXdrJsonValue(e),
+                )
+                .toList();
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrInflationResult',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

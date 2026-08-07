@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSignatureHint {
   XdrSignatureHint(this._signatureHint);
@@ -48,4 +49,22 @@ class XdrSignatureHint {
     if (raw == null) throw Exception('missing $prefix');
     return XdrSignatureHint(TxRepHelper.hexToBytes(raw));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSignatureHint');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSignatureHint.
+  static XdrSignatureHint fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSignatureHint'),
+  );
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() =>
+      XdrJsonHelper.hex(_signatureHint, type: 'XdrSignatureHint');
+
+  /// Reads a XdrSignatureHint from the SEP-0051 rendering of its value.
+  static XdrSignatureHint fromXdrJsonValue(Object? value) => XdrSignatureHint(
+    XdrJsonHelper.readHex(value, type: 'XdrSignatureHint', expectedLength: 4),
+  );
 }

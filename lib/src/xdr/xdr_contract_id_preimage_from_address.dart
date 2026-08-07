@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_address.dart';
 import 'xdr_uint256.dart';
 
@@ -60,5 +61,49 @@ class XdrContractIDPreimageFromAddress {
     XdrSCAddress address = XdrSCAddress.fromTxRep(map, '$prefix.address');
     XdrUint256 salt = XdrUint256.fromTxRep(map, '$prefix.salt');
     return XdrContractIDPreimageFromAddress(address, salt);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrContractIDPreimageFromAddress',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractIDPreimageFromAddress.
+  static XdrContractIDPreimageFromAddress fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrContractIDPreimageFromAddress',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrContractIDPreimageFromAddress.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'address': _address.toXdrJsonValue(),
+    'salt': _salt.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrContractIDPreimageFromAddress from its SEP-0051 rendering.
+  static XdrContractIDPreimageFromAddress fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrContractIDPreimageFromAddress',
+      allowedKeys: const <String>{'address', 'salt'},
+    );
+    final Object? jsonAddress = XdrJsonHelper.readField(
+      object,
+      'address',
+      type: 'XdrContractIDPreimageFromAddress',
+    );
+    final Object? jsonSalt = XdrJsonHelper.readField(
+      object,
+      'salt',
+      type: 'XdrContractIDPreimageFromAddress',
+    );
+    return XdrContractIDPreimageFromAddress(
+      XdrSCAddress.fromXdrJsonValue(jsonAddress),
+      XdrUint256.fromXdrJsonValue(jsonSalt),
+    );
   }
 }

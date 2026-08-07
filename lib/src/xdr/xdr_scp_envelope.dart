@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_scp_statement.dart';
 import 'xdr_signature.dart';
 
@@ -44,5 +45,43 @@ class XdrSCPEnvelope {
   static XdrSCPEnvelope fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPEnvelope.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCPEnvelope');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCPEnvelope.
+  static XdrSCPEnvelope fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCPEnvelope'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCPEnvelope.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'statement': _statement.toXdrJsonValue(),
+    'signature': _signature.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSCPEnvelope from its SEP-0051 rendering.
+  static XdrSCPEnvelope fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCPEnvelope',
+      allowedKeys: const <String>{'statement', 'signature'},
+    );
+    final Object? jsonStatement = XdrJsonHelper.readField(
+      object,
+      'statement',
+      type: 'XdrSCPEnvelope',
+    );
+    final Object? jsonSignature = XdrJsonHelper.readField(
+      object,
+      'signature',
+      type: 'XdrSCPEnvelope',
+    );
+    return XdrSCPEnvelope(
+      XdrSCPStatement.fromXdrJsonValue(jsonStatement),
+      XdrSignature.fromXdrJsonValue(jsonSignature),
+    );
   }
 }

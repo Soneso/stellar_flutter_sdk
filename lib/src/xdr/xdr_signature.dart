@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSignature {
   XdrSignature(this._signature);
@@ -50,4 +51,22 @@ class XdrSignature {
     if (raw == null) throw Exception('missing $prefix');
     return XdrSignature(TxRepHelper.hexToBytes(raw));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSignature');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSignature.
+  static XdrSignature fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSignature'),
+  );
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() =>
+      XdrJsonHelper.hex(_signature, type: 'XdrSignature', maxLength: 64);
+
+  /// Reads a XdrSignature from the SEP-0051 rendering of its value.
+  static XdrSignature fromXdrJsonValue(Object? value) => XdrSignature(
+    XdrJsonHelper.readHex(value, type: 'XdrSignature', maxLength: 64),
+  );
 }

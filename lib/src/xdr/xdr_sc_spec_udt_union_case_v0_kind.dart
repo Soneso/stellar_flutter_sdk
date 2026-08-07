@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSCSpecUDTUnionCaseV0Kind {
   final _value;
@@ -58,5 +59,48 @@ class XdrSCSpecUDTUnionCaseV0Kind {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecUDTUnionCaseV0Kind.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCSpecUDTUnionCaseV0Kind',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecUDTUnionCaseV0Kind.
+  static XdrSCSpecUDTUnionCaseV0Kind fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecUDTUnionCaseV0Kind'),
+      );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'void_v0';
+      case 1:
+        return 'tuple_v0';
+      default:
+        XdrJsonHelper.fail(
+          'XdrSCSpecUDTUnionCaseV0Kind',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrSCSpecUDTUnionCaseV0Kind from its SEP-0051 name.
+  static XdrSCSpecUDTUnionCaseV0Kind fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'void_v0':
+          return XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_VOID_V0;
+        case 'tuple_v0':
+          return XdrSCSpecUDTUnionCaseV0Kind.SC_SPEC_UDT_UNION_CASE_TUPLE_V0;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrSCSpecUDTUnionCaseV0Kind',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

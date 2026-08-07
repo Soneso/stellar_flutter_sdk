@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_contract_event.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrDiagnosticEvent {
   bool _inSuccessfulContractCall;
@@ -44,5 +45,51 @@ class XdrDiagnosticEvent {
   static XdrDiagnosticEvent fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrDiagnosticEvent.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrDiagnosticEvent',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrDiagnosticEvent.
+  static XdrDiagnosticEvent fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrDiagnosticEvent'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrDiagnosticEvent.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'in_successful_contract_call': XdrJsonHelper.boolean(
+      _inSuccessfulContractCall,
+    ),
+    'event': _event.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrDiagnosticEvent from its SEP-0051 rendering.
+  static XdrDiagnosticEvent fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrDiagnosticEvent',
+      allowedKeys: const <String>{'in_successful_contract_call', 'event'},
+    );
+    final Object? jsonInSuccessfulContractCall = XdrJsonHelper.readField(
+      object,
+      'in_successful_contract_call',
+      type: 'XdrDiagnosticEvent',
+    );
+    final Object? jsonEvent = XdrJsonHelper.readField(
+      object,
+      'event',
+      type: 'XdrDiagnosticEvent',
+    );
+    return XdrDiagnosticEvent(
+      XdrJsonHelper.readBoolean(
+        jsonInSuccessfulContractCall,
+        type: 'XdrDiagnosticEvent',
+        key: 'in_successful_contract_call',
+      ),
+      XdrContractEvent.fromXdrJsonValue(jsonEvent),
+    );
   }
 }

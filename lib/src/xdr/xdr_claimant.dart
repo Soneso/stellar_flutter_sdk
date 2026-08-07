@@ -10,6 +10,7 @@ import 'txrep_helper.dart';
 import 'xdr_claimant_type.dart';
 import 'xdr_claimant_v0.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClaimant {
   XdrClaimantType _type;
@@ -88,5 +89,43 @@ class XdrClaimant {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrClaimant');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClaimant.
+  static XdrClaimant fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrClaimant'));
+
+  /// Returns the SEP-0051 rendering of this XdrClaimant.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'claimant_type_v0': _v0!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrClaimant',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrClaimant from its SEP-0051 rendering.
+  static XdrClaimant fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrClaimant',
+    );
+    switch (arm.key) {
+      case 'claimant_type_v0':
+        final XdrClaimant arm0 = XdrClaimant(XdrClaimantType.CLAIMANT_TYPE_V0);
+        arm0.v0 = XdrClaimantV0.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrClaimant',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

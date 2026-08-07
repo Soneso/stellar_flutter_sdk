@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_claim_atom.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_manage_offer_success_result_offer.dart';
 
 class XdrManageOfferSuccessResult {
@@ -62,5 +63,57 @@ class XdrManageOfferSuccessResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrManageOfferSuccessResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrManageOfferSuccessResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrManageOfferSuccessResult.
+  static XdrManageOfferSuccessResult fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrManageOfferSuccessResult'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrManageOfferSuccessResult.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'offers_claimed': XdrJsonHelper.array<XdrClaimAtom>(
+      _offersClaimed,
+      (XdrClaimAtom v) => v.toXdrJsonValue(),
+      type: 'XdrManageOfferSuccessResult',
+      key: 'offers_claimed',
+    ),
+    'offer': _offer.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrManageOfferSuccessResult from its SEP-0051 rendering.
+  static XdrManageOfferSuccessResult fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrManageOfferSuccessResult',
+      allowedKeys: const <String>{'offers_claimed', 'offer'},
+    );
+    final Object? jsonOffersClaimed = XdrJsonHelper.readField(
+      object,
+      'offers_claimed',
+      type: 'XdrManageOfferSuccessResult',
+    );
+    final Object? jsonOffer = XdrJsonHelper.readField(
+      object,
+      'offer',
+      type: 'XdrManageOfferSuccessResult',
+    );
+    return XdrManageOfferSuccessResult(
+      XdrJsonHelper.readArray(
+            jsonOffersClaimed,
+            type: 'XdrManageOfferSuccessResult',
+            key: 'offers_claimed',
+          )
+          .map<XdrClaimAtom>((Object? e) => XdrClaimAtom.fromXdrJsonValue(e))
+          .toList(),
+      XdrManageOfferSuccessResultOffer.fromXdrJsonValue(jsonOffer),
+    );
   }
 }

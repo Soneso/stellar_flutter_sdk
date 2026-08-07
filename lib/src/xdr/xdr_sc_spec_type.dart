@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSCSpecType {
   final _value;
@@ -123,5 +124,138 @@ class XdrSCSpecType {
   static XdrSCSpecType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecType.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCSpecType');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecType.
+  static XdrSCSpecType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'val';
+      case 1:
+        return 'bool';
+      case 2:
+        return 'void';
+      case 3:
+        return 'error';
+      case 4:
+        return 'u32';
+      case 5:
+        return 'i32';
+      case 6:
+        return 'u64';
+      case 7:
+        return 'i64';
+      case 8:
+        return 'timepoint';
+      case 9:
+        return 'duration';
+      case 10:
+        return 'u128';
+      case 11:
+        return 'i128';
+      case 12:
+        return 'u256';
+      case 13:
+        return 'i256';
+      case 14:
+        return 'bytes';
+      case 16:
+        return 'string';
+      case 17:
+        return 'symbol';
+      case 19:
+        return 'address';
+      case 20:
+        return 'muxed_address';
+      case 1000:
+        return 'option';
+      case 1001:
+        return 'result';
+      case 1002:
+        return 'vec';
+      case 1004:
+        return 'map';
+      case 1005:
+        return 'tuple';
+      case 1006:
+        return 'bytes_n';
+      case 2000:
+        return 'udt';
+      default:
+        XdrJsonHelper.fail('XdrSCSpecType', 'holds the unknown value $_value');
+    }
+  }
+
+  /// Reads a XdrSCSpecType from its SEP-0051 name.
+  static XdrSCSpecType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'val':
+          return XdrSCSpecType.SC_SPEC_TYPE_VAL;
+        case 'bool':
+          return XdrSCSpecType.SC_SPEC_TYPE_BOOL;
+        case 'void':
+          return XdrSCSpecType.SC_SPEC_TYPE_VOID;
+        case 'error':
+          return XdrSCSpecType.SC_SPEC_TYPE_ERROR;
+        case 'u32':
+          return XdrSCSpecType.SC_SPEC_TYPE_U32;
+        case 'i32':
+          return XdrSCSpecType.SC_SPEC_TYPE_I32;
+        case 'u64':
+          return XdrSCSpecType.SC_SPEC_TYPE_U64;
+        case 'i64':
+          return XdrSCSpecType.SC_SPEC_TYPE_I64;
+        case 'timepoint':
+          return XdrSCSpecType.SC_SPEC_TYPE_TIMEPOINT;
+        case 'duration':
+          return XdrSCSpecType.SC_SPEC_TYPE_DURATION;
+        case 'u128':
+          return XdrSCSpecType.SC_SPEC_TYPE_U128;
+        case 'i128':
+          return XdrSCSpecType.SC_SPEC_TYPE_I128;
+        case 'u256':
+          return XdrSCSpecType.SC_SPEC_TYPE_U256;
+        case 'i256':
+          return XdrSCSpecType.SC_SPEC_TYPE_I256;
+        case 'bytes':
+          return XdrSCSpecType.SC_SPEC_TYPE_BYTES;
+        case 'string':
+          return XdrSCSpecType.SC_SPEC_TYPE_STRING;
+        case 'symbol':
+          return XdrSCSpecType.SC_SPEC_TYPE_SYMBOL;
+        case 'address':
+          return XdrSCSpecType.SC_SPEC_TYPE_ADDRESS;
+        case 'muxed_address':
+          return XdrSCSpecType.SC_SPEC_TYPE_MUXED_ADDRESS;
+        case 'option':
+          return XdrSCSpecType.SC_SPEC_TYPE_OPTION;
+        case 'result':
+          return XdrSCSpecType.SC_SPEC_TYPE_RESULT;
+        case 'vec':
+          return XdrSCSpecType.SC_SPEC_TYPE_VEC;
+        case 'map':
+          return XdrSCSpecType.SC_SPEC_TYPE_MAP;
+        case 'tuple':
+          return XdrSCSpecType.SC_SPEC_TYPE_TUPLE;
+        case 'bytes_n':
+          return XdrSCSpecType.SC_SPEC_TYPE_BYTES_N;
+        case 'udt':
+          return XdrSCSpecType.SC_SPEC_TYPE_UDT;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrSCSpecType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

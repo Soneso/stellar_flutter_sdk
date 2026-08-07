@@ -10,6 +10,7 @@ import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_auth.dart';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_int128_parts.dart';
 import 'xdr_int256_parts.dart';
 import 'xdr_int32.dart';
@@ -657,4 +658,14 @@ class XdrSCVal extends XdrSCValBase {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCVal.decode(XdrDataInputStream(bytes));
   }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCVal.
+  ///
+  /// Dart does not inherit statics, so this narrows the base class rendering to
+  /// this type rather than relying on the one the base declares.
+  static XdrSCVal fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrSCVal'));
+
+  static XdrSCVal fromXdrJsonValue(Object? value) =>
+      XdrSCValBase.fromXdrJsonValueAs(value, XdrSCVal.new);
 }

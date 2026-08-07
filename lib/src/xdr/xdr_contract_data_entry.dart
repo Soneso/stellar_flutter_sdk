@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_contract_data_durability.dart';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_address.dart';
 import 'xdr_sc_val.dart';
 
@@ -75,5 +76,72 @@ class XdrContractDataEntry {
   static XdrContractDataEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractDataEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrContractDataEntry',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractDataEntry.
+  static XdrContractDataEntry fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractDataEntry'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrContractDataEntry.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'contract': _contract.toXdrJsonValue(),
+    'key': _key.toXdrJsonValue(),
+    'durability': _durability.toXdrJsonValue(),
+    'val': _val.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrContractDataEntry from its SEP-0051 rendering.
+  static XdrContractDataEntry fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrContractDataEntry',
+      allowedKeys: const <String>{
+        'ext',
+        'contract',
+        'key',
+        'durability',
+        'val',
+      },
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrContractDataEntry',
+    );
+    final Object? jsonContract = XdrJsonHelper.readField(
+      object,
+      'contract',
+      type: 'XdrContractDataEntry',
+    );
+    final Object? jsonKey = XdrJsonHelper.readField(
+      object,
+      'key',
+      type: 'XdrContractDataEntry',
+    );
+    final Object? jsonDurability = XdrJsonHelper.readField(
+      object,
+      'durability',
+      type: 'XdrContractDataEntry',
+    );
+    final Object? jsonVal = XdrJsonHelper.readField(
+      object,
+      'val',
+      type: 'XdrContractDataEntry',
+    );
+    return XdrContractDataEntry(
+      XdrExtensionPoint.fromXdrJsonValue(jsonExt),
+      XdrSCAddress.fromXdrJsonValue(jsonContract),
+      XdrSCVal.fromXdrJsonValue(jsonKey),
+      XdrContractDataDurability.fromXdrJsonValue(jsonDurability),
+      XdrSCVal.fromXdrJsonValue(jsonVal),
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrHotArchiveBucketEntryType {
   final _value;
@@ -63,5 +64,55 @@ class XdrHotArchiveBucketEntryType {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHotArchiveBucketEntryType.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrHotArchiveBucketEntryType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrHotArchiveBucketEntryType.
+  static XdrHotArchiveBucketEntryType fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrHotArchiveBucketEntryType',
+        ),
+      );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case -1:
+        return 'metaentry';
+      case 0:
+        return 'archived';
+      case 1:
+        return 'live';
+      default:
+        XdrJsonHelper.fail(
+          'XdrHotArchiveBucketEntryType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrHotArchiveBucketEntryType from its SEP-0051 name.
+  static XdrHotArchiveBucketEntryType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'metaentry':
+          return XdrHotArchiveBucketEntryType.HOT_ARCHIVE_METAENTRY;
+        case 'archived':
+          return XdrHotArchiveBucketEntryType.HOT_ARCHIVE_ARCHIVED;
+        case 'live':
+          return XdrHotArchiveBucketEntryType.HOT_ARCHIVE_LIVE;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrHotArchiveBucketEntryType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

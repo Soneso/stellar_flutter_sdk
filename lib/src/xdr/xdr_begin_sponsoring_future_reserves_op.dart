@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrBeginSponsoringFutureReservesOp {
   XdrAccountID _sponsoredID;
@@ -59,5 +60,42 @@ class XdrBeginSponsoringFutureReservesOp {
       TxRepHelper.getValue(map, '$prefix.sponsoredID') ?? '',
     );
     return XdrBeginSponsoringFutureReservesOp(sponsoredID);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrBeginSponsoringFutureReservesOp',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrBeginSponsoringFutureReservesOp.
+  static XdrBeginSponsoringFutureReservesOp fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrBeginSponsoringFutureReservesOp',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrBeginSponsoringFutureReservesOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'sponsored_id': _sponsoredID.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrBeginSponsoringFutureReservesOp from its SEP-0051 rendering.
+  static XdrBeginSponsoringFutureReservesOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrBeginSponsoringFutureReservesOp',
+      allowedKeys: const <String>{'sponsored_id'},
+    );
+    final Object? jsonSponsoredID = XdrJsonHelper.readField(
+      object,
+      'sponsored_id',
+      type: 'XdrBeginSponsoringFutureReservesOp',
+    );
+    return XdrBeginSponsoringFutureReservesOp(
+      XdrAccountID.fromXdrJsonValue(jsonSponsoredID),
+    );
   }
 }

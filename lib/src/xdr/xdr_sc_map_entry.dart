@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_val.dart';
 
 class XdrSCMapEntry {
@@ -54,5 +55,43 @@ class XdrSCMapEntry {
     XdrSCVal key = XdrSCVal.fromTxRep(map, '$prefix.key');
     XdrSCVal val = XdrSCVal.fromTxRep(map, '$prefix.val');
     return XdrSCMapEntry(key, val);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCMapEntry');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCMapEntry.
+  static XdrSCMapEntry fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCMapEntry'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCMapEntry.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'key': _key.toXdrJsonValue(),
+    'val': _val.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSCMapEntry from its SEP-0051 rendering.
+  static XdrSCMapEntry fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCMapEntry',
+      allowedKeys: const <String>{'key', 'val'},
+    );
+    final Object? jsonKey = XdrJsonHelper.readField(
+      object,
+      'key',
+      type: 'XdrSCMapEntry',
+    );
+    final Object? jsonVal = XdrJsonHelper.readField(
+      object,
+      'val',
+      type: 'XdrSCMapEntry',
+    );
+    return XdrSCMapEntry(
+      XdrSCVal.fromXdrJsonValue(jsonKey),
+      XdrSCVal.fromXdrJsonValue(jsonVal),
+    );
   }
 }

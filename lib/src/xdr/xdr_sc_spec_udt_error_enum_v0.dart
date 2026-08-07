@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_spec_udt_error_enum_case_v0.dart';
 
 class XdrSCSpecUDTErrorEnumV0 {
@@ -69,5 +70,102 @@ class XdrSCSpecUDTErrorEnumV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecUDTErrorEnumV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCSpecUDTErrorEnumV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecUDTErrorEnumV0.
+  static XdrSCSpecUDTErrorEnumV0 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecUDTErrorEnumV0'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCSpecUDTErrorEnumV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'doc': XdrJsonHelper.escapedString(
+      _doc,
+      type: 'XdrSCSpecUDTErrorEnumV0',
+      key: 'doc',
+      maxBytes: 1024,
+    ),
+    'lib': XdrJsonHelper.escapedString(
+      _lib,
+      type: 'XdrSCSpecUDTErrorEnumV0',
+      key: 'lib',
+      maxBytes: 80,
+    ),
+    'name': XdrJsonHelper.escapedString(
+      _name,
+      type: 'XdrSCSpecUDTErrorEnumV0',
+      key: 'name',
+      maxBytes: 60,
+    ),
+    'cases': XdrJsonHelper.array<XdrSCSpecUDTErrorEnumCaseV0>(
+      _cases,
+      (XdrSCSpecUDTErrorEnumCaseV0 v) => v.toXdrJsonValue(),
+      type: 'XdrSCSpecUDTErrorEnumV0',
+      key: 'cases',
+    ),
+  };
+
+  /// Reads a XdrSCSpecUDTErrorEnumV0 from its SEP-0051 rendering.
+  static XdrSCSpecUDTErrorEnumV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCSpecUDTErrorEnumV0',
+      allowedKeys: const <String>{'doc', 'lib', 'name', 'cases'},
+    );
+    final Object? jsonDoc = XdrJsonHelper.readField(
+      object,
+      'doc',
+      type: 'XdrSCSpecUDTErrorEnumV0',
+    );
+    final Object? jsonLib = XdrJsonHelper.readField(
+      object,
+      'lib',
+      type: 'XdrSCSpecUDTErrorEnumV0',
+    );
+    final Object? jsonName = XdrJsonHelper.readField(
+      object,
+      'name',
+      type: 'XdrSCSpecUDTErrorEnumV0',
+    );
+    final Object? jsonCases = XdrJsonHelper.readField(
+      object,
+      'cases',
+      type: 'XdrSCSpecUDTErrorEnumV0',
+    );
+    return XdrSCSpecUDTErrorEnumV0(
+      XdrJsonHelper.readEscapedString(
+        jsonDoc,
+        type: 'XdrSCSpecUDTErrorEnumV0',
+        key: 'doc',
+        maxBytes: 1024,
+      ),
+      XdrJsonHelper.readEscapedString(
+        jsonLib,
+        type: 'XdrSCSpecUDTErrorEnumV0',
+        key: 'lib',
+        maxBytes: 80,
+      ),
+      XdrJsonHelper.readEscapedString(
+        jsonName,
+        type: 'XdrSCSpecUDTErrorEnumV0',
+        key: 'name',
+        maxBytes: 60,
+      ),
+      XdrJsonHelper.readArray(
+            jsonCases,
+            type: 'XdrSCSpecUDTErrorEnumV0',
+            key: 'cases',
+          )
+          .map<XdrSCSpecUDTErrorEnumCaseV0>(
+            (Object? e) => XdrSCSpecUDTErrorEnumCaseV0.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

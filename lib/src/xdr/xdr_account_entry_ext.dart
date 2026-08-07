@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_account_entry_v1.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrAccountEntryExt {
   int _v;
@@ -69,5 +70,58 @@ class XdrAccountEntryExt {
   static XdrAccountEntryExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountEntryExt.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrAccountEntryExt',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAccountEntryExt.
+  static XdrAccountEntryExt fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrAccountEntryExt'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrAccountEntryExt.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return 'v0';
+      case 1:
+        return <String, Object?>{'v1': _v1!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrAccountEntryExt',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrAccountEntryExt from its SEP-0051 rendering.
+  static XdrAccountEntryExt fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'v0':
+          return XdrAccountEntryExt(0);
+      }
+      XdrJsonHelper.fail(
+        'XdrAccountEntryExt',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrAccountEntryExt',
+    );
+    switch (arm.key) {
+      case 'v1':
+        final XdrAccountEntryExt arm0 = XdrAccountEntryExt(1);
+        arm0.v1 = XdrAccountEntryV1.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrAccountEntryExt',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

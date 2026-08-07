@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_parallel_tx_execution_stage.dart';
 
 class XdrParallelTxsComponent {
@@ -70,5 +71,58 @@ class XdrParallelTxsComponent {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrParallelTxsComponent.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrParallelTxsComponent',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrParallelTxsComponent.
+  static XdrParallelTxsComponent fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrParallelTxsComponent'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrParallelTxsComponent.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'base_fee': _baseFee == null ? null : _baseFee!.toXdrJsonValue(),
+    'execution_stages': XdrJsonHelper.array<XdrParallelTxExecutionStage>(
+      _executionStages,
+      (XdrParallelTxExecutionStage v) => v.toXdrJsonValue(),
+      type: 'XdrParallelTxsComponent',
+      key: 'execution_stages',
+    ),
+  };
+
+  /// Reads a XdrParallelTxsComponent from its SEP-0051 rendering.
+  static XdrParallelTxsComponent fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrParallelTxsComponent',
+      allowedKeys: const <String>{'base_fee', 'execution_stages'},
+    );
+    final Object? jsonBaseFee = XdrJsonHelper.readField(
+      object,
+      'base_fee',
+      type: 'XdrParallelTxsComponent',
+    );
+    final Object? jsonExecutionStages = XdrJsonHelper.readField(
+      object,
+      'execution_stages',
+      type: 'XdrParallelTxsComponent',
+    );
+    return XdrParallelTxsComponent(
+      jsonBaseFee == null ? null : XdrInt64.fromXdrJsonValue(jsonBaseFee),
+      XdrJsonHelper.readArray(
+            jsonExecutionStages,
+            type: 'XdrParallelTxsComponent',
+            key: 'execution_stages',
+          )
+          .map<XdrParallelTxExecutionStage>(
+            (Object? e) => XdrParallelTxExecutionStage.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrTimeSlicedNodeData {
@@ -131,5 +132,118 @@ class XdrTimeSlicedNodeData {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTimeSlicedNodeData.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTimeSlicedNodeData',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTimeSlicedNodeData.
+  static XdrTimeSlicedNodeData fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTimeSlicedNodeData'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTimeSlicedNodeData.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'added_authenticated_peers': _addedAuthenticatedPeers.toXdrJsonValue(),
+    'dropped_authenticated_peers': _droppedAuthenticatedPeers.toXdrJsonValue(),
+    'total_inbound_peer_count': _totalInboundPeerCount.toXdrJsonValue(),
+    'total_outbound_peer_count': _totalOutboundPeerCount.toXdrJsonValue(),
+    'p75_scp_first_to_self_latency_ms': _p75SCPFirstToSelfLatencyMs
+        .toXdrJsonValue(),
+    'p75_scp_self_to_other_latency_ms': _p75SCPSelfToOtherLatencyMs
+        .toXdrJsonValue(),
+    'lost_sync_count': _lostSyncCount.toXdrJsonValue(),
+    'is_validator': XdrJsonHelper.boolean(_isValidator),
+    'max_inbound_peer_count': _maxInboundPeerCount.toXdrJsonValue(),
+    'max_outbound_peer_count': _maxOutboundPeerCount.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTimeSlicedNodeData from its SEP-0051 rendering.
+  static XdrTimeSlicedNodeData fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTimeSlicedNodeData',
+      allowedKeys: const <String>{
+        'added_authenticated_peers',
+        'dropped_authenticated_peers',
+        'total_inbound_peer_count',
+        'total_outbound_peer_count',
+        'p75_scp_first_to_self_latency_ms',
+        'p75_scp_self_to_other_latency_ms',
+        'lost_sync_count',
+        'is_validator',
+        'max_inbound_peer_count',
+        'max_outbound_peer_count',
+      },
+    );
+    final Object? jsonAddedAuthenticatedPeers = XdrJsonHelper.readField(
+      object,
+      'added_authenticated_peers',
+      type: 'XdrTimeSlicedNodeData',
+    );
+    final Object? jsonDroppedAuthenticatedPeers = XdrJsonHelper.readField(
+      object,
+      'dropped_authenticated_peers',
+      type: 'XdrTimeSlicedNodeData',
+    );
+    final Object? jsonTotalInboundPeerCount = XdrJsonHelper.readField(
+      object,
+      'total_inbound_peer_count',
+      type: 'XdrTimeSlicedNodeData',
+    );
+    final Object? jsonTotalOutboundPeerCount = XdrJsonHelper.readField(
+      object,
+      'total_outbound_peer_count',
+      type: 'XdrTimeSlicedNodeData',
+    );
+    final Object? jsonP75SCPFirstToSelfLatencyMs = XdrJsonHelper.readField(
+      object,
+      'p75_scp_first_to_self_latency_ms',
+      type: 'XdrTimeSlicedNodeData',
+    );
+    final Object? jsonP75SCPSelfToOtherLatencyMs = XdrJsonHelper.readField(
+      object,
+      'p75_scp_self_to_other_latency_ms',
+      type: 'XdrTimeSlicedNodeData',
+    );
+    final Object? jsonLostSyncCount = XdrJsonHelper.readField(
+      object,
+      'lost_sync_count',
+      type: 'XdrTimeSlicedNodeData',
+    );
+    final Object? jsonIsValidator = XdrJsonHelper.readField(
+      object,
+      'is_validator',
+      type: 'XdrTimeSlicedNodeData',
+    );
+    final Object? jsonMaxInboundPeerCount = XdrJsonHelper.readField(
+      object,
+      'max_inbound_peer_count',
+      type: 'XdrTimeSlicedNodeData',
+    );
+    final Object? jsonMaxOutboundPeerCount = XdrJsonHelper.readField(
+      object,
+      'max_outbound_peer_count',
+      type: 'XdrTimeSlicedNodeData',
+    );
+    return XdrTimeSlicedNodeData(
+      XdrUint32.fromXdrJsonValue(jsonAddedAuthenticatedPeers),
+      XdrUint32.fromXdrJsonValue(jsonDroppedAuthenticatedPeers),
+      XdrUint32.fromXdrJsonValue(jsonTotalInboundPeerCount),
+      XdrUint32.fromXdrJsonValue(jsonTotalOutboundPeerCount),
+      XdrUint32.fromXdrJsonValue(jsonP75SCPFirstToSelfLatencyMs),
+      XdrUint32.fromXdrJsonValue(jsonP75SCPSelfToOtherLatencyMs),
+      XdrUint32.fromXdrJsonValue(jsonLostSyncCount),
+      XdrJsonHelper.readBoolean(
+        jsonIsValidator,
+        type: 'XdrTimeSlicedNodeData',
+        key: 'is_validator',
+      ),
+      XdrUint32.fromXdrJsonValue(jsonMaxInboundPeerCount),
+      XdrUint32.fromXdrJsonValue(jsonMaxOutboundPeerCount),
+    );
   }
 }

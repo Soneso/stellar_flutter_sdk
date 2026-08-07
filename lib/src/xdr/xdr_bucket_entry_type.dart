@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrBucketEntryType {
   final _value;
@@ -57,5 +58,55 @@ class XdrBucketEntryType {
   static XdrBucketEntryType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBucketEntryType.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrBucketEntryType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrBucketEntryType.
+  static XdrBucketEntryType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrBucketEntryType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case -1:
+        return 'metaentry';
+      case 0:
+        return 'liveentry';
+      case 1:
+        return 'deadentry';
+      case 2:
+        return 'initentry';
+      default:
+        XdrJsonHelper.fail(
+          'XdrBucketEntryType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrBucketEntryType from its SEP-0051 name.
+  static XdrBucketEntryType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'metaentry':
+          return XdrBucketEntryType.METAENTRY;
+        case 'liveentry':
+          return XdrBucketEntryType.LIVEENTRY;
+        case 'deadentry':
+          return XdrBucketEntryType.DEADENTRY;
+        case 'initentry':
+          return XdrBucketEntryType.INITENTRY;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrBucketEntryType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

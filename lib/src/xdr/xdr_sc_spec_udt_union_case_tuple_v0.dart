@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_spec_type_def.dart';
 
 class XdrSCSpecUDTUnionCaseTupleV0 {
@@ -59,5 +60,90 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecUDTUnionCaseTupleV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCSpecUDTUnionCaseTupleV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecUDTUnionCaseTupleV0.
+  static XdrSCSpecUDTUnionCaseTupleV0 fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrSCSpecUDTUnionCaseTupleV0',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrSCSpecUDTUnionCaseTupleV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'doc': XdrJsonHelper.escapedString(
+      _doc,
+      type: 'XdrSCSpecUDTUnionCaseTupleV0',
+      key: 'doc',
+      maxBytes: 1024,
+    ),
+    'name': XdrJsonHelper.escapedString(
+      _name,
+      type: 'XdrSCSpecUDTUnionCaseTupleV0',
+      key: 'name',
+      maxBytes: 60,
+    ),
+    'type': XdrJsonHelper.array<XdrSCSpecTypeDef>(
+      _type,
+      (XdrSCSpecTypeDef v) => v.toXdrJsonValue(),
+      type: 'XdrSCSpecUDTUnionCaseTupleV0',
+      key: 'type',
+    ),
+  };
+
+  /// Reads a XdrSCSpecUDTUnionCaseTupleV0 from its SEP-0051 rendering.
+  static XdrSCSpecUDTUnionCaseTupleV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCSpecUDTUnionCaseTupleV0',
+      allowedKeys: const <String>{'doc', 'name', 'type', 'type_'},
+    );
+    final Object? jsonDoc = XdrJsonHelper.readField(
+      object,
+      'doc',
+      type: 'XdrSCSpecUDTUnionCaseTupleV0',
+    );
+    final Object? jsonName = XdrJsonHelper.readField(
+      object,
+      'name',
+      type: 'XdrSCSpecUDTUnionCaseTupleV0',
+    );
+    final Object? jsonType = XdrJsonHelper.readField(
+      object,
+      'type',
+      type: 'XdrSCSpecUDTUnionCaseTupleV0',
+      alias: 'type_',
+    );
+    return XdrSCSpecUDTUnionCaseTupleV0(
+      XdrJsonHelper.readEscapedString(
+        jsonDoc,
+        type: 'XdrSCSpecUDTUnionCaseTupleV0',
+        key: 'doc',
+        maxBytes: 1024,
+      ),
+      XdrJsonHelper.readEscapedString(
+        jsonName,
+        type: 'XdrSCSpecUDTUnionCaseTupleV0',
+        key: 'name',
+        maxBytes: 60,
+      ),
+      XdrJsonHelper.readArray(
+            jsonType,
+            type: 'XdrSCSpecUDTUnionCaseTupleV0',
+            key: 'type',
+          )
+          .map<XdrSCSpecTypeDef>(
+            (Object? e) => XdrSCSpecTypeDef.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }
