@@ -279,6 +279,58 @@ void main() {
       );
     });
 
+    test('createWallet_autoSubmit_sendTryAgainLater_throwsSubmissionFailed',
+        () async {
+      // createWallet with autoSubmit=true → _submitDeployTransaction →
+      // sendTransaction returns TRY_AGAIN_LATER, a status the network did
+      // not queue → throws submissionFailed without polling. No
+      // getTransaction responses are queued: polling instead would end in
+      // a timeout exception, failing the type assertion below.
+      final deployer = KeyPair.random();
+      final mock = MockSorobanServer();
+      final provider = RecordingWebAuthnProvider();
+      final credIdBytes = base64Url.decode(
+        base64Url.normalize(_credentialIdB64),
+      );
+      final pubKey = _validSecp256r1PublicKey();
+
+      provider.registerResponses.add(WebAuthnRegistrationResult(
+        credentialId: credIdBytes,
+        publicKey: pubKey,
+        attestationObject: _bytes(37, 0xCE),
+      ));
+
+      mock.getAccountResponses.add(_deployerAccount(deployer));
+      mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 500));
+
+      final sendResp = SendTransactionResponse(<String, dynamic>{});
+      sendResp.hash = 'busy-hash';
+      sendResp.status = SendTransactionResponse.STATUS_TRY_AGAIN_LATER;
+      mock.sendResponses.add(sendResp);
+
+      final config = OZSmartAccountConfig(
+        rpcUrl: 'https://soroban-testnet.stellar.org',
+        networkPassphrase: Network.TESTNET.networkPassphrase,
+        accountWasmHash: '0' * 64,
+        webauthnVerifierAddress: _contractA,
+        webauthnProvider: provider,
+      );
+      final kit = FakePipelineKit(
+        config: config,
+        sorobanServer: mock,
+        deployer: deployer,
+      );
+
+      final ops = OZWalletOperations(kit);
+      await expectLater(
+        () => ops.createWallet(autoSubmit: true),
+        throwsA(isA<SmartAccountTransactionSubmissionFailed>().having(
+            (e) => e.toString(),
+            'message',
+            contains('TRY_AGAIN_LATER'))),
+      );
+    });
+
     test('createWallet_autoSubmit_relayerPath_success', () async {
       // createWallet with autoSubmit=true and relayer configured → uses relayer.
       // The relayer's success path (lines 1498+) requires polling.

@@ -1708,16 +1708,26 @@ class OZWalletOperations {
         );
       }
 
-      if (sendResult.errorResultXdr != null) {
+      // A PENDING submission was accepted into the network's transaction
+      // queue and a DUPLICATE one names a transaction already in that queue,
+      // so both poll to the true outcome below. Any other status reports a
+      // submission the network did not queue, so polling its hash cannot
+      // find a result.
+      final sendStatus = sendResult.status;
+      if (sendStatus != SendTransactionResponse.STATUS_PENDING &&
+          sendStatus != SendTransactionResponse.STATUS_DUPLICATE) {
+        var error = 'Deployment transaction failed with status: $sendStatus';
+        if (sendResult.errorResultXdr != null) {
+          error +=
+              ', error transaction result xdr: ${sendResult.errorResultXdr}';
+        }
         try {
           await _credentialManager.markDeploymentFailed(
             credentialId: credentialIdBase64url,
-            error: 'Transaction error: ${sendResult.errorResultXdr}',
+            error: error,
           );
         } catch (_) {}
-        throw SmartAccountTransactionException.submissionFailed(
-          'Deployment transaction error: ${sendResult.errorResultXdr}',
-        );
+        throw SmartAccountTransactionException.submissionFailed(error);
       }
 
       final hash = sendResult.hash;

@@ -33,12 +33,12 @@ final class NetworkConstants {
 
   /// Transaction time buffer in seconds.
   ///
-  /// This buffer is subtracted from the current time when setting the lower
-  /// bound of transaction time bounds. It accounts for potential clock skew
-  /// between the client and the Stellar network, ensuring transactions are
-  /// not rejected due to minor time differences.
-  ///
-  /// Default: 10 seconds
+  /// Unused by the SDK: Soroban transactions set no lower time bound
+  /// (minTime = 0). A lower bound derived from the client clock is seen as
+  /// lying in the future by any submission node whose clock or ledger state
+  /// lags the client, which rejects the transaction with tx_too_early.
+  @Deprecated(
+      'Unused by the SDK; Soroban transactions set no lower time bound (minTime = 0).')
   static const int TRANSACTION_TIME_BUFFER_SECONDS = 10;
 
   /// WebAuth challenge grace period in seconds.

@@ -9,6 +9,7 @@ import 'package:stellar_flutter_sdk/src/constants/network_constants.dart';
 import 'package:stellar_flutter_sdk/src/invoke_host_function_operation.dart';
 import 'package:stellar_flutter_sdk/src/restore_footprint_operation.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_auth.dart';
+import 'package:stellar_flutter_sdk/src/soroban/soroban_contract_parser.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_server.dart';
 import 'package:stellar_flutter_sdk/src/soroban/contract_spec.dart';
 import 'package:stellar_flutter_sdk/src/transaction.dart';
@@ -150,13 +151,19 @@ class SorobanClient {
   /// and then constructs a SorobanClient by using the loaded contract info.
   static Future<SorobanClient> forClientOptions(
       {required ClientOptions options}) async {
-    final server = options.server ?? SorobanServer(options.rpcUrl);
+    SorobanServer server;
+    if (options.server != null) {
+      server = options.server!;
+    } else {
+      server = SorobanServer(options.rpcUrl);
+      server.enableLogging = options.enableServerLogging;
+    }
     final info = await server.loadContractInfoForContractId(options.contractId);
     if (info != null) {
       return SorobanClient._(info.specEntries, options);
     } else {
       throw new Exception(
-          "Could not load contract inf for the contract: ${options.contractId}");
+          "Could not load contract info for the contract: ${options.contractId}");
     }
   }
 
@@ -165,6 +172,25 @@ class SorobanClient {
   /// to install the contract.
   static Future<SorobanClient> deploy(
       {required DeployRequest deployRequest}) async {
+    // Load the spec from the wasm code entry before deploying: the code entry
+    // was settled by the install transaction, while reading the contract
+    // instance right after deployment races the RPC's ledger-entry ingestion,
+    // so a successful deployment could surface as a load failure.
+    SorobanServer server;
+    if (deployRequest.server != null) {
+      server = deployRequest.server!;
+    } else {
+      server = SorobanServer(deployRequest.rpcUrl);
+      server.enableLogging = deployRequest.enableSorobanServerLogging;
+    }
+    SorobanContractInfo? contractInfo;
+    try {
+      contractInfo =
+          await server.loadContractInfoForWasmId(deployRequest.wasmHash);
+    } on SorobanContractParserFailed {
+      contractInfo = null; // code without a parseable spec: fall back below
+    }
+
     final sourceAddress =
         Address.forAccountId(deployRequest.sourceAccountKeyPair.accountId);
     final createContractHostFunction =
@@ -194,6 +220,9 @@ class SorobanClient {
       throw Exception("Could not get contract id for deployed contract");
     }
     clientOptions.contractId = StrKey.encodeContractIdHex(contractId);
+    if (contractInfo != null) {
+      return SorobanClient._(contractInfo.specEntries, clientOptions);
+    }
     return SorobanClient.forClientOptions(options: clientOptions);
   }
 
@@ -672,7 +701,7 @@ class AssembledTransaction {
     final account = await tx._getSourceAccount();
     tx.raw = TransactionBuilder(account);
     final timeBounds = TimeBounds(
-        DateTime.now().millisecondsSinceEpoch ~/ 1000 - NetworkConstants.TRANSACTION_TIME_BUFFER_SECONDS,
+        0,
         DateTime.now().millisecondsSinceEpoch ~/ 1000 +
             tx.options.methodOptions.timeoutInSeconds);
     final preconditions = TransactionPreconditions();
@@ -715,7 +744,7 @@ class AssembledTransaction {
         final sourceAccount = await _getSourceAccount();
         raw = TransactionBuilder(sourceAccount);
         final timeBounds = TimeBounds(
-            DateTime.now().millisecondsSinceEpoch ~/ 1000 - NetworkConstants.TRANSACTION_TIME_BUFFER_SECONDS,
+            0,
             DateTime.now().millisecondsSinceEpoch ~/ 1000 +
                 options.methodOptions.timeoutInSeconds);
         final preconditions = TransactionPreconditions();
@@ -767,14 +796,32 @@ class AssembledTransaction {
       }
       throw Exception("Could not send transaction.");
     }
-    if (sendTxResponse.status == SendTransactionResponse.STATUS_ERROR) {
-      throw new Exception(
-          "Send transaction failed with error transaction result xdr: ${sendTxResponse.errorResultXdr}");
-    } else if (sendTxResponse.status ==
-        SendTransactionResponse.STATUS_DUPLICATE) {
-      throw new Exception("Send transaction failed with status: DUPLICATE");
+    // A PENDING submission was accepted into the network's transaction queue
+    // and a DUPLICATE one names a transaction already in that queue, so both
+    // poll to the transaction's true outcome. Any other status reports a
+    // submission the network did not queue, so polling its hash cannot find
+    // a result.
+    final status = sendTxResponse.status;
+    if (status != SendTransactionResponse.STATUS_PENDING &&
+        status != SendTransactionResponse.STATUS_DUPLICATE) {
+      var message = "Send transaction failed with status: $status";
+      if (sendTxResponse.errorResultXdr != null) {
+        message +=
+            ", error transaction result xdr: ${sendTxResponse.errorResultXdr}";
+      }
+      final diagnosticEvents = sendTxResponse.diagnosticEvents;
+      if (diagnosticEvents != null && diagnosticEvents.isNotEmpty) {
+        message +=
+            ", diagnostic events: ${diagnosticEvents.map((event) => event.toBase64EncodedXdrString()).join(", ")}";
+      }
+      throw Exception(message);
     }
-    return await _pollStatus(sendTxResponse.hash!);
+    final hash = sendTxResponse.hash;
+    if (hash == null) {
+      throw Exception(
+          "Send transaction response contains no transaction hash.");
+    }
+    return await _pollStatus(hash);
   }
 
   Future<GetTransactionResponse> _pollStatus(String transactionId) async {
@@ -1348,7 +1395,7 @@ class AssembledTransaction {
     final restoreOp = (RestoreFootprintOperationBuilder()).build();
     final sourceAccount = await restoreTx._getSourceAccount();
     final timeBounds = TimeBounds(
-        DateTime.now().millisecondsSinceEpoch ~/ 1000 - NetworkConstants.TRANSACTION_TIME_BUFFER_SECONDS,
+        0,
         DateTime.now().millisecondsSinceEpoch ~/ 1000 +
             restoreTx.options.methodOptions.timeoutInSeconds);
     final preconditions = TransactionPreconditions();

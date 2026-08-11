@@ -278,6 +278,28 @@ void main() {
           isA<UploadContractWasmHostFunction>());
     });
 
+    test('restore and rebuilt transactions set no lower time bound', () async {
+      final keyPair = KeyPair.random();
+      final txData = transactionDataWithWrites(keyPair);
+      final simulateEnvelopes = <String>[];
+      final server = restoreFlowMockServer(keyPair, txData,
+          simulateEnvelopes: simulateEnvelopes);
+
+      await AssembledTransaction.build(
+          options: buildOptions(keyPair, server, MethodOptions(restore: true)));
+
+      // The initial invocation, the restore transaction, and the rebuilt
+      // invocation were each simulated once.
+      expect(simulateEnvelopes.length, 3);
+      for (final envelope in simulateEnvelopes) {
+        final transaction =
+            AbstractTransaction.fromEnvelopeXdrString(envelope) as Transaction;
+        final timeBounds = transaction.preconditions?.timeBounds;
+        expect(timeBounds, isNotNull);
+        expect(timeBounds!.minTime, 0);
+      }
+    });
+
     test('throws when the restore transaction fails', () async {
       final keyPair = KeyPair.random();
       final txData = transactionDataWithWrites(keyPair);
