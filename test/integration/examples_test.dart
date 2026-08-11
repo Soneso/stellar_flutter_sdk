@@ -5,6 +5,8 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'dart:typed_data';
 import 'dart:async';
 
+import '../tests_util.dart';
+
 void main() {
   StellarSDK sdk = StellarSDK.TESTNET;
 
@@ -216,7 +218,7 @@ void main() {
     String receiverAccountId = receiverKeyPair.accountId;
 
     // Fund the issuer account.
-    await FriendBot.fundTestAccount(issuerAccoutId);
+    await fundTestAccountAndAwaitVisibility(issuerAccoutId, horizon: sdk);
 
     // Load the issuer account so that we have it's current sequence number.
     AccountResponse issuer = await sdk.accounts.account(issuerAccoutId);
@@ -424,6 +426,8 @@ void main() {
 // Ask the Freindbot to create our account in the stellar network (only awailable in testnet).
     await FriendBot.fundTestAccount(keyPair.accountId);
 
+    await fundTestAccountAndAwaitVisibility(keyPair.accountId, horizon: sdk);
+
 // Load the account data from stellar.
     await sdk.accounts.account(keyPair.accountId);
   });
@@ -469,8 +473,8 @@ void main() {
     String accountYId = keyPairY.accountId;
 
     // Create both accounts.
-    await FriendBot.fundTestAccount(accountXId);
-    await FriendBot.fundTestAccount(accountYId);
+    await fundTestAccountAndAwaitVisibility(accountXId, horizon: sdk);
+    await fundTestAccountAndAwaitVisibility(accountYId, horizon: sdk);
 
     // Prepare the operation for merging account Y into account X.
     AccountMergeOperationBuilder accMergeOp = AccountMergeOperationBuilder(accountXId);
@@ -519,7 +523,7 @@ void main() {
     String accountId = accountKeyPair.accountId;
 
     // Create account.
-    await FriendBot.fundTestAccount(accountId);
+    await fundTestAccountAndAwaitVisibility(accountId, horizon: sdk);
 
     // Load account data to get the current sequence number.
     AccountResponse account = await sdk.accounts.account(accountId);
@@ -559,7 +563,7 @@ void main() {
     String accountId = keyPair.accountId;
 
     // Create account.
-    await FriendBot.fundTestAccount(accountId);
+    await fundTestAccountAndAwaitVisibility(accountId, horizon: sdk);
 
     // Load account data including it's current sequence number.
     AccountResponse account = await sdk.accounts.account(accountId);
@@ -634,7 +638,7 @@ void main() {
     String buyerAccountId = buyerKeypair.accountId;
 
     // Create the buyer account.
-    await FriendBot.fundTestAccount(buyerAccountId);
+    await fundTestAccountAndAwaitVisibility(buyerAccountId, horizon: sdk);
 
     // Create the issuer account.
     AccountResponse buyerAccount = await sdk.accounts.account(buyerAccountId);
@@ -756,7 +760,7 @@ void main() {
     String sellerAccountId = sellerKeypair.accountId;
 
     // Create seller account.
-    await FriendBot.fundTestAccount(sellerAccountId);
+    await fundTestAccountAndAwaitVisibility(sellerAccountId, horizon: sdk);
 
     // Create issuer account.
     AccountResponse sellerAccount = await sdk.accounts.account(sellerAccountId);
@@ -880,7 +884,7 @@ void main() {
     String sellerAccountId = sellerKeypair.accountId;
 
     // Create seller account.
-    await FriendBot.fundTestAccount(sellerAccountId);
+    await fundTestAccountAndAwaitVisibility(sellerAccountId, horizon: sdk);
 
     // Create issuer account.
     AccountResponse sellerAccount = await sdk.accounts.account(sellerAccountId);
@@ -1008,7 +1012,7 @@ void main() {
     String trustorAccountId = trustorKeypair.accountId;
 
     // Create trustor account.
-    await FriendBot.fundTestAccount(trustorAccountId);
+    await fundTestAccountAndAwaitVisibility(trustorAccountId, horizon: sdk);
 
     // Load the trustor account so that we can later create the trustline.
     AccountResponse trustorAccount = await sdk.accounts.account(trustorAccountId);
@@ -1109,7 +1113,7 @@ void main() {
     String trustorAccountId = trustorKeypair.accountId;
 
     // Create trustor account.
-    await FriendBot.fundTestAccount(trustorAccountId);
+    await fundTestAccountAndAwaitVisibility(trustorAccountId, horizon: sdk);
 
     // Load trustor account, we will need it later to create the trustline.
     AccountResponse trustorAccount = await sdk.accounts.account(trustorAccountId);
@@ -1271,8 +1275,8 @@ void main() {
     KeyPair keyPairB = KeyPair.random();
     String accountBId = keyPairB.accountId;
     String accountAId = keyPairA.accountId;
-    await FriendBot.fundTestAccount(accountAId);
-    await FriendBot.fundTestAccount(accountBId);
+    await fundTestAccountAndAwaitVisibility(accountAId, horizon: sdk);
+    await fundTestAccountAndAwaitVisibility(accountBId, horizon: sdk);
 
     // Load current data of account B.
     AccountResponse accountB = await sdk.accounts.account(accountBId);
@@ -1319,8 +1323,8 @@ void main() {
     String destinationId = destinationKeyPair.accountId;
 
     // Create the source and the payer account.
-    await FriendBot.fundTestAccount(sourceId);
-    await FriendBot.fundTestAccount(payerId);
+    await fundTestAccountAndAwaitVisibility(sourceId, horizon: sdk);
+    await fundTestAccountAndAwaitVisibility(payerId, horizon: sdk);
 
     // Load the current data of the source account so that we can create the inner transaction.
     AccountResponse sourceAccount = await sdk.accounts.account(sourceId);
@@ -1371,7 +1375,7 @@ void main() {
     String senderAccountId = senderKeyPair.accountId;
 
     // Create the sender account.
-    await FriendBot.fundTestAccount(senderAccountId);
+    await fundTestAccountAndAwaitVisibility(senderAccountId, horizon: sdk);
 
     // Load the current account data of the sender account.
     AccountResponse accountA = await sdk.accounts.account(senderAccountId);

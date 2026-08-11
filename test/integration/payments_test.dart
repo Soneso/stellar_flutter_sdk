@@ -14,11 +14,8 @@ void main() {
   test('send native payment', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountAId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountAId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountAId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -79,11 +76,8 @@ void main() {
   test('send native payment with preconditions', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountAId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountAId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountAId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -174,11 +168,8 @@ void main() {
       () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountAId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountAId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountAId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -258,11 +249,8 @@ void main() {
   test('send native payment with max operation fee', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountAId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountAId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountAId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -304,11 +292,8 @@ void main() {
   test('send non native payment', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountAId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountAId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountAId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -420,11 +405,8 @@ void main() {
   test('send non native payment with muxed accounts', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountAId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountAId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountAId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -554,11 +536,8 @@ void main() {
   test('path payment strict send and strict receive', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountAId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountAId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountAId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -865,11 +844,8 @@ void main() {
       () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountAId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountAId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountAId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -1024,11 +1000,8 @@ void main() {
   test('get payments for account, transaction, ledger', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountAId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountAId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountAId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -1107,11 +1080,8 @@ void main() {
   test('stream payments', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountAId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountAId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountAId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
     AccountResponse accountA = await sdk.accounts.account(accountAId);
 
     KeyPair keyPairB = KeyPair.random();
@@ -1165,11 +1135,8 @@ void main() {
   test('no signature transaction envelop', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountAId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountAId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountAId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();

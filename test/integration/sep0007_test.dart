@@ -6,6 +6,8 @@ import 'package:http/testing.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'package:http/http.dart' as http;
 
+import '../tests_util.dart';
+
 void main() {
   StellarSDK sdk = StellarSDK.TESTNET;
   final String accountId =
@@ -50,7 +52,7 @@ void main() {
       assert(true);
     }).catchError((error) async {
       assert(error is ErrorResponse && error.code == 404);
-      await FriendBot.fundTestAccount(accountId);
+      await fundTestAccountAndAwaitVisibility(accountId, horizon: sdk);
     });
   });
 

@@ -32,9 +32,8 @@ void main() {
   final sourceAccountKeyPair = KeyPair.random();
 
   setUp(() async {
-    await fundTestAccountAndWaitForRpc(
-        sorobanServer, sourceAccountKeyPair.accountId,
-        useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(sourceAccountKeyPair.accountId,
+        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
   });
 
   Future<String> installContract(String path) async {

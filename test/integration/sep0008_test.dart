@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import '../tests_util.dart';
+
 void main() {
   String anchorDomain = 'api.anchor.org';
   String anchorToml = '''
@@ -44,11 +46,14 @@ void main() {
   StellarToml toml = StellarToml(anchorToml);
 
   setUp(() async {
-    await FriendBot.fundTestAccount(asset1IssuerKp.accountId);
+    await fundTestAccountAndAwaitVisibility(asset1IssuerKp.accountId,
+        horizon: sdk);
     print("funded Issuer 1: " + asset1IssuerKp.accountId);
-    await FriendBot.fundTestAccount(asset2IssuerKp.accountId);
+    await fundTestAccountAndAwaitVisibility(asset2IssuerKp.accountId,
+        horizon: sdk);
     print("funded Issuer 2: " + asset2IssuerKp.accountId);
-    await FriendBot.fundTestAccount(accountAKp.accountId);
+    await fundTestAccountAndAwaitVisibility(accountAKp.accountId,
+        horizon: sdk);
     print("funded Account A: " + accountAKp.accountId);
 
     var sourceAccountId = asset1IssuerKp.accountId;

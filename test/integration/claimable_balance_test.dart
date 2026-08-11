@@ -13,11 +13,8 @@ void main() {
     KeyPair sourceAccountKeyxPair = KeyPair.random();
     String sourceAccountId = sourceAccountKeyxPair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(sourceAccountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(sourceAccountId);
-    }
+    await fundTestAccountAndAwaitVisibility(sourceAccountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
 
@@ -93,11 +90,8 @@ void main() {
     assert(claimableBalances.records.length == 1);
     ClaimableBalanceResponse cb = claimableBalances.records[0];
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(fistClaimantId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(fistClaimantId);
-    }
+    await fundTestAccountAndAwaitVisibility(fistClaimantId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     ClaimClaimableBalanceOperationBuilder opc =
         ClaimClaimableBalanceOperationBuilder(cb.balanceId);

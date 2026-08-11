@@ -14,11 +14,8 @@ void main() {
     KeyPair masterAccountKeyPair = KeyPair.random();
     String masterAccountId = masterAccountKeyPair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(masterAccountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(masterAccountId);
-    }
+    await fundTestAccountAndAwaitVisibility(masterAccountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     AccountResponse masterAccount = await sdk.accounts.account(masterAccountId);
 

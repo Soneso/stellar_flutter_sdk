@@ -1352,7 +1352,8 @@ void main() {
       final sourceKeyPair = KeyPair.random();
       print('Created test account: ${sourceKeyPair.accountId}');
 
-      await fundTestAccountAndWaitForRpc(sorobanServer, sourceKeyPair.accountId);
+      await fundTestAccountAndAwaitVisibility(sourceKeyPair.accountId,
+          rpc: sorobanServer);
       print('Funded test account via Friendbot');
 
       // Step 2: Create signer keypair (used for both constructor and authentication)
@@ -1435,7 +1436,8 @@ void main() {
       final sourceKeyPair = KeyPair.random();
       print('Created test account: ${sourceKeyPair.accountId}');
 
-      await fundTestAccountAndWaitForRpc(sorobanServer, sourceKeyPair.accountId);
+      await fundTestAccountAndAwaitVisibility(sourceKeyPair.accountId,
+          rpc: sorobanServer);
       print('Funded test account via Friendbot');
 
       // Step 2: Create signer keypair (used for both constructor and authentication)

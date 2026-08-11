@@ -46,7 +46,8 @@ void main() {
   Future<OZSmartAccountKit> createKit() async {
     final deployer = KeyPair.random();
     final sorobanServer = SorobanServer(rpcUrl);
-    await fundTestAccountAndWaitForRpc(sorobanServer, deployer.accountId);
+    await fundTestAccountAndAwaitVisibility(deployer.accountId,
+        rpc: sorobanServer);
 
     final provider = MockWebAuthnProvider();
     provider.registrationResult = WebAuthnRegistrationResult(

@@ -3,6 +3,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import '../tests_util.dart';
+
 void main() {
   String testOn = 'testnet'; //'futurenet';
   StellarSDK sdk =
@@ -13,11 +15,8 @@ void main() {
     KeyPair keyPair = KeyPair.random();
     String accountId = keyPair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     var account = await sdk.accounts.account(accountId);
     BigInt startSequence = account.sequenceNumber;
@@ -47,11 +46,8 @@ void main() {
     KeyPair keyPair = KeyPair.random();
     String accountId = keyPair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     var account = await sdk.accounts.account(accountId);
     BigInt startSequence = account.sequenceNumber;
@@ -85,11 +81,8 @@ void main() {
     KeyPair keyPair = KeyPair.random();
     String accountId = keyPair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     var account = await sdk.accounts.account(accountId);
     BigInt startSequence = account.sequenceNumber;
@@ -122,11 +115,8 @@ void main() {
     KeyPair keyPair = KeyPair.random();
     String accountId = keyPair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     // set invalid sequence number to produce error.
     var account = Account(accountId, BigInt.from(100000000));

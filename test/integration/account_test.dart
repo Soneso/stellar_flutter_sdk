@@ -19,11 +19,8 @@ void main() {
   test('test set account options', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountAId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountAId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountAId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
     BigInt seqNum = accountA.sequenceNumber;
 
@@ -107,11 +104,8 @@ void main() {
   test('test find accounts for asset', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountAId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountAId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountAId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -176,13 +170,10 @@ void main() {
     String accountXId = keyPairX.accountId;
     String accountYId = keyPairY.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountXId);
-      await FriendBot.fundTestAccount(accountYId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountXId);
-      await FuturenetFriendBot.fundTestAccount(accountYId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountXId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(accountYId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     AccountMergeOperation accountMergeOperation =
         AccountMergeOperationBuilder(accountXId).build();
@@ -224,13 +215,10 @@ void main() {
     String accountXId = keyPairX.accountId;
     String accountYId = keyPairY.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountXId);
-      await FriendBot.fundTestAccount(accountYId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountXId);
-      await FuturenetFriendBot.fundTestAccount(accountYId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountXId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(accountYId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     MuxedAccount muxedDestinationAccount = MuxedAccount(accountXId, BigInt.from(10120291));
     MuxedAccount muxedSourceAccount = MuxedAccount(accountYId, BigInt.from(9999999999));
@@ -277,11 +265,8 @@ void main() {
     KeyPair keyPair = KeyPair.random();
     String accountId = keyPair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     AccountResponse account = await sdk.accounts.account(accountId);
     BigInt startSequence = account.sequenceNumber;
@@ -314,11 +299,8 @@ void main() {
     KeyPair keyPair = KeyPair.random();
     String accountId = keyPair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     AccountResponse account = await sdk.accounts.account(accountId);
 
@@ -381,11 +363,8 @@ void main() {
   test('stream transactions for an account', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountAId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountAId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountAId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
     AccountResponse accountA = await sdk.accounts.account(accountAId);
 
     KeyPair keyPairB = KeyPair.random();
@@ -447,11 +426,8 @@ void main() {
     KeyPair keyPair = KeyPair.random();
     String accountId = keyPair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     AccountResponse account = await sdk.accounts.account(accountId);
 

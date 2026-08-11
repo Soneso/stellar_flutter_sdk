@@ -14,11 +14,8 @@ void main() {
     KeyPair accountKeyPair = KeyPair.random();
     String accountId = accountKeyPair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     AccountResponse account = await sdk.accounts.account(accountId);
     Page<AccountResponse> accountsForSigner =
@@ -297,11 +294,8 @@ void main() {
     String issuerAccountId = issuerKeipair.accountId;
     String buyerAccountId = buyerKeipair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(buyerAccountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(buyerAccountId);
-    }
+    await fundTestAccountAndAwaitVisibility(buyerAccountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     AccountResponse buyerAccount = await sdk.accounts.account(buyerAccountId);
     CreateAccountOperationBuilder caob =
@@ -404,11 +398,8 @@ void main() {
   test('query: strict send path, strict receive path, trades', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(accountAId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(accountAId);
-    }
+    await fundTestAccountAndAwaitVisibility(accountAId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();

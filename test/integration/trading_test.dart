@@ -18,11 +18,8 @@ void main() {
     String issuerAccountId = issuerKeipair.accountId;
     String buyerAccountId = buyerKeipair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(buyerAccountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(buyerAccountId);
-    }
+    await fundTestAccountAndAwaitVisibility(buyerAccountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     AccountResponse buyerAccount = await sdk.accounts.account(buyerAccountId);
     CreateAccountOperationBuilder caob =
@@ -199,11 +196,8 @@ void main() {
     String issuerAccountId = issuerKeipair.accountId;
     String sellerAccountId = sellerKeipair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(sellerAccountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(sellerAccountId);
-    }
+    await fundTestAccountAndAwaitVisibility(sellerAccountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     AccountResponse sellerAccount = await sdk.accounts.account(sellerAccountId);
     CreateAccountOperation co =
@@ -359,11 +353,8 @@ void main() {
     String issuerAccountId = issuerKeipair.accountId;
     String sellerAccountId = sellerKeipair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(sellerAccountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(sellerAccountId);
-    }
+    await fundTestAccountAndAwaitVisibility(sellerAccountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     AccountResponse sellerAccount = await sdk.accounts.account(sellerAccountId);
     CreateAccountOperation co =
@@ -488,13 +479,10 @@ void main() {
     String buyerAccountId = buyerKeypair.accountId;
 
     // Fund accounts
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(sellerAccountId);
-      await FriendBot.fundTestAccount(buyerAccountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(sellerAccountId);
-      await FuturenetFriendBot.fundTestAccount(buyerAccountId);
-    }
+    await fundTestAccountAndAwaitVisibility(sellerAccountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(buyerAccountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     // Create issuer account
     AccountResponse sellerAccount = await sdk.accounts.account(sellerAccountId);

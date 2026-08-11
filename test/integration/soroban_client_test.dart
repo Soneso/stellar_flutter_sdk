@@ -24,9 +24,8 @@ void main() {
   final sourceAccountKeyPair = KeyPair.random();
 
   setUp(() async {
-    await fundTestAccountAndWaitForRpc(
-        sorobanServer, sourceAccountKeyPair.accountId,
-        useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(sourceAccountKeyPair.accountId,
+        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
   });
 
   Future<String> installContract(String path) async {
@@ -222,8 +221,8 @@ void main() {
     // we need to sign the auth entry
 
     final invokerKeyPair = KeyPair.random();
-    await fundTestAccountAndWaitForRpc(sorobanServer, invokerKeyPair.accountId,
-        useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(invokerKeyPair.accountId,
+        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
 
     invokerAddress = Address.forAccountId(invokerKeyPair.accountId);
     args = [invokerAddress.toXdrSCVal(), XdrSCVal.forU32(4)];
@@ -308,12 +307,12 @@ void main() {
     final bobKeyPair = KeyPair.random();
     final bobId = bobKeyPair.accountId;
 
-    await fundTestAccountAndWaitForRpc(sorobanServer, adminKeyPair.accountId,
-        useFuturenet: testOn != 'testnet');
-    await fundTestAccountAndWaitForRpc(sorobanServer, aliceId,
-        useFuturenet: testOn != 'testnet');
-    await fundTestAccountAndWaitForRpc(sorobanServer, bobId,
-        useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(adminKeyPair.accountId,
+        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(aliceId,
+        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(bobId,
+        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
 
     final atomicSwapClient = await deployContract(swapContractWasmHash);
     print(
@@ -421,12 +420,12 @@ void main() {
     final bobKeyPair = KeyPair.random();
     final bobId = bobKeyPair.accountId;
 
-    await fundTestAccountAndWaitForRpc(sorobanServer, adminKeyPair.accountId,
-        useFuturenet: testOn != 'testnet');
-    await fundTestAccountAndWaitForRpc(sorobanServer, aliceId,
-        useFuturenet: testOn != 'testnet');
-    await fundTestAccountAndWaitForRpc(sorobanServer, bobId,
-        useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(adminKeyPair.accountId,
+        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(aliceId,
+        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(bobId,
+        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
 
     final atomicSwapClient = await deployContract(swapContractWasmHash);
     print(
@@ -588,8 +587,8 @@ void main() {
 
     // Test 2: submitter and invoker are NOT the same (need to sign auth entry)
     final invokerKeyPair = KeyPair.random();
-    await fundTestAccountAndWaitForRpc(sorobanServer, invokerKeyPair.accountId,
-        useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(invokerKeyPair.accountId,
+        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
 
     invokerAddress = Address.forAccountId(invokerKeyPair.accountId);
 
@@ -635,12 +634,12 @@ void main() {
     final bobKeyPair = KeyPair.random();
     final bobId = bobKeyPair.accountId;
 
-    await fundTestAccountAndWaitForRpc(sorobanServer, adminKeyPair.accountId,
-        useFuturenet: testOn != 'testnet');
-    await fundTestAccountAndWaitForRpc(sorobanServer, aliceId,
-        useFuturenet: testOn != 'testnet');
-    await fundTestAccountAndWaitForRpc(sorobanServer, bobId,
-        useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(adminKeyPair.accountId,
+        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(aliceId,
+        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(bobId,
+        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
 
     // Deploy atomic swap contract
     final atomicSwapDeployedClient = await deployContract(swapContractWasmHash);

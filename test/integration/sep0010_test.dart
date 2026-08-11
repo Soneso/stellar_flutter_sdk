@@ -320,9 +320,6 @@ void main() {
       transactionXdr,
     );
 
-    KeyPair testAccountKeyPair = KeyPair.random();
-    await FriendBot.fundTestAccount(testAccountKeyPair.accountId);
-
     if (envelopeXdr.discriminant != XdrEnvelopeType.ENVELOPE_TYPE_TX) {
       throw ChallengeValidationError("Invalid transaction type");
     }

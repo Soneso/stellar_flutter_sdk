@@ -31,15 +31,15 @@ void main() {
     try {
       await sdk.accounts.account(submitterId);
     } catch (e) {
-      await fundTestAccountAndWaitForRpc(sorobanServer, submitterId,
-          useFuturenet: testOn != 'testnet');
+      await fundTestAccountAndAwaitVisibility(submitterId,
+          rpc: sorobanServer, horizon: sdk, useFuturenet: testOn != 'testnet');
     }
 
     try {
       await sdk.accounts.account(invokerId);
     } catch (e) {
-      await fundTestAccountAndWaitForRpc(sorobanServer, invokerId,
-          useFuturenet: testOn != 'testnet');
+      await fundTestAccountAndAwaitVisibility(invokerId,
+          rpc: sorobanServer, horizon: sdk, useFuturenet: testOn != 'testnet');
     }
   });
 

@@ -18,11 +18,8 @@ void main() {
     String issuerAccountId = issuerKeipair.accountId;
     String trustorAccountId = trustorKeipair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(trustorAccountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(trustorAccountId);
-    }
+    await fundTestAccountAndAwaitVisibility(trustorAccountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     AccountResponse trustorAccount =
         await sdk.accounts.account(trustorAccountId);
@@ -116,13 +113,10 @@ void main() {
     final trustingKeyPair = KeyPair.random();
     final trustingAccountId = trustingKeyPair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(issuerAccountId);
-      await FriendBot.fundTestAccount(trustingAccountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(issuerAccountId);
-      await FuturenetFriendBot.fundTestAccount(trustingAccountId);
-    }
+    await fundTestAccountAndAwaitVisibility(issuerAccountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(trustingAccountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     final trustingAccount = await sdk.accounts.account(trustingAccountId);
 
@@ -151,11 +145,8 @@ void main() {
     String issuerAccountId = issuerKeipair.accountId;
     String trustorAccountId = trustorKeipair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(trustorAccountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(trustorAccountId);
-    }
+    await fundTestAccountAndAwaitVisibility(trustorAccountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     AccountResponse trustorAccount =
         await sdk.accounts.account(trustorAccountId);

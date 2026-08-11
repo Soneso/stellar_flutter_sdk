@@ -43,8 +43,8 @@ void main() {
     try {
       await sdk.accounts.account(accountId);
     } catch (_) {
-      await fundTestAccountAndWaitForRpc(sorobanServer, accountId,
-          useFuturenet: testOn != 'testnet');
+      await fundTestAccountAndAwaitVisibility(accountId,
+          rpc: sorobanServer, horizon: sdk, useFuturenet: testOn != 'testnet');
     }
   }
 

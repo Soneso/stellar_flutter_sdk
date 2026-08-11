@@ -37,8 +37,8 @@ void main() {
     try {
       await sdk.accounts.account(accountAId);
     } catch (e) {
-      await fundTestAccountAndWaitForRpc(sorobanServer, accountAId,
-          useFuturenet: testOn != 'testnet');
+      await fundTestAccountAndAwaitVisibility(accountAId,
+          rpc: sorobanServer, horizon: sdk, useFuturenet: testOn != 'testnet');
     }
   });
 
@@ -820,8 +820,8 @@ void main() {
     });
 
     test('test SAC with asset', () async {
-      await fundTestAccountAndWaitForRpc(sorobanServer, accountBId,
-          useFuturenet: testOn != 'testnet');
+      await fundTestAccountAndAwaitVisibility(accountBId,
+          rpc: sorobanServer, horizon: sdk, useFuturenet: testOn != 'testnet');
       await Future.delayed(Duration(seconds: 5));
 
       // prepare trustline

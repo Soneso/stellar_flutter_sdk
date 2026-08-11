@@ -19,13 +19,10 @@ void main() {
     KeyPair payerKeyPair = KeyPair.random();
     String payerId = payerKeyPair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(sourceId);
-      await FriendBot.fundTestAccount(payerId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(sourceId);
-      await FuturenetFriendBot.fundTestAccount(payerId);
-    }
+    await fundTestAccountAndAwaitVisibility(sourceId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(payerId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     AccountResponse sourceAccount = await sdk.accounts.account(sourceId);
 
@@ -85,13 +82,10 @@ void main() {
     KeyPair payerKeyPair = KeyPair.random();
     String payerId = payerKeyPair.accountId;
 
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(sourceId);
-      await FriendBot.fundTestAccount(payerId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(sourceId);
-      await FuturenetFriendBot.fundTestAccount(payerId);
-    }
+    await fundTestAccountAndAwaitVisibility(sourceId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(payerId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     MuxedAccount muxedSourceAccount = MuxedAccount(sourceId, BigInt.from(97839283928292));
     MuxedAccount muxedPayerAccount = MuxedAccount(payerId, BigInt.from(24242423737333));

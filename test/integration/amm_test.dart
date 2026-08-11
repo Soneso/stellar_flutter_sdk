@@ -24,17 +24,12 @@ void main() {
   String nativeLiquidityPoolId = "";
 
   setUp(() async {
-    if (testOn == 'testnet') {
-      await FriendBot.fundTestAccount(testAccountKeyPair.accountId);
-      await FriendBot.fundTestAccount(assetAIssueAccountKeyPair.accountId);
-      await FriendBot.fundTestAccount(assetBIssueAccountKeyPair.accountId);
-    } else {
-      await FuturenetFriendBot.fundTestAccount(testAccountKeyPair.accountId);
-      await FuturenetFriendBot.fundTestAccount(
-          assetAIssueAccountKeyPair.accountId);
-      await FuturenetFriendBot.fundTestAccount(
-          assetBIssueAccountKeyPair.accountId);
-    }
+    await fundTestAccountAndAwaitVisibility(testAccountKeyPair.accountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(assetAIssueAccountKeyPair.accountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(assetBIssueAccountKeyPair.accountId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
 
     String sourceAccountId = testAccountKeyPair.accountId;
     AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
@@ -471,13 +466,10 @@ void main() {
       KeyPair accYKp = KeyPair.random();
       String accYId = accYKp.accountId;
 
-      if (testOn == 'testnet') {
-        await FriendBot.fundTestAccount(accXId);
-        await FriendBot.fundTestAccount(accYId);
-      } else {
-        await FuturenetFriendBot.fundTestAccount(accXId);
-        await FuturenetFriendBot.fundTestAccount(accYId);
-      }
+      await fundTestAccountAndAwaitVisibility(accXId,
+          horizon: sdk, useFuturenet: testOn != 'testnet');
+      await fundTestAccountAndAwaitVisibility(accYId,
+          horizon: sdk, useFuturenet: testOn != 'testnet');
 
       AccountResponse accX = await sdk.accounts.account(accXId);
       ChangeTrustOperationBuilder ctOpB1 = ChangeTrustOperationBuilder(
