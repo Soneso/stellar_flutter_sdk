@@ -236,7 +236,7 @@ Flutter web has unique security constraints:
 
 3. **CORS restrictions.** Horizon servers must include appropriate CORS headers. Public Horizon and Soroban RPC endpoints support CORS. Custom Horizon instances may need CORS configuration.
 
-4. **No `httpOverrides`.** The `StellarSDK.httpOverrides` setter and `SorobanServer.httpOverrides` throw `UnsupportedError` on web.
+4. **No `httpOverrides`.** The `StellarSDK.httpOverrides` setter throws `UnsupportedError` on web; the `SorobanServer.httpOverrides` setter is ignored on web (no-op).
 
 ## HTTPS and Endpoint Security
 
