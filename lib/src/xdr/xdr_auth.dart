@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrAuth {
   int _flags;
@@ -33,5 +34,35 @@ class XdrAuth {
   static XdrAuth fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAuth.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrAuth');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAuth.
+  static XdrAuth fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrAuth'));
+
+  /// Returns the SEP-0051 rendering of this XdrAuth.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'flags': XdrJsonHelper.int32(_flags, type: 'XdrAuth', key: 'flags'),
+  };
+
+  /// Reads a XdrAuth from its SEP-0051 rendering.
+  static XdrAuth fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrAuth',
+      allowedKeys: const <String>{'flags'},
+    );
+    final Object? jsonFlags = XdrJsonHelper.readField(
+      object,
+      'flags',
+      type: 'XdrAuth',
+    );
+    return XdrAuth(
+      XdrJsonHelper.readInt32(jsonFlags, type: 'XdrAuth', key: 'flags'),
+    );
   }
 }

@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_dependent_tx_cluster.dart';
+import 'xdr_json_helper.dart';
 
 class XdrParallelTxExecutionStage {
   XdrParallelTxExecutionStage(this._parallelTxExecutionStage);
@@ -55,4 +56,33 @@ class XdrParallelTxExecutionStage {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrParallelTxExecutionStage.decode(XdrDataInputStream(bytes));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrParallelTxExecutionStage',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrParallelTxExecutionStage.
+  static XdrParallelTxExecutionStage fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrParallelTxExecutionStage'),
+      );
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() => XdrJsonHelper.array<XdrDependentTxCluster>(
+    _parallelTxExecutionStage,
+    (XdrDependentTxCluster v) => v.toXdrJsonValue(),
+    type: 'XdrParallelTxExecutionStage',
+  );
+
+  /// Reads a XdrParallelTxExecutionStage from the SEP-0051 rendering of its value.
+  static XdrParallelTxExecutionStage fromXdrJsonValue(Object? value) =>
+      XdrParallelTxExecutionStage(
+        XdrJsonHelper.readArray(value, type: 'XdrParallelTxExecutionStage')
+            .map<XdrDependentTxCluster>(
+              (Object? e) => XdrDependentTxCluster.fromXdrJsonValue(e),
+            )
+            .toList(),
+      );
 }

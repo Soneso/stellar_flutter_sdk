@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrShortHashSeed {
   Uint8List _seed;
@@ -36,5 +37,41 @@ class XdrShortHashSeed {
   static XdrShortHashSeed fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrShortHashSeed.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrShortHashSeed');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrShortHashSeed.
+  static XdrShortHashSeed fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrShortHashSeed'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrShortHashSeed.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'seed': XdrJsonHelper.hex(_seed, type: 'XdrShortHashSeed', key: 'seed'),
+  };
+
+  /// Reads a XdrShortHashSeed from its SEP-0051 rendering.
+  static XdrShortHashSeed fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrShortHashSeed',
+      allowedKeys: const <String>{'seed'},
+    );
+    final Object? jsonSeed = XdrJsonHelper.readField(
+      object,
+      'seed',
+      type: 'XdrShortHashSeed',
+    );
+    return XdrShortHashSeed(
+      XdrJsonHelper.readHex(
+        jsonSeed,
+        type: 'XdrShortHashSeed',
+        key: 'seed',
+        expectedLength: 16,
+      ),
+    );
   }
 }

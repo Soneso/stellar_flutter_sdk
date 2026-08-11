@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrInnerTransactionResultExt {
   int _v;
@@ -57,5 +58,50 @@ class XdrInnerTransactionResultExt {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInnerTransactionResultExt.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrInnerTransactionResultExt',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrInnerTransactionResultExt.
+  static XdrInnerTransactionResultExt fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrInnerTransactionResultExt',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrInnerTransactionResultExt.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return 'v0';
+    }
+    XdrJsonHelper.fail(
+      'XdrInnerTransactionResultExt',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrInnerTransactionResultExt from its SEP-0051 rendering.
+  static XdrInnerTransactionResultExt fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'v0':
+          return XdrInnerTransactionResultExt(0);
+      }
+      XdrJsonHelper.fail(
+        'XdrInnerTransactionResultExt',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrInnerTransactionResultExt',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

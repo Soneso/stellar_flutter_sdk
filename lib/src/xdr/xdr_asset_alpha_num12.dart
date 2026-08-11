@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrAssetAlphaNum12 {
   Uint8List _assetCode;
@@ -59,5 +60,53 @@ class XdrAssetAlphaNum12 {
       TxRepHelper.getValue(map, '$prefix.issuer') ?? '',
     );
     return XdrAssetAlphaNum12(assetCode, issuer);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrAssetAlphaNum12',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAssetAlphaNum12.
+  static XdrAssetAlphaNum12 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrAssetAlphaNum12'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrAssetAlphaNum12.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'asset_code': XdrJsonHelper.assetCode12(
+      _assetCode,
+      type: 'XdrAssetAlphaNum12',
+      key: 'asset_code',
+    ),
+    'issuer': _issuer.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrAssetAlphaNum12 from its SEP-0051 rendering.
+  static XdrAssetAlphaNum12 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrAssetAlphaNum12',
+      allowedKeys: const <String>{'asset_code', 'issuer'},
+    );
+    final Object? jsonAssetCode = XdrJsonHelper.readField(
+      object,
+      'asset_code',
+      type: 'XdrAssetAlphaNum12',
+    );
+    final Object? jsonIssuer = XdrJsonHelper.readField(
+      object,
+      'issuer',
+      type: 'XdrAssetAlphaNum12',
+    );
+    return XdrAssetAlphaNum12(
+      XdrJsonHelper.readAssetCode12(
+        jsonAssetCode,
+        type: 'XdrAssetAlphaNum12',
+        key: 'asset_code',
+      ),
+      XdrAccountID.fromXdrJsonValue(jsonIssuer),
+    );
   }
 }

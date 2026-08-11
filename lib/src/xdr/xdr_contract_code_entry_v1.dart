@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_contract_code_cost_inputs.dart';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
+import 'xdr_json_helper.dart';
 
 class XdrContractCodeEntryV1 {
   XdrExtensionPoint _ext;
@@ -51,5 +52,45 @@ class XdrContractCodeEntryV1 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractCodeEntryV1.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrContractCodeEntryV1',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractCodeEntryV1.
+  static XdrContractCodeEntryV1 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractCodeEntryV1'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrContractCodeEntryV1.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'cost_inputs': _costInputs.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrContractCodeEntryV1 from its SEP-0051 rendering.
+  static XdrContractCodeEntryV1 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrContractCodeEntryV1',
+      allowedKeys: const <String>{'ext', 'cost_inputs'},
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrContractCodeEntryV1',
+    );
+    final Object? jsonCostInputs = XdrJsonHelper.readField(
+      object,
+      'cost_inputs',
+      type: 'XdrContractCodeEntryV1',
+    );
+    return XdrContractCodeEntryV1(
+      XdrExtensionPoint.fromXdrJsonValue(jsonExt),
+      XdrContractCodeCostInputs.fromXdrJsonValue(jsonCostInputs),
+    );
   }
 }

@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_address.dart';
 import 'xdr_sc_val.dart';
 
@@ -107,5 +108,66 @@ class XdrSorobanDelegateSignature {
       );
     }
     return XdrSorobanDelegateSignature(address, signature, nestedDelegates);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSorobanDelegateSignature',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanDelegateSignature.
+  static XdrSorobanDelegateSignature fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrSorobanDelegateSignature'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrSorobanDelegateSignature.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'address': _address.toXdrJsonValue(),
+    'signature': _signature.toXdrJsonValue(),
+    'nested_delegates': XdrJsonHelper.array<XdrSorobanDelegateSignature>(
+      _nestedDelegates,
+      (XdrSorobanDelegateSignature v) => v.toXdrJsonValue(),
+      type: 'XdrSorobanDelegateSignature',
+      key: 'nested_delegates',
+    ),
+  };
+
+  /// Reads a XdrSorobanDelegateSignature from its SEP-0051 rendering.
+  static XdrSorobanDelegateSignature fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSorobanDelegateSignature',
+      allowedKeys: const <String>{'address', 'signature', 'nested_delegates'},
+    );
+    final Object? jsonAddress = XdrJsonHelper.readField(
+      object,
+      'address',
+      type: 'XdrSorobanDelegateSignature',
+    );
+    final Object? jsonSignature = XdrJsonHelper.readField(
+      object,
+      'signature',
+      type: 'XdrSorobanDelegateSignature',
+    );
+    final Object? jsonNestedDelegates = XdrJsonHelper.readField(
+      object,
+      'nested_delegates',
+      type: 'XdrSorobanDelegateSignature',
+    );
+    return XdrSorobanDelegateSignature(
+      XdrSCAddress.fromXdrJsonValue(jsonAddress),
+      XdrSCVal.fromXdrJsonValue(jsonSignature),
+      XdrJsonHelper.readArray(
+            jsonNestedDelegates,
+            type: 'XdrSorobanDelegateSignature',
+            key: 'nested_delegates',
+          )
+          .map<XdrSorobanDelegateSignature>(
+            (Object? e) => XdrSorobanDelegateSignature.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

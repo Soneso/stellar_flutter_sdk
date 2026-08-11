@@ -10,6 +10,7 @@ import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_envelope_type.dart';
 import 'xdr_fee_bump_transaction_envelope.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_transaction_v0_envelope.dart';
 import 'xdr_transaction_v1_envelope.dart';
 
@@ -153,5 +154,68 @@ class XdrTransactionEnvelopeBase {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionEnvelope',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionEnvelope.
+  static XdrTransactionEnvelopeBase fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionEnvelope'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionEnvelopeBase.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'tx_v0': _v0!.toXdrJsonValue()};
+      case 2:
+        return <String, Object?>{'tx': _v1!.toXdrJsonValue()};
+      case 5:
+        return <String, Object?>{'tx_fee_bump': _feeBump!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrTransactionEnvelope',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrTransactionEnvelopeBase from its SEP-0051 rendering.
+  static XdrTransactionEnvelopeBase fromXdrJsonValue(Object? value) =>
+      fromXdrJsonValueAs(value, XdrTransactionEnvelopeBase.new);
+
+  /// Reads a subclass of XdrTransactionEnvelopeBase from its SEP-0051 rendering.
+  static T fromXdrJsonValueAs<T extends XdrTransactionEnvelopeBase>(
+    Object? value,
+    T Function(XdrEnvelopeType) constructor,
+  ) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrTransactionEnvelope',
+    );
+    switch (arm.key) {
+      case 'tx_v0':
+        final T arm0 = constructor(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0);
+        arm0.v0 = XdrTransactionV0Envelope.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'tx':
+        final T arm1 = constructor(XdrEnvelopeType.ENVELOPE_TYPE_TX);
+        arm1.v1 = XdrTransactionV1Envelope.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'tx_fee_bump':
+        final T arm2 = constructor(XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP);
+        arm2.feeBump = XdrFeeBumpTransactionEnvelope.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm2;
+    }
+    XdrJsonHelper.fail(
+      'XdrTransactionEnvelope',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

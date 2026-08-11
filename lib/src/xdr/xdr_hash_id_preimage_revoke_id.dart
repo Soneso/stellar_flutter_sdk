@@ -6,10 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../key_pair.dart';
 import 'xdr_account_id.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sequence_number.dart';
 import 'xdr_uint32.dart';
 
@@ -79,5 +81,80 @@ class XdrHashIDPreimageRevokeID {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHashIDPreimageRevokeID.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrHashIDPreimageRevokeID',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrHashIDPreimageRevokeID.
+  static XdrHashIDPreimageRevokeID fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrHashIDPreimageRevokeID'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrHashIDPreimageRevokeID.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'source_account': _sourceAccount.toXdrJsonValue(),
+    'seq_num': _seqNum.toXdrJsonValue(),
+    'op_num': _opNum.toXdrJsonValue(),
+    'liquidity_pool_id': StrKey.encodeLiquidityPoolId(_liquidityPoolID.hash),
+    'asset': _asset.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrHashIDPreimageRevokeID from its SEP-0051 rendering.
+  static XdrHashIDPreimageRevokeID fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrHashIDPreimageRevokeID',
+      allowedKeys: const <String>{
+        'source_account',
+        'seq_num',
+        'op_num',
+        'liquidity_pool_id',
+        'asset',
+      },
+    );
+    final Object? jsonSourceAccount = XdrJsonHelper.readField(
+      object,
+      'source_account',
+      type: 'XdrHashIDPreimageRevokeID',
+    );
+    final Object? jsonSeqNum = XdrJsonHelper.readField(
+      object,
+      'seq_num',
+      type: 'XdrHashIDPreimageRevokeID',
+    );
+    final Object? jsonOpNum = XdrJsonHelper.readField(
+      object,
+      'op_num',
+      type: 'XdrHashIDPreimageRevokeID',
+    );
+    final Object? jsonLiquidityPoolID = XdrJsonHelper.readField(
+      object,
+      'liquidity_pool_id',
+      type: 'XdrHashIDPreimageRevokeID',
+    );
+    final Object? jsonAsset = XdrJsonHelper.readField(
+      object,
+      'asset',
+      type: 'XdrHashIDPreimageRevokeID',
+    );
+    return XdrHashIDPreimageRevokeID(
+      XdrAccountID.fromXdrJsonValue(jsonSourceAccount),
+      XdrSequenceNumber.fromXdrJsonValue(jsonSeqNum),
+      XdrUint32.fromXdrJsonValue(jsonOpNum),
+      XdrHash(
+        XdrJsonHelper.readStrKey(
+          jsonLiquidityPoolID,
+          type: 'XdrHashIDPreimageRevokeID',
+          key: 'liquidity_pool_id',
+          decode: StrKey.decodeLiquidityPoolId,
+          expectedLength: 32,
+        ),
+      ),
+      XdrAsset.fromXdrJsonValue(jsonAsset),
+    );
   }
 }

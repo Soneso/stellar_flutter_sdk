@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrBucketListType {
   final _value;
@@ -51,5 +52,45 @@ class XdrBucketListType {
   static XdrBucketListType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBucketListType.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrBucketListType');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrBucketListType.
+  static XdrBucketListType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrBucketListType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'live';
+      case 1:
+        return 'hot_archive';
+      default:
+        XdrJsonHelper.fail(
+          'XdrBucketListType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrBucketListType from its SEP-0051 name.
+  static XdrBucketListType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'live':
+          return XdrBucketListType.LIVE;
+        case 'hot_archive':
+          return XdrBucketListType.HOT_ARCHIVE;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrBucketListType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

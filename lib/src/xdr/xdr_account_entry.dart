@@ -10,6 +10,7 @@ import 'xdr_account_entry_ext.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sequence_number.dart';
 import 'xdr_signer.dart';
 import 'xdr_string32.dart';
@@ -137,5 +138,125 @@ class XdrAccountEntry {
   static XdrAccountEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrAccountEntry');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAccountEntry.
+  static XdrAccountEntry fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrAccountEntry'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrAccountEntry.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'account_id': _accountID.toXdrJsonValue(),
+    'balance': _balance.toXdrJsonValue(),
+    'seq_num': _seqNum.toXdrJsonValue(),
+    'num_sub_entries': _numSubEntries.toXdrJsonValue(),
+    'inflation_dest': _inflationDest == null
+        ? null
+        : _inflationDest!.toXdrJsonValue(),
+    'flags': _flags.toXdrJsonValue(),
+    'home_domain': _homeDomain.toXdrJsonValue(),
+    'thresholds': _thresholds.toXdrJsonValue(),
+    'signers': XdrJsonHelper.array<XdrSigner>(
+      _signers,
+      (XdrSigner v) => v.toXdrJsonValue(),
+      type: 'XdrAccountEntry',
+      key: 'signers',
+      maxLength: 20,
+    ),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrAccountEntry from its SEP-0051 rendering.
+  static XdrAccountEntry fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrAccountEntry',
+      allowedKeys: const <String>{
+        'account_id',
+        'balance',
+        'seq_num',
+        'num_sub_entries',
+        'inflation_dest',
+        'flags',
+        'home_domain',
+        'thresholds',
+        'signers',
+        'ext',
+      },
+    );
+    final Object? jsonAccountID = XdrJsonHelper.readField(
+      object,
+      'account_id',
+      type: 'XdrAccountEntry',
+    );
+    final Object? jsonBalance = XdrJsonHelper.readField(
+      object,
+      'balance',
+      type: 'XdrAccountEntry',
+    );
+    final Object? jsonSeqNum = XdrJsonHelper.readField(
+      object,
+      'seq_num',
+      type: 'XdrAccountEntry',
+    );
+    final Object? jsonNumSubEntries = XdrJsonHelper.readField(
+      object,
+      'num_sub_entries',
+      type: 'XdrAccountEntry',
+    );
+    final Object? jsonInflationDest = XdrJsonHelper.readField(
+      object,
+      'inflation_dest',
+      type: 'XdrAccountEntry',
+    );
+    final Object? jsonFlags = XdrJsonHelper.readField(
+      object,
+      'flags',
+      type: 'XdrAccountEntry',
+    );
+    final Object? jsonHomeDomain = XdrJsonHelper.readField(
+      object,
+      'home_domain',
+      type: 'XdrAccountEntry',
+    );
+    final Object? jsonThresholds = XdrJsonHelper.readField(
+      object,
+      'thresholds',
+      type: 'XdrAccountEntry',
+    );
+    final Object? jsonSigners = XdrJsonHelper.readField(
+      object,
+      'signers',
+      type: 'XdrAccountEntry',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrAccountEntry',
+    );
+    return XdrAccountEntry(
+      XdrAccountID.fromXdrJsonValue(jsonAccountID),
+      XdrInt64.fromXdrJsonValue(jsonBalance),
+      XdrSequenceNumber.fromXdrJsonValue(jsonSeqNum),
+      XdrUint32.fromXdrJsonValue(jsonNumSubEntries),
+      jsonInflationDest == null
+          ? null
+          : XdrAccountID.fromXdrJsonValue(jsonInflationDest),
+      XdrUint32.fromXdrJsonValue(jsonFlags),
+      XdrString32.fromXdrJsonValue(jsonHomeDomain),
+      XdrThresholds.fromXdrJsonValue(jsonThresholds),
+      XdrJsonHelper.readArray(
+        jsonSigners,
+        type: 'XdrAccountEntry',
+        key: 'signers',
+        maxLength: 20,
+      ).map<XdrSigner>((Object? e) => XdrSigner.fromXdrJsonValue(e)).toList(),
+      XdrAccountEntryExt.fromXdrJsonValue(jsonExt),
+    );
   }
 }

@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrHostFunctionType {
   final _value;
@@ -108,5 +109,55 @@ class XdrHostFunctionType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrHostFunctionType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrHostFunctionType.
+  static XdrHostFunctionType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrHostFunctionType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'invoke_contract';
+      case 1:
+        return 'create_contract';
+      case 2:
+        return 'upload_contract_wasm';
+      case 3:
+        return 'create_contract_v2';
+      default:
+        XdrJsonHelper.fail(
+          'XdrHostFunctionType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrHostFunctionType from its SEP-0051 name.
+  static XdrHostFunctionType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'invoke_contract':
+          return XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT;
+        case 'create_contract':
+          return XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT;
+        case 'upload_contract_wasm':
+          return XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM;
+        case 'create_contract_v2':
+          return XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrHostFunctionType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

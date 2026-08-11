@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClaimAtomType {
   final _value;
@@ -55,5 +56,49 @@ class XdrClaimAtomType {
   static XdrClaimAtomType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimAtomType.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrClaimAtomType');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClaimAtomType.
+  static XdrClaimAtomType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrClaimAtomType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'v0';
+      case 1:
+        return 'order_book';
+      case 2:
+        return 'liquidity_pool';
+      default:
+        XdrJsonHelper.fail(
+          'XdrClaimAtomType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrClaimAtomType from its SEP-0051 name.
+  static XdrClaimAtomType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'v0':
+          return XdrClaimAtomType.CLAIM_ATOM_TYPE_V0;
+        case 'order_book':
+          return XdrClaimAtomType.CLAIM_ATOM_TYPE_ORDER_BOOK;
+        case 'liquidity_pool':
+          return XdrClaimAtomType.CLAIM_ATOM_TYPE_LIQUIDITY_POOL;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrClaimAtomType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

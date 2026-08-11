@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSCAddressType {
   final _value;
@@ -113,5 +114,57 @@ class XdrSCAddressType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCAddressType');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCAddressType.
+  static XdrSCAddressType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCAddressType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'account';
+      case 1:
+        return 'contract';
+      case 2:
+        return 'muxed_account';
+      case 3:
+        return 'claimable_balance';
+      case 4:
+        return 'liquidity_pool';
+      default:
+        XdrJsonHelper.fail(
+          'XdrSCAddressType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrSCAddressType from its SEP-0051 name.
+  static XdrSCAddressType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'account':
+          return XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT;
+        case 'contract':
+          return XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT;
+        case 'muxed_account':
+          return XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT;
+        case 'claimable_balance':
+          return XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE;
+        case 'liquidity_pool':
+          return XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrSCAddressType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

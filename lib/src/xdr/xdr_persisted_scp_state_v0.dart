@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_scp_envelope.dart';
 import 'xdr_scp_quorum_set.dart';
 import 'xdr_stored_transaction_set.dart';
@@ -86,5 +87,91 @@ class XdrPersistedSCPStateV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPersistedSCPStateV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrPersistedSCPStateV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPersistedSCPStateV0.
+  static XdrPersistedSCPStateV0 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrPersistedSCPStateV0'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrPersistedSCPStateV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'scp_envelopes': XdrJsonHelper.array<XdrSCPEnvelope>(
+      _scpEnvelopes,
+      (XdrSCPEnvelope v) => v.toXdrJsonValue(),
+      type: 'XdrPersistedSCPStateV0',
+      key: 'scp_envelopes',
+    ),
+    'quorum_sets': XdrJsonHelper.array<XdrSCPQuorumSet>(
+      _quorumSets,
+      (XdrSCPQuorumSet v) => v.toXdrJsonValue(),
+      type: 'XdrPersistedSCPStateV0',
+      key: 'quorum_sets',
+    ),
+    'tx_sets': XdrJsonHelper.array<XdrStoredTransactionSet>(
+      _txSets,
+      (XdrStoredTransactionSet v) => v.toXdrJsonValue(),
+      type: 'XdrPersistedSCPStateV0',
+      key: 'tx_sets',
+    ),
+  };
+
+  /// Reads a XdrPersistedSCPStateV0 from its SEP-0051 rendering.
+  static XdrPersistedSCPStateV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrPersistedSCPStateV0',
+      allowedKeys: const <String>{'scp_envelopes', 'quorum_sets', 'tx_sets'},
+    );
+    final Object? jsonScpEnvelopes = XdrJsonHelper.readField(
+      object,
+      'scp_envelopes',
+      type: 'XdrPersistedSCPStateV0',
+    );
+    final Object? jsonQuorumSets = XdrJsonHelper.readField(
+      object,
+      'quorum_sets',
+      type: 'XdrPersistedSCPStateV0',
+    );
+    final Object? jsonTxSets = XdrJsonHelper.readField(
+      object,
+      'tx_sets',
+      type: 'XdrPersistedSCPStateV0',
+    );
+    return XdrPersistedSCPStateV0(
+      XdrJsonHelper.readArray(
+            jsonScpEnvelopes,
+            type: 'XdrPersistedSCPStateV0',
+            key: 'scp_envelopes',
+          )
+          .map<XdrSCPEnvelope>(
+            (Object? e) => XdrSCPEnvelope.fromXdrJsonValue(e),
+          )
+          .toList(),
+      XdrJsonHelper.readArray(
+            jsonQuorumSets,
+            type: 'XdrPersistedSCPStateV0',
+            key: 'quorum_sets',
+          )
+          .map<XdrSCPQuorumSet>(
+            (Object? e) => XdrSCPQuorumSet.fromXdrJsonValue(e),
+          )
+          .toList(),
+      XdrJsonHelper.readArray(
+            jsonTxSets,
+            type: 'XdrPersistedSCPStateV0',
+            key: 'tx_sets',
+          )
+          .map<XdrStoredTransactionSet>(
+            (Object? e) => XdrStoredTransactionSet.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

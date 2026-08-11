@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrTransactionEventStage {
   final _value;
@@ -62,5 +63,52 @@ class XdrTransactionEventStage {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionEventStage.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionEventStage',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionEventStage.
+  static XdrTransactionEventStage fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionEventStage'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'before_all_txs';
+      case 1:
+        return 'after_tx';
+      case 2:
+        return 'after_all_txs';
+      default:
+        XdrJsonHelper.fail(
+          'XdrTransactionEventStage',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrTransactionEventStage from its SEP-0051 name.
+  static XdrTransactionEventStage fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'before_all_txs':
+          return XdrTransactionEventStage
+              .TRANSACTION_EVENT_STAGE_BEFORE_ALL_TXS;
+        case 'after_tx':
+          return XdrTransactionEventStage.TRANSACTION_EVENT_STAGE_AFTER_TX;
+        case 'after_all_txs':
+          return XdrTransactionEventStage.TRANSACTION_EVENT_STAGE_AFTER_ALL_TXS;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrTransactionEventStage',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

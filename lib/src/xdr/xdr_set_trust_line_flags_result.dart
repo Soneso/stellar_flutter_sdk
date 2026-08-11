@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_set_trust_line_flags_result_code.dart';
 
 class XdrSetTrustLineFlagsResult {
@@ -60,5 +61,79 @@ class XdrSetTrustLineFlagsResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSetTrustLineFlagsResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSetTrustLineFlagsResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSetTrustLineFlagsResult.
+  static XdrSetTrustLineFlagsResult fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrSetTrustLineFlagsResult'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrSetTrustLineFlagsResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'no_trust_line';
+      case -3:
+        return 'cant_revoke';
+      case -4:
+        return 'invalid_state';
+      case -5:
+        return 'low_reserve';
+    }
+    XdrJsonHelper.fail(
+      'XdrSetTrustLineFlagsResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrSetTrustLineFlagsResult from its SEP-0051 rendering.
+  static XdrSetTrustLineFlagsResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrSetTrustLineFlagsResult(
+            XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_SUCCESS,
+          );
+        case 'malformed':
+          return XdrSetTrustLineFlagsResult(
+            XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_MALFORMED,
+          );
+        case 'no_trust_line':
+          return XdrSetTrustLineFlagsResult(
+            XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_NO_TRUST_LINE,
+          );
+        case 'cant_revoke':
+          return XdrSetTrustLineFlagsResult(
+            XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_CANT_REVOKE,
+          );
+        case 'invalid_state':
+          return XdrSetTrustLineFlagsResult(
+            XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_INVALID_STATE,
+          );
+        case 'low_reserve':
+          return XdrSetTrustLineFlagsResult(
+            XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_LOW_RESERVE,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrSetTrustLineFlagsResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrSetTrustLineFlagsResult',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

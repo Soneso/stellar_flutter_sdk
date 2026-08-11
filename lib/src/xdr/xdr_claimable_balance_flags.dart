@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClaimableBalanceFlags {
   final _value;
@@ -54,5 +55,44 @@ class XdrClaimableBalanceFlags {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimableBalanceFlags.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrClaimableBalanceFlags',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClaimableBalanceFlags.
+  static XdrClaimableBalanceFlags fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrClaimableBalanceFlags'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 1:
+        return 'claimable_balance_clawback_enabled_flag';
+      default:
+        XdrJsonHelper.fail(
+          'XdrClaimableBalanceFlags',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrClaimableBalanceFlags from its SEP-0051 name.
+  static XdrClaimableBalanceFlags fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'claimable_balance_clawback_enabled_flag':
+          return XdrClaimableBalanceFlags
+              .CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrClaimableBalanceFlags',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

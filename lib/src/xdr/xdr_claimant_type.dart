@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClaimantType {
   final _value;
@@ -81,5 +82,41 @@ class XdrClaimantType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrClaimantType');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClaimantType.
+  static XdrClaimantType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrClaimantType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'claimant_type_v0';
+      default:
+        XdrJsonHelper.fail(
+          'XdrClaimantType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrClaimantType from its SEP-0051 name.
+  static XdrClaimantType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'claimant_type_v0':
+          return XdrClaimantType.CLAIMANT_TYPE_V0;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrClaimantType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

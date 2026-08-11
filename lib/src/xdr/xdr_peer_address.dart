@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_peer_address_ip.dart';
 import 'xdr_uint32.dart';
 
@@ -50,5 +51,50 @@ class XdrPeerAddress {
   static XdrPeerAddress fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPeerAddress.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrPeerAddress');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPeerAddress.
+  static XdrPeerAddress fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrPeerAddress'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrPeerAddress.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ip': _ip.toXdrJsonValue(),
+    'port': _port.toXdrJsonValue(),
+    'num_failures': _numFailures.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrPeerAddress from its SEP-0051 rendering.
+  static XdrPeerAddress fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrPeerAddress',
+      allowedKeys: const <String>{'ip', 'port', 'num_failures'},
+    );
+    final Object? jsonIp = XdrJsonHelper.readField(
+      object,
+      'ip',
+      type: 'XdrPeerAddress',
+    );
+    final Object? jsonPort = XdrJsonHelper.readField(
+      object,
+      'port',
+      type: 'XdrPeerAddress',
+    );
+    final Object? jsonNumFailures = XdrJsonHelper.readField(
+      object,
+      'num_failures',
+      type: 'XdrPeerAddress',
+    );
+    return XdrPeerAddress(
+      XdrPeerAddressIp.fromXdrJsonValue(jsonIp),
+      XdrUint32.fromXdrJsonValue(jsonPort),
+      XdrUint32.fromXdrJsonValue(jsonNumFailures),
+    );
   }
 }

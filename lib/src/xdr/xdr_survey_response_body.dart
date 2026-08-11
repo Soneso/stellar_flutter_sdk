@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_survey_message_response_type.dart';
 import 'xdr_topology_response_body_v2.dart';
 
@@ -74,5 +75,52 @@ class XdrSurveyResponseBody {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSurveyResponseBody.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSurveyResponseBody',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSurveyResponseBody.
+  static XdrSurveyResponseBody fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSurveyResponseBody'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSurveyResponseBody.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 2:
+        return <String, Object?>{
+          'survey_topology_response_v2': _topologyResponseBodyV2!
+              .toXdrJsonValue(),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrSurveyResponseBody',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrSurveyResponseBody from its SEP-0051 rendering.
+  static XdrSurveyResponseBody fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrSurveyResponseBody',
+    );
+    switch (arm.key) {
+      case 'survey_topology_response_v2':
+        final XdrSurveyResponseBody arm0 = XdrSurveyResponseBody(
+          XdrSurveyMessageResponseType.SURVEY_TOPOLOGY_RESPONSE_V2,
+        );
+        arm0.topologyResponseBodyV2 =
+            XdrTopologyResponseBodyV2.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrSurveyResponseBody',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

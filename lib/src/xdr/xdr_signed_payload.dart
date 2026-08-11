@@ -6,8 +6,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../key_pair.dart';
 import 'xdr_data_io.dart';
 import 'xdr_data_value.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint256.dart';
 
 class XdrSignedPayload {
@@ -55,5 +57,43 @@ class XdrSignedPayload {
     XdrUint256 ed25519 = XdrUint256.fromTxRep(map, '$prefix.ed25519');
     XdrDataValue payload = XdrDataValue.fromTxRep(map, '$prefix.payload');
     return XdrSignedPayload(ed25519, payload);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSignedPayload');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSignedPayload.
+  static XdrSignedPayload fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSignedPayload'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSignedPayload.
+  Object? toXdrJsonValue() {
+    XdrJsonHelper.checkSignedPayloadLength(
+      _payload.dataValue.length,
+      type: 'XdrSignedPayload',
+    );
+    final XdrDataOutputStream stream = XdrDataOutputStream();
+    XdrUint256.encode(stream, _ed25519);
+    XdrDataValue.encode(stream, _payload);
+    return StrKey.encodeCheck(
+      VersionByte.SIGNED_PAYLOAD,
+      Uint8List.fromList(stream.bytes),
+    );
+  }
+
+  /// Reads a XdrSignedPayload from its SEP-0051 rendering.
+  static XdrSignedPayload fromXdrJsonValue(Object? value) {
+    final Uint8List region = XdrJsonHelper.readStrKey(
+      value,
+      type: 'XdrSignedPayload',
+      key: null,
+      decode: (String strKey) =>
+          StrKey.decodeCheck(VersionByte.SIGNED_PAYLOAD, strKey),
+    );
+    final (Uint8List ed25519, Uint8List payload) =
+        XdrJsonHelper.readSignedPayloadRegion(region, type: 'XdrSignedPayload');
+    return XdrSignedPayload(XdrUint256(ed25519), XdrDataValue(payload));
   }
 }

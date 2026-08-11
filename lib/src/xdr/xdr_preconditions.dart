@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_precondition_type.dart';
 import 'xdr_preconditions_v2.dart';
 import 'xdr_time_bounds.dart';
@@ -120,5 +121,66 @@ class XdrPreconditions {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrPreconditions');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPreconditions.
+  static XdrPreconditions fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrPreconditions'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrPreconditions.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'none';
+      case 1:
+        return <String, Object?>{'time': _timeBounds!.toXdrJsonValue()};
+      case 2:
+        return <String, Object?>{'v2': _v2!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrPreconditions',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrPreconditions from its SEP-0051 rendering.
+  static XdrPreconditions fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'none':
+          return XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
+      }
+      XdrJsonHelper.fail(
+        'XdrPreconditions',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrPreconditions',
+    );
+    switch (arm.key) {
+      case 'time':
+        final XdrPreconditions arm0 = XdrPreconditions(
+          XdrPreconditionType.PRECOND_TIME,
+        );
+        arm0.timeBounds = XdrTimeBounds.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'v2':
+        final XdrPreconditions arm1 = XdrPreconditions(
+          XdrPreconditionType.PRECOND_V2,
+        );
+        arm1.v2 = XdrPreconditionsV2.fromXdrJsonValue(arm.value);
+        return arm1;
+    }
+    XdrJsonHelper.fail(
+      'XdrPreconditions',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

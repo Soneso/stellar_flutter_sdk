@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_soroban_address_credentials.dart';
 import 'xdr_soroban_address_credentials_with_delegates.dart';
 import 'xdr_soroban_credentials_base.dart';
@@ -77,4 +78,18 @@ class XdrSorobanCredentials extends XdrSorobanCredentialsBase {
     result.addressWithDelegates = addressWithDelegates;
     return result;
   }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanCredentials.
+  ///
+  /// Dart does not inherit statics, so this narrows the base class rendering to
+  /// this type rather than relying on the one the base declares.
+  static XdrSorobanCredentials fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSorobanCredentials'),
+  );
+
+  static XdrSorobanCredentials fromXdrJsonValue(Object? value) =>
+      XdrSorobanCredentialsBase.fromXdrJsonValueAs(
+        value,
+        XdrSorobanCredentials.new,
+      );
 }

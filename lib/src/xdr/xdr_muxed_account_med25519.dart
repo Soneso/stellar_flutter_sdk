@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_muxed_account_med25519_base.dart';
 import 'xdr_uint256.dart';
 import 'xdr_uint64.dart';
@@ -28,6 +29,17 @@ class XdrMuxedAccountMed25519 extends XdrMuxedAccountMed25519Base {
     String prefix,
   ) {
     var b = XdrMuxedAccountMed25519Base.fromTxRep(map, prefix);
+    return XdrMuxedAccountMed25519(b.id, b.ed25519);
+  }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrMuxedAccountMed25519.
+  static XdrMuxedAccountMed25519 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrMuxedAccountMed25519'),
+  );
+
+  /// Reads a XdrMuxedAccountMed25519 from its SEP-0051 rendering.
+  static XdrMuxedAccountMed25519 fromXdrJsonValue(Object? value) {
+    var b = XdrMuxedAccountMed25519Base.fromXdrJsonValue(value);
     return XdrMuxedAccountMed25519(b.id, b.ed25519);
   }
 

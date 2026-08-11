@@ -10,6 +10,7 @@ import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_allow_trust_op_asset.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrAllowTrustOp {
   XdrAccountID _trustor;
@@ -70,5 +71,58 @@ class XdrAllowTrustOp {
       TxRepHelper.getValue(map, '$prefix.authorize') ?? '0',
     );
     return XdrAllowTrustOp(trustor, asset, authorize);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrAllowTrustOp');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAllowTrustOp.
+  static XdrAllowTrustOp fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrAllowTrustOp'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrAllowTrustOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'trustor': _trustor.toXdrJsonValue(),
+    'asset': _asset.toXdrJsonValue(),
+    'authorize': XdrJsonHelper.uint32(
+      _authorize,
+      type: 'XdrAllowTrustOp',
+      key: 'authorize',
+    ),
+  };
+
+  /// Reads a XdrAllowTrustOp from its SEP-0051 rendering.
+  static XdrAllowTrustOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrAllowTrustOp',
+      allowedKeys: const <String>{'trustor', 'asset', 'authorize'},
+    );
+    final Object? jsonTrustor = XdrJsonHelper.readField(
+      object,
+      'trustor',
+      type: 'XdrAllowTrustOp',
+    );
+    final Object? jsonAsset = XdrJsonHelper.readField(
+      object,
+      'asset',
+      type: 'XdrAllowTrustOp',
+    );
+    final Object? jsonAuthorize = XdrJsonHelper.readField(
+      object,
+      'authorize',
+      type: 'XdrAllowTrustOp',
+    );
+    return XdrAllowTrustOp(
+      XdrAccountID.fromXdrJsonValue(jsonTrustor),
+      XdrAllowTrustOpAsset.fromXdrJsonValue(jsonAsset),
+      XdrJsonHelper.readUint32(
+        jsonAuthorize,
+        type: 'XdrAllowTrustOp',
+        key: 'authorize',
+      ),
+    );
   }
 }

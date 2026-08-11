@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_entry_changes.dart';
 
 class XdrOperationMeta {
@@ -37,5 +38,36 @@ class XdrOperationMeta {
   static XdrOperationMeta fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrOperationMeta.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrOperationMeta');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrOperationMeta.
+  static XdrOperationMeta fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrOperationMeta'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrOperationMeta.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'changes': _changes.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrOperationMeta from its SEP-0051 rendering.
+  static XdrOperationMeta fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrOperationMeta',
+      allowedKeys: const <String>{'changes'},
+    );
+    final Object? jsonChanges = XdrJsonHelper.readField(
+      object,
+      'changes',
+      type: 'XdrOperationMeta',
+    );
+    return XdrOperationMeta(
+      XdrLedgerEntryChanges.fromXdrJsonValue(jsonChanges),
+    );
   }
 }

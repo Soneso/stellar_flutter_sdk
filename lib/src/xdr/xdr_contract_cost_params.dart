@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_contract_cost_param_entry.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrContractCostParams {
   XdrContractCostParams(this._contractCostParams);
@@ -54,4 +55,37 @@ class XdrContractCostParams {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractCostParams.decode(XdrDataInputStream(bytes));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrContractCostParams',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractCostParams.
+  static XdrContractCostParams fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractCostParams'),
+  );
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() => XdrJsonHelper.array<XdrContractCostParamEntry>(
+    _contractCostParams,
+    (XdrContractCostParamEntry v) => v.toXdrJsonValue(),
+    type: 'XdrContractCostParams',
+    maxLength: 1024,
+  );
+
+  /// Reads a XdrContractCostParams from the SEP-0051 rendering of its value.
+  static XdrContractCostParams fromXdrJsonValue(Object? value) =>
+      XdrContractCostParams(
+        XdrJsonHelper.readArray(
+              value,
+              type: 'XdrContractCostParams',
+              maxLength: 1024,
+            )
+            .map<XdrContractCostParamEntry>(
+              (Object? e) => XdrContractCostParamEntry.fromXdrJsonValue(e),
+            )
+            .toList(),
+      );
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrDataEntryExt {
   int _v;
@@ -54,5 +55,44 @@ class XdrDataEntryExt {
   static XdrDataEntryExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrDataEntryExt.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrDataEntryExt');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrDataEntryExt.
+  static XdrDataEntryExt fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrDataEntryExt'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrDataEntryExt.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return 'v0';
+    }
+    XdrJsonHelper.fail(
+      'XdrDataEntryExt',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrDataEntryExt from its SEP-0051 rendering.
+  static XdrDataEntryExt fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'v0':
+          return XdrDataEntryExt(0);
+      }
+      XdrJsonHelper.fail(
+        'XdrDataEntryExt',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrDataEntryExt',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

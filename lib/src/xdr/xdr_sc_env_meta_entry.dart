@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_env_meta_entry_interface_version.dart';
 import 'xdr_sc_env_meta_kind.dart';
 
@@ -72,5 +73,50 @@ class XdrSCEnvMetaEntry {
   static XdrSCEnvMetaEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCEnvMetaEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCEnvMetaEntry');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCEnvMetaEntry.
+  static XdrSCEnvMetaEntry fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCEnvMetaEntry'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCEnvMetaEntry.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{
+          'sc_env_meta_kind_interface_version': _interfaceVersion!
+              .toXdrJsonValue(),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrSCEnvMetaEntry',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrSCEnvMetaEntry from its SEP-0051 rendering.
+  static XdrSCEnvMetaEntry fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrSCEnvMetaEntry',
+    );
+    switch (arm.key) {
+      case 'sc_env_meta_kind_interface_version':
+        final XdrSCEnvMetaEntry arm0 = XdrSCEnvMetaEntry(
+          XdrSCEnvMetaKind.SC_ENV_META_KIND_INTERFACE_VERSION,
+        );
+        arm0.interfaceVersion =
+            XdrSCEnvMetaEntryInterfaceVersion.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrSCEnvMetaEntry',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

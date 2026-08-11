@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_operation_result.dart';
 import 'xdr_transaction_result_code.dart';
 
@@ -85,5 +86,194 @@ class XdrInnerTransactionResultResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInnerTransactionResultResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrInnerTransactionResultResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrInnerTransactionResultResult.
+  static XdrInnerTransactionResultResult fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrInnerTransactionResultResult',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrInnerTransactionResultResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{
+          'tx_success': XdrJsonHelper.array<XdrOperationResult>(
+            _results!,
+            (XdrOperationResult v) => v.toXdrJsonValue(),
+            type: 'XdrInnerTransactionResultResult',
+            key: 'tx_success',
+          ),
+        };
+      case -1:
+        return <String, Object?>{
+          'tx_failed': XdrJsonHelper.array<XdrOperationResult>(
+            _results!,
+            (XdrOperationResult v) => v.toXdrJsonValue(),
+            type: 'XdrInnerTransactionResultResult',
+            key: 'tx_failed',
+          ),
+        };
+      case -2:
+        return 'tx_too_early';
+      case -3:
+        return 'tx_too_late';
+      case -4:
+        return 'tx_missing_operation';
+      case -5:
+        return 'tx_bad_seq';
+      case -6:
+        return 'tx_bad_auth';
+      case -7:
+        return 'tx_insufficient_balance';
+      case -8:
+        return 'tx_no_account';
+      case -9:
+        return 'tx_insufficient_fee';
+      case -10:
+        return 'tx_bad_auth_extra';
+      case -11:
+        return 'tx_internal_error';
+      case -12:
+        return 'tx_not_supported';
+      case -14:
+        return 'tx_bad_sponsorship';
+      case -15:
+        return 'tx_bad_min_seq_age_or_gap';
+      case -16:
+        return 'tx_malformed';
+      case -17:
+        return 'tx_soroban_invalid';
+      case -18:
+        return 'tx_frozen_key_accessed';
+    }
+    XdrJsonHelper.fail(
+      'XdrInnerTransactionResultResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrInnerTransactionResultResult from its SEP-0051 rendering.
+  static XdrInnerTransactionResultResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'tx_too_early':
+          return XdrInnerTransactionResultResult(
+            XdrTransactionResultCode.txTOO_EARLY,
+          );
+        case 'tx_too_late':
+          return XdrInnerTransactionResultResult(
+            XdrTransactionResultCode.txTOO_LATE,
+          );
+        case 'tx_missing_operation':
+          return XdrInnerTransactionResultResult(
+            XdrTransactionResultCode.txMISSING_OPERATION,
+          );
+        case 'tx_bad_seq':
+          return XdrInnerTransactionResultResult(
+            XdrTransactionResultCode.txBAD_SEQ,
+          );
+        case 'tx_bad_auth':
+          return XdrInnerTransactionResultResult(
+            XdrTransactionResultCode.txBAD_AUTH,
+          );
+        case 'tx_insufficient_balance':
+          return XdrInnerTransactionResultResult(
+            XdrTransactionResultCode.txINSUFFICIENT_BALANCE,
+          );
+        case 'tx_no_account':
+          return XdrInnerTransactionResultResult(
+            XdrTransactionResultCode.txNO_ACCOUNT,
+          );
+        case 'tx_insufficient_fee':
+          return XdrInnerTransactionResultResult(
+            XdrTransactionResultCode.txINSUFFICIENT_FEE,
+          );
+        case 'tx_bad_auth_extra':
+          return XdrInnerTransactionResultResult(
+            XdrTransactionResultCode.txBAD_AUTH_EXTRA,
+          );
+        case 'tx_internal_error':
+          return XdrInnerTransactionResultResult(
+            XdrTransactionResultCode.txINTERNAL_ERROR,
+          );
+        case 'tx_not_supported':
+          return XdrInnerTransactionResultResult(
+            XdrTransactionResultCode.txNOT_SUPPORTED,
+          );
+        case 'tx_bad_sponsorship':
+          return XdrInnerTransactionResultResult(
+            XdrTransactionResultCode.txBAD_SPONSORSHIP,
+          );
+        case 'tx_bad_min_seq_age_or_gap':
+          return XdrInnerTransactionResultResult(
+            XdrTransactionResultCode.txBAD_MIN_SEQ_AGE_OR_GAP,
+          );
+        case 'tx_malformed':
+          return XdrInnerTransactionResultResult(
+            XdrTransactionResultCode.txMALFORMED,
+          );
+        case 'tx_soroban_invalid':
+          return XdrInnerTransactionResultResult(
+            XdrTransactionResultCode.txSOROBAN_INVALID,
+          );
+        case 'tx_frozen_key_accessed':
+          return XdrInnerTransactionResultResult(
+            XdrTransactionResultCode.txFROZEN_KEY_ACCESSED,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrInnerTransactionResultResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrInnerTransactionResultResult',
+    );
+    switch (arm.key) {
+      case 'tx_success':
+        final XdrInnerTransactionResultResult arm0 =
+            XdrInnerTransactionResultResult(XdrTransactionResultCode.txSUCCESS);
+        arm0.results =
+            XdrJsonHelper.readArray(
+                  arm.value,
+                  type: 'XdrInnerTransactionResultResult',
+                  key: 'tx_success',
+                )
+                .map<XdrOperationResult>(
+                  (Object? e) => XdrOperationResult.fromXdrJsonValue(e),
+                )
+                .toList();
+        return arm0;
+      case 'tx_failed':
+        final XdrInnerTransactionResultResult arm1 =
+            XdrInnerTransactionResultResult(XdrTransactionResultCode.txFAILED);
+        arm1.results =
+            XdrJsonHelper.readArray(
+                  arm.value,
+                  type: 'XdrInnerTransactionResultResult',
+                  key: 'tx_failed',
+                )
+                .map<XdrOperationResult>(
+                  (Object? e) => XdrOperationResult.fromXdrJsonValue(e),
+                )
+                .toList();
+        return arm1;
+    }
+    XdrJsonHelper.fail(
+      'XdrInnerTransactionResultResult',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

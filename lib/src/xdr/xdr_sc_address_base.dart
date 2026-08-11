@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../key_pair.dart';
 import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_claimable_balance_id.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_muxed_account_med25519.dart';
 import 'xdr_sc_address_type.dart';
 
@@ -191,5 +193,93 @@ class XdrSCAddressBase {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCAddress');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCAddress.
+  static XdrSCAddressBase fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCAddress'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCAddress.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT:
+        return _accountId!.toXdrJsonValue();
+      case XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT:
+        return StrKey.encodeContractId(_contractId!.hash);
+      case XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT:
+        return _muxedAccount!.toXdrJsonValue();
+      case XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
+        return _claimableBalanceId!.toXdrJsonValue();
+      case XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL:
+        return StrKey.encodeLiquidityPoolId(_liquidityPoolId!.hash);
+    }
+    XdrJsonHelper.fail(
+      'XdrSCAddress',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrSCAddress from its SEP-0051 rendering.
+  static XdrSCAddressBase fromXdrJsonValue(Object? value) =>
+      fromXdrJsonValueAs(value, XdrSCAddressBase.new);
+
+  /// Reads a subclass of XdrSCAddressBase from its SEP-0051 rendering.
+  static T fromXdrJsonValueAs<T extends XdrSCAddressBase>(
+    Object? value,
+    T Function(XdrSCAddressType) constructor,
+  ) {
+    switch (XdrJsonHelper.readStrKeyPrefix(value, type: 'XdrSCAddress')) {
+      case 'G':
+        final T arm0 = constructor(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT);
+        arm0.accountId = XdrAccountID.fromXdrJsonValue(value);
+        return arm0;
+      case 'C':
+        final T arm1 = constructor(XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT);
+        arm1.contractId = XdrHash(
+          XdrJsonHelper.readStrKey(
+            value,
+            type: 'XdrSCAddress',
+            key: null,
+            decode: StrKey.decodeContractId,
+            expectedLength: 32,
+          ),
+        );
+        return arm1;
+      case 'M':
+        final T arm2 = constructor(
+          XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT,
+        );
+        arm2.muxedAccount = XdrMuxedAccountMed25519.fromXdrJsonValue(value);
+        return arm2;
+      case 'B':
+        final T arm3 = constructor(
+          XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE,
+        );
+        arm3.claimableBalanceId = XdrClaimableBalanceID.fromXdrJsonValue(value);
+        return arm3;
+      case 'L':
+        final T arm4 = constructor(
+          XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL,
+        );
+        arm4.liquidityPoolId = XdrHash(
+          XdrJsonHelper.readStrKey(
+            value,
+            type: 'XdrSCAddress',
+            key: null,
+            decode: StrKey.decodeLiquidityPoolId,
+            expectedLength: 32,
+          ),
+        );
+        return arm4;
+    }
+    XdrJsonHelper.fail(
+      'XdrSCAddress',
+      'expects a G, C, M, B or L strkey but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

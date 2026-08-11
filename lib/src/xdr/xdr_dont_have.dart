@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_message_type.dart';
 import 'xdr_uint256.dart';
 
@@ -41,5 +42,43 @@ class XdrDontHave {
   static XdrDontHave fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrDontHave.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrDontHave');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrDontHave.
+  static XdrDontHave fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrDontHave'));
+
+  /// Returns the SEP-0051 rendering of this XdrDontHave.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'type': _type.toXdrJsonValue(),
+    'req_hash': _reqHash.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrDontHave from its SEP-0051 rendering.
+  static XdrDontHave fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrDontHave',
+      allowedKeys: const <String>{'type', 'type_', 'req_hash'},
+    );
+    final Object? jsonType = XdrJsonHelper.readField(
+      object,
+      'type',
+      type: 'XdrDontHave',
+      alias: 'type_',
+    );
+    final Object? jsonReqHash = XdrJsonHelper.readField(
+      object,
+      'req_hash',
+      type: 'XdrDontHave',
+    );
+    return XdrDontHave(
+      XdrMessageType.fromXdrJsonValue(jsonType),
+      XdrUint256.fromXdrJsonValue(jsonReqHash),
+    );
   }
 }

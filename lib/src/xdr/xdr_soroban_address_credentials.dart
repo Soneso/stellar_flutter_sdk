@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_address.dart';
 import 'xdr_sc_val.dart';
 import 'xdr_uint32.dart';
@@ -102,6 +103,69 @@ class XdrSorobanAddressCredentials {
       nonce,
       signatureExpirationLedger,
       signature,
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSorobanAddressCredentials',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanAddressCredentials.
+  static XdrSorobanAddressCredentials fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrSorobanAddressCredentials',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrSorobanAddressCredentials.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'address': _address.toXdrJsonValue(),
+    'nonce': _nonce.toXdrJsonValue(),
+    'signature_expiration_ledger': _signatureExpirationLedger.toXdrJsonValue(),
+    'signature': _signature.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSorobanAddressCredentials from its SEP-0051 rendering.
+  static XdrSorobanAddressCredentials fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSorobanAddressCredentials',
+      allowedKeys: const <String>{
+        'address',
+        'nonce',
+        'signature_expiration_ledger',
+        'signature',
+      },
+    );
+    final Object? jsonAddress = XdrJsonHelper.readField(
+      object,
+      'address',
+      type: 'XdrSorobanAddressCredentials',
+    );
+    final Object? jsonNonce = XdrJsonHelper.readField(
+      object,
+      'nonce',
+      type: 'XdrSorobanAddressCredentials',
+    );
+    final Object? jsonSignatureExpirationLedger = XdrJsonHelper.readField(
+      object,
+      'signature_expiration_ledger',
+      type: 'XdrSorobanAddressCredentials',
+    );
+    final Object? jsonSignature = XdrJsonHelper.readField(
+      object,
+      'signature',
+      type: 'XdrSorobanAddressCredentials',
+    );
+    return XdrSorobanAddressCredentials(
+      XdrSCAddress.fromXdrJsonValue(jsonAddress),
+      XdrInt64.fromXdrJsonValue(jsonNonce),
+      XdrUint32.fromXdrJsonValue(jsonSignatureExpirationLedger),
+      XdrSCVal.fromXdrJsonValue(jsonSignature),
     );
   }
 }

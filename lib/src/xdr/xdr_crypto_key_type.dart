@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrCryptoKeyType {
   final _value;
@@ -110,5 +111,57 @@ class XdrCryptoKeyType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrCryptoKeyType');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrCryptoKeyType.
+  static XdrCryptoKeyType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrCryptoKeyType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'ed25519';
+      case 1:
+        return 'pre_auth_tx';
+      case 2:
+        return 'hash_x';
+      case 3:
+        return 'ed25519_signed_payload';
+      case 256:
+        return 'muxed_ed25519';
+      default:
+        XdrJsonHelper.fail(
+          'XdrCryptoKeyType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrCryptoKeyType from its SEP-0051 name.
+  static XdrCryptoKeyType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'ed25519':
+          return XdrCryptoKeyType.KEY_TYPE_ED25519;
+        case 'pre_auth_tx':
+          return XdrCryptoKeyType.KEY_TYPE_PRE_AUTH_TX;
+        case 'hash_x':
+          return XdrCryptoKeyType.KEY_TYPE_HASH_X;
+        case 'ed25519_signed_payload':
+          return XdrCryptoKeyType.KEY_TYPE_ED25519_SIGNED_PAYLOAD;
+        case 'muxed_ed25519':
+          return XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrCryptoKeyType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

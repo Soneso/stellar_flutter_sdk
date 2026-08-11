@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSorobanCredentialsType {
   final _value;
@@ -116,5 +117,56 @@ class XdrSorobanCredentialsType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSorobanCredentialsType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanCredentialsType.
+  static XdrSorobanCredentialsType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSorobanCredentialsType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'source_account';
+      case 1:
+        return 'address';
+      case 2:
+        return 'address_v2';
+      case 3:
+        return 'address_with_delegates';
+      default:
+        XdrJsonHelper.fail(
+          'XdrSorobanCredentialsType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrSorobanCredentialsType from its SEP-0051 name.
+  static XdrSorobanCredentialsType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'source_account':
+          return XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT;
+        case 'address':
+          return XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS;
+        case 'address_v2':
+          return XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2;
+        case 'address_with_delegates':
+          return XdrSorobanCredentialsType
+              .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrSorobanCredentialsType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

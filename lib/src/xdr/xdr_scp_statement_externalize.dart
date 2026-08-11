@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_scp_ballot.dart';
 import 'xdr_uint32.dart';
 
@@ -53,5 +54,53 @@ class XdrSCPStatementExternalize {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPStatementExternalize.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCPStatementExternalize',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCPStatementExternalize.
+  static XdrSCPStatementExternalize fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrSCPStatementExternalize'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrSCPStatementExternalize.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'commit': _commit.toXdrJsonValue(),
+    'n_h': _nH.toXdrJsonValue(),
+    'commit_quorum_set_hash': _commitQuorumSetHash.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSCPStatementExternalize from its SEP-0051 rendering.
+  static XdrSCPStatementExternalize fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCPStatementExternalize',
+      allowedKeys: const <String>{'commit', 'n_h', 'commit_quorum_set_hash'},
+    );
+    final Object? jsonCommit = XdrJsonHelper.readField(
+      object,
+      'commit',
+      type: 'XdrSCPStatementExternalize',
+    );
+    final Object? jsonNH = XdrJsonHelper.readField(
+      object,
+      'n_h',
+      type: 'XdrSCPStatementExternalize',
+    );
+    final Object? jsonCommitQuorumSetHash = XdrJsonHelper.readField(
+      object,
+      'commit_quorum_set_hash',
+      type: 'XdrSCPStatementExternalize',
+    );
+    return XdrSCPStatementExternalize(
+      XdrSCPBallot.fromXdrJsonValue(jsonCommit),
+      XdrUint32.fromXdrJsonValue(jsonNH),
+      XdrHash.fromXdrJsonValue(jsonCommitQuorumSetHash),
+    );
   }
 }

@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_bucket_metadata.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hot_archive_bucket_entry_type.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_entry.dart';
 import 'xdr_ledger_key.dart';
 
@@ -103,5 +104,64 @@ class XdrHotArchiveBucketEntry {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHotArchiveBucketEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrHotArchiveBucketEntry',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrHotArchiveBucketEntry.
+  static XdrHotArchiveBucketEntry fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrHotArchiveBucketEntry'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrHotArchiveBucketEntry.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'archived': _archivedEntry!.toXdrJsonValue()};
+      case 1:
+        return <String, Object?>{'live': _key!.toXdrJsonValue()};
+      case -1:
+        return <String, Object?>{'metaentry': _metaEntry!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrHotArchiveBucketEntry',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrHotArchiveBucketEntry from its SEP-0051 rendering.
+  static XdrHotArchiveBucketEntry fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrHotArchiveBucketEntry',
+    );
+    switch (arm.key) {
+      case 'archived':
+        final XdrHotArchiveBucketEntry arm0 = XdrHotArchiveBucketEntry(
+          XdrHotArchiveBucketEntryType.HOT_ARCHIVE_ARCHIVED,
+        );
+        arm0.archivedEntry = XdrLedgerEntry.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'live':
+        final XdrHotArchiveBucketEntry arm1 = XdrHotArchiveBucketEntry(
+          XdrHotArchiveBucketEntryType.HOT_ARCHIVE_LIVE,
+        );
+        arm1.key = XdrLedgerKey.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'metaentry':
+        final XdrHotArchiveBucketEntry arm2 = XdrHotArchiveBucketEntry(
+          XdrHotArchiveBucketEntryType.HOT_ARCHIVE_METAENTRY,
+        );
+        arm2.metaEntry = XdrBucketMetadata.fromXdrJsonValue(arm.value);
+        return arm2;
+    }
+    XdrJsonHelper.fail(
+      'XdrHotArchiveBucketEntry',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

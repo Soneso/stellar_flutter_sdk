@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint64.dart';
 
 class XdrUInt256PartsBase {
@@ -70,5 +71,37 @@ class XdrUInt256PartsBase {
     XdrUint64 loHi = XdrUint64.fromTxRep(map, '$prefix.lo_hi');
     XdrUint64 loLo = XdrUint64.fromTxRep(map, '$prefix.lo_lo');
     return XdrUInt256PartsBase(hiHi, hiLo, loHi, loLo);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrUInt256Parts');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrUInt256Parts.
+  static XdrUInt256PartsBase fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrUInt256Parts'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrUInt256Parts.
+  Object? toXdrJsonValue() => XdrJsonHelper.partsToDecimalString(
+    <BigInt>[_hiHi.uint64, _hiLo.uint64, _loHi.uint64, _loLo.uint64],
+    signed: false,
+    type: 'XdrUInt256Parts',
+  );
+
+  /// Reads a XdrUInt256Parts from its SEP-0051 rendering.
+  static XdrUInt256PartsBase fromXdrJsonValue(Object? value) {
+    final List<BigInt> limbs = XdrJsonHelper.decimalStringToParts(
+      value,
+      limbCount: 4,
+      signed: false,
+      type: 'XdrUInt256Parts',
+    );
+    return XdrUInt256PartsBase(
+      XdrUint64(limbs[0]),
+      XdrUint64(limbs[1]),
+      XdrUint64(limbs[2]),
+      XdrUint64(limbs[3]),
+    );
   }
 }

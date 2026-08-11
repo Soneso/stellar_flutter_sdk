@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrLedgerHeaderFlags {
   final _value;
@@ -57,5 +58,51 @@ class XdrLedgerHeaderFlags {
   static XdrLedgerHeaderFlags fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerHeaderFlags.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerHeaderFlags',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerHeaderFlags.
+  static XdrLedgerHeaderFlags fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerHeaderFlags'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 1:
+        return 'trading_flag';
+      case 2:
+        return 'deposit_flag';
+      case 4:
+        return 'withdrawal_flag';
+      default:
+        XdrJsonHelper.fail(
+          'XdrLedgerHeaderFlags',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrLedgerHeaderFlags from its SEP-0051 name.
+  static XdrLedgerHeaderFlags fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'trading_flag':
+          return XdrLedgerHeaderFlags.DISABLE_LIQUIDITY_POOL_TRADING_FLAG;
+        case 'deposit_flag':
+          return XdrLedgerHeaderFlags.DISABLE_LIQUIDITY_POOL_DEPOSIT_FLAG;
+        case 'withdrawal_flag':
+          return XdrLedgerHeaderFlags.DISABLE_LIQUIDITY_POOL_WITHDRAWAL_FLAG;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerHeaderFlags',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

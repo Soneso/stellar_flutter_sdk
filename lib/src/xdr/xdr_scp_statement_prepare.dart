@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_scp_ballot.dart';
 import 'xdr_uint32.dart';
 
@@ -103,5 +104,84 @@ class XdrSCPStatementPrepare {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPStatementPrepare.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCPStatementPrepare',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCPStatementPrepare.
+  static XdrSCPStatementPrepare fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCPStatementPrepare'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCPStatementPrepare.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'quorum_set_hash': _quorumSetHash.toXdrJsonValue(),
+    'ballot': _ballot.toXdrJsonValue(),
+    'prepared': _prepared == null ? null : _prepared!.toXdrJsonValue(),
+    'prepared_prime': _preparedPrime == null
+        ? null
+        : _preparedPrime!.toXdrJsonValue(),
+    'n_c': _nC.toXdrJsonValue(),
+    'n_h': _nH.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSCPStatementPrepare from its SEP-0051 rendering.
+  static XdrSCPStatementPrepare fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCPStatementPrepare',
+      allowedKeys: const <String>{
+        'quorum_set_hash',
+        'ballot',
+        'prepared',
+        'prepared_prime',
+        'n_c',
+        'n_h',
+      },
+    );
+    final Object? jsonQuorumSetHash = XdrJsonHelper.readField(
+      object,
+      'quorum_set_hash',
+      type: 'XdrSCPStatementPrepare',
+    );
+    final Object? jsonBallot = XdrJsonHelper.readField(
+      object,
+      'ballot',
+      type: 'XdrSCPStatementPrepare',
+    );
+    final Object? jsonPrepared = XdrJsonHelper.readField(
+      object,
+      'prepared',
+      type: 'XdrSCPStatementPrepare',
+    );
+    final Object? jsonPreparedPrime = XdrJsonHelper.readField(
+      object,
+      'prepared_prime',
+      type: 'XdrSCPStatementPrepare',
+    );
+    final Object? jsonNC = XdrJsonHelper.readField(
+      object,
+      'n_c',
+      type: 'XdrSCPStatementPrepare',
+    );
+    final Object? jsonNH = XdrJsonHelper.readField(
+      object,
+      'n_h',
+      type: 'XdrSCPStatementPrepare',
+    );
+    return XdrSCPStatementPrepare(
+      XdrHash.fromXdrJsonValue(jsonQuorumSetHash),
+      XdrSCPBallot.fromXdrJsonValue(jsonBallot),
+      jsonPrepared == null ? null : XdrSCPBallot.fromXdrJsonValue(jsonPrepared),
+      jsonPreparedPrime == null
+          ? null
+          : XdrSCPBallot.fromXdrJsonValue(jsonPreparedPrime),
+      XdrUint32.fromXdrJsonValue(jsonNC),
+      XdrUint32.fromXdrJsonValue(jsonNH),
+    );
   }
 }

@@ -6,12 +6,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../key_pair.dart';
 import 'txrep_helper.dart';
 import 'xdr_asset_alpha_num12.dart';
 import 'xdr_asset_alpha_num4.dart';
 import 'xdr_asset_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 
 class XdrTrustlineAssetBase {
   XdrAssetType _type;
@@ -158,5 +160,89 @@ class XdrTrustlineAssetBase {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrTrustlineAsset');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTrustlineAsset.
+  static XdrTrustlineAssetBase fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTrustlineAsset'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTrustlineAssetBase.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'native';
+      case 1:
+        return <String, Object?>{
+          'credit_alphanum4': _alphaNum4!.toXdrJsonValue(),
+        };
+      case 2:
+        return <String, Object?>{
+          'credit_alphanum12': _alphaNum12!.toXdrJsonValue(),
+        };
+      case 3:
+        return <String, Object?>{
+          'pool_share': StrKey.encodeLiquidityPoolId(_liquidityPoolID!.hash),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrTrustlineAsset',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrTrustlineAssetBase from its SEP-0051 rendering.
+  static XdrTrustlineAssetBase fromXdrJsonValue(Object? value) =>
+      fromXdrJsonValueAs(value, XdrTrustlineAssetBase.new);
+
+  /// Reads a subclass of XdrTrustlineAssetBase from its SEP-0051 rendering.
+  static T fromXdrJsonValueAs<T extends XdrTrustlineAssetBase>(
+    Object? value,
+    T Function(XdrAssetType) constructor,
+  ) {
+    if (value is String) {
+      switch (value) {
+        case 'native':
+          return constructor(XdrAssetType.ASSET_TYPE_NATIVE);
+      }
+      XdrJsonHelper.fail(
+        'XdrTrustlineAsset',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrTrustlineAsset',
+    );
+    switch (arm.key) {
+      case 'credit_alphanum4':
+        final T arm0 = constructor(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4);
+        arm0.alphaNum4 = XdrAssetAlphaNum4.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'credit_alphanum12':
+        final T arm1 = constructor(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12);
+        arm1.alphaNum12 = XdrAssetAlphaNum12.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'pool_share':
+        final T arm2 = constructor(XdrAssetType.ASSET_TYPE_POOL_SHARE);
+        arm2.liquidityPoolID = XdrHash(
+          XdrJsonHelper.readStrKey(
+            arm.value,
+            type: 'XdrTrustlineAsset',
+            key: 'pool_share',
+            decode: StrKey.decodeLiquidityPoolId,
+            expectedLength: 32,
+          ),
+        );
+        return arm2;
+    }
+    XdrJsonHelper.fail(
+      'XdrTrustlineAsset',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

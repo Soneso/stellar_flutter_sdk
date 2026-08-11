@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_public_key.dart';
 
 class XdrNodeID {
@@ -34,4 +35,19 @@ class XdrNodeID {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrNodeID.decode(XdrDataInputStream(bytes));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrNodeID');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrNodeID.
+  static XdrNodeID fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrNodeID'));
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() => _nodeID.toXdrJsonValue();
+
+  /// Reads a XdrNodeID from the SEP-0051 rendering of its value.
+  static XdrNodeID fromXdrJsonValue(Object? value) =>
+      XdrNodeID(XdrPublicKey.fromXdrJsonValue(value));
 }

@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_entry_changes.dart';
 import 'xdr_transaction_meta.dart';
 import 'xdr_transaction_result_pair.dart';
@@ -94,5 +95,73 @@ class XdrTransactionResultMetaV1 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionResultMetaV1.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionResultMetaV1',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionResultMetaV1.
+  static XdrTransactionResultMetaV1 fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionResultMetaV1'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionResultMetaV1.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'result': _result.toXdrJsonValue(),
+    'fee_processing': _feeProcessing.toXdrJsonValue(),
+    'tx_apply_processing': _txApplyProcessing.toXdrJsonValue(),
+    'post_tx_apply_fee_processing': _postTxApplyFeeProcessing.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTransactionResultMetaV1 from its SEP-0051 rendering.
+  static XdrTransactionResultMetaV1 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTransactionResultMetaV1',
+      allowedKeys: const <String>{
+        'ext',
+        'result',
+        'fee_processing',
+        'tx_apply_processing',
+        'post_tx_apply_fee_processing',
+      },
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrTransactionResultMetaV1',
+    );
+    final Object? jsonResult = XdrJsonHelper.readField(
+      object,
+      'result',
+      type: 'XdrTransactionResultMetaV1',
+    );
+    final Object? jsonFeeProcessing = XdrJsonHelper.readField(
+      object,
+      'fee_processing',
+      type: 'XdrTransactionResultMetaV1',
+    );
+    final Object? jsonTxApplyProcessing = XdrJsonHelper.readField(
+      object,
+      'tx_apply_processing',
+      type: 'XdrTransactionResultMetaV1',
+    );
+    final Object? jsonPostTxApplyFeeProcessing = XdrJsonHelper.readField(
+      object,
+      'post_tx_apply_fee_processing',
+      type: 'XdrTransactionResultMetaV1',
+    );
+    return XdrTransactionResultMetaV1(
+      XdrExtensionPoint.fromXdrJsonValue(jsonExt),
+      XdrTransactionResultPair.fromXdrJsonValue(jsonResult),
+      XdrLedgerEntryChanges.fromXdrJsonValue(jsonFeeProcessing),
+      XdrTransactionMeta.fromXdrJsonValue(jsonTxApplyProcessing),
+      XdrLedgerEntryChanges.fromXdrJsonValue(jsonPostTxApplyFeeProcessing),
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrExtendFootprintTTLResultCode {
   final _value;
@@ -66,5 +67,61 @@ class XdrExtendFootprintTTLResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrExtendFootprintTTLResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrExtendFootprintTTLResultCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrExtendFootprintTTLResultCode.
+  static XdrExtendFootprintTTLResultCode fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrExtendFootprintTTLResultCode',
+        ),
+      );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'resource_limit_exceeded';
+      case -3:
+        return 'insufficient_refundable_fee';
+      default:
+        XdrJsonHelper.fail(
+          'XdrExtendFootprintTTLResultCode',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrExtendFootprintTTLResultCode from its SEP-0051 name.
+  static XdrExtendFootprintTTLResultCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_SUCCESS;
+        case 'malformed':
+          return XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_MALFORMED;
+        case 'resource_limit_exceeded':
+          return XdrExtendFootprintTTLResultCode
+              .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED;
+        case 'insufficient_refundable_fee':
+          return XdrExtendFootprintTTLResultCode
+              .EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrExtendFootprintTTLResultCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

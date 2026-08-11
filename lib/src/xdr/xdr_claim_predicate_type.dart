@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClaimPredicateType {
   final _value;
@@ -126,5 +127,63 @@ class XdrClaimPredicateType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrClaimPredicateType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClaimPredicateType.
+  static XdrClaimPredicateType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrClaimPredicateType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'unconditional';
+      case 1:
+        return 'and';
+      case 2:
+        return 'or';
+      case 3:
+        return 'not';
+      case 4:
+        return 'before_absolute_time';
+      case 5:
+        return 'before_relative_time';
+      default:
+        XdrJsonHelper.fail(
+          'XdrClaimPredicateType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrClaimPredicateType from its SEP-0051 name.
+  static XdrClaimPredicateType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'unconditional':
+          return XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL;
+        case 'and':
+          return XdrClaimPredicateType.CLAIM_PREDICATE_AND;
+        case 'or':
+          return XdrClaimPredicateType.CLAIM_PREDICATE_OR;
+        case 'not':
+          return XdrClaimPredicateType.CLAIM_PREDICATE_NOT;
+        case 'before_absolute_time':
+          return XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME;
+        case 'before_relative_time':
+          return XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrClaimPredicateType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

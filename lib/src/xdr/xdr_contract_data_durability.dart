@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrContractDataDurability {
   final _value;
@@ -98,5 +99,47 @@ class XdrContractDataDurability {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrContractDataDurability',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractDataDurability.
+  static XdrContractDataDurability fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractDataDurability'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'temporary';
+      case 1:
+        return 'persistent';
+      default:
+        XdrJsonHelper.fail(
+          'XdrContractDataDurability',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrContractDataDurability from its SEP-0051 name.
+  static XdrContractDataDurability fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'temporary':
+          return XdrContractDataDurability.TEMPORARY;
+        case 'persistent':
+          return XdrContractDataDurability.PERSISTENT;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrContractDataDurability',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

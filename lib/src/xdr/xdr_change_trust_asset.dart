@@ -7,6 +7,7 @@ import 'xdr_asset.dart';
 import 'xdr_asset_type.dart';
 import 'xdr_change_trust_asset_base.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrChangeTrustAsset extends XdrChangeTrustAssetBase {
   XdrChangeTrustAsset(super.type);
@@ -65,4 +66,18 @@ class XdrChangeTrustAsset extends XdrChangeTrustAssetBase {
     }
     return result;
   }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrChangeTrustAsset.
+  ///
+  /// Dart does not inherit statics, so this narrows the base class rendering to
+  /// this type rather than relying on the one the base declares.
+  static XdrChangeTrustAsset fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrChangeTrustAsset'),
+  );
+
+  static XdrChangeTrustAsset fromXdrJsonValue(Object? value) =>
+      XdrChangeTrustAssetBase.fromXdrJsonValueAs(
+        value,
+        XdrChangeTrustAsset.new,
+      );
 }

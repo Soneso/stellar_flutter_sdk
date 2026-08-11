@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrUint256 {
   XdrUint256(this._uint256);
@@ -45,4 +46,20 @@ class XdrUint256 {
     if (raw == null) throw Exception('missing $prefix');
     return XdrUint256(TxRepHelper.hexToBytes(raw));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrUint256');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrUint256.
+  static XdrUint256 fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrUint256'));
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() => XdrJsonHelper.hex(_uint256, type: 'XdrUint256');
+
+  /// Reads a XdrUint256 from the SEP-0051 rendering of its value.
+  static XdrUint256 fromXdrJsonValue(Object? value) => XdrUint256(
+    XdrJsonHelper.readHex(value, type: 'XdrUint256', expectedLength: 32),
+  );
 }

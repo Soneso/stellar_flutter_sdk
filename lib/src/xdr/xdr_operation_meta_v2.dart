@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_contract_event.dart';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_entry_changes.dart';
 
 class XdrOperationMetaV2 {
@@ -61,5 +62,65 @@ class XdrOperationMetaV2 {
   static XdrOperationMetaV2 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrOperationMetaV2.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrOperationMetaV2',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrOperationMetaV2.
+  static XdrOperationMetaV2 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrOperationMetaV2'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrOperationMetaV2.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'changes': _changes.toXdrJsonValue(),
+    'events': XdrJsonHelper.array<XdrContractEvent>(
+      _events,
+      (XdrContractEvent v) => v.toXdrJsonValue(),
+      type: 'XdrOperationMetaV2',
+      key: 'events',
+    ),
+  };
+
+  /// Reads a XdrOperationMetaV2 from its SEP-0051 rendering.
+  static XdrOperationMetaV2 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrOperationMetaV2',
+      allowedKeys: const <String>{'ext', 'changes', 'events'},
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrOperationMetaV2',
+    );
+    final Object? jsonChanges = XdrJsonHelper.readField(
+      object,
+      'changes',
+      type: 'XdrOperationMetaV2',
+    );
+    final Object? jsonEvents = XdrJsonHelper.readField(
+      object,
+      'events',
+      type: 'XdrOperationMetaV2',
+    );
+    return XdrOperationMetaV2(
+      XdrExtensionPoint.fromXdrJsonValue(jsonExt),
+      XdrLedgerEntryChanges.fromXdrJsonValue(jsonChanges),
+      XdrJsonHelper.readArray(
+            jsonEvents,
+            type: 'XdrOperationMetaV2',
+            key: 'events',
+          )
+          .map<XdrContractEvent>(
+            (Object? e) => XdrContractEvent.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

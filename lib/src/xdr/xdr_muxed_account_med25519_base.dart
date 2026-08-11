@@ -6,7 +6,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../key_pair.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint256.dart';
 import 'xdr_uint64.dart';
 
@@ -59,6 +61,42 @@ class XdrMuxedAccountMed25519Base {
   ) {
     XdrUint64 id = XdrUint64.fromTxRep(map, '$prefix.id');
     XdrUint256 ed25519 = XdrUint256.fromTxRep(map, '$prefix.ed25519');
+    return XdrMuxedAccountMed25519Base(id, ed25519);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrMuxedAccountMed25519',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrMuxedAccountMed25519.
+  static XdrMuxedAccountMed25519Base fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrMuxedAccountMed25519'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrMuxedAccountMed25519.
+  Object? toXdrJsonValue() {
+    final XdrDataOutputStream stream = XdrDataOutputStream();
+    XdrUint256.encode(stream, _ed25519);
+    XdrUint64.encode(stream, _id);
+    return StrKey.encodeStellarMuxedAccountId(Uint8List.fromList(stream.bytes));
+  }
+
+  /// Reads a XdrMuxedAccountMed25519 from its SEP-0051 rendering.
+  static XdrMuxedAccountMed25519Base fromXdrJsonValue(Object? value) {
+    final XdrDataInputStream stream = XdrDataInputStream(
+      XdrJsonHelper.readStrKey(
+        value,
+        type: 'XdrMuxedAccountMed25519',
+        key: null,
+        decode: StrKey.decodeStellarMuxedAccountId,
+        expectedLength: 40,
+      ),
+    );
+    final XdrUint256 ed25519 = XdrUint256.decode(stream);
+    final XdrUint64 id = XdrUint64.decode(stream);
     return XdrMuxedAccountMed25519Base(id, ed25519);
   }
 }

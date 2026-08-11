@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_binary_fuse_filter_type.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_short_hash_seed.dart';
 import 'xdr_uint32.dart';
 
@@ -131,5 +132,118 @@ class XdrSerializedBinaryFuseFilter {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSerializedBinaryFuseFilter.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSerializedBinaryFuseFilter',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSerializedBinaryFuseFilter.
+  static XdrSerializedBinaryFuseFilter fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrSerializedBinaryFuseFilter',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrSerializedBinaryFuseFilter.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'type': _type.toXdrJsonValue(),
+    'input_hash_seed': _inputHashSeed.toXdrJsonValue(),
+    'filter_seed': _filterSeed.toXdrJsonValue(),
+    'segment_length': _segmentLength.toXdrJsonValue(),
+    'segement_length_mask': _segementLengthMask.toXdrJsonValue(),
+    'segment_count': _segmentCount.toXdrJsonValue(),
+    'segment_count_length': _segmentCountLength.toXdrJsonValue(),
+    'fingerprint_length': _fingerprintLength.toXdrJsonValue(),
+    'fingerprints': XdrJsonHelper.hex(
+      _fingerprints,
+      type: 'XdrSerializedBinaryFuseFilter',
+      key: 'fingerprints',
+    ),
+  };
+
+  /// Reads a XdrSerializedBinaryFuseFilter from its SEP-0051 rendering.
+  static XdrSerializedBinaryFuseFilter fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSerializedBinaryFuseFilter',
+      allowedKeys: const <String>{
+        'type',
+        'type_',
+        'input_hash_seed',
+        'filter_seed',
+        'segment_length',
+        'segement_length_mask',
+        'segment_count',
+        'segment_count_length',
+        'fingerprint_length',
+        'fingerprints',
+      },
+    );
+    final Object? jsonType = XdrJsonHelper.readField(
+      object,
+      'type',
+      type: 'XdrSerializedBinaryFuseFilter',
+      alias: 'type_',
+    );
+    final Object? jsonInputHashSeed = XdrJsonHelper.readField(
+      object,
+      'input_hash_seed',
+      type: 'XdrSerializedBinaryFuseFilter',
+    );
+    final Object? jsonFilterSeed = XdrJsonHelper.readField(
+      object,
+      'filter_seed',
+      type: 'XdrSerializedBinaryFuseFilter',
+    );
+    final Object? jsonSegmentLength = XdrJsonHelper.readField(
+      object,
+      'segment_length',
+      type: 'XdrSerializedBinaryFuseFilter',
+    );
+    final Object? jsonSegementLengthMask = XdrJsonHelper.readField(
+      object,
+      'segement_length_mask',
+      type: 'XdrSerializedBinaryFuseFilter',
+    );
+    final Object? jsonSegmentCount = XdrJsonHelper.readField(
+      object,
+      'segment_count',
+      type: 'XdrSerializedBinaryFuseFilter',
+    );
+    final Object? jsonSegmentCountLength = XdrJsonHelper.readField(
+      object,
+      'segment_count_length',
+      type: 'XdrSerializedBinaryFuseFilter',
+    );
+    final Object? jsonFingerprintLength = XdrJsonHelper.readField(
+      object,
+      'fingerprint_length',
+      type: 'XdrSerializedBinaryFuseFilter',
+    );
+    final Object? jsonFingerprints = XdrJsonHelper.readField(
+      object,
+      'fingerprints',
+      type: 'XdrSerializedBinaryFuseFilter',
+    );
+    return XdrSerializedBinaryFuseFilter(
+      XdrBinaryFuseFilterType.fromXdrJsonValue(jsonType),
+      XdrShortHashSeed.fromXdrJsonValue(jsonInputHashSeed),
+      XdrShortHashSeed.fromXdrJsonValue(jsonFilterSeed),
+      XdrUint32.fromXdrJsonValue(jsonSegmentLength),
+      XdrUint32.fromXdrJsonValue(jsonSegementLengthMask),
+      XdrUint32.fromXdrJsonValue(jsonSegmentCount),
+      XdrUint32.fromXdrJsonValue(jsonSegmentCountLength),
+      XdrUint32.fromXdrJsonValue(jsonFingerprintLength),
+      XdrJsonHelper.readHex(
+        jsonFingerprints,
+        type: 'XdrSerializedBinaryFuseFilter',
+        key: 'fingerprints',
+      ),
+    );
   }
 }

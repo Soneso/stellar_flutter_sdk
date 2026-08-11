@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_val.dart';
 
 class XdrContractEventV0 {
@@ -51,5 +52,54 @@ class XdrContractEventV0 {
   static XdrContractEventV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractEventV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrContractEventV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractEventV0.
+  static XdrContractEventV0 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractEventV0'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrContractEventV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'topics': XdrJsonHelper.array<XdrSCVal>(
+      _topics,
+      (XdrSCVal v) => v.toXdrJsonValue(),
+      type: 'XdrContractEventV0',
+      key: 'topics',
+    ),
+    'data': _data.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrContractEventV0 from its SEP-0051 rendering.
+  static XdrContractEventV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrContractEventV0',
+      allowedKeys: const <String>{'topics', 'data'},
+    );
+    final Object? jsonTopics = XdrJsonHelper.readField(
+      object,
+      'topics',
+      type: 'XdrContractEventV0',
+    );
+    final Object? jsonData = XdrJsonHelper.readField(
+      object,
+      'data',
+      type: 'XdrContractEventV0',
+    );
+    return XdrContractEventV0(
+      XdrJsonHelper.readArray(
+        jsonTopics,
+        type: 'XdrContractEventV0',
+        key: 'topics',
+      ).map<XdrSCVal>((Object? e) => XdrSCVal.fromXdrJsonValue(e)).toList(),
+      XdrSCVal.fromXdrJsonValue(jsonData),
+    );
   }
 }

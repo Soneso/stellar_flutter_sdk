@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrOfferEntryFlags {
   final _value;
@@ -48,5 +49,43 @@ class XdrOfferEntryFlags {
   static XdrOfferEntryFlags fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrOfferEntryFlags.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrOfferEntryFlags',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrOfferEntryFlags.
+  static XdrOfferEntryFlags fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrOfferEntryFlags'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 1:
+        return 'passive_flag';
+      default:
+        XdrJsonHelper.fail(
+          'XdrOfferEntryFlags',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrOfferEntryFlags from its SEP-0051 name.
+  static XdrOfferEntryFlags fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'passive_flag':
+          return XdrOfferEntryFlags.PASSIVE_FLAG;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrOfferEntryFlags',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

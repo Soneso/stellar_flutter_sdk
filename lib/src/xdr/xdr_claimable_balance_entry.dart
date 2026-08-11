@@ -12,6 +12,7 @@ import 'xdr_claimable_balance_id.dart';
 import 'xdr_claimant.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClaimableBalanceEntry {
   XdrClaimableBalanceID _balanceID;
@@ -89,5 +90,85 @@ class XdrClaimableBalanceEntry {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimableBalanceEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrClaimableBalanceEntry',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClaimableBalanceEntry.
+  static XdrClaimableBalanceEntry fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrClaimableBalanceEntry'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrClaimableBalanceEntry.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'balance_id': _balanceID.toXdrJsonValue(),
+    'claimants': XdrJsonHelper.array<XdrClaimant>(
+      _claimants,
+      (XdrClaimant v) => v.toXdrJsonValue(),
+      type: 'XdrClaimableBalanceEntry',
+      key: 'claimants',
+      maxLength: 10,
+    ),
+    'asset': _asset.toXdrJsonValue(),
+    'amount': _amount.toXdrJsonValue(),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrClaimableBalanceEntry from its SEP-0051 rendering.
+  static XdrClaimableBalanceEntry fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrClaimableBalanceEntry',
+      allowedKeys: const <String>{
+        'balance_id',
+        'claimants',
+        'asset',
+        'amount',
+        'ext',
+      },
+    );
+    final Object? jsonBalanceID = XdrJsonHelper.readField(
+      object,
+      'balance_id',
+      type: 'XdrClaimableBalanceEntry',
+    );
+    final Object? jsonClaimants = XdrJsonHelper.readField(
+      object,
+      'claimants',
+      type: 'XdrClaimableBalanceEntry',
+    );
+    final Object? jsonAsset = XdrJsonHelper.readField(
+      object,
+      'asset',
+      type: 'XdrClaimableBalanceEntry',
+    );
+    final Object? jsonAmount = XdrJsonHelper.readField(
+      object,
+      'amount',
+      type: 'XdrClaimableBalanceEntry',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrClaimableBalanceEntry',
+    );
+    return XdrClaimableBalanceEntry(
+      XdrClaimableBalanceID.fromXdrJsonValue(jsonBalanceID),
+      XdrJsonHelper.readArray(
+            jsonClaimants,
+            type: 'XdrClaimableBalanceEntry',
+            key: 'claimants',
+            maxLength: 10,
+          )
+          .map<XdrClaimant>((Object? e) => XdrClaimant.fromXdrJsonValue(e))
+          .toList(),
+      XdrAsset.fromXdrJsonValue(jsonAsset),
+      XdrInt64.fromXdrJsonValue(jsonAmount),
+      XdrClaimableBalanceEntryExt.fromXdrJsonValue(jsonExt),
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_spec_udt_union_case_v0.dart';
 
 class XdrSCSpecUDTUnionV0 {
@@ -65,5 +66,102 @@ class XdrSCSpecUDTUnionV0 {
   static XdrSCSpecUDTUnionV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecUDTUnionV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCSpecUDTUnionV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecUDTUnionV0.
+  static XdrSCSpecUDTUnionV0 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecUDTUnionV0'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCSpecUDTUnionV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'doc': XdrJsonHelper.escapedString(
+      _doc,
+      type: 'XdrSCSpecUDTUnionV0',
+      key: 'doc',
+      maxBytes: 1024,
+    ),
+    'lib': XdrJsonHelper.escapedString(
+      _lib,
+      type: 'XdrSCSpecUDTUnionV0',
+      key: 'lib',
+      maxBytes: 80,
+    ),
+    'name': XdrJsonHelper.escapedString(
+      _name,
+      type: 'XdrSCSpecUDTUnionV0',
+      key: 'name',
+      maxBytes: 60,
+    ),
+    'cases': XdrJsonHelper.array<XdrSCSpecUDTUnionCaseV0>(
+      _cases,
+      (XdrSCSpecUDTUnionCaseV0 v) => v.toXdrJsonValue(),
+      type: 'XdrSCSpecUDTUnionV0',
+      key: 'cases',
+    ),
+  };
+
+  /// Reads a XdrSCSpecUDTUnionV0 from its SEP-0051 rendering.
+  static XdrSCSpecUDTUnionV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCSpecUDTUnionV0',
+      allowedKeys: const <String>{'doc', 'lib', 'name', 'cases'},
+    );
+    final Object? jsonDoc = XdrJsonHelper.readField(
+      object,
+      'doc',
+      type: 'XdrSCSpecUDTUnionV0',
+    );
+    final Object? jsonLib = XdrJsonHelper.readField(
+      object,
+      'lib',
+      type: 'XdrSCSpecUDTUnionV0',
+    );
+    final Object? jsonName = XdrJsonHelper.readField(
+      object,
+      'name',
+      type: 'XdrSCSpecUDTUnionV0',
+    );
+    final Object? jsonCases = XdrJsonHelper.readField(
+      object,
+      'cases',
+      type: 'XdrSCSpecUDTUnionV0',
+    );
+    return XdrSCSpecUDTUnionV0(
+      XdrJsonHelper.readEscapedString(
+        jsonDoc,
+        type: 'XdrSCSpecUDTUnionV0',
+        key: 'doc',
+        maxBytes: 1024,
+      ),
+      XdrJsonHelper.readEscapedString(
+        jsonLib,
+        type: 'XdrSCSpecUDTUnionV0',
+        key: 'lib',
+        maxBytes: 80,
+      ),
+      XdrJsonHelper.readEscapedString(
+        jsonName,
+        type: 'XdrSCSpecUDTUnionV0',
+        key: 'name',
+        maxBytes: 60,
+      ),
+      XdrJsonHelper.readArray(
+            jsonCases,
+            type: 'XdrSCSpecUDTUnionV0',
+            key: 'cases',
+          )
+          .map<XdrSCSpecUDTUnionCaseV0>(
+            (Object? e) => XdrSCSpecUDTUnionCaseV0.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

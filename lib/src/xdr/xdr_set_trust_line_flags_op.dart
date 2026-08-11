@@ -10,6 +10,7 @@ import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrSetTrustLineFlagsOp {
@@ -87,5 +88,64 @@ class XdrSetTrustLineFlagsOp {
     XdrUint32 clearFlags = XdrUint32.fromTxRep(map, '$prefix.clearFlags');
     XdrUint32 setFlags = XdrUint32.fromTxRep(map, '$prefix.setFlags');
     return XdrSetTrustLineFlagsOp(accountID, asset, clearFlags, setFlags);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSetTrustLineFlagsOp',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSetTrustLineFlagsOp.
+  static XdrSetTrustLineFlagsOp fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSetTrustLineFlagsOp'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSetTrustLineFlagsOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'trustor': _accountID.toXdrJsonValue(),
+    'asset': _asset.toXdrJsonValue(),
+    'clear_flags': _clearFlags.toXdrJsonValue(),
+    'set_flags': _setFlags.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSetTrustLineFlagsOp from its SEP-0051 rendering.
+  static XdrSetTrustLineFlagsOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSetTrustLineFlagsOp',
+      allowedKeys: const <String>{
+        'trustor',
+        'asset',
+        'clear_flags',
+        'set_flags',
+      },
+    );
+    final Object? jsonAccountID = XdrJsonHelper.readField(
+      object,
+      'trustor',
+      type: 'XdrSetTrustLineFlagsOp',
+    );
+    final Object? jsonAsset = XdrJsonHelper.readField(
+      object,
+      'asset',
+      type: 'XdrSetTrustLineFlagsOp',
+    );
+    final Object? jsonClearFlags = XdrJsonHelper.readField(
+      object,
+      'clear_flags',
+      type: 'XdrSetTrustLineFlagsOp',
+    );
+    final Object? jsonSetFlags = XdrJsonHelper.readField(
+      object,
+      'set_flags',
+      type: 'XdrSetTrustLineFlagsOp',
+    );
+    return XdrSetTrustLineFlagsOp(
+      XdrAccountID.fromXdrJsonValue(jsonAccountID),
+      XdrAsset.fromXdrJsonValue(jsonAsset),
+      XdrUint32.fromXdrJsonValue(jsonClearFlags),
+      XdrUint32.fromXdrJsonValue(jsonSetFlags),
+    );
   }
 }

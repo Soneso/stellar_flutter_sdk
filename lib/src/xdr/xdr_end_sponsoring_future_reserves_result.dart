@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_end_sponsoring_future_reserves_result_code.dart';
+import 'xdr_json_helper.dart';
 
 class XdrEndSponsoringFutureReservesResult {
   XdrEndSponsoringFutureReservesResultCode _code;
@@ -77,6 +78,61 @@ class XdrEndSponsoringFutureReservesResult {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrEndSponsoringFutureReservesResult.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrEndSponsoringFutureReservesResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrEndSponsoringFutureReservesResult.
+  static XdrEndSponsoringFutureReservesResult fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrEndSponsoringFutureReservesResult',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrEndSponsoringFutureReservesResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'not_sponsored';
+    }
+    XdrJsonHelper.fail(
+      'XdrEndSponsoringFutureReservesResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrEndSponsoringFutureReservesResult from its SEP-0051 rendering.
+  static XdrEndSponsoringFutureReservesResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrEndSponsoringFutureReservesResult(
+            XdrEndSponsoringFutureReservesResultCode
+                .END_SPONSORING_FUTURE_RESERVES_SUCCESS,
+          );
+        case 'not_sponsored':
+          return XdrEndSponsoringFutureReservesResult(
+            XdrEndSponsoringFutureReservesResultCode
+                .END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrEndSponsoringFutureReservesResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrEndSponsoringFutureReservesResult',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
     );
   }
 }

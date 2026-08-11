@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_host_function.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_soroban_authorization_entry.dart';
 
 class XdrInvokeHostFunctionOp {
@@ -85,5 +86,58 @@ class XdrInvokeHostFunctionOp {
       auth.add(XdrSorobanAuthorizationEntry.fromTxRep(map, '$prefix.auth[$i]'));
     }
     return XdrInvokeHostFunctionOp(function, auth);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrInvokeHostFunctionOp',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrInvokeHostFunctionOp.
+  static XdrInvokeHostFunctionOp fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrInvokeHostFunctionOp'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrInvokeHostFunctionOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'host_function': _function.toXdrJsonValue(),
+    'auth': XdrJsonHelper.array<XdrSorobanAuthorizationEntry>(
+      _auth,
+      (XdrSorobanAuthorizationEntry v) => v.toXdrJsonValue(),
+      type: 'XdrInvokeHostFunctionOp',
+      key: 'auth',
+    ),
+  };
+
+  /// Reads a XdrInvokeHostFunctionOp from its SEP-0051 rendering.
+  static XdrInvokeHostFunctionOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrInvokeHostFunctionOp',
+      allowedKeys: const <String>{'host_function', 'auth'},
+    );
+    final Object? jsonFunction = XdrJsonHelper.readField(
+      object,
+      'host_function',
+      type: 'XdrInvokeHostFunctionOp',
+    );
+    final Object? jsonAuth = XdrJsonHelper.readField(
+      object,
+      'auth',
+      type: 'XdrInvokeHostFunctionOp',
+    );
+    return XdrInvokeHostFunctionOp(
+      XdrHostFunction.fromXdrJsonValue(jsonFunction),
+      XdrJsonHelper.readArray(
+            jsonAuth,
+            type: 'XdrInvokeHostFunctionOp',
+            key: 'auth',
+          )
+          .map<XdrSorobanAuthorizationEntry>(
+            (Object? e) => XdrSorobanAuthorizationEntry.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

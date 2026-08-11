@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_spec_type_def.dart';
 
 class XdrSCSpecTypeTuple {
@@ -47,5 +48,53 @@ class XdrSCSpecTypeTuple {
   static XdrSCSpecTypeTuple fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecTypeTuple.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCSpecTypeTuple',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecTypeTuple.
+  static XdrSCSpecTypeTuple fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecTypeTuple'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCSpecTypeTuple.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'value_types': XdrJsonHelper.array<XdrSCSpecTypeDef>(
+      _valueTypes,
+      (XdrSCSpecTypeDef v) => v.toXdrJsonValue(),
+      type: 'XdrSCSpecTypeTuple',
+      key: 'value_types',
+      maxLength: 12,
+    ),
+  };
+
+  /// Reads a XdrSCSpecTypeTuple from its SEP-0051 rendering.
+  static XdrSCSpecTypeTuple fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCSpecTypeTuple',
+      allowedKeys: const <String>{'value_types'},
+    );
+    final Object? jsonValueTypes = XdrJsonHelper.readField(
+      object,
+      'value_types',
+      type: 'XdrSCSpecTypeTuple',
+    );
+    return XdrSCSpecTypeTuple(
+      XdrJsonHelper.readArray(
+            jsonValueTypes,
+            type: 'XdrSCSpecTypeTuple',
+            key: 'value_types',
+            maxLength: 12,
+          )
+          .map<XdrSCSpecTypeDef>(
+            (Object? e) => XdrSCSpecTypeDef.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

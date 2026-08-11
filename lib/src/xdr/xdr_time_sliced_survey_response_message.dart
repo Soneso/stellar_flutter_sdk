@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_survey_response_message.dart';
 import 'xdr_uint32.dart';
 
@@ -49,5 +50,49 @@ class XdrTimeSlicedSurveyResponseMessage {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTimeSlicedSurveyResponseMessage.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTimeSlicedSurveyResponseMessage',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTimeSlicedSurveyResponseMessage.
+  static XdrTimeSlicedSurveyResponseMessage fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrTimeSlicedSurveyResponseMessage',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrTimeSlicedSurveyResponseMessage.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'response': _response.toXdrJsonValue(),
+    'nonce': _nonce.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTimeSlicedSurveyResponseMessage from its SEP-0051 rendering.
+  static XdrTimeSlicedSurveyResponseMessage fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTimeSlicedSurveyResponseMessage',
+      allowedKeys: const <String>{'response', 'nonce'},
+    );
+    final Object? jsonResponse = XdrJsonHelper.readField(
+      object,
+      'response',
+      type: 'XdrTimeSlicedSurveyResponseMessage',
+    );
+    final Object? jsonNonce = XdrJsonHelper.readField(
+      object,
+      'nonce',
+      type: 'XdrTimeSlicedSurveyResponseMessage',
+    );
+    return XdrTimeSlicedSurveyResponseMessage(
+      XdrSurveyResponseMessage.fromXdrJsonValue(jsonResponse),
+      XdrUint32.fromXdrJsonValue(jsonNonce),
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrManageOfferEffect {
   final _value;
@@ -54,5 +55,51 @@ class XdrManageOfferEffect {
   static XdrManageOfferEffect fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrManageOfferEffect.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrManageOfferEffect',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrManageOfferEffect.
+  static XdrManageOfferEffect fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrManageOfferEffect'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'created';
+      case 1:
+        return 'updated';
+      case 2:
+        return 'deleted';
+      default:
+        XdrJsonHelper.fail(
+          'XdrManageOfferEffect',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrManageOfferEffect from its SEP-0051 name.
+  static XdrManageOfferEffect fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'created':
+          return XdrManageOfferEffect.MANAGE_OFFER_CREATED;
+        case 'updated':
+          return XdrManageOfferEffect.MANAGE_OFFER_UPDATED;
+        case 'deleted':
+          return XdrManageOfferEffect.MANAGE_OFFER_DELETED;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrManageOfferEffect',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

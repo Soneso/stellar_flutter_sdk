@@ -11,6 +11,7 @@ import 'xdr_data_io.dart';
 import 'xdr_fee_bump_transaction_ext.dart';
 import 'xdr_fee_bump_transaction_inner_tx.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_muxed_account.dart';
 
 class XdrFeeBumpTransaction {
@@ -92,5 +93,59 @@ class XdrFeeBumpTransaction {
       '$prefix.ext',
     );
     return XdrFeeBumpTransaction(feeSource, fee, innerTx, ext);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrFeeBumpTransaction',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrFeeBumpTransaction.
+  static XdrFeeBumpTransaction fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrFeeBumpTransaction'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrFeeBumpTransaction.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'fee_source': _feeSource.toXdrJsonValue(),
+    'fee': _fee.toXdrJsonValue(),
+    'inner_tx': _innerTx.toXdrJsonValue(),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrFeeBumpTransaction from its SEP-0051 rendering.
+  static XdrFeeBumpTransaction fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrFeeBumpTransaction',
+      allowedKeys: const <String>{'fee_source', 'fee', 'inner_tx', 'ext'},
+    );
+    final Object? jsonFeeSource = XdrJsonHelper.readField(
+      object,
+      'fee_source',
+      type: 'XdrFeeBumpTransaction',
+    );
+    final Object? jsonFee = XdrJsonHelper.readField(
+      object,
+      'fee',
+      type: 'XdrFeeBumpTransaction',
+    );
+    final Object? jsonInnerTx = XdrJsonHelper.readField(
+      object,
+      'inner_tx',
+      type: 'XdrFeeBumpTransaction',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrFeeBumpTransaction',
+    );
+    return XdrFeeBumpTransaction(
+      XdrMuxedAccount.fromXdrJsonValue(jsonFeeSource),
+      XdrInt64.fromXdrJsonValue(jsonFee),
+      XdrFeeBumpTransactionInnerTx.fromXdrJsonValue(jsonInnerTx),
+      XdrFeeBumpTransactionExt.fromXdrJsonValue(jsonExt),
+    );
   }
 }

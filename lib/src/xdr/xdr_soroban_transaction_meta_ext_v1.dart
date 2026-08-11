@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSorobanTransactionMetaExtV1 {
   XdrExtensionPoint _ext;
@@ -78,5 +79,72 @@ class XdrSorobanTransactionMetaExtV1 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanTransactionMetaExtV1.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSorobanTransactionMetaExtV1',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanTransactionMetaExtV1.
+  static XdrSorobanTransactionMetaExtV1 fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrSorobanTransactionMetaExtV1',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrSorobanTransactionMetaExtV1.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'total_non_refundable_resource_fee_charged':
+        _totalNonRefundableResourceFeeCharged.toXdrJsonValue(),
+    'total_refundable_resource_fee_charged': _totalRefundableResourceFeeCharged
+        .toXdrJsonValue(),
+    'rent_fee_charged': _rentFeeCharged.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSorobanTransactionMetaExtV1 from its SEP-0051 rendering.
+  static XdrSorobanTransactionMetaExtV1 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSorobanTransactionMetaExtV1',
+      allowedKeys: const <String>{
+        'ext',
+        'total_non_refundable_resource_fee_charged',
+        'total_refundable_resource_fee_charged',
+        'rent_fee_charged',
+      },
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrSorobanTransactionMetaExtV1',
+    );
+    final Object? jsonTotalNonRefundableResourceFeeCharged =
+        XdrJsonHelper.readField(
+          object,
+          'total_non_refundable_resource_fee_charged',
+          type: 'XdrSorobanTransactionMetaExtV1',
+        );
+    final Object? jsonTotalRefundableResourceFeeCharged =
+        XdrJsonHelper.readField(
+          object,
+          'total_refundable_resource_fee_charged',
+          type: 'XdrSorobanTransactionMetaExtV1',
+        );
+    final Object? jsonRentFeeCharged = XdrJsonHelper.readField(
+      object,
+      'rent_fee_charged',
+      type: 'XdrSorobanTransactionMetaExtV1',
+    );
+    return XdrSorobanTransactionMetaExtV1(
+      XdrExtensionPoint.fromXdrJsonValue(jsonExt),
+      XdrInt64.fromXdrJsonValue(jsonTotalNonRefundableResourceFeeCharged),
+      XdrInt64.fromXdrJsonValue(jsonTotalRefundableResourceFeeCharged),
+      XdrInt64.fromXdrJsonValue(jsonRentFeeCharged),
+    );
   }
 }

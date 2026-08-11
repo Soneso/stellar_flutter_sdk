@@ -4,6 +4,7 @@
 
 import 'xdr_account_id_base.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_public_key.dart';
 
 class XdrAccountID extends XdrAccountIDBase {
@@ -20,6 +21,17 @@ class XdrAccountID extends XdrAccountIDBase {
 
   static XdrAccountID fromTxRep(Map<String, String> map, String prefix) {
     var b = XdrAccountIDBase.fromTxRep(map, prefix);
+    return XdrAccountID(b.accountID);
+  }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAccountID.
+  static XdrAccountID fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrAccountID'),
+  );
+
+  /// Reads a XdrAccountID from its SEP-0051 rendering.
+  static XdrAccountID fromXdrJsonValue(Object? value) {
+    var b = XdrAccountIDBase.fromXdrJsonValue(value);
     return XdrAccountID(b.accountID);
   }
 

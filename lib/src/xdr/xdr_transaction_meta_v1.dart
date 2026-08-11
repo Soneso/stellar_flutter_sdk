@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_entry_changes.dart';
 import 'xdr_operation_meta.dart';
 
@@ -54,5 +55,58 @@ class XdrTransactionMetaV1 {
   static XdrTransactionMetaV1 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionMetaV1.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionMetaV1',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionMetaV1.
+  static XdrTransactionMetaV1 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionMetaV1'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionMetaV1.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'tx_changes': _txChanges.toXdrJsonValue(),
+    'operations': XdrJsonHelper.array<XdrOperationMeta>(
+      _operations,
+      (XdrOperationMeta v) => v.toXdrJsonValue(),
+      type: 'XdrTransactionMetaV1',
+      key: 'operations',
+    ),
+  };
+
+  /// Reads a XdrTransactionMetaV1 from its SEP-0051 rendering.
+  static XdrTransactionMetaV1 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTransactionMetaV1',
+      allowedKeys: const <String>{'tx_changes', 'operations'},
+    );
+    final Object? jsonTxChanges = XdrJsonHelper.readField(
+      object,
+      'tx_changes',
+      type: 'XdrTransactionMetaV1',
+    );
+    final Object? jsonOperations = XdrJsonHelper.readField(
+      object,
+      'operations',
+      type: 'XdrTransactionMetaV1',
+    );
+    return XdrTransactionMetaV1(
+      XdrLedgerEntryChanges.fromXdrJsonValue(jsonTxChanges),
+      XdrJsonHelper.readArray(
+            jsonOperations,
+            type: 'XdrTransactionMetaV1',
+            key: 'operations',
+          )
+          .map<XdrOperationMeta>(
+            (Object? e) => XdrOperationMeta.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

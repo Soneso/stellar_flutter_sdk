@@ -10,6 +10,7 @@ import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_muxed_account.dart';
 
 class XdrPaymentOp {
@@ -71,5 +72,50 @@ class XdrPaymentOp {
     );
     XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.amount');
     return XdrPaymentOp(destination, asset, amount);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrPaymentOp');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPaymentOp.
+  static XdrPaymentOp fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrPaymentOp'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrPaymentOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'destination': _destination.toXdrJsonValue(),
+    'asset': _asset.toXdrJsonValue(),
+    'amount': _amount.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrPaymentOp from its SEP-0051 rendering.
+  static XdrPaymentOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrPaymentOp',
+      allowedKeys: const <String>{'destination', 'asset', 'amount'},
+    );
+    final Object? jsonDestination = XdrJsonHelper.readField(
+      object,
+      'destination',
+      type: 'XdrPaymentOp',
+    );
+    final Object? jsonAsset = XdrJsonHelper.readField(
+      object,
+      'asset',
+      type: 'XdrPaymentOp',
+    );
+    final Object? jsonAmount = XdrJsonHelper.readField(
+      object,
+      'amount',
+      type: 'XdrPaymentOp',
+    );
+    return XdrPaymentOp(
+      XdrMuxedAccount.fromXdrJsonValue(jsonDestination),
+      XdrAsset.fromXdrJsonValue(jsonAsset),
+      XdrInt64.fromXdrJsonValue(jsonAmount),
+    );
   }
 }

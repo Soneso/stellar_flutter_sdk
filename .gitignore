@@ -99,3 +99,9 @@ tools/xdr-generator/stellar/
 # Compatibility matrix generator (intermediate data)
 tools/matrix-generator/data/
 compatibility/sep/README.md
+
+# SEP-0051 corpus refresh scratch (regenerated documents, never committed)
+tools/sep-51-corpus/.tmp/
+
+# SEP-0051 WasmGC smoke target build output
+tool/sep51_wasm_smoke/.tmp/

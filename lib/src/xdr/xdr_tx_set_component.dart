@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_tx_set_component_txs_maybe_discounted_fee.dart';
 import 'xdr_tx_set_component_type.dart';
 
@@ -72,5 +73,50 @@ class XdrTxSetComponent {
   static XdrTxSetComponent fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTxSetComponent.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrTxSetComponent');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTxSetComponent.
+  static XdrTxSetComponent fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTxSetComponent'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTxSetComponent.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{
+          'txset_comp_txs_maybe_discounted_fee': _txsMaybeDiscountedFee!
+              .toXdrJsonValue(),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrTxSetComponent',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrTxSetComponent from its SEP-0051 rendering.
+  static XdrTxSetComponent fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrTxSetComponent',
+    );
+    switch (arm.key) {
+      case 'txset_comp_txs_maybe_discounted_fee':
+        final XdrTxSetComponent arm0 = XdrTxSetComponent(
+          XdrTxSetComponentType.TXSET_COMP_TXS_MAYBE_DISCOUNTED_FEE,
+        );
+        arm0.txsMaybeDiscountedFee =
+            XdrTxSetComponentTxsMaybeDiscountedFee.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrTxSetComponent',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

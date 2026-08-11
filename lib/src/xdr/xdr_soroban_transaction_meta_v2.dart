@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_val.dart';
 import 'xdr_soroban_transaction_meta_ext.dart';
 
@@ -60,5 +61,50 @@ class XdrSorobanTransactionMetaV2 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSorobanTransactionMetaV2.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSorobanTransactionMetaV2',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanTransactionMetaV2.
+  static XdrSorobanTransactionMetaV2 fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrSorobanTransactionMetaV2'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrSorobanTransactionMetaV2.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'return_value': _returnValue == null
+        ? null
+        : _returnValue!.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSorobanTransactionMetaV2 from its SEP-0051 rendering.
+  static XdrSorobanTransactionMetaV2 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSorobanTransactionMetaV2',
+      allowedKeys: const <String>{'ext', 'return_value'},
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrSorobanTransactionMetaV2',
+    );
+    final Object? jsonReturnValue = XdrJsonHelper.readField(
+      object,
+      'return_value',
+      type: 'XdrSorobanTransactionMetaV2',
+    );
+    return XdrSorobanTransactionMetaV2(
+      XdrSorobanTransactionMetaExt.fromXdrJsonValue(jsonExt),
+      jsonReturnValue == null
+          ? null
+          : XdrSCVal.fromXdrJsonValue(jsonReturnValue),
+    );
   }
 }

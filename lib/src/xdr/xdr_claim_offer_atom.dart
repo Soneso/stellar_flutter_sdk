@@ -10,6 +10,7 @@ import 'xdr_account_id.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint64.dart';
 
 class XdrClaimOfferAtom {
@@ -84,5 +85,78 @@ class XdrClaimOfferAtom {
   static XdrClaimOfferAtom fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimOfferAtom.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrClaimOfferAtom');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClaimOfferAtom.
+  static XdrClaimOfferAtom fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrClaimOfferAtom'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrClaimOfferAtom.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'seller_id': _sellerID.toXdrJsonValue(),
+    'offer_id': _offerID.toXdrJsonValue(),
+    'asset_sold': _assetSold.toXdrJsonValue(),
+    'amount_sold': _amountSold.toXdrJsonValue(),
+    'asset_bought': _assetBought.toXdrJsonValue(),
+    'amount_bought': _amountBought.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrClaimOfferAtom from its SEP-0051 rendering.
+  static XdrClaimOfferAtom fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrClaimOfferAtom',
+      allowedKeys: const <String>{
+        'seller_id',
+        'offer_id',
+        'asset_sold',
+        'amount_sold',
+        'asset_bought',
+        'amount_bought',
+      },
+    );
+    final Object? jsonSellerID = XdrJsonHelper.readField(
+      object,
+      'seller_id',
+      type: 'XdrClaimOfferAtom',
+    );
+    final Object? jsonOfferID = XdrJsonHelper.readField(
+      object,
+      'offer_id',
+      type: 'XdrClaimOfferAtom',
+    );
+    final Object? jsonAssetSold = XdrJsonHelper.readField(
+      object,
+      'asset_sold',
+      type: 'XdrClaimOfferAtom',
+    );
+    final Object? jsonAmountSold = XdrJsonHelper.readField(
+      object,
+      'amount_sold',
+      type: 'XdrClaimOfferAtom',
+    );
+    final Object? jsonAssetBought = XdrJsonHelper.readField(
+      object,
+      'asset_bought',
+      type: 'XdrClaimOfferAtom',
+    );
+    final Object? jsonAmountBought = XdrJsonHelper.readField(
+      object,
+      'amount_bought',
+      type: 'XdrClaimOfferAtom',
+    );
+    return XdrClaimOfferAtom(
+      XdrAccountID.fromXdrJsonValue(jsonSellerID),
+      XdrUint64.fromXdrJsonValue(jsonOfferID),
+      XdrAsset.fromXdrJsonValue(jsonAssetSold),
+      XdrInt64.fromXdrJsonValue(jsonAmountSold),
+      XdrAsset.fromXdrJsonValue(jsonAssetBought),
+      XdrInt64.fromXdrJsonValue(jsonAmountBought),
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrBumpSequenceResultCode {
   final _value;
@@ -58,5 +59,47 @@ class XdrBumpSequenceResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBumpSequenceResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrBumpSequenceResultCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrBumpSequenceResultCode.
+  static XdrBumpSequenceResultCode fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrBumpSequenceResultCode'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'bad_seq';
+      default:
+        XdrJsonHelper.fail(
+          'XdrBumpSequenceResultCode',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrBumpSequenceResultCode from its SEP-0051 name.
+  static XdrBumpSequenceResultCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrBumpSequenceResultCode.BUMP_SEQUENCE_SUCCESS;
+        case 'bad_seq':
+          return XdrBumpSequenceResultCode.BUMP_SEQUENCE_BAD_SEQ;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrBumpSequenceResultCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

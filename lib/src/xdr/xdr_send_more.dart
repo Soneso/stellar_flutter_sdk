@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrSendMore {
@@ -34,5 +35,33 @@ class XdrSendMore {
   static XdrSendMore fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSendMore.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSendMore');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSendMore.
+  static XdrSendMore fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrSendMore'));
+
+  /// Returns the SEP-0051 rendering of this XdrSendMore.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'num_messages': _numMessages.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSendMore from its SEP-0051 rendering.
+  static XdrSendMore fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSendMore',
+      allowedKeys: const <String>{'num_messages'},
+    );
+    final Object? jsonNumMessages = XdrJsonHelper.readField(
+      object,
+      'num_messages',
+      type: 'XdrSendMore',
+    );
+    return XdrSendMore(XdrUint32.fromXdrJsonValue(jsonNumMessages));
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint64.dart';
 
 class XdrTimeBounds {
@@ -52,5 +53,31 @@ class XdrTimeBounds {
     XdrUint64 minTime = XdrUint64.fromTxRep(map, '$prefix.minTime');
     XdrUint64 maxTime = XdrUint64.fromTxRep(map, '$prefix.maxTime');
     return XdrTimeBounds(minTime, maxTime);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrTimeBounds');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTimeBounds.
+  static XdrTimeBounds fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrTimeBounds'));
+
+  /// Returns the SEP-0051 rendering of this XdrTimeBounds.
+  Object? toXdrJsonValue() => <String, Object?>{
+        'min_time': _minTime.toXdrJsonValue(),
+        'max_time': _maxTime.toXdrJsonValue(),
+      };
+
+  /// Reads a XdrTimeBounds from its SEP-0051 rendering.
+  static XdrTimeBounds fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+        value, type: 'XdrTimeBounds', allowedKeys: const <String>{'min_time', 'max_time'});
+    final Object? jsonMinTime = XdrJsonHelper.readField(object, 'min_time', type: 'XdrTimeBounds');
+    final Object? jsonMaxTime = XdrJsonHelper.readField(object, 'max_time', type: 'XdrTimeBounds');
+    return XdrTimeBounds(
+        XdrUint64.fromXdrJsonValue(jsonMinTime),
+        XdrUint64.fromXdrJsonValue(jsonMaxTime),
+    );
   }
 }

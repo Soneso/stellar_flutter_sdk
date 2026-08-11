@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_contract_event_v0.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrContractEventBody {
   int _v;
@@ -65,5 +66,46 @@ class XdrContractEventBody {
   static XdrContractEventBody fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractEventBody.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrContractEventBody',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractEventBody.
+  static XdrContractEventBody fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractEventBody'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrContractEventBody.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return <String, Object?>{'v0': _v0!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrContractEventBody',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrContractEventBody from its SEP-0051 rendering.
+  static XdrContractEventBody fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrContractEventBody',
+    );
+    switch (arm.key) {
+      case 'v0':
+        final XdrContractEventBody arm0 = XdrContractEventBody(0);
+        arm0.v0 = XdrContractEventV0.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrContractEventBody',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

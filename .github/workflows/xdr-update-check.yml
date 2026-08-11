@@ -48,8 +48,10 @@ jobs:
               any_changed=true
               added=$(diff "$local_file" "$upstream_file" | grep -c '^>' || true)
               removed=$(diff "$local_file" "$upstream_file" | grep -c '^<' || true)
+              # shellcheck disable=SC2016
               printf -- '- `%s`: +%s / -%s lines\n' "$filename" "$added" "$removed" >> /tmp/changes_summary.txt
 
+              # shellcheck disable=SC2016
               printf '\n<details>\n<summary>%s</summary>\n\n```diff\n' "$filename" >> /tmp/full_diff.txt
               diff -u "$local_file" "$upstream_file" \
                 --label "local/$filename" --label "upstream/$filename" >> /tmp/full_diff.txt || true
@@ -63,6 +65,7 @@ jobs:
             if [ ! -f "xdr/$filename" ]; then
               any_changed=true
               lines=$(wc -l < "$upstream_file")
+              # shellcheck disable=SC2016
               printf -- '- `%s`: **new file** (%s lines)\n' "$filename" "$lines" >> /tmp/changes_summary.txt
               printf '\n<details>\n<summary>%s (new)</summary>\n\nThis is a new XDR definition file not yet present in the SDK.\n\n</details>\n' "$filename" >> /tmp/full_diff.txt
             fi
@@ -118,7 +121,9 @@ jobs:
             exit 0
           fi
 
+          # shellcheck disable=SC2016,SC2129
           printf '%s\n' 'Upstream `curr` has advanced since this issue was last updated. Sync to the commit below instead of the one referenced above.' > /tmp/comment_body.md
+          # shellcheck disable=SC2016,SC2129
           printf '\n**Upstream commit:** [`%s`](https://github.com/stellar/stellar-xdr/commit/%s)\n' "$upstream_sha_short" "$upstream_sha" >> /tmp/comment_body.md
           printf '\n## Changed files\n\n' >> /tmp/comment_body.md
           cat /tmp/changes_summary.txt >> /tmp/comment_body.md
@@ -127,6 +132,7 @@ jobs:
           max_diff_size=50000
           diff_size=$(wc -c < /tmp/full_diff.txt)
           if [ "$diff_size" -gt "$max_diff_size" ]; then
+            # shellcheck disable=SC2129
             head -c "$max_diff_size" /tmp/full_diff.txt >> /tmp/comment_body.md
             printf '\n```\n\n</details>\n\n' >> /tmp/comment_body.md
             printf '> **Note:** Diffs truncated (%s bytes total). See the [upstream commit](https://github.com/stellar/stellar-xdr/commit/%s) for the full changeset.\n' "$diff_size" "$upstream_sha" >> /tmp/comment_body.md
@@ -154,20 +160,29 @@ jobs:
 
           # Build the issue body by concatenating safe static parts with file content.
           # Avoids unquoted heredocs to prevent shell expansion of untrusted diff content.
+          # shellcheck disable=SC2016,SC2129
           printf '%s\n' 'The upstream [`stellar/stellar-xdr`](https://github.com/stellar/stellar-xdr) `curr` branch has changes that are not yet reflected in this SDK.' > /tmp/issue_body.md
+          # shellcheck disable=SC2016,SC2129
           printf '\n**Upstream commit:** [`%s`](https://github.com/stellar/stellar-xdr/commit/%s)\n' "$upstream_sha_short" "$upstream_sha" >> /tmp/issue_body.md
           printf '\n## Changed files\n\n' >> /tmp/issue_body.md
           cat /tmp/changes_summary.txt >> /tmp/issue_body.md
           printf '\n## Diffs\n' >> /tmp/issue_body.md
           cat /tmp/full_diff.txt >> /tmp/issue_body.md
           printf '\n## Required actions\n\n' >> /tmp/issue_body.md
+          # shellcheck disable=SC2016
           printf '%s\n' \
             '1. Update `XDR_COMMIT` in the repo-root `Makefile` to the upstream commit shown above' \
             '2. Run `make xdr-update` to re-download `.x` files and regenerate the Dart XDR types' \
-            '3. Run `dart analyze lib/` and fix any issues in the SDK layer (operation builders, TxRep, SEP implementations, etc.)' \
-            '4. Run `flutter test` and fix any test failures' \
-            '5. If the XDR changes introduce new types or extend existing ones (e.g. new operations, transaction fields, or protocol features), evaluate whether the SDK needs new or updated high-level APIs to support them (e.g. operation builders, TxRep, service classes)' \
-            '6. Update the changelog and release notes with any breaking changes or new features' >> /tmp/issue_body.md
+            '3. Run `make xdr-generate-tests` to re-emit the XDR unit tests' \
+            '4. Update `sdk_xdr_commit` in `tools/sep-51-oracle/oracle-pin.json` to the same commit. The SEP-0051 corpus generator refuses to run while that field disagrees with the `Makefile`' \
+            '5. Install the pinned XDR-JSON reference CLI, whose exact command is recorded in `tools/sep-51-oracle/oracle-pin.json` under `install`' \
+            '6. Run `ruby tools/sep-51-oracle/name_map.rb --diff` to rebuild the SEP-0051 name table and check every derived JSON name against the reference' \
+            '7. Run `python3 tools/sep-51-corpus/generate_corpus.py` to regenerate the SEP-0051 conformance corpus against the same build' \
+            '8. Run `make sep51-generate-tests` to re-emit the SEP-0051 tests and the embedded corpus' \
+            '9. Run `dart analyze lib/` and fix any issues in the SDK layer (operation builders, TxRep, SEP implementations, etc.)' \
+            '10. Run `flutter test` and fix any test failures' \
+            '11. If the XDR changes introduce new types or extend existing ones (e.g. new operations, transaction fields, or protocol features), evaluate whether the SDK needs new or updated high-level APIs to support them (e.g. operation builders, TxRep, service classes)' \
+            '12. Update the changelog and release notes with any breaking changes or new features. A changed JSON key or rendering is a wire-format change and belongs there too' >> /tmp/issue_body.md
           printf '\nSee the [XDR generator README](tools/xdr-generator/README.md) for detailed instructions.\n' >> /tmp/issue_body.md
           printf '\n---\n*This issue was created automatically by the [XDR update check workflow](.github/workflows/xdr-update-check.yml).*\n' >> /tmp/issue_body.md
 

@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_soroban_resources_ext_v0.dart';
 
 class XdrSorobanTransactionDataExt {
@@ -111,5 +112,64 @@ class XdrSorobanTransactionDataExt {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSorobanTransactionDataExt',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanTransactionDataExt.
+  static XdrSorobanTransactionDataExt fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrSorobanTransactionDataExt',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrSorobanTransactionDataExt.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return 'v0';
+      case 1:
+        return <String, Object?>{'v1': _resourceExt!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrSorobanTransactionDataExt',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrSorobanTransactionDataExt from its SEP-0051 rendering.
+  static XdrSorobanTransactionDataExt fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'v0':
+          return XdrSorobanTransactionDataExt(0);
+      }
+      XdrJsonHelper.fail(
+        'XdrSorobanTransactionDataExt',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrSorobanTransactionDataExt',
+    );
+    switch (arm.key) {
+      case 'v1':
+        final XdrSorobanTransactionDataExt arm0 = XdrSorobanTransactionDataExt(
+          1,
+        );
+        arm0.resourceExt = XdrSorobanResourcesExtV0.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrSorobanTransactionDataExt',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

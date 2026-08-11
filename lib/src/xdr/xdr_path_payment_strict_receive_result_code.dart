@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrPathPaymentStrictReceiveResultCode {
   final _value;
@@ -105,6 +106,109 @@ class XdrPathPaymentStrictReceiveResultCode {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPathPaymentStrictReceiveResultCode.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrPathPaymentStrictReceiveResultCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPathPaymentStrictReceiveResultCode.
+  static XdrPathPaymentStrictReceiveResultCode fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrPathPaymentStrictReceiveResultCode',
+        ),
+      );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'underfunded';
+      case -3:
+        return 'src_no_trust';
+      case -4:
+        return 'src_not_authorized';
+      case -5:
+        return 'no_destination';
+      case -6:
+        return 'no_trust';
+      case -7:
+        return 'not_authorized';
+      case -8:
+        return 'line_full';
+      case -9:
+        return 'no_issuer';
+      case -10:
+        return 'too_few_offers';
+      case -11:
+        return 'offer_cross_self';
+      case -12:
+        return 'over_sendmax';
+      default:
+        XdrJsonHelper.fail(
+          'XdrPathPaymentStrictReceiveResultCode',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrPathPaymentStrictReceiveResultCode from its SEP-0051 name.
+  static XdrPathPaymentStrictReceiveResultCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_SUCCESS;
+        case 'malformed':
+          return XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_MALFORMED;
+        case 'underfunded':
+          return XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED;
+        case 'src_no_trust':
+          return XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST;
+        case 'src_not_authorized':
+          return XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED;
+        case 'no_destination':
+          return XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION;
+        case 'no_trust':
+          return XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST;
+        case 'not_authorized':
+          return XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED;
+        case 'line_full':
+          return XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL;
+        case 'no_issuer':
+          return XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER;
+        case 'too_few_offers':
+          return XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS;
+        case 'offer_cross_self':
+          return XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF;
+        case 'over_sendmax':
+          return XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrPathPaymentStrictReceiveResultCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
     );
   }
 }

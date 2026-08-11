@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_claim_atom.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_simple_payment_result.dart';
 
 class XdrPathPaymentResultSuccess {
@@ -54,5 +55,57 @@ class XdrPathPaymentResultSuccess {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPathPaymentResultSuccess.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrPathPaymentResultSuccess',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPathPaymentResultSuccess.
+  static XdrPathPaymentResultSuccess fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrPathPaymentResultSuccess'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrPathPaymentResultSuccess.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'offers': XdrJsonHelper.array<XdrClaimAtom>(
+      _offers,
+      (XdrClaimAtom v) => v.toXdrJsonValue(),
+      type: 'XdrPathPaymentResultSuccess',
+      key: 'offers',
+    ),
+    'last': _last.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrPathPaymentResultSuccess from its SEP-0051 rendering.
+  static XdrPathPaymentResultSuccess fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrPathPaymentResultSuccess',
+      allowedKeys: const <String>{'offers', 'last'},
+    );
+    final Object? jsonOffers = XdrJsonHelper.readField(
+      object,
+      'offers',
+      type: 'XdrPathPaymentResultSuccess',
+    );
+    final Object? jsonLast = XdrJsonHelper.readField(
+      object,
+      'last',
+      type: 'XdrPathPaymentResultSuccess',
+    );
+    return XdrPathPaymentResultSuccess(
+      XdrJsonHelper.readArray(
+            jsonOffers,
+            type: 'XdrPathPaymentResultSuccess',
+            key: 'offers',
+          )
+          .map<XdrClaimAtom>((Object? e) => XdrClaimAtom.fromXdrJsonValue(e))
+          .toList(),
+      XdrSimplePaymentResult.fromXdrJsonValue(jsonLast),
+    );
   }
 }

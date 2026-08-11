@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSCBytes {
   XdrSCBytes(this._sCBytes);
@@ -47,4 +48,19 @@ class XdrSCBytes {
     if (raw == null) throw Exception('missing $prefix');
     return XdrSCBytes(TxRepHelper.hexToBytes(raw));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCBytes');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCBytes.
+  static XdrSCBytes fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrSCBytes'));
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() => XdrJsonHelper.hex(_sCBytes, type: 'XdrSCBytes');
+
+  /// Reads a XdrSCBytes from the SEP-0051 rendering of its value.
+  static XdrSCBytes fromXdrJsonValue(Object? value) =>
+      XdrSCBytes(XdrJsonHelper.readHex(value, type: 'XdrSCBytes'));
 }

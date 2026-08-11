@@ -10,6 +10,7 @@ import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 
 class XdrCreateAccountOp {
   XdrAccountID _destination;
@@ -63,5 +64,45 @@ class XdrCreateAccountOp {
       '$prefix.startingBalance',
     );
     return XdrCreateAccountOp(destination, startingBalance);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrCreateAccountOp',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrCreateAccountOp.
+  static XdrCreateAccountOp fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrCreateAccountOp'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrCreateAccountOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'destination': _destination.toXdrJsonValue(),
+    'starting_balance': _startingBalance.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrCreateAccountOp from its SEP-0051 rendering.
+  static XdrCreateAccountOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrCreateAccountOp',
+      allowedKeys: const <String>{'destination', 'starting_balance'},
+    );
+    final Object? jsonDestination = XdrJsonHelper.readField(
+      object,
+      'destination',
+      type: 'XdrCreateAccountOp',
+    );
+    final Object? jsonStartingBalance = XdrJsonHelper.readField(
+      object,
+      'starting_balance',
+      type: 'XdrCreateAccountOp',
+    );
+    return XdrCreateAccountOp(
+      XdrAccountID.fromXdrJsonValue(jsonDestination),
+      XdrInt64.fromXdrJsonValue(jsonStartingBalance),
+    );
   }
 }

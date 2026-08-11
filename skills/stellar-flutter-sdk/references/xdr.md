@@ -36,6 +36,43 @@ if (decoded is Transaction) {
 }
 ```
 
+## XDR-JSON (SEP-51)
+
+Base64 is the compact form; XDR-JSON is the readable one. Every generated `Xdr*` type carries four members over the shared runtime `XdrJsonHelper`:
+
+```dart
+String toXdrJson();                             // canonical document as text
+Object? toXdrJsonValue();                       // the same document as a Dart tree
+static T fromXdrJson(String json);              // parse from text
+static T fromXdrJsonValue(Object? value);       // read from a tree
+```
+
+```dart
+XdrTransactionEnvelope envelope =
+    XdrTransactionEnvelope.fromBase64EncodedXdrString(xdrBase64);
+
+String json = envelope.toXdrJson();
+// {"tx":{"tx":{"source_account":"GDTJ...","fee":2792036,"seq_num":"29059748724737", ... }}
+
+// Round-trips to the same bytes
+print(XdrTransactionEnvelope.fromXdrJson(json).toBase64EncodedXdrString() == xdrBase64);
+```
+
+Rules worth knowing before you hand-write a document:
+
+- 32-bit integers are JSON numbers; 64-bit integers are base-10 strings (`"29059748724737"`).
+- Opaque fields are lowercase hexadecimal; an empty one is `""`.
+- Addresses are strkeys: `G...`, `C...`, `M...`, `B...`, `L...`, `T...`, `X...`, `P...` by type and arm.
+- A union's void arm is a bare string (`"native"`); a valued arm is a single-key object (`{"credit_alphanum4":{...}}`).
+- Every declared struct key must be present, including an optional field whose value is `null`. An undeclared key is refused.
+- Output is compact, single-line, and ordered as the XDR definition declares the fields.
+- Every rejection is a `FormatException`.
+
+Use it for debugging, diffing, and showing a value to a user before they sign. Do not use it as a network format or as long-lived storage: Horizon and the RPC take base64, and the document shape follows the XDR definitions, which change with the protocol.
+
+For the full mapping, input strictness rules, and the pitfalls:
+[SEP-51 Reference](./sep-51.md)
+
 ## XdrSCVal Factory Methods
 
 Complete reference for Soroban smart contract value types:

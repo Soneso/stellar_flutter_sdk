@@ -6,8 +6,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../key_pair.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 
 class XdrLedgerKeyLiquidityPool {
   XdrHash _liquidityPoolID;
@@ -51,5 +53,46 @@ class XdrLedgerKeyLiquidityPool {
   ) {
     XdrHash liquidityPoolID = XdrHash.fromTxRep(map, '$prefix.liquidityPoolID');
     return XdrLedgerKeyLiquidityPool(liquidityPoolID);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerKeyLiquidityPool',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerKeyLiquidityPool.
+  static XdrLedgerKeyLiquidityPool fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerKeyLiquidityPool'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerKeyLiquidityPool.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'liquidity_pool_id': StrKey.encodeLiquidityPoolId(_liquidityPoolID.hash),
+  };
+
+  /// Reads a XdrLedgerKeyLiquidityPool from its SEP-0051 rendering.
+  static XdrLedgerKeyLiquidityPool fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerKeyLiquidityPool',
+      allowedKeys: const <String>{'liquidity_pool_id'},
+    );
+    final Object? jsonLiquidityPoolID = XdrJsonHelper.readField(
+      object,
+      'liquidity_pool_id',
+      type: 'XdrLedgerKeyLiquidityPool',
+    );
+    return XdrLedgerKeyLiquidityPool(
+      XdrHash(
+        XdrJsonHelper.readStrKey(
+          jsonLiquidityPoolID,
+          type: 'XdrLedgerKeyLiquidityPool',
+          key: 'liquidity_pool_id',
+          decode: StrKey.decodeLiquidityPoolId,
+          expectedLength: 32,
+        ),
+      ),
+    );
   }
 }

@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_transaction_envelope_base.dart';
 
 class XdrTransactionEnvelope extends XdrTransactionEnvelopeBase {
@@ -50,4 +51,18 @@ class XdrTransactionEnvelope extends XdrTransactionEnvelopeBase {
   String toEnvelopeXdrBase64() {
     return toBase64EncodedXdrString();
   }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionEnvelope.
+  ///
+  /// Dart does not inherit statics, so this narrows the base class rendering to
+  /// this type rather than relying on the one the base declares.
+  static XdrTransactionEnvelope fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionEnvelope'),
+  );
+
+  static XdrTransactionEnvelope fromXdrJsonValue(Object? value) =>
+      XdrTransactionEnvelopeBase.fromXdrJsonValueAs(
+        value,
+        XdrTransactionEnvelope.new,
+      );
 }

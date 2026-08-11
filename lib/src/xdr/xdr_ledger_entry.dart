@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_entry_data.dart';
 import 'xdr_ledger_entry_ext.dart';
 import 'xdr_uint32.dart';
@@ -52,5 +53,50 @@ class XdrLedgerEntry {
   static XdrLedgerEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrLedgerEntry');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerEntry.
+  static XdrLedgerEntry fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerEntry'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerEntry.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'last_modified_ledger_seq': _lastModifiedLedgerSeq.toXdrJsonValue(),
+    'data': _data.toXdrJsonValue(),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLedgerEntry from its SEP-0051 rendering.
+  static XdrLedgerEntry fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerEntry',
+      allowedKeys: const <String>{'last_modified_ledger_seq', 'data', 'ext'},
+    );
+    final Object? jsonLastModifiedLedgerSeq = XdrJsonHelper.readField(
+      object,
+      'last_modified_ledger_seq',
+      type: 'XdrLedgerEntry',
+    );
+    final Object? jsonData = XdrJsonHelper.readField(
+      object,
+      'data',
+      type: 'XdrLedgerEntry',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrLedgerEntry',
+    );
+    return XdrLedgerEntry(
+      XdrUint32.fromXdrJsonValue(jsonLastModifiedLedgerSeq),
+      XdrLedgerEntryData.fromXdrJsonValue(jsonData),
+      XdrLedgerEntryExt.fromXdrJsonValue(jsonExt),
+    );
   }
 }

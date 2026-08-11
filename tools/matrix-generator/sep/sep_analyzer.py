@@ -5073,6 +5073,395 @@ class SEPAnalyzer:
 
         return implemented
 
+    @staticmethod
+    def sep_51_detections() -> Dict[str, Tuple[str, Tuple[str, ...], str]]:
+        """
+        Locate each SEP-51 mapping rule in the SDK source.
+
+        Maps a feature name to the file that carries the rule, the source
+        fragments that must all be present for the rule to count as
+        implemented, and the SDK symbol to report. The runtime helper holds the
+        rules that are stated once; a generated type is named where the rule is
+        only observable at a field or arm.
+
+        Returns:
+            Dictionary of feature name to (relative path, probes, SDK symbol)
+        """
+        helper = 'lib/src/xdr/xdr_json_helper.dart'
+
+        return {
+            # XDR data types
+            'integer_32': (
+                'lib/src/xdr/xdr_int32.dart',
+                ('XdrJsonHelper.int32(', 'XdrJsonHelper.readInt32('),
+                'XdrInt32.toXdrJsonValue / fromXdrJsonValue',
+            ),
+            'unsigned_integer_32': (
+                'lib/src/xdr/xdr_uint32.dart',
+                ('XdrJsonHelper.uint32(', 'XdrJsonHelper.readUint32('),
+                'XdrUint32.toXdrJsonValue / fromXdrJsonValue',
+            ),
+            'hyper_integer': (
+                'lib/src/xdr/xdr_int64.dart',
+                ('XdrJsonHelper.int64(', 'XdrJsonHelper.readInt64('),
+                'XdrInt64.toXdrJsonValue / fromXdrJsonValue',
+            ),
+            'unsigned_hyper_integer': (
+                'lib/src/xdr/xdr_uint64.dart',
+                ('XdrJsonHelper.uint64(', 'XdrJsonHelper.readUint64('),
+                'XdrUint64.toXdrJsonValue / fromXdrJsonValue',
+            ),
+            'hyper_number_input': (
+                helper,
+                ('static BigInt readInt64(', '} else if (value is num) {',
+                 '_maxExactJsonInteger'),
+                'XdrJsonHelper.readInt64 (JSON number accepted below 2^53)',
+            ),
+            'unsigned_hyper_number_input': (
+                helper,
+                ('static BigInt readUint64(', '} else if (value is num) {',
+                 '_maxExactJsonInteger'),
+                'XdrJsonHelper.readUint64 (JSON number accepted below 2^53)',
+            ),
+            'boolean': (
+                'lib/src/xdr/xdr_sc_val_base.dart',
+                ('XdrJsonHelper.boolean(_b!)', 'XdrJsonHelper.readBoolean('),
+                'XdrSCVal bool arm',
+            ),
+            'opaque_fixed': (
+                'lib/src/xdr/xdr_hash.dart',
+                ("XdrJsonHelper.hex(_hash, type: 'XdrHash')",
+                 'expectedLength: 32'),
+                'XdrHash.toXdrJsonValue / fromXdrJsonValue',
+            ),
+            'opaque_variable': (
+                'lib/src/xdr/xdr_data_value.dart',
+                ("XdrJsonHelper.hex(_dataValue, type: 'XdrDataValue'",
+                 "XdrJsonHelper.readHex(value, type: 'XdrDataValue'"),
+                'XdrDataValue.toXdrJsonValue / fromXdrJsonValue',
+            ),
+            'string_escaping': (
+                helper,
+                ('static String escapedString(',
+                 'static String readEscapedString(',
+                 r"buffer.write(r'\x');"),
+                'XdrJsonHelper.escapedString / readEscapedString',
+            ),
+            'array_fixed': (
+                'lib/src/xdr/xdr_ledger_header.dart',
+                ("key: 'skip_list',", 'fixedLength: 4,'),
+                'XdrLedgerHeader.skipList (readArray fixedLength)',
+            ),
+            'array_variable': (
+                'lib/src/xdr/xdr_account_entry_v2.dart',
+                ('XdrJsonHelper.array<XdrAccountID?>(',
+                 'XdrJsonHelper.readArray('),
+                'XdrAccountEntryV2.signerSponsoringIDs',
+            ),
+            'enum': (
+                'lib/src/xdr/xdr_asset_type.dart',
+                ("return 'credit_alphanum4';", "case 'credit_alphanum4':"),
+                'XdrAssetType.toXdrJsonValue / fromXdrJsonValue',
+            ),
+            'struct': (
+                'lib/src/xdr/xdr_time_bounds.dart',
+                ("'min_time': _minTime.toXdrJsonValue(),",
+                 "allowedKeys: const <String>{'min_time', 'max_time'},"),
+                'XdrTimeBounds.toXdrJsonValue / fromXdrJsonValue',
+            ),
+            'union_void_arm': (
+                'lib/src/xdr/xdr_asset.dart',
+                ("return 'native';", "case 'native':"),
+                'XdrAsset native arm',
+            ),
+            'union_value_arm': (
+                'lib/src/xdr/xdr_asset.dart',
+                ("'credit_alphanum4': _alphaNum4!.toXdrJsonValue(),",
+                 'XdrJsonHelper.readSingleKeyObject('),
+                'XdrAsset credit_alphanum4 arm',
+            ),
+            'union_integer_cases': (
+                'lib/src/xdr/xdr_extension_point.dart',
+                ("return 'v0';", "case 'v0':"),
+                'XdrExtensionPoint.toXdrJsonValue / fromXdrJsonValue',
+            ),
+            'void': (
+                'lib/src/xdr/xdr_sc_val_base.dart',
+                ("return 'void';", "case 'void':"),
+                'XdrSCVal void arm (no value emitted)',
+            ),
+            'optional': (
+                'lib/src/xdr/xdr_contract_event.dart',
+                ("'contract_id': _hash == null ? null :",),
+                'XdrContractEvent.contractID (null when absent)',
+            ),
+
+            # Stellar-specific types
+            'sc_address': (
+                'lib/src/xdr/xdr_sc_address_base.dart',
+                ('StrKey.encodeContractId(_contractId!.hash)',
+                 'StrKey.encodeLiquidityPoolId(_liquidityPoolId!.hash)',
+                 "XdrJsonHelper.readStrKeyPrefix(value, type: 'XdrSCAddress')"),
+                'XdrSCAddress.toXdrJsonValue / fromXdrJsonValueAs',
+            ),
+            'account_id': (
+                'lib/src/xdr/xdr_account_id_base.dart',
+                ('_accountID.toXdrJsonValue()',
+                 'XdrPublicKey.fromXdrJsonValue(value)'),
+                'XdrAccountID (delegates to XdrPublicKey)',
+            ),
+            'contract_id': (
+                'lib/src/xdr/xdr_contract_event.dart',
+                ('StrKey.encodeContractId(',
+                 'decode: StrKey.decodeContractId,'),
+                'XdrContractEvent.contractID (C strkey)',
+            ),
+            'muxed_account': (
+                'lib/src/xdr/xdr_muxed_account.dart',
+                ('StrKey.encodeStellarAccountId(_ed25519!.uint256)',
+                 '_med25519!.toXdrJsonValue()',
+                 "XdrJsonHelper.readStrKeyPrefix(value, type: 'XdrMuxedAccount')"),
+                'XdrMuxedAccount.toXdrJsonValue / fromXdrJsonValue',
+            ),
+            'muxed_account_med25519': (
+                'lib/src/xdr/xdr_muxed_account_med25519_base.dart',
+                ('StrKey.encodeStellarMuxedAccountId(',
+                 'decode: StrKey.decodeStellarMuxedAccountId,'),
+                'XdrMuxedAccountMed25519.toXdrJsonValue / fromXdrJsonValue',
+            ),
+            'muxed_ed25519_account': (
+                'lib/src/xdr/xdr_sc_address_base.dart',
+                ('_muxedAccount!.toXdrJsonValue()',
+                 'XdrMuxedAccountMed25519.fromXdrJsonValue('),
+                'XdrSCAddress muxed arm (XdrMuxedAccountMed25519)',
+            ),
+            'pool_id': (
+                'lib/src/xdr/xdr_trustline_asset_base.dart',
+                ('StrKey.encodeLiquidityPoolId(_liquidityPoolID!.hash)',
+                 'decode: StrKey.decodeLiquidityPoolId,'),
+                'XdrTrustlineAsset pool_share arm (L strkey)',
+            ),
+            'claimable_balance_id': (
+                'lib/src/xdr/xdr_claimable_balance_id_base.dart',
+                ('StrKey.encodeClaimableBalanceId(',
+                 'decode: StrKey.decodeClaimableBalanceId,'),
+                'XdrClaimableBalanceID.toXdrJsonValue / fromXdrJsonValue',
+            ),
+            'public_key': (
+                'lib/src/xdr/xdr_public_key_base.dart',
+                ('StrKey.encodeStellarAccountId(_ed25519!.uint256)',
+                 'decode: StrKey.decodeStellarAccountId,'),
+                'XdrPublicKey.toXdrJsonValue / fromXdrJsonValueAs',
+            ),
+            'node_id': (
+                'lib/src/xdr/xdr_node_id.dart',
+                ('_nodeID.toXdrJsonValue()',
+                 'XdrPublicKey.fromXdrJsonValue(value)'),
+                'XdrNodeID (delegates to XdrPublicKey)',
+            ),
+            'signer_key': (
+                'lib/src/xdr/xdr_signer_key.dart',
+                ('StrKey.encodeStellarAccountId(', 'StrKey.encodePreAuthTx(',
+                 'StrKey.encodeSha256Hash(',
+                 "XdrJsonHelper.readStrKeyPrefix(value, type: 'XdrSignerKey')"),
+                'XdrSignerKey.toXdrJsonValue / fromXdrJsonValue',
+            ),
+            'signer_key_ed25519_signed_payload': (
+                'lib/src/xdr/xdr_signed_payload.dart',
+                ('XdrJsonHelper.checkSignedPayloadLength(',
+                 'VersionByte.SIGNED_PAYLOAD',
+                 'XdrJsonHelper.readSignedPayloadRegion('),
+                'XdrSignedPayload.toXdrJsonValue / fromXdrJsonValue',
+            ),
+            'asset_code': (
+                'lib/src/xdr/xdr_allow_trust_op_asset.dart',
+                ('XdrJsonHelper.assetCode4(', 'XdrJsonHelper.assetCode12(',
+                 'XdrJsonHelper.readAssetCode4(',
+                 'XdrJsonHelper.readAssetCode12('),
+                'XdrAllowTrustOpAsset (bare string by arm)',
+            ),
+            'asset_code_4': (
+                helper,
+                ('static String assetCode4(',
+                 'static Uint8List readAssetCode4('),
+                'XdrJsonHelper.assetCode4 / readAssetCode4',
+            ),
+            'asset_code_12': (
+                helper,
+                ('static String assetCode12(',
+                 'static Uint8List readAssetCode12(',
+                 '_assetCode12MinRendered = 5'),
+                'XdrJsonHelper.assetCode12 / readAssetCode12',
+            ),
+            'int128_parts': (
+                'lib/src/xdr/xdr_int128_parts_base.dart',
+                ('XdrJsonHelper.partsToDecimalString(',
+                 'XdrJsonHelper.decimalStringToParts('),
+                'XdrInt128Parts.toXdrJsonValue / fromXdrJsonValue',
+            ),
+            'uint128_parts': (
+                'lib/src/xdr/xdr_u_int128_parts_base.dart',
+                ('XdrJsonHelper.partsToDecimalString(',
+                 'XdrJsonHelper.decimalStringToParts('),
+                'XdrUInt128Parts.toXdrJsonValue / fromXdrJsonValue',
+            ),
+            'int256_parts': (
+                'lib/src/xdr/xdr_int256_parts_base.dart',
+                ('XdrJsonHelper.partsToDecimalString(',
+                 'XdrJsonHelper.decimalStringToParts('),
+                'XdrInt256Parts.toXdrJsonValue / fromXdrJsonValue',
+            ),
+            'uint256_parts': (
+                'lib/src/xdr/xdr_u_int256_parts_base.dart',
+                ('XdrJsonHelper.partsToDecimalString(',
+                 'XdrJsonHelper.decimalStringToParts('),
+                'XdrUInt256Parts.toXdrJsonValue / fromXdrJsonValue',
+            ),
+
+            # JSON schema
+            'schema_property': (
+                helper,
+                ('static Map<String, dynamic> stripSchema(',
+                 "schemaKey = r'$schema'"),
+                'XdrJsonHelper.stripSchema',
+            ),
+        }
+
+    def analyze_sep_51(self) -> Dict[str, Any]:
+        """
+        Analyze SEP-51 (XDR-JSON) implementation.
+
+        SEP-51 has no service package. Every rule the specification states once
+        lives once in lib/src/xdr/xdr_json_helper.dart, and every generated XDR
+        type carries toXdrJson, toXdrJsonValue, fromXdrJson and
+        fromXdrJsonValue over it. Detection therefore runs against that runtime
+        plus the generated types that exercise each mapping rule, rather than
+        against a SEP source directory.
+
+        Returns:
+            Analysis results dictionary
+        """
+        helper_rel = 'lib/src/xdr/xdr_json_helper.dart'
+        helper_path = self.sdk_path / helper_rel
+
+        if not helper_path.exists():
+            return {
+                'implemented': False,
+                'reason': f'No SEP-51 implementation file found ({helper_rel})'
+            }
+
+        detections = self.sep_51_detections()
+
+        sources: Dict[str, str] = {}
+        files: List[Path] = []
+        for rel_path in sorted({entry[0] for entry in detections.values()}):
+            path = self.sdk_path / rel_path
+            if not path.exists():
+                continue
+            sources[rel_path] = path.read_text(encoding='utf-8')
+            files.append(path)
+
+        # Load SEP-51 definition
+        sep_def_path = self.data_dir / f'sep_{self.sep_number}_definition.json'
+
+        sep_definition = {}
+        if sep_def_path.exists():
+            with open(sep_def_path, 'r', encoding='utf-8') as f:
+                sep_definition = json.load(f)
+
+        # Restrict reported classes to the SEP-51 runtime entry point. The
+        # generated types are read for detection but each carries its own XDR
+        # structure, not a SEP-51 surface of its own.
+        all_classes = [
+            cls for cls in self.extract_class_info(helper_path)
+            if cls['name'] == 'XdrJsonHelper'
+        ]
+        for cls in all_classes:
+            cls['documentation'] = (
+                'Runtime for SEP-51 XDR-JSON encoding and decoding. Every '
+                'generated XDR type carries toXdrJson, toXdrJsonValue, '
+                'fromXdrJson and fromXdrJsonValue over it.'
+            )
+
+        implemented_features = self.map_sep_51_features(sources, sep_definition)
+
+        return {
+            'implemented': True,
+            'files': [str(f.relative_to(self.sdk_path)) for f in files],
+            'classes': all_classes,
+            'implemented_features': implemented_features,
+            'total_classes': len(all_classes),
+            'total_methods': sum(len(c['methods']) for c in all_classes),
+            'total_properties': sum(len(c['properties']) for c in all_classes)
+        }
+
+    def map_sep_51_features(self, sources: Dict[str, str],
+                            sep_definition: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Map the SDK source to the SEP-51 mapping rules.
+
+        Args:
+            sources: Relative path to source text, for every probed file
+            sep_definition: SEP-51 specification definition
+
+        Returns:
+            Dictionary mapping XDR-JSON features to implementation status
+        """
+        implemented = {
+            'xdr_data_types': {},
+            'stellar_specific_types': {},
+            'json_schema': {},
+            'coverage': {}
+        }
+
+        detections = self.sep_51_detections()
+
+        def detect(name: str) -> Tuple[bool, Any]:
+            entry = detections.get(name)
+            if entry is None:
+                return False, None
+            rel_path, probes, sdk_symbol = entry
+            content = sources.get(rel_path)
+            if content is None:
+                return False, None
+            if all(probe in content for probe in probes):
+                return True, sdk_symbol
+            return False, None
+
+        for section in sep_definition.get('sections', []):
+            section_key = section.get('key', '')
+            if section_key not in implemented:
+                continue
+
+            for feature in section.get('xdr_json_features', []):
+                feature_name = feature['name']
+                is_implemented, sdk_symbol = detect(feature_name)
+                implemented[section_key][feature_name] = {
+                    'required': feature.get('required', False),
+                    'implemented': is_implemented,
+                    'sdk_method': sdk_symbol if is_implemented else None,
+                    'description': feature.get('description', '')
+                }
+
+        total_features = sum(
+            len(implemented[key]) for key in
+            ('xdr_data_types', 'stellar_specific_types', 'json_schema')
+        )
+        implemented_count = sum(
+            1 for key in
+            ('xdr_data_types', 'stellar_specific_types', 'json_schema')
+            for feature in implemented[key].values()
+            if feature.get('implemented')
+        )
+
+        implemented['coverage'] = {
+            'total': total_features,
+            'implemented': implemented_count,
+            'percentage': round((implemented_count / total_features * 100) if total_features > 0 else 0, 2)
+        }
+
+        return implemented
+
     def analyze(self) -> Dict[str, Any]:
         """
         Analyze SEP implementation in Flutter SDK.
@@ -5117,6 +5506,8 @@ class SEPAnalyzer:
             self.analysis_data = self.analyze_sep_47()
         elif self.sep_number == '0048':
             self.analysis_data = self.analyze_sep_48()
+        elif self.sep_number == '0051':
+            self.analysis_data = self.analyze_sep_51()
         elif self.sep_number == '0053':
             self.analysis_data = self.analyze_sep_53()
         else:

@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrContractExecutableType {
   final _value;
@@ -108,5 +109,51 @@ class XdrContractExecutableType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrContractExecutableType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractExecutableType.
+  static XdrContractExecutableType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractExecutableType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'wasm';
+      case 1:
+        return 'stellar_asset';
+      case 2:
+        return 'external_ref';
+      default:
+        XdrJsonHelper.fail(
+          'XdrContractExecutableType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrContractExecutableType from its SEP-0051 name.
+  static XdrContractExecutableType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'wasm':
+          return XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM;
+        case 'stellar_asset':
+          return XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET;
+        case 'external_ref':
+          return XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrContractExecutableType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

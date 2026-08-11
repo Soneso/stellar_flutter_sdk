@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sequence_number.dart';
 import 'xdr_uint32.dart';
 
@@ -53,5 +54,56 @@ class XdrHashIDPreimageOperationID {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHashIDPreimageOperationID.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrHashIDPreimageOperationID',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrHashIDPreimageOperationID.
+  static XdrHashIDPreimageOperationID fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrHashIDPreimageOperationID',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrHashIDPreimageOperationID.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'source_account': _sourceAccount.toXdrJsonValue(),
+    'seq_num': _seqNum.toXdrJsonValue(),
+    'op_num': _opNum.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrHashIDPreimageOperationID from its SEP-0051 rendering.
+  static XdrHashIDPreimageOperationID fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrHashIDPreimageOperationID',
+      allowedKeys: const <String>{'source_account', 'seq_num', 'op_num'},
+    );
+    final Object? jsonSourceAccount = XdrJsonHelper.readField(
+      object,
+      'source_account',
+      type: 'XdrHashIDPreimageOperationID',
+    );
+    final Object? jsonSeqNum = XdrJsonHelper.readField(
+      object,
+      'seq_num',
+      type: 'XdrHashIDPreimageOperationID',
+    );
+    final Object? jsonOpNum = XdrJsonHelper.readField(
+      object,
+      'op_num',
+      type: 'XdrHashIDPreimageOperationID',
+    );
+    return XdrHashIDPreimageOperationID(
+      XdrAccountID.fromXdrJsonValue(jsonSourceAccount),
+      XdrSequenceNumber.fromXdrJsonValue(jsonSeqNum),
+      XdrUint32.fromXdrJsonValue(jsonOpNum),
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_liquidity_pool_entry_constant_product.dart';
 import 'xdr_liquidity_pool_type.dart';
 
@@ -72,5 +73,51 @@ class XdrLiquidityPoolBody {
   static XdrLiquidityPoolBody fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolBody.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLiquidityPoolBody',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLiquidityPoolBody.
+  static XdrLiquidityPoolBody fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLiquidityPoolBody'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLiquidityPoolBody.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{
+          'liquidity_pool_constant_product': _constantProduct!.toXdrJsonValue(),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrLiquidityPoolBody',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrLiquidityPoolBody from its SEP-0051 rendering.
+  static XdrLiquidityPoolBody fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrLiquidityPoolBody',
+    );
+    switch (arm.key) {
+      case 'liquidity_pool_constant_product':
+        final XdrLiquidityPoolBody arm0 = XdrLiquidityPoolBody(
+          XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT,
+        );
+        arm0.constantProduct =
+            XdrLiquidityPoolEntryConstantProduct.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrLiquidityPoolBody',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

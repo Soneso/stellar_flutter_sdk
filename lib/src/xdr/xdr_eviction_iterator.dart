@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 import 'xdr_uint64.dart';
 
@@ -54,5 +55,60 @@ class XdrEvictionIterator {
   static XdrEvictionIterator fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrEvictionIterator.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrEvictionIterator',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrEvictionIterator.
+  static XdrEvictionIterator fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrEvictionIterator'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrEvictionIterator.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'bucket_list_level': _bucketListLevel.toXdrJsonValue(),
+    'is_curr_bucket': XdrJsonHelper.boolean(_isCurrBucket),
+    'bucket_file_offset': _bucketFileOffset.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrEvictionIterator from its SEP-0051 rendering.
+  static XdrEvictionIterator fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrEvictionIterator',
+      allowedKeys: const <String>{
+        'bucket_list_level',
+        'is_curr_bucket',
+        'bucket_file_offset',
+      },
+    );
+    final Object? jsonBucketListLevel = XdrJsonHelper.readField(
+      object,
+      'bucket_list_level',
+      type: 'XdrEvictionIterator',
+    );
+    final Object? jsonIsCurrBucket = XdrJsonHelper.readField(
+      object,
+      'is_curr_bucket',
+      type: 'XdrEvictionIterator',
+    );
+    final Object? jsonBucketFileOffset = XdrJsonHelper.readField(
+      object,
+      'bucket_file_offset',
+      type: 'XdrEvictionIterator',
+    );
+    return XdrEvictionIterator(
+      XdrUint32.fromXdrJsonValue(jsonBucketListLevel),
+      XdrJsonHelper.readBoolean(
+        jsonIsCurrBucket,
+        type: 'XdrEvictionIterator',
+        key: 'is_curr_bucket',
+      ),
+      XdrUint64.fromXdrJsonValue(jsonBucketFileOffset),
+    );
   }
 }

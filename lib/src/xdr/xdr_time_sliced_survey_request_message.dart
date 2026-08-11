@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_survey_request_message.dart';
 import 'xdr_uint32.dart';
 
@@ -77,5 +78,68 @@ class XdrTimeSlicedSurveyRequestMessage {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTimeSlicedSurveyRequestMessage.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTimeSlicedSurveyRequestMessage',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTimeSlicedSurveyRequestMessage.
+  static XdrTimeSlicedSurveyRequestMessage fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrTimeSlicedSurveyRequestMessage',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrTimeSlicedSurveyRequestMessage.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'request': _request.toXdrJsonValue(),
+    'nonce': _nonce.toXdrJsonValue(),
+    'inbound_peers_index': _inboundPeersIndex.toXdrJsonValue(),
+    'outbound_peers_index': _outboundPeersIndex.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTimeSlicedSurveyRequestMessage from its SEP-0051 rendering.
+  static XdrTimeSlicedSurveyRequestMessage fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTimeSlicedSurveyRequestMessage',
+      allowedKeys: const <String>{
+        'request',
+        'nonce',
+        'inbound_peers_index',
+        'outbound_peers_index',
+      },
+    );
+    final Object? jsonRequest = XdrJsonHelper.readField(
+      object,
+      'request',
+      type: 'XdrTimeSlicedSurveyRequestMessage',
+    );
+    final Object? jsonNonce = XdrJsonHelper.readField(
+      object,
+      'nonce',
+      type: 'XdrTimeSlicedSurveyRequestMessage',
+    );
+    final Object? jsonInboundPeersIndex = XdrJsonHelper.readField(
+      object,
+      'inbound_peers_index',
+      type: 'XdrTimeSlicedSurveyRequestMessage',
+    );
+    final Object? jsonOutboundPeersIndex = XdrJsonHelper.readField(
+      object,
+      'outbound_peers_index',
+      type: 'XdrTimeSlicedSurveyRequestMessage',
+    );
+    return XdrTimeSlicedSurveyRequestMessage(
+      XdrSurveyRequestMessage.fromXdrJsonValue(jsonRequest),
+      XdrUint32.fromXdrJsonValue(jsonNonce),
+      XdrUint32.fromXdrJsonValue(jsonInboundPeersIndex),
+      XdrUint32.fromXdrJsonValue(jsonOutboundPeersIndex),
+    );
   }
 }

@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_clawback_claimable_balance_result_code.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClawbackClaimableBalanceResult {
   XdrClawbackClaimableBalanceResultCode _code;
@@ -63,5 +64,74 @@ class XdrClawbackClaimableBalanceResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClawbackClaimableBalanceResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrClawbackClaimableBalanceResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClawbackClaimableBalanceResult.
+  static XdrClawbackClaimableBalanceResult fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrClawbackClaimableBalanceResult',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrClawbackClaimableBalanceResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'does_not_exist';
+      case -2:
+        return 'not_issuer';
+      case -3:
+        return 'not_clawback_enabled';
+    }
+    XdrJsonHelper.fail(
+      'XdrClawbackClaimableBalanceResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrClawbackClaimableBalanceResult from its SEP-0051 rendering.
+  static XdrClawbackClaimableBalanceResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrClawbackClaimableBalanceResult(
+            XdrClawbackClaimableBalanceResultCode
+                .CLAWBACK_CLAIMABLE_BALANCE_SUCCESS,
+          );
+        case 'does_not_exist':
+          return XdrClawbackClaimableBalanceResult(
+            XdrClawbackClaimableBalanceResultCode
+                .CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST,
+          );
+        case 'not_issuer':
+          return XdrClawbackClaimableBalanceResult(
+            XdrClawbackClaimableBalanceResultCode
+                .CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER,
+          );
+        case 'not_clawback_enabled':
+          return XdrClawbackClaimableBalanceResult(
+            XdrClawbackClaimableBalanceResultCode
+                .CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrClawbackClaimableBalanceResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrClawbackClaimableBalanceResult',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

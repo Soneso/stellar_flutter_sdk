@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_manage_offer_effect.dart';
 import 'xdr_offer_entry.dart';
 
@@ -78,5 +79,76 @@ class XdrManageOfferSuccessResultOffer {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrManageOfferSuccessResultOffer.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrManageOfferSuccessResultOffer',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrManageOfferSuccessResultOffer.
+  static XdrManageOfferSuccessResultOffer fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrManageOfferSuccessResultOffer',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrManageOfferSuccessResultOffer.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'created': _offer!.toXdrJsonValue()};
+      case 1:
+        return <String, Object?>{'updated': _offer!.toXdrJsonValue()};
+      case 2:
+        return 'deleted';
+    }
+    XdrJsonHelper.fail(
+      'XdrManageOfferSuccessResultOffer',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrManageOfferSuccessResultOffer from its SEP-0051 rendering.
+  static XdrManageOfferSuccessResultOffer fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'deleted':
+          return XdrManageOfferSuccessResultOffer(
+            XdrManageOfferEffect.MANAGE_OFFER_DELETED,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrManageOfferSuccessResultOffer',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrManageOfferSuccessResultOffer',
+    );
+    switch (arm.key) {
+      case 'created':
+        final XdrManageOfferSuccessResultOffer arm0 =
+            XdrManageOfferSuccessResultOffer(
+              XdrManageOfferEffect.MANAGE_OFFER_CREATED,
+            );
+        arm0.offer = XdrOfferEntry.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'updated':
+        final XdrManageOfferSuccessResultOffer arm1 =
+            XdrManageOfferSuccessResultOffer(
+              XdrManageOfferEffect.MANAGE_OFFER_UPDATED,
+            );
+        arm1.offer = XdrOfferEntry.fromXdrJsonValue(arm.value);
+        return arm1;
+    }
+    XdrJsonHelper.fail(
+      'XdrManageOfferSuccessResultOffer',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

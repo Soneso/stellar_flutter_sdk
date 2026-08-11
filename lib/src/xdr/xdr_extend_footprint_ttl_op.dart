@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrExtendFootprintTTLOp {
@@ -60,5 +61,45 @@ class XdrExtendFootprintTTLOp {
     XdrExtensionPoint ext = XdrExtensionPoint.fromTxRep(map, '$prefix.ext');
     XdrUint32 extendTo = XdrUint32.fromTxRep(map, '$prefix.extendTo');
     return XdrExtendFootprintTTLOp(ext, extendTo);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrExtendFootprintTTLOp',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrExtendFootprintTTLOp.
+  static XdrExtendFootprintTTLOp fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrExtendFootprintTTLOp'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrExtendFootprintTTLOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'extend_to': _extendTo.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrExtendFootprintTTLOp from its SEP-0051 rendering.
+  static XdrExtendFootprintTTLOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrExtendFootprintTTLOp',
+      allowedKeys: const <String>{'ext', 'extend_to'},
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrExtendFootprintTTLOp',
+    );
+    final Object? jsonExtendTo = XdrJsonHelper.readField(
+      object,
+      'extend_to',
+      type: 'XdrExtendFootprintTTLOp',
+    );
+    return XdrExtendFootprintTTLOp(
+      XdrExtensionPoint.fromXdrJsonValue(jsonExt),
+      XdrUint32.fromXdrJsonValue(jsonExtendTo),
+    );
   }
 }

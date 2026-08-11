@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_ip_addr_type.dart';
+import 'xdr_json_helper.dart';
 
 class XdrPeerAddressIp {
   XdrIPAddrType _type;
@@ -79,5 +80,72 @@ class XdrPeerAddressIp {
   static XdrPeerAddressIp fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPeerAddressIp.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrPeerAddressIp');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPeerAddressIp.
+  static XdrPeerAddressIp fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrPeerAddressIp'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrPeerAddressIp.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{
+          'i_pv4': XdrJsonHelper.hex(
+            _ipv4!,
+            type: 'XdrPeerAddressIp',
+            key: 'i_pv4',
+          ),
+        };
+      case 1:
+        return <String, Object?>{
+          'i_pv6': XdrJsonHelper.hex(
+            _ipv6!,
+            type: 'XdrPeerAddressIp',
+            key: 'i_pv6',
+          ),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrPeerAddressIp',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrPeerAddressIp from its SEP-0051 rendering.
+  static XdrPeerAddressIp fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrPeerAddressIp',
+    );
+    switch (arm.key) {
+      case 'i_pv4':
+        final XdrPeerAddressIp arm0 = XdrPeerAddressIp(XdrIPAddrType.IPv4);
+        arm0.ipv4 = XdrJsonHelper.readHex(
+          arm.value,
+          type: 'XdrPeerAddressIp',
+          key: 'i_pv4',
+          expectedLength: 4,
+        );
+        return arm0;
+      case 'i_pv6':
+        final XdrPeerAddressIp arm1 = XdrPeerAddressIp(XdrIPAddrType.IPv6);
+        arm1.ipv6 = XdrJsonHelper.readHex(
+          arm.value,
+          type: 'XdrPeerAddressIp',
+          key: 'i_pv6',
+          expectedLength: 16,
+        );
+        return arm1;
+    }
+    XdrJsonHelper.fail(
+      'XdrPeerAddressIp',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

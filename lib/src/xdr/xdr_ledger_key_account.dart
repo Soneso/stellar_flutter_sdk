@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrLedgerKeyAccount {
   XdrAccountID _accountID;
@@ -49,5 +50,36 @@ class XdrLedgerKeyAccount {
       TxRepHelper.getValue(map, '$prefix.accountID') ?? '',
     );
     return XdrLedgerKeyAccount(accountID);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerKeyAccount',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerKeyAccount.
+  static XdrLedgerKeyAccount fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerKeyAccount'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerKeyAccount.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'account_id': _accountID.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLedgerKeyAccount from its SEP-0051 rendering.
+  static XdrLedgerKeyAccount fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerKeyAccount',
+      allowedKeys: const <String>{'account_id'},
+    );
+    final Object? jsonAccountID = XdrJsonHelper.readField(
+      object,
+      'account_id',
+      type: 'XdrLedgerKeyAccount',
+    );
+    return XdrLedgerKeyAccount(XdrAccountID.fromXdrJsonValue(jsonAccountID));
   }
 }

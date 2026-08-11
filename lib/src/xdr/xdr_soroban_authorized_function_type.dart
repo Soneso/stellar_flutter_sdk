@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSorobanAuthorizedFunctionType {
   final _value;
@@ -109,5 +110,58 @@ class XdrSorobanAuthorizedFunctionType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSorobanAuthorizedFunctionType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanAuthorizedFunctionType.
+  static XdrSorobanAuthorizedFunctionType fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrSorobanAuthorizedFunctionType',
+        ),
+      );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'contract_fn';
+      case 1:
+        return 'create_contract_host_fn';
+      case 2:
+        return 'create_contract_v2_host_fn';
+      default:
+        XdrJsonHelper.fail(
+          'XdrSorobanAuthorizedFunctionType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrSorobanAuthorizedFunctionType from its SEP-0051 name.
+  static XdrSorobanAuthorizedFunctionType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'contract_fn':
+          return XdrSorobanAuthorizedFunctionType
+              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN;
+        case 'create_contract_host_fn':
+          return XdrSorobanAuthorizedFunctionType
+              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN;
+        case 'create_contract_v2_host_fn':
+          return XdrSorobanAuthorizedFunctionType
+              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrSorobanAuthorizedFunctionType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

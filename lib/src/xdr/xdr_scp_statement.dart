@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_node_id.dart';
 import 'xdr_scp_statement_pledges.dart';
 import 'xdr_uint64.dart';
@@ -51,5 +52,50 @@ class XdrSCPStatement {
   static XdrSCPStatement fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPStatement.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCPStatement');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCPStatement.
+  static XdrSCPStatement fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCPStatement'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCPStatement.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'node_id': _nodeID.toXdrJsonValue(),
+    'slot_index': _slotIndex.toXdrJsonValue(),
+    'pledges': _pledges.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSCPStatement from its SEP-0051 rendering.
+  static XdrSCPStatement fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCPStatement',
+      allowedKeys: const <String>{'node_id', 'slot_index', 'pledges'},
+    );
+    final Object? jsonNodeID = XdrJsonHelper.readField(
+      object,
+      'node_id',
+      type: 'XdrSCPStatement',
+    );
+    final Object? jsonSlotIndex = XdrJsonHelper.readField(
+      object,
+      'slot_index',
+      type: 'XdrSCPStatement',
+    );
+    final Object? jsonPledges = XdrJsonHelper.readField(
+      object,
+      'pledges',
+      type: 'XdrSCPStatement',
+    );
+    return XdrSCPStatement(
+      XdrNodeID.fromXdrJsonValue(jsonNodeID),
+      XdrUint64.fromXdrJsonValue(jsonSlotIndex),
+      XdrSCPStatementPledges.fromXdrJsonValue(jsonPledges),
+    );
   }
 }

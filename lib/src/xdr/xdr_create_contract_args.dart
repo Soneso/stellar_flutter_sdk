@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_contract_executable.dart';
 import 'xdr_contract_id_preimage.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrCreateContractArgs {
   XdrContractIDPreimage _contractIDPreimage;
@@ -72,5 +73,45 @@ class XdrCreateContractArgs {
       '$prefix.executable',
     );
     return XdrCreateContractArgs(contractIDPreimage, executable);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrCreateContractArgs',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrCreateContractArgs.
+  static XdrCreateContractArgs fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrCreateContractArgs'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrCreateContractArgs.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'contract_id_preimage': _contractIDPreimage.toXdrJsonValue(),
+    'executable': _executable.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrCreateContractArgs from its SEP-0051 rendering.
+  static XdrCreateContractArgs fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrCreateContractArgs',
+      allowedKeys: const <String>{'contract_id_preimage', 'executable'},
+    );
+    final Object? jsonContractIDPreimage = XdrJsonHelper.readField(
+      object,
+      'contract_id_preimage',
+      type: 'XdrCreateContractArgs',
+    );
+    final Object? jsonExecutable = XdrJsonHelper.readField(
+      object,
+      'executable',
+      type: 'XdrCreateContractArgs',
+    );
+    return XdrCreateContractArgs(
+      XdrContractIDPreimage.fromXdrJsonValue(jsonContractIDPreimage),
+      XdrContractExecutable.fromXdrJsonValue(jsonExecutable),
+    );
   }
 }

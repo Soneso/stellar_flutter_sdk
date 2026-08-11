@@ -10,6 +10,7 @@ import 'txrep_helper.dart';
 import 'xdr_claim_predicate_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClaimPredicate {
   XdrClaimPredicateType _type;
@@ -254,5 +255,136 @@ class XdrClaimPredicate {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrClaimPredicate');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClaimPredicate.
+  static XdrClaimPredicate fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrClaimPredicate'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrClaimPredicate.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'unconditional';
+      case 1:
+        return <String, Object?>{
+          'and': XdrJsonHelper.array<XdrClaimPredicate>(
+            _andPredicates!,
+            (XdrClaimPredicate v) => v.toXdrJsonValue(),
+            type: 'XdrClaimPredicate',
+            key: 'and',
+            maxLength: 2,
+          ),
+        };
+      case 2:
+        return <String, Object?>{
+          'or': XdrJsonHelper.array<XdrClaimPredicate>(
+            _orPredicates!,
+            (XdrClaimPredicate v) => v.toXdrJsonValue(),
+            type: 'XdrClaimPredicate',
+            key: 'or',
+            maxLength: 2,
+          ),
+        };
+      case 3:
+        return <String, Object?>{
+          'not': _notPredicate == null ? null : _notPredicate!.toXdrJsonValue(),
+        };
+      case 4:
+        return <String, Object?>{
+          'before_absolute_time': _absBefore!.toXdrJsonValue(),
+        };
+      case 5:
+        return <String, Object?>{
+          'before_relative_time': _relBefore!.toXdrJsonValue(),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrClaimPredicate',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrClaimPredicate from its SEP-0051 rendering.
+  static XdrClaimPredicate fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'unconditional':
+          return XdrClaimPredicate(
+            XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrClaimPredicate',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrClaimPredicate',
+    );
+    switch (arm.key) {
+      case 'and':
+        final XdrClaimPredicate arm0 = XdrClaimPredicate(
+          XdrClaimPredicateType.CLAIM_PREDICATE_AND,
+        );
+        arm0.andPredicates =
+            XdrJsonHelper.readArray(
+                  arm.value,
+                  type: 'XdrClaimPredicate',
+                  key: 'and',
+                  maxLength: 2,
+                )
+                .map<XdrClaimPredicate>(
+                  (Object? e) => XdrClaimPredicate.fromXdrJsonValue(e),
+                )
+                .toList();
+        return arm0;
+      case 'or':
+        final XdrClaimPredicate arm1 = XdrClaimPredicate(
+          XdrClaimPredicateType.CLAIM_PREDICATE_OR,
+        );
+        arm1.orPredicates =
+            XdrJsonHelper.readArray(
+                  arm.value,
+                  type: 'XdrClaimPredicate',
+                  key: 'or',
+                  maxLength: 2,
+                )
+                .map<XdrClaimPredicate>(
+                  (Object? e) => XdrClaimPredicate.fromXdrJsonValue(e),
+                )
+                .toList();
+        return arm1;
+      case 'not':
+        final XdrClaimPredicate arm2 = XdrClaimPredicate(
+          XdrClaimPredicateType.CLAIM_PREDICATE_NOT,
+        );
+        arm2.notPredicate = arm.value == null
+            ? null
+            : XdrClaimPredicate.fromXdrJsonValue(arm.value);
+        return arm2;
+      case 'before_absolute_time':
+        final XdrClaimPredicate arm3 = XdrClaimPredicate(
+          XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME,
+        );
+        arm3.absBefore = XdrInt64.fromXdrJsonValue(arm.value);
+        return arm3;
+      case 'before_relative_time':
+        final XdrClaimPredicate arm4 = XdrClaimPredicate(
+          XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME,
+        );
+        arm4.relBefore = XdrInt64.fromXdrJsonValue(arm.value);
+        return arm4;
+    }
+    XdrJsonHelper.fail(
+      'XdrClaimPredicate',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

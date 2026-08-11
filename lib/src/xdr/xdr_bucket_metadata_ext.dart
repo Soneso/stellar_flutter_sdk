@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_bucket_list_type.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrBucketMetadataExt {
   int _v;
@@ -74,5 +75,58 @@ class XdrBucketMetadataExt {
   static XdrBucketMetadataExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBucketMetadataExt.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrBucketMetadataExt',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrBucketMetadataExt.
+  static XdrBucketMetadataExt fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrBucketMetadataExt'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrBucketMetadataExt.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return 'v0';
+      case 1:
+        return <String, Object?>{'v1': _bucketListType!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrBucketMetadataExt',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrBucketMetadataExt from its SEP-0051 rendering.
+  static XdrBucketMetadataExt fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'v0':
+          return XdrBucketMetadataExt(0);
+      }
+      XdrJsonHelper.fail(
+        'XdrBucketMetadataExt',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrBucketMetadataExt',
+    );
+    switch (arm.key) {
+      case 'v1':
+        final XdrBucketMetadataExt arm0 = XdrBucketMetadataExt(1);
+        arm0.bucketListType = XdrBucketListType.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrBucketMetadataExt',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrLedgerEntryType {
   final _value;
@@ -144,5 +145,79 @@ class XdrLedgerEntryType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerEntryType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerEntryType.
+  static XdrLedgerEntryType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerEntryType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'account';
+      case 1:
+        return 'trustline';
+      case 2:
+        return 'offer';
+      case 3:
+        return 'data';
+      case 4:
+        return 'claimable_balance';
+      case 5:
+        return 'liquidity_pool';
+      case 6:
+        return 'contract_data';
+      case 7:
+        return 'contract_code';
+      case 8:
+        return 'config_setting';
+      case 9:
+        return 'ttl';
+      default:
+        XdrJsonHelper.fail(
+          'XdrLedgerEntryType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrLedgerEntryType from its SEP-0051 name.
+  static XdrLedgerEntryType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'account':
+          return XdrLedgerEntryType.ACCOUNT;
+        case 'trustline':
+          return XdrLedgerEntryType.TRUSTLINE;
+        case 'offer':
+          return XdrLedgerEntryType.OFFER;
+        case 'data':
+          return XdrLedgerEntryType.DATA;
+        case 'claimable_balance':
+          return XdrLedgerEntryType.CLAIMABLE_BALANCE;
+        case 'liquidity_pool':
+          return XdrLedgerEntryType.LIQUIDITY_POOL;
+        case 'contract_data':
+          return XdrLedgerEntryType.CONTRACT_DATA;
+        case 'contract_code':
+          return XdrLedgerEntryType.CONTRACT_CODE;
+        case 'config_setting':
+          return XdrLedgerEntryType.CONFIG_SETTING;
+        case 'ttl':
+          return XdrLedgerEntryType.TTL;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerEntryType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

@@ -12,6 +12,7 @@ import 'xdr_int128_parts.dart';
 import 'xdr_int256_parts.dart';
 import 'xdr_int32.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_address.dart';
 import 'xdr_sc_bytes.dart';
 import 'xdr_sc_contract_instance.dart';
@@ -561,5 +562,252 @@ class XdrSCValBase {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCVal');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCVal.
+  static XdrSCValBase fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrSCVal'));
+
+  /// Returns the SEP-0051 rendering of this XdrSCValBase.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'bool': XdrJsonHelper.boolean(_b!)};
+      case 1:
+        return 'void';
+      case 2:
+        return <String, Object?>{'error': _error!.toXdrJsonValue()};
+      case 3:
+        return <String, Object?>{'u32': _u32!.toXdrJsonValue()};
+      case 4:
+        return <String, Object?>{'i32': _i32!.toXdrJsonValue()};
+      case 5:
+        return <String, Object?>{'u64': _u64!.toXdrJsonValue()};
+      case 6:
+        return <String, Object?>{'i64': _i64!.toXdrJsonValue()};
+      case 7:
+        return <String, Object?>{'timepoint': _timepoint!.toXdrJsonValue()};
+      case 8:
+        return <String, Object?>{'duration': _duration!.toXdrJsonValue()};
+      case 9:
+        return <String, Object?>{'u128': _u128!.toXdrJsonValue()};
+      case 10:
+        return <String, Object?>{'i128': _i128!.toXdrJsonValue()};
+      case 11:
+        return <String, Object?>{'u256': _u256!.toXdrJsonValue()};
+      case 12:
+        return <String, Object?>{'i256': _i256!.toXdrJsonValue()};
+      case 13:
+        return <String, Object?>{'bytes': _bytes!.toXdrJsonValue()};
+      case 14:
+        return <String, Object?>{
+          'string': XdrJsonHelper.escapedString(
+            _str!,
+            type: 'XdrSCVal',
+            key: 'string',
+          ),
+        };
+      case 15:
+        return <String, Object?>{
+          'symbol': XdrJsonHelper.escapedString(
+            _sym!,
+            type: 'XdrSCVal',
+            key: 'symbol',
+          ),
+        };
+      case 16:
+        return <String, Object?>{
+          'vec': _vec == null
+              ? null
+              : XdrJsonHelper.array<XdrSCVal>(
+                  _vec!,
+                  (XdrSCVal v) => v.toXdrJsonValue(),
+                  type: 'XdrSCVal',
+                  key: 'vec',
+                ),
+        };
+      case 17:
+        return <String, Object?>{
+          'map': _map == null
+              ? null
+              : XdrJsonHelper.array<XdrSCMapEntry>(
+                  _map!,
+                  (XdrSCMapEntry v) => v.toXdrJsonValue(),
+                  type: 'XdrSCVal',
+                  key: 'map',
+                ),
+        };
+      case 18:
+        return <String, Object?>{'address': _address!.toXdrJsonValue()};
+      case 19:
+        return <String, Object?>{
+          'contract_instance': _instance!.toXdrJsonValue(),
+        };
+      case 20:
+        return 'ledger_key_contract_instance';
+      case 21:
+        return <String, Object?>{
+          'ledger_key_nonce': _nonce_key!.toXdrJsonValue(),
+        };
+      case 22:
+        return <String, Object?>{
+          'executable_tag': XdrJsonHelper.escapedString(
+            _executableTag!,
+            type: 'XdrSCVal',
+            key: 'executable_tag',
+          ),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrSCVal',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrSCValBase from its SEP-0051 rendering.
+  static XdrSCValBase fromXdrJsonValue(Object? value) =>
+      fromXdrJsonValueAs(value, XdrSCValBase.new);
+
+  /// Reads a subclass of XdrSCValBase from its SEP-0051 rendering.
+  static T fromXdrJsonValueAs<T extends XdrSCValBase>(
+    Object? value,
+    T Function(XdrSCValType) constructor,
+  ) {
+    if (value is String) {
+      switch (value) {
+        case 'void':
+          return constructor(XdrSCValType.SCV_VOID);
+        case 'ledger_key_contract_instance':
+          return constructor(XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE);
+      }
+      XdrJsonHelper.fail(
+        'XdrSCVal',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrSCVal',
+    );
+    switch (arm.key) {
+      case 'bool':
+        final T arm0 = constructor(XdrSCValType.SCV_BOOL);
+        arm0.b = XdrJsonHelper.readBoolean(
+          arm.value,
+          type: 'XdrSCVal',
+          key: 'bool',
+        );
+        return arm0;
+      case 'error':
+        final T arm1 = constructor(XdrSCValType.SCV_ERROR);
+        arm1.error = XdrSCError.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'u32':
+        final T arm2 = constructor(XdrSCValType.SCV_U32);
+        arm2.u32 = XdrUint32.fromXdrJsonValue(arm.value);
+        return arm2;
+      case 'i32':
+        final T arm3 = constructor(XdrSCValType.SCV_I32);
+        arm3.i32 = XdrInt32.fromXdrJsonValue(arm.value);
+        return arm3;
+      case 'u64':
+        final T arm4 = constructor(XdrSCValType.SCV_U64);
+        arm4.u64 = XdrUint64.fromXdrJsonValue(arm.value);
+        return arm4;
+      case 'i64':
+        final T arm5 = constructor(XdrSCValType.SCV_I64);
+        arm5.i64 = XdrInt64.fromXdrJsonValue(arm.value);
+        return arm5;
+      case 'timepoint':
+        final T arm6 = constructor(XdrSCValType.SCV_TIMEPOINT);
+        arm6.timepoint = XdrUint64.fromXdrJsonValue(arm.value);
+        return arm6;
+      case 'duration':
+        final T arm7 = constructor(XdrSCValType.SCV_DURATION);
+        arm7.duration = XdrUint64.fromXdrJsonValue(arm.value);
+        return arm7;
+      case 'u128':
+        final T arm8 = constructor(XdrSCValType.SCV_U128);
+        arm8.u128 = XdrUInt128Parts.fromXdrJsonValue(arm.value);
+        return arm8;
+      case 'i128':
+        final T arm9 = constructor(XdrSCValType.SCV_I128);
+        arm9.i128 = XdrInt128Parts.fromXdrJsonValue(arm.value);
+        return arm9;
+      case 'u256':
+        final T arm10 = constructor(XdrSCValType.SCV_U256);
+        arm10.u256 = XdrUInt256Parts.fromXdrJsonValue(arm.value);
+        return arm10;
+      case 'i256':
+        final T arm11 = constructor(XdrSCValType.SCV_I256);
+        arm11.i256 = XdrInt256Parts.fromXdrJsonValue(arm.value);
+        return arm11;
+      case 'bytes':
+        final T arm12 = constructor(XdrSCValType.SCV_BYTES);
+        arm12.bytes = XdrSCBytes.fromXdrJsonValue(arm.value);
+        return arm12;
+      case 'string':
+        final T arm13 = constructor(XdrSCValType.SCV_STRING);
+        arm13.str = XdrJsonHelper.readEscapedString(
+          arm.value,
+          type: 'XdrSCVal',
+          key: 'string',
+        );
+        return arm13;
+      case 'symbol':
+        final T arm14 = constructor(XdrSCValType.SCV_SYMBOL);
+        arm14.sym = XdrJsonHelper.readEscapedString(
+          arm.value,
+          type: 'XdrSCVal',
+          key: 'symbol',
+        );
+        return arm14;
+      case 'vec':
+        final T arm15 = constructor(XdrSCValType.SCV_VEC);
+        arm15.vec = arm.value == null
+            ? null
+            : XdrJsonHelper.readArray(arm.value, type: 'XdrSCVal', key: 'vec')
+                  .map<XdrSCVal>((Object? e) => XdrSCVal.fromXdrJsonValue(e))
+                  .toList();
+        return arm15;
+      case 'map':
+        final T arm16 = constructor(XdrSCValType.SCV_MAP);
+        arm16.map = arm.value == null
+            ? null
+            : XdrJsonHelper.readArray(arm.value, type: 'XdrSCVal', key: 'map')
+                  .map<XdrSCMapEntry>(
+                    (Object? e) => XdrSCMapEntry.fromXdrJsonValue(e),
+                  )
+                  .toList();
+        return arm16;
+      case 'address':
+        final T arm17 = constructor(XdrSCValType.SCV_ADDRESS);
+        arm17.address = XdrSCAddress.fromXdrJsonValue(arm.value);
+        return arm17;
+      case 'contract_instance':
+        final T arm18 = constructor(XdrSCValType.SCV_CONTRACT_INSTANCE);
+        arm18.instance = XdrSCContractInstance.fromXdrJsonValue(arm.value);
+        return arm18;
+      case 'ledger_key_nonce':
+        final T arm19 = constructor(XdrSCValType.SCV_LEDGER_KEY_NONCE);
+        arm19.nonce_key = XdrSCNonceKey.fromXdrJsonValue(arm.value);
+        return arm19;
+      case 'executable_tag':
+        final T arm20 = constructor(XdrSCValType.SCV_EXECUTABLE_TAG);
+        arm20.executableTag = XdrJsonHelper.readEscapedString(
+          arm.value,
+          type: 'XdrSCVal',
+          key: 'executable_tag',
+        );
+        return arm20;
+    }
+    XdrJsonHelper.fail(
+      'XdrSCVal',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

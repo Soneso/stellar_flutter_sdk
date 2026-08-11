@@ -10,6 +10,7 @@ import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_price.dart';
 
 class XdrCreatePassiveSellOfferOp {
@@ -87,5 +88,60 @@ class XdrCreatePassiveSellOfferOp {
     XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.amount');
     XdrPrice price = XdrPrice.fromTxRep(map, '$prefix.price');
     return XdrCreatePassiveSellOfferOp(selling, buying, amount, price);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrCreatePassiveSellOfferOp',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrCreatePassiveSellOfferOp.
+  static XdrCreatePassiveSellOfferOp fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrCreatePassiveSellOfferOp'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrCreatePassiveSellOfferOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'selling': _selling.toXdrJsonValue(),
+    'buying': _buying.toXdrJsonValue(),
+    'amount': _amount.toXdrJsonValue(),
+    'price': _price.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrCreatePassiveSellOfferOp from its SEP-0051 rendering.
+  static XdrCreatePassiveSellOfferOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrCreatePassiveSellOfferOp',
+      allowedKeys: const <String>{'selling', 'buying', 'amount', 'price'},
+    );
+    final Object? jsonSelling = XdrJsonHelper.readField(
+      object,
+      'selling',
+      type: 'XdrCreatePassiveSellOfferOp',
+    );
+    final Object? jsonBuying = XdrJsonHelper.readField(
+      object,
+      'buying',
+      type: 'XdrCreatePassiveSellOfferOp',
+    );
+    final Object? jsonAmount = XdrJsonHelper.readField(
+      object,
+      'amount',
+      type: 'XdrCreatePassiveSellOfferOp',
+    );
+    final Object? jsonPrice = XdrJsonHelper.readField(
+      object,
+      'price',
+      type: 'XdrCreatePassiveSellOfferOp',
+    );
+    return XdrCreatePassiveSellOfferOp(
+      XdrAsset.fromXdrJsonValue(jsonSelling),
+      XdrAsset.fromXdrJsonValue(jsonBuying),
+      XdrInt64.fromXdrJsonValue(jsonAmount),
+      XdrPrice.fromXdrJsonValue(jsonPrice),
+    );
   }
 }

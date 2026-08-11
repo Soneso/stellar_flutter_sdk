@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_liquidity_pool_constant_product_parameters.dart';
 
 class XdrLiquidityPoolEntryConstantProduct {
@@ -92,6 +93,77 @@ class XdrLiquidityPoolEntryConstantProduct {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolEntryConstantProduct.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLiquidityPoolEntryConstantProduct',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLiquidityPoolEntryConstantProduct.
+  static XdrLiquidityPoolEntryConstantProduct fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrLiquidityPoolEntryConstantProduct',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrLiquidityPoolEntryConstantProduct.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'params': _params.toXdrJsonValue(),
+    'reserve_a': _reserveA.toXdrJsonValue(),
+    'reserve_b': _reserveB.toXdrJsonValue(),
+    'total_pool_shares': _totalPoolShares.toXdrJsonValue(),
+    'pool_shares_trust_line_count': _poolSharesTrustLineCount.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLiquidityPoolEntryConstantProduct from its SEP-0051 rendering.
+  static XdrLiquidityPoolEntryConstantProduct fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLiquidityPoolEntryConstantProduct',
+      allowedKeys: const <String>{
+        'params',
+        'reserve_a',
+        'reserve_b',
+        'total_pool_shares',
+        'pool_shares_trust_line_count',
+      },
+    );
+    final Object? jsonParams = XdrJsonHelper.readField(
+      object,
+      'params',
+      type: 'XdrLiquidityPoolEntryConstantProduct',
+    );
+    final Object? jsonReserveA = XdrJsonHelper.readField(
+      object,
+      'reserve_a',
+      type: 'XdrLiquidityPoolEntryConstantProduct',
+    );
+    final Object? jsonReserveB = XdrJsonHelper.readField(
+      object,
+      'reserve_b',
+      type: 'XdrLiquidityPoolEntryConstantProduct',
+    );
+    final Object? jsonTotalPoolShares = XdrJsonHelper.readField(
+      object,
+      'total_pool_shares',
+      type: 'XdrLiquidityPoolEntryConstantProduct',
+    );
+    final Object? jsonPoolSharesTrustLineCount = XdrJsonHelper.readField(
+      object,
+      'pool_shares_trust_line_count',
+      type: 'XdrLiquidityPoolEntryConstantProduct',
+    );
+    return XdrLiquidityPoolEntryConstantProduct(
+      XdrLiquidityPoolConstantProductParameters.fromXdrJsonValue(jsonParams),
+      XdrInt64.fromXdrJsonValue(jsonReserveA),
+      XdrInt64.fromXdrJsonValue(jsonReserveB),
+      XdrInt64.fromXdrJsonValue(jsonTotalPoolShares),
+      XdrInt64.fromXdrJsonValue(jsonPoolSharesTrustLineCount),
     );
   }
 }

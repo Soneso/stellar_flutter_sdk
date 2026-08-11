@@ -13,6 +13,7 @@ import 'xdr_hash_id_preimage_operation_id.dart';
 import 'xdr_hash_id_preimage_revoke_id.dart';
 import 'xdr_hash_id_preimage_soroban_authorization.dart';
 import 'xdr_hash_id_preimage_soroban_authorization_with_address.dart';
+import 'xdr_json_helper.dart';
 
 class XdrHashIDPreimage {
   XdrEnvelopeType _type;
@@ -148,5 +149,93 @@ class XdrHashIDPreimage {
   static XdrHashIDPreimage fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHashIDPreimage.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrHashIDPreimage');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrHashIDPreimage.
+  static XdrHashIDPreimage fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrHashIDPreimage'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrHashIDPreimage.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 6:
+        return <String, Object?>{'op_id': _operationID!.toXdrJsonValue()};
+      case 7:
+        return <String, Object?>{
+          'pool_revoke_op_id': _revokeID!.toXdrJsonValue(),
+        };
+      case 8:
+        return <String, Object?>{'contract_id': _contractID!.toXdrJsonValue()};
+      case 9:
+        return <String, Object?>{
+          'soroban_authorization': _sorobanAuthorization!.toXdrJsonValue(),
+        };
+      case 10:
+        return <String, Object?>{
+          'soroban_authorization_with_address':
+              _sorobanAuthorizationWithAddress!.toXdrJsonValue(),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrHashIDPreimage',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrHashIDPreimage from its SEP-0051 rendering.
+  static XdrHashIDPreimage fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrHashIDPreimage',
+    );
+    switch (arm.key) {
+      case 'op_id':
+        final XdrHashIDPreimage arm0 = XdrHashIDPreimage(
+          XdrEnvelopeType.ENVELOPE_TYPE_OP_ID,
+        );
+        arm0.operationID = XdrHashIDPreimageOperationID.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm0;
+      case 'pool_revoke_op_id':
+        final XdrHashIDPreimage arm1 = XdrHashIDPreimage(
+          XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID,
+        );
+        arm1.revokeID = XdrHashIDPreimageRevokeID.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'contract_id':
+        final XdrHashIDPreimage arm2 = XdrHashIDPreimage(
+          XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_ID,
+        );
+        arm2.contractID = XdrHashIDPreimageContractID.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm2;
+      case 'soroban_authorization':
+        final XdrHashIDPreimage arm3 = XdrHashIDPreimage(
+          XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION,
+        );
+        arm3.sorobanAuthorization =
+            XdrHashIDPreimageSorobanAuthorization.fromXdrJsonValue(arm.value);
+        return arm3;
+      case 'soroban_authorization_with_address':
+        final XdrHashIDPreimage arm4 = XdrHashIDPreimage(
+          XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS,
+        );
+        arm4.sorobanAuthorizationWithAddress =
+            XdrHashIDPreimageSorobanAuthorizationWithAddress.fromXdrJsonValue(
+              arm.value,
+            );
+        return arm4;
+    }
+    XdrJsonHelper.fail(
+      'XdrHashIDPreimage',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrLedgerUpgradeType {
   final _value;
@@ -71,5 +72,67 @@ class XdrLedgerUpgradeType {
   static XdrLedgerUpgradeType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerUpgradeType.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerUpgradeType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerUpgradeType.
+  static XdrLedgerUpgradeType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerUpgradeType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 1:
+        return 'version';
+      case 2:
+        return 'base_fee';
+      case 3:
+        return 'max_tx_set_size';
+      case 4:
+        return 'base_reserve';
+      case 5:
+        return 'flags';
+      case 6:
+        return 'config';
+      case 7:
+        return 'max_soroban_tx_set_size';
+      default:
+        XdrJsonHelper.fail(
+          'XdrLedgerUpgradeType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrLedgerUpgradeType from its SEP-0051 name.
+  static XdrLedgerUpgradeType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'version':
+          return XdrLedgerUpgradeType.LEDGER_UPGRADE_VERSION;
+        case 'base_fee':
+          return XdrLedgerUpgradeType.LEDGER_UPGRADE_BASE_FEE;
+        case 'max_tx_set_size':
+          return XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_TX_SET_SIZE;
+        case 'base_reserve':
+          return XdrLedgerUpgradeType.LEDGER_UPGRADE_BASE_RESERVE;
+        case 'flags':
+          return XdrLedgerUpgradeType.LEDGER_UPGRADE_FLAGS;
+        case 'config':
+          return XdrLedgerUpgradeType.LEDGER_UPGRADE_CONFIG;
+        case 'max_soroban_tx_set_size':
+          return XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerUpgradeType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

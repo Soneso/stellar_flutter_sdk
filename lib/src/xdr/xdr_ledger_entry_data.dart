@@ -13,6 +13,7 @@ import 'xdr_contract_code_entry.dart';
 import 'xdr_contract_data_entry.dart';
 import 'xdr_data_entry.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_entry_type.dart';
 import 'xdr_liquidity_pool_entry.dart';
 import 'xdr_offer_entry.dart';
@@ -210,5 +211,132 @@ class XdrLedgerEntryData {
   static XdrLedgerEntryData fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntryData.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerEntryData',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerEntryData.
+  static XdrLedgerEntryData fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerEntryData'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerEntryData.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'account': _account!.toXdrJsonValue()};
+      case 1:
+        return <String, Object?>{'trustline': _trustLine!.toXdrJsonValue()};
+      case 2:
+        return <String, Object?>{'offer': _offer!.toXdrJsonValue()};
+      case 3:
+        return <String, Object?>{'data': _data!.toXdrJsonValue()};
+      case 4:
+        return <String, Object?>{
+          'claimable_balance': _claimableBalance!.toXdrJsonValue(),
+        };
+      case 5:
+        return <String, Object?>{
+          'liquidity_pool': _liquidityPool!.toXdrJsonValue(),
+        };
+      case 6:
+        return <String, Object?>{
+          'contract_data': _contractData!.toXdrJsonValue(),
+        };
+      case 7:
+        return <String, Object?>{
+          'contract_code': _contractCode!.toXdrJsonValue(),
+        };
+      case 8:
+        return <String, Object?>{
+          'config_setting': _configSetting!.toXdrJsonValue(),
+        };
+      case 9:
+        return <String, Object?>{'ttl': _ttl!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerEntryData',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrLedgerEntryData from its SEP-0051 rendering.
+  static XdrLedgerEntryData fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrLedgerEntryData',
+    );
+    switch (arm.key) {
+      case 'account':
+        final XdrLedgerEntryData arm0 = XdrLedgerEntryData(
+          XdrLedgerEntryType.ACCOUNT,
+        );
+        arm0.account = XdrAccountEntry.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'trustline':
+        final XdrLedgerEntryData arm1 = XdrLedgerEntryData(
+          XdrLedgerEntryType.TRUSTLINE,
+        );
+        arm1.trustLine = XdrTrustLineEntry.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'offer':
+        final XdrLedgerEntryData arm2 = XdrLedgerEntryData(
+          XdrLedgerEntryType.OFFER,
+        );
+        arm2.offer = XdrOfferEntry.fromXdrJsonValue(arm.value);
+        return arm2;
+      case 'data':
+        final XdrLedgerEntryData arm3 = XdrLedgerEntryData(
+          XdrLedgerEntryType.DATA,
+        );
+        arm3.data = XdrDataEntry.fromXdrJsonValue(arm.value);
+        return arm3;
+      case 'claimable_balance':
+        final XdrLedgerEntryData arm4 = XdrLedgerEntryData(
+          XdrLedgerEntryType.CLAIMABLE_BALANCE,
+        );
+        arm4.claimableBalance = XdrClaimableBalanceEntry.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm4;
+      case 'liquidity_pool':
+        final XdrLedgerEntryData arm5 = XdrLedgerEntryData(
+          XdrLedgerEntryType.LIQUIDITY_POOL,
+        );
+        arm5.liquidityPool = XdrLiquidityPoolEntry.fromXdrJsonValue(arm.value);
+        return arm5;
+      case 'contract_data':
+        final XdrLedgerEntryData arm6 = XdrLedgerEntryData(
+          XdrLedgerEntryType.CONTRACT_DATA,
+        );
+        arm6.contractData = XdrContractDataEntry.fromXdrJsonValue(arm.value);
+        return arm6;
+      case 'contract_code':
+        final XdrLedgerEntryData arm7 = XdrLedgerEntryData(
+          XdrLedgerEntryType.CONTRACT_CODE,
+        );
+        arm7.contractCode = XdrContractCodeEntry.fromXdrJsonValue(arm.value);
+        return arm7;
+      case 'config_setting':
+        final XdrLedgerEntryData arm8 = XdrLedgerEntryData(
+          XdrLedgerEntryType.CONFIG_SETTING,
+        );
+        arm8.configSetting = XdrConfigSettingEntry.fromXdrJsonValue(arm.value);
+        return arm8;
+      case 'ttl':
+        final XdrLedgerEntryData arm9 = XdrLedgerEntryData(
+          XdrLedgerEntryType.TTL,
+        );
+        arm9.ttl = XdrTTLEntry.fromXdrJsonValue(arm.value);
+        return arm9;
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerEntryData',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

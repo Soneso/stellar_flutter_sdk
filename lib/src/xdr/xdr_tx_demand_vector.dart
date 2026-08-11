@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 
 class XdrTxDemandVector {
   XdrTxDemandVector(this._txDemandVector);
@@ -46,4 +47,30 @@ class XdrTxDemandVector {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTxDemandVector.decode(XdrDataInputStream(bytes));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrTxDemandVector');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTxDemandVector.
+  static XdrTxDemandVector fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTxDemandVector'),
+  );
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() => XdrJsonHelper.array<XdrHash>(
+    _txDemandVector,
+    (XdrHash v) => v.toXdrJsonValue(),
+    type: 'XdrTxDemandVector',
+    maxLength: 1000,
+  );
+
+  /// Reads a XdrTxDemandVector from the SEP-0051 rendering of its value.
+  static XdrTxDemandVector fromXdrJsonValue(Object? value) => XdrTxDemandVector(
+    XdrJsonHelper.readArray(
+      value,
+      type: 'XdrTxDemandVector',
+      maxLength: 1000,
+    ).map<XdrHash>((Object? e) => XdrHash.fromXdrJsonValue(e)).toList(),
+  );
 }

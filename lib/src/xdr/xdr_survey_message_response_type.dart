@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSurveyMessageResponseType {
   final _value;
@@ -54,5 +55,47 @@ class XdrSurveyMessageResponseType {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSurveyMessageResponseType.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSurveyMessageResponseType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSurveyMessageResponseType.
+  static XdrSurveyMessageResponseType fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrSurveyMessageResponseType',
+        ),
+      );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 2:
+        return 'survey_topology_response_v2';
+      default:
+        XdrJsonHelper.fail(
+          'XdrSurveyMessageResponseType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrSurveyMessageResponseType from its SEP-0051 name.
+  static XdrSurveyMessageResponseType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'survey_topology_response_v2':
+          return XdrSurveyMessageResponseType.SURVEY_TOPOLOGY_RESPONSE_V2;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrSurveyMessageResponseType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

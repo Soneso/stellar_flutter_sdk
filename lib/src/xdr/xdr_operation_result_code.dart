@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrOperationResultCode {
   final _value;
@@ -74,5 +75,67 @@ class XdrOperationResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrOperationResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrOperationResultCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrOperationResultCode.
+  static XdrOperationResultCode fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrOperationResultCode'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'op_inner';
+      case -1:
+        return 'op_bad_auth';
+      case -2:
+        return 'op_no_account';
+      case -3:
+        return 'op_not_supported';
+      case -4:
+        return 'op_too_many_subentries';
+      case -5:
+        return 'op_exceeded_work_limit';
+      case -6:
+        return 'op_too_many_sponsoring';
+      default:
+        XdrJsonHelper.fail(
+          'XdrOperationResultCode',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrOperationResultCode from its SEP-0051 name.
+  static XdrOperationResultCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'op_inner':
+          return XdrOperationResultCode.opINNER;
+        case 'op_bad_auth':
+          return XdrOperationResultCode.opBAD_AUTH;
+        case 'op_no_account':
+          return XdrOperationResultCode.opNO_ACCOUNT;
+        case 'op_not_supported':
+          return XdrOperationResultCode.opNOT_SUPPORTED;
+        case 'op_too_many_subentries':
+          return XdrOperationResultCode.opTOO_MANY_SUBENTRIES;
+        case 'op_exceeded_work_limit':
+          return XdrOperationResultCode.opEXCEEDED_WORK_LIMIT;
+        case 'op_too_many_sponsoring':
+          return XdrOperationResultCode.opTOO_MANY_SPONSORING;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrOperationResultCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

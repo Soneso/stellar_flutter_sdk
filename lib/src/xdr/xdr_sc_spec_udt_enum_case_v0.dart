@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrSCSpecUDTEnumCaseV0 {
@@ -51,5 +52,72 @@ class XdrSCSpecUDTEnumCaseV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecUDTEnumCaseV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCSpecUDTEnumCaseV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecUDTEnumCaseV0.
+  static XdrSCSpecUDTEnumCaseV0 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecUDTEnumCaseV0'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCSpecUDTEnumCaseV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'doc': XdrJsonHelper.escapedString(
+      _doc,
+      type: 'XdrSCSpecUDTEnumCaseV0',
+      key: 'doc',
+      maxBytes: 1024,
+    ),
+    'name': XdrJsonHelper.escapedString(
+      _name,
+      type: 'XdrSCSpecUDTEnumCaseV0',
+      key: 'name',
+      maxBytes: 60,
+    ),
+    'value': _value.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSCSpecUDTEnumCaseV0 from its SEP-0051 rendering.
+  static XdrSCSpecUDTEnumCaseV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCSpecUDTEnumCaseV0',
+      allowedKeys: const <String>{'doc', 'name', 'value'},
+    );
+    final Object? jsonDoc = XdrJsonHelper.readField(
+      object,
+      'doc',
+      type: 'XdrSCSpecUDTEnumCaseV0',
+    );
+    final Object? jsonName = XdrJsonHelper.readField(
+      object,
+      'name',
+      type: 'XdrSCSpecUDTEnumCaseV0',
+    );
+    final Object? jsonValue = XdrJsonHelper.readField(
+      object,
+      'value',
+      type: 'XdrSCSpecUDTEnumCaseV0',
+    );
+    return XdrSCSpecUDTEnumCaseV0(
+      XdrJsonHelper.readEscapedString(
+        jsonDoc,
+        type: 'XdrSCSpecUDTEnumCaseV0',
+        key: 'doc',
+        maxBytes: 1024,
+      ),
+      XdrJsonHelper.readEscapedString(
+        jsonName,
+        type: 'XdrSCSpecUDTEnumCaseV0',
+        key: 'name',
+        maxBytes: 60,
+      ),
+      XdrUint32.fromXdrJsonValue(jsonValue),
+    );
   }
 }

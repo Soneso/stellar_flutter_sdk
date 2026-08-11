@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_account_merge_result_code.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 
 class XdrAccountMergeResult {
   XdrAccountMergeResultCode _code;
@@ -74,5 +75,100 @@ class XdrAccountMergeResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountMergeResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrAccountMergeResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAccountMergeResult.
+  static XdrAccountMergeResult fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrAccountMergeResult'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrAccountMergeResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{
+          'success': _sourceAccountBalance!.toXdrJsonValue(),
+        };
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'no_account';
+      case -3:
+        return 'immutable_set';
+      case -4:
+        return 'has_sub_entries';
+      case -5:
+        return 'seqnum_too_far';
+      case -6:
+        return 'dest_full';
+      case -7:
+        return 'is_sponsor';
+    }
+    XdrJsonHelper.fail(
+      'XdrAccountMergeResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrAccountMergeResult from its SEP-0051 rendering.
+  static XdrAccountMergeResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'malformed':
+          return XdrAccountMergeResult(
+            XdrAccountMergeResultCode.ACCOUNT_MERGE_MALFORMED,
+          );
+        case 'no_account':
+          return XdrAccountMergeResult(
+            XdrAccountMergeResultCode.ACCOUNT_MERGE_NO_ACCOUNT,
+          );
+        case 'immutable_set':
+          return XdrAccountMergeResult(
+            XdrAccountMergeResultCode.ACCOUNT_MERGE_IMMUTABLE_SET,
+          );
+        case 'has_sub_entries':
+          return XdrAccountMergeResult(
+            XdrAccountMergeResultCode.ACCOUNT_MERGE_HAS_SUB_ENTRIES,
+          );
+        case 'seqnum_too_far':
+          return XdrAccountMergeResult(
+            XdrAccountMergeResultCode.ACCOUNT_MERGE_SEQNUM_TOO_FAR,
+          );
+        case 'dest_full':
+          return XdrAccountMergeResult(
+            XdrAccountMergeResultCode.ACCOUNT_MERGE_DEST_FULL,
+          );
+        case 'is_sponsor':
+          return XdrAccountMergeResult(
+            XdrAccountMergeResultCode.ACCOUNT_MERGE_IS_SPONSOR,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrAccountMergeResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrAccountMergeResult',
+    );
+    switch (arm.key) {
+      case 'success':
+        final XdrAccountMergeResult arm0 = XdrAccountMergeResult(
+          XdrAccountMergeResultCode.ACCOUNT_MERGE_SUCCESS,
+        );
+        arm0.sourceAccountBalance = XdrInt64.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrAccountMergeResult',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

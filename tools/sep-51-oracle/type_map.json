@@ -1,0 +1,1748 @@
+{
+  "oracle": {
+    "tool": "stellar-xdr",
+    "version": "28.0.0",
+    "xdr_commit": "9c9c145953e80990d6ff1ae3a6a973a0ce6d0694"
+  },
+  "sdk_xdr_commit": "911c9356277468cb588481bd90b5d4b6eda395a7",
+  "description": "Maps the qualified .x type name to the reference CLI's spelling and to this SDK's generated Dart class name. Keyed on the .x name because the Dart name is many-to-one. unknown_to_oracle lists every type the reference build does not resolve, whatever the cause; the expected cause is a type added after the XDR commit that build vendors, and the list is empty while the two pins agree closely enough.",
+  "type_map": {
+    "AccountEntry": {
+      "oracle": "AccountEntry",
+      "dart": "XdrAccountEntry"
+    },
+    "AccountEntryExt": {
+      "oracle": "AccountEntryExt",
+      "dart": "XdrAccountEntryExt"
+    },
+    "AccountEntryExtensionV1": {
+      "oracle": "AccountEntryExtensionV1",
+      "dart": "XdrAccountEntryV1"
+    },
+    "AccountEntryExtensionV1Ext": {
+      "oracle": "AccountEntryExtensionV1Ext",
+      "dart": "XdrAccountEntryV1Ext"
+    },
+    "AccountEntryExtensionV2": {
+      "oracle": "AccountEntryExtensionV2",
+      "dart": "XdrAccountEntryV2"
+    },
+    "AccountEntryExtensionV2Ext": {
+      "oracle": "AccountEntryExtensionV2Ext",
+      "dart": "XdrAccountEntryV2Ext"
+    },
+    "AccountEntryExtensionV3": {
+      "oracle": "AccountEntryExtensionV3",
+      "dart": "XdrAccountEntryV3"
+    },
+    "AccountFlags": {
+      "oracle": "AccountFlags",
+      "dart": "XdrAccountFlags"
+    },
+    "AccountMergeResult": {
+      "oracle": "AccountMergeResult",
+      "dart": "XdrAccountMergeResult"
+    },
+    "AccountMergeResultCode": {
+      "oracle": "AccountMergeResultCode",
+      "dart": "XdrAccountMergeResultCode"
+    },
+    "AllowTrustOp": {
+      "oracle": "AllowTrustOp",
+      "dart": "XdrAllowTrustOp"
+    },
+    "AllowTrustResult": {
+      "oracle": "AllowTrustResult",
+      "dart": "XdrAllowTrustResult"
+    },
+    "AllowTrustResultCode": {
+      "oracle": "AllowTrustResultCode",
+      "dart": "XdrAllowTrustResultCode"
+    },
+    "AlphaNum12": {
+      "oracle": "AlphaNum12",
+      "dart": "XdrAssetAlphaNum12"
+    },
+    "AlphaNum4": {
+      "oracle": "AlphaNum4",
+      "dart": "XdrAssetAlphaNum4"
+    },
+    "Asset": {
+      "oracle": "Asset",
+      "dart": "XdrAsset"
+    },
+    "AssetCode": {
+      "oracle": "AssetCode",
+      "dart": "XdrAllowTrustOpAsset"
+    },
+    "AssetType": {
+      "oracle": "AssetType",
+      "dart": "XdrAssetType"
+    },
+    "Auth": {
+      "oracle": "Auth",
+      "dart": "XdrAuth"
+    },
+    "AuthCert": {
+      "oracle": "AuthCert",
+      "dart": "XdrAuthCert"
+    },
+    "AuthenticatedMessage": {
+      "oracle": "AuthenticatedMessage",
+      "dart": "XdrAuthenticatedMessage"
+    },
+    "AuthenticatedMessageV0": {
+      "oracle": "AuthenticatedMessageV0",
+      "dart": "XdrAuthenticatedMessageV0"
+    },
+    "BeginSponsoringFutureReservesOp": {
+      "oracle": "BeginSponsoringFutureReservesOp",
+      "dart": "XdrBeginSponsoringFutureReservesOp"
+    },
+    "BeginSponsoringFutureReservesResult": {
+      "oracle": "BeginSponsoringFutureReservesResult",
+      "dart": "XdrBeginSponsoringFutureReservesResult"
+    },
+    "BeginSponsoringFutureReservesResultCode": {
+      "oracle": "BeginSponsoringFutureReservesResultCode",
+      "dart": "XdrBeginSponsoringFutureReservesResultCode"
+    },
+    "BinaryFuseFilterType": {
+      "oracle": "BinaryFuseFilterType",
+      "dart": "XdrBinaryFuseFilterType"
+    },
+    "BucketEntry": {
+      "oracle": "BucketEntry",
+      "dart": "XdrBucketEntry"
+    },
+    "BucketEntryType": {
+      "oracle": "BucketEntryType",
+      "dart": "XdrBucketEntryType"
+    },
+    "BucketListType": {
+      "oracle": "BucketListType",
+      "dart": "XdrBucketListType"
+    },
+    "BucketMetadata": {
+      "oracle": "BucketMetadata",
+      "dart": "XdrBucketMetadata"
+    },
+    "BucketMetadataExt": {
+      "oracle": "BucketMetadataExt",
+      "dart": "XdrBucketMetadataExt"
+    },
+    "BumpSequenceOp": {
+      "oracle": "BumpSequenceOp",
+      "dart": "XdrBumpSequenceOp"
+    },
+    "BumpSequenceResult": {
+      "oracle": "BumpSequenceResult",
+      "dart": "XdrBumpSequenceResult"
+    },
+    "BumpSequenceResultCode": {
+      "oracle": "BumpSequenceResultCode",
+      "dart": "XdrBumpSequenceResultCode"
+    },
+    "ChangeTrustAsset": {
+      "oracle": "ChangeTrustAsset",
+      "dart": "XdrChangeTrustAsset"
+    },
+    "ChangeTrustOp": {
+      "oracle": "ChangeTrustOp",
+      "dart": "XdrChangeTrustOp"
+    },
+    "ChangeTrustResult": {
+      "oracle": "ChangeTrustResult",
+      "dart": "XdrChangeTrustResult"
+    },
+    "ChangeTrustResultCode": {
+      "oracle": "ChangeTrustResultCode",
+      "dart": "XdrChangeTrustResultCode"
+    },
+    "ClaimAtom": {
+      "oracle": "ClaimAtom",
+      "dart": "XdrClaimAtom"
+    },
+    "ClaimAtomType": {
+      "oracle": "ClaimAtomType",
+      "dart": "XdrClaimAtomType"
+    },
+    "ClaimClaimableBalanceOp": {
+      "oracle": "ClaimClaimableBalanceOp",
+      "dart": "XdrClaimClaimableBalanceOp"
+    },
+    "ClaimClaimableBalanceResult": {
+      "oracle": "ClaimClaimableBalanceResult",
+      "dart": "XdrClaimClaimableBalanceResult"
+    },
+    "ClaimClaimableBalanceResultCode": {
+      "oracle": "ClaimClaimableBalanceResultCode",
+      "dart": "XdrClaimClaimableBalanceResultCode"
+    },
+    "ClaimLiquidityAtom": {
+      "oracle": "ClaimLiquidityAtom",
+      "dart": "XdrClaimLiquidityAtom"
+    },
+    "ClaimOfferAtom": {
+      "oracle": "ClaimOfferAtom",
+      "dart": "XdrClaimOfferAtom"
+    },
+    "ClaimOfferAtomV0": {
+      "oracle": "ClaimOfferAtomV0",
+      "dart": "XdrClaimOfferAtomV0"
+    },
+    "ClaimPredicate": {
+      "oracle": "ClaimPredicate",
+      "dart": "XdrClaimPredicate"
+    },
+    "ClaimPredicateType": {
+      "oracle": "ClaimPredicateType",
+      "dart": "XdrClaimPredicateType"
+    },
+    "ClaimableBalanceEntry": {
+      "oracle": "ClaimableBalanceEntry",
+      "dart": "XdrClaimableBalanceEntry"
+    },
+    "ClaimableBalanceEntryExt": {
+      "oracle": "ClaimableBalanceEntryExt",
+      "dart": "XdrClaimableBalanceEntryExt"
+    },
+    "ClaimableBalanceEntryExtensionV1": {
+      "oracle": "ClaimableBalanceEntryExtensionV1",
+      "dart": "XdrClaimableBalanceEntryExtV1"
+    },
+    "ClaimableBalanceEntryExtensionV1Ext": {
+      "oracle": "ClaimableBalanceEntryExtensionV1Ext",
+      "dart": "XdrClaimableBalanceEntryExtV1Ext"
+    },
+    "ClaimableBalanceFlags": {
+      "oracle": "ClaimableBalanceFlags",
+      "dart": "XdrClaimableBalanceFlags"
+    },
+    "ClaimableBalanceID": {
+      "oracle": "ClaimableBalanceId",
+      "dart": "XdrClaimableBalanceID"
+    },
+    "ClaimableBalanceIDType": {
+      "oracle": "ClaimableBalanceIdType",
+      "dart": "XdrClaimableBalanceIDType"
+    },
+    "Claimant": {
+      "oracle": "Claimant",
+      "dart": "XdrClaimant"
+    },
+    "ClaimantType": {
+      "oracle": "ClaimantType",
+      "dart": "XdrClaimantType"
+    },
+    "ClaimantV0": {
+      "oracle": "ClaimantV0",
+      "dart": "XdrClaimantV0"
+    },
+    "ClawbackClaimableBalanceOp": {
+      "oracle": "ClawbackClaimableBalanceOp",
+      "dart": "XdrClawbackClaimableBalanceOp"
+    },
+    "ClawbackClaimableBalanceResult": {
+      "oracle": "ClawbackClaimableBalanceResult",
+      "dart": "XdrClawbackClaimableBalanceResult"
+    },
+    "ClawbackClaimableBalanceResultCode": {
+      "oracle": "ClawbackClaimableBalanceResultCode",
+      "dart": "XdrClawbackClaimableBalanceResultCode"
+    },
+    "ClawbackOp": {
+      "oracle": "ClawbackOp",
+      "dart": "XdrClawbackOp"
+    },
+    "ClawbackResult": {
+      "oracle": "ClawbackResult",
+      "dart": "XdrClawbackResult"
+    },
+    "ClawbackResultCode": {
+      "oracle": "ClawbackResultCode",
+      "dart": "XdrClawbackResultCode"
+    },
+    "ConfigSettingContractBandwidthV0": {
+      "oracle": "ConfigSettingContractBandwidthV0",
+      "dart": "XdrConfigSettingContractBandwidthV0"
+    },
+    "ConfigSettingContractComputeV0": {
+      "oracle": "ConfigSettingContractComputeV0",
+      "dart": "XdrConfigSettingContractComputeV0"
+    },
+    "ConfigSettingContractEventsV0": {
+      "oracle": "ConfigSettingContractEventsV0",
+      "dart": "XdrConfigSettingContractEventsV0"
+    },
+    "ConfigSettingContractExecutionLanesV0": {
+      "oracle": "ConfigSettingContractExecutionLanesV0",
+      "dart": "XdrConfigSettingContractExecutionLanesV0"
+    },
+    "ConfigSettingContractHistoricalDataV0": {
+      "oracle": "ConfigSettingContractHistoricalDataV0",
+      "dart": "XdrConfigSettingContractHistoricalDataV0"
+    },
+    "ConfigSettingContractLedgerCostExtV0": {
+      "oracle": "ConfigSettingContractLedgerCostExtV0",
+      "dart": "XdrConfigSettingContractLedgerCostExtV0"
+    },
+    "ConfigSettingContractLedgerCostV0": {
+      "oracle": "ConfigSettingContractLedgerCostV0",
+      "dart": "XdrConfigSettingContractLedgerCostV0"
+    },
+    "ConfigSettingContractParallelComputeV0": {
+      "oracle": "ConfigSettingContractParallelComputeV0",
+      "dart": "XdrConfigSettingContractParallelComputeV0"
+    },
+    "ConfigSettingEntry": {
+      "oracle": "ConfigSettingEntry",
+      "dart": "XdrConfigSettingEntry"
+    },
+    "ConfigSettingID": {
+      "oracle": "ConfigSettingId",
+      "dart": "XdrConfigSettingID"
+    },
+    "ConfigSettingSCPTiming": {
+      "oracle": "ConfigSettingScpTiming",
+      "dart": "XdrConfigSettingSCPTiming"
+    },
+    "ConfigUpgradeSet": {
+      "oracle": "ConfigUpgradeSet",
+      "dart": "XdrConfigUpgradeSet"
+    },
+    "ConfigUpgradeSetKey": {
+      "oracle": "ConfigUpgradeSetKey",
+      "dart": "XdrConfigUpgradeSetKey"
+    },
+    "ContractCodeCostInputs": {
+      "oracle": "ContractCodeCostInputs",
+      "dart": "XdrContractCodeCostInputs"
+    },
+    "ContractCodeEntry": {
+      "oracle": "ContractCodeEntry",
+      "dart": "XdrContractCodeEntry"
+    },
+    "ContractCodeEntryExt": {
+      "oracle": "ContractCodeEntryExt",
+      "dart": "XdrContractCodeEntryExt"
+    },
+    "ContractCodeEntryV1": {
+      "oracle": "ContractCodeEntryV1",
+      "dart": "XdrContractCodeEntryV1"
+    },
+    "ContractCostParamEntry": {
+      "oracle": "ContractCostParamEntry",
+      "dart": "XdrContractCostParamEntry"
+    },
+    "ContractCostType": {
+      "oracle": "ContractCostType",
+      "dart": "XdrContractCostType"
+    },
+    "ContractDataDurability": {
+      "oracle": "ContractDataDurability",
+      "dart": "XdrContractDataDurability"
+    },
+    "ContractDataEntry": {
+      "oracle": "ContractDataEntry",
+      "dart": "XdrContractDataEntry"
+    },
+    "ContractEvent": {
+      "oracle": "ContractEvent",
+      "dart": "XdrContractEvent"
+    },
+    "ContractEventBody": {
+      "oracle": "ContractEventBody",
+      "dart": "XdrContractEventBody"
+    },
+    "ContractEventType": {
+      "oracle": "ContractEventType",
+      "dart": "XdrContractEventType"
+    },
+    "ContractEventV0": {
+      "oracle": "ContractEventV0",
+      "dart": "XdrContractEventV0"
+    },
+    "ContractExecutable": {
+      "oracle": "ContractExecutable",
+      "dart": "XdrContractExecutable"
+    },
+    "ContractExecutableExternalRef": {
+      "oracle": "ContractExecutableExternalRef",
+      "dart": "XdrContractExecutableExternalRef"
+    },
+    "ContractExecutableType": {
+      "oracle": "ContractExecutableType",
+      "dart": "XdrContractExecutableType"
+    },
+    "ContractIDPreimage": {
+      "oracle": "ContractIdPreimage",
+      "dart": "XdrContractIDPreimage"
+    },
+    "ContractIDPreimageFromAddress": {
+      "oracle": "ContractIdPreimageFromAddress",
+      "dart": "XdrContractIDPreimageFromAddress"
+    },
+    "ContractIDPreimageType": {
+      "oracle": "ContractIdPreimageType",
+      "dart": "XdrContractIDPreimageType"
+    },
+    "CreateAccountOp": {
+      "oracle": "CreateAccountOp",
+      "dart": "XdrCreateAccountOp"
+    },
+    "CreateAccountResult": {
+      "oracle": "CreateAccountResult",
+      "dart": "XdrCreateAccountResult"
+    },
+    "CreateAccountResultCode": {
+      "oracle": "CreateAccountResultCode",
+      "dart": "XdrCreateAccountResultCode"
+    },
+    "CreateClaimableBalanceOp": {
+      "oracle": "CreateClaimableBalanceOp",
+      "dart": "XdrCreateClaimableBalanceOp"
+    },
+    "CreateClaimableBalanceResult": {
+      "oracle": "CreateClaimableBalanceResult",
+      "dart": "XdrCreateClaimableBalanceResult"
+    },
+    "CreateClaimableBalanceResultCode": {
+      "oracle": "CreateClaimableBalanceResultCode",
+      "dart": "XdrCreateClaimableBalanceResultCode"
+    },
+    "CreateContractArgs": {
+      "oracle": "CreateContractArgs",
+      "dart": "XdrCreateContractArgs"
+    },
+    "CreateContractArgsV2": {
+      "oracle": "CreateContractArgsV2",
+      "dart": "XdrCreateContractArgsV2"
+    },
+    "CreatePassiveSellOfferOp": {
+      "oracle": "CreatePassiveSellOfferOp",
+      "dart": "XdrCreatePassiveSellOfferOp"
+    },
+    "CryptoKeyType": {
+      "oracle": "CryptoKeyType",
+      "dart": "XdrCryptoKeyType"
+    },
+    "Curve25519Public": {
+      "oracle": "Curve25519Public",
+      "dart": "XdrCurve25519Public"
+    },
+    "Curve25519Secret": {
+      "oracle": "Curve25519Secret",
+      "dart": "XdrCurve25519Secret"
+    },
+    "DataEntry": {
+      "oracle": "DataEntry",
+      "dart": "XdrDataEntry"
+    },
+    "DataEntryExt": {
+      "oracle": "DataEntryExt",
+      "dart": "XdrDataEntryExt"
+    },
+    "DecoratedSignature": {
+      "oracle": "DecoratedSignature",
+      "dart": "XdrDecoratedSignature"
+    },
+    "DiagnosticEvent": {
+      "oracle": "DiagnosticEvent",
+      "dart": "XdrDiagnosticEvent"
+    },
+    "DontHave": {
+      "oracle": "DontHave",
+      "dart": "XdrDontHave"
+    },
+    "EndSponsoringFutureReservesResult": {
+      "oracle": "EndSponsoringFutureReservesResult",
+      "dart": "XdrEndSponsoringFutureReservesResult"
+    },
+    "EndSponsoringFutureReservesResultCode": {
+      "oracle": "EndSponsoringFutureReservesResultCode",
+      "dart": "XdrEndSponsoringFutureReservesResultCode"
+    },
+    "EnvelopeType": {
+      "oracle": "EnvelopeType",
+      "dart": "XdrEnvelopeType"
+    },
+    "Error": {
+      "oracle": "SError",
+      "dart": "XdrError"
+    },
+    "ErrorCode": {
+      "oracle": "ErrorCode",
+      "dart": "XdrErrorCode"
+    },
+    "EvictionIterator": {
+      "oracle": "EvictionIterator",
+      "dart": "XdrEvictionIterator"
+    },
+    "ExtendFootprintTTLOp": {
+      "oracle": "ExtendFootprintTtlOp",
+      "dart": "XdrExtendFootprintTTLOp"
+    },
+    "ExtendFootprintTTLResult": {
+      "oracle": "ExtendFootprintTtlResult",
+      "dart": "XdrExtendFootprintTTLResult"
+    },
+    "ExtendFootprintTTLResultCode": {
+      "oracle": "ExtendFootprintTtlResultCode",
+      "dart": "XdrExtendFootprintTTLResultCode"
+    },
+    "ExtensionPoint": {
+      "oracle": "ExtensionPoint",
+      "dart": "XdrExtensionPoint"
+    },
+    "FeeBumpTransaction": {
+      "oracle": "FeeBumpTransaction",
+      "dart": "XdrFeeBumpTransaction"
+    },
+    "FeeBumpTransactionEnvelope": {
+      "oracle": "FeeBumpTransactionEnvelope",
+      "dart": "XdrFeeBumpTransactionEnvelope"
+    },
+    "FeeBumpTransactionExt": {
+      "oracle": "FeeBumpTransactionExt",
+      "dart": "XdrFeeBumpTransactionExt"
+    },
+    "FeeBumpTransactionInnerTx": {
+      "oracle": "FeeBumpTransactionInnerTx",
+      "dart": "XdrFeeBumpTransactionInnerTx"
+    },
+    "FloodAdvert": {
+      "oracle": "FloodAdvert",
+      "dart": "XdrFloodAdvert"
+    },
+    "FloodDemand": {
+      "oracle": "FloodDemand",
+      "dart": "XdrFloodDemand"
+    },
+    "FreezeBypassTxs": {
+      "oracle": "FreezeBypassTxs",
+      "dart": "XdrFreezeBypassTxs"
+    },
+    "FreezeBypassTxsDelta": {
+      "oracle": "FreezeBypassTxsDelta",
+      "dart": "XdrFreezeBypassTxsDelta"
+    },
+    "FrozenLedgerKeys": {
+      "oracle": "FrozenLedgerKeys",
+      "dart": "XdrFrozenLedgerKeys"
+    },
+    "FrozenLedgerKeysDelta": {
+      "oracle": "FrozenLedgerKeysDelta",
+      "dart": "XdrFrozenLedgerKeysDelta"
+    },
+    "GeneralizedTransactionSet": {
+      "oracle": "GeneralizedTransactionSet",
+      "dart": "XdrGeneralizedTransactionSet"
+    },
+    "HashIDPreimage": {
+      "oracle": "HashIdPreimage",
+      "dart": "XdrHashIDPreimage"
+    },
+    "HashIDPreimageContractID": {
+      "oracle": "HashIdPreimageContractId",
+      "dart": "XdrHashIDPreimageContractID"
+    },
+    "HashIDPreimageOperationID": {
+      "oracle": "HashIdPreimageOperationId",
+      "dart": "XdrHashIDPreimageOperationID"
+    },
+    "HashIDPreimageRevokeID": {
+      "oracle": "HashIdPreimageRevokeId",
+      "dart": "XdrHashIDPreimageRevokeID"
+    },
+    "HashIDPreimageSorobanAuthorization": {
+      "oracle": "HashIdPreimageSorobanAuthorization",
+      "dart": "XdrHashIDPreimageSorobanAuthorization"
+    },
+    "HashIDPreimageSorobanAuthorizationWithAddress": {
+      "oracle": "HashIdPreimageSorobanAuthorizationWithAddress",
+      "dart": "XdrHashIDPreimageSorobanAuthorizationWithAddress"
+    },
+    "Hello": {
+      "oracle": "Hello",
+      "dart": "XdrHello"
+    },
+    "HmacSha256Key": {
+      "oracle": "HmacSha256Key",
+      "dart": "XdrHmacSha256Key"
+    },
+    "HmacSha256Mac": {
+      "oracle": "HmacSha256Mac",
+      "dart": "XdrHmacSha256Mac"
+    },
+    "HostFunction": {
+      "oracle": "HostFunction",
+      "dart": "XdrHostFunction"
+    },
+    "HostFunctionType": {
+      "oracle": "HostFunctionType",
+      "dart": "XdrHostFunctionType"
+    },
+    "HotArchiveBucketEntry": {
+      "oracle": "HotArchiveBucketEntry",
+      "dart": "XdrHotArchiveBucketEntry"
+    },
+    "HotArchiveBucketEntryType": {
+      "oracle": "HotArchiveBucketEntryType",
+      "dart": "XdrHotArchiveBucketEntryType"
+    },
+    "IPAddrType": {
+      "oracle": "IpAddrType",
+      "dart": "XdrIPAddrType"
+    },
+    "InflationPayout": {
+      "oracle": "InflationPayout",
+      "dart": "XdrInflationPayout"
+    },
+    "InflationResult": {
+      "oracle": "InflationResult",
+      "dart": "XdrInflationResult"
+    },
+    "InflationResultCode": {
+      "oracle": "InflationResultCode",
+      "dart": "XdrInflationResultCode"
+    },
+    "InnerTransactionResult": {
+      "oracle": "InnerTransactionResult",
+      "dart": "XdrInnerTransactionResult"
+    },
+    "InnerTransactionResultExt": {
+      "oracle": "InnerTransactionResultExt",
+      "dart": "XdrInnerTransactionResultExt"
+    },
+    "InnerTransactionResultPair": {
+      "oracle": "InnerTransactionResultPair",
+      "dart": "XdrInnerTransactionResultPair"
+    },
+    "InnerTransactionResultResult": {
+      "oracle": "InnerTransactionResultResult",
+      "dart": "XdrInnerTransactionResultResult"
+    },
+    "Int128Parts": {
+      "oracle": "Int128Parts",
+      "dart": "XdrInt128Parts"
+    },
+    "Int256Parts": {
+      "oracle": "Int256Parts",
+      "dart": "XdrInt256Parts"
+    },
+    "InvokeContractArgs": {
+      "oracle": "InvokeContractArgs",
+      "dart": "XdrInvokeContractArgs"
+    },
+    "InvokeHostFunctionOp": {
+      "oracle": "InvokeHostFunctionOp",
+      "dart": "XdrInvokeHostFunctionOp"
+    },
+    "InvokeHostFunctionResult": {
+      "oracle": "InvokeHostFunctionResult",
+      "dart": "XdrInvokeHostFunctionResult"
+    },
+    "InvokeHostFunctionResultCode": {
+      "oracle": "InvokeHostFunctionResultCode",
+      "dart": "XdrInvokeHostFunctionResultCode"
+    },
+    "InvokeHostFunctionSuccessPreImage": {
+      "oracle": "InvokeHostFunctionSuccessPreImage",
+      "dart": "XdrInvokeHostFunctionSuccessPreImage"
+    },
+    "LedgerBounds": {
+      "oracle": "LedgerBounds",
+      "dart": "XdrLedgerBounds"
+    },
+    "LedgerCloseMeta": {
+      "oracle": "LedgerCloseMeta",
+      "dart": "XdrLedgerCloseMeta"
+    },
+    "LedgerCloseMetaBatch": {
+      "oracle": "LedgerCloseMetaBatch",
+      "dart": "XdrLedgerCloseMetaBatch"
+    },
+    "LedgerCloseMetaExt": {
+      "oracle": "LedgerCloseMetaExt",
+      "dart": "XdrLedgerCloseMetaExt"
+    },
+    "LedgerCloseMetaExtV1": {
+      "oracle": "LedgerCloseMetaExtV1",
+      "dart": "XdrLedgerCloseMetaExtV1"
+    },
+    "LedgerCloseMetaV0": {
+      "oracle": "LedgerCloseMetaV0",
+      "dart": "XdrLedgerCloseMetaV0"
+    },
+    "LedgerCloseMetaV1": {
+      "oracle": "LedgerCloseMetaV1",
+      "dart": "XdrLedgerCloseMetaV1"
+    },
+    "LedgerCloseMetaV2": {
+      "oracle": "LedgerCloseMetaV2",
+      "dart": "XdrLedgerCloseMetaV2"
+    },
+    "LedgerCloseValueSignature": {
+      "oracle": "LedgerCloseValueSignature",
+      "dart": "XdrLedgerCloseValueSignature"
+    },
+    "LedgerEntry": {
+      "oracle": "LedgerEntry",
+      "dart": "XdrLedgerEntry"
+    },
+    "LedgerEntryChange": {
+      "oracle": "LedgerEntryChange",
+      "dart": "XdrLedgerEntryChange"
+    },
+    "LedgerEntryChangeType": {
+      "oracle": "LedgerEntryChangeType",
+      "dart": "XdrLedgerEntryChangeType"
+    },
+    "LedgerEntryData": {
+      "oracle": "LedgerEntryData",
+      "dart": "XdrLedgerEntryData"
+    },
+    "LedgerEntryExt": {
+      "oracle": "LedgerEntryExt",
+      "dart": "XdrLedgerEntryExt"
+    },
+    "LedgerEntryExtensionV1": {
+      "oracle": "LedgerEntryExtensionV1",
+      "dart": "XdrLedgerEntryV1"
+    },
+    "LedgerEntryExtensionV1Ext": {
+      "oracle": "LedgerEntryExtensionV1Ext",
+      "dart": "XdrLedgerEntryV1Ext"
+    },
+    "LedgerEntryType": {
+      "oracle": "LedgerEntryType",
+      "dart": "XdrLedgerEntryType"
+    },
+    "LedgerFootprint": {
+      "oracle": "LedgerFootprint",
+      "dart": "XdrLedgerFootprint"
+    },
+    "LedgerHeader": {
+      "oracle": "LedgerHeader",
+      "dart": "XdrLedgerHeader"
+    },
+    "LedgerHeaderExt": {
+      "oracle": "LedgerHeaderExt",
+      "dart": "XdrLedgerHeaderExt"
+    },
+    "LedgerHeaderExtensionV1": {
+      "oracle": "LedgerHeaderExtensionV1",
+      "dart": "XdrLedgerHeaderExtensionV1"
+    },
+    "LedgerHeaderExtensionV1Ext": {
+      "oracle": "LedgerHeaderExtensionV1Ext",
+      "dart": "XdrLedgerHeaderExtensionV1Ext"
+    },
+    "LedgerHeaderFlags": {
+      "oracle": "LedgerHeaderFlags",
+      "dart": "XdrLedgerHeaderFlags"
+    },
+    "LedgerHeaderHistoryEntry": {
+      "oracle": "LedgerHeaderHistoryEntry",
+      "dart": "XdrLedgerHeaderHistoryEntry"
+    },
+    "LedgerHeaderHistoryEntryExt": {
+      "oracle": "LedgerHeaderHistoryEntryExt",
+      "dart": "XdrLedgerHeaderHistoryEntryExt"
+    },
+    "LedgerKey": {
+      "oracle": "LedgerKey",
+      "dart": "XdrLedgerKey"
+    },
+    "LedgerKeyAccount": {
+      "oracle": "LedgerKeyAccount",
+      "dart": "XdrLedgerKeyAccount"
+    },
+    "LedgerKeyClaimableBalance": {
+      "oracle": "LedgerKeyClaimableBalance",
+      "dart": "XdrLedgerKeyClaimableBalance"
+    },
+    "LedgerKeyConfigSetting": {
+      "oracle": "LedgerKeyConfigSetting",
+      "dart": "XdrLedgerKeyConfigSetting"
+    },
+    "LedgerKeyContractCode": {
+      "oracle": "LedgerKeyContractCode",
+      "dart": "XdrLedgerKeyContractCode"
+    },
+    "LedgerKeyContractData": {
+      "oracle": "LedgerKeyContractData",
+      "dart": "XdrLedgerKeyContractData"
+    },
+    "LedgerKeyData": {
+      "oracle": "LedgerKeyData",
+      "dart": "XdrLedgerKeyData"
+    },
+    "LedgerKeyLiquidityPool": {
+      "oracle": "LedgerKeyLiquidityPool",
+      "dart": "XdrLedgerKeyLiquidityPool"
+    },
+    "LedgerKeyOffer": {
+      "oracle": "LedgerKeyOffer",
+      "dart": "XdrLedgerKeyOffer"
+    },
+    "LedgerKeyTrustLine": {
+      "oracle": "LedgerKeyTrustLine",
+      "dart": "XdrLedgerKeyTrustLine"
+    },
+    "LedgerKeyTtl": {
+      "oracle": "LedgerKeyTtl",
+      "dart": "XdrLedgerKeyTTL"
+    },
+    "LedgerSCPMessages": {
+      "oracle": "LedgerScpMessages",
+      "dart": "XdrLedgerSCPMessages"
+    },
+    "LedgerUpgrade": {
+      "oracle": "LedgerUpgrade",
+      "dart": "XdrLedgerUpgrade"
+    },
+    "LedgerUpgradeType": {
+      "oracle": "LedgerUpgradeType",
+      "dart": "XdrLedgerUpgradeType"
+    },
+    "Liabilities": {
+      "oracle": "Liabilities",
+      "dart": "XdrLiabilities"
+    },
+    "LiquidityPoolConstantProductParameters": {
+      "oracle": "LiquidityPoolConstantProductParameters",
+      "dart": "XdrLiquidityPoolConstantProductParameters"
+    },
+    "LiquidityPoolDepositOp": {
+      "oracle": "LiquidityPoolDepositOp",
+      "dart": "XdrLiquidityPoolDepositOp"
+    },
+    "LiquidityPoolDepositResult": {
+      "oracle": "LiquidityPoolDepositResult",
+      "dart": "XdrLiquidityPoolDepositResult"
+    },
+    "LiquidityPoolDepositResultCode": {
+      "oracle": "LiquidityPoolDepositResultCode",
+      "dart": "XdrLiquidityPoolDepositResultCode"
+    },
+    "LiquidityPoolEntry": {
+      "oracle": "LiquidityPoolEntry",
+      "dart": "XdrLiquidityPoolEntry"
+    },
+    "LiquidityPoolEntryBody": {
+      "oracle": "LiquidityPoolEntryBody",
+      "dart": "XdrLiquidityPoolBody"
+    },
+    "LiquidityPoolEntryConstantProduct": {
+      "oracle": "LiquidityPoolEntryConstantProduct",
+      "dart": "XdrLiquidityPoolEntryConstantProduct"
+    },
+    "LiquidityPoolParameters": {
+      "oracle": "LiquidityPoolParameters",
+      "dart": "XdrLiquidityPoolParameters"
+    },
+    "LiquidityPoolType": {
+      "oracle": "LiquidityPoolType",
+      "dart": "XdrLiquidityPoolType"
+    },
+    "LiquidityPoolWithdrawOp": {
+      "oracle": "LiquidityPoolWithdrawOp",
+      "dart": "XdrLiquidityPoolWithdrawOp"
+    },
+    "LiquidityPoolWithdrawResult": {
+      "oracle": "LiquidityPoolWithdrawResult",
+      "dart": "XdrLiquidityPoolWithdrawResult"
+    },
+    "LiquidityPoolWithdrawResultCode": {
+      "oracle": "LiquidityPoolWithdrawResultCode",
+      "dart": "XdrLiquidityPoolWithdrawResultCode"
+    },
+    "ManageBuyOfferOp": {
+      "oracle": "ManageBuyOfferOp",
+      "dart": "XdrManageBuyOfferOp"
+    },
+    "ManageBuyOfferResult": {
+      "oracle": "ManageBuyOfferResult",
+      "dart": "XdrManageOfferResult"
+    },
+    "ManageBuyOfferResultCode": {
+      "oracle": "ManageBuyOfferResultCode",
+      "dart": "XdrManageOfferResultCode"
+    },
+    "ManageDataOp": {
+      "oracle": "ManageDataOp",
+      "dart": "XdrManageDataOp"
+    },
+    "ManageDataResult": {
+      "oracle": "ManageDataResult",
+      "dart": "XdrManageDataResult"
+    },
+    "ManageDataResultCode": {
+      "oracle": "ManageDataResultCode",
+      "dart": "XdrManageDataResultCode"
+    },
+    "ManageOfferEffect": {
+      "oracle": "ManageOfferEffect",
+      "dart": "XdrManageOfferEffect"
+    },
+    "ManageOfferSuccessResult": {
+      "oracle": "ManageOfferSuccessResult",
+      "dart": "XdrManageOfferSuccessResult"
+    },
+    "ManageOfferSuccessResultOffer": {
+      "oracle": "ManageOfferSuccessResultOffer",
+      "dart": "XdrManageOfferSuccessResultOffer"
+    },
+    "ManageSellOfferOp": {
+      "oracle": "ManageSellOfferOp",
+      "dart": "XdrManageSellOfferOp"
+    },
+    "ManageSellOfferResult": {
+      "oracle": "ManageSellOfferResult",
+      "dart": "XdrManageOfferResult"
+    },
+    "ManageSellOfferResultCode": {
+      "oracle": "ManageSellOfferResultCode",
+      "dart": "XdrManageOfferResultCode"
+    },
+    "Memo": {
+      "oracle": "Memo",
+      "dart": "XdrMemo"
+    },
+    "MemoType": {
+      "oracle": "MemoType",
+      "dart": "XdrMemoType"
+    },
+    "MessageType": {
+      "oracle": "MessageType",
+      "dart": "XdrMessageType"
+    },
+    "MuxedAccount": {
+      "oracle": "MuxedAccount",
+      "dart": "XdrMuxedAccount"
+    },
+    "MuxedAccountMed25519": {
+      "oracle": "MuxedAccountMed25519",
+      "dart": "XdrMuxedAccountMed25519"
+    },
+    "MuxedEd25519Account": {
+      "oracle": "MuxedEd25519Account",
+      "dart": "XdrMuxedAccountMed25519"
+    },
+    "OfferEntry": {
+      "oracle": "OfferEntry",
+      "dart": "XdrOfferEntry"
+    },
+    "OfferEntryExt": {
+      "oracle": "OfferEntryExt",
+      "dart": "XdrOfferEntryExt"
+    },
+    "OfferEntryFlags": {
+      "oracle": "OfferEntryFlags",
+      "dart": "XdrOfferEntryFlags"
+    },
+    "Operation": {
+      "oracle": "Operation",
+      "dart": "XdrOperation"
+    },
+    "OperationBody": {
+      "oracle": "OperationBody",
+      "dart": "XdrOperationBody"
+    },
+    "OperationMeta": {
+      "oracle": "OperationMeta",
+      "dart": "XdrOperationMeta"
+    },
+    "OperationMetaV2": {
+      "oracle": "OperationMetaV2",
+      "dart": "XdrOperationMetaV2"
+    },
+    "OperationResult": {
+      "oracle": "OperationResult",
+      "dart": "XdrOperationResult"
+    },
+    "OperationResultCode": {
+      "oracle": "OperationResultCode",
+      "dart": "XdrOperationResultCode"
+    },
+    "OperationResultTr": {
+      "oracle": "OperationResultTr",
+      "dart": "XdrOperationResultTr"
+    },
+    "OperationType": {
+      "oracle": "OperationType",
+      "dart": "XdrOperationType"
+    },
+    "ParallelTxsComponent": {
+      "oracle": "ParallelTxsComponent",
+      "dart": "XdrParallelTxsComponent"
+    },
+    "PathPaymentStrictReceiveOp": {
+      "oracle": "PathPaymentStrictReceiveOp",
+      "dart": "XdrPathPaymentStrictReceiveOp"
+    },
+    "PathPaymentStrictReceiveResult": {
+      "oracle": "PathPaymentStrictReceiveResult",
+      "dart": "XdrPathPaymentStrictReceiveResult"
+    },
+    "PathPaymentStrictReceiveResultCode": {
+      "oracle": "PathPaymentStrictReceiveResultCode",
+      "dart": "XdrPathPaymentStrictReceiveResultCode"
+    },
+    "PathPaymentStrictReceiveResultSuccess": {
+      "oracle": "PathPaymentStrictReceiveResultSuccess",
+      "dart": "XdrPathPaymentResultSuccess"
+    },
+    "PathPaymentStrictSendOp": {
+      "oracle": "PathPaymentStrictSendOp",
+      "dart": "XdrPathPaymentStrictSendOp"
+    },
+    "PathPaymentStrictSendResult": {
+      "oracle": "PathPaymentStrictSendResult",
+      "dart": "XdrPathPaymentStrictSendResult"
+    },
+    "PathPaymentStrictSendResultCode": {
+      "oracle": "PathPaymentStrictSendResultCode",
+      "dart": "XdrPathPaymentStrictSendResultCode"
+    },
+    "PathPaymentStrictSendResultSuccess": {
+      "oracle": "PathPaymentStrictSendResultSuccess",
+      "dart": "XdrPathPaymentResultSuccess"
+    },
+    "PaymentOp": {
+      "oracle": "PaymentOp",
+      "dart": "XdrPaymentOp"
+    },
+    "PaymentResult": {
+      "oracle": "PaymentResult",
+      "dart": "XdrPaymentResult"
+    },
+    "PaymentResultCode": {
+      "oracle": "PaymentResultCode",
+      "dart": "XdrPaymentResultCode"
+    },
+    "PeerAddress": {
+      "oracle": "PeerAddress",
+      "dart": "XdrPeerAddress"
+    },
+    "PeerAddressIp": {
+      "oracle": "PeerAddressIp",
+      "dart": "XdrPeerAddressIp"
+    },
+    "PeerStats": {
+      "oracle": "PeerStats",
+      "dart": "XdrPeerStats"
+    },
+    "PersistedSCPState": {
+      "oracle": "PersistedScpState",
+      "dart": "XdrPersistedSCPState"
+    },
+    "PersistedSCPStateV0": {
+      "oracle": "PersistedScpStateV0",
+      "dart": "XdrPersistedSCPStateV0"
+    },
+    "PersistedSCPStateV1": {
+      "oracle": "PersistedScpStateV1",
+      "dart": "XdrPersistedSCPStateV1"
+    },
+    "PreconditionType": {
+      "oracle": "PreconditionType",
+      "dart": "XdrPreconditionType"
+    },
+    "Preconditions": {
+      "oracle": "Preconditions",
+      "dart": "XdrPreconditions"
+    },
+    "PreconditionsV2": {
+      "oracle": "PreconditionsV2",
+      "dart": "XdrPreconditionsV2"
+    },
+    "Price": {
+      "oracle": "Price",
+      "dart": "XdrPrice"
+    },
+    "PublicKey": {
+      "oracle": "PublicKey",
+      "dart": "XdrPublicKey"
+    },
+    "PublicKeyType": {
+      "oracle": "PublicKeyType",
+      "dart": "XdrPublicKeyType"
+    },
+    "RestoreFootprintOp": {
+      "oracle": "RestoreFootprintOp",
+      "dart": "XdrRestoreFootprintOp"
+    },
+    "RestoreFootprintResult": {
+      "oracle": "RestoreFootprintResult",
+      "dart": "XdrRestoreFootprintResult"
+    },
+    "RestoreFootprintResultCode": {
+      "oracle": "RestoreFootprintResultCode",
+      "dart": "XdrRestoreFootprintResultCode"
+    },
+    "RevokeSponsorshipOp": {
+      "oracle": "RevokeSponsorshipOp",
+      "dart": "XdrRevokeSponsorshipOp"
+    },
+    "RevokeSponsorshipOpSigner": {
+      "oracle": "RevokeSponsorshipOpSigner",
+      "dart": "XdrRevokeSponsorshipSigner"
+    },
+    "RevokeSponsorshipResult": {
+      "oracle": "RevokeSponsorshipResult",
+      "dart": "XdrRevokeSponsorshipResult"
+    },
+    "RevokeSponsorshipResultCode": {
+      "oracle": "RevokeSponsorshipResultCode",
+      "dart": "XdrRevokeSponsorshipResultCode"
+    },
+    "RevokeSponsorshipType": {
+      "oracle": "RevokeSponsorshipType",
+      "dart": "XdrRevokeSponsorshipType"
+    },
+    "SCAddress": {
+      "oracle": "ScAddress",
+      "dart": "XdrSCAddress"
+    },
+    "SCAddressType": {
+      "oracle": "ScAddressType",
+      "dart": "XdrSCAddressType"
+    },
+    "SCContractInstance": {
+      "oracle": "ScContractInstance",
+      "dart": "XdrSCContractInstance"
+    },
+    "SCEnvMetaEntry": {
+      "oracle": "ScEnvMetaEntry",
+      "dart": "XdrSCEnvMetaEntry"
+    },
+    "SCEnvMetaEntryInterfaceVersion": {
+      "oracle": "ScEnvMetaEntryInterfaceVersion",
+      "dart": "XdrSCEnvMetaEntryInterfaceVersion"
+    },
+    "SCEnvMetaKind": {
+      "oracle": "ScEnvMetaKind",
+      "dart": "XdrSCEnvMetaKind"
+    },
+    "SCError": {
+      "oracle": "ScError",
+      "dart": "XdrSCError"
+    },
+    "SCErrorCode": {
+      "oracle": "ScErrorCode",
+      "dart": "XdrSCErrorCode"
+    },
+    "SCErrorType": {
+      "oracle": "ScErrorType",
+      "dart": "XdrSCErrorType"
+    },
+    "SCMapEntry": {
+      "oracle": "ScMapEntry",
+      "dart": "XdrSCMapEntry"
+    },
+    "SCMetaEntry": {
+      "oracle": "ScMetaEntry",
+      "dart": "XdrSCMetaEntry"
+    },
+    "SCMetaKind": {
+      "oracle": "ScMetaKind",
+      "dart": "XdrSCMetaKind"
+    },
+    "SCMetaV0": {
+      "oracle": "ScMetaV0",
+      "dart": "XdrSCMetaV0"
+    },
+    "SCNonceKey": {
+      "oracle": "ScNonceKey",
+      "dart": "XdrSCNonceKey"
+    },
+    "SCPBallot": {
+      "oracle": "ScpBallot",
+      "dart": "XdrSCPBallot"
+    },
+    "SCPEnvelope": {
+      "oracle": "ScpEnvelope",
+      "dart": "XdrSCPEnvelope"
+    },
+    "SCPHistoryEntry": {
+      "oracle": "ScpHistoryEntry",
+      "dart": "XdrSCPHistoryEntry"
+    },
+    "SCPHistoryEntryV0": {
+      "oracle": "ScpHistoryEntryV0",
+      "dart": "XdrSCPHistoryEntryV0"
+    },
+    "SCPNomination": {
+      "oracle": "ScpNomination",
+      "dart": "XdrSCPNomination"
+    },
+    "SCPQuorumSet": {
+      "oracle": "ScpQuorumSet",
+      "dart": "XdrSCPQuorumSet"
+    },
+    "SCPStatement": {
+      "oracle": "ScpStatement",
+      "dart": "XdrSCPStatement"
+    },
+    "SCPStatementConfirm": {
+      "oracle": "ScpStatementConfirm",
+      "dart": "XdrSCPStatementConfirm"
+    },
+    "SCPStatementExternalize": {
+      "oracle": "ScpStatementExternalize",
+      "dart": "XdrSCPStatementExternalize"
+    },
+    "SCPStatementPledges": {
+      "oracle": "ScpStatementPledges",
+      "dart": "XdrSCPStatementPledges"
+    },
+    "SCPStatementPrepare": {
+      "oracle": "ScpStatementPrepare",
+      "dart": "XdrSCPStatementPrepare"
+    },
+    "SCPStatementType": {
+      "oracle": "ScpStatementType",
+      "dart": "XdrSCPStatementType"
+    },
+    "SCSpecEntry": {
+      "oracle": "ScSpecEntry",
+      "dart": "XdrSCSpecEntry"
+    },
+    "SCSpecEntryKind": {
+      "oracle": "ScSpecEntryKind",
+      "dart": "XdrSCSpecEntryKind"
+    },
+    "SCSpecEventDataFormat": {
+      "oracle": "ScSpecEventDataFormat",
+      "dart": "XdrSCSpecEventDataFormat"
+    },
+    "SCSpecEventParamLocationV0": {
+      "oracle": "ScSpecEventParamLocationV0",
+      "dart": "XdrSCSpecEventParamLocationV0"
+    },
+    "SCSpecEventParamV0": {
+      "oracle": "ScSpecEventParamV0",
+      "dart": "XdrSCSpecEventParamV0"
+    },
+    "SCSpecEventV0": {
+      "oracle": "ScSpecEventV0",
+      "dart": "XdrSCSpecEventV0"
+    },
+    "SCSpecFunctionInputV0": {
+      "oracle": "ScSpecFunctionInputV0",
+      "dart": "XdrSCSpecFunctionInputV0"
+    },
+    "SCSpecFunctionV0": {
+      "oracle": "ScSpecFunctionV0",
+      "dart": "XdrSCSpecFunctionV0"
+    },
+    "SCSpecType": {
+      "oracle": "ScSpecType",
+      "dart": "XdrSCSpecType"
+    },
+    "SCSpecTypeBytesN": {
+      "oracle": "ScSpecTypeBytesN",
+      "dart": "XdrSCSpecTypeBytesN"
+    },
+    "SCSpecTypeDef": {
+      "oracle": "ScSpecTypeDef",
+      "dart": "XdrSCSpecTypeDef"
+    },
+    "SCSpecTypeMap": {
+      "oracle": "ScSpecTypeMap",
+      "dart": "XdrSCSpecTypeMap"
+    },
+    "SCSpecTypeOption": {
+      "oracle": "ScSpecTypeOption",
+      "dart": "XdrSCSpecTypeOption"
+    },
+    "SCSpecTypeResult": {
+      "oracle": "ScSpecTypeResult",
+      "dart": "XdrSCSpecTypeResult"
+    },
+    "SCSpecTypeTuple": {
+      "oracle": "ScSpecTypeTuple",
+      "dart": "XdrSCSpecTypeTuple"
+    },
+    "SCSpecTypeUDT": {
+      "oracle": "ScSpecTypeUdt",
+      "dart": "XdrSCSpecTypeUDT"
+    },
+    "SCSpecTypeVec": {
+      "oracle": "ScSpecTypeVec",
+      "dart": "XdrSCSpecTypeVec"
+    },
+    "SCSpecUDTEnumCaseV0": {
+      "oracle": "ScSpecUdtEnumCaseV0",
+      "dart": "XdrSCSpecUDTEnumCaseV0"
+    },
+    "SCSpecUDTEnumV0": {
+      "oracle": "ScSpecUdtEnumV0",
+      "dart": "XdrSCSpecUDTEnumV0"
+    },
+    "SCSpecUDTErrorEnumCaseV0": {
+      "oracle": "ScSpecUdtErrorEnumCaseV0",
+      "dart": "XdrSCSpecUDTErrorEnumCaseV0"
+    },
+    "SCSpecUDTErrorEnumV0": {
+      "oracle": "ScSpecUdtErrorEnumV0",
+      "dart": "XdrSCSpecUDTErrorEnumV0"
+    },
+    "SCSpecUDTStructFieldV0": {
+      "oracle": "ScSpecUdtStructFieldV0",
+      "dart": "XdrSCSpecUDTStructFieldV0"
+    },
+    "SCSpecUDTStructV0": {
+      "oracle": "ScSpecUdtStructV0",
+      "dart": "XdrSCSpecUDTStructV0"
+    },
+    "SCSpecUDTUnionCaseTupleV0": {
+      "oracle": "ScSpecUdtUnionCaseTupleV0",
+      "dart": "XdrSCSpecUDTUnionCaseTupleV0"
+    },
+    "SCSpecUDTUnionCaseV0": {
+      "oracle": "ScSpecUdtUnionCaseV0",
+      "dart": "XdrSCSpecUDTUnionCaseV0"
+    },
+    "SCSpecUDTUnionCaseV0Kind": {
+      "oracle": "ScSpecUdtUnionCaseV0Kind",
+      "dart": "XdrSCSpecUDTUnionCaseV0Kind"
+    },
+    "SCSpecUDTUnionCaseVoidV0": {
+      "oracle": "ScSpecUdtUnionCaseVoidV0",
+      "dart": "XdrSCSpecUDTUnionCaseVoidV0"
+    },
+    "SCSpecUDTUnionV0": {
+      "oracle": "ScSpecUdtUnionV0",
+      "dart": "XdrSCSpecUDTUnionV0"
+    },
+    "SCVal": {
+      "oracle": "ScVal",
+      "dart": "XdrSCVal"
+    },
+    "SCValType": {
+      "oracle": "ScValType",
+      "dart": "XdrSCValType"
+    },
+    "SendMore": {
+      "oracle": "SendMore",
+      "dart": "XdrSendMore"
+    },
+    "SendMoreExtended": {
+      "oracle": "SendMoreExtended",
+      "dart": "XdrSendMoreExtended"
+    },
+    "SerializedBinaryFuseFilter": {
+      "oracle": "SerializedBinaryFuseFilter",
+      "dart": "XdrSerializedBinaryFuseFilter"
+    },
+    "SetOptionsOp": {
+      "oracle": "SetOptionsOp",
+      "dart": "XdrSetOptionsOp"
+    },
+    "SetOptionsResult": {
+      "oracle": "SetOptionsResult",
+      "dart": "XdrSetOptionsResult"
+    },
+    "SetOptionsResultCode": {
+      "oracle": "SetOptionsResultCode",
+      "dart": "XdrSetOptionsResultCode"
+    },
+    "SetTrustLineFlagsOp": {
+      "oracle": "SetTrustLineFlagsOp",
+      "dart": "XdrSetTrustLineFlagsOp"
+    },
+    "SetTrustLineFlagsResult": {
+      "oracle": "SetTrustLineFlagsResult",
+      "dart": "XdrSetTrustLineFlagsResult"
+    },
+    "SetTrustLineFlagsResultCode": {
+      "oracle": "SetTrustLineFlagsResultCode",
+      "dart": "XdrSetTrustLineFlagsResultCode"
+    },
+    "ShortHashSeed": {
+      "oracle": "ShortHashSeed",
+      "dart": "XdrShortHashSeed"
+    },
+    "SignedTimeSlicedSurveyRequestMessage": {
+      "oracle": "SignedTimeSlicedSurveyRequestMessage",
+      "dart": "XdrSignedTimeSlicedSurveyRequestMessage"
+    },
+    "SignedTimeSlicedSurveyResponseMessage": {
+      "oracle": "SignedTimeSlicedSurveyResponseMessage",
+      "dart": "XdrSignedTimeSlicedSurveyResponseMessage"
+    },
+    "SignedTimeSlicedSurveyStartCollectingMessage": {
+      "oracle": "SignedTimeSlicedSurveyStartCollectingMessage",
+      "dart": "XdrSignedTimeSlicedSurveyStartCollectingMessage"
+    },
+    "SignedTimeSlicedSurveyStopCollectingMessage": {
+      "oracle": "SignedTimeSlicedSurveyStopCollectingMessage",
+      "dart": "XdrSignedTimeSlicedSurveyStopCollectingMessage"
+    },
+    "Signer": {
+      "oracle": "Signer",
+      "dart": "XdrSigner"
+    },
+    "SignerKey": {
+      "oracle": "SignerKey",
+      "dart": "XdrSignerKey"
+    },
+    "SignerKeyEd25519SignedPayload": {
+      "oracle": "SignerKeyEd25519SignedPayload",
+      "dart": "XdrSignedPayload"
+    },
+    "SignerKeyType": {
+      "oracle": "SignerKeyType",
+      "dart": "XdrSignerKeyType"
+    },
+    "SimplePaymentResult": {
+      "oracle": "SimplePaymentResult",
+      "dart": "XdrSimplePaymentResult"
+    },
+    "SorobanAddressCredentials": {
+      "oracle": "SorobanAddressCredentials",
+      "dart": "XdrSorobanAddressCredentials"
+    },
+    "SorobanAddressCredentialsWithDelegates": {
+      "oracle": "SorobanAddressCredentialsWithDelegates",
+      "dart": "XdrSorobanAddressCredentialsWithDelegates"
+    },
+    "SorobanAuthorizationEntry": {
+      "oracle": "SorobanAuthorizationEntry",
+      "dart": "XdrSorobanAuthorizationEntry"
+    },
+    "SorobanAuthorizedFunction": {
+      "oracle": "SorobanAuthorizedFunction",
+      "dart": "XdrSorobanAuthorizedFunction"
+    },
+    "SorobanAuthorizedFunctionType": {
+      "oracle": "SorobanAuthorizedFunctionType",
+      "dart": "XdrSorobanAuthorizedFunctionType"
+    },
+    "SorobanAuthorizedInvocation": {
+      "oracle": "SorobanAuthorizedInvocation",
+      "dart": "XdrSorobanAuthorizedInvocation"
+    },
+    "SorobanCredentials": {
+      "oracle": "SorobanCredentials",
+      "dart": "XdrSorobanCredentials"
+    },
+    "SorobanCredentialsType": {
+      "oracle": "SorobanCredentialsType",
+      "dart": "XdrSorobanCredentialsType"
+    },
+    "SorobanDelegateSignature": {
+      "oracle": "SorobanDelegateSignature",
+      "dart": "XdrSorobanDelegateSignature"
+    },
+    "SorobanResources": {
+      "oracle": "SorobanResources",
+      "dart": "XdrSorobanResources"
+    },
+    "SorobanResourcesExtV0": {
+      "oracle": "SorobanResourcesExtV0",
+      "dart": "XdrSorobanResourcesExtV0"
+    },
+    "SorobanTransactionData": {
+      "oracle": "SorobanTransactionData",
+      "dart": "XdrSorobanTransactionData"
+    },
+    "SorobanTransactionDataExt": {
+      "oracle": "SorobanTransactionDataExt",
+      "dart": "XdrSorobanTransactionDataExt"
+    },
+    "SorobanTransactionMeta": {
+      "oracle": "SorobanTransactionMeta",
+      "dart": "XdrSorobanTransactionMeta"
+    },
+    "SorobanTransactionMetaExt": {
+      "oracle": "SorobanTransactionMetaExt",
+      "dart": "XdrSorobanTransactionMetaExt"
+    },
+    "SorobanTransactionMetaExtV1": {
+      "oracle": "SorobanTransactionMetaExtV1",
+      "dart": "XdrSorobanTransactionMetaExtV1"
+    },
+    "SorobanTransactionMetaV2": {
+      "oracle": "SorobanTransactionMetaV2",
+      "dart": "XdrSorobanTransactionMetaV2"
+    },
+    "StateArchivalSettings": {
+      "oracle": "StateArchivalSettings",
+      "dart": "XdrStateArchivalSettings"
+    },
+    "StellarMessage": {
+      "oracle": "StellarMessage",
+      "dart": "XdrStellarMessage"
+    },
+    "StellarValue": {
+      "oracle": "StellarValue",
+      "dart": "XdrStellarValue"
+    },
+    "StellarValueExt": {
+      "oracle": "StellarValueExt",
+      "dart": "XdrStellarValueExt"
+    },
+    "StellarValueProposedValue": {
+      "oracle": "StellarValueProposedValue",
+      "dart": "XdrStellarValueProposedValue"
+    },
+    "StellarValueType": {
+      "oracle": "StellarValueType",
+      "dart": "XdrStellarValueType"
+    },
+    "StoredDebugTransactionSet": {
+      "oracle": "StoredDebugTransactionSet",
+      "dart": "XdrStoredDebugTransactionSet"
+    },
+    "StoredTransactionSet": {
+      "oracle": "StoredTransactionSet",
+      "dart": "XdrStoredTransactionSet"
+    },
+    "SurveyMessageCommandType": {
+      "oracle": "SurveyMessageCommandType",
+      "dart": "XdrSurveyMessageCommandType"
+    },
+    "SurveyMessageResponseType": {
+      "oracle": "SurveyMessageResponseType",
+      "dart": "XdrSurveyMessageResponseType"
+    },
+    "SurveyRequestMessage": {
+      "oracle": "SurveyRequestMessage",
+      "dart": "XdrSurveyRequestMessage"
+    },
+    "SurveyResponseBody": {
+      "oracle": "SurveyResponseBody",
+      "dart": "XdrSurveyResponseBody"
+    },
+    "SurveyResponseMessage": {
+      "oracle": "SurveyResponseMessage",
+      "dart": "XdrSurveyResponseMessage"
+    },
+    "TTLEntry": {
+      "oracle": "TtlEntry",
+      "dart": "XdrTTLEntry"
+    },
+    "ThresholdIndexes": {
+      "oracle": "ThresholdIndexes",
+      "dart": "XdrThresholdIndexes"
+    },
+    "TimeBounds": {
+      "oracle": "TimeBounds",
+      "dart": "XdrTimeBounds"
+    },
+    "TimeSlicedNodeData": {
+      "oracle": "TimeSlicedNodeData",
+      "dart": "XdrTimeSlicedNodeData"
+    },
+    "TimeSlicedPeerData": {
+      "oracle": "TimeSlicedPeerData",
+      "dart": "XdrTimeSlicedPeerData"
+    },
+    "TimeSlicedSurveyRequestMessage": {
+      "oracle": "TimeSlicedSurveyRequestMessage",
+      "dart": "XdrTimeSlicedSurveyRequestMessage"
+    },
+    "TimeSlicedSurveyResponseMessage": {
+      "oracle": "TimeSlicedSurveyResponseMessage",
+      "dart": "XdrTimeSlicedSurveyResponseMessage"
+    },
+    "TimeSlicedSurveyStartCollectingMessage": {
+      "oracle": "TimeSlicedSurveyStartCollectingMessage",
+      "dart": "XdrTimeSlicedSurveyStartCollectingMessage"
+    },
+    "TimeSlicedSurveyStopCollectingMessage": {
+      "oracle": "TimeSlicedSurveyStopCollectingMessage",
+      "dart": "XdrTimeSlicedSurveyStopCollectingMessage"
+    },
+    "TopologyResponseBodyV2": {
+      "oracle": "TopologyResponseBodyV2",
+      "dart": "XdrTopologyResponseBodyV2"
+    },
+    "Transaction": {
+      "oracle": "Transaction",
+      "dart": "XdrTransaction"
+    },
+    "TransactionEnvelope": {
+      "oracle": "TransactionEnvelope",
+      "dart": "XdrTransactionEnvelope"
+    },
+    "TransactionEvent": {
+      "oracle": "TransactionEvent",
+      "dart": "XdrTransactionEvent"
+    },
+    "TransactionEventStage": {
+      "oracle": "TransactionEventStage",
+      "dart": "XdrTransactionEventStage"
+    },
+    "TransactionExt": {
+      "oracle": "TransactionExt",
+      "dart": "XdrTransactionExt"
+    },
+    "TransactionHistoryEntry": {
+      "oracle": "TransactionHistoryEntry",
+      "dart": "XdrTransactionHistoryEntry"
+    },
+    "TransactionHistoryEntryExt": {
+      "oracle": "TransactionHistoryEntryExt",
+      "dart": "XdrTransactionHistoryEntryExt"
+    },
+    "TransactionHistoryResultEntry": {
+      "oracle": "TransactionHistoryResultEntry",
+      "dart": "XdrTransactionHistoryResultEntry"
+    },
+    "TransactionHistoryResultEntryExt": {
+      "oracle": "TransactionHistoryResultEntryExt",
+      "dart": "XdrTransactionHistoryResultEntryExt"
+    },
+    "TransactionMeta": {
+      "oracle": "TransactionMeta",
+      "dart": "XdrTransactionMeta"
+    },
+    "TransactionMetaV1": {
+      "oracle": "TransactionMetaV1",
+      "dart": "XdrTransactionMetaV1"
+    },
+    "TransactionMetaV2": {
+      "oracle": "TransactionMetaV2",
+      "dart": "XdrTransactionMetaV2"
+    },
+    "TransactionMetaV3": {
+      "oracle": "TransactionMetaV3",
+      "dart": "XdrTransactionMetaV3"
+    },
+    "TransactionMetaV4": {
+      "oracle": "TransactionMetaV4",
+      "dart": "XdrTransactionMetaV4"
+    },
+    "TransactionPhase": {
+      "oracle": "TransactionPhase",
+      "dart": "XdrTransactionPhase"
+    },
+    "TransactionResult": {
+      "oracle": "TransactionResult",
+      "dart": "XdrTransactionResult"
+    },
+    "TransactionResultCode": {
+      "oracle": "TransactionResultCode",
+      "dart": "XdrTransactionResultCode"
+    },
+    "TransactionResultExt": {
+      "oracle": "TransactionResultExt",
+      "dart": "XdrTransactionResultExt"
+    },
+    "TransactionResultMeta": {
+      "oracle": "TransactionResultMeta",
+      "dart": "XdrTransactionResultMeta"
+    },
+    "TransactionResultMetaV1": {
+      "oracle": "TransactionResultMetaV1",
+      "dart": "XdrTransactionResultMetaV1"
+    },
+    "TransactionResultPair": {
+      "oracle": "TransactionResultPair",
+      "dart": "XdrTransactionResultPair"
+    },
+    "TransactionResultResult": {
+      "oracle": "TransactionResultResult",
+      "dart": "XdrTransactionResultResult"
+    },
+    "TransactionResultSet": {
+      "oracle": "TransactionResultSet",
+      "dart": "XdrTransactionResultSet"
+    },
+    "TransactionSet": {
+      "oracle": "TransactionSet",
+      "dart": "XdrTransactionSet"
+    },
+    "TransactionSetV1": {
+      "oracle": "TransactionSetV1",
+      "dart": "XdrTransactionSetV1"
+    },
+    "TransactionSignaturePayload": {
+      "oracle": "TransactionSignaturePayload",
+      "dart": "XdrTransactionSignaturePayload"
+    },
+    "TransactionSignaturePayloadTaggedTransaction": {
+      "oracle": "TransactionSignaturePayloadTaggedTransaction",
+      "dart": "XdrTransactionSignaturePayloadTaggedTransaction"
+    },
+    "TransactionV0": {
+      "oracle": "TransactionV0",
+      "dart": "XdrTransactionV0"
+    },
+    "TransactionV0Envelope": {
+      "oracle": "TransactionV0Envelope",
+      "dart": "XdrTransactionV0Envelope"
+    },
+    "TransactionV0Ext": {
+      "oracle": "TransactionV0Ext",
+      "dart": "XdrTransactionV0Ext"
+    },
+    "TransactionV1Envelope": {
+      "oracle": "TransactionV1Envelope",
+      "dart": "XdrTransactionV1Envelope"
+    },
+    "TrustLineAsset": {
+      "oracle": "TrustLineAsset",
+      "dart": "XdrTrustlineAsset"
+    },
+    "TrustLineEntry": {
+      "oracle": "TrustLineEntry",
+      "dart": "XdrTrustLineEntry"
+    },
+    "TrustLineEntryExt": {
+      "oracle": "TrustLineEntryExt",
+      "dart": "XdrTrustLineEntryExt"
+    },
+    "TrustLineEntryExtensionV2": {
+      "oracle": "TrustLineEntryExtensionV2",
+      "dart": "XdrTrustLineEntryExtensionV2"
+    },
+    "TrustLineEntryExtensionV2Ext": {
+      "oracle": "TrustLineEntryExtensionV2Ext",
+      "dart": "XdrTrustLineEntryExtensionV2Ext"
+    },
+    "TrustLineEntryV1": {
+      "oracle": "TrustLineEntryV1",
+      "dart": "XdrTrustLineEntryV1"
+    },
+    "TrustLineEntryV1Ext": {
+      "oracle": "TrustLineEntryV1Ext",
+      "dart": "XdrTrustLineEntryV1Ext"
+    },
+    "TrustLineFlags": {
+      "oracle": "TrustLineFlags",
+      "dart": "XdrTrustLineFlags"
+    },
+    "TxSetComponent": {
+      "oracle": "TxSetComponent",
+      "dart": "XdrTxSetComponent"
+    },
+    "TxSetComponentTxsMaybeDiscountedFee": {
+      "oracle": "TxSetComponentTxsMaybeDiscountedFee",
+      "dart": "XdrTxSetComponentTxsMaybeDiscountedFee"
+    },
+    "TxSetComponentType": {
+      "oracle": "TxSetComponentType",
+      "dart": "XdrTxSetComponentType"
+    },
+    "UInt128Parts": {
+      "oracle": "UInt128Parts",
+      "dart": "XdrUInt128Parts"
+    },
+    "UInt256Parts": {
+      "oracle": "UInt256Parts",
+      "dart": "XdrUInt256Parts"
+    },
+    "UpgradeEntryMeta": {
+      "oracle": "UpgradeEntryMeta",
+      "dart": "XdrUpgradeEntryMeta"
+    }
+  },
+  "unknown_to_oracle": []
+}

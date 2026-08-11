@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 import 'xdr_uint64.dart';
 
@@ -51,5 +52,50 @@ class XdrAccountEntryV3 {
   static XdrAccountEntryV3 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrAccountEntryV3.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrAccountEntryV3');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrAccountEntryV3.
+  static XdrAccountEntryV3 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrAccountEntryV3'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrAccountEntryV3.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'seq_ledger': _seqLedger.toXdrJsonValue(),
+    'seq_time': _seqTime.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrAccountEntryV3 from its SEP-0051 rendering.
+  static XdrAccountEntryV3 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrAccountEntryV3',
+      allowedKeys: const <String>{'ext', 'seq_ledger', 'seq_time'},
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrAccountEntryV3',
+    );
+    final Object? jsonSeqLedger = XdrJsonHelper.readField(
+      object,
+      'seq_ledger',
+      type: 'XdrAccountEntryV3',
+    );
+    final Object? jsonSeqTime = XdrJsonHelper.readField(
+      object,
+      'seq_time',
+      type: 'XdrAccountEntryV3',
+    );
+    return XdrAccountEntryV3(
+      XdrExtensionPoint.fromXdrJsonValue(jsonExt),
+      XdrUint32.fromXdrJsonValue(jsonSeqLedger),
+      XdrUint64.fromXdrJsonValue(jsonSeqTime),
+    );
   }
 }

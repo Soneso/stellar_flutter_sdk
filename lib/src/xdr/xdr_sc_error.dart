@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_error_code.dart';
 import 'xdr_sc_error_type.dart';
 import 'xdr_uint32.dart';
@@ -139,5 +140,97 @@ class XdrSCError {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCError');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCError.
+  static XdrSCError fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrSCError'));
+
+  /// Returns the SEP-0051 rendering of this XdrSCError.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'contract': _contractCode!.toXdrJsonValue()};
+      case 1:
+        return <String, Object?>{'wasm_vm': _code!.toXdrJsonValue()};
+      case 2:
+        return <String, Object?>{'context': _code!.toXdrJsonValue()};
+      case 3:
+        return <String, Object?>{'storage': _code!.toXdrJsonValue()};
+      case 4:
+        return <String, Object?>{'object': _code!.toXdrJsonValue()};
+      case 5:
+        return <String, Object?>{'crypto': _code!.toXdrJsonValue()};
+      case 6:
+        return <String, Object?>{'events': _code!.toXdrJsonValue()};
+      case 7:
+        return <String, Object?>{'budget': _code!.toXdrJsonValue()};
+      case 8:
+        return <String, Object?>{'value': _code!.toXdrJsonValue()};
+      case 9:
+        return <String, Object?>{'auth': _code!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrSCError',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrSCError from its SEP-0051 rendering.
+  static XdrSCError fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrSCError',
+    );
+    switch (arm.key) {
+      case 'contract':
+        final XdrSCError arm0 = XdrSCError(XdrSCErrorType.SCE_CONTRACT);
+        arm0.contractCode = XdrUint32.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'wasm_vm':
+        final XdrSCError arm1 = XdrSCError(XdrSCErrorType.SCE_WASM_VM);
+        arm1.code = XdrSCErrorCode.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'context':
+        final XdrSCError arm2 = XdrSCError(XdrSCErrorType.SCE_CONTEXT);
+        arm2.code = XdrSCErrorCode.fromXdrJsonValue(arm.value);
+        return arm2;
+      case 'storage':
+        final XdrSCError arm3 = XdrSCError(XdrSCErrorType.SCE_STORAGE);
+        arm3.code = XdrSCErrorCode.fromXdrJsonValue(arm.value);
+        return arm3;
+      case 'object':
+        final XdrSCError arm4 = XdrSCError(XdrSCErrorType.SCE_OBJECT);
+        arm4.code = XdrSCErrorCode.fromXdrJsonValue(arm.value);
+        return arm4;
+      case 'crypto':
+        final XdrSCError arm5 = XdrSCError(XdrSCErrorType.SCE_CRYPTO);
+        arm5.code = XdrSCErrorCode.fromXdrJsonValue(arm.value);
+        return arm5;
+      case 'events':
+        final XdrSCError arm6 = XdrSCError(XdrSCErrorType.SCE_EVENTS);
+        arm6.code = XdrSCErrorCode.fromXdrJsonValue(arm.value);
+        return arm6;
+      case 'budget':
+        final XdrSCError arm7 = XdrSCError(XdrSCErrorType.SCE_BUDGET);
+        arm7.code = XdrSCErrorCode.fromXdrJsonValue(arm.value);
+        return arm7;
+      case 'value':
+        final XdrSCError arm8 = XdrSCError(XdrSCErrorType.SCE_VALUE);
+        arm8.code = XdrSCErrorCode.fromXdrJsonValue(arm.value);
+        return arm8;
+      case 'auth':
+        final XdrSCError arm9 = XdrSCError(XdrSCErrorType.SCE_AUTH);
+        arm9.code = XdrSCErrorCode.fromXdrJsonValue(arm.value);
+        return arm9;
+    }
+    XdrJsonHelper.fail(
+      'XdrSCError',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

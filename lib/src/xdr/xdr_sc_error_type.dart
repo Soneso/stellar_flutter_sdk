@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSCErrorType {
   final _value;
@@ -144,5 +145,74 @@ class XdrSCErrorType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCErrorType');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCErrorType.
+  static XdrSCErrorType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCErrorType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'contract';
+      case 1:
+        return 'wasm_vm';
+      case 2:
+        return 'context';
+      case 3:
+        return 'storage';
+      case 4:
+        return 'object';
+      case 5:
+        return 'crypto';
+      case 6:
+        return 'events';
+      case 7:
+        return 'budget';
+      case 8:
+        return 'value';
+      case 9:
+        return 'auth';
+      default:
+        XdrJsonHelper.fail('XdrSCErrorType', 'holds the unknown value $_value');
+    }
+  }
+
+  /// Reads a XdrSCErrorType from its SEP-0051 name.
+  static XdrSCErrorType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'contract':
+          return XdrSCErrorType.SCE_CONTRACT;
+        case 'wasm_vm':
+          return XdrSCErrorType.SCE_WASM_VM;
+        case 'context':
+          return XdrSCErrorType.SCE_CONTEXT;
+        case 'storage':
+          return XdrSCErrorType.SCE_STORAGE;
+        case 'object':
+          return XdrSCErrorType.SCE_OBJECT;
+        case 'crypto':
+          return XdrSCErrorType.SCE_CRYPTO;
+        case 'events':
+          return XdrSCErrorType.SCE_EVENTS;
+        case 'budget':
+          return XdrSCErrorType.SCE_BUDGET;
+        case 'value':
+          return XdrSCErrorType.SCE_VALUE;
+        case 'auth':
+          return XdrSCErrorType.SCE_AUTH;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrSCErrorType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

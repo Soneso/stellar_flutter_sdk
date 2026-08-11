@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_signer_key.dart';
 import 'xdr_uint32.dart';
 
@@ -55,5 +56,42 @@ class XdrSigner {
     );
     XdrUint32 weight = XdrUint32.fromTxRep(map, '$prefix.weight');
     return XdrSigner(key, weight);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSigner');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSigner.
+  static XdrSigner fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrSigner'));
+
+  /// Returns the SEP-0051 rendering of this XdrSigner.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'key': _key.toXdrJsonValue(),
+    'weight': _weight.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSigner from its SEP-0051 rendering.
+  static XdrSigner fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSigner',
+      allowedKeys: const <String>{'key', 'weight'},
+    );
+    final Object? jsonKey = XdrJsonHelper.readField(
+      object,
+      'key',
+      type: 'XdrSigner',
+    );
+    final Object? jsonWeight = XdrJsonHelper.readField(
+      object,
+      'weight',
+      type: 'XdrSigner',
+    );
+    return XdrSigner(
+      XdrSignerKey.fromXdrJsonValue(jsonKey),
+      XdrUint32.fromXdrJsonValue(jsonWeight),
+    );
   }
 }

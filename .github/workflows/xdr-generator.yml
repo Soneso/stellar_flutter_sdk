@@ -5,14 +5,24 @@ on:
     branches: [master]
     paths:
       - 'tools/xdr-generator/**'
+      - 'tools/sep-51-corpus/**'
       - 'xdr/*.x'
       - 'lib/src/xdr/**'
+      - 'test/unit/xdr/generated/**'
+      - 'test/unit/xdr/json_generated/**'
+      - 'test/unit/sep/sep51_corpus_data.dart'
+      - 'Makefile'
   pull_request:
     branches: [master]
     paths:
       - 'tools/xdr-generator/**'
+      - 'tools/sep-51-corpus/**'
       - 'xdr/*.x'
       - 'lib/src/xdr/**'
+      - 'test/unit/xdr/generated/**'
+      - 'test/unit/xdr/json_generated/**'
+      - 'test/unit/sep/sep51_corpus_data.dart'
+      - 'Makefile'
 
 permissions:
   contents: read
@@ -39,7 +49,7 @@ jobs:
 
   generated-files-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -55,20 +65,39 @@ jobs:
           path: tools/xdr-generator/vendor/bundle
           key: gems-${{ hashFiles('tools/xdr-generator/Gemfile.lock') }}
 
+      # Every generator runs before anything reads its output: a check run against a
+      # half-written tree reports a shape that is not there.
       - name: Regenerate XDR files
         run: make xdr-generate
 
+      - name: Regenerate the emitted XDR tests
+        run: make xdr-generate-tests
+
+      - name: Regenerate the emitted SEP-0051 tests and corpus data
+        run: make sep51-generate-tests
+
       - name: Check for uncommitted changes
         run: |
-          if ! git diff --quiet lib/src/xdr/ || \
-             [ -n "$(git ls-files --others --exclude-standard lib/src/xdr/)" ]; then
-            echo "::error::Generated XDR files are out of date."
-            echo "Run 'make xdr-update' and commit the results."
+          # Only paths a generator writes. Both emission targets format what they emit, so
+          # the committed tree is the formatted emission and the verdict below turns on the
+          # emission alone. The repository is not `dart format` clean outside these paths,
+          # so widening the check would report pre-existing formatting as generator drift.
+          GENERATED_PATHS=(
+            lib/src/xdr/
+            test/unit/xdr/generated/
+            test/unit/xdr/json_generated/
+            test/unit/sep/sep51_corpus_data.dart
+          )
+
+          if ! git diff --quiet -- "${GENERATED_PATHS[@]}" || \
+             [ -n "$(git ls-files --others --exclude-standard -- "${GENERATED_PATHS[@]}")" ]; then
+            echo "::error::Generated files are out of date."
+            echo "Run 'make xdr-update', 'make xdr-generate-tests' and 'make sep51-generate-tests', then commit the results."
             echo ""
             echo "Modified files:"
-            git diff --stat lib/src/xdr/
+            git diff --stat -- "${GENERATED_PATHS[@]}"
             echo ""
             echo "Untracked files:"
-            git ls-files --others --exclude-standard lib/src/xdr/
+            git ls-files --others --exclude-standard -- "${GENERATED_PATHS[@]}"
             exit 1
           fi

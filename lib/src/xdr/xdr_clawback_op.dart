@@ -10,6 +10,7 @@ import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_muxed_account.dart';
 
 class XdrClawbackOp {
@@ -69,5 +70,50 @@ class XdrClawbackOp {
     );
     XdrInt64 amount = XdrInt64.fromTxRep(map, '$prefix.amount');
     return XdrClawbackOp(asset, from, amount);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrClawbackOp');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClawbackOp.
+  static XdrClawbackOp fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrClawbackOp'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrClawbackOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'asset': _asset.toXdrJsonValue(),
+    'from': _from.toXdrJsonValue(),
+    'amount': _amount.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrClawbackOp from its SEP-0051 rendering.
+  static XdrClawbackOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrClawbackOp',
+      allowedKeys: const <String>{'asset', 'from', 'amount'},
+    );
+    final Object? jsonAsset = XdrJsonHelper.readField(
+      object,
+      'asset',
+      type: 'XdrClawbackOp',
+    );
+    final Object? jsonFrom = XdrJsonHelper.readField(
+      object,
+      'from',
+      type: 'XdrClawbackOp',
+    );
+    final Object? jsonAmount = XdrJsonHelper.readField(
+      object,
+      'amount',
+      type: 'XdrClawbackOp',
+    );
+    return XdrClawbackOp(
+      XdrAsset.fromXdrJsonValue(jsonAsset),
+      XdrMuxedAccount.fromXdrJsonValue(jsonFrom),
+      XdrInt64.fromXdrJsonValue(jsonAmount),
+    );
   }
 }

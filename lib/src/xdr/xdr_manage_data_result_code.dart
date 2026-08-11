@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrManageDataResultCode {
   final _value;
@@ -69,5 +70,59 @@ class XdrManageDataResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrManageDataResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrManageDataResultCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrManageDataResultCode.
+  static XdrManageDataResultCode fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrManageDataResultCode'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'not_supported_yet';
+      case -2:
+        return 'name_not_found';
+      case -3:
+        return 'low_reserve';
+      case -4:
+        return 'invalid_name';
+      default:
+        XdrJsonHelper.fail(
+          'XdrManageDataResultCode',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrManageDataResultCode from its SEP-0051 name.
+  static XdrManageDataResultCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrManageDataResultCode.MANAGE_DATA_SUCCESS;
+        case 'not_supported_yet':
+          return XdrManageDataResultCode.MANAGE_DATA_NOT_SUPPORTED_YET;
+        case 'name_not_found':
+          return XdrManageDataResultCode.MANAGE_DATA_NAME_NOT_FOUND;
+        case 'low_reserve':
+          return XdrManageDataResultCode.MANAGE_DATA_LOW_RESERVE;
+        case 'invalid_name':
+          return XdrManageDataResultCode.MANAGE_DATA_INVALID_NAME;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrManageDataResultCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

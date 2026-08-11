@@ -10,6 +10,7 @@ import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_decorated_signature.dart';
 import 'xdr_fee_bump_transaction.dart';
+import 'xdr_json_helper.dart';
 
 class XdrFeeBumpTransactionEnvelope {
   XdrFeeBumpTransaction _tx;
@@ -88,5 +89,64 @@ class XdrFeeBumpTransactionEnvelope {
       );
     }
     return XdrFeeBumpTransactionEnvelope(tx, signatures);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrFeeBumpTransactionEnvelope',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrFeeBumpTransactionEnvelope.
+  static XdrFeeBumpTransactionEnvelope fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrFeeBumpTransactionEnvelope',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrFeeBumpTransactionEnvelope.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'tx': _tx.toXdrJsonValue(),
+    'signatures': XdrJsonHelper.array<XdrDecoratedSignature>(
+      _signatures,
+      (XdrDecoratedSignature v) => v.toXdrJsonValue(),
+      type: 'XdrFeeBumpTransactionEnvelope',
+      key: 'signatures',
+      maxLength: 20,
+    ),
+  };
+
+  /// Reads a XdrFeeBumpTransactionEnvelope from its SEP-0051 rendering.
+  static XdrFeeBumpTransactionEnvelope fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrFeeBumpTransactionEnvelope',
+      allowedKeys: const <String>{'tx', 'signatures'},
+    );
+    final Object? jsonTx = XdrJsonHelper.readField(
+      object,
+      'tx',
+      type: 'XdrFeeBumpTransactionEnvelope',
+    );
+    final Object? jsonSignatures = XdrJsonHelper.readField(
+      object,
+      'signatures',
+      type: 'XdrFeeBumpTransactionEnvelope',
+    );
+    return XdrFeeBumpTransactionEnvelope(
+      XdrFeeBumpTransaction.fromXdrJsonValue(jsonTx),
+      XdrJsonHelper.readArray(
+            jsonSignatures,
+            type: 'XdrFeeBumpTransactionEnvelope',
+            key: 'signatures',
+            maxLength: 20,
+          )
+          .map<XdrDecoratedSignature>(
+            (Object? e) => XdrDecoratedSignature.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_meta_kind.dart';
 import 'xdr_sc_meta_v0.dart';
 
@@ -66,5 +67,44 @@ class XdrSCMetaEntry {
   static XdrSCMetaEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCMetaEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCMetaEntry');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCMetaEntry.
+  static XdrSCMetaEntry fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCMetaEntry'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCMetaEntry.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'sc_meta_v0': _v0!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrSCMetaEntry',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrSCMetaEntry from its SEP-0051 rendering.
+  static XdrSCMetaEntry fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrSCMetaEntry',
+    );
+    switch (arm.key) {
+      case 'sc_meta_v0':
+        final XdrSCMetaEntry arm0 = XdrSCMetaEntry(XdrSCMetaKind.SC_META_V0);
+        arm0.v0 = XdrSCMetaV0.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrSCMetaEntry',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

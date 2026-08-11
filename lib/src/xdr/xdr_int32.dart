@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrInt32 {
   XdrInt32(this._int32);
@@ -44,4 +45,19 @@ class XdrInt32 {
     if (raw == null) throw Exception('missing $prefix');
     return XdrInt32(TxRepHelper.parseInt(raw));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrInt32');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrInt32.
+  static XdrInt32 fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrInt32'));
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() => XdrJsonHelper.int32(_int32, type: 'XdrInt32');
+
+  /// Reads a XdrInt32 from the SEP-0051 rendering of its value.
+  static XdrInt32 fromXdrJsonValue(Object? value) =>
+      XdrInt32(XdrJsonHelper.readInt32(value, type: 'XdrInt32'));
 }

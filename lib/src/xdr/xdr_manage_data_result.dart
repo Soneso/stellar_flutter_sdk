@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_manage_data_result_code.dart';
 
 class XdrManageDataResult {
@@ -57,5 +58,72 @@ class XdrManageDataResult {
   static XdrManageDataResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrManageDataResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrManageDataResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrManageDataResult.
+  static XdrManageDataResult fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrManageDataResult'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrManageDataResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'not_supported_yet';
+      case -2:
+        return 'name_not_found';
+      case -3:
+        return 'low_reserve';
+      case -4:
+        return 'invalid_name';
+    }
+    XdrJsonHelper.fail(
+      'XdrManageDataResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrManageDataResult from its SEP-0051 rendering.
+  static XdrManageDataResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrManageDataResult(
+            XdrManageDataResultCode.MANAGE_DATA_SUCCESS,
+          );
+        case 'not_supported_yet':
+          return XdrManageDataResult(
+            XdrManageDataResultCode.MANAGE_DATA_NOT_SUPPORTED_YET,
+          );
+        case 'name_not_found':
+          return XdrManageDataResult(
+            XdrManageDataResultCode.MANAGE_DATA_NAME_NOT_FOUND,
+          );
+        case 'low_reserve':
+          return XdrManageDataResult(
+            XdrManageDataResultCode.MANAGE_DATA_LOW_RESERVE,
+          );
+        case 'invalid_name':
+          return XdrManageDataResult(
+            XdrManageDataResultCode.MANAGE_DATA_INVALID_NAME,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrManageDataResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrManageDataResult',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

@@ -6,11 +6,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../key_pair.dart';
 import 'xdr_contract_event_body.dart';
 import 'xdr_contract_event_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_extension_point.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 
 class XdrContractEvent {
   XdrExtensionPoint _ext;
@@ -67,5 +69,74 @@ class XdrContractEvent {
   static XdrContractEvent fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractEvent.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrContractEvent');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractEvent.
+  static XdrContractEvent fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractEvent'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrContractEvent.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'contract_id': _hash == null ? null : StrKey.encodeContractId(_hash!.hash),
+    'type': _type.toXdrJsonValue(),
+    'body': _body.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrContractEvent from its SEP-0051 rendering.
+  static XdrContractEvent fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrContractEvent',
+      allowedKeys: const <String>{
+        'ext',
+        'contract_id',
+        'type',
+        'type_',
+        'body',
+      },
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrContractEvent',
+    );
+    final Object? jsonHash = XdrJsonHelper.readField(
+      object,
+      'contract_id',
+      type: 'XdrContractEvent',
+    );
+    final Object? jsonType = XdrJsonHelper.readField(
+      object,
+      'type',
+      type: 'XdrContractEvent',
+      alias: 'type_',
+    );
+    final Object? jsonBody = XdrJsonHelper.readField(
+      object,
+      'body',
+      type: 'XdrContractEvent',
+    );
+    return XdrContractEvent(
+      XdrExtensionPoint.fromXdrJsonValue(jsonExt),
+      jsonHash == null
+          ? null
+          : XdrHash(
+              XdrJsonHelper.readStrKey(
+                jsonHash,
+                type: 'XdrContractEvent',
+                key: 'contract_id',
+                decode: StrKey.decodeContractId,
+                expectedLength: 32,
+              ),
+            ),
+      XdrContractEventType.fromXdrJsonValue(jsonType),
+      XdrContractEventBody.fromXdrJsonValue(jsonBody),
+    );
   }
 }

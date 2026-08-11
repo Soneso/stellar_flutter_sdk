@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_close_value_signature.dart';
 import 'xdr_uint32.dart';
 
@@ -78,5 +79,68 @@ class XdrStellarValueProposedValue {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrStellarValueProposedValue.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrStellarValueProposedValue',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrStellarValueProposedValue.
+  static XdrStellarValueProposedValue fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrStellarValueProposedValue',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrStellarValueProposedValue.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'tx_set_hash': _txSetHash.toXdrJsonValue(),
+    'previous_ledger_hash': _previousLedgerHash.toXdrJsonValue(),
+    'previous_ledger_version': _previousLedgerVersion.toXdrJsonValue(),
+    'lc_value_signature': _lcValueSignature.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrStellarValueProposedValue from its SEP-0051 rendering.
+  static XdrStellarValueProposedValue fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrStellarValueProposedValue',
+      allowedKeys: const <String>{
+        'tx_set_hash',
+        'previous_ledger_hash',
+        'previous_ledger_version',
+        'lc_value_signature',
+      },
+    );
+    final Object? jsonTxSetHash = XdrJsonHelper.readField(
+      object,
+      'tx_set_hash',
+      type: 'XdrStellarValueProposedValue',
+    );
+    final Object? jsonPreviousLedgerHash = XdrJsonHelper.readField(
+      object,
+      'previous_ledger_hash',
+      type: 'XdrStellarValueProposedValue',
+    );
+    final Object? jsonPreviousLedgerVersion = XdrJsonHelper.readField(
+      object,
+      'previous_ledger_version',
+      type: 'XdrStellarValueProposedValue',
+    );
+    final Object? jsonLcValueSignature = XdrJsonHelper.readField(
+      object,
+      'lc_value_signature',
+      type: 'XdrStellarValueProposedValue',
+    );
+    return XdrStellarValueProposedValue(
+      XdrHash.fromXdrJsonValue(jsonTxSetHash),
+      XdrHash.fromXdrJsonValue(jsonPreviousLedgerHash),
+      XdrUint32.fromXdrJsonValue(jsonPreviousLedgerVersion),
+      XdrLedgerCloseValueSignature.fromXdrJsonValue(jsonLcValueSignature),
+    );
   }
 }

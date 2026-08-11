@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrStateArchivalSettings {
@@ -139,5 +140,117 @@ class XdrStateArchivalSettings {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrStateArchivalSettings.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrStateArchivalSettings',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrStateArchivalSettings.
+  static XdrStateArchivalSettings fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrStateArchivalSettings'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrStateArchivalSettings.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'max_entry_ttl': _maxEntryTTL.toXdrJsonValue(),
+    'min_temporary_ttl': _minTemporaryTTL.toXdrJsonValue(),
+    'min_persistent_ttl': _minPersistentTTL.toXdrJsonValue(),
+    'persistent_rent_rate_denominator': _persistentRentRateDenominator
+        .toXdrJsonValue(),
+    'temp_rent_rate_denominator': _tempRentRateDenominator.toXdrJsonValue(),
+    'max_entries_to_archive': _maxEntriesToArchive.toXdrJsonValue(),
+    'live_soroban_state_size_window_sample_size':
+        _liveSorobanStateSizeWindowSampleSize.toXdrJsonValue(),
+    'live_soroban_state_size_window_sample_period':
+        _liveSorobanStateSizeWindowSamplePeriod.toXdrJsonValue(),
+    'eviction_scan_size': _evictionScanSize.toXdrJsonValue(),
+    'starting_eviction_scan_level': _startingEvictionScanLevel.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrStateArchivalSettings from its SEP-0051 rendering.
+  static XdrStateArchivalSettings fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrStateArchivalSettings',
+      allowedKeys: const <String>{
+        'max_entry_ttl',
+        'min_temporary_ttl',
+        'min_persistent_ttl',
+        'persistent_rent_rate_denominator',
+        'temp_rent_rate_denominator',
+        'max_entries_to_archive',
+        'live_soroban_state_size_window_sample_size',
+        'live_soroban_state_size_window_sample_period',
+        'eviction_scan_size',
+        'starting_eviction_scan_level',
+      },
+    );
+    final Object? jsonMaxEntryTTL = XdrJsonHelper.readField(
+      object,
+      'max_entry_ttl',
+      type: 'XdrStateArchivalSettings',
+    );
+    final Object? jsonMinTemporaryTTL = XdrJsonHelper.readField(
+      object,
+      'min_temporary_ttl',
+      type: 'XdrStateArchivalSettings',
+    );
+    final Object? jsonMinPersistentTTL = XdrJsonHelper.readField(
+      object,
+      'min_persistent_ttl',
+      type: 'XdrStateArchivalSettings',
+    );
+    final Object? jsonPersistentRentRateDenominator = XdrJsonHelper.readField(
+      object,
+      'persistent_rent_rate_denominator',
+      type: 'XdrStateArchivalSettings',
+    );
+    final Object? jsonTempRentRateDenominator = XdrJsonHelper.readField(
+      object,
+      'temp_rent_rate_denominator',
+      type: 'XdrStateArchivalSettings',
+    );
+    final Object? jsonMaxEntriesToArchive = XdrJsonHelper.readField(
+      object,
+      'max_entries_to_archive',
+      type: 'XdrStateArchivalSettings',
+    );
+    final Object? jsonLiveSorobanStateSizeWindowSampleSize =
+        XdrJsonHelper.readField(
+          object,
+          'live_soroban_state_size_window_sample_size',
+          type: 'XdrStateArchivalSettings',
+        );
+    final Object? jsonLiveSorobanStateSizeWindowSamplePeriod =
+        XdrJsonHelper.readField(
+          object,
+          'live_soroban_state_size_window_sample_period',
+          type: 'XdrStateArchivalSettings',
+        );
+    final Object? jsonEvictionScanSize = XdrJsonHelper.readField(
+      object,
+      'eviction_scan_size',
+      type: 'XdrStateArchivalSettings',
+    );
+    final Object? jsonStartingEvictionScanLevel = XdrJsonHelper.readField(
+      object,
+      'starting_eviction_scan_level',
+      type: 'XdrStateArchivalSettings',
+    );
+    return XdrStateArchivalSettings(
+      XdrUint32.fromXdrJsonValue(jsonMaxEntryTTL),
+      XdrUint32.fromXdrJsonValue(jsonMinTemporaryTTL),
+      XdrUint32.fromXdrJsonValue(jsonMinPersistentTTL),
+      XdrInt64.fromXdrJsonValue(jsonPersistentRentRateDenominator),
+      XdrInt64.fromXdrJsonValue(jsonTempRentRateDenominator),
+      XdrUint32.fromXdrJsonValue(jsonMaxEntriesToArchive),
+      XdrUint32.fromXdrJsonValue(jsonLiveSorobanStateSizeWindowSampleSize),
+      XdrUint32.fromXdrJsonValue(jsonLiveSorobanStateSizeWindowSamplePeriod),
+      XdrUint32.fromXdrJsonValue(jsonEvictionScanSize),
+      XdrUint32.fromXdrJsonValue(jsonStartingEvictionScanLevel),
+    );
   }
 }

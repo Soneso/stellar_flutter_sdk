@@ -51,3 +51,67 @@ jobs:
           files: coverage/lcov.info
           fail_ci_if_error: false
           verbose: true
+
+  # The job above runs every test on the Dart VM. The web targets disagree with the VM on
+  # integer width, on JSON number typing and on what happens when a recursive encoder runs
+  # out of stack, and the XDR-JSON surface of SEP-0051 is exposed to all three. This job is
+  # what observes them.
+  web:
+    name: Web targets
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: '3.38.x'
+          channel: 'stable'
+
+      # dart2wasm output runs under a Node ESM loader, and WasmGC needs a Node with it
+      # enabled by default rather than behind a flag.
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Google Chrome is preinstalled on the runner image. The suites under
+      # test/unit/sep/web/ carry @TestOn('browser') and run on no other platform.
+      - name: Run browser tests
+        run: |
+          flutter test --platform chrome \
+            test/unit/sep/web/ \
+            test/unit/sep/sep51_canonical_envelope_test.dart \
+            test/unit/sep/sep51_corpus_test.dart \
+            test/unit/sep/sep51_name_derivation_test.dart \
+            test/unit/sep/sep51_negative_input_test.dart \
+            test/unit/sep/sep51_recursion_limit_test.dart \
+            test/unit/sep/sep51_rollback_rehearsal_test.dart \
+            test/unit/sep/sep51_schema_property_test.dart \
+            test/unit/sep/sep51_spec_examples_test.dart \
+            test/unit/sep/sep51_stellar_types_test.dart \
+            test/unit/xdr/json_generated/ \
+            test/unit/xdr/xdr_json_helper_test.dart \
+            test/unit/xdr/xdr_json_reference_rendering_test.dart
+
+      # `flutter test` has no WasmGC platform, so the nesting guard is checked there by
+      # compiling a harness and running it under Node. A guard that let an over-nested
+      # document reach the encoder would abort the module rather than throw, so the
+      # harness reports through its exit status.
+      - name: Run the WasmGC nesting guard smoke target
+        run: |
+          set +e
+          bash tool/sep51_wasm_smoke/run.sh
+          status=$?
+          set -e
+          if [ "$status" -eq 2 ]; then
+            echo "::error::The smoke target could not run: dart or node is missing. This is a broken job, not a guard failure."
+            exit 1
+          fi
+          exit "$status"

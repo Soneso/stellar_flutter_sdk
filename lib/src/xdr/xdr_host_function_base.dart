@@ -13,6 +13,7 @@ import 'xdr_data_io.dart';
 import 'xdr_data_value.dart';
 import 'xdr_host_function_type.dart';
 import 'xdr_invoke_contract_args.dart';
+import 'xdr_json_helper.dart';
 
 class XdrHostFunctionBase {
   XdrHostFunctionType _type;
@@ -176,5 +177,97 @@ class XdrHostFunctionBase {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrHostFunction');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrHostFunction.
+  static XdrHostFunctionBase fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrHostFunction'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrHostFunctionBase.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{
+          'invoke_contract': _invokeContract!.toXdrJsonValue(),
+        };
+      case 1:
+        return <String, Object?>{
+          'create_contract': _createContract!.toXdrJsonValue(),
+        };
+      case 2:
+        return <String, Object?>{
+          'upload_contract_wasm': XdrJsonHelper.hex(
+            _wasm!.dataValue,
+            type: 'XdrHostFunction',
+            key: 'upload_contract_wasm',
+          ),
+        };
+      case 3:
+        return <String, Object?>{
+          'create_contract_v2': _createContractV2!.toXdrJsonValue(),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrHostFunction',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrHostFunctionBase from its SEP-0051 rendering.
+  static XdrHostFunctionBase fromXdrJsonValue(Object? value) =>
+      fromXdrJsonValueAs(value, XdrHostFunctionBase.new);
+
+  /// Reads a subclass of XdrHostFunctionBase from its SEP-0051 rendering.
+  static T fromXdrJsonValueAs<T extends XdrHostFunctionBase>(
+    Object? value,
+    T Function(XdrHostFunctionType) constructor,
+  ) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrHostFunction',
+    );
+    switch (arm.key) {
+      case 'invoke_contract':
+        final T arm0 = constructor(
+          XdrHostFunctionType.HOST_FUNCTION_TYPE_INVOKE_CONTRACT,
+        );
+        arm0.invokeContract = XdrInvokeContractArgs.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'create_contract':
+        final T arm1 = constructor(
+          XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT,
+        );
+        arm1.createContract = XdrCreateContractArgs.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'upload_contract_wasm':
+        final T arm2 = constructor(
+          XdrHostFunctionType.HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM,
+        );
+        arm2.wasm = XdrDataValue(
+          XdrJsonHelper.readHex(
+            arm.value,
+            type: 'XdrHostFunction',
+            key: 'upload_contract_wasm',
+          ),
+        );
+        return arm2;
+      case 'create_contract_v2':
+        final T arm3 = constructor(
+          XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2,
+        );
+        arm3.createContractV2 = XdrCreateContractArgsV2.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm3;
+    }
+    XdrJsonHelper.fail(
+      'XdrHostFunction',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

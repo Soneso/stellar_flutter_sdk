@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_entry_v1.dart';
 
 class XdrLedgerEntryExt {
@@ -67,5 +68,56 @@ class XdrLedgerEntryExt {
   static XdrLedgerEntryExt fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntryExt.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrLedgerEntryExt');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerEntryExt.
+  static XdrLedgerEntryExt fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerEntryExt'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerEntryExt.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return 'v0';
+      case 1:
+        return <String, Object?>{'v1': _v1!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerEntryExt',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrLedgerEntryExt from its SEP-0051 rendering.
+  static XdrLedgerEntryExt fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'v0':
+          return XdrLedgerEntryExt(0);
+      }
+      XdrJsonHelper.fail(
+        'XdrLedgerEntryExt',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrLedgerEntryExt',
+    );
+    switch (arm.key) {
+      case 'v1':
+        final XdrLedgerEntryExt arm0 = XdrLedgerEntryExt(1);
+        arm0.v1 = XdrLedgerEntryV1.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerEntryExt',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

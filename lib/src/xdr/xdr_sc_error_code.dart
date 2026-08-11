@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSCErrorCode {
   final _value;
@@ -144,5 +145,74 @@ class XdrSCErrorCode {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCErrorCode');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCErrorCode.
+  static XdrSCErrorCode fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCErrorCode'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'arith_domain';
+      case 1:
+        return 'index_bounds';
+      case 2:
+        return 'invalid_input';
+      case 3:
+        return 'missing_value';
+      case 4:
+        return 'existing_value';
+      case 5:
+        return 'exceeded_limit';
+      case 6:
+        return 'invalid_action';
+      case 7:
+        return 'internal_error';
+      case 8:
+        return 'unexpected_type';
+      case 9:
+        return 'unexpected_size';
+      default:
+        XdrJsonHelper.fail('XdrSCErrorCode', 'holds the unknown value $_value');
+    }
+  }
+
+  /// Reads a XdrSCErrorCode from its SEP-0051 name.
+  static XdrSCErrorCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'arith_domain':
+          return XdrSCErrorCode.SCEC_ARITH_DOMAIN;
+        case 'index_bounds':
+          return XdrSCErrorCode.SCEC_INDEX_BOUNDS;
+        case 'invalid_input':
+          return XdrSCErrorCode.SCEC_INVALID_INPUT;
+        case 'missing_value':
+          return XdrSCErrorCode.SCEC_MISSING_VALUE;
+        case 'existing_value':
+          return XdrSCErrorCode.SCEC_EXISTING_VALUE;
+        case 'exceeded_limit':
+          return XdrSCErrorCode.SCEC_EXCEEDED_LIMIT;
+        case 'invalid_action':
+          return XdrSCErrorCode.SCEC_INVALID_ACTION;
+        case 'internal_error':
+          return XdrSCErrorCode.SCEC_INTERNAL_ERROR;
+        case 'unexpected_type':
+          return XdrSCErrorCode.SCEC_UNEXPECTED_TYPE;
+        case 'unexpected_size':
+          return XdrSCErrorCode.SCEC_UNEXPECTED_SIZE;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrSCErrorCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

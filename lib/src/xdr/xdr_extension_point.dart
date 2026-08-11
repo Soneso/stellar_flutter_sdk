@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrExtensionPoint {
   int _v;
@@ -79,5 +80,44 @@ class XdrExtensionPoint {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrExtensionPoint');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrExtensionPoint.
+  static XdrExtensionPoint fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrExtensionPoint'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrExtensionPoint.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return 'v0';
+    }
+    XdrJsonHelper.fail(
+      'XdrExtensionPoint',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrExtensionPoint from its SEP-0051 rendering.
+  static XdrExtensionPoint fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'v0':
+          return XdrExtensionPoint(0);
+      }
+      XdrJsonHelper.fail(
+        'XdrExtensionPoint',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrExtensionPoint',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

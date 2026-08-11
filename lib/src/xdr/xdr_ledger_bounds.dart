@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrLedgerBounds {
@@ -54,5 +55,43 @@ class XdrLedgerBounds {
     XdrUint32 minLedger = XdrUint32.fromTxRep(map, '$prefix.minLedger');
     XdrUint32 maxLedger = XdrUint32.fromTxRep(map, '$prefix.maxLedger');
     return XdrLedgerBounds(minLedger, maxLedger);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrLedgerBounds');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerBounds.
+  static XdrLedgerBounds fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerBounds'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerBounds.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'min_ledger': _minLedger.toXdrJsonValue(),
+    'max_ledger': _maxLedger.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLedgerBounds from its SEP-0051 rendering.
+  static XdrLedgerBounds fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerBounds',
+      allowedKeys: const <String>{'min_ledger', 'max_ledger'},
+    );
+    final Object? jsonMinLedger = XdrJsonHelper.readField(
+      object,
+      'min_ledger',
+      type: 'XdrLedgerBounds',
+    );
+    final Object? jsonMaxLedger = XdrJsonHelper.readField(
+      object,
+      'max_ledger',
+      type: 'XdrLedgerBounds',
+    );
+    return XdrLedgerBounds(
+      XdrUint32.fromXdrJsonValue(jsonMinLedger),
+      XdrUint32.fromXdrJsonValue(jsonMaxLedger),
+    );
   }
 }

@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrSorobanResourcesExtV0 {
@@ -83,5 +84,47 @@ class XdrSorobanResourcesExtV0 {
       );
     }
     return XdrSorobanResourcesExtV0(archivedSorobanEntries);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSorobanResourcesExtV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanResourcesExtV0.
+  static XdrSorobanResourcesExtV0 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSorobanResourcesExtV0'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSorobanResourcesExtV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'archived_soroban_entries': XdrJsonHelper.array<XdrUint32>(
+      _archivedSorobanEntries,
+      (XdrUint32 v) => v.toXdrJsonValue(),
+      type: 'XdrSorobanResourcesExtV0',
+      key: 'archived_soroban_entries',
+    ),
+  };
+
+  /// Reads a XdrSorobanResourcesExtV0 from its SEP-0051 rendering.
+  static XdrSorobanResourcesExtV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSorobanResourcesExtV0',
+      allowedKeys: const <String>{'archived_soroban_entries'},
+    );
+    final Object? jsonArchivedSorobanEntries = XdrJsonHelper.readField(
+      object,
+      'archived_soroban_entries',
+      type: 'XdrSorobanResourcesExtV0',
+    );
+    return XdrSorobanResourcesExtV0(
+      XdrJsonHelper.readArray(
+        jsonArchivedSorobanEntries,
+        type: 'XdrSorobanResourcesExtV0',
+        key: 'archived_soroban_entries',
+      ).map<XdrUint32>((Object? e) => XdrUint32.fromXdrJsonValue(e)).toList(),
+    );
   }
 }

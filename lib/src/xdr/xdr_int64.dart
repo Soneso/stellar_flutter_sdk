@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrInt64 {
   XdrInt64(this._int64);
@@ -44,4 +45,19 @@ class XdrInt64 {
     if (raw == null) throw Exception('missing $prefix');
     return XdrInt64(TxRepHelper.parseBigInt(raw));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrInt64');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrInt64.
+  static XdrInt64 fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrInt64'));
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() => XdrJsonHelper.int64(_int64, type: 'XdrInt64');
+
+  /// Reads a XdrInt64 from the SEP-0051 rendering of its value.
+  static XdrInt64 fromXdrJsonValue(Object? value) =>
+      XdrInt64(XdrJsonHelper.readInt64(value, type: 'XdrInt64'));
 }

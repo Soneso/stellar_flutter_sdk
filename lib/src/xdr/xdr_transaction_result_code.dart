@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrTransactionResultCode {
   final _value;
@@ -124,5 +125,119 @@ class XdrTransactionResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionResultCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionResultCode.
+  static XdrTransactionResultCode fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionResultCode'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 1:
+        return 'tx_fee_bump_inner_success';
+      case 0:
+        return 'tx_success';
+      case -1:
+        return 'tx_failed';
+      case -2:
+        return 'tx_too_early';
+      case -3:
+        return 'tx_too_late';
+      case -4:
+        return 'tx_missing_operation';
+      case -5:
+        return 'tx_bad_seq';
+      case -6:
+        return 'tx_bad_auth';
+      case -7:
+        return 'tx_insufficient_balance';
+      case -8:
+        return 'tx_no_account';
+      case -9:
+        return 'tx_insufficient_fee';
+      case -10:
+        return 'tx_bad_auth_extra';
+      case -11:
+        return 'tx_internal_error';
+      case -12:
+        return 'tx_not_supported';
+      case -13:
+        return 'tx_fee_bump_inner_failed';
+      case -14:
+        return 'tx_bad_sponsorship';
+      case -15:
+        return 'tx_bad_min_seq_age_or_gap';
+      case -16:
+        return 'tx_malformed';
+      case -17:
+        return 'tx_soroban_invalid';
+      case -18:
+        return 'tx_frozen_key_accessed';
+      default:
+        XdrJsonHelper.fail(
+          'XdrTransactionResultCode',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrTransactionResultCode from its SEP-0051 name.
+  static XdrTransactionResultCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'tx_fee_bump_inner_success':
+          return XdrTransactionResultCode.txFEE_BUMP_INNER_SUCCESS;
+        case 'tx_success':
+          return XdrTransactionResultCode.txSUCCESS;
+        case 'tx_failed':
+          return XdrTransactionResultCode.txFAILED;
+        case 'tx_too_early':
+          return XdrTransactionResultCode.txTOO_EARLY;
+        case 'tx_too_late':
+          return XdrTransactionResultCode.txTOO_LATE;
+        case 'tx_missing_operation':
+          return XdrTransactionResultCode.txMISSING_OPERATION;
+        case 'tx_bad_seq':
+          return XdrTransactionResultCode.txBAD_SEQ;
+        case 'tx_bad_auth':
+          return XdrTransactionResultCode.txBAD_AUTH;
+        case 'tx_insufficient_balance':
+          return XdrTransactionResultCode.txINSUFFICIENT_BALANCE;
+        case 'tx_no_account':
+          return XdrTransactionResultCode.txNO_ACCOUNT;
+        case 'tx_insufficient_fee':
+          return XdrTransactionResultCode.txINSUFFICIENT_FEE;
+        case 'tx_bad_auth_extra':
+          return XdrTransactionResultCode.txBAD_AUTH_EXTRA;
+        case 'tx_internal_error':
+          return XdrTransactionResultCode.txINTERNAL_ERROR;
+        case 'tx_not_supported':
+          return XdrTransactionResultCode.txNOT_SUPPORTED;
+        case 'tx_fee_bump_inner_failed':
+          return XdrTransactionResultCode.txFEE_BUMP_INNER_FAILED;
+        case 'tx_bad_sponsorship':
+          return XdrTransactionResultCode.txBAD_SPONSORSHIP;
+        case 'tx_bad_min_seq_age_or_gap':
+          return XdrTransactionResultCode.txBAD_MIN_SEQ_AGE_OR_GAP;
+        case 'tx_malformed':
+          return XdrTransactionResultCode.txMALFORMED;
+        case 'tx_soroban_invalid':
+          return XdrTransactionResultCode.txSOROBAN_INVALID;
+        case 'tx_frozen_key_accessed':
+          return XdrTransactionResultCode.txFROZEN_KEY_ACCESSED;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrTransactionResultCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

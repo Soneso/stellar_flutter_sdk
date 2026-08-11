@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSCPStatementType {
   final _value;
@@ -57,5 +58,55 @@ class XdrSCPStatementType {
   static XdrSCPStatementType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPStatementType.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCPStatementType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCPStatementType.
+  static XdrSCPStatementType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCPStatementType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'prepare';
+      case 1:
+        return 'confirm';
+      case 2:
+        return 'externalize';
+      case 3:
+        return 'nominate';
+      default:
+        XdrJsonHelper.fail(
+          'XdrSCPStatementType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrSCPStatementType from its SEP-0051 name.
+  static XdrSCPStatementType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'prepare':
+          return XdrSCPStatementType.SCP_ST_PREPARE;
+        case 'confirm':
+          return XdrSCPStatementType.SCP_ST_CONFIRM;
+        case 'externalize':
+          return XdrSCPStatementType.SCP_ST_EXTERNALIZE;
+        case 'nominate':
+          return XdrSCPStatementType.SCP_ST_NOMINATE;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrSCPStatementType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

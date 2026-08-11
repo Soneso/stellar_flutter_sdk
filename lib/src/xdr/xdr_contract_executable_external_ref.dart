@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_address.dart';
 
 class XdrContractExecutableExternalRef {
@@ -68,5 +69,57 @@ class XdrContractExecutableExternalRef {
       TxRepHelper.getValue(map, '$prefix.tag') ?? '',
     );
     return XdrContractExecutableExternalRef(executableOwner, tag);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrContractExecutableExternalRef',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractExecutableExternalRef.
+  static XdrContractExecutableExternalRef fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrContractExecutableExternalRef',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrContractExecutableExternalRef.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'executable_owner': _executableOwner.toXdrJsonValue(),
+    'tag': XdrJsonHelper.escapedString(
+      _tag,
+      type: 'XdrContractExecutableExternalRef',
+      key: 'tag',
+    ),
+  };
+
+  /// Reads a XdrContractExecutableExternalRef from its SEP-0051 rendering.
+  static XdrContractExecutableExternalRef fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrContractExecutableExternalRef',
+      allowedKeys: const <String>{'executable_owner', 'tag'},
+    );
+    final Object? jsonExecutableOwner = XdrJsonHelper.readField(
+      object,
+      'executable_owner',
+      type: 'XdrContractExecutableExternalRef',
+    );
+    final Object? jsonTag = XdrJsonHelper.readField(
+      object,
+      'tag',
+      type: 'XdrContractExecutableExternalRef',
+    );
+    return XdrContractExecutableExternalRef(
+      XdrSCAddress.fromXdrJsonValue(jsonExecutableOwner),
+      XdrJsonHelper.readEscapedString(
+        jsonTag,
+        type: 'XdrContractExecutableExternalRef',
+        key: 'tag',
+      ),
+    );
   }
 }

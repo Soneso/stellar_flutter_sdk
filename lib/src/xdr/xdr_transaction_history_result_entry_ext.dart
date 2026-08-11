@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrTransactionHistoryResultEntryExt {
   int _v;
@@ -59,6 +60,51 @@ class XdrTransactionHistoryResultEntryExt {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionHistoryResultEntryExt.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionHistoryResultEntryExt',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionHistoryResultEntryExt.
+  static XdrTransactionHistoryResultEntryExt fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrTransactionHistoryResultEntryExt',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionHistoryResultEntryExt.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return 'v0';
+    }
+    XdrJsonHelper.fail(
+      'XdrTransactionHistoryResultEntryExt',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrTransactionHistoryResultEntryExt from its SEP-0051 rendering.
+  static XdrTransactionHistoryResultEntryExt fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'v0':
+          return XdrTransactionHistoryResultEntryExt(0);
+      }
+      XdrJsonHelper.fail(
+        'XdrTransactionHistoryResultEntryExt',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrTransactionHistoryResultEntryExt',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
     );
   }
 }

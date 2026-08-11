@@ -6,8 +6,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../key_pair.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_liquidity_pool_body.dart';
 
 class XdrLiquidityPoolEntry {
@@ -46,5 +48,53 @@ class XdrLiquidityPoolEntry {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLiquidityPoolEntry',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLiquidityPoolEntry.
+  static XdrLiquidityPoolEntry fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLiquidityPoolEntry'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLiquidityPoolEntry.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'liquidity_pool_id': StrKey.encodeLiquidityPoolId(_liquidityPoolID.hash),
+    'body': _body.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLiquidityPoolEntry from its SEP-0051 rendering.
+  static XdrLiquidityPoolEntry fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLiquidityPoolEntry',
+      allowedKeys: const <String>{'liquidity_pool_id', 'body'},
+    );
+    final Object? jsonLiquidityPoolID = XdrJsonHelper.readField(
+      object,
+      'liquidity_pool_id',
+      type: 'XdrLiquidityPoolEntry',
+    );
+    final Object? jsonBody = XdrJsonHelper.readField(
+      object,
+      'body',
+      type: 'XdrLiquidityPoolEntry',
+    );
+    return XdrLiquidityPoolEntry(
+      XdrHash(
+        XdrJsonHelper.readStrKey(
+          jsonLiquidityPoolID,
+          type: 'XdrLiquidityPoolEntry',
+          key: 'liquidity_pool_id',
+          decode: StrKey.decodeLiquidityPoolId,
+          expectedLength: 32,
+        ),
+      ),
+      XdrLiquidityPoolBody.fromXdrJsonValue(jsonBody),
+    );
   }
 }

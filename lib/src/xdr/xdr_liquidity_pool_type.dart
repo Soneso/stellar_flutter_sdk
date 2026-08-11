@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrLiquidityPoolType {
   final _value;
@@ -87,5 +88,43 @@ class XdrLiquidityPoolType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLiquidityPoolType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLiquidityPoolType.
+  static XdrLiquidityPoolType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLiquidityPoolType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'liquidity_pool_constant_product';
+      default:
+        XdrJsonHelper.fail(
+          'XdrLiquidityPoolType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrLiquidityPoolType from its SEP-0051 name.
+  static XdrLiquidityPoolType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'liquidity_pool_constant_product':
+          return XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrLiquidityPoolType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_int32.dart';
+import 'xdr_json_helper.dart';
 
 class XdrPrice {
   XdrInt32 _n;
@@ -51,5 +52,42 @@ class XdrPrice {
     XdrInt32 n = XdrInt32.fromTxRep(map, '$prefix.n');
     XdrInt32 d = XdrInt32.fromTxRep(map, '$prefix.d');
     return XdrPrice(n, d);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrPrice');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPrice.
+  static XdrPrice fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrPrice'));
+
+  /// Returns the SEP-0051 rendering of this XdrPrice.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'n': _n.toXdrJsonValue(),
+    'd': _d.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrPrice from its SEP-0051 rendering.
+  static XdrPrice fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrPrice',
+      allowedKeys: const <String>{'n', 'd'},
+    );
+    final Object? jsonN = XdrJsonHelper.readField(
+      object,
+      'n',
+      type: 'XdrPrice',
+    );
+    final Object? jsonD = XdrJsonHelper.readField(
+      object,
+      'd',
+      type: 'XdrPrice',
+    );
+    return XdrPrice(
+      XdrInt32.fromXdrJsonValue(jsonN),
+      XdrInt32.fromXdrJsonValue(jsonD),
+    );
   }
 }

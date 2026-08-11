@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_string64.dart';
 
 class XdrLedgerKeyDataBase {
@@ -61,5 +62,43 @@ class XdrLedgerKeyDataBase {
     );
     XdrString64 dataName = XdrString64.fromTxRep(map, '$prefix.dataName');
     return XdrLedgerKeyDataBase(accountID, dataName);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrLedgerKeyData');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerKeyData.
+  static XdrLedgerKeyDataBase fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerKeyData'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerKeyDataBase.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'account_id': _accountID.toXdrJsonValue(),
+    'data_name': _dataName.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLedgerKeyDataBase from its SEP-0051 rendering.
+  static XdrLedgerKeyDataBase fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerKeyData',
+      allowedKeys: const <String>{'account_id', 'data_name'},
+    );
+    final Object? jsonAccountID = XdrJsonHelper.readField(
+      object,
+      'account_id',
+      type: 'XdrLedgerKeyData',
+    );
+    final Object? jsonDataName = XdrJsonHelper.readField(
+      object,
+      'data_name',
+      type: 'XdrLedgerKeyData',
+    );
+    return XdrLedgerKeyDataBase(
+      XdrAccountID.fromXdrJsonValue(jsonAccountID),
+      XdrString64.fromXdrJsonValue(jsonDataName),
+    );
   }
 }

@@ -18,7 +18,9 @@ Map<String, String> parseTxRepLines(List<String> lines) {
   for (var line in lines) {
     int idx = line.indexOf(': ');
     if (idx < 0) {
-      throw FormatException('Malformed TxRep line (missing ": " delimiter): $line');
+      throw FormatException(
+        'Malformed TxRep line (missing ": " delimiter): $line',
+      );
     }
     map[line.substring(0, idx)] = line.substring(idx + 2);
   }

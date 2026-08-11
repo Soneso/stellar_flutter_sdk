@@ -9,6 +9,7 @@ import 'xdr_contract_id_preimage_base.dart';
 import 'xdr_contract_id_preimage_from_address.dart';
 import 'xdr_contract_id_preimage_type.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_address.dart';
 import 'xdr_sc_address_type.dart';
 import 'xdr_uint256.dart';
@@ -83,4 +84,18 @@ class XdrContractIDPreimage extends XdrContractIDPreimageBase {
     result.fromAsset = fromAsset;
     return result;
   }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractIDPreimage.
+  ///
+  /// Dart does not inherit statics, so this narrows the base class rendering to
+  /// this type rather than relying on the one the base declares.
+  static XdrContractIDPreimage fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractIDPreimage'),
+  );
+
+  static XdrContractIDPreimage fromXdrJsonValue(Object? value) =>
+      XdrContractIDPreimageBase.fromXdrJsonValueAs(
+        value,
+        XdrContractIDPreimage.new,
+      );
 }

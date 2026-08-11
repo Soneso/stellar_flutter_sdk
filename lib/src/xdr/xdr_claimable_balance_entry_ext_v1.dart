@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_claimable_balance_entry_ext_v1_ext.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrClaimableBalanceEntryExtV1 {
@@ -50,5 +51,49 @@ class XdrClaimableBalanceEntryExtV1 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrClaimableBalanceEntryExtV1.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrClaimableBalanceEntryExtV1',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClaimableBalanceEntryExtV1.
+  static XdrClaimableBalanceEntryExtV1 fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrClaimableBalanceEntryExtV1',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrClaimableBalanceEntryExtV1.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'flags': _flags.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrClaimableBalanceEntryExtV1 from its SEP-0051 rendering.
+  static XdrClaimableBalanceEntryExtV1 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrClaimableBalanceEntryExtV1',
+      allowedKeys: const <String>{'ext', 'flags'},
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrClaimableBalanceEntryExtV1',
+    );
+    final Object? jsonFlags = XdrJsonHelper.readField(
+      object,
+      'flags',
+      type: 'XdrClaimableBalanceEntryExtV1',
+    );
+    return XdrClaimableBalanceEntryExtV1(
+      XdrClaimableBalanceEntryExtV1Ext.fromXdrJsonValue(jsonExt),
+      XdrUint32.fromXdrJsonValue(jsonFlags),
+    );
   }
 }

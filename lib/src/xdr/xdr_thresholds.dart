@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrThresholds {
   XdrThresholds(this._thresholds);
@@ -37,4 +38,22 @@ class XdrThresholds {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrThresholds.decode(XdrDataInputStream(bytes));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrThresholds');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrThresholds.
+  static XdrThresholds fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrThresholds'),
+  );
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() =>
+      XdrJsonHelper.hex(_thresholds, type: 'XdrThresholds');
+
+  /// Reads a XdrThresholds from the SEP-0051 rendering of its value.
+  static XdrThresholds fromXdrJsonValue(Object? value) => XdrThresholds(
+    XdrJsonHelper.readHex(value, type: 'XdrThresholds', expectedLength: 4),
+  );
 }

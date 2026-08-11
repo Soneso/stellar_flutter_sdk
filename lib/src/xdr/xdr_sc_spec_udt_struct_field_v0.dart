@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_spec_type_def.dart';
 
 class XdrSCSpecUDTStructFieldV0 {
@@ -51,5 +52,73 @@ class XdrSCSpecUDTStructFieldV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecUDTStructFieldV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCSpecUDTStructFieldV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecUDTStructFieldV0.
+  static XdrSCSpecUDTStructFieldV0 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecUDTStructFieldV0'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCSpecUDTStructFieldV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'doc': XdrJsonHelper.escapedString(
+      _doc,
+      type: 'XdrSCSpecUDTStructFieldV0',
+      key: 'doc',
+      maxBytes: 1024,
+    ),
+    'name': XdrJsonHelper.escapedString(
+      _name,
+      type: 'XdrSCSpecUDTStructFieldV0',
+      key: 'name',
+      maxBytes: 30,
+    ),
+    'type': _type.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSCSpecUDTStructFieldV0 from its SEP-0051 rendering.
+  static XdrSCSpecUDTStructFieldV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCSpecUDTStructFieldV0',
+      allowedKeys: const <String>{'doc', 'name', 'type', 'type_'},
+    );
+    final Object? jsonDoc = XdrJsonHelper.readField(
+      object,
+      'doc',
+      type: 'XdrSCSpecUDTStructFieldV0',
+    );
+    final Object? jsonName = XdrJsonHelper.readField(
+      object,
+      'name',
+      type: 'XdrSCSpecUDTStructFieldV0',
+    );
+    final Object? jsonType = XdrJsonHelper.readField(
+      object,
+      'type',
+      type: 'XdrSCSpecUDTStructFieldV0',
+      alias: 'type_',
+    );
+    return XdrSCSpecUDTStructFieldV0(
+      XdrJsonHelper.readEscapedString(
+        jsonDoc,
+        type: 'XdrSCSpecUDTStructFieldV0',
+        key: 'doc',
+        maxBytes: 1024,
+      ),
+      XdrJsonHelper.readEscapedString(
+        jsonName,
+        type: 'XdrSCSpecUDTStructFieldV0',
+        key: 'name',
+        maxBytes: 30,
+      ),
+      XdrSCSpecTypeDef.fromXdrJsonValue(jsonType),
+    );
   }
 }

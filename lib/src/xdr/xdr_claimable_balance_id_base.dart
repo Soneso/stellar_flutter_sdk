@@ -6,10 +6,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../key_pair.dart';
 import 'txrep_helper.dart';
 import 'xdr_claimable_balance_id_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClaimableBalanceIDBase {
   XdrClaimableBalanceIDType _type;
@@ -103,5 +105,60 @@ class XdrClaimableBalanceIDBase {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrClaimableBalanceID',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClaimableBalanceID.
+  static XdrClaimableBalanceIDBase fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrClaimableBalanceID'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrClaimableBalanceID.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0:
+        return StrKey.encodeClaimableBalanceId(
+          Uint8List.fromList(<int>[discriminant.value, ..._v0!.hash]),
+        );
+    }
+    XdrJsonHelper.fail(
+      'XdrClaimableBalanceID',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrClaimableBalanceID from its SEP-0051 rendering.
+  static XdrClaimableBalanceIDBase fromXdrJsonValue(Object? value) =>
+      fromXdrJsonValueAs(value, XdrClaimableBalanceIDBase.new);
+
+  /// Reads a subclass of XdrClaimableBalanceIDBase from its SEP-0051 rendering.
+  static T fromXdrJsonValueAs<T extends XdrClaimableBalanceIDBase>(
+    Object? value,
+    T Function(XdrClaimableBalanceIDType) constructor,
+  ) {
+    final Uint8List bytes = XdrJsonHelper.readStrKey(
+      value,
+      type: 'XdrClaimableBalanceID',
+      key: null,
+      decode: StrKey.decodeClaimableBalanceId,
+      expectedLength: 33,
+    );
+    if (bytes[0] !=
+        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0.value) {
+      XdrJsonHelper.fail(
+        'XdrClaimableBalanceID',
+        'carries the unknown discriminant ${bytes[0]}',
+      );
+    }
+    final T decoded = constructor(
+      XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0,
+    );
+    decoded.v0 = XdrHash(Uint8List.sublistView(bytes, 1));
+    return decoded;
   }
 }

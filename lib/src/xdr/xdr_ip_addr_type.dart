@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrIPAddrType {
   final _value;
@@ -51,5 +52,42 @@ class XdrIPAddrType {
   static XdrIPAddrType fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrIPAddrType.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrIPAddrType');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrIPAddrType.
+  static XdrIPAddrType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrIPAddrType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'i_pv4';
+      case 1:
+        return 'i_pv6';
+      default:
+        XdrJsonHelper.fail('XdrIPAddrType', 'holds the unknown value $_value');
+    }
+  }
+
+  /// Reads a XdrIPAddrType from its SEP-0051 name.
+  static XdrIPAddrType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'i_pv4':
+          return XdrIPAddrType.IPv4;
+        case 'i_pv6':
+          return XdrIPAddrType.IPv6;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrIPAddrType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

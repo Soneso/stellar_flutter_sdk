@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrDataValue {
   XdrDataValue(this._dataValue);
@@ -50,4 +51,22 @@ class XdrDataValue {
     if (raw == null) throw Exception('missing $prefix');
     return XdrDataValue(TxRepHelper.hexToBytes(raw));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrDataValue');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrDataValue.
+  static XdrDataValue fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrDataValue'),
+  );
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() =>
+      XdrJsonHelper.hex(_dataValue, type: 'XdrDataValue', maxLength: 64);
+
+  /// Reads a XdrDataValue from the SEP-0051 rendering of its value.
+  static XdrDataValue fromXdrJsonValue(Object? value) => XdrDataValue(
+    XdrJsonHelper.readHex(value, type: 'XdrDataValue', maxLength: 64),
+  );
 }

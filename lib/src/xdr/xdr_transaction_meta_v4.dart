@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_data_io.dart';
 import 'xdr_diagnostic_event.dart';
 import 'xdr_extension_point.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_entry_changes.dart';
 import 'xdr_operation_meta_v2.dart';
 import 'xdr_soroban_transaction_meta_v2.dart';
@@ -151,5 +152,131 @@ class XdrTransactionMetaV4 {
   static XdrTransactionMetaV4 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionMetaV4.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionMetaV4',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionMetaV4.
+  static XdrTransactionMetaV4 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionMetaV4'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionMetaV4.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'tx_changes_before': _txChangesBefore.toXdrJsonValue(),
+    'operations': XdrJsonHelper.array<XdrOperationMetaV2>(
+      _operations,
+      (XdrOperationMetaV2 v) => v.toXdrJsonValue(),
+      type: 'XdrTransactionMetaV4',
+      key: 'operations',
+    ),
+    'tx_changes_after': _txChangesAfter.toXdrJsonValue(),
+    'soroban_meta': _sorobanMeta == null
+        ? null
+        : _sorobanMeta!.toXdrJsonValue(),
+    'events': XdrJsonHelper.array<XdrTransactionEvent>(
+      _events,
+      (XdrTransactionEvent v) => v.toXdrJsonValue(),
+      type: 'XdrTransactionMetaV4',
+      key: 'events',
+    ),
+    'diagnostic_events': XdrJsonHelper.array<XdrDiagnosticEvent>(
+      _diagnosticEvents,
+      (XdrDiagnosticEvent v) => v.toXdrJsonValue(),
+      type: 'XdrTransactionMetaV4',
+      key: 'diagnostic_events',
+    ),
+  };
+
+  /// Reads a XdrTransactionMetaV4 from its SEP-0051 rendering.
+  static XdrTransactionMetaV4 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTransactionMetaV4',
+      allowedKeys: const <String>{
+        'ext',
+        'tx_changes_before',
+        'operations',
+        'tx_changes_after',
+        'soroban_meta',
+        'events',
+        'diagnostic_events',
+      },
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrTransactionMetaV4',
+    );
+    final Object? jsonTxChangesBefore = XdrJsonHelper.readField(
+      object,
+      'tx_changes_before',
+      type: 'XdrTransactionMetaV4',
+    );
+    final Object? jsonOperations = XdrJsonHelper.readField(
+      object,
+      'operations',
+      type: 'XdrTransactionMetaV4',
+    );
+    final Object? jsonTxChangesAfter = XdrJsonHelper.readField(
+      object,
+      'tx_changes_after',
+      type: 'XdrTransactionMetaV4',
+    );
+    final Object? jsonSorobanMeta = XdrJsonHelper.readField(
+      object,
+      'soroban_meta',
+      type: 'XdrTransactionMetaV4',
+    );
+    final Object? jsonEvents = XdrJsonHelper.readField(
+      object,
+      'events',
+      type: 'XdrTransactionMetaV4',
+    );
+    final Object? jsonDiagnosticEvents = XdrJsonHelper.readField(
+      object,
+      'diagnostic_events',
+      type: 'XdrTransactionMetaV4',
+    );
+    return XdrTransactionMetaV4(
+      XdrExtensionPoint.fromXdrJsonValue(jsonExt),
+      XdrLedgerEntryChanges.fromXdrJsonValue(jsonTxChangesBefore),
+      XdrJsonHelper.readArray(
+            jsonOperations,
+            type: 'XdrTransactionMetaV4',
+            key: 'operations',
+          )
+          .map<XdrOperationMetaV2>(
+            (Object? e) => XdrOperationMetaV2.fromXdrJsonValue(e),
+          )
+          .toList(),
+      XdrLedgerEntryChanges.fromXdrJsonValue(jsonTxChangesAfter),
+      jsonSorobanMeta == null
+          ? null
+          : XdrSorobanTransactionMetaV2.fromXdrJsonValue(jsonSorobanMeta),
+      XdrJsonHelper.readArray(
+            jsonEvents,
+            type: 'XdrTransactionMetaV4',
+            key: 'events',
+          )
+          .map<XdrTransactionEvent>(
+            (Object? e) => XdrTransactionEvent.fromXdrJsonValue(e),
+          )
+          .toList(),
+      XdrJsonHelper.readArray(
+            jsonDiagnosticEvents,
+            type: 'XdrTransactionMetaV4',
+            key: 'diagnostic_events',
+          )
+          .map<XdrDiagnosticEvent>(
+            (Object? e) => XdrDiagnosticEvent.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

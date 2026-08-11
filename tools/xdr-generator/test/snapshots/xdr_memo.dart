@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_memo_type.dart';
 import 'xdr_uint64.dart';
 
@@ -149,5 +150,65 @@ class XdrMemo {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrMemo');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrMemo.
+  static XdrMemo fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrMemo'));
+
+  /// Returns the SEP-0051 rendering of this XdrMemo.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'none';
+      case 1:
+        return <String, Object?>{'text': XdrJsonHelper.escapedString(_text!, type: 'XdrMemo', key: 'text', maxBytes: 28)};
+      case 2:
+        return <String, Object?>{'id': _id!.toXdrJsonValue()};
+      case 3:
+        return <String, Object?>{'hash': _hash!.toXdrJsonValue()};
+      case 4:
+        return <String, Object?>{'return': _retHash!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+        'XdrMemo', 'holds the unknown discriminant ${discriminant.value}');
+  }
+
+  /// Reads a XdrMemo from its SEP-0051 rendering.
+  static XdrMemo fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'none':
+          return XdrMemo(XdrMemoType.MEMO_NONE);
+      }
+      XdrJsonHelper.fail('XdrMemo',
+          'has no arm named ${XdrJsonHelper.preview(value)}');
+    }
+    final MapEntry<String, Object?> arm =
+        XdrJsonHelper.readSingleKeyObject(value, type: 'XdrMemo');
+    switch (arm.key) {
+      case 'text':
+        final XdrMemo arm0 = XdrMemo(XdrMemoType.MEMO_TEXT);
+        arm0.text = XdrJsonHelper.readEscapedString(arm.value, type: 'XdrMemo', key: 'text', maxBytes: 28);
+        return arm0;
+      case 'id':
+        final XdrMemo arm1 = XdrMemo(XdrMemoType.MEMO_ID);
+        arm1.id = XdrUint64.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'hash':
+        final XdrMemo arm2 = XdrMemo(XdrMemoType.MEMO_HASH);
+        arm2.hash = XdrHash.fromXdrJsonValue(arm.value);
+        return arm2;
+      case 'return':
+        final XdrMemo arm3 = XdrMemo(XdrMemoType.MEMO_RETURN);
+        arm3.retHash = XdrHash.fromXdrJsonValue(arm.value);
+        return arm3;
+    }
+    XdrJsonHelper.fail('XdrMemo',
+        'has no arm named ${XdrJsonHelper.preview(arm.key)}');
   }
 }

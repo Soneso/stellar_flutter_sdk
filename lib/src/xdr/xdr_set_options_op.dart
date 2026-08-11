@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_signer.dart';
 import 'xdr_string32.dart';
 import 'xdr_uint32.dart';
@@ -336,6 +337,127 @@ class XdrSetOptionsOp {
       highThreshold,
       homeDomain,
       signer,
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSetOptionsOp');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSetOptionsOp.
+  static XdrSetOptionsOp fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSetOptionsOp'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSetOptionsOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'inflation_dest': _inflationDest == null
+        ? null
+        : _inflationDest!.toXdrJsonValue(),
+    'clear_flags': _clearFlags == null ? null : _clearFlags!.toXdrJsonValue(),
+    'set_flags': _setFlags == null ? null : _setFlags!.toXdrJsonValue(),
+    'master_weight': _masterWeight == null
+        ? null
+        : _masterWeight!.toXdrJsonValue(),
+    'low_threshold': _lowThreshold == null
+        ? null
+        : _lowThreshold!.toXdrJsonValue(),
+    'med_threshold': _medThreshold == null
+        ? null
+        : _medThreshold!.toXdrJsonValue(),
+    'high_threshold': _highThreshold == null
+        ? null
+        : _highThreshold!.toXdrJsonValue(),
+    'home_domain': _homeDomain == null ? null : _homeDomain!.toXdrJsonValue(),
+    'signer': _signer == null ? null : _signer!.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSetOptionsOp from its SEP-0051 rendering.
+  static XdrSetOptionsOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSetOptionsOp',
+      allowedKeys: const <String>{
+        'inflation_dest',
+        'clear_flags',
+        'set_flags',
+        'master_weight',
+        'low_threshold',
+        'med_threshold',
+        'high_threshold',
+        'home_domain',
+        'signer',
+      },
+    );
+    final Object? jsonInflationDest = XdrJsonHelper.readField(
+      object,
+      'inflation_dest',
+      type: 'XdrSetOptionsOp',
+    );
+    final Object? jsonClearFlags = XdrJsonHelper.readField(
+      object,
+      'clear_flags',
+      type: 'XdrSetOptionsOp',
+    );
+    final Object? jsonSetFlags = XdrJsonHelper.readField(
+      object,
+      'set_flags',
+      type: 'XdrSetOptionsOp',
+    );
+    final Object? jsonMasterWeight = XdrJsonHelper.readField(
+      object,
+      'master_weight',
+      type: 'XdrSetOptionsOp',
+    );
+    final Object? jsonLowThreshold = XdrJsonHelper.readField(
+      object,
+      'low_threshold',
+      type: 'XdrSetOptionsOp',
+    );
+    final Object? jsonMedThreshold = XdrJsonHelper.readField(
+      object,
+      'med_threshold',
+      type: 'XdrSetOptionsOp',
+    );
+    final Object? jsonHighThreshold = XdrJsonHelper.readField(
+      object,
+      'high_threshold',
+      type: 'XdrSetOptionsOp',
+    );
+    final Object? jsonHomeDomain = XdrJsonHelper.readField(
+      object,
+      'home_domain',
+      type: 'XdrSetOptionsOp',
+    );
+    final Object? jsonSigner = XdrJsonHelper.readField(
+      object,
+      'signer',
+      type: 'XdrSetOptionsOp',
+    );
+    return XdrSetOptionsOp(
+      jsonInflationDest == null
+          ? null
+          : XdrAccountID.fromXdrJsonValue(jsonInflationDest),
+      jsonClearFlags == null
+          ? null
+          : XdrUint32.fromXdrJsonValue(jsonClearFlags),
+      jsonSetFlags == null ? null : XdrUint32.fromXdrJsonValue(jsonSetFlags),
+      jsonMasterWeight == null
+          ? null
+          : XdrUint32.fromXdrJsonValue(jsonMasterWeight),
+      jsonLowThreshold == null
+          ? null
+          : XdrUint32.fromXdrJsonValue(jsonLowThreshold),
+      jsonMedThreshold == null
+          ? null
+          : XdrUint32.fromXdrJsonValue(jsonMedThreshold),
+      jsonHighThreshold == null
+          ? null
+          : XdrUint32.fromXdrJsonValue(jsonHighThreshold),
+      jsonHomeDomain == null
+          ? null
+          : XdrString32.fromXdrJsonValue(jsonHomeDomain),
+      jsonSigner == null ? null : XdrSigner.fromXdrJsonValue(jsonSigner),
     );
   }
 }

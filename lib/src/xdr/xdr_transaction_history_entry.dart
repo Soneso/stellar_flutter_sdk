@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_transaction_history_entry_ext.dart';
 import 'xdr_transaction_set.dart';
 import 'xdr_uint32.dart';
@@ -58,5 +59,53 @@ class XdrTransactionHistoryEntry {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionHistoryEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionHistoryEntry',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionHistoryEntry.
+  static XdrTransactionHistoryEntry fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionHistoryEntry'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionHistoryEntry.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ledger_seq': _ledgerSeq.toXdrJsonValue(),
+    'tx_set': _txSet.toXdrJsonValue(),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTransactionHistoryEntry from its SEP-0051 rendering.
+  static XdrTransactionHistoryEntry fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTransactionHistoryEntry',
+      allowedKeys: const <String>{'ledger_seq', 'tx_set', 'ext'},
+    );
+    final Object? jsonLedgerSeq = XdrJsonHelper.readField(
+      object,
+      'ledger_seq',
+      type: 'XdrTransactionHistoryEntry',
+    );
+    final Object? jsonTxSet = XdrJsonHelper.readField(
+      object,
+      'tx_set',
+      type: 'XdrTransactionHistoryEntry',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrTransactionHistoryEntry',
+    );
+    return XdrTransactionHistoryEntry(
+      XdrUint32.fromXdrJsonValue(jsonLedgerSeq),
+      XdrTransactionSet.fromXdrJsonValue(jsonTxSet),
+      XdrTransactionHistoryEntryExt.fromXdrJsonValue(jsonExt),
+    );
   }
 }

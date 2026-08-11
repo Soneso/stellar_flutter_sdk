@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_node_id.dart';
 import 'xdr_uint64.dart';
 
@@ -162,5 +163,160 @@ class XdrPeerStats {
   static XdrPeerStats fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPeerStats.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrPeerStats');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPeerStats.
+  static XdrPeerStats fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrPeerStats'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrPeerStats.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'id': _id.toXdrJsonValue(),
+    'version_str': XdrJsonHelper.escapedString(
+      _versionStr,
+      type: 'XdrPeerStats',
+      key: 'version_str',
+      maxBytes: 100,
+    ),
+    'messages_read': _messagesRead.toXdrJsonValue(),
+    'messages_written': _messagesWritten.toXdrJsonValue(),
+    'bytes_read': _bytesRead.toXdrJsonValue(),
+    'bytes_written': _bytesWritten.toXdrJsonValue(),
+    'seconds_connected': _secondsConnected.toXdrJsonValue(),
+    'unique_flood_bytes_recv': _uniqueFloodBytesRecv.toXdrJsonValue(),
+    'duplicate_flood_bytes_recv': _duplicateFloodBytesRecv.toXdrJsonValue(),
+    'unique_fetch_bytes_recv': _uniqueFetchBytesRecv.toXdrJsonValue(),
+    'duplicate_fetch_bytes_recv': _duplicateFetchBytesRecv.toXdrJsonValue(),
+    'unique_flood_message_recv': _uniqueFloodMessageRecv.toXdrJsonValue(),
+    'duplicate_flood_message_recv': _duplicateFloodMessageRecv.toXdrJsonValue(),
+    'unique_fetch_message_recv': _uniqueFetchMessageRecv.toXdrJsonValue(),
+    'duplicate_fetch_message_recv': _duplicateFetchMessageRecv.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrPeerStats from its SEP-0051 rendering.
+  static XdrPeerStats fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrPeerStats',
+      allowedKeys: const <String>{
+        'id',
+        'version_str',
+        'messages_read',
+        'messages_written',
+        'bytes_read',
+        'bytes_written',
+        'seconds_connected',
+        'unique_flood_bytes_recv',
+        'duplicate_flood_bytes_recv',
+        'unique_fetch_bytes_recv',
+        'duplicate_fetch_bytes_recv',
+        'unique_flood_message_recv',
+        'duplicate_flood_message_recv',
+        'unique_fetch_message_recv',
+        'duplicate_fetch_message_recv',
+      },
+    );
+    final Object? jsonId = XdrJsonHelper.readField(
+      object,
+      'id',
+      type: 'XdrPeerStats',
+    );
+    final Object? jsonVersionStr = XdrJsonHelper.readField(
+      object,
+      'version_str',
+      type: 'XdrPeerStats',
+    );
+    final Object? jsonMessagesRead = XdrJsonHelper.readField(
+      object,
+      'messages_read',
+      type: 'XdrPeerStats',
+    );
+    final Object? jsonMessagesWritten = XdrJsonHelper.readField(
+      object,
+      'messages_written',
+      type: 'XdrPeerStats',
+    );
+    final Object? jsonBytesRead = XdrJsonHelper.readField(
+      object,
+      'bytes_read',
+      type: 'XdrPeerStats',
+    );
+    final Object? jsonBytesWritten = XdrJsonHelper.readField(
+      object,
+      'bytes_written',
+      type: 'XdrPeerStats',
+    );
+    final Object? jsonSecondsConnected = XdrJsonHelper.readField(
+      object,
+      'seconds_connected',
+      type: 'XdrPeerStats',
+    );
+    final Object? jsonUniqueFloodBytesRecv = XdrJsonHelper.readField(
+      object,
+      'unique_flood_bytes_recv',
+      type: 'XdrPeerStats',
+    );
+    final Object? jsonDuplicateFloodBytesRecv = XdrJsonHelper.readField(
+      object,
+      'duplicate_flood_bytes_recv',
+      type: 'XdrPeerStats',
+    );
+    final Object? jsonUniqueFetchBytesRecv = XdrJsonHelper.readField(
+      object,
+      'unique_fetch_bytes_recv',
+      type: 'XdrPeerStats',
+    );
+    final Object? jsonDuplicateFetchBytesRecv = XdrJsonHelper.readField(
+      object,
+      'duplicate_fetch_bytes_recv',
+      type: 'XdrPeerStats',
+    );
+    final Object? jsonUniqueFloodMessageRecv = XdrJsonHelper.readField(
+      object,
+      'unique_flood_message_recv',
+      type: 'XdrPeerStats',
+    );
+    final Object? jsonDuplicateFloodMessageRecv = XdrJsonHelper.readField(
+      object,
+      'duplicate_flood_message_recv',
+      type: 'XdrPeerStats',
+    );
+    final Object? jsonUniqueFetchMessageRecv = XdrJsonHelper.readField(
+      object,
+      'unique_fetch_message_recv',
+      type: 'XdrPeerStats',
+    );
+    final Object? jsonDuplicateFetchMessageRecv = XdrJsonHelper.readField(
+      object,
+      'duplicate_fetch_message_recv',
+      type: 'XdrPeerStats',
+    );
+    return XdrPeerStats(
+      XdrNodeID.fromXdrJsonValue(jsonId),
+      XdrJsonHelper.readEscapedString(
+        jsonVersionStr,
+        type: 'XdrPeerStats',
+        key: 'version_str',
+        maxBytes: 100,
+      ),
+      XdrUint64.fromXdrJsonValue(jsonMessagesRead),
+      XdrUint64.fromXdrJsonValue(jsonMessagesWritten),
+      XdrUint64.fromXdrJsonValue(jsonBytesRead),
+      XdrUint64.fromXdrJsonValue(jsonBytesWritten),
+      XdrUint64.fromXdrJsonValue(jsonSecondsConnected),
+      XdrUint64.fromXdrJsonValue(jsonUniqueFloodBytesRecv),
+      XdrUint64.fromXdrJsonValue(jsonDuplicateFloodBytesRecv),
+      XdrUint64.fromXdrJsonValue(jsonUniqueFetchBytesRecv),
+      XdrUint64.fromXdrJsonValue(jsonDuplicateFetchBytesRecv),
+      XdrUint64.fromXdrJsonValue(jsonUniqueFloodMessageRecv),
+      XdrUint64.fromXdrJsonValue(jsonDuplicateFloodMessageRecv),
+      XdrUint64.fromXdrJsonValue(jsonUniqueFetchMessageRecv),
+      XdrUint64.fromXdrJsonValue(jsonDuplicateFetchMessageRecv),
+    );
   }
 }

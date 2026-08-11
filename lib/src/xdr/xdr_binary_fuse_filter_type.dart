@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrBinaryFuseFilterType {
   final _value;
@@ -62,5 +63,51 @@ class XdrBinaryFuseFilterType {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBinaryFuseFilterType.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrBinaryFuseFilterType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrBinaryFuseFilterType.
+  static XdrBinaryFuseFilterType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrBinaryFuseFilterType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'b8_bit';
+      case 1:
+        return 'b16_bit';
+      case 2:
+        return 'b32_bit';
+      default:
+        XdrJsonHelper.fail(
+          'XdrBinaryFuseFilterType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrBinaryFuseFilterType from its SEP-0051 name.
+  static XdrBinaryFuseFilterType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'b8_bit':
+          return XdrBinaryFuseFilterType.BINARY_FUSE_FILTER_8_BIT;
+        case 'b16_bit':
+          return XdrBinaryFuseFilterType.BINARY_FUSE_FILTER_16_BIT;
+        case 'b32_bit':
+          return XdrBinaryFuseFilterType.BINARY_FUSE_FILTER_32_BIT;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrBinaryFuseFilterType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

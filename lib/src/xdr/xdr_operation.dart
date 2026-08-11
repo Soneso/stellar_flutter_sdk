@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_muxed_account.dart';
 import 'xdr_operation_body.dart';
 
@@ -81,5 +82,47 @@ class XdrOperation {
     }
     XdrOperationBody body = XdrOperationBody.fromTxRep(map, '$prefix.body');
     return XdrOperation(sourceAccount, body);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrOperation');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrOperation.
+  static XdrOperation fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrOperation'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrOperation.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'source_account': _sourceAccount == null
+        ? null
+        : _sourceAccount!.toXdrJsonValue(),
+    'body': _body.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrOperation from its SEP-0051 rendering.
+  static XdrOperation fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrOperation',
+      allowedKeys: const <String>{'source_account', 'body'},
+    );
+    final Object? jsonSourceAccount = XdrJsonHelper.readField(
+      object,
+      'source_account',
+      type: 'XdrOperation',
+    );
+    final Object? jsonBody = XdrJsonHelper.readField(
+      object,
+      'body',
+      type: 'XdrOperation',
+    );
+    return XdrOperation(
+      jsonSourceAccount == null
+          ? null
+          : XdrMuxedAccount.fromXdrJsonValue(jsonSourceAccount),
+      XdrOperationBody.fromXdrJsonValue(jsonBody),
+    );
   }
 }

@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrPublicKeyType {
   final _value;
@@ -81,5 +82,41 @@ class XdrPublicKeyType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrPublicKeyType');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPublicKeyType.
+  static XdrPublicKeyType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrPublicKeyType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'public_key_type_ed25519';
+      default:
+        XdrJsonHelper.fail(
+          'XdrPublicKeyType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrPublicKeyType from its SEP-0051 name.
+  static XdrPublicKeyType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'public_key_type_ed25519':
+          return XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrPublicKeyType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

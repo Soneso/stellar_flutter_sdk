@@ -10,6 +10,7 @@ import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_muxed_account.dart';
 
 class XdrPathPaymentStrictSendOp {
@@ -143,6 +144,93 @@ class XdrPathPaymentStrictSendOp {
       destAsset,
       destAmount,
       path,
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrPathPaymentStrictSendOp',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPathPaymentStrictSendOp.
+  static XdrPathPaymentStrictSendOp fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrPathPaymentStrictSendOp'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrPathPaymentStrictSendOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'send_asset': _sendAsset.toXdrJsonValue(),
+    'send_amount': _sendMax.toXdrJsonValue(),
+    'destination': _destination.toXdrJsonValue(),
+    'dest_asset': _destAsset.toXdrJsonValue(),
+    'dest_min': _destAmount.toXdrJsonValue(),
+    'path': XdrJsonHelper.array<XdrAsset>(
+      _path,
+      (XdrAsset v) => v.toXdrJsonValue(),
+      type: 'XdrPathPaymentStrictSendOp',
+      key: 'path',
+      maxLength: 5,
+    ),
+  };
+
+  /// Reads a XdrPathPaymentStrictSendOp from its SEP-0051 rendering.
+  static XdrPathPaymentStrictSendOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrPathPaymentStrictSendOp',
+      allowedKeys: const <String>{
+        'send_asset',
+        'send_amount',
+        'destination',
+        'dest_asset',
+        'dest_min',
+        'path',
+      },
+    );
+    final Object? jsonSendAsset = XdrJsonHelper.readField(
+      object,
+      'send_asset',
+      type: 'XdrPathPaymentStrictSendOp',
+    );
+    final Object? jsonSendMax = XdrJsonHelper.readField(
+      object,
+      'send_amount',
+      type: 'XdrPathPaymentStrictSendOp',
+    );
+    final Object? jsonDestination = XdrJsonHelper.readField(
+      object,
+      'destination',
+      type: 'XdrPathPaymentStrictSendOp',
+    );
+    final Object? jsonDestAsset = XdrJsonHelper.readField(
+      object,
+      'dest_asset',
+      type: 'XdrPathPaymentStrictSendOp',
+    );
+    final Object? jsonDestAmount = XdrJsonHelper.readField(
+      object,
+      'dest_min',
+      type: 'XdrPathPaymentStrictSendOp',
+    );
+    final Object? jsonPath = XdrJsonHelper.readField(
+      object,
+      'path',
+      type: 'XdrPathPaymentStrictSendOp',
+    );
+    return XdrPathPaymentStrictSendOp(
+      XdrAsset.fromXdrJsonValue(jsonSendAsset),
+      XdrInt64.fromXdrJsonValue(jsonSendMax),
+      XdrMuxedAccount.fromXdrJsonValue(jsonDestination),
+      XdrAsset.fromXdrJsonValue(jsonDestAsset),
+      XdrInt64.fromXdrJsonValue(jsonDestAmount),
+      XdrJsonHelper.readArray(
+        jsonPath,
+        type: 'XdrPathPaymentStrictSendOp',
+        key: 'path',
+        maxLength: 5,
+      ).map<XdrAsset>((Object? e) => XdrAsset.fromXdrJsonValue(e)).toList(),
     );
   }
 }

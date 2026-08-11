@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrString32 {
   XdrString32(this._string32);
@@ -44,4 +45,21 @@ class XdrString32 {
     if (raw == null) throw Exception('missing $prefix');
     return XdrString32(TxRepHelper.unescapeString(raw));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrString32');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrString32.
+  static XdrString32 fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrString32'));
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() =>
+      XdrJsonHelper.escapedString(_string32, type: 'XdrString32', maxBytes: 32);
+
+  /// Reads a XdrString32 from the SEP-0051 rendering of its value.
+  static XdrString32 fromXdrJsonValue(Object? value) => XdrString32(
+    XdrJsonHelper.readEscapedString(value, type: 'XdrString32', maxBytes: 32),
+  );
 }

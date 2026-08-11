@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_scp_envelope.dart';
 import 'xdr_scp_quorum_set.dart';
 
@@ -66,5 +67,71 @@ class XdrPersistedSCPStateV1 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrPersistedSCPStateV1.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrPersistedSCPStateV1',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrPersistedSCPStateV1.
+  static XdrPersistedSCPStateV1 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrPersistedSCPStateV1'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrPersistedSCPStateV1.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'scp_envelopes': XdrJsonHelper.array<XdrSCPEnvelope>(
+      _scpEnvelopes,
+      (XdrSCPEnvelope v) => v.toXdrJsonValue(),
+      type: 'XdrPersistedSCPStateV1',
+      key: 'scp_envelopes',
+    ),
+    'quorum_sets': XdrJsonHelper.array<XdrSCPQuorumSet>(
+      _quorumSets,
+      (XdrSCPQuorumSet v) => v.toXdrJsonValue(),
+      type: 'XdrPersistedSCPStateV1',
+      key: 'quorum_sets',
+    ),
+  };
+
+  /// Reads a XdrPersistedSCPStateV1 from its SEP-0051 rendering.
+  static XdrPersistedSCPStateV1 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrPersistedSCPStateV1',
+      allowedKeys: const <String>{'scp_envelopes', 'quorum_sets'},
+    );
+    final Object? jsonScpEnvelopes = XdrJsonHelper.readField(
+      object,
+      'scp_envelopes',
+      type: 'XdrPersistedSCPStateV1',
+    );
+    final Object? jsonQuorumSets = XdrJsonHelper.readField(
+      object,
+      'quorum_sets',
+      type: 'XdrPersistedSCPStateV1',
+    );
+    return XdrPersistedSCPStateV1(
+      XdrJsonHelper.readArray(
+            jsonScpEnvelopes,
+            type: 'XdrPersistedSCPStateV1',
+            key: 'scp_envelopes',
+          )
+          .map<XdrSCPEnvelope>(
+            (Object? e) => XdrSCPEnvelope.fromXdrJsonValue(e),
+          )
+          .toList(),
+      XdrJsonHelper.readArray(
+            jsonQuorumSets,
+            type: 'XdrPersistedSCPStateV1',
+            key: 'quorum_sets',
+          )
+          .map<XdrSCPQuorumSet>(
+            (Object? e) => XdrSCPQuorumSet.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

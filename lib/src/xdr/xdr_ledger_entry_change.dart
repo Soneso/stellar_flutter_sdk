@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_entry.dart';
 import 'xdr_ledger_entry_change_type.dart';
 import 'xdr_ledger_key.dart';
@@ -115,5 +116,80 @@ class XdrLedgerEntryChange {
   static XdrLedgerEntryChange fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerEntryChange.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerEntryChange',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerEntryChange.
+  static XdrLedgerEntryChange fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerEntryChange'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerEntryChange.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'created': _created!.toXdrJsonValue()};
+      case 1:
+        return <String, Object?>{'updated': _updated!.toXdrJsonValue()};
+      case 2:
+        return <String, Object?>{'removed': _removed!.toXdrJsonValue()};
+      case 3:
+        return <String, Object?>{'state': _state!.toXdrJsonValue()};
+      case 4:
+        return <String, Object?>{'restored': _restored!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerEntryChange',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrLedgerEntryChange from its SEP-0051 rendering.
+  static XdrLedgerEntryChange fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrLedgerEntryChange',
+    );
+    switch (arm.key) {
+      case 'created':
+        final XdrLedgerEntryChange arm0 = XdrLedgerEntryChange(
+          XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED,
+        );
+        arm0.created = XdrLedgerEntry.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'updated':
+        final XdrLedgerEntryChange arm1 = XdrLedgerEntryChange(
+          XdrLedgerEntryChangeType.LEDGER_ENTRY_UPDATED,
+        );
+        arm1.updated = XdrLedgerEntry.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'removed':
+        final XdrLedgerEntryChange arm2 = XdrLedgerEntryChange(
+          XdrLedgerEntryChangeType.LEDGER_ENTRY_REMOVED,
+        );
+        arm2.removed = XdrLedgerKey.fromXdrJsonValue(arm.value);
+        return arm2;
+      case 'state':
+        final XdrLedgerEntryChange arm3 = XdrLedgerEntryChange(
+          XdrLedgerEntryChangeType.LEDGER_ENTRY_STATE,
+        );
+        arm3.state = XdrLedgerEntry.fromXdrJsonValue(arm.value);
+        return arm3;
+      case 'restored':
+        final XdrLedgerEntryChange arm4 = XdrLedgerEntryChange(
+          XdrLedgerEntryChangeType.LEDGER_ENTRY_RESTORED,
+        );
+        arm4.restored = XdrLedgerEntry.fromXdrJsonValue(arm.value);
+        return arm4;
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerEntryChange',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

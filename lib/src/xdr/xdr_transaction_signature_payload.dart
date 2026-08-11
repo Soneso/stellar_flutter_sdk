@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_transaction_signature_payload_tagged_transaction.dart';
 
 class XdrTransactionSignaturePayload {
@@ -53,5 +54,51 @@ class XdrTransactionSignaturePayload {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionSignaturePayload.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionSignaturePayload',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionSignaturePayload.
+  static XdrTransactionSignaturePayload fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrTransactionSignaturePayload',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionSignaturePayload.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'network_id': _networkId.toXdrJsonValue(),
+    'tagged_transaction': _taggedTransaction.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTransactionSignaturePayload from its SEP-0051 rendering.
+  static XdrTransactionSignaturePayload fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTransactionSignaturePayload',
+      allowedKeys: const <String>{'network_id', 'tagged_transaction'},
+    );
+    final Object? jsonNetworkId = XdrJsonHelper.readField(
+      object,
+      'network_id',
+      type: 'XdrTransactionSignaturePayload',
+    );
+    final Object? jsonTaggedTransaction = XdrJsonHelper.readField(
+      object,
+      'tagged_transaction',
+      type: 'XdrTransactionSignaturePayload',
+    );
+    return XdrTransactionSignaturePayload(
+      XdrHash.fromXdrJsonValue(jsonNetworkId),
+      XdrTransactionSignaturePayloadTaggedTransaction.fromXdrJsonValue(
+        jsonTaggedTransaction,
+      ),
+    );
   }
 }

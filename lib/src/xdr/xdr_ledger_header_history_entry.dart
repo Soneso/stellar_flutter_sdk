@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_header.dart';
 import 'xdr_ledger_header_history_entry_ext.dart';
 
@@ -58,5 +59,53 @@ class XdrLedgerHeaderHistoryEntry {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerHeaderHistoryEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerHeaderHistoryEntry',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerHeaderHistoryEntry.
+  static XdrLedgerHeaderHistoryEntry fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerHeaderHistoryEntry'),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerHeaderHistoryEntry.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'hash': _hash.toXdrJsonValue(),
+    'header': _header.toXdrJsonValue(),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLedgerHeaderHistoryEntry from its SEP-0051 rendering.
+  static XdrLedgerHeaderHistoryEntry fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerHeaderHistoryEntry',
+      allowedKeys: const <String>{'hash', 'header', 'ext'},
+    );
+    final Object? jsonHash = XdrJsonHelper.readField(
+      object,
+      'hash',
+      type: 'XdrLedgerHeaderHistoryEntry',
+    );
+    final Object? jsonHeader = XdrJsonHelper.readField(
+      object,
+      'header',
+      type: 'XdrLedgerHeaderHistoryEntry',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrLedgerHeaderHistoryEntry',
+    );
+    return XdrLedgerHeaderHistoryEntry(
+      XdrHash.fromXdrJsonValue(jsonHash),
+      XdrLedgerHeader.fromXdrJsonValue(jsonHeader),
+      XdrLedgerHeaderHistoryEntryExt.fromXdrJsonValue(jsonExt),
+    );
   }
 }

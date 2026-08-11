@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingContractParallelComputeV0 {
@@ -51,6 +52,46 @@ class XdrConfigSettingContractParallelComputeV0 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigSettingContractParallelComputeV0.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrConfigSettingContractParallelComputeV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrConfigSettingContractParallelComputeV0.
+  static XdrConfigSettingContractParallelComputeV0 fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrConfigSettingContractParallelComputeV0',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrConfigSettingContractParallelComputeV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ledger_max_dependent_tx_clusters': _ledgerMaxDependentTxClusters
+        .toXdrJsonValue(),
+  };
+
+  /// Reads a XdrConfigSettingContractParallelComputeV0 from its SEP-0051 rendering.
+  static XdrConfigSettingContractParallelComputeV0 fromXdrJsonValue(
+    Object? value,
+  ) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrConfigSettingContractParallelComputeV0',
+      allowedKeys: const <String>{'ledger_max_dependent_tx_clusters'},
+    );
+    final Object? jsonLedgerMaxDependentTxClusters = XdrJsonHelper.readField(
+      object,
+      'ledger_max_dependent_tx_clusters',
+      type: 'XdrConfigSettingContractParallelComputeV0',
+    );
+    return XdrConfigSettingContractParallelComputeV0(
+      XdrUint32.fromXdrJsonValue(jsonLedgerMaxDependentTxClusters),
     );
   }
 }

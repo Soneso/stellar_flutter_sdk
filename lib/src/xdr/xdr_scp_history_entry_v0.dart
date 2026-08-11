@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_scp_messages.dart';
 import 'xdr_scp_quorum_set.dart';
 
@@ -58,5 +59,58 @@ class XdrSCPHistoryEntryV0 {
   static XdrSCPHistoryEntryV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPHistoryEntryV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCPHistoryEntryV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCPHistoryEntryV0.
+  static XdrSCPHistoryEntryV0 fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCPHistoryEntryV0'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCPHistoryEntryV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'quorum_sets': XdrJsonHelper.array<XdrSCPQuorumSet>(
+      _quorumSets,
+      (XdrSCPQuorumSet v) => v.toXdrJsonValue(),
+      type: 'XdrSCPHistoryEntryV0',
+      key: 'quorum_sets',
+    ),
+    'ledger_messages': _ledgerMessages.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSCPHistoryEntryV0 from its SEP-0051 rendering.
+  static XdrSCPHistoryEntryV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCPHistoryEntryV0',
+      allowedKeys: const <String>{'quorum_sets', 'ledger_messages'},
+    );
+    final Object? jsonQuorumSets = XdrJsonHelper.readField(
+      object,
+      'quorum_sets',
+      type: 'XdrSCPHistoryEntryV0',
+    );
+    final Object? jsonLedgerMessages = XdrJsonHelper.readField(
+      object,
+      'ledger_messages',
+      type: 'XdrSCPHistoryEntryV0',
+    );
+    return XdrSCPHistoryEntryV0(
+      XdrJsonHelper.readArray(
+            jsonQuorumSets,
+            type: 'XdrSCPHistoryEntryV0',
+            key: 'quorum_sets',
+          )
+          .map<XdrSCPQuorumSet>(
+            (Object? e) => XdrSCPQuorumSet.fromXdrJsonValue(e),
+          )
+          .toList(),
+      XdrLedgerSCPMessages.fromXdrJsonValue(jsonLedgerMessages),
+    );
   }
 }

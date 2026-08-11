@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrConfigSettingContractBandwidthV0 {
@@ -71,6 +72,61 @@ class XdrConfigSettingContractBandwidthV0 {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrConfigSettingContractBandwidthV0.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrConfigSettingContractBandwidthV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrConfigSettingContractBandwidthV0.
+  static XdrConfigSettingContractBandwidthV0 fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrConfigSettingContractBandwidthV0',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrConfigSettingContractBandwidthV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ledger_max_txs_size_bytes': _ledgerMaxTxsSizeBytes.toXdrJsonValue(),
+    'tx_max_size_bytes': _txMaxSizeBytes.toXdrJsonValue(),
+    'fee_tx_size1_kb': _feeTxSize1KB.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrConfigSettingContractBandwidthV0 from its SEP-0051 rendering.
+  static XdrConfigSettingContractBandwidthV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrConfigSettingContractBandwidthV0',
+      allowedKeys: const <String>{
+        'ledger_max_txs_size_bytes',
+        'tx_max_size_bytes',
+        'fee_tx_size1_kb',
+      },
+    );
+    final Object? jsonLedgerMaxTxsSizeBytes = XdrJsonHelper.readField(
+      object,
+      'ledger_max_txs_size_bytes',
+      type: 'XdrConfigSettingContractBandwidthV0',
+    );
+    final Object? jsonTxMaxSizeBytes = XdrJsonHelper.readField(
+      object,
+      'tx_max_size_bytes',
+      type: 'XdrConfigSettingContractBandwidthV0',
+    );
+    final Object? jsonFeeTxSize1KB = XdrJsonHelper.readField(
+      object,
+      'fee_tx_size1_kb',
+      type: 'XdrConfigSettingContractBandwidthV0',
+    );
+    return XdrConfigSettingContractBandwidthV0(
+      XdrUint32.fromXdrJsonValue(jsonLedgerMaxTxsSizeBytes),
+      XdrUint32.fromXdrJsonValue(jsonTxMaxSizeBytes),
+      XdrInt64.fromXdrJsonValue(jsonFeeTxSize1KB),
     );
   }
 }

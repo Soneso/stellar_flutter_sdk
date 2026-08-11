@@ -21,6 +21,7 @@ import 'xdr_end_sponsoring_future_reserves_result.dart';
 import 'xdr_extend_footprint_ttl_result.dart';
 import 'xdr_inflation_result.dart';
 import 'xdr_invoke_host_function_result.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_liquidity_pool_deposit_result.dart';
 import 'xdr_liquidity_pool_withdraw_result.dart';
 import 'xdr_manage_data_result.dart';
@@ -563,5 +564,343 @@ class XdrOperationResultTr {
   static XdrOperationResultTr fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrOperationResultTr.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrOperationResultTr',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrOperationResultTr.
+  static XdrOperationResultTr fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrOperationResultTr'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrOperationResultTr.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{
+          'create_account': _createAccountResult!.toXdrJsonValue(),
+        };
+      case 1:
+        return <String, Object?>{'payment': _paymentResult!.toXdrJsonValue()};
+      case 2:
+        return <String, Object?>{
+          'path_payment_strict_receive': _pathPaymentStrictReceiveResult!
+              .toXdrJsonValue(),
+        };
+      case 3:
+        return <String, Object?>{
+          'manage_sell_offer': _manageSellOfferResult!.toXdrJsonValue(),
+        };
+      case 4:
+        return <String, Object?>{
+          'create_passive_sell_offer': _createPassiveSellOfferResult!
+              .toXdrJsonValue(),
+        };
+      case 5:
+        return <String, Object?>{
+          'set_options': _setOptionsResult!.toXdrJsonValue(),
+        };
+      case 6:
+        return <String, Object?>{
+          'change_trust': _changeTrustResult!.toXdrJsonValue(),
+        };
+      case 7:
+        return <String, Object?>{
+          'allow_trust': _allowTrustResult!.toXdrJsonValue(),
+        };
+      case 8:
+        return <String, Object?>{
+          'account_merge': _accountMergeResult!.toXdrJsonValue(),
+        };
+      case 9:
+        return <String, Object?>{
+          'inflation': _inflationResult!.toXdrJsonValue(),
+        };
+      case 10:
+        return <String, Object?>{
+          'manage_data': _manageDataResult!.toXdrJsonValue(),
+        };
+      case 11:
+        return <String, Object?>{
+          'bump_sequence': _bumpSeqResult!.toXdrJsonValue(),
+        };
+      case 12:
+        return <String, Object?>{
+          'manage_buy_offer': _manageBuyOfferResult!.toXdrJsonValue(),
+        };
+      case 13:
+        return <String, Object?>{
+          'path_payment_strict_send': _pathPaymentStrictSendResult!
+              .toXdrJsonValue(),
+        };
+      case 14:
+        return <String, Object?>{
+          'create_claimable_balance': _createClaimableBalanceResult!
+              .toXdrJsonValue(),
+        };
+      case 15:
+        return <String, Object?>{
+          'claim_claimable_balance': _claimClaimableBalanceResult!
+              .toXdrJsonValue(),
+        };
+      case 16:
+        return <String, Object?>{
+          'begin_sponsoring_future_reserves':
+              _beginSponsoringFutureReservesResult!.toXdrJsonValue(),
+        };
+      case 17:
+        return <String, Object?>{
+          'end_sponsoring_future_reserves': _endSponsoringFutureReservesResult!
+              .toXdrJsonValue(),
+        };
+      case 18:
+        return <String, Object?>{
+          'revoke_sponsorship': _revokeSponsorshipResult!.toXdrJsonValue(),
+        };
+      case 19:
+        return <String, Object?>{'clawback': _clawbackResult!.toXdrJsonValue()};
+      case 20:
+        return <String, Object?>{
+          'clawback_claimable_balance': _clawbackClaimableBalanceResult!
+              .toXdrJsonValue(),
+        };
+      case 21:
+        return <String, Object?>{
+          'set_trust_line_flags': _setTrustLineFlagsResult!.toXdrJsonValue(),
+        };
+      case 22:
+        return <String, Object?>{
+          'liquidity_pool_deposit': _liquidityPoolDepositResult!
+              .toXdrJsonValue(),
+        };
+      case 23:
+        return <String, Object?>{
+          'liquidity_pool_withdraw': _liquidityPoolWithdrawResult!
+              .toXdrJsonValue(),
+        };
+      case 24:
+        return <String, Object?>{
+          'invoke_host_function': _invokeHostFunctionResult!.toXdrJsonValue(),
+        };
+      case 25:
+        return <String, Object?>{
+          'extend_footprint_ttl': _extendFootprintTTLResult!.toXdrJsonValue(),
+        };
+      case 26:
+        return <String, Object?>{
+          'restore_footprint': _restoreFootprintResult!.toXdrJsonValue(),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrOperationResultTr',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrOperationResultTr from its SEP-0051 rendering.
+  static XdrOperationResultTr fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrOperationResultTr',
+    );
+    switch (arm.key) {
+      case 'create_account':
+        final XdrOperationResultTr arm0 = XdrOperationResultTr(
+          XdrOperationType.CREATE_ACCOUNT,
+        );
+        arm0.createAccountResult = XdrCreateAccountResult.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm0;
+      case 'payment':
+        final XdrOperationResultTr arm1 = XdrOperationResultTr(
+          XdrOperationType.PAYMENT,
+        );
+        arm1.paymentResult = XdrPaymentResult.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'path_payment_strict_receive':
+        final XdrOperationResultTr arm2 = XdrOperationResultTr(
+          XdrOperationType.PATH_PAYMENT_STRICT_RECEIVE,
+        );
+        arm2.pathPaymentStrictReceiveResult =
+            XdrPathPaymentStrictReceiveResult.fromXdrJsonValue(arm.value);
+        return arm2;
+      case 'manage_sell_offer':
+        final XdrOperationResultTr arm3 = XdrOperationResultTr(
+          XdrOperationType.MANAGE_SELL_OFFER,
+        );
+        arm3.manageSellOfferResult = XdrManageOfferResult.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm3;
+      case 'create_passive_sell_offer':
+        final XdrOperationResultTr arm4 = XdrOperationResultTr(
+          XdrOperationType.CREATE_PASSIVE_SELL_OFFER,
+        );
+        arm4.createPassiveSellOfferResult =
+            XdrManageOfferResult.fromXdrJsonValue(arm.value);
+        return arm4;
+      case 'set_options':
+        final XdrOperationResultTr arm5 = XdrOperationResultTr(
+          XdrOperationType.SET_OPTIONS,
+        );
+        arm5.setOptionsResult = XdrSetOptionsResult.fromXdrJsonValue(arm.value);
+        return arm5;
+      case 'change_trust':
+        final XdrOperationResultTr arm6 = XdrOperationResultTr(
+          XdrOperationType.CHANGE_TRUST,
+        );
+        arm6.changeTrustResult = XdrChangeTrustResult.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm6;
+      case 'allow_trust':
+        final XdrOperationResultTr arm7 = XdrOperationResultTr(
+          XdrOperationType.ALLOW_TRUST,
+        );
+        arm7.allowTrustResult = XdrAllowTrustResult.fromXdrJsonValue(arm.value);
+        return arm7;
+      case 'account_merge':
+        final XdrOperationResultTr arm8 = XdrOperationResultTr(
+          XdrOperationType.ACCOUNT_MERGE,
+        );
+        arm8.accountMergeResult = XdrAccountMergeResult.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm8;
+      case 'inflation':
+        final XdrOperationResultTr arm9 = XdrOperationResultTr(
+          XdrOperationType.INFLATION,
+        );
+        arm9.inflationResult = XdrInflationResult.fromXdrJsonValue(arm.value);
+        return arm9;
+      case 'manage_data':
+        final XdrOperationResultTr arm10 = XdrOperationResultTr(
+          XdrOperationType.MANAGE_DATA,
+        );
+        arm10.manageDataResult = XdrManageDataResult.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm10;
+      case 'bump_sequence':
+        final XdrOperationResultTr arm11 = XdrOperationResultTr(
+          XdrOperationType.BUMP_SEQUENCE,
+        );
+        arm11.bumpSeqResult = XdrBumpSequenceResult.fromXdrJsonValue(arm.value);
+        return arm11;
+      case 'manage_buy_offer':
+        final XdrOperationResultTr arm12 = XdrOperationResultTr(
+          XdrOperationType.MANAGE_BUY_OFFER,
+        );
+        arm12.manageBuyOfferResult = XdrManageOfferResult.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm12;
+      case 'path_payment_strict_send':
+        final XdrOperationResultTr arm13 = XdrOperationResultTr(
+          XdrOperationType.PATH_PAYMENT_STRICT_SEND,
+        );
+        arm13.pathPaymentStrictSendResult =
+            XdrPathPaymentStrictSendResult.fromXdrJsonValue(arm.value);
+        return arm13;
+      case 'create_claimable_balance':
+        final XdrOperationResultTr arm14 = XdrOperationResultTr(
+          XdrOperationType.CREATE_CLAIMABLE_BALANCE,
+        );
+        arm14.createClaimableBalanceResult =
+            XdrCreateClaimableBalanceResult.fromXdrJsonValue(arm.value);
+        return arm14;
+      case 'claim_claimable_balance':
+        final XdrOperationResultTr arm15 = XdrOperationResultTr(
+          XdrOperationType.CLAIM_CLAIMABLE_BALANCE,
+        );
+        arm15.claimClaimableBalanceResult =
+            XdrClaimClaimableBalanceResult.fromXdrJsonValue(arm.value);
+        return arm15;
+      case 'begin_sponsoring_future_reserves':
+        final XdrOperationResultTr arm16 = XdrOperationResultTr(
+          XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES,
+        );
+        arm16.beginSponsoringFutureReservesResult =
+            XdrBeginSponsoringFutureReservesResult.fromXdrJsonValue(arm.value);
+        return arm16;
+      case 'end_sponsoring_future_reserves':
+        final XdrOperationResultTr arm17 = XdrOperationResultTr(
+          XdrOperationType.END_SPONSORING_FUTURE_RESERVES,
+        );
+        arm17.endSponsoringFutureReservesResult =
+            XdrEndSponsoringFutureReservesResult.fromXdrJsonValue(arm.value);
+        return arm17;
+      case 'revoke_sponsorship':
+        final XdrOperationResultTr arm18 = XdrOperationResultTr(
+          XdrOperationType.REVOKE_SPONSORSHIP,
+        );
+        arm18.revokeSponsorshipResult =
+            XdrRevokeSponsorshipResult.fromXdrJsonValue(arm.value);
+        return arm18;
+      case 'clawback':
+        final XdrOperationResultTr arm19 = XdrOperationResultTr(
+          XdrOperationType.CLAWBACK,
+        );
+        arm19.clawbackResult = XdrClawbackResult.fromXdrJsonValue(arm.value);
+        return arm19;
+      case 'clawback_claimable_balance':
+        final XdrOperationResultTr arm20 = XdrOperationResultTr(
+          XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE,
+        );
+        arm20.clawbackClaimableBalanceResult =
+            XdrClawbackClaimableBalanceResult.fromXdrJsonValue(arm.value);
+        return arm20;
+      case 'set_trust_line_flags':
+        final XdrOperationResultTr arm21 = XdrOperationResultTr(
+          XdrOperationType.SET_TRUST_LINE_FLAGS,
+        );
+        arm21.setTrustLineFlagsResult =
+            XdrSetTrustLineFlagsResult.fromXdrJsonValue(arm.value);
+        return arm21;
+      case 'liquidity_pool_deposit':
+        final XdrOperationResultTr arm22 = XdrOperationResultTr(
+          XdrOperationType.LIQUIDITY_POOL_DEPOSIT,
+        );
+        arm22.liquidityPoolDepositResult =
+            XdrLiquidityPoolDepositResult.fromXdrJsonValue(arm.value);
+        return arm22;
+      case 'liquidity_pool_withdraw':
+        final XdrOperationResultTr arm23 = XdrOperationResultTr(
+          XdrOperationType.LIQUIDITY_POOL_WITHDRAW,
+        );
+        arm23.liquidityPoolWithdrawResult =
+            XdrLiquidityPoolWithdrawResult.fromXdrJsonValue(arm.value);
+        return arm23;
+      case 'invoke_host_function':
+        final XdrOperationResultTr arm24 = XdrOperationResultTr(
+          XdrOperationType.INVOKE_HOST_FUNCTION,
+        );
+        arm24.invokeHostFunctionResult =
+            XdrInvokeHostFunctionResult.fromXdrJsonValue(arm.value);
+        return arm24;
+      case 'extend_footprint_ttl':
+        final XdrOperationResultTr arm25 = XdrOperationResultTr(
+          XdrOperationType.EXTEND_FOOTPRINT_TTL,
+        );
+        arm25.extendFootprintTTLResult =
+            XdrExtendFootprintTTLResult.fromXdrJsonValue(arm.value);
+        return arm25;
+      case 'restore_footprint':
+        final XdrOperationResultTr arm26 = XdrOperationResultTr(
+          XdrOperationType.RESTORE_FOOTPRINT,
+        );
+        arm26.restoreFootprintResult =
+            XdrRestoreFootprintResult.fromXdrJsonValue(arm.value);
+        return arm26;
+    }
+    XdrJsonHelper.fail(
+      'XdrOperationResultTr',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

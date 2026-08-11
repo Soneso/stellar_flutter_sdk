@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_signature.dart';
 import 'xdr_signature_hint.dart';
 
@@ -60,5 +61,45 @@ class XdrDecoratedSignature {
     XdrSignatureHint hint = XdrSignatureHint.fromTxRep(map, '$prefix.hint');
     XdrSignature signature = XdrSignature.fromTxRep(map, '$prefix.signature');
     return XdrDecoratedSignature(hint, signature);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrDecoratedSignature',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrDecoratedSignature.
+  static XdrDecoratedSignature fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrDecoratedSignature'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrDecoratedSignature.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'hint': _hint.toXdrJsonValue(),
+    'signature': _signature.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrDecoratedSignature from its SEP-0051 rendering.
+  static XdrDecoratedSignature fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrDecoratedSignature',
+      allowedKeys: const <String>{'hint', 'signature'},
+    );
+    final Object? jsonHint = XdrJsonHelper.readField(
+      object,
+      'hint',
+      type: 'XdrDecoratedSignature',
+    );
+    final Object? jsonSignature = XdrJsonHelper.readField(
+      object,
+      'signature',
+      type: 'XdrDecoratedSignature',
+    );
+    return XdrDecoratedSignature(
+      XdrSignatureHint.fromXdrJsonValue(jsonHint),
+      XdrSignature.fromXdrJsonValue(jsonSignature),
+    );
   }
 }

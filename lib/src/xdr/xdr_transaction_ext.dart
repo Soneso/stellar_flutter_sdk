@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_soroban_transaction_data.dart';
 
 class XdrTransactionExt {
@@ -107,5 +108,58 @@ class XdrTransactionExt {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrTransactionExt');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionExt.
+  static XdrTransactionExt fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionExt'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionExt.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return 'v0';
+      case 1:
+        return <String, Object?>{'v1': _sorobanData!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrTransactionExt',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrTransactionExt from its SEP-0051 rendering.
+  static XdrTransactionExt fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'v0':
+          return XdrTransactionExt(0);
+      }
+      XdrJsonHelper.fail(
+        'XdrTransactionExt',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrTransactionExt',
+    );
+    switch (arm.key) {
+      case 'v1':
+        final XdrTransactionExt arm0 = XdrTransactionExt(1);
+        arm0.sorobanData = XdrSorobanTransactionData.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrTransactionExt',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

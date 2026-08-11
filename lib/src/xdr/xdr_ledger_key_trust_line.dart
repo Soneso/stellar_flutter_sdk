@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'txrep_helper.dart';
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_trustline_asset.dart';
 
 class XdrLedgerKeyTrustLine {
@@ -63,5 +64,45 @@ class XdrLedgerKeyTrustLine {
     );
     XdrTrustlineAsset asset = XdrTrustlineAsset.fromTxRep(map, '$prefix.asset');
     return XdrLedgerKeyTrustLine(accountID, asset);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerKeyTrustLine',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerKeyTrustLine.
+  static XdrLedgerKeyTrustLine fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerKeyTrustLine'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerKeyTrustLine.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'account_id': _accountID.toXdrJsonValue(),
+    'asset': _asset.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLedgerKeyTrustLine from its SEP-0051 rendering.
+  static XdrLedgerKeyTrustLine fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerKeyTrustLine',
+      allowedKeys: const <String>{'account_id', 'asset'},
+    );
+    final Object? jsonAccountID = XdrJsonHelper.readField(
+      object,
+      'account_id',
+      type: 'XdrLedgerKeyTrustLine',
+    );
+    final Object? jsonAsset = XdrJsonHelper.readField(
+      object,
+      'asset',
+      type: 'XdrLedgerKeyTrustLine',
+    );
+    return XdrLedgerKeyTrustLine(
+      XdrAccountID.fromXdrJsonValue(jsonAccountID),
+      XdrTrustlineAsset.fromXdrJsonValue(jsonAsset),
+    );
   }
 }

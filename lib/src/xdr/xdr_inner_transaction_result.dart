@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_data_io.dart';
 import 'xdr_inner_transaction_result_result.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_transaction_result_ext.dart';
 
 class XdrInnerTransactionResult {
@@ -57,5 +58,52 @@ class XdrInnerTransactionResult {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrInnerTransactionResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrInnerTransactionResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrInnerTransactionResult.
+  static XdrInnerTransactionResult fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrInnerTransactionResult'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrInnerTransactionResult.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'fee_charged': _feeCharged.toXdrJsonValue(),
+    'result': _result.toXdrJsonValue(),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrInnerTransactionResult from its SEP-0051 rendering.
+  static XdrInnerTransactionResult fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrInnerTransactionResult',
+      allowedKeys: const <String>{'fee_charged', 'result', 'ext'},
+    );
+    final Object? jsonFeeCharged = XdrJsonHelper.readField(
+      object,
+      'fee_charged',
+      type: 'XdrInnerTransactionResult',
+    );
+    final Object? jsonResult = XdrJsonHelper.readField(
+      object,
+      'result',
+      type: 'XdrInnerTransactionResult',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrInnerTransactionResult',
+    );
+    return XdrInnerTransactionResult(
+      XdrInt64.fromXdrJsonValue(jsonFeeCharged),
+      XdrInnerTransactionResultResult.fromXdrJsonValue(jsonResult),
+      XdrTransactionResultExt.fromXdrJsonValue(jsonExt),
+    );
   }
 }

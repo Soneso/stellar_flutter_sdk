@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrLedgerHeaderExtensionV1Ext {
   int _v;
@@ -57,5 +58,50 @@ class XdrLedgerHeaderExtensionV1Ext {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerHeaderExtensionV1Ext.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerHeaderExtensionV1Ext',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerHeaderExtensionV1Ext.
+  static XdrLedgerHeaderExtensionV1Ext fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrLedgerHeaderExtensionV1Ext',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerHeaderExtensionV1Ext.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return 'v0';
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerHeaderExtensionV1Ext',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrLedgerHeaderExtensionV1Ext from its SEP-0051 rendering.
+  static XdrLedgerHeaderExtensionV1Ext fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'v0':
+          return XdrLedgerHeaderExtensionV1Ext(0);
+      }
+      XdrJsonHelper.fail(
+        'XdrLedgerHeaderExtensionV1Ext',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerHeaderExtensionV1Ext',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

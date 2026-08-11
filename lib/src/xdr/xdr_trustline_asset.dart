@@ -6,6 +6,7 @@ import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_asset_type.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_trustline_asset_base.dart';
 
 class XdrTrustlineAsset extends XdrTrustlineAssetBase {
@@ -62,4 +63,15 @@ class XdrTrustlineAsset extends XdrTrustlineAssetBase {
     }
     return result;
   }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTrustlineAsset.
+  ///
+  /// Dart does not inherit statics, so this narrows the base class rendering to
+  /// this type rather than relying on the one the base declares.
+  static XdrTrustlineAsset fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTrustlineAsset'),
+  );
+
+  static XdrTrustlineAsset fromXdrJsonValue(Object? value) =>
+      XdrTrustlineAssetBase.fromXdrJsonValueAs(value, XdrTrustlineAsset.new);
 }

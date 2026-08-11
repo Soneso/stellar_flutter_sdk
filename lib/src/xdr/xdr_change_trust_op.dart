@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_change_trust_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int64.dart';
+import 'xdr_json_helper.dart';
 
 class XdrChangeTrustOp {
   XdrChangeTrustAsset _line;
@@ -58,5 +59,43 @@ class XdrChangeTrustOp {
     );
     XdrInt64 limit = XdrInt64.fromTxRep(map, '$prefix.limit');
     return XdrChangeTrustOp(line, limit);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrChangeTrustOp');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrChangeTrustOp.
+  static XdrChangeTrustOp fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrChangeTrustOp'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrChangeTrustOp.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'line': _line.toXdrJsonValue(),
+    'limit': _limit.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrChangeTrustOp from its SEP-0051 rendering.
+  static XdrChangeTrustOp fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrChangeTrustOp',
+      allowedKeys: const <String>{'line', 'limit'},
+    );
+    final Object? jsonLine = XdrJsonHelper.readField(
+      object,
+      'line',
+      type: 'XdrChangeTrustOp',
+    );
+    final Object? jsonLimit = XdrJsonHelper.readField(
+      object,
+      'limit',
+      type: 'XdrChangeTrustOp',
+    );
+    return XdrChangeTrustOp(
+      XdrChangeTrustAsset.fromXdrJsonValue(jsonLine),
+      XdrInt64.fromXdrJsonValue(jsonLimit),
+    );
   }
 }

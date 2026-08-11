@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_time_sliced_peer_data.dart';
 
 class XdrTimeSlicedPeerDataList {
@@ -55,4 +56,37 @@ class XdrTimeSlicedPeerDataList {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTimeSlicedPeerDataList.decode(XdrDataInputStream(bytes));
   }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTimeSlicedPeerDataList',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTimeSlicedPeerDataList.
+  static XdrTimeSlicedPeerDataList fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTimeSlicedPeerDataList'),
+  );
+
+  /// Returns the SEP-0051 rendering of the wrapped value.
+  Object? toXdrJsonValue() => XdrJsonHelper.array<XdrTimeSlicedPeerData>(
+    _timeSlicedPeerDataList,
+    (XdrTimeSlicedPeerData v) => v.toXdrJsonValue(),
+    type: 'XdrTimeSlicedPeerDataList',
+    maxLength: 25,
+  );
+
+  /// Reads a XdrTimeSlicedPeerDataList from the SEP-0051 rendering of its value.
+  static XdrTimeSlicedPeerDataList fromXdrJsonValue(Object? value) =>
+      XdrTimeSlicedPeerDataList(
+        XdrJsonHelper.readArray(
+              value,
+              type: 'XdrTimeSlicedPeerDataList',
+              maxLength: 25,
+            )
+            .map<XdrTimeSlicedPeerData>(
+              (Object? e) => XdrTimeSlicedPeerData.fromXdrJsonValue(e),
+            )
+            .toList(),
+      );
 }

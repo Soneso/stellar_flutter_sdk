@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_change_trust_result_code.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrChangeTrustResult {
   XdrChangeTrustResultCode _code;
@@ -57,5 +58,96 @@ class XdrChangeTrustResult {
   static XdrChangeTrustResult fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrChangeTrustResult.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrChangeTrustResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrChangeTrustResult.
+  static XdrChangeTrustResult fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrChangeTrustResult'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrChangeTrustResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'no_issuer';
+      case -3:
+        return 'invalid_limit';
+      case -4:
+        return 'low_reserve';
+      case -5:
+        return 'self_not_allowed';
+      case -6:
+        return 'trust_line_missing';
+      case -7:
+        return 'cannot_delete';
+      case -8:
+        return 'not_auth_maintain_liabilities';
+    }
+    XdrJsonHelper.fail(
+      'XdrChangeTrustResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrChangeTrustResult from its SEP-0051 rendering.
+  static XdrChangeTrustResult fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrChangeTrustResult(
+            XdrChangeTrustResultCode.CHANGE_TRUST_SUCCESS,
+          );
+        case 'malformed':
+          return XdrChangeTrustResult(
+            XdrChangeTrustResultCode.CHANGE_TRUST_MALFORMED,
+          );
+        case 'no_issuer':
+          return XdrChangeTrustResult(
+            XdrChangeTrustResultCode.CHANGE_TRUST_NO_ISSUER,
+          );
+        case 'invalid_limit':
+          return XdrChangeTrustResult(
+            XdrChangeTrustResultCode.CHANGE_TRUST_INVALID_LIMIT,
+          );
+        case 'low_reserve':
+          return XdrChangeTrustResult(
+            XdrChangeTrustResultCode.CHANGE_TRUST_LOW_RESERVE,
+          );
+        case 'self_not_allowed':
+          return XdrChangeTrustResult(
+            XdrChangeTrustResultCode.CHANGE_TRUST_SELF_NOT_ALLOWED,
+          );
+        case 'trust_line_missing':
+          return XdrChangeTrustResult(
+            XdrChangeTrustResultCode.CHANGE_TRUST_TRUST_LINE_MISSING,
+          );
+        case 'cannot_delete':
+          return XdrChangeTrustResult(
+            XdrChangeTrustResultCode.CHANGE_TRUST_CANNOT_DELETE,
+          );
+        case 'not_auth_maintain_liabilities':
+          return XdrChangeTrustResult(
+            XdrChangeTrustResultCode.CHANGE_TRUST_NOT_AUTH_MAINTAIN_LIABILITIES,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrChangeTrustResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrChangeTrustResult',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

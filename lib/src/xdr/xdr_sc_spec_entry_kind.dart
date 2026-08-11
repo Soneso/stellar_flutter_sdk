@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSCSpecEntryKind {
   final _value;
@@ -72,5 +73,63 @@ class XdrSCSpecEntryKind {
   static XdrSCSpecEntryKind fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecEntryKind.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCSpecEntryKind',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecEntryKind.
+  static XdrSCSpecEntryKind fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecEntryKind'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'function_v0';
+      case 1:
+        return 'udt_struct_v0';
+      case 2:
+        return 'udt_union_v0';
+      case 3:
+        return 'udt_enum_v0';
+      case 4:
+        return 'udt_error_enum_v0';
+      case 5:
+        return 'event_v0';
+      default:
+        XdrJsonHelper.fail(
+          'XdrSCSpecEntryKind',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrSCSpecEntryKind from its SEP-0051 name.
+  static XdrSCSpecEntryKind fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'function_v0':
+          return XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0;
+        case 'udt_struct_v0':
+          return XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0;
+        case 'udt_union_v0':
+          return XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0;
+        case 'udt_enum_v0':
+          return XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0;
+        case 'udt_error_enum_v0':
+          return XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0;
+        case 'event_v0':
+          return XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrSCSpecEntryKind',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSCMetaV0 {
   String _key;
@@ -39,5 +40,42 @@ class XdrSCMetaV0 {
   static XdrSCMetaV0 fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCMetaV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCMetaV0');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCMetaV0.
+  static XdrSCMetaV0 fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrSCMetaV0'));
+
+  /// Returns the SEP-0051 rendering of this XdrSCMetaV0.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'key': XdrJsonHelper.escapedString(_key, type: 'XdrSCMetaV0', key: 'key'),
+    'val': XdrJsonHelper.escapedString(_val, type: 'XdrSCMetaV0', key: 'val'),
+  };
+
+  /// Reads a XdrSCMetaV0 from its SEP-0051 rendering.
+  static XdrSCMetaV0 fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCMetaV0',
+      allowedKeys: const <String>{'key', 'val'},
+    );
+    final Object? jsonKey = XdrJsonHelper.readField(
+      object,
+      'key',
+      type: 'XdrSCMetaV0',
+    );
+    final Object? jsonVal = XdrJsonHelper.readField(
+      object,
+      'val',
+      type: 'XdrSCMetaV0',
+    );
+    return XdrSCMetaV0(
+      XdrJsonHelper.readEscapedString(jsonKey, type: 'XdrSCMetaV0', key: 'key'),
+      XdrJsonHelper.readEscapedString(jsonVal, type: 'XdrSCMetaV0', key: 'val'),
+    );
   }
 }

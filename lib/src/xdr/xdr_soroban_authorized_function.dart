@@ -5,6 +5,7 @@
 import 'xdr_create_contract_args.dart';
 import 'xdr_create_contract_args_v2.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_invoke_contract_args.dart';
 import 'xdr_soroban_authorized_function_base.dart';
 import 'xdr_soroban_authorized_function_type.dart';
@@ -70,4 +71,22 @@ class XdrSorobanAuthorizedFunction extends XdrSorobanAuthorizedFunctionBase {
     result.createContractV2HostFn = args;
     return result;
   }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanAuthorizedFunction.
+  ///
+  /// Dart does not inherit statics, so this narrows the base class rendering to
+  /// this type rather than relying on the one the base declares.
+  static XdrSorobanAuthorizedFunction fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrSorobanAuthorizedFunction',
+        ),
+      );
+
+  static XdrSorobanAuthorizedFunction fromXdrJsonValue(Object? value) =>
+      XdrSorobanAuthorizedFunctionBase.fromXdrJsonValueAs(
+        value,
+        XdrSorobanAuthorizedFunction.new,
+      );
 }

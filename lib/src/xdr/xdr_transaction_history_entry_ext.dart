@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_generalized_transaction_set.dart';
+import 'xdr_json_helper.dart';
 
 class XdrTransactionHistoryEntryExt {
   int _v;
@@ -75,5 +76,65 @@ class XdrTransactionHistoryEntryExt {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionHistoryEntryExt.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionHistoryEntryExt',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionHistoryEntryExt.
+  static XdrTransactionHistoryEntryExt fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrTransactionHistoryEntryExt',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionHistoryEntryExt.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return 'v0';
+      case 1:
+        return <String, Object?>{'v1': _generalizedTxSet!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrTransactionHistoryEntryExt',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrTransactionHistoryEntryExt from its SEP-0051 rendering.
+  static XdrTransactionHistoryEntryExt fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'v0':
+          return XdrTransactionHistoryEntryExt(0);
+      }
+      XdrJsonHelper.fail(
+        'XdrTransactionHistoryEntryExt',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrTransactionHistoryEntryExt',
+    );
+    switch (arm.key) {
+      case 'v1':
+        final XdrTransactionHistoryEntryExt arm0 =
+            XdrTransactionHistoryEntryExt(1);
+        arm0.generalizedTxSet = XdrGeneralizedTransactionSet.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrTransactionHistoryEntryExt',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

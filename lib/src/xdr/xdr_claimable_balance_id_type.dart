@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrClaimableBalanceIDType {
   final _value;
@@ -92,5 +93,43 @@ class XdrClaimableBalanceIDType {
         }
         throw Exception('Unknown enum value: $name');
     }
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrClaimableBalanceIDType',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrClaimableBalanceIDType.
+  static XdrClaimableBalanceIDType fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrClaimableBalanceIDType'),
+  );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'claimable_balance_id_type_v0';
+      default:
+        XdrJsonHelper.fail(
+          'XdrClaimableBalanceIDType',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrClaimableBalanceIDType from its SEP-0051 name.
+  static XdrClaimableBalanceIDType fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'claimable_balance_id_type_v0':
+          return XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrClaimableBalanceIDType',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

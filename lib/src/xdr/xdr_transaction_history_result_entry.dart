@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_transaction_history_result_entry_ext.dart';
 import 'xdr_transaction_result_set.dart';
 import 'xdr_uint32.dart';
@@ -66,5 +67,56 @@ class XdrTransactionHistoryResultEntry {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTransactionHistoryResultEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionHistoryResultEntry',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionHistoryResultEntry.
+  static XdrTransactionHistoryResultEntry fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrTransactionHistoryResultEntry',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionHistoryResultEntry.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ledger_seq': _ledgerSeq.toXdrJsonValue(),
+    'tx_result_set': _txResultSet.toXdrJsonValue(),
+    'ext': _ext.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTransactionHistoryResultEntry from its SEP-0051 rendering.
+  static XdrTransactionHistoryResultEntry fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTransactionHistoryResultEntry',
+      allowedKeys: const <String>{'ledger_seq', 'tx_result_set', 'ext'},
+    );
+    final Object? jsonLedgerSeq = XdrJsonHelper.readField(
+      object,
+      'ledger_seq',
+      type: 'XdrTransactionHistoryResultEntry',
+    );
+    final Object? jsonTxResultSet = XdrJsonHelper.readField(
+      object,
+      'tx_result_set',
+      type: 'XdrTransactionHistoryResultEntry',
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrTransactionHistoryResultEntry',
+    );
+    return XdrTransactionHistoryResultEntry(
+      XdrUint32.fromXdrJsonValue(jsonLedgerSeq),
+      XdrTransactionResultSet.fromXdrJsonValue(jsonTxResultSet),
+      XdrTransactionHistoryResultEntryExt.fromXdrJsonValue(jsonExt),
+    );
   }
 }

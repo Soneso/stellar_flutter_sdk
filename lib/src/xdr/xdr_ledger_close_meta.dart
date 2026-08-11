@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_close_meta_v0.dart';
 import 'xdr_ledger_close_meta_v1.dart';
 import 'xdr_ledger_close_meta_v2.dart';
@@ -91,5 +92,58 @@ class XdrLedgerCloseMeta {
   static XdrLedgerCloseMeta fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerCloseMeta.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerCloseMeta',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerCloseMeta.
+  static XdrLedgerCloseMeta fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerCloseMeta'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerCloseMeta.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return <String, Object?>{'v0': _v0!.toXdrJsonValue()};
+      case 1:
+        return <String, Object?>{'v1': _v1!.toXdrJsonValue()};
+      case 2:
+        return <String, Object?>{'v2': _v2!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerCloseMeta',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrLedgerCloseMeta from its SEP-0051 rendering.
+  static XdrLedgerCloseMeta fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrLedgerCloseMeta',
+    );
+    switch (arm.key) {
+      case 'v0':
+        final XdrLedgerCloseMeta arm0 = XdrLedgerCloseMeta(0);
+        arm0.v0 = XdrLedgerCloseMetaV0.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'v1':
+        final XdrLedgerCloseMeta arm1 = XdrLedgerCloseMeta(1);
+        arm1.v1 = XdrLedgerCloseMetaV1.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'v2':
+        final XdrLedgerCloseMeta arm2 = XdrLedgerCloseMeta(2);
+        arm2.v2 = XdrLedgerCloseMetaV2.fromXdrJsonValue(arm.value);
+        return arm2;
+    }
+    XdrJsonHelper.fail(
+      'XdrLedgerCloseMeta',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

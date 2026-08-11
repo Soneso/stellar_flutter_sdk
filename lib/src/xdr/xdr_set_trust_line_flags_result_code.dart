@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSetTrustLineFlagsResultCode {
   final _value;
@@ -74,5 +75,71 @@ class XdrSetTrustLineFlagsResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSetTrustLineFlagsResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSetTrustLineFlagsResultCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSetTrustLineFlagsResultCode.
+  static XdrSetTrustLineFlagsResultCode fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrSetTrustLineFlagsResultCode',
+        ),
+      );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'no_trust_line';
+      case -3:
+        return 'cant_revoke';
+      case -4:
+        return 'invalid_state';
+      case -5:
+        return 'low_reserve';
+      default:
+        XdrJsonHelper.fail(
+          'XdrSetTrustLineFlagsResultCode',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrSetTrustLineFlagsResultCode from its SEP-0051 name.
+  static XdrSetTrustLineFlagsResultCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_SUCCESS;
+        case 'malformed':
+          return XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_MALFORMED;
+        case 'no_trust_line':
+          return XdrSetTrustLineFlagsResultCode
+              .SET_TRUST_LINE_FLAGS_NO_TRUST_LINE;
+        case 'cant_revoke':
+          return XdrSetTrustLineFlagsResultCode
+              .SET_TRUST_LINE_FLAGS_CANT_REVOKE;
+        case 'invalid_state':
+          return XdrSetTrustLineFlagsResultCode
+              .SET_TRUST_LINE_FLAGS_INVALID_STATE;
+        case 'low_reserve':
+          return XdrSetTrustLineFlagsResultCode
+              .SET_TRUST_LINE_FLAGS_LOW_RESERVE;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrSetTrustLineFlagsResultCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

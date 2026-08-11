@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrSCSpecEventParamLocationV0 {
   final _value;
@@ -58,5 +59,53 @@ class XdrSCSpecEventParamLocationV0 {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecEventParamLocationV0.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCSpecEventParamLocationV0',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecEventParamLocationV0.
+  static XdrSCSpecEventParamLocationV0 fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrSCSpecEventParamLocationV0',
+        ),
+      );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'data';
+      case 1:
+        return 'topic_list';
+      default:
+        XdrJsonHelper.fail(
+          'XdrSCSpecEventParamLocationV0',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrSCSpecEventParamLocationV0 from its SEP-0051 name.
+  static XdrSCSpecEventParamLocationV0 fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'data':
+          return XdrSCSpecEventParamLocationV0
+              .SC_SPEC_EVENT_PARAM_LOCATION_DATA;
+        case 'topic_list':
+          return XdrSCSpecEventParamLocationV0
+              .SC_SPEC_EVENT_PARAM_LOCATION_TOPIC_LIST;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrSCSpecEventParamLocationV0',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

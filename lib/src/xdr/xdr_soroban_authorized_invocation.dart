@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_soroban_authorized_function.dart';
 
 class XdrSorobanAuthorizedInvocation {
@@ -95,5 +96,62 @@ class XdrSorobanAuthorizedInvocation {
       );
     }
     return XdrSorobanAuthorizedInvocation(function, subInvocations);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSorobanAuthorizedInvocation',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSorobanAuthorizedInvocation.
+  static XdrSorobanAuthorizedInvocation fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrSorobanAuthorizedInvocation',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrSorobanAuthorizedInvocation.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'function': _function.toXdrJsonValue(),
+    'sub_invocations': XdrJsonHelper.array<XdrSorobanAuthorizedInvocation>(
+      _subInvocations,
+      (XdrSorobanAuthorizedInvocation v) => v.toXdrJsonValue(),
+      type: 'XdrSorobanAuthorizedInvocation',
+      key: 'sub_invocations',
+    ),
+  };
+
+  /// Reads a XdrSorobanAuthorizedInvocation from its SEP-0051 rendering.
+  static XdrSorobanAuthorizedInvocation fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSorobanAuthorizedInvocation',
+      allowedKeys: const <String>{'function', 'sub_invocations'},
+    );
+    final Object? jsonFunction = XdrJsonHelper.readField(
+      object,
+      'function',
+      type: 'XdrSorobanAuthorizedInvocation',
+    );
+    final Object? jsonSubInvocations = XdrJsonHelper.readField(
+      object,
+      'sub_invocations',
+      type: 'XdrSorobanAuthorizedInvocation',
+    );
+    return XdrSorobanAuthorizedInvocation(
+      XdrSorobanAuthorizedFunction.fromXdrJsonValue(jsonFunction),
+      XdrJsonHelper.readArray(
+            jsonSubInvocations,
+            type: 'XdrSorobanAuthorizedInvocation',
+            key: 'sub_invocations',
+          )
+          .map<XdrSorobanAuthorizedInvocation>(
+            (Object? e) => XdrSorobanAuthorizedInvocation.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

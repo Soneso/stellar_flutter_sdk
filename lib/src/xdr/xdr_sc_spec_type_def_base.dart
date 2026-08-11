@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_sc_spec_type.dart';
 import 'xdr_sc_spec_type_bytes_n.dart';
 import 'xdr_sc_spec_type_map.dart';
@@ -149,5 +150,171 @@ class XdrSCSpecTypeDefBase {
   static XdrSCSpecTypeDefBase fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCSpecTypeDefBase.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCSpecTypeDef');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCSpecTypeDef.
+  static XdrSCSpecTypeDefBase fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCSpecTypeDef'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCSpecTypeDefBase.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'val';
+      case 1:
+        return 'bool';
+      case 2:
+        return 'void';
+      case 3:
+        return 'error';
+      case 4:
+        return 'u32';
+      case 5:
+        return 'i32';
+      case 6:
+        return 'u64';
+      case 7:
+        return 'i64';
+      case 8:
+        return 'timepoint';
+      case 9:
+        return 'duration';
+      case 10:
+        return 'u128';
+      case 11:
+        return 'i128';
+      case 12:
+        return 'u256';
+      case 13:
+        return 'i256';
+      case 14:
+        return 'bytes';
+      case 16:
+        return 'string';
+      case 17:
+        return 'symbol';
+      case 19:
+        return 'address';
+      case 20:
+        return 'muxed_address';
+      case 1000:
+        return <String, Object?>{'option': _option!.toXdrJsonValue()};
+      case 1001:
+        return <String, Object?>{'result': _result!.toXdrJsonValue()};
+      case 1002:
+        return <String, Object?>{'vec': _vec!.toXdrJsonValue()};
+      case 1004:
+        return <String, Object?>{'map': _map!.toXdrJsonValue()};
+      case 1005:
+        return <String, Object?>{'tuple': _tuple!.toXdrJsonValue()};
+      case 1006:
+        return <String, Object?>{'bytes_n': _bytesN!.toXdrJsonValue()};
+      case 2000:
+        return <String, Object?>{'udt': _udt!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrSCSpecTypeDef',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrSCSpecTypeDefBase from its SEP-0051 rendering.
+  static XdrSCSpecTypeDefBase fromXdrJsonValue(Object? value) =>
+      fromXdrJsonValueAs(value, XdrSCSpecTypeDefBase.new);
+
+  /// Reads a subclass of XdrSCSpecTypeDefBase from its SEP-0051 rendering.
+  static T fromXdrJsonValueAs<T extends XdrSCSpecTypeDefBase>(
+    Object? value,
+    T Function(XdrSCSpecType) constructor,
+  ) {
+    if (value is String) {
+      switch (value) {
+        case 'val':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_VAL);
+        case 'bool':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_BOOL);
+        case 'void':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_VOID);
+        case 'error':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_ERROR);
+        case 'u32':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_U32);
+        case 'i32':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_I32);
+        case 'u64':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_U64);
+        case 'i64':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_I64);
+        case 'timepoint':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_TIMEPOINT);
+        case 'duration':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_DURATION);
+        case 'u128':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_U128);
+        case 'i128':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_I128);
+        case 'u256':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_U256);
+        case 'i256':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_I256);
+        case 'bytes':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_BYTES);
+        case 'string':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_STRING);
+        case 'symbol':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_SYMBOL);
+        case 'address':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_ADDRESS);
+        case 'muxed_address':
+          return constructor(XdrSCSpecType.SC_SPEC_TYPE_MUXED_ADDRESS);
+      }
+      XdrJsonHelper.fail(
+        'XdrSCSpecTypeDef',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrSCSpecTypeDef',
+    );
+    switch (arm.key) {
+      case 'option':
+        final T arm0 = constructor(XdrSCSpecType.SC_SPEC_TYPE_OPTION);
+        arm0.option = XdrSCSpecTypeOption.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'result':
+        final T arm1 = constructor(XdrSCSpecType.SC_SPEC_TYPE_RESULT);
+        arm1.result = XdrSCSpecTypeResult.fromXdrJsonValue(arm.value);
+        return arm1;
+      case 'vec':
+        final T arm2 = constructor(XdrSCSpecType.SC_SPEC_TYPE_VEC);
+        arm2.vec = XdrSCSpecTypeVec.fromXdrJsonValue(arm.value);
+        return arm2;
+      case 'map':
+        final T arm3 = constructor(XdrSCSpecType.SC_SPEC_TYPE_MAP);
+        arm3.map = XdrSCSpecTypeMap.fromXdrJsonValue(arm.value);
+        return arm3;
+      case 'tuple':
+        final T arm4 = constructor(XdrSCSpecType.SC_SPEC_TYPE_TUPLE);
+        arm4.tuple = XdrSCSpecTypeTuple.fromXdrJsonValue(arm.value);
+        return arm4;
+      case 'bytes_n':
+        final T arm5 = constructor(XdrSCSpecType.SC_SPEC_TYPE_BYTES_N);
+        arm5.bytesN = XdrSCSpecTypeBytesN.fromXdrJsonValue(arm.value);
+        return arm5;
+      case 'udt':
+        final T arm6 = constructor(XdrSCSpecType.SC_SPEC_TYPE_UDT);
+        arm6.udt = XdrSCSpecTypeUDT.fromXdrJsonValue(arm.value);
+        return arm6;
+    }
+    XdrJsonHelper.fail(
+      'XdrSCSpecTypeDef',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

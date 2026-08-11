@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_auth_cert.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_node_id.dart';
 import 'xdr_uint256.dart';
 import 'xdr_uint32.dart';
@@ -106,5 +107,119 @@ class XdrHello {
   static XdrHello fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrHello.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrHello');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrHello.
+  static XdrHello fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrHello'));
+
+  /// Returns the SEP-0051 rendering of this XdrHello.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ledger_version': _ledgerVersion.toXdrJsonValue(),
+    'overlay_version': _overlayVersion.toXdrJsonValue(),
+    'overlay_min_version': _overlayMinVersion.toXdrJsonValue(),
+    'network_id': _networkID.toXdrJsonValue(),
+    'version_str': XdrJsonHelper.escapedString(
+      _versionStr,
+      type: 'XdrHello',
+      key: 'version_str',
+      maxBytes: 100,
+    ),
+    'listening_port': XdrJsonHelper.int32(
+      _listeningPort,
+      type: 'XdrHello',
+      key: 'listening_port',
+    ),
+    'peer_id': _peerID.toXdrJsonValue(),
+    'cert': _cert.toXdrJsonValue(),
+    'nonce': _nonce.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrHello from its SEP-0051 rendering.
+  static XdrHello fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrHello',
+      allowedKeys: const <String>{
+        'ledger_version',
+        'overlay_version',
+        'overlay_min_version',
+        'network_id',
+        'version_str',
+        'listening_port',
+        'peer_id',
+        'cert',
+        'nonce',
+      },
+    );
+    final Object? jsonLedgerVersion = XdrJsonHelper.readField(
+      object,
+      'ledger_version',
+      type: 'XdrHello',
+    );
+    final Object? jsonOverlayVersion = XdrJsonHelper.readField(
+      object,
+      'overlay_version',
+      type: 'XdrHello',
+    );
+    final Object? jsonOverlayMinVersion = XdrJsonHelper.readField(
+      object,
+      'overlay_min_version',
+      type: 'XdrHello',
+    );
+    final Object? jsonNetworkID = XdrJsonHelper.readField(
+      object,
+      'network_id',
+      type: 'XdrHello',
+    );
+    final Object? jsonVersionStr = XdrJsonHelper.readField(
+      object,
+      'version_str',
+      type: 'XdrHello',
+    );
+    final Object? jsonListeningPort = XdrJsonHelper.readField(
+      object,
+      'listening_port',
+      type: 'XdrHello',
+    );
+    final Object? jsonPeerID = XdrJsonHelper.readField(
+      object,
+      'peer_id',
+      type: 'XdrHello',
+    );
+    final Object? jsonCert = XdrJsonHelper.readField(
+      object,
+      'cert',
+      type: 'XdrHello',
+    );
+    final Object? jsonNonce = XdrJsonHelper.readField(
+      object,
+      'nonce',
+      type: 'XdrHello',
+    );
+    return XdrHello(
+      XdrUint32.fromXdrJsonValue(jsonLedgerVersion),
+      XdrUint32.fromXdrJsonValue(jsonOverlayVersion),
+      XdrUint32.fromXdrJsonValue(jsonOverlayMinVersion),
+      XdrHash.fromXdrJsonValue(jsonNetworkID),
+      XdrJsonHelper.readEscapedString(
+        jsonVersionStr,
+        type: 'XdrHello',
+        key: 'version_str',
+        maxBytes: 100,
+      ),
+      XdrJsonHelper.readInt32(
+        jsonListeningPort,
+        type: 'XdrHello',
+        key: 'listening_port',
+      ),
+      XdrNodeID.fromXdrJsonValue(jsonPeerID),
+      XdrAuthCert.fromXdrJsonValue(jsonCert),
+      XdrUint256.fromXdrJsonValue(jsonNonce),
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 import 'xdr_value.dart';
 
@@ -44,5 +45,43 @@ class XdrSCPBallot {
   static XdrSCPBallot fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPBallot.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrSCPBallot');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCPBallot.
+  static XdrSCPBallot fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCPBallot'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCPBallot.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'counter': _counter.toXdrJsonValue(),
+    'value': _value.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrSCPBallot from its SEP-0051 rendering.
+  static XdrSCPBallot fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrSCPBallot',
+      allowedKeys: const <String>{'counter', 'value'},
+    );
+    final Object? jsonCounter = XdrJsonHelper.readField(
+      object,
+      'counter',
+      type: 'XdrSCPBallot',
+    );
+    final Object? jsonValue = XdrJsonHelper.readField(
+      object,
+      'value',
+      type: 'XdrSCPBallot',
+    );
+    return XdrSCPBallot(
+      XdrUint32.fromXdrJsonValue(jsonCounter),
+      XdrValue.fromXdrJsonValue(jsonValue),
+    );
   }
 }

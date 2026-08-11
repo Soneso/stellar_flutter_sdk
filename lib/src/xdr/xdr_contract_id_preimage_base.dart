@@ -11,6 +11,7 @@ import 'xdr_asset.dart';
 import 'xdr_contract_id_preimage_from_address.dart';
 import 'xdr_contract_id_preimage_type.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrContractIDPreimageBase {
   XdrContractIDPreimageType _type;
@@ -131,5 +132,65 @@ class XdrContractIDPreimageBase {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrContractIDPreimage',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractIDPreimage.
+  static XdrContractIDPreimageBase fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractIDPreimage'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrContractIDPreimageBase.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'address': _fromAddress!.toXdrJsonValue()};
+      case 1:
+        return <String, Object?>{'asset': _fromAsset!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrContractIDPreimage',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrContractIDPreimageBase from its SEP-0051 rendering.
+  static XdrContractIDPreimageBase fromXdrJsonValue(Object? value) =>
+      fromXdrJsonValueAs(value, XdrContractIDPreimageBase.new);
+
+  /// Reads a subclass of XdrContractIDPreimageBase from its SEP-0051 rendering.
+  static T fromXdrJsonValueAs<T extends XdrContractIDPreimageBase>(
+    Object? value,
+    T Function(XdrContractIDPreimageType) constructor,
+  ) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrContractIDPreimage',
+    );
+    switch (arm.key) {
+      case 'address':
+        final T arm0 = constructor(
+          XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+        );
+        arm0.fromAddress = XdrContractIDPreimageFromAddress.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm0;
+      case 'asset':
+        final T arm1 = constructor(
+          XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET,
+        );
+        arm1.fromAsset = XdrAsset.fromXdrJsonValue(arm.value);
+        return arm1;
+    }
+    XdrJsonHelper.fail(
+      'XdrContractIDPreimage',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

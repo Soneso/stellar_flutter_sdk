@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_uint32.dart';
 
 class XdrTTLEntry {
@@ -41,5 +42,42 @@ class XdrTTLEntry {
   static XdrTTLEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrTTLEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() =>
+      XdrJsonHelper.encodeDocument(toXdrJsonValue(), type: 'XdrTTLEntry');
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTTLEntry.
+  static XdrTTLEntry fromXdrJson(String json) =>
+      fromXdrJsonValue(XdrJsonHelper.decodeDocument(json, type: 'XdrTTLEntry'));
+
+  /// Returns the SEP-0051 rendering of this XdrTTLEntry.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'key_hash': _keyHash.toXdrJsonValue(),
+    'live_until_ledger_seq': _liveUntilLedgerSeq.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrTTLEntry from its SEP-0051 rendering.
+  static XdrTTLEntry fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTTLEntry',
+      allowedKeys: const <String>{'key_hash', 'live_until_ledger_seq'},
+    );
+    final Object? jsonKeyHash = XdrJsonHelper.readField(
+      object,
+      'key_hash',
+      type: 'XdrTTLEntry',
+    );
+    final Object? jsonLiveUntilLedgerSeq = XdrJsonHelper.readField(
+      object,
+      'live_until_ledger_seq',
+      type: 'XdrTTLEntry',
+    );
+    return XdrTTLEntry(
+      XdrHash.fromXdrJsonValue(jsonKeyHash),
+      XdrUint32.fromXdrJsonValue(jsonLiveUntilLedgerSeq),
+    );
   }
 }

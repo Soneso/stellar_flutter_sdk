@@ -4,6 +4,7 @@
 
 import 'xdr_account_id.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_ledger_key_offer_base.dart';
 import 'xdr_uint64.dart';
 
@@ -21,6 +22,17 @@ class XdrLedgerKeyOffer extends XdrLedgerKeyOfferBase {
 
   static XdrLedgerKeyOffer fromTxRep(Map<String, String> map, String prefix) {
     var b = XdrLedgerKeyOfferBase.fromTxRep(map, prefix);
+    return XdrLedgerKeyOffer(b.sellerID, b.offerID);
+  }
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerKeyOffer.
+  static XdrLedgerKeyOffer fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrLedgerKeyOffer'),
+  );
+
+  /// Reads a XdrLedgerKeyOffer from its SEP-0051 rendering.
+  static XdrLedgerKeyOffer fromXdrJsonValue(Object? value) {
+    var b = XdrLedgerKeyOfferBase.fromXdrJsonValue(value);
     return XdrLedgerKeyOffer(b.sellerID, b.offerID);
   }
 

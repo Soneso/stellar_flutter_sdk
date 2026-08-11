@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'xdr_contract_code_entry_ext.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 
 class XdrContractCodeEntry {
   XdrContractCodeEntryExt _ext;
@@ -53,5 +54,56 @@ class XdrContractCodeEntry {
   static XdrContractCodeEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrContractCodeEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrContractCodeEntry',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractCodeEntry.
+  static XdrContractCodeEntry fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractCodeEntry'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrContractCodeEntry.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'ext': _ext.toXdrJsonValue(),
+    'hash': _hash.toXdrJsonValue(),
+    'code': XdrJsonHelper.hex(_code, type: 'XdrContractCodeEntry', key: 'code'),
+  };
+
+  /// Reads a XdrContractCodeEntry from its SEP-0051 rendering.
+  static XdrContractCodeEntry fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrContractCodeEntry',
+      allowedKeys: const <String>{'ext', 'hash', 'code'},
+    );
+    final Object? jsonExt = XdrJsonHelper.readField(
+      object,
+      'ext',
+      type: 'XdrContractCodeEntry',
+    );
+    final Object? jsonHash = XdrJsonHelper.readField(
+      object,
+      'hash',
+      type: 'XdrContractCodeEntry',
+    );
+    final Object? jsonCode = XdrJsonHelper.readField(
+      object,
+      'code',
+      type: 'XdrContractCodeEntry',
+    );
+    return XdrContractCodeEntry(
+      XdrContractCodeEntryExt.fromXdrJsonValue(jsonExt),
+      XdrHash.fromXdrJsonValue(jsonHash),
+      XdrJsonHelper.readHex(
+        jsonCode,
+        type: 'XdrContractCodeEntry',
+        key: 'code',
+      ),
+    );
   }
 }

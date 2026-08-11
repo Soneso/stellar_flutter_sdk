@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_decorated_signature.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_transaction_v0.dart';
 
 class XdrTransactionV0Envelope {
@@ -85,5 +86,60 @@ class XdrTransactionV0Envelope {
       );
     }
     return XdrTransactionV0Envelope(tx, signatures);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrTransactionV0Envelope',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrTransactionV0Envelope.
+  static XdrTransactionV0Envelope fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrTransactionV0Envelope'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrTransactionV0Envelope.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'tx': _tx.toXdrJsonValue(),
+    'signatures': XdrJsonHelper.array<XdrDecoratedSignature>(
+      _signatures,
+      (XdrDecoratedSignature v) => v.toXdrJsonValue(),
+      type: 'XdrTransactionV0Envelope',
+      key: 'signatures',
+      maxLength: 20,
+    ),
+  };
+
+  /// Reads a XdrTransactionV0Envelope from its SEP-0051 rendering.
+  static XdrTransactionV0Envelope fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrTransactionV0Envelope',
+      allowedKeys: const <String>{'tx', 'signatures'},
+    );
+    final Object? jsonTx = XdrJsonHelper.readField(
+      object,
+      'tx',
+      type: 'XdrTransactionV0Envelope',
+    );
+    final Object? jsonSignatures = XdrJsonHelper.readField(
+      object,
+      'signatures',
+      type: 'XdrTransactionV0Envelope',
+    );
+    return XdrTransactionV0Envelope(
+      XdrTransactionV0.fromXdrJsonValue(jsonTx),
+      XdrJsonHelper.readArray(
+            jsonSignatures,
+            type: 'XdrTransactionV0Envelope',
+            key: 'signatures',
+            maxLength: 20,
+          )
+          .map<XdrDecoratedSignature>(
+            (Object? e) => XdrDecoratedSignature.fromXdrJsonValue(e),
+          )
+          .toList(),
+    );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_node_id.dart';
 import 'xdr_signature.dart';
 
@@ -46,5 +47,49 @@ class XdrLedgerCloseValueSignature {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLedgerCloseValueSignature.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLedgerCloseValueSignature',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLedgerCloseValueSignature.
+  static XdrLedgerCloseValueSignature fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrLedgerCloseValueSignature',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrLedgerCloseValueSignature.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'node_id': _nodeID.toXdrJsonValue(),
+    'signature': _signature.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLedgerCloseValueSignature from its SEP-0051 rendering.
+  static XdrLedgerCloseValueSignature fromXdrJsonValue(Object? value) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLedgerCloseValueSignature',
+      allowedKeys: const <String>{'node_id', 'signature'},
+    );
+    final Object? jsonNodeID = XdrJsonHelper.readField(
+      object,
+      'node_id',
+      type: 'XdrLedgerCloseValueSignature',
+    );
+    final Object? jsonSignature = XdrJsonHelper.readField(
+      object,
+      'signature',
+      type: 'XdrLedgerCloseValueSignature',
+    );
+    return XdrLedgerCloseValueSignature(
+      XdrNodeID.fromXdrJsonValue(jsonNodeID),
+      XdrSignature.fromXdrJsonValue(jsonSignature),
+    );
   }
 }

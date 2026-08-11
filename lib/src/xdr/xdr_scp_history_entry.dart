@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_scp_history_entry_v0.dart';
 
 class XdrSCPHistoryEntry {
@@ -65,5 +66,46 @@ class XdrSCPHistoryEntry {
   static XdrSCPHistoryEntry fromBase64EncodedXdrString(String base64Encoded) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrSCPHistoryEntry.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrSCPHistoryEntry',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrSCPHistoryEntry.
+  static XdrSCPHistoryEntry fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrSCPHistoryEntry'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrSCPHistoryEntry.
+  Object? toXdrJsonValue() {
+    switch (discriminant) {
+      case 0:
+        return <String, Object?>{'v0': _v0!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrSCPHistoryEntry',
+      'holds the unknown discriminant ${discriminant}',
+    );
+  }
+
+  /// Reads a XdrSCPHistoryEntry from its SEP-0051 rendering.
+  static XdrSCPHistoryEntry fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrSCPHistoryEntry',
+    );
+    switch (arm.key) {
+      case 'v0':
+        final XdrSCPHistoryEntry arm0 = XdrSCPHistoryEntry(0);
+        arm0.v0 = XdrSCPHistoryEntryV0.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrSCPHistoryEntry',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

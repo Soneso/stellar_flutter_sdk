@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrLiquidityPoolWithdrawResultCode {
   final _value;
@@ -78,5 +79,78 @@ class XdrLiquidityPoolWithdrawResultCode {
   ) {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrLiquidityPoolWithdrawResultCode.decode(XdrDataInputStream(bytes));
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLiquidityPoolWithdrawResultCode',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLiquidityPoolWithdrawResultCode.
+  static XdrLiquidityPoolWithdrawResultCode fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrLiquidityPoolWithdrawResultCode',
+        ),
+      );
+
+  /// Returns this member's SEP-0051 name.
+  Object? toXdrJsonValue() {
+    switch (_value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'no_trust';
+      case -3:
+        return 'underfunded';
+      case -4:
+        return 'line_full';
+      case -5:
+        return 'under_minimum';
+      case -6:
+        return 'trustline_frozen';
+      default:
+        XdrJsonHelper.fail(
+          'XdrLiquidityPoolWithdrawResultCode',
+          'holds the unknown value $_value',
+        );
+    }
+  }
+
+  /// Reads a XdrLiquidityPoolWithdrawResultCode from its SEP-0051 name.
+  static XdrLiquidityPoolWithdrawResultCode fromXdrJsonValue(Object? value) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrLiquidityPoolWithdrawResultCode
+              .LIQUIDITY_POOL_WITHDRAW_SUCCESS;
+        case 'malformed':
+          return XdrLiquidityPoolWithdrawResultCode
+              .LIQUIDITY_POOL_WITHDRAW_MALFORMED;
+        case 'no_trust':
+          return XdrLiquidityPoolWithdrawResultCode
+              .LIQUIDITY_POOL_WITHDRAW_NO_TRUST;
+        case 'underfunded':
+          return XdrLiquidityPoolWithdrawResultCode
+              .LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED;
+        case 'line_full':
+          return XdrLiquidityPoolWithdrawResultCode
+              .LIQUIDITY_POOL_WITHDRAW_LINE_FULL;
+        case 'under_minimum':
+          return XdrLiquidityPoolWithdrawResultCode
+              .LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM;
+        case 'trustline_frozen':
+          return XdrLiquidityPoolWithdrawResultCode
+              .LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN;
+      }
+    }
+    XdrJsonHelper.fail(
+      'XdrLiquidityPoolWithdrawResultCode',
+      'expects one of its member names but found ${XdrJsonHelper.preview(value)}',
+    );
   }
 }

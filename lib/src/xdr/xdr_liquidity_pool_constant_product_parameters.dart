@@ -10,6 +10,7 @@ import 'txrep_helper.dart';
 import 'xdr_asset.dart';
 import 'xdr_data_io.dart';
 import 'xdr_int32.dart';
+import 'xdr_json_helper.dart';
 
 class XdrLiquidityPoolConstantProductParameters {
   XdrAsset _assetA;
@@ -88,5 +89,58 @@ class XdrLiquidityPoolConstantProductParameters {
     );
     XdrInt32 fee = XdrInt32.fromTxRep(map, '$prefix.fee');
     return XdrLiquidityPoolConstantProductParameters(assetA, assetB, fee);
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrLiquidityPoolConstantProductParameters',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrLiquidityPoolConstantProductParameters.
+  static XdrLiquidityPoolConstantProductParameters fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrLiquidityPoolConstantProductParameters',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrLiquidityPoolConstantProductParameters.
+  Object? toXdrJsonValue() => <String, Object?>{
+    'asset_a': _assetA.toXdrJsonValue(),
+    'asset_b': _assetB.toXdrJsonValue(),
+    'fee': _fee.toXdrJsonValue(),
+  };
+
+  /// Reads a XdrLiquidityPoolConstantProductParameters from its SEP-0051 rendering.
+  static XdrLiquidityPoolConstantProductParameters fromXdrJsonValue(
+    Object? value,
+  ) {
+    final Map<String, dynamic> object = XdrJsonHelper.readObject(
+      value,
+      type: 'XdrLiquidityPoolConstantProductParameters',
+      allowedKeys: const <String>{'asset_a', 'asset_b', 'fee'},
+    );
+    final Object? jsonAssetA = XdrJsonHelper.readField(
+      object,
+      'asset_a',
+      type: 'XdrLiquidityPoolConstantProductParameters',
+    );
+    final Object? jsonAssetB = XdrJsonHelper.readField(
+      object,
+      'asset_b',
+      type: 'XdrLiquidityPoolConstantProductParameters',
+    );
+    final Object? jsonFee = XdrJsonHelper.readField(
+      object,
+      'fee',
+      type: 'XdrLiquidityPoolConstantProductParameters',
+    );
+    return XdrLiquidityPoolConstantProductParameters(
+      XdrAsset.fromXdrJsonValue(jsonAssetA),
+      XdrAsset.fromXdrJsonValue(jsonAssetB),
+      XdrInt32.fromXdrJsonValue(jsonFee),
+    );
   }
 }

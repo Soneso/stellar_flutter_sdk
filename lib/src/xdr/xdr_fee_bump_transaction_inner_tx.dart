@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'txrep_helper.dart';
 import 'xdr_data_io.dart';
 import 'xdr_envelope_type.dart';
+import 'xdr_json_helper.dart';
 import 'xdr_transaction_v1_envelope.dart';
 
 class XdrFeeBumpTransactionInnerTx {
@@ -102,5 +103,52 @@ class XdrFeeBumpTransactionInnerTx {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrFeeBumpTransactionInnerTx',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrFeeBumpTransactionInnerTx.
+  static XdrFeeBumpTransactionInnerTx fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrFeeBumpTransactionInnerTx',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrFeeBumpTransactionInnerTx.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 2:
+        return <String, Object?>{'tx': _v1!.toXdrJsonValue()};
+    }
+    XdrJsonHelper.fail(
+      'XdrFeeBumpTransactionInnerTx',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrFeeBumpTransactionInnerTx from its SEP-0051 rendering.
+  static XdrFeeBumpTransactionInnerTx fromXdrJsonValue(Object? value) {
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrFeeBumpTransactionInnerTx',
+    );
+    switch (arm.key) {
+      case 'tx':
+        final XdrFeeBumpTransactionInnerTx arm0 = XdrFeeBumpTransactionInnerTx(
+          XdrEnvelopeType.ENVELOPE_TYPE_TX,
+        );
+        arm0.v1 = XdrTransactionV1Envelope.fromXdrJsonValue(arm.value);
+        return arm0;
+    }
+    XdrJsonHelper.fail(
+      'XdrFeeBumpTransactionInnerTx',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

@@ -11,6 +11,7 @@ import 'xdr_contract_executable_external_ref.dart';
 import 'xdr_contract_executable_type.dart';
 import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
+import 'xdr_json_helper.dart';
 
 class XdrContractExecutableBase {
   XdrContractExecutableType _type;
@@ -137,5 +138,81 @@ class XdrContractExecutableBase {
         break;
     }
     return result;
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrContractExecutable',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractExecutable.
+  static XdrContractExecutableBase fromXdrJson(String json) => fromXdrJsonValue(
+    XdrJsonHelper.decodeDocument(json, type: 'XdrContractExecutable'),
+  );
+
+  /// Returns the SEP-0051 rendering of this XdrContractExecutableBase.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return <String, Object?>{'wasm': _wasmHash!.toXdrJsonValue()};
+      case 1:
+        return 'stellar_asset';
+      case 2:
+        return <String, Object?>{
+          'external_ref': _externalRef!.toXdrJsonValue(),
+        };
+    }
+    XdrJsonHelper.fail(
+      'XdrContractExecutable',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrContractExecutableBase from its SEP-0051 rendering.
+  static XdrContractExecutableBase fromXdrJsonValue(Object? value) =>
+      fromXdrJsonValueAs(value, XdrContractExecutableBase.new);
+
+  /// Reads a subclass of XdrContractExecutableBase from its SEP-0051 rendering.
+  static T fromXdrJsonValueAs<T extends XdrContractExecutableBase>(
+    Object? value,
+    T Function(XdrContractExecutableType) constructor,
+  ) {
+    if (value is String) {
+      switch (value) {
+        case 'stellar_asset':
+          return constructor(
+            XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrContractExecutable',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    final MapEntry<String, Object?> arm = XdrJsonHelper.readSingleKeyObject(
+      value,
+      type: 'XdrContractExecutable',
+    );
+    switch (arm.key) {
+      case 'wasm':
+        final T arm0 = constructor(
+          XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,
+        );
+        arm0.wasmHash = XdrHash.fromXdrJsonValue(arm.value);
+        return arm0;
+      case 'external_ref':
+        final T arm1 = constructor(
+          XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF,
+        );
+        arm1.externalRef = XdrContractExecutableExternalRef.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm1;
+    }
+    XdrJsonHelper.fail(
+      'XdrContractExecutable',
+      'has no arm named ${XdrJsonHelper.preview(arm.key)}',
+    );
   }
 }

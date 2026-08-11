@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'xdr_begin_sponsoring_future_reserves_result_code.dart';
 import 'xdr_data_io.dart';
+import 'xdr_json_helper.dart';
 
 class XdrBeginSponsoringFutureReservesResult {
   XdrBeginSponsoringFutureReservesResultCode _code;
@@ -71,6 +72,77 @@ class XdrBeginSponsoringFutureReservesResult {
     Uint8List bytes = base64Decode(base64Encoded);
     return XdrBeginSponsoringFutureReservesResult.decode(
       XdrDataInputStream(bytes),
+    );
+  }
+
+  /// Returns the SEP-0051 XDR-JSON rendering of this value.
+  String toXdrJson() => XdrJsonHelper.encodeDocument(
+    toXdrJsonValue(),
+    type: 'XdrBeginSponsoringFutureReservesResult',
+  );
+
+  /// Parses the SEP-0051 XDR-JSON rendering of a XdrBeginSponsoringFutureReservesResult.
+  static XdrBeginSponsoringFutureReservesResult fromXdrJson(String json) =>
+      fromXdrJsonValue(
+        XdrJsonHelper.decodeDocument(
+          json,
+          type: 'XdrBeginSponsoringFutureReservesResult',
+        ),
+      );
+
+  /// Returns the SEP-0051 rendering of this XdrBeginSponsoringFutureReservesResult.
+  Object? toXdrJsonValue() {
+    switch (discriminant.value) {
+      case 0:
+        return 'success';
+      case -1:
+        return 'malformed';
+      case -2:
+        return 'already_sponsored';
+      case -3:
+        return 'recursive';
+    }
+    XdrJsonHelper.fail(
+      'XdrBeginSponsoringFutureReservesResult',
+      'holds the unknown discriminant ${discriminant.value}',
+    );
+  }
+
+  /// Reads a XdrBeginSponsoringFutureReservesResult from its SEP-0051 rendering.
+  static XdrBeginSponsoringFutureReservesResult fromXdrJsonValue(
+    Object? value,
+  ) {
+    if (value is String) {
+      switch (value) {
+        case 'success':
+          return XdrBeginSponsoringFutureReservesResult(
+            XdrBeginSponsoringFutureReservesResultCode
+                .BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS,
+          );
+        case 'malformed':
+          return XdrBeginSponsoringFutureReservesResult(
+            XdrBeginSponsoringFutureReservesResultCode
+                .BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED,
+          );
+        case 'already_sponsored':
+          return XdrBeginSponsoringFutureReservesResult(
+            XdrBeginSponsoringFutureReservesResultCode
+                .BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED,
+          );
+        case 'recursive':
+          return XdrBeginSponsoringFutureReservesResult(
+            XdrBeginSponsoringFutureReservesResultCode
+                .BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE,
+          );
+      }
+      XdrJsonHelper.fail(
+        'XdrBeginSponsoringFutureReservesResult',
+        'has no arm named ${XdrJsonHelper.preview(value)}',
+      );
+    }
+    XdrJsonHelper.fail(
+      'XdrBeginSponsoringFutureReservesResult',
+      'expects one of its arm names but found ${XdrJsonHelper.preview(value)}',
     );
   }
 }
