@@ -219,6 +219,10 @@ class SubmitTransactionResponse extends Response {
 
   /// Helper method that returns Offer ID for ManageOffer from TransactionResult Xdr.
   /// This is helpful when you need the ID of an offer to update it later.
+  ///
+  /// Answers null when the transaction did not succeed, when no operation sits
+  /// at [position], or when the operation there is not a manage offer.
+  /// For a fee bump the inner transaction's operations are read.
   int? getOfferIdFromResult(int position) {
     if (!this.success) {
       return null;
@@ -234,8 +238,15 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    XdrOperationResult opResult = result.result.results![position];
-    XdrOperationType? disc = opResult.tr!.discriminant;
+    // A fee bump carries its operation results on the inner transaction.
+    final results = result.result.results ??
+        result.result.innerResultPair?.result.result.results;
+    if (results == null || position < 0 || position >= results.length) {
+      return null;
+    }
+
+    final tr = results[position].tr;
+    final disc = tr?.discriminant;
     if (disc != XdrOperationType.MANAGE_SELL_OFFER &&
         disc != XdrOperationType.MANAGE_BUY_OFFER) {
       return null;
@@ -243,8 +254,8 @@ class SubmitTransactionResponse extends Response {
 
     XdrManageOfferResult? manageResult =
         disc == XdrOperationType.MANAGE_SELL_OFFER
-            ? opResult.tr!.manageSellOfferResult
-            : opResult.tr!.manageBuyOfferResult;
+            ? tr!.manageSellOfferResult
+            : tr!.manageBuyOfferResult;
 
     if (manageResult?.success?.offer.offer == null) {
       return null;
@@ -261,6 +272,10 @@ class SubmitTransactionResponse extends Response {
 
   /// Helper method that returns Claimable Balance ID for CreateClaimableBalance from TransactionResult XDR.
   /// This is helpful when you need the created Claimable Balance ID to show it to the user
+  ///
+  /// Answers null when the transaction did not succeed, when no operation sits
+  /// at [position], or when the operation there is not a CreateClaimableBalance.
+  /// For a fee bump the inner transaction's operations are read.
   String? getClaimableBalanceIdIdFromResult(int position) {
     if (!this.success) {
       return null;
@@ -276,28 +291,24 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    XdrOperationType? disc =
-        result.result.results![position]
-            .tr!
-            .discriminant;
-    if (disc != XdrOperationType.CREATE_CLAIMABLE_BALANCE) {
+    // A fee bump carries its operation results on the inner transaction.
+    final results = result.result.results ??
+        result.result.innerResultPair?.result.result.results;
+    if (results == null || position < 0 || position >= results.length) {
       return null;
     }
 
-    if (result.result.results![position]
-            .tr!
-            .createClaimableBalanceResult!
-            .balanceID ==
-        null) {
+    final tr = results[position].tr;
+    if (tr?.discriminant != XdrOperationType.CREATE_CLAIMABLE_BALANCE) {
       return null;
     }
 
-    return Util.bytesToHex(result.result.results![0]
-        .tr!
-        .createClaimableBalanceResult!
-        .balanceID!
-        .v0!
-        .hash);
+    final balanceID = tr!.createClaimableBalanceResult?.balanceID;
+    if (balanceID?.v0 == null) {
+      return null;
+    }
+
+    return Util.bytesToHex(balanceID!.v0!.hash);
   }
 
   /// Constructs a SubmitTransactionResponse from JSON returned by Horizon API.

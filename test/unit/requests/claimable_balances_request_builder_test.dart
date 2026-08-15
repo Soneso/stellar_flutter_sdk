@@ -366,7 +366,7 @@ void main() {
   group('ClaimableBalancesRequestBuilder fetch and execute', () {
     final serverUri = Uri.parse('https://horizon-testnet.stellar.org');
     final balanceId =
-        '000000000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c';
+        '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
     final issuer = 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5';
     final claimant =
         'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
@@ -403,6 +403,23 @@ void main() {
       expect(balance.amount, equals('100.0000000'));
       expect(balance.claimants.length, equals(1));
       expect(balance.claimants.first.destination, equals(claimant));
+    });
+
+    test('forBalanceId requests the Horizon form for a B strkey id', () async {
+      // The path must carry the hex of the XDR encoding, the four byte type
+      // discriminant ahead of the hash, which is the id Horizon serves.
+      final strKeyId =
+          StrKey.encodeClaimableBalanceIdHex(balanceId.substring(8));
+      final mockClient = MockClient((request) async {
+        expect(request.url.path, contains('/claimable_balances/$balanceId'));
+        return http.Response(json.encode(balanceRecord), 200);
+      });
+
+      final builder = ClaimableBalancesRequestBuilder(mockClient, serverUri);
+      final balance = await builder.forBalanceId(strKeyId);
+
+      expect(balance, isA<ClaimableBalanceResponse>());
+      expect(balance.balanceId, equals(balanceId));
     });
 
     test('execute returns a page of claimable balances', () async {

@@ -793,7 +793,7 @@ void main() {
       var hashHex = hash.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
       var expectedHex =
           '00' + hashHex; // 1-byte V0 discriminant (0) + 32-byte hash
-      // forId accepts Horizon format (4-byte prefix) — stringIdToXdrHash takes last 32 bytes
+      // forId accepts the Horizon format (4-byte prefix) and keeps the 32 hash bytes
       var horizonHex = '00000000' + hashHex;
       var v = XdrClaimableBalanceID.forId(horizonHex);
       expect(

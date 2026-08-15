@@ -48,7 +48,7 @@ void main() {
     });
 
     test('XdrSCAddress forClaimableBalanceId', () {
-      var balanceId = '000000006d6f6e657900000000000000000000000000000000000000000000000000000000';
+      var balanceId = '000000006d6f6e6579000000000000000000000000000000000000000000000000000000';
       var addr = XdrSCAddress.forClaimableBalanceId(balanceId);
       expect(addr.discriminant, equals(XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE));
       expect(addr.claimableBalanceId, isNotNull);
@@ -101,7 +101,7 @@ void main() {
     });
 
     test('XdrSCVal forClaimableBalanceAddress', () {
-      var balanceId = '000000006d6f6e657900000000000000000000000000000000000000000000000000000000';
+      var balanceId = '000000006d6f6e6579000000000000000000000000000000000000000000000000000000';
       var scVal = XdrSCVal.forClaimableBalanceAddress(balanceId);
       expect(scVal.discriminant, equals(XdrSCValType.SCV_ADDRESS));
       expect(scVal.address, isNotNull);

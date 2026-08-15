@@ -882,7 +882,7 @@ signatures.len: 0
 
       test('SCAddress SC_ADDRESS_TYPE_CLAIMABLE_BALANCE', () {
         final balanceId =
-            '000000006d6f6e657900000000000000000000000000000000000000000000000000000000';
+            '000000006d6f6e6579000000000000000000000000000000000000000000000000000000';
         final scAddress = XdrSCAddress.forClaimableBalanceId(balanceId);
         expect(
           scAddress.discriminant,

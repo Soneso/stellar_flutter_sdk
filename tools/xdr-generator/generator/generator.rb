@@ -656,7 +656,7 @@ class Generator < Xdrgen::Generators::Base
     field_name = underscore_field(dart_name)
     param = encode_param_name(dart_name)
     gen_txrep = should_generate_txrep?(dart_name)
-    txrep_ctx = { kind: :fixed_opaque_typedef }
+    txrep_ctx = { kind: :fixed_opaque_typedef, size: size }
 
     out.puts COPYRIGHT_HEADER
     out.puts "import 'dart:convert';"
@@ -683,7 +683,7 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  }"
 
     render_base64_methods(out, dart_name)
-    render_txrep_methods(out, dart_name, { kind: :fixed_opaque_typedef }) if gen_txrep
+    render_txrep_methods(out, dart_name, txrep_ctx) if gen_txrep
     render_typedef_sep51_methods(out, dart_name, decl, field_name)
 
     out.puts "}"
@@ -2438,7 +2438,7 @@ class Generator < Xdrgen::Generators::Base
     when :simple_typedef
       render_simple_typedef_txrep_methods(out, class_name, type_context[:dart_type], type_context[:field_name])
     when :fixed_opaque_typedef
-      render_fixed_opaque_typedef_txrep_methods(out, class_name)
+      render_fixed_opaque_typedef_txrep_methods(out, class_name, type_context[:size])
     when :variable_opaque_typedef
       render_variable_opaque_typedef_txrep_methods(out, class_name)
     when :string_typedef
@@ -2841,7 +2841,10 @@ class Generator < Xdrgen::Generators::Base
   # Fixed opaque typedef TxRep (e.g., XdrHash)
   # ---------------------------------------------------------------------------
 
-  def render_fixed_opaque_typedef_txrep_methods(out, class_name)
+  # The width check holds the parsed value to the declared opaque size. Hex
+  # decoding accepts any length, so without it a short or long TxRep line
+  # yields a value whose XDR encoding is not the type it claims to be.
+  def render_fixed_opaque_typedef_txrep_methods(out, class_name, size)
     field_name = underscore_field(class_name)
     out.puts ""
     out.puts "  void toTxRep(String prefix, List<String> lines) {"
@@ -2851,7 +2854,11 @@ class Generator < Xdrgen::Generators::Base
     out.puts "  static #{class_name} fromTxRep(Map<String, String> map, String prefix) {"
     out.puts "    String? raw = TxRepHelper.getValue(map, prefix);"
     out.puts "    if (raw == null) throw Exception('missing \$prefix');"
-    out.puts "    return #{class_name}(TxRepHelper.hexToBytes(raw));"
+    out.puts "    Uint8List bytes = TxRepHelper.hexToBytes(raw);"
+    out.puts "    if (bytes.length != #{size}) {"
+    out.puts "      throw Exception('\$prefix must be #{size} bytes, \${bytes.length} given');"
+    out.puts "    }"
+    out.puts "    return #{class_name}(bytes);"
     out.puts "  }"
   end
 

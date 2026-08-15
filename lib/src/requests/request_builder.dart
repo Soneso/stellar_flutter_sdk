@@ -11,6 +11,7 @@ import 'package:stellar_flutter_sdk/src/asset_type_credit_alphanum.dart';
 import 'package:stellar_flutter_sdk/src/asset_type_native.dart';
 import 'package:stellar_flutter_sdk/src/constants/network_constants.dart';
 import 'package:stellar_flutter_sdk/src/stellar_sdk.dart';
+import 'package:stellar_flutter_sdk/src/xdr/xdr_claimable_balance_id.dart';
 
 import '../assets.dart';
 import '../eventsource/eventsource.dart';
@@ -206,6 +207,21 @@ abstract class RequestBuilder {
     }
     _segmentsAdded = false; // Allow overwriting segments
     queryParameters = {};
+  }
+
+  /// Resolves [claimableBalanceId], in any accepted spelling, to the hex of
+  /// its XDR encoding: the four byte type discriminant ahead of the hash,
+  /// which is the id Horizon serves.
+  ///
+  /// Throws [ArgumentError], naming the reason, when the id holds none of the
+  /// accepted spellings.
+  static String claimableBalanceIdHorizonHex(String claimableBalanceId) {
+    try {
+      return XdrClaimableBalanceID.forId(claimableBalanceId).paddedBalanceIdHex;
+    } on FormatException catch (e) {
+      throw ArgumentError(
+          "invalid claimable balance id: $claimableBalanceId (${e.message})");
+    }
   }
 
   /// Sets the URL path segments for this request.

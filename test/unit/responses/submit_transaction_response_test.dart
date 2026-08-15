@@ -901,10 +901,47 @@ void main() {
         null,
       );
 
-      // Method needs proper XDR structure, otherwise returns null
-      final result = response.getOfferIdFromResult(0);
-      // Result depends on XDR structure
-      expect(result, anyOf(isNull, isA<int>()));
+      // The result carries a single payment, so no position holds a
+      // manage offer.
+      expect(response.getOfferIdFromResult(0), isNull);
+    });
+
+    test('getOfferIdFromResult returns the id of the operation at the given position', () {
+      // A payment at position 0 and a created sell offer at position 1.
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        'AAAA',
+        'AAAAAAAAAMgAAAAAAAAAAgAAAAAAAAABAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAABERERERERERERERERERERERERERERERERERERERERERAAAAAkywFuoAAAAAAAAAAVVTRAAAAAAAIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIAAAAAAA9CQAAAAAEAAAACAAAAAAAAAAAAAAAA',
+        'AAAA',
+        'AAAA',
+        null,
+      );
+
+      expect(response.getOfferIdFromResult(0), isNull);
+      expect(response.getOfferIdFromResult(1), equals(9876543210));
+      // A position outside the operation list answers null, like every other
+      // case in which nothing sits at the position.
+      expect(response.getOfferIdFromResult(2), isNull);
+      expect(response.getOfferIdFromResult(-1), isNull);
+    });
+
+    test('getOfferIdFromResult reads a fee bump\'s inner operations', () {
+      // A fee bump wrapping one created sell offer; the operation results sit
+      // on the inner transaction.
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        'AAAA',
+        'AAAAAAAAAZAAAAABMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMAAAAAAAAAyAAAAAAAAAABAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAEREREREREREREREREREREREREREREREREREREREREREAAAAAAAZ5MgAAAAAAAAABVVNEAAAAAAAiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIgAAAAAAD0JAAAAAAQAAAAIAAAAAAAAAAAAAAAAAAAAA',
+        'AAAA',
+        'AAAA',
+        null,
+      );
+
+      expect(response.getOfferIdFromResult(0), equals(424242));
     });
 
     test('getClaimableBalanceIdIdFromResult returns null when result XDR is null', () {
@@ -922,7 +959,7 @@ void main() {
       expect(response.getClaimableBalanceIdIdFromResult(0), isNull);
     });
 
-    test('getClaimableBalanceIdIdFromResult needs valid success XDR', () {
+    test('getClaimableBalanceIdIdFromResult answers null without a create claimable balance', () {
       final response = SubmitTransactionResponse(
         null,
         12345,
@@ -934,10 +971,75 @@ void main() {
         null,
       );
 
-      // Method needs proper XDR structure, otherwise returns null
-      final result = response.getClaimableBalanceIdIdFromResult(0);
-      // Result depends on XDR structure
-      expect(result, anyOf(isNull, isA<String>()));
+      // The result carries a single payment, so no position holds a
+      // CreateClaimableBalance.
+      expect(response.getClaimableBalanceIdIdFromResult(0), isNull);
+    });
+
+    test('getClaimableBalanceIdIdFromResult reads a fee bump\'s inner operations', () {
+      // A fee bump wrapping one successful CreateClaimableBalance; the
+      // operation results sit on the inner transaction.
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        'AAAA',
+        'AAAAAAAAAZAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyAAAAAAAAAABAAAAAAAAAA4AAAAAAAAAAPXqf7PeGNrp8Sr5bPB1B0kBb7y6a/CekCpp5UVodx2CAAAAAAAAAAA=',
+        'AAAA',
+        'AAAA',
+        null,
+      );
+
+      expect(
+          response.getClaimableBalanceIdIdFromResult(0),
+          equals(
+              'f5ea7fb3de18dae9f12af96cf0750749016fbcba6bf09e902a69e54568771d82'));
+    });
+
+    test('getClaimableBalanceIdIdFromResult returns the id of the operation at the given position', () {
+      // TransactionResult with two CreateClaimableBalance operations carrying
+      // different balance hashes, so each position must answer with its own id.
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        'AAAA',
+        'AAAAAAAAAMgAAAAAAAAAAgAAAAAAAAAOAAAAAAAAAAA/DDS/k60NmXHQTMyQ9wVRHIOKrZc0pKL7DXoD/H/omgAAAAAAAAAOAAAAAAAAAAD16n+z3hja6fEq+WzwdQdJAW+8umvwnpAqaeVFaHcdggAAAAA=',
+        'AAAA',
+        'AAAA',
+        null,
+      );
+
+      expect(
+          response.getClaimableBalanceIdIdFromResult(0),
+          equals('3f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a'));
+      expect(
+          response.getClaimableBalanceIdIdFromResult(1),
+          equals('f5ea7fb3de18dae9f12af96cf0750749016fbcba6bf09e902a69e54568771d82'));
+      // A position outside the operation list answers null, like every other
+      // case in which nothing sits at the position.
+      expect(response.getClaimableBalanceIdIdFromResult(2), isNull);
+      expect(response.getClaimableBalanceIdIdFromResult(-1), isNull);
+    });
+
+    test('getClaimableBalanceIdIdFromResult answers null for a position holding another operation type', () {
+      // TransactionResult with a payment at position 0 and a
+      // CreateClaimableBalance at position 1.
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        'AAAA',
+        'AAAAAAAAAMgAAAAAAAAAAgAAAAAAAAABAAAAAAAAAAAAAAAOAAAAAAAAAAD16n+z3hja6fEq+WzwdQdJAW+8umvwnpAqaeVFaHcdggAAAAA=',
+        'AAAA',
+        'AAAA',
+        null,
+      );
+
+      expect(response.getClaimableBalanceIdIdFromResult(0), isNull);
+      expect(
+          response.getClaimableBalanceIdIdFromResult(1),
+          equals('f5ea7fb3de18dae9f12af96cf0750749016fbcba6bf09e902a69e54568771d82'));
     });
   });
 

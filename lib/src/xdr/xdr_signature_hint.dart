@@ -47,7 +47,11 @@ class XdrSignatureHint {
   static XdrSignatureHint fromTxRep(Map<String, String> map, String prefix) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
-    return XdrSignatureHint(TxRepHelper.hexToBytes(raw));
+    Uint8List bytes = TxRepHelper.hexToBytes(raw);
+    if (bytes.length != 4) {
+      throw Exception('$prefix must be 4 bytes, ${bytes.length} given');
+    }
+    return XdrSignatureHint(bytes);
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

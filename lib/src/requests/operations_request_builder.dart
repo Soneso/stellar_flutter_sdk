@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
@@ -85,20 +84,7 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// Returns successful operations for a given claimable balance by [claimableBalanceId].
   /// See: [Stellar developer docs](https://developers.stellar.org)
   OperationsRequestBuilder forClaimableBalance(String claimableBalanceId) {
-    var id = claimableBalanceId;
-    if (id.startsWith("B")) {
-      try {
-        // Horizon identifies a claimable balance by the hex of its XDR
-        // encoding: the four byte type discriminant followed by the hash. The
-        // strkey body carries a one byte discriminant, so three zero bytes
-        // complete it.
-        id = Util.bytesToHex(Uint8List.fromList(
-            [0, 0, 0, ...StrKey.decodeClaimableBalanceId(claimableBalanceId)]));
-      } catch (_) {
-        throw ArgumentError(
-            "invalid claimable balance id: $claimableBalanceId");
-      }
-    }
+    final id = RequestBuilder.claimableBalanceIdHorizonHex(claimableBalanceId);
     this.setSegments(["claimable_balances", id, "operations"]);
     return this;
   }

@@ -154,6 +154,44 @@ void main() {
         expect(built, isNull, reason: taggedHex);
       }
     });
+
+    test('forId refuses a hex id of a width matching no accepted shape', () {
+      // A width the codec does not define must be refused, not zero-padded or
+      // truncated to a 32-byte hash that names a different balance. The pinned
+      // count holds the message to reporting the actual width.
+      for (final id in <String>[
+        'dead',
+        'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5',
+        '0000000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
+      ]) {
+        expect(
+            () => XdrClaimableBalanceID.forId(id),
+            throwsA(isA<FormatException>().having((e) => e.message, 'message',
+                contains('${id.length} characters given'))),
+            reason: id);
+      }
+
+      // 58 characters is the strkey width, so that case names the strkey rule.
+      expect(
+          () => XdrClaimableBalanceID.forId('a' * 58),
+          throwsA(isA<FormatException>().having((e) => e.message, 'message',
+              contains('must be a strkey beginning with "B"'))));
+    });
+
+    test('paddedBalanceIdHex reports the id the way Horizon spells it', () {
+      final hashHex =
+          'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
+      for (final spelling in <String>[
+        hashHex,
+        '00$hashHex',
+        '00000000$hashHex',
+        StrKey.encodeClaimableBalanceIdHex(hashHex),
+      ]) {
+        expect(XdrClaimableBalanceID.forId(spelling).paddedBalanceIdHex,
+            '00000000$hashHex',
+            reason: spelling);
+      }
+    });
   });
 
   group('XdrClaimableBalanceEntry', () {

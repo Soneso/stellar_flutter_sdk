@@ -44,7 +44,7 @@ void main() {
     });
 
     test('create claimable balance address', () {
-      final balanceId = '000000006d6f6e657900000000000000000000000000000000000000000000000000000000';
+      final balanceId = '000000006d6f6e6579000000000000000000000000000000000000000000000000000000';
       final address = Address.forClaimableBalanceId(balanceId);
 
       expect(address, isNotNull);
@@ -658,7 +658,7 @@ void main() {
   group('Address - additional coverage', () {
     test('forClaimableBalanceId creates address with balance ID', () {
       final balanceId =
-          '000000006d6f6e657900000000000000000000000000000000000000000000000000000000';
+          '000000006d6f6e6579000000000000000000000000000000000000000000000000000000';
       final address = Address.forClaimableBalanceId(balanceId);
 
       expect(address.type, equals(Address.TYPE_CLAIMABLE_BALANCE));
@@ -680,7 +680,7 @@ void main() {
 
     test('claimable balance address toXdr and fromXdr', () {
       final balanceId =
-          '000000006d6f6e657900000000000000000000000000000000000000000000000000000000';
+          '000000006d6f6e6579000000000000000000000000000000000000000000000000000000';
       final address = Address.forClaimableBalanceId(balanceId);
 
       final xdr = address.toXdr();
