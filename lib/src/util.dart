@@ -779,7 +779,7 @@ class Base32 {
   static String encode(Uint8List bytes) {
     int i = 0, index = 0, digit = 0;
     int currByte, nextByte;
-    String base32 = '';
+    final StringBuffer base32 = StringBuffer();
 
     while (i < bytes.length) {
       currByte = bytes[i];
@@ -803,9 +803,9 @@ class Base32 {
           i++;
         }
       }
-      base32 = base32 + _base32Chars[digit];
+      base32.write(_base32Chars[digit]);
     }
-    return base32;
+    return base32.toString();
   }
 
   /// Encodes a hexadecimal string to Base32.

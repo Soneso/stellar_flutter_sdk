@@ -176,9 +176,7 @@ class XdrLedgerKey extends XdrLedgerKeyBase {
 
     var id = liquidityPoolId;
     if (id.startsWith("L")) {
-      try {
-        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(liquidityPoolId));
-      } catch (_) {}
+      id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(liquidityPoolId));
     }
     result.liquidityPoolID = XdrHash(Util.hexToBytes(id));
     return result;

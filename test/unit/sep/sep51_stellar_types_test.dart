@@ -80,6 +80,14 @@ String _breakChecksum(String strKey) {
   return strKey.substring(0, strKey.length - 1) + (last == 'A' ? 'B' : 'A');
 }
 
+/// Renders [payload] behind [versionByte] as a checksummed strkey without the
+/// width check the SDK encoder applies, for building wrong-width vectors.
+String craftStrKey(int versionByte, Uint8List payload) {
+  final Uint8List body = Uint8List.fromList([versionByte, ...payload]);
+  final Uint8List checksum = StrKey.calculateChecksum(body);
+  return Base32.encode(Uint8List.fromList([...body, ...checksum]));
+}
+
 void main() {
   group('SEP-0051 §Address Types renders a public key as a G strkey', () {
     test('PublicKey carries its one arm', () {
@@ -178,11 +186,11 @@ void main() {
     });
 
     test('a payload of the wrong width is refused', () {
-      // The strkey codec checks the checksum and the version byte and not the
-      // width, so a 39-byte payload encodes and decodes cleanly and only this
-      // reader stands between it and an instance the binary encoder would
-      // write as malformed XDR.
-      final String short = StrKey.encodeStellarMuxedAccountId(Uint8List(39));
+      // A 39-byte payload has no 69-character M rendering, so the strkey
+      // codec refuses the crafted address on length and the reader restates
+      // that as its own failure.
+      final String short = craftStrKey(
+          VersionByte.MUXED_ACCOUNT_ID.getValue(), Uint8List(39));
       expect(
         () => XdrMuxedAccountMed25519.fromXdrJson('"$short"'),
         throwsA(isA<FormatException>()),
@@ -331,8 +339,8 @@ void main() {
       // Thirty-two bytes carrying the tag and a hash one byte short. The
       // checksum and the version byte are both right, so the width is the only
       // thing that says this is not a balance id.
-      final String narrow = StrKey.encodeCheck(
-        VersionByte.CLAIMABLE_BALANCE,
+      final String narrow = craftStrKey(
+        VersionByte.CLAIMABLE_BALANCE.getValue(),
         Uint8List.fromList(<int>[0, ...List<int>.filled(31, 6)]),
       );
       expect(
@@ -342,7 +350,12 @@ void main() {
     });
 
     test('a tag the union does not declare is refused', () {
-      final String tagged = StrKey.encodeClaimableBalanceId(
+      // Thirty-three bytes of the right width, tagged with a discriminant the
+      // union does not declare. The tag is the only thing that says this is
+      // not a balance id, so the value is built through the raw codec, which
+      // encodes what it is handed.
+      final String tagged = StrKey.encodeCheck(
+        VersionByte.CLAIMABLE_BALANCE,
         Uint8List.fromList(<int>[7, ...List<int>.filled(32, 6)]),
       );
       expect(
@@ -390,7 +403,8 @@ void main() {
     });
 
     test('a well-formed strkey carrying the wrong number of bytes', () {
-      final String narrow = StrKey.encodeStellarAccountId(Uint8List(31));
+      final String narrow =
+          craftStrKey(VersionByte.ACCOUNT_ID.getValue(), Uint8List(31));
       readers.forEach((String name, void Function(String) read) {
         expect(
           () => read(narrow),

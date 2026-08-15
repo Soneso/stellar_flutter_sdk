@@ -87,9 +87,7 @@ class XdrSCAddress extends XdrSCAddressBase {
     );
     var id = liquidityPoolId;
     if (id.startsWith("L")) {
-      try {
-        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(liquidityPoolId));
-      } catch (_) {}
+      id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(liquidityPoolId));
     }
 
     result.liquidityPoolId = XdrHash(Util.hexToBytes(id));

@@ -5,6 +5,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../constants/stellar_protocol_constants.dart';
+import '../key_pair.dart' show StrKey;
 import '../util.dart' show Util;
 
 /// Shared runtime for SEP-0051 (XDR-JSON) encoding and decoding.
@@ -828,16 +830,17 @@ class XdrJsonHelper {
   ///
   /// [decode] is the codec for the strkey kind the field declares, so a value
   /// of another kind is refused by its version byte rather than silently
-  /// accepted. The codec reports a bad checksum or a wrong version byte in its
-  /// own vocabulary; those are reported here under the XDR-JSON contract
-  /// instead, so a caller has one exception type to handle. The codec's own
-  /// wording is carried through where it has any.
+  /// accepted. The codecs this SDK passes state a bad length, a bad checksum
+  /// or a wrong version byte as a [FormatException], and such a rejection is
+  /// restated here under the XDR-JSON contract, carrying the codec's own
+  /// wording through. A codec supplied by a caller that signals failure some
+  /// other way propagates as it is.
   ///
-  /// [expectedLength] is the byte count the field's declaration fixes. The
-  /// strkey codec checks the encoding, the version byte and the checksum, and
-  /// nothing about the width, so a well-formed strkey carrying the wrong number
-  /// of bytes decodes cleanly and would otherwise be written back out as
-  /// malformed XDR.
+  /// [expectedLength] is the byte count the field's declaration fixes, and
+  /// this reader holds the decoded value to that width whichever codec it was
+  /// given. The check is the reader's own contract rather than a restatement
+  /// of the codec's, so a width the field cannot hold is reported under the
+  /// XDR-JSON contract rather than reaching the binary encoder.
   static Uint8List readStrKey(
     Object? value, {
     required String type,
@@ -849,23 +852,14 @@ class XdrJsonHelper {
       fail(type, '${_at(key)}expects a strkey but found ${preview(value)}');
     }
 
-    String? detail;
-    Uint8List? decoded;
+    final Uint8List decoded;
     try {
       decoded = decode(value);
     } on FormatException catch (error) {
-      detail = error.message;
-    } on ArgumentError {
-      // A string too short to hold a version byte and a checksum fails in the
-      // codec's own indexing rather than through its validation, so it arrives
-      // as an ArgumentError carrying no wording worth repeating.
-    }
-
-    if (decoded == null) {
       fail(
         type,
         '${_at(key)}holds a malformed strkey: ${preview(value)}'
-        '${detail == null ? '' : ' ($detail)'}',
+        ' (${error.message})',
       );
     }
 
@@ -952,39 +946,22 @@ class XdrJsonHelper {
     return padded;
   }
 
-  /// Byte count of the signer key a signed-payload strkey carries.
-  static const int _signedPayloadKeyWidth = 32;
-
-  /// Byte count of the length prefix that follows the signer key.
-  static const int _signedPayloadLengthWidth = 4;
-
-  /// Largest payload a signed-payload signer can carry, from `opaque payload<64>`.
-  static const int _signedPayloadMaxLength = 64;
-
   /// Refuses a signed-payload length that has no SEP-0051 rendering.
   ///
   /// The payload is bounded above by its own declaration. It is bounded below
   /// by the strkey form, which has no encoding for an empty payload: the region
   /// such a value produces is shorter than any strkey the ecosystem reads back,
-  /// so a document carrying one could never be decoded again. Both directions
-  /// call this, so the bound is stated once.
+  /// so a document carrying one could never be decoded again. The bound itself
+  /// is [StrKey.signedPayloadLengthViolation]; this states it as a failure of
+  /// the type and key it is given.
   static void checkSignedPayloadLength(
     int length, {
     required String type,
     String? key,
   }) {
-    if (length < 1) {
-      fail(
-        type,
-        '${_at(key)}carries an empty payload, which has no strkey rendering',
-      );
-    }
-    if (length > _signedPayloadMaxLength) {
-      fail(
-        type,
-        '${_at(key)}carries a $length-byte payload, more than the declared '
-        'maximum of $_signedPayloadMaxLength',
-      );
+    final String? violation = StrKey.signedPayloadLengthViolation(length);
+    if (violation != null) {
+      fail(type, '${_at(key)}$violation');
     }
   }
 
@@ -994,46 +971,36 @@ class XdrJsonHelper {
   /// The region is the XDR encoding of the two fields: a 32-byte key, a 4-byte
   /// big-endian length, and the payload padded with NUL bytes to a multiple of
   /// four. A region whose length prefix, padding or total width disagrees with
-  /// that layout is refused rather than truncated to fit.
+  /// that layout is refused. The framing itself is
+  /// [StrKey.signedPayloadFramingViolation]; this states it as a failure of the
+  /// type and key under decode, then splits the region the framing describes.
+  /// The reader in this SDK obtains its region from [StrKey.decodeCheck], which
+  /// has already applied that rule, so the refusal here answers a caller that
+  /// supplies a region of its own.
   ///
-  /// The bytes are taken rather than the JSON value so that this holds no
-  /// dependency on the strkey codec, which [readStrKey] takes as a parameter.
+  /// The bytes are taken rather than the JSON value because the caller has
+  /// already run the strkey codec, which [readStrKey] takes as a parameter;
+  /// what is left to do is describe the region and split it.
   static (Uint8List, Uint8List) readSignedPayloadRegion(
     Uint8List region, {
     required String type,
     String? key,
   }) {
-    const int prefix = _signedPayloadKeyWidth + _signedPayloadLengthWidth;
-    if (region.length < prefix) {
-      fail(
-        type,
-        '${_at(key)}is ${region.length} bytes, too short to hold a signer key '
-        'and a payload length',
-      );
+    final String? violation = StrKey.signedPayloadFramingViolation(region);
+    if (violation != null) {
+      fail(type, '${_at(key)}$violation');
     }
 
-    int length = 0;
-    for (int i = 0; i < _signedPayloadLengthWidth; i++) {
-      length = (length << 8) | region[_signedPayloadKeyWidth + i];
-    }
-    checkSignedPayloadLength(length, type: type, key: key);
-
-    final int padded = length + (-length) % 4;
-    if (region.length != prefix + padded) {
-      fail(
-        type,
-        '${_at(key)}is ${region.length} bytes, but a $length-byte payload '
-        'occupies ${prefix + padded}',
-      );
-    }
-    for (int i = prefix + length; i < region.length; i++) {
-      if (region[i] != 0) {
-        fail(type, '${_at(key)}pads its payload with a byte that is not NUL');
-      }
-    }
+    const int keyWidth =
+        StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES;
+    const int prefix =
+        keyWidth + StellarProtocolConstants.SIGNED_PAYLOAD_LENGTH_PREFIX_BYTES;
+    final int length = ByteData.sublistView(
+      region,
+    ).getUint32(keyWidth, Endian.big);
 
     return (
-      Uint8List.sublistView(region, 0, _signedPayloadKeyWidth),
+      Uint8List.sublistView(region, 0, keyWidth),
       Uint8List.sublistView(region, prefix, prefix + length),
     );
   }

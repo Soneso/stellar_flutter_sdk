@@ -1078,10 +1078,10 @@ void main() {
 
     test('forClaimableBalance with B-prefixed ID', () {
       final builder = OperationsRequestBuilder(httpClient, serverUri);
-      final cbHexId =
-          '000000000a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
+      final cbHashHex =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final claimableBalanceId =
-          StrKey.encodeClaimableBalanceIdHex(cbHexId);
+          StrKey.encodeClaimableBalanceIdHex(cbHashHex);
       builder.forClaimableBalance(claimableBalanceId);
       final uri = builder.buildUri();
 
@@ -1196,10 +1196,10 @@ void main() {
 
     test('forClaimableBalance with B-prefixed ID', () {
       final builder = TransactionsRequestBuilder(httpClient, serverUri);
-      final cbHexId =
-          '000000000a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
+      final cbHashHex =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final claimableBalanceId =
-          StrKey.encodeClaimableBalanceIdHex(cbHexId);
+          StrKey.encodeClaimableBalanceIdHex(cbHashHex);
       builder.forClaimableBalance(claimableBalanceId);
       final uri = builder.buildUri();
 
@@ -1567,10 +1567,10 @@ void main() {
 
     test('forClaimableBalance decodes B-prefixed ID to hex', () {
       final builder = OperationsRequestBuilder(httpClient, serverUri);
-      final cbHexId =
-          '000000000a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
+      final cbHashHex =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final balanceIdWithPrefix =
-          StrKey.encodeClaimableBalanceIdHex(cbHexId);
+          StrKey.encodeClaimableBalanceIdHex(cbHashHex);
       builder.forClaimableBalance(balanceIdWithPrefix);
       final uri = builder.buildUri();
 
@@ -1682,10 +1682,10 @@ void main() {
 
     test('forClaimableBalance decodes B-prefixed ID to hex', () {
       final builder = TransactionsRequestBuilder(httpClient, serverUri);
-      final cbHexId =
-          '000000000a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
+      final cbHashHex =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
       final balanceIdWithPrefix =
-          StrKey.encodeClaimableBalanceIdHex(cbHexId);
+          StrKey.encodeClaimableBalanceIdHex(cbHashHex);
       builder.forClaimableBalance(balanceIdWithPrefix);
       final uri = builder.buildUri();
 

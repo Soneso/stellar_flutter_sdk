@@ -102,17 +102,57 @@ void main() {
 
     test('forId with B prefix', () {
       final hashHex =
-          '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
+          'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
       final bId = StrKey.encodeClaimableBalanceIdHex(hashHex);
       final id = XdrClaimableBalanceID.forId(bId);
       expect(id.v0, isNotNull);
+      expect(Util.bytesToHex(id.v0!.hash), hashHex);
     });
 
-    test('forId with B prefix and 33 bytes', () {
+    test('forId with a hex id carrying its four byte discriminant', () {
       final hashHex =
-          '0000000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
-      final id = XdrClaimableBalanceID.forId(hashHex);
+          'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
+      final id = XdrClaimableBalanceID.forId('00000000$hashHex');
       expect(id.v0, isNotNull);
+      expect(Util.bytesToHex(id.v0!.hash), hashHex);
+    });
+
+    test('forId with a hex id carrying its one byte discriminant', () {
+      final hashHex =
+          'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
+      final id = XdrClaimableBalanceID.forId('00$hashHex');
+      expect(id.discriminant,
+          XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
+      expect(Util.bytesToHex(id.v0!.hash), hashHex);
+    });
+
+    test('forId with a bare hex hash', () {
+      final hashHex =
+          'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
+      final id = XdrClaimableBalanceID.forId(hashHex);
+      expect(id.discriminant,
+          XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
+      expect(Util.bytesToHex(id.v0!.hash), hashHex);
+    });
+
+    test('forId refuses a hex id whose discriminant names no type', () {
+      // Both hex widths carry the balance id type: the one-byte discriminant
+      // of the strkey form and the four-byte XDR union discriminant Horizon
+      // writes. A non-zero value in either names no type the protocol defines,
+      // and must not be dropped to leave a V0 id over the same hash.
+      final hashHex =
+          'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
+
+      for (final taggedHex in <String>['01$hashHex', '00000001$hashHex']) {
+        XdrClaimableBalanceID? built;
+        expect(
+            () => built = XdrClaimableBalanceID.forId(taggedHex),
+            throwsA(isA<FormatException>().having((e) => e.message, 'message',
+                contains('carries the discriminant 1, '
+                    'which names no claimable balance id type'))),
+            reason: taggedHex);
+        expect(built, isNull, reason: taggedHex);
+      }
     });
   });
 
@@ -282,6 +322,15 @@ void main() {
       final key = XdrLedgerKey.forLiquidityPool(lId);
       expect(key.discriminant, XdrLedgerEntryType.LIQUIDITY_POOL);
       expect(key.liquidityPoolID, isNotNull);
+    });
+
+    test('forLiquidityPool reports why an L id failed to decode', () {
+      // An L-prefixed string is not hexadecimal, so a swallowed strkey failure
+      // could only resurface as a hex parse error naming nothing useful.
+      expect(
+          () => XdrLedgerKey.forLiquidityPool('LINVALIDPOOLID'),
+          throwsA(isA<FormatException>().having((e) => e.message, 'message',
+              contains('Encoded string must be 56 characters, got 14'))));
     });
 
     test('forContractData', () {

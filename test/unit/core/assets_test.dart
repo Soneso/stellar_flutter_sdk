@@ -365,11 +365,11 @@ void main() {
         throwsA(isA<FormatException>()),
       );
 
-      // Empty issuer throws RangeError
+      // Empty issuer is refused for its length
       final invalidAsset2 = AssetTypeCreditAlphaNum4('USD', '');
       expect(
         () => invalidAsset2.toXdr(),
-        throwsA(isA<RangeError>()),
+        throwsA(isA<FormatException>()),
       );
 
       // Wrong prefix (secret seed instead of account ID)

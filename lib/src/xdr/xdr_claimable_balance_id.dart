@@ -7,9 +7,11 @@ import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'package:stellar_flutter_sdk/src/util.dart';
 
+import '../constants/stellar_protocol_constants.dart';
 import 'xdr_claimable_balance_id_base.dart';
 import 'xdr_claimable_balance_id_type.dart';
 import 'xdr_data_io.dart';
+import 'xdr_hash.dart';
 import 'xdr_json_helper.dart';
 
 class XdrClaimableBalanceID extends XdrClaimableBalanceIDBase {
@@ -36,24 +38,71 @@ class XdrClaimableBalanceID extends XdrClaimableBalanceIDBase {
     return result;
   }
 
+  /// Builds a claimable balance id from [claimableBalanceId], given either as
+  /// the strkey rendering of the id (B...) or as its hex rendering.
+  ///
+  /// A claimable balance strkey is
+  /// [StellarProtocolConstants.STRKEY_CLAIMABLE_BALANCE_LENGTH] characters, so
+  /// a string of that length beginning with "B" is read as one; every other
+  /// string is read as hex and fitted to the width of the hash by
+  /// [Util.stringIdToXdrHash].
+  ///
+  /// A hex rendering may carry the balance id type ahead of the hash, either
+  /// as the single byte the strkey form leads with or as the four-byte
+  /// big-endian XDR union discriminant Horizon writes. Both widths are held to
+  /// [XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0].
+  ///
+  /// Throws:
+  /// - [FormatException]: if a strkey is not one this codec accepts, if a hex
+  ///   rendering is not hexadecimal, or if a hex rendering carries a
+  ///   discriminant, in either width, that names no claimable balance id type
   static XdrClaimableBalanceID forId(String claimableBalanceId) {
     XdrClaimableBalanceID bId = XdrClaimableBalanceID(
       XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0,
     );
 
-    var id = claimableBalanceId;
-    if (id.startsWith("B")) {
-      try {
-        var bytes = StrKey.decodeClaimableBalanceId(claimableBalanceId);
-        if (bytes.length == 33) {
-          // has discriminant in front
-          // remove discriminant since we only have CLAIMABLE_BALANCE_ID_TYPE_V0
-          bytes = bytes.sublist(1);
-        }
-        id = Util.bytesToHex(bytes);
-      } catch (_) {}
+    if (claimableBalanceId.startsWith("B") &&
+        claimableBalanceId.length ==
+            StellarProtocolConstants.STRKEY_CLAIMABLE_BALANCE_LENGTH) {
+      // decodeClaimableBalanceId returns exactly the discriminant byte and the
+      // 32-byte hash, with the discriminant already held to V0.
+      final Uint8List decoded = StrKey.decodeClaimableBalanceId(
+        claimableBalanceId,
+      );
+      bId.v0 = XdrHash(
+        Uint8List.sublistView(
+          decoded,
+          StellarProtocolConstants.CLAIMABLE_BALANCE_DISCRIMINANT_BYTES,
+        ),
+      );
+      return bId;
     }
-    bId.v0 = Util.stringIdToXdrHash(id);
+
+    const int taggedHexLength =
+        (StellarProtocolConstants.CLAIMABLE_BALANCE_DISCRIMINANT_BYTES +
+            StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) *
+        2;
+    const int unionTaggedHexLength =
+        (StellarProtocolConstants.XDR_UNION_DISCRIMINANT_BYTES +
+            StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) *
+        2;
+    int? tag;
+    if (claimableBalanceId.length == taggedHexLength) {
+      tag = Util.hexToBytes(claimableBalanceId.toUpperCase())[0];
+    } else if (claimableBalanceId.length == unionTaggedHexLength) {
+      tag = ByteData.sublistView(
+        Util.hexToBytes(claimableBalanceId.toUpperCase()),
+      ).getUint32(0, Endian.big);
+    }
+    if (tag != null &&
+        tag != XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0.value) {
+      throw FormatException(
+        "Claimable balance id carries the discriminant $tag, "
+        "which names no claimable balance id type",
+      );
+    }
+
+    bId.v0 = Util.stringIdToXdrHash(claimableBalanceId);
     return bId;
   }
 

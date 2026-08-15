@@ -320,11 +320,51 @@ final class StellarProtocolConstants {
   static const int LIQUIDITY_POOL_FEE_V18 = 30;
 
   // ============================================================================
+  // XDR ENCODING CONSTANTS
+  // ============================================================================
+  // Constants describing the XDR wire format itself.
+  //
+  // Reference: RFC 4506 (XDR: External Data Representation Standard)
+
+  /// Length of the discriminant an XDR union carries in bytes.
+  ///
+  /// A union is written as a four-byte big-endian value naming the arm,
+  /// followed by that arm's value. Horizon renders a claimable balance id in
+  /// the same shape: the union discriminant, then the 32-byte hash.
+  ///
+  /// Reference: RFC 4506 section 4.15 (Discriminated Union)
+  static const int XDR_UNION_DISCRIMINANT_BYTES = 4;
+
+  // ============================================================================
+  // CLAIMABLE BALANCE CONSTANTS
+  // ============================================================================
+  // Constants related to claimable balances as defined in CAP-0023.
+  //
+  // Reference: CAP-0023 (Claimable Balance)
+
+  /// Length of the discriminant a claimable balance id carries in bytes.
+  ///
+  /// In its strkey rendering, a claimable balance id is a one-byte value naming
+  /// the type of the balance id followed by the 32-byte hash that identifies
+  /// the balance. The XDR union discriminates on a four-byte value instead.
+  ///
+  /// Reference: SEP-0023 https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md
+  static const int CLAIMABLE_BALANCE_DISCRIMINANT_BYTES = 1;
+
+  // ============================================================================
   // SIGNED PAYLOAD CONSTANTS
   // ============================================================================
   // Constants related to signed payloads as defined in CAP-0040.
   //
   // Reference: CAP-0040 (Signed Payload Signer)
+
+  /// Minimum length of a signed payload.
+  ///
+  /// The strkey form has no rendering for an empty payload, so a signed
+  /// payload carries at least one byte.
+  ///
+  /// Reference: SEP-0023 https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md
+  static const int SIGNED_PAYLOAD_MIN_LENGTH_BYTES = 1;
 
   /// Maximum length of a signed payload.
   ///
@@ -332,6 +372,23 @@ final class StellarProtocolConstants {
   ///
   /// Reference: CAP-0040
   static const int SIGNED_PAYLOAD_MAX_LENGTH_BYTES = 64;
+
+  /// Width the narrowest signed payload occupies once padded, in bytes.
+  ///
+  /// The payload is padded with NUL bytes up to a multiple of four, so a
+  /// payload of [SIGNED_PAYLOAD_MIN_LENGTH_BYTES] occupies four bytes and no
+  /// signed payload occupies fewer.
+  ///
+  /// Reference: CAP-0040
+  static const int SIGNED_PAYLOAD_MIN_PADDED_LENGTH_BYTES = 4;
+
+  /// Length of the payload length prefix in bytes.
+  ///
+  /// A signed payload carries its payload behind a big-endian unsigned 32-bit
+  /// length, which occupies 4 bytes and follows the signer key.
+  ///
+  /// Reference: CAP-0040
+  static const int SIGNED_PAYLOAD_LENGTH_PREFIX_BYTES = 4;
 
   // ============================================================================
   // STRING FORMATTING CONSTANTS

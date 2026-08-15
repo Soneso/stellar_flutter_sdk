@@ -176,6 +176,21 @@ void main() {
     expect(signerAccountId, keyPair.accountId);
   });
 
+  test('sep-23: Signed payload length bound on construction', () {
+    // Snippet from sep-23.md "Signed payloads (P...)"
+    KeyPair keyPair = KeyPair.random();
+
+    try {
+      SignedPayloadSigner.fromAccountId(keyPair.accountId, Uint8List(0));
+      fail('an empty payload has no strkey rendering');
+    } on Exception catch (e) {
+      expect(
+        e.toString(),
+        'Exception: invalid payload length, must be at least 1',
+      );
+    }
+  });
+
   test('sep-23: Liquidity pool and claimable balance IDs', () {
     // Snippet from sep-23.md "Liquidity pool and claimable balance IDs"
 
@@ -195,31 +210,53 @@ void main() {
     expect(balanceId, startsWith('B'));
     expect(StrKey.isValidClaimableBalanceId(balanceId), true);
     Uint8List decodedBalance = StrKey.decodeClaimableBalanceId(balanceId);
-    expect(decodedBalance.length, greaterThan(0));
+    // A one-byte discriminant followed by the 32-byte hash.
+    expect(decodedBalance.length, 33);
   });
 
-  test('sep-23: Error handling - validation', () {
-    // Snippet from sep-23.md "Error handling"
+  test('sep-23: Claimable balance encoding rejects a bad discriminant', () {
+    // Snippet from sep-23.md "Liquidity pool and claimable balance IDs"
+    Uint8List tagged = Uint8List(33);
+    tagged[0] = 1; // names no claimable balance ID type
 
-    // Invalid checksum or wrong version byte throws
+    try {
+      StrKey.encodeClaimableBalanceId(tagged);
+      fail('a discriminant of 1 names no claimable balance id type');
+    } on Exception catch (e) {
+      expect(
+        e.toString(),
+        'Exception: claimable balance id carries the discriminant 1, '
+        'which names no claimable balance id type',
+      );
+    }
+  });
+
+  test('sep-23: Error handling', () {
+    // Snippet from sep-23.md "Error handling"
+    try {
+      Uint8List raw = StrKey.decodeStellarAccountId('GINVALIDADDRESS');
+      fail('decoded ${raw.length} bytes from a 15 character string');
+    } on FormatException catch (e) {
+      expect(e.message, 'Encoded string must be 56 characters, got 15');
+    }
+  });
+
+  test('sep-23: Error handling - classifying with the isValid methods', () {
+    // Snippet from sep-23.md "Error handling"
+    String input =
+        'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ';
+
+    expect(StrKey.isValidStellarAccountId(input), false);
+    expect(StrKey.isValidStellarMuxedAccountId(input), true);
+
+    MuxedAccount muxed = MuxedAccount.fromAccountId(input)!;
     expect(
-      () => StrKey.decodeStellarAccountId('GINVALIDADDRESS...'),
-      throwsA(isA<Exception>()),
+      muxed.ed25519AccountId,
+      'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ',
     );
 
-    // Use validation to avoid exceptions
-    String input = 'user-provided-address';
-    expect(StrKey.isValidStellarAccountId(input), false);
-    expect(StrKey.isValidStellarMuxedAccountId(input), false);
-
-    // Valid account ID passes validation
-    KeyPair kp = KeyPair.random();
-    expect(StrKey.isValidStellarAccountId(kp.accountId), true);
-
-    // Valid muxed account passes validation
-    String validMuxedId =
-        'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ';
-    expect(StrKey.isValidStellarMuxedAccountId(validMuxedId), true);
+    // fromAccountId returns null for a string starting with neither G nor M.
+    expect(MuxedAccount.fromAccountId('user-provided-address'), isNull);
   });
 
   test('sep-23: StrKey validation methods', () {

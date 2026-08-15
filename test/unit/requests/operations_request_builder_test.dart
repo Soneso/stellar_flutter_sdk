@@ -195,14 +195,18 @@ void main() {
     });
 
     test('forClaimableBalance converts B strkey id to hex', () {
-      final cbHexId =
-          '000000000a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
-      final strKeyId = StrKey.encodeClaimableBalanceIdHex(cbHexId);
+      final cbHashHex =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
+      final strKeyId = StrKey.encodeClaimableBalanceIdHex(cbHashHex);
 
       final builder =
           OperationsRequestBuilder(http.Client(), serverUri).forClaimableBalance(strKeyId);
 
-      expect(builder.buildUri().path, contains('/claimable_balances/$cbHexId'));
+      expect(
+        builder.buildUri().path,
+        matches(
+            RegExp('/claimable_balances/00000000$cbHashHex/operations\$')),
+      );
     });
 
     test('forClaimableBalance throws on invalid B-prefixed id', () {
