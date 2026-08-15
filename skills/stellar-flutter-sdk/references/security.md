@@ -62,6 +62,92 @@ bool isValidSeed(String seed) {
 }
 ```
 
+### Strkey Decoding Is a Trust Boundary
+
+Every `StrKey.decode*` method throws a `FormatException` and nothing else, so one `catch` covers the whole codec. The checks run in a fixed order: the version byte must name a type the codec knows, the encoded string must be a length that type admits, the base32 body must re-encode to the string it came from, the leading decoded byte must be the expected version byte, the CRC-16 checksum must match the payload, the decoded payload is measured again as a backstop on the length check, and last the per-type framing rules for `P...` and `B...` apply.
+
+The length is checked before the string is base32-decoded. That bounds the work an oversized input can cause, and it makes an empty or one-character input an ordinary rejection rather than an index error.
+
+| Prefix | Encoded length | Payload |
+|--------|----------------|---------|
+| G, S, T, X, C, L | 56 | 32 bytes |
+| M | 69 | 40 bytes |
+| P | 69 to 165 | 40 to 100 bytes |
+| B | 58 | 33 bytes |
+
+The `isValid*` methods run the matching decoder and return false instead of throwing. Use them to classify untrusted input; use `decode*` where one type is expected and a rejection should stop the operation.
+
+### Signed Payloads Are Not Malleable
+
+A `P...` address holds a 32-byte signer key, the payload length as a 4-byte big-endian integer, and the payload padded with NUL bytes to a multiple of four. `decodeSignedPayload` and `decodeXdrSignedPayload` hold an address to exactly that shape: the declared length is 1 to 64, the decoded bytes total exactly 32 + 4 plus the padded payload, and the padding bytes are NUL. Anything else is a `FormatException`.
+
+Every accepted `P...` address re-encodes to the string it came from, so string equality on accepted addresses is equality on signers: allowlists and caches may compare them as strings.
+
+```dart
+try {
+  StrKey.decodeSignedPayload(untrustedAddress);
+} on FormatException catch (e) {
+  print(e.message);
+  // Decoded signed payload pads its payload with a byte that is not NUL
+}
+```
+
+`SignedPayloadSigner` applies the same length bound on construction, so an out-of-range payload fails before it is encoded:
+
+```dart
+import 'dart:typed_data';
+
+KeyPair keyPair = KeyPair.random();
+
+try {
+  SignedPayloadSigner.fromAccountId(keyPair.accountId, Uint8List(0));
+} on Exception catch (e) {
+  print(e); // Exception: invalid payload length, must be at least 1
+}
+```
+
+### Claimable Balance IDs Carry a Checked Discriminant
+
+A `B...` address is 33 bytes: a one-byte discriminant naming the balance ID type, then the 32-byte hash. `CLAIMABLE_BALANCE_ID_TYPE_V0` is the only type the protocol defines and its discriminant is zero. Both directions insist on it, so an address naming an undefined type cannot be read as a V0 balance pointing at a different entry.
+
+- `decodeClaimableBalanceId` throws a `FormatException` on any other discriminant, and returns all 33 bytes -- drop the first for the hash.
+- `encodeClaimableBalanceId` takes the bare 32-byte hash, which it prefixes with the discriminant, the 33-byte form, or the 36-byte XDR encoding Horizon reports, whose four-byte discriminant it verifies and strips. Any other width throws, as does a discriminant that names no balance ID type. The encode direction raises a plain `Exception` rather than a `FormatException`.
+- `XdrClaimableBalanceID.forId` applies the same rule to a B-address and to the hex rendering of the ID.
+
+```dart
+import 'dart:typed_data';
+
+Uint8List tagged = Uint8List(33);
+tagged[0] = 1; // names no claimable balance ID type
+
+try {
+  StrKey.encodeClaimableBalanceId(tagged);
+} on Exception catch (e) {
+  print(e);
+  // Exception: claimable balance id carries the discriminant 1,
+  // which names no claimable balance id type
+}
+```
+
+### Raw Key Material
+
+`KeyPair.fromPublicKey` and `KeyPair.fromSecretSeedList` take raw bytes and reject anything that is not 32 bytes with an `ArgumentError`, so truncated or padded key material cannot reach the signing code.
+
+`ArgumentError` is an `Error`, not an `Exception`, so `on Exception catch` does not catch it. Check the width before the call, or catch `ArgumentError` explicitly.
+
+```dart
+import 'dart:typed_data';
+
+KeyPair? readVerifier(Uint8List publicKeyBytes) {
+  try {
+    return KeyPair.fromPublicKey(publicKeyBytes);
+  } on ArgumentError catch (e) {
+    print(e); // Invalid argument(s): Public key must be 32 bytes, got 31
+    return null;
+  }
+}
+```
+
 ### Asset Code Validation
 
 ```dart
@@ -257,7 +343,8 @@ The SDK uses pure Dart cryptographic libraries (`pointycastle`, `pinenacl`) with
 
 - [ ] Secret keys loaded from platform secure storage, never hardcoded
 - [ ] Secret keys cleared from memory after use
-- [ ] All user-supplied addresses validated with `StrKey` methods
+- [ ] All user-supplied addresses validated with `StrKey` methods, with `FormatException` handled where `decode*` is called directly
+- [ ] Raw key bytes length-checked before `KeyPair.fromPublicKey` / `KeyPair.fromSecretSeedList`, or `ArgumentError` caught
 - [ ] Asset codes validated (1-12 alphanumeric characters)
 - [ ] Amounts validated as positive decimals with at most 7 decimal places
 - [ ] All transactions inspected before signing (source, operations, fee)

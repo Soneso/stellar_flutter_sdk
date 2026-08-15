@@ -11,6 +11,7 @@ See the [SEP-23 specification](https://github.com/stellar/stellar-protocol/blob/
 This example demonstrates the most common strkey operations: generating a keypair, validating addresses, and converting between formats.
 
 ```dart
+import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 // Generate a keypair
@@ -32,6 +33,7 @@ String encoded = StrKey.encodeStellarAccountId(rawPublicKey);
 Account IDs (G...) are public keys that identify accounts on the network. Secret seeds (S...) are private keys used for signing transactions — never share these publicly.
 
 ```dart
+import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 // Use a keypair with a known seed
@@ -155,6 +157,7 @@ transaction.sign(senderKeyPair, Network.TESTNET);
 For direct manipulation of muxed account binary data, use the StrKey class methods.
 
 ```dart
+import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 String muxedAccountId =
@@ -176,6 +179,7 @@ Pre-auth transaction hashes (T...) authorize specific transactions in advance. S
 
 ```dart
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 // Pre-auth TX (T...)
@@ -203,6 +207,7 @@ Uint8List decodedHash = StrKey.decodeSha256Hash(hashSigner);
 Soroban smart contracts are identified by C-addresses. These encode the 32-byte contract hash.
 
 ```dart
+import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 // Encode a 32-byte hash as a contract ID
@@ -226,10 +231,11 @@ String encodedFromHex = StrKey.encodeContractIdHex(hex);
 Signed payloads (defined in [CAP-40](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md)) combine a public key with arbitrary payload data. They're used for delegated signing scenarios where a signature covers both the transaction and additional application-specific data.
 
 ```dart
+import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 KeyPair keyPair = KeyPair.random();
-Uint8List payload = Uint8List(32); // 4-64 bytes of application data
+Uint8List payload = Uint8List(32); // 1 to 64 bytes of application data
 
 SignedPayloadSigner signer = SignedPayloadSigner.fromAccountId(
   keyPair.accountId,
@@ -244,11 +250,35 @@ String signerAccountId = KeyPair.fromXdrPublicKey(
 print(signerAccountId);
 ```
 
+Behind a P-address sit three fields: the 32-byte signer key, the payload length as a 4-byte big-endian integer, and the payload padded with NUL bytes up to a multiple of four. `decodeSignedPayload` and `decodeXdrSignedPayload` hold an address to exactly that shape:
+
+- The declared length is 1 to 64 bytes. `opaque payload<64>` sets the ceiling, and an empty payload has no P-address the ecosystem reads back.
+- The decoded bytes total exactly 32 + 4 plus the padded payload, so nothing rides along behind it.
+- The padding bytes are NUL.
+
+An address that breaks any of those throws a `FormatException`.
+
+`SignedPayloadSigner` applies the same length bound when you build one, so an out-of-range payload fails before you encode it:
+
+```dart
+import 'dart:typed_data';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+KeyPair keyPair = KeyPair.random();
+
+try {
+  SignedPayloadSigner.fromAccountId(keyPair.accountId, Uint8List(0));
+} on Exception catch (e) {
+  print(e); // Exception: invalid payload length, must be at least 1
+}
+```
+
 ## Liquidity pool and claimable balance IDs
 
 Pool IDs (L...) identify AMM liquidity pools. Claimable balance IDs (B...) reference claimable balance entries. Both support hex encoding for interoperability with APIs.
 
 ```dart
+import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 // Liquidity pool ID (L...)
@@ -266,65 +296,97 @@ StrKey.isValidClaimableBalanceId(balanceId); // true
 Uint8List decodedBalance = StrKey.decodeClaimableBalanceId(balanceId);
 ```
 
-## Version bytes reference
+A pool ID carries the bare 32-byte hash. A claimable balance ID carries 33 bytes: a one-byte discriminant naming the balance ID type, then the 32-byte hash. `CLAIMABLE_BALANCE_ID_TYPE_V0` is the only type the protocol defines, its discriminant is zero, and both directions insist on it.
 
-Each strkey type has a unique version byte that determines its prefix character:
-
-| Prefix | Type | Description |
-|--------|------|-------------|
-| G | Account ID | Ed25519 public key |
-| S | Secret Seed | Ed25519 private key |
-| M | Muxed Account | Account ID + 64-bit ID |
-| T | Pre-Auth TX | Pre-authorized transaction hash |
-| X | SHA-256 Hash | Hash signer |
-| P | Signed Payload | Public key + payload |
-| C | Contract ID | Soroban smart contract |
-| L | Liquidity Pool ID | AMM liquidity pool |
-| B | Claimable Balance | Claimable balance entry |
-
-## Error handling
-
-Invalid addresses throw exceptions. Use validation methods to check addresses before decoding to avoid exceptions in user-facing code.
+`decodeClaimableBalanceId` throws a `FormatException` on any other discriminant, and returns all 33 bytes: drop the first for the hash. `encodeClaimableBalanceId` takes the bare 32-byte hash, which it prefixes with the discriminant for you, the 33-byte form, or the 36-byte XDR encoding Horizon reports, whose four-byte union discriminant it verifies and strips. Any other width throws, as does a discriminant that names no balance ID type. The encode direction raises a plain `Exception` rather than a `FormatException`, so catch `Exception` around it:
 
 ```dart
+import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-// Invalid checksum or wrong version byte throws
-try {
-  StrKey.decodeStellarAccountId('GINVALIDADDRESS...');
-} catch (e) {
-  print('Invalid: $e');
-}
+Uint8List tagged = Uint8List(33);
+tagged[0] = 1; // names no claimable balance ID type
 
-// Use validation to avoid exceptions
-String input = 'user-provided-address';
-if (StrKey.isValidStellarAccountId(input)) {
-  Uint8List raw = StrKey.decodeStellarAccountId(input);
-} else if (StrKey.isValidStellarMuxedAccountId(input)) {
-  MuxedAccount? muxed = MuxedAccount.fromAccountId(input);
-  Uint8List raw = StrKey.decodeStellarAccountId(muxed!.ed25519AccountId);
-} else {
-  print('Invalid address format');
-}
-
-// MuxedAccount validates on construction
 try {
-  // Must start with G (Ed25519 account ID)
-  MuxedAccount muxed = MuxedAccount('INVALID', BigInt.from(123));
-} catch (e) {
-  print('Invalid: $e');
+  StrKey.encodeClaimableBalanceId(tagged);
+} on Exception catch (e) {
+  print(e);
+  // Exception: claimable balance id carries the discriminant 1,
+  // which names no claimable balance id type
 }
 ```
 
+`XdrClaimableBalanceID.forId` reads the same rule. It takes a B-address or the hex rendering of the ID, and rejects a non-zero discriminant in either.
+
+## Version bytes reference
+
+Each strkey type has a unique version byte that determines its prefix character. Every type admits a fixed encoded length and payload width except `P`, which admits a range, and the decoder holds an address to both: it measures the string before decoding it, and the payload again after the checksum.
+
+| Prefix | Type | Description | Encoded length | Payload |
+|--------|------|-------------|----------------|---------|
+| G | Account ID | Ed25519 public key | 56 | 32 bytes |
+| S | Secret Seed | Ed25519 private key | 56 | 32 bytes |
+| M | Muxed Account | Account ID + 64-bit ID | 69 | 40 bytes |
+| T | Pre-Auth TX | Pre-authorized transaction hash | 56 | 32 bytes |
+| X | SHA-256 Hash | Hash signer | 56 | 32 bytes |
+| P | Signed Payload | Public key + payload | 69 to 165 | 40 to 100 bytes |
+| C | Contract ID | Soroban smart contract | 56 | 32 bytes |
+| L | Liquidity Pool ID | AMM liquidity pool | 56 | 32 bytes |
+| B | Claimable Balance | Claimable balance entry | 58 | 33 bytes |
+
+P is the only type with a range. Its payload is the 32-byte signer key, the 4-byte length prefix, and 1 to 64 payload bytes padded to a multiple of four.
+
+## Error handling
+
+Every `decode*` method throws a `FormatException` when the address does not hold up, so that is the only type to catch. The `encode*` methods raise a plain `Exception` for a payload of a width their type does not admit. The decoder rejects, in order: a version byte it does not know, an encoded length that is wrong for the type, a base32 body that does not re-encode to the string it came from, a version byte belonging to a different type, a bad CRC-16 checksum, a decoded payload of the wrong width as a backstop on the length check, and last the per-type framing rules for `P...` and `B...`.
+
+Because the length comes first, an empty string or a single character is a length failure like any other. Short input needs no special case.
+
+```dart
+import 'dart:typed_data';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+try {
+  Uint8List raw = StrKey.decodeStellarAccountId('GINVALIDADDRESS');
+  print('Decoded ${raw.length} bytes');
+} on FormatException catch (e) {
+  print(e.message); // Encoded string must be 56 characters, got 15
+}
+```
+
+The `isValid*` methods run the matching decoder and return false instead of throwing. Reach for them when you are classifying input rather than handling one expected type.
+
+```dart
+import 'dart:typed_data';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+String input =
+    'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUQ';
+
+if (StrKey.isValidStellarAccountId(input)) {
+  Uint8List raw = StrKey.decodeStellarAccountId(input);
+  print('Account ID carrying ${raw.length} bytes');
+} else if (StrKey.isValidStellarMuxedAccountId(input)) {
+  MuxedAccount muxed = MuxedAccount.fromAccountId(input)!;
+  print('Muxed account over ${muxed.ed25519AccountId}');
+} else {
+  print('Not an address this SDK reads');
+}
+```
+
+`MuxedAccount.fromAccountId` returns null for a string that starts with neither G nor M, and throws the decoder's `FormatException` for an M-address that does not hold up.
+
 ### Common validation errors
 
-The SEP-23 spec defines several invalid strkey cases that implementations must reject:
+The SEP-23 spec defines several invalid strkey cases that implementations must reject. All of them arrive as `FormatException`:
 
-- **Invalid length**: Strkey length must match the expected format
-- **Invalid checksum**: The CRC-16 checksum at the end must be valid
-- **Wrong version byte**: The first character must match the expected type
-- **Invalid base32 characters**: Only A-Z and 2-7 are valid
-- **Invalid padding**: Strkeys must not contain `=` padding characters
+- **Invalid length**: the encoded string must be a length its type admits, and the decoded payload the matching width (see the table above)
+- **Invalid checksum**: the CRC-16 checksum at the end must match the payload
+- **Wrong version byte**: the first character must match the expected type
+- **Invalid base32 characters**: only A-Z and 2-7 are valid
+- **Invalid padding**: strkeys must not contain `=` padding characters
+- **Malformed signed payload**: a `P...` address must declare 1 to 64 payload bytes, be exactly as wide as that payload needs, and pad with NUL
+- **Unknown claimable balance discriminant**: a `B...` address must lead with the `CLAIMABLE_BALANCE_ID_TYPE_V0` discriminant
 
 ## Related specifications
 

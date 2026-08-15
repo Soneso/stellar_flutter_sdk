@@ -451,7 +451,7 @@ For the full error catalog and solutions:
 
 ## 10. Security Best Practices
 
-Covers secret key management (use `flutter_secure_storage` on mobile, environment variables on server, never store client-side on web), transaction verification before signing (inspect operations, validate fees), network passphrase validation, account ID validation via `StrKey`, and amount precision checks (max 7 decimal places).
+Covers secret key management (use `flutter_secure_storage` on mobile, environment variables on server, never store client-side on web), transaction verification before signing (inspect operations, validate fees), network passphrase validation, address validation via `StrKey` (decoding is strict on length, checksum and per-type framing, and every rejection is a `FormatException`), and amount precision checks (max 7 decimal places).
 
 For complete security patterns and platform-specific key storage:
 [Security Guide](./references/security.md)

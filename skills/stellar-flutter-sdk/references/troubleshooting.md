@@ -15,6 +15,10 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 | `ErrorResponse` | Horizon HTTP errors (4xx/5xx) | `code` (int), `body` (String) |
 | `TooManyRequestsException` | HTTP 429 rate limiting | `retryAfter` (int?, seconds) |
 | `SubmitTransactionTimeoutResponseException` | HTTP 504 on tx submit | `type`, `title`, `status`, `detail` |
+| `FormatException` | Strkey decoding, XDR-JSON decoding | `message` (String) |
+| `ArgumentError` | Raw key material of the wrong width | `message` (Object?) |
+
+`ArgumentError` extends `Error`, not `Exception`, so `on Exception catch` does not catch it. See [Address and Key Decoding Errors](#address-and-key-decoding-errors).
 
 Soroban RPC errors use a different pattern -- all responses extend `SorobanRpcResponse` which has an `error` field of type `SorobanRpcErrorResponse?` and a computed `isErrorResponse` getter.
 
@@ -216,6 +220,83 @@ Future<AccountResponse> fetchWithRetry(
 
 ---
 
+## Address and Key Decoding Errors
+
+`StrKey.decode*` reports every rejection as a `FormatException`, so one `catch` covers the decoding side of the codec. The message names the check that failed. The encode direction is different: the `encode*` methods and the `SignedPayloadSigner` constructor raise a plain `Exception`, for a payload of a width the type does not admit or a discriminant that names no type.
+
+```dart
+import 'dart:typed_data';
+
+try {
+  Uint8List raw = StrKey.decodeStellarAccountId(userInput);
+  print('${raw.length} bytes'); // 32 bytes
+} on FormatException catch (e) {
+  print(e.message); // Encoded string must be 56 characters, got 15
+}
+```
+
+### FormatException messages
+
+Checks run in this order, so the first failing one is the message you get.
+
+| Message | Cause |
+|---------|-------|
+| `Unrecognized version byte 99` | The `VersionByte` names no strkey type. Only reachable through `decodeCheck` or `encodeCheck` called with a hand-built `VersionByte`; the named `decode*` and `encode*` methods always pass a known one. |
+| `Encoded string must be 56 characters, got 15` | The string length is outside the range the type admits. Checked before base32 decoding, so an empty or one-character input lands here rather than in an index error. |
+| `Invalid encoded string` | The string is not the base32 rendering of the bytes it decodes to: a character outside `A-Z` and `2-7`, an `=` padding character, or trailing bits that do not round-trip. |
+| `Version byte is invalid` | The address belongs to another strkey type, for example a `G...` passed to `decodeSha256Hash`. |
+| `Checksum invalid` | The trailing CRC-16 does not match the payload. A typo or a truncated copy of an otherwise well-formed address. |
+| `Decoded signed payload carries an empty payload, which has no strkey rendering` | A `P...` address declaring a payload length of 0. |
+| `Decoded signed payload carries a 65536-byte payload, more than the declared maximum of 64` | A `P...` address declaring more than 64 payload bytes. |
+| `Decoded signed payload is 40 bytes, but a 5-byte payload occupies 44` | A `P...` address whose total width disagrees with the length it declares. |
+| `Decoded signed payload pads its payload with a byte that is not NUL` | A `P...` address padded with something other than NUL. |
+| `Decoded claimable balance id carries the discriminant 1, which names no claimable balance id type` | A `B...` address leading with a discriminant other than `CLAIMABLE_BALANCE_ID_TYPE_V0`, whose value is zero. |
+
+A `Decoded payload must be ... bytes, got ...` message backs the encoded-length check after the checksum. It cannot be reached through the public `decode*` methods, because the length check already fixes the payload width.
+
+Decoding a strkey from XDR-JSON restates the codec's message inside the XDR-JSON contract, keeping the wording:
+
+```dart
+// XDR-JSON XdrClaimableBalanceID holds a malformed strkey:
+// "BAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA..."
+// (Decoded claimable balance id carries the discriminant 1, which names no
+// claimable balance id type)
+```
+
+### Errors that are not FormatException
+
+The encoding direction and the raw-byte constructors report their own types. Message text is shown as stored; `print(e)` prefixes it with `Exception:` or `Invalid argument(s):`.
+
+| Type | Message | Source |
+|------|---------|--------|
+| `ArgumentError` | `Public key must be 32 bytes, got 31` | `KeyPair.fromPublicKey` |
+| `ArgumentError` | `Secret seed must be 32 bytes, got 31` | `KeyPair.fromSecretSeedList` |
+| `Exception` | `invalid payload length, must be at least 1` | `SignedPayloadSigner` with an empty payload |
+| `Exception` | `invalid payload length, must be at most 64` | `SignedPayloadSigner` with more than 64 bytes |
+| `Exception` | `Payload must be 32 bytes, got 31` | any `encode*` method with a payload of a width its type does not admit |
+| `Exception` | `claimable balance id must be 32 bytes (the hash), 33 bytes (the hash behind its discriminant), or 36 bytes (its XDR encoding), got 34` | `encodeClaimableBalanceId` with any other width |
+| `Exception` | `claimable balance id carries the discriminant 1, which names no claimable balance id type` | `encodeClaimableBalanceId` with a 33-byte value whose first byte is not zero |
+| `Exception` | `claimable balance id carries an XDR discriminant that names no claimable balance id type` | `encodeClaimableBalanceId` with a 36-byte value not opening with four zero bytes |
+
+`ArgumentError` is an `Error`, so `on Exception catch` will not catch the two `KeyPair` cases. Catch `ArgumentError`, or check the width before the call.
+
+```dart
+import 'dart:typed_data';
+
+try {
+  KeyPair signer = KeyPair.fromSecretSeedList(seedBytes);
+  transaction.sign(signer, Network.TESTNET);
+} on ArgumentError catch (e) {
+  print(e); // Invalid argument(s): Secret seed must be 32 bytes, got 31
+}
+```
+
+### Choosing between decode and isValid
+
+The `isValid*` methods run the matching decoder and return false instead of throwing, so they classify input without a `try`. They tell you nothing about why a value failed. When one type is expected, call `decode*` and read the message.
+
+---
+
 ## Soroban RPC Error Handling
 
 Soroban uses `SorobanServer` with JSON-RPC. Errors appear at two levels: RPC-level errors (on the `SorobanRpcResponse.error` field) and application-level errors (like `SimulateTransactionResponse.resultError`).
@@ -347,6 +428,10 @@ transaction.addResourceFee(bufferedFee);
 **XLM reserve requirements:** Every subentry (trustline, offer, data entry, signer) requires 0.5 XLM base reserve. Creating entries without sufficient XLM fails with `op_low_reserve`.
 
 **Forgetting to apply simulation data:** After simulating a Soroban transaction, you must call `sorobanTransactionData =`, `addResourceFee()`, and `setSorobanAuth()` on the transaction before signing and submitting.
+
+**Catching only `Exception` around key construction:** `KeyPair.fromPublicKey` and `KeyPair.fromSecretSeedList` throw `ArgumentError` for a key that is not 32 bytes. `ArgumentError` is an `Error`, so an `on Exception catch` around the call lets it escape.
+
+**Treating a decoded claimable balance ID as 32 bytes:** `decodeClaimableBalanceId` returns 33 bytes -- the discriminant, then the hash. Drop the first byte before comparing against a hash from another source.
 
 ---
 
