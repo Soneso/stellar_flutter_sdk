@@ -1295,7 +1295,8 @@ Page<TransactionResponse> txPage = await sdk.transactions
 
 // Transactions affecting a claimable balance
 Page<TransactionResponse> txPage = await sdk.transactions
-    .forClaimableBalance("00000000abc...")
+    .forClaimableBalance(
+        "00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be")
     .execute();
 
 // Transactions affecting a liquidity pool
