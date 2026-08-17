@@ -2,8 +2,6 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-import 'package:stellar_flutter_sdk/src/key_pair.dart';
-
 import 'operation.dart';
 import 'util.dart';
 import 'xdr/xdr.dart';
@@ -115,17 +113,19 @@ class LiquidityPoolDepositOperation extends Operation {
   /// Converts this operation to its XDR representation.
   ///
   /// Returns: XDR operation body for the liquidity pool deposit.
+  ///
+  /// Throws:
+  /// - [ArgumentError]: if [liquidityPoolId] is neither a liquidity pool
+  ///   strkey (L...) nor the hex of a 32 byte pool hash
   @override
   XdrOperationBody toOperationBody() {
-    var id = liquidityPoolId;
-    if (id.startsWith("L")) {
-      try {
-        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(liquidityPoolId));
-      } catch (_) {
-        throw ArgumentError("invalid liquidity pool id: $liquidityPoolId");
-      }
+    final XdrHash xLiquidityPoolID;
+    try {
+      xLiquidityPoolID = Util.liquidityPoolIdToXdrHash(liquidityPoolId);
+    } on FormatException catch (e) {
+      throw ArgumentError(
+          "invalid liquidity pool id: $liquidityPoolId (${e.message})");
     }
-    XdrHash xLiquidityPoolID = Util.stringIdToXdrHash(id);
     var amountA = XdrInt64(Util.decimalStringToStroops(this.maxAmountA));
     var amountB = XdrInt64(Util.decimalStringToStroops(this.maxAmountB));
     XdrPrice xMinPrice = Price.fromString(minPrice).toXdr();

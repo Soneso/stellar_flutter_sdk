@@ -460,7 +460,7 @@ class StrKey {
   /// Checks if the given [strKeyContractId] is a valid soroban contract id.
   /// Must start with "C". The name carries the hex rendering that
   /// [decodeContractIdHex] returns; the id it accepts is the same strkey
-  /// [isValidContractId] accepts, and the two agree for every input.
+  /// [isValidContractId] accepts.
   static bool isValidContractIdHex(String strKeyContractId) {
     return isValidContractId(strKeyContractId);
   }
@@ -470,6 +470,20 @@ class StrKey {
   static String decodeContractIdHex(String strKeyContractId) {
     return Util.bytesToHex(
         decodeCheck(VersionByte.CONTRACT_ID, strKeyContractId));
+  }
+
+  /// Describes how the [discriminant] a claimable balance id leads with names
+  /// no balance id type, or returns null when it names one.
+  ///
+  /// The description names the violation and is worded to follow the value it
+  /// is reported about, so a caller supplies its own subject.
+  static String? _claimableBalanceDiscriminantViolation(int discriminant) {
+    if (discriminant ==
+        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0.value) {
+      return null;
+    }
+    return 'carries the discriminant $discriminant, which names no '
+        'claimable balance id type';
   }
 
   /// Encodes raw [data] to strkey claimable balance (B...).
@@ -519,10 +533,12 @@ class StrKey {
           "or $xdrWidth bytes (its XDR encoding), "
           "got ${data.length}");
     }
-    if (data[0] !=
-        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0.value) {
-      throw new Exception("claimable balance id carries the discriminant "
-          "${data[0]}, which names no claimable balance id type");
+    // Fires ahead of encodeCheck's copy of this rule on purpose: this arm's
+    // message and plain-Exception type are pinned by tests.
+    final String? discriminant =
+        _claimableBalanceDiscriminantViolation(data[0]);
+    if (discriminant != null) {
+      throw new Exception("claimable balance id $discriminant");
     }
     return encodeCheck(VersionByte.CLAIMABLE_BALANCE, data);
   }
@@ -578,7 +594,10 @@ class StrKey {
   /// This is the core encoding method used by all strkey encoding functions.
   /// It verifies that [data] is a width the type of [versionByte] admits,
   /// prepends the version byte, calculates a CRC16 checksum, and encodes
-  /// the result using Base32.
+  /// the result using Base32. For a signed payload (P...) it also verifies the
+  /// framing of that payload, and for a claimable balance (B...) the
+  /// discriminant the payload leads with, so every address this encoder mints
+  /// is one [decodeCheck] reads back.
   ///
   /// Parameters:
   /// - [versionByte]: The version byte identifying the address type
@@ -588,7 +607,9 @@ class StrKey {
   ///
   /// Throws:
   /// - [FormatException]: if [versionByte] names no strkey type this codec
-  ///   knows
+  ///   knows, if a signed payload disagrees with the framing
+  ///   [signedPayloadFramingViolation] describes, or if a claimable balance id
+  ///   carries a discriminant that names no balance id type
   /// - [Exception]: if [data] is not a width the type admits
   ///
   /// Example:
@@ -608,6 +629,23 @@ class StrKey {
     if (data.length < lengths.payloadMin || data.length > lengths.payloadMax) {
       throw new Exception("Payload must be ${lengths.payloadRange} bytes, "
           "got ${data.length}");
+    }
+
+    if (versionByte.getValue() ==
+        StellarProtocolConstants.VERSION_BYTE_SIGNED_PAYLOAD) {
+      final String? framing = signedPayloadFramingViolation(data);
+      if (framing != null) {
+        throw new FormatException("Signed payload $framing");
+      }
+    }
+
+    if (versionByte.getValue() ==
+        StellarProtocolConstants.VERSION_BYTE_CLAIMABLE_BALANCE) {
+      final String? discriminant =
+          _claimableBalanceDiscriminantViolation(data[0]);
+      if (discriminant != null) {
+        throw new FormatException("Claimable balance id $discriminant");
+      }
     }
 
     List<int> output = [];
@@ -717,11 +755,12 @@ class StrKey {
     }
 
     if (versionByte.getValue() ==
-            StellarProtocolConstants.VERSION_BYTE_CLAIMABLE_BALANCE &&
-        data[0] !=
-            XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0.value) {
-      throw new FormatException("Decoded claimable balance id carries the "
-          "discriminant ${data[0]}, which names no claimable balance id type");
+        StellarProtocolConstants.VERSION_BYTE_CLAIMABLE_BALANCE) {
+      final String? discriminant =
+          _claimableBalanceDiscriminantViolation(data[0]);
+      if (discriminant != null) {
+        throw new FormatException("Decoded claimable balance id $discriminant");
+      }
     }
 
     return data;
@@ -1234,15 +1273,30 @@ class SignedPayloadSigner {
 
   /// Creates a signed payload signer from an account ID.
   ///
+  /// A signed payload signer names the ed25519 key that signs, so [accountId]
+  /// is an account id (G...). A muxed account id (M...) names a subaccount of
+  /// one rather than a key, and is refused rather than read as the key it
+  /// multiplexes.
+  ///
   /// Parameters:
   /// - [accountId] The Stellar account ID (G... format)
   /// - [payload] Binary payload data to be signed
   ///
   /// Returns: SignedPayloadSigner instance
+  ///
+  /// Throws:
+  /// - [ArgumentError]: if [accountId] is a muxed account id
+  /// - [FormatException]: if [accountId] is not an account id this codec reads
+  /// - [Exception]: if [payload] is not a width a signed payload carries
   static SignedPayloadSigner fromAccountId(
       String accountId, Uint8List payload) {
-    XdrAccountID accId =
-        XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
+    if (accountId.startsWith('M')) {
+      throw ArgumentError("A signed payload signer takes an ed25519 account id "
+          "(G...), not a muxed account id (M...)");
+    }
+    XdrAccountID accId = XdrAccountID(
+        KeyPair.fromPublicKey(StrKey.decodeStellarAccountId(accountId))
+            .xdrPublicKey);
     return SignedPayloadSigner(accId, payload);
   }
 

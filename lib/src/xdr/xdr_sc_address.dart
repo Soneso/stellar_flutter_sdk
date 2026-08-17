@@ -4,6 +4,7 @@
 
 import 'dart:typed_data';
 
+import 'package:stellar_flutter_sdk/src/constants/stellar_protocol_constants.dart';
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'package:stellar_flutter_sdk/src/util.dart';
 
@@ -11,7 +12,6 @@ import 'xdr_account_id.dart';
 import 'xdr_claimable_balance_id.dart';
 import 'xdr_data_io.dart';
 import 'xdr_json_helper.dart';
-import 'xdr_hash.dart';
 import 'xdr_muxed_account_med25519.dart';
 import 'xdr_sc_address_base.dart';
 import 'xdr_sc_address_type.dart';
@@ -61,15 +61,25 @@ class XdrSCAddress extends XdrSCAddressBase {
     }
   }
 
+  /// Builds a contract address from [contractId], given either as the strkey
+  /// rendering of the id (C...) or as the hex of its 32 byte hash.
+  ///
+  /// Throws:
+  /// - [FormatException]: if a strkey is not one this codec accepts, or if a
+  ///   hex rendering is not hexadecimal or renders a byte count other than 32
   static XdrSCAddress forContractId(String contractId) {
     XdrSCAddress result = XdrSCAddress(
       XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT,
     );
     var contractIdHex = contractId;
-    if (contractId.startsWith('C')) {
+    // 'C' is a hexadecimal digit, so only a string of the strkey's exact
+    // length reads as one; a 64-character hex id may lead with 'C' too.
+    if (contractId.startsWith('C') &&
+        contractId.length ==
+            StellarProtocolConstants.STRKEY_CONTRACT_ID_LENGTH) {
       contractIdHex = StrKey.decodeContractIdHex(contractIdHex);
     }
-    result.contractId = XdrHash(Util.hexToBytes(contractIdHex));
+    result.contractId = Util.hexIdToXdrHash(contractIdHex, "Contract id");
     return result;
   }
 
@@ -81,16 +91,17 @@ class XdrSCAddress extends XdrSCAddressBase {
     return result;
   }
 
+  /// Builds a liquidity pool address from [liquidityPoolId], given either as
+  /// the strkey rendering of the id (L...) or as the hex of its 32 byte hash.
+  ///
+  /// Throws:
+  /// - [FormatException]: if a strkey is not one this codec accepts, or if a
+  ///   hex rendering is not hexadecimal or renders a byte count other than 32
   static XdrSCAddress forLiquidityPoolId(String liquidityPoolId) {
     XdrSCAddress result = XdrSCAddress(
       XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL,
     );
-    var id = liquidityPoolId;
-    if (id.startsWith("L")) {
-      id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(liquidityPoolId));
-    }
-
-    result.liquidityPoolId = XdrHash(Util.hexToBytes(id));
+    result.liquidityPoolId = Util.liquidityPoolIdToXdrHash(liquidityPoolId);
     return result;
   }
 

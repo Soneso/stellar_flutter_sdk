@@ -689,7 +689,10 @@ void main() {
 
       final restored = Address.fromXdr(xdr);
       expect(restored.type, equals(Address.TYPE_CLAIMABLE_BALANCE));
-      expect(restored.claimableBalanceId, isNotNull);
+      // fromXdr reports the id in the spelling Horizon serves: the four byte
+      // type discriminant ahead of the hash, 72 characters of hex. That is the
+      // spelling this address was built from, so the id round-trips unchanged.
+      expect(restored.claimableBalanceId, equals(balanceId));
     });
 
     test('liquidity pool address toXdr and fromXdr', () {
@@ -703,7 +706,7 @@ void main() {
 
       final restored = Address.fromXdr(xdr);
       expect(restored.type, equals(Address.TYPE_LIQUIDITY_POOL));
-      expect(restored.liquidityPoolId, isNotNull);
+      expect(restored.liquidityPoolId, equals(poolId));
     });
 
     test('muxed account address toXdr handles conversion', () {

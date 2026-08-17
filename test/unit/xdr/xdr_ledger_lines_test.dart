@@ -2,6 +2,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'dart:typed_data';
 
+/// Hex of the 32 byte hash the claimable balance id cases are built over.
+const _balanceHashHex =
+    'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
+
+/// Hex of the 32 byte hash the liquidity pool id cases are built over.
+const _poolHashHex =
+    'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
+
 void main() {
   group('XdrLedgerEntryChangeType', () {
     test('constructor and toString', () {
@@ -93,46 +101,37 @@ void main() {
     });
 
     test('forId with hex string', () {
-      final id = XdrClaimableBalanceID.forId(
-          '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be');
+      final id = XdrClaimableBalanceID.forId('00000000$_balanceHashHex');
       expect(id.discriminant,
           XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
-      expect(id.v0, isNotNull);
+      expect(Util.bytesToHex(id.v0!.hash), _balanceHashHex);
     });
 
     test('forId with B prefix', () {
-      final hashHex =
-          'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
-      final bId = StrKey.encodeClaimableBalanceIdHex(hashHex);
+      final bId = StrKey.encodeClaimableBalanceIdHex(_balanceHashHex);
       final id = XdrClaimableBalanceID.forId(bId);
       expect(id.v0, isNotNull);
-      expect(Util.bytesToHex(id.v0!.hash), hashHex);
+      expect(Util.bytesToHex(id.v0!.hash), _balanceHashHex);
     });
 
     test('forId with a hex id carrying its four byte discriminant', () {
-      final hashHex =
-          'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
-      final id = XdrClaimableBalanceID.forId('00000000$hashHex');
+      final id = XdrClaimableBalanceID.forId('00000000$_balanceHashHex');
       expect(id.v0, isNotNull);
-      expect(Util.bytesToHex(id.v0!.hash), hashHex);
+      expect(Util.bytesToHex(id.v0!.hash), _balanceHashHex);
     });
 
     test('forId with a hex id carrying its one byte discriminant', () {
-      final hashHex =
-          'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
-      final id = XdrClaimableBalanceID.forId('00$hashHex');
+      final id = XdrClaimableBalanceID.forId('00$_balanceHashHex');
       expect(id.discriminant,
           XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
-      expect(Util.bytesToHex(id.v0!.hash), hashHex);
+      expect(Util.bytesToHex(id.v0!.hash), _balanceHashHex);
     });
 
     test('forId with a bare hex hash', () {
-      final hashHex =
-          'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
-      final id = XdrClaimableBalanceID.forId(hashHex);
+      final id = XdrClaimableBalanceID.forId(_balanceHashHex);
       expect(id.discriminant,
           XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
-      expect(Util.bytesToHex(id.v0!.hash), hashHex);
+      expect(Util.bytesToHex(id.v0!.hash), _balanceHashHex);
     });
 
     test('forId refuses a hex id whose discriminant names no type', () {
@@ -140,10 +139,10 @@ void main() {
       // of the strkey form and the four-byte XDR union discriminant Horizon
       // writes. A non-zero value in either names no type the protocol defines,
       // and must not be dropped to leave a V0 id over the same hash.
-      final hashHex =
-          'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
-
-      for (final taggedHex in <String>['01$hashHex', '00000001$hashHex']) {
+      for (final taggedHex in <String>[
+        '01$_balanceHashHex',
+        '00000001$_balanceHashHex'
+      ]) {
         XdrClaimableBalanceID? built;
         expect(
             () => built = XdrClaimableBalanceID.forId(taggedHex),
@@ -161,8 +160,8 @@ void main() {
       // count holds the message to reporting the actual width.
       for (final id in <String>[
         'dead',
-        'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5',
-        '0000000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be',
+        _balanceHashHex.substring(0, _balanceHashHex.length - 2),
+        '0000000000$_balanceHashHex',
       ]) {
         expect(
             () => XdrClaimableBalanceID.forId(id),
@@ -172,23 +171,42 @@ void main() {
       }
 
       // 58 characters is the strkey width, so that case names the strkey rule.
-      expect(
-          () => XdrClaimableBalanceID.forId('a' * 58),
-          throwsA(isA<FormatException>().having((e) => e.message, 'message',
-              contains('must be a strkey beginning with "B"'))));
+      // A lower case "b" lands here too, so the rule names the case as well.
+      for (final id in <String>['a' * 58, 'b' * 58]) {
+        expect(
+            () => XdrClaimableBalanceID.forId(id),
+            throwsA(isA<FormatException>().having(
+                (e) => e.message,
+                'message',
+                contains('must be a strkey beginning with "B", '
+                    'which is upper case'))),
+            reason: id);
+      }
+    });
+
+    test('forId reads a hex id in either case', () {
+      // package:convert decodes hex case-insensitively, so the upper case
+      // spelling of a hash names the same balance as the lower case one.
+      for (final spelling in <String>[
+        _balanceHashHex.toUpperCase(),
+        '00${_balanceHashHex.toUpperCase()}',
+        '00000000${_balanceHashHex.toUpperCase()}',
+      ]) {
+        expect(Util.bytesToHex(XdrClaimableBalanceID.forId(spelling).v0!.hash),
+            _balanceHashHex,
+            reason: spelling);
+      }
     });
 
     test('paddedBalanceIdHex reports the id the way Horizon spells it', () {
-      final hashHex =
-          'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
       for (final spelling in <String>[
-        hashHex,
-        '00$hashHex',
-        '00000000$hashHex',
-        StrKey.encodeClaimableBalanceIdHex(hashHex),
+        _balanceHashHex,
+        '00$_balanceHashHex',
+        '00000000$_balanceHashHex',
+        StrKey.encodeClaimableBalanceIdHex(_balanceHashHex),
       ]) {
         expect(XdrClaimableBalanceID.forId(spelling).paddedBalanceIdHex,
-            '00000000$hashHex',
+            '00000000$_balanceHashHex',
             reason: spelling);
       }
     });
@@ -338,28 +356,23 @@ void main() {
     });
 
     test('forClaimableBalance', () {
-      final balanceId =
-          '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
-      final key = XdrLedgerKey.forClaimableBalance(balanceId);
+      final key =
+          XdrLedgerKey.forClaimableBalance('00000000$_balanceHashHex');
       expect(key.discriminant, XdrLedgerEntryType.CLAIMABLE_BALANCE);
-      expect(key.balanceID, isNotNull);
+      expect(Util.bytesToHex(key.balanceID!.v0!.hash), _balanceHashHex);
     });
 
     test('forLiquidityPool with hex id', () {
-      final poolId =
-          'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
-      final key = XdrLedgerKey.forLiquidityPool(poolId);
+      final key = XdrLedgerKey.forLiquidityPool(_poolHashHex);
       expect(key.discriminant, XdrLedgerEntryType.LIQUIDITY_POOL);
-      expect(key.liquidityPoolID, isNotNull);
+      expect(Util.bytesToHex(key.liquidityPoolID!.hash), _poolHashHex);
     });
 
     test('forLiquidityPool with L prefix', () {
-      final poolId =
-          'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
-      final lId = StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolId));
+      final lId = StrKey.encodeLiquidityPoolId(Util.hexToBytes(_poolHashHex));
       final key = XdrLedgerKey.forLiquidityPool(lId);
       expect(key.discriminant, XdrLedgerEntryType.LIQUIDITY_POOL);
-      expect(key.liquidityPoolID, isNotNull);
+      expect(Util.bytesToHex(key.liquidityPoolID!.hash), _poolHashHex);
     });
 
     test('forLiquidityPool reports why an L id failed to decode', () {
@@ -369,6 +382,21 @@ void main() {
           () => XdrLedgerKey.forLiquidityPool('LINVALIDPOOLID'),
           throwsA(isA<FormatException>().having((e) => e.message, 'message',
               contains('Encoded string must be 56 characters, got 14'))));
+    });
+
+    test('forLiquidityPool refuses a hex id of a width other than 32 bytes', () {
+      // A width the key cannot hold must be refused, not zero-padded or
+      // truncated to a 32-byte hash that names a different pool.
+      for (final entry in <String, int>{'00ff': 2, 'ff' * 40: 40}.entries) {
+        expect(
+            () => XdrLedgerKey.forLiquidityPool(entry.key),
+            throwsA(isA<FormatException>().having(
+                (e) => e.message,
+                'message',
+                'Liquidity pool id must be hex of a 32 byte hash; '
+                    '${entry.value} bytes given')),
+            reason: entry.key);
+      }
     });
 
     test('forContractData', () {

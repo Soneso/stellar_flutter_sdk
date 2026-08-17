@@ -381,27 +381,29 @@ void main() {
     });
   });
 
-  group('Util.stringIdToXdrHash', () {
+  group('Util.hexIdToXdrHash', () {
     test('converts hex string to XdrHash', () {
       final hexId = 'a1b2c3d4e5f678901234567890abcdef1234567890abcdef1234567890abcdef';
-      final xdrHash = Util.stringIdToXdrHash(hexId);
+      final xdrHash = Util.hexIdToXdrHash(hexId, 'Liquidity pool id');
 
-      expect(xdrHash.hash.length, equals(32));
+      expect(Util.bytesToHex(xdrHash.hash), equals(hexId));
     });
 
-    test('pads short IDs to 32 bytes', () {
-      final shortId = 'a1b2c3';
-      final xdrHash = Util.stringIdToXdrHash(shortId);
-
-      expect(xdrHash.hash.length, equals(32));
+    test('rejects short IDs rather than padding them', () {
+      expect(
+          () => Util.hexIdToXdrHash('a1b2c3', 'Liquidity pool id'),
+          throwsA(isA<FormatException>().having((e) => e.message, 'message',
+              'Liquidity pool id must be hex of a 32 byte hash; 3 bytes given')));
     });
 
-    test('truncates long IDs to 32 bytes', () {
+    test('rejects long IDs rather than truncating them', () {
       final longId = 'a1b2c3d4e5f678901234567890abcdef1234567890abcdef1234567890abcdef' +
           'aabbccdd';
-      final xdrHash = Util.stringIdToXdrHash(longId);
 
-      expect(xdrHash.hash.length, equals(32));
+      expect(
+          () => Util.hexIdToXdrHash(longId, 'Liquidity pool id'),
+          throwsA(isA<FormatException>().having((e) => e.message, 'message',
+              'Liquidity pool id must be hex of a 32 byte hash; 36 bytes given')));
     });
   });
 

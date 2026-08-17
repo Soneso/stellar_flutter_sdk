@@ -89,11 +89,13 @@ class XdrClaimableBalanceID extends XdrClaimableBalanceIDBase {
         2;
     if (claimableBalanceId.length ==
         StellarProtocolConstants.STRKEY_CLAIMABLE_BALANCE_LENGTH) {
-      // Only reachable when the string does not begin with "B".
+      // Only reachable when the string does not begin with "B". A lower case
+      // "b" lands here too, which the case rule below accounts for.
       throw FormatException(
         "Claimable balance id of "
         "${StellarProtocolConstants.STRKEY_CLAIMABLE_BALANCE_LENGTH} "
-        "characters must be a strkey beginning with \"B\"",
+        "characters must be a strkey beginning with \"B\", "
+        "which is upper case",
       );
     }
     if (claimableBalanceId.length != hashHexLength &&
@@ -108,7 +110,7 @@ class XdrClaimableBalanceID extends XdrClaimableBalanceIDBase {
         "characters given",
       );
     }
-    final Uint8List bytes = Util.hexToBytes(claimableBalanceId.toUpperCase());
+    final Uint8List bytes = Util.hexToBytes(claimableBalanceId);
     int? tag;
     if (claimableBalanceId.length == taggedHexLength) {
       tag = bytes[0];

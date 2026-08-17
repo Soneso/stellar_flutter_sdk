@@ -706,7 +706,7 @@ void main() {
     Matcher widthFailure(String fragment) => throwsA(
       isA<Exception>().having(
         (Exception e) => e.toString(),
-        'message',
+        'toString',
         contains(fragment),
       ),
     );

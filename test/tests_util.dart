@@ -8,6 +8,15 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/widgets.dart' show WidgetsFlutterBinding;
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+/// Renders [payload] behind [versionByte] as a checksummed strkey without the
+/// structural checks the SDK encoder applies, for building the vectors those
+/// checks refuse.
+String craftStrKey(int versionByte, Uint8List payload) {
+  final Uint8List body = Uint8List.fromList([versionByte, ...payload]);
+  final Uint8List checksum = StrKey.calculateChecksum(body);
+  return Base32.encode(Uint8List.fromList([...body, ...checksum]));
+}
+
 /// Loads contract bytecode from the test/wasm directory.
 ///
 /// Uses Flutter assets on web and file system on native platforms.

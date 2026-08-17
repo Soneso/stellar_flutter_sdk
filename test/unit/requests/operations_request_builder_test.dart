@@ -223,6 +223,22 @@ void main() {
       );
     });
 
+    test('forClaimableBalance normalizes a one byte tagged hex id', () {
+      // The single discriminant byte is the width the strkey payload carries.
+      // It names the same balance as the four byte XDR union discriminant.
+      final cbHashHex =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
+
+      final builder = OperationsRequestBuilder(http.Client(), serverUri)
+          .forClaimableBalance('00$cbHashHex');
+
+      expect(
+        builder.buildUri().path,
+        matches(
+            RegExp('/claimable_balances/00000000$cbHashHex/operations\$')),
+      );
+    });
+
     test('forClaimableBalance throws on invalid B-prefixed id', () {
       expect(
         () => OperationsRequestBuilder(http.Client(), serverUri)

@@ -4,6 +4,8 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import 'dart:typed_data';
 import 'package:pinenacl/ed25519.dart' as ed25519;
 
+import '../tests_util.dart';
+
 /// Matches a [FormatException] carrying exactly [message].
 ///
 /// A [FormatException] is an [Exception], while a [RangeError] raised by
@@ -12,14 +14,6 @@ import 'package:pinenacl/ed25519.dart' as ed25519;
 /// into while decoding.
 Matcher throwsFormat(String message) => throwsA(isA<FormatException>()
     .having((FormatException e) => e.message, 'message', message));
-
-/// Renders [payload] behind [versionByte] as a checksummed strkey without the
-/// width check the SDK encoder applies, for building wrong-width vectors.
-String craftStrKey(int versionByte, Uint8List payload) {
-  final Uint8List body = Uint8List.fromList([versionByte, ...payload]);
-  final Uint8List checksum = StrKey.calculateChecksum(body);
-  return Base32.encode(Uint8List.fromList([...body, ...checksum]));
-}
 
 /// Matches an [Exception] whose rendering contains [fragment].
 Matcher throwsExceptionWith(String fragment) => throwsA(isA<Exception>()
@@ -291,18 +285,22 @@ void main() {
 
   test('refuses to encode a payload of the wrong width', () async {
     final short = Uint8List(31);
-    for (final encode in [
-      StrKey.encodeStellarAccountId,
-      StrKey.encodeStellarSecretSeed,
-      StrKey.encodePreAuthTx,
-      StrKey.encodeSha256Hash,
-      StrKey.encodeContractId,
-      StrKey.encodeLiquidityPoolId,
-    ]) {
-      expect(() => encode(short), throwsA(isA<Exception>()));
-    }
+    final encodersOf32Bytes = <String, String Function(Uint8List)>{
+      'account id': StrKey.encodeStellarAccountId,
+      'secret seed': StrKey.encodeStellarSecretSeed,
+      'pre auth tx': StrKey.encodePreAuthTx,
+      'sha256 hash': StrKey.encodeSha256Hash,
+      'contract id': StrKey.encodeContractId,
+      'liquidity pool id': StrKey.encodeLiquidityPoolId,
+    };
+
+    encodersOf32Bytes.forEach((name, encode) {
+      expect(() => encode(short),
+          throwsExceptionWith("Payload must be 32 bytes, got 31"),
+          reason: name);
+    });
     expect(() => StrKey.encodeStellarMuxedAccountId(Uint8List(39)),
-        throwsA(isA<Exception>()));
+        throwsExceptionWith("Payload must be 40 bytes, got 39"));
   });
 
   test('test sep-23 contract and muxed id 0 vectors', () async {
@@ -422,8 +420,16 @@ void main() {
     // discriminant in front of the hash
     final asHexXdr = "000000" + asHex;
     assert(claimableBalanceId == StrKey.encodeClaimableBalanceIdHex(asHexXdr));
-    expect(() => StrKey.encodeClaimableBalanceIdHex("00000001" + asHex2),
-        throwsA(isA<Exception>()));
+
+    // The union discriminant is the whole four byte prefix, so a value set in
+    // any of those bytes names no balance id type.
+    for (final prefix in <String>["00000001", "01000000", "00010000"]) {
+      expect(
+          () => StrKey.encodeClaimableBalanceIdHex(prefix + asHex2),
+          throwsExceptionWith("claimable balance id carries an XDR "
+              "discriminant that names no claimable balance id type"),
+          reason: prefix);
+    }
 
     final xdr = "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";
 
@@ -625,6 +631,23 @@ void main() {
               " which names no claimable balance id type"));
     });
 
+    test('refuses to encode a claimable balance id of an unknown type through '
+        'the raw codec', () {
+      // encodeClaimableBalanceId reads the discriminant of what it is handed,
+      // and encodeCheck holds the same rule for a caller that reaches past it.
+      final unknownType = Uint8List.fromList([1, ...payloadOf32Bytes]);
+      expect(
+          () => StrKey.encodeCheck(VersionByte.CLAIMABLE_BALANCE, unknownType),
+          throwsFormat("Claimable balance id carries the discriminant 1, "
+              "which names no claimable balance id type"));
+      expect(
+          () => StrKey.decodeClaimableBalanceId(
+              craftStrKey(VersionByte.CLAIMABLE_BALANCE.getValue(),
+                  unknownType)),
+          throwsFormat("Decoded claimable balance id carries the discriminant "
+              "1, which names no claimable balance id type"));
+    });
+
     test('refuses to encode a claimable balance id of the wrong width', () {
       expect(
           () => StrKey.encodeClaimableBalanceId(payloadOf31Bytes),
@@ -704,32 +727,36 @@ void main() {
     });
 
     test('refuses every framing violation carried on a P address', () {
+      // encodeCheck applies the same framing rule, so each address below is
+      // crafted around it: the version byte and the checksum are right and the
+      // framing of the payload is the only thing wrong with it.
       final cases = <(String, String)>[
         (
-          StrKey.encodeCheck(VersionByte.SIGNED_PAYLOAD, declaresEmptyPayload),
+          craftStrKey(
+              VersionByte.SIGNED_PAYLOAD.getValue(), declaresEmptyPayload),
           "Decoded signed payload carries an empty payload, "
               "which has no strkey rendering"
         ),
         (
-          StrKey.encodeCheck(
-              VersionByte.SIGNED_PAYLOAD, declaresOversizePayload),
+          craftStrKey(
+              VersionByte.SIGNED_PAYLOAD.getValue(), declaresOversizePayload),
           "Decoded signed payload carries a 65-byte payload, "
               "more than the declared maximum of 64"
         ),
         (
-          StrKey.encodeCheck(
-              VersionByte.SIGNED_PAYLOAD, declaresLessThanItCarries),
+          craftStrKey(
+              VersionByte.SIGNED_PAYLOAD.getValue(), declaresLessThanItCarries),
           "Decoded signed payload is 72 bytes, "
               "but a 32-byte payload occupies 68"
         ),
         (
-          StrKey.encodeCheck(
-              VersionByte.SIGNED_PAYLOAD, declaresMoreThanItCarries),
+          craftStrKey(
+              VersionByte.SIGNED_PAYLOAD.getValue(), declaresMoreThanItCarries),
           "Decoded signed payload is 64 bytes, "
               "but a 29-byte payload occupies 68"
         ),
         (
-          StrKey.encodeCheck(VersionByte.SIGNED_PAYLOAD, padsWithoutNul),
+          craftStrKey(VersionByte.SIGNED_PAYLOAD.getValue(), padsWithoutNul),
           "Decoded signed payload pads its payload with a byte that is not NUL"
         ),
       ];
@@ -742,6 +769,48 @@ void main() {
             reason: address);
         expect(StrKey.isValidSignedPayload(address), isFalse, reason: address);
       }
+    });
+
+    test('refuses to encode every framing violation', () {
+      final cases = <(Uint8List, String)>[
+        (
+          declaresEmptyPayload,
+          "Signed payload carries an empty payload, "
+              "which has no strkey rendering"
+        ),
+        (
+          declaresOversizePayload,
+          "Signed payload carries a 65-byte payload, "
+              "more than the declared maximum of 64"
+        ),
+        (
+          declaresLessThanItCarries,
+          "Signed payload is 72 bytes, but a 32-byte payload occupies 68"
+        ),
+        (
+          declaresMoreThanItCarries,
+          "Signed payload is 64 bytes, but a 29-byte payload occupies 68"
+        ),
+        (
+          padsWithoutNul,
+          "Signed payload pads its payload with a byte that is not NUL"
+        ),
+      ];
+
+      for (final (region, message) in cases) {
+        expect(
+            () => StrKey.encodeCheck(VersionByte.SIGNED_PAYLOAD, region),
+            throwsFormat(message),
+            reason: message);
+      }
+    });
+
+    test('encodes a well framed region', () {
+      final encoded =
+          StrKey.encodeCheck(VersionByte.SIGNED_PAYLOAD, wellFramed);
+      expect(encoded, startsWith("P"));
+      expect(StrKey.decodeCheck(VersionByte.SIGNED_PAYLOAD, encoded),
+          wellFramed);
     });
 
     test('refuses the signed payloads SEP-0023 lists as invalid', () {

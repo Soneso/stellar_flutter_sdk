@@ -1523,4 +1523,83 @@ void main() {
 
       expect(() => operation.toOperationBody(), throwsArgumentError);
     });
+
+    test('deposit builder converts hex id', () {
+      final poolHexId =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
+
+      final operation = LiquidityPoolDepositOperationBuilder(
+        liquidityPoolId: poolHexId,
+        maxAmountA: '1000.0',
+        maxAmountB: '500.0',
+        minPrice: '0.49',
+        maxPrice: '0.51',
+      ).build();
+
+      final body = operation.toOperationBody();
+      expect(Util.bytesToHex(body.liquidityPoolDepositOp!.liquidityPoolID.hash),
+          equals(poolHexId));
+    });
+
+    test('withdraw builder converts hex id', () {
+      final poolHexId =
+          '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
+
+      final operation = LiquidityPoolWithdrawOperationBuilder(
+        liquidityPoolId: poolHexId,
+        amount: '100.0',
+        minAmountA: '990.0',
+        minAmountB: '490.0',
+      ).build();
+
+      final body = operation.toOperationBody();
+      expect(
+          Util.bytesToHex(body.liquidityPoolWithdrawOp!.liquidityPoolID.hash),
+          equals(poolHexId));
+    });
+
+    // A hex id of any width other than 32 bytes must be refused. Zero-padding
+    // a short id or truncating a long one would build an operation against a
+    // pool the caller never named.
+    final rejectedHexIds = <String, String>{
+      'abc0': 'Liquidity pool id must be hex of a 32 byte hash; 2 bytes given',
+      '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9aabbccdd':
+          'Liquidity pool id must be hex of a 32 byte hash; 36 bytes given',
+      'zzzz': 'Invalid hexadecimal code unit U+007a.',
+    };
+
+    for (final entry in rejectedHexIds.entries) {
+      test('deposit builder rejects hex id "${entry.key}"', () {
+        final operation = LiquidityPoolDepositOperationBuilder(
+          liquidityPoolId: entry.key,
+          maxAmountA: '1000.0',
+          maxAmountB: '500.0',
+          minPrice: '0.49',
+          maxPrice: '0.51',
+        ).build();
+
+        expect(
+            () => operation.toOperationBody(),
+            throwsA(isA<ArgumentError>().having(
+                (e) => e.message,
+                'message',
+                'invalid liquidity pool id: ${entry.key} (${entry.value})')));
+      });
+
+      test('withdraw builder rejects hex id "${entry.key}"', () {
+        final operation = LiquidityPoolWithdrawOperationBuilder(
+          liquidityPoolId: entry.key,
+          amount: '100.0',
+          minAmountA: '990.0',
+          minAmountB: '490.0',
+        ).build();
+
+        expect(
+            () => operation.toOperationBody(),
+            throwsA(isA<ArgumentError>().having(
+                (e) => e.message,
+                'message',
+                'invalid liquidity pool id: ${entry.key} (${entry.value})')));
+      });
+    }
   });}

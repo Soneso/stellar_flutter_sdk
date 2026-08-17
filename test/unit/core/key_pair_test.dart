@@ -906,6 +906,36 @@ void main() {
       expect(signer.signerAccountID, isNotNull);
     });
 
+    test('SignedPayloadSigner.fromAccountId refuses a muxed account id', () {
+      // A signed payload signer names the key that signs. A muxed account id
+      // names a subaccount of an account rather than a key, so it is refused
+      // rather than read as the key it multiplexes.
+      const String muxedAccountId =
+          'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK';
+      Uint8List payload = Uint8List.fromList([1, 2, 3, 4]);
+
+      expect(
+        () => SignedPayloadSigner.fromAccountId(muxedAccountId, payload),
+        throwsA(isA<ArgumentError>().having(
+          (ArgumentError e) => e.message,
+          'message',
+          'A signed payload signer takes an ed25519 account id (G...), '
+              'not a muxed account id (M...)',
+        ))
+      );
+
+      // The ed25519 account the muxed id multiplexes is accepted, so the
+      // refusal is of the muxed form rather than of the key behind it.
+      SignedPayloadSigner signer = SignedPayloadSigner.fromAccountId(
+        'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ',
+        payload,
+      );
+      expect(
+        KeyPair.fromXdrAccountId(signer.signerAccountID).accountId,
+        equals('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ')
+      );
+    });
+
     test('SignedPayloadSigner.fromPublicKey', () {
       KeyPair keyPair = KeyPair.random();
       Uint8List payload = Uint8List.fromList([5, 6, 7, 8]);

@@ -422,6 +422,24 @@ void main() {
       expect(balance.balanceId, equals(balanceId));
     });
 
+    test('forBalanceId requests the Horizon form for a one byte tagged id',
+        () async {
+      // The single discriminant byte is the width the strkey payload carries.
+      // It names the same balance as the four byte XDR union discriminant, and
+      // the path must carry the four byte form either way.
+      final taggedId = '00${balanceId.substring(8)}';
+      final mockClient = MockClient((request) async {
+        expect(request.url.path, contains('/claimable_balances/$balanceId'));
+        return http.Response(json.encode(balanceRecord), 200);
+      });
+
+      final builder = ClaimableBalancesRequestBuilder(mockClient, serverUri);
+      final balance = await builder.forBalanceId(taggedId);
+
+      expect(balance, isA<ClaimableBalanceResponse>());
+      expect(balance.balanceId, equals(balanceId));
+    });
+
     test('execute returns a page of claimable balances', () async {
       final page = {
         '_links': {

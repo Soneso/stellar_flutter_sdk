@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import '../../tests_util.dart';
+
 /// The types SEP-0051 §Stellar-Specific Types gives a rendering of their own.
 ///
 /// Three sections are covered. §Address Types lists the types that render as a
@@ -80,13 +82,14 @@ String _breakChecksum(String strKey) {
   return strKey.substring(0, strKey.length - 1) + (last == 'A' ? 'B' : 'A');
 }
 
-/// Renders [payload] behind [versionByte] as a checksummed strkey without the
-/// width check the SDK encoder applies, for building wrong-width vectors.
-String craftStrKey(int versionByte, Uint8List payload) {
-  final Uint8List body = Uint8List.fromList([versionByte, ...payload]);
-  final Uint8List checksum = StrKey.calculateChecksum(body);
-  return Base32.encode(Uint8List.fromList([...body, ...checksum]));
-}
+/// Matches a [FormatException] whose message carries every fragment.
+Matcher throwsFormatWith(List<String> fragments) => throwsA(
+  isA<FormatException>().having(
+    (FormatException e) => e.message,
+    'message',
+    allOf(fragments.map(contains).toList()),
+  ),
+);
 
 void main() {
   group('SEP-0051 §Address Types renders a public key as a G strkey', () {
@@ -349,19 +352,31 @@ void main() {
       );
     });
 
-    test('a tag the union does not declare is refused', () {
+    test('a tag the union does not declare is refused by the strkey codec', () {
       // Thirty-three bytes of the right width, tagged with a discriminant the
       // union does not declare. The tag is the only thing that says this is
-      // not a balance id, so the value is built through the raw codec, which
-      // encodes what it is handed.
-      final String tagged = StrKey.encodeCheck(
-        VersionByte.CLAIMABLE_BALANCE,
-        Uint8List.fromList(<int>[7, ...List<int>.filled(32, 6)]),
-      );
-      expect(
-        () => XdrClaimableBalanceID.fromXdrJson('"$tagged"'),
-        throwsA(isA<FormatException>()),
-      );
+      // not a balance id, so the value is crafted past the SDK encoder, which
+      // refuses the tag itself.
+      //
+      // The reader resolves the strkey through
+      // StrKey.decodeClaimableBalanceId, which refuses an undeclared tag
+      // before the reader compares it, so the codec is the layer that answers
+      // and its wording is what the report carries.
+      for (final int tag in <int>[1, 7, 255]) {
+        final String tagged = craftStrKey(
+          VersionByte.CLAIMABLE_BALANCE.getValue(),
+          Uint8List.fromList(<int>[tag, ...List<int>.filled(32, 6)]),
+        );
+        expect(
+          () => XdrClaimableBalanceID.fromXdrJson('"$tagged"'),
+          throwsFormatWith(<String>[
+            'XDR-JSON XdrClaimableBalanceID holds a malformed strkey',
+            '(Decoded claimable balance id carries the discriminant $tag, '
+                'which names no claimable balance id type)',
+          ]),
+          reason: 'tag $tag',
+        );
+      }
     });
   });
 

@@ -62,6 +62,15 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   }
 
   /// Requests details about the claimable balance to fetch by [balanceId].
+  ///
+  /// [balanceId] may be given in any spelling of a claimable balance id: the
+  /// strkey (B...), the hex of the bare hash, or that hex behind the type
+  /// discriminant, carried either as one byte or as the four the XDR union
+  /// writes. The request is sent with the 72 character form Horizon serves.
+  ///
+  /// Throws [ArgumentError], naming the reason, when [balanceId] holds none
+  /// of those spellings.
+  ///
   /// See [Stellar developer docs](https://developers.stellar.org)
   Future<ClaimableBalanceResponse> forBalanceId(String balanceId) {
     final id = RequestBuilder.claimableBalanceIdHorizonHex(balanceId);

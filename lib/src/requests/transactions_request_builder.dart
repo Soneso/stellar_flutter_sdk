@@ -107,9 +107,17 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Returns all transactions that affect the specified claimable balance.
   ///
   /// Parameters:
-  /// - [claimableBalanceId] The claimable balance ID (hex or B-prefixed)
+  /// - [claimableBalanceId] The claimable balance id, in any of its spellings:
+  ///   the strkey (B...), the hex of the bare hash, or that hex behind the
+  ///   type discriminant, carried either as one byte or as the four the XDR
+  ///   union writes. The request is sent with the 72 character form Horizon
+  ///   serves.
   ///
   /// Returns: This builder instance for method chaining
+  ///
+  /// Throws:
+  /// - [ArgumentError]: naming the reason, when [claimableBalanceId] holds
+  ///   none of those spellings
   ///
   /// Example:
   /// ```dart

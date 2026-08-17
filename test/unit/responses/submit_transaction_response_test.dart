@@ -1,6 +1,81 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+/// Encodes a transaction result reporting [results] under [code].
+String _transactionResultXdr(
+    XdrTransactionResultCode code, List<XdrOperationResult> results) {
+  final XdrTransactionResultResult result = XdrTransactionResultResult(code)
+    ..results = results;
+  return XdrTransactionResult(
+    XdrInt64(BigInt.from(200)),
+    result,
+    XdrTransactionResultExt(0),
+  ).toBase64EncodedXdrString();
+}
+
+/// A successful manage offer operation result of [type] reporting [effect].
+///
+/// [offerId] is read for the created and updated effects, the only ones
+/// carrying an offer entry. Both the sell and the buy operation spell success
+/// as discriminant 0, so the sell result code encodes either.
+XdrOperationResult _manageOfferOperationResult(
+  XdrOperationType type,
+  XdrManageOfferEffect effect, {
+  int? offerId,
+}) {
+  final XdrManageOfferSuccessResultOffer offer =
+      XdrManageOfferSuccessResultOffer(effect);
+  if (effect != XdrManageOfferEffect.MANAGE_OFFER_DELETED) {
+    offer.offer = XdrOfferEntry(
+      XdrAccountID.forAccountId(
+          'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'),
+      XdrUint64(BigInt.from(offerId!)),
+      XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
+      XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
+      XdrInt64(BigInt.from(1000000)),
+      XdrPrice(XdrInt32(1), XdrInt32(2)),
+      XdrUint32(0),
+      XdrOfferEntryExt(0),
+    );
+  }
+
+  final XdrManageOfferResult manageResult =
+      XdrManageOfferResult(XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS)
+        ..success = XdrManageOfferSuccessResult([], offer);
+  final XdrOperationResultTr tr = XdrOperationResultTr(type);
+  if (type == XdrOperationType.MANAGE_BUY_OFFER) {
+    tr.manageBuyOfferResult = manageResult;
+  } else {
+    tr.manageSellOfferResult = manageResult;
+  }
+  return XdrOperationResult(XdrOperationResultCode.opINNER)..tr = tr;
+}
+
+/// A failed response carrying [resultXdr] as the submitted result and again in
+/// the extras.
+///
+/// Repeating it leaves the transaction result code as the only reason a helper
+/// can answer null: [SubmitTransactionResponse.success] reads the submitted
+/// result, while [SubmitTransactionResponse.resultXdr] answers the extras copy
+/// on the failure branch, so neither is missing.
+SubmitTransactionResponse _failedResponseWithResultXdr(String resultXdr) =>
+    SubmitTransactionResponse(
+      SubmitTransactionResponseExtras(
+        'AAAA',
+        resultXdr,
+        null,
+        null,
+        ExtrasResultCodes('tx_failed', ['op_success']),
+      ),
+      null,
+      'hash123',
+      'AAAA',
+      resultXdr,
+      'AAAA',
+      'AAAA',
+      null,
+    );
+
 void main() {
   group('SubmitTransactionResponse', () {
     group('fromJson - successful transaction', () {
@@ -769,6 +844,34 @@ void main() {
       expect(response.resultMetaXdr, isNull);
       expect(response.feeMetaXdr, isNull);
     });
+
+    test('XDR getters answer from extras when the result XDR cannot be read', () {
+      final extras = SubmitTransactionResponseExtras(
+        'ExtrasEnvelopeXdr==',
+        'ExtrasResultXdr==',
+        'ExtrasMetaXdr==',
+        'ExtrasFeeMetaXdr==',
+        null,
+      );
+      final response = SubmitTransactionResponse(
+        extras,
+        null,
+        'hash123',
+        'MainEnvelopeXdr==',
+        'not base64 at all!!',
+        'MainMetaXdr==',
+        'MainFeeMetaXdr==',
+        null,
+      );
+
+      // A result that cannot be read cannot confirm success, so every getter
+      // takes the failure branch instead of letting the decode escape.
+      expect(response.success, isFalse);
+      expect(response.envelopeXdr, equals('ExtrasEnvelopeXdr=='));
+      expect(response.resultXdr, equals('ExtrasResultXdr=='));
+      expect(response.resultMetaXdr, equals('ExtrasMetaXdr=='));
+      expect(response.feeMetaXdr, equals('ExtrasFeeMetaXdr=='));
+    });
   });
 
   group('SubmitTransactionResponse XDR Decoding', () {
@@ -819,7 +922,7 @@ void main() {
       expect(response.getTransactionMetaResultXdr(), isNull);
     });
 
-    test('getTransactionMetaResultXdr handles short XDR', () {
+    test('getTransactionMetaResultXdr answers null for a truncated meta XDR', () {
       final response = SubmitTransactionResponse(
         null,
         12345,
@@ -831,11 +934,10 @@ void main() {
         null,
       );
 
-      // AAAA is valid base64 but might decode to something
-      // Just test that the method doesn't throw
-      final result = response.getTransactionMetaResultXdr();
-      // Result might be null or a valid XDR object
-      expect(result, anyOf(isNull, isA<XdrTransactionMeta>()));
+      // AAAA renders three bytes, one short of the four a single XDR int
+      // needs, so reading the union discriminant already runs off the end of
+      // the buffer.
+      expect(response.getTransactionMetaResultXdr(), isNull);
     });
 
     test('getFeeMetaXdr returns null when feeMetaXdr is null', () {
@@ -853,7 +955,7 @@ void main() {
       expect(response.getFeeMetaXdr(), isNull);
     });
 
-    test('getFeeMetaXdr handles short XDR', () {
+    test('getFeeMetaXdr answers null for a truncated fee meta XDR', () {
       final response = SubmitTransactionResponse(
         null,
         12345,
@@ -865,11 +967,10 @@ void main() {
         null,
       );
 
-      // AAAA is valid base64 but might decode to something
-      // Just test that the method doesn't throw
-      final result = response.getFeeMetaXdr();
-      // Result might be null or a valid XDR object
-      expect(result, anyOf(isNull, isA<XdrLedgerEntryChanges>()));
+      // AAAA renders three bytes, one short of the four a single XDR int
+      // needs, so reading the change count already runs off the end of the
+      // buffer.
+      expect(response.getFeeMetaXdr(), isNull);
     });
   });
 
@@ -889,7 +990,7 @@ void main() {
       expect(response.getOfferIdFromResult(0), isNull);
     });
 
-    test('getOfferIdFromResult needs valid success XDR', () {
+    test('getOfferIdFromResult answers null without a manage offer', () {
       final response = SubmitTransactionResponse(
         null,
         12345,
@@ -1040,6 +1141,133 @@ void main() {
       expect(
           response.getClaimableBalanceIdIdFromResult(1),
           equals('f5ea7fb3de18dae9f12af96cf0750749016fbcba6bf09e902a69e54568771d82'));
+    });
+
+    test('getOfferIdFromResult reports the id of a created buy offer', () {
+      final resultXdr =
+          _transactionResultXdr(XdrTransactionResultCode.txSUCCESS, [
+        _manageOfferOperationResult(
+          XdrOperationType.MANAGE_BUY_OFFER,
+          XdrManageOfferEffect.MANAGE_OFFER_CREATED,
+          offerId: 5551234,
+        ),
+      ]);
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        'AAAA',
+        resultXdr,
+        'AAAA',
+        'AAAA',
+        null,
+      );
+
+      expect(response.getOfferIdFromResult(0), equals(5551234));
+    });
+
+    test('getOfferIdFromResult answers null for a deleted offer', () {
+      // Deletion is the one success effect carrying no offer entry, so the
+      // operation succeeded yet no id exists to report.
+      final resultXdr =
+          _transactionResultXdr(XdrTransactionResultCode.txSUCCESS, [
+        _manageOfferOperationResult(
+          XdrOperationType.MANAGE_SELL_OFFER,
+          XdrManageOfferEffect.MANAGE_OFFER_DELETED,
+        ),
+      ]);
+      final response = SubmitTransactionResponse(
+        null,
+        12345,
+        'hash123',
+        'AAAA',
+        resultXdr,
+        'AAAA',
+        'AAAA',
+        null,
+      );
+
+      expect(response.getOfferIdFromResult(0), isNull);
+    });
+
+    test('getOfferIdFromResult answers null when the transaction failed', () {
+      final response = _failedResponseWithResultXdr(
+          _transactionResultXdr(XdrTransactionResultCode.txFAILED, [
+        _manageOfferOperationResult(
+          XdrOperationType.MANAGE_SELL_OFFER,
+          XdrManageOfferEffect.MANAGE_OFFER_CREATED,
+          offerId: 7654321,
+        ),
+      ]));
+
+      // Position 0 holds a decodable offer success, but core reports success
+      // codes for operations that ran before the failure; only the
+      // transaction result code says the ledger rolled everything back.
+      expect(response.success, isFalse);
+      expect(response.getOfferIdFromResult(0), isNull);
+    });
+
+    test('getClaimableBalanceIdIdFromResult answers null when the transaction failed', () {
+      // txFAILED carrying two CreateClaimableBalance successes.
+      final response = _failedResponseWithResultXdr(
+          'AAAAAAAAAMj/////AAAAAgAAAAAAAAAOAAAAAAAAAAA/DDS/k60NmXHQTMyQ9wVRHI'
+          'OKrZc0pKL7DXoD/H/omgAAAAAAAAAOAAAAAAAAAAD16n+z3hja6fEq+WzwdQdJAW+8'
+          'umvwnpAqaeVFaHcdggAAAAA=');
+
+      // Read the fixture first, so an unreadable one cannot pass this test by
+      // answering null for the wrong reason.
+      final decoded =
+          XdrTransactionResult.fromBase64EncodedXdrString(response.resultXdr!);
+      expect(decoded.result.discriminant,
+          equals(XdrTransactionResultCode.txFAILED));
+      expect(decoded.result.results, hasLength(2));
+
+      // Both positions hold a decodable balance id, but core reports success
+      // codes for operations that ran before the failure; only the
+      // transaction result code says the ledger rolled everything back.
+      expect(response.success, isFalse);
+      expect(response.getClaimableBalanceIdIdFromResult(0), isNull);
+      expect(response.getClaimableBalanceIdIdFromResult(1), isNull);
+    });
+
+    // Neither input yields a TransactionResult: the first is not base64 at
+    // all, the second is base64 but far too short to hold one. Both must be
+    // answered with null rather than escaping to the caller.
+    const unreadableResultXdrs = ['not base64 at all!!', 'AAAAAA=='];
+
+    test('getOfferIdFromResult answers null when the result XDR cannot be read', () {
+      for (final resultXdr in unreadableResultXdrs) {
+        final response = SubmitTransactionResponse(
+          null,
+          12345,
+          'hash123',
+          'AAAA',
+          resultXdr,
+          'AAAA',
+          'AAAA',
+          null,
+        );
+
+        expect(response.getOfferIdFromResult(0), isNull, reason: resultXdr);
+      }
+    });
+
+    test('getClaimableBalanceIdIdFromResult answers null when the result XDR cannot be read', () {
+      for (final resultXdr in unreadableResultXdrs) {
+        final response = SubmitTransactionResponse(
+          null,
+          12345,
+          'hash123',
+          'AAAA',
+          resultXdr,
+          'AAAA',
+          'AAAA',
+          null,
+        );
+
+        expect(response.getClaimableBalanceIdIdFromResult(0), isNull,
+            reason: resultXdr);
+      }
     });
   });
 

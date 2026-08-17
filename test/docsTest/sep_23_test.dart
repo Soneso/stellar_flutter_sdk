@@ -203,9 +203,10 @@ void main() {
     Uint8List decodedPool = StrKey.decodeLiquidityPoolId(poolId);
     expect(decodedPool.length, 32);
 
-    // Claimable balance ID (B...)
+    // Claimable balance ID (B...), from the bare 32-byte hash. The 33-byte tagged
+    // form and the 36-byte XDR form Horizon reports encode the same way.
     String balanceHex =
-        '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfd';
+        '3f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a';
     String balanceId = StrKey.encodeClaimableBalanceIdHex(balanceHex);
     expect(balanceId, startsWith('B'));
     expect(StrKey.isValidClaimableBalanceId(balanceId), true);

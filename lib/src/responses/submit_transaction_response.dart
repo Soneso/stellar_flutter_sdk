@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'response.dart';
-import 'dart:convert';
 import '../xdr/xdr.dart';
 import '../util.dart';
 import 'transaction_response.dart';
@@ -45,7 +44,7 @@ class SubmitTransactionResponse extends Response {
   int? ledger;
 
   String? _strEnvelopeXdr;
-  String? _strResultXdr;
+  final String? _strResultXdr;
   String? _strMetaXdr;
   String? _strFeeMetaXdr;
 
@@ -82,7 +81,8 @@ class SubmitTransactionResponse extends Response {
   /// Returns true if the transaction was successfully included in a ledger.
   ///
   /// This checks the transaction result XDR to determine success. For fee-bump
-  /// transactions, it checks the inner transaction result.
+  /// transactions, it checks the inner transaction result. A result XDR that
+  /// cannot be read answers false.
   ///
   /// Example:
   /// ```dart
@@ -95,8 +95,17 @@ class SubmitTransactionResponse extends Response {
   /// ```
   bool get success {
     if (_strResultXdr != null) {
-      XdrTransactionResult result =
-          XdrTransactionResult.fromBase64EncodedXdrString(_strResultXdr!);
+      final XdrTransactionResult result;
+      try {
+        result =
+            XdrTransactionResult.fromBase64EncodedXdrString(_strResultXdr);
+      } catch (e) {
+        // A result that cannot be read cannot confirm success. Reading it
+        // raises both Exception shapes (malformed base64) and Error shapes
+        // (a truncated body indexes past the buffer), so the catch is
+        // deliberately unqualified.
+        return false;
+      }
       if (result.result.discriminant == XdrTransactionResultCode.txSUCCESS) {
         return true;
       } else if (result.result.discriminant ==
@@ -228,15 +237,10 @@ class SubmitTransactionResponse extends Response {
       return null;
     }
 
-    XdrDataInputStream xdrInputStream =
-        XdrDataInputStream(base64Decode(this.resultXdr!));
-    XdrTransactionResult result;
-
-    try {
-      result = XdrTransactionResult.decode(xdrInputStream);
-    } catch (e) {
-      return null;
-    }
+    // [resultXdr] returns the string [success] already decoded, so the decode
+    // cannot fail here.
+    final result =
+        XdrTransactionResult.fromBase64EncodedXdrString(this.resultXdr!);
 
     // A fee bump carries its operation results on the inner transaction.
     final results = result.result.results ??
@@ -276,20 +280,20 @@ class SubmitTransactionResponse extends Response {
   /// Answers null when the transaction did not succeed, when no operation sits
   /// at [position], or when the operation there is not a CreateClaimableBalance.
   /// For a fee bump the inner transaction's operations are read.
+  ///
+  /// The id is the bare 64 character hash of the created balance, keeping this
+  /// method's original signature; a claimable balance read from XDR elsewhere
+  /// instead carries the 72 character form Horizon serves. Either spelling
+  /// feeds the builders unchanged, since they accept both.
   String? getClaimableBalanceIdIdFromResult(int position) {
     if (!this.success) {
       return null;
     }
 
-    XdrDataInputStream xdrInputStream =
-        XdrDataInputStream(base64Decode(this.resultXdr!));
-    XdrTransactionResult result;
-
-    try {
-      result = XdrTransactionResult.decode(xdrInputStream);
-    } catch (e) {
-      return null;
-    }
+    // [resultXdr] returns the string [success] already decoded, so the decode
+    // cannot fail here.
+    final result =
+        XdrTransactionResult.fromBase64EncodedXdrString(this.resultXdr!);
 
     // A fee bump carries its operation results on the inner transaction.
     final results = result.result.results ??

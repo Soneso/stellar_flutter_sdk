@@ -836,11 +836,10 @@ class XdrJsonHelper {
   /// wording through. A codec supplied by a caller that signals failure some
   /// other way propagates as it is.
   ///
-  /// [expectedLength] is the byte count the field's declaration fixes, and
-  /// this reader holds the decoded value to that width whichever codec it was
-  /// given. The check is the reader's own contract rather than a restatement
-  /// of the codec's, so a width the field cannot hold is reported under the
-  /// XDR-JSON contract rather than reaching the binary encoder.
+  /// [expectedLength] is the byte count the field's declaration fixes. This
+  /// reader holds the decoded value to that width whichever codec it was
+  /// given, as its own contract rather than a restatement of the codec's, and
+  /// reports a width the field cannot hold under the XDR-JSON contract.
   static Uint8List readStrKey(
     Object? value, {
     required String type,
