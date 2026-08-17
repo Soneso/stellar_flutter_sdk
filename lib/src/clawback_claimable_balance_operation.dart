@@ -4,7 +4,6 @@
 
 import 'xdr/xdr.dart';
 import 'operation.dart';
-import 'util.dart';
 
 /// Claws back a claimable balance, removing it from the network.
 ///
@@ -55,7 +54,11 @@ class ClawbackClaimableBalanceOperation extends Operation {
   /// - [_balanceId] The hex-encoded ID of the claimable balance to claw back
   ClawbackClaimableBalanceOperation(this._balanceId);
 
-  /// The hex-encoded ID of the claimable balance to claw back.
+  /// The ID of the claimable balance to claw back.
+  ///
+  /// An operation read from XDR reports the 72-character form Horizon serves:
+  /// the four-byte big-endian union discriminant ahead of the 32-byte hash. An
+  /// operation built from a string reports that string as given.
   String get balanceId => _balanceId;
 
   /// Converts this operation to its XDR OperationBody representation.
@@ -80,8 +83,8 @@ class ClawbackClaimableBalanceOperation extends Operation {
   /// Returns: A builder configured with the balance ID from the XDR.
   static ClawbackClaimableBalanceOperationBuilder builder(
       XdrClawbackClaimableBalanceOp op) {
-    String balanceId = Util.bytesToHex(op.balanceID.v0!.hash);
-    return ClawbackClaimableBalanceOperationBuilder(balanceId);
+    return ClawbackClaimableBalanceOperationBuilder(
+        op.balanceID.paddedBalanceIdHex);
   }
 }
 

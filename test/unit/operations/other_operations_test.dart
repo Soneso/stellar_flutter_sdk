@@ -830,7 +830,36 @@ void main() {
         );
         final restored = restoredBuilder.build();
 
-        expect(restored.balanceId, equals(balanceIdWithoutPrefix));
+        expect(restored.balanceId, equals(balanceId));
+        expect(restored.toXdrBase64(), equals(operation.toXdrBase64()));
+      });
+
+      test('bare hash input reads back as the form Horizon serves', () {
+        final operation =
+          ClaimClaimableBalanceOperationBuilder(balanceIdWithoutPrefix).build();
+
+        final xdrBody = operation.toOperationBody();
+        final restored = ClaimClaimableBalanceOperation.builder(
+          xdrBody.claimClaimableBalanceOp!
+        ).build();
+
+        expect(restored.balanceId, equals(balanceId));
+        expect(restored.toXdrBase64(), equals(operation.toXdrBase64()));
+      });
+
+      test('decoded bytes report the form Horizon serves', () {
+        final operation =
+          ClaimClaimableBalanceOperationBuilder(balanceIdWithoutPrefix).build();
+
+        // Decoding real bytes leaves the union holding the bare hash; the operation
+        // reports the spelling Horizon serves.
+        final decoded = XdrOperation.decode(
+          XdrDataInputStream(base64Decode(operation.toXdrBase64())));
+        final restored =
+          Operation.fromXdr(decoded) as ClaimClaimableBalanceOperation;
+
+        expect(restored.balanceId, equals(balanceId));
+        expect(restored.toXdrBase64(), equals(operation.toXdrBase64()));
       });
     });
   });
@@ -885,7 +914,38 @@ void main() {
         );
         final restored = restoredBuilder.build();
 
-        expect(restored.balanceId, equals(balanceIdWithoutPrefix));
+        expect(restored.balanceId, equals(balanceId));
+        expect(restored.toXdrBase64(), equals(operation.toXdrBase64()));
+      });
+
+      test('bare hash input reads back as the form Horizon serves', () {
+        final operation =
+          ClawbackClaimableBalanceOperationBuilder(balanceIdWithoutPrefix)
+            .build();
+
+        final xdrBody = operation.toOperationBody();
+        final restored = ClawbackClaimableBalanceOperation.builder(
+          xdrBody.clawbackClaimableBalanceOp!
+        ).build();
+
+        expect(restored.balanceId, equals(balanceId));
+        expect(restored.toXdrBase64(), equals(operation.toXdrBase64()));
+      });
+
+      test('decoded bytes report the form Horizon serves', () {
+        final operation =
+          ClawbackClaimableBalanceOperationBuilder(balanceIdWithoutPrefix)
+            .build();
+
+        // Decoding real bytes leaves the union holding the bare hash; the operation
+        // reports the spelling Horizon serves.
+        final decoded = XdrOperation.decode(
+          XdrDataInputStream(base64Decode(operation.toXdrBase64())));
+        final restored =
+          Operation.fromXdr(decoded) as ClawbackClaimableBalanceOperation;
+
+        expect(restored.balanceId, equals(balanceId));
+        expect(restored.toXdrBase64(), equals(operation.toXdrBase64()));
       });
     });
   });
