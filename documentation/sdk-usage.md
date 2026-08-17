@@ -971,7 +971,8 @@ Add liquidity to a pool. You specify the maximum amounts of each asset to deposi
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 LiquidityPoolDepositOperation depositOp = LiquidityPoolDepositOperationBuilder(
-  liquidityPoolId: "poolid123abc...", // pool ID from query above
+  liquidityPoolId:
+      "dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7", // pool ID (hex) from query above
   maxAmountA: "1000",                // max amount of asset A (XLM)
   maxAmountB: "500",                 // max amount of asset B (USD)
   minPrice: "1.9",                   // min price (A per B) - slippage protection
@@ -990,7 +991,8 @@ Remove liquidity by burning pool shares. You receive both assets back proportion
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 LiquidityPoolWithdrawOperation withdrawOp = LiquidityPoolWithdrawOperationBuilder(
-  liquidityPoolId: "poolid123abc...", // pool ID
+  liquidityPoolId:
+      "dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7", // pool ID (hex)
   amount: "100",                     // amount of pool shares to burn
   minAmountA: "180",                 // min amount of asset A to receive (slippage protection)
   minAmountB: "90",                  // min amount of asset B to receive (slippage protection)
