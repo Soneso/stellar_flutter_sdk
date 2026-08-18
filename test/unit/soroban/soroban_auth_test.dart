@@ -44,7 +44,7 @@ void main() {
     });
 
     test('create claimable balance address', () {
-      final balanceId = '000000006d6f6e657900000000000000000000000000000000000000000000000000000000';
+      final balanceId = '000000006d6f6e6579000000000000000000000000000000000000000000000000000000';
       final address = Address.forClaimableBalanceId(balanceId);
 
       expect(address, isNotNull);
@@ -658,7 +658,7 @@ void main() {
   group('Address - additional coverage', () {
     test('forClaimableBalanceId creates address with balance ID', () {
       final balanceId =
-          '000000006d6f6e657900000000000000000000000000000000000000000000000000000000';
+          '000000006d6f6e6579000000000000000000000000000000000000000000000000000000';
       final address = Address.forClaimableBalanceId(balanceId);
 
       expect(address.type, equals(Address.TYPE_CLAIMABLE_BALANCE));
@@ -680,7 +680,7 @@ void main() {
 
     test('claimable balance address toXdr and fromXdr', () {
       final balanceId =
-          '000000006d6f6e657900000000000000000000000000000000000000000000000000000000';
+          '000000006d6f6e6579000000000000000000000000000000000000000000000000000000';
       final address = Address.forClaimableBalanceId(balanceId);
 
       final xdr = address.toXdr();
@@ -689,7 +689,10 @@ void main() {
 
       final restored = Address.fromXdr(xdr);
       expect(restored.type, equals(Address.TYPE_CLAIMABLE_BALANCE));
-      expect(restored.claimableBalanceId, isNotNull);
+      // fromXdr reports the id in the spelling Horizon serves: the four byte
+      // type discriminant ahead of the hash, 72 characters of hex. That is the
+      // spelling this address was built from, so the id round-trips unchanged.
+      expect(restored.claimableBalanceId, equals(balanceId));
     });
 
     test('liquidity pool address toXdr and fromXdr', () {
@@ -703,7 +706,7 @@ void main() {
 
       final restored = Address.fromXdr(xdr);
       expect(restored.type, equals(Address.TYPE_LIQUIDITY_POOL));
-      expect(restored.liquidityPoolId, isNotNull);
+      expect(restored.liquidityPoolId, equals(poolId));
     });
 
     test('muxed account address toXdr handles conversion', () {

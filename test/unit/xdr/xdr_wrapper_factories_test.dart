@@ -734,6 +734,95 @@ void main() {
       expect(v.toStrKey(), contractId);
       _roundtrip(v);
     });
+
+    test('forContractId with hex', () {
+      var hash = Uint8List.fromList(List<int>.filled(32, 0xAB));
+      var v = XdrSCAddress.forContractId(_hex(hash));
+      expect(v.discriminant, XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT);
+      expect(v.contractId!.hash, hash);
+      _roundtrip(v);
+    });
+
+    test('forContractId reads an upper case hex id leading with C as hex', () {
+      // 'C' is a hexadecimal digit, so a 64-character hex id may lead with it;
+      // only a 56-character C... string is a strkey.
+      const upperHex =
+          'CA1B2C3D4E5F678901234567890ABCDEF1234567890ABCDEF1234567890ABCDE';
+      var v = XdrSCAddress.forContractId(upperHex);
+      expect(v.discriminant, XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT);
+      expect(_hex(v.contractId!.hash), upperHex.toLowerCase());
+      _roundtrip(v);
+    });
+
+    test('forContractId rejects hex of fewer than 32 bytes', () {
+      expect(
+        () => XdrSCAddress.forContractId('00ff'),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            'message',
+            'Contract id must be hex of a 32 byte hash; 2 bytes given',
+          ),
+        ),
+      );
+    });
+
+    test('forContractId rejects hex of more than 32 bytes', () {
+      expect(
+        () => XdrSCAddress.forContractId('ff' * 40),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            'message',
+            'Contract id must be hex of a 32 byte hash; 40 bytes given',
+          ),
+        ),
+      );
+    });
+
+    test('forLiquidityPoolId', () {
+      var hash = Uint8List.fromList(List<int>.filled(32, 0xCD));
+      var strKey = StrKey.encodeLiquidityPoolId(hash);
+      var v = XdrSCAddress.forLiquidityPoolId(strKey);
+      expect(v.discriminant, XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL);
+      expect(v.liquidityPoolId!.hash, hash);
+      expect(v.toStrKey(), strKey);
+      _roundtrip(v);
+    });
+
+    test('forLiquidityPoolId with hex', () {
+      var hash = Uint8List.fromList(List<int>.filled(32, 0xCD));
+      var v = XdrSCAddress.forLiquidityPoolId(_hex(hash));
+      expect(v.discriminant, XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL);
+      expect(v.liquidityPoolId!.hash, hash);
+      _roundtrip(v);
+    });
+
+    test('forLiquidityPoolId rejects hex of fewer than 32 bytes', () {
+      expect(
+        () => XdrSCAddress.forLiquidityPoolId('00ff'),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            'message',
+            'Liquidity pool id must be hex of a 32 byte hash; 2 bytes given',
+          ),
+        ),
+      );
+    });
+
+    test('forLiquidityPoolId rejects hex of more than 32 bytes', () {
+      expect(
+        () => XdrSCAddress.forLiquidityPoolId('ff' * 40),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            'message',
+            'Liquidity pool id must be hex of a 32 byte hash; 40 bytes given',
+          ),
+        ),
+      );
+    });
   });
 
   // =========================================================================
@@ -787,20 +876,22 @@ void main() {
   // XdrClaimableBalanceID factory methods
   // =========================================================================
   group('XdrClaimableBalanceID factories', () {
-    test('forId and claimableBalanceIdString', () {
+    test('forId renders both spellings of the id it was given', () {
       var hash = Uint8List.fromList(List<int>.filled(32, 0xAB));
-      // claimableBalanceIdString uses 1-byte discriminant prefix (matching StrKey payload format)
-      var hashHex = hash.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
-      var expectedHex =
-          '00' + hashHex; // 1-byte V0 discriminant (0) + 32-byte hash
-      // forId accepts Horizon format (4-byte prefix) — stringIdToXdrHash takes last 32 bytes
+      var hashHex = _hex(hash);
+      // forId accepts the Horizon format (4-byte prefix) and keeps the 32 hash bytes
       var horizonHex = '00000000' + hashHex;
       var v = XdrClaimableBalanceID.forId(horizonHex);
       expect(
         v.discriminant,
         XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0,
       );
-      expect(v.claimableBalanceIdString, expectedHex);
+      // paddedBalanceIdHex is the 72 character form Horizon serves: the four
+      // byte XDR union discriminant ahead of the hash.
+      expect(v.paddedBalanceIdHex, horizonHex);
+      // claimableBalanceIdString is the 66 character form the strkey payload
+      // carries: the single discriminant byte ahead of the hash.
+      expect(v.claimableBalanceIdString, '00' + hashHex);
       _roundtrip(v);
     });
 
@@ -1190,3 +1281,6 @@ void _roundtrip(dynamic val) {
   var base64 = val.toBase64EncodedXdrString();
   expect(base64, isNotEmpty);
 }
+
+String _hex(Uint8List bytes) =>
+    bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();

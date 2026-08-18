@@ -82,18 +82,19 @@ class OperationsRequestBuilder extends RequestBuilder {
   }
 
   /// Returns successful operations for a given claimable balance by [claimableBalanceId].
+  ///
+  /// [claimableBalanceId] may be given in any spelling of a claimable balance
+  /// id: the strkey (B...), the hex of the bare hash, or that hex behind the
+  /// type discriminant, carried either as one byte or as the four the XDR
+  /// union writes. The request is sent with the 72 character form Horizon
+  /// serves.
+  ///
+  /// Throws [ArgumentError], naming the reason, when [claimableBalanceId]
+  /// holds none of those spellings.
+  ///
   /// See: [Stellar developer docs](https://developers.stellar.org)
   OperationsRequestBuilder forClaimableBalance(String claimableBalanceId) {
-    var id = claimableBalanceId;
-    if (id.startsWith("B")) {
-      try {
-        id = Util.bytesToHex(
-            StrKey.decodeClaimableBalanceId(claimableBalanceId));
-      } catch (_) {
-        throw ArgumentError(
-            "invalid claimable balance id: $claimableBalanceId");
-      }
-    }
+    final id = RequestBuilder.claimableBalanceIdHorizonHex(claimableBalanceId);
     this.setSegments(["claimable_balances", id, "operations"]);
     return this;
   }

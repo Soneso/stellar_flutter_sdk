@@ -233,28 +233,33 @@ void main() {
       });
     });
 
-    group('stringIdToXdrHash', () {
+    group('hexIdToXdrHash', () {
       test('should convert hex string to 32-byte hash', () {
         var hex = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2";
-        var hash = Util.stringIdToXdrHash(hex);
-        expect(hash.hash.length, equals(32));
+        var hash = Util.hexIdToXdrHash(hex, 'Contract id');
+        expect(Util.bytesToHex(hash.hash), equals(hex));
       });
 
-      test('should pad short strings', () {
+      test('should reject short strings rather than pad them', () {
         var hex = "a1b2c3";
-        var hash = Util.stringIdToXdrHash(hex);
-        expect(hash.hash.length, equals(32));
+        expect(
+            () => Util.hexIdToXdrHash(hex, 'Contract id'),
+            throwsA(isA<FormatException>().having((e) => e.message, 'message',
+                'Contract id must be hex of a 32 byte hash; 3 bytes given')));
       });
 
-      test('should truncate long strings', () {
+      test('should reject long strings rather than truncate them', () {
         var hex = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6";
-        var hash = Util.stringIdToXdrHash(hex);
-        expect(hash.hash.length, equals(32));
+        expect(
+            () => Util.hexIdToXdrHash(hex, 'Contract id'),
+            throwsA(isA<FormatException>().having((e) => e.message, 'message',
+                'Contract id must be hex of a 32 byte hash; 36 bytes given')));
       });
 
-      test('should handle lowercase hex', () {
-        var hex = "abcdef1234567890";
-        expect(() => Util.stringIdToXdrHash(hex), returnsNormally);
+      test('should read a 32-byte id in either case', () {
+        var hex = "A1B2C3D4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C7D8E9F0A1B2";
+        var hash = Util.hexIdToXdrHash(hex, 'Contract id');
+        expect(Util.bytesToHex(hash.hash), equals(hex.toLowerCase()));
       });
     });
 

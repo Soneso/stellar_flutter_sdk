@@ -107,9 +107,17 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// Returns all transactions that affect the specified claimable balance.
   ///
   /// Parameters:
-  /// - [claimableBalanceId] The claimable balance ID (hex or B-prefixed)
+  /// - [claimableBalanceId] The claimable balance id, in any of its spellings:
+  ///   the strkey (B...), the hex of the bare hash, or that hex behind the
+  ///   type discriminant, carried either as one byte or as the four the XDR
+  ///   union writes. The request is sent with the 72 character form Horizon
+  ///   serves.
   ///
   /// Returns: This builder instance for method chaining
+  ///
+  /// Throws:
+  /// - [ArgumentError]: naming the reason, when [claimableBalanceId] holds
+  ///   none of those spellings
   ///
   /// Example:
   /// ```dart
@@ -121,16 +129,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// See also:
   /// - [Stellar developer docs](https://developers.stellar.org)
   TransactionsRequestBuilder forClaimableBalance(String claimableBalanceId) {
-    var id = claimableBalanceId;
-    if (id.startsWith("B")) {
-      try {
-        id = Util.bytesToHex(
-            StrKey.decodeClaimableBalanceId(claimableBalanceId));
-      } catch (_) {
-        throw ArgumentError(
-            "invalid claimable balance id: $claimableBalanceId");
-      }
-    }
+    final id = RequestBuilder.claimableBalanceIdHorizonHex(claimableBalanceId);
     this.setSegments(["claimable_balances", id, "transactions"]);
     return this;
   }

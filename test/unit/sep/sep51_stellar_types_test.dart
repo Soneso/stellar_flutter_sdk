@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+import '../../tests_util.dart';
+
 /// The types SEP-0051 §Stellar-Specific Types gives a rendering of their own.
 ///
 /// Three sections are covered. §Address Types lists the types that render as a
@@ -79,6 +81,15 @@ String _breakChecksum(String strKey) {
   final String last = strKey.substring(strKey.length - 1);
   return strKey.substring(0, strKey.length - 1) + (last == 'A' ? 'B' : 'A');
 }
+
+/// Matches a [FormatException] whose message carries every fragment.
+Matcher throwsFormatWith(List<String> fragments) => throwsA(
+  isA<FormatException>().having(
+    (FormatException e) => e.message,
+    'message',
+    allOf(fragments.map(contains).toList()),
+  ),
+);
 
 void main() {
   group('SEP-0051 §Address Types renders a public key as a G strkey', () {
@@ -178,11 +189,11 @@ void main() {
     });
 
     test('a payload of the wrong width is refused', () {
-      // The strkey codec checks the checksum and the version byte and not the
-      // width, so a 39-byte payload encodes and decodes cleanly and only this
-      // reader stands between it and an instance the binary encoder would
-      // write as malformed XDR.
-      final String short = StrKey.encodeStellarMuxedAccountId(Uint8List(39));
+      // A 39-byte payload has no 69-character M rendering, so the strkey
+      // codec refuses the crafted address on length and the reader restates
+      // that as its own failure.
+      final String short = craftStrKey(
+          VersionByte.MUXED_ACCOUNT_ID.getValue(), Uint8List(39));
       expect(
         () => XdrMuxedAccountMed25519.fromXdrJson('"$short"'),
         throwsA(isA<FormatException>()),
@@ -331,8 +342,8 @@ void main() {
       // Thirty-two bytes carrying the tag and a hash one byte short. The
       // checksum and the version byte are both right, so the width is the only
       // thing that says this is not a balance id.
-      final String narrow = StrKey.encodeCheck(
-        VersionByte.CLAIMABLE_BALANCE,
+      final String narrow = craftStrKey(
+        VersionByte.CLAIMABLE_BALANCE.getValue(),
         Uint8List.fromList(<int>[0, ...List<int>.filled(31, 6)]),
       );
       expect(
@@ -341,14 +352,31 @@ void main() {
       );
     });
 
-    test('a tag the union does not declare is refused', () {
-      final String tagged = StrKey.encodeClaimableBalanceId(
-        Uint8List.fromList(<int>[7, ...List<int>.filled(32, 6)]),
-      );
-      expect(
-        () => XdrClaimableBalanceID.fromXdrJson('"$tagged"'),
-        throwsA(isA<FormatException>()),
-      );
+    test('a tag the union does not declare is refused by the strkey codec', () {
+      // Thirty-three bytes of the right width, tagged with a discriminant the
+      // union does not declare. The tag is the only thing that says this is
+      // not a balance id, so the value is crafted past the SDK encoder, which
+      // refuses the tag itself.
+      //
+      // The reader resolves the strkey through
+      // StrKey.decodeClaimableBalanceId, which refuses an undeclared tag
+      // before the reader compares it, so the codec is the layer that answers
+      // and its wording is what the report carries.
+      for (final int tag in <int>[1, 7, 255]) {
+        final String tagged = craftStrKey(
+          VersionByte.CLAIMABLE_BALANCE.getValue(),
+          Uint8List.fromList(<int>[tag, ...List<int>.filled(32, 6)]),
+        );
+        expect(
+          () => XdrClaimableBalanceID.fromXdrJson('"$tagged"'),
+          throwsFormatWith(<String>[
+            'XDR-JSON XdrClaimableBalanceID holds a malformed strkey',
+            '(Decoded claimable balance id carries the discriminant $tag, '
+                'which names no claimable balance id type)',
+          ]),
+          reason: 'tag $tag',
+        );
+      }
     });
   });
 
@@ -390,7 +418,8 @@ void main() {
     });
 
     test('a well-formed strkey carrying the wrong number of bytes', () {
-      final String narrow = StrKey.encodeStellarAccountId(Uint8List(31));
+      final String narrow =
+          craftStrKey(VersionByte.ACCOUNT_ID.getValue(), Uint8List(31));
       readers.forEach((String name, void Function(String) read) {
         expect(
           () => read(narrow),

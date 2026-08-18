@@ -45,7 +45,7 @@ import 'constants/bit_constants.dart';
 /// - [StrKey] for encoding and decoding Stellar addresses
 /// - [KeyPair] for working with keypairs and account IDs
 class VersionByte {
-  final _value;
+  final int _value;
 
   const VersionByte._internal(this._value);
 
@@ -57,7 +57,7 @@ class VersionByte {
   VersionByte(this._value);
 
   /// Returns the internal version byte value for address encoding.
-  getValue() => this._value;
+  int getValue() => this._value;
 
   /// Version byte for standard account IDs (G...).
   static const ACCOUNT_ID = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_ACCOUNT_ID);
@@ -85,6 +85,41 @@ class VersionByte {
 
   /// Version byte for claimable balance IDs (B...).
   static const CLAIMABLE_BALANCE = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_CLAIMABLE_BALANCE);
+}
+
+/// The lengths one strkey type admits.
+///
+/// [encodedMin] and [encodedMax] bound the base32 string; [payloadMin] and
+/// [payloadMax] bound the bytes it carries once the version byte and the
+/// checksum are removed. A type of a single width has both ends of a range
+/// equal.
+class _StrKeyLengths {
+  final int encodedMin;
+  final int encodedMax;
+  final int payloadMin;
+  final int payloadMax;
+
+  const _StrKeyLengths(
+      {required this.encodedMin,
+      required this.encodedMax,
+      required this.payloadMin,
+      required this.payloadMax});
+
+  /// Lengths of a type whose encoded string and payload each have one width.
+  const _StrKeyLengths.fixed(int encoded, int payload)
+      : encodedMin = encoded,
+        encodedMax = encoded,
+        payloadMin = payload,
+        payloadMax = payload;
+
+  /// The encoded-length bound, worded for an error message.
+  String get encodedRange => _describe(encodedMin, encodedMax);
+
+  /// The payload-length bound, worded for an error message.
+  String get payloadRange => _describe(payloadMin, payloadMax);
+
+  static String _describe(int min, int max) =>
+      min == max ? '$min' : '$min to $max';
 }
 
 /// Provides encoding and decoding for Stellar strkey addresses.
@@ -130,6 +165,48 @@ class VersionByte {
 /// - [VersionByte] for address type prefixes
 /// - [Stellar SEP-0023](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md) for strkey specification
 class StrKey {
+  /// The lengths each strkey type admits, keyed by version byte.
+  ///
+  /// A version byte absent from this table names no type this codec knows.
+  /// [decodeCheck] describes how it applies the two ranges a type holds here.
+  static const Map<int, _StrKeyLengths> _lengthsByVersionByte = {
+    StellarProtocolConstants.VERSION_BYTE_ACCOUNT_ID: _StrKeyLengths.fixed(
+        StellarProtocolConstants.STRKEY_ACCOUNT_ID_LENGTH,
+        StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES),
+    StellarProtocolConstants.VERSION_BYTE_MUXED_ACCOUNT: _StrKeyLengths.fixed(
+        StellarProtocolConstants.STRKEY_MUXED_ACCOUNT_ID_LENGTH,
+        StellarProtocolConstants.MUXED_ACCOUNT_DECODED_LENGTH),
+    StellarProtocolConstants.VERSION_BYTE_SEED: _StrKeyLengths.fixed(
+        StellarProtocolConstants.STRKEY_SECRET_SEED_LENGTH,
+        StellarProtocolConstants.ED25519_PRIVATE_KEY_LENGTH_BYTES),
+    StellarProtocolConstants.VERSION_BYTE_PRE_AUTH_TX: _StrKeyLengths.fixed(
+        StellarProtocolConstants.STRKEY_PRE_AUTH_TX_LENGTH,
+        StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES),
+    StellarProtocolConstants.VERSION_BYTE_SHA256_HASH: _StrKeyLengths.fixed(
+        StellarProtocolConstants.STRKEY_SHA256_HASH_LENGTH,
+        StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES),
+    StellarProtocolConstants.VERSION_BYTE_SIGNED_PAYLOAD: _StrKeyLengths(
+        encodedMin: StellarProtocolConstants.STRKEY_SIGNED_PAYLOAD_MIN_LENGTH,
+        encodedMax: StellarProtocolConstants.STRKEY_SIGNED_PAYLOAD_MAX_LENGTH,
+        payloadMin: StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES +
+            StellarProtocolConstants.SIGNED_PAYLOAD_LENGTH_PREFIX_BYTES +
+            StellarProtocolConstants.SIGNED_PAYLOAD_MIN_PADDED_LENGTH_BYTES,
+        payloadMax: StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES +
+            StellarProtocolConstants.SIGNED_PAYLOAD_LENGTH_PREFIX_BYTES +
+            StellarProtocolConstants.SIGNED_PAYLOAD_MAX_LENGTH_BYTES),
+    StellarProtocolConstants.VERSION_BYTE_CONTRACT_ID: _StrKeyLengths.fixed(
+        StellarProtocolConstants.STRKEY_CONTRACT_ID_LENGTH,
+        StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES),
+    StellarProtocolConstants.VERSION_BYTE_LIQUIDITY_POOL: _StrKeyLengths.fixed(
+        StellarProtocolConstants.STRKEY_LIQUIDITY_POOL_LENGTH,
+        StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES),
+    StellarProtocolConstants.VERSION_BYTE_CLAIMABLE_BALANCE:
+        _StrKeyLengths.fixed(
+            StellarProtocolConstants.STRKEY_CLAIMABLE_BALANCE_LENGTH,
+            StellarProtocolConstants.CLAIMABLE_BALANCE_DISCRIMINANT_BYTES +
+                StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES),
+  };
+
   /// Encodes [data] to strkey account id (G...).
   static String encodeStellarAccountId(Uint8List data) {
     return encodeCheck(VersionByte.ACCOUNT_ID, data);
@@ -143,21 +220,12 @@ class StrKey {
   /// Checks if the given [accountId] is a valid stellar account id.
   /// Must start with "G". If it starts with "M" use [isValidStellarMuxedAccountId].
   static bool isValidStellarAccountId(String accountId) {
-    if (accountId.length != StellarProtocolConstants.STRKEY_ACCOUNT_ID_LENGTH) {
-      return false;
-    }
-    Uint8List decoded;
     try {
-      decoded = decodeStellarAccountId(accountId);
+      decodeStellarAccountId(accountId);
+      return true;
     } on Exception catch (_) {
       return false;
-    } on Error catch (_) {
-      return false;
     }
-    if (decoded.length != StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES) {
-      return false;
-    }
-    return true;
   }
 
   /// Encodes [data] to strkey muxed account id (M...).
@@ -173,22 +241,12 @@ class StrKey {
   /// Checks if the given [accountId] is a valid stellar muxed account id.
   /// Must start with "M". If it starts with "G" use [isValidStellarAccountId].
   static bool isValidStellarMuxedAccountId(String accountId) {
-    if (accountId.length != StellarProtocolConstants.STRKEY_MUXED_ACCOUNT_ID_LENGTH) {
-      return false;
-    }
-    Uint8List decoded;
     try {
-      decoded = decodeStellarMuxedAccountId(accountId);
+      decodeStellarMuxedAccountId(accountId);
+      return true;
     } on Exception catch (_) {
       return false;
-    } on Error catch (_) {
-      return false;
     }
-
-    if (decoded.length != StellarProtocolConstants.MUXED_ACCOUNT_DECODED_LENGTH) {
-      return false;
-    }
-    return true;
   }
 
   /// Encodes [data] to strkey secret seed (S...).
@@ -204,22 +262,12 @@ class StrKey {
   /// Checks if the given [secretSeed] is a valid stellar secret seed.
   /// Must start with "S".
   static bool isValidStellarSecretSeed(String secretSeed) {
-    if (secretSeed.length != StellarProtocolConstants.STRKEY_SECRET_SEED_LENGTH) {
-      return false;
-    }
-    Uint8List decoded;
     try {
-      decoded = decodeStellarSecretSeed(secretSeed);
+      decodeStellarSecretSeed(secretSeed);
+      return true;
     } on Exception catch (_) {
       return false;
-    } on Error catch (_) {
-      return false;
     }
-
-    if (decoded.length != StellarProtocolConstants.ED25519_PRIVATE_KEY_LENGTH_BYTES) {
-      return false;
-    }
-    return true;
   }
 
   /// Encodes [data] to strkey preAuthTx (T...).
@@ -227,7 +275,7 @@ class StrKey {
     return encodeCheck(VersionByte.PRE_AUTH_TX, data);
   }
 
-  /// Decodes strkey [secretSeed] (S...) to raw data.
+  /// Decodes strkey [preAuthTx] (T...) to raw data.
   static Uint8List decodePreAuthTx(String preAuthTx) {
     return decodeCheck(VersionByte.PRE_AUTH_TX, preAuthTx);
   }
@@ -235,22 +283,12 @@ class StrKey {
   /// Checks if the given [preAuthTx] is a valid strkey PreAuthTx.
   /// Must start with "T".
   static bool isValidPreAuthTx(String preAuthTx) {
-    if (preAuthTx.length != StellarProtocolConstants.STRKEY_PRE_AUTH_TX_LENGTH) {
-      return false;
-    }
-    Uint8List decoded;
     try {
-      decoded = decodePreAuthTx(preAuthTx);
+      decodePreAuthTx(preAuthTx);
+      return true;
     } on Exception catch (_) {
       return false;
-    } on Error catch (_) {
-      return false;
     }
-
-    if (decoded.length != StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
-      return false;
-    }
-    return true;
   }
 
   /// Encodes [data] to strkey sha256 hash (X...).
@@ -266,21 +304,12 @@ class StrKey {
   /// Checks if the given [sha256Hash] is a valid strkey sha256 hash.
   /// Must start with "X".
   static bool isValidSha256Hash(String sha256Hash) {
-    if (sha256Hash.length != StellarProtocolConstants.STRKEY_SHA256_HASH_LENGTH) {
-      return false;
-    }
-    Uint8List decoded;
     try {
-      decoded = decodeSha256Hash(sha256Hash);
+      decodeSha256Hash(sha256Hash);
+      return true;
     } on Exception catch (_) {
       return false;
-    } on Error catch (_) {
-      return false;
     }
-    if (decoded.length != StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
-      return false;
-    }
-    return true;
   }
 
   /// Encodes [signedPayloadSigner] to strkey signed payload (P...).
@@ -329,18 +358,77 @@ class StrKey {
   /// Checks if the given str key [signedPayload] (P...) is a valid signed payload.
   /// Must start with "P".
   static bool isValidSignedPayload(String signedPayload) {
-    if (signedPayload.length < StellarProtocolConstants.STRKEY_SIGNED_PAYLOAD_MIN_LENGTH ||
-        signedPayload.length > StellarProtocolConstants.STRKEY_SIGNED_PAYLOAD_MAX_LENGTH) {
-      return false;
-    }
     try {
       decodeSignedPayload(signedPayload);
       return true;
     } on Exception catch (_) {
       return false;
-    } on Error catch (_) {
-      return false;
     }
+  }
+
+  /// Describes how a payload of [length] bytes falls outside the widths a
+  /// signed payload admits, or returns null when it is within them.
+  ///
+  /// The payload is bounded above by its own declaration at
+  /// [StellarProtocolConstants.SIGNED_PAYLOAD_MAX_LENGTH_BYTES] bytes and
+  /// bounded below by the strkey form, which has no encoding for an empty
+  /// payload. The description names the violation and is worded to follow the
+  /// value it is reported about, so a caller supplies its own subject.
+  static String? signedPayloadLengthViolation(int length) {
+    if (length < StellarProtocolConstants.SIGNED_PAYLOAD_MIN_LENGTH_BYTES) {
+      return 'carries an empty payload, which has no strkey rendering';
+    }
+    if (length > StellarProtocolConstants.SIGNED_PAYLOAD_MAX_LENGTH_BYTES) {
+      return 'carries a $length-byte payload, more than the declared '
+          'maximum of '
+          '${StellarProtocolConstants.SIGNED_PAYLOAD_MAX_LENGTH_BYTES}';
+    }
+    return null;
+  }
+
+  /// Describes how [region] disagrees with the framing a signed payload
+  /// carries, or returns null when it agrees with it.
+  ///
+  /// The region is the payload of a signed payload strkey: the XDR encoding of
+  /// a 32-byte signer key, a 4-byte big-endian payload length, and the payload
+  /// padded with NUL bytes to a multiple of four. A region too short to hold
+  /// the signer key and the length, one declaring a length
+  /// [signedPayloadLengthViolation] refuses, one whose total width is not the
+  /// width the declared length occupies, or one padding its payload with a
+  /// byte other than NUL is described.
+  ///
+  /// The description names the violation and is worded to follow the value it
+  /// is reported about, so a caller supplies its own subject.
+  static String? signedPayloadFramingViolation(Uint8List region) {
+    const int keyWidth =
+        StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES;
+    const int lengthWidth =
+        StellarProtocolConstants.SIGNED_PAYLOAD_LENGTH_PREFIX_BYTES;
+    const int prefix = keyWidth + lengthWidth;
+
+    if (region.length < prefix) {
+      return 'is ${region.length} bytes, too short to hold a signer key '
+          'and a payload length';
+    }
+
+    final int length =
+        ByteData.sublistView(region).getUint32(keyWidth, Endian.big);
+    final String? bound = signedPayloadLengthViolation(length);
+    if (bound != null) {
+      return bound;
+    }
+
+    final int padded = length + (-length) % 4;
+    if (region.length != prefix + padded) {
+      return 'is ${region.length} bytes, but a $length-byte payload '
+          'occupies ${prefix + padded}';
+    }
+    for (int i = prefix + length; i < region.length; i++) {
+      if (region[i] != 0) {
+        return 'pads its payload with a byte that is not NUL';
+      }
+    }
+    return null;
   }
 
   /// Encodes [data] to strkey contract id (C...).
@@ -361,34 +449,20 @@ class StrKey {
   /// Checks if the given [contractId] is a valid soroban contract id.
   /// Must start with "C".
   static bool isValidContractId(String contractId) {
-    if (contractId.length != StellarProtocolConstants.STRKEY_CONTRACT_ID_LENGTH) {
-      return false;
-    }
-    Uint8List decoded;
     try {
-      decoded = decodeContractId(contractId);
-    } on Exception catch (_) {
-      return false;
-    } on Error catch (_) {
-      return false;
-    }
-    if (decoded.length != StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
-      return false;
-    }
-    return true;
-  }
-
-  /// Checks if the given [contractIdHex] is a valid soroban contract id.
-  /// Must be in hex format.
-  static bool isValidContractIdHex(String contractIdHex) {
-    try {
-      decodeContractIdHex(contractIdHex);
+      decodeContractId(contractId);
       return true;
     } on Exception catch (_) {
       return false;
-    } on Error catch (_) {
-      return false;
     }
+  }
+
+  /// Checks if the given [strKeyContractId] is a valid soroban contract id.
+  /// Must start with "C". The name carries the hex rendering that
+  /// [decodeContractIdHex] returns; the id it accepts is the same strkey
+  /// [isValidContractId] accepts.
+  static bool isValidContractIdHex(String strKeyContractId) {
+    return isValidContractId(strKeyContractId);
   }
 
   /// Decodes [strKeyContractId] (C...) to raw bytes and returns the
@@ -398,11 +472,73 @@ class StrKey {
         decodeCheck(VersionByte.CONTRACT_ID, strKeyContractId));
   }
 
+  /// Describes how the [discriminant] a claimable balance id leads with names
+  /// no balance id type, or returns null when it names one.
+  ///
+  /// The description names the violation and is worded to follow the value it
+  /// is reported about, so a caller supplies its own subject.
+  static String? _claimableBalanceDiscriminantViolation(int discriminant) {
+    if (discriminant ==
+        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0.value) {
+      return null;
+    }
+    return 'carries the discriminant $discriminant, which names no '
+        'claimable balance id type';
+  }
+
   /// Encodes raw [data] to strkey claimable balance (B...).
+  ///
+  /// [data] is the 32-byte hash naming the balance, which is encoded behind
+  /// the discriminant of the balance id type the protocol defines, that hash
+  /// already carrying its own discriminant, or the 36-byte XDR encoding of the
+  /// balance id opening with the four byte union discriminant, the shape
+  /// Horizon reports.
+  ///
+  /// Throws:
+  /// - [Exception]: if [data] is none of those widths, or if it carries a
+  ///   discriminant that names no claimable balance id type. Such a value has
+  ///   no strkey rendering.
   static String encodeClaimableBalanceId(Uint8List data) {
-    if (data.length == StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
-      // type is missing so let's append it
-      return encodeCheck(VersionByte.CLAIMABLE_BALANCE, Uint8List.fromList([0, ...data]));
+    const int hashWidth = StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES;
+    const int taggedWidth =
+        StellarProtocolConstants.CLAIMABLE_BALANCE_DISCRIMINANT_BYTES +
+            hashWidth;
+    const int xdrDiscriminantWidth =
+        StellarProtocolConstants.XDR_UNION_DISCRIMINANT_BYTES;
+    const int xdrWidth = xdrDiscriminantWidth + hashWidth;
+
+    if (data.length == hashWidth) {
+      return encodeCheck(
+          VersionByte.CLAIMABLE_BALANCE,
+          Uint8List.fromList([
+            XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0.value,
+            ...data
+          ]));
+    }
+    if (data.length == xdrWidth) {
+      final v0 = XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0.value;
+      if (data[0] != 0 || data[1] != 0 || data[2] != 0 || data[3] != v0) {
+        throw new Exception(
+            "claimable balance id carries an XDR discriminant that names no "
+            "claimable balance id type");
+      }
+      return encodeCheck(
+          VersionByte.CLAIMABLE_BALANCE,
+          Uint8List.fromList([v0, ...data.sublist(xdrDiscriminantWidth)]));
+    }
+    if (data.length != taggedWidth) {
+      throw new Exception(
+          "claimable balance id must be $hashWidth bytes (the hash), "
+          "$taggedWidth bytes (the hash behind its discriminant), "
+          "or $xdrWidth bytes (its XDR encoding), "
+          "got ${data.length}");
+    }
+    // Fires ahead of encodeCheck's copy of this rule on purpose: this arm's
+    // message and plain-Exception type are pinned by tests.
+    final String? discriminant =
+        _claimableBalanceDiscriminantViolation(data[0]);
+    if (discriminant != null) {
+      throw new Exception("claimable balance id $discriminant");
     }
     return encodeCheck(VersionByte.CLAIMABLE_BALANCE, data);
   }
@@ -419,22 +555,12 @@ class StrKey {
 
   /// Checks validity of alleged [claimableBalanceId] (B...) strkey address.
   static bool isValidClaimableBalanceId(String claimableBalanceId) {
-    if (claimableBalanceId.length != StellarProtocolConstants.STRKEY_CLAIMABLE_BALANCE_LENGTH) {
-      return false;
-    }
-    Uint8List decoded;
     try {
-      decoded = decodeClaimableBalanceId(claimableBalanceId);
+      decodeClaimableBalanceId(claimableBalanceId);
+      return true;
     } on Exception catch (_) {
       return false;
-    } on Error catch (_) {
-      return false;
     }
-    if (decoded.length != StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES + 1) {
-      // +1 byte for discriminant
-      return false;
-    }
-    return true;
   }
 
   /// Encodes raw [data] to strkey liquidity pool (L...).
@@ -455,28 +581,23 @@ class StrKey {
 
   /// Checks validity of alleged [liquidityPoolId] (L...) strkey address.
   static bool isValidLiquidityPoolId(String liquidityPoolId) {
-    if (liquidityPoolId.length != StellarProtocolConstants.STRKEY_LIQUIDITY_POOL_LENGTH) {
-      return false;
-    }
-    Uint8List decoded;
     try {
-      decoded = decodeLiquidityPoolId(liquidityPoolId);
+      decodeLiquidityPoolId(liquidityPoolId);
+      return true;
     } on Exception catch (_) {
       return false;
-    } on Error catch (_) {
-      return false;
     }
-    if (decoded.length != StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
-      return false;
-    }
-    return true;
   }
 
   /// Encodes binary data to a strkey address with checksum.
   ///
   /// This is the core encoding method used by all strkey encoding functions.
-  /// It prepends the version byte, calculates a CRC16 checksum, and encodes
-  /// the result using Base32.
+  /// It verifies that [data] is a width the type of [versionByte] admits,
+  /// prepends the version byte, calculates a CRC16 checksum, and encodes
+  /// the result using Base32. For a signed payload (P...) it also verifies the
+  /// framing of that payload, and for a claimable balance (B...) the
+  /// discriminant the payload leads with, so every address this encoder mints
+  /// is one [decodeCheck] reads back.
   ///
   /// Parameters:
   /// - [versionByte]: The version byte identifying the address type
@@ -484,12 +605,49 @@ class StrKey {
   ///
   /// Returns: Base32-encoded strkey address with checksum
   ///
+  /// Throws:
+  /// - [FormatException]: if [versionByte] names no strkey type this codec
+  ///   knows, if a signed payload disagrees with the framing
+  ///   [signedPayloadFramingViolation] describes, or if a claimable balance id
+  ///   carries a discriminant that names no balance id type
+  /// - [Exception]: if [data] is not a width the type admits
+  ///
   /// Example:
   /// ```dart
   /// Uint8List publicKey = keyPair.publicKey;
   /// String accountId = StrKey.encodeCheck(VersionByte.ACCOUNT_ID, publicKey);
   /// ```
   static String encodeCheck(VersionByte versionByte, Uint8List data) {
+    final _StrKeyLengths? lengths =
+        _lengthsByVersionByte[versionByte.getValue()];
+
+    if (lengths == null) {
+      throw new FormatException(
+          "Unrecognized version byte ${versionByte.getValue()}");
+    }
+
+    if (data.length < lengths.payloadMin || data.length > lengths.payloadMax) {
+      throw new Exception("Payload must be ${lengths.payloadRange} bytes, "
+          "got ${data.length}");
+    }
+
+    if (versionByte.getValue() ==
+        StellarProtocolConstants.VERSION_BYTE_SIGNED_PAYLOAD) {
+      final String? framing = signedPayloadFramingViolation(data);
+      if (framing != null) {
+        throw new FormatException("Signed payload $framing");
+      }
+    }
+
+    if (versionByte.getValue() ==
+        StellarProtocolConstants.VERSION_BYTE_CLAIMABLE_BALANCE) {
+      final String? discriminant =
+          _claimableBalanceDiscriminantViolation(data[0]);
+      if (discriminant != null) {
+        throw new FormatException("Claimable balance id $discriminant");
+      }
+    }
+
     List<int> output = [];
     output.add(versionByte.getValue());
     output.addAll(data);
@@ -507,8 +665,18 @@ class StrKey {
   /// Decodes a strkey address and verifies its checksum.
   ///
   /// This is the core decoding method used by all strkey decoding functions.
-  /// It verifies the Base32 encoding, version byte, and CRC16 checksum before
-  /// returning the decoded data.
+  /// It verifies the length of the encoded string, the Base32 encoding, the
+  /// version byte, the CRC16 checksum and the width of the decoded payload
+  /// before returning that payload. For a signed payload (P...) it also
+  /// verifies the framing of that payload, and for a claimable balance (B...)
+  /// the discriminant the payload leads with.
+  ///
+  /// The encoded string is measured before it is decoded: that bound settles
+  /// the width of the payload returned and bounds the work an oversized input
+  /// can cause. The payload is measured again after the checksum, holding the
+  /// decoder to that width whatever the Base32 step returns, and placing the
+  /// measurement where a corrupted address is reported as a checksum failure
+  /// rather than as a width failure.
   ///
   /// Parameters:
   /// - [versionByte]: Expected version byte for validation
@@ -517,7 +685,14 @@ class StrKey {
   /// Returns: Decoded binary data
   ///
   /// Throws:
-  /// - [FormatException]: If encoding, version byte, or checksum is invalid
+  /// - [FormatException]: if [versionByte] names no strkey type this codec
+  ///   knows, if [encData] is not a length that type admits, if [encData] is
+  ///   not the Base32 rendering of the bytes it decodes to, if the leading
+  ///   decoded byte is not [versionByte], if the CRC16 checksum does not match
+  ///   the payload, if the payload is not a width that type admits, if a
+  ///   signed payload disagrees with the framing
+  ///   [signedPayloadFramingViolation] describes, or if a claimable balance id
+  ///   carries a discriminant that names no balance id type
   ///
   /// Example:
   /// ```dart
@@ -527,6 +702,20 @@ class StrKey {
   /// );
   /// ```
   static Uint8List decodeCheck(VersionByte versionByte, String encData) {
+    final _StrKeyLengths? lengths =
+        _lengthsByVersionByte[versionByte.getValue()];
+
+    if (lengths == null) {
+      throw new FormatException(
+          "Unrecognized version byte ${versionByte.getValue()}");
+    }
+
+    if (encData.length < lengths.encodedMin ||
+        encData.length > lengths.encodedMax) {
+      throw new FormatException("Encoded string must be "
+          "${lengths.encodedRange} characters, got ${encData.length}");
+    }
+
     Uint8List decoded = Base32.decode(encData);
     int decodedVersionByte = decoded[0];
     Uint8List payload =
@@ -548,6 +737,30 @@ class StrKey {
 
     if (!ListEquality().equals(expectedChecksum, checksum)) {
       throw new FormatException("Checksum invalid");
+    }
+
+    // The encoded-length bound above already fixes this width for every type
+    // the table names. This backs that invariant rather than replacing it.
+    if (data.length < lengths.payloadMin || data.length > lengths.payloadMax) {
+      throw new FormatException("Decoded payload must be "
+          "${lengths.payloadRange} bytes, got ${data.length}");
+    }
+
+    if (versionByte.getValue() ==
+        StellarProtocolConstants.VERSION_BYTE_SIGNED_PAYLOAD) {
+      final String? framing = signedPayloadFramingViolation(data);
+      if (framing != null) {
+        throw new FormatException("Decoded signed payload $framing");
+      }
+    }
+
+    if (versionByte.getValue() ==
+        StellarProtocolConstants.VERSION_BYTE_CLAIMABLE_BALANCE) {
+      final String? discriminant =
+          _claimableBalanceDiscriminantViolation(data[0]);
+      if (discriminant != null) {
+        throw new FormatException("Decoded claimable balance id $discriminant");
+      }
     }
 
     return data;
@@ -669,7 +882,18 @@ class KeyPair {
   }
 
   /// Creates a new KeyPair object from a raw 32 byte secret [seed].
+  ///
+  /// Throws:
+  /// - [ArgumentError]: if [seed] is not
+  ///   [StellarProtocolConstants.ED25519_PRIVATE_KEY_LENGTH_BYTES] bytes, the
+  ///   only width an Ed25519 seed has
   static KeyPair fromSecretSeedList(Uint8List seed) {
+    if (seed.length !=
+        StellarProtocolConstants.ED25519_PRIVATE_KEY_LENGTH_BYTES) {
+      throw ArgumentError("Secret seed must be "
+          "${StellarProtocolConstants.ED25519_PRIVATE_KEY_LENGTH_BYTES} bytes, "
+          "got ${seed.length}");
+    }
     ed25519.SigningKey sk = ed25519.SigningKey.fromSeed(seed);
     return new KeyPair(sk.publicKey.asTypedList, sk.asTypedList);
   }
@@ -687,7 +911,18 @@ class KeyPair {
   }
 
   /// Creates a new KeyPair object from a 32 byte [publicKey] address.
+  ///
+  /// Throws:
+  /// - [ArgumentError]: if [publicKey] is not
+  ///   [StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES] bytes, the
+  ///   only width an Ed25519 public key has
   static KeyPair fromPublicKey(Uint8List publicKey) {
+    if (publicKey.length !=
+        StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES) {
+      throw ArgumentError("Public key must be "
+          "${StellarProtocolConstants.ED25519_PUBLIC_KEY_LENGTH_BYTES} bytes, "
+          "got ${publicKey.length}");
+    }
     return new KeyPair(publicKey, null);
   }
 
@@ -1011,18 +1246,23 @@ class SignedPayloadSigner {
 
   /// Creates a signed payload signer with account ID and payload data.
   ///
-  /// This constructor validates that the payload length does not exceed the maximum
-  /// allowed size and that the signer account uses an ED25519 public key.
+  /// This constructor validates that the payload length is within the range the
+  /// wire format carries and that the signer account uses an ED25519 public key.
   ///
   /// Parameters:
   /// - [_signerAccountID] The XDR account ID of the signer (must be ED25519)
-  /// - [_payload] The binary payload data to be signed (max 64 bytes)
+  /// - [_payload] The binary payload data to be signed (1 to 64 bytes)
   ///
   /// Throws:
-  /// - [Exception] If payload exceeds 64 bytes or account is not ED25519
+  /// - [Exception] If payload is empty, exceeds 64 bytes, or account is not ED25519
   SignedPayloadSigner(this._signerAccountID, this._payload) {
+    if (_payload.length <
+        StellarProtocolConstants.SIGNED_PAYLOAD_MIN_LENGTH_BYTES) {
+      throw Exception("invalid payload length, must be at least " +
+          StellarProtocolConstants.SIGNED_PAYLOAD_MIN_LENGTH_BYTES.toString());
+    }
     if (_payload.length > StellarProtocolConstants.SIGNED_PAYLOAD_MAX_LENGTH_BYTES) {
-      throw Exception("invalid payload length, must be less than " +
+      throw Exception("invalid payload length, must be at most " +
           StellarProtocolConstants.SIGNED_PAYLOAD_MAX_LENGTH_BYTES.toString());
     }
     if (_signerAccountID.accountID.getEd25519() == null) {
@@ -1033,15 +1273,30 @@ class SignedPayloadSigner {
 
   /// Creates a signed payload signer from an account ID.
   ///
+  /// A signed payload signer names the ed25519 key that signs, so [accountId]
+  /// is an account id (G...). A muxed account id (M...) names a subaccount of
+  /// one rather than a key, and is refused rather than read as the key it
+  /// multiplexes.
+  ///
   /// Parameters:
   /// - [accountId] The Stellar account ID (G... format)
   /// - [payload] Binary payload data to be signed
   ///
   /// Returns: SignedPayloadSigner instance
+  ///
+  /// Throws:
+  /// - [ArgumentError]: if [accountId] is a muxed account id
+  /// - [FormatException]: if [accountId] is not an account id this codec reads
+  /// - [Exception]: if [payload] is not a width a signed payload carries
   static SignedPayloadSigner fromAccountId(
       String accountId, Uint8List payload) {
-    XdrAccountID accId =
-        XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
+    if (accountId.startsWith('M')) {
+      throw ArgumentError("A signed payload signer takes an ed25519 account id "
+          "(G...), not a muxed account id (M...)");
+    }
+    XdrAccountID accId = XdrAccountID(
+        KeyPair.fromPublicKey(StrKey.decodeStellarAccountId(accountId))
+            .xdrPublicKey);
     return SignedPayloadSigner(accId, payload);
   }
 

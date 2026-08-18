@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'response.dart';
-import 'dart:convert';
 import '../xdr/xdr.dart';
 import '../util.dart';
 import 'transaction_response.dart';
@@ -45,7 +44,7 @@ class SubmitTransactionResponse extends Response {
   int? ledger;
 
   String? _strEnvelopeXdr;
-  String? _strResultXdr;
+  final String? _strResultXdr;
   String? _strMetaXdr;
   String? _strFeeMetaXdr;
 
@@ -82,7 +81,8 @@ class SubmitTransactionResponse extends Response {
   /// Returns true if the transaction was successfully included in a ledger.
   ///
   /// This checks the transaction result XDR to determine success. For fee-bump
-  /// transactions, it checks the inner transaction result.
+  /// transactions, it checks the inner transaction result. A result XDR that
+  /// cannot be read answers false.
   ///
   /// Example:
   /// ```dart
@@ -95,8 +95,17 @@ class SubmitTransactionResponse extends Response {
   /// ```
   bool get success {
     if (_strResultXdr != null) {
-      XdrTransactionResult result =
-          XdrTransactionResult.fromBase64EncodedXdrString(_strResultXdr!);
+      final XdrTransactionResult result;
+      try {
+        result =
+            XdrTransactionResult.fromBase64EncodedXdrString(_strResultXdr);
+      } catch (e) {
+        // A result that cannot be read cannot confirm success. Reading it
+        // raises both Exception shapes (malformed base64) and Error shapes
+        // (a truncated body indexes past the buffer), so the catch is
+        // deliberately unqualified.
+        return false;
+      }
       if (result.result.discriminant == XdrTransactionResultCode.txSUCCESS) {
         return true;
       } else if (result.result.discriminant ==
@@ -219,23 +228,29 @@ class SubmitTransactionResponse extends Response {
 
   /// Helper method that returns Offer ID for ManageOffer from TransactionResult Xdr.
   /// This is helpful when you need the ID of an offer to update it later.
+  ///
+  /// Answers null when the transaction did not succeed, when no operation sits
+  /// at [position], or when the operation there is not a manage offer.
+  /// For a fee bump the inner transaction's operations are read.
   int? getOfferIdFromResult(int position) {
     if (!this.success) {
       return null;
     }
 
-    XdrDataInputStream xdrInputStream =
-        XdrDataInputStream(base64Decode(this.resultXdr!));
-    XdrTransactionResult result;
+    // [resultXdr] returns the string [success] already decoded, so the decode
+    // cannot fail here.
+    final result =
+        XdrTransactionResult.fromBase64EncodedXdrString(this.resultXdr!);
 
-    try {
-      result = XdrTransactionResult.decode(xdrInputStream);
-    } catch (e) {
+    // A fee bump carries its operation results on the inner transaction.
+    final results = result.result.results ??
+        result.result.innerResultPair?.result.result.results;
+    if (results == null || position < 0 || position >= results.length) {
       return null;
     }
 
-    XdrOperationResult opResult = result.result.results![position];
-    XdrOperationType? disc = opResult.tr!.discriminant;
+    final tr = results[position].tr;
+    final disc = tr?.discriminant;
     if (disc != XdrOperationType.MANAGE_SELL_OFFER &&
         disc != XdrOperationType.MANAGE_BUY_OFFER) {
       return null;
@@ -243,8 +258,8 @@ class SubmitTransactionResponse extends Response {
 
     XdrManageOfferResult? manageResult =
         disc == XdrOperationType.MANAGE_SELL_OFFER
-            ? opResult.tr!.manageSellOfferResult
-            : opResult.tr!.manageBuyOfferResult;
+            ? tr!.manageSellOfferResult
+            : tr!.manageBuyOfferResult;
 
     if (manageResult?.success?.offer.offer == null) {
       return null;
@@ -261,43 +276,43 @@ class SubmitTransactionResponse extends Response {
 
   /// Helper method that returns Claimable Balance ID for CreateClaimableBalance from TransactionResult XDR.
   /// This is helpful when you need the created Claimable Balance ID to show it to the user
+  ///
+  /// Answers null when the transaction did not succeed, when no operation sits
+  /// at [position], or when the operation there is not a CreateClaimableBalance.
+  /// For a fee bump the inner transaction's operations are read.
+  ///
+  /// The id is the bare 64 character hash of the created balance, keeping this
+  /// method's original signature; a claimable balance read from XDR elsewhere
+  /// instead carries the 72 character form Horizon serves. Either spelling
+  /// feeds the builders unchanged, since they accept both.
   String? getClaimableBalanceIdIdFromResult(int position) {
     if (!this.success) {
       return null;
     }
 
-    XdrDataInputStream xdrInputStream =
-        XdrDataInputStream(base64Decode(this.resultXdr!));
-    XdrTransactionResult result;
+    // [resultXdr] returns the string [success] already decoded, so the decode
+    // cannot fail here.
+    final result =
+        XdrTransactionResult.fromBase64EncodedXdrString(this.resultXdr!);
 
-    try {
-      result = XdrTransactionResult.decode(xdrInputStream);
-    } catch (e) {
+    // A fee bump carries its operation results on the inner transaction.
+    final results = result.result.results ??
+        result.result.innerResultPair?.result.result.results;
+    if (results == null || position < 0 || position >= results.length) {
       return null;
     }
 
-    XdrOperationType? disc =
-        result.result.results![position]
-            .tr!
-            .discriminant;
-    if (disc != XdrOperationType.CREATE_CLAIMABLE_BALANCE) {
+    final tr = results[position].tr;
+    if (tr?.discriminant != XdrOperationType.CREATE_CLAIMABLE_BALANCE) {
       return null;
     }
 
-    if (result.result.results![position]
-            .tr!
-            .createClaimableBalanceResult!
-            .balanceID ==
-        null) {
+    final balanceID = tr!.createClaimableBalanceResult?.balanceID;
+    if (balanceID?.v0 == null) {
       return null;
     }
 
-    return Util.bytesToHex(result.result.results![0]
-        .tr!
-        .createClaimableBalanceResult!
-        .balanceID!
-        .v0!
-        .hash);
+    return Util.bytesToHex(balanceID!.v0!.hash);
   }
 
   /// Constructs a SubmitTransactionResponse from JSON returned by Horizon API.

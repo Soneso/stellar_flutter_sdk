@@ -695,4 +695,69 @@ void main() {
           throwsException);
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // Fixed opaque typedef fromTxRep width
+  // ---------------------------------------------------------------------------
+  group('fixed opaque typedef fromTxRep width', () {
+    const String hash64 =
+        'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+
+    Matcher widthFailure(String fragment) => throwsA(
+      isA<Exception>().having(
+        (Exception e) => e.toString(),
+        'toString',
+        contains(fragment),
+      ),
+    );
+
+    test('XdrHash accepts exactly 64 hex characters', () {
+      var hash = XdrHash.fromTxRep({'tx.v0': hash64}, 'tx.v0');
+      expect(hash.hash.length, 32);
+      expect(TxRepHelper.bytesToHex(hash.hash), hash64);
+    });
+
+    test('XdrHash rejects a value narrower than 32 bytes', () {
+      expect(
+        () => XdrHash.fromTxRep({'tx.v0': '00'}, 'tx.v0'),
+        widthFailure('tx.v0 must be 32 bytes, 1 given'),
+      );
+    });
+
+    test('XdrHash rejects a value wider than 32 bytes', () {
+      expect(
+        () => XdrHash.fromTxRep({'tx.v0': '${hash64}ff'}, 'tx.v0'),
+        widthFailure('tx.v0 must be 32 bytes, 33 given'),
+      );
+    });
+
+    test('XdrUint256 rejects a value narrower than 32 bytes', () {
+      expect(
+        () => XdrUint256.fromTxRep({'tx.key': '00'}, 'tx.key'),
+        widthFailure('tx.key must be 32 bytes, 1 given'),
+      );
+    });
+
+    // The width each type enforces comes from its own opaque declaration, so a
+    // 4-byte type accepts what a 32-byte one rejects and rejects the reverse.
+    test('XdrSignatureHint holds values to its own 4-byte width', () {
+      var hint = XdrSignatureHint.fromTxRep({'tx.hint': '01020304'}, 'tx.hint');
+      expect(hint.signatureHint, Uint8List.fromList([1, 2, 3, 4]));
+      expect(
+        () => XdrSignatureHint.fromTxRep({'tx.hint': hash64}, 'tx.hint'),
+        widthFailure('tx.hint must be 4 bytes, 32 given'),
+      );
+    });
+
+    test('a short .v0 fails the enclosing claimable balance id', () {
+      var map = {
+        'tx.bal.type': 'CLAIMABLE_BALANCE_ID_TYPE_V0',
+        'tx.bal.v0': '00',
+      };
+      expect(
+        () => XdrClaimableBalanceIDBase.fromTxRep(map, 'tx.bal'),
+        widthFailure('tx.bal.v0 must be 32 bytes, 1 given'),
+      );
+    });
+  });
 }

@@ -54,6 +54,8 @@ void main() {
         await sdk.submitTransaction(transaction);
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
+    final createdBalanceIdHash = response.getClaimableBalanceIdIdFromResult(0);
+    assert(createdBalanceIdHash != null);
 
     Page<EffectResponse> effectsPage = await sdk.effects
         .forAccount(sourceAccountId)
@@ -78,6 +80,10 @@ void main() {
       }
     }
     assert(bid != null);
+    // The id from the transaction result and the id from the effect name one
+    // balance, whichever spelling the effect carries.
+    assert(XdrClaimableBalanceID.forId(createdBalanceIdHash!).paddedBalanceIdHex ==
+        XdrClaimableBalanceID.forId(bid!).paddedBalanceIdHex);
 
     var operationsPage =
         await sdk.operations.forAccount(sourceAccountId).execute();

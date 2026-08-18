@@ -541,7 +541,7 @@ void main() {
         isA<FormatException>().having(
           (FormatException e) => e.message,
           'message',
-          contains('carries an empty payload, which has no strkey rendering'),
+          contains('Encoded string must be 69 to 165 characters, got 63'),
         ),
       ),
     );

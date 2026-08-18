@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 import 'package:http/http.dart' as http;
-import 'package:stellar_flutter_sdk/src/key_pair.dart';
-import 'package:stellar_flutter_sdk/src/util.dart';
 import '../assets.dart';
 import '../responses/claimable_balance_response.dart';
 import 'dart:async';
@@ -64,16 +62,18 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   }
 
   /// Requests details about the claimable balance to fetch by [balanceId].
+  ///
+  /// [balanceId] may be given in any spelling of a claimable balance id: the
+  /// strkey (B...), the hex of the bare hash, or that hex behind the type
+  /// discriminant, carried either as one byte or as the four the XDR union
+  /// writes. The request is sent with the 72 character form Horizon serves.
+  ///
+  /// Throws [ArgumentError], naming the reason, when [balanceId] holds none
+  /// of those spellings.
+  ///
   /// See [Stellar developer docs](https://developers.stellar.org)
   Future<ClaimableBalanceResponse> forBalanceId(String balanceId) {
-    var id = balanceId;
-    if (id.startsWith("B")) {
-      try {
-        id = Util.bytesToHex(StrKey.decodeClaimableBalanceId(balanceId));
-      } catch (_) {
-        throw ArgumentError("invalid claimable balance id: $balanceId");
-      }
-    }
+    final id = RequestBuilder.claimableBalanceIdHorizonHex(balanceId);
     this.setSegments(["claimable_balances", id]);
     return this.claimableBalance(this.buildUri());
   }

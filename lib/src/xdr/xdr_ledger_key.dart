@@ -171,16 +171,17 @@ class XdrLedgerKey extends XdrLedgerKeyBase {
     return result;
   }
 
+  /// Builds a liquidity pool ledger key from [liquidityPoolId], given either
+  /// as the strkey rendering of the id (L...) or as the hex of its 32 byte
+  /// hash.
+  ///
+  /// Throws:
+  /// - [FormatException]: if a strkey is not one this codec accepts, or if a
+  ///   hex rendering is not hexadecimal or renders a byte count other than 32
   static XdrLedgerKey forLiquidityPool(String liquidityPoolId) {
     var result = XdrLedgerKey(XdrLedgerEntryType.LIQUIDITY_POOL);
 
-    var id = liquidityPoolId;
-    if (id.startsWith("L")) {
-      try {
-        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(liquidityPoolId));
-      } catch (_) {}
-    }
-    result.liquidityPoolID = XdrHash(Util.hexToBytes(id));
+    result.liquidityPoolID = Util.liquidityPoolIdToXdrHash(liquidityPoolId);
     return result;
   }
 

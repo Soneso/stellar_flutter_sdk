@@ -94,6 +94,10 @@ class Address {
   String? muxedAccountId;
 
   /// The id of the claimable balance if type is TYPE_CLAIMABLE_BALANCE otherwise null.
+  ///
+  /// [Address.fromXdr] reports it in the spelling Horizon serves: the hex of
+  /// the XDR encoding, the four byte type discriminant ahead of the hash.
+  /// Every spelling [XdrClaimableBalanceID.forId] accepts may be given here.
   String? claimableBalanceId;
 
   /// The id of the liquidity pool if type is TYPE_LIQUIDITY_POOL otherwise null.
@@ -174,7 +178,7 @@ class Address {
       return Address(TYPE_MUXED_ACCOUNT, muxedAccountId: xdr.muxedAccount!.accountId);
     } else if (xdr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE) {
       return Address(TYPE_CLAIMABLE_BALANCE,
-          claimableBalanceId: xdr.claimableBalanceId!.claimableBalanceIdString);
+          claimableBalanceId: xdr.claimableBalanceId!.paddedBalanceIdHex);
     } else if (xdr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL) {
       return Address(TYPE_LIQUIDITY_POOL,
           liquidityPoolId: Util.bytesToHex(xdr.liquidityPoolId!.hash));

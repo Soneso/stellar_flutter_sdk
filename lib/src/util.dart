@@ -11,6 +11,7 @@ import '../stub/web_io.dart' if (dart.library.io) 'dart:io';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
+import 'constants/stellar_protocol_constants.dart';
 import 'requests/request_builder.dart';
 import 'soroban/soroban_auth.dart';
 import 'xdr/xdr.dart';
@@ -499,31 +500,59 @@ class Util {
     return diff == 0;
   }
 
-  /// Converts a hex string ID to an XDR hash object.
+  /// Converts the hex rendering of a 32 byte id to an XDR hash object.
   ///
-  /// Takes a hexadecimal string [strId] and converts it to an XdrHash
-  /// object used in Stellar XDR structures. The hash is padded or
-  /// truncated to exactly 32 bytes.
+  /// [idKind] names the kind of id [hexId] carries, e.g. "Liquidity pool id",
+  /// and leads the message of a rejection so the caller reads which of its
+  /// arguments was refused.
   ///
   /// Parameters:
-  /// - [strId]: The hex string ID to convert
+  /// - [hexId]: The hex rendering of the id
+  /// - [idKind]: The name of the id kind, leading a rejection message
   ///
-  /// Returns: XdrHash object containing the 32-byte hash
+  /// Returns: XdrHash object carrying the 32 bytes [hexId] renders
+  ///
+  /// Throws:
+  /// - [FormatException]: if [hexId] is not hexadecimal, or renders a byte
+  ///   count other than 32
   ///
   /// Example:
   /// ```dart
-  /// String id = "a1b2c3...";
-  /// XdrHash hash = Util.stringIdToXdrHash(id);
+  /// XdrHash hash = Util.hexIdToXdrHash(id, "Liquidity pool id");
   /// ```
-  static XdrHash stringIdToXdrHash(String strId) {
-    Uint8List bytes = Util.hexToBytes(strId.toUpperCase());
-    if (bytes.length < 32) {
-      bytes = Util.paddedByteArray(bytes, 32);
-    } else if (bytes.length > 32) {
-      bytes = bytes.sublist(bytes.length - 32, bytes.length);
+  static XdrHash hexIdToXdrHash(String hexId, String idKind) {
+    final Uint8List bytes = Util.hexToBytes(hexId);
+    if (bytes.length != StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES) {
+      throw FormatException(
+        "$idKind must be hex of a "
+        "${StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES} byte hash; "
+        "${bytes.length} bytes given",
+      );
     }
-
     return XdrHash(bytes);
+  }
+
+  /// Converts [liquidityPoolId], given either as the strkey rendering of the
+  /// id (L...) or as the hex of its 32 byte hash, to an XDR hash object.
+  ///
+  /// Parameters:
+  /// - [liquidityPoolId]: The strkey or hex rendering of the pool id
+  ///
+  /// Returns: XdrHash object carrying the 32 bytes of the pool id
+  ///
+  /// Throws:
+  /// - [FormatException]: if a strkey is not one this codec accepts, or if a
+  ///   hex rendering is not hexadecimal or renders a byte count other than 32
+  ///
+  /// Example:
+  /// ```dart
+  /// XdrHash hash = Util.liquidityPoolIdToXdrHash(poolId);
+  /// ```
+  static XdrHash liquidityPoolIdToXdrHash(String liquidityPoolId) {
+    if (liquidityPoolId.startsWith("L")) {
+      return XdrHash(StrKey.decodeLiquidityPoolId(liquidityPoolId));
+    }
+    return Util.hexIdToXdrHash(liquidityPoolId, "Liquidity pool id");
   }
 
   /// Reads a file from the filesystem and returns its contents as bytes.
@@ -779,7 +808,7 @@ class Base32 {
   static String encode(Uint8List bytes) {
     int i = 0, index = 0, digit = 0;
     int currByte, nextByte;
-    String base32 = '';
+    final StringBuffer base32 = StringBuffer();
 
     while (i < bytes.length) {
       currByte = bytes[i];
@@ -803,9 +832,9 @@ class Base32 {
           i++;
         }
       }
-      base32 = base32 + _base32Chars[digit];
+      base32.write(_base32Chars[digit]);
     }
-    return base32;
+    return base32.toString();
   }
 
   /// Encodes a hexadecimal string to Base32.

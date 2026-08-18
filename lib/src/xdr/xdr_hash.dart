@@ -44,7 +44,11 @@ class XdrHash {
   static XdrHash fromTxRep(Map<String, String> map, String prefix) {
     String? raw = TxRepHelper.getValue(map, prefix);
     if (raw == null) throw Exception('missing $prefix');
-    return XdrHash(TxRepHelper.hexToBytes(raw));
+    Uint8List bytes = TxRepHelper.hexToBytes(raw);
+    if (bytes.length != 32) {
+      throw Exception('$prefix must be 32 bytes, ${bytes.length} given');
+    }
+    return XdrHash(bytes);
   }
 
   /// Returns the SEP-0051 XDR-JSON rendering of this value.

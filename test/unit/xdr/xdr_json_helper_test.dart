@@ -1625,8 +1625,8 @@ void main() {
     });
 
     test('rejects a string too short to carry a version byte', () {
-      // Short input fails inside the codec's indexing rather than through its
-      // validation, so it arrives as an ArgumentError and carries no detail.
+      // The codec measures the string before decoding it, so short input is
+      // refused by its own validation and arrives here as a FormatException.
       expect(
         () => XdrJsonHelper.readStrKey(
           '',
@@ -1634,7 +1634,10 @@ void main() {
           key: 'contract_id',
           decode: StrKey.decodeContractId,
         ),
-        formatFailure('key "contract_id" holds a malformed strkey: ""'),
+        formatFailure(
+          'key "contract_id" holds a malformed strkey: "" '
+          '(Encoded string must be 56 characters, got 0)',
+        ),
       );
     });
 
@@ -1819,10 +1822,8 @@ void main() {
   });
 
   group('XdrJsonHelper strkey widths', () {
-    // The strkey codec checks the encoding, the version byte and the checksum,
-    // and nothing about the width. Each pair below is a well-formed strkey of
-    // the right kind; only the byte count differs, and the reference
-    // implementation accepts the first of each pair and refuses the second.
+    // Both strings below are of the right kind and carry a valid checksum,
+    // and differ only in the number of bytes they encode.
     const String publicKey32 =
         'GAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQDZ7H';
     const String publicKey31 =
@@ -1840,13 +1841,13 @@ void main() {
       );
     });
 
-    test('rejects a well-formed strkey of the wrong width', () {
+    test('rejects a decoded value the declared width cannot hold', () {
       expect(
         () => XdrJsonHelper.readStrKey(
-          publicKey31,
+          publicKey32,
           type: 'XdrPublicKey',
           key: 'ed25519',
-          decode: StrKey.decodeStellarAccountId,
+          decode: (String _) => Uint8List(31),
           expectedLength: 32,
         ),
         formatFailure(
@@ -1855,14 +1856,44 @@ void main() {
       );
     });
 
-    test('leaves the width unchecked when none is declared', () {
+    test('leaves the decoded width alone when the field declares none', () {
       expect(
         XdrJsonHelper.readStrKey(
+          publicKey32,
+          type: 'T',
+          decode: (String _) => Uint8List(31),
+        ),
+        Uint8List(31),
+      );
+    });
+
+    test('reports a strkey the codec refuses', () {
+      // The report carries the codec's own wording, so the detail naming the
+      // length it expected and the length it was given survives the wrapping.
+      void read() => XdrJsonHelper.readStrKey(
+        publicKey31,
+        type: 'XdrPublicKey',
+        key: 'ed25519',
+        decode: StrKey.decodeStellarAccountId,
+        expectedLength: 32,
+      );
+
+      expect(publicKey31.length, 55);
+      expect(read, formatFailure('key "ed25519" holds a malformed strkey'));
+      expect(
+        read,
+        formatFailure('(Encoded string must be 56 characters, got 55)'),
+      );
+    });
+
+    test('reports a strkey the codec refuses with no declared width', () {
+      expect(
+        () => XdrJsonHelper.readStrKey(
           publicKey31,
           type: 'T',
           decode: StrKey.decodeStellarAccountId,
-        ).length,
-        31,
+        ),
+        formatFailure('holds a malformed strkey'),
       );
     });
   });

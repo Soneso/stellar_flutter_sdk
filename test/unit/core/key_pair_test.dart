@@ -906,6 +906,36 @@ void main() {
       expect(signer.signerAccountID, isNotNull);
     });
 
+    test('SignedPayloadSigner.fromAccountId refuses a muxed account id', () {
+      // A signed payload signer names the key that signs. A muxed account id
+      // names a subaccount of an account rather than a key, so it is refused
+      // rather than read as the key it multiplexes.
+      const String muxedAccountId =
+          'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK';
+      Uint8List payload = Uint8List.fromList([1, 2, 3, 4]);
+
+      expect(
+        () => SignedPayloadSigner.fromAccountId(muxedAccountId, payload),
+        throwsA(isA<ArgumentError>().having(
+          (ArgumentError e) => e.message,
+          'message',
+          'A signed payload signer takes an ed25519 account id (G...), '
+              'not a muxed account id (M...)',
+        ))
+      );
+
+      // The ed25519 account the muxed id multiplexes is accepted, so the
+      // refusal is of the muxed form rather than of the key behind it.
+      SignedPayloadSigner signer = SignedPayloadSigner.fromAccountId(
+        'GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ',
+        payload,
+      );
+      expect(
+        KeyPair.fromXdrAccountId(signer.signerAccountID).accountId,
+        equals('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ')
+      );
+    });
+
     test('SignedPayloadSigner.fromPublicKey', () {
       KeyPair keyPair = KeyPair.random();
       Uint8List payload = Uint8List.fromList([5, 6, 7, 8]);
@@ -925,7 +955,93 @@ void main() {
 
       expect(
         () => SignedPayloadSigner.fromAccountId(keyPair.accountId, longPayload),
-        throwsException
+        throwsA(isA<Exception>().having(
+          (Exception e) => e.toString(),
+          'toString',
+          contains('invalid payload length, must be at most 64'),
+        ))
+      );
+    });
+
+    test('SignedPayloadSigner throws on empty payload', () {
+      // A signed payload strkey has no rendering for an empty payload, so a
+      // signer carrying one could not be encoded and read back.
+      KeyPair keyPair = KeyPair.random();
+
+      expect(
+        () => SignedPayloadSigner.fromAccountId(keyPair.accountId, Uint8List(0)),
+        throwsA(isA<Exception>().having(
+          (Exception e) => e.toString(),
+          'toString',
+          contains('invalid payload length, must be at least 1'),
+        ))
+      );
+      expect(
+        () => SignedPayloadSigner.fromPublicKey(keyPair.publicKey, Uint8List(0)),
+        throwsA(isA<Exception>().having(
+          (Exception e) => e.toString(),
+          'toString',
+          contains('invalid payload length, must be at least 1'),
+        ))
+      );
+    });
+
+    test('SignedPayloadSigner accepts the boundary payload widths', () {
+      KeyPair keyPair = KeyPair.random();
+
+      expect(
+        SignedPayloadSigner.fromAccountId(
+          keyPair.accountId,
+          Uint8List.fromList([1]),
+        ).payload.length,
+        equals(1)
+      );
+      expect(
+        SignedPayloadSigner.fromAccountId(
+          keyPair.accountId,
+          Uint8List(64),
+        ).payload.length,
+        equals(64)
+      );
+    });
+
+    test('KeyPair.fromPublicKey throws on a key that is not 32 bytes', () {
+      // An Ed25519 public key has one width, and a key of any other width
+      // would encode to an account id that cannot be read back.
+      expect(
+        () => KeyPair.fromPublicKey(Uint8List(31)),
+        throwsA(isA<ArgumentError>().having(
+          (ArgumentError e) => e.message,
+          'message',
+          contains('Public key must be 32 bytes, got 31'),
+        ))
+      );
+      expect(
+        () => KeyPair.fromPublicKey(Uint8List(33)),
+        throwsA(isA<ArgumentError>().having(
+          (ArgumentError e) => e.message,
+          'message',
+          contains('Public key must be 32 bytes, got 33'),
+        ))
+      );
+    });
+
+    test('KeyPair.fromSecretSeedList throws on a seed that is not 32 bytes', () {
+      expect(
+        () => KeyPair.fromSecretSeedList(Uint8List(31)),
+        throwsA(isA<ArgumentError>().having(
+          (ArgumentError e) => e.message,
+          'message',
+          contains('Secret seed must be 32 bytes, got 31'),
+        ))
+      );
+      expect(
+        () => KeyPair.fromSecretSeedList(Uint8List(33)),
+        throwsA(isA<ArgumentError>().having(
+          (ArgumentError e) => e.message,
+          'message',
+          contains('Secret seed must be 32 bytes, got 33'),
+        ))
       );
     });
 
