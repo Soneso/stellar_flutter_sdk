@@ -4,7 +4,7 @@ description: Build Stellar blockchain applications in Flutter/Dart using stellar
 license: Apache 2.0
 compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.5.0
 metadata:
-  version: "1.3.1"
+  version: "1.4.0"
   sdk_version: "3.5.0"
 ---
 

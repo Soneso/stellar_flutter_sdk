@@ -187,7 +187,9 @@ if (response.entries != null) {
 
 ### Load Contract Code
 
-Helper methods to load contract bytecode from the network.
+Helper methods to load contract bytecode from the network. An instance created from a CAP-85
+external reference resolves automatically; a Stellar Asset Contract has no wasm, so it
+yields `null`.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -197,12 +199,52 @@ SorobanServer server = SorobanServer('https://soroban-testnet.stellar.org:443');
 // By contract ID
 XdrContractCodeEntry? code = await server.loadContractCodeForContractId('CCXYZ...');
 if (code != null) {
-  print('Code size: ${code.code.dataStore.length} bytes');
+  print('Code size: ${code.code.length} bytes');
 }
 
 // By WASM ID
 XdrContractCodeEntry? code2 = await server.loadContractCodeForWasmId(wasmId);
 ```
+
+### External Reference Executables (CAP-85)
+
+From Protocol 28 on, a contract can be created from an external reference: instead of
+carrying its own wasm hash, the instance names an owner contract and a tag, and the owner
+holds a persistent contract data entry under that tag whose value is the 32-byte hash of an
+already uploaded wasm. `loadContractCodeForContractId` and `loadContractInfoForContractId`
+resolve such instances without any extra step. To resolve a reference directly, use
+`getExternalRefWasmHash`:
+
+```dart
+import 'dart:typed_data';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+SorobanServer server = SorobanServer('https://soroban-testnet.stellar.org:443');
+
+// Read the contract instance to inspect its executable.
+LedgerEntry? entry = await server.getContractData(
+  'CCXYZ...',
+  XdrSCVal.forLedgerKeyContractInstance(),
+  XdrContractDataDurability.PERSISTENT,
+);
+
+XdrContractExecutable? executable =
+    entry?.ledgerEntryDataXdr.contractData?.val.instance?.executable;
+if (executable != null && executable.externalRef != null) {
+  // The tag entry on the owner contract holds the wasm hash the instance runs.
+  Uint8List? wasmHash =
+      await server.getExternalRefWasmHash(executable.externalRef!);
+  if (wasmHash != null) {
+    XdrContractCodeEntry? code =
+        await server.loadContractCodeForWasmId(Util.bytesToHex(wasmHash));
+    print('Code size: ${code?.code.length} bytes');
+  }
+}
+```
+
+`getExternalRefWasmHash` returns the 32-byte wasm hash, or `null` when the owner is not a
+contract address, no entry exists under the tag, or the entry does not hold a 32-byte
+`SCV_BYTES` value. The owner contract is read, never invoked.
 
 ## SorobanClient
 
@@ -1185,6 +1227,28 @@ InvokeHostFunctionOperation createOp = InvokeHostFuncOpBuilder(
 // Build, simulate, sign, and send (same pattern)
 ```
 
+### Create Contract from an External Reference (Protocol 28)
+
+Deploy a contract whose executable is a CAP-85 external reference: the owner contract's
+persistent tag entry names the wasm the instance runs.
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+InvokeHostFunctionOperation createOp = InvokeHostFuncOpBuilder(
+  CreateContractFromExternalRefHostFunction(
+    Address.forAccountId(keyPair.accountId),
+    Address.forContractId(ownerContractIdHex),
+    'token-v1',
+  ),
+).build();
+
+// Simulate, sign and send as for any create contract operation.
+```
+
+`CreateContractFromExternalRefWithConstructorHostFunction` is the variant taking
+constructor arguments, mirroring `CreateContractWithConstructorHostFunction`.
+
 ### Invoke Contract (Low-Level)
 
 Invoke a contract method without using SorobanClient.
@@ -1289,7 +1353,8 @@ Map<String, String> meta = contractInfo.metaEntries;
 
 ### Parse from Network
 
-Load and parse contract info from a deployed contract.
+Load and parse contract info from a deployed contract. A contract created from a CAP-85
+external reference (Protocol 28) is resolved automatically.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';

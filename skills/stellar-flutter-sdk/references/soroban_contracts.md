@@ -481,6 +481,9 @@ SorobanContractInfo? info = await server.loadContractInfoForWasmId(wasmId);
 SorobanContractInfo? info = await server.loadContractInfoForContractId(contractId);
 ```
 
+A contract created from a CAP-85 external reference (Protocol 28) resolves automatically.
+See `rpc.md` > Contract Introspection Helpers for `getExternalRefWasmHash()`.
+
 ### SorobanContractInfo Properties
 
 | Property | Type | Description |

@@ -395,6 +395,14 @@ if (info != null) {
 }
 ```
 
+The `...ForContractId` loaders resolve a CAP-85 external reference executable (Protocol 28)
+automatically: the instance names an owner contract and a tag, and the owner's persistent tag
+entry holds the wasm hash. `getExternalRefWasmHash(XdrContractExecutableExternalRef ref)`
+resolves a reference directly and returns the 32-byte hash as `Uint8List?`; it answers `null`
+when the owner is not a contract address, no entry exists under the tag, or the entry does not
+hold a 32-byte `SCV_BYTES` value. A Stellar Asset Contract has no wasm, so the loaders yield
+`null` for it.
+
 For full introspection details (enumerating parameters, UDTs, events), see [Soroban Contracts](./soroban_contracts.md).
 
 ---
@@ -447,3 +455,4 @@ For detailed error handling patterns (simulation errors, send errors, restore pr
 - `loadContractCodeForWasmId(String wasmId)` → `XdrContractCodeEntry?`
 - `loadContractInfoForContractId(String contractId)` → `SorobanContractInfo?`
 - `loadContractInfoForWasmId(String wasmId)` → `SorobanContractInfo?`
+- `getExternalRefWasmHash(XdrContractExecutableExternalRef ref)` → `Uint8List?`
