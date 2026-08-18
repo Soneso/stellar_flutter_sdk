@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
 import 'soroban_http_stub.dart' if (dart.library.io) 'soroban_http_io.dart';
 import 'package:stellar_flutter_sdk/src/account.dart';
@@ -508,9 +509,17 @@ class SorobanServer {
   /// - [Soroban storage documentation](https://developers.stellar.org/docs/smart-contracts/storage)
   Future<LedgerEntry?> getContractData(String contractId, XdrSCVal key,
       XdrContractDataDurability durability) async {
-    XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA);
-    ledgerKey.contractData = XdrLedgerKeyContractData(
+    return _getContractDataForAddress(
         Address.forContractId(contractId).toXdr(), key, durability);
+  }
+
+  /// Address-typed body shared by [getContractData] and
+  /// [getExternalRefWasmHash].
+  Future<LedgerEntry?> _getContractDataForAddress(XdrSCAddress contract,
+      XdrSCVal key, XdrContractDataDurability durability) async {
+    XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA);
+    ledgerKey.contractData =
+        XdrLedgerKeyContractData(contract, key, durability);
     GetLedgerEntriesResponse ledgerEntriesResponse =
         await getLedgerEntries([ledgerKey.toBase64EncodedXdrString()]);
     if (ledgerEntriesResponse.entries != null &&
@@ -518,6 +527,71 @@ class SorobanServer {
       return ledgerEntriesResponse.entries![0];
     }
     return null;
+  }
+
+  /// Resolves a CAP-85 external executable reference to the wasm hash it names.
+  ///
+  /// A contract created from an external reference does not carry its own code
+  /// hash. The reference names an owner contract and a tag, and the owner holds
+  /// a persistent contract data entry keyed by that tag whose value is the
+  /// 32-byte hash of an already uploaded wasm. This method reads that entry off
+  /// the ledger; the owner contract is not invoked.
+  ///
+  /// The tag entry is matched byte for byte, so the tag is passed through
+  /// exactly as the reference carries it.
+  ///
+  /// Parameters:
+  /// - [ref] The external reference naming the owner contract and the tag
+  ///
+  /// Returns the 32-byte wasm hash, or null when:
+  /// - the owner address is not a contract address; only a contract can hold
+  ///   the tag entry
+  /// - the owner has no entry under the tag, or the entry was archived
+  /// - the entry is not a contract data entry, its value is not an SCV_BYTES
+  ///   value, or the value is not exactly 32 bytes long
+  /// - the RPC answered with an error; the error is carried on the response
+  ///   object of the underlying getLedgerEntries request, and the entry list
+  ///   stays null
+  ///
+  /// Example:
+  /// ```dart
+  /// final server = SorobanServer('https://soroban-testnet.stellar.org:443');
+  /// final instanceEntry = await server.getContractData(contractId,
+  ///     XdrSCVal.forLedgerKeyContractInstance(),
+  ///     XdrContractDataDurability.PERSISTENT);
+  /// final executable = instanceEntry?.ledgerEntryDataXdr.contractData?.val
+  ///     .instance?.executable;
+  /// if (executable?.externalRef != null) {
+  ///   final wasmHash =
+  ///       await server.getExternalRefWasmHash(executable!.externalRef!);
+  ///   print('runs wasm: ${wasmHash != null ? Util.bytesToHex(wasmHash) : 'unresolved'}');
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [loadContractCodeForContractId], which applies this resolution
+  ///   automatically when it meets an external reference executable
+  Future<Uint8List?> getExternalRefWasmHash(
+      XdrContractExecutableExternalRef ref) async {
+    if (ref.executableOwner.discriminant !=
+        XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT) {
+      return null;
+    }
+    LedgerEntry? entry = await _getContractDataForAddress(
+        ref.executableOwner,
+        XdrSCVal.forExecutableTag(ref.tag),
+        XdrContractDataDurability.PERSISTENT);
+    if (entry == null) {
+      return null;
+    }
+    XdrSCVal? value = entry.ledgerEntryDataXdr.contractData?.val;
+    if (value == null ||
+        value.discriminant != XdrSCValType.SCV_BYTES ||
+        value.bytes == null ||
+        value.bytes!.sCBytes.length != 32) {
+      return null;
+    }
+    return value.bytes!.sCBytes;
   }
 
   /// Loads the WebAssembly bytecode for a contract given its Wasm ID.
@@ -574,10 +648,12 @@ class SorobanServer {
 
   /// Loads the WebAssembly bytecode for a contract given its contract ID.
   ///
-  /// This method first retrieves the contract instance to determine its Wasm ID, then
-  /// loads the corresponding contract code. This is a two-step process:
-  /// 1. Query the contract instance ledger entry to get the Wasm hash
-  /// 2. Query the contract code entry using that Wasm hash
+  /// This method first retrieves the contract instance, determines the wasm
+  /// hash from its executable, then loads the corresponding contract code:
+  /// - a wasm executable carries the hash directly
+  /// - a CAP-85 external reference executable is resolved through the owner
+  ///   contract's tag entry via [getExternalRefWasmHash]
+  /// - a Stellar Asset Contract has no wasm on chain and yields null
   ///
   /// Use this when you have a contract ID but need to access the underlying bytecode.
   /// Multiple contracts can share the same bytecode (same Wasm ID) if they were
@@ -592,6 +668,9 @@ class SorobanServer {
   ///
   /// Returns null if:
   /// - The contract instance does not exist
+  /// - The instance is a Stellar Asset Contract
+  /// - The instance carries an external reference that does not resolve; see
+  ///   [getExternalRefWasmHash] for the cases
   /// - The contract code entry is missing (should not happen for valid contracts)
   ///
   /// Throws:
@@ -631,12 +710,25 @@ class SorobanServer {
         ledgerEntriesResponse.entries!.length > 0) {
       XdrLedgerEntryData ledgerEntryData =
           ledgerEntriesResponse.entries![0].ledgerEntryDataXdr;
-      if (ledgerEntryData.contractData != null &&
-          ledgerEntryData.contractData?.val.instance?.executable.wasmHash !=
-              null) {
-        String wasmId = Util.bytesToHex(ledgerEntryData
-            .contractData!.val.instance!.executable.wasmHash!.hash);
-        return await (loadContractCodeForWasmId(wasmId));
+      XdrContractExecutable? executable =
+          ledgerEntryData.contractData?.val.instance?.executable;
+      if (executable == null) {
+        return null;
+      }
+      if (executable.discriminant ==
+              XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM &&
+          executable.wasmHash != null) {
+        return await loadContractCodeForWasmId(
+            Util.bytesToHex(executable.wasmHash!.hash));
+      }
+      if (executable.discriminant ==
+              XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF &&
+          executable.externalRef != null) {
+        Uint8List? wasmHash =
+            await getExternalRefWasmHash(executable.externalRef!);
+        if (wasmHash != null) {
+          return await loadContractCodeForWasmId(Util.bytesToHex(wasmHash));
+        }
       }
     }
     return null;
@@ -646,7 +738,8 @@ class SorobanServer {
   ///
   /// This is a convenience method that combines loading the contract bytecode and parsing
   /// it to extract structured metadata. It performs these steps:
-  /// 1. Retrieves the contract instance to get the Wasm ID
+  /// 1. Retrieves the contract instance to get the Wasm ID, resolving a CAP-85
+  ///    external reference executable through [getExternalRefWasmHash]
   /// 2. Loads the contract code entry
   /// 3. Parses the WebAssembly bytecode to extract metadata sections
   ///
@@ -658,7 +751,9 @@ class SorobanServer {
   /// - [contractId] Hex-encoded contract ID to load and parse
   ///
   /// Returns: [SorobanContractInfo] containing environment version, spec entries,
-  /// and contract metadata. Returns null if the contract does not exist.
+  /// and contract metadata. Returns null if the contract does not exist, if the
+  /// instance is a Stellar Asset Contract, or if it carries an external reference
+  /// that does not resolve.
   ///
   /// Throws:
   /// - [SorobanContractParserFailed] If bytecode parsing fails due to invalid format

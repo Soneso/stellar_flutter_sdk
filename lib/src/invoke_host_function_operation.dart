@@ -72,6 +72,18 @@ abstract class HostFunction {
                       xdr.createContract!.contractIDPreimage.address!),
                   wasmId,
                   salt: xdr.createContract!.contractIDPreimage.salt!);
+            } else if (xdr.createContract!.executable.type ==
+                    XdrContractExecutableType
+                        .CONTRACT_EXECUTABLE_EXTERNAL_REF &&
+                xdr.createContract!.executable.externalRef != null) {
+              XdrContractExecutableExternalRef ref =
+                  xdr.createContract!.executable.externalRef!;
+              return CreateContractFromExternalRefHostFunction(
+                  Address.fromXdr(
+                      xdr.createContract!.contractIDPreimage.address!),
+                  Address.fromXdr(ref.executableOwner),
+                  ref.tag,
+                  salt: xdr.createContract!.contractIDPreimage.salt!);
             }
           } else if (xdr.createContract!.contractIDPreimage.type ==
                   XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET &&
@@ -95,6 +107,19 @@ abstract class HostFunction {
                   Address.fromXdr(
                       xdr.createContractV2!.contractIDPreimage.address!),
                   wasmId, xdr.createContractV2!.constructorArgs,
+                  salt: xdr.createContractV2!.contractIDPreimage.salt!);
+            } else if (xdr.createContractV2!.executable.type ==
+                    XdrContractExecutableType
+                        .CONTRACT_EXECUTABLE_EXTERNAL_REF &&
+                xdr.createContractV2!.executable.externalRef != null) {
+              XdrContractExecutableExternalRef ref =
+                  xdr.createContractV2!.executable.externalRef!;
+              return CreateContractFromExternalRefWithConstructorHostFunction(
+                  Address.fromXdr(
+                      xdr.createContractV2!.contractIDPreimage.address!),
+                  Address.fromXdr(ref.executableOwner),
+                  ref.tag,
+                  xdr.createContractV2!.constructorArgs,
                   salt: xdr.createContractV2!.contractIDPreimage.salt!);
             }
           } else if (xdr.createContractV2!.contractIDPreimage.type ==
@@ -387,6 +412,185 @@ class CreateContractWithConstructorHostFunction extends HostFunction {
   @override
   XdrHostFunction toXdr() {
     return XdrHostFunction.forCreatingContractV2(address.toXdr(), salt, wasmId, constructorArgs);
+  }
+}
+
+/// Creates a contract instance from a CAP-85 external executable reference.
+///
+/// From Protocol 28 on, a contract can be created without naming a wasm hash
+/// directly. The executable instead names an owner contract and a tag; the
+/// owner holds a persistent contract data entry under that tag whose value is
+/// the 32-byte hash of an already uploaded wasm, and the created instance runs
+/// that code.
+///
+/// External References:
+/// - **Owner Contract**: The contract holding the executable tag entry
+/// - **Tag**: The key of the entry; matched byte for byte
+/// - **Deployer Address**: Account or contract creating the instance
+/// - **Salt**: Random or chosen value ensuring a unique contract ID
+///
+/// Example - Create Contract from an External Reference:
+/// ```dart
+/// var deployerAddress = Address.forAccountId(deployerAccountId);
+/// var ownerAddress = Address.forContractId(ownerContractIdHex);
+///
+/// var createFunction = CreateContractFromExternalRefHostFunction(
+///   deployerAddress,
+///   ownerAddress,
+///   'token-v1'
+/// );
+///
+/// var createOp = InvokeHostFuncOpBuilder(createFunction)
+///   .setSourceAccount(deployerAccountId)
+///   .build();
+/// ```
+///
+/// See also:
+/// - [CreateContractFromExternalRefWithConstructorHostFunction] for contracts
+///   with constructor arguments
+/// - [SorobanServer.getExternalRefWasmHash] to resolve a reference to its wasm
+///   hash
+class CreateContractFromExternalRefHostFunction extends HostFunction {
+  Address _address;
+
+  /// The address of the deployer (account or contract).
+  Address get address => this._address;
+  set address(Address value) => this._address = value;
+
+  Address _executableOwner;
+
+  /// The contract holding the executable tag entry the instance runs.
+  Address get executableOwner => this._executableOwner;
+  set executableOwner(Address value) => this._executableOwner = value;
+
+  String _tag;
+
+  /// The tag the owner holds the executable entry under.
+  String get tag => this._tag;
+  set tag(String value) => this._tag = value;
+
+  late XdrUint256 _salt;
+
+  /// Random salt for unique contract ID generation.
+  XdrUint256 get salt => this._salt;
+  set salt(XdrUint256 value) => this._salt = value;
+
+  /// Creates a CreateContractFromExternalRefHostFunction.
+  ///
+  /// Parameters:
+  /// - [_address]: Deployer address (account or contract).
+  /// - [_executableOwner]: Contract holding the executable tag entry.
+  /// - [_tag]: Tag of the executable entry on the owner.
+  /// - [salt]: Optional salt for contract ID (generated if not provided).
+  CreateContractFromExternalRefHostFunction(
+      this._address, this._executableOwner, this._tag,
+      {XdrUint256? salt}) {
+    if (salt != null) {
+      this._salt = salt;
+    } else {
+      this._salt = new XdrUint256(TweetNaCl.randombytes(32));
+    }
+  }
+
+  /// Converts this host function to its XDR representation.
+  ///
+  /// Returns: XDR host function for contract creation from an external
+  /// reference.
+  @override
+  XdrHostFunction toXdr() {
+    return XdrHostFunction.forCreatingContractWithExternalRef(
+        address.toXdr(), salt, executableOwner.toXdr(), tag);
+  }
+}
+
+/// Creates a contract instance from a CAP-85 external executable reference,
+/// passing constructor arguments.
+///
+/// Combines [CreateContractFromExternalRefHostFunction] with constructor
+/// initialization: the executable names an owner contract and a tag whose
+/// persistent entry holds the wasm hash, and the constructor arguments are
+/// passed to the created instance during deployment.
+///
+/// Example - Create Contract from an External Reference with Constructor:
+/// ```dart
+/// var deployerAddress = Address.forAccountId(deployerAccountId);
+/// var ownerAddress = Address.forContractId(ownerContractIdHex);
+/// var constructorArgs = [XdrSCVal.forString("MyToken")];
+///
+/// var createFunction = CreateContractFromExternalRefWithConstructorHostFunction(
+///   deployerAddress,
+///   ownerAddress,
+///   'token-v1',
+///   constructorArgs
+/// );
+///
+/// var createOp = InvokeHostFuncOpBuilder(createFunction)
+///   .setSourceAccount(deployerAccountId)
+///   .build();
+/// ```
+///
+/// See also:
+/// - [CreateContractFromExternalRefHostFunction] for contracts without
+///   constructor arguments
+/// - [CreateContractWithConstructorHostFunction] for the wasm-hash form
+class CreateContractFromExternalRefWithConstructorHostFunction
+    extends HostFunction {
+  Address _address;
+
+  /// The address of the deployer (account or contract).
+  Address get address => this._address;
+  set address(Address value) => this._address = value;
+
+  Address _executableOwner;
+
+  /// The contract holding the executable tag entry the instance runs.
+  Address get executableOwner => this._executableOwner;
+  set executableOwner(Address value) => this._executableOwner = value;
+
+  String _tag;
+
+  /// The tag the owner holds the executable entry under.
+  String get tag => this._tag;
+  set tag(String value) => this._tag = value;
+
+  List<XdrSCVal> _constructorArgs;
+
+  /// Constructor arguments passed to the contract during creation.
+  List<XdrSCVal> get constructorArgs => this._constructorArgs;
+  set constructorArgs(List<XdrSCVal> value) => this._constructorArgs = value;
+
+  late XdrUint256 _salt;
+
+  /// Random salt for unique contract ID generation.
+  XdrUint256 get salt => this._salt;
+  set salt(XdrUint256 value) => this._salt = value;
+
+  /// Creates a CreateContractFromExternalRefWithConstructorHostFunction.
+  ///
+  /// Parameters:
+  /// - [_address]: Deployer address (account or contract).
+  /// - [_executableOwner]: Contract holding the executable tag entry.
+  /// - [_tag]: Tag of the executable entry on the owner.
+  /// - [_constructorArgs]: Arguments passed to the contract constructor.
+  /// - [salt]: Optional salt for contract ID (generated if not provided).
+  CreateContractFromExternalRefWithConstructorHostFunction(
+      this._address, this._executableOwner, this._tag, this._constructorArgs,
+      {XdrUint256? salt}) {
+    if (salt != null) {
+      this._salt = salt;
+    } else {
+      this._salt = new XdrUint256(TweetNaCl.randombytes(32));
+    }
+  }
+
+  /// Converts this host function to its XDR representation.
+  ///
+  /// Returns: XDR host function for contract creation from an external
+  /// reference with constructor arguments.
+  @override
+  XdrHostFunction toXdr() {
+    return XdrHostFunction.forCreatingContractV2WithExternalRef(
+        address.toXdr(), salt, executableOwner.toXdr(), tag, constructorArgs);
   }
 }
 

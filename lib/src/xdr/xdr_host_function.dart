@@ -100,6 +100,50 @@ class XdrHostFunction extends XdrHostFunctionBase {
     return result;
   }
 
+  static XdrHostFunction forCreatingContractWithExternalRef(
+    XdrSCAddress address,
+    XdrUint256 salt,
+    XdrSCAddress executableOwner,
+    String tag,
+  ) {
+    XdrHostFunction result = XdrHostFunction(
+      XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT,
+    );
+    XdrContractIDPreimage cId = XdrContractIDPreimage(
+      XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+    );
+    cId.address = address;
+    cId.salt = salt;
+    result.createContract = XdrCreateContractArgs(
+      cId,
+      XdrContractExecutable.forExternalRef(executableOwner, tag),
+    );
+    return result;
+  }
+
+  static XdrHostFunction forCreatingContractV2WithExternalRef(
+    XdrSCAddress address,
+    XdrUint256 salt,
+    XdrSCAddress executableOwner,
+    String tag,
+    List<XdrSCVal> constructorArgs,
+  ) {
+    XdrHostFunction result = XdrHostFunction(
+      XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2,
+    );
+    XdrContractIDPreimage cId = XdrContractIDPreimage(
+      XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+    );
+    cId.address = address;
+    cId.salt = salt;
+    result.createContractV2 = XdrCreateContractArgsV2(
+      cId,
+      XdrContractExecutable.forExternalRef(executableOwner, tag),
+      constructorArgs,
+    );
+    return result;
+  }
+
   static XdrHostFunction forDeploySACWithAsset(XdrAsset fromAsset) {
     XdrHostFunction result = XdrHostFunction(
       XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT,
