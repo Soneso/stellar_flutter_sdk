@@ -105,3 +105,6 @@ tools/sep-51-corpus/.tmp/
 
 # SEP-0051 WasmGC smoke target build output
 tool/sep51_wasm_smoke/.tmp/
+
+# P28 owner fixture build output
+tools/p28-owner-fixture/target/

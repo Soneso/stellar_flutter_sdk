@@ -1,3 +1,5 @@
+import 'dart:math';
+import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import '../tests_util.dart';
@@ -14,9 +16,14 @@ void main() {
       : StellarSDK.FUTURENET;
   Network network = testOn == 'testnet' ? Network.TESTNET : Network.FUTURENET;
 
-  String helloContractPath = "test/wasm/soroban_hello_world_contract.wasm";
+  // The owner fixture exposes set_executable(tag, wasm_hash) and
+  // get_executable(tag) over the CAP-85 host functions; its source lives in this
+  // repo under tools/p28-owner-fixture.
+  String ownerFixturePath = "test/wasm/p28_owner_fixture.wasm";
+  String targetContractPath = "test/wasm/soroban_hello_world_contract.wasm";
+  String executableTag = 'sdk-e2e-v1';
 
-  test('external reference resolution against a live network', () async {
+  test('external reference lifecycle against a live network', () async {
     final latestLedger = await sorobanServer.getLatestLedger();
     final protocolVersion = latestLedger.protocolVersion;
     if (protocolVersion == null || protocolVersion < 28) {
@@ -36,60 +43,129 @@ void main() {
       useFuturenet: testOn != 'testnet',
     );
 
-    final wasmBytes = await loadContractCode(helloContractPath);
-    final wasmHash = await SorobanClient.install(
+    // Install and deploy the owner fixture holding the executable tag entries.
+    final ownerWasmHash = await SorobanClient.install(
       installRequest: InstallRequest(
-        wasmBytes: wasmBytes,
+        wasmBytes: await loadContractCode(ownerFixturePath),
         sourceAccountKeyPair: keyPair,
         network: network,
         rpcUrl: rpcUrl,
         server: sorobanServer,
       ),
     );
-    final client = await SorobanClient.deploy(
+    final owner = await SorobanClient.deploy(
       deployRequest: DeployRequest(
         sourceAccountKeyPair: keyPair,
         network: network,
         rpcUrl: rpcUrl,
-        wasmHash: wasmHash,
+        wasmHash: ownerWasmHash,
         server: sorobanServer,
       ),
     );
-    final contractId = client.getContractId();
-    final contractIdHex = contractId.startsWith('C')
-        ? StrKey.decodeContractIdHex(contractId)
-        : contractId;
+    expect(owner.getMethodNames(), contains('set_executable'));
+    final ownerIdHex = StrKey.decodeContractIdHex(owner.getContractId());
+    final ownerAddress = Address.forContractId(ownerIdHex);
 
-    // The executable dispatch still loads a wasm instance from the live ledger.
-    final codeEntry = await sorobanServer.loadContractCodeForContractId(
-      contractIdHex,
+    // Install the target code and write the tag entry naming it.
+    final targetBytes = await loadContractCode(targetContractPath);
+    final targetWasmHash = await SorobanClient.install(
+      installRequest: InstallRequest(
+        wasmBytes: targetBytes,
+        sourceAccountKeyPair: keyPair,
+        network: network,
+        rpcUrl: rpcUrl,
+        server: sorobanServer,
+      ),
     );
-    expect(codeEntry, isNotNull);
-    expect(codeEntry!.code, isNotEmpty);
+    await owner.invokeMethod(name: 'set_executable', args: [
+      XdrSCVal.forString(executableTag),
+      XdrSCVal.forBytes(Util.hexToBytes(targetWasmHash)),
+    ]);
 
-    // The RPC must accept the ledger key the resolver builds for an executable
-    // tag, and answer an empty entry list for a tag no entry exists under. The
-    // response is asserted directly because a null from the resolver would not
-    // distinguish an accepted-but-absent key from a rejected request.
+    // The reference resolves to the stored wasm hash; an unknown tag answers
+    // an accepted-but-empty read and a null from the resolver.
+    final ref = XdrContractExecutableExternalRef(
+      ownerAddress.toXdr(),
+      executableTag,
+    );
+    final resolved = await sorobanServer.getExternalRefWasmHash(ref);
+    expect(resolved, isNotNull);
+    expect(Util.bytesToHex(resolved!), targetWasmHash);
+
     const unusedTag = 'no entry exists under this tag';
-    final owner = Address.forContractId(contractIdHex).toXdr();
-    final tagKey = XdrLedgerKey.forContractData(
-      owner,
+    final unusedKey = XdrLedgerKey.forContractData(
+      ownerAddress.toXdr(),
       XdrSCVal.forExecutableTag(unusedTag),
       XdrContractDataDurability.PERSISTENT,
     );
     final response = await sorobanServer.getLedgerEntries([
-      tagKey.toBase64EncodedXdrString(),
+      unusedKey.toBase64EncodedXdrString(),
     ]);
     expect(response.error, isNull);
     expect(response.entries, isNotNull);
     expect(response.entries, isEmpty);
-
-    // The resolver reports the same absence as null.
-    final ref = XdrContractExecutable.forExternalRef(
-      owner,
+    final unusedRef = XdrContractExecutableExternalRef(
+      ownerAddress.toXdr(),
       unusedTag,
-    ).externalRef!;
-    expect(await sorobanServer.getExternalRefWasmHash(ref), isNull);
-  }, timeout: const Timeout(Duration(minutes: 5)));
+    );
+    expect(await sorobanServer.getExternalRefWasmHash(unusedRef), isNull);
+
+    // Deploy from the reference with an explicit salt; the created contract id
+    // must match the derivation, and the instance must run the target's code.
+    final random = Random.secure();
+    final salt =
+        Uint8List.fromList(List<int>.generate(32, (_) => random.nextInt(256)));
+    final predictedContractId = Address.deriveContractId(
+      deployer: Address.forAccountId(keyPair.accountId),
+      salt: salt,
+      network: network,
+    );
+    final client = await SorobanClient.deployFromExternalRef(
+      deployRequest: DeployFromExternalRefRequest(
+        sourceAccountKeyPair: keyPair,
+        network: network,
+        rpcUrl: rpcUrl,
+        executableOwner: ownerAddress,
+        tag: executableTag,
+        salt: XdrUint256(salt),
+        server: sorobanServer,
+      ),
+    );
+    expect(client.getContractId(), predictedContractId);
+    expect(client.getMethodNames(), contains('hello'));
+
+    // The instance entry carries the external reference arm naming owner and
+    // tag, and the loading paths recover the target's code through it.
+    final newIdHex = StrKey.decodeContractIdHex(client.getContractId());
+    final instanceEntry = await sorobanServer.getContractData(
+      newIdHex,
+      XdrSCVal.forLedgerKeyContractInstance(),
+      XdrContractDataDurability.PERSISTENT,
+    );
+    expect(instanceEntry, isNotNull);
+    final executable =
+        instanceEntry!.ledgerEntryDataXdr.contractData?.val.instance?.executable;
+    expect(executable, isNotNull);
+    expect(executable!.type,
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF);
+    expect(Util.bytesToHex(executable.externalRef!.executableOwner.contractId!.hash),
+        ownerIdHex);
+    expect(executable.externalRef!.tag, executableTag);
+
+    final codeEntry =
+        await sorobanServer.loadContractCodeForContractId(newIdHex);
+    expect(codeEntry, isNotNull);
+    expect(codeEntry!.code, equals(targetBytes));
+    final info = await sorobanServer.loadContractInfoForContractId(newIdHex);
+    expect(info, isNotNull);
+    expect(info!.funcs.map((func) => func.name), contains('hello'));
+
+    // The deployed instance is live: it answers as the target contract.
+    final result = await client.invokeMethod(
+      name: 'hello',
+      args: [XdrSCVal.forSymbol('friend')],
+    );
+    expect(result.vec![0].sym, 'Hello');
+    expect(result.vec![1].sym, 'friend');
+  }, timeout: const Timeout(Duration(minutes: 8)));
 }

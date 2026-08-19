@@ -226,6 +226,109 @@ class SorobanClient {
     return SorobanClient.forClientOptions(options: clientOptions);
   }
 
+  /// Deploys a new contract instance from a CAP-85 external reference and
+  /// creates a [SorobanClient] for it.
+  ///
+  /// The executable of the new instance names an owner contract and a tag;
+  /// the owner's persistent entry under that tag holds the hash of the wasm
+  /// the instance runs. Nothing is installed as part of the deployment.
+  ///
+  /// The reference is resolved before the transaction is built, so an
+  /// unresolvable reference fails here with an [Exception] naming the owner
+  /// and the tag. One message covers every miss: no entry under the tag, an
+  /// owner that is not a contract, or an entry that does not hold a 32-byte
+  /// wasm hash.
+  static Future<SorobanClient> deployFromExternalRef(
+      {required DeployFromExternalRefRequest deployRequest}) async {
+    SorobanServer server;
+    if (deployRequest.server != null) {
+      server = deployRequest.server!;
+    } else {
+      server = SorobanServer(deployRequest.rpcUrl);
+      server.enableLogging = deployRequest.enableSorobanServerLogging;
+    }
+
+    final ref = XdrContractExecutableExternalRef(
+        deployRequest.executableOwner.toXdr(), deployRequest.tag);
+    final wasmHash = await server.getExternalRefWasmHash(ref);
+    if (wasmHash == null) {
+      final ownerAddress = deployRequest.executableOwner;
+      String owner;
+      if (ownerAddress.contractId != null) {
+        // Spell a contract owner as its "C..." strkey; the field may already
+        // hold that spelling.
+        final id = ownerAddress.contractId!;
+        owner =
+            StrKey.isValidContractId(id) ? id : StrKey.encodeContractIdHex(id);
+      } else {
+        owner = ownerAddress.accountId ??
+            ownerAddress.muxedAccountId ??
+            ownerAddress.claimableBalanceId ??
+            ownerAddress.liquidityPoolId!;
+      }
+      throw Exception(
+          "external reference does not resolve: owner $owner holds no 32-byte "
+          "wasm hash entry under tag ${deployRequest.tag}");
+    }
+
+    // Load the spec from the resolved code before deploying: the code entry
+    // is already settled, while reading the contract instance right after
+    // deployment races the RPC's ledger-entry ingestion, so a successful
+    // deployment could surface as a load failure.
+    SorobanContractInfo? contractInfo;
+    try {
+      contractInfo =
+          await server.loadContractInfoForWasmId(Util.bytesToHex(wasmHash));
+    } on SorobanContractParserFailed {
+      contractInfo = null; // code without a parseable spec: fall back below
+    }
+
+    final sourceAddress =
+        Address.forAccountId(deployRequest.sourceAccountKeyPair.accountId);
+    final constructorArgs = deployRequest.constructorArgs ?? [];
+    final HostFunction createContractHostFunction;
+    if (constructorArgs.isNotEmpty) {
+      createContractHostFunction =
+          CreateContractFromExternalRefWithConstructorHostFunction(
+              sourceAddress,
+              deployRequest.executableOwner,
+              deployRequest.tag,
+              constructorArgs,
+              salt: deployRequest.salt);
+    } else {
+      createContractHostFunction = CreateContractFromExternalRefHostFunction(
+          sourceAddress, deployRequest.executableOwner, deployRequest.tag,
+          salt: deployRequest.salt);
+    }
+
+    final op = InvokeHostFuncOpBuilder(createContractHostFunction).build();
+    final clientOptions = ClientOptions(
+        sourceAccountKeyPair: deployRequest.sourceAccountKeyPair,
+        contractId: "ignored",
+        network: deployRequest.network,
+        rpcUrl: deployRequest.rpcUrl,
+        server: deployRequest.server,
+        enableServerLogging: deployRequest.enableSorobanServerLogging);
+    final options = AssembledTransactionOptions(
+        clientOptions: clientOptions,
+        methodOptions: deployRequest.methodOptions,
+        method: SorobanClient._CONSTRUCTOR_FUNC,
+        arguments: deployRequest.constructorArgs,
+        enableSorobanServerLogging: deployRequest.enableSorobanServerLogging);
+    final tx =
+        await AssembledTransaction.buildWithOp(operation: op, options: options);
+    final response = await tx.signAndSend();
+    final contractId = response.getCreatedContractId();
+    if (contractId == null) {
+      throw Exception("Could not get contract id for deployed contract");
+    }
+    clientOptions.contractId = StrKey.encodeContractIdHex(contractId);
+    if (contractInfo != null) {
+      return SorobanClient._(contractInfo.specEntries, clientOptions);
+    }
+    return SorobanClient.forClientOptions(options: clientOptions);
+  }
+
   /// Installs (uploads) the given contract code to soroban.
   /// If successfully it returns the wasm hash of the installed contract as a hex string.
   static Future<String> install(
@@ -1916,6 +2019,94 @@ class DeployRequest {
       required this.network,
       required this.rpcUrl,
       required this.wasmHash,
+      this.constructorArgs,
+      this.salt,
+      MethodOptions? methodOptions,
+      this.enableSorobanServerLogging = false,
+      this.server}) {
+    this.methodOptions = methodOptions ?? MethodOptions();
+  }
+}
+
+/// Request configuration for deploying a Soroban smart contract from a CAP-85
+/// external reference.
+///
+/// The executable is not a wasm hash: it names an owner contract and a tag,
+/// and the owner holds a persistent contract data entry under that tag whose
+/// value is the 32-byte hash of an already uploaded wasm. The created
+/// instance runs that code. Nothing is installed as part of the deployment;
+/// the owner contract already holds the tag entry.
+class DeployFromExternalRefRequest {
+  /// Keypair of the Stellar account that will send this transaction.
+  /// The keypair must contain the private key for signing.
+  KeyPair sourceAccountKeyPair;
+
+  /// The Stellar network this contract is to be deployed.
+  Network network;
+
+  /// The URL of the RPC instance that will be used to deploy the contract.
+  String rpcUrl;
+
+  /// The contract holding the executable tag entry the new instance runs.
+  Address executableOwner;
+
+  /// The tag the owner holds the executable entry under; matched byte for byte.
+  String tag;
+
+  /// Optional: Constructor/Initialization args for the contract's `__constructor` method.
+  /// Only required if the contract has a constructor function.
+  List<XdrSCVal>? constructorArgs;
+
+  /// Optional: Salt used to generate the contract's ID. If not provided, a random 32-byte
+  /// salt will be generated automatically during contract deployment.
+  XdrUint256? salt;
+
+  /// Optional: Method options used to fine tune the transaction.
+  /// If not provided, default MethodOptions will be used.
+  late MethodOptions methodOptions;
+
+  /// Optional: Enable soroban server logging (helpful for debugging). Default: false.
+  bool enableSorobanServerLogging = false;
+
+  /// Optional: A preconfigured [SorobanServer] to use for all RPC calls
+  /// instead of constructing one from [rpcUrl]. When provided, the server
+  /// is used as configured; [enableSorobanServerLogging] does not modify
+  /// its logging setting.
+  SorobanServer? server;
+
+  /// Creates a DeployFromExternalRefRequest for deploying a contract instance
+  /// from a CAP-85 external reference.
+  ///
+  /// Parameters:
+  /// - [sourceAccountKeyPair] Account keypair with private key for signing
+  /// - [network] Stellar network for deployment (TESTNET, PUBLIC, etc.)
+  /// - [rpcUrl] Soroban RPC server URL
+  /// - [executableOwner] Contract holding the executable tag entry
+  /// - [tag] Tag of the executable entry on the owner; matched byte for byte
+  /// - [constructorArgs] Optional constructor arguments if contract has __constructor
+  /// - [salt] Optional salt for deterministic contract ID (random if not provided)
+  /// - [methodOptions] Optional transaction tuning options (fee, timeout, etc.)
+  /// - [enableSorobanServerLogging] Enable debug logging (default: false)
+  /// - [server] Preconfigured SorobanServer to use instead of constructing one from [rpcUrl]
+  ///
+  /// Example:
+  /// ```dart
+  /// final request = DeployFromExternalRefRequest(
+  ///   sourceAccountKeyPair: myKeyPair,
+  ///   network: Network.TESTNET,
+  ///   rpcUrl: rpcUrl,
+  ///   executableOwner: Address.forContractId(ownerContractIdHex),
+  ///   tag: 'token-v1',
+  /// );
+  /// final client =
+  ///     await SorobanClient.deployFromExternalRef(deployRequest: request);
+  /// ```
+  DeployFromExternalRefRequest(
+      {required this.sourceAccountKeyPair,
+      required this.network,
+      required this.rpcUrl,
+      required this.executableOwner,
+      required this.tag,
       this.constructorArgs,
       this.salt,
       MethodOptions? methodOptions,
