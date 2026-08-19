@@ -256,12 +256,10 @@ class SorobanClient {
       String owner;
       if (ownerAddress.contractId != null) {
         // Spell a contract owner as its "C..." strkey; the field may already
-        // hold that spelling, in which case the hex encoder refuses it.
-        try {
-          owner = StrKey.encodeContractIdHex(ownerAddress.contractId!);
-        } catch (_) {
-          owner = ownerAddress.contractId!;
-        }
+        // hold that spelling.
+        final id = ownerAddress.contractId!;
+        owner =
+            StrKey.isValidContractId(id) ? id : StrKey.encodeContractIdHex(id);
       } else {
         owner = ownerAddress.accountId ??
             ownerAddress.muxedAccountId ??

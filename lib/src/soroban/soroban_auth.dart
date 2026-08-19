@@ -252,10 +252,7 @@ class Address {
       throw ArgumentError(
           "salt must be exactly 32 bytes, got ${salt.length}");
     }
-    final networkId = network.networkId;
-    if (networkId == null) {
-      throw ArgumentError("network has no id");
-    }
+    final networkId = network.networkId!;
 
     final contractIdPreimage = XdrContractIDPreimage(
         XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
@@ -271,7 +268,6 @@ class Address {
     final contractIdBytes = Util.hash(Uint8List.fromList(stream.bytes));
     return StrKey.encodeContractId(contractIdBytes);
   }
-
 }
 
 /// Address-based authorization credentials for Soroban contract invocations.
