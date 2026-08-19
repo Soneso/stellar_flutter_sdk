@@ -386,6 +386,61 @@ SorobanClient client2 = await SorobanClient.deploy(
 );
 ```
 
+### Deployment from an External Reference (Protocol 28)
+
+Create a contract instance that runs the wasm named by a CAP-85 external reference:
+the owner contract holds a persistent entry under a tag, and its value is the hash of
+the wasm the instance runs. There is no install step; the owner already holds the tag
+entry. The reference is resolved before the transaction is built, so an unresolvable
+reference throws naming the owner and the tag rather than failing on-chain.
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+// Address.forContractId takes the hex form of the owner contract id
+String ownerContractIdHex = StrKey.decodeContractIdHex('CCXYZ...');
+
+SorobanClient client = await SorobanClient.deployFromExternalRef(
+  deployRequest: DeployFromExternalRefRequest(
+    rpcUrl: 'https://soroban-testnet.stellar.org:443',
+    network: Network.TESTNET,
+    sourceAccountKeyPair: KeyPair.fromSecretSeed('SXXX...'),
+    executableOwner: Address.forContractId(ownerContractIdHex),
+    tag: 'token-v1', // Tag of the executable entry on the owner; matched byte for byte
+  ),
+);
+```
+
+`constructorArgs` and `salt` work as in `DeployRequest`. The contract spec is loaded
+from the resolved wasm before submission and the returned client is ready to invoke.
+
+### Deriving a Contract Id Before Deploying
+
+`Address.deriveContractId` returns the contract id ("C...") a deployment by a given
+deployer with a given salt creates on a given network. The id derives from the
+deployer, the salt and the network only; the executable (wasm hash, external reference
+or Stellar asset) does not enter the derivation. Use it when the address is needed
+before the deployment, for example in constructor arguments of another contract.
+
+```dart
+import 'dart:math';
+import 'dart:typed_data';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+Address deployer = Address.forAccountId('GABC...');
+// The salt determines the contract id, so it comes from a secure source
+final random = Random.secure();
+Uint8List salt = Uint8List.fromList(List<int>.generate(32, (_) => random.nextInt(256)));
+
+String futureContractId = Address.deriveContractId(
+  deployer: deployer,
+  salt: salt,
+  network: Network.TESTNET,
+);
+
+// Deploying with the same deployer and salt creates exactly this contract id
+```
+
 ## AssembledTransaction
 
 Fine-grained control over the transaction lifecycle. Use `buildInvokeMethodTx()` instead of `invokeMethod()` when you need to inspect simulation results, add memos, or handle multi-signature workflows.
@@ -1230,7 +1285,8 @@ InvokeHostFunctionOperation createOp = InvokeHostFuncOpBuilder(
 ### Create Contract from an External Reference (Protocol 28)
 
 Deploy a contract whose executable is a CAP-85 external reference: the owner contract's
-persistent tag entry names the wasm the instance runs.
+persistent tag entry names the wasm the instance runs. For the one-call variant, see
+"Deployment from an External Reference (Protocol 28)" under Installing and Deploying.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';

@@ -88,6 +88,40 @@ SorobanClient client = await SorobanClient.deploy(
 );
 ```
 
+### Deploy from an External Reference (Protocol 28)
+
+A CAP-85 external reference names an owner contract and a tag; the owner's persistent
+entry under that tag holds the wasm hash the new instance runs. There is no install
+step. `SorobanClient.deployFromExternalRef` resolves the reference before the
+transaction is built (an unresolvable reference throws naming the owner and the tag),
+loads the spec from the resolved wasm, and returns a ready client:
+
+```dart
+// Address.forContractId takes the hex form of the owner contract id
+SorobanClient client = await SorobanClient.deployFromExternalRef(
+  deployRequest: DeployFromExternalRefRequest(
+    sourceAccountKeyPair: keyPair,
+    network: Network.TESTNET,
+    rpcUrl: 'https://soroban-testnet.stellar.org:443',
+    executableOwner: Address.forContractId(ownerContractIdHex),
+    tag: 'token-v1', // matched byte for byte
+    // constructorArgs and salt work as in DeployRequest
+  ),
+);
+```
+
+Without SorobanClient, build the create operation directly with
+`CreateContractFromExternalRefHostFunction(Address address, Address executableOwner,
+String tag, {XdrUint256? salt})` in an `InvokeHostFuncOpBuilder`;
+`CreateContractFromExternalRefWithConstructorHostFunction` adds the constructor
+argument list after the tag. `HostFunction.fromXdr` returns these classes for
+external-ref create operations in parsed envelopes.
+
+`Address.deriveContractId({deployer, salt, network})` returns the contract id ("C...")
+a deployment creates. The id derives from deployer, salt and network only (the
+executable does not enter it), so the address is known before deploying. The salt is
+32 raw bytes (`Uint8List`), not hex; a wrong length throws `ArgumentError`.
+
 ### Invoke Contract Methods
 
 ```dart
