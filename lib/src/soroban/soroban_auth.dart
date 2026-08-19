@@ -232,6 +232,46 @@ class Address {
     throw ArgumentError('Given XdrSCVal is not of type address.');
   }
 
+  /// Derives the contract id a deployment by the given [deployer] with the
+  /// given [salt] creates on the given [network].
+  ///
+  /// The id depends only on the deployer address, the salt and the network;
+  /// the executable the contract is created with (wasm hash, CAP-85 external
+  /// reference or Stellar asset) does not enter the derivation. Use it to know
+  /// a contract's address before deploying, for example when the address is
+  /// needed in constructor arguments of another contract.
+  ///
+  /// Returns the derived contract id ("C...").
+  ///
+  /// Throws [ArgumentError] if [salt] is not exactly 32 bytes.
+  static String deriveContractId(
+      {required Address deployer,
+      required Uint8List salt,
+      required Network network}) {
+    if (salt.length != 32) {
+      throw ArgumentError(
+          "salt must be exactly 32 bytes, got ${salt.length}");
+    }
+    final networkId = network.networkId;
+    if (networkId == null) {
+      throw ArgumentError("network has no id");
+    }
+
+    final contractIdPreimage = XdrContractIDPreimage(
+        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
+    contractIdPreimage.fromAddress =
+        XdrContractIDPreimageFromAddress(deployer.toXdr(), XdrUint256(salt));
+
+    final preimage = XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_ID);
+    preimage.contractID =
+        XdrHashIDPreimageContractID(XdrHash(networkId), contractIdPreimage);
+
+    final stream = XdrDataOutputStream();
+    XdrHashIDPreimage.encode(stream, preimage);
+    final contractIdBytes = Util.hash(Uint8List.fromList(stream.bytes));
+    return StrKey.encodeContractId(contractIdBytes);
+  }
+
 }
 
 /// Address-based authorization credentials for Soroban contract invocations.
