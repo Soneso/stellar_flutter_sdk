@@ -351,6 +351,64 @@ void main() {
         );
       });
 
+      test('should throw on a value that is not a decimal amount', () {
+        // BigInt.parse reads hex and honours a sign of its own, and a fraction
+        // is only read from a value in exactly two parts.
+        for (final value in [
+          "0x10",
+          "0X1F",
+          "-0x10",
+          "--5",
+          "++5",
+          "1.2.3",
+          "1..2",
+          "5-3",
+          "abc",
+          "5e3",
+          "100,5",
+          "1 000.25",
+          "1\n000.5",
+          "",
+          ".",
+        ]) {
+          expect(
+            () => Util.decimalStringToStroops(value),
+            throwsA(isA<Exception>()),
+            reason: 'expected "$value" to be refused',
+          );
+        }
+      });
+
+      test('should ignore surrounding whitespace', () {
+        expect(Util.decimalStringToStroops(" 100.5 "),
+            equals(BigInt.from(1005000000)));
+        expect(Util.decimalStringToStroops("100.5\n"),
+            equals(BigInt.from(1005000000)));
+        expect(Util.decimalStringToStroops("\n100.5"),
+            equals(BigInt.from(1005000000)));
+
+        // Whitespace is removed before the sign and the fraction are read.
+        expect(Util.decimalStringToStroops(" -1.5 "),
+            equals(BigInt.from(-15000000)));
+        expect(Util.decimalStringToStroops(" -0.1"),
+            equals(BigInt.from(-1000000)));
+        expect(Util.decimalStringToStroops("880.169896 "),
+            equals(BigInt.from(8801698960)));
+        expect(Util.decimalStringToStroops("0.1234   "),
+            equals(BigInt.from(1234000)));
+      });
+
+      test('should accept a value with nothing after the decimal point', () {
+        expect(Util.decimalStringToStroops("5."), equals(BigInt.from(50000000)));
+        expect(Util.decimalStringToStroops("0."), equals(BigInt.zero));
+      });
+
+      test('should accept a leading plus', () {
+        expect(Util.decimalStringToStroops("+5"), equals(BigInt.from(50000000)));
+        expect(Util.decimalStringToStroops(" +1.5 "),
+            equals(BigInt.from(15000000)));
+      });
+
       test('should handle small amounts', () {
         var stroops = Util.decimalStringToStroops("0.0000001");
         expect(stroops, equals(BigInt.one));

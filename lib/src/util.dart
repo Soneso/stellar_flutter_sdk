@@ -648,8 +648,11 @@ class Util {
   /// Stellar classic asset amounts are stored as integers with 7 decimal
   /// places of precision (stroops): one unit of an asset equals 10,000,000
   /// stroops. This converts a decimal string such as "123.45" to its stroop
-  /// value 1234500000. A leading "-" is supported and produces a negative
-  /// stroop value.
+  /// value 1234500000. A leading "-" produces a negative stroop value.
+  ///
+  /// Surrounding whitespace is removed. What remains must be digits, then
+  /// optionally a decimal point and any further digits, after at most one leading
+  /// "+" or "-".
   ///
   /// Parameters:
   /// - [value]: Decimal amount string (e.g. "123.45" or "-0.5")
@@ -657,7 +660,8 @@ class Util {
   /// Returns: The amount in stroops
   ///
   /// Throws:
-  /// - [Exception]: If the fractional part has more than 7 digits
+  /// - [Exception]: If the value is not a decimal number, or its fractional
+  ///   part has more than 7 significant digits
   ///
   /// Example:
   /// ```dart
@@ -665,8 +669,17 @@ class Util {
   /// // Returns 1005000000
   /// ```
   static BigInt decimalStringToStroops(String value) {
-    final bool negative = value.startsWith("-");
-    final String unsigned = negative ? value.substring(1) : value;
+    final String trimmed = value.trim();
+    final bool negative = trimmed.startsWith("-");
+    final String unsigned =
+        (negative || trimmed.startsWith("+")) ? trimmed.substring(1) : trimmed;
+
+    // An amount is decimal digits, so the value is validated before BigInt.parse
+    // sees it: BigInt.parse also reads hex and honours a sign of its own, and the
+    // split below reads a fraction only from a value in exactly two parts.
+    if (!RegExp(r'^\d+(\.\d*)?$').hasMatch(unsigned)) {
+      throw Exception("Not a decimal amount: $value");
+    }
 
     List<String> two = unsigned.split(".");
     BigInt amount = BigInt.parse(two[0]) * BigInt.from(stroopsPerXlm);
