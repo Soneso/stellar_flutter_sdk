@@ -181,10 +181,17 @@ class Price {
   /// This method uses the continued fractions algorithm to find a fraction
   /// that approximates the given decimal value, constrained by 32-bit integers.
   ///
+  /// Surrounding whitespace is removed. What remains must be digits, then
+  /// optionally a decimal point and any further digits, after at most one
+  /// leading sign.
+  ///
   /// Parameters:
   /// - [price] Decimal price as string (e.g., "1.5", "0.333", "123.456")
   ///
   /// Returns: Price object with numerator and denominator approximating the input
+  ///
+  /// Throws:
+  /// - [Exception] If the price is not a decimal number
   ///
   /// Warning: This function can give unexpected results for values that cannot
   /// be exactly represented as a fraction with 32-bit numerator and denominator.
@@ -217,8 +224,15 @@ class Price {
   /// See also:
   /// - [Price] constructor for creating exact fractions
   static Price fromString(String price) {
+    // A price is decimal digits, so the value is validated before BigInt.parse
+    // sees it: BigInt.parse also reads hex and honours a sign of its own, and
+    // the split below reads a fraction only from a value in exactly two parts.
+    final String trimmed = price.trim();
+    if (!RegExp(r'^[+-]?\d+(\.\d*)?$').hasMatch(trimmed)) {
+      throw Exception("Not a decimal price: $price");
+    }
 
-    List<String> two = price.split(".");
+    List<String> two = trimmed.split(".");
     BigInt number = BigInt.parse(two[0]);
     double f = 0.0;
     if (two.length == 2) {

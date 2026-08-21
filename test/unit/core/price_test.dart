@@ -34,6 +34,59 @@ void main() {
     });
 
     group('Price.fromString', () {
+      test('throws on a value that is not a decimal price', () {
+        // A price is decimal digits, so hex, exponents, thousands separators
+        // and a repeated decimal point are all refused.
+        for (final value in [
+          "0x10",
+          "0X1F",
+          "-0x10",
+          "+0x10",
+          "--1",
+          "++5",
+          "+-1",
+          "1.2.3",
+          "1..2",
+          "1.5.",
+          "1.5e2",
+          "1 . 5",
+          "abc",
+          "1e3",
+          "1,5",
+          "",
+          ".",
+          ".5",
+        ]) {
+          expect(
+            () => Price.fromString(value),
+            throwsA(predicate((e) =>
+                e is Exception &&
+                e.toString().contains("Not a decimal price"))),
+            reason: 'expected "$value" to be refused',
+          );
+        }
+      });
+
+      test('accepts a sign and surrounding whitespace', () {
+        expect(Price.fromString("+1.5").numerator, equals(3));
+        expect(Price.fromString("+1.5").denominator, equals(2));
+        expect(Price.fromString("+100").numerator, equals(100));
+
+        // A leading "-" passes the guard. The fraction it produces is not
+        // asserted here.
+        expect(() => Price.fromString("-1.5"), returnsNormally);
+
+        final padded = Price.fromString(" 1.5 ");
+        expect(padded.numerator, equals(3));
+        expect(padded.denominator, equals(2));
+      });
+
+      test('accepts a value with nothing after the decimal point', () {
+        expect(Price.fromString("1.").numerator, equals(1));
+        expect(Price.fromString("1.").denominator, equals(1));
+        expect(Price.fromString("0.").numerator, equals(0));
+      });
+
       test('creates Price from string "1.5"', () {
         final price = Price.fromString("1.5");
 
