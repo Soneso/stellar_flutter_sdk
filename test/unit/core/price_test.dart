@@ -72,13 +72,55 @@ void main() {
         expect(Price.fromString("+1.5").denominator, equals(2));
         expect(Price.fromString("+100").numerator, equals(100));
 
-        // A leading "-" passes the guard. The fraction it produces is not
-        // asserted here.
-        expect(() => Price.fromString("-1.5"), returnsNormally);
-
         final padded = Price.fromString(" 1.5 ");
         expect(padded.numerator, equals(3));
         expect(padded.denominator, equals(2));
+      });
+
+      test('approximates a negative price from its floor', () {
+        // The expansion consumes the floor and the remainder above it, so a
+        // negative price with a fraction takes one lower than the part
+        // truncated towards zero.
+        expect(Price.fromString("-1.5").numerator, equals(-3));
+        expect(Price.fromString("-1.5").denominator, equals(2));
+
+        expect(Price.fromString("-0.5").numerator, equals(-1));
+        expect(Price.fromString("-0.5").denominator, equals(2));
+
+        expect(Price.fromString("-2.25").numerator, equals(-9));
+        expect(Price.fromString("-2.25").denominator, equals(4));
+
+        expect(Price.fromString("-0.001").numerator, equals(-1));
+        expect(Price.fromString("-0.001").denominator, equals(1000));
+
+        // A negative whole number has no fraction to carry.
+        expect(Price.fromString("-1").numerator, equals(-1));
+        expect(Price.fromString("-1").denominator, equals(1));
+        expect(Price.fromString("-100").numerator, equals(-100));
+        expect(Price.fromString("-100").denominator, equals(1));
+      });
+
+      test('keeps a negative price inside the int32 range', () {
+        // Every numerator of a negative price is negative, so an upper bound
+        // alone would let the expansion run past the int32 floor. Seven
+        // decimal places is the precision a price arrives in.
+        for (final value in ["-7.0217221", "-50.9702439", "-7.6150891"]) {
+          final price = Price.fromString(value);
+
+          expect(price.numerator, greaterThanOrEqualTo(-2147483648));
+          expect(price.denominator, lessThanOrEqualTo(2147483647));
+          expect(price.numerator! / price.denominator!,
+              closeTo(double.parse(value), 1e-9),
+              reason: 'expected "$value" to approximate its own value');
+        }
+
+        // The floor itself is representable, so it is kept rather than
+        // broken on. A bound one short of it yields a zero denominator.
+        expect(Price.fromString("-2147483648").numerator, equals(-2147483648));
+        expect(Price.fromString("-2147483648").denominator, equals(1));
+        expect(
+            Price.fromString("-2147483647.5").numerator, equals(-2147483648));
+        expect(Price.fromString("-2147483647.5").denominator, equals(1));
       });
 
       test('accepts a value with nothing after the decimal point', () {

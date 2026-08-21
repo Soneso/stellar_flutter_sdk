@@ -217,7 +217,8 @@ class Price {
   ///
   /// Algorithm notes:
   /// - Uses continued fractions for best rational approximation
-  /// - Constrained by INT32_MAX_VALUE for both numerator and denominator
+  /// - Numerator and denominator are bounded by INT32_MAX_VALUE, and the
+  ///   numerator also by INT32_MIN_VALUE
   /// - May not converge for some decimal values
   /// - Precision depends on the decimal's representability as a fraction
   ///
@@ -238,7 +239,17 @@ class Price {
     if (two.length == 2) {
       f = double.parse("0.${two[1]}");
     }
+
+    // The expansion below consumes the floor of the value and the remainder
+    // above it. Splitting on the point gives the part truncated towards zero
+    // and an unsigned fraction, which for a negative value is one too high:
+    // -1.5 is floor -2 with remainder 0.5, not -1 with remainder 0.5.
+    if (trimmed.startsWith("-") && f > 0.0) {
+      number -= BigInt.one;
+      f = 1.0 - f;
+    }
     BigInt maxInt = BigInt.from(BitConstants.INT32_MAX_VALUE);
+    BigInt minInt = BigInt.from(BitConstants.INT32_MIN_VALUE);
     BigInt a;
     // List<List<BigInt>> fractions = List<List<BigInt>>();
     List<List<BigInt>> fractions = [];
@@ -252,7 +263,11 @@ class Price {
       a = number;
       BigInt h = a * (fractions[i - 1][0]) + (fractions[i - 2][0]);
       BigInt k = a * (fractions[i - 1][1]) + (fractions[i - 2][1]);
-      if (h > maxInt || k > maxInt) {
+      // A negative price leaves no numerator positive, so an upper bound alone
+      // would let one run past the int32 floor, where XdrInt32 keeps only its
+      // low 32 bits. Each convergent denominator is at least 1, so only the
+      // numerator needs a floor.
+      if (h > maxInt || k > maxInt || h < minInt) {
         break;
       }
       fractions.add([h, k]);
