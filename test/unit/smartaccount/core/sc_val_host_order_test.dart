@@ -225,6 +225,23 @@ void main() {
       expect(compareScValHostOrder(a, XdrSCVal.forExecutableTag('apple')), 0);
     });
 
+    test('testExecutableTagComparands_binaryBytesOrder', () {
+      // Tags that spell no text compare by their raw bytes. Read through a
+      // replacement-based text decoding, both of these collapse to the same
+      // replacement character and would compare equal.
+      final c0 = XdrSCVal.forExecutableTagBytes(Uint8List.fromList([0xC0]));
+      final ff = XdrSCVal.forExecutableTagBytes(Uint8List.fromList([0xFF]));
+      expect(compareScValHostOrder(c0, ff) < 0, isTrue);
+      expect(compareScValHostOrder(ff, c0) > 0, isTrue);
+      expect(
+        compareScValHostOrder(
+          c0,
+          XdrSCVal.forExecutableTagBytes(Uint8List.fromList([0xC0])),
+        ),
+        0,
+      );
+    });
+
     test('testVecComparands_prefixShorterFirst', () {
       // Vec comparands: on a shared prefix, the shorter vec sorts first.
       final shortVec = XdrSCVal.forVec(<XdrSCVal>[XdrSCVal.forSymbol('a')]);

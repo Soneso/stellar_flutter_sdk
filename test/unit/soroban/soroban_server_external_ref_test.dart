@@ -65,11 +65,12 @@ void main() {
   XdrLedgerEntryData tagEntryData(
     XdrSCVal value, {
     String tag = executableTag,
+    XdrSCVal? tagValue,
   }) {
     final contractData = XdrContractDataEntry(
       XdrExtensionPoint(0),
       ownerAddress(),
-      XdrSCVal.forExecutableTag(tag),
+      tagValue ?? XdrSCVal.forExecutableTag(tag),
       XdrContractDataDurability.PERSISTENT,
       value,
     );
@@ -175,6 +176,30 @@ void main() {
       expect(wasmHash, Util.hexToBytes(wasmId));
     });
 
+    test('a binary tag reaches the lookup key as its own bytes', () async {
+      // The tag bytes spell no text, so any decode-and-reencode hop on the
+      // resolution path would build the key of a different entry.
+      final binaryTag = Uint8List.fromList([0xC0, 0x00, 0xFF, 0xFE]);
+      final capturedKeys = <String>[];
+      final server = mockedServer([
+        tagEntryData(
+          XdrSCVal.forBytes(Util.hexToBytes(wasmId)),
+          tagValue: XdrSCVal.forExecutableTagBytes(binaryTag),
+        ),
+      ], capturedKeys);
+      final ref = XdrContractExecutable.forExternalRefBytes(
+        ownerAddress(),
+        binaryTag,
+      ).externalRef!;
+
+      final wasmHash = await server.getExternalRefWasmHash(ref);
+
+      expect(wasmHash, Util.hexToBytes(wasmId));
+      expect(capturedKeys.length, 1);
+      final tagKey = XdrLedgerKey.fromBase64EncodedXdrString(capturedKeys[0]);
+      expect(tagKey.contractData!.key.executableTag, binaryTag);
+    });
+
     test('external ref resolves through the owner tag entry', () async {
       final wasmCode = Uint8List.fromList([0, 97, 115, 109, 1]);
       final capturedKeys = <String>[];
@@ -203,7 +228,7 @@ void main() {
         contractDataKey.key.discriminant.value,
         XdrSCValType.SCV_EXECUTABLE_TAG.value,
       );
-      expect(contractDataKey.key.executableTag, executableTag);
+      expect(contractDataKey.key.executableTagString, executableTag);
       expect(
         contractDataKey.durability.value,
         XdrContractDataDurability.PERSISTENT.value,
@@ -305,9 +330,9 @@ void main() {
         encoded,
       ).instance!.executable.externalRef!.tag;
 
-      expect(decodedTag, tag);
+      expect(decodedTag, utf8.encode(tag));
       expect(
-        XdrSCVal.forExecutableTag(decodedTag).toBase64EncodedXdrString(),
+        XdrSCVal.forExecutableTagBytes(decodedTag).toBase64EncodedXdrString(),
         writtenKey,
       );
     });
@@ -340,19 +365,20 @@ void main() {
     final owner = Address.forContractId(ownerContractIdHex);
 
     test('create contract round trips byte-identically', () {
-      final hostFunction = CreateContractFromExternalRefHostFunction(
-        deployer,
-        owner,
-        executableTag,
-        salt: fixedSalt,
-      );
+      final hostFunction =
+          CreateContractFromExternalRefHostFunction.forTagString(
+            deployer,
+            owner,
+            executableTag,
+            salt: fixedSalt,
+          );
       final xdr = hostFunction.toXdr();
 
       final parsed = HostFunction.fromXdr(xdr);
 
       expect(parsed, isA<CreateContractFromExternalRefHostFunction>());
       final typed = parsed as CreateContractFromExternalRefHostFunction;
-      expect(typed.tag, executableTag);
+      expect(typed.tagString, executableTag);
       expect(typed.executableOwner.contractId, ownerContractIdHex);
       expect(typed.salt.uint256, fixedSalt.uint256);
       expect(
@@ -363,7 +389,7 @@ void main() {
 
     test('create contract with constructor round trips byte-identically', () {
       final hostFunction =
-          CreateContractFromExternalRefWithConstructorHostFunction(
+          CreateContractFromExternalRefWithConstructorHostFunction.forTagString(
             deployer,
             owner,
             executableTag,
@@ -380,7 +406,7 @@ void main() {
       );
       final typed =
           parsed as CreateContractFromExternalRefWithConstructorHostFunction;
-      expect(typed.tag, executableTag);
+      expect(typed.tagString, executableTag);
       expect(typed.executableOwner.contractId, ownerContractIdHex);
       expect(typed.constructorArgs.length, 1);
       expect(typed.constructorArgs[0].u32!.uint32, 7);
@@ -391,11 +417,12 @@ void main() {
     });
 
     test('create contract generates a 32-byte salt when none is given', () {
-      final hostFunction = CreateContractFromExternalRefHostFunction(
-        deployer,
-        owner,
-        executableTag,
-      );
+      final hostFunction =
+          CreateContractFromExternalRefHostFunction.forTagString(
+            deployer,
+            owner,
+            executableTag,
+          );
 
       expect(hostFunction.salt.uint256.length, 32);
       final xdr = hostFunction.toXdr();
@@ -409,7 +436,7 @@ void main() {
       'create contract with constructor generates a 32-byte salt when none is given',
       () {
         final hostFunction =
-            CreateContractFromExternalRefWithConstructorHostFunction(
+            CreateContractFromExternalRefWithConstructorHostFunction.forTagString(
               deployer,
               owner,
               executableTag,
@@ -434,23 +461,25 @@ void main() {
         Uint8List.fromList(List.generate(32, (i) => 255 - i)),
       );
 
-      final hostFunction = CreateContractFromExternalRefHostFunction(
-        deployer,
-        owner,
-        executableTag,
-        salt: fixedSalt,
-      );
+      final hostFunction =
+          CreateContractFromExternalRefHostFunction.forTagString(
+            deployer,
+            owner,
+            executableTag,
+            salt: fixedSalt,
+          );
       hostFunction.address = otherDeployer;
       hostFunction.executableOwner = otherOwner;
-      hostFunction.tag = 'token-v2';
+      hostFunction.tag = Uint8List.fromList(utf8.encode('token-v2'));
       hostFunction.salt = otherSalt;
 
-      final expected = CreateContractFromExternalRefHostFunction(
-        otherDeployer,
-        otherOwner,
-        'token-v2',
-        salt: otherSalt,
-      );
+      final expected =
+          CreateContractFromExternalRefHostFunction.forTagString(
+            otherDeployer,
+            otherOwner,
+            'token-v2',
+            salt: otherSalt,
+          );
       expect(hostFunction.address.contractId, otherDeployer.contractId);
       expect(
         hostFunction.toXdr().toBase64EncodedXdrString(),
@@ -470,7 +499,7 @@ void main() {
         );
 
         final hostFunction =
-            CreateContractFromExternalRefWithConstructorHostFunction(
+            CreateContractFromExternalRefWithConstructorHostFunction.forTagString(
               deployer,
               owner,
               executableTag,
@@ -479,12 +508,12 @@ void main() {
             );
         hostFunction.address = otherDeployer;
         hostFunction.executableOwner = otherOwner;
-        hostFunction.tag = 'token-v2';
+        hostFunction.tag = Uint8List.fromList(utf8.encode('token-v2'));
         hostFunction.constructorArgs = [XdrSCVal.forU32(9)];
         hostFunction.salt = otherSalt;
 
         final expected =
-            CreateContractFromExternalRefWithConstructorHostFunction(
+            CreateContractFromExternalRefWithConstructorHostFunction.forTagString(
               otherDeployer,
               otherOwner,
               'token-v2',

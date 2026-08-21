@@ -290,6 +290,8 @@ class JsonTestGenerator < TestGenerator
   def struct_field_type(dart_name, member)
     type_str = @gen.dart_type_string(member.declaration, member)
     xdr_field_name = member.name.to_s
+    return "Uint8List" if BYTES_BACKED_STRING_FIELDS.dig(dart_name, xdr_field_name)
+
     overrides = FIELD_TYPE_OVERRIDES[dart_name]
     return type_str unless overrides&.key?(xdr_field_name)
 

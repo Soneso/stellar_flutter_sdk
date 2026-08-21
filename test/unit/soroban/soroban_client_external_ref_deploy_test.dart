@@ -317,7 +317,7 @@ void main() {
       final tagKey = capturedKeys[0];
       expect(Util.bytesToHex(tagKey.contractData!.contract.contractId!.hash),
           ownerContractIdHex);
-      expect(tagKey.contractData!.key.executableTag, executableTag);
+      expect(tagKey.contractData!.key.executableTagString, executableTag);
       final codeKey = capturedKeys[1];
       expect(codeKey.contractCode!.hash.hash, wasmHashBytes);
 
@@ -327,7 +327,7 @@ void main() {
       final typed = hostFunction
           as CreateContractFromExternalRefWithConstructorHostFunction;
       expect(typed.executableOwner.contractId, ownerContractIdHex);
-      expect(typed.tag, executableTag);
+      expect(typed.tagString, executableTag);
       expect(typed.salt.uint256, fixedSalt.uint256);
       expect(typed.constructorArgs, hasLength(1));
       expect(typed.constructorArgs[0].u32!.uint32, 7);
@@ -357,7 +357,7 @@ void main() {
       expect(hostFunction, isA<CreateContractFromExternalRefHostFunction>());
       final typed = hostFunction as CreateContractFromExternalRefHostFunction;
       expect(typed.executableOwner.contractId, ownerContractIdHex);
-      expect(typed.tag, executableTag);
+      expect(typed.tagString, executableTag);
       expect(typed.salt.uint256, hasLength(32));
     });
 

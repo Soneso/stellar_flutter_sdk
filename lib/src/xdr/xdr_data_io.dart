@@ -329,10 +329,17 @@ class XdrDataInputStream extends DataInput {
     return readByte();
   }
 
-  String readString() {
+  /// Reads an XDR `string` and returns its raw bytes.
+  ///
+  /// An XDR `string` carries arbitrary bytes, so the payload is returned
+  /// unexamined; only a caller that wants text applies an encoding to it.
+  Uint8List readStringBytes() {
     int length = readInt();
-    List<int> bytes = readBytes(length);
-    return utf8.decode(bytes);
+    return readBytes(length);
+  }
+
+  String readString() {
+    return utf8.decode(readStringBytes());
   }
 
   List<int?> readIntArray() {
@@ -367,12 +374,18 @@ class XdrDataInputStream extends DataInput {
 }
 
 class XdrDataOutputStream extends DataOutput {
+  /// Writes [bytes] in the XDR `string` wire form: a four-byte length,
+  /// the bytes themselves, and padding to the next multiple of four.
+  ///
+  /// The length an XDR `string` may declare is bounded by its own four-byte
+  /// length prefix, so no further limit applies here.
+  void writeStringBytes(Uint8List bytes) {
+    writeInt(bytes.length);
+    write(bytes);
+  }
+
   writeString(String s) {
-    List<int> bytesNeeded = utf8.encode(s);
-    if (bytesNeeded.length > 65535)
-      throw FormatException("Length cannot be greater than 65535");
-    writeInt(bytesNeeded.length);
-    write(bytesNeeded);
+    writeStringBytes(utf8.encode(s));
   }
 
   writeIntArray(List<int> a) {

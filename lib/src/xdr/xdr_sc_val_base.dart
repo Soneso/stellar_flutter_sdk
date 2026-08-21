@@ -117,9 +117,17 @@ class XdrSCValBase {
 
   XdrSCNonceKey? get nonce_key => this._nonce_key;
 
-  String? _executableTag;
+  Uint8List? _executableTag;
 
-  String? get executableTag => this._executableTag;
+  Uint8List? get executableTag => this._executableTag;
+
+  /// The text [executableTag] spells, read as UTF-8, or null when this arm is unset.
+  ///
+  /// Throws a FormatException when the bytes are not valid UTF-8.
+  String? get executableTagString {
+    final Uint8List? bytes = _executableTag;
+    return bytes == null ? null : utf8.decode(bytes);
+  }
 
   XdrSCValBase(this._type);
 
@@ -163,7 +171,7 @@ class XdrSCValBase {
 
   set nonce_key(XdrSCNonceKey? value) => this._nonce_key = value;
 
-  set executableTag(String? value) => this._executableTag = value;
+  set executableTag(Uint8List? value) => this._executableTag = value;
 
   static void encode(XdrDataOutputStream stream, XdrSCValBase encodedSCVal) {
     stream.writeInt(encodedSCVal.discriminant.value);
@@ -249,7 +257,7 @@ class XdrSCValBase {
         XdrSCNonceKey.encode(stream, encodedSCVal._nonce_key!);
         break;
       case XdrSCValType.SCV_EXECUTABLE_TAG:
-        stream.writeString(encodedSCVal._executableTag!);
+        stream.writeStringBytes(encodedSCVal._executableTag!);
         break;
       default:
         break;
@@ -345,7 +353,7 @@ class XdrSCValBase {
         decoded._nonce_key = XdrSCNonceKey.decode(stream);
         break;
       case XdrSCValType.SCV_EXECUTABLE_TAG:
-        decoded._executableTag = stream.readString();
+        decoded._executableTag = stream.readStringBytes();
         break;
       default:
         break;
@@ -449,7 +457,7 @@ class XdrSCValBase {
         break;
       case XdrSCValType.SCV_EXECUTABLE_TAG:
         lines.add(
-          '$prefix.executable_tag: ${TxRepHelper.escapeString(_executableTag!)}',
+          '$prefix.executable_tag: ${TxRepHelper.escapeBytes(_executableTag!)}',
         );
         break;
       default:
@@ -554,7 +562,7 @@ class XdrSCValBase {
         result._nonce_key = XdrSCNonceKey.fromTxRep(map, '$prefix.nonce_key');
         break;
       case XdrSCValType.SCV_EXECUTABLE_TAG:
-        result._executableTag = TxRepHelper.unescapeString(
+        result._executableTag = TxRepHelper.unescapeBytes(
           TxRepHelper.getValue(map, '$prefix.executable_tag') ?? '',
         );
         break;
@@ -655,7 +663,7 @@ class XdrSCValBase {
         };
       case 22:
         return <String, Object?>{
-          'executable_tag': XdrJsonHelper.escapedString(
+          'executable_tag': XdrJsonHelper.escapedBytes(
             _executableTag!,
             type: 'XdrSCVal',
             key: 'executable_tag',
@@ -798,7 +806,7 @@ class XdrSCValBase {
         return arm19;
       case 'executable_tag':
         final T arm20 = constructor(XdrSCValType.SCV_EXECUTABLE_TAG);
-        arm20.executableTag = XdrJsonHelper.readEscapedString(
+        arm20.executableTag = XdrJsonHelper.readEscapedBytes(
           arm.value,
           type: 'XdrSCVal',
           key: 'executable_tag',

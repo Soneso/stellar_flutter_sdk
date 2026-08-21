@@ -2,6 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'xdr_contract_executable_base.dart';
@@ -51,15 +52,29 @@ class XdrContractExecutable extends XdrContractExecutableBase {
     );
   }
 
-  static XdrContractExecutable forExternalRef(
+  /// Builds an external reference executable over the raw bytes of [tag].
+  ///
+  /// An executable tag is an XDR string, which carries arbitrary bytes.
+  static XdrContractExecutable forExternalRefBytes(
     XdrSCAddress executableOwner,
-    String tag,
+    Uint8List tag,
   ) {
     var result = XdrContractExecutable(
       XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF,
     );
     result.externalRef = XdrContractExecutableExternalRef(executableOwner, tag);
     return result;
+  }
+
+  /// Builds an external reference executable over the UTF-8 encoding of [tag].
+  static XdrContractExecutable forExternalRef(
+    XdrSCAddress executableOwner,
+    String tag,
+  ) {
+    return forExternalRefBytes(
+      executableOwner,
+      Uint8List.fromList(utf8.encode(tag)),
+    );
   }
 
   /// Parses the SEP-0051 XDR-JSON rendering of a XdrContractExecutable.

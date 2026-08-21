@@ -1,6 +1,7 @@
 // Tests for hand-written wrapper factory methods and helpers.
 // These methods are not auto-generated and need dedicated test coverage.
 
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -180,7 +181,7 @@ void main() {
     test('forExecutableTag', () {
       var v = XdrSCVal.forExecutableTag('my-tag');
       expect(v.discriminant, XdrSCValType.SCV_EXECUTABLE_TAG);
-      expect(v.executableTag, 'my-tag');
+      expect(v.executableTagString, 'my-tag');
       _roundtrip(v);
     });
 
@@ -971,7 +972,7 @@ void main() {
         v.discriminant,
         XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF,
       );
-      expect(v.externalRef!.tag, 'my-tag');
+      expect(v.externalRef!.tagString, 'my-tag');
       _roundtrip(v);
 
       // The external reference is mutable after construction.
@@ -979,12 +980,12 @@ void main() {
         StrKey.encodeContractId(Uint8List.fromList(List.filled(32, 7))),
       );
       v.externalRef!.executableOwner = otherOwner;
-      v.externalRef!.tag = 'other-tag';
+      v.externalRef!.tag = Uint8List.fromList(utf8.encode('other-tag'));
       expect(
         v.externalRef!.executableOwner.contractId!.hash,
         otherOwner.contractId!.hash,
       );
-      expect(v.externalRef!.tag, 'other-tag');
+      expect(v.externalRef!.tagString, 'other-tag');
     });
   });
 

@@ -164,6 +164,112 @@ class TxRepHelper {
     return buf.toString();
   }
 
+  /// Escape raw bytes for TxRep double-quoted format.
+  ///
+  /// Applies the ladder of [escapeString] one byte at a time: `"` and `\` take
+  /// their own escapes, `\n`, `\r` and `\t` their C-style short ones, printable
+  /// ASCII passes through, and every other byte is written as `\xNN`. Bytes
+  /// spelling valid UTF-8 render exactly as [escapeString] renders that text,
+  /// so both spellings of a value produce one TxRep line.
+  static String escapeBytes(Uint8List bytes) {
+    StringBuffer buf = StringBuffer();
+    buf.write('"');
+    for (int byte in bytes) {
+      if (byte == 0x5C) {
+        // backslash
+        buf.write(r'\\');
+      } else if (byte == 0x22) {
+        // double quote
+        buf.write(r'\"');
+      } else if (byte == 0x0A) {
+        // newline
+        buf.write(r'\n');
+      } else if (byte == 0x0D) {
+        // carriage return
+        buf.write(r'\r');
+      } else if (byte == 0x09) {
+        // tab
+        buf.write(r'\t');
+      } else if (byte >= 0x20 && byte <= 0x7E) {
+        buf.writeCharCode(byte);
+      } else {
+        buf.write('\\x');
+        buf.write(byte.toRadixString(16).padLeft(2, '0'));
+      }
+    }
+    buf.write('"');
+    return buf.toString();
+  }
+
+  /// Unescape a TxRep string value to the bytes it spells.
+  ///
+  /// Reads the escape sequences [unescapeString] reads and answers the bytes
+  /// behind them, so a value whose bytes are not valid UTF-8 survives the round
+  /// trip. Characters standing outside an escape contribute their UTF-8 bytes.
+  static Uint8List unescapeBytes(String s) {
+    String input = s;
+    if (input.startsWith('"') && input.endsWith('"') && input.length >= 2) {
+      input = input.substring(1, input.length - 1);
+    }
+
+    List<int> bytes = [];
+    StringBuffer pendingText = StringBuffer();
+
+    void flushPendingText() {
+      if (pendingText.isNotEmpty) {
+        bytes.addAll(utf8.encode(pendingText.toString()));
+        pendingText.clear();
+      }
+    }
+
+    int i = 0;
+    while (i < input.length) {
+      if (input[i] == '\\' && i + 1 < input.length) {
+        String next = input[i + 1];
+        if (next == '"') {
+          flushPendingText();
+          bytes.add(0x22);
+          i += 2;
+        } else if (next == '\\') {
+          flushPendingText();
+          bytes.add(0x5C);
+          i += 2;
+        } else if (next == 'n') {
+          flushPendingText();
+          bytes.add(0x0A);
+          i += 2;
+        } else if (next == 'r') {
+          flushPendingText();
+          bytes.add(0x0D);
+          i += 2;
+        } else if (next == 't') {
+          flushPendingText();
+          bytes.add(0x09);
+          i += 2;
+        } else if (next == 'x' && i + 3 < input.length) {
+          String hexStr = input.substring(i + 2, i + 4);
+          int? byteVal = int.tryParse(hexStr, radix: 16);
+          if (byteVal != null && byteVal >= 0) {
+            flushPendingText();
+            bytes.add(byteVal);
+            i += 4;
+          } else {
+            pendingText.write(input[i]);
+            i++;
+          }
+        } else {
+          pendingText.write(input[i]);
+          i++;
+        }
+      } else {
+        pendingText.write(input[i]);
+        i++;
+      }
+    }
+    flushPendingText();
+    return Uint8List.fromList(bytes);
+  }
+
   /// Unescape a TxRep string value.
   ///
   /// Handles `\"`, `\\`, `\n`, `\r`, `\t`, and `\xNN` escape sequences. If the

@@ -100,11 +100,15 @@ class XdrHostFunction extends XdrHostFunctionBase {
     return result;
   }
 
+  /// Builds a create-contract host function whose executable names
+  /// [executableOwner] and the raw bytes of [tag].
+  ///
+  /// An executable tag is an XDR string, which carries arbitrary bytes.
   static XdrHostFunction forCreatingContractWithExternalRef(
     XdrSCAddress address,
     XdrUint256 salt,
     XdrSCAddress executableOwner,
-    String tag,
+    Uint8List tag,
   ) {
     XdrHostFunction result = XdrHostFunction(
       XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT,
@@ -116,16 +120,20 @@ class XdrHostFunction extends XdrHostFunctionBase {
     cId.salt = salt;
     result.createContract = XdrCreateContractArgs(
       cId,
-      XdrContractExecutable.forExternalRef(executableOwner, tag),
+      XdrContractExecutable.forExternalRefBytes(executableOwner, tag),
     );
     return result;
   }
 
+  /// Builds a create-contract-V2 host function whose executable names
+  /// [executableOwner] and the raw bytes of [tag].
+  ///
+  /// An executable tag is an XDR string, which carries arbitrary bytes.
   static XdrHostFunction forCreatingContractV2WithExternalRef(
     XdrSCAddress address,
     XdrUint256 salt,
     XdrSCAddress executableOwner,
-    String tag,
+    Uint8List tag,
     List<XdrSCVal> constructorArgs,
   ) {
     XdrHostFunction result = XdrHostFunction(
@@ -138,7 +146,7 @@ class XdrHostFunction extends XdrHostFunctionBase {
     cId.salt = salt;
     result.createContractV2 = XdrCreateContractArgsV2(
       cId,
-      XdrContractExecutable.forExternalRef(executableOwner, tag),
+      XdrContractExecutable.forExternalRefBytes(executableOwner, tag),
       constructorArgs,
     );
     return result;

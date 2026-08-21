@@ -97,3 +97,21 @@ FIELD_TYPE_OVERRIDES = {
   # InnerTransactionResult: XDR has InnerTransactionResultExt but SDK reuses XdrTransactionResultExt
   "XdrInnerTransactionResult" => { "ext" => "XdrTransactionResultExt" },
 }.freeze
+
+# XDR `string` fields the SDK carries as raw bytes rather than as Dart text.
+#
+# An XDR `string` holds arbitrary bytes. A field listed here is emitted as a
+# Uint8List and keeps the `string` wire form -- a length prefix, the bytes, and
+# padding to a multiple of four -- so its encoding is unchanged. Beside it the
+# generator emits the named getter, which decodes the bytes as UTF-8 for a
+# caller that wants text.
+#
+# Key: DartClassName => { "xdrFieldName" => "utf8GetterName" }
+#
+# The xdrFieldName is the name from the .x file, before any FIELD_OVERRIDES
+# renaming.
+
+BYTES_BACKED_STRING_FIELDS = {
+  "XdrContractExecutableExternalRef" => { "tag" => "tagString" },
+  "XdrSCVal" => { "executable_tag" => "executableTagString" },
+}.freeze

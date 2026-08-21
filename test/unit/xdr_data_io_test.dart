@@ -470,10 +470,13 @@ void main() {
       expect(input.readString(), equals(longString));
     });
 
-    test('writeString throws exception for string exceeding 65535 bytes', () {
+    test('writeString round trips a string longer than 65535 bytes', () {
       final output = XdrDataOutputStream();
-      final tooLongString = 'A' * 65536;
-      expect(() => output.writeString(tooLongString), throwsFormatException);
+      final longString = 'A' * 65536;
+      output.writeString(longString);
+
+      final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
+      expect(input.readString(), equals(longString));
     });
 
     test('writeIntArray and readIntArray', () {
@@ -715,11 +718,13 @@ void main() {
   });
 
   group('XdrDataOutputStream - writeString edge cases', () {
-    test('writeString throws on string longer than 65535 bytes', () {
+    test('writeString declares the length of a string over 65535 bytes', () {
       final output = XdrDataOutputStream();
-      final tooLongString = 'A' * 65536;
+      final longString = 'A' * 70000;
+      output.writeString(longString);
 
-      expect(() => output.writeString(tooLongString), throwsFormatException);
+      final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
+      expect(input.readInt(), equals(70000));
     });
 
     test('writeString at max length boundary', () {
