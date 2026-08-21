@@ -111,8 +111,9 @@ SorobanClient client = await SorobanClient.deployFromExternalRef(
 ```
 
 Without SorobanClient, build the create operation directly with
-`CreateContractFromExternalRefHostFunction(Address address, Address executableOwner,
-String tag, {XdrUint256? salt})` in an `InvokeHostFuncOpBuilder`;
+`CreateContractFromExternalRefHostFunction.forTagString(Address address,
+Address executableOwner, String tag, {XdrUint256? salt})` in an
+`InvokeHostFuncOpBuilder`;
 `CreateContractFromExternalRefWithConstructorHostFunction` adds the constructor
 argument list after the tag. `HostFunction.fromXdr` returns these classes for
 external-ref create operations in parsed envelopes.

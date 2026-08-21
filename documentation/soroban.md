@@ -1292,7 +1292,7 @@ persistent tag entry names the wasm the instance runs. For the one-call variant,
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 InvokeHostFunctionOperation createOp = InvokeHostFuncOpBuilder(
-  CreateContractFromExternalRefHostFunction(
+  CreateContractFromExternalRefHostFunction.forTagString(
     Address.forAccountId(keyPair.accountId),
     Address.forContractId(ownerContractIdHex),
     'token-v1',
