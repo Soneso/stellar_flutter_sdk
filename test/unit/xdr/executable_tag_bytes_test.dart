@@ -302,6 +302,23 @@ void main() {
       );
     });
 
+    test('a carriage return takes its short escape both ways', () {
+      final bytes = Uint8List.fromList([0x61, 0x0D, 0x62]);
+      expect(TxRepHelper.escapeBytes(bytes), r'"a\rb"');
+      expect(TxRepHelper.unescapeBytes(r'"a\rb"'), bytes);
+    });
+
+    test('an unknown or truncated escape stays literal text', () {
+      expect(
+        TxRepHelper.unescapeBytes(r'"\q"'),
+        Uint8List.fromList(utf8.encode(r'\q')),
+      );
+      expect(
+        TxRepHelper.unescapeBytes(r'"\x"'),
+        Uint8List.fromList(utf8.encode(r'\x')),
+      );
+    });
+
     test('TxRepHelper escapes bytes as it escapes the text they spell', () {
       for (final text in <String>[
         '',

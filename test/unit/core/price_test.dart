@@ -126,7 +126,29 @@ void main() {
       test('accepts a value with nothing after the decimal point', () {
         expect(Price.fromString("1.").numerator, equals(1));
         expect(Price.fromString("1.").denominator, equals(1));
-        expect(Price.fromString("0.").numerator, equals(0));
+      });
+
+      test('refuses a value no int32 fraction can carry', () {
+        // Beyond the int32 boundaries the expansion ends before recording a
+        // convergent, and zero or a value too small for any int32 fraction
+        // ends at 0/1. Neither encodes a price the network accepts, so both
+        // are refused locally.
+        for (final value in [
+          "2147483648",
+          "-2147483649",
+          "3000000000",
+          "12345678901234567890.5",
+          "0",
+          "0.",
+          "0.0000000001",
+        ]) {
+          expect(() => Price.fromString(value), throwsA(isA<Exception>()),
+              reason: 'expected "$value" to be refused');
+        }
+
+        // The boundaries themselves are int32 values and are kept.
+        expect(Price.fromString("2147483647").numerator, equals(2147483647));
+        expect(Price.fromString("2147483647").denominator, equals(1));
       });
 
       test('creates Price from string "1.5"', () {

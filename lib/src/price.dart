@@ -192,6 +192,9 @@ class Price {
   ///
   /// Throws:
   /// - [Exception] If the price is not a decimal number
+  /// - [Exception] If no int32 fraction can carry the value: zero, a value
+  ///   too small for any int32 fraction, or a value beyond the int32
+  ///   boundaries
   ///
   /// Warning: This function can give unexpected results for values that cannot
   /// be exactly represented as a fraction with 32-bit numerator and denominator.
@@ -281,6 +284,13 @@ class Price {
     }
     BigInt n = fractions[fractions.length - 1][0];
     BigInt d = fractions[fractions.length - 1][1];
+    // Beyond the int32 boundaries the expansion ends before recording a
+    // convergent, leaving the 1/0 seed; zero and values too small for any
+    // int32 fraction end at 0/1. Neither encodes a price the network
+    // accepts, so both are refused locally.
+    if (n == BigInt.zero || d == BigInt.zero) {
+      throw Exception("Not a price an int32 fraction can carry: $price");
+    }
     return new Price(n.toInt(), d.toInt());
   }
 

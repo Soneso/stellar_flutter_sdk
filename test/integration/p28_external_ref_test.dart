@@ -151,7 +151,8 @@ void main() {
         XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF);
     expect(Util.bytesToHex(executable.externalRef!.executableOwner.contractId!.hash),
         ownerIdHex);
-    expect(executable.externalRef!.tag, executableTag);
+    expect(executable.externalRef!.tag,
+        Uint8List.fromList(utf8.encode(executableTag)));
 
     final codeEntry =
         await sorobanServer.loadContractCodeForContractId(newIdHex);
