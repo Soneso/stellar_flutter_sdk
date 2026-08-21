@@ -579,7 +579,7 @@ class SorobanServer {
     }
     LedgerEntry? entry = await _getContractDataForAddress(
         ref.executableOwner,
-        XdrSCVal.forExecutableTag(ref.tag),
+        XdrSCVal.forExecutableTagBytes(ref.tag),
         XdrContractDataDurability.PERSISTENT);
     if (entry == null) {
       return null;

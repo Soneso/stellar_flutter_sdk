@@ -16,9 +16,14 @@ class XdrContractExecutableExternalRef {
   XdrSCAddress get executableOwner => this._executableOwner;
   set executableOwner(XdrSCAddress value) => this._executableOwner = value;
 
-  String _tag;
-  String get tag => this._tag;
-  set tag(String value) => this._tag = value;
+  Uint8List _tag;
+  Uint8List get tag => this._tag;
+  set tag(Uint8List value) => this._tag = value;
+
+  /// The text [tag] spells, read as UTF-8.
+  ///
+  /// Throws a FormatException when the bytes are not valid UTF-8.
+  String get tagString => utf8.decode(_tag);
 
   XdrContractExecutableExternalRef(this._executableOwner, this._tag);
 
@@ -30,12 +35,12 @@ class XdrContractExecutableExternalRef {
       stream,
       encodedContractExecutableExternalRef.executableOwner,
     );
-    stream.writeString(encodedContractExecutableExternalRef.tag);
+    stream.writeStringBytes(encodedContractExecutableExternalRef.tag);
   }
 
   static XdrContractExecutableExternalRef decode(XdrDataInputStream stream) {
     XdrSCAddress executableOwner = XdrSCAddress.decode(stream);
-    String tag = stream.readString();
+    Uint8List tag = stream.readStringBytes();
     return XdrContractExecutableExternalRef(executableOwner, tag);
   }
 
@@ -54,7 +59,7 @@ class XdrContractExecutableExternalRef {
 
   void toTxRep(String prefix, List<String> lines) {
     _executableOwner.toTxRep('$prefix.executable_owner', lines);
-    lines.add('$prefix.tag: ${TxRepHelper.escapeString(_tag)}');
+    lines.add('$prefix.tag: ${TxRepHelper.escapeBytes(_tag)}');
   }
 
   static XdrContractExecutableExternalRef fromTxRep(
@@ -65,7 +70,7 @@ class XdrContractExecutableExternalRef {
       map,
       '$prefix.executable_owner',
     );
-    String tag = TxRepHelper.unescapeString(
+    Uint8List tag = TxRepHelper.unescapeBytes(
       TxRepHelper.getValue(map, '$prefix.tag') ?? '',
     );
     return XdrContractExecutableExternalRef(executableOwner, tag);
@@ -89,7 +94,7 @@ class XdrContractExecutableExternalRef {
   /// Returns the SEP-0051 rendering of this XdrContractExecutableExternalRef.
   Object? toXdrJsonValue() => <String, Object?>{
     'executable_owner': _executableOwner.toXdrJsonValue(),
-    'tag': XdrJsonHelper.escapedString(
+    'tag': XdrJsonHelper.escapedBytes(
       _tag,
       type: 'XdrContractExecutableExternalRef',
       key: 'tag',
@@ -115,7 +120,7 @@ class XdrContractExecutableExternalRef {
     );
     return XdrContractExecutableExternalRef(
       XdrSCAddress.fromXdrJsonValue(jsonExecutableOwner),
-      XdrJsonHelper.readEscapedString(
+      XdrJsonHelper.readEscapedBytes(
         jsonTag,
         type: 'XdrContractExecutableExternalRef',
         key: 'tag',

@@ -45,10 +45,12 @@ class Generator < Xdrgen::Generators::Base
   def generate
     @generated_files = Set.new
     @sep51_emitted = Set.new
+    @bytes_backed_applied = Set.new
     @sep51_constants = sep51_collect_constants(@top)
     verify_sep51_typedef_registry!(@top)
     render_definitions(@top)
     verify_sep51_type_registry!(@sep51_emitted)
+    verify_bytes_backed_string_fields!(@bytes_backed_applied)
   end
 
   private
@@ -210,10 +212,16 @@ class Generator < Xdrgen::Generators::Base
         type_overridden = true
       end
 
+      # A `string` field the SDK carries as raw bytes keeps the string wire
+      # form; its Dart type becomes Uint8List and its text moves to a getter.
+      bytes_string_getter = bytes_backed_string_getter(struct_name, xdr_field_name, m.declaration)
+      type_str = "Uint8List" if bytes_string_getter
+
       # Detect fixed-opaque typedef size for proper decode (stream.readBytes(N)).
       # Only relevant when the field type resolves to Uint8List (via TYPE_OVERRIDES).
       fos = nil
-      if type_str.delete_suffix('?') == "Uint8List" && m.declaration.respond_to?(:type)
+      if bytes_string_getter.nil? && type_str.delete_suffix('?') == "Uint8List" &&
+         m.declaration.respond_to?(:type)
         fos = fixed_opaque_typedef_size(m.declaration.type)
       end
 
@@ -224,6 +232,7 @@ class Generator < Xdrgen::Generators::Base
         decl: m.declaration,
         fixed_opaque_size: fos,
         type_overridden: type_overridden,
+        bytes_string_getter: bytes_string_getter,
       }
     end
 
@@ -244,6 +253,10 @@ class Generator < Xdrgen::Generators::Base
       out.puts "  #{f[:type]} _#{f[:name]};"
       out.puts "  #{f[:type]} get #{f[:name]} => this._#{f[:name]};"
       out.puts "  set #{f[:name]}(#{f[:type]} value) => this._#{f[:name]} = value;"
+      next unless f[:bytes_string_getter]
+
+      out.puts ""
+      render_bytes_string_getter(out, f[:bytes_string_getter], f[:name], "_#{f[:name]}")
     end
 
     # Constructor (after fields, matching hand-written pattern)
@@ -388,6 +401,11 @@ class Generator < Xdrgen::Generators::Base
       out.puts "  #{arm[:dart_type]}? _#{arm[:field_name]};"
       out.puts ""
       out.puts "  #{arm[:dart_type]}? get #{arm[:field_name]} => this._#{arm[:field_name]};"
+      next unless arm[:bytes_string_getter]
+
+      out.puts ""
+      render_bytes_string_getter(out, arm[:bytes_string_getter], arm[:field_name],
+                                 "_#{arm[:field_name]}", nullable: true)
     end
 
     # Constructor (after disc+arm getters, matching majority of hand-written files)
@@ -857,6 +875,11 @@ class Generator < Xdrgen::Generators::Base
 
     # When a FIELD_TYPE_OVERRIDE changes the type, use simple Type.encode() dispatch
     # instead of AST-based Opaque/Array dispatch (which would generate raw byte operations).
+    if field_info[:bytes_string_getter]
+      out.puts "    stream.writeStringBytes(#{accessor});"
+      return
+    end
+
     if field_info[:type_overridden]
       if is_optional
         out.puts "    if (#{accessor} != null) {"
@@ -926,6 +949,11 @@ class Generator < Xdrgen::Generators::Base
     decl = field_info[:decl]
     member = field_info[:member]
     is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
+
+    if field_info[:bytes_string_getter]
+      out.puts "    Uint8List #{local_name} = stream.readStringBytes();"
+      return
+    end
 
     # When a FIELD_TYPE_OVERRIDE changes the type, use simple Type.decode() dispatch
     # instead of AST-based Opaque/Array dispatch (which would generate raw byte operations).
@@ -1016,6 +1044,8 @@ class Generator < Xdrgen::Generators::Base
     case arm[:encode_style]
     when :string
       out.puts "        stream.writeString(#{accessor});"
+    when :string_bytes
+      out.puts "        stream.writeStringBytes(#{accessor});"
     when :opaque_var
       out.puts "        XdrDataValue.encode(stream, #{accessor});"
     when :array
@@ -1055,6 +1085,8 @@ class Generator < Xdrgen::Generators::Base
     case arm[:decode_style]
     when :string
       out.puts "        #{target}.#{pfield} = stream.readString();"
+    when :string_bytes
+      out.puts "        #{target}.#{pfield} = stream.readStringBytes();"
     when :opaque_var
       out.puts "        #{target}.#{pfield} = XdrDataValue.decode(stream);"
     when :array
@@ -1144,6 +1176,7 @@ class Generator < Xdrgen::Generators::Base
           element_type: arm_info[:element_type],
           inner_type: arm_info[:inner_type],
           fixed_size: arm_info[:fixed_size],
+          bytes_string_getter: arm_info[:bytes_string_getter],
           is_default: false,
         }
       end
@@ -1173,6 +1206,7 @@ class Generator < Xdrgen::Generators::Base
           element_type: arm_info[:element_type],
           inner_type: arm_info[:inner_type],
           fixed_size: arm_info[:fixed_size],
+          bytes_string_getter: arm_info[:bytes_string_getter],
           is_default: true,
         }
       end
@@ -1195,6 +1229,18 @@ class Generator < Xdrgen::Generators::Base
 
   def resolve_dart_arm_info(arm, union_name)
     decl = arm.declaration
+
+    bytes_string_getter = bytes_backed_string_getter(union_name, arm.name, decl)
+    if bytes_string_getter
+      return {
+        dart_type: "Uint8List",
+        encode_style: :string_bytes,
+        decode_style: :string_bytes,
+        element_type: nil,
+        inner_type: nil,
+        bytes_string_getter: bytes_string_getter,
+      }
+    end
 
     case decl
     when AST::Declarations::Array
@@ -1659,7 +1705,11 @@ class Generator < Xdrgen::Generators::Base
   # The rendering of one value, dispatched on its XDR declaration. The registry
   # is consulted first, so a collapsed typedef keeps the rendering its identity
   # calls for rather than the one its collapsed Dart type would imply.
-  def sep51_decl_to(decl, accessor, type_q, key_q, override_type = nil)
+  def sep51_decl_to(decl, accessor, type_q, key_q, override_type = nil, bytes_backed: false)
+    # A bytes-backed `string` renders through the same escape ladder SEP-0051
+    # gives a string, applied to the bytes the field holds.
+    return "XdrJsonHelper.escapedBytes(#{accessor}, #{sep51_args(type_q, key_q)})" if bytes_backed
+
     renderer = sep51_typedef_renderer(decl)
     return renderer[:to].call(accessor, type_q, key_q) if renderer
 
@@ -1700,7 +1750,11 @@ class Generator < Xdrgen::Generators::Base
     end
   end
 
-  def sep51_decl_from(decl, value, type_q, key_q, override_type = nil)
+  def sep51_decl_from(decl, value, type_q, key_q, override_type = nil, bytes_backed: false)
+    if bytes_backed
+      return "XdrJsonHelper.readEscapedBytes(#{value}, #{sep51_args(type_q, key_q)})"
+    end
+
     renderer = sep51_typedef_renderer(decl)
     return renderer[:from].call(value, type_q, key_q) if renderer
 
@@ -1906,13 +1960,16 @@ class Generator < Xdrgen::Generators::Base
       keys << alias_key if alias_key
 
       override = field[:type_overridden] ? field[:type].sub(/\?\z/, '') : nil
-      value = sep51_decl_to(field[:decl], optional ? "#{accessor}!" : accessor, quoted, key_q, override)
+      bytes_backed = !field[:bytes_string_getter].nil?
+      value = sep51_decl_to(field[:decl], optional ? "#{accessor}!" : accessor, quoted, key_q,
+                            override, bytes_backed: bytes_backed)
       entries << [key_q, optional ? "#{accessor} == null ? null : #{value}" : value]
 
       local = "json#{field[:name][0].upcase}#{field[:name][1..]}"
       read = "XdrJsonHelper.readField(object, #{key_q}, type: #{quoted}" \
              "#{alias_key ? ", alias: '#{alias_key}'" : ''})"
-      parsed = sep51_decl_from(field[:decl], local, quoted, key_q, override)
+      parsed = sep51_decl_from(field[:decl], local, quoted, key_q, override,
+                               bytes_backed: bytes_backed)
       reads << { local: local, read: read, parsed: parsed, optional: optional }
     end
 
@@ -2001,7 +2058,8 @@ class Generator < Xdrgen::Generators::Base
         out.puts "        return '#{branch[:key]}';"
       else
         accessor = "_#{arm[:field_name]}!#{sep51_arm_unwrap(arm)}"
-        value = sep51_decl_to(arm[:decl], accessor, quoted, "'#{branch[:key]}'")
+        value = sep51_decl_to(arm[:decl], accessor, quoted, "'#{branch[:key]}'", nil,
+                              bytes_backed: !arm[:bytes_string_getter].nil?)
         value = "_#{arm[:field_name]} == null ? null : #{value}" if sep51_optional_arm?(arm)
         out.puts "        return <String, Object?>{'#{branch[:key]}': #{value}};"
       end
@@ -2053,7 +2111,8 @@ class Generator < Xdrgen::Generators::Base
       valued_branches.each_with_index do |branch, index|
         arm = branch[:arm]
         parsed = sep51_arm_rewrap(arm,
-                                  sep51_decl_from(arm[:decl], 'arm.value', quoted, "'#{branch[:key]}'"))
+                                  sep51_decl_from(arm[:decl], 'arm.value', quoted, "'#{branch[:key]}'",
+                                                  nil, bytes_backed: !arm[:bytes_string_getter].nil?))
         parsed = "arm.value == null ? null : #{parsed}" if sep51_optional_arm?(arm)
         local = "arm#{index}"
         out.puts "      case '#{branch[:key]}':"
@@ -2125,6 +2184,70 @@ class Generator < Xdrgen::Generators::Base
     renderer[:from].call(context).each { |line| out.puts "    #{line}" }
     out.puts "  }"
     true
+  end
+
+  # Emits the getter that reads a bytes-backed `string` field as text. An XDR
+  # string carries arbitrary bytes, so the decode belongs to the caller who
+  # wants text rather than to the field itself.
+  def render_bytes_string_getter(out, getter, field_name, accessor, nullable: false)
+    out.puts "  /// The text [#{field_name}] spells, read as UTF-8#{nullable ? ', or null when this arm is unset' : ''}."
+    out.puts "  ///"
+    out.puts "  /// Throws a FormatException when the bytes are not valid UTF-8."
+    if nullable
+      out.puts "  String? get #{getter} {"
+      out.puts "    final Uint8List? bytes = #{accessor};"
+      out.puts "    return bytes == null ? null : utf8.decode(bytes);"
+      out.puts "  }"
+    else
+      out.puts "  String get #{getter} => utf8.decode(#{accessor});"
+    end
+  end
+
+  # The getter name a `string` field carried as raw bytes exposes its text
+  # under, or nil where the field is ordinary Dart text. Records the hit so the
+  # registry check can tell an applied entry from a stale one.
+  def bytes_backed_string_getter(type_name, xdr_field_name, decl)
+    getter = BYTES_BACKED_STRING_FIELDS.dig(type_name, xdr_field_name.to_s)
+    return nil if getter.nil?
+
+    unless string_valued?(decl)
+      raise "#{type_name}.#{xdr_field_name} is listed in BYTES_BACKED_STRING_FIELDS " \
+            'but does not declare an XDR string'
+    end
+
+    @bytes_backed_applied.add("#{type_name}.#{xdr_field_name}")
+    getter
+  end
+
+  # Every field listed as bytes-backed must reach a generated type, so a rename
+  # cannot quietly drop one and leave the field emitted as text.
+  def verify_bytes_backed_string_fields!(applied)
+    expected = BYTES_BACKED_STRING_FIELDS.flat_map do |type_name, fields|
+      fields.keys.map { |field| "#{type_name}.#{field}" }
+    end
+    missing = expected.reject { |entry| applied.include?(entry) }
+    return if missing.empty?
+
+    raise "BYTES_BACKED_STRING_FIELDS names #{missing.join(', ')}, which no generated " \
+          'field matches; update the table'
+  end
+
+  # True when a declaration names an XDR string, directly or through typedefs.
+  def string_valued?(decl)
+    return true if decl.is_a?(AST::Declarations::String)
+    return false if decl.is_a?(AST::Declarations::Opaque) ||
+                    decl.is_a?(AST::Declarations::Array)
+    return false unless decl.respond_to?(:type)
+
+    typespec = decl.type
+    return true if typespec.is_a?(AST::Typespecs::String)
+    return false unless typespec.is_a?(AST::Typespecs::Simple)
+    return false unless typespec.respond_to?(:resolved_type)
+
+    resolved = typespec.resolved_type
+    return false unless resolved.is_a?(AST::Definitions::Typedef)
+
+    string_valued?(resolved.declaration)
   end
 
   # Every registered type-level rendering must reach a generated class, so a
@@ -2357,6 +2480,9 @@ class Generator < Xdrgen::Generators::Base
     type_str = field[:type]
     is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
 
+    # Bytes-backed string fields call escapeBytes / unescapeBytes
+    return true if field[:bytes_string_getter]
+
     # Optional fields always emit _present via TxRepHelper.getValue
     return true if is_optional
 
@@ -2503,6 +2629,11 @@ class Generator < Xdrgen::Generators::Base
       member    = f[:member]
       is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
 
+      if f[:bytes_string_getter]
+        out.puts "    lines.add('\$prefix.#{xdr_name}: \${TxRepHelper.escapeBytes(_#{dart_name})}');"
+        next
+      end
+
       if f[:type_overridden]
         # type_overridden fields: use the overridden type for dispatch
         inner_type = type_str.sub(/\?\z/, '')
@@ -2571,6 +2702,13 @@ class Generator < Xdrgen::Generators::Base
       decl      = f[:decl]
       member    = f[:member]
       is_optional = member && (member.type.sub_type == :optional || typedef_is_optional?(decl.type))
+
+      if f[:bytes_string_getter]
+        out.puts "    Uint8List #{dart_name} = TxRepHelper.unescapeBytes("
+        out.puts "      TxRepHelper.getValue(map, '\$prefix.#{xdr_name}') ?? '',"
+        out.puts "    );"
+        next
+      end
 
       if f[:type_overridden]
         inner_type = type_str.sub(/\?\z/, '')
@@ -2726,6 +2864,8 @@ class Generator < Xdrgen::Generators::Base
     case style
     when :string
       out.puts "        lines.add('\$prefix.#{xdr_field}: \${TxRepHelper.escapeString(#{accessor})}');"
+    when :string_bytes
+      out.puts "        lines.add('\$prefix.#{xdr_field}: \${TxRepHelper.escapeBytes(#{accessor})}');"
     when :opaque_var
       # XdrDataValue is variable opaque
       out.puts "        lines.add('\$prefix.#{xdr_field}: \${TxRepHelper.bytesToHex(#{accessor}.dataValue)}');"
@@ -2764,6 +2904,8 @@ class Generator < Xdrgen::Generators::Base
     case style
     when :string
       out.puts "        result._#{field} = TxRepHelper.unescapeString(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}') ?? '');"
+    when :string_bytes
+      out.puts "        result._#{field} = TxRepHelper.unescapeBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}') ?? '');"
     when :opaque_var
       out.puts "        result._#{field} = XdrDataValue(TxRepHelper.hexToBytes(TxRepHelper.getValue(map, '\$prefix.#{xdr_field}') ?? ''));"
     when :opaque_fixed

@@ -181,10 +181,20 @@ class Price {
   /// This method uses the continued fractions algorithm to find a fraction
   /// that approximates the given decimal value, constrained by 32-bit integers.
   ///
+  /// Surrounding whitespace is removed. What remains must be digits, then
+  /// optionally a decimal point and any further digits, after at most one
+  /// leading sign.
+  ///
   /// Parameters:
   /// - [price] Decimal price as string (e.g., "1.5", "0.333", "123.456")
   ///
   /// Returns: Price object with numerator and denominator approximating the input
+  ///
+  /// Throws:
+  /// - [Exception] If the price is not a decimal number
+  /// - [Exception] If no int32 fraction can carry the value: zero, a value
+  ///   too small for any int32 fraction, or a value beyond the int32
+  ///   boundaries
   ///
   /// Warning: This function can give unexpected results for values that cannot
   /// be exactly represented as a fraction with 32-bit numerator and denominator.
@@ -210,21 +220,39 @@ class Price {
   ///
   /// Algorithm notes:
   /// - Uses continued fractions for best rational approximation
-  /// - Constrained by INT32_MAX_VALUE for both numerator and denominator
+  /// - Numerator and denominator are bounded by INT32_MAX_VALUE, and the
+  ///   numerator also by INT32_MIN_VALUE
   /// - May not converge for some decimal values
   /// - Precision depends on the decimal's representability as a fraction
   ///
   /// See also:
   /// - [Price] constructor for creating exact fractions
   static Price fromString(String price) {
+    // A price is decimal digits, so the value is validated before BigInt.parse
+    // sees it: BigInt.parse also reads hex and honours a sign of its own, and
+    // the split below reads a fraction only from a value in exactly two parts.
+    final String trimmed = price.trim();
+    if (!RegExp(r'^[+-]?\d+(\.\d*)?$').hasMatch(trimmed)) {
+      throw Exception("Not a decimal price: $price");
+    }
 
-    List<String> two = price.split(".");
+    List<String> two = trimmed.split(".");
     BigInt number = BigInt.parse(two[0]);
     double f = 0.0;
     if (two.length == 2) {
       f = double.parse("0.${two[1]}");
     }
+
+    // The expansion below consumes the floor of the value and the remainder
+    // above it. Splitting on the point gives the part truncated towards zero
+    // and an unsigned fraction, which for a negative value is one too high:
+    // -1.5 is floor -2 with remainder 0.5, not -1 with remainder 0.5.
+    if (trimmed.startsWith("-") && f > 0.0) {
+      number -= BigInt.one;
+      f = 1.0 - f;
+    }
     BigInt maxInt = BigInt.from(BitConstants.INT32_MAX_VALUE);
+    BigInt minInt = BigInt.from(BitConstants.INT32_MIN_VALUE);
     BigInt a;
     // List<List<BigInt>> fractions = List<List<BigInt>>();
     List<List<BigInt>> fractions = [];
@@ -238,7 +266,11 @@ class Price {
       a = number;
       BigInt h = a * (fractions[i - 1][0]) + (fractions[i - 2][0]);
       BigInt k = a * (fractions[i - 1][1]) + (fractions[i - 2][1]);
-      if (h > maxInt || k > maxInt) {
+      // A negative price leaves no numerator positive, so an upper bound alone
+      // would let one run past the int32 floor, where XdrInt32 keeps only its
+      // low 32 bits. Each convergent denominator is at least 1, so only the
+      // numerator needs a floor.
+      if (h > maxInt || k > maxInt || h < minInt) {
         break;
       }
       fractions.add([h, k]);
@@ -252,6 +284,13 @@ class Price {
     }
     BigInt n = fractions[fractions.length - 1][0];
     BigInt d = fractions[fractions.length - 1][1];
+    // Beyond the int32 boundaries the expansion ends before recording a
+    // convergent, leaving the 1/0 seed; zero and values too small for any
+    // int32 fraction end at 0/1. Neither encodes a price the network
+    // accepts, so both are refused locally.
+    if (n == BigInt.zero || d == BigInt.zero) {
+      throw Exception("Not a price an int32 fraction can carry: $price");
+    }
     return new Price(n.toInt(), d.toInt());
   }
 

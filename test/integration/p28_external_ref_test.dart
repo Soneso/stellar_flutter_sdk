@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
@@ -86,7 +87,7 @@ void main() {
     // an accepted-but-empty read and a null from the resolver.
     final ref = XdrContractExecutableExternalRef(
       ownerAddress.toXdr(),
-      executableTag,
+      Uint8List.fromList(utf8.encode(executableTag)),
     );
     final resolved = await sorobanServer.getExternalRefWasmHash(ref);
     expect(resolved, isNotNull);
@@ -106,7 +107,7 @@ void main() {
     expect(response.entries, isEmpty);
     final unusedRef = XdrContractExecutableExternalRef(
       ownerAddress.toXdr(),
-      unusedTag,
+      Uint8List.fromList(utf8.encode(unusedTag)),
     );
     expect(await sorobanServer.getExternalRefWasmHash(unusedRef), isNull);
 
@@ -150,7 +151,8 @@ void main() {
         XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF);
     expect(Util.bytesToHex(executable.externalRef!.executableOwner.contractId!.hash),
         ownerIdHex);
-    expect(executable.externalRef!.tag, executableTag);
+    expect(executable.externalRef!.tag,
+        Uint8List.fromList(utf8.encode(executableTag)));
 
     final codeEntry =
         await sorobanServer.loadContractCodeForContractId(newIdHex);

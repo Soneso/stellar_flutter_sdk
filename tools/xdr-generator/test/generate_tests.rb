@@ -289,6 +289,7 @@ class TestGenerator
         override = FIELD_TYPE_OVERRIDES[dart_name][xdr_field_name]
         type_str = type_str.end_with?('?') ? "#{override}?" : override
       end
+      type_str = "Uint8List" if BYTES_BACKED_STRING_FIELDS.dig(dart_name, xdr_field_name)
 
       { name: field_name, type: type_str, decl: m.declaration }
     end
@@ -752,6 +753,7 @@ class TestGenerator
         override = FIELD_TYPE_OVERRIDES[dart_name][xdr_field_name]
         type_str = type_str.end_with?('?') ? "#{override}?" : override
       end
+      type_str = "Uint8List" if BYTES_BACKED_STRING_FIELDS.dig(dart_name, xdr_field_name)
 
       # For optional fields, use null
       if type_str.end_with?('?')
@@ -1548,6 +1550,10 @@ class TestGeneratorHelper
 
   def resolve_dart_arm_info(arm, union_name)
     decl = arm.declaration
+    if BYTES_BACKED_STRING_FIELDS.dig(union_name, arm.name.to_s)
+      return { dart_type: "Uint8List", decode_style: :string_bytes }
+    end
+
     case decl
     when AST::Declarations::Array
       { dart_type: "List<#{dart_type_for_typespec(decl.type)}>", decode_style: :array }

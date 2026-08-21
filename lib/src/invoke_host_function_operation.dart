@@ -2,6 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:pinenacl/tweetnacl.dart';
 import 'xdr/xdr.dart';
@@ -434,7 +435,7 @@ class CreateContractWithConstructorHostFunction extends HostFunction {
 /// var deployerAddress = Address.forAccountId(deployerAccountId);
 /// var ownerAddress = Address.forContractId(ownerContractIdHex);
 ///
-/// var createFunction = CreateContractFromExternalRefHostFunction(
+/// var createFunction = CreateContractFromExternalRefHostFunction.forTagString(
 ///   deployerAddress,
 ///   ownerAddress,
 ///   'token-v1'
@@ -463,11 +464,18 @@ class CreateContractFromExternalRefHostFunction extends HostFunction {
   Address get executableOwner => this._executableOwner;
   set executableOwner(Address value) => this._executableOwner = value;
 
-  String _tag;
+  Uint8List _tag;
 
-  /// The tag the owner holds the executable entry under.
-  String get tag => this._tag;
-  set tag(String value) => this._tag = value;
+  /// The tag the owner holds the executable entry under, as raw bytes.
+  ///
+  /// An executable tag is an XDR string, which carries arbitrary bytes.
+  Uint8List get tag => this._tag;
+  set tag(Uint8List value) => this._tag = value;
+
+  /// The text [tag] spells, read as UTF-8.
+  ///
+  /// Throws a FormatException when the bytes are not valid UTF-8.
+  String get tagString => utf8.decode(_tag);
 
   late XdrUint256 _salt;
 
@@ -475,12 +483,13 @@ class CreateContractFromExternalRefHostFunction extends HostFunction {
   XdrUint256 get salt => this._salt;
   set salt(XdrUint256 value) => this._salt = value;
 
-  /// Creates a CreateContractFromExternalRefHostFunction.
+  /// Creates a CreateContractFromExternalRefHostFunction over a tag given as
+  /// raw bytes.
   ///
   /// Parameters:
   /// - [_address]: Deployer address (account or contract).
   /// - [_executableOwner]: Contract holding the executable tag entry.
-  /// - [_tag]: Tag of the executable entry on the owner.
+  /// - [_tag]: Tag of the executable entry on the owner, as raw bytes.
   /// - [salt]: Optional salt for contract ID (generated if not provided).
   CreateContractFromExternalRefHostFunction(
       this._address, this._executableOwner, this._tag,
@@ -491,6 +500,14 @@ class CreateContractFromExternalRefHostFunction extends HostFunction {
       this._salt = new XdrUint256(TweetNaCl.randombytes(32));
     }
   }
+
+  /// Creates a CreateContractFromExternalRefHostFunction over the UTF-8
+  /// encoding of [tag].
+  CreateContractFromExternalRefHostFunction.forTagString(
+      Address address, Address executableOwner, String tag,
+      {XdrUint256? salt})
+      : this(address, executableOwner, Uint8List.fromList(utf8.encode(tag)),
+            salt: salt);
 
   /// Converts this host function to its XDR representation.
   ///
@@ -517,7 +534,8 @@ class CreateContractFromExternalRefHostFunction extends HostFunction {
 /// var ownerAddress = Address.forContractId(ownerContractIdHex);
 /// var constructorArgs = [XdrSCVal.forString("MyToken")];
 ///
-/// var createFunction = CreateContractFromExternalRefWithConstructorHostFunction(
+/// var createFunction =
+///     CreateContractFromExternalRefWithConstructorHostFunction.forTagString(
 ///   deployerAddress,
 ///   ownerAddress,
 ///   'token-v1',
@@ -547,11 +565,18 @@ class CreateContractFromExternalRefWithConstructorHostFunction
   Address get executableOwner => this._executableOwner;
   set executableOwner(Address value) => this._executableOwner = value;
 
-  String _tag;
+  Uint8List _tag;
 
-  /// The tag the owner holds the executable entry under.
-  String get tag => this._tag;
-  set tag(String value) => this._tag = value;
+  /// The tag the owner holds the executable entry under, as raw bytes.
+  ///
+  /// An executable tag is an XDR string, which carries arbitrary bytes.
+  Uint8List get tag => this._tag;
+  set tag(Uint8List value) => this._tag = value;
+
+  /// The text [tag] spells, read as UTF-8.
+  ///
+  /// Throws a FormatException when the bytes are not valid UTF-8.
+  String get tagString => utf8.decode(_tag);
 
   List<XdrSCVal> _constructorArgs;
 
@@ -565,12 +590,13 @@ class CreateContractFromExternalRefWithConstructorHostFunction
   XdrUint256 get salt => this._salt;
   set salt(XdrUint256 value) => this._salt = value;
 
-  /// Creates a CreateContractFromExternalRefWithConstructorHostFunction.
+  /// Creates a CreateContractFromExternalRefWithConstructorHostFunction over a
+  /// tag given as raw bytes.
   ///
   /// Parameters:
   /// - [_address]: Deployer address (account or contract).
   /// - [_executableOwner]: Contract holding the executable tag entry.
-  /// - [_tag]: Tag of the executable entry on the owner.
+  /// - [_tag]: Tag of the executable entry on the owner, as raw bytes.
   /// - [_constructorArgs]: Arguments passed to the contract constructor.
   /// - [salt]: Optional salt for contract ID (generated if not provided).
   CreateContractFromExternalRefWithConstructorHostFunction(
@@ -582,6 +608,18 @@ class CreateContractFromExternalRefWithConstructorHostFunction
       this._salt = new XdrUint256(TweetNaCl.randombytes(32));
     }
   }
+
+  /// Creates a CreateContractFromExternalRefWithConstructorHostFunction over
+  /// the UTF-8 encoding of [tag].
+  CreateContractFromExternalRefWithConstructorHostFunction.forTagString(
+      Address address,
+      Address executableOwner,
+      String tag,
+      List<XdrSCVal> constructorArgs,
+      {XdrUint256? salt})
+      : this(address, executableOwner, Uint8List.fromList(utf8.encode(tag)),
+            constructorArgs,
+            salt: salt);
 
   /// Converts this host function to its XDR representation.
   ///

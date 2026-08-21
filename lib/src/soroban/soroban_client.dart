@@ -2,6 +2,7 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:stellar_flutter_sdk/src/account.dart';
@@ -248,8 +249,9 @@ class SorobanClient {
       server.enableLogging = deployRequest.enableSorobanServerLogging;
     }
 
+    final tagBytes = Uint8List.fromList(utf8.encode(deployRequest.tag));
     final ref = XdrContractExecutableExternalRef(
-        deployRequest.executableOwner.toXdr(), deployRequest.tag);
+        deployRequest.executableOwner.toXdr(), tagBytes);
     final wasmHash = await server.getExternalRefWasmHash(ref);
     if (wasmHash == null) {
       final ownerAddress = deployRequest.executableOwner;
@@ -292,12 +294,12 @@ class SorobanClient {
           CreateContractFromExternalRefWithConstructorHostFunction(
               sourceAddress,
               deployRequest.executableOwner,
-              deployRequest.tag,
+              tagBytes,
               constructorArgs,
               salt: deployRequest.salt);
     } else {
       createContractHostFunction = CreateContractFromExternalRefHostFunction(
-          sourceAddress, deployRequest.executableOwner, deployRequest.tag,
+          sourceAddress, deployRequest.executableOwner, tagBytes,
           salt: deployRequest.salt);
     }
 

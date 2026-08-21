@@ -131,6 +131,13 @@ final class BitConstants {
   /// Decimal: 2147483647
   static const int INT32_MAX_VALUE = 0x7FFFFFFF;
 
+  /// Minimum value for a signed 32-bit integer.
+  ///
+  /// Binary: 0b10000000000000000000000000000000
+  /// Hexadecimal: -0x80000000
+  /// Decimal: -2147483648
+  static const int INT32_MIN_VALUE = -0x80000000;
+
   // ============================================================================
   // CRC16 CHECKSUM CONSTANTS
   // ============================================================================

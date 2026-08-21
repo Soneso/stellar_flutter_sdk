@@ -84,8 +84,8 @@ int compareScValHostOrder(XdrSCVal a, XdrSCVal b) {
   }
   if (a.discriminant == XdrSCValType.SCV_EXECUTABLE_TAG) {
     return _compareBytesUnsigned(
-      utf8.encode(a.executableTag ?? ''),
-      utf8.encode(b.executableTag ?? ''),
+      a.executableTag ?? const <int>[],
+      b.executableTag ?? const <int>[],
     );
   }
   return _compareBytesUnsigned(

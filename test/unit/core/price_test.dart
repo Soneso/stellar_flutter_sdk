@@ -34,6 +34,123 @@ void main() {
     });
 
     group('Price.fromString', () {
+      test('throws on a value that is not a decimal price', () {
+        // A price is decimal digits, so hex, exponents, thousands separators
+        // and a repeated decimal point are all refused.
+        for (final value in [
+          "0x10",
+          "0X1F",
+          "-0x10",
+          "+0x10",
+          "--1",
+          "++5",
+          "+-1",
+          "1.2.3",
+          "1..2",
+          "1.5.",
+          "1.5e2",
+          "1 . 5",
+          "abc",
+          "1e3",
+          "1,5",
+          "",
+          ".",
+          ".5",
+        ]) {
+          expect(
+            () => Price.fromString(value),
+            throwsA(predicate((e) =>
+                e is Exception &&
+                e.toString().contains("Not a decimal price"))),
+            reason: 'expected "$value" to be refused',
+          );
+        }
+      });
+
+      test('accepts a sign and surrounding whitespace', () {
+        expect(Price.fromString("+1.5").numerator, equals(3));
+        expect(Price.fromString("+1.5").denominator, equals(2));
+        expect(Price.fromString("+100").numerator, equals(100));
+
+        final padded = Price.fromString(" 1.5 ");
+        expect(padded.numerator, equals(3));
+        expect(padded.denominator, equals(2));
+      });
+
+      test('approximates a negative price from its floor', () {
+        // The expansion consumes the floor and the remainder above it, so a
+        // negative price with a fraction takes one lower than the part
+        // truncated towards zero.
+        expect(Price.fromString("-1.5").numerator, equals(-3));
+        expect(Price.fromString("-1.5").denominator, equals(2));
+
+        expect(Price.fromString("-0.5").numerator, equals(-1));
+        expect(Price.fromString("-0.5").denominator, equals(2));
+
+        expect(Price.fromString("-2.25").numerator, equals(-9));
+        expect(Price.fromString("-2.25").denominator, equals(4));
+
+        expect(Price.fromString("-0.001").numerator, equals(-1));
+        expect(Price.fromString("-0.001").denominator, equals(1000));
+
+        // A negative whole number has no fraction to carry.
+        expect(Price.fromString("-1").numerator, equals(-1));
+        expect(Price.fromString("-1").denominator, equals(1));
+        expect(Price.fromString("-100").numerator, equals(-100));
+        expect(Price.fromString("-100").denominator, equals(1));
+      });
+
+      test('keeps a negative price inside the int32 range', () {
+        // Every numerator of a negative price is negative, so an upper bound
+        // alone would let the expansion run past the int32 floor. Seven
+        // decimal places is the precision a price arrives in.
+        for (final value in ["-7.0217221", "-50.9702439", "-7.6150891"]) {
+          final price = Price.fromString(value);
+
+          expect(price.numerator, greaterThanOrEqualTo(-2147483648));
+          expect(price.denominator, lessThanOrEqualTo(2147483647));
+          expect(price.numerator! / price.denominator!,
+              closeTo(double.parse(value), 1e-9),
+              reason: 'expected "$value" to approximate its own value');
+        }
+
+        // The floor itself is representable, so it is kept rather than
+        // broken on. A bound one short of it yields a zero denominator.
+        expect(Price.fromString("-2147483648").numerator, equals(-2147483648));
+        expect(Price.fromString("-2147483648").denominator, equals(1));
+        expect(
+            Price.fromString("-2147483647.5").numerator, equals(-2147483648));
+        expect(Price.fromString("-2147483647.5").denominator, equals(1));
+      });
+
+      test('accepts a value with nothing after the decimal point', () {
+        expect(Price.fromString("1.").numerator, equals(1));
+        expect(Price.fromString("1.").denominator, equals(1));
+      });
+
+      test('refuses a value no int32 fraction can carry', () {
+        // Beyond the int32 boundaries the expansion ends before recording a
+        // convergent, and zero or a value too small for any int32 fraction
+        // ends at 0/1. Neither encodes a price the network accepts, so both
+        // are refused locally.
+        for (final value in [
+          "2147483648",
+          "-2147483649",
+          "3000000000",
+          "12345678901234567890.5",
+          "0",
+          "0.",
+          "0.0000000001",
+        ]) {
+          expect(() => Price.fromString(value), throwsA(isA<Exception>()),
+              reason: 'expected "$value" to be refused');
+        }
+
+        // The boundaries themselves are int32 values and are kept.
+        expect(Price.fromString("2147483647").numerator, equals(2147483647));
+        expect(Price.fromString("2147483647").denominator, equals(1));
+      });
+
       test('creates Price from string "1.5"', () {
         final price = Price.fromString("1.5");
 

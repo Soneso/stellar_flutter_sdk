@@ -532,7 +532,7 @@ void main() {
                 Uint8List.fromList(List<int>.filled(32, 0xAB)),
               )),
           )),
-        'test_string',
+        Uint8List.fromList([1, 2, 3, 4]),
       );
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrContractExecutableExternalRef.encode(output, original);
@@ -612,7 +612,7 @@ void main() {
                   Uint8List.fromList(List<int>.filled(32, 0xAB)),
                 )),
             )),
-          'test_string',
+          Uint8List.fromList([1, 2, 3, 4]),
         ));
         XdrDataOutputStream output = XdrDataOutputStream();
         XdrContractExecutableBase.encode(output, original);
@@ -1177,7 +1177,7 @@ void main() {
 
     test('XdrSCVal XdrSCValType.SCV_EXECUTABLE_TAG arm roundtrip', () {
       var original = XdrSCValBase(XdrSCValType.SCV_EXECUTABLE_TAG);
-      original.executableTag = 'test_string';
+      original.executableTag = Uint8List.fromList([1, 2, 3, 4]);
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSCValBase.encode(output, original);
       Uint8List encoded = Uint8List.fromList(output.bytes);
@@ -2155,7 +2155,7 @@ void main() {
                 Uint8List.fromList(List<int>.filled(32, 0xAB)),
               )),
           )),
-        'test_string',
+        Uint8List.fromList([1, 2, 3, 4]),
       );
       List<String> lines = [];
       original.toTxRep('tx', lines);
@@ -2221,7 +2221,7 @@ void main() {
                         Uint8List.fromList(List<int>.filled(32, 0xAB)),
                       )),
                   )),
-                'test_string',
+                Uint8List.fromList([1, 2, 3, 4]),
               )));
         List<String> lines = [];
         original.toTxRep('tx', lines);
@@ -2614,7 +2614,7 @@ void main() {
 
     test('XdrSCVal TxRep roundtrip XdrSCValType.SCV_EXECUTABLE_TAG', () {
       var original = (XdrSCValBase(XdrSCValType.SCV_EXECUTABLE_TAG)
-        ..executableTag = 'test_string');
+        ..executableTag = Uint8List.fromList([1, 2, 3, 4]));
       List<String> lines = [];
       original.toTxRep('tx', lines);
       Map<String, String> map = parseTxRepLines(lines);

@@ -927,7 +927,7 @@ signatures.len: 0
           reconstructed.toBase64EncodedXdrString(),
           executable.toBase64EncodedXdrString(),
         );
-        expect(reconstructed.externalRef!.tag, 'tag-1');
+        expect(reconstructed.externalRef!.tagString, 'tag-1');
       });
     });
 

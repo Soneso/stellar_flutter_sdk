@@ -1266,7 +1266,7 @@ void main() {
                 Uint8List.fromList(List<int>.filled(32, 0xAB)),
               )),
           )),
-        'test_string',
+        Uint8List.fromList([1, 2, 3, 4]),
       );
       var json = original.toXdrJson();
       var fromDocument = XdrContractExecutableExternalRef.fromXdrJson(json);
@@ -1293,7 +1293,7 @@ void main() {
                 Uint8List.fromList(List<int>.filled(32, 0xAB)),
               )),
           )),
-        'test_string',
+        Uint8List.fromList([1, 2, 3, 4]),
       );
       var object = <String, Object?>{
         ...(original.toXdrJsonValue() as Map<String, Object?>),
@@ -1364,7 +1364,7 @@ void main() {
                 Uint8List.fromList(List<int>.filled(32, 0xAB)),
               )),
           )),
-        'test_string',
+        Uint8List.fromList([1, 2, 3, 4]),
       ));
       expect(
         (original.toXdrJsonValue() as Map<String, Object?>).keys.single,
@@ -2079,7 +2079,7 @@ void main() {
     });
     test('XdrSCVal executable_tag arm round trip', () {
       var original = XdrSCVal(XdrSCValType.SCV_EXECUTABLE_TAG);
-      original.executableTag = 'test_string';
+      original.executableTag = Uint8List.fromList([1, 2, 3, 4]);
       expect(
         (original.toXdrJsonValue() as Map<String, Object?>).keys.single,
         'executable_tag',

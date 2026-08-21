@@ -282,10 +282,23 @@ class XdrSCVal extends XdrSCValBase {
     return XdrSCVal(XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE);
   }
 
-  static XdrSCVal forExecutableTag(String executableTag) {
+  /// Builds an SCV_EXECUTABLE_TAG value over the raw bytes of [executableTag].
+  ///
+  /// An executable tag is an XDR string, which carries arbitrary bytes. A tag
+  /// read off the ledger is matched byte for byte, so a lookup key built from
+  /// it is built from its bytes.
+  static XdrSCVal forExecutableTagBytes(Uint8List executableTag) {
     XdrSCVal val = XdrSCVal(XdrSCValType.SCV_EXECUTABLE_TAG);
     val.executableTag = executableTag;
     return val;
+  }
+
+  /// Builds an SCV_EXECUTABLE_TAG value over the UTF-8 encoding of
+  /// [executableTag].
+  static XdrSCVal forExecutableTag(String executableTag) {
+    return forExecutableTagBytes(
+      Uint8List.fromList(utf8.encode(executableTag)),
+    );
   }
 
   /// Splits a BigInt into hi/lo 64-bit parts for 128-bit representation.
