@@ -128,7 +128,7 @@ signatures.len: 0
     });
 
     group('MANAGE_SELL_OFFER edge cases', () {
-      test('toTxRep converts MANAGE_SELL_OFFER with zero price', () {
+      test('a MANAGE_SELL_OFFER with zero price is refused at signing', () {
         final sourceAccount = Account(sourceAccountId, BigInt.from(2908908335136768));
         final issuer = KeyPair.random();
         final usd = AssetTypeCreditAlphaNum4('USD', issuer.accountId);
@@ -140,12 +140,10 @@ signatures.len: 0
             .addOperation(operation)
             .build();
 
-        transaction.sign(sourceKeyPair, Network.TESTNET);
-        final xdr = transaction.toEnvelopeXdrBase64();
-        final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
-
-        expect(txRep, contains('tx.operations[0].body.type: MANAGE_SELL_OFFER'));
-        expect(txRep, contains('price.n: 0'));
+        // The price reaches XDR through Price.fromString, which refuses a
+        // price of zero.
+        expect(() => transaction.sign(sourceKeyPair, Network.TESTNET),
+            throwsA(isA<Exception>()));
       });
 
       test('toTxRep converts MANAGE_SELL_OFFER delete with offerID', () {
