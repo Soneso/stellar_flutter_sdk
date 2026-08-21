@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import '../0001/stellar_toml.dart';
+import '../shared/sep_request_amount.dart';
 import 'dart:async';
 import '../../requests/request_builder.dart';
 import '../../responses/response.dart';
@@ -594,7 +595,7 @@ class TransferServerService {
     final Map<String, String> queryParams = {
       "operation": request.operation,
       "asset_code": request.assetCode,
-      "amount": request.amount.toString(),
+      "amount": SepRequestAmount.format(request.amount),
     };
 
     if (request.type != null) {
