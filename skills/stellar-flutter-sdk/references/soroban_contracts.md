@@ -99,7 +99,7 @@ loads the spec from the resolved wasm, and returns a ready client:
 ```dart
 // Address.forContractId takes the hex form of the owner contract id
 SorobanClient client = await SorobanClient.deployFromExternalRef(
-  deployRequest: DeployFromExternalRefRequest(
+  deployRequest: DeployFromExternalRefRequest.forTagString(
     sourceAccountKeyPair: keyPair,
     network: Network.TESTNET,
     rpcUrl: 'https://soroban-testnet.stellar.org:443',
@@ -109,6 +109,11 @@ SorobanClient client = await SorobanClient.deployFromExternalRef(
   ),
 );
 ```
+
+`DeployFromExternalRefRequest.tag` is `Uint8List` (an executable tag carries arbitrary
+bytes); `forTagString` encodes a text tag as UTF-8 exactly once, and the default
+constructor takes the raw bytes. The same bytes resolve the owner's entry and build the
+create operation.
 
 `deployFromExternalRef` builds the `CREATE_CONTRACT_V2` host function form (empty
 constructor-argument vector when no args are given), as `deploy` does.

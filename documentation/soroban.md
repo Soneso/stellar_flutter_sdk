@@ -401,7 +401,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 String ownerContractIdHex = StrKey.decodeContractIdHex('CCXYZ...');
 
 SorobanClient client = await SorobanClient.deployFromExternalRef(
-  deployRequest: DeployFromExternalRefRequest(
+  deployRequest: DeployFromExternalRefRequest.forTagString(
     rpcUrl: 'https://soroban-testnet.stellar.org:443',
     network: Network.TESTNET,
     sourceAccountKeyPair: KeyPair.fromSecretSeed('SXXX...'),
@@ -410,6 +410,12 @@ SorobanClient client = await SorobanClient.deployFromExternalRef(
   ),
 );
 ```
+
+`DeployFromExternalRefRequest.tag` carries the tag as raw bytes (`Uint8List`) — an
+executable tag is an XDR string, whose bytes need not be valid UTF-8. The
+`forTagString` constructor takes a text tag and encodes it as UTF-8 exactly once; pass
+the bytes to the default constructor for a tag that spells no text. The same bytes are
+used to resolve the owner's entry and to build the create operation.
 
 `constructorArgs` and `salt` work as in `DeployRequest`; the create operation uses the
 `CREATE_CONTRACT_V2` host function form with an empty constructor-argument vector when
@@ -1165,6 +1171,14 @@ stellar-contract-bindings flutter \
 ```
 
 Or use the [web interface](https://stellar-contract-bindings.fly.dev/).
+
+The generator does not yet resolve a contract created from a CAP-85 external
+reference (Protocol 28) and fails with "Unknown executable type" for one. Until it
+does, generate the binding from a contract that carries the wasm directly (any
+instance deployed from the same wasm hash, which
+`SorobanServer.getExternalRefWasmHash` resolves for the reference). A generated
+client works with external-reference contracts at runtime either way — the SDK
+resolves the reference when loading the contract.
 
 ### Use Generated Client
 

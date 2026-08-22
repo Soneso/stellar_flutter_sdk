@@ -668,6 +668,20 @@ tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.executabl
 tx.operations[0].body.invokeHostFunctionOp.auth.len: 0
 ```
 
+An external-ref executable (Protocol 28, CAP-85) replaces the two `executable.*` lines:
+
+```
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.executable.type: CONTRACT_EXECUTABLE_EXTERNAL_REF
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.executable.external_ref.executable_owner.type: SC_ADDRESS_TYPE_CONTRACT
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.executable.external_ref.executable_owner.contractId: <64 hex>
+tx.operations[0].body.invokeHostFunctionOp.hostFunction.createContract.executable.external_ref.tag: "token-v1"
+```
+
+The same executable fields appear under `createContractV2` for
+`HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2`, followed by its `constructorArgs` list. A tag
+whose bytes spell no text renders its non-printable bytes as `\xNN` escapes inside the
+quotes.
+
 ### SCVal types in Txrep
 
 | SCVal type | Txrep type string | Field name(s) |
