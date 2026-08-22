@@ -411,7 +411,9 @@ SorobanClient client = await SorobanClient.deployFromExternalRef(
 );
 ```
 
-`constructorArgs` and `salt` work as in `DeployRequest`. The contract spec is loaded
+`constructorArgs` and `salt` work as in `DeployRequest`; the create operation uses the
+`CREATE_CONTRACT_V2` host function form with an empty constructor-argument vector when
+`constructorArgs` is not given, as `deploy` does. The contract spec is loaded
 from the resolved wasm before submission and the returned client is ready to invoke.
 
 ### Deriving a Contract Id Before Deploying
@@ -1284,8 +1286,11 @@ InvokeHostFunctionOperation createOp = InvokeHostFuncOpBuilder(
 ### Create Contract from an External Reference (Protocol 28)
 
 Deploy a contract whose executable is a CAP-85 external reference: the owner contract's
-persistent tag entry names the wasm the instance runs. For the one-call variant, see
-"Deployment from an External Reference (Protocol 28)" under Installing and Deploying.
+persistent tag entry names the wasm the instance runs. The executable owner must be a
+contract address — only a contract can hold the tag entry; the builders' constructor and
+`executableOwner` setter throw `ArgumentError` for any other address type. For the
+one-call variant, see "Deployment from an External Reference (Protocol 28)" under
+Installing and Deploying.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';

@@ -110,13 +110,18 @@ SorobanClient client = await SorobanClient.deployFromExternalRef(
 );
 ```
 
+`deployFromExternalRef` builds the `CREATE_CONTRACT_V2` host function form (empty
+constructor-argument vector when no args are given), as `deploy` does.
+
 Without SorobanClient, build the create operation directly with
 `CreateContractFromExternalRefHostFunction.forTagString(Address address,
 Address executableOwner, String tag, {XdrUint256? salt})` in an
 `InvokeHostFuncOpBuilder`;
 `CreateContractFromExternalRefWithConstructorHostFunction` adds the constructor
-argument list after the tag. `HostFunction.fromXdr` returns these classes for
-external-ref create operations in parsed envelopes.
+argument list after the tag. Both builders throw `ArgumentError` for an
+`executableOwner` that is not a contract address (constructor and setter).
+`HostFunction.fromXdr` returns these classes for external-ref create operations
+in parsed envelopes and applies the same owner check.
 
 `Address.deriveContractId({deployer, salt, network})` returns the contract id ("C...")
 a deployment creates. The id derives from deployer, salt and network only (the

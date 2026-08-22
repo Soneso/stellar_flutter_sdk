@@ -3597,6 +3597,8 @@ class OZBuilders {
 - `createCreateContractContextTypeFromBytes`: Returns `OZContextRuleTypeCreateContract` from raw WASM-hash bytes; must be exactly 32 bytes.
 - `collectUniqueSignersFromRules`: Returns the unique signers from `rules`, removing duplicates across rules. First occurrence wins.
 
+CreateContract rules identify a deployment by its 32-byte WASM hash only, matching the on-chain rule schema. A create-contract invocation whose executable is a CAP-85 external reference or a Stellar Asset Contract carries no WASM hash, so rule resolution rejects it with `SmartAccountValidationException` during signing.
+
 ### OZContextRuleType (sealed)
 
 ```dart

@@ -313,6 +313,11 @@ CallContract    ->  Vec([Symbol("CallContract"), Address(contractAddress)])
 CreateContract  ->  Vec([Symbol("CreateContract"), Bytes(wasmHash)])
 ```
 
+CreateContract rules identify a deployment by its 32-byte wasm hash only. A
+create-contract invocation whose executable is a CAP-85 external reference (or a
+Stellar Asset Contract) carries no wasm hash, so rule resolution rejects it with
+`SmartAccountValidationException` during signing.
+
 The `OZBuilders` static helpers wrap construction with validation:
 
 ```dart
