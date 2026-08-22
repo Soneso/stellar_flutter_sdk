@@ -122,7 +122,7 @@ void main() {
       network: network,
     );
     final client = await SorobanClient.deployFromExternalRef(
-      deployRequest: DeployFromExternalRefRequest(
+      deployRequest: DeployFromExternalRefRequest.forTagString(
         sourceAccountKeyPair: keyPair,
         network: network,
         rpcUrl: rpcUrl,

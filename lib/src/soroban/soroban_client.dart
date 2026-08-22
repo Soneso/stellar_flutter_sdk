@@ -15,6 +15,7 @@ import 'package:stellar_flutter_sdk/src/soroban/soroban_server.dart';
 import 'package:stellar_flutter_sdk/src/soroban/contract_spec.dart';
 import 'package:stellar_flutter_sdk/src/transaction.dart';
 import 'package:stellar_flutter_sdk/src/util.dart';
+import 'package:stellar_flutter_sdk/src/xdr/txrep_helper.dart';
 import 'package:stellar_flutter_sdk/src/xdr/xdr.dart';
 
 import '../key_pair.dart';
@@ -254,7 +255,7 @@ class SorobanClient {
       server.enableLogging = deployRequest.enableSorobanServerLogging;
     }
 
-    final tagBytes = Uint8List.fromList(utf8.encode(deployRequest.tag));
+    final tagBytes = deployRequest.tag;
     final ref = XdrContractExecutableExternalRef(
         deployRequest.executableOwner.toXdr(), tagBytes);
     final wasmHash = await server.getExternalRefWasmHash(ref);
@@ -275,7 +276,7 @@ class SorobanClient {
       }
       throw Exception(
           "external reference does not resolve: owner $owner holds no 32-byte "
-          "wasm hash entry under tag ${deployRequest.tag}");
+          "wasm hash entry under tag ${TxRepHelper.escapeBytes(deployRequest.tag)}");
     }
 
     // Load the spec from the resolved code before deploying: the code entry
@@ -2051,7 +2052,15 @@ class DeployFromExternalRefRequest {
   Address executableOwner;
 
   /// The tag the owner holds the executable entry under; matched byte for byte.
-  String tag;
+  ///
+  /// An executable tag is an XDR string, which carries arbitrary bytes. For a
+  /// text tag, use the [DeployFromExternalRefRequest.forTagString] constructor.
+  Uint8List tag;
+
+  /// The text [tag] spells, read as UTF-8.
+  ///
+  /// Throws a FormatException when the bytes are not valid UTF-8.
+  String get tagString => utf8.decode(tag);
 
   /// Optional: Constructor/Initialization args for the contract's `__constructor` method.
   /// Only required if the contract has a constructor function.
@@ -2082,7 +2091,7 @@ class DeployFromExternalRefRequest {
   /// - [network] Stellar network for deployment (TESTNET, PUBLIC, etc.)
   /// - [rpcUrl] Soroban RPC server URL
   /// - [executableOwner] Contract holding the executable tag entry
-  /// - [tag] Tag of the executable entry on the owner; matched byte for byte
+  /// - [tag] Tag of the executable entry on the owner, as raw bytes; matched byte for byte
   /// - [constructorArgs] Optional constructor arguments if contract has __constructor
   /// - [salt] Optional salt for deterministic contract ID (random if not provided)
   /// - [methodOptions] Optional transaction tuning options (fee, timeout, etc.)
@@ -2091,7 +2100,7 @@ class DeployFromExternalRefRequest {
   ///
   /// Example:
   /// ```dart
-  /// final request = DeployFromExternalRefRequest(
+  /// final request = DeployFromExternalRefRequest.forTagString(
   ///   sourceAccountKeyPair: myKeyPair,
   ///   network: Network.TESTNET,
   ///   rpcUrl: rpcUrl,
@@ -2114,6 +2123,30 @@ class DeployFromExternalRefRequest {
       this.server}) {
     this.methodOptions = methodOptions ?? MethodOptions();
   }
+
+  /// Creates a DeployFromExternalRefRequest over the UTF-8 encoding of [tag].
+  DeployFromExternalRefRequest.forTagString(
+      {required KeyPair sourceAccountKeyPair,
+      required Network network,
+      required String rpcUrl,
+      required Address executableOwner,
+      required String tag,
+      List<XdrSCVal>? constructorArgs,
+      XdrUint256? salt,
+      MethodOptions? methodOptions,
+      bool enableSorobanServerLogging = false,
+      SorobanServer? server})
+      : this(
+            sourceAccountKeyPair: sourceAccountKeyPair,
+            network: network,
+            rpcUrl: rpcUrl,
+            executableOwner: executableOwner,
+            tag: Uint8List.fromList(utf8.encode(tag)),
+            constructorArgs: constructorArgs,
+            salt: salt,
+            methodOptions: methodOptions,
+            enableSorobanServerLogging: enableSorobanServerLogging,
+            server: server);
 }
 
 /// Result data from simulating a Soroban contract invocation.
