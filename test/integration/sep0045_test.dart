@@ -1219,7 +1219,8 @@ void main() {
           SorobanAuthorizationEntry entry) async {
         callbackInvoked = true;
         // Set signature expiration ledger before signing
-        entry.credentials.addressCredentials!.signatureExpirationLedger = 1000000;
+        entry.credentials.innerAddressCredentials!.signatureExpirationLedger =
+            1000000;
         entry.sign(clientDomainKeyPair, Network.TESTNET);
         return entry;
       }
