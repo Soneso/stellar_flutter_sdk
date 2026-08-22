@@ -45,18 +45,37 @@ void main() {
       expect(SepRequestAmount.format(1.23456789), equals("1.2345679"));
     });
 
-    test('is rounded at the seventh digit, not truncated', () {
-      // The double here is 780615714.94290959835052490234375, so rendering
-      // more digits and cutting at the seventh yields ...9429095 while
-      // rounding yields ...9429096.
+    test('renders exactly seven fractional digits unchanged', () {
+      // The shortest representation carries exactly seven fractional digits
+      // here and is rendered unchanged.
       expect(SepRequestAmount.format(780615714.9429096),
           equals("780615714.9429096"));
     });
 
-    test('rounds from the stored double, not the written literal', () {
-      // The double nearest 1.5e-7 is 0.000000149999999999999993, so the
-      // nearer seven-decimal value is one stroop, not two.
-      expect(SepRequestAmount.format(1.5e-7), equals("0.0000001"));
+    test('a halfway fraction rounds away from zero', () {
+      // The written value 0.00000015 ends exactly halfway at the seventh
+      // place.
+      expect(SepRequestAmount.format(1.5e-7), equals("0.0000002"));
+      expect(SepRequestAmount.format(-1.5e-7), equals("-0.0000002"));
+      // Half a stroop exactly is halfway at the zero boundary and rounds
+      // away, keeping its sign.
+      expect(SepRequestAmount.format(5e-8), equals("0.0000001"));
+      expect(SepRequestAmount.format(-5e-8), equals("-0.0000001"));
+    });
+
+    test('keeps the written decimals of a large amount', () {
+      // The stored double is 100000000000.100006103515625; the shortest
+      // representation is the written value, and no digit beyond it may be
+      // rendered.
+      expect(SepRequestAmount.format(100000000000.1),
+          equals("100000000000.1"));
+      expect(SepRequestAmount.format(-100000000000.1),
+          equals("-100000000000.1"));
+    });
+
+    test('rounding carries through the integer part', () {
+      expect(SepRequestAmount.format(0.99999995), equals("1"));
+      expect(SepRequestAmount.format(1.99999996), equals("2"));
     });
 
     test('rounds a true midpoint away from zero', () {
@@ -131,6 +150,13 @@ void main() {
       request.amount = 3e-7;
       await service.fee(request);
       expect(capturedAmount, equals("0.0000003"));
+
+      // The stored double is 100000000000.100006103515625; the query must
+      // carry the shortest representation, not the binary expansion behind
+      // it.
+      request.amount = 100000000000.1;
+      await service.fee(request);
+      expect(capturedAmount, equals("100000000000.1"));
     });
 
     test('SEP-6 fee sends the amount as a plain decimal', () async {
@@ -151,6 +177,13 @@ void main() {
       await service.fee(FeeRequest(
           operation: "deposit", assetCode: "ETH", amount: 3e-7));
       expect(capturedAmount, equals("0.0000003"));
+
+      // The stored double is 100000000000.100006103515625; the query must
+      // carry the shortest representation, not the binary expansion behind
+      // it.
+      await service.fee(FeeRequest(
+          operation: "deposit", assetCode: "ETH", amount: 100000000000.1));
+      expect(capturedAmount, equals("100000000000.1"));
     });
   });
 }
