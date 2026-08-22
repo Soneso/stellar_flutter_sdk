@@ -337,4 +337,76 @@ void main() {
       }
     });
   });
+
+  group('executable tag in authorized invocations', () {
+    final salt = XdrUint256(
+      Uint8List.fromList(List<int>.generate(32, (i) => i)),
+    );
+
+    XdrContractIDPreimage idPreimage() {
+      final preimage = XdrContractIDPreimage(
+        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+      );
+      preimage.address = owner();
+      preimage.salt = salt;
+      return preimage;
+    }
+
+    test('a V1 create-contract authorization preserves a binary tag', () {
+      final invocation = SorobanAuthorizedInvocation(
+        SorobanAuthorizedFunction.forCreateContractHostFunction(
+          XdrCreateContractArgs(
+            idPreimage(),
+            XdrContractExecutable.forExternalRefBytes(owner(), binaryTag),
+          ),
+        ),
+      );
+
+      final encoded = invocation.toXdr().toBase64EncodedXdrString();
+      final restored = SorobanAuthorizedInvocation.fromXdr(
+        XdrSorobanAuthorizedInvocation.fromBase64EncodedXdrString(encoded),
+      );
+
+      final args = restored.function.createContractHostFn!;
+      final ref = args.executable.externalRef!;
+      expect(
+        Util.bytesToHex(ref.executableOwner.contractId!.hash),
+        ownerContractIdHex,
+      );
+      expect(ref.tag, binaryTag);
+      expect(args.contractIDPreimage.salt!.uint256, salt.uint256);
+      expect(restored.toXdr().toBase64EncodedXdrString(), encoded);
+    });
+
+    test('a V2 create-contract authorization preserves a binary tag and its '
+        'constructor args', () {
+      final invocation = SorobanAuthorizedInvocation(
+        SorobanAuthorizedFunction.forCreateContractV2HostFunction(
+          XdrCreateContractArgsV2(
+            idPreimage(),
+            XdrContractExecutable.forExternalRefBytes(owner(), binaryTag),
+            <XdrSCVal>[XdrSCVal.forU32(7), XdrSCVal.forBytes(binaryTag)],
+          ),
+        ),
+      );
+
+      final encoded = invocation.toXdr().toBase64EncodedXdrString();
+      final restored = SorobanAuthorizedInvocation.fromXdr(
+        XdrSorobanAuthorizedInvocation.fromBase64EncodedXdrString(encoded),
+      );
+
+      final args = restored.function.createContractV2HostFn!;
+      final ref = args.executable.externalRef!;
+      expect(
+        Util.bytesToHex(ref.executableOwner.contractId!.hash),
+        ownerContractIdHex,
+      );
+      expect(ref.tag, binaryTag);
+      expect(args.contractIDPreimage.salt!.uint256, salt.uint256);
+      expect(args.constructorArgs, hasLength(2));
+      expect(args.constructorArgs[0].u32!.uint32, 7);
+      expect(args.constructorArgs[1].bytes!.sCBytes, binaryTag);
+      expect(restored.toXdr().toBase64EncodedXdrString(), encoded);
+    });
+  });
 }
