@@ -376,7 +376,7 @@ transaction.addResourceFee(bufferedFee);
 
 **Delegated auth (WITH_DELEGATES) submission fails:** after `setSorobanAuth`, the initial simulation excluded the delegate authorization, so its resources are understated — re-simulate with the delegated entry attached and apply the returned `sorobanTransactionData` / `addResourceFee` before submitting. Multiple G-address signatures on one node must be added in ascending public-key order (the SDK appends in call order, no sorting).
 
-**V2 entries on an old network:** emitting `ADDRESS_V2` / `WITH_DELEGATES` below protocol 27 invalidates the tx. If `useUpgradedAuth: true` still yields legacy `ADDRESS` entries, the RPC does not support the flag (silently ignored) or the simulation did not run in recording mode — detect support by inspecting `credentials.arm`, never by an error code.
+**V2 entries on an old network:** emitting `ADDRESS_V2` / `WITH_DELEGATES` below protocol 27 invalidates the tx — set `useUpgradedAuth: false` there and build legacy entries via the `forAddressLegacy` / `forAddressCredentialsLegacy` factories. If simulation with `useUpgradedAuth` at its default (`true`) still yields legacy `ADDRESS` entries, the RPC does not support the flag (silently ignored) or the simulation did not run in recording mode — detect support by inspecting `credentials.arm`, never by an error code.
 
 **Switch no longer compiles after upgrade:** the new union cases on `SorobanCredentials` / `XdrSorobanCredentialsType` / `XdrEnvelopeType` / `XdrHashIDPreimage` require a `default` arm in exhaustive switches.
 

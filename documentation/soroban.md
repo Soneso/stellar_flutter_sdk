@@ -603,22 +603,21 @@ Protocol 27 adds two address-credential arms to `SorobanCredentials`:
 - `ADDRESS_V2` carries the same `SorobanAddressCredentials` body as the legacy `ADDRESS` arm, but the signature payload additionally binds the credential address.
 - `ADDRESS_WITH_DELEGATES` extends V2 with a tree of delegate signatures, letting additional addresses co-sign one authorization entry.
 
-The legacy `ADDRESS` arm remains the default everywhere and stays fully valid. The new arms are opt-in: emitting them on a network below protocol 27 invalidates the transaction.
+`ADDRESS_V2` is the default arm: simulation requests it, and `SorobanCredentials.forAddress` / `forAddressCredentials` build it. The legacy `ADDRESS` arm stays fully valid; use it on a network below protocol 27, where the newer arms invalidate the transaction — request it from simulation with `useUpgradedAuth: false` and build it with `forAddressLegacy` / `forAddressCredentialsLegacy`.
 
-All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntry.sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry. Use `credentials.innerAddressCredentials` to read the inner credentials of any address arm (it returns `null` only for source-account credentials).
+All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntry.sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry. Use `credentials.innerAddressCredentials` to read the inner credentials of any address arm (it returns `null` only for source-account credentials). Factories: `SorobanCredentials.forAddress` / `forAddressCredentials` build `ADDRESS_V2` (as does the explicit `forAddressV2`), `forAddressLegacy` / `forAddressCredentialsLegacy` build legacy `ADDRESS`, and `forAddressWithDelegates` builds the delegated arm.
 
-#### Requesting V2 Entries from Simulation
+#### V2 Entries from Simulation
 
-Set `useUpgradedAuth` to request `ADDRESS_V2` credential arms in the simulation response. The flag is best-effort: an RPC server that supports it records `ADDRESS_V2` entries, while a server without support silently ignores it and returns legacy `ADDRESS` entries — detect which arm you got by inspecting the credential arm of the returned entries, never by expecting an error. When `useUpgradedAuth` is `false` (the default), the key is omitted from the JSON-RPC params entirely.
+Simulation requests `ADDRESS_V2` credential arms by default (`useUpgradedAuth` is `true` on `MethodOptions` and `SimulateTransactionRequest`, and the key is always sent in the JSON-RPC params). The flag is best-effort: an RPC server that supports it records `ADDRESS_V2` entries, while a server without support silently ignores it and returns legacy `ADDRESS` entries — detect which arm you got by inspecting the credential arm of the returned entries, never by expecting an error. Set `useUpgradedAuth` to `false` to request legacy `ADDRESS` entries, for example on a network below protocol 27.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-// Contract client: opt in via MethodOptions
+// Contract client: ADDRESS_V2 entries are requested by default
 AssembledTransaction tx = await client.buildInvokeMethodTx(
   name: 'swap',
   args: args,
-  methodOptions: MethodOptions(useUpgradedAuth: true),
 );
 
 // Detect whether the RPC honored the flag
@@ -627,9 +626,9 @@ bool gotV2 = entries.any((e) =>
     e.credentials.arm ==
     XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2);
 
-// Low-level: opt in on the simulate request
+// Low-level: request legacy ADDRESS entries on the simulate request
 SimulateTransactionRequest request =
-    SimulateTransactionRequest(transaction, useUpgradedAuth: true);
+    SimulateTransactionRequest(transaction, useUpgradedAuth: false);
 SimulateTransactionResponse sim = await server.simulateTransaction(request);
 ```
 
@@ -697,7 +696,7 @@ delegated.sign(delegateKeyPair, Network.TESTNET,
 
 `SorobanDelegateDescriptor` supports nesting via `nestedDelegates` and accepts a pre-built `signature` (default void) for nodes signed externally, such as contract addresses.
 
-`SorobanCredentials.forAddressV2` and the delegated arms are built client-side: simulation and the high-level `SorobanClient` / `AssembledTransaction` only ever return legacy `ADDRESS` entries, so the V2 and `WITH_DELEGATES` arms are assembled and submitted at the `SorobanServer` level.
+`WITH_DELEGATES` entries are never returned by simulation, so the delegated arm is always assembled client-side and submitted at the `SorobanServer` level. `ADDRESS_V2` entries come from a supporting RPC by default (`useUpgradedAuth`), or client-side from `SorobanCredentials.forAddressV2` when converting an entry in place.
 
 After attaching the signed entries with `transaction.setSorobanAuth(...)`, re-simulate in enforcing mode before submitting. The first (recording) simulation does not run the authorizing account's `__check_auth`, so it understates the resource fee and — for a custom (contract) account whose `__check_auth` reads storage or calls into delegates — omits the footprint entries that authorization touches. Re-simulate with the signed entry attached and `authMode` set to `enforce` (`SimulateTransactionRequest(transaction, authMode: 'enforce')`), then apply the returned data before signing: assign `response.transactionData` to `transaction.sorobanTransactionData` and add `response.minResourceFee` via `transaction.addResourceFee(...)`. The already-signed auth is preserved.
 

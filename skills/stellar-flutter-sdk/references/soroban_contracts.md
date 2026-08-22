@@ -213,9 +213,9 @@ GetTransactionResponse response =
 
 ### Protocol 27 Credentials (CAP-71)
 
-`SorobanCredentials` arms: source-account, legacy `ADDRESS` (default, valid all protocols), `ADDRESS_V2`, `ADDRESS_WITH_DELEGATES` (V2 and delegates are protocol 27+; emitting below p27 invalidates the tx). `credentials.innerAddressCredentials` returns the inner creds for any address arm (null for source-account); `credentials.arm` is the discriminant.
+`SorobanCredentials` arms: source-account, legacy `ADDRESS` (valid all protocols), `ADDRESS_V2` (the default arm), `ADDRESS_WITH_DELEGATES` (V2 and delegates are protocol 27+; emitting below p27 invalidates the tx). `forAddress`/`forAddressCredentials` build `ADDRESS_V2`; `forAddressLegacy`/`forAddressCredentialsLegacy` build legacy `ADDRESS`. `credentials.innerAddressCredentials` returns the inner creds for any address arm (null for source-account); `credentials.arm` is the discriminant.
 
-Request V2 entries from simulation: `MethodOptions(useUpgradedAuth: true)` or `SimulateTransactionRequest(tx, useUpgradedAuth: true)`. The key is omitted when false; RPCs without support silently return legacy `ADDRESS`. Detect by inspecting `arm`, never by error code.
+Simulation requests V2 entries by default (`useUpgradedAuth` is `true` on `MethodOptions` and `SimulateTransactionRequest`, always sent on the wire); pass `false` for legacy `ADDRESS` entries. RPCs without support silently return legacy `ADDRESS` either way. Detect by inspecting `arm`, never by error code.
 
 `signAuthEntries` / `needsNonInvokerSigningBy` handle all arms; `needsNonInvokerSigningBy` lists every void node including delegates.
 
