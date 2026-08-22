@@ -795,7 +795,7 @@ void main() {
     test('ADDRESS arm: toXdr throws if addressCredentials is null', () {
       // Create ADDRESS creds normally then clear the inner field
       final kp = KeyPair.fromSecretSeed(_kSeed);
-      final creds = SorobanCredentials.forAddress(
+      final creds = SorobanCredentials.forAddressLegacy(
           Address.forAccountId(kp.accountId),
           _kNonce,
           _kExpiration,

@@ -194,7 +194,7 @@ void main() {
     });
 
     test('create address credentials', () {
-      final credentials = SorobanCredentials.forAddress(
+      final credentials = SorobanCredentials.forAddressLegacy(
         address,
         nonce,
         expirationLedger,
@@ -208,7 +208,7 @@ void main() {
     });
 
     test('address credentials toXdr', () {
-      final credentials = SorobanCredentials.forAddress(
+      final credentials = SorobanCredentials.forAddressLegacy(
         address,
         nonce,
         expirationLedger,
@@ -222,7 +222,7 @@ void main() {
     });
 
     test('credentials toXdr and fromXdr round-trip', () {
-      final credentials = SorobanCredentials.forAddress(
+      final credentials = SorobanCredentials.forAddressLegacy(
         address,
         nonce,
         expirationLedger,
@@ -246,7 +246,7 @@ void main() {
       );
       final credentials = SorobanCredentials.forAddressCredentials(addressCreds);
 
-      expect(credentials.addressCredentials, equals(addressCreds));
+      expect(credentials.addressV2Credentials, equals(addressCreds));
     });
   });
 
@@ -489,7 +489,7 @@ void main() {
     });
 
     test('create authorization entry with address credentials', () {
-      final credentials = SorobanCredentials.forAddress(
+      final credentials = SorobanCredentials.forAddressLegacy(
         address,
         BigInt.from(123456),
         1000000,
@@ -542,7 +542,7 @@ void main() {
 
     test('sign authorization entry', () {
       final signer = KeyPair.random();
-      final credentials = SorobanCredentials.forAddress(
+      final credentials = SorobanCredentials.forAddressLegacy(
         Address.forAccountId(signer.accountId),
         BigInt.from(999),
         2000000,
@@ -582,7 +582,7 @@ void main() {
     test('multiple signatures on entry', () {
       final signer1 = KeyPair.random();
       final signer2 = KeyPair.random();
-      final credentials = SorobanCredentials.forAddress(
+      final credentials = SorobanCredentials.forAddressLegacy(
         Address.forAccountId(signer1.accountId),
         BigInt.from(111),
         3000000,
@@ -778,15 +778,15 @@ void main() {
       expect(credentials.addressCredentials, isNull);
     });
 
-    test('forAddress creates credentials with address', () {
+    test('forAddressLegacy creates credentials with address', () {
       final address = Address.forAccountId(
           'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
       final nonce = BigInt.from(11111);
       final expiration = 22222;
       final signature = XdrSCVal.forVoid();
 
-      final credentials =
-          SorobanCredentials.forAddress(address, nonce, expiration, signature);
+      final credentials = SorobanCredentials.forAddressLegacy(
+          address, nonce, expiration, signature);
 
       expect(credentials.addressCredentials, isNotNull);
       expect(credentials.addressCredentials!.address, equals(address));
@@ -802,7 +802,7 @@ void main() {
       final credentials =
           SorobanCredentials.forAddressCredentials(addressCreds);
 
-      expect(credentials.addressCredentials, equals(addressCreds));
+      expect(credentials.addressV2Credentials, equals(addressCreds));
     });
 
     test('toXdr for source account credentials', () {
@@ -817,7 +817,7 @@ void main() {
     test('toXdr for address credentials', () {
       final address = Address.forAccountId(
           'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
-      final credentials = SorobanCredentials.forAddress(
+      final credentials = SorobanCredentials.forAddressLegacy(
           address, BigInt.from(555), 666, XdrSCVal.forVoid());
 
       final xdr = credentials.toXdr();
@@ -1120,7 +1120,7 @@ void main() {
     test('sign works with address credentials', () {
       final address = Address.forAccountId(
           'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
-      final credentials = SorobanCredentials.forAddress(
+      final credentials = SorobanCredentials.forAddressLegacy(
           address, BigInt.from(123), 456, XdrSCVal.forVoid());
 
       final function = SorobanAuthorizedFunction.forContractFunction(
