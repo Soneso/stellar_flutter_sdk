@@ -234,6 +234,11 @@ class SorobanClient {
   /// the owner's persistent entry under that tag holds the hash of the wasm
   /// the instance runs. Nothing is installed as part of the deployment.
   ///
+  /// The create operation uses the CREATE_CONTRACT_V2 host function form with
+  /// the given constructor arguments (an empty vector when none are given), as
+  /// [deploy] does. For the plain CREATE_CONTRACT form, build the operation
+  /// directly with [CreateContractFromExternalRefHostFunction].
+  ///
   /// The reference is resolved before the transaction is built, so an
   /// unresolvable reference fails here with an [Exception] naming the owner
   /// and the tag. One message covers every miss: no entry under the tag, an
@@ -287,21 +292,13 @@ class SorobanClient {
 
     final sourceAddress =
         Address.forAccountId(deployRequest.sourceAccountKeyPair.accountId);
-    final constructorArgs = deployRequest.constructorArgs ?? [];
-    final HostFunction createContractHostFunction;
-    if (constructorArgs.isNotEmpty) {
-      createContractHostFunction =
-          CreateContractFromExternalRefWithConstructorHostFunction(
-              sourceAddress,
-              deployRequest.executableOwner,
-              tagBytes,
-              constructorArgs,
-              salt: deployRequest.salt);
-    } else {
-      createContractHostFunction = CreateContractFromExternalRefHostFunction(
-          sourceAddress, deployRequest.executableOwner, tagBytes,
-          salt: deployRequest.salt);
-    }
+    final createContractHostFunction =
+        CreateContractFromExternalRefWithConstructorHostFunction(
+            sourceAddress,
+            deployRequest.executableOwner,
+            tagBytes,
+            deployRequest.constructorArgs ?? [],
+            salt: deployRequest.salt);
 
     final op = InvokeHostFuncOpBuilder(createContractHostFunction).build();
     final clientOptions = ClientOptions(

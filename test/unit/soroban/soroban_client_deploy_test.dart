@@ -159,12 +159,14 @@ void main() {
   /// [codeEntryAnswers] in order (its last element repeats), so tests can
   /// serve a missing or unparseable entry to the pre-deploy load and the real
   /// one to the fallback. Every request is appended to [requestLog] as
-  /// 'code', 'account', 'contractData', 'simulate', 'send' or 'getTx'.
+  /// 'code', 'account', 'contractData', 'simulate', 'send' or 'getTx'; the
+  /// submitted envelope is recorded into [capturedEnvelopes] when given.
   SorobanServer deployFlowMockServer(
     KeyPair keyPair,
     List<Uint8List?> codeEntryAnswers,
-    List<String> requestLog,
-  ) {
+    List<String> requestLog, {
+    List<String>? capturedEnvelopes,
+  }) {
     final txData = transactionDataWithWrites(keyPair);
     var codeRequests = 0;
     final mockDio = dio.Dio();
@@ -209,6 +211,8 @@ void main() {
           });
         case 'sendTransaction':
           requestLog.add('send');
+          capturedEnvelopes
+              ?.add(requestBody['params']['transaction'] as String);
           return jsonRpcResponse(requestBody['id'], {
             'status': 'PENDING',
             'hash': txHash,
@@ -283,6 +287,33 @@ void main() {
       expect(client.getContractId(), createdContractId);
       expect(client.getMethodNames(), contains('hello'));
       expect(requestLog, contains('contractData'));
+    });
+
+    test('submits the V2 create-contract host function with an empty '
+        'constructor vector', () async {
+      // The deploy always takes the with-constructor (V2) form; absent
+      // constructor args ride along as an empty vector.
+      final keyPair = KeyPair.random();
+      final requestLog = <String>[];
+      final capturedEnvelopes = <String>[];
+      final server = deployFlowMockServer(keyPair, [helloWasm], requestLog,
+          capturedEnvelopes: capturedEnvelopes);
+
+      final client = await SorobanClient.deploy(
+          deployRequest: deployRequest(keyPair, server));
+
+      expect(client.getContractId(), createdContractId);
+      expect(capturedEnvelopes, hasLength(1));
+      final tx =
+          AbstractTransaction.fromEnvelopeXdrString(capturedEnvelopes[0]);
+      expect(tx, isA<Transaction>());
+      final op = (tx as Transaction).operations[0];
+      expect(op, isA<InvokeHostFunctionOperation>());
+      final hostFunction = (op as InvokeHostFunctionOperation).function;
+      expect(hostFunction, isA<CreateContractWithConstructorHostFunction>());
+      final typed = hostFunction as CreateContractWithConstructorHostFunction;
+      expect(typed.wasmId, wasmHash);
+      expect(typed.constructorArgs, isEmpty);
     });
   });
 }

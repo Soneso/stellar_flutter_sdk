@@ -333,7 +333,8 @@ void main() {
       expect(typed.constructorArgs[0].u32!.uint32, 7);
     });
 
-    test('uses the plain host function without constructor args', () async {
+    test('uses the V2 host function with an empty vector when no constructor '
+        'args are given', () async {
       final keyPair = KeyPair.random();
       final requestLog = <String>[];
       final capturedKeys = <XdrLedgerKey>[];
@@ -354,11 +355,48 @@ void main() {
       expect(client.getContractId(), createdContractId);
 
       final hostFunction = submittedHostFunction(capturedEnvelopes);
-      expect(hostFunction, isA<CreateContractFromExternalRefHostFunction>());
-      final typed = hostFunction as CreateContractFromExternalRefHostFunction;
+      expect(hostFunction,
+          isA<CreateContractFromExternalRefWithConstructorHostFunction>());
+      final typed = hostFunction
+          as CreateContractFromExternalRefWithConstructorHostFunction;
       expect(typed.executableOwner.contractId, ownerContractIdHex);
       expect(typed.tagString, executableTag);
       expect(typed.salt.uint256, hasLength(32));
+      expect(typed.constructorArgs, isEmpty);
+    });
+
+    test('uses the V2 host function with an empty vector for explicit empty '
+        'constructor args', () async {
+      final keyPair = KeyPair.random();
+      final requestLog = <String>[];
+      final capturedKeys = <XdrLedgerKey>[];
+      final capturedEnvelopes = <String>[];
+      final server = externalRefDeployFlowMockServer(
+          keyPair, requestLog, capturedKeys, capturedEnvelopes);
+
+      final client = await SorobanClient.deployFromExternalRef(
+          deployRequest: DeployFromExternalRefRequest(
+        sourceAccountKeyPair: keyPair,
+        network: Network.TESTNET,
+        rpcUrl: rpcUrl,
+        executableOwner: Address.forContractId(ownerContractIdHex),
+        tag: executableTag,
+        constructorArgs: [],
+        salt: fixedSalt,
+        server: server,
+      ));
+
+      expect(client.getContractId(), createdContractId);
+
+      final hostFunction = submittedHostFunction(capturedEnvelopes);
+      expect(hostFunction,
+          isA<CreateContractFromExternalRefWithConstructorHostFunction>());
+      final typed = hostFunction
+          as CreateContractFromExternalRefWithConstructorHostFunction;
+      expect(typed.executableOwner.contractId, ownerContractIdHex);
+      expect(typed.tagString, executableTag);
+      expect(typed.salt.uint256, fixedSalt.uint256);
+      expect(typed.constructorArgs, isEmpty);
     });
 
     test('throws naming owner and tag when the reference does not resolve',
