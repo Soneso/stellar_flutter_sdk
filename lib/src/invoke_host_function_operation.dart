@@ -446,6 +446,10 @@ class CreateContractWithConstructorHostFunction extends HostFunction {
 ///   .build();
 /// ```
 ///
+/// The executable owner must be a contract address — only a contract can hold
+/// the executable tag entry. The constructor and the [executableOwner] setter
+/// throw [ArgumentError] for any other address type.
+///
 /// See also:
 /// - [CreateContractFromExternalRefWithConstructorHostFunction] for contracts
 ///   with constructor arguments
@@ -462,7 +466,10 @@ class CreateContractFromExternalRefHostFunction extends HostFunction {
 
   /// The contract holding the executable tag entry the instance runs.
   Address get executableOwner => this._executableOwner;
-  set executableOwner(Address value) => this._executableOwner = value;
+  set executableOwner(Address value) {
+    _checkExternalRefOwnerIsContract(value);
+    this._executableOwner = value;
+  }
 
   Uint8List _tag;
 
@@ -494,6 +501,7 @@ class CreateContractFromExternalRefHostFunction extends HostFunction {
   CreateContractFromExternalRefHostFunction(
       this._address, this._executableOwner, this._tag,
       {XdrUint256? salt}) {
+    _checkExternalRefOwnerIsContract(_executableOwner);
     if (salt != null) {
       this._salt = salt;
     } else {
@@ -517,6 +525,15 @@ class CreateContractFromExternalRefHostFunction extends HostFunction {
   XdrHostFunction toXdr() {
     return XdrHostFunction.forCreatingContractWithExternalRef(
         address.toXdr(), salt, executableOwner.toXdr(), tag);
+  }
+}
+
+/// Throws [ArgumentError] when [executableOwner] is not a contract address.
+void _checkExternalRefOwnerIsContract(Address executableOwner) {
+  if (executableOwner.type != Address.TYPE_CONTRACT) {
+    throw ArgumentError(
+        'External reference owner is not a contract address; only a contract '
+        'can hold the executable tag entry');
   }
 }
 
@@ -547,6 +564,10 @@ class CreateContractFromExternalRefHostFunction extends HostFunction {
 ///   .build();
 /// ```
 ///
+/// The executable owner must be a contract address — only a contract can hold
+/// the executable tag entry. The constructor and the [executableOwner] setter
+/// throw [ArgumentError] for any other address type.
+///
 /// See also:
 /// - [CreateContractFromExternalRefHostFunction] for contracts without
 ///   constructor arguments
@@ -563,7 +584,10 @@ class CreateContractFromExternalRefWithConstructorHostFunction
 
   /// The contract holding the executable tag entry the instance runs.
   Address get executableOwner => this._executableOwner;
-  set executableOwner(Address value) => this._executableOwner = value;
+  set executableOwner(Address value) {
+    _checkExternalRefOwnerIsContract(value);
+    this._executableOwner = value;
+  }
 
   Uint8List _tag;
 
@@ -602,6 +626,7 @@ class CreateContractFromExternalRefWithConstructorHostFunction
   CreateContractFromExternalRefWithConstructorHostFunction(
       this._address, this._executableOwner, this._tag, this._constructorArgs,
       {XdrUint256? salt}) {
+    _checkExternalRefOwnerIsContract(_executableOwner);
     if (salt != null) {
       this._salt = salt;
     } else {
