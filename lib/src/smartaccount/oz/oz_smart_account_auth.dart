@@ -130,17 +130,23 @@ abstract class OZSmartAccountAuth {
 
   /// Builds the authorisation payload hash for source-account credentials.
   ///
-  /// Used when converting source-account credentials to fresh ADDRESS_V2
+  /// Used when converting source-account credentials to fresh address
   /// credentials, typically for relayer fee sponsoring. [address], [nonce]
   /// and [expirationLedger] are the values the new credentials will carry;
   /// there are no existing address credentials to read them from.
   ///
-  /// The preimage is the address-bound
-  /// ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS
-  /// (networkID, nonce, signatureExpirationLedger, address, invocation) and
-  /// the returned hash is `SHA-256(XDR_encode(preimage))`. The host
-  /// reconstructs that preimage from the submitted ADDRESS_V2 credentials,
-  /// so [address] must be the address those credentials carry.
+  /// [useUpgradedAuth] selects the arm of those new credentials and with it
+  /// the preimage:
+  /// - `true` (the default): ADDRESS_V2 and the address-bound
+  ///   ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS
+  ///   (networkID, nonce, signatureExpirationLedger, address, invocation).
+  /// - `false`: legacy ADDRESS and ENVELOPE_TYPE_SOROBAN_AUTHORIZATION
+  ///   (networkID, nonce, signatureExpirationLedger, invocation), which does
+  ///   not cover the address.
+  ///
+  /// The returned hash is `SHA-256(XDR_encode(preimage))`. The host
+  /// reconstructs the preimage from the submitted credentials, so [address]
+  /// must be the address those credentials carry.
   ///
   /// Throws [SmartAccountTransactionSigningFailed] when XDR encoding fails.
   static Future<Uint8List> buildSourceAccountAuthPayloadHash(
@@ -148,8 +154,9 @@ abstract class OZSmartAccountAuth {
     XdrSCAddress address,
     XdrInt64 nonce,
     int expirationLedger,
-    String networkPassphrase,
-  ) async {
+    String networkPassphrase, {
+    bool useUpgradedAuth = true,
+  }) async {
     final addressCredentials = XdrSorobanAddressCredentials(
       address,
       nonce,
@@ -157,7 +164,9 @@ abstract class OZSmartAccountAuth {
       XdrSCVal.forVoid(),
     );
     final syntheticEntry = XdrSorobanAuthorizationEntry(
-      XdrSorobanCredentials.forAddressV2Credentials(addressCredentials),
+      useUpgradedAuth
+          ? XdrSorobanCredentials.forAddressV2Credentials(addressCredentials)
+          : XdrSorobanCredentials.forAddressCredentials(addressCredentials),
       entry.rootInvocation,
     );
     return _hashPreimage(syntheticEntry, networkPassphrase);

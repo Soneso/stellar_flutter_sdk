@@ -230,6 +230,7 @@ Future<
     })> _harness({
   RecordingRelayerClient? relayer,
   RecordingIndexerClient? indexer,
+  bool useUpgradedAuth = true,
 }) async {
   final soroban = MockSorobanServer();
   final provider = RecordingWebAuthnProvider();
@@ -240,6 +241,7 @@ Future<
     accountWasmHash: '0' * 64,
     webauthnVerifierAddress: _contractA,
     webauthnProvider: provider,
+    useUpgradedAuth: useUpgradedAuth,
   );
   final credentials = StubCredentialManager();
   final stored = OZStoredCredential(
@@ -268,6 +270,56 @@ Future<
     provider: provider,
     deployer: deployer,
     stored: stored,
+  );
+}
+
+/// Queues the responses one `fundWallet` run consumes: the balance read, the
+/// funding transfer carrying a source-account auth entry, the latest ledger,
+/// the post-signing re-simulation, the send and the poll.
+MockSorobanServer _fundWalletMock({required String hash}) {
+  final mock = MockSorobanServer();
+  // Every account lookup answers with the account that was requested, so the
+  // temporary keypair fundWallet generates internally resolves.
+  mock.getAccountDefault =
+      () => Account(mock.getAccountCalls.last, BigInt.from(7));
+
+  final balanceStroops = BigInt.from(1005) * BigInt.from(Util.stroopsPerXlm);
+  mock.simulateResponses.add(_simResponseWithValue(
+    Util.bigIntToI128ScVal(balanceStroops),
+  ));
+  mock.simulateResponses.add(_simResponseWithAuthEntry(
+    entry: _sourceAccountTransferEntry(),
+    minResourceFee: 100,
+  ));
+  mock.latestLedgerResponses.add(_latestLedger(4000));
+  mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 120));
+  mock.sendResponses.add(_sendPending(hash: hash));
+  mock.pollResponses.add(_txSuccess(ledger: 4100));
+  return mock;
+}
+
+/// Builds a connected kit over [mock] whose config carries [useUpgradedAuth].
+FakePipelineKit _fundWalletKit({
+  required MockSorobanServer mock,
+  bool useUpgradedAuth = true,
+}) {
+  return FakePipelineKit(
+    config: OZSmartAccountConfig(
+      rpcUrl: 'https://soroban-testnet.stellar.org',
+      networkPassphrase: Network.TESTNET.networkPassphrase,
+      accountWasmHash: '0' * 64,
+      webauthnVerifierAddress: _contractA,
+      useUpgradedAuth: useUpgradedAuth,
+    ),
+    sorobanServer: mock,
+  )..setConnected(credentialId: _credentialIdB64, contractId: _contractA);
+}
+
+/// Runs `fundWallet` with Friendbot stubbed out, returning the funded amount.
+Future<String> _runFundWallet(OZTransactionOperations ops) {
+  return http.runWithClient(
+    () => ops.fundWallet(nativeTokenContract: _contractB),
+    () => http_testing.MockClient((request) async => http.Response('{}', 200)),
   );
 }
 
@@ -930,6 +982,168 @@ void main() {
         reason: 'the signature must verify over the WITH_ADDRESS preimage '
             'carrying the temporary account address',
       );
+    });
+
+    test('fundWallet_optOutConfig_convertsToSignedLegacyAddress', () async {
+      // With useUpgradedAuth false the conversion writes legacy ADDRESS
+      // credentials, still carrying the temporary account's own address, and
+      // signs the non-address-bound ENVELOPE_TYPE_SOROBAN_AUTHORIZATION
+      // preimage a pre-protocol-27 relayer parser accepts.
+      const expirationLedger = 4000 + Util.ledgersPerHour;
+      final mock = _fundWalletMock(hash: 'fund-legacy-hash');
+      final ops = OZTransactionOperations(_fundWalletKit(
+        mock: mock,
+        useUpgradedAuth: false,
+      ));
+
+      final funded = await _runFundWallet(ops);
+      expect(funded, equals('1000'));
+
+      // The temporary account is the first account fundWallet looks up.
+      final tempAccountId = mock.getAccountCalls.first;
+      final envelope = mock.sendCalls.single.toEnvelopeXdr();
+      final auth =
+          envelope.v1!.tx.operations.first.body.invokeHostFunctionOp!.auth;
+      expect(auth, hasLength(1));
+      final converted = auth.single;
+
+      expect(
+        converted.credentials.discriminant,
+        equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS),
+        reason: 'the converted entry must carry legacy ADDRESS credentials',
+      );
+      expect(converted.credentials.addressV2, isNull,
+          reason: 'the ADDRESS_V2 arm must be empty on a legacy entry');
+      final creds = converted.credentials.address;
+      expect(creds, isNotNull);
+      expect(
+        Address.fromXdr(creds!.address).accountId,
+        equals(tempAccountId),
+        reason: 'the credentials must carry the real temporary account '
+            'address in the legacy arm too',
+      );
+      expect(creds.signatureExpirationLedger.uint32, equals(expirationLedger));
+
+      // Rebuild the legacy preimage the host would reconstruct from the
+      // submitted credentials, independently of the production helper.
+      final preimage = XdrHashIDPreimage(
+        XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION,
+      );
+      preimage.sorobanAuthorization = XdrHashIDPreimageSorobanAuthorization(
+        XdrHash(Network.TESTNET.networkId!),
+        creds.nonce,
+        creds.signatureExpirationLedger,
+        converted.rootInvocation,
+      );
+      final preimageStream = XdrDataOutputStream();
+      XdrHashIDPreimage.encode(preimageStream, preimage);
+      final payloadHash = Util.hash(Uint8List.fromList(preimageStream.bytes));
+
+      final signatureEntries = creds.signature.vec!.single.map!;
+      final publicKeyBytes = signatureEntries
+          .firstWhere((e) => e.key.sym == 'public_key')
+          .val
+          .bytes!
+          .sCBytes;
+      final signatureBytes = signatureEntries
+          .firstWhere((e) => e.key.sym == 'signature')
+          .val
+          .bytes!
+          .sCBytes;
+      final tempKeyPair = KeyPair.fromAccountId(tempAccountId);
+      expect(publicKeyBytes, equals(tempKeyPair.publicKey));
+      expect(
+        tempKeyPair.verify(payloadHash, Uint8List.fromList(signatureBytes)),
+        isTrue,
+        reason: 'the signature must verify over the legacy '
+            'SorobanAuthorization preimage carrying nonce, expiration and '
+            'invocation',
+      );
+    });
+
+    test('fundWallet_optOutConfig_everySimulateRequestsLegacyEntries',
+        () async {
+      final mock = _fundWalletMock(hash: 'fund-legacy-sim-hash');
+      final ops = OZTransactionOperations(_fundWalletKit(
+        mock: mock,
+        useUpgradedAuth: false,
+      ));
+
+      await _runFundWallet(ops);
+
+      // Balance read, funding-transfer simulation, post-signing re-simulation.
+      expect(mock.simulateCalls, hasLength(3));
+      for (final call in mock.simulateCalls) {
+        expect(call.getRequestArgs()['useUpgradedAuth'], isFalse,
+            reason: 'every simulation fundWallet runs must ask the RPC for '
+                'legacy entries');
+      }
+    });
+
+    test('fundWallet_defaultConfig_everySimulateRequestsUpgradedEntries',
+        () async {
+      final mock = _fundWalletMock(hash: 'fund-upgraded-sim-hash');
+      final ops = OZTransactionOperations(_fundWalletKit(mock: mock));
+
+      await _runFundWallet(ops);
+
+      expect(mock.simulateCalls, hasLength(3));
+      for (final call in mock.simulateCalls) {
+        expect(call.getRequestArgs()['useUpgradedAuth'], isTrue);
+      }
+    });
+  });
+
+  group('simulation credential-arm request', () {
+    /// Drives one `submit` round trip and returns the simulate requests the
+    /// kit sent, in call order.
+    Future<List<SimulateTransactionRequest>> runSubmit({
+      required bool useUpgradedAuth,
+    }) async {
+      final h = await _harness(useUpgradedAuth: useUpgradedAuth);
+      h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
+      h.soroban.simulateResponses.add(_simResponseWithAuthEntry(
+        entry: _makeAddressCredsEntry(contractAddress: _contractA),
+      ));
+      h.soroban.latestLedgerResponses.add(_latestLedger(5000));
+      h.provider.authenticateResponses.add(_fakeAuthResult());
+      h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
+      h.soroban.simulateResponses.add(_simResponseEmpty());
+      h.soroban.sendResponses.add(_sendPending(hash: 'arm-request'));
+      h.soroban.pollResponses.add(_txSuccess());
+
+      await OZTransactionOperations(h.kit).submit(
+        hostFunction: XdrHostFunction.forInvokingContractWithArgs(
+          XdrInvokeContractArgs(
+            Address.forContractId(_contractA).toXdr(),
+            'op',
+            const <XdrSCVal>[],
+          ),
+        ),
+        auth: const <XdrSorobanAuthorizationEntry>[],
+      );
+      return h.soroban.simulateCalls;
+    }
+
+    test('submit_optOutConfig_everySimulateRequestsLegacyEntries', () async {
+      final calls = await runSubmit(useUpgradedAuth: false);
+
+      expect(calls, hasLength(2));
+      for (final call in calls) {
+        expect(call.getRequestArgs()['useUpgradedAuth'], isFalse,
+            reason: 'the initial simulation and the post-signing '
+                're-simulation must both request legacy entries');
+      }
+    });
+
+    test('submit_defaultConfig_everySimulateRequestsUpgradedEntries',
+        () async {
+      final calls = await runSubmit(useUpgradedAuth: true);
+
+      expect(calls, hasLength(2));
+      for (final call in calls) {
+        expect(call.getRequestArgs()['useUpgradedAuth'], isTrue);
+      }
     });
   });
 

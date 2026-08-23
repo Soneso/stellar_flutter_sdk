@@ -80,6 +80,7 @@ class OZSmartAccountConfig {
     this.maxContextRuleScanId = 50,
     this.defaultPolicies = const <String, OZPolicyInstallParams>{},
     this.sorobanServer,
+    this.useUpgradedAuth = true,
     this.useUpgradedAuthForWalletSigners = true,
   }) : storage = storage ?? OZInMemoryStorageAdapter() {
     if (rpcUrl.trim().isEmpty) {
@@ -245,6 +246,23 @@ class OZSmartAccountConfig {
   /// When omitted, the kit creates a server from [rpcUrl].
   final SorobanServer? sorobanServer;
 
+  /// Governs the credential arm of the kit's internal simulations and of the
+  /// `fundWallet` source-account conversion.
+  ///
+  /// When `true`, every simulation the kit runs requests upgraded ADDRESS_V2
+  /// entries and the `fundWallet` conversion writes ADDRESS_V2 credentials
+  /// signed over the address-bound preimage
+  /// (ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS). When `false`,
+  /// simulations request legacy ADDRESS entries and the conversion writes
+  /// legacy ADDRESS credentials signed over
+  /// ENVELOPE_TYPE_SOROBAN_AUTHORIZATION, so the submitted authorization XDR
+  /// stays within the pre-protocol-27 schema that relayer services parse.
+  /// Default: `true`.
+  ///
+  /// Separate from [useUpgradedAuthForWalletSigners], which governs only the
+  /// entries a delegated external wallet signs.
+  final bool useUpgradedAuth;
+
   /// Governs the credential arm of delegated external-wallet auth entries.
   ///
   /// When `true`, delegated entries built for [OZSelectedSignerWallet]
@@ -367,6 +385,7 @@ class OZSmartAccountConfig {
     Map<String, OZPolicyInstallParams>? defaultPolicies,
     SorobanServer? sorobanServer,
     bool setSorobanServer = false,
+    bool? useUpgradedAuth,
     bool? useUpgradedAuthForWalletSigners,
   }) {
     return OZSmartAccountConfig(
@@ -397,6 +416,7 @@ class OZSmartAccountConfig {
       sorobanServer: setSorobanServer
           ? sorobanServer
           : (sorobanServer ?? this.sorobanServer),
+      useUpgradedAuth: useUpgradedAuth ?? this.useUpgradedAuth,
       useUpgradedAuthForWalletSigners: useUpgradedAuthForWalletSigners ??
           this.useUpgradedAuthForWalletSigners,
     );
@@ -429,6 +449,7 @@ class OZSmartAccountConfig {
         // server instance compare equal, while different instances do not.
         identical(sorobanServer, other.sorobanServer) &&
         maxContextRuleScanId == other.maxContextRuleScanId &&
+        useUpgradedAuth == other.useUpgradedAuth &&
         useUpgradedAuthForWalletSigners ==
             other.useUpgradedAuthForWalletSigners &&
         const MapEquality<String, OZPolicyInstallParams>()
@@ -453,6 +474,7 @@ class OZSmartAccountConfig {
         identityHashCode(externalEd25519Adapter),
         identityHashCode(sorobanServer),
         maxContextRuleScanId,
+        useUpgradedAuth,
         useUpgradedAuthForWalletSigners,
         const MapEquality<String, OZPolicyInstallParams>()
             .hash(defaultPolicies),
@@ -503,6 +525,7 @@ class OZSmartAccountConfigBuilder {
   Map<String, OZPolicyInstallParams> _defaultPolicies =
       const <String, OZPolicyInstallParams>{};
   SorobanServer? _sorobanServer;
+  bool _useUpgradedAuth = true;
   bool _useUpgradedAuthForWalletSigners = true;
 
   /// Sets the deployer keypair. Pass `null` to use the deterministic
@@ -593,6 +616,15 @@ class OZSmartAccountConfigBuilder {
     return this;
   }
 
+  /// Sets the credential arm used by the kit's internal simulations and by
+  /// the `fundWallet` source-account conversion. Pass `false` to keep the
+  /// submitted authorization XDR within the pre-protocol-27 schema that
+  /// relayer services parse.
+  OZSmartAccountConfigBuilder useUpgradedAuth(bool value) {
+    _useUpgradedAuth = value;
+    return this;
+  }
+
   /// Sets the credential arm used for delegated external-wallet auth
   /// entries. Pass `false` to build the legacy ADDRESS arm for wallet
   /// software that cannot sign the address-bound preimage type.
@@ -623,6 +655,7 @@ class OZSmartAccountConfigBuilder {
       maxContextRuleScanId: _maxContextRuleScanId,
       defaultPolicies: _defaultPolicies,
       sorobanServer: _sorobanServer,
+      useUpgradedAuth: _useUpgradedAuth,
       useUpgradedAuthForWalletSigners: _useUpgradedAuthForWalletSigners,
     );
   }

@@ -506,8 +506,12 @@ class OZTransactionOperations {
   ) async {
     final SimulateTransactionResponse simulation;
     try {
-      simulation = await _kit.sorobanServer
-          .simulateTransaction(SimulateTransactionRequest(transaction));
+      simulation = await _kit.sorobanServer.simulateTransaction(
+        SimulateTransactionRequest(
+          transaction,
+          useUpgradedAuth: _kit.config.useUpgradedAuth,
+        ),
+      );
     } catch (e) {
       throw SmartAccountTransactionException.submissionFailed(
         'Failed to simulate transaction: $e',
@@ -535,8 +539,12 @@ class OZTransactionOperations {
   ) async {
     final SimulateTransactionResponse reSimulation;
     try {
-      reSimulation = await _kit.sorobanServer
-          .simulateTransaction(SimulateTransactionRequest(signedTransaction));
+      reSimulation = await _kit.sorobanServer.simulateTransaction(
+        SimulateTransactionRequest(
+          signedTransaction,
+          useUpgradedAuth: _kit.config.useUpgradedAuth,
+        ),
+      );
     } catch (e) {
       throw SmartAccountTransactionException.submissionFailed(
         'Failed to re-simulate signed transaction: $e',
@@ -779,8 +787,12 @@ class OZTransactionOperations {
 
     final SimulateTransactionResponse simulation;
     try {
-      simulation = await _kit.sorobanServer
-          .simulateTransaction(SimulateTransactionRequest(transaction));
+      simulation = await _kit.sorobanServer.simulateTransaction(
+        SimulateTransactionRequest(
+          transaction,
+          useUpgradedAuth: _kit.config.useUpgradedAuth,
+        ),
+      );
     } catch (e) {
       throw SmartAccountTransactionException.simulationFailed(
         'Failed to simulate read-only host function: $e',
@@ -812,8 +824,10 @@ class OZTransactionOperations {
   /// transfers the temporary account's balance (minus a small reserve) to
   /// the smart account via the supplied SEP-41 native-token contract.
   /// Supports relayer fee sponsoring by converting source-account auth
-  /// entries on the transfer to ADDRESS_V2 credentials carrying the temp
-  /// account's address and signed by the temp keypair.
+  /// entries on the transfer to address credentials carrying the temp
+  /// account's address and signed by the temp keypair;
+  /// [OZSmartAccountConfig.useUpgradedAuth] selects the ADDRESS_V2 or the
+  /// legacy ADDRESS arm.
   ///
   /// Returns the funded amount as a decimal XLM string. Throws
   /// [SmartAccountTransactionException] when Friendbot funding, balance lookup, or
@@ -906,8 +920,12 @@ class OZTransactionOperations {
 
     final SimulateTransactionResponse simulation;
     try {
-      simulation = await _kit.sorobanServer
-          .simulateTransaction(SimulateTransactionRequest(transaction));
+      simulation = await _kit.sorobanServer.simulateTransaction(
+        SimulateTransactionRequest(
+          transaction,
+          useUpgradedAuth: _kit.config.useUpgradedAuth,
+        ),
+      );
     } catch (e) {
       throw SmartAccountTransactionException.submissionFailed(
         'Failed to simulate funding transfer: $e',
@@ -954,8 +972,12 @@ class OZTransactionOperations {
 
     final SimulateTransactionResponse reSimulation;
     try {
-      reSimulation = await _kit.sorobanServer
-          .simulateTransaction(SimulateTransactionRequest(signedTransaction));
+      reSimulation = await _kit.sorobanServer.simulateTransaction(
+        SimulateTransactionRequest(
+          signedTransaction,
+          useUpgradedAuth: _kit.config.useUpgradedAuth,
+        ),
+      );
     } catch (e) {
       throw SmartAccountTransactionException.submissionFailed(
         'Failed to re-simulate funding transfer: $e',
@@ -1016,10 +1038,13 @@ class OZTransactionOperations {
 
   // Private helpers
 
-  /// Converts source-account auth entries to fresh ADDRESS_V2 credentials
-  /// carrying the temporary account's address, signed over the address-bound
-  /// WITH_ADDRESS preimage. Address-credentialed entries are re-signed in
-  /// place to refresh their signature, preserving their credential arm.
+  /// Converts source-account auth entries to fresh address credentials
+  /// carrying the temporary account's address. The arm follows
+  /// [OZSmartAccountConfig.useUpgradedAuth]: ADDRESS_V2 signed over the
+  /// address-bound WITH_ADDRESS preimage, or legacy ADDRESS signed over
+  /// ENVELOPE_TYPE_SOROBAN_AUTHORIZATION. Address-credentialed entries are
+  /// re-signed in place to refresh their signature, preserving their
+  /// credential arm.
   ///
   /// For source-account entries this writes a classical Stellar Ed25519
   /// signature ScVal of shape `Vec([Map({public_key, signature})])` — not
@@ -1032,6 +1057,7 @@ class OZTransactionOperations {
     required int expirationLedger,
   }) async {
     final tempPubKey = tempKeypair.publicKey;
+    final useUpgradedAuth = _kit.config.useUpgradedAuth;
     final result = <XdrSorobanAuthorizationEntry>[];
     for (final entry in authEntries) {
       if (entry.credentials.discriminant ==
@@ -1039,16 +1065,17 @@ class OZTransactionOperations {
         final nonce = _generateNonce();
         final tempAddress = Address.forAccountId(tempKeypair.accountId).toXdr();
 
-        // The payload hash covers the address-bound WITH_ADDRESS preimage
-        // carrying the temporary account address; the host rebuilds that
-        // preimage from the ADDRESS_V2 credentials written below, so the
-        // address must be identical in both places.
+        // The payload hash covers the preimage the host rebuilds from the
+        // credentials written below, so both are built from the same arm.
+        // Under ADDRESS_V2 that preimage carries the temporary account
+        // address, which is why the address must be identical in both places.
         final payloadHash = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
           entry,
           tempAddress,
           nonce,
           expirationLedger,
           _kit.config.networkPassphrase,
+          useUpgradedAuth: useUpgradedAuth,
         );
         final signature = tempKeypair.sign(payloadHash);
 
@@ -1073,7 +1100,10 @@ class OZTransactionOperations {
           signatureVec,
         );
         result.add(XdrSorobanAuthorizationEntry(
-          XdrSorobanCredentials.forAddressV2Credentials(addressCredentials),
+          useUpgradedAuth
+              ? XdrSorobanCredentials.forAddressV2Credentials(
+                  addressCredentials)
+              : XdrSorobanCredentials.forAddressCredentials(addressCredentials),
           _cloneInvocation(entry.rootInvocation),
         ));
       } else if (entry.credentials.discriminant ==

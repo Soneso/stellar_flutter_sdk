@@ -733,6 +733,64 @@ void main() {
               'byte-identical result to the manual WITH_ADDRESS preimage '
               'construction');
     });
+
+    test(
+        'buildSourceAccountAuthPayloadHash_optOut_matchesManualLegacyPreimage',
+        () async {
+      final contractAddr = XdrSCAddress.forContractId(_kContractId);
+      final fn = XdrSorobanAuthorizedFunction(
+        XdrSorobanAuthorizedFunctionType
+            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
+      );
+      fn.contractFn = XdrInvokeContractArgs(
+        contractAddr,
+        'hello',
+        <XdrSCVal>[XdrSCVal.forU64(BigInt.from(1234))],
+      );
+      final invocation = XdrSorobanAuthorizedInvocation(
+        fn,
+        <XdrSorobanAuthorizedInvocation>[],
+      );
+      final entry = XdrSorobanAuthorizationEntry(
+        XdrSorobanCredentials.forSourceAccount(),
+        invocation,
+      );
+      final nonce = XdrInt64(_kNonce);
+      final tempAddress = XdrSCAddress.forAccountId(_kV2SignerAccount);
+
+      final ozHash = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
+        entry,
+        tempAddress,
+        nonce,
+        _kExpiration,
+        _kNetworkPassphrase,
+        useUpgradedAuth: false,
+      );
+
+      // Manual construction of the legacy preimage, which does not cover the
+      // address.
+      final networkId = Uint8List.fromList(
+        crypto.sha256.convert(utf8.encode(_kNetworkPassphrase)).bytes,
+      );
+      final preimage = XdrHashIDPreimage(
+        XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION,
+      );
+      preimage.sorobanAuthorization = XdrHashIDPreimageSorobanAuthorization(
+        XdrHash(networkId),
+        nonce,
+        XdrUint32(_kExpiration),
+        invocation,
+      );
+      final stream = XdrDataOutputStream();
+      XdrHashIDPreimage.encode(stream, preimage);
+      final expectedHash = Uint8List.fromList(
+        crypto.sha256.convert(stream.bytes).bytes,
+      );
+
+      expect(ozHash, expectedHash,
+          reason: 'the opt-out arm must produce a byte-identical result to '
+              'the manual legacy preimage construction');
+    });
   });
 
   // -------------------------------------------------------------------------

@@ -327,8 +327,12 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
 
     final SimulateTransactionResponse simulation;
     try {
-      simulation = await _kit.sorobanServer
-          .simulateTransaction(SimulateTransactionRequest(transaction));
+      simulation = await _kit.sorobanServer.simulateTransaction(
+        SimulateTransactionRequest(
+          transaction,
+          useUpgradedAuth: _kit.config.useUpgradedAuth,
+        ),
+      );
     } catch (e) {
       throw SmartAccountTransactionException.simulationFailed(
         'Failed to simulate multi-signer transaction: $e',
@@ -645,7 +649,10 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     final SimulateTransactionResponse reSimulation;
     try {
       reSimulation = await _kit.sorobanServer.simulateTransaction(
-        SimulateTransactionRequest(signedTransaction),
+        SimulateTransactionRequest(
+          signedTransaction,
+          useUpgradedAuth: _kit.config.useUpgradedAuth,
+        ),
       );
     } catch (e) {
       throw SmartAccountTransactionException.simulationFailed(

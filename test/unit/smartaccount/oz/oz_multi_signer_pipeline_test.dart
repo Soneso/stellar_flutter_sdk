@@ -957,6 +957,83 @@ void main() {
       expect(preimage.sorobanAuthorizationWithAddress, isNull);
     });
   });
+
+  group('OZMultiSignerManager - simulation credential-arm request', () {
+    const walletAddress =
+        'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7';
+
+    /// Drives one wallet-only multi-signer submission with the supplied
+    /// [useUpgradedAuth] config value and returns the simulate requests the
+    /// manager sent, in call order.
+    Future<List<SimulateTransactionRequest>> runSubmission({
+      required bool useUpgradedAuth,
+    }) async {
+      final deployer = KeyPair.random();
+      final mock = MockSorobanServer();
+      mock.getAccountResponses.add(_deployerAccount(deployer));
+      mock.simulateResponses.add(_simResponseWithAuthEntry(
+        entry: _makeAddressCredsEntry(_contractA),
+        minResourceFee: 100,
+      ));
+      mock.latestLedgerResponses.add(_latestLedger(600));
+      mock.getAccountResponses.add(_deployerAccount(deployer, seq: 2));
+      mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 80));
+      mock.sendResponses.add(_sendPending(hash: 'simulation-arm-hash'));
+      mock.pollResponses.add(_txSuccess(ledger: 6001));
+
+      final kit = FakePipelineKit(
+        config: OZSmartAccountConfig(
+          rpcUrl: 'https://soroban-testnet.stellar.org',
+          networkPassphrase: Network.TESTNET.networkPassphrase,
+          accountWasmHash: '0' * 64,
+          webauthnVerifierAddress: _contractA,
+          useUpgradedAuth: useUpgradedAuth,
+        ),
+        sorobanServer: mock,
+        deployer: deployer,
+      );
+      kit.setExternalWallet(_AlwaysSignWallet(walletAddress));
+      kit.setConnected(credentialId: _credentialIdB64, contractId: _contractA);
+
+      final result =
+          await OZMultiSignerManager(kit).submitWithMultipleSigners(
+        hostFunction: XdrHostFunction.forInvokingContractWithArgs(
+          XdrInvokeContractArgs(
+            Address.forContractId(_contractB).toXdr(),
+            'vote',
+            const <XdrSCVal>[],
+          ),
+        ),
+        selectedSigners: <OZSelectedSigner>[
+          OZSelectedSignerWallet(walletAddress),
+        ],
+      );
+      expect(result.success, isTrue);
+      return mock.simulateCalls;
+    }
+
+    test('multiSignerSubmission_optOutConfig_simulateRequestsLegacyEntries',
+        () async {
+      final calls = await runSubmission(useUpgradedAuth: false);
+
+      expect(calls, hasLength(2));
+      for (final call in calls) {
+        expect(call.getRequestArgs()['useUpgradedAuth'], isFalse,
+            reason: 'the initial simulation and the signed re-simulation '
+                'must both request legacy entries');
+      }
+    });
+
+    test('multiSignerSubmission_defaultConfig_simulateRequestsUpgradedEntries',
+        () async {
+      final calls = await runSubmission(useUpgradedAuth: true);
+
+      expect(calls, hasLength(2));
+      for (final call in calls) {
+        expect(call.getRequestArgs()['useUpgradedAuth'], isTrue);
+      }
+    });
+  });
 }
 
 /// Returns the strkey of the address carried by [entry]'s credentials, or

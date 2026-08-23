@@ -607,6 +607,51 @@ void main() {
       expect(config.maxContextRuleScanId, 25);
     });
 
+    test('testUseUpgradedAuth_defaultsToTrue', () {
+      expect(_validConfig().useUpgradedAuth, isTrue);
+    });
+
+    test('testBuilder_useUpgradedAuth_setter', () {
+      final config = OZSmartAccountConfig.builder(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+      )
+          .useUpgradedAuth(false)
+          .build();
+
+      expect(config.useUpgradedAuth, isFalse);
+      expect(config.useUpgradedAuthForWalletSigners, isTrue,
+          reason: 'the wallet-signer flag is set separately');
+    });
+
+    test('testUseUpgradedAuth_copyWithAndEquality', () {
+      final original = _validConfig();
+      final optedOut = original.copyWith(useUpgradedAuth: false);
+
+      expect(optedOut.useUpgradedAuth, isFalse);
+      expect(optedOut.useUpgradedAuthForWalletSigners, isTrue,
+          reason: 'copyWith must not carry the flag over to the '
+              'wallet-signer flag');
+      expect(original.useUpgradedAuth, isTrue,
+          reason: 'copyWith must not mutate the original');
+      expect(original == optedOut, isFalse);
+      expect(optedOut.hashCode == original.hashCode, isFalse);
+      expect(optedOut.copyWith(useUpgradedAuth: true), equals(original));
+    });
+
+    test('testUseUpgradedAuth_isIndependentOfWalletSignerFlag', () {
+      final base = _validConfig();
+      final simulationOptOut = base.copyWith(useUpgradedAuth: false);
+      final walletOptOut =
+          base.copyWith(useUpgradedAuthForWalletSigners: false);
+
+      expect(simulationOptOut == walletOptOut, isFalse);
+      expect(simulationOptOut.useUpgradedAuthForWalletSigners, isTrue);
+      expect(walletOptOut.useUpgradedAuth, isTrue);
+    });
+
     test('testUseUpgradedAuthForWalletSigners_defaultsToTrue', () {
       expect(_validConfig().useUpgradedAuthForWalletSigners, isTrue);
     });

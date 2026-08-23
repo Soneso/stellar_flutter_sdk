@@ -90,6 +90,42 @@ GetTransactionResponse _txSuccess({int ledger = 12345}) {
 /// instance; only its non-null presence matters to the visibility poll.
 LedgerEntry _visibleInstanceEntry() => LedgerEntry('', '', 0, null, null);
 
+/// Runs one `createWallet` build with the supplied [useUpgradedAuth] config
+/// value and returns the simulate request the deploy path sent.
+Future<SimulateTransactionRequest> _runCreateWalletSimulation({
+  required bool useUpgradedAuth,
+}) async {
+  final deployer = KeyPair.random();
+  final mock = MockSorobanServer();
+  final provider = RecordingWebAuthnProvider();
+  provider.registerResponses.add(WebAuthnRegistrationResult(
+    credentialId: base64Url.decode(base64Url.normalize(_credentialIdB64)),
+    publicKey: _validSecp256r1PublicKey(),
+    attestationObject: _bytes(37, 0xAA),
+    transports: <String>['internal'],
+    deviceType: 'multiDevice',
+    backedUp: true,
+  ));
+  mock.getAccountResponses.add(_deployerAccount(deployer));
+  mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 500));
+
+  final kit = FakePipelineKit(
+    config: OZSmartAccountConfig(
+      rpcUrl: 'https://soroban-testnet.stellar.org',
+      networkPassphrase: Network.TESTNET.networkPassphrase,
+      accountWasmHash: '0' * 64,
+      webauthnVerifierAddress: _contractA,
+      webauthnProvider: provider,
+      useUpgradedAuth: useUpgradedAuth,
+    ),
+    sorobanServer: mock,
+    deployer: deployer,
+  );
+
+  await OZWalletOperations(kit).createWallet(autoSubmit: false);
+  return mock.simulateCalls.single;
+}
+
 void main() {
   group('OZWalletOperations.createWallet pipeline', () {
     test('createWallet_noAutoSubmit_returnsBuildResult', () async {
@@ -143,6 +179,20 @@ void main() {
       expect(result.transactionHash, isNull); // no autoSubmit
       expect(provider.registerCalls, hasLength(1));
       expect(provider.registerCalls.single.userName, 'Test User');
+    });
+
+    test('createWallet_optOutConfig_simulateRequestsLegacyEntries', () async {
+      final request = await _runCreateWalletSimulation(useUpgradedAuth: false);
+
+      expect(request.getRequestArgs()['useUpgradedAuth'], isFalse,
+          reason: 'the deployment simulation must follow the config flag');
+    });
+
+    test('createWallet_defaultConfig_simulateRequestsUpgradedEntries',
+        () async {
+      final request = await _runCreateWalletSimulation(useUpgradedAuth: true);
+
+      expect(request.getRequestArgs()['useUpgradedAuth'], isTrue);
     });
 
     test('createWallet_registrationThrowsNonWebAuthnException_wrapsAsRegistrationFailed', () async {
