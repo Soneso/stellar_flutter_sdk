@@ -130,24 +130,37 @@ abstract class OZSmartAccountAuth {
 
   /// Builds the authorisation payload hash for source-account credentials.
   ///
-  /// Used when converting source-account credentials to address
-  /// credentials, typically for relayer fee sponsoring. The preimage is
-  /// always ENVELOPE_TYPE_SOROBAN_AUTHORIZATION because this flow creates
-  /// new legacy ADDRESS credentials for a temporary keypair.
+  /// Used when converting source-account credentials to fresh ADDRESS_V2
+  /// credentials, typically for relayer fee sponsoring. [address], [nonce]
+  /// and [expirationLedger] are the values the new credentials will carry;
+  /// there are no existing address credentials to read them from.
+  ///
+  /// The preimage is the address-bound
+  /// ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS
+  /// (networkID, nonce, signatureExpirationLedger, address, invocation) and
+  /// the returned hash is `SHA-256(XDR_encode(preimage))`. The host
+  /// reconstructs that preimage from the submitted ADDRESS_V2 credentials,
+  /// so [address] must be the address those credentials carry.
   ///
   /// Throws [SmartAccountTransactionSigningFailed] when XDR encoding fails.
   static Future<Uint8List> buildSourceAccountAuthPayloadHash(
     XdrSorobanAuthorizationEntry entry,
+    XdrSCAddress address,
     XdrInt64 nonce,
     int expirationLedger,
     String networkPassphrase,
   ) async {
-    return _hashAuthPreimage(
-      nonce: nonce,
-      expirationLedger: expirationLedger,
-      invocation: entry.rootInvocation,
-      networkPassphrase: networkPassphrase,
+    final addressCredentials = XdrSorobanAddressCredentials(
+      address,
+      nonce,
+      XdrUint32(expirationLedger),
+      XdrSCVal.forVoid(),
     );
+    final syntheticEntry = XdrSorobanAuthorizationEntry(
+      XdrSorobanCredentials.forAddressV2Credentials(addressCredentials),
+      entry.rootInvocation,
+    );
+    return _hashPreimage(syntheticEntry, networkPassphrase);
   }
 
   // Entry signing
@@ -452,40 +465,6 @@ abstract class OZSmartAccountAuth {
     }
 
     return Uint8List.fromList(crypto.sha256.convert(encodedPreimage).bytes);
-  }
-
-  /// Hashes a legacy Soroban authorisation preimage.
-  ///
-  /// Constructs a synthetic legacy ADDRESS entry from the given parameters,
-  /// then delegates to [_hashPreimage] (which uses the canonical
-  /// builder). The credential address field is a placeholder because the
-  /// legacy preimage (ENVELOPE_TYPE_SOROBAN_AUTHORIZATION) does not include
-  /// the address, so its value is irrelevant to the hash.
-  ///
-  /// Used exclusively by [buildSourceAccountAuthPayloadHash] for the
-  /// source-account -> legacy ADDRESS conversion path.
-  static Future<Uint8List> _hashAuthPreimage({
-    required XdrInt64 nonce,
-    required int expirationLedger,
-    required XdrSorobanAuthorizedInvocation invocation,
-    required String networkPassphrase,
-  }) async {
-    // Build a synthetic legacy ADDRESS entry. The address value is a
-    // placeholder (all-zero contract ID) because the legacy preimage type
-    // (ENVELOPE_TYPE_SOROBAN_AUTHORIZATION) does not include the address.
-    const _kPlaceholderContractId =
-        'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4';
-    final addressCreds = XdrSorobanAddressCredentials(
-      XdrSCAddress.forContractId(_kPlaceholderContractId),
-      nonce,
-      XdrUint32(expirationLedger),
-      XdrSCVal.forVoid(),
-    );
-    final syntheticEntry = XdrSorobanAuthorizationEntry(
-      XdrSorobanCredentials.forAddressCredentials(addressCreds),
-      invocation,
-    );
-    return _hashPreimage(syntheticEntry, networkPassphrase);
   }
 
   /// Rebuilds an [XdrSorobanAuthorizationEntry] with [stampedInner] as the

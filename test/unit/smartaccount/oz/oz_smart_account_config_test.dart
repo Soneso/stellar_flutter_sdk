@@ -607,6 +607,39 @@ void main() {
       expect(config.maxContextRuleScanId, 25);
     });
 
+    test('testUseUpgradedAuthForWalletSigners_defaultsToTrue', () {
+      expect(_validConfig().useUpgradedAuthForWalletSigners, isTrue);
+    });
+
+    test('testBuilder_useUpgradedAuthForWalletSigners_setter', () {
+      final config = OZSmartAccountConfig.builder(
+        rpcUrl: _validRpcUrl,
+        networkPassphrase: _validPassphrase,
+        accountWasmHash: _validWasmHash,
+        webauthnVerifierAddress: _validVerifier,
+      )
+          .useUpgradedAuthForWalletSigners(false)
+          .build();
+
+      expect(config.useUpgradedAuthForWalletSigners, isFalse);
+    });
+
+    test('testUseUpgradedAuthForWalletSigners_copyWithAndEquality', () {
+      final original = _validConfig();
+      final optedOut =
+          original.copyWith(useUpgradedAuthForWalletSigners: false);
+
+      expect(optedOut.useUpgradedAuthForWalletSigners, isFalse);
+      expect(original.useUpgradedAuthForWalletSigners, isTrue,
+          reason: 'copyWith must not mutate the original');
+      expect(original == optedOut, isFalse);
+      expect(optedOut.hashCode == original.hashCode, isFalse);
+      expect(
+        optedOut.copyWith(useUpgradedAuthForWalletSigners: true),
+        equals(original),
+      );
+    });
+
     test('testCreateDefaultDeployer_succeeds', () async {
       final deployer = await OZSmartAccountConfig.createDefaultDeployer();
       expect(deployer, isNotNull);

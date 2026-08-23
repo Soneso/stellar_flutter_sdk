@@ -812,8 +812,8 @@ class OZTransactionOperations {
   /// transfers the temporary account's balance (minus a small reserve) to
   /// the smart account via the supplied SEP-41 native-token contract.
   /// Supports relayer fee sponsoring by converting source-account auth
-  /// entries on the transfer to address credentials signed by the temp
-  /// keypair.
+  /// entries on the transfer to ADDRESS_V2 credentials carrying the temp
+  /// account's address and signed by the temp keypair.
   ///
   /// Returns the funded amount as a decimal XLM string. Throws
   /// [SmartAccountTransactionException] when Friendbot funding, balance lookup, or
@@ -1016,9 +1016,10 @@ class OZTransactionOperations {
 
   // Private helpers
 
-  /// Converts source-account auth entries to address credentials and signs
-  /// them with the temporary keypair. Address-credentialed entries are
-  /// re-signed in place to refresh their signature.
+  /// Converts source-account auth entries to fresh ADDRESS_V2 credentials
+  /// carrying the temporary account's address, signed over the address-bound
+  /// WITH_ADDRESS preimage. Address-credentialed entries are re-signed in
+  /// place to refresh their signature, preserving their credential arm.
   ///
   /// For source-account entries this writes a classical Stellar Ed25519
   /// signature ScVal of shape `Vec([Map({public_key, signature})])` — not
@@ -1036,9 +1037,15 @@ class OZTransactionOperations {
       if (entry.credentials.discriminant ==
           XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT) {
         final nonce = _generateNonce();
+        final tempAddress = Address.forAccountId(tempKeypair.accountId).toXdr();
 
+        // The payload hash covers the address-bound WITH_ADDRESS preimage
+        // carrying the temporary account address; the host rebuilds that
+        // preimage from the ADDRESS_V2 credentials written below, so the
+        // address must be identical in both places.
         final payloadHash = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
           entry,
+          tempAddress,
           nonce,
           expirationLedger,
           _kit.config.networkPassphrase,
@@ -1060,13 +1067,13 @@ class OZTransactionOperations {
         final signatureVec = XdrSCVal.forVec(<XdrSCVal>[signatureMap]);
 
         final addressCredentials = XdrSorobanAddressCredentials(
-          Address.forAccountId(tempKeypair.accountId).toXdr(),
+          tempAddress,
           nonce,
           XdrUint32(expirationLedger),
           signatureVec,
         );
         result.add(XdrSorobanAuthorizationEntry(
-          XdrSorobanCredentials.forAddressCredentials(addressCredentials),
+          XdrSorobanCredentials.forAddressV2Credentials(addressCredentials),
           _cloneInvocation(entry.rootInvocation),
         ));
       } else if (entry.credentials.discriminant ==

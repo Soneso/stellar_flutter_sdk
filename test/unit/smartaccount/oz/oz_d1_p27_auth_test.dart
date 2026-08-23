@@ -671,12 +671,12 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
-  // buildSourceAccountAuthPayloadHash is always legacy (regression guard)
+  // buildSourceAccountAuthPayloadHash binds the address (regression guard)
   // -------------------------------------------------------------------------
 
-  group('buildSourceAccountAuthPayloadHash produces legacy preimage', () {
+  group('buildSourceAccountAuthPayloadHash produces WITH_ADDRESS preimage', () {
     test(
-        'buildSourceAccountAuthPayloadHash_matchesManualLegacyPreimage',
+        'buildSourceAccountAuthPayloadHash_matchesManualWithAddressPreimage',
         () async {
       final contractAddr = XdrSCAddress.forContractId(_kContractId);
       final fn = XdrSorobanAuthorizedFunction(
@@ -697,28 +697,31 @@ void main() {
         invocation,
       );
       final nonce = XdrInt64(_kNonce);
+      final tempAddress = XdrSCAddress.forAccountId(_kV2SignerAccount);
 
       final ozHash = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
         entry,
+        tempAddress,
         nonce,
         _kExpiration,
         _kNetworkPassphrase,
       );
 
-      // Manual construction of the legacy preimage.
+      // Manual construction of the address-bound preimage.
       final networkId = Uint8List.fromList(
         crypto.sha256.convert(utf8.encode(_kNetworkPassphrase)).bytes,
       );
-      final authPreimage = XdrHashIDPreimageSorobanAuthorization(
+      final authPreimage = XdrHashIDPreimageSorobanAuthorizationWithAddress(
         XdrHash(networkId),
         nonce,
         XdrUint32(_kExpiration),
+        tempAddress,
         invocation,
       );
       final preimage = XdrHashIDPreimage(
-        XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION,
+        XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS,
       );
-      preimage.sorobanAuthorization = authPreimage;
+      preimage.sorobanAuthorizationWithAddress = authPreimage;
       final stream = XdrDataOutputStream();
       XdrHashIDPreimage.encode(stream, preimage);
       final expectedHash = Uint8List.fromList(
@@ -727,7 +730,8 @@ void main() {
 
       expect(ozHash, expectedHash,
           reason: 'buildSourceAccountAuthPayloadHash must produce a '
-              'byte-identical result to the manual legacy preimage construction');
+              'byte-identical result to the manual WITH_ADDRESS preimage '
+              'construction');
     });
   });
 

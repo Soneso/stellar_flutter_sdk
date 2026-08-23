@@ -172,6 +172,10 @@ class _AlwaysSignWallet extends OZExternalWalletAdapter {
 
   final String _address;
 
+  /// Every base64 preimage handed to [signAuthEntry], in call order. Lets
+  /// tests assert what the external wallet is asked to sign.
+  final List<String> signedPreimages = <String>[];
+
   @override
   Future<OZConnectedWallet?> connect() async => OZConnectedWallet(
         address: _address,
@@ -209,6 +213,7 @@ class _AlwaysSignWallet extends OZExternalWalletAdapter {
     String preimageXdr, {
     OZSignAuthEntryOptions? options,
   }) async {
+    signedPreimages.add(preimageXdr);
     // Return a dummy 64-byte signature (all zeros) encoded as base64.
     final dummySig = List<int>.filled(64, 0);
     return OZSignAuthEntryResult(
@@ -828,4 +833,148 @@ void main() {
       expect(h.provider.authenticateCalls, isEmpty);
     });
   });
+
+  group('OZMultiSignerManager - delegated wallet credential arm', () {
+    const walletAddress =
+        'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7';
+
+    /// Drives one wallet-only multi-signer submission against a
+    /// smart-account auth entry and returns the delegated `__check_auth`
+    /// entry the pipeline appended plus the wallet adapter that signed it.
+    Future<({XdrSorobanAuthorizationEntry delegated, _AlwaysSignWallet wallet})>
+        runWalletSubmission({required bool useUpgradedAuth}) async {
+      final deployer = KeyPair.random();
+      final mock = MockSorobanServer();
+      mock.getAccountResponses.add(_deployerAccount(deployer));
+      mock.simulateResponses.add(_simResponseWithAuthEntry(
+        entry: _makeAddressCredsEntry(_contractA),
+        minResourceFee: 100,
+      ));
+      mock.latestLedgerResponses.add(_latestLedger(600));
+      mock.getAccountResponses.add(_deployerAccount(deployer, seq: 2));
+      mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 80));
+      mock.sendResponses.add(_sendPending(hash: 'delegated-arm-hash'));
+      mock.pollResponses.add(_txSuccess(ledger: 6001));
+
+      final config = OZSmartAccountConfig(
+        rpcUrl: 'https://soroban-testnet.stellar.org',
+        networkPassphrase: Network.TESTNET.networkPassphrase,
+        accountWasmHash: '0' * 64,
+        webauthnVerifierAddress: _contractA,
+        useUpgradedAuthForWalletSigners: useUpgradedAuth,
+      );
+      final wallet = _AlwaysSignWallet(walletAddress);
+      final kit = FakePipelineKit(
+        config: config,
+        sorobanServer: mock,
+        deployer: deployer,
+      );
+      kit.setExternalWallet(wallet);
+      kit.setConnected(credentialId: _credentialIdB64, contractId: _contractA);
+
+      final manager = OZMultiSignerManager(kit);
+      final result = await manager.submitWithMultipleSigners(
+        hostFunction: XdrHostFunction.forInvokingContractWithArgs(
+          XdrInvokeContractArgs(
+            Address.forContractId(_contractB).toXdr(),
+            'vote',
+            const <XdrSCVal>[],
+          ),
+        ),
+        selectedSigners: <OZSelectedSigner>[
+          OZSelectedSignerWallet(walletAddress),
+        ],
+      );
+      expect(result.success, isTrue);
+
+      final envelope = mock.sendCalls.single.toEnvelopeXdr();
+      // ignore: invalid_use_of_internal_member
+      final auth =
+          envelope.v1!.tx.operations.first.body.invokeHostFunctionOp!.auth;
+      final delegated = auth.singleWhere(
+        (e) => _entryAddress(e) == walletAddress,
+        orElse: () => throw StateError(
+          'no delegated entry for $walletAddress in the submitted envelope',
+        ),
+      );
+      return (delegated: delegated, wallet: wallet);
+    }
+
+    test('delegatedWalletEntry_defaultConfig_carriesAddressV2', () async {
+      final outcome = await runWalletSubmission(useUpgradedAuth: true);
+
+      expect(
+        outcome.delegated.credentials.discriminant,
+        equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2),
+      );
+      expect(outcome.delegated.credentials.addressV2, isNotNull);
+      expect(outcome.delegated.credentials.address, isNull,
+          reason: 'the legacy arm must be empty on an ADDRESS_V2 entry');
+    });
+
+    test('delegatedWalletEntry_optOutConfig_carriesLegacyAddress', () async {
+      final outcome = await runWalletSubmission(useUpgradedAuth: false);
+
+      expect(
+        outcome.delegated.credentials.discriminant,
+        equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS),
+      );
+      expect(outcome.delegated.credentials.address, isNotNull);
+      expect(outcome.delegated.credentials.addressV2, isNull);
+    });
+
+    test('delegatedWalletEntry_signerReceivesAddressBoundPreimage', () async {
+      final outcome = await runWalletSubmission(useUpgradedAuth: true);
+
+      final preimage = XdrHashIDPreimage.decode(
+        XdrDataInputStream(base64Decode(outcome.wallet.signedPreimages.single)),
+      );
+      expect(
+        preimage.discriminant,
+        equals(
+          XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS,
+        ),
+      );
+      final withAddress = preimage.sorobanAuthorizationWithAddress;
+      expect(withAddress, isNotNull);
+      expect(
+        Address.fromXdr(withAddress!.address).accountId,
+        equals(walletAddress),
+        reason: 'the signed preimage must bind the delegated wallet address',
+      );
+    });
+
+    test('delegatedWalletEntry_optOut_signerReceivesLegacyPreimage', () async {
+      final outcome = await runWalletSubmission(useUpgradedAuth: false);
+
+      final preimage = XdrHashIDPreimage.decode(
+        XdrDataInputStream(base64Decode(outcome.wallet.signedPreimages.single)),
+      );
+      expect(
+        preimage.discriminant,
+        equals(XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION),
+      );
+      expect(preimage.sorobanAuthorizationWithAddress, isNull);
+    });
+  });
+}
+
+/// Returns the strkey of the address carried by [entry]'s credentials, or
+/// `null` for arms without a top-level address.
+String? _entryAddress(XdrSorobanAuthorizationEntry entry) {
+  final creds = entry.credentials;
+  final XdrSorobanAddressCredentials? inner;
+  switch (creds.discriminant) {
+    case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS:
+      inner = creds.address;
+      break;
+    case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2:
+      inner = creds.addressV2;
+      break;
+    default:
+      inner = null;
+  }
+  if (inner == null) return null;
+  final address = Address.fromXdr(inner.address);
+  return address.accountId ?? address.contractId;
 }

@@ -8,6 +8,8 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart' as http_testing;
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 import 'oz_pipeline_fixtures.dart';
@@ -61,6 +63,33 @@ SimulateTransactionResponse _simResponseWithAuthEntry({
   r.results = <SimulateTransactionResult>[result];
   r.minResourceFee = minResourceFee;
   return r;
+}
+
+/// Builds a simulation response whose single result carries [value] as the
+/// host-function return value and no auth entries.
+SimulateTransactionResponse _simResponseWithValue(XdrSCVal value) {
+  final r = SimulateTransactionResponse(<String, dynamic>{});
+  r.results = <SimulateTransactionResult>[
+    SimulateTransactionResult(value.toBase64EncodedXdrString(), <String>[]),
+  ];
+  return r;
+}
+
+/// Builds the source-account auth entry a native-SAC `transfer` simulation
+/// reports when the transfer is authorised by the transaction source.
+XdrSorobanAuthorizationEntry _sourceAccountTransferEntry() {
+  final invokeArgs = XdrInvokeContractArgs(
+    Address.forContractId(_contractB).toXdr(),
+    'transfer',
+    const <XdrSCVal>[],
+  );
+  return XdrSorobanAuthorizationEntry(
+    XdrSorobanCredentials.forSourceAccount(),
+    XdrSorobanAuthorizedInvocation(
+      XdrSorobanAuthorizedFunction.forInvokeContractArgs(invokeArgs),
+      <XdrSorobanAuthorizedInvocation>[],
+    ),
+  );
 }
 
 /// Builds a [GetLatestLedgerResponse] with the given sequence number.
@@ -797,6 +826,109 @@ void main() {
       await expectLater(
         () => ops.fundWallet(nativeTokenContract: _contractA),
         throwsA(isA<SmartAccountWalletNotConnected>()),
+      );
+    });
+
+    test('fundWallet_sourceAccountEntry_convertsToSignedAddressV2', () async {
+      // The funding transfer simulates with source-account credentials,
+      // which the conversion replaces with ADDRESS_V2 credentials carrying
+      // the temporary account's own address, signed over the address-bound
+      // WITH_ADDRESS preimage that the host rebuilds from those credentials.
+      const expirationLedger = 4000 + Util.ledgersPerHour;
+      final mock = MockSorobanServer();
+      // Every account lookup answers with the account that was requested, so
+      // the temporary keypair fundWallet generates internally resolves.
+      mock.getAccountDefault =
+          () => Account(mock.getAccountCalls.last, BigInt.from(7));
+
+      final balanceStroops =
+          BigInt.from(1005) * BigInt.from(Util.stroopsPerXlm);
+      mock.simulateResponses.add(_simResponseWithValue(
+        Util.bigIntToI128ScVal(balanceStroops),
+      ));
+      mock.simulateResponses.add(_simResponseWithAuthEntry(
+        entry: _sourceAccountTransferEntry(),
+        minResourceFee: 100,
+      ));
+      mock.latestLedgerResponses.add(_latestLedger(4000));
+      mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 120));
+      mock.sendResponses.add(_sendPending(hash: 'fund-convert-hash'));
+      mock.pollResponses.add(_txSuccess(ledger: 4100));
+
+      final kit = FakePipelineKit(sorobanServer: mock)
+        ..setConnected(credentialId: _credentialIdB64, contractId: _contractA);
+      final ops = OZTransactionOperations(kit);
+
+      final funded = await http.runWithClient(
+        () => ops.fundWallet(nativeTokenContract: _contractB),
+        () => http_testing.MockClient(
+          (request) async => http.Response('{}', 200),
+        ),
+      );
+      expect(funded, equals('1000'));
+
+      // The temporary account is the first account fundWallet looks up.
+      final tempAccountId = mock.getAccountCalls.first;
+      final envelope = mock.sendCalls.single.toEnvelopeXdr();
+      final auth =
+          envelope.v1!.tx.operations.first.body.invokeHostFunctionOp!.auth;
+      expect(auth, hasLength(1));
+      final converted = auth.single;
+
+      expect(
+        converted.credentials.discriminant,
+        equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2),
+        reason: 'the converted entry must carry ADDRESS_V2 credentials',
+      );
+      final creds = converted.credentials.addressV2;
+      expect(creds, isNotNull);
+      expect(
+        creds!.address.discriminant,
+        equals(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT),
+      );
+      expect(
+        Address.fromXdr(creds.address).accountId,
+        equals(tempAccountId),
+        reason: 'the credentials must carry the real temporary account address',
+      );
+      expect(creds.signatureExpirationLedger.uint32, equals(expirationLedger));
+
+      // Rebuild the WITH_ADDRESS preimage the host would reconstruct from the
+      // submitted credentials, independently of the production helper.
+      final preimage = XdrHashIDPreimage(
+        XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS,
+      );
+      preimage.sorobanAuthorizationWithAddress =
+          XdrHashIDPreimageSorobanAuthorizationWithAddress(
+        XdrHash(Network.TESTNET.networkId!),
+        creds.nonce,
+        creds.signatureExpirationLedger,
+        creds.address,
+        converted.rootInvocation,
+      );
+      final preimageStream = XdrDataOutputStream();
+      XdrHashIDPreimage.encode(preimageStream, preimage);
+      final payloadHash =
+          Util.hash(Uint8List.fromList(preimageStream.bytes));
+
+      final signatureEntries = creds.signature.vec!.single.map!;
+      final publicKeyBytes = signatureEntries
+          .firstWhere((e) => e.key.sym == 'public_key')
+          .val
+          .bytes!
+          .sCBytes;
+      final signatureBytes = signatureEntries
+          .firstWhere((e) => e.key.sym == 'signature')
+          .val
+          .bytes!
+          .sCBytes;
+      final tempKeyPair = KeyPair.fromAccountId(tempAccountId);
+      expect(publicKeyBytes, equals(tempKeyPair.publicKey));
+      expect(
+        tempKeyPair.verify(payloadHash, Uint8List.fromList(signatureBytes)),
+        isTrue,
+        reason: 'the signature must verify over the WITH_ADDRESS preimage '
+            'carrying the temporary account address',
       );
     });
   });
