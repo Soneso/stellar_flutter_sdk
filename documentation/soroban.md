@@ -1363,7 +1363,10 @@ Installing and Deploying.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-// keyPair is the deployer account from the "Upload WASM" example above
+// Secret seed of your funded deployer account; replace it with yours
+KeyPair keyPair = KeyPair.fromSecretSeed(
+    'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI');
+
 InvokeHostFunctionOperation createOp = InvokeHostFuncOpBuilder(
   CreateContractFromExternalRefHostFunction.forTagString(
     Address.forAccountId(keyPair.accountId),
@@ -1438,23 +1441,32 @@ For advanced auth workflows, sign authorization entries directly.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-// Get auth entries from simulation
-List<SorobanAuthorizationEntry>? auth = simResponse.sorobanAuth;
-GetLatestLedgerResponse latestLedger = await server.getLatestLedger();
+// The simulation response, the transaction it simulated, and the authorizing
+// keypair come from the surrounding flow and enter as parameters.
+Future<void> signSimulatedAuth(
+  SorobanServer server,
+  SimulateTransactionResponse simResponse,
+  Transaction tx,
+  KeyPair signerKeyPair,
+) async {
+  // Get auth entries from simulation
+  List<SorobanAuthorizationEntry>? auth = simResponse.sorobanAuth;
+  GetLatestLedgerResponse latestLedger = await server.getLatestLedger();
 
-if (auth != null) {
-  for (SorobanAuthorizationEntry entry in auth) {
-    // Set signature expiration (~50 seconds at 5s/ledger)
-    entry.credentials.addressCredentials?.signatureExpirationLedger =
-        latestLedger.sequence! + 10;
+  if (auth != null) {
+    for (SorobanAuthorizationEntry entry in auth) {
+      // Set signature expiration (~50 seconds at 5s/ledger)
+      entry.credentials.innerAddressCredentials?.signatureExpirationLedger =
+          latestLedger.sequence! + 10;
 
-    // Sign the entry
-    entry.sign(signerKeyPair, Network.TESTNET);
+      // Sign the entry
+      entry.sign(signerKeyPair, Network.TESTNET);
+    }
   }
-}
 
-// Set signed auth on transaction
-tx.setSorobanAuth(auth);
+  // Set signed auth on transaction
+  tx.setSorobanAuth(auth);
+}
 ```
 
 > **Tip**: Contract IDs must be C-prefixed strkey format.

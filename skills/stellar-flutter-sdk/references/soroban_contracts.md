@@ -6,6 +6,15 @@ All code assumes the standard SDK import:
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 ```
 
+- [High-Level: SorobanClient](#high-level-sorobanclient)
+- [Low-Level: SorobanServer](#low-level-sorobanserver)
+- [Argument Encoding with XdrSCVal](#argument-encoding-with-xdrscval)
+- [Reading Contract Return Values](#reading-contract-return-values)
+- [Reading Contract State](#reading-contract-state)
+- [TTL Extension and Restore](#ttl-extension-and-restore)
+- [Deploy Stellar Asset Contract (SAC)](#deploy-stellar-asset-contract-sac)
+- [Contract Introspection](#contract-introspection)
+
 ## High-Level: SorobanClient
 
 `SorobanClient` handles simulation, signing, and submission automatically. Use this for most contract interactions.
@@ -97,18 +106,24 @@ transaction is built (an unresolvable reference throws naming the owner and the 
 loads the spec from the resolved wasm, and returns a ready client:
 
 ```dart
-SorobanClient client = await SorobanClient.deployFromExternalRef(
-  deployRequest: DeployFromExternalRefRequest.forTagString(
-    sourceAccountKeyPair: keyPair,
-    network: Network.TESTNET,
-    rpcUrl: 'https://soroban-testnet.stellar.org:443',
-    // The owner contract holding the tag entry
-    executableOwner: Address.forContractId(
-        'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP'),
-    tag: 'token-v1', // matched byte for byte
-    // constructorArgs and salt work as in DeployRequest
-  ),
-);
+Future<SorobanClient> deployFromReference() async {
+  // Secret seed of the funded account that signs the deployment
+  KeyPair keyPair = KeyPair.fromSecretSeed(
+      'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI');
+
+  return SorobanClient.deployFromExternalRef(
+    deployRequest: DeployFromExternalRefRequest.forTagString(
+      sourceAccountKeyPair: keyPair,
+      network: Network.TESTNET,
+      rpcUrl: 'https://soroban-testnet.stellar.org:443',
+      // The owner contract holding the tag entry
+      executableOwner: Address.forContractId(
+          'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP'),
+      tag: 'token-v1', // matched byte for byte
+      // constructorArgs and salt work as in DeployRequest
+    ),
+  );
+}
 ```
 
 `DeployFromExternalRefRequest.tag` is `Uint8List` (an executable tag carries arbitrary

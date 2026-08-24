@@ -8,6 +8,16 @@ All code assumes the standard SDK import:
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 ```
 
+- [Exception Hierarchy](#exception-hierarchy)
+- [Horizon HTTP Error Handling](#horizon-http-error-handling)
+- [Transaction Failure Debugging](#transaction-failure-debugging)
+- [Common Error Patterns and Solutions](#common-error-patterns-and-solutions)
+- [Address and Key Decoding Errors](#address-and-key-decoding-errors)
+- [Soroban RPC Error Handling](#soroban-rpc-error-handling)
+- [Debugging Techniques](#debugging-techniques)
+- [Common Mistakes](#common-mistakes)
+- [Platform & Environment](#platform--environment)
+
 ## Exception Hierarchy
 
 | Exception | Source | Fields |
@@ -227,11 +237,14 @@ Future<AccountResponse> fetchWithRetry(
 ```dart
 import 'dart:typed_data';
 
-try {
-  Uint8List raw = StrKey.decodeStellarAccountId(userInput);
-  print('${raw.length} bytes'); // 32 bytes
-} on FormatException catch (e) {
-  print(e.message); // Encoded string must be 56 characters, got 15
+void decodeAccountId() {
+  String userInput = 'GINVALIDADDRESS'; // e.g. a truncated paste, 15 characters
+  try {
+    Uint8List raw = StrKey.decodeStellarAccountId(userInput);
+    print('${raw.length} bytes'); // 32 bytes
+  } on FormatException catch (e) {
+    print(e.message); // Encoded string must be 56 characters, got 15
+  }
 }
 ```
 
@@ -242,7 +255,7 @@ Checks run in this order, so the first failing one is the message you get.
 | Message | Cause |
 |---------|-------|
 | `Unrecognized version byte 99` | The `VersionByte` names no strkey type. Only reachable through `decodeCheck` or `encodeCheck` called with a hand-built `VersionByte`; the named `decode*` and `encode*` methods always pass a known one. |
-| `Encoded string must be 56 characters, got 15` | The string length is outside the range the type admits. Checked before base32 decoding, so an empty or one-character input lands here rather than in an index error. |
+| `Encoded string must be 56 characters, got 15` | The string length is outside the range the type admits. Checked before base32 decoding, so an empty or one-character input lands here. |
 | `Invalid encoded string` | The string is not the base32 rendering of the bytes it decodes to: a character outside `A-Z` and `2-7`, an `=` padding character, or trailing bits that do not round-trip. |
 | `Version byte is invalid` | The address belongs to another strkey type, for example a `G...` passed to `decodeSha256Hash`. |
 | `Checksum invalid` | The trailing CRC-16 does not match the payload. A typo or a truncated copy of an otherwise well-formed address. |
@@ -283,11 +296,14 @@ The encoding direction and the raw-byte constructors report their own types. Mes
 ```dart
 import 'dart:typed_data';
 
-try {
-  KeyPair signer = KeyPair.fromSecretSeedList(seedBytes);
-  transaction.sign(signer, Network.TESTNET);
-} on ArgumentError catch (e) {
-  print(e); // Invalid argument(s): Secret seed must be 32 bytes, got 31
+// The raw seed and the transaction to sign enter as parameters.
+void signWithRawSeed(Uint8List seedBytes, Transaction transaction) {
+  try {
+    KeyPair signer = KeyPair.fromSecretSeedList(seedBytes);
+    transaction.sign(signer, Network.TESTNET);
+  } on ArgumentError catch (e) {
+    print(e); // Invalid argument(s): Secret seed must be 32 bytes, got 31
+  }
 }
 ```
 

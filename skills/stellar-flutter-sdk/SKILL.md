@@ -1,6 +1,6 @@
 ---
 name: stellar-flutter-sdk
-description: Build Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, XDR-JSON, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with async/await and Stream patterns across Android, iOS, and Web. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing in a Flutter app.
+description: Builds Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, XDR-JSON, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with async/await and Stream patterns across Android, iOS, and Web. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing in a Flutter app.
 license: Apache 2.0
 compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.5.0
 metadata:
@@ -24,8 +24,6 @@ dependencies:
 > iOS: set the app's deployment target to 15.0 or higher. Passkey smart-account features need iOS 16 at runtime.
 
 > All code examples below assume `import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';`
->
-> If you can't find a constructor or method signature in this file or the topic references, grep `references/api_reference.md` — it has all public class/method signatures.
 
 ## 1. Stellar Basics
 
@@ -427,7 +425,7 @@ For the full error catalog and solutions:
 
 ## 10. Security Best Practices
 
-Covers secret key management (use `flutter_secure_storage` on mobile, environment variables on server, never store client-side on web), transaction verification before signing (inspect operations, validate fees), network passphrase validation, address validation via `StrKey` (decoding is strict on length, checksum and per-type framing, and every rejection is a `FormatException`), and amount precision checks (max 7 decimal places).
+Covers secret key management (use `flutter_secure_storage` on mobile, environment variables on server, never store client-side on web), transaction verification before signing (inspect operations, validate fees), network passphrase validation, address validation via `StrKey` (decoding is strict on length, checksum and per-type framing, and every rejection is a `FormatException`), and amount precision checks (at most seven significant fractional digits after trailing zeros are ignored).
 
 For complete security patterns and platform-specific key storage:
 [Security Guide](./references/security.md)
@@ -459,7 +457,7 @@ For all SEP examples with code: [SEP Implementations Guide](./references/sep.md)
 
 **Dart null safety:** A bare `KeyPair kp;` declaration is a compile error — assign immediately, use `late KeyPair kp;` (throws if read before assignment), or declare nullable `KeyPair? kp;` and null-check before use.
 
-**Amounts are always Strings:** All payment amounts, balances, and prices are `String` types (7 decimal places max). Internally, the network uses 64-bit integer stroops (1 XLM = 10,000,000 stroops).
+**Amounts and prices are always Strings:** Payment amounts and balances are decimal strings with at most seven significant fractional digits after trailing zeros are ignored; the network carries them as 64-bit integer stroops (1 XLM = 10,000,000 stroops). Prices are decimal strings too, but `Price.fromString` approximates them to a signed-int32 fraction, so no seven-digit rule applies — it rejects malformed syntax, zero, and any value no int32 fraction can carry.
 ```dart
 // WRONG: numeric amount — loses precision
 double amount = 100.1234567;

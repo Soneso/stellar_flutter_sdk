@@ -6,6 +6,18 @@ Security patterns and guidelines for production Stellar Flutter SDK applications
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 ```
 
+- [Secret Key Management](#secret-key-management)
+- [Input Validation](#input-validation)
+- [Transaction Verification Before Signing](#transaction-verification-before-signing)
+- [Network Selection and Validation](#network-selection-and-validation)
+- [Safe Error Handling](#safe-error-handling)
+- [Multi-Signature Security](#multi-signature-security)
+- [SEP-10 Authentication Security](#sep-10-authentication-security)
+- [Web Platform Considerations](#web-platform-considerations)
+- [HTTPS and Endpoint Security](#https-and-endpoint-security)
+- [Dependency Security](#dependency-security)
+- [Security Checklist](#security-checklist)
+
 ## Secret Key Management
 
 Secret keys (S... seeds) give full control over an account. Compromised keys lead to irreversible fund loss.
@@ -66,7 +78,7 @@ bool isValidSeed(String seed) {
 
 Every `StrKey.decode*` method throws a `FormatException` and nothing else, so one `catch` covers the whole codec. The checks run in a fixed order: the version byte must name a type the codec knows, the encoded string must be a length that type admits, the base32 body must re-encode to the string it came from, the leading decoded byte must be the expected version byte, the CRC-16 checksum must match the payload, the decoded payload is measured again as a backstop on the length check, and last the per-type framing rules for `P...` and `B...` apply.
 
-The length is checked before the string is base32-decoded. That bounds the work an oversized input can cause, and it makes an empty or one-character input an ordinary rejection rather than an index error.
+The length is checked before the string is base32-decoded, which bounds the work an oversized input can cause. An empty or one-character input fails that length check with a `FormatException`.
 
 | Prefix | Encoded length | Payload |
 |--------|----------------|---------|
@@ -84,11 +96,16 @@ A `P...` address holds a 32-byte signer key, the payload length as a 4-byte big-
 Every accepted `P...` address re-encodes to the string it came from, so string equality on accepted addresses is equality on signers: allowlists and caches may compare them as strings.
 
 ```dart
-try {
-  StrKey.decodeSignedPayload(untrustedAddress);
-} on FormatException catch (e) {
-  print(e.message);
-  // Decoded signed payload pads its payload with a byte that is not NUL
+// A P-address as it arrived over the network or from user input
+void acceptSigner(String untrustedAddress) {
+  try {
+    StrKey.decodeSignedPayload(untrustedAddress);
+  } on FormatException catch (e) {
+    print(e.message);
+    // e.g. Decoded signed payload pads its payload with a byte that is not NUL
+    return;
+  }
+  // safe to store or compare as a string from here
 }
 ```
 
@@ -164,28 +181,39 @@ String? validateAssetCode(String code) {
 
 ### Amount Validation
 
+Validate an amount by parsing it the way the SDK does, not with `double.tryParse`. `Util.decimalStringToStroops` trims surrounding whitespace, admits digits with an optional decimal point after at most one leading sign, rejects a fraction carrying more than seven significant digits, and throws for everything else. Its `BigInt` result is the stroop value the wire carries, so run the positivity and range checks on that.
+
 ```dart
+// WRONG: double.tryParse admits what the wire does not.
+double.tryParse('1e-7');  // 1e-7 -- scientific notation is not a Stellar amount
+double.tryParse('NaN');   // NaN -- every comparison against NaN is false, so it
+                          // slips past a "<= 0" and a "> max" rejection alike
+```
+
+```dart
+// CORRECT: parse with the SDK, then bound the stroop value.
+// int64 max stroops, the largest amount the wire carries.
+final BigInt maxStroops = BigInt.parse('9223372036854775807');
+
 String? validateAmount(String input) {
-  if (input.isEmpty) return 'Amount is required';
+  if (input.trim().isEmpty) return 'Amount is required';
 
-  double? amount = double.tryParse(input);
-  if (amount == null) return 'Amount must be a number';
-  if (amount <= 0) return 'Amount must be positive';
-
-  // Stellar supports max 7 decimal places (stroops)
-  List<String> parts = input.split('.');
-  if (parts.length == 2 && parts[1].length > 7) {
-    return 'Maximum 7 decimal places';
+  BigInt stroops;
+  try {
+    stroops = Util.decimalStringToStroops(input);
+  } catch (_) {
+    return 'Amount must be a decimal number with at most seven significant '
+        'fractional digits (trailing zeros are ignored)';
   }
 
-  // Stellar maximum: 922,337,203,685.4775807
-  if (amount > 922337203685.4775807) {
-    return 'Amount exceeds Stellar maximum';
-  }
+  if (stroops <= BigInt.zero) return 'Amount must be positive';
+  if (stroops > maxStroops) return 'Amount exceeds Stellar maximum';
 
   return null; // Valid
 }
 ```
+
+Prices are not amounts and do not belong on this path. A price string is approximated to a signed-int32 fraction by `Price.fromString`, which enforces its own rules; no seven-decimal limit applies.
 
 ### Memo Validation
 
@@ -346,7 +374,7 @@ The SDK uses pure Dart cryptographic libraries (`pointycastle`, `pinenacl`) with
 - [ ] All user-supplied addresses validated with `StrKey` methods, with `FormatException` handled where `decode*` is called directly
 - [ ] Raw key bytes length-checked before `KeyPair.fromPublicKey` / `KeyPair.fromSecretSeedList`, or `ArgumentError` caught
 - [ ] Asset codes validated (1-12 alphanumeric characters)
-- [ ] Amounts validated as positive decimals with at most 7 decimal places
+- [ ] Amounts validated as positive decimals with at most seven significant fractional digits (trailing zeros ignored)
 - [ ] All transactions inspected before signing (source, operations, fee)
 - [ ] Error messages sanitized -- no secrets in logs or user-facing errors
 - [ ] Network configuration sourced from a single place (testnet vs public)

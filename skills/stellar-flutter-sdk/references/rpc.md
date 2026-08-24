@@ -14,6 +14,15 @@ final server = SorobanServer('https://soroban-testnet.stellar.org:443');
 
 The `SorobanServer` class communicates via JSON-RPC over HTTP using the `dio` package. It is separate from `StellarSDK` (which uses `package:http` for Horizon).
 
+- [Network and Health Methods](#network-and-health-methods)
+- [Get Account Method](#get-account-method)
+- [Transaction Methods](#transaction-methods)
+- [Ledger Query Methods](#ledger-query-methods)
+- [Event Methods](#event-methods)
+- [Contract Introspection Helpers](#contract-introspection-helpers)
+- [Error Handling](#error-handling)
+- [Method Summary](#method-summary)
+
 ---
 
 ## Network and Health Methods

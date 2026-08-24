@@ -1754,6 +1754,8 @@ Find claimable balances you can claim, or look up a specific balance by ID.
 
 Fetch a specific claimable balance by its ID.
 
+`forBalanceId` accepts any spelling of a balance id: the `B...` strkey, the bare 64 character hash hex, the 66 character hex carrying the one byte discriminant, or the 72 character hex of the XDR form. It sends Horizon's 72 character form regardless of which you pass, and throws `ArgumentError` for an id matching none of those spellings, before any request goes out.
+
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -1761,7 +1763,7 @@ StellarSDK sdk = StellarSDK.TESTNET;
 
 // Using hex format
 ClaimableBalanceResponse balance = await sdk.claimableBalances
-    .claimableBalance("00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072");
+    .forBalanceId("00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072");
 print("Amount: ${balance.amount}");
 print("Asset: ${Asset.canonicalForm(balance.asset)}");
 ```
