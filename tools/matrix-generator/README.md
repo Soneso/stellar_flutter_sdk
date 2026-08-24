@@ -4,8 +4,8 @@ Automated tool that generates compatibility matrices comparing the Flutter Stell
 
 It analyzes three areas:
 
-- **Horizon API** -- all REST endpoints defined in `stellar-go/services/horizon`
-- **Soroban RPC** -- all JSON-RPC methods defined in `stellar-rpc`
+- **Horizon API** -- all REST endpoints defined in `stellar-horizon`
+- **Soroban RPC** -- all JSON-RPC methods defined in `stellar-rpc`, with the response structs from `go-stellar-sdk`
 - **SEPs** -- 19 Stellar Ecosystem Proposals (SEP-01 through SEP-53)
 
 ## Requirements
@@ -13,7 +13,9 @@ It analyzes three areas:
 - Python 3.8+
 - No external dependencies (stdlib only)
 - Internet access (fetches specs from GitHub and stellar.org)
-- Local clones of `stellar-go` and `stellar-rpc` as siblings of the SDK root (for Horizon analysis)
+- Local clones of `stellar-horizon` and `stellar-rpc` as siblings of the SDK root
+
+Horizon and RPC sources are fetched from GitHub at the tag of the latest release. The local clones back the `--local` modes below, and `run_analysis.py` checks for them up front: `stellar-horizon` must carry `internal/httpx/router.go`.
 
 Optional: set `GITHUB_TOKEN` for higher API rate limits (5,000 vs 60 requests/hour).
 

@@ -648,7 +648,7 @@ def parse_from_local(router_path: Path, output_path: Path) -> int:
     # Verify input file exists
     if not router_path.exists():
         print(f"ERROR: Router file not found: {router_path}")
-        print("Please ensure stellar-go repository is cloned locally.")
+        print("Please ensure the stellar-horizon repository is cloned locally.")
         return 1
 
     try:
@@ -692,7 +692,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Parse from local file (default, expects stellar-go as sibling of SDK)
+  # Parse from local file (default, expects stellar-horizon as sibling of SDK)
   %(prog)s
 
   # Parse local file with custom paths
@@ -703,7 +703,7 @@ Examples:
     parser.add_argument(
         '--local',
         type=str,
-        help='Path to local router.go file (default: ../stellar-go relative to SDK root)'
+        help='Path to local router.go file (default: ../stellar-horizon relative to SDK root)'
     )
 
     parser.add_argument(
@@ -732,7 +732,7 @@ Examples:
     if args.local:
         router_path = Path(args.local)
     else:
-        router_path = SDK_ROOT.parent / "stellar-go" / "services" / "horizon" / "internal" / "httpx" / "router.go"
+        router_path = SDK_ROOT.parent / "stellar-horizon" / "internal" / "httpx" / "router.go"
 
     return parse_from_local(router_path, output_path)
 

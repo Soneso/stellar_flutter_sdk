@@ -14,6 +14,15 @@ final server = SorobanServer('https://soroban-testnet.stellar.org:443');
 
 The `SorobanServer` class communicates via JSON-RPC over HTTP using the `dio` package. It is separate from `StellarSDK` (which uses `package:http` for Horizon).
 
+- [Network and Health Methods](#network-and-health-methods)
+- [Get Account Method](#get-account-method)
+- [Transaction Methods](#transaction-methods)
+- [Ledger Query Methods](#ledger-query-methods)
+- [Event Methods](#event-methods)
+- [Contract Introspection Helpers](#contract-introspection-helpers)
+- [Error Handling](#error-handling)
+- [Method Summary](#method-summary)
+
 ---
 
 ## Network and Health Methods
@@ -153,12 +162,12 @@ final tx = TransactionBuilder(account!)
     .build();
 
 // Simulate (optional: add ResourceConfig for instruction leeway)
-// useUpgradedAuth: true requests protocol 27 ADDRESS_V2 auth entries; the key is
-// omitted when false, and RPCs without support silently return legacy ADDRESS entries.
+// useUpgradedAuth defaults to true (protocol 27 ADDRESS_V2 auth entries) and is
+// always sent; pass false to request legacy ADDRESS entries. RPCs without
+// support silently return legacy ADDRESS entries either way.
 final simResponse = await server.simulateTransaction(
   SimulateTransactionRequest(tx,
-      resourceConfig: ResourceConfig(200000), // instruction buffer
-      useUpgradedAuth: false),
+      resourceConfig: ResourceConfig(200000)), // instruction buffer
 );
 
 if (simResponse.resultError != null) {
@@ -395,6 +404,14 @@ if (info != null) {
 }
 ```
 
+The `...ForContractId` loaders resolve a CAP-85 external reference executable (Protocol 28)
+automatically: the instance names an owner contract and a tag, and the owner's persistent tag
+entry holds the wasm hash. `getExternalRefWasmHash(XdrContractExecutableExternalRef ref)`
+resolves a reference directly and returns the 32-byte hash as `Uint8List?`; it answers `null`
+when the owner is not a contract address, no entry exists under the tag, or the entry does not
+hold a 32-byte `SCV_BYTES` value. A Stellar Asset Contract has no wasm, so the loaders yield
+`null` for it.
+
 For full introspection details (enumerating parameters, UDTs, events), see [Soroban Contracts](./soroban_contracts.md).
 
 ---
@@ -447,3 +464,4 @@ For detailed error handling patterns (simulation errors, send errors, restore pr
 - `loadContractCodeForWasmId(String wasmId)` → `XdrContractCodeEntry?`
 - `loadContractInfoForContractId(String contractId)` → `SorobanContractInfo?`
 - `loadContractInfoForWasmId(String wasmId)` → `SorobanContractInfo?`
+- `getExternalRefWasmHash(XdrContractExecutableExternalRef ref)` → `Uint8List?`

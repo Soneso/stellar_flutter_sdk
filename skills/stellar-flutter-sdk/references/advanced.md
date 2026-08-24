@@ -6,6 +6,14 @@ Less common but important patterns. All code assumes the standard SDK import:
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 ```
 
+- [Multi-Signature Accounts](#multi-signature-accounts)
+- [Fee-Bump Transactions](#fee-bump-transactions)
+- [Sponsored Reserves](#sponsored-reserves)
+- [Liquidity Pools](#liquidity-pools)
+- [Muxed Accounts](#muxed-accounts)
+- [Async Transaction Submission](#async-transaction-submission)
+- [Manual Sequence Numbers](#manual-sequence-numbers)
+
 ## Multi-Signature Accounts
 
 **IMPORTANT:** Always add signers and set thresholds in a SINGLE transaction. Setting thresholds first in a separate transaction may lock you out if the new thresholds require signatures you haven't added yet.
@@ -241,4 +249,20 @@ print('Hash: ${asyncResponse.hash}');
 print('Status: ${asyncResponse.txStatus}');
 // Possible statuses: txStatusPending, txStatusDuplicate, txStatusTryAgainLater, txStatusError
 // Poll getTransaction() later to check final result
+```
+
+## Manual Sequence Numbers
+
+`TransactionBuilder.build()` reads the source account's sequence number, puts that value plus one in the transaction, then advances the account object — never increment manually for a normal submission. For a transaction that must carry a specific future sequence (e.g., pre-authorized transactions), construct the `Account` with one less than the sequence you want the transaction to carry:
+
+```dart
+StellarSDK sdk = StellarSDK.TESTNET;
+String accountId = 'GXXXXX...';       // source account
+String destinationId = 'GYYYYY...';   // whatever the transaction does
+Operation op = PaymentOperationBuilder(destinationId, Asset.NATIVE, '10').build();
+
+AccountResponse account = await sdk.accounts.account(accountId); // on-chain seq N
+BigInt target = account.sequenceNumber + BigInt.from(5); // sequence the tx must carry
+Account synthetic = Account(account.accountId, target - BigInt.one);
+Transaction tx = TransactionBuilder(synthetic).addOperation(op).build(); // carries target
 ```

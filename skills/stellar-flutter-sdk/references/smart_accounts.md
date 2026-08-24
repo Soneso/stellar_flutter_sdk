@@ -58,7 +58,7 @@ Smart accounts are part of the main SDK package. Add the dependency:
 ```yaml
 # pubspec.yaml
 dependencies:
-  stellar_flutter_sdk: ^3.5.0   # check pub.dev for the current version
+  stellar_flutter_sdk: ^3.6.0   # check pub.dev for the current version
 ```
 
 ---
@@ -93,6 +93,10 @@ The constructor throws `SmartAccountConfigurationException` when `accountWasmHas
 | `externalWallet` | `OZExternalWalletAdapter?` | `null` | Wallet adapter (Freighter/LOBSTR-style) injected into `kit.externalSigners` |
 | `externalEd25519Adapter` | `OZExternalEd25519SignerAdapter?` | `null` | Ed25519 adapter (hardware wallet, HSM, remote signer) injected into `kit.externalSigners` |
 | `maxContextRuleScanId` | `int` | `50` | Highest context-rule ID to scan when listing |
+| `defaultPolicies` | `Map<String, OZPolicyInstallParams>` | `{}` | Policies installed on a new wallet's default context rule at deploy time; a per-call `policies` argument overrides it |
+| `sorobanServer` | `SorobanServer?` | `null` | Preconfigured RPC server (custom Dio httpClient, proxies); when omitted the kit builds one from `rpcUrl` |
+| `useUpgradedAuth` | `bool` | `true` | Credential arm of the kit's simulations and the `fundWallet` source-account conversion: `ADDRESS_V2` by default; `false` keeps the authorization XDR within the pre-protocol-27 schema for relayers that cannot parse protocol 27 XDR |
+| `useUpgradedAuthForWalletSigners` | `bool` | `true` | Credential arm of delegated external-wallet auth entries: `ADDRESS_V2` (address-bound preimage) by default; `false` builds the legacy `ADDRESS` arm for wallet software that cannot sign the address-bound preimage type |
 
 > DANGER: the default `OZInMemoryStorageAdapter` is non-persistent and tests-only. Omit `storage` in production and credentials are lost when the process exits — the on-chain smart account becomes unreachable. Always pass a platform-backed adapter. See [WebAuthn Setup](./smart_accounts_webauthn.md).
 

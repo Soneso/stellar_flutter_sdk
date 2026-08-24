@@ -6,6 +6,18 @@ Security patterns and guidelines for production Stellar Flutter SDK applications
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 ```
 
+- [Secret Key Management](#secret-key-management)
+- [Input Validation](#input-validation)
+- [Transaction Verification Before Signing](#transaction-verification-before-signing)
+- [Network Selection and Validation](#network-selection-and-validation)
+- [Safe Error Handling](#safe-error-handling)
+- [Multi-Signature Security](#multi-signature-security)
+- [SEP-10 Authentication Security](#sep-10-authentication-security)
+- [Web Platform Considerations](#web-platform-considerations)
+- [HTTPS and Endpoint Security](#https-and-endpoint-security)
+- [Dependency Security](#dependency-security)
+- [Security Checklist](#security-checklist)
+
 ## Secret Key Management
 
 Secret keys (S... seeds) give full control over an account. Compromised keys lead to irreversible fund loss.
@@ -62,6 +74,97 @@ bool isValidSeed(String seed) {
 }
 ```
 
+### Strkey Decoding Is a Trust Boundary
+
+Every `StrKey.decode*` method throws a `FormatException` and nothing else, so one `catch` covers the whole codec. The checks run in a fixed order: the version byte must name a type the codec knows, the encoded string must be a length that type admits, the base32 body must re-encode to the string it came from, the leading decoded byte must be the expected version byte, the CRC-16 checksum must match the payload, the decoded payload is measured again as a backstop on the length check, and last the per-type framing rules for `P...` and `B...` apply.
+
+The length is checked before the string is base32-decoded, which bounds the work an oversized input can cause. An empty or one-character input fails that length check with a `FormatException`.
+
+| Prefix | Encoded length | Payload |
+|--------|----------------|---------|
+| G, S, T, X, C, L | 56 | 32 bytes |
+| M | 69 | 40 bytes |
+| P | 69 to 165 | 40 to 100 bytes |
+| B | 58 | 33 bytes |
+
+The `isValid*` methods run the matching decoder and return false instead of throwing. Use them to classify untrusted input; use `decode*` where one type is expected and a rejection should stop the operation.
+
+### Signed Payloads Are Not Malleable
+
+A `P...` address holds a 32-byte signer key, the payload length as a 4-byte big-endian integer, and the payload padded with NUL bytes to a multiple of four. `decodeSignedPayload` and `decodeXdrSignedPayload` hold an address to exactly that shape: the declared length is 1 to 64, the decoded bytes total exactly 32 + 4 plus the padded payload, and the padding bytes are NUL. Anything else is a `FormatException`.
+
+Every accepted `P...` address re-encodes to the string it came from, so string equality on accepted addresses is equality on signers: allowlists and caches may compare them as strings.
+
+```dart
+// A P-address as it arrived over the network or from user input
+void acceptSigner(String untrustedAddress) {
+  try {
+    StrKey.decodeSignedPayload(untrustedAddress);
+  } on FormatException catch (e) {
+    print(e.message);
+    // e.g. Decoded signed payload pads its payload with a byte that is not NUL
+    return;
+  }
+  // safe to store or compare as a string from here
+}
+```
+
+`SignedPayloadSigner` applies the same length bound on construction, so an out-of-range payload fails before it is encoded:
+
+```dart
+import 'dart:typed_data';
+
+KeyPair keyPair = KeyPair.random();
+
+try {
+  SignedPayloadSigner.fromAccountId(keyPair.accountId, Uint8List(0));
+} on Exception catch (e) {
+  print(e); // Exception: invalid payload length, must be at least 1
+}
+```
+
+### Claimable Balance IDs Carry a Checked Discriminant
+
+A `B...` address is 33 bytes: a one-byte discriminant naming the balance ID type, then the 32-byte hash. `CLAIMABLE_BALANCE_ID_TYPE_V0` is the only type the protocol defines and its discriminant is zero. Both directions insist on it, so an address naming an undefined type cannot be read as a V0 balance pointing at a different entry.
+
+- `decodeClaimableBalanceId` throws a `FormatException` on any other discriminant, and returns all 33 bytes -- drop the first for the hash.
+- `encodeClaimableBalanceId` takes the bare 32-byte hash, which it prefixes with the discriminant, the 33-byte form, or the 36-byte XDR encoding Horizon reports, whose four-byte discriminant it verifies and strips. Any other width throws, as does a discriminant that names no balance ID type. The encode direction raises a plain `Exception` rather than a `FormatException`.
+- `XdrClaimableBalanceID.forId` applies the same rule to a B-address and to the hex rendering of the ID.
+
+```dart
+import 'dart:typed_data';
+
+Uint8List tagged = Uint8List(33);
+tagged[0] = 1; // names no claimable balance ID type
+
+try {
+  StrKey.encodeClaimableBalanceId(tagged);
+} on Exception catch (e) {
+  print(e);
+  // Exception: claimable balance id carries the discriminant 1,
+  // which names no claimable balance id type
+}
+```
+
+### Raw Key Material
+
+`KeyPair.fromPublicKey` and `KeyPair.fromSecretSeedList` take raw bytes and reject anything that is not 32 bytes with an `ArgumentError`, so truncated or padded key material cannot reach the signing code.
+
+`ArgumentError` is an `Error`, not an `Exception`, so `on Exception catch` does not catch it. Check the width before the call, or catch `ArgumentError` explicitly.
+
+```dart
+import 'dart:typed_data';
+
+KeyPair? readVerifier(Uint8List publicKeyBytes) {
+  try {
+    return KeyPair.fromPublicKey(publicKeyBytes);
+  } on ArgumentError catch (e) {
+    print(e); // Invalid argument(s): Public key must be 32 bytes, got 31
+    return null;
+  }
+}
+```
+
 ### Asset Code Validation
 
 ```dart
@@ -78,28 +181,39 @@ String? validateAssetCode(String code) {
 
 ### Amount Validation
 
+Validate an amount by parsing it the way the SDK does, not with `double.tryParse`. `Util.decimalStringToStroops` trims surrounding whitespace, admits digits with an optional decimal point after at most one leading sign, rejects a fraction carrying more than seven significant digits, and throws for everything else. Its `BigInt` result is the stroop value the wire carries, so run the positivity and range checks on that.
+
 ```dart
+// WRONG: double.tryParse admits what the wire does not.
+double.tryParse('1e-7');  // 1e-7 -- scientific notation is not a Stellar amount
+double.tryParse('NaN');   // NaN -- every comparison against NaN is false, so it
+                          // slips past a "<= 0" and a "> max" rejection alike
+```
+
+```dart
+// CORRECT: parse with the SDK, then bound the stroop value.
+// int64 max stroops, the largest amount the wire carries.
+final BigInt maxStroops = BigInt.parse('9223372036854775807');
+
 String? validateAmount(String input) {
-  if (input.isEmpty) return 'Amount is required';
+  if (input.trim().isEmpty) return 'Amount is required';
 
-  double? amount = double.tryParse(input);
-  if (amount == null) return 'Amount must be a number';
-  if (amount <= 0) return 'Amount must be positive';
-
-  // Stellar supports max 7 decimal places (stroops)
-  List<String> parts = input.split('.');
-  if (parts.length == 2 && parts[1].length > 7) {
-    return 'Maximum 7 decimal places';
+  BigInt stroops;
+  try {
+    stroops = Util.decimalStringToStroops(input);
+  } catch (_) {
+    return 'Amount must be a decimal number with at most seven significant '
+        'fractional digits (trailing zeros are ignored)';
   }
 
-  // Stellar maximum: 922,337,203,685.4775807
-  if (amount > 922337203685.4775807) {
-    return 'Amount exceeds Stellar maximum';
-  }
+  if (stroops <= BigInt.zero) return 'Amount must be positive';
+  if (stroops > maxStroops) return 'Amount exceeds Stellar maximum';
 
   return null; // Valid
 }
 ```
+
+Prices are not amounts and do not belong on this path. A price string is approximated to a signed-int32 fraction by `Price.fromString`, which enforces its own rules; no seven-decimal limit applies.
 
 ### Memo Validation
 
@@ -257,9 +371,10 @@ The SDK uses pure Dart cryptographic libraries (`pointycastle`, `pinenacl`) with
 
 - [ ] Secret keys loaded from platform secure storage, never hardcoded
 - [ ] Secret keys cleared from memory after use
-- [ ] All user-supplied addresses validated with `StrKey` methods
+- [ ] All user-supplied addresses validated with `StrKey` methods, with `FormatException` handled where `decode*` is called directly
+- [ ] Raw key bytes length-checked before `KeyPair.fromPublicKey` / `KeyPair.fromSecretSeedList`, or `ArgumentError` caught
 - [ ] Asset codes validated (1-12 alphanumeric characters)
-- [ ] Amounts validated as positive decimals with at most 7 decimal places
+- [ ] Amounts validated as positive decimals with at most seven significant fractional digits (trailing zeros ignored)
 - [ ] All transactions inspected before signing (source, operations, fee)
 - [ ] Error messages sanitized -- no secrets in logs or user-facing errors
 - [ ] Network configuration sourced from a single place (testnet vs public)

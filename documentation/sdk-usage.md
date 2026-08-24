@@ -971,7 +971,8 @@ Add liquidity to a pool. You specify the maximum amounts of each asset to deposi
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 LiquidityPoolDepositOperation depositOp = LiquidityPoolDepositOperationBuilder(
-  liquidityPoolId: "poolid123abc...", // pool ID from query above
+  liquidityPoolId:
+      "dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7", // pool ID (hex) from query above
   maxAmountA: "1000",                // max amount of asset A (XLM)
   maxAmountB: "500",                 // max amount of asset B (USD)
   minPrice: "1.9",                   // min price (A per B) - slippage protection
@@ -990,7 +991,8 @@ Remove liquidity by burning pool shares. You receive both assets back proportion
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 LiquidityPoolWithdrawOperation withdrawOp = LiquidityPoolWithdrawOperationBuilder(
-  liquidityPoolId: "poolid123abc...", // pool ID
+  liquidityPoolId:
+      "dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7", // pool ID (hex)
   amount: "100",                     // amount of pool shares to burn
   minAmountA: "180",                 // min amount of asset A to receive (slippage protection)
   minAmountB: "90",                  // min amount of asset B to receive (slippage protection)
@@ -1295,7 +1297,8 @@ Page<TransactionResponse> txPage = await sdk.transactions
 
 // Transactions affecting a claimable balance
 Page<TransactionResponse> txPage = await sdk.transactions
-    .forClaimableBalance("00000000abc...")
+    .forClaimableBalance(
+        "00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be")
     .execute();
 
 // Transactions affecting a liquidity pool
@@ -1751,6 +1754,8 @@ Find claimable balances you can claim, or look up a specific balance by ID.
 
 Fetch a specific claimable balance by its ID.
 
+`forBalanceId` accepts any spelling of a balance id: the `B...` strkey, the bare 64 character hash hex, the 66 character hex carrying the one byte discriminant, or the 72 character hex of the XDR form. It sends Horizon's 72 character form regardless of which you pass, and throws `ArgumentError` for an id matching none of those spellings, before any request goes out.
+
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -1758,7 +1763,7 @@ StellarSDK sdk = StellarSDK.TESTNET;
 
 // Using hex format
 ClaimableBalanceResponse balance = await sdk.claimableBalances
-    .claimableBalance("00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072");
+    .forBalanceId("00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072");
 print("Amount: ${balance.amount}");
 print("Asset: ${Asset.canonicalForm(balance.asset)}");
 ```
