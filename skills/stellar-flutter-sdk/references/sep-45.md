@@ -638,7 +638,7 @@ void main() {
         ? Address.forContractId(credentialsAddress)
         : Address.forAccountId(credentialsAddress);
 
-    final credentials = SorobanCredentials.forAddress(
+    final credentials = SorobanCredentials.forAddressLegacy(
       address,
       nonce,
       1000000, // expirationLedger

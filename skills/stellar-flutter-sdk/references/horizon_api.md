@@ -7,6 +7,8 @@ For method signatures on response objects, see [API Reference](./api_reference.m
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 ```
 
+Contents: [Common Query Methods](#common-query-methods) | [Accounts](#accounts) | [Transactions](#transactions) | [Operations](#operations) | [Payments](#payments) | [Ledgers](#ledgers) | [Effects](#effects) | [Offers](#offers) | [Order Book](#order-book) | [Trades](#trades) | [Assets](#assets) | [Claimable Balances](#claimable-balances) | [Liquidity Pools](#liquidity-pools) | [Path Finding](#path-finding) | [Fee Stats](#fee-stats) | [Health Check](#health-check) | [Root](#root) | [Pagination](#pagination) | [Error Handling](#error-handling)
+
 ## Common Query Methods
 
 All request builders extend `RequestBuilder` and share these pagination methods:
@@ -368,16 +370,20 @@ Page<AssetResponse> assets = await sdk.assets
 `sdk.claimableBalances` returns `ClaimableBalancesRequestBuilder`.
 
 ```dart
-// Get single claimable balance
+// Get single claimable balance. forBalanceId takes the B... strkey, the bare
+// 64 character hash hex, the 66 character one byte tagged hex, or the 72
+// character XDR form, and sends Horizon's 72 character form.
+String balanceId =
+    "00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072";
 ClaimableBalanceResponse balance =
-    await sdk.claimableBalances.claimableBalance(balanceId);
+    await sdk.claimableBalances.forBalanceId(balanceId);
 
 // Filter claimable balances
 Page<ClaimableBalanceResponse> page =
     await sdk.claimableBalances.forClaimant(claimantAccountId).execute();
 // WRONG: page.records.first.id -- ClaimableBalanceResponse does NOT have .id
 // CORRECT: page.records.first.balanceId -- returns the balance ID string
-String balanceId = page.records.first.balanceId;
+balanceId = page.records.first.balanceId;
 
 await sdk.claimableBalances.forAsset(usdAsset).execute();
 await sdk.claimableBalances.forSponsor(sponsorAccountId).execute();

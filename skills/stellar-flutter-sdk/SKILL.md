@@ -1,10 +1,10 @@
 ---
 name: stellar-flutter-sdk
-description: Build Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, XDR-JSON, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with async/await and Stream patterns across Android, iOS, and Web. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing in a Flutter app.
+description: Builds Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, XDR-JSON, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with async/await and Stream patterns across Android, iOS, and Web. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing in a Flutter app.
 license: Apache 2.0
 compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.5.0
 metadata:
-  version: "1.3.1"
+  version: "1.4.0"
   sdk_version: "3.5.0"
 ---
 
@@ -24,8 +24,6 @@ dependencies:
 > iOS: set the app's deployment target to 15.0 or higher. Passkey smart-account features need iOS 16 at runtime.
 
 > All code examples below assume `import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';`
->
-> If you can't find a constructor or method signature in this file or the topic references, grep `references/api_reference.md` — it has all public class/method signatures.
 
 ## 1. Stellar Basics
 
@@ -157,14 +155,7 @@ for (TransactionResponse tx in txPage.records) {
   print('${tx.hash} ledger=${tx.ledger}');
 }
 
-// Pagination: cursor from last result
-Page<TransactionResponse> nextPage = await sdk.transactions
-    .forAccount(accountId)
-    .cursor(txPage.records.last.pagingToken)
-    .limit(5).order(RequestBuilderOrder.DESC).execute();
-
-// Single transaction by hash
-TransactionResponse single = await sdk.transactions.transaction('abc123...');
+// Next page: .cursor(txPage.records.last.pagingToken); single tx: sdk.transactions.transaction(hash)
 ```
 
 For all Horizon endpoints, advanced queries, and pagination patterns:
@@ -326,15 +317,11 @@ XdrSCVal result = await client.invokeMethod(name: 'get_count');
 print('Count: ${result.u32}');
 
 // Write call (simulates, signs, submits automatically)
-XdrSCVal result = await client.invokeMethod(
+XdrSCVal incremented = await client.invokeMethod(
   name: 'increment', args: [XdrSCVal.forU32(5)],
 );
 
-// With custom options (fee, timeout)
-XdrSCVal result = await client.invokeMethod(
-  name: 'expensive_op', args: [XdrSCVal.forSymbol('data')],
-  methodOptions: MethodOptions(fee: 10000, timeoutInSeconds: 60),
-);
+// Custom fee/timeout: pass methodOptions: MethodOptions(fee: 10000, timeoutInSeconds: 60)
 ```
 
 For contract authorization, multi-auth workflows, protocol 27 credentials (ADDRESS_V2 / WITH_DELEGATES, `useUpgradedAuth`), and low-level deploy/invoke:
@@ -385,20 +372,7 @@ XdrSCVal decoded = XdrSCVal.fromBase64EncodedXdrString(base64);
 
 ### XDR-JSON (SEP-51)
 
-Every generated `Xdr*` type also renders as readable JSON and reads back to the same bytes:
-
-```dart
-XdrTransactionEnvelope envelope =
-    XdrTransactionEnvelope.fromBase64EncodedXdrString(xdrBase64);
-
-String json = envelope.toXdrJson();           // canonical, compact, single line
-Object? tree = envelope.toXdrJsonValue();     // the same document as a Dart tree
-
-XdrTransactionEnvelope back = XdrTransactionEnvelope.fromXdrJson(json);
-print(back.toBase64EncodedXdrString() == xdrBase64);  // true
-```
-
-64-bit integers are base-10 strings, opaque fields are lowercase hex, addresses are strkeys, and every rejection is a `FormatException`. Use it for debugging and tooling, not as a network format.
+Every generated `Xdr*` type also renders as readable JSON and reads back to the same bytes: `toXdrJson()` / `toXdrJsonValue()` out, static `fromXdrJson(String)` / `fromXdrJsonValue(Object?)` in. 64-bit integers are base-10 strings, opaque fields are lowercase hex, addresses are strkeys, and every rejection is a `FormatException`. Use it for debugging and tooling, not as a network format.
 
 To submit a pre-signed XDR envelope: `sdk.submitTransactionEnvelopeXdrBase64(signedXdrBase64)`.
 
@@ -451,7 +425,7 @@ For the full error catalog and solutions:
 
 ## 10. Security Best Practices
 
-Covers secret key management (use `flutter_secure_storage` on mobile, environment variables on server, never store client-side on web), transaction verification before signing (inspect operations, validate fees), network passphrase validation, account ID validation via `StrKey`, and amount precision checks (max 7 decimal places).
+Covers secret key management (use `flutter_secure_storage` on mobile, environment variables on server, never store client-side on web), transaction verification before signing (inspect operations, validate fees), network passphrase validation, address validation via `StrKey` (decoding is strict on length, checksum and per-type framing, and every rejection is a `FormatException`), and amount precision checks (at most seven significant fractional digits after trailing zeros are ignored).
 
 For complete security patterns and platform-specific key storage:
 [Security Guide](./references/security.md)
@@ -481,16 +455,9 @@ For all SEP examples with code: [SEP Implementations Guide](./references/sep.md)
 
 ## Common Pitfalls
 
-**Dart null safety:** All variables must be initialized before use.
-```dart
-// WRONG: KeyPair kp; — compile error: non-nullable must be assigned
-// CORRECT options:
-late KeyPair kp;          // assigned later, throws if used before assignment
-KeyPair? kp;              // nullable, check with kp != null
-KeyPair kp = KeyPair.random();  // assign immediately
-```
+**Dart null safety:** A bare `KeyPair kp;` declaration is a compile error — assign immediately, use `late KeyPair kp;` (throws if read before assignment), or declare nullable `KeyPair? kp;` and null-check before use.
 
-**Amounts are always Strings:** All payment amounts, balances, and prices are `String` types (7 decimal places max). Internally, the network uses 64-bit integer stroops (1 XLM = 10,000,000 stroops).
+**Amounts and prices are always Strings:** Payment amounts and balances are decimal strings with at most seven significant fractional digits after trailing zeros are ignored; the network carries them as 64-bit integer stroops (1 XLM = 10,000,000 stroops). Prices are decimal strings too, but `Price.fromString` approximates them to a signed-int32 fraction, so no seven-digit rule applies — it rejects malformed syntax, zero, and any value no int32 fraction can carry.
 ```dart
 // WRONG: numeric amount — loses precision
 double amount = 100.1234567;
@@ -511,12 +478,9 @@ await sdk.submitTransaction(tx);
 AccountResponse account = await sdk.accounts.account(accountId); // on-chain seq N
 account.incrementSequenceNumber(); // now N+1
 Transaction tx = TransactionBuilder(account).addOperation(op).build(); // seq N+2 — tx_bad_seq
-
-// When you DO need manual control (e.g., pre-authorized transactions):
-BigInt customSeqNum = account.sequenceNumber + BigInt.from(5);
-Account customAccount = Account(account.accountId, customSeqNum); // account with modified seq
-Transaction tx = TransactionBuilder(customAccount).addOperation(op).build(); // uses customSeqNum+1
 ```
+
+When a transaction must carry a specific future sequence (pre-authorized transactions), see Manual Sequence Numbers in [Advanced Features](./references/advanced.md).
 
 **Insufficient signatures return `op_bad_auth`, not `tx_bad_auth`:**
 ```dart

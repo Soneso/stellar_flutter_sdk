@@ -6,6 +6,15 @@ All code assumes the standard SDK import:
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 ```
 
+- [High-Level: SorobanClient](#high-level-sorobanclient)
+- [Low-Level: SorobanServer](#low-level-sorobanserver)
+- [Argument Encoding with XdrSCVal](#argument-encoding-with-xdrscval)
+- [Reading Contract Return Values](#reading-contract-return-values)
+- [Reading Contract State](#reading-contract-state)
+- [TTL Extension and Restore](#ttl-extension-and-restore)
+- [Deploy Stellar Asset Contract (SAC)](#deploy-stellar-asset-contract-sac)
+- [Contract Introspection](#contract-introspection)
+
 ## High-Level: SorobanClient
 
 `SorobanClient` handles simulation, signing, and submission automatically. Use this for most contract interactions.
@@ -87,6 +96,58 @@ SorobanClient client = await SorobanClient.deploy(
   ),
 );
 ```
+
+### Deploy from an External Reference (Protocol 28)
+
+A CAP-85 external reference names an owner contract and a tag; the owner's persistent
+entry under that tag holds the wasm hash the new instance runs. There is no install
+step. `SorobanClient.deployFromExternalRef` resolves the reference before the
+transaction is built (an unresolvable reference throws naming the owner and the tag),
+loads the spec from the resolved wasm, and returns a ready client:
+
+```dart
+Future<SorobanClient> deployFromReference() async {
+  // Secret seed of the funded account that signs the deployment
+  KeyPair keyPair = KeyPair.fromSecretSeed(
+      'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI');
+
+  return SorobanClient.deployFromExternalRef(
+    deployRequest: DeployFromExternalRefRequest.forTagString(
+      sourceAccountKeyPair: keyPair,
+      network: Network.TESTNET,
+      rpcUrl: 'https://soroban-testnet.stellar.org:443',
+      // The owner contract holding the tag entry
+      executableOwner: Address.forContractId(
+          'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP'),
+      tag: 'token-v1', // matched byte for byte
+      // constructorArgs and salt work as in DeployRequest
+    ),
+  );
+}
+```
+
+`DeployFromExternalRefRequest.tag` is `Uint8List` (an executable tag carries arbitrary
+bytes); `forTagString` encodes a text tag as UTF-8 exactly once, and the default
+constructor takes the raw bytes. The same bytes resolve the owner's entry and build the
+create operation.
+
+`deployFromExternalRef` builds the `CREATE_CONTRACT_V2` host function form (empty
+constructor-argument vector when no args are given), as `deploy` does.
+
+Without SorobanClient, build the create operation directly with
+`CreateContractFromExternalRefHostFunction.forTagString(Address address,
+Address executableOwner, String tag, {XdrUint256? salt})` in an
+`InvokeHostFuncOpBuilder`;
+`CreateContractFromExternalRefWithConstructorHostFunction` adds the constructor
+argument list after the tag. Both builders throw `ArgumentError` for an
+`executableOwner` that is not a contract address (constructor and setter).
+`HostFunction.fromXdr` returns these classes for external-ref create operations
+in parsed envelopes and applies the same owner check.
+
+`Address.deriveContractId({deployer, salt, network})` returns the contract id ("C...")
+a deployment creates. The id derives from deployer, salt and network only (the
+executable does not enter it), so the address is known before deploying. The salt is
+32 raw bytes (`Uint8List`), not hex; a wrong length throws `ArgumentError`.
 
 ### Invoke Contract Methods
 
@@ -178,9 +239,9 @@ GetTransactionResponse response =
 
 ### Protocol 27 Credentials (CAP-71)
 
-`SorobanCredentials` arms: source-account, legacy `ADDRESS` (default, valid all protocols), `ADDRESS_V2`, `ADDRESS_WITH_DELEGATES` (V2 and delegates are protocol 27+; emitting below p27 invalidates the tx). `credentials.innerAddressCredentials` returns the inner creds for any address arm (null for source-account); `credentials.arm` is the discriminant.
+`SorobanCredentials` arms: source-account, legacy `ADDRESS` (valid all protocols), `ADDRESS_V2` (the default arm), `ADDRESS_WITH_DELEGATES` (V2 and delegates are protocol 27+; emitting below p27 invalidates the tx). `forAddress`/`forAddressCredentials` build `ADDRESS_V2`; `forAddressLegacy`/`forAddressCredentialsLegacy` build legacy `ADDRESS`. `credentials.innerAddressCredentials` returns the inner creds for any address arm (null for source-account); `credentials.arm` is the discriminant.
 
-Request V2 entries from simulation: `MethodOptions(useUpgradedAuth: true)` or `SimulateTransactionRequest(tx, useUpgradedAuth: true)`. The key is omitted when false; RPCs without support silently return legacy `ADDRESS`. Detect by inspecting `arm`, never by error code.
+Simulation requests V2 entries by default (`useUpgradedAuth` is `true` on `MethodOptions` and `SimulateTransactionRequest`, always sent on the wire); pass `false` for legacy `ADDRESS` entries. RPCs without support silently return legacy `ADDRESS` either way. Detect by inspecting `arm`, never by error code.
 
 `signAuthEntries` / `needsNonInvokerSigningBy` handle all arms; `needsNonInvokerSigningBy` lists every void node including delegates.
 
@@ -480,6 +541,9 @@ SorobanServer server = SorobanServer('https://soroban-testnet.stellar.org:443');
 SorobanContractInfo? info = await server.loadContractInfoForWasmId(wasmId);
 SorobanContractInfo? info = await server.loadContractInfoForContractId(contractId);
 ```
+
+A contract created from a CAP-85 external reference (Protocol 28) resolves automatically.
+See `rpc.md` > Contract Introspection Helpers for `getExternalRefWasmHash()`.
 
 ### SorobanContractInfo Properties
 

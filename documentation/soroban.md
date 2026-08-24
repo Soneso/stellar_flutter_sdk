@@ -12,7 +12,9 @@ Install WASM, deploy a contract, and call a method in one go.
 import 'dart:io';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-KeyPair keyPair = KeyPair.fromSecretSeed('SXXX...');
+// Secret seed of your funded account; replace it with yours
+KeyPair keyPair = KeyPair.fromSecretSeed(
+    'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI');
 String rpcUrl = 'https://soroban-testnet.stellar.org:443';
 
 // 1. Install WASM
@@ -112,7 +114,9 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 SorobanServer server = SorobanServer('https://soroban-testnet.stellar.org:443');
 
 // Returns Account? (not AccountResponse like Horizon)
-Account? account = await server.getAccount('GABC...');
+// The id names a funded account; replace it with yours.
+Account? account = await server.getAccount(
+    'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q');
 if (account != null) {
   print('Sequence: ${account.sequenceNumber}');
 }
@@ -127,8 +131,9 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 SorobanServer server = SorobanServer('https://soroban-testnet.stellar.org:443');
 
+// The id names a deployed contract; replace it with yours.
 LedgerEntry? entry = await server.getContractData(
-  'CCXYZ...',
+  'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP',
   XdrSCVal.forSymbol('counter'),
   XdrContractDataDurability.PERSISTENT,
 );
@@ -148,7 +153,8 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 SorobanServer server = SorobanServer('https://soroban-testnet.stellar.org:443');
 
 // By contract ID
-SorobanContractInfo? info = await server.loadContractInfoForContractId('CCXYZ...');
+SorobanContractInfo? info = await server.loadContractInfoForContractId(
+    'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP');
 if (info != null) {
   print('Spec entries: ${info.specEntries.length}');
 }
@@ -168,7 +174,8 @@ SorobanServer server = SorobanServer('https://soroban-testnet.stellar.org:443');
 
 // Build ledger key for contract data
 XdrLedgerKey ledgerKey = XdrLedgerKey.forContractData(
-  XdrSCAddress.forContractId('CABC...'),
+  XdrSCAddress.forContractId(
+      'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP'),
   XdrSCVal.forSymbol('counter'),
   XdrContractDataDurability.PERSISTENT,
 );
@@ -187,7 +194,9 @@ if (response.entries != null) {
 
 ### Load Contract Code
 
-Helper methods to load contract bytecode from the network.
+Helper methods to load contract bytecode from the network. An instance created from a CAP-85
+external reference resolves automatically; a Stellar Asset Contract has no wasm, so it
+yields `null`.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -195,14 +204,56 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 SorobanServer server = SorobanServer('https://soroban-testnet.stellar.org:443');
 
 // By contract ID
-XdrContractCodeEntry? code = await server.loadContractCodeForContractId('CCXYZ...');
+XdrContractCodeEntry? code = await server.loadContractCodeForContractId(
+    'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP');
 if (code != null) {
-  print('Code size: ${code.code.dataStore.length} bytes');
+  print('Code size: ${code.code.length} bytes');
 }
 
 // By WASM ID
 XdrContractCodeEntry? code2 = await server.loadContractCodeForWasmId(wasmId);
 ```
+
+### External Reference Executables (CAP-85)
+
+From Protocol 28 on, a contract can be created from an external reference: instead of
+carrying its own wasm hash, the instance names an owner contract and a tag, and the owner
+holds a persistent contract data entry under that tag whose value is the 32-byte hash of an
+already uploaded wasm. `loadContractCodeForContractId` and `loadContractInfoForContractId`
+resolve such instances without any extra step. To resolve a reference directly, use
+`getExternalRefWasmHash`:
+
+```dart
+import 'dart:typed_data';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+SorobanServer server = SorobanServer('https://soroban-testnet.stellar.org:443');
+
+// Read the contract instance to inspect its executable.
+// The id names a deployed contract; replace it with yours.
+LedgerEntry? entry = await server.getContractData(
+  'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP',
+  XdrSCVal.forLedgerKeyContractInstance(),
+  XdrContractDataDurability.PERSISTENT,
+);
+
+XdrContractExecutable? executable =
+    entry?.ledgerEntryDataXdr.contractData?.val.instance?.executable;
+if (executable != null && executable.externalRef != null) {
+  // The tag entry on the owner contract holds the wasm hash the instance runs.
+  Uint8List? wasmHash =
+      await server.getExternalRefWasmHash(executable.externalRef!);
+  if (wasmHash != null) {
+    XdrContractCodeEntry? code =
+        await server.loadContractCodeForWasmId(Util.bytesToHex(wasmHash));
+    print('Code size: ${code?.code.length} bytes');
+  }
+}
+```
+
+`getExternalRefWasmHash` returns the 32-byte wasm hash, or `null` when the owner is not a
+contract address, no entry exists under the tag, or the entry does not hold a 32-byte
+`SCV_BYTES` value. The owner contract is read, never invoked.
 
 ## SorobanClient
 
@@ -215,10 +266,13 @@ Set up a SorobanClient instance for interacting with a specific contract.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// The seed names a funded account and the id a deployed contract;
+// replace both with yours.
 SorobanClient client = await SorobanClient.forClientOptions(
   options: ClientOptions(
-    sourceAccountKeyPair: KeyPair.fromSecretSeed('SXXX...'),
-    contractId: 'CCXYZ...',
+    sourceAccountKeyPair: KeyPair.fromSecretSeed(
+        'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI'),
+    contractId: 'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP',
     network: Network.TESTNET,
     rpcUrl: 'https://soroban-testnet.stellar.org:443',
   ),
@@ -241,7 +295,7 @@ SorobanServer server = SorobanServer(rpcUrl);
 SorobanClient client = await SorobanClient.forClientOptions(
   options: ClientOptions(
     sourceAccountKeyPair: keyPair,
-    contractId: 'CCXYZ...',
+    contractId: 'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP',
     network: Network.TESTNET,
     rpcUrl: rpcUrl,
     server: server,
@@ -258,8 +312,9 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 SorobanClient client = await SorobanClient.forClientOptions(
   options: ClientOptions(
-    sourceAccountKeyPair: KeyPair.fromSecretSeed('SXXX...'),
-    contractId: 'CCXYZ...',
+    sourceAccountKeyPair: KeyPair.fromSecretSeed(
+        'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI'),
+    contractId: 'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP',
     network: Network.TESTNET,
     rpcUrl: 'https://soroban-testnet.stellar.org:443',
   ),
@@ -268,15 +323,22 @@ SorobanClient client = await SorobanClient.forClientOptions(
 // Read-only (returns simulation result)
 XdrSCVal balance = await client.invokeMethod(
   name: 'balance',
-  args: [XdrSCVal.forAccountAddress('GABC...')],
+  args: [
+    XdrSCVal.forAccountAddress(
+        'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q'),
+  ],
 );
 
 // Write (auto-signs and submits)
 XdrSCVal result = await client.invokeMethod(
   name: 'transfer',
   args: [
-    XdrSCVal.forAccountAddress('GFROM...'),
-    XdrSCVal.forAccountAddress('GTO...'),
+    // Sender
+    XdrSCVal.forAccountAddress(
+        'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q'),
+    // Destination
+    XdrSCVal.forAccountAddress(
+        'GBMYYYOUQTENJ7DBSKCVRIOHINC2JJZVQX7B4WOQL4KNLRZEVK6TRNG7'),
     XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(1000)),
   ],
 );
@@ -310,7 +372,9 @@ String wasmHash = await SorobanClient.install(
     wasmBytes: File('contract.wasm').readAsBytesSync(),
     rpcUrl: 'https://soroban-testnet.stellar.org:443',
     network: Network.TESTNET,
-    sourceAccountKeyPair: KeyPair.fromSecretSeed('SXXX...'),
+    // Secret seed of your funded account; replace it with yours
+    sourceAccountKeyPair: KeyPair.fromSecretSeed(
+        'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI'),
   ),
 );
 ```
@@ -327,7 +391,8 @@ SorobanClient client = await SorobanClient.deploy(
   deployRequest: DeployRequest(
     rpcUrl: 'https://soroban-testnet.stellar.org:443',
     network: Network.TESTNET,
-    sourceAccountKeyPair: KeyPair.fromSecretSeed('SXXX...'),
+    sourceAccountKeyPair: KeyPair.fromSecretSeed(
+        'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI'),
     wasmHash: wasmHash,
   ),
 );
@@ -337,11 +402,78 @@ SorobanClient client2 = await SorobanClient.deploy(
   deployRequest: DeployRequest(
     rpcUrl: 'https://soroban-testnet.stellar.org:443',
     network: Network.TESTNET,
-    sourceAccountKeyPair: KeyPair.fromSecretSeed('SXXX...'),
+    sourceAccountKeyPair: KeyPair.fromSecretSeed(
+        'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI'),
     wasmHash: wasmHash,
     constructorArgs: [XdrSCVal.forSymbol('MyToken'), XdrSCVal.forU32(8)],
   ),
 );
+```
+
+### Deployment from an External Reference (Protocol 28)
+
+Create a contract instance that runs the wasm named by a CAP-85 external reference:
+the owner contract holds a persistent entry under a tag, and its value is the hash of
+the wasm the instance runs. There is no install step; the owner already holds the tag
+entry. The reference is resolved before the transaction is built, so an unresolvable
+reference throws naming the owner and the tag rather than failing on-chain.
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+SorobanClient client = await SorobanClient.deployFromExternalRef(
+  deployRequest: DeployFromExternalRefRequest.forTagString(
+    rpcUrl: 'https://soroban-testnet.stellar.org:443',
+    network: Network.TESTNET,
+    // Secret seed of the funded account that signs the deployment; replace it with yours
+    sourceAccountKeyPair: KeyPair.fromSecretSeed(
+        'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI'),
+    // The owner contract holding the tag entry; replace it with yours
+    executableOwner: Address.forContractId(
+        'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP'),
+    tag: 'token-v1', // Tag of the executable entry on the owner; matched byte for byte
+  ),
+);
+```
+
+`DeployFromExternalRefRequest.tag` carries the tag as raw bytes (`Uint8List`) — an
+executable tag is an XDR string, whose bytes need not be valid UTF-8. The
+`forTagString` constructor takes a text tag and encodes it as UTF-8 exactly once; pass
+the bytes to the default constructor for a tag that spells no text. The same bytes are
+used to resolve the owner's entry and to build the create operation.
+
+`constructorArgs` and `salt` work as in `DeployRequest`; the create operation uses the
+`CREATE_CONTRACT_V2` host function form with an empty constructor-argument vector when
+`constructorArgs` is not given, as `deploy` does. The contract spec is loaded
+from the resolved wasm before submission and the returned client is ready to invoke.
+
+### Deriving a Contract Id Before Deploying
+
+`Address.deriveContractId` returns the contract id ("C...") a deployment by a given
+deployer with a given salt creates on a given network. The id derives from the
+deployer, the salt and the network only; the executable (wasm hash, external reference
+or Stellar asset) does not enter the derivation. Use it when the address is needed
+before the deployment, for example in constructor arguments of another contract.
+
+```dart
+import 'dart:math';
+import 'dart:typed_data';
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+// The account (or contract) that will submit the deployment
+Address deployer = Address.forAccountId(
+    'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q');
+// The salt determines the contract id, so it comes from a secure source
+final random = Random.secure();
+Uint8List salt = Uint8List.fromList(List<int>.generate(32, (_) => random.nextInt(256)));
+
+String futureContractId = Address.deriveContractId(
+  deployer: deployer,
+  salt: salt,
+  network: Network.TESTNET,
+);
+
+// Deploying with the same deployer and salt creates exactly this contract id
 ```
 
 ## AssembledTransaction
@@ -357,8 +489,9 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 SorobanClient client = await SorobanClient.forClientOptions(
   options: ClientOptions(
-    sourceAccountKeyPair: KeyPair.fromSecretSeed('SXXX...'),
-    contractId: 'CCXYZ...',
+    sourceAccountKeyPair: KeyPair.fromSecretSeed(
+        'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI'),
+    contractId: 'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP',
     network: Network.TESTNET,
     rpcUrl: 'https://soroban-testnet.stellar.org:443',
   ),
@@ -434,13 +567,17 @@ Before submission, check which accounts need to authorize the transaction.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-KeyPair alice = KeyPair.fromSecretSeed('SALICE...');
-KeyPair bob = KeyPair.fromSecretSeed('SBOB...');
+// Secret seeds of the two funded accounts; replace them with yours
+KeyPair alice = KeyPair.fromSecretSeed(
+    'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI');
+KeyPair bob = KeyPair.fromSecretSeed(
+    'SDJRWLCGLROL365KUWQG7OAAYHBNCNV7TJ7LG2GW5663XVZED6YU7HXB');
 
 SorobanClient client = await SorobanClient.forClientOptions(
   options: ClientOptions(
     sourceAccountKeyPair: alice,
-    contractId: 'CSWAP...',
+    // The deployed swap contract
+    contractId: 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
     network: Network.TESTNET,
     rpcUrl: 'https://soroban-testnet.stellar.org:443',
   ),
@@ -458,7 +595,8 @@ AssembledTransaction tx = await client.buildInvokeMethodTx(
 
 // Check who needs to sign (returns list of account IDs)
 List<String> neededSigners = tx.needsNonInvokerSigningBy();
-// e.g., ['GBOB...'] - Bob needs to authorize
+// e.g., ['GBMYYYOUQTENJ7DBSKCVRIOHINC2JJZVQX7B4WOQL4KNLRZEVK6TRNG7']
+// - Bob needs to authorize
 ```
 
 ### Local Signing
@@ -483,7 +621,8 @@ Sign auth entries when the private key is on another server (e.g., custody servi
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 // Only have Bob's public key locally
-KeyPair bobPublicKey = KeyPair.fromAccountId('GBOB...');
+KeyPair bobPublicKey = KeyPair.fromAccountId(
+    'GBMYYYOUQTENJ7DBSKCVRIOHINC2JJZVQX7B4WOQL4KNLRZEVK6TRNG7');
 
 await tx.signAuthEntries(
   signerKeyPair: bobPublicKey,
@@ -506,22 +645,21 @@ Protocol 27 adds two address-credential arms to `SorobanCredentials`:
 - `ADDRESS_V2` carries the same `SorobanAddressCredentials` body as the legacy `ADDRESS` arm, but the signature payload additionally binds the credential address.
 - `ADDRESS_WITH_DELEGATES` extends V2 with a tree of delegate signatures, letting additional addresses co-sign one authorization entry.
 
-The legacy `ADDRESS` arm remains the default everywhere and stays fully valid. The new arms are opt-in: emitting them on a network below protocol 27 invalidates the transaction.
+`ADDRESS_V2` is the default arm: simulation requests it, and `SorobanCredentials.forAddress` / `forAddressCredentials` build it. The legacy `ADDRESS` arm stays fully valid; use it on a network below protocol 27, where the newer arms invalidate the transaction — request it from simulation with `useUpgradedAuth: false` and build it with `forAddressLegacy` / `forAddressCredentialsLegacy`.
 
-All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntry.sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry. Use `credentials.innerAddressCredentials` to read the inner credentials of any address arm (it returns `null` only for source-account credentials).
+All signing APIs (`signAuthEntries`, `SorobanAuthorizationEntry.sign`, SEP-45) support all three arms and preserve the arm on write-back. `needsNonInvokerSigningBy` reports the address of every node whose signature is void, including each unsigned delegate node of a `WITH_DELEGATES` entry. Use `credentials.innerAddressCredentials` to read the inner credentials of any address arm (it returns `null` only for source-account credentials). Factories: `SorobanCredentials.forAddress` / `forAddressCredentials` build `ADDRESS_V2` (as does the explicit `forAddressV2`), `forAddressLegacy` / `forAddressCredentialsLegacy` build legacy `ADDRESS`, and `forAddressWithDelegates` builds the delegated arm.
 
-#### Requesting V2 Entries from Simulation
+#### V2 Entries from Simulation
 
-Set `useUpgradedAuth` to request `ADDRESS_V2` credential arms in the simulation response. The flag is best-effort: an RPC server that supports it records `ADDRESS_V2` entries, while a server without support silently ignores it and returns legacy `ADDRESS` entries — detect which arm you got by inspecting the credential arm of the returned entries, never by expecting an error. When `useUpgradedAuth` is `false` (the default), the key is omitted from the JSON-RPC params entirely.
+Simulation requests `ADDRESS_V2` credential arms by default (`useUpgradedAuth` is `true` on `MethodOptions` and `SimulateTransactionRequest`, and the key is always sent in the JSON-RPC params). The flag is best-effort: an RPC server that supports it records `ADDRESS_V2` entries, while a server without support silently ignores it and returns legacy `ADDRESS` entries — detect which arm you got by inspecting the credential arm of the returned entries, never by expecting an error. Set `useUpgradedAuth` to `false` to request legacy `ADDRESS` entries, for example on a network below protocol 27.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-// Contract client: opt in via MethodOptions
+// Contract client: ADDRESS_V2 entries are requested by default
 AssembledTransaction tx = await client.buildInvokeMethodTx(
   name: 'swap',
   args: args,
-  methodOptions: MethodOptions(useUpgradedAuth: true),
 );
 
 // Detect whether the RPC honored the flag
@@ -530,9 +668,9 @@ bool gotV2 = entries.any((e) =>
     e.credentials.arm ==
     XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2);
 
-// Low-level: opt in on the simulate request
+// Low-level: request legacy ADDRESS entries on the simulate request
 SimulateTransactionRequest request =
-    SimulateTransactionRequest(transaction, useUpgradedAuth: true);
+    SimulateTransactionRequest(transaction, useUpgradedAuth: false);
 SimulateTransactionResponse sim = await server.simulateTransaction(request);
 ```
 
@@ -553,8 +691,10 @@ final SorobanServer server =
     SorobanServer('https://soroban-testnet.stellar.org:443');
 
 // Top-level credential account and a delegate signer's account
-final KeyPair topLevelKeyPair = KeyPair.fromSecretSeed('STOPLEVEL...');
-final KeyPair delegateKeyPair = KeyPair.fromSecretSeed('SDELEGATE...');
+final KeyPair topLevelKeyPair = KeyPair.fromSecretSeed(
+    'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI');
+final KeyPair delegateKeyPair = KeyPair.fromSecretSeed(
+    'SDJRWLCGLROL365KUWQG7OAAYHBNCNV7TJ7LG2GW5663XVZED6YU7HXB');
 
 // An ADDRESS or ADDRESS_V2 entry bound to the top-level account. In practice
 // this comes from simulation (tx.simulationResponse!.sorobanAuth!.first);
@@ -600,7 +740,7 @@ delegated.sign(delegateKeyPair, Network.TESTNET,
 
 `SorobanDelegateDescriptor` supports nesting via `nestedDelegates` and accepts a pre-built `signature` (default void) for nodes signed externally, such as contract addresses.
 
-`SorobanCredentials.forAddressV2` and the delegated arms are built client-side: simulation and the high-level `SorobanClient` / `AssembledTransaction` only ever return legacy `ADDRESS` entries, so the V2 and `WITH_DELEGATES` arms are assembled and submitted at the `SorobanServer` level.
+`WITH_DELEGATES` entries are never returned by simulation, so the delegated arm is always assembled client-side and submitted at the `SorobanServer` level. `ADDRESS_V2` entries come from a supporting RPC by default (`useUpgradedAuth`), or client-side from `SorobanCredentials.forAddressV2` when converting an entry in place.
 
 After attaching the signed entries with `transaction.setSorobanAuth(...)`, re-simulate in enforcing mode before submitting. The first (recording) simulation does not run the authorizing account's `__check_auth`, so it understates the resource fee and — for a custom (contract) account whose `__check_auth` reads storage or calls into delegates — omits the footprint entries that authorization touches. Re-simulate with the signed entry attached and `authMode` set to `enforce` (`SimulateTransactionRequest(transaction, authMode: 'enforce')`), then apply the returned data before signing: assign `response.transactionData` to `transaction.sorobanTransactionData` and add `response.minResourceFee` via `transaction.addResourceFee(...)`. The already-signed auth is preserved.
 
@@ -666,13 +806,17 @@ Account and contract addresses for referencing entities on the network.
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 // Account address (G...) - convenience method
-XdrSCVal account = XdrSCVal.forAccountAddress('GABC...');
+XdrSCVal account = XdrSCVal.forAccountAddress(
+    'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q');
 
 // Contract address (C...) - convenience method
-XdrSCVal contract = XdrSCVal.forContractAddress('CABC...');
+XdrSCVal contract = XdrSCVal.forContractAddress(
+    'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP');
 
 // Via Address helper
-XdrSCVal addr = Address.forAccountId('GABC...').toXdrSCVal();
+XdrSCVal addr = Address.forAccountId(
+        'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q')
+    .toXdrSCVal();
 ```
 
 #### Collections
@@ -706,10 +850,12 @@ ContractSpec spec = client.getContractSpec();
 
 // Convert function arguments (uses spec to determine types)
 List<XdrSCVal> args = spec.funcArgsToXdrSCValues('swap', {
-  'a': 'GALICE...',        // Auto-converts to Address
-  'b': 'GBOB...',
-  'token_a': 'CTOKEN1...', // Contract address
-  'token_b': 'CTOKEN2...',
+  // Auto-converts to Address
+  'a': 'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q',
+  'b': 'GBMYYYOUQTENJ7DBSKCVRIOHINC2JJZVQX7B4WOQL4KNLRZEVK6TRNG7',
+  // Contract address
+  'token_a': 'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP',
+  'token_b': 'CAGRIGZCFEYDOPSFJRJVUYLIN53H3BELSKM2BJ5OWW6MHSWR3DP6MACS',
   'amount_a': 1000,         // Auto-converts to i128
   'min_b_for_a': 950,
   'amount_b': 500,
@@ -773,8 +919,8 @@ XdrSCSpecTypeMap mapType = XdrSCSpecTypeMap(
 );
 XdrSCSpecTypeDef def = XdrSCSpecTypeDef.forMap(mapType);
 XdrSCVal val = spec.nativeToXdrSCVal({
-  'alice': 'GALICE...',
-  'bob': 'GBOB...',
+  'alice': 'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q',
+  'bob': 'GBMYYYOUQTENJ7DBSKCVRIOHINC2JJZVQX7B4WOQL4KNLRZEVK6TRNG7',
 }, def);
 ```
 
@@ -928,7 +1074,8 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 SorobanServer server = SorobanServer('https://soroban-testnet.stellar.org:443');
 
-String contractId = 'CCXYZ...';
+// The id names a deployed contract; replace it with yours.
+String contractId = 'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP';
 
 // Filter: any first topic, "transfer" as second topic
 EventFilter filter = EventFilter(
@@ -969,8 +1116,9 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 SorobanClient client = await SorobanClient.forClientOptions(
   options: ClientOptions(
-    sourceAccountKeyPair: KeyPair.fromSecretSeed('SXXX...'),
-    contractId: 'CCXYZ...',
+    sourceAccountKeyPair: KeyPair.fromSecretSeed(
+        'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI'),
+    contractId: 'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP',
     network: Network.TESTNET,
     rpcUrl: 'https://soroban-testnet.stellar.org:443',
     enableServerLogging: true, // Debug JSON-RPC requests/responses
@@ -1068,6 +1216,14 @@ stellar-contract-bindings flutter \
 
 Or use the [web interface](https://stellar-contract-bindings.fly.dev/).
 
+The generator does not yet resolve a contract created from a CAP-85 external
+reference (Protocol 28) and fails with "Unknown executable type" for one. Until it
+does, generate the binding from a contract that carries the wasm directly (any
+instance deployed from the same wasm hash, which
+`SorobanServer.getExternalRefWasmHash` resolves for the reference). A generated
+client works with external-reference contracts at runtime either way — the SDK
+resolves the reference when loading the contract.
+
 ### Use Generated Client
 
 The generated client provides type-safe method calls with native Dart types.
@@ -1076,18 +1232,26 @@ The generated client provides type-safe method calls with native Dart types.
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 // import your generated bindings
 
+// The seed names a funded account and the id the deployed token contract;
+// replace both with yours.
 TokenClient client = await TokenClient.forContractId(
-  sourceAccountKeyPair: KeyPair.fromSecretSeed('SXXX...'),
-  contractId: 'CTOKEN...',
+  sourceAccountKeyPair: KeyPair.fromSecretSeed(
+      'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI'),
+  contractId: 'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP',
   network: Network.TESTNET,
   rpcUrl: 'https://soroban-testnet.stellar.org:443',
 );
 
 // Type-safe calls with native Dart types
-BigInt balance = await client.balance(id: Address.forAccountId('GABC...'));
+BigInt balance = await client.balance(
+    id: Address.forAccountId(
+        'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q'),
+);
 await client.transfer(
-  from: Address.forAccountId('GFROM...'),
-  to: Address.forAccountId('GTO...'),
+  from: Address.forAccountId(
+      'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q'),
+  to: Address.forAccountId(
+      'GBMYYYOUQTENJ7DBSKCVRIOHINC2JJZVQX7B4WOQL4KNLRZEVK6TRNG7'),
   amount: BigInt.from(1000),
 );
 ```
@@ -1104,7 +1268,9 @@ Upload contract bytecode to the network. Returns a WASM hash for deployment.
 import 'dart:io';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-KeyPair keyPair = KeyPair.fromSecretSeed('SXXX...');
+// Secret seed of your funded account; replace it with yours
+KeyPair keyPair = KeyPair.fromSecretSeed(
+    'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI');
 SorobanServer server = SorobanServer('https://soroban-testnet.stellar.org:443');
 
 // Build upload operation
@@ -1185,6 +1351,38 @@ InvokeHostFunctionOperation createOp = InvokeHostFuncOpBuilder(
 // Build, simulate, sign, and send (same pattern)
 ```
 
+### Create Contract from an External Reference (Protocol 28)
+
+Deploy a contract whose executable is a CAP-85 external reference: the owner contract's
+persistent tag entry names the wasm the instance runs. The executable owner must be a
+contract address — only a contract can hold the tag entry; the builders' constructor and
+`executableOwner` setter throw `ArgumentError` for any other address type. For the
+one-call variant, see "Deployment from an External Reference (Protocol 28)" under
+Installing and Deploying.
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+// Secret seed of your funded deployer account; replace it with yours
+KeyPair keyPair = KeyPair.fromSecretSeed(
+    'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI');
+
+InvokeHostFunctionOperation createOp = InvokeHostFuncOpBuilder(
+  CreateContractFromExternalRefHostFunction.forTagString(
+    Address.forAccountId(keyPair.accountId),
+    // The owner contract holding the tag entry
+    Address.forContractId(
+        'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP'),
+    'token-v1',
+  ),
+).build();
+
+// Simulate, sign and send as for any create contract operation.
+```
+
+`CreateContractFromExternalRefWithConstructorHostFunction` is the variant taking
+constructor arguments, mirroring `CreateContractWithConstructorHostFunction`.
+
 ### Invoke Contract (Low-Level)
 
 Invoke a contract method without using SorobanClient.
@@ -1225,7 +1423,9 @@ Wrap a classic Stellar asset as a Soroban token contract. The protocol requires 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-Asset asset = Asset.createNonNativeAsset('USDC', 'GISSUER...');
+// The id names the asset issuer account; replace it with yours.
+Asset asset = Asset.createNonNativeAsset(
+    'USDC', 'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q');
 
 InvokeHostFunctionOperation sacOp = InvokeHostFuncOpBuilder(
   DeploySACWithAssetHostFunction(asset),
@@ -1241,23 +1441,32 @@ For advanced auth workflows, sign authorization entries directly.
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-// Get auth entries from simulation
-List<SorobanAuthorizationEntry>? auth = simResponse.sorobanAuth;
-GetLatestLedgerResponse latestLedger = await server.getLatestLedger();
+// The simulation response, the transaction it simulated, and the authorizing
+// keypair come from the surrounding flow and enter as parameters.
+Future<void> signSimulatedAuth(
+  SorobanServer server,
+  SimulateTransactionResponse simResponse,
+  Transaction tx,
+  KeyPair signerKeyPair,
+) async {
+  // Get auth entries from simulation
+  List<SorobanAuthorizationEntry>? auth = simResponse.sorobanAuth;
+  GetLatestLedgerResponse latestLedger = await server.getLatestLedger();
 
-if (auth != null) {
-  for (SorobanAuthorizationEntry entry in auth) {
-    // Set signature expiration (~50 seconds at 5s/ledger)
-    entry.credentials.addressCredentials?.signatureExpirationLedger =
-        latestLedger.sequence! + 10;
+  if (auth != null) {
+    for (SorobanAuthorizationEntry entry in auth) {
+      // Set signature expiration (~50 seconds at 5s/ledger)
+      entry.credentials.innerAddressCredentials?.signatureExpirationLedger =
+          latestLedger.sequence! + 10;
 
-    // Sign the entry
-    entry.sign(signerKeyPair, Network.TESTNET);
+      // Sign the entry
+      entry.sign(signerKeyPair, Network.TESTNET);
+    }
   }
-}
 
-// Set signed auth on transaction
-tx.setSorobanAuth(auth);
+  // Set signed auth on transaction
+  tx.setSorobanAuth(auth);
+}
 ```
 
 > **Tip**: Contract IDs must be C-prefixed strkey format.
@@ -1289,7 +1498,8 @@ Map<String, String> meta = contractInfo.metaEntries;
 
 ### Parse from Network
 
-Load and parse contract info from a deployed contract.
+Load and parse contract info from a deployed contract. A contract created from a CAP-85
+external reference (Protocol 28) is resolved automatically.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -1297,7 +1507,8 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 SorobanServer server = SorobanServer('https://soroban-testnet.stellar.org:443');
 
 // By contract ID
-SorobanContractInfo? contractInfo = await server.loadContractInfoForContractId('CCXYZ...');
+SorobanContractInfo? contractInfo = await server.loadContractInfoForContractId(
+    'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP');
 
 // By WASM ID
 SorobanContractInfo? contractInfo2 = await server.loadContractInfoForWasmId(wasmId);

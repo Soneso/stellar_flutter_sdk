@@ -546,9 +546,14 @@ try {
   XdrSignerKey.fromXdrJson(
       '"PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAED2A"');
 } on FormatException catch (e) {
-  print(e.message); // ... carries an empty payload, which has no strkey rendering
+  print(e.message);
+  // XDR-JSON XdrSignedPayload holds a malformed strkey:
+  // "PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA..." (Encoded string must be
+  // 69 to 165 characters, got 63)
 }
 ```
+
+An empty payload leaves the P-address 63 characters wide, short of the 69 the shortest signed payload occupies, so the strkey codec turns it away on length and the reader restates that. The encoding direction reports the bound directly, as `carries an empty payload, which has no strkey rendering`.
 
 Payloads of 1 to 64 bytes render and read back normally. Only the empty one has no rendering.
 
