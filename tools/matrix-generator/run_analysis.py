@@ -256,12 +256,14 @@ class AnalysisOrchestrator:
         """
         errors = []
 
-        # Check if stellar-go repository exists (sibling of SDK root)
-        stellar_go = SDK_ROOT.parent / "stellar-go"
-        if not stellar_go.exists():
-            errors.append(f"stellar-go repository not found at {stellar_go}")
+        # Check if stellar-horizon repository exists (sibling of SDK root).
+        # Endpoint definitions sit at internal/httpx/router.go, relative to the
+        # repository root.
+        stellar_horizon = SDK_ROOT.parent / "stellar-horizon"
+        if not stellar_horizon.exists():
+            errors.append(f"stellar-horizon repository not found at {stellar_horizon}")
         else:
-            router_go = stellar_go / "services/horizon/internal/httpx/router.go"
+            router_go = stellar_horizon / "internal/httpx/router.go"
             if not router_go.exists():
                 errors.append(f"Horizon router.go not found at {router_go}")
 

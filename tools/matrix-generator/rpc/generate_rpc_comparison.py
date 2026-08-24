@@ -113,7 +113,7 @@ class MethodComparison:
 
 
 class RPCMethodExtractor:
-    """Extract RPC methods from stellar-rpc protocol files"""
+    """Extract RPC methods from the go-stellar-sdk RPC protocol files"""
 
     # Import fallback method metadata from the parser module
     from rpc_parser import RPCMethodParser as _RPCMethodParser
@@ -121,10 +121,10 @@ class RPCMethodExtractor:
 
     def __init__(self, rpc_protocol_path: str, rpc_methods_file: Optional[Path] = None):
         """
-        Initialize with path to stellar-rpc protocol directory
+        Initialize with path to the RPC protocol directory
 
         Args:
-            rpc_protocol_path: Path to stellar-rpc protocol directory
+            rpc_protocol_path: Path to the go-stellar-sdk protocols/rpc directory
             rpc_methods_file: Optional path to existing rpc_methods.json file
         """
         self.protocol_path = Path(rpc_protocol_path)
@@ -967,7 +967,7 @@ def main():
     # Define paths
     sdk_root = Path(__file__).parent.parent.parent.parent
     base_dir = sdk_root / 'compatibility'
-    rpc_protocol_path = sdk_root.parent / "stellar-rpc" / "protocol"
+    rpc_protocol_path = sdk_root.parent / "go-stellar-sdk" / "protocols" / "rpc"
     soroban_server_path = sdk_root / "lib" / "src" / "soroban" / "soroban_server.dart"
 
     data_dir = Path(__file__).parent.parent / "data" / "rpc"

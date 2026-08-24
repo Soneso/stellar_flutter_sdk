@@ -1,9 +1,9 @@
 # Soroban RPC vs Flutter SDK Compatibility Matrix
 
-**RPC Version:** v27.1.1 (released 2026-07-07)  
-**RPC Source:** [https://github.com/stellar/stellar-rpc/releases/tag/v27.1.1](https://github.com/stellar/stellar-rpc/releases/tag/v27.1.1)  
-**SDK Version:** 3.5.0  
-**Generated:** 2026-08-11 11:39:09
+**RPC Version:** v28.0.0 (released 2026-08-17)  
+**RPC Source:** [https://github.com/stellar/stellar-rpc/releases/tag/v28.0.0](https://github.com/stellar/stellar-rpc/releases/tag/v28.0.0)  
+**SDK Version:** 3.6.0  
+**Generated:** 2026-08-24 19:44:21
 
 ## Overall Coverage
 

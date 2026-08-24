@@ -58,7 +58,7 @@ Smart accounts are part of the main SDK package. Add the dependency:
 ```yaml
 # pubspec.yaml
 dependencies:
-  stellar_flutter_sdk: ^3.5.0   # check pub.dev for the current version
+  stellar_flutter_sdk: ^3.6.0   # check pub.dev for the current version
 ```
 
 ---
