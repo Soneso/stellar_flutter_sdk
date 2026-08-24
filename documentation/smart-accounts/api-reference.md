@@ -293,6 +293,9 @@ OZSmartAccountConfig({
   OZExternalEd25519SignerAdapter? externalEd25519Adapter,
   int maxContextRuleScanId = 50,
   Map<String, OZPolicyInstallParams> defaultPolicies = const {},
+  SorobanServer? sorobanServer,
+  bool useUpgradedAuth = true,
+  bool useUpgradedAuthForWalletSigners = true,
 })
 ```
 
@@ -317,6 +320,9 @@ OZSmartAccountConfig({
 - `externalEd25519Adapter`: Optional adapter for out-of-process Ed25519 signing (for example hardware wallets and remote signing services). The kit injects this into the internally-constructed `OZExternalSignerManager`. In-memory Ed25519 keys can also be registered at runtime via `kit.externalSigners.addEd25519FromRawKey(...)` without an adapter.
 - `maxContextRuleScanId`: Upper bound on rule IDs to scan when iterating context rules. Default `50`. Increase if the account has had many add / remove cycles. Must be non-negative.
 - `defaultPolicies`: Policies installed on a new wallet's default context rule at deploy time, keyed by policy contract address (`C…`) with the policy's install parameters (an [OZPolicyInstallParams](#ozpolicyinstallparams-sealed)) as the value. Applied through the account constructor by `createWallet` and `deployPendingCredential`; a per-call `policies` argument overrides this default. Defaults to no policies. Maximum 5 (`OZConstants.maxPolicies`); validated when a wallet operation resolves the map, not at configuration time. See the `createWallet` `policies` parameter for the built-in policies' install constraints at deploy time.
+- `sorobanServer`: Optional preconfigured `SorobanServer` used by the kit, for example one created with a custom Dio `httpClient` for proxies or interceptors. When omitted, the kit creates a server from `rpcUrl`.
+- `useUpgradedAuth`: Governs the credential arm of the kit's internal simulations and of the `fundWallet` source-account conversion. When `true` (the default), simulations request `ADDRESS_V2` entries and the conversion writes `ADDRESS_V2` credentials signed over the address-bound preimage (`ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS`). When `false`, simulations request legacy `ADDRESS` entries and the conversion writes legacy `ADDRESS` credentials signed over `ENVELOPE_TYPE_SOROBAN_AUTHORIZATION`, so the submitted authorization XDR stays within the pre-protocol-27 schema that relayer services parse. Separate from `useUpgradedAuthForWalletSigners`, which governs only the entries a delegated external wallet signs.
+- `useUpgradedAuthForWalletSigners`: Governs the credential arm of delegated external-wallet auth entries. When `true` (the default), delegated entries built for `OZSelectedSignerWallet` signers carry `ADDRESS_V2` credentials, whose signed preimage carries the wallet address. When `false`, they carry the legacy `ADDRESS` arm with its non-address-bound preimage, for wallet software that cannot sign the address-bound preimage type.
 
 Throws `SmartAccountConfigurationException.missingConfig` when a required parameter is blank, and `SmartAccountConfigurationException.invalidConfig` when `accountWasmHash`, `webauthnVerifierAddress`, `signatureExpirationLedgers`, `timeoutInSeconds`, or `maxContextRuleScanId` fails validation.
 
@@ -398,6 +404,9 @@ Setter methods (each returns the builder for chaining):
 - `externalEd25519Adapter(OZExternalEd25519SignerAdapter? value)`
 - `maxContextRuleScanId(int value)`
 - `defaultPolicies(Map<String, OZPolicyInstallParams> value)`
+- `sorobanServer(SorobanServer? value)`
+- `useUpgradedAuth(bool value)`
+- `useUpgradedAuthForWalletSigners(bool value)`
 
 #### build
 
@@ -3427,10 +3436,12 @@ abstract class OZSmartAccountAuth {
 
   static Future<Uint8List> buildSourceAccountAuthPayloadHash(
     XdrSorobanAuthorizationEntry entry,
+    XdrSCAddress address,
     XdrInt64 nonce,
     int expirationLedger,
-    String networkPassphrase,
-  );
+    String networkPassphrase, {
+    bool useUpgradedAuth = true,
+  });
 
   static Future<XdrSorobanAuthorizationEntry> signAuthEntry({
     required XdrSorobanAuthorizationEntry entry,
@@ -3450,8 +3461,8 @@ abstract class OZSmartAccountAuth {
 ```
 
 - `buildAuthDigest`: Computes `SHA-256(signaturePayload || contextRuleIds.toXDR())`.
-- `buildAuthPayloadHash`: Builds the authorisation payload hash for an entry with address credentials. The hash is the WebAuthn challenge when collecting biometric signatures.
-- `buildSourceAccountAuthPayloadHash`: Variant for source-account credentials, typically used when converting them to address credentials for relayer fee sponsoring.
+- `buildAuthPayloadHash`: Builds the authorisation payload hash for an entry with address credentials (legacy `ADDRESS` or `ADDRESS_V2`; the arm selects the preimage type, and an `ADDRESS_WITH_DELEGATES` entry throws). The hash is the WebAuthn challenge when collecting biometric signatures.
+- `buildSourceAccountAuthPayloadHash`: Variant for source-account credentials, typically used when converting them to address credentials for relayer fee sponsoring. `address`, `nonce`, and `expirationLedger` are the values the new credentials will carry; `useUpgradedAuth` selects the arm the hash is built for — `ADDRESS_V2` with its address-bound preimage by default, the legacy `ADDRESS` arm when `false`. The submitted credentials must match both the address and the arm.
 - `signAuthEntry`: Attaches a pre-computed `signature` to an authorisation entry. Does not perform cryptographic signing. Returns a fresh entry; when `contextRuleIds` is non-empty it overrides any existing identifiers in the payload.
 - `addRawSignatureMapEntry`: Adds a raw key/value entry to an auth entry's signature map. Used for delegated-signer placeholders where the value is `Bytes` rather than a signature.
 

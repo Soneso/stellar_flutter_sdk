@@ -259,6 +259,8 @@ final config = OZSmartAccountConfig(
 );
 ```
 
+The kit's simulations and the `fundWallet` source-account conversion use `ADDRESS_V2` credentials (protocol 27). For a relayer that cannot parse protocol 27 authorization XDR, set `useUpgradedAuth: false` in `OZSmartAccountConfig` — simulations then request legacy `ADDRESS` entries and the conversion writes legacy `ADDRESS` credentials, keeping the submitted XDR within the pre-protocol-27 schema. The separate `useUpgradedAuthForWalletSigners` flag covers only the entries a delegated external wallet signs; set it to `false` for wallet software that cannot sign the address-bound `ADDRESS_V2` preimage type.
+
 ---
 
 ### Verifier Contract

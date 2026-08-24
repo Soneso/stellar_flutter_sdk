@@ -157,14 +157,7 @@ for (TransactionResponse tx in txPage.records) {
   print('${tx.hash} ledger=${tx.ledger}');
 }
 
-// Pagination: cursor from last result
-Page<TransactionResponse> nextPage = await sdk.transactions
-    .forAccount(accountId)
-    .cursor(txPage.records.last.pagingToken)
-    .limit(5).order(RequestBuilderOrder.DESC).execute();
-
-// Single transaction by hash
-TransactionResponse single = await sdk.transactions.transaction('abc123...');
+// Next page: .cursor(txPage.records.last.pagingToken); single tx: sdk.transactions.transaction(hash)
 ```
 
 For all Horizon endpoints, advanced queries, and pagination patterns:
@@ -326,15 +319,11 @@ XdrSCVal result = await client.invokeMethod(name: 'get_count');
 print('Count: ${result.u32}');
 
 // Write call (simulates, signs, submits automatically)
-XdrSCVal result = await client.invokeMethod(
+XdrSCVal incremented = await client.invokeMethod(
   name: 'increment', args: [XdrSCVal.forU32(5)],
 );
 
-// With custom options (fee, timeout)
-XdrSCVal result = await client.invokeMethod(
-  name: 'expensive_op', args: [XdrSCVal.forSymbol('data')],
-  methodOptions: MethodOptions(fee: 10000, timeoutInSeconds: 60),
-);
+// Custom fee/timeout: pass methodOptions: MethodOptions(fee: 10000, timeoutInSeconds: 60)
 ```
 
 For contract authorization, multi-auth workflows, protocol 27 credentials (ADDRESS_V2 / WITH_DELEGATES, `useUpgradedAuth`), and low-level deploy/invoke:
@@ -385,20 +374,7 @@ XdrSCVal decoded = XdrSCVal.fromBase64EncodedXdrString(base64);
 
 ### XDR-JSON (SEP-51)
 
-Every generated `Xdr*` type also renders as readable JSON and reads back to the same bytes:
-
-```dart
-XdrTransactionEnvelope envelope =
-    XdrTransactionEnvelope.fromBase64EncodedXdrString(xdrBase64);
-
-String json = envelope.toXdrJson();           // canonical, compact, single line
-Object? tree = envelope.toXdrJsonValue();     // the same document as a Dart tree
-
-XdrTransactionEnvelope back = XdrTransactionEnvelope.fromXdrJson(json);
-print(back.toBase64EncodedXdrString() == xdrBase64);  // true
-```
-
-64-bit integers are base-10 strings, opaque fields are lowercase hex, addresses are strkeys, and every rejection is a `FormatException`. Use it for debugging and tooling, not as a network format.
+Every generated `Xdr*` type also renders as readable JSON and reads back to the same bytes: `toXdrJson()` / `toXdrJsonValue()` out, static `fromXdrJson(String)` / `fromXdrJsonValue(Object?)` in. 64-bit integers are base-10 strings, opaque fields are lowercase hex, addresses are strkeys, and every rejection is a `FormatException`. Use it for debugging and tooling, not as a network format.
 
 To submit a pre-signed XDR envelope: `sdk.submitTransactionEnvelopeXdrBase64(signedXdrBase64)`.
 
@@ -481,14 +457,7 @@ For all SEP examples with code: [SEP Implementations Guide](./references/sep.md)
 
 ## Common Pitfalls
 
-**Dart null safety:** All variables must be initialized before use.
-```dart
-// WRONG: KeyPair kp; — compile error: non-nullable must be assigned
-// CORRECT options:
-late KeyPair kp;          // assigned later, throws if used before assignment
-KeyPair? kp;              // nullable, check with kp != null
-KeyPair kp = KeyPair.random();  // assign immediately
-```
+**Dart null safety:** A bare `KeyPair kp;` declaration is a compile error — assign immediately, use `late KeyPair kp;` (throws if read before assignment), or declare nullable `KeyPair? kp;` and null-check before use.
 
 **Amounts are always Strings:** All payment amounts, balances, and prices are `String` types (7 decimal places max). Internally, the network uses 64-bit integer stroops (1 XLM = 10,000,000 stroops).
 ```dart
@@ -511,12 +480,9 @@ await sdk.submitTransaction(tx);
 AccountResponse account = await sdk.accounts.account(accountId); // on-chain seq N
 account.incrementSequenceNumber(); // now N+1
 Transaction tx = TransactionBuilder(account).addOperation(op).build(); // seq N+2 — tx_bad_seq
-
-// When you DO need manual control (e.g., pre-authorized transactions):
-BigInt customSeqNum = account.sequenceNumber + BigInt.from(5);
-Account customAccount = Account(account.accountId, customSeqNum); // account with modified seq
-Transaction tx = TransactionBuilder(customAccount).addOperation(op).build(); // uses customSeqNum+1
 ```
+
+When a transaction must carry a specific future sequence (pre-authorized transactions), see Manual Sequence Numbers in [Advanced Features](./references/advanced.md).
 
 **Insufficient signatures return `op_bad_auth`, not `tx_bad_auth`:**
 ```dart

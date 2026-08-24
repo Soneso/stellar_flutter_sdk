@@ -242,3 +242,14 @@ print('Status: ${asyncResponse.txStatus}');
 // Possible statuses: txStatusPending, txStatusDuplicate, txStatusTryAgainLater, txStatusError
 // Poll getTransaction() later to check final result
 ```
+
+## Manual Sequence Numbers
+
+`TransactionBuilder.build()` increments the source account's sequence number itself — never increment manually for a normal submission. For a transaction that must carry a specific future sequence (e.g., pre-authorized transactions), build from an `Account` constructed with the desired value:
+
+```dart
+AccountResponse account = await sdk.accounts.account(accountId); // on-chain seq N
+BigInt customSeqNum = account.sequenceNumber + BigInt.from(5);
+Account customAccount = Account(account.accountId, customSeqNum);
+Transaction tx = TransactionBuilder(customAccount).addOperation(op).build(); // uses customSeqNum+1
+```

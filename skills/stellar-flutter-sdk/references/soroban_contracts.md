@@ -97,13 +97,14 @@ transaction is built (an unresolvable reference throws naming the owner and the 
 loads the spec from the resolved wasm, and returns a ready client:
 
 ```dart
-// Address.forContractId takes the hex form of the owner contract id
 SorobanClient client = await SorobanClient.deployFromExternalRef(
   deployRequest: DeployFromExternalRefRequest.forTagString(
     sourceAccountKeyPair: keyPair,
     network: Network.TESTNET,
     rpcUrl: 'https://soroban-testnet.stellar.org:443',
-    executableOwner: Address.forContractId(ownerContractIdHex),
+    // The owner contract holding the tag entry
+    executableOwner: Address.forContractId(
+        'CCTHWH6DJQY6N2HSPVOFNKFT3FBM4MFBVEXXOAQ6UOS7BTML4JDRSXQP'),
     tag: 'token-v1', // matched byte for byte
     // constructorArgs and salt work as in DeployRequest
   ),
