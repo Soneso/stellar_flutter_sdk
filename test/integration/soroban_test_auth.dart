@@ -368,7 +368,7 @@ void main() {
           await sorobanServer.getLatestLedger();
       for (SorobanAuthorizationEntry a in auth!) {
         // update signature expiration ledger
-        a.credentials.addressCredentials!.signatureExpirationLedger =
+        a.credentials.innerAddressCredentials!.signatureExpirationLedger =
             latestLedgerResponse.sequence! + 10;
         // sign
         a.sign(invokerKeypair, network);

@@ -111,6 +111,47 @@ XdrSorobanAuthorizationEntry _makeCreateAssetEntry() {
   );
 }
 
+/// Builds an auth entry whose root invocation is a V1 create-contract host
+/// function referencing a CAP-85 external executable (owner contract plus
+/// binary tag). The create-contract context-type collector must reject this
+/// with a validation error.
+XdrSorobanAuthorizationEntry _makeCreateExternalRefEntry() {
+  final args = XdrCreateContractArgs(
+    _idPreimage(),
+    XdrContractExecutable.forExternalRefBytes(
+      Address.forContractId(_verifierContract).toXdr(),
+      Uint8List.fromList(<int>[0xC0, 0x00, 0xFF, 0xFE]),
+    ),
+  );
+  return XdrSorobanAuthorizationEntry(
+    XdrSorobanCredentials.forSourceAccount(),
+    XdrSorobanAuthorizedInvocation(
+      XdrSorobanAuthorizedFunction.forCreateContractArgs(args),
+      <XdrSorobanAuthorizedInvocation>[],
+    ),
+  );
+}
+
+/// Builds an auth entry whose root invocation is a V2 create-contract host
+/// function referencing a CAP-85 external executable.
+XdrSorobanAuthorizationEntry _makeCreateExternalRefV2Entry() {
+  final args = XdrCreateContractArgsV2(
+    _idPreimage(),
+    XdrContractExecutable.forExternalRefBytes(
+      Address.forContractId(_verifierContract).toXdr(),
+      Uint8List.fromList(<int>[0xC0, 0x00, 0xFF, 0xFE]),
+    ),
+    const <XdrSCVal>[],
+  );
+  return XdrSorobanAuthorizationEntry(
+    XdrSorobanCredentials.forSourceAccount(),
+    XdrSorobanAuthorizedInvocation(
+      XdrSorobanAuthorizedFunction.forCreateContractArgsV2(args),
+      <XdrSorobanAuthorizedInvocation>[],
+    ),
+  );
+}
+
 /// Builds an auth entry whose root invocation is a contract call and whose
 /// single sub-invocation is a V1 create-contract host function. Exercises the
 /// sub-invocation recursion branch of the context-type collector.
@@ -1015,6 +1056,45 @@ void main() {
           <OZParsedContextRule>[_rule(id: 9)],
         ),
         throwsA(isA<SmartAccountInvalidInput>()),
+      );
+    });
+
+    test('V1 create-contract entry referencing an external executable throws',
+        () {
+      // Covers _extractWasmHash CONTRACT_EXECUTABLE_EXTERNAL_REF branch: an
+      // external reference names no wasm hash, so no CreateContract rule can
+      // match it.
+      final h = _buildHarness();
+      final mgr = OZContextRuleManager(h.kit);
+      expect(
+        () => mgr.resolveContextRuleIdsForEntryWithRules(
+          _makeCreateExternalRefEntry(),
+          const <OZSmartAccountSigner>[],
+          <OZParsedContextRule>[_rule(id: 12)],
+        ),
+        throwsA(isA<SmartAccountInvalidInput>().having(
+          (e) => e.message,
+          'message',
+          contains('external executable'),
+        )),
+      );
+    });
+
+    test('V2 create-contract entry referencing an external executable throws',
+        () {
+      final h = _buildHarness();
+      final mgr = OZContextRuleManager(h.kit);
+      expect(
+        () => mgr.resolveContextRuleIdsForEntryWithRules(
+          _makeCreateExternalRefV2Entry(),
+          const <OZSmartAccountSigner>[],
+          <OZParsedContextRule>[_rule(id: 13)],
+        ),
+        throwsA(isA<SmartAccountInvalidInput>().having(
+          (e) => e.message,
+          'message',
+          contains('external executable'),
+        )),
       );
     });
 

@@ -363,6 +363,13 @@ void main() {
     );
     final deployer = Address.forAccountId(accountId);
     final owner = Address.forContractId(ownerContractIdHex);
+    final ownerIsNoContract = throwsA(
+      isA<ArgumentError>().having(
+        (e) => e.message,
+        'message',
+        contains('only a contract can hold'),
+      ),
+    );
 
     test('create contract round trips byte-identically', () {
       final hostFunction =
@@ -527,5 +534,118 @@ void main() {
         );
       },
     );
+
+    test('constructing with a non-contract executable owner throws', () {
+      final tagBytes = Uint8List.fromList(utf8.encode(executableTag));
+      final accountOwner = Address.forAccountId(accountId);
+
+      expect(
+        () => CreateContractFromExternalRefHostFunction(
+          deployer,
+          accountOwner,
+          tagBytes,
+        ),
+        ownerIsNoContract,
+      );
+      expect(
+        () => CreateContractFromExternalRefWithConstructorHostFunction(
+          deployer,
+          accountOwner,
+          tagBytes,
+          [XdrSCVal.forU32(7)],
+        ),
+        ownerIsNoContract,
+      );
+      // A liquidity pool address is no contract either.
+      expect(
+        () => CreateContractFromExternalRefWithConstructorHostFunction(
+          deployer,
+          Address.forLiquidityPoolId(
+            '3f0918bf77f7e30fe942e4bc2ce903ffa2d80e7f3e1f82ba58877f0eb73df0b7',
+          ),
+          tagBytes,
+          [XdrSCVal.forU32(7)],
+        ),
+        ownerIsNoContract,
+      );
+    });
+
+    test('forTagString rejects a non-contract executable owner', () {
+      // forTagString delegates to the validating default constructor.
+      expect(
+        () => CreateContractFromExternalRefHostFunction.forTagString(
+          deployer,
+          Address.forAccountId(accountId),
+          executableTag,
+        ),
+        ownerIsNoContract,
+      );
+    });
+
+    test(
+      'executableOwner setter rejects a non-contract address and keeps the owner',
+      () {
+        final accountOwner = Address.forAccountId(accountId);
+
+        final hostFunction =
+            CreateContractFromExternalRefHostFunction.forTagString(
+              deployer,
+              owner,
+              executableTag,
+              salt: fixedSalt,
+            );
+        expect(
+          () => hostFunction.executableOwner = accountOwner,
+          ownerIsNoContract,
+        );
+        expect(hostFunction.executableOwner.contractId, ownerContractIdHex);
+
+        final withConstructor =
+            CreateContractFromExternalRefWithConstructorHostFunction.forTagString(
+              deployer,
+              owner,
+              executableTag,
+              [XdrSCVal.forU32(7)],
+              salt: fixedSalt,
+            );
+        expect(
+          () => withConstructor.executableOwner = accountOwner,
+          ownerIsNoContract,
+        );
+        expect(withConstructor.executableOwner.contractId, ownerContractIdHex);
+      },
+    );
+
+    test('fromXdr rejects an external ref whose owner is not a contract', () {
+      // The raw XDR layer stays permissive: the factories accept any owner
+      // address and the value survives encode/decode unchanged. Parsing the
+      // decoded value into the typed model is where the rejection lives.
+      final accountOwner = Address.forAccountId(accountId).toXdr();
+      final tagBytes = Uint8List.fromList(utf8.encode(executableTag));
+      final rawFunctions = [
+        XdrHostFunction.forCreatingContractWithExternalRef(
+          deployer.toXdr(),
+          fixedSalt,
+          accountOwner,
+          tagBytes,
+        ),
+        XdrHostFunction.forCreatingContractV2WithExternalRef(
+          deployer.toXdr(),
+          fixedSalt,
+          accountOwner,
+          tagBytes,
+          [XdrSCVal.forU32(7)],
+        ),
+      ];
+
+      for (final raw in rawFunctions) {
+        final stream = XdrDataOutputStream();
+        XdrHostFunction.encode(stream, raw);
+        final decoded = XdrHostFunction.decode(
+          XdrDataInputStream(Uint8List.fromList(stream.bytes)),
+        );
+        expect(() => HostFunction.fromXdr(decoded), ownerIsNoContract);
+      }
+    });
   });
 }

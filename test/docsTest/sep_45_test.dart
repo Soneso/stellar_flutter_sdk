@@ -93,7 +93,7 @@ void main() {
       address = Address.forAccountId(credentialsAddress);
     }
 
-    final credentials = SorobanCredentials.forAddress(
+    final credentials = SorobanCredentials.forAddressLegacy(
       address,
       nonce,
       expirationLedger,
@@ -786,7 +786,7 @@ void main() {
 
     // Build an entry WITH sub-invocations (invalid)
     final address = Address.forAccountId(serverAccountId);
-    final credentials = SorobanCredentials.forAddress(
+    final credentials = SorobanCredentials.forAddressLegacy(
       address,
       BigInt.from(12345),
       1000000,

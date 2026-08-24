@@ -51,10 +51,11 @@ export 'oz_selected_signer.dart';
 /// implicitly; if it should sign, include a [OZSelectedSignerPasskey]
 /// referencing it.
 ///
-/// Delegated wallet signers produce their own auth entries with Address
-/// credentials targeting the smart account's `__check_auth` function;
-/// the smart account's signature map carries an empty-bytes placeholder
-/// per delegated signer.
+/// Delegated wallet signers produce their own auth entries targeting the
+/// smart account's `__check_auth` function; the smart account's signature
+/// map carries an empty-bytes placeholder per delegated signer. Those
+/// entries carry ADDRESS_V2 credentials by default — see
+/// [OZSmartAccountConfig.useUpgradedAuthForWalletSigners].
 class OZMultiSignerManager implements OZMultiSignerManagerInterface {
   /// Constructs a multi-signer manager bound to the supplied kit.
   /// Marked [internal] because consumers reach this manager via
@@ -326,8 +327,12 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
 
     final SimulateTransactionResponse simulation;
     try {
-      simulation = await _kit.sorobanServer
-          .simulateTransaction(SimulateTransactionRequest(transaction));
+      simulation = await _kit.sorobanServer.simulateTransaction(
+        SimulateTransactionRequest(
+          transaction,
+          useUpgradedAuth: _kit.config.useUpgradedAuth,
+        ),
+      );
     } catch (e) {
       throw SmartAccountTransactionException.simulationFailed(
         'Failed to simulate multi-signer transaction: $e',
@@ -564,10 +569,16 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
           <XdrSorobanAuthorizedInvocation>[],
         );
 
+        // Delegated wallet entries carry ADDRESS_V2 credentials by default,
+        // binding the wallet address into the signed preimage
+        // (ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS). The config
+        // opt-out builds the legacy ADDRESS arm for wallet software that
+        // cannot sign the address-bound preimage type.
         final signedDelegatedEntry = await _authorizeInvocation(
           publicKey: selectedSigner.address,
           validUntilLedgerSeq: expirationLedger,
           invocation: checkAuthInvocation,
+          useUpgradedAuth: _kit.config.useUpgradedAuthForWalletSigners,
           signer: (preimage) async {
             final stream = XdrDataOutputStream();
             XdrHashIDPreimage.encode(stream, preimage);
@@ -638,7 +649,10 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     final SimulateTransactionResponse reSimulation;
     try {
       reSimulation = await _kit.sorobanServer.simulateTransaction(
-        SimulateTransactionRequest(signedTransaction),
+        SimulateTransactionRequest(
+          signedTransaction,
+          useUpgradedAuth: _kit.config.useUpgradedAuth,
+        ),
       );
     } catch (e) {
       throw SmartAccountTransactionException.simulationFailed(
@@ -955,14 +969,15 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
     required String publicKey,
     required int validUntilLedgerSeq,
     required XdrSorobanAuthorizedInvocation invocation,
+    required bool useUpgradedAuth,
     required Future<_AuthSignature> Function(XdrHashIDPreimage preimage) signer,
   }) async {
     final nonce = _generateNonce();
 
-    // Build a fresh legacy ADDRESS entry so the canonical preimage
-    // builder can be used. This entry is always ADDRESS (not V2) because it
-    // is a brand-new entry synthesised for the delegated `__check_auth`
-    // invocation, not a simulation-returned entry.
+    // Build a fresh entry so the canonical preimage builder can be used.
+    // [useUpgradedAuth] selects the credential arm: ADDRESS_V2 binds
+    // [publicKey] into the signed preimage, the legacy ADDRESS arm leaves the
+    // preimage address-independent.
     final addressCredentials = XdrSorobanAddressCredentials(
       Address.forAccountId(publicKey).toXdr(),
       nonce,
@@ -970,7 +985,7 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       XdrSCVal.forVoid(),
     );
     final freshEntry = XdrSorobanAuthorizationEntry(
-      XdrSorobanCredentials.forAddressCredentials(addressCredentials),
+      _delegatedCredentialsXdr(addressCredentials, useUpgradedAuth),
       invocation,
     );
 
@@ -1014,10 +1029,24 @@ class OZMultiSignerManager implements OZMultiSignerManagerInterface {
       signatureScVal,
     );
 
+    // The signed entry keeps the arm the preimage was built from; an
+    // ADDRESS_V2 credential is what lets the host rebuild the address-bound
+    // preimage the wallet signed.
     return XdrSorobanAuthorizationEntry(
-      XdrSorobanCredentials.forAddressCredentials(credentials),
+      _delegatedCredentialsXdr(credentials, useUpgradedAuth),
       invocation,
     );
+  }
+
+  /// Wraps [credentials] in the ADDRESS_V2 arm when [useUpgradedAuth] is
+  /// `true`, otherwise in the legacy ADDRESS arm.
+  static XdrSorobanCredentials _delegatedCredentialsXdr(
+    XdrSorobanAddressCredentials credentials,
+    bool useUpgradedAuth,
+  ) {
+    return useUpgradedAuth
+        ? XdrSorobanCredentials.forAddressV2Credentials(credentials)
+        : XdrSorobanCredentials.forAddressCredentials(credentials);
   }
 
   /// Returns the inner [XdrSorobanAddressCredentials] for ADDRESS or

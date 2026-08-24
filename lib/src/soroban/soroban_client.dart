@@ -15,6 +15,7 @@ import 'package:stellar_flutter_sdk/src/soroban/soroban_server.dart';
 import 'package:stellar_flutter_sdk/src/soroban/contract_spec.dart';
 import 'package:stellar_flutter_sdk/src/transaction.dart';
 import 'package:stellar_flutter_sdk/src/util.dart';
+import 'package:stellar_flutter_sdk/src/xdr/txrep_helper.dart';
 import 'package:stellar_flutter_sdk/src/xdr/xdr.dart';
 
 import '../key_pair.dart';
@@ -234,6 +235,11 @@ class SorobanClient {
   /// the owner's persistent entry under that tag holds the hash of the wasm
   /// the instance runs. Nothing is installed as part of the deployment.
   ///
+  /// The create operation uses the CREATE_CONTRACT_V2 host function form with
+  /// the given constructor arguments (an empty vector when none are given), as
+  /// [deploy] does. For the plain CREATE_CONTRACT form, build the operation
+  /// directly with [CreateContractFromExternalRefHostFunction].
+  ///
   /// The reference is resolved before the transaction is built, so an
   /// unresolvable reference fails here with an [Exception] naming the owner
   /// and the tag. One message covers every miss: no entry under the tag, an
@@ -249,7 +255,7 @@ class SorobanClient {
       server.enableLogging = deployRequest.enableSorobanServerLogging;
     }
 
-    final tagBytes = Uint8List.fromList(utf8.encode(deployRequest.tag));
+    final tagBytes = deployRequest.tag;
     final ref = XdrContractExecutableExternalRef(
         deployRequest.executableOwner.toXdr(), tagBytes);
     final wasmHash = await server.getExternalRefWasmHash(ref);
@@ -270,7 +276,7 @@ class SorobanClient {
       }
       throw Exception(
           "external reference does not resolve: owner $owner holds no 32-byte "
-          "wasm hash entry under tag ${deployRequest.tag}");
+          "wasm hash entry under tag ${TxRepHelper.escapeBytes(deployRequest.tag)}");
     }
 
     // Load the spec from the resolved code before deploying: the code entry
@@ -287,21 +293,13 @@ class SorobanClient {
 
     final sourceAddress =
         Address.forAccountId(deployRequest.sourceAccountKeyPair.accountId);
-    final constructorArgs = deployRequest.constructorArgs ?? [];
-    final HostFunction createContractHostFunction;
-    if (constructorArgs.isNotEmpty) {
-      createContractHostFunction =
-          CreateContractFromExternalRefWithConstructorHostFunction(
-              sourceAddress,
-              deployRequest.executableOwner,
-              tagBytes,
-              constructorArgs,
-              salt: deployRequest.salt);
-    } else {
-      createContractHostFunction = CreateContractFromExternalRefHostFunction(
-          sourceAddress, deployRequest.executableOwner, tagBytes,
-          salt: deployRequest.salt);
-    }
+    final createContractHostFunction =
+        CreateContractFromExternalRefWithConstructorHostFunction(
+            sourceAddress,
+            deployRequest.executableOwner,
+            tagBytes,
+            deployRequest.constructorArgs ?? [],
+            salt: deployRequest.salt);
 
     final op = InvokeHostFuncOpBuilder(createContractHostFunction).build();
     final clientOptions = ClientOptions(
@@ -1691,17 +1689,18 @@ class MethodOptions {
   /// Default: false.
   bool restore = false;
 
-  /// When true, the simulation request includes `"useUpgradedAuth": true`,
-  /// asking the RPC server to return ADDRESS_V2 credential entries (protocol 27+).
+  /// Selects the credential arm the simulation requests: true (the default)
+  /// asks the RPC server for ADDRESS_V2 credential entries (protocol 27+),
+  /// false for legacy ADDRESS entries. The flag is forwarded to
+  /// [SimulateTransactionRequest] and always sent in the request.
   ///
-  /// The key is omitted from the request entirely when false (never sent as
-  /// `"useUpgradedAuth": false`). RPCs that do not support this flag silently
-  /// ignore it and return legacy ADDRESS entries; support is detected by
-  /// inspecting the credential arm of the returned entries, not by an error code.
+  /// RPCs that do not support the flag silently ignore it and return legacy
+  /// ADDRESS entries; support is detected by inspecting the credential arm of
+  /// the returned entries, not by an error code.
   ///
-  /// Emitting V2 entries on a network below protocol 27 invalidates the
-  /// transaction; set this only when targeting protocol 27+. Default: false.
-  bool useUpgradedAuth = false;
+  /// Set this to false on a network below protocol 27, where V2 entries
+  /// invalidate the transaction. Default: true.
+  bool useUpgradedAuth = true;
 
   /// Creates MethodOptions for contract method invocation.
   ///
@@ -1710,7 +1709,7 @@ class MethodOptions {
   /// - [timeoutInSeconds] Transaction timeout (default: 300 seconds)
   /// - [simulate] Auto-simulate transaction (default: true)
   /// - [restore] Auto-restore archived entries (default: false)
-  /// - [useUpgradedAuth] Request ADDRESS_V2 credential entries (default: false)
+  /// - [useUpgradedAuth] Request ADDRESS_V2 credential entries (default: true)
   ///
   /// Example:
   /// ```dart
@@ -1725,7 +1724,7 @@ class MethodOptions {
       this.timeoutInSeconds = NetworkConstants.DEFAULT_TIMEOUT_SECONDS,
       this.simulate = true,
       this.restore = false,
-      this.useUpgradedAuth = false});
+      this.useUpgradedAuth = true});
 }
 
 /// Configuration options for constructing an AssembledTransaction.
@@ -2053,7 +2052,15 @@ class DeployFromExternalRefRequest {
   Address executableOwner;
 
   /// The tag the owner holds the executable entry under; matched byte for byte.
-  String tag;
+  ///
+  /// An executable tag is an XDR string, which carries arbitrary bytes. For a
+  /// text tag, use the [DeployFromExternalRefRequest.forTagString] constructor.
+  Uint8List tag;
+
+  /// The text [tag] spells, read as UTF-8.
+  ///
+  /// Throws a FormatException when the bytes are not valid UTF-8.
+  String get tagString => utf8.decode(tag);
 
   /// Optional: Constructor/Initialization args for the contract's `__constructor` method.
   /// Only required if the contract has a constructor function.
@@ -2084,7 +2091,7 @@ class DeployFromExternalRefRequest {
   /// - [network] Stellar network for deployment (TESTNET, PUBLIC, etc.)
   /// - [rpcUrl] Soroban RPC server URL
   /// - [executableOwner] Contract holding the executable tag entry
-  /// - [tag] Tag of the executable entry on the owner; matched byte for byte
+  /// - [tag] Tag of the executable entry on the owner, as raw bytes; matched byte for byte
   /// - [constructorArgs] Optional constructor arguments if contract has __constructor
   /// - [salt] Optional salt for deterministic contract ID (random if not provided)
   /// - [methodOptions] Optional transaction tuning options (fee, timeout, etc.)
@@ -2093,7 +2100,7 @@ class DeployFromExternalRefRequest {
   ///
   /// Example:
   /// ```dart
-  /// final request = DeployFromExternalRefRequest(
+  /// final request = DeployFromExternalRefRequest.forTagString(
   ///   sourceAccountKeyPair: myKeyPair,
   ///   network: Network.TESTNET,
   ///   rpcUrl: rpcUrl,
@@ -2116,6 +2123,30 @@ class DeployFromExternalRefRequest {
       this.server}) {
     this.methodOptions = methodOptions ?? MethodOptions();
   }
+
+  /// Creates a DeployFromExternalRefRequest over the UTF-8 encoding of [tag].
+  DeployFromExternalRefRequest.forTagString(
+      {required KeyPair sourceAccountKeyPair,
+      required Network network,
+      required String rpcUrl,
+      required Address executableOwner,
+      required String tag,
+      List<XdrSCVal>? constructorArgs,
+      XdrUint256? salt,
+      MethodOptions? methodOptions,
+      bool enableSorobanServerLogging = false,
+      SorobanServer? server})
+      : this(
+            sourceAccountKeyPair: sourceAccountKeyPair,
+            network: network,
+            rpcUrl: rpcUrl,
+            executableOwner: executableOwner,
+            tag: Uint8List.fromList(utf8.encode(tag)),
+            constructorArgs: constructorArgs,
+            salt: salt,
+            methodOptions: methodOptions,
+            enableSorobanServerLogging: enableSorobanServerLogging,
+            server: server);
 }
 
 /// Result data from simulating a Soroban contract invocation.

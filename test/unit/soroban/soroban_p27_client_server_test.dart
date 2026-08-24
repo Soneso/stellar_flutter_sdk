@@ -43,7 +43,7 @@ SorobanAuthorizationEntry _makeLegacyEntry(String accountId) {
   final address = Address.forAccountId(accountId);
   final inner = SorobanAddressCredentials(
       address, BigInt.parse('123456789101112'), _kExpiration, XdrSCVal.forVoid());
-  return _makeEntry(SorobanCredentials.forAddressCredentials(inner));
+  return _makeEntry(SorobanCredentials.forAddressCredentialsLegacy(inner));
 }
 
 /// Builds an ADDRESS_V2 entry for [accountId] with a void signature.
@@ -189,12 +189,13 @@ Future<(HttpServer, Map<String, dynamic>)> _startMockRpcServer({
 
 /// Builds an [AssembledTransaction] wired to the mock server at [rpcUrl].
 /// [simulate] controls whether auto-simulation runs during build.
+/// [useUpgradedAuth] null means "leave MethodOptions on its default".
 Future<AssembledTransaction> _buildAssembledTx(
     String rpcUrl,
     String accountId,
     KeyPair kp, {
     bool simulate = false,
-    bool useUpgradedAuth = false,
+    bool? useUpgradedAuth,
 }) async {
   final clientOptions = ClientOptions(
     sourceAccountKeyPair: kp,
@@ -202,9 +203,12 @@ Future<AssembledTransaction> _buildAssembledTx(
     network: Network.TESTNET,
     rpcUrl: rpcUrl,
   );
+  final methodOptions = useUpgradedAuth == null
+      ? MethodOptions(simulate: simulate)
+      : MethodOptions(simulate: simulate, useUpgradedAuth: useUpgradedAuth);
   final options = AssembledTransactionOptions(
     clientOptions: clientOptions,
-    methodOptions: MethodOptions(simulate: simulate, useUpgradedAuth: useUpgradedAuth),
+    methodOptions: methodOptions,
     method: 'hello',
     arguments: [XdrSCVal.forU64(BigInt.from(1234))],
   );
@@ -232,28 +236,36 @@ void main() {
         .addOperation(BumpSequenceOperation(BigInt.from(110)))
         .build();
 
-    test('useUpgradedAuth key is ABSENT when default (false)', () {
+    test('useUpgradedAuth key is present as boolean true by default', () {
       final req = SimulateTransactionRequest(_buildTx());
       final args = req.getRequestArgs();
 
-      expect(args.containsKey('useUpgradedAuth'), isFalse,
-          reason: '"useUpgradedAuth" must be omitted entirely when not set');
+      expect(args.containsKey('useUpgradedAuth'), isTrue,
+          reason: '"useUpgradedAuth" must always be emitted');
+      expect(args['useUpgradedAuth'], equals(true),
+          reason: '"useUpgradedAuth" must default to boolean true');
+      expect(args['useUpgradedAuth'], isA<bool>());
     });
 
-    test('useUpgradedAuth key is ABSENT when explicitly false', () {
+    test('useUpgradedAuth key is present as boolean false when explicitly false',
+        () {
       final req = SimulateTransactionRequest(_buildTx(), useUpgradedAuth: false);
       final args = req.getRequestArgs();
 
-      expect(args.containsKey('useUpgradedAuth'), isFalse,
-          reason: '"useUpgradedAuth: false" must never be emitted');
+      expect(args.containsKey('useUpgradedAuth'), isTrue,
+          reason: '"useUpgradedAuth" must always be emitted');
+      expect(args['useUpgradedAuth'], equals(false),
+          reason: '"useUpgradedAuth: false" must be emitted as boolean false');
+      expect(args['useUpgradedAuth'], isA<bool>());
     });
 
-    test('useUpgradedAuth key is present as boolean true when opted in', () {
+    test('useUpgradedAuth key is present as boolean true when explicitly true',
+        () {
       final req = SimulateTransactionRequest(_buildTx(), useUpgradedAuth: true);
       final args = req.getRequestArgs();
 
       expect(args['useUpgradedAuth'], equals(true),
-          reason: '"useUpgradedAuth" must be boolean true when opted in');
+          reason: '"useUpgradedAuth" must be boolean true when set to true');
     });
 
     test('existing params (transaction, resourceConfig, authMode) unaffected', () {
@@ -276,7 +288,7 @@ void main() {
           resourceConfig: rc, authMode: 'enforce', useUpgradedAuth: false);
       final args = req.getRequestArgs();
 
-      expect(args.containsKey('useUpgradedAuth'), isFalse);
+      expect(args['useUpgradedAuth'], equals(false));
       expect(args['resourceConfig']['instructionLeeway'], equals(999));
       expect(args['authMode'], equals('enforce'));
     });
@@ -286,14 +298,14 @@ void main() {
   // GROUP 2: MethodOptions.useUpgradedAuth field
   // -------------------------------------------------------------------------
   group('MethodOptions.useUpgradedAuth field', () {
-    test('defaults to false', () {
+    test('defaults to true', () {
       final opts = MethodOptions();
-      expect(opts.useUpgradedAuth, isFalse);
+      expect(opts.useUpgradedAuth, isTrue);
     });
 
-    test('can be set to true', () {
-      final opts = MethodOptions(useUpgradedAuth: true);
-      expect(opts.useUpgradedAuth, isTrue);
+    test('can be set to false', () {
+      final opts = MethodOptions(useUpgradedAuth: false);
+      expect(opts.useUpgradedAuth, isFalse);
     });
 
     test('existing fields unaffected when useUpgradedAuth added', () {
@@ -303,7 +315,7 @@ void main() {
       expect(opts.timeoutInSeconds, equals(120));
       expect(opts.simulate, isFalse);
       expect(opts.restore, isTrue);
-      expect(opts.useUpgradedAuth, isFalse);
+      expect(opts.useUpgradedAuth, isTrue);
     });
   });
 
@@ -328,7 +340,7 @@ void main() {
       }
     });
 
-    test('default MethodOptions() omits useUpgradedAuth from the wire request', () async {
+    test('default MethodOptions() sends "useUpgradedAuth": true in the wire request', () async {
 
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final (server, captured) = await _startMockRpcServer(
@@ -340,8 +352,30 @@ void main() {
 
         expect(captured.containsKey('transaction'), isTrue,
             reason: 'The simulate request must have reached the mock server');
-        expect(captured.containsKey('useUpgradedAuth'), isFalse,
-            reason: '"useUpgradedAuth" must be absent from the request by default');
+        expect(captured['useUpgradedAuth'], equals(true),
+            reason: '"useUpgradedAuth": true must appear in the simulate '
+                'request params by default');
+      } finally {
+        await server.close();
+      }
+    });
+
+    test('useUpgradedAuth: false produces "useUpgradedAuth": false in the wire request', () async {
+
+      final kp = KeyPair.fromSecretSeed(_kSeed);
+      final (server, captured) = await _startMockRpcServer(
+          accountId: kp.accountId, seqNum: BigInt.from(100));
+
+      try {
+        final rpcUrl = 'http://127.0.0.1:${server.port}';
+        await _buildAssembledTx(rpcUrl, kp.accountId, kp,
+            simulate: true, useUpgradedAuth: false);
+
+        expect(captured.containsKey('transaction'), isTrue,
+            reason: 'The simulate request must have reached the mock server');
+        expect(captured['useUpgradedAuth'], equals(false),
+            reason: '"useUpgradedAuth": false must appear in the simulate '
+                'request params when opted out');
       } finally {
         await server.close();
       }

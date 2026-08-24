@@ -278,7 +278,7 @@ void main() {
     final accountAddr = Address.forAccountId(signer.accountId);
 
     test('fromXdr -> toXdr preserves ADDRESS arm', () {
-      final creds = SorobanCredentials.forAddress(
+      final creds = SorobanCredentials.forAddressLegacy(
           accountAddr, _kNonce, _kExpiration, XdrSCVal.forVoid());
       final roundTripped =
           SorobanCredentials.fromXdr(creds.toXdr());
@@ -347,7 +347,7 @@ void main() {
     });
 
     test('innerAddressCredentials returns payload for ADDRESS arm', () {
-      final creds = SorobanCredentials.forAddress(
+      final creds = SorobanCredentials.forAddressLegacy(
           accountAddr, _kNonce, _kExpiration, XdrSCVal.forVoid());
       final inner = creds.innerAddressCredentials;
       expect(inner, isNotNull);
@@ -374,6 +374,47 @@ void main() {
       expect(got, isNotNull);
       expect(got!.nonce, equals(_kNonce));
     });
+
+    test(
+        'factory arm selection: forAddress/forAddressCredentials build '
+        'ADDRESS_V2, Legacy factories build ADDRESS, forAddressV2 unchanged',
+        () {
+      final inner = SorobanAddressCredentials(
+          accountAddr, _kNonce, _kExpiration, XdrSCVal.forVoid());
+
+      final byAddress = SorobanCredentials.forAddress(
+          accountAddr, _kNonce, _kExpiration, XdrSCVal.forVoid());
+      expect(byAddress.arm,
+          equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2));
+      expect(byAddress.addressV2Credentials, isNotNull);
+      expect(byAddress.addressCredentials, isNull);
+
+      final byCredentials = SorobanCredentials.forAddressCredentials(inner);
+      expect(byCredentials.arm,
+          equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2));
+      expect(byCredentials.addressV2Credentials, isNotNull);
+      expect(byCredentials.addressCredentials, isNull);
+
+      final byAddressLegacy = SorobanCredentials.forAddressLegacy(
+          accountAddr, _kNonce, _kExpiration, XdrSCVal.forVoid());
+      expect(byAddressLegacy.arm,
+          equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS));
+      expect(byAddressLegacy.addressCredentials, isNotNull);
+      expect(byAddressLegacy.addressV2Credentials, isNull);
+
+      final byCredentialsLegacy =
+          SorobanCredentials.forAddressCredentialsLegacy(inner);
+      expect(byCredentialsLegacy.arm,
+          equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS));
+      expect(byCredentialsLegacy.addressCredentials, isNotNull);
+      expect(byCredentialsLegacy.addressV2Credentials, isNull);
+
+      final byV2 = SorobanCredentials.forAddressV2(inner);
+      expect(byV2.arm,
+          equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2));
+      expect(byV2.addressV2Credentials, isNotNull);
+      expect(byV2.addressCredentials, isNull);
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -396,7 +437,7 @@ void main() {
     });
 
     test('legacy ADDRESS preimage matches golden base64', () {
-      final creds = SorobanCredentials.forAddress(
+      final creds = SorobanCredentials.forAddressLegacy(
           accountAddr, _kNonce, _kExpiration, XdrSCVal.forVoid());
       final entry = SorobanAuthorizationEntry(creds, rootInvocation);
 
@@ -407,7 +448,7 @@ void main() {
     });
 
     test('legacy ADDRESS payload SHA-256 matches golden hex', () {
-      final creds = SorobanCredentials.forAddress(
+      final creds = SorobanCredentials.forAddressLegacy(
           accountAddr, _kNonce, _kExpiration, XdrSCVal.forVoid());
       final entry = SorobanAuthorizationEntry(creds, rootInvocation);
 
@@ -419,7 +460,7 @@ void main() {
     });
 
     test('legacy ADDRESS Ed25519 signature matches golden hex', () {
-      final creds = SorobanCredentials.forAddress(
+      final creds = SorobanCredentials.forAddressLegacy(
           accountAddr, _kNonce, _kExpiration, XdrSCVal.forVoid());
       final entry = SorobanAuthorizationEntry(creds, rootInvocation);
 
@@ -458,12 +499,25 @@ void main() {
       expect(_bytesToHex(payloadHash), equals(_kV2PayloadHex));
     });
 
+    test('forAddress entry matches golden ADDRESS_V2 preimage and payload', () {
+      final creds = SorobanCredentials.forAddress(
+          accountAddr, _kNonce, _kExpiration, XdrSCVal.forVoid());
+      final entry = SorobanAuthorizationEntry(creds, rootInvocation);
+
+      final preimage = entry.buildPreimage(Network.TESTNET);
+      final preimageBytes = _encodePreimage(preimage);
+      final payloadHash = Util.hash(preimageBytes);
+
+      expect(base64Encode(preimageBytes), equals(_kV2PreimageB64));
+      expect(_bytesToHex(payloadHash), equals(_kV2PayloadHex));
+    });
+
     test('ADDRESS and ADDRESS_V2 preimages differ for identical fields', () {
       final inner = SorobanAddressCredentials(
           accountAddr, _kNonce, _kExpiration, XdrSCVal.forVoid());
 
       final legacyEntry = SorobanAuthorizationEntry(
-        SorobanCredentials.forAddressCredentials(inner),
+        SorobanCredentials.forAddressCredentialsLegacy(inner),
         rootInvocation,
       );
       final v2Entry = SorobanAuthorizationEntry(
@@ -497,7 +551,7 @@ void main() {
 
     test('ADDRESS arm -> ENVELOPE_TYPE_SOROBAN_AUTHORIZATION', () {
       final entry = SorobanAuthorizationEntry(
-        SorobanCredentials.forAddress(
+        SorobanCredentials.forAddressLegacy(
             accountAddr, _kNonce, _kExpiration, XdrSCVal.forVoid()),
         rootInvocation,
       );
@@ -594,7 +648,7 @@ void main() {
       final accountAddr = Address.forAccountId(signer.accountId);
 
       // Build entry with stale expiration
-      final creds = SorobanCredentials.forAddress(
+      final creds = SorobanCredentials.forAddressLegacy(
           accountAddr, _kNonce, 100, XdrSCVal.forVoid());
       final entry = SorobanAuthorizationEntry(creds, _buildHelloInvocation());
 
@@ -790,7 +844,8 @@ void main() {
         'withDelegates from ADDRESS arm source produces WITH_DELEGATES result',
         () {
       final addressEntry = SorobanAuthorizationEntry(
-          SorobanCredentials.forAddressCredentials(inner), rootInvocation);
+          SorobanCredentials.forAddressCredentialsLegacy(inner),
+          rootInvocation);
 
       final result = SorobanAuthorizationEntry.withDelegates(
           addressEntry, [SorobanDelegateDescriptor(_kContractId)], _kExpiration);
@@ -838,7 +893,7 @@ void main() {
     });
 
     test('forAddress null signs top-level ADDRESS arm', () {
-      final creds = SorobanCredentials.forAddress(
+      final creds = SorobanCredentials.forAddressLegacy(
           Address.forAccountId(signer.accountId),
           _kNonce,
           _kExpiration,
@@ -977,13 +1032,14 @@ void main() {
           XdrSCVal.forVoid());
       final entry = SorobanAuthorizationEntry(creds, rootInvocation);
 
-      expect(entry.credentials.addressCredentials!.signature.discriminant,
+      expect(entry.credentials.innerAddressCredentials!.signature.discriminant,
           equals(XdrSCValType.SCV_VOID));
 
       entry.sign(signer, Network.TESTNET);
 
-      expect(entry.credentials.addressCredentials!.signature.vec, isNotNull);
-      expect(entry.credentials.addressCredentials!.signature.vec!.length,
+      expect(entry.credentials.innerAddressCredentials!.signature.vec,
+          isNotNull);
+      expect(entry.credentials.innerAddressCredentials!.signature.vec!.length,
           equals(1));
     });
 
@@ -998,7 +1054,7 @@ void main() {
       entry.sign(signer, Network.TESTNET);
       entry.sign(signer2, Network.TESTNET);
 
-      expect(entry.credentials.addressCredentials!.signature.vec!.length,
+      expect(entry.credentials.innerAddressCredentials!.signature.vec!.length,
           equals(2));
     });
   });

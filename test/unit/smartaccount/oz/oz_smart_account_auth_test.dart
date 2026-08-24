@@ -15,6 +15,13 @@ const String kValidContractId =
     'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK';
 const String kNetworkPassphrase = 'Test SDF Network ; September 2015';
 
+/// Stands in for the temporary funding account whose address the converted
+/// ADDRESS_V2 credentials carry.
+const String kTempAccountAddress =
+    'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54';
+
+final XdrSCAddress _tempAddress = XdrSCAddress.forAccountId(kTempAccountAddress);
+
 Uint8List _bytes(int n, [int seed = 0]) {
   final out = Uint8List(n);
   for (var i = 0; i < n; i++) {
@@ -28,6 +35,7 @@ XdrSorobanAuthorizationEntry _buildEntry({
   BigInt? nonce,
   int expirationLedger = 0,
   XdrSCVal? signature,
+  bool addressV2 = false,
 }) {
   final addrXdr = XdrSCAddress.forContractId(address);
   final cred = XdrSorobanAddressCredentials(
@@ -36,7 +44,9 @@ XdrSorobanAuthorizationEntry _buildEntry({
     XdrUint32(expirationLedger),
     signature ?? XdrSCVal.forVoid(),
   );
-  final credsWrapper = XdrSorobanCredentials.forAddressCredentials(cred);
+  final credsWrapper = addressV2
+      ? XdrSorobanCredentials.forAddressV2Credentials(cred)
+      : XdrSorobanCredentials.forAddressCredentials(cred);
 
   // Construct a minimal root invocation: a contract-fn invocation with no
   // sub-invocations.
@@ -88,12 +98,14 @@ void main() {
       final entry = _buildSourceAccountEntry();
       final h1 = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
         entry,
+        _tempAddress,
         XdrInt64(BigInt.from(1)),
         100,
         kNetworkPassphrase,
       );
       final h2 = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
         entry,
+        _tempAddress,
         XdrInt64(BigInt.from(2)),
         100,
         kNetworkPassphrase,
@@ -102,17 +114,41 @@ void main() {
     });
 
     test(
-        'testBuildSourceAccountAuthPayloadHash_differentExpirationProducesDifferentHash',
+        'testBuildSourceAccountAuthPayloadHash_differentAddressesProduceDifferentHashes',
         () async {
       final entry = _buildSourceAccountEntry();
       final h1 = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
         entry,
+        _tempAddress,
         XdrInt64(BigInt.from(1)),
         100,
         kNetworkPassphrase,
       );
       final h2 = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
         entry,
+        XdrSCAddress.forAccountId(kValidGAddress),
+        XdrInt64(BigInt.from(1)),
+        100,
+        kNetworkPassphrase,
+      );
+      expect(h1, isNot(h2),
+          reason: 'the address is part of the WITH_ADDRESS preimage');
+    });
+
+    test(
+        'testBuildSourceAccountAuthPayloadHash_differentExpirationProducesDifferentHash',
+        () async {
+      final entry = _buildSourceAccountEntry();
+      final h1 = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
+        entry,
+        _tempAddress,
+        XdrInt64(BigInt.from(1)),
+        100,
+        kNetworkPassphrase,
+      );
+      final h2 = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
+        entry,
+        _tempAddress,
         XdrInt64(BigInt.from(1)),
         200,
         kNetworkPassphrase,
@@ -126,12 +162,14 @@ void main() {
       final entry = _buildSourceAccountEntry();
       final h1 = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
         entry,
+        _tempAddress,
         XdrInt64(BigInt.from(1)),
         100,
         'Public Global Stellar Network ; September 2015',
       );
       final h2 = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
         entry,
+        _tempAddress,
         XdrInt64(BigInt.from(1)),
         100,
         kNetworkPassphrase,
@@ -143,12 +181,14 @@ void main() {
       final entry = _buildSourceAccountEntry();
       final h1 = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
         entry,
+        _tempAddress,
         XdrInt64(BigInt.from(1)),
         100,
         kNetworkPassphrase,
       );
       final h2 = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
         entry,
+        _tempAddress,
         XdrInt64(BigInt.from(1)),
         100,
         kNetworkPassphrase,
@@ -162,6 +202,7 @@ void main() {
       final nonce = XdrInt64(BigInt.from(7));
       final h1 = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
         entry,
+        _tempAddress,
         nonce,
         50,
         kNetworkPassphrase,
@@ -170,16 +211,17 @@ void main() {
       final networkId = Uint8List.fromList(
         crypto.sha256.convert(utf8.encode(kNetworkPassphrase)).bytes,
       );
-      final auth = XdrHashIDPreimageSorobanAuthorization(
+      final auth = XdrHashIDPreimageSorobanAuthorizationWithAddress(
         XdrHash(networkId),
         nonce,
         XdrUint32(50),
+        _tempAddress,
         entry.rootInvocation,
       );
       final preimage = XdrHashIDPreimage(
-        XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION,
+        XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS,
       );
-      preimage.sorobanAuthorization = auth;
+      preimage.sorobanAuthorizationWithAddress = auth;
       final stream = XdrDataOutputStream();
       XdrHashIDPreimage.encode(stream, preimage);
       final manual = Uint8List.fromList(
@@ -201,12 +243,16 @@ void main() {
     test(
         'testBuildAuthPayloadHash_andBuildSourceAccountAuthPayloadHash_sameInputsProduceSameHash',
         () async {
-      final addrEntry = _buildEntry(nonce: BigInt.from(99));
+      // Both helpers hash the WITH_ADDRESS preimage for an ADDRESS_V2
+      // credential, so identical address, nonce, expiration and invocation
+      // must yield the identical hash.
+      final addrEntry = _buildEntry(nonce: BigInt.from(99), addressV2: true);
       final srcEntry = _buildSourceAccountEntry();
       final h1 = await OZSmartAccountAuth.buildAuthPayloadHash(
           addrEntry, 100, kNetworkPassphrase);
       final h2 = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
         srcEntry,
+        XdrSCAddress.forContractId(kValidContractId),
         XdrInt64(BigInt.from(99)),
         100,
         kNetworkPassphrase,

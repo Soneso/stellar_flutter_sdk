@@ -618,13 +618,15 @@ void main() {
           await sorobanServer.getLatestLedger();
 
       for (SorobanAuthorizationEntry a in auth!) {
-        a.credentials.addressCredentials!.signatureExpirationLedger =
+        a.credentials.innerAddressCredentials!.signatureExpirationLedger =
             latestLedgerResponse.sequence! + 10;
 
-        if (a.credentials.addressCredentials!.address.accountId == aliceId) {
+        if (a.credentials.innerAddressCredentials!.address.accountId ==
+            aliceId) {
           a.sign(aliceKeypair, network);
         }
-        if (a.credentials.addressCredentials!.address.accountId == bobId) {
+        if (a.credentials.innerAddressCredentials!.address.accountId ==
+            bobId) {
           a.sign(bobKeypair, network);
         }
       }

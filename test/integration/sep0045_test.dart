@@ -100,7 +100,7 @@ void main() {
       throw Exception('Invalid address: $credentialsAddress');
     }
 
-    final credentials = SorobanCredentials.forAddress(
+    final credentials = SorobanCredentials.forAddressLegacy(
       address,
       nonce,
       expirationLedger,
@@ -837,7 +837,7 @@ void main() {
 
       // Build an entry with sub-invocations
       final address = Address.forAccountId(serverAccountId);
-      final credentials = SorobanCredentials.forAddress(
+      final credentials = SorobanCredentials.forAddressLegacy(
         address,
         BigInt.from(12345),
         1000000,
@@ -1219,7 +1219,8 @@ void main() {
           SorobanAuthorizationEntry entry) async {
         callbackInvoked = true;
         // Set signature expiration ledger before signing
-        entry.credentials.addressCredentials!.signatureExpirationLedger = 1000000;
+        entry.credentials.innerAddressCredentials!.signatureExpirationLedger =
+            1000000;
         entry.sign(clientDomainKeyPair, Network.TESTNET);
         return entry;
       }

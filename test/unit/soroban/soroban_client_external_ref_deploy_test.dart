@@ -88,14 +88,16 @@ XdrLedgerEntryData contractCodeEntry(Uint8List wasmHashBytes, Uint8List code) {
 }
 
 /// CONTRACT_DATA entry holding the wasm hash under the owner's executable
-/// tag key, as served for a CAP-85 external reference resolution.
+/// tag key, as served for a CAP-85 external reference resolution. The tag is
+/// raw bytes; an executable tag is an XDR string, which carries arbitrary
+/// bytes.
 XdrLedgerEntryData executableTagEntry(
-    String ownerContractIdHex, String tag, Uint8List wasmHashBytes) {
+    String ownerContractIdHex, Uint8List tag, Uint8List wasmHashBytes) {
   final entryData = XdrLedgerEntryData(XdrLedgerEntryType.CONTRACT_DATA);
   entryData.contractData = XdrContractDataEntry(
     XdrExtensionPoint(0),
     Address.forContractId(ownerContractIdHex).toXdr(),
-    XdrSCVal.forExecutableTag(tag),
+    XdrSCVal.forExecutableTagBytes(tag),
     XdrContractDataDurability.PERSISTENT,
     XdrSCVal.forBytes(wasmHashBytes),
   );
@@ -209,10 +211,13 @@ void main() {
             if (!tagEntryExists) {
               return emptyLedgerEntriesResponse(requestBody);
             }
+            // The served entry holds the requested tag bytes, as a ledger
+            // holding that entry would; the resolution is matched byte for
+            // byte through the requested key.
             return ledgerEntryResponse(
                 requestBody,
-                executableTagEntry(
-                    ownerContractIdHex, executableTag, wasmHashBytes));
+                executableTagEntry(ownerContractIdHex,
+                    key.contractData!.key.executableTag!, wasmHashBytes));
           }
           if (key.discriminant == XdrLedgerEntryType.CONTRACT_CODE) {
             final firstCodeLoad = !requestLog.contains('code');
@@ -294,7 +299,7 @@ void main() {
           keyPair, requestLog, capturedKeys, capturedEnvelopes);
 
       final client = await SorobanClient.deployFromExternalRef(
-          deployRequest: DeployFromExternalRefRequest(
+          deployRequest: DeployFromExternalRefRequest.forTagString(
         sourceAccountKeyPair: keyPair,
         network: Network.TESTNET,
         rpcUrl: rpcUrl,
@@ -333,7 +338,77 @@ void main() {
       expect(typed.constructorArgs[0].u32!.uint32, 7);
     });
 
-    test('uses the plain host function without constructor args', () async {
+    test('uses the V2 host function with an empty vector when no constructor '
+        'args are given', () async {
+      final keyPair = KeyPair.random();
+      final requestLog = <String>[];
+      final capturedKeys = <XdrLedgerKey>[];
+      final capturedEnvelopes = <String>[];
+      final server = externalRefDeployFlowMockServer(
+          keyPair, requestLog, capturedKeys, capturedEnvelopes);
+
+      final client = await SorobanClient.deployFromExternalRef(
+          deployRequest: DeployFromExternalRefRequest.forTagString(
+        sourceAccountKeyPair: keyPair,
+        network: Network.TESTNET,
+        rpcUrl: rpcUrl,
+        executableOwner: Address.forContractId(ownerContractIdHex),
+        tag: executableTag,
+        server: server,
+      ));
+
+      expect(client.getContractId(), createdContractId);
+
+      final hostFunction = submittedHostFunction(capturedEnvelopes);
+      expect(hostFunction,
+          isA<CreateContractFromExternalRefWithConstructorHostFunction>());
+      final typed = hostFunction
+          as CreateContractFromExternalRefWithConstructorHostFunction;
+      expect(typed.executableOwner.contractId, ownerContractIdHex);
+      expect(typed.tagString, executableTag);
+      expect(typed.salt.uint256, hasLength(32));
+      expect(typed.constructorArgs, isEmpty);
+    });
+
+    test('uses the V2 host function with an empty vector for explicit empty '
+        'constructor args', () async {
+      final keyPair = KeyPair.random();
+      final requestLog = <String>[];
+      final capturedKeys = <XdrLedgerKey>[];
+      final capturedEnvelopes = <String>[];
+      final server = externalRefDeployFlowMockServer(
+          keyPair, requestLog, capturedKeys, capturedEnvelopes);
+
+      final client = await SorobanClient.deployFromExternalRef(
+          deployRequest: DeployFromExternalRefRequest.forTagString(
+        sourceAccountKeyPair: keyPair,
+        network: Network.TESTNET,
+        rpcUrl: rpcUrl,
+        executableOwner: Address.forContractId(ownerContractIdHex),
+        tag: executableTag,
+        constructorArgs: [],
+        salt: fixedSalt,
+        server: server,
+      ));
+
+      expect(client.getContractId(), createdContractId);
+
+      final hostFunction = submittedHostFunction(capturedEnvelopes);
+      expect(hostFunction,
+          isA<CreateContractFromExternalRefWithConstructorHostFunction>());
+      final typed = hostFunction
+          as CreateContractFromExternalRefWithConstructorHostFunction;
+      expect(typed.executableOwner.contractId, ownerContractIdHex);
+      expect(typed.tagString, executableTag);
+      expect(typed.salt.uint256, fixedSalt.uint256);
+      expect(typed.constructorArgs, isEmpty);
+    });
+
+    test('a binary tag deploys through the high-level request', () async {
+      // The tag bytes are not valid UTF-8. An executable tag is an XDR
+      // string, which carries arbitrary bytes; the deploy must carry them
+      // byte for byte from the resolution key into the submitted envelope.
+      final binaryTag = Uint8List.fromList([0xC0, 0x00, 0xFF, 0xFE]);
       final keyPair = KeyPair.random();
       final requestLog = <String>[];
       final capturedKeys = <XdrLedgerKey>[];
@@ -347,21 +422,111 @@ void main() {
         network: Network.TESTNET,
         rpcUrl: rpcUrl,
         executableOwner: Address.forContractId(ownerContractIdHex),
-        tag: executableTag,
+        tag: binaryTag,
+        salt: fixedSalt,
         server: server,
       ));
 
       expect(client.getContractId(), createdContractId);
 
+      // The resolution asked for the owner's entry under the binary tag.
+      final tagKey = capturedKeys[0];
+      expect(Util.bytesToHex(tagKey.contractData!.contract.contractId!.hash),
+          ownerContractIdHex);
+      expect(tagKey.contractData!.key.executableTag, binaryTag);
+
+      // The submitted envelope carries the same bytes as the resolution key.
       final hostFunction = submittedHostFunction(capturedEnvelopes);
-      expect(hostFunction, isA<CreateContractFromExternalRefHostFunction>());
-      final typed = hostFunction as CreateContractFromExternalRefHostFunction;
+      expect(hostFunction,
+          isA<CreateContractFromExternalRefWithConstructorHostFunction>());
+      final typed = hostFunction
+          as CreateContractFromExternalRefWithConstructorHostFunction;
       expect(typed.executableOwner.contractId, ownerContractIdHex);
-      expect(typed.tagString, executableTag);
-      expect(typed.salt.uint256, hasLength(32));
+      expect(typed.tag, binaryTag);
+    });
+
+    test('forTagString encodes the tag exactly once', () async {
+      // A non-ASCII tag makes double encoding visible: its UTF-8 bytes
+      // would not survive a second encode.
+      const textTag = 'token-µ-v1';
+      final textTagBytes = Uint8List.fromList(utf8.encode(textTag));
+      final keyPair = KeyPair.random();
+      final requestLog = <String>[];
+      final capturedKeys = <XdrLedgerKey>[];
+      final capturedEnvelopes = <String>[];
+      final server = externalRefDeployFlowMockServer(
+          keyPair, requestLog, capturedKeys, capturedEnvelopes);
+
+      final request = DeployFromExternalRefRequest.forTagString(
+        sourceAccountKeyPair: keyPair,
+        network: Network.TESTNET,
+        rpcUrl: rpcUrl,
+        executableOwner: Address.forContractId(ownerContractIdHex),
+        tag: textTag,
+        salt: fixedSalt,
+        server: server,
+      );
+      expect(request.tag, textTagBytes);
+      expect(request.tagString, textTag);
+
+      final client =
+          await SorobanClient.deployFromExternalRef(deployRequest: request);
+
+      expect(client.getContractId(), createdContractId);
+      expect(capturedKeys[0].contractData!.key.executableTag, textTagBytes);
+      final hostFunction = submittedHostFunction(capturedEnvelopes);
+      expect(hostFunction,
+          isA<CreateContractFromExternalRefWithConstructorHostFunction>());
+      final typed = hostFunction
+          as CreateContractFromExternalRefWithConstructorHostFunction;
+      expect(typed.tag, textTagBytes);
+      expect(typed.tagString, textTag);
+    });
+
+    test('tagString throws for a binary tag', () {
+      final request = DeployFromExternalRefRequest(
+        sourceAccountKeyPair: KeyPair.random(),
+        network: Network.TESTNET,
+        rpcUrl: rpcUrl,
+        executableOwner: Address.forContractId(ownerContractIdHex),
+        tag: Uint8List.fromList([0xC0, 0x00, 0xFF, 0xFE]),
+      );
+      expect(() => request.tagString, throwsFormatException);
     });
 
     test('throws naming owner and tag when the reference does not resolve',
+        () async {
+      final keyPair = KeyPair.random();
+      final requestLog = <String>[];
+      final server = externalRefDeployFlowMockServer(
+          keyPair, requestLog, <XdrLedgerKey>[], <String>[],
+          tagEntryExists: false);
+
+      try {
+        await SorobanClient.deployFromExternalRef(
+            deployRequest: DeployFromExternalRefRequest.forTagString(
+          sourceAccountKeyPair: keyPair,
+          network: Network.TESTNET,
+          rpcUrl: rpcUrl,
+          executableOwner: Address.forContractId(ownerContractIdHex),
+          tag: executableTag,
+          server: server,
+        ));
+        fail('expected an exception for an unresolvable reference');
+      } on Exception catch (e) {
+        expect(e.toString(), contains('does not resolve'));
+        // A contract owner is spelled as its "C..." strkey.
+        expect(e.toString(),
+            contains(StrKey.encodeContractIdHex(ownerContractIdHex)));
+        // The tag renders through TxRepHelper.escapeBytes; an ASCII tag
+        // appears quoted.
+        expect(e.toString(), contains('under tag "$executableTag"'));
+      }
+      // The failure happened before anything was submitted.
+      expect(requestLog, ['tag']);
+    });
+
+    test('renders a binary tag escaped when the reference does not resolve',
         () async {
       final keyPair = KeyPair.random();
       final requestLog = <String>[];
@@ -376,18 +541,16 @@ void main() {
           network: Network.TESTNET,
           rpcUrl: rpcUrl,
           executableOwner: Address.forContractId(ownerContractIdHex),
-          tag: executableTag,
+          tag: Uint8List.fromList([0xC0, 0x00, 0xFF, 0xFE]),
           server: server,
         ));
         fail('expected an exception for an unresolvable reference');
       } on Exception catch (e) {
         expect(e.toString(), contains('does not resolve'));
-        // A contract owner is spelled as its "C..." strkey.
-        expect(e.toString(),
-            contains(StrKey.encodeContractIdHex(ownerContractIdHex)));
-        expect(e.toString(), contains(executableTag));
+        // TxRepHelper.escapeBytes writes non-printable bytes as \xNN
+        // escapes inside double quotes.
+        expect(e.toString(), contains(r'under tag "\xc0\x00\xff\xfe"'));
       }
-      // The failure happened before anything was submitted.
       expect(requestLog, ['tag']);
     });
 
@@ -403,7 +566,7 @@ void main() {
 
       try {
         await SorobanClient.deployFromExternalRef(
-            deployRequest: DeployFromExternalRefRequest(
+            deployRequest: DeployFromExternalRefRequest.forTagString(
           sourceAccountKeyPair: keyPair,
           network: Network.TESTNET,
           rpcUrl: rpcUrl,
@@ -415,7 +578,9 @@ void main() {
       } on Exception catch (e) {
         expect(e.toString(), contains('does not resolve'));
         expect(e.toString(), contains(ownerKeyPair.accountId));
-        expect(e.toString(), contains(executableTag));
+        // The tag renders through TxRepHelper.escapeBytes; an ASCII tag
+        // appears quoted.
+        expect(e.toString(), contains('under tag "$executableTag"'));
       }
       expect(requestLog, isEmpty);
     });
@@ -443,7 +608,7 @@ void main() {
       for (final (owner, spelling) in owners) {
         try {
           await SorobanClient.deployFromExternalRef(
-              deployRequest: DeployFromExternalRefRequest(
+              deployRequest: DeployFromExternalRefRequest.forTagString(
             sourceAccountKeyPair: keyPair,
             network: Network.TESTNET,
             rpcUrl: rpcUrl,
@@ -473,7 +638,7 @@ void main() {
           firstCodeLoadParseable: false);
 
       final client = await SorobanClient.deployFromExternalRef(
-          deployRequest: DeployFromExternalRefRequest(
+          deployRequest: DeployFromExternalRefRequest.forTagString(
         sourceAccountKeyPair: keyPair,
         network: Network.TESTNET,
         rpcUrl: rpcUrl,
@@ -501,7 +666,7 @@ void main() {
 
       await expectLater(
           SorobanClient.deployFromExternalRef(
-              deployRequest: DeployFromExternalRefRequest(
+              deployRequest: DeployFromExternalRefRequest.forTagString(
             sourceAccountKeyPair: keyPair,
             network: Network.TESTNET,
             rpcUrl: rpcUrl,
@@ -522,7 +687,7 @@ void main() {
 
       await expectLater(
           SorobanClient.deployFromExternalRef(
-              deployRequest: DeployFromExternalRefRequest(
+              deployRequest: DeployFromExternalRefRequest.forTagString(
             sourceAccountKeyPair: keyPair,
             network: Network.TESTNET,
             rpcUrl: 'http://localhost:1',

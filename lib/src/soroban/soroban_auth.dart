@@ -413,14 +413,17 @@ class SorobanAddressCredentialsWithDelegates {
 ///
 /// 2. Address Credentials (legacy, all protocol versions):
 ///    - Explicit per-address signature; preimage type ENVELOPE_TYPE_SOROBAN_AUTHORIZATION.
-///    - Created via [SorobanCredentials.forAddress] or [SorobanCredentials.forAddressCredentials].
-///    - This is the default and remains valid on all protocol versions.
+///    - Created via [SorobanCredentials.forAddressLegacy],
+///      [SorobanCredentials.forAddressCredentialsLegacy], or the default
+///      constructor's [addressCredentials] parameter.
+///    - Valid on all protocol versions.
 ///
 /// 3. Address V2 Credentials (protocol 27+):
 ///    - Same body as Address but preimage type changes to
 ///      ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS (address-bound).
 ///    - Emitting this arm below protocol 27 invalidates the transaction.
-///    - Created via [SorobanCredentials.forAddressV2].
+///    - Created via [SorobanCredentials.forAddress],
+///      [SorobanCredentials.forAddressCredentials], or [SorobanCredentials.forAddressV2].
 ///
 /// 4. Address With Delegates Credentials (protocol 27+):
 ///    - Extends V2 with a recursive delegate tree.
@@ -451,7 +454,8 @@ class SorobanCredentials {
   /// This constructor creates source-account credentials when
   /// [addressCredentials] is null, or legacy address credentials otherwise.
   ///
-  /// For the new P27 arms use [forAddressV2] or [forAddressWithDelegates].
+  /// For the P27 arms use [forAddress] / [forAddressCredentials] /
+  /// [forAddressV2] (ADDRESS_V2) or [forAddressWithDelegates].
   SorobanCredentials({SorobanAddressCredentials? addressCredentials}) :
       _arm = addressCredentials != null
           ? XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS
@@ -468,18 +472,52 @@ class SorobanCredentials {
     return SorobanCredentials();
   }
 
-  /// Creates legacy address-based credentials.
+  /// Creates ADDRESS_V2 credentials (protocol 27+) for the given address.
+  ///
+  /// Preimage type: ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS
+  /// (address-bound). Emitting this arm on a network below protocol 27
+  /// invalidates the transaction; use [forAddressLegacy] there.
+  static SorobanCredentials forAddress(Address address, BigInt nonce,
+      int signatureExpirationLedger, XdrSCVal signature) {
+    SorobanAddressCredentials addressCredentials = SorobanAddressCredentials(
+        address, nonce, signatureExpirationLedger, signature);
+    return SorobanCredentials._(
+      XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
+      addressV2Credentials: addressCredentials,
+    );
+  }
+
+  /// Creates legacy address-based credentials for the given address.
   ///
   /// Preimage type: ENVELOPE_TYPE_SOROBAN_AUTHORIZATION.
   /// Valid on all protocol versions.
-  static SorobanCredentials forAddress(Address address, BigInt nonce,
+  static SorobanCredentials forAddressLegacy(Address address, BigInt nonce,
       int signatureExpirationLedger, XdrSCVal signature) {
     SorobanAddressCredentials addressCredentials = SorobanAddressCredentials(
         address, nonce, signatureExpirationLedger, signature);
     return SorobanCredentials(addressCredentials: addressCredentials);
   }
 
+  /// Creates ADDRESS_V2 credentials (protocol 27+) from existing address
+  /// credentials.
+  ///
+  /// Equivalent to [forAddressV2]. Emitting this arm on a network below
+  /// protocol 27 invalidates the transaction; use
+  /// [forAddressCredentialsLegacy] there.
   static SorobanCredentials forAddressCredentials(
+      SorobanAddressCredentials addressCredentials) {
+    return SorobanCredentials._(
+      XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
+      addressV2Credentials: addressCredentials,
+    );
+  }
+
+  /// Creates legacy address-based credentials from existing address
+  /// credentials.
+  ///
+  /// Preimage type: ENVELOPE_TYPE_SOROBAN_AUTHORIZATION.
+  /// Valid on all protocol versions.
+  static SorobanCredentials forAddressCredentialsLegacy(
       SorobanAddressCredentials addressCredentials) {
     return SorobanCredentials(addressCredentials: addressCredentials);
   }

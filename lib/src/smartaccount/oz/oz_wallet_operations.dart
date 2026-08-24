@@ -1569,8 +1569,12 @@ class OZWalletOperations {
 
     final SimulateTransactionResponse simulation;
     try {
-      simulation = await _kit.sorobanServer
-          .simulateTransaction(SimulateTransactionRequest(transaction));
+      simulation = await _kit.sorobanServer.simulateTransaction(
+        SimulateTransactionRequest(
+          transaction,
+          useUpgradedAuth: _kit.config.useUpgradedAuth,
+        ),
+      );
     } catch (e) {
       throw SmartAccountTransactionException.simulationFailed(
         'Failed to simulate deployment transaction: $e',
