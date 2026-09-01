@@ -425,6 +425,161 @@ if (result?.vec != null) {
 
 **Common mistake:** `result.u32` returns `XdrUint32?`, not `int?`. Always unwrap: `result.u32?.uint32`.
 
+### Converting results to native Dart values
+
+`dynamic toNative()` on `XdrSCVal` converts a value tree to native Dart values on a
+best-effort basis, as an alternative to the manual unwrapping above. It never
+throws: an arm with no faithful native representation converts to the `XdrSCVal`
+itself, so the caller can detect that with `is XdrSCVal`.
+
+| XDR type | Native result |
+|---|---|
+| Bool | `bool` |
+| Void | `null` |
+| U32, I32 | `int` |
+| U64, I64, Timepoint, Duration | `BigInt` |
+| U128, I128, U256, I256 | `BigInt` |
+| Bytes | `Uint8List` (the stored instance, not a copy) |
+| String, Symbol | `String` |
+| Vec | `List<dynamic>`, elements converted recursively |
+| Map | `Map<dynamic, dynamic>` (see below), or the `XdrSCVal` itself |
+| Address | `Address` |
+| Error, Contract Instance, Ledger Key Contract Instance, Ledger Key Nonce, Executable Tag, or any arm not listed above | the `XdrSCVal` itself |
+
+Every integer 64 bits or wider converts to `BigInt`, never `int`, so the value
+stays exact on Flutter web, where a Dart `int` above 2^53 is a JavaScript double.
+
+**Map key rules.** `Address`, `Uint8List`, and `XdrSCVal` have no value equality, so
+map keys use a narrower conversion than values:
+
+| Key XDR type | Dart map key |
+|---|---|
+| Symbol, String | `String` |
+| U32, I32 | `int` |
+| U64, I64, Timepoint, Duration, U128, I128, U256, I256 | `BigInt` |
+| Bool | `bool` |
+| Void | `null` |
+| Bytes | lowercase hex `String` |
+| Address | StrKey `String` (`G...`/`C...`/`M...`/`B...`/`L...`) |
+| anything else | none -- the whole map falls back to the `XdrSCVal` itself |
+
+An address *value* converts to an `Address` object, but an address *key* becomes
+its StrKey string; a bytes *value* stays a `Uint8List`, but a bytes *key* becomes
+its hex string. `int` and `BigInt` are distinct Dart key types even for the same
+number (`BigInt.from(5) == 5` is `false`), so a U32 key and a U64 key holding the
+same value coexist as two entries. The whole map falls back to the `XdrSCVal`
+itself when a key has no representation in the table above, or when two entries
+convert to the same Dart key.
+
+```dart
+// Every 64-bit-and-wider integer is BigInt, at any width.
+XdrSCVal u64Val = XdrSCVal.forU64(BigInt.parse('18446744073709551615'));
+print(u64Val.toNative()); // 18446744073709551615 (BigInt)
+
+XdrSCVal i128Val = XdrSCVal.forI128BigInt(
+    BigInt.parse('-170141183460469231731687303715884105728'));
+print(i128Val.toNative()); // -170141183460469231731687303715884105728 (BigInt)
+```
+
+```dart
+// An int key and a BigInt key holding the same number are distinct entries.
+XdrSCVal val = XdrSCVal.forMap([
+  XdrSCMapEntry(XdrSCVal.forU32(5), XdrSCVal.forString('u32 five')),
+  XdrSCMapEntry(
+      XdrSCVal.forU64(BigInt.from(5)), XdrSCVal.forString('u64 five')),
+]);
+Map<dynamic, dynamic> native = val.toNative() as Map<dynamic, dynamic>;
+print(native.length); // 2 -- the int key and the BigInt key never collide
+for (dynamic key in native.keys) {
+  print('${key is BigInt}: $key'); // false: 5, then true: 5
+}
+```
+
+```dart
+// A Bytes key becomes a lowercase hex String, not a Uint8List.
+XdrSCVal val = XdrSCVal.forMap([
+  XdrSCMapEntry(
+      XdrSCVal.forBytes(Uint8List.fromList([1, 2])), XdrSCVal.forU32(1)),
+]);
+Map<dynamic, dynamic> native = val.toNative() as Map<dynamic, dynamic>;
+print(native.keys.toList()); // [0102]
+```
+
+**Detecting a fallback:**
+
+```dart
+// A vec has no value equality, so it cannot serve as a map key: the whole
+// map falls back to the XdrSCVal itself.
+XdrSCVal val = XdrSCVal.forMap([
+  XdrSCMapEntry(
+      XdrSCVal.forVec([XdrSCVal.forU32(1)]), XdrSCVal.forU32(1)),
+]);
+dynamic native = val.toNative();
+
+// WRONG: assumes toNative() always returns a Map -- throws a cast error
+// once a map contains an unrepresentable or colliding key.
+Map<dynamic, dynamic> wrong = native as Map<dynamic, dynamic>;
+
+// CORRECT: check the fallback before treating the result as a Map.
+if (native is XdrSCVal) {
+  print('unsupported map, handle the XdrSCVal directly');
+} else {
+  Map<dynamic, dynamic> map = native as Map<dynamic, dynamic>;
+  print(map);
+}
+```
+
+**Narrowing a BigInt result:**
+
+```dart
+XdrSCVal u64Val = XdrSCVal.forU64(BigInt.parse('18446744073709551615'));
+dynamic native = u64Val.toNative();
+
+// WRONG: BigInt.toInt() truncates silently on web once the value exceeds
+// 2^53 -- no exception, just a wrong number.
+int wrong = (native as BigInt).toInt();
+
+// CORRECT: keep it as BigInt, or convert to String for display.
+BigInt correct = native as BigInt;
+print(correct.toString()); // 18446744073709551615
+```
+
+**Looking up an address-keyed map:**
+
+```dart
+const g = 'GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB';
+XdrSCVal val = XdrSCVal.forMap([
+  XdrSCMapEntry(XdrSCVal.forAccountAddress(g), XdrSCVal.forU32(1)),
+]);
+Map<dynamic, dynamic> native = val.toNative() as Map<dynamic, dynamic>;
+
+// WRONG: the map key is the StrKey String, not an Address -- Address has
+// no value equality, so this lookup misses even for the same address.
+Address lookupKey = Address.forAccountId(g);
+dynamic wrong = native[lookupKey]; // null
+
+// CORRECT: look the entry up with the StrKey String the key actually is.
+dynamic correct = native[g]; // 1
+```
+
+**Expecting an int key to match a BigInt key:**
+
+```dart
+XdrSCVal val = XdrSCVal.forMap([
+  XdrSCMapEntry(XdrSCVal.forU32(5), XdrSCVal.forString('u32 five')),
+  XdrSCMapEntry(
+      XdrSCVal.forU64(BigInt.from(5)), XdrSCVal.forString('u64 five')),
+]);
+Map<dynamic, dynamic> native = val.toNative() as Map<dynamic, dynamic>;
+
+// WRONG: looking up the u64 entry with a plain int -- misses because the
+// map holds a BigInt key, and 5 (int) != BigInt.from(5).
+dynamic wrong = native[5]; // 'u32 five', not the u64 entry
+
+// CORRECT: use a BigInt key to reach a U64-or-wider entry.
+dynamic correct = native[BigInt.from(5)]; // 'u64 five'
+```
+
 ---
 
 ## Reading Contract State
