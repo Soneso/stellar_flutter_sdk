@@ -1,3 +1,6 @@
+## [Unreleased]
+- `XdrSCVal` gains `toNative()`, converting a smart contract value to native Dart values on a best-effort basis: `BigInt` for every 64-bit-and-wider integer, `Address` for address values, and `List`/`Map` for vecs and maps. A value with no faithful native representation, or a map with an unrepresentable or colliding key, converts to the `XdrSCVal` itself so a caller can detect the fallback with `is XdrSCVal`. The method is opt-in and never throws; no existing API changes behavior.
+
 ## [3.6.0] - 25.Aug.2026.
 - Migration guide for existing code: [documentation/migration/3.6.0.md](documentation/migration/3.6.0.md).
 - Breaking change: strkey decoding and keypair construction reject a number of inputs they used to accept. Every case is listed below; code that decodes addresses coming from users or from the network is worth checking against it.
