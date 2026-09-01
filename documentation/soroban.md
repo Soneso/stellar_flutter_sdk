@@ -1038,6 +1038,109 @@ if (result.map != null) {
 }
 ```
 
+#### Converting to Native Dart Values
+
+`XdrSCVal.toNative()` converts a value tree to native Dart values on a best-effort
+basis, as an alternative to the manual field access above. It is opt-in — every
+existing API keeps returning `XdrSCVal` — and it never throws: a value with no
+faithful native representation converts to the `XdrSCVal` itself, so the caller can
+detect that with `is XdrSCVal`.
+
+| XDR type | Native result |
+|---|---|
+| Bool | `bool` |
+| Void | `null` |
+| U32, I32 | `int` |
+| U64, I64, Timepoint, Duration | `BigInt` |
+| U128, I128, U256, I256 | `BigInt` |
+| Bytes | `Uint8List` (the stored instance, not a copy) |
+| String, Symbol | `String` |
+| Vec | `List<dynamic>`, elements converted recursively |
+| Map | `Map<dynamic, dynamic>` (see below), or the `XdrSCVal` itself |
+| Address | `Address` |
+| Error, Contract Instance, Ledger Key Contract Instance, Ledger Key Nonce, Executable Tag, or any arm not listed above | the `XdrSCVal` itself |
+
+Every integer 64 bits or wider — U64, I64, Timepoint, Duration, and the 128/256-bit
+types — converts to `BigInt`, never `int`, so the value stays exact on Flutter web,
+where a Dart `int` above 2^53 is a JavaScript double.
+
+Map keys use a narrower conversion than values, because `Address`, `Uint8List`, and
+`XdrSCVal` have no value equality and would be useless as map keys:
+
+| Key XDR type | Dart map key |
+|---|---|
+| Symbol, String | `String` |
+| U32, I32 | `int` |
+| U64, I64, Timepoint, Duration, U128, I128, U256, I256 | `BigInt` |
+| Bool | `bool` |
+| Void | `null` |
+| Bytes | lowercase hex `String` |
+| Address | StrKey `String` (`G...`/`C...`/`M...`/`B...`/`L...`) |
+| anything else | none — the whole map falls back to the `XdrSCVal` itself |
+
+Two asymmetries follow from that narrowing: an address *value* converts to an
+`Address` object, but an address *key* becomes its StrKey string; a bytes *value*
+stays a `Uint8List`, but a bytes *key* becomes its hex string. Look a converted map
+up with the same type its keys actually have.
+
+`int` and `BigInt` are distinct Dart types even for the same number
+(`BigInt.from(5) == 5` is `false`), so a map with a U32 key `5` and a U64 key
+holding `5` keeps both as separate entries. The whole map falls back to the
+`XdrSCVal` itself when a key has no representation in the table above, or when two
+entries convert to the same Dart key — a later entry would otherwise silently
+overwrite an earlier one.
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+XdrSCVal boolVal = XdrSCVal.forBool(true);
+print(boolVal.toNative()); // true
+
+XdrSCVal u32Val = XdrSCVal.forU32(42);
+print(u32Val.toNative()); // 42
+
+// u64 and wider integers always convert to BigInt, never int, so the
+// value stays exact on every platform this SDK targets, web included.
+XdrSCVal u64Val = XdrSCVal.forU64(BigInt.parse('18446744073709551615'));
+dynamic nativeU64 = u64Val.toNative();
+print(nativeU64 is BigInt); // true
+print(nativeU64); // 18446744073709551615
+```
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+XdrSCVal mapVal = XdrSCVal.forMap([
+  XdrSCMapEntry(
+      XdrSCVal.forSymbol('name'), XdrSCVal.forString('Alice')),
+  XdrSCMapEntry(XdrSCVal.forSymbol('age'), XdrSCVal.forU32(30)),
+]);
+
+Map<dynamic, dynamic> native =
+    mapVal.toNative() as Map<dynamic, dynamic>;
+print(native); // {name: Alice, age: 30}
+print(native.keys.toList()); // [name, age]
+```
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+// A vec has no value equality, so it cannot serve as a map key: the
+// whole map falls back to the XdrSCVal itself.
+XdrSCVal mapWithVecKey = XdrSCVal.forMap([
+  XdrSCMapEntry(
+      XdrSCVal.forVec([XdrSCVal.forBool(true)]), XdrSCVal.forU32(1)),
+]);
+
+dynamic native = mapWithVecKey.toNative();
+print(native is XdrSCVal); // true
+print(identical(native, mapWithVecKey)); // true
+```
+
+`ContractSpec.nativeToXdrSCVal` does not accept every shape `toNative()` can produce
+— for example, it rejects `Address` objects for several argument types. The two
+directions are separate conversions, not a round trip.
+
 ## Events
 
 Query contract events emitted during execution. Useful for tracking transfers, state changes, and other contract activity.
