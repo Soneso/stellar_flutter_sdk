@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/src/constants/bit_constants.dart';
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
 import 'package:stellar_flutter_sdk/src/soroban/soroban_auth.dart';
+import 'package:stellar_flutter_sdk/src/util.dart';
 
 import 'xdr_data_io.dart';
 import 'xdr_json_helper.dart';
@@ -665,6 +666,214 @@ class XdrSCVal extends XdrSCValBase {
         break;
     }
     return null;
+  }
+
+  /// Converts this value to a native Dart value on a best-effort basis.
+  ///
+  /// Every 64-bit-and-wider integer arm (SCV_U64, SCV_I64, SCV_TIMEPOINT,
+  /// SCV_DURATION, SCV_U128, SCV_I128, SCV_U256 and SCV_I256) converts to
+  /// BigInt rather than int, so the value is exact on every platform this
+  /// SDK targets, including Flutter web. SCV_ADDRESS converts to an
+  /// [Address]. SCV_MAP converts to a Map whose keys use a narrower
+  /// conversion than values: a bytes key becomes a lowercase hex String and
+  /// an address key becomes its StrKey String, because Uint8List and
+  /// Address have no value equality and so cannot serve as usable map
+  /// keys. A Dart int key and a BigInt key holding the same numeric value
+  /// are distinct map entries. This method never throws: an arm with no
+  /// native representation, an ill-formed payload, or a map with an
+  /// unrepresentable or colliding key converts to this XdrSCVal itself,
+  /// which a caller can detect with `is XdrSCVal`. The Uint8List returned
+  /// for SCV_BYTES is the stored instance, not a copy.
+  dynamic toNative() {
+    switch (discriminant) {
+      case XdrSCValType.SCV_BOOL:
+        if (b != null) {
+          return b!;
+        }
+        break;
+      case XdrSCValType.SCV_VOID:
+        return null;
+      case XdrSCValType.SCV_U32:
+        if (u32 != null) {
+          return u32!.uint32;
+        }
+        break;
+      case XdrSCValType.SCV_I32:
+        if (i32 != null) {
+          return i32!.int32;
+        }
+        break;
+      case XdrSCValType.SCV_U64:
+        if (u64 != null) {
+          return u64!.uint64;
+        }
+        break;
+      case XdrSCValType.SCV_I64:
+        if (i64 != null) {
+          return i64!.int64;
+        }
+        break;
+      case XdrSCValType.SCV_TIMEPOINT:
+        if (timepoint != null) {
+          return timepoint!.uint64;
+        }
+        break;
+      case XdrSCValType.SCV_DURATION:
+        if (duration != null) {
+          return duration!.uint64;
+        }
+        break;
+      case XdrSCValType.SCV_U128:
+      case XdrSCValType.SCV_I128:
+      case XdrSCValType.SCV_U256:
+      case XdrSCValType.SCV_I256:
+        final BigInt? value = toBigInt();
+        if (value != null) {
+          return value;
+        }
+        break;
+      case XdrSCValType.SCV_BYTES:
+        if (bytes != null) {
+          return bytes!.sCBytes;
+        }
+        break;
+      case XdrSCValType.SCV_STRING:
+        if (str != null) {
+          return str!;
+        }
+        break;
+      case XdrSCValType.SCV_SYMBOL:
+        if (sym != null) {
+          return sym!;
+        }
+        break;
+      case XdrSCValType.SCV_VEC:
+        return (vec ?? const <XdrSCVal>[])
+            .map((XdrSCVal e) => e.toNative())
+            .toList();
+      case XdrSCValType.SCV_MAP:
+        return _mapToNative();
+      case XdrSCValType.SCV_ADDRESS:
+        if (address != null) {
+          try {
+            return Address.fromXdr(address!);
+          } catch (_) {
+            return this;
+          }
+        }
+        break;
+    }
+    return this;
+  }
+
+  /// Converts this SCV_MAP value's entries to a native Dart Map.
+  ///
+  /// A null [map] payload converts to an empty Map. The whole map falls
+  /// back to this XdrSCVal itself when a key is unrepresentable (per
+  /// [_mapKeyToNative]) or when two entries collide on the same Dart key,
+  /// detected by comparing the entry count with the resulting Map's
+  /// length.
+  dynamic _mapToNative() {
+    final List<XdrSCMapEntry>? entries = map;
+    if (entries == null) {
+      return <dynamic, dynamic>{};
+    }
+    final Map<dynamic, dynamic> result = <dynamic, dynamic>{};
+    for (final XdrSCMapEntry entry in entries) {
+      final Object? key = _mapKeyToNative(entry.key);
+      if (identical(key, _unrepresentableKey)) {
+        return this;
+      }
+      result[key] = entry.val.toNative();
+    }
+    if (result.length != entries.length) {
+      return this;
+    }
+    return result;
+  }
+
+  /// Sentinel returned by [_mapKeyToNative] for a key with no usable native
+  /// map-key representation. `null` is a legitimate key result (the
+  /// SCV_VOID key), so the sentinel is checked by identity, not equality.
+  static final Object _unrepresentableKey = Object();
+
+  /// Converts [key] to a native Dart map key, or [_unrepresentableKey] when
+  /// [key]'s arm, or an ill-formed payload, has no usable native map-key
+  /// representation.
+  static Object? _mapKeyToNative(XdrSCVal key) {
+    switch (key.discriminant) {
+      case XdrSCValType.SCV_SYMBOL:
+        if (key.sym != null) {
+          return key.sym!;
+        }
+        break;
+      case XdrSCValType.SCV_STRING:
+        if (key.str != null) {
+          return key.str!;
+        }
+        break;
+      case XdrSCValType.SCV_U32:
+        if (key.u32 != null) {
+          return key.u32!.uint32;
+        }
+        break;
+      case XdrSCValType.SCV_I32:
+        if (key.i32 != null) {
+          return key.i32!.int32;
+        }
+        break;
+      case XdrSCValType.SCV_U64:
+        if (key.u64 != null) {
+          return key.u64!.uint64;
+        }
+        break;
+      case XdrSCValType.SCV_I64:
+        if (key.i64 != null) {
+          return key.i64!.int64;
+        }
+        break;
+      case XdrSCValType.SCV_TIMEPOINT:
+        if (key.timepoint != null) {
+          return key.timepoint!.uint64;
+        }
+        break;
+      case XdrSCValType.SCV_DURATION:
+        if (key.duration != null) {
+          return key.duration!.uint64;
+        }
+        break;
+      case XdrSCValType.SCV_U128:
+      case XdrSCValType.SCV_I128:
+      case XdrSCValType.SCV_U256:
+      case XdrSCValType.SCV_I256:
+        final BigInt? value = key.toBigInt();
+        if (value != null) {
+          return value;
+        }
+        break;
+      case XdrSCValType.SCV_BOOL:
+        if (key.b != null) {
+          return key.b!;
+        }
+        break;
+      case XdrSCValType.SCV_VOID:
+        return null;
+      case XdrSCValType.SCV_BYTES:
+        if (key.bytes != null) {
+          return Util.bytesToHex(key.bytes!.sCBytes);
+        }
+        break;
+      case XdrSCValType.SCV_ADDRESS:
+        if (key.address != null) {
+          try {
+            return key.address!.toStrKey();
+          } catch (_) {
+            return _unrepresentableKey;
+          }
+        }
+        break;
+    }
+    return _unrepresentableKey;
   }
 
   static XdrSCVal fromBase64EncodedXdrString(String base64Encoded) {

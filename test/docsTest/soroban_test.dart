@@ -668,4 +668,50 @@ void main() {
       expect(wasmHash, isNotNull);
     });
   });
+
+  group('toNative conversion (offline)', () {
+    test('soroban: toNative - Scalars and BigInt', () {
+      // Snippet from soroban.md "Converting to Native Dart Values"
+      XdrSCVal boolVal = XdrSCVal.forBool(true);
+      expect(boolVal.toNative(), true);
+
+      XdrSCVal u32Val = XdrSCVal.forU32(42);
+      expect(u32Val.toNative(), 42);
+
+      // u64 and wider integers always convert to BigInt, never int, so the
+      // value stays exact on every platform this SDK targets, web included.
+      XdrSCVal u64Val = XdrSCVal.forU64(BigInt.parse('18446744073709551615'));
+      dynamic nativeU64 = u64Val.toNative();
+      expect(nativeU64, isA<BigInt>());
+      expect(nativeU64, BigInt.parse('18446744073709551615'));
+    });
+
+    test('soroban: toNative - Maps preserve key order', () {
+      // Snippet from soroban.md "Converting to Native Dart Values"
+      XdrSCVal mapVal = XdrSCVal.forMap([
+        XdrSCMapEntry(
+            XdrSCVal.forSymbol('name'), XdrSCVal.forString('Alice')),
+        XdrSCMapEntry(XdrSCVal.forSymbol('age'), XdrSCVal.forU32(30)),
+      ]);
+
+      Map<dynamic, dynamic> native =
+          mapVal.toNative() as Map<dynamic, dynamic>;
+      expect(native, equals({'name': 'Alice', 'age': 30}));
+      expect(native.keys.toList(), equals(['name', 'age']));
+    });
+
+    test('soroban: toNative - Detecting a fallback', () {
+      // Snippet from soroban.md "Converting to Native Dart Values"
+      // A vec has no value equality, so it cannot serve as a map key: the
+      // whole map falls back to the XdrSCVal itself.
+      XdrSCVal mapWithVecKey = XdrSCVal.forMap([
+        XdrSCMapEntry(
+            XdrSCVal.forVec([XdrSCVal.forBool(true)]), XdrSCVal.forU32(1)),
+      ]);
+
+      dynamic native = mapWithVecKey.toNative();
+      expect(native is XdrSCVal, true);
+      expect(native, same(mapWithVecKey));
+    });
+  });
 }
