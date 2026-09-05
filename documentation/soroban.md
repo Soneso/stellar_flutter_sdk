@@ -1216,14 +1216,6 @@ stellar-contract-bindings flutter \
 
 Or use the [web interface](https://stellar-contract-bindings.fly.dev/).
 
-The generator does not yet resolve a contract created from a CAP-85 external
-reference (Protocol 28) and fails with "Unknown executable type" for one. Until it
-does, generate the binding from a contract that carries the wasm directly (any
-instance deployed from the same wasm hash, which
-`SorobanServer.getExternalRefWasmHash` resolves for the reference). A generated
-client works with external-reference contracts at runtime either way — the SDK
-resolves the reference when loading the contract.
-
 ### Use Generated Client
 
 The generated client provides type-safe method calls with native Dart types.
