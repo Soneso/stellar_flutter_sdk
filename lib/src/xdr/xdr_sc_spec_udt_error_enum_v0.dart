@@ -101,7 +101,7 @@ class XdrSCSpecUDTErrorEnumV0 {
       _name,
       type: 'XdrSCSpecUDTErrorEnumV0',
       key: 'name',
-      maxBytes: 60,
+      maxBytes: 1024,
     ),
     'cases': XdrJsonHelper.array<XdrSCSpecUDTErrorEnumCaseV0>(
       _cases,
@@ -155,7 +155,7 @@ class XdrSCSpecUDTErrorEnumV0 {
         jsonName,
         type: 'XdrSCSpecUDTErrorEnumV0',
         key: 'name',
-        maxBytes: 60,
+        maxBytes: 1024,
       ),
       XdrJsonHelper.readArray(
             jsonCases,

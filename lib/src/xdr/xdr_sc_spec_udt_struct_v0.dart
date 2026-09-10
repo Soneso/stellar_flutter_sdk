@@ -99,7 +99,7 @@ class XdrSCSpecUDTStructV0 {
       _name,
       type: 'XdrSCSpecUDTStructV0',
       key: 'name',
-      maxBytes: 60,
+      maxBytes: 1024,
     ),
     'fields': XdrJsonHelper.array<XdrSCSpecUDTStructFieldV0>(
       _fields,
@@ -153,7 +153,7 @@ class XdrSCSpecUDTStructV0 {
         jsonName,
         type: 'XdrSCSpecUDTStructV0',
         key: 'name',
-        maxBytes: 60,
+        maxBytes: 1024,
       ),
       XdrJsonHelper.readArray(
             jsonFields,

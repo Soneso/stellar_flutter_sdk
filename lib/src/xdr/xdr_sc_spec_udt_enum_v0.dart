@@ -97,7 +97,7 @@ class XdrSCSpecUDTEnumV0 {
       _name,
       type: 'XdrSCSpecUDTEnumV0',
       key: 'name',
-      maxBytes: 60,
+      maxBytes: 1024,
     ),
     'cases': XdrJsonHelper.array<XdrSCSpecUDTEnumCaseV0>(
       _cases,
@@ -151,7 +151,7 @@ class XdrSCSpecUDTEnumV0 {
         jsonName,
         type: 'XdrSCSpecUDTEnumV0',
         key: 'name',
-        maxBytes: 60,
+        maxBytes: 1024,
       ),
       XdrJsonHelper.readArray(
             jsonCases,
