@@ -174,15 +174,16 @@ jobs:
             '1. Update `XDR_COMMIT` in the repo-root `Makefile` to the upstream commit shown above' \
             '2. Run `make xdr-update` to re-download `.x` files and regenerate the Dart XDR types' \
             '3. Run `make xdr-generate-tests` to re-emit the XDR unit tests' \
-            '4. Update `sdk_xdr_commit` in `tools/sep-51-oracle/oracle-pin.json` to the same commit. The SEP-0051 corpus generator refuses to run while that field disagrees with the `Makefile`' \
-            '5. Install the pinned XDR-JSON reference CLI, whose exact command is recorded in `tools/sep-51-oracle/oracle-pin.json` under `install`' \
-            '6. Run `ruby tools/sep-51-oracle/name_map.rb --diff` to rebuild the SEP-0051 name table and check every derived JSON name against the reference' \
-            '7. Run `python3 tools/sep-51-corpus/generate_corpus.py` to regenerate the SEP-0051 conformance corpus against the same build' \
-            '8. Run `make sep51-generate-tests` to re-emit the SEP-0051 tests and the embedded corpus' \
-            '9. Run `dart analyze lib/` and fix any issues in the SDK layer (operation builders, TxRep, SEP implementations, etc.)' \
-            '10. Run `flutter test` and fix any test failures' \
-            '11. If the XDR changes introduce new types or extend existing ones (e.g. new operations, transaction fields, or protocol features), evaluate whether the SDK needs new or updated high-level APIs to support them (e.g. operation builders, TxRep, service classes)' \
-            '12. Update the changelog and release notes with any breaking changes or new features. A changed JSON key or rendering is a wire-format change and belongs there too' >> /tmp/issue_body.md
+            '4. Run `make xdr-generator-test`; if the snapshot diffs show only the intended upstream change, run `make xdr-generator-update-snapshots` and re-run the test' \
+            '5. Update `sdk_xdr_commit` in `tools/sep-51-oracle/oracle-pin.json` to the same commit. The SEP-0051 corpus generator refuses to run while that field disagrees with the `Makefile`' \
+            '6. Install the pinned XDR-JSON reference CLI, whose exact command is recorded in `tools/sep-51-oracle/oracle-pin.json` under `install`' \
+            '7. Run `ruby tools/sep-51-oracle/name_map.rb --diff` to rebuild the SEP-0051 name table and check every derived JSON name against the reference' \
+            '8. Run `python3 tools/sep-51-corpus/generate_corpus.py` to regenerate the SEP-0051 conformance corpus against the same build' \
+            '9. Run `make sep51-generate-tests` to re-emit the SEP-0051 tests and the embedded corpus' \
+            '10. Run `dart analyze lib/` and fix any issues in the SDK layer (operation builders, TxRep, SEP implementations, etc.)' \
+            '11. Run `flutter test` and fix any test failures' \
+            '12. If the XDR changes introduce new types or extend existing ones (e.g. new operations, transaction fields, or protocol features), evaluate whether the SDK needs new or updated high-level APIs to support them (e.g. operation builders, TxRep, service classes)' \
+            '13. Update the changelog and release notes with any breaking changes or new features. A changed JSON key or rendering is a wire-format change and belongs there too' >> /tmp/issue_body.md
           printf '\nSee the [XDR generator README](tools/xdr-generator/README.md) for detailed instructions.\n' >> /tmp/issue_body.md
           printf '\n---\n*This issue was created automatically by the [XDR update check workflow](.github/workflows/xdr-update-check.yml).*\n' >> /tmp/issue_body.md
 

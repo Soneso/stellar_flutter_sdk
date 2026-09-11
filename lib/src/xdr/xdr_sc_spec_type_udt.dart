@@ -54,7 +54,7 @@ class XdrSCSpecTypeUDT {
       _name,
       type: 'XdrSCSpecTypeUDT',
       key: 'name',
-      maxBytes: 60,
+      maxBytes: 1024,
     ),
   };
 
@@ -75,7 +75,7 @@ class XdrSCSpecTypeUDT {
         jsonName,
         type: 'XdrSCSpecTypeUDT',
         key: 'name',
-        maxBytes: 60,
+        maxBytes: 1024,
       ),
     );
   }

@@ -125,6 +125,7 @@ class XdrSCSpecEventV0 {
       _name,
       type: 'XdrSCSpecEventV0',
       key: 'name',
+      maxBytes: 1024,
     ),
     'prefix_topics': XdrJsonHelper.array<String>(
       _prefixTopics,
@@ -207,6 +208,7 @@ class XdrSCSpecEventV0 {
         jsonName,
         type: 'XdrSCSpecEventV0',
         key: 'name',
+        maxBytes: 1024,
       ),
       XdrJsonHelper.readArray(
             jsonPrefixTopics,
