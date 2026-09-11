@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -134,6 +136,44 @@ void main() {
       expect(creditAsset.code, equals("USD"));
       expect(creditAsset.issuerId, equals(issuerKeyPair.accountId));
       expect(restored.amount, equals("50.75"));
+    });
+
+    test('payment amount survives the wire byte-for-byte', () {
+      for (final amount in ["100.5", "922337203685.4775807"]) {
+        final payment = PaymentOperationBuilder(
+          destinationKeyPair.accountId,
+          Asset.NATIVE,
+          amount,
+        ).build();
+
+        final decoded = Operation.fromXdr(XdrOperation.decode(
+            XdrDataInputStream(base64Decode(payment.toXdrBase64()))));
+
+        expect(decoded, isA<PaymentOperation>());
+        expect((decoded as PaymentOperation).amount, equals(amount),
+            reason: 'expected "$amount" back unchanged from its encoding');
+      }
+    });
+
+    test('payment refuses an amount past the int64 maximum', () {
+      // One stroop past the int64 maximum, and a value far beyond it.
+      for (final amount in ["922337203685.4775808", "99999999999999999999"]) {
+        final payment = PaymentOperationBuilder(
+          destinationKeyPair.accountId,
+          Asset.NATIVE,
+          amount,
+        ).build();
+
+        // toXdr propagates the guard unwrapped; toXdrBase64 rethrows
+        // every failure as an AssertionError.
+        expect(
+          () => payment.toXdr(),
+          throwsA(predicate((e) =>
+              e is Exception &&
+              e.toString().contains("Amount out of range"))),
+          reason: 'expected "$amount" to be refused',
+        );
+      }
     });
 
     test('payment with decimal amount precision', () {

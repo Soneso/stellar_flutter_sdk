@@ -138,6 +138,23 @@ final class BitConstants {
   /// Decimal: -2147483648
   static const int INT32_MIN_VALUE = -0x80000000;
 
+  /// Maximum value for a signed 64-bit integer, as BigInt (web-safe).
+  ///
+  /// Used to validate values destined for XDR int64 fields, such as
+  /// classic asset amounts in stroops.
+  ///
+  /// Hexadecimal: 0x7FFFFFFFFFFFFFFF
+  /// Decimal: 9223372036854775807
+  static final BigInt int64MaxValueBigInt =
+      BigInt.parse('7FFFFFFFFFFFFFFF', radix: 16);
+
+  /// Minimum value for a signed 64-bit integer, as BigInt (web-safe).
+  ///
+  /// Hexadecimal: -0x8000000000000000
+  /// Decimal: -9223372036854775808
+  static final BigInt int64MinValueBigInt =
+      -BigInt.parse('8000000000000000', radix: 16);
+
   // ============================================================================
   // CRC16 CHECKSUM CONSTANTS
   // ============================================================================

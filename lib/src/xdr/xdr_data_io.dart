@@ -275,6 +275,18 @@ class DataOutput {
   }
 
   void writeBigInt64(BigInt v, [Endian endian = Endian.big]) {
+    // Both signed (XdrInt64, sequence numbers) and unsigned (XdrUint64)
+    // callers encode through this method, so it accepts the union of both
+    // ranges. A value outside it has no 64-bit rendering at all; encoding
+    // would keep only its low 64 bits.
+    if (v < BitConstants.int64MinValueBigInt ||
+        v > BitConstants.uint64MaskBigInt) {
+      throw ArgumentError.value(
+        v,
+        'v',
+        'does not fit in a signed or unsigned 64-bit integer',
+      );
+    }
     BigInt unsigned = v.toUnsigned(64);
     List<int> bytes = List<int>.filled(8, 0);
     for (int i = 7; i >= 0; i--) {
