@@ -98,7 +98,8 @@ jobs:
             test/unit/sep/sep51_stellar_types_test.dart \
             test/unit/xdr/json_generated/ \
             test/unit/xdr/xdr_json_helper_test.dart \
-            test/unit/xdr/xdr_json_reference_rendering_test.dart
+            test/unit/xdr/xdr_json_reference_rendering_test.dart \
+            test/unit/xdr/xdr_sc_val_to_native_test.dart
 
       # `flutter test` has no WasmGC platform, so the nesting guard is checked there by
       # compiling a harness and running it under Node. A guard that let an over-nested

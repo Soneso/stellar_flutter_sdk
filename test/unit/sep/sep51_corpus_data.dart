@@ -32,7 +32,7 @@ const Map<String, String> sep51CorpusMetadata = <String, String>{
   'reference_tool': 'stellar-xdr',
   'reference_version': '28.0.0',
   'reference_xdr_commit': '9c9c145953e80990d6ff1ae3a6a973a0ce6d0694',
-  'sdk_xdr_commit': '911c9356277468cb588481bd90b5d4b6eda395a7',
+  'sdk_xdr_commit': 'c40231c76bf2ebce76b24aa11c72508ac3eaa329',
   'entry_count': '359',
   'unresolvable_enum_members': '',
   'unresolvable_struct_types': '',

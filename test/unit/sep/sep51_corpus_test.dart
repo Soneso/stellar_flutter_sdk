@@ -716,7 +716,7 @@ void main() {
       );
       expect(
         sep51CorpusMetadata['sdk_xdr_commit'],
-        '911c9356277468cb588481bd90b5d4b6eda395a7',
+        'c40231c76bf2ebce76b24aa11c72508ac3eaa329',
       );
     });
 

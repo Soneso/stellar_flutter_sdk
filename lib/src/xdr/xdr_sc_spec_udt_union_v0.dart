@@ -97,7 +97,7 @@ class XdrSCSpecUDTUnionV0 {
       _name,
       type: 'XdrSCSpecUDTUnionV0',
       key: 'name',
-      maxBytes: 60,
+      maxBytes: 1024,
     ),
     'cases': XdrJsonHelper.array<XdrSCSpecUDTUnionCaseV0>(
       _cases,
@@ -151,7 +151,7 @@ class XdrSCSpecUDTUnionV0 {
         jsonName,
         type: 'XdrSCSpecUDTUnionV0',
         key: 'name',
-        maxBytes: 60,
+        maxBytes: 1024,
       ),
       XdrJsonHelper.readArray(
             jsonCases,
