@@ -11,6 +11,7 @@ import '../stub/web_io.dart' if (dart.library.io) 'dart:io';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/src/key_pair.dart';
+import 'constants/bit_constants.dart';
 import 'constants/stellar_protocol_constants.dart';
 import 'requests/request_builder.dart';
 import 'soroban/soroban_auth.dart';
@@ -660,8 +661,10 @@ class Util {
   /// Returns: The amount in stroops
   ///
   /// Throws:
-  /// - [Exception]: If the value is not a decimal number, or its fractional
-  ///   part has more than 7 significant digits
+  /// - [Exception]: If the value is not a decimal number, its fractional
+  ///   part has more than 7 significant digits, or the amount lies outside
+  ///   the int64 stroop range of -922337203685.4775808 to
+  ///   922337203685.4775807
   ///
   /// Example:
   /// ```dart
@@ -701,7 +704,15 @@ class Util {
       amount += BigInt.parse(point);
     }
 
-    return negative ? -amount : amount;
+    final BigInt signed = negative ? -amount : amount;
+    // A stroop amount is carried in an XDR int64; a value outside its
+    // bounds has no faithful 64-bit rendering.
+    if (signed < BitConstants.int64MinValueBigInt ||
+        signed > BitConstants.int64MaxValueBigInt) {
+      throw Exception("Amount out of range: $value is not between "
+          "-922337203685.4775808 and 922337203685.4775807");
+    }
+    return signed;
   }
 
   /// Converts a stroop amount to a decimal string.

@@ -507,6 +507,32 @@ void main() {
       final stroops = Util.decimalStringToStroops('-0.0000001');
       expect(stroops, equals(BigInt.from(-1)));
     });
+
+    test('accepts the int64 boundary amounts', () {
+      expect(Util.decimalStringToStroops('922337203685.4775807'),
+          equals(BigInt.parse('9223372036854775807')));
+      expect(Util.decimalStringToStroops('-922337203685.4775808'),
+          equals(BigInt.parse('-9223372036854775808')));
+    });
+
+    test('throws on an amount past the int64 boundaries', () {
+      // A stroop amount is carried in an XDR int64, so one stroop past
+      // either bound is refused rather than encoded.
+      for (final value in [
+        '922337203685.4775808',
+        '-922337203685.4775809',
+        '922337203686',
+        '99999999999999999999',
+        '-99999999999999999999',
+      ]) {
+        expect(
+            () => Util.decimalStringToStroops(value),
+            throwsA(predicate((e) =>
+                e is Exception &&
+                e.toString().contains('Amount out of range'))),
+            reason: 'expected "$value" to be refused');
+      }
+    });
   });
 
   group('Util.stroopsToDecimalString', () {

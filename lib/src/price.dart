@@ -61,7 +61,9 @@ import 'constants/bit_constants.dart';
 /// - [fromString] approximates decimals to fractions (may lose precision)
 /// - Both n and d must fit in 32-bit signed integers
 /// - Zero denominator is invalid (division by zero)
-/// - Negative prices are technically possible but rarely used
+/// - The Stellar network rejects offers whose price is zero or negative,
+///   and js-stellar-base refuses such values at parse time; this SDK
+///   refuses zero at parse time and parses negative values faithfully
 ///
 /// Price approximation limitations:
 /// ```dart
@@ -278,6 +280,13 @@ class Price {
         break;
       }
       double point = 1 / f;
+      // A remainder so small its reciprocal overflows a double carries
+      // nothing further the expansion can consume: the convergents recorded
+      // so far are the closest an int32 fraction gets. A value with no
+      // convergent at all falls through to the rejection below.
+      if (!point.isFinite) {
+        break;
+      }
       number = BigInt.from(point);
       f = point - number.toDouble();
       i = i + 1;

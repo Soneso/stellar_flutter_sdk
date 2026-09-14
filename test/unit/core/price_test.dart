@@ -151,6 +151,31 @@ void main() {
         expect(Price.fromString("2147483647").denominator, equals(1));
       });
 
+      test('refuses a fraction below the reciprocal double resolution', () {
+        // 308 to 322 leading zeros give a fraction whose reciprocal
+        // overflows a double. The expansion ends on the convergents it
+        // holds, so a value with none is refused with the documented
+        // exception rather than an internal error escaping.
+        for (final zeros in [308, 315, 322]) {
+          final value = "0.${"0" * zeros}1";
+          expect(
+            () => Price.fromString(value),
+            throwsA(predicate((e) =>
+                e is Exception &&
+                e
+                    .toString()
+                    .contains("Not a price an int32 fraction can carry"))),
+            reason: 'expected the $zeros-zeros value to be refused',
+          );
+        }
+
+        // With a whole part the dropped remainder leaves the whole part
+        // as the closest int32 fraction.
+        final kept = Price.fromString("12345.${"0" * 310}1");
+        expect(kept.numerator, equals(12345));
+        expect(kept.denominator, equals(1));
+      });
+
       test('creates Price from string "1.5"', () {
         final price = Price.fromString("1.5");
 
