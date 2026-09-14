@@ -532,10 +532,10 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
     String accountBId = keyPairB.accountId;
 
     Operation createAccount = new CreateAccountOperationBuilder(
-            accountBId, "2200000000000000000020111229198190202020202.1230019")
+            accountBId, "922337203685.4775807")
         .build();
     Operation payment = new PaymentOperationBuilder(accountBId, Asset.NATIVE,
-            "3333333000000000000020111229198190202020202.123333")
+            "802337203685.123333")
         .setSourceAccount(accountAId)
         .build();
     Asset nonNativeAsset = AssetTypeCreditAlphaNum4(
@@ -543,7 +543,7 @@ feeBump.signatures[0].signature: 085a2ee61be0d5bc2c2c7c7e90cc4c921febfe25aa54b6e
     Operation nonNativePayment = new PaymentOperationBuilder(
             accountBId,
             nonNativeAsset,
-            "3333333000000000000020111229198190202020202.123333")
+            "802337203685.123333")
         .setSourceAccount(accountAId)
         .build();
 

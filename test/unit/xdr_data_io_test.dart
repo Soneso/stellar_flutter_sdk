@@ -111,6 +111,22 @@ void main() {
       expect(readSigned, equals(BigInt.parse('-9223372036854775808')));
     });
 
+    test('writeBigInt64 refuses a value with no 64-bit rendering', () {
+      // The stream serves both signed and unsigned 64-bit callers, so the
+      // accepted range is their union: [-2^63, 2^64 - 1]. A value outside
+      // it would keep only its low 64 bits and change on the wire.
+      BigInt tooLarge = BigInt.parse('18446744073709551616'); // 2^64
+      BigInt tooSmall = BigInt.parse('-9223372036854775809'); // -2^63 - 1
+      expect(() => XdrDataOutputStream().writeBigInt64(tooLarge),
+          throwsArgumentError);
+      expect(() => XdrDataOutputStream().writeBigInt64(tooSmall),
+          throwsArgumentError);
+      expect(
+          () => XdrDataOutputStream()
+              .writeBigInt64(BigInt.parse('999999999999999999990000000')),
+          throwsArgumentError);
+    });
+
     test('writeBigInt64 converts negative to unsigned correctly', () {
       // -1 should be written as max uint64
       BigInt negOne = BigInt.from(-1);
