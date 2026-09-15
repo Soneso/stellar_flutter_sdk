@@ -6,6 +6,7 @@ void main() {
   const deployer = 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7';
   final ownerHex = 'ab' * 32;
   final salt = XdrUint256(Uint8List.fromList(List.filled(32, 0x11)));
+  final binaryTag = Uint8List.fromList([0xC0, 0x00, 0xFF, 0xFE]);
 
   String envelopeFor(HostFunction hostFunction) {
     final account = Account(deployer, BigInt.one);
@@ -14,9 +15,9 @@ void main() {
   }
 
   group('external-ref create operations in TxRep envelopes', () {
-    test('a CREATE_CONTRACT envelope round-trips and names the reference', () {
-      final envelope = envelopeFor(CreateContractFromExternalRefHostFunction.forTagString(
-          Address.forAccountId(deployer), Address.forContractId(ownerHex), 'token-v1',
+    test('a CREATE_CONTRACT envelope round-trips with a binary tag and names the reference', () {
+      final envelope = envelopeFor(CreateContractFromExternalRefHostFunction(
+          Address.forAccountId(deployer), Address.forContractId(ownerHex), binaryTag,
           salt: salt));
 
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(envelope);
@@ -31,13 +32,12 @@ void main() {
       expect(
           txRep,
           contains(
-              'hostFunction.createContract.executable.external_ref.tag: "token-v1"'));
+              r'hostFunction.createContract.executable.external_ref.tag: "\xc0\x00\xff\xfe"'));
 
       expect(TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep), equals(envelope));
     });
 
     test('a CREATE_CONTRACT_V2 envelope round-trips with a binary tag and args', () {
-      final binaryTag = Uint8List.fromList([0xC0, 0x00, 0xFF, 0xFE]);
       final envelope = envelopeFor(CreateContractFromExternalRefWithConstructorHostFunction(
           Address.forAccountId(deployer), Address.forContractId(ownerHex), binaryTag,
           [XdrSCVal.forU32(7)],
