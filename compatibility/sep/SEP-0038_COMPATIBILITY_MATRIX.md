@@ -1,7 +1,7 @@
 # SEP-0038 (Anchor RFQ API) Compatibility Matrix
 
-**Generated:** 2026-08-24 19:44:34  
-**SDK Version:** 3.6.0  
+**Generated:** 2026-09-15 16:14:44  
+**SDK Version:** 3.7.0  
 **SEP Version:** 2.5.0  
 **SEP Status:** Draft  
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md
