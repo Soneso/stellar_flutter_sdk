@@ -1,9 +1,9 @@
 # Horizon API vs Flutter SDK Compatibility Matrix
 
-**Horizon Version:** v28.0.0 (released 2026-08-20)  
-**Horizon Source:** [v28.0.0](https://github.com/stellar/stellar-horizon/releases/tag/v28.0.0)  
-**SDK Version:** 3.6.0  
-**Generated:** 2026-08-24 19:44:09
+**Horizon Version:** v28.0.1 (released 2026-08-27)  
+**Horizon Source:** [v28.0.1](https://github.com/stellar/stellar-horizon/releases/tag/v28.0.1)  
+**SDK Version:** 3.7.0  
+**Generated:** 2026-09-15 16:14:38
 
 **Horizon Endpoints Discovered:** 52  
 **Public API Endpoints (in matrix):** 50
