@@ -860,6 +860,151 @@ void main() {
     });
   });
 
+  group('typed submit methods check the payload they post', () {
+    // Each lookup handler appends a payment to a flagged account to the live
+    // operation list of the submitted transaction. The appended operation is
+    // not part of the checked and posted payload.
+    test('submitTransaction', () async {
+      final transaction = buildTx([payment(a)]);
+      final envelope = transaction.toEnvelopeXdrBase64();
+      final sdk = sdkWith(
+        accounts: {
+          a: () {
+            transaction.operations.add(payment(b));
+            return unflagged(a)();
+          },
+          b: flagged(b),
+        },
+        requests: requests,
+        posted: posted,
+      );
+      final response = await sdk.submitTransaction(transaction);
+      expect(response.success, isTrue);
+      expect(requests, ['GET /accounts/$a', 'POST /transactions']);
+      expect(posted, [envelope]);
+    });
+
+    test('submitFeeBumpTransaction', () async {
+      final inner = buildTx([payment(a)]);
+      final transaction = feeBump(inner);
+      final envelope = transaction.toEnvelopeXdrBase64();
+      final sdk = sdkWith(
+        accounts: {
+          a: () {
+            inner.operations.add(payment(b));
+            return unflagged(a)();
+          },
+          b: flagged(b),
+        },
+        requests: requests,
+        posted: posted,
+      );
+      final response = await sdk.submitFeeBumpTransaction(transaction);
+      expect(response.success, isTrue);
+      expect(requests, ['GET /accounts/$a', 'POST /transactions']);
+      expect(posted, [envelope]);
+    });
+
+    test('submitAsyncTransaction', () async {
+      final transaction = buildTx([payment(a)]);
+      final envelope = transaction.toEnvelopeXdrBase64();
+      final sdk = sdkWith(
+        accounts: {
+          a: () {
+            transaction.operations.add(payment(b));
+            return unflagged(a)();
+          },
+          b: flagged(b),
+        },
+        requests: requests,
+        posted: posted,
+      );
+      final response = await sdk.submitAsyncTransaction(transaction);
+      expect(response.txStatus, 'PENDING');
+      expect(requests, ['GET /accounts/$a', 'POST /transactions_async']);
+      expect(posted, [envelope]);
+    });
+
+    test('submitAsyncFeeBumpTransaction', () async {
+      final inner = buildTx([payment(a)]);
+      final transaction = feeBump(inner);
+      final envelope = transaction.toEnvelopeXdrBase64();
+      final sdk = sdkWith(
+        accounts: {
+          a: () {
+            inner.operations.add(payment(b));
+            return unflagged(a)();
+          },
+          b: flagged(b),
+        },
+        requests: requests,
+        posted: posted,
+      );
+      final response = await sdk.submitAsyncFeeBumpTransaction(transaction);
+      expect(response.txStatus, 'PENDING');
+      expect(requests, ['GET /accounts/$a', 'POST /transactions_async']);
+      expect(posted, [envelope]);
+    });
+  });
+
+  group('SEP-7 signAndSubmitTransaction', () {
+    test('throws when a destination requires a memo', () async {
+      final signer = KeyPair.random();
+      final transaction = TransactionBuilder(
+        Account(signer.accountId, BigInt.from(123)),
+      ).addOperation(payment(dest)).build();
+      final uriScheme = URIScheme();
+      final url = uriScheme.generateSignTransactionURI(
+        transaction.toEnvelopeXdrBase64(),
+      );
+
+      final originalClient = StellarSDK.TESTNET.httpClient;
+      addTearDown(() => StellarSDK.TESTNET.httpClient = originalClient);
+      StellarSDK.TESTNET.httpClient = sdkWith(
+        accounts: {dest: flagged(dest)},
+        requests: requests,
+      ).httpClient;
+
+      await expectLater(
+        uriScheme.signAndSubmitTransaction(
+          url,
+          signer,
+          network: Network.TESTNET,
+        ),
+        throwsA(memoRequired(dest, 0)),
+      );
+      expect(requests, ['GET /accounts/$dest']);
+    });
+
+    test('checks the inner transaction of a fee bump', () async {
+      final signer = KeyPair.random();
+      final inner = TransactionBuilder(
+        Account(signer.accountId, BigInt.from(123)),
+      ).addOperation(payment(dest)).build();
+      final uriScheme = URIScheme();
+      final url = uriScheme.generateSignTransactionURI(
+        feeBump(inner).toEnvelopeXdrBase64(),
+      );
+
+      final originalClient = StellarSDK.TESTNET.httpClient;
+      addTearDown(() => StellarSDK.TESTNET.httpClient = originalClient);
+      StellarSDK.TESTNET.httpClient = sdkWith(
+        accounts: {dest: flagged(dest)},
+        requests: requests,
+      ).httpClient;
+
+      await expectLater(
+        uriScheme.signAndSubmitTransaction(
+          url,
+          signer,
+          network: Network.TESTNET,
+        ),
+        throwsA(memoRequired(dest, 0)),
+      );
+      expect(requests, ['GET /accounts/$dest']);
+    });
+  });
+
   group('AccountRequiresMemoException', () {
     test('carries the account id and the operation index', () {
       final accountId = KeyPair.random().accountId;
