@@ -331,7 +331,7 @@ ManageDataOperationBuilder('config.memo_required', Uint8List.fromList(utf8.encod
 | Situation | What happens |
 |-----------|--------------|
 | No memo, a destination's `config.memo_required` is `1` | `AccountRequiresMemoException`; nothing submitted |
-| Destination does not exist (HTTP 404) | Skipped by the check; the network rejects the payment with `op_no_destination` |
+| Destination does not exist (HTTP 404) | Skipped by the check; the network decides (usually `op_no_destination`, or `op_no_account` for an account merge) |
 | Lookup fails with an HTTP status other than 404 or 429 | `ErrorResponse` (its `code` is the status); nothing submitted |
 | Lookup is rate limited (HTTP 429) | `TooManyRequestsException`; nothing submitted |
 | Transport failure during a lookup | `http.ClientException`; nothing submitted |
@@ -339,7 +339,7 @@ ManageDataOperationBuilder('config.memo_required', Uint8List.fromList(utf8.encod
 
 The check validates memo presence, not memo type. Any memo passes.
 
-A payment to an account that does not exist passes the check and fails on the network:
+This payment to an account that does not exist passes the check and fails on the network:
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -363,5 +363,5 @@ print(response.extras?.resultCodes?.operationsResultCodes); // contains op_no_de
 
 ## Related SEPs
 
-- SEP-07 ([sep-07.md](sep-07.md)) — `signAndSubmitTransaction()` submits through `submitTransaction()` or `submitFeeBumpTransaction()` when the URI has no `url:` callback, so it can throw `AccountRequiresMemoException`
-- SEP-23 — muxed accounts (M-addresses), which the check skips; `MuxedAccount` is covered in `api_reference.md`
+- SEP-07 ([sep-07.md](sep-07.md)): `signAndSubmitTransaction()` submits through `submitTransaction()` or `submitFeeBumpTransaction()` when the URI has no `url:` callback, so it can throw `AccountRequiresMemoException`
+- SEP-23: muxed accounts (M-addresses), which the check skips; `MuxedAccount` is covered in `api_reference.md`
