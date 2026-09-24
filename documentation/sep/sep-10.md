@@ -21,7 +21,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
 
 // Get JWT token - handles challenge request, signing, and submission
-final userKeyPair = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A');
+final userKeyPair = KeyPair.fromSecretSeed('SBUFKERJDFHSPHX6NFJ3YZJ7HWDBHSTPSGCWDJZ2MCCN566MTPKINC3V');
 final jwtToken = await webAuth.jwtToken(userKeyPair.accountId, [userKeyPair]);
 
 // Use the token for authenticated requests to SEP-6, SEP-12, SEP-24, etc.
@@ -68,7 +68,7 @@ For most use cases, `jwtToken()` handles the entire SEP-10 flow: requesting a ch
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
-final userKeyPair = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A');
+final userKeyPair = KeyPair.fromSecretSeed('SBUFKERJDFHSPHX6NFJ3YZJ7HWDBHSTPSGCWDJZ2MCCN566MTPKINC3V');
 
 final jwtToken = await webAuth.jwtToken(
   userKeyPair.accountId,
@@ -93,8 +93,8 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
 
 // Provide all signers needed to meet the account's threshold
-final signer1 = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A');
-final signer2 = KeyPair.fromSecretSeed('SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2HIF74DBGCZ6V5CSBRROPGKVZ');
+final signer1 = KeyPair.fromSecretSeed('SBUFKERJDFHSPHX6NFJ3YZJ7HWDBHSTPSGCWDJZ2MCCN566MTPKINC3V');
+final signer2 = KeyPair.fromSecretSeed('SC2KNFCUVZT3MIGTD56K4JCCTCUWMFYMZZ4O3BUEZAZNW25GLPD4JJUR');
 
 final jwtToken = await webAuth.jwtToken(
   signer1.accountId,
@@ -110,7 +110,7 @@ Muxed accounts (M... addresses) bundle a user ID with a G... account. This lets 
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
-final userKeyPair = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A');
+final userKeyPair = KeyPair.fromSecretSeed('SBUFKERJDFHSPHX6NFJ3YZJ7HWDBHSTPSGCWDJZ2MCCN566MTPKINC3V');
 
 // Create muxed account with user ID embedded in the address
 final muxedAccount = MuxedAccount(userKeyPair.accountId, 1234567890);
@@ -129,7 +129,7 @@ For services that use memos instead of muxed accounts to identify users sharing 
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
-final userKeyPair = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A');
+final userKeyPair = KeyPair.fromSecretSeed('SBUFKERJDFHSPHX6NFJ3YZJ7HWDBHSTPSGCWDJZ2MCCN566MTPKINC3V');
 
 final jwtToken = await webAuth.jwtToken(
   userKeyPair.accountId,
@@ -153,8 +153,8 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
 
-final userKeyPair = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A');
-final clientDomainKeyPair = KeyPair.fromSecretSeed('SBGWSG6BTNCKCOB3DIFBGCVMUPQFYPA2HIF74DBGCZ6V5CSBRROPGKVZ');
+final userKeyPair = KeyPair.fromSecretSeed('SBUFKERJDFHSPHX6NFJ3YZJ7HWDBHSTPSGCWDJZ2MCCN566MTPKINC3V');
+final clientDomainKeyPair = KeyPair.fromSecretSeed('SC2KNFCUVZT3MIGTD56K4JCCTCUWMFYMZZ4O3BUEZAZNW25GLPD4JJUR');
 
 final jwtToken = await webAuth.jwtToken(
   userKeyPair.accountId,
@@ -174,7 +174,7 @@ import 'package:http/http.dart' as http;
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
-final userKeyPair = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A');
+final userKeyPair = KeyPair.fromSecretSeed('SBUFKERJDFHSPHX6NFJ3YZJ7HWDBHSTPSGCWDJZ2MCCN566MTPKINC3V');
 
 // Callback receives base64-encoded transaction XDR and must return signed XDR
 Future<String> signingDelegate(String transactionXdr) async {
@@ -218,7 +218,7 @@ When an anchor serves multiple domains from the same authentication server, spec
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
-final userKeyPair = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A');
+final userKeyPair = KeyPair.fromSecretSeed('SBUFKERJDFHSPHX6NFJ3YZJ7HWDBHSTPSGCWDJZ2MCCN566MTPKINC3V');
 
 final jwtToken = await webAuth.jwtToken(
   userKeyPair.accountId,
@@ -236,7 +236,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 try {
   final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
-  final userKeyPair = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A');
+  final userKeyPair = KeyPair.fromSecretSeed('SBUFKERJDFHSPHX6NFJ3YZJ7HWDBHSTPSGCWDJZ2MCCN566MTPKINC3V');
 
   final jwtToken = await webAuth.jwtToken(userKeyPair.accountId, [userKeyPair]);
 
@@ -371,7 +371,7 @@ Future<String> authenticateWithRetry(
 
 // Usage
 final webAuth = await WebAuth.fromDomain('testanchor.stellar.org', Network.TESTNET);
-final userKeyPair = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A');
+final userKeyPair = KeyPair.fromSecretSeed('SBUFKERJDFHSPHX6NFJ3YZJ7HWDBHSTPSGCWDJZ2MCCN566MTPKINC3V');
 
 final jwtToken = await authenticateWithRetry(webAuth, userKeyPair.accountId, [userKeyPair]);
 ```

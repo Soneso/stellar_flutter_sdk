@@ -53,7 +53,7 @@ final class StellarProtocolConstants {
   /// Format: 1 byte version + 32 bytes seed + 2 bytes checksum = 35 bytes
   /// Base32 encoded: ceil(35 * 8 / 5) = 56 characters
   ///
-  /// Example: SBZVMB6XETHG5YZ6RZRJNVOQX4YQZ7XTTAEGVHQVBP2FQXVP4TWGIMSU
+  /// Example: SCHPKFPYADP233U6UV27HO65U3GO53AMKNFRH7YPYCDJJBCP6XUREMO7
   static const int STRKEY_SECRET_SEED_LENGTH = 56;
 
   /// Length of a pre-authorized transaction hash in strkey format (T...).
@@ -150,7 +150,7 @@ final class StellarProtocolConstants {
   ///
   /// Results in 'S' prefix: 18 << 3 = 144 (0x90)
   ///
-  /// Example: SBZVMB6XETHG5YZ6RZRJNVOQX4YQZ7XTTAEGVHQVBP2FQXVP4TWGIMSU
+  /// Example: SCHPKFPYADP233U6UV27HO65U3GO53AMKNFRH7YPYCDJJBCP6XUREMO7
   static const int VERSION_BYTE_SEED = 18 << 3;
 
   /// Version byte for pre-authorized transaction hash strkey encoding.

@@ -345,7 +345,7 @@ Create a rule that applies to a specific token contract, signed by two delegated
 
 ```dart
 final signerA = OZDelegatedSigner('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ');
-final signerB = OZDelegatedSigner('GC3C4MCEADMY26BVBPJIIUOKD5WZEZW5XI2LSU5F4QDZARBVAM4UTZEL');
+final signerB = OZDelegatedSigner('GD7LROI3D5VBYDOIQXRAJTAFFZM7DLJERBY47EEFD4BT4LRU5EML5J53');
 
 final result = await kit.contextRuleManager.addContextRule(
   contextType: OZContextRuleTypeCallContract(
@@ -619,7 +619,7 @@ Future<OZTransactionResult> addWeightedThreshold({
 
 ```dart
 final admin = OZDelegatedSigner('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ');
-final lead  = OZDelegatedSigner('GC3C4MCEADMY26BVBPJIIUOKD5WZEZW5XI2LSU5F4QDZARBVAM4UTZEL');
+final lead  = OZDelegatedSigner('GD7LROI3D5VBYDOIQXRAJTAFFZM7DLJERBY47EEFD4BT4LRU5EML5J53');
 final dev   = OZDelegatedSigner('GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOKY3B2WSQHG4W37');
 
 await kit.policyManager.addWeightedThreshold(
@@ -935,7 +935,7 @@ final wallet = OZSelectedSignerWallet('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7
 
 final result = await kit.multiSignerManager.multiSignerTransfer(
   tokenContract: 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
-  recipient: 'GC3C4MCEADMY26BVBPJIIUOKD5WZEZW5XI2LSU5F4QDZARBVAM4UTZEL',
+  recipient: 'GD7LROI3D5VBYDOIQXRAJTAFFZM7DLJERBY47EEFD4BT4LRU5EML5J53',
   amount: '100',
   selectedSigners: <OZSelectedSigner>[passkey, wallet],
 );
@@ -1001,7 +1001,7 @@ await kit.multiSignerManager.multiSignerExecuteAndSubmit(
   targetArgs: <XdrSCVal>[XdrSCVal.forU32(42), XdrSCVal.forBool(true)],
   selectedSigners: <OZSelectedSigner>[
     OZSelectedSignerWallet('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ'),
-    OZSelectedSignerWallet('GC3C4MCEADMY26BVBPJIIUOKD5WZEZW5XI2LSU5F4QDZARBVAM4UTZEL'),
+    OZSelectedSignerWallet('GD7LROI3D5VBYDOIQXRAJTAFFZM7DLJERBY47EEFD4BT4LRU5EML5J53'),
   ],
 );
 ```
@@ -1040,7 +1040,7 @@ An `OZSelectedSignerWallet` (G-address) resolves through `kit.externalSigners`. 
 
 ```dart
 // In-memory wallet keypair
-await kit.externalSigners.addFromSecret('SCZANGBA5YHTNYVVV4C3U252E2B6P6F5T3U6MM63WBSBZ6PRBVTL77SY');
+await kit.externalSigners.addFromSecret('SBSFETH4O6QMSIUVEFQM7OPRC47SFATEKMIRX5FNOG5EYEDMSRCYXEXT');
 
 // In-memory Ed25519 signer
 kit.externalSigners.addEd25519FromRawKey(
@@ -1184,7 +1184,7 @@ int? parseContractErrorCode(Object e) {
 try {
   await kit.transactionOperations.transfer(
     tokenContract: 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
-    recipient: 'GC3C4MCEADMY26BVBPJIIUOKD5WZEZW5XI2LSU5F4QDZARBVAM4UTZEL',
+    recipient: 'GD7LROI3D5VBYDOIQXRAJTAFFZM7DLJERBY47EEFD4BT4LRU5EML5J53',
     amount: '10',
   );
 } on SmartAccountTransactionSimulationFailed catch (e) {
