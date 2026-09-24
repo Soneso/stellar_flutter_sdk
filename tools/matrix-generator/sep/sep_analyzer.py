@@ -1342,6 +1342,178 @@ class SEPAnalyzer:
 
         return implemented
 
+    def analyze_sep_29(self) -> Dict[str, Any]:
+        """
+        Analyze SEP-29 (Account Memo Requirements) implementation.
+
+        The SEP-29 check is implemented on the StellarSDK class in
+        lib/src/stellar_sdk.dart, which also declares
+        AccountRequiresMemoException. Setting the flag uses the manage data
+        operation in lib/src/manage_data_operation.dart. Detection is performed
+        against the source of those files rather than a SEP source directory.
+
+        Returns:
+            Analysis results dictionary
+        """
+        sdk_path = self.sdk_path / 'lib' / 'src' / 'stellar_sdk.dart'
+        manage_data_path = self.sdk_path / 'lib' / 'src' / 'manage_data_operation.dart'
+
+        if not sdk_path.exists():
+            return {
+                'implemented': False,
+                'reason': 'No SEP-29 implementation file found (lib/src/stellar_sdk.dart)'
+            }
+
+        # Load SEP-29 definition
+        sep_def_path = self.data_dir / f'sep_{self.sep_number}_definition.json'
+
+        sep_definition = {}
+        if sep_def_path.exists():
+            with open(sep_def_path, 'r', encoding='utf-8') as f:
+                sep_definition = json.load(f)
+
+        content = sdk_path.read_text(encoding='utf-8')
+        manage_data_content = ''
+        if manage_data_path.exists():
+            manage_data_content = manage_data_path.read_text(encoding='utf-8')
+
+        # Restrict reported classes to the SEP-29 entry points.
+        all_classes = [
+            cls for cls in self.extract_class_info(sdk_path)
+            if cls['name'] in ('StellarSDK', 'AccountRequiresMemoException')
+        ]
+        for cls in all_classes:
+            if cls['name'] == 'StellarSDK':
+                cls['documentation'] = (
+                    'Horizon client with the SEP-29 memo required check '
+                    '(checkMemoRequired) run by the submit methods unless '
+                    'skipMemoRequiredCheck is true'
+                )
+            elif cls['name'] == 'AccountRequiresMemoException':
+                cls['documentation'] = (
+                    'Thrown when a destination account requires a memo and the '
+                    'transaction carries none; holds the account id and the '
+                    'index of the operation that names it'
+                )
+
+        implemented_features = self.map_sep_29_features(
+            content, manage_data_content, sep_definition
+        )
+
+        files = [str(sdk_path.relative_to(self.sdk_path))]
+        if manage_data_content:
+            files.append(str(manage_data_path.relative_to(self.sdk_path)))
+
+        return {
+            'implemented': True,
+            'files': files,
+            'classes': all_classes,
+            'implemented_features': implemented_features,
+            'total_classes': len(all_classes),
+            'total_methods': sum(len(c['methods']) for c in all_classes),
+            'total_properties': sum(len(c['properties']) for c in all_classes)
+        }
+
+    def map_sep_29_features(self, content: str, manage_data_content: str,
+                            sep_definition: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Map the StellarSDK source to SEP-29 memo required capability fields.
+
+        Args:
+            content: Source of lib/src/stellar_sdk.dart
+            manage_data_content: Source of lib/src/manage_data_operation.dart
+            sep_definition: SEP-29 specification definition
+
+        Returns:
+            Dictionary mapping memo required features to implementation status
+        """
+        implemented = {
+            'memo_required': {},
+            'coverage': {}
+        }
+
+        # Submit methods that must expose the skipMemoRequiredCheck parameter.
+        submit_methods = {
+            'submit_transaction_opt_out': 'submitTransaction',
+            'submit_fee_bump_transaction_opt_out': 'submitFeeBumpTransaction',
+            'submit_async_transaction_opt_out': 'submitAsyncTransaction',
+            'submit_async_fee_bump_transaction_opt_out': 'submitAsyncFeeBumpTransaction',
+            'submit_transaction_envelope_opt_out': 'submitTransactionEnvelopeXdrBase64',
+            'submit_async_transaction_envelope_opt_out': 'submitAsyncTransactionEnvelopeXdrBase64',
+        }
+
+        def detect(name: str) -> Tuple[bool, str]:
+            if name == 'memo_required_data_entry':
+                if 'config.memo_required' in content and 'checkMemoRequired' in content:
+                    return True, 'checkMemoRequired (config.memo_required data entry)'
+            elif name == 'set_memo_required_flag':
+                if 'class ManageDataOperationBuilder' in manage_data_content:
+                    return True, 'ManageDataOperationBuilder'
+            elif name == 'payment_destination':
+                if 'is PaymentOperation' in content:
+                    return True, 'checkMemoRequired (PaymentOperation)'
+            elif name == 'path_payment_strict_send_destination':
+                if 'is PathPaymentStrictSendOperation' in content:
+                    return True, 'checkMemoRequired (PathPaymentStrictSendOperation)'
+            elif name == 'path_payment_strict_receive_destination':
+                if 'is PathPaymentStrictReceiveOperation' in content:
+                    return True, 'checkMemoRequired (PathPaymentStrictReceiveOperation)'
+            elif name == 'account_merge_destination':
+                if 'is AccountMergeOperation' in content:
+                    return True, 'checkMemoRequired (AccountMergeOperation)'
+            elif name == 'muxed_destination_exempt':
+                if 'destination.id != null' in content:
+                    return True, 'checkMemoRequired (muxed destination skipped)'
+            elif name == 'memo_present_skips_lookup':
+                if 'is MemoNone' in content:
+                    return True, 'checkMemoRequired (memo short-circuit)'
+            elif name == 'fee_bump_inner_transaction':
+                if 'innerTransaction' in content:
+                    return True, 'checkMemoRequired (FeeBumpTransaction.innerTransaction)'
+            elif name == 'unknown_destination_skipped':
+                if 'NetworkConstants.HTTP_NOT_FOUND' in content:
+                    return True, 'checkMemoRequired (HTTP 404 skipped)'
+            elif name == 'check_memo_required_method':
+                if 'Future<void> checkMemoRequired(' in content:
+                    return True, 'checkMemoRequired(AbstractTransaction)'
+            elif name in submit_methods:
+                method = submit_methods[name]
+                pattern = r'Future<[^>]+>\s*' + method + r'\([^)]*skipMemoRequiredCheck'
+                if re.search(pattern, content):
+                    return True, f'{method}(skipMemoRequiredCheck)'
+            elif name == 'account_requires_memo_exception':
+                if 'class AccountRequiresMemoException' in content and 'operationIndex' in content:
+                    return True, 'AccountRequiresMemoException'
+            return False, None
+
+        sections = sep_definition.get('sections', [])
+        for section in sections:
+            if section.get('key') != 'memo_required':
+                continue
+            for feature in section.get('memo_required_features', []):
+                feature_name = feature['name']
+                is_implemented, sdk_property = detect(feature_name)
+                implemented['memo_required'][feature_name] = {
+                    'required': feature.get('required', False),
+                    'implemented': is_implemented,
+                    'sdk_method': sdk_property if is_implemented else None,
+                    'description': feature.get('description', '')
+                }
+
+        total_features = len(implemented['memo_required'])
+        implemented_count = sum(
+            1 for feature in implemented['memo_required'].values()
+            if feature.get('implemented')
+        )
+
+        implemented['coverage'] = {
+            'total': total_features,
+            'implemented': implemented_count,
+            'percentage': round((implemented_count / total_features * 100) if total_features > 0 else 0, 2)
+        }
+
+        return implemented
+
     def analyze_sep_53(self) -> Dict[str, Any]:
         """
         Analyze SEP-53 (Sign and Verify Messages) implementation.
@@ -5494,6 +5666,8 @@ class SEPAnalyzer:
             self.analysis_data = self.analyze_sep_12()
         elif self.sep_number == '0024':
             self.analysis_data = self.analyze_sep_24()
+        elif self.sep_number == '0029':
+            self.analysis_data = self.analyze_sep_29()
         elif self.sep_number == '0030':
             self.analysis_data = self.analyze_sep_30()
         elif self.sep_number == '0038':

@@ -86,296 +86,330 @@ void main() {
         updatedAccount.data.keys.contains("config.memo_required"), false);
   });
 
-  test('sep-29: Quick Example - Check memo requirement', () async {
-    // Snippet from sep-29.md "Quick Example"
-    // Setup: create destination with memo_required set
+  test('sep-29: Quick Example', () async {
+    // Setup: a funded sender and a destination that requires a memo
     KeyPair senderKeyPair = KeyPair.random();
-    KeyPair destKeyPair = KeyPair.random();
+    KeyPair destinationKeyPair = KeyPair.random();
     await FriendBot.fundTestAccount(senderKeyPair.accountId);
-    await FriendBot.fundTestAccount(destKeyPair.accountId);
+    await FriendBot.fundTestAccount(destinationKeyPair.accountId);
+    await _setMemoRequired(sdk, destinationKeyPair);
 
-    // Set memo_required on destination
-    AccountResponse destSetupAccount =
-        await sdk.accounts.account(destKeyPair.accountId);
-    ManageDataOperation setFlag = ManageDataOperationBuilder(
-      "config.memo_required",
-      Uint8List.fromList(utf8.encode("1")),
-    ).build();
-    Transaction setupTx = TransactionBuilder(destSetupAccount)
-        .addOperation(setFlag)
-        .build();
-    setupTx.sign(destKeyPair, Network.TESTNET);
-    await sdk.submitTransaction(setupTx);
-
-    // Now run the quick example logic
-    String destinationId = destKeyPair.accountId;
+    // Snippet from sep-29.md "Quick Example"
+    String destinationId = destinationKeyPair.accountId;
     AccountResponse senderAccount =
         await sdk.accounts.account(senderKeyPair.accountId);
 
-    PaymentOperation paymentOp = PaymentOperationBuilder(
-      destinationId,
-      Asset.NATIVE,
-      "100.0",
-    ).build();
+    Transaction transaction = TransactionBuilder(senderAccount)
+        .addOperation(
+            PaymentOperationBuilder(destinationId, Asset.NATIVE, "100.0")
+                .build())
+        .build();
+    transaction.sign(senderKeyPair, Network.TESTNET);
 
-    // Check if destination requires a memo
-    AccountResponse destAccount =
-        await sdk.accounts.account(destinationId);
-    bool requiresMemo =
-        destAccount.data.keys.contains("config.memo_required");
-
-    expect(requiresMemo, true);
-
-    Transaction transaction;
-    if (requiresMemo) {
-      transaction = TransactionBuilder(senderAccount)
-          .addOperation(paymentOp)
-          .addMemo(MemoText("user-123"))
-          .build();
-    } else {
-      transaction = TransactionBuilder(senderAccount)
-          .addOperation(paymentOp)
-          .build();
+    try {
+      await sdk.submitTransaction(transaction);
+      fail("Expected AccountRequiresMemoException");
+    } on AccountRequiresMemoException catch (e) {
+      // The destination requires a memo; nothing was submitted
+      expect(e.accountId, destinationId);
+      expect(e.operationIndex, 0);
     }
 
+    // Reload the sender account: build() advanced its local sequence number
+    senderAccount = await sdk.accounts.account(senderKeyPair.accountId);
+    transaction = TransactionBuilder(senderAccount)
+        .addOperation(
+            PaymentOperationBuilder(destinationId, Asset.NATIVE, "100.0")
+                .build())
+        .addMemo(MemoText("user-123"))
+        .build();
     transaction.sign(senderKeyPair, Network.TESTNET);
+
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     expect(response.success, true);
   });
 
   test('sep-29: Checking Multiple Destinations', () async {
-    // Snippet from sep-29.md "Checking Multiple Destinations"
+    // Setup: a sender, a destination without the flag and one with it
     KeyPair senderKeyPair = KeyPair.random();
-    KeyPair dest1KeyPair = KeyPair.random();
-    KeyPair dest2KeyPair = KeyPair.random();
+    KeyPair walletKeyPair = KeyPair.random();
+    KeyPair exchangeKeyPair = KeyPair.random();
     await FriendBot.fundTestAccount(senderKeyPair.accountId);
-    await FriendBot.fundTestAccount(dest1KeyPair.accountId);
-    await FriendBot.fundTestAccount(dest2KeyPair.accountId);
+    await FriendBot.fundTestAccount(walletKeyPair.accountId);
+    await FriendBot.fundTestAccount(exchangeKeyPair.accountId);
+    await _setMemoRequired(sdk, exchangeKeyPair);
 
-    // Set memo_required on dest1 only
-    AccountResponse dest1Setup =
-        await sdk.accounts.account(dest1KeyPair.accountId);
-    ManageDataOperation setFlag = ManageDataOperationBuilder(
-      "config.memo_required",
-      Uint8List.fromList(utf8.encode("1")),
-    ).build();
-    Transaction setupTx = TransactionBuilder(dest1Setup)
-        .addOperation(setFlag)
+    // Snippet from sep-29.md "Checking Multiple Destinations"
+    AccountResponse senderAccount =
+        await sdk.accounts.account(senderKeyPair.accountId);
+
+    Transaction transaction = TransactionBuilder(senderAccount)
+        .addOperation(PaymentOperationBuilder(
+                walletKeyPair.accountId, Asset.NATIVE, "10.0")
+            .build())
+        .addOperation(PaymentOperationBuilder(
+                exchangeKeyPair.accountId, Asset.NATIVE, "25.0")
+            .build())
         .build();
-    setupTx.sign(dest1KeyPair, Network.TESTNET);
-    await sdk.submitTransaction(setupTx);
+    transaction.sign(senderKeyPair, Network.TESTNET);
 
-    // Check each destination for memo requirement
-    List<String> destinations = [
-      dest1KeyPair.accountId,
-      dest2KeyPair.accountId,
-    ];
-
-    String? accountRequiringMemo;
-    for (String destId in destinations) {
-      AccountResponse destAccount = await sdk.accounts.account(destId);
-      if (destAccount.data.keys.contains("config.memo_required")) {
-        accountRequiringMemo = destId;
-        break;
-      }
+    try {
+      await sdk.submitTransaction(transaction);
+      fail("Expected AccountRequiresMemoException");
+    } on AccountRequiresMemoException catch (e) {
+      // operationIndex is the zero-based index of the operation that
+      // names the account, here the second payment
+      expect(e.accountId, exchangeKeyPair.accountId);
+      expect(e.operationIndex, 1);
     }
-
-    expect(accountRequiringMemo, dest1KeyPair.accountId);
   });
 
-  test('sep-29: Account Merge with memo check', () async {
-    // Snippet from sep-29.md "Account Merge Operations"
+  test('sep-29: Account Merge', () async {
+    // Setup: an account to merge and a destination that requires a memo
     KeyPair sourceKeyPair = KeyPair.random();
-    KeyPair destKeyPair = KeyPair.random();
+    KeyPair destinationKeyPair = KeyPair.random();
     await FriendBot.fundTestAccount(sourceKeyPair.accountId);
-    await FriendBot.fundTestAccount(destKeyPair.accountId);
+    await FriendBot.fundTestAccount(destinationKeyPair.accountId);
+    await _setMemoRequired(sdk, destinationKeyPair);
 
-    String destinationId = destKeyPair.accountId;
+    // Snippet from sep-29.md "Account Merge"
+    String destinationId = destinationKeyPair.accountId;
     AccountResponse sourceAccount =
         await sdk.accounts.account(sourceKeyPair.accountId);
 
-    AccountMergeOperation mergeOp =
-        AccountMergeOperationBuilder(destinationId).build();
+    Transaction transaction = TransactionBuilder(sourceAccount)
+        .addOperation(AccountMergeOperationBuilder(destinationId).build())
+        .build();
+    transaction.sign(sourceKeyPair, Network.TESTNET);
 
-    // Check if destination requires a memo (it doesn't in this case)
-    AccountResponse destAccount =
-        await sdk.accounts.account(destinationId);
-    bool requiresMemo =
-        destAccount.data.keys.contains("config.memo_required");
-
-    expect(requiresMemo, false);
-
-    Transaction transaction;
-    if (requiresMemo) {
-      transaction = TransactionBuilder(sourceAccount)
-          .addOperation(mergeOp)
-          .addMemo(MemoText("closing-account"))
-          .build();
-    } else {
-      transaction = TransactionBuilder(sourceAccount)
-          .addOperation(mergeOp)
-          .build();
+    try {
+      await sdk.submitTransaction(transaction);
+      fail("Expected AccountRequiresMemoException");
+    } on AccountRequiresMemoException catch (e) {
+      // The merge destination requires a memo; nothing was submitted
+      expect(e.accountId, destinationId);
+      expect(e.operationIndex, 0);
     }
 
+    // Reload the source account and merge with a memo
+    sourceAccount = await sdk.accounts.account(sourceKeyPair.accountId);
+    transaction = TransactionBuilder(sourceAccount)
+        .addOperation(AccountMergeOperationBuilder(destinationId).build())
+        .addMemo(MemoText("closing-account"))
+        .build();
     transaction.sign(sourceKeyPair, Network.TESTNET);
+
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     expect(response.success, true);
   });
 
   test('sep-29: Multiplexed Accounts (M-addresses)', () async {
-    // Snippet from sep-29.md "Multiplexed Accounts"
+    // Setup: a sender and a base account that requires a memo
     KeyPair senderKeyPair = KeyPair.random();
     KeyPair baseKeyPair = KeyPair.random();
     await FriendBot.fundTestAccount(senderKeyPair.accountId);
     await FriendBot.fundTestAccount(baseKeyPair.accountId);
+    await _setMemoRequired(sdk, baseKeyPair);
 
+    // Snippet from sep-29.md "Multiplexed Accounts (M-addresses)"
     AccountResponse senderAccount =
         await sdk.accounts.account(senderKeyPair.accountId);
 
-    // Create a muxed destination with user ID embedded
-    String baseAccountId = baseKeyPair.accountId;
+    // The muxed id identifies the customer, so no memo is needed
     MuxedAccount muxedDestination =
-        MuxedAccount(baseAccountId, BigInt.from(12345));
-
-    PaymentOperation paymentOp =
-        PaymentOperationBuilder.forMuxedDestinationAccount(
-      muxedDestination,
-      Asset.NATIVE,
-      "100.0",
-    ).build();
+        MuxedAccount(baseKeyPair.accountId, BigInt.from(12345));
+    expect(muxedDestination.accountId.startsWith("M"), true);
 
     Transaction transaction = TransactionBuilder(senderAccount)
-        .addOperation(paymentOp)
+        .addOperation(PaymentOperationBuilder.forMuxedDestinationAccount(
+                muxedDestination, Asset.NATIVE, "100.0")
+            .build())
         .build();
-
-    // Muxed accounts encode user ID in the address, so no memo check needed
-    // Verify the destination is a muxed account (M-address)
-    expect(muxedDestination.accountId.startsWith('M'), true);
-
     transaction.sign(senderKeyPair, Network.TESTNET);
+
+    // Muxed destinations are not looked up; the payment is submitted
     SubmitTransactionResponse response =
         await sdk.submitTransaction(transaction);
     expect(response.success, true);
   });
 
-  test('sep-29: Integration sendPayment function', () async {
-    // Snippet from sep-29.md "Integration with Payment Flows"
+  test('sep-29: Fee Bump Transactions', () async {
+    // Setup: a sender, a fee payer and a destination that requires a memo
     KeyPair senderKeyPair = KeyPair.random();
-    KeyPair destKeyPair = KeyPair.random();
+    KeyPair feePayerKeyPair = KeyPair.random();
+    KeyPair destinationKeyPair = KeyPair.random();
     await FriendBot.fundTestAccount(senderKeyPair.accountId);
-    await FriendBot.fundTestAccount(destKeyPair.accountId);
+    await FriendBot.fundTestAccount(feePayerKeyPair.accountId);
+    await FriendBot.fundTestAccount(destinationKeyPair.accountId);
+    await _setMemoRequired(sdk, destinationKeyPair);
 
-    // Set memo_required on destination
-    AccountResponse destSetup =
-        await sdk.accounts.account(destKeyPair.accountId);
-    ManageDataOperation setFlag = ManageDataOperationBuilder(
-      "config.memo_required",
-      Uint8List.fromList(utf8.encode("1")),
-    ).build();
-    Transaction setupTx = TransactionBuilder(destSetup)
-        .addOperation(setFlag)
+    // Snippet from sep-29.md "Fee Bump Transactions"
+    String destinationId = destinationKeyPair.accountId;
+    AccountResponse senderAccount =
+        await sdk.accounts.account(senderKeyPair.accountId);
+
+    Transaction innerTransaction = TransactionBuilder(senderAccount)
+        .addOperation(
+            PaymentOperationBuilder(destinationId, Asset.NATIVE, "100.0")
+                .build())
         .build();
-    setupTx.sign(destKeyPair, Network.TESTNET);
-    await sdk.submitTransaction(setupTx);
+    innerTransaction.sign(senderKeyPair, Network.TESTNET);
 
-    // Test: sending without memo should fail validation
-    Map<String, dynamic> result1 = await _sendPayment(
+    FeeBumpTransaction feeBump = FeeBumpTransactionBuilder(innerTransaction)
+        .setBaseFee(200)
+        .setFeeAccount(feePayerKeyPair.accountId)
+        .build();
+    feeBump.sign(feePayerKeyPair, Network.TESTNET);
+
+    // The inner transaction is checked: it has no memo
+    try {
+      await sdk.submitFeeBumpTransaction(feeBump);
+      fail("Expected AccountRequiresMemoException");
+    } on AccountRequiresMemoException catch (e) {
+      // The inner transaction pays an account that requires a memo;
+      // nothing was submitted
+      expect(e.accountId, destinationId);
+      expect(e.operationIndex, 0);
+    }
+  });
+
+  test('sep-29: Skipping the Check', () async {
+    // Setup: a sender and a destination that requires a memo
+    KeyPair senderKeyPair = KeyPair.random();
+    KeyPair destinationKeyPair = KeyPair.random();
+    await FriendBot.fundTestAccount(senderKeyPair.accountId);
+    await FriendBot.fundTestAccount(destinationKeyPair.accountId);
+    await _setMemoRequired(sdk, destinationKeyPair);
+
+    // Snippet from sep-29.md "Skipping the Check"
+    AccountResponse senderAccount =
+        await sdk.accounts.account(senderKeyPair.accountId);
+
+    Transaction transaction = TransactionBuilder(senderAccount)
+        .addOperation(PaymentOperationBuilder(
+                destinationKeyPair.accountId, Asset.NATIVE, "100.0")
+            .build())
+        .build();
+    transaction.sign(senderKeyPair, Network.TESTNET);
+
+    // No destination lookup; the network does not enforce SEP-29
+    SubmitTransactionResponse response = await sdk
+        .submitTransaction(transaction, skipMemoRequiredCheck: true);
+    expect(response.success, true);
+  });
+
+  test('sep-29: Integration sendPayment function', () async {
+    // Setup: a sender and a destination that requires a memo
+    KeyPair senderKeyPair = KeyPair.random();
+    KeyPair destinationKeyPair = KeyPair.random();
+    await FriendBot.fundTestAccount(senderKeyPair.accountId);
+    await FriendBot.fundTestAccount(destinationKeyPair.accountId);
+    await _setMemoRequired(sdk, destinationKeyPair);
+
+    // Snippet from sep-29.md "Integration sendPayment function"
+    Map<String, dynamic> result = await sendPayment(
       sdk,
       senderKeyPair,
-      destKeyPair.accountId,
+      destinationKeyPair.accountId,
       "10.0",
     );
-    expect(result1['success'], false);
-    expect(result1['error'], 'memo_required');
+    expect(result['success'], false);
+    expect(result['error'], 'memo_required');
+    expect(result['account'], destinationKeyPair.accountId);
 
-    // Test: sending with memo should succeed
-    Map<String, dynamic> result2 = await _sendPayment(
+    result = await sendPayment(
       sdk,
       senderKeyPair,
-      destKeyPair.accountId,
+      destinationKeyPair.accountId,
       "10.0",
       memo: "user-123",
     );
-    expect(result2['success'], true);
-    expect(result2['hash'], isNotNull);
+    expect(result['success'], true);
+    expect(result['hash'], isNotNull);
   });
 
-  test('sep-29: Error Handling - nonexistent account', () async {
+  test('sep-29: Error Handling', () async {
+    // Setup: a funded sender
+    KeyPair senderKeyPair = KeyPair.random();
+    await FriendBot.fundTestAccount(senderKeyPair.accountId);
+
     // Snippet from sep-29.md "Error Handling"
-    // Use a valid but nonexistent account ID
-    KeyPair nonexistentKeyPair = KeyPair.random();
-    String destinationId = nonexistentKeyPair.accountId;
+    // A valid account id that does not exist on the network
+    String destinationId = KeyPair.random().accountId;
+    AccountResponse senderAccount =
+        await sdk.accounts.account(senderKeyPair.accountId);
 
-    bool caughtError = false;
-    try {
-      await sdk.accounts.account(destinationId);
-    } catch (e) {
-      // Destination account does not exist
-      caughtError = true;
-    }
+    Transaction transaction = TransactionBuilder(senderAccount)
+        .addOperation(
+            PaymentOperationBuilder(destinationId, Asset.NATIVE, "10.0")
+                .build())
+        .build();
+    transaction.sign(senderKeyPair, Network.TESTNET);
 
-    expect(caughtError, true);
+    // The check skips destinations Horizon does not know
+    await sdk.checkMemoRequired(transaction);
+
+    // The network rejects the payment to the missing account
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
+    expect(response.success, false);
+    expect(response.extras?.resultCodes?.operationsResultCodes,
+        contains("op_no_destination"));
   });
 }
 
-/// Helper matching the sendPayment function from the doc.
-Future<Map<String, dynamic>> _sendPayment(
+/// Sends a payment and reports a SEP-29 memo requirement as a result map.
+Future<Map<String, dynamic>> sendPayment(
   StellarSDK sdk,
   KeyPair senderKeyPair,
   String destinationId,
   String amount, {
   String? memo,
 }) async {
-  AccountResponse senderAccount;
-  try {
-    senderAccount = await sdk.accounts.account(senderKeyPair.accountId);
-  } catch (e) {
-    return {
-      'success': false,
-      'error': 'account_not_found',
-      'message': 'Sender account does not exist',
-    };
-  }
+  // Load the sender on every call so each transaction uses the current
+  // sequence number
+  AccountResponse senderAccount =
+      await sdk.accounts.account(senderKeyPair.accountId);
 
-  // Check if destination requires a memo
-  bool requiresMemo = false;
-  try {
-    AccountResponse destAccount = await sdk.accounts.account(destinationId);
-    requiresMemo = destAccount.data.keys.contains("config.memo_required");
-  } catch (e) {
-    return {
-      'success': false,
-      'error': 'destination_lookup_failed',
-      'message': 'Could not verify destination account',
-    };
-  }
-
-  if (requiresMemo && memo == null) {
-    return {
-      'success': false,
-      'error': 'memo_required',
-      'account': destinationId,
-    };
-  }
-
-  PaymentOperation paymentOp = PaymentOperationBuilder(
-    destinationId,
-    Asset.NATIVE,
-    amount,
-  ).build();
-
-  TransactionBuilder builder = TransactionBuilder(senderAccount);
-  builder.addOperation(paymentOp);
-
+  TransactionBuilder builder = TransactionBuilder(senderAccount)
+      .addOperation(
+          PaymentOperationBuilder(destinationId, Asset.NATIVE, amount)
+              .build());
   if (memo != null) {
     builder.addMemo(MemoText(memo));
   }
 
   Transaction transaction = builder.build();
   transaction.sign(senderKeyPair, Network.TESTNET);
-  SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
 
-  return {'success': response.success, 'hash': response.hash};
+  try {
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
+    return {'success': response.success, 'hash': response.hash};
+  } on AccountRequiresMemoException catch (e) {
+    return {
+      'success': false,
+      'error': 'memo_required',
+      'account': e.accountId,
+      'operationIndex': e.operationIndex,
+    };
+  }
+}
+
+/// Test setup: sets `config.memo_required` to `1` on [accountKeyPair].
+Future<void> _setMemoRequired(StellarSDK sdk, KeyPair accountKeyPair) async {
+  AccountResponse account =
+      await sdk.accounts.account(accountKeyPair.accountId);
+  Transaction transaction = TransactionBuilder(account)
+      .addOperation(ManageDataOperationBuilder(
+        "config.memo_required",
+        Uint8List.fromList(utf8.encode("1")),
+      ).build())
+      .build();
+  transaction.sign(accountKeyPair, Network.TESTNET);
+  SubmitTransactionResponse response =
+      await sdk.submitTransaction(transaction);
+  expect(response.success, true);
 }

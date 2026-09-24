@@ -8,7 +8,16 @@ import 'dart:async';
 import 'dart:convert';
 import 'http_client_stub.dart' if (dart.library.io) 'http_client_io.dart';
 import 'assets.dart';
+import 'account_merge_operation.dart';
+import 'constants/network_constants.dart';
+import 'memo.dart';
+import 'muxed_account.dart';
+import 'operation.dart';
+import 'path_payment_strict_receive_operation.dart';
+import 'path_payment_strict_send_operation.dart';
+import 'payment_operation.dart';
 import 'requests/request_builder.dart';
+import 'responses/account_response.dart';
 import 'responses/response.dart';
 import 'responses/root_response.dart';
 import 'responses/submit_transaction_response.dart';
@@ -356,81 +365,267 @@ class StellarSDK {
   LiquidityPoolTradesRequestBuilder get liquidityPoolTrades =>
       LiquidityPoolTradesRequestBuilder(httpClient, _serverURI);
 
+  /// Account data entry key that marks an account as requiring a memo on
+  /// incoming payments (SEP-29).
+  static const String _memoRequiredDataKey = 'config.memo_required';
+
+  /// Decoded value of [_memoRequiredDataKey] that activates the requirement.
+  static const String _memoRequiredDataValue = '1';
+
+  /// Checks whether [transaction] may be submitted without a memo (SEP-29).
+  ///
+  /// SEP-29 lets an account require a memo on incoming payments by setting its
+  /// data entry `config.memo_required` to `1`. This method loads the
+  /// destination accounts of the transaction from Horizon and throws
+  /// [AccountRequiresMemoException] if one of them carries that entry while
+  /// the transaction has no memo. The submit methods of this class run the
+  /// same check by default.
+  ///
+  /// The check covers payment, path payment (strict send and strict receive)
+  /// and account merge operations. A fee bump transaction is checked through
+  /// its inner transaction. No request is made if the transaction carries a
+  /// memo of any type other than [MemoNone], or if none of its operations
+  /// names a destination that needs a lookup. Multiplexed (M...) destinations
+  /// are not looked up, because the multiplexing id already identifies the
+  /// recipient. Otherwise each distinct destination account is loaded once,
+  /// sequentially and in operation order, until the first account that
+  /// requires a memo. A destination that does not exist (Horizon answers 404)
+  /// is skipped; the network then decides about the submission.
+  ///
+  /// Parameters:
+  /// - [transaction] The [Transaction] or [FeeBumpTransaction] to check
+  ///
+  /// Throws:
+  /// - [AccountRequiresMemoException] If the transaction has no memo and a
+  ///   destination account requires one
+  /// - [ErrorResponse] If a destination lookup fails with an HTTP status other
+  ///   than 404
+  /// - [TooManyRequestsException] If a destination lookup is rate limited
+  /// - [http.ClientException] If a destination lookup fails at the transport
+  ///   level
+  ///
+  /// Example:
+  /// ```dart
+  /// try {
+  ///   await sdk.checkMemoRequired(transaction);
+  /// } on AccountRequiresMemoException catch (e) {
+  ///   print("Memo required by ${e.accountId} (operation ${e.operationIndex})");
+  /// }
+  /// ```
+  ///
+  /// See also:
+  /// - [AccountRequiresMemoException] for the reported account and operation
+  /// - [SEP-29 specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md)
+  Future<void> checkMemoRequired(AbstractTransaction transaction) async {
+    if (transaction is FeeBumpTransaction) {
+      await _checkMemoRequiredForTransaction(transaction.innerTransaction);
+    } else if (transaction is Transaction) {
+      await _checkMemoRequiredForTransaction(transaction);
+    }
+  }
+
+  /// Runs the SEP-29 check of [checkMemoRequired] on a [Transaction].
+  Future<void> _checkMemoRequiredForTransaction(
+      Transaction transaction) async {
+    bool memoMissing =
+        transaction.memo == null || transaction.memo is MemoNone;
+    if (!memoMissing) {
+      return;
+    }
+
+    // Distinct non-multiplexed destination account ids, in operation order,
+    // each mapped to the index of the first operation that names it.
+    Map<String, int> destinationIndexes = <String, int>{};
+    List<Operation> operations = transaction.operations;
+    for (int i = 0; i < operations.length; i++) {
+      Operation operation = operations[i];
+      MuxedAccount destination;
+      if (operation is PaymentOperation) {
+        destination = operation.destination;
+      } else if (operation is PathPaymentStrictSendOperation) {
+        destination = operation.destination;
+      } else if (operation is PathPaymentStrictReceiveOperation) {
+        destination = operation.destination;
+      } else if (operation is AccountMergeOperation) {
+        destination = operation.destination;
+      } else {
+        continue;
+      }
+      if (destination.id != null) {
+        continue;
+      }
+      destinationIndexes.putIfAbsent(destination.ed25519AccountId, () => i);
+    }
+
+    for (String accountId in destinationIndexes.keys) {
+      AccountResponse account;
+      try {
+        account = await accounts.account(accountId);
+      } on ErrorResponse catch (e) {
+        if (e.code == NetworkConstants.HTTP_NOT_FOUND) {
+          continue;
+        }
+        rethrow;
+      }
+      AccountResponseData data = account.data;
+      if (data.keys.contains(_memoRequiredDataKey) &&
+          utf8.decode(data.getDecoded(_memoRequiredDataKey),
+                  allowMalformed: true) ==
+              _memoRequiredDataValue) {
+        throw AccountRequiresMemoException(
+            accountId, destinationIndexes[accountId]!);
+      }
+    }
+  }
+
+  /// Runs the SEP-29 check of [checkMemoRequired] on a base64-encoded
+  /// transaction envelope.
+  ///
+  /// An envelope that cannot be decoded is not checked. It is submitted
+  /// unchanged, so that Horizon reports the malformed envelope in its
+  /// response.
+  Future<void> _checkMemoRequiredForEnvelope(String envelope) async {
+    AbstractTransaction transaction;
+    try {
+      transaction = AbstractTransaction.fromEnvelopeXdrString(envelope);
+    } catch (_) {
+      return;
+    }
+    await checkMemoRequired(transaction);
+  }
+
   /// Submits a synchronous [transaction] to the network. Unlike the asynchronous version [submitAsyncTransaction],
   /// which relays the response from core directly back to the user, this endpoint blocks and waits for the transaction
   /// to be ingested in Horizon.
   ///
+  /// Before submitting, the transaction is checked with [checkMemoRequired] (SEP-29). If the transaction has no memo,
+  /// this costs one account lookup per distinct non-muxed destination. Set [skipMemoRequiredCheck] to `true` to submit
+  /// without the SEP-29 memo-required check.
+  ///
   /// Returns [SubmitTransactionTimeoutResponseException] If the response represents a timeout (status code: 504). The exception
   /// may contain the hash of the transaction if available, so that the result can be fetched later.
   ///
+  /// Throws [AccountRequiresMemoException] if the transaction has no memo and a destination account requires one.
+  /// Throws [ErrorResponse] or [TooManyRequestsException] if a destination account lookup of the memo-required check fails.
+  /// A destination that does not exist (status code: 404) is skipped by the check.
   /// Throws [UnknownResponse] if the Horizon response could not be interpreted.
   /// Throws [http.ClientException] if there is a transport-level failure when communication with the server.
   /// For example, if the server could not be reached.
   /// See also: [Stellar developer docs](https://developers.stellar.org)
-  Future<SubmitTransactionResponse> submitTransaction(
-      Transaction transaction) async {
+  Future<SubmitTransactionResponse> submitTransaction(Transaction transaction,
+      {bool skipMemoRequiredCheck = false}) async {
+    if (!skipMemoRequiredCheck) {
+      await checkMemoRequired(transaction);
+    }
     return submitTransactionEnvelopeXdrBase64(
-        transaction.toEnvelopeXdrBase64());
+        transaction.toEnvelopeXdrBase64(),
+        skipMemoRequiredCheck: true);
   }
 
   /// Submits a synchronous [feeBumpTransaction] to the network. Unlike the asynchronous version [submitAsyncFeeBumpTransaction],
   /// which relays the response from core directly back to the user, this endpoint blocks and waits for the transaction
   /// to be ingested in Horizon.
   ///
+  /// Before submitting, the inner transaction is checked with [checkMemoRequired] (SEP-29). If it has no memo,
+  /// this costs one account lookup per distinct non-muxed destination. Set [skipMemoRequiredCheck] to `true` to submit
+  /// without the SEP-29 memo-required check.
+  ///
   /// Returns [SubmitTransactionTimeoutResponseException] If the response represents a timeout (status code: 504). The exception
   /// may contain the hash of the transaction if available, so that the result can be fetched later.
   ///
+  /// Throws [AccountRequiresMemoException] if the inner transaction has no memo and a destination account requires one.
+  /// Throws [ErrorResponse] or [TooManyRequestsException] if a destination account lookup of the memo-required check fails.
+  /// A destination that does not exist (status code: 404) is skipped by the check.
   /// Throws [UnknownResponse] if the Horizon response could not be interpreted.
   /// Throws [http.ClientException] if there is a transport-level failure when communication with the server.
   /// For example, if the server could not be reached.
   /// See also: [Stellar developer docs](https://developers.stellar.org)
   Future<SubmitTransactionResponse> submitFeeBumpTransaction(
-      FeeBumpTransaction feeBumpTransaction) async {
+      FeeBumpTransaction feeBumpTransaction,
+      {bool skipMemoRequiredCheck = false}) async {
+    if (!skipMemoRequiredCheck) {
+      await checkMemoRequired(feeBumpTransaction);
+    }
     return submitTransactionEnvelopeXdrBase64(
-        feeBumpTransaction.toEnvelopeXdrBase64());
+        feeBumpTransaction.toEnvelopeXdrBase64(),
+        skipMemoRequiredCheck: true);
   }
 
   /// Submits an asynchronous [transaction] to the network. Unlike the synchronous version [submitTransaction],
   /// which blocks and waits for the transaction to be ingested in Horizon, this endpoint relays the response from
   /// core directly back to the user. Returns [SubmitAsyncTransactionResponse].
+  /// Before submitting, the transaction is checked with [checkMemoRequired] (SEP-29). If the transaction has no memo,
+  /// this costs one account lookup per distinct non-muxed destination. Set [skipMemoRequiredCheck] to `true` to submit
+  /// without the SEP-29 memo-required check.
+  /// Throws [AccountRequiresMemoException] if the transaction has no memo and a destination account requires one.
+  /// Throws [ErrorResponse] or [TooManyRequestsException] if a destination account lookup of the memo-required check fails.
+  /// A destination that does not exist (status code: 404) is skipped by the check.
   /// Throws [SubmitAsyncTransactionProblem] if the Horizon response represents a known problem.
   /// Throws [UnknownResponse] if the Horizon response could not be interpreted.
   /// Throws [http.ClientException] if there is a transport-level failure when communication with the server.
   /// For example, if the server could not be reached.
   /// See also: [Stellar developer docs](https://developers.stellar.org)
   Future<SubmitAsyncTransactionResponse> submitAsyncTransaction(
-      Transaction transaction) async {
+      Transaction transaction,
+      {bool skipMemoRequiredCheck = false}) async {
+    if (!skipMemoRequiredCheck) {
+      await checkMemoRequired(transaction);
+    }
     return submitAsyncTransactionEnvelopeXdrBase64(
-        transaction.toEnvelopeXdrBase64());
+        transaction.toEnvelopeXdrBase64(),
+        skipMemoRequiredCheck: true);
   }
 
   /// Submits an asynchronous [feeBumpTransaction] to the network. Unlike the synchronous version [submitFeeBumpTransaction],
   /// which blocks and waits for the transaction to be ingested in Horizon, this endpoint relays the response from
   /// core directly back to the user. Returns [SubmitAsyncTransactionResponse].
+  /// Before submitting, the inner transaction is checked with [checkMemoRequired] (SEP-29). If it has no memo,
+  /// this costs one account lookup per distinct non-muxed destination. Set [skipMemoRequiredCheck] to `true` to submit
+  /// without the SEP-29 memo-required check.
+  /// Throws [AccountRequiresMemoException] if the inner transaction has no memo and a destination account requires one.
+  /// Throws [ErrorResponse] or [TooManyRequestsException] if a destination account lookup of the memo-required check fails.
+  /// A destination that does not exist (status code: 404) is skipped by the check.
   /// Throws [SubmitAsyncTransactionProblem] if the Horizon response represents a known problem.
   /// Throws [UnknownResponse] if the Horizon response could not be interpreted.
   /// Throws [http.ClientException] if there is a transport-level failure when communication with the server.
   /// For example, if the server could not be reached.
   /// See also: [Stellar developer docs](https://developers.stellar.org)
   Future<SubmitAsyncTransactionResponse> submitAsyncFeeBumpTransaction(
-      FeeBumpTransaction feeBumpTransaction) async {
+      FeeBumpTransaction feeBumpTransaction,
+      {bool skipMemoRequiredCheck = false}) async {
+    if (!skipMemoRequiredCheck) {
+      await checkMemoRequired(feeBumpTransaction);
+    }
     return submitAsyncTransactionEnvelopeXdrBase64(
-        feeBumpTransaction.toEnvelopeXdrBase64());
+        feeBumpTransaction.toEnvelopeXdrBase64(),
+        skipMemoRequiredCheck: true);
   }
 
   /// Submits a synchronous [transactionEnvelopeXdrBase64] String to the network. Unlike the asynchronous version [submitAsyncTransactionEnvelopeXdrBase64],
   /// which relays the response from core directly back to the user, this endpoint blocks and waits for the transaction
   /// to be ingested in Horizon.
   ///
+  /// Before submitting, the envelope is decoded and the transaction is checked with [checkMemoRequired] (SEP-29).
+  /// If the transaction has no memo, this costs one account lookup per distinct non-muxed destination. An envelope
+  /// that cannot be decoded is not checked and is submitted unchanged. Set [skipMemoRequiredCheck] to `true` to submit
+  /// without the SEP-29 memo-required check.
+  ///
   /// Returns [SubmitTransactionTimeoutResponseException] If the response represents a timeout (status code: 504). The exception
   /// may contain the hash of the transaction if available, so that the result can be fetched later.
   ///
+  /// Throws [AccountRequiresMemoException] if the transaction has no memo and a destination account requires one.
+  /// Throws [ErrorResponse] or [TooManyRequestsException] if a destination account lookup of the memo-required check fails.
+  /// A destination that does not exist (status code: 404) is skipped by the check.
   /// Throws [UnknownResponse] if the Horizon response could not be interpreted.
   /// Throws [http.ClientException] if there is a transport-level failure when communication with the server.
   /// For example, if the server could not be reached.
   /// See also: [Stellar developer docs](https://developers.stellar.org)
   Future<SubmitTransactionResponse> submitTransactionEnvelopeXdrBase64(
-      String transactionEnvelopeXdrBase64) async {
+      String transactionEnvelopeXdrBase64,
+      {bool skipMemoRequiredCheck = false}) async {
+    if (!skipMemoRequiredCheck) {
+      await _checkMemoRequiredForEnvelope(transactionEnvelopeXdrBase64);
+    }
     Uri callURI = _serverURI.replace(pathSegments: ["transactions"]);
 
     //print("Envelope XDR: " + transaction.toEnvelopeXdrBase64());
@@ -464,6 +659,13 @@ class StellarSDK {
   /// Submits an asynchronous [transactionEnvelopeXdrBase64] String to the network. Unlike the synchronous version [submitTransactionEnvelopeXdrBase64],
   /// which blocks and waits for the transaction to be ingested in Horizon, this endpoint relays the response from
   /// core directly back to the user. Returns [SubmitAsyncTransactionResponse].
+  /// Before submitting, the envelope is decoded and the transaction is checked with [checkMemoRequired] (SEP-29).
+  /// If the transaction has no memo, this costs one account lookup per distinct non-muxed destination. An envelope
+  /// that cannot be decoded is not checked and is submitted unchanged. Set [skipMemoRequiredCheck] to `true` to submit
+  /// without the SEP-29 memo-required check.
+  /// Throws [AccountRequiresMemoException] if the transaction has no memo and a destination account requires one.
+  /// Throws [ErrorResponse] or [TooManyRequestsException] if a destination account lookup of the memo-required check fails.
+  /// A destination that does not exist (status code: 404) is skipped by the check.
   /// Throws [SubmitAsyncTransactionProblem] if the Horizon response represents a known problem.
   /// Throws [UnknownResponse] if the Horizon response could not be interpreted.
   /// Throws [http.ClientException] if there is a transport-level failure when communication with the server.
@@ -471,7 +673,11 @@ class StellarSDK {
   /// See also: [Stellar developer docs](https://developers.stellar.org)
   Future<SubmitAsyncTransactionResponse>
       submitAsyncTransactionEnvelopeXdrBase64(
-          String transactionEnvelopeXdrBase64) async {
+          String transactionEnvelopeXdrBase64,
+          {bool skipMemoRequiredCheck = false}) async {
+    if (!skipMemoRequiredCheck) {
+      await _checkMemoRequiredForEnvelope(transactionEnvelopeXdrBase64);
+    }
     Uri callURI = _serverURI.replace(pathSegments: ["transactions_async"]);
 
     SubmitAsyncTransactionResponse result = await _httpClient
@@ -510,5 +716,47 @@ class StellarSDK {
     });
 
     return result;
+  }
+}
+
+/// Exception thrown when a transaction without a memo pays an account that
+/// requires one (SEP-29).
+///
+/// An account requires a memo on incoming payments when its data entry
+/// `config.memo_required` is set to `1`. The submit methods of [StellarSDK]
+/// and [StellarSDK.checkMemoRequired] throw this exception before anything is
+/// submitted, when the checked transaction carries no memo and one of its
+/// payment, path payment or account merge operations names such an account as
+/// a non-multiplexed destination.
+///
+/// Example:
+/// ```dart
+/// try {
+///   await sdk.submitTransaction(transaction);
+/// } on AccountRequiresMemoException catch (e) {
+///   print("Account ${e.accountId} requires a memo "
+///       "(operation ${e.operationIndex})");
+/// }
+/// ```
+///
+/// See also:
+/// - [StellarSDK.checkMemoRequired] for running the check without submitting
+/// - [SEP-29 specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md)
+class AccountRequiresMemoException implements Exception {
+  /// The account id (G...) of the destination account that requires a memo.
+  final String accountId;
+
+  /// The zero-based index, over all operations of the checked transaction, of
+  /// the first payment, path payment or account merge operation that names
+  /// [accountId] as a non-multiplexed destination.
+  final int operationIndex;
+
+  /// Creates an exception for the destination [accountId] named by the
+  /// operation at [operationIndex].
+  AccountRequiresMemoException(this.accountId, this.operationIndex);
+
+  String toString() {
+    return "Destination account $accountId of operation $operationIndex "
+        "requires a memo in the transaction.";
   }
 }

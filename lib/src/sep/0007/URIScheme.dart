@@ -554,6 +554,9 @@ class URIScheme {
   /// - [ArgumentError] if [sep7TxUrl] does not contain a valid `xdr` parameter
   /// - [ArgumentError] if the XDR cannot be parsed as a valid transaction
   /// - [ArgumentError] if the transaction type is unsupported
+  /// - [AccountRequiresMemoException] if the transaction is submitted directly to
+  ///   the Stellar network, carries no memo, and a destination account requires
+  ///   one (SEP-29)
   ///
   /// **Behavior:**
   ///
