@@ -64,7 +64,7 @@ All six submit methods of `StellarSDK` run the check before they send anything: 
 - A transaction that carries a memo passes without any request. Every memo type counts (`MemoText`, `MemoId`, `MemoHash`, `MemoReturnHash`); `MemoNone` counts as no memo.
 - Multiplexed destinations (M-addresses) are skipped. The muxed id already identifies the customer.
 - Each remaining destination account is loaded from Horizon once, in operation order, one request at a time. An account named by several operations is loaded only once.
-- A destination Horizon does not know (HTTP 404) is skipped. The network decides about the submission, and a payment to a missing account fails with `op_no_destination`.
+- A destination Horizon does not know (HTTP 404) is skipped, and the network decides the outcome. A missing destination usually fails the operation (`op_no_destination` for a payment or path payment, `op_no_account` for an account merge), but an earlier operation of the same transaction can create the account, and a payment that returns an asset to its issuer succeeds even after the issuer account was merged away.
 - The first destination whose `config.memo_required` entry decodes to `1` ends the check with `AccountRequiresMemoException`. No further account is loaded and nothing is submitted.
 
 The exception has two fields. `accountId` is the account (`G...`) that requires the memo. `operationIndex` is the zero-based index, over all operations of the checked transaction, of the first payment, path payment or account merge operation that names that account as a non-multiplexed destination.
