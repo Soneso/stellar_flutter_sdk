@@ -148,7 +148,7 @@ StellarSDK sdk = StellarSDK.TESTNET;
 
 // Sender's keypair
 KeyPair senderKeyPair =
-    KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6CSS');
+    KeyPair.fromSecretSeed('SCPUGMKJ4R3TW4PF5RDPF5QCVTZD2EK5FCQJWZ64BYVUY4JSFMZPWR4I');
 String senderAccountId = senderKeyPair.accountId;
 
 // Resolve recipient's Stellar address

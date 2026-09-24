@@ -276,7 +276,7 @@ final financialFields = FinancialAccountKYCFields()
   ..mobileMoneyProvider = 'M-Pesa'
 
   // Crypto payout address
-  ..cryptoAddress = 'GDJKZLTXCKVQYIGJQIYSNFJ3CEKIIZ6HIAZEDE2KBPCSEPBVH4GNDLTJ';
+  ..cryptoAddress = 'GCW5ZALYF3B76ZBRKLTO6IGLRZTRWBNO2QSVLREJBTU65XWYLQ4GRIXB';
 
 // Attach to natural person
 final personFields = NaturalPersonKYCFields()
