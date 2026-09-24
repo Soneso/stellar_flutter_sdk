@@ -433,6 +433,9 @@ class StellarSDK {
       return;
     }
 
+    // Destinations are collected before the first await, so the typed submit
+    // methods check the same operations they have already encoded.
+    //
     // Distinct non-multiplexed destination account ids, in operation order,
     // each mapped to the index of the first operation that names it.
     Map<String, int> destinationIndexes = <String, int>{};
@@ -514,11 +517,13 @@ class StellarSDK {
   /// See also: [Stellar developer docs](https://developers.stellar.org)
   Future<SubmitTransactionResponse> submitTransaction(Transaction transaction,
       {bool skipMemoRequiredCheck = false}) async {
+    // Encoded before the check: the check reads the operations before its first
+    // await, so both see the same payload.
+    String envelope = transaction.toEnvelopeXdrBase64();
     if (!skipMemoRequiredCheck) {
       await checkMemoRequired(transaction);
     }
-    return submitTransactionEnvelopeXdrBase64(
-        transaction.toEnvelopeXdrBase64(),
+    return submitTransactionEnvelopeXdrBase64(envelope,
         skipMemoRequiredCheck: true);
   }
 
@@ -543,11 +548,13 @@ class StellarSDK {
   Future<SubmitTransactionResponse> submitFeeBumpTransaction(
       FeeBumpTransaction feeBumpTransaction,
       {bool skipMemoRequiredCheck = false}) async {
+    // Encoded before the check: the check reads the operations before its first
+    // await, so both see the same payload.
+    String envelope = feeBumpTransaction.toEnvelopeXdrBase64();
     if (!skipMemoRequiredCheck) {
       await checkMemoRequired(feeBumpTransaction);
     }
-    return submitTransactionEnvelopeXdrBase64(
-        feeBumpTransaction.toEnvelopeXdrBase64(),
+    return submitTransactionEnvelopeXdrBase64(envelope,
         skipMemoRequiredCheck: true);
   }
 
@@ -568,11 +575,13 @@ class StellarSDK {
   Future<SubmitAsyncTransactionResponse> submitAsyncTransaction(
       Transaction transaction,
       {bool skipMemoRequiredCheck = false}) async {
+    // Encoded before the check: the check reads the operations before its first
+    // await, so both see the same payload.
+    String envelope = transaction.toEnvelopeXdrBase64();
     if (!skipMemoRequiredCheck) {
       await checkMemoRequired(transaction);
     }
-    return submitAsyncTransactionEnvelopeXdrBase64(
-        transaction.toEnvelopeXdrBase64(),
+    return submitAsyncTransactionEnvelopeXdrBase64(envelope,
         skipMemoRequiredCheck: true);
   }
 
@@ -593,11 +602,13 @@ class StellarSDK {
   Future<SubmitAsyncTransactionResponse> submitAsyncFeeBumpTransaction(
       FeeBumpTransaction feeBumpTransaction,
       {bool skipMemoRequiredCheck = false}) async {
+    // Encoded before the check: the check reads the operations before its first
+    // await, so both see the same payload.
+    String envelope = feeBumpTransaction.toEnvelopeXdrBase64();
     if (!skipMemoRequiredCheck) {
       await checkMemoRequired(feeBumpTransaction);
     }
-    return submitAsyncTransactionEnvelopeXdrBase64(
-        feeBumpTransaction.toEnvelopeXdrBase64(),
+    return submitAsyncTransactionEnvelopeXdrBase64(envelope,
         skipMemoRequiredCheck: true);
   }
 
@@ -755,6 +766,7 @@ class AccountRequiresMemoException implements Exception {
   /// operation at [operationIndex].
   AccountRequiresMemoException(this.accountId, this.operationIndex);
 
+  @override
   String toString() {
     return "Destination account $accountId of operation $operationIndex "
         "requires a memo in the transaction.";
