@@ -43,6 +43,7 @@ class SEPParser:
         '0011': 'Txrep: Human-Readable Low-Level Representation of Stellar Transactions',
         '0012': 'Anchor/Client customer info transfer',
         '0024': 'Hosted Deposit and Withdrawal',
+        '0029': 'Account Memo Requirements',
         '0030': 'Account Recovery',
         '0038': 'Anchor RFQ API',
         '0045': 'Web Authentication for Contract Accounts',
@@ -54,8 +55,8 @@ class SEPParser:
     }
 
     # SEPs defined entirely from an enumerated capability set rather than a
-    # fetched markdown document (cryptographic specifications with no endpoints).
-    HARDCODED_SEPS = {'0053'}
+    # fetched markdown document (specifications with no endpoints).
+    HARDCODED_SEPS = {'0029', '0053'}
 
     def __init__(self, sep_number: str):
         """
@@ -5955,6 +5956,181 @@ class SEPParser:
 
         return data
 
+    def parse_sep_29(self) -> Dict[str, Any]:
+        """
+        Build the SEP-29 (Account Memo Requirements) definition.
+
+        SEP-29 defines a client-side check with no HTTP endpoints of its own, so
+        the capability set is enumerated here rather than parsed from a fetched
+        markdown document. Preamble, summary, and source URL are set explicitly
+        from the specification.
+
+        Returns:
+            Structured SEP-29 data with memo required capability fields
+        """
+        data = {
+            'sep_number': self.sep_number,
+            'preamble': {
+                'sep': '0029',
+                'title': 'Account Memo Requirements',
+                'status': 'Active',
+                'version': '0.5.0',
+            },
+            'summary': (
+                'An account signals that incoming payments must carry a memo by '
+                'setting the data entry "config.memo_required" to the value "1". '
+                'Before submitting a transaction without a memo, the sender loads '
+                'the destination account of every payment, path payment and '
+                'account merge operation and refuses to submit when one of them '
+                'requires a memo. Multiplexed destinations are exempt, because '
+                'the multiplexing id already identifies the recipient.'
+            ),
+            'sections': []
+        }
+
+        # Memo required check capability fields.
+        memo_required_fields = [
+            {
+                'name': 'memo_required_data_entry',
+                'description': 'Reads the destination account\'s config.memo_required data entry and compares its decoded value with 1',
+                'requirements': 'config.memo_required data entry lookup',
+                'required': True,
+                'category': 'Memo Required'
+            },
+            {
+                'name': 'set_memo_required_flag',
+                'description': 'Sets or removes the data entry with a manage data operation',
+                'requirements': 'ManageDataOperationBuilder',
+                'required': True,
+                'category': 'Memo Required'
+            },
+            {
+                'name': 'payment_destination',
+                'description': 'Checks the destination of a payment operation',
+                'requirements': 'PaymentOperation destination check',
+                'required': True,
+                'category': 'Memo Required'
+            },
+            {
+                'name': 'path_payment_strict_send_destination',
+                'description': 'Checks the destination of a path payment strict send operation',
+                'requirements': 'PathPaymentStrictSendOperation destination check',
+                'required': True,
+                'category': 'Memo Required'
+            },
+            {
+                'name': 'path_payment_strict_receive_destination',
+                'description': 'Checks the destination of a path payment strict receive operation',
+                'requirements': 'PathPaymentStrictReceiveOperation destination check',
+                'required': True,
+                'category': 'Memo Required'
+            },
+            {
+                'name': 'account_merge_destination',
+                'description': 'Checks the destination of an account merge operation',
+                'requirements': 'AccountMergeOperation destination check',
+                'required': True,
+                'category': 'Memo Required'
+            },
+            {
+                'name': 'muxed_destination_exempt',
+                'description': 'Skips multiplexed destinations',
+                'requirements': 'Multiplexed destination detection',
+                'required': True,
+                'category': 'Memo Required'
+            },
+            {
+                'name': 'memo_present_skips_lookup',
+                'description': 'Performs no lookup when the transaction carries a memo',
+                'requirements': 'Memo presence short-circuit',
+                'required': True,
+                'category': 'Memo Required'
+            },
+            {
+                'name': 'fee_bump_inner_transaction',
+                'description': 'Checks a fee bump transaction through its inner transaction',
+                'requirements': 'Fee bump inner transaction unwrap',
+                'required': True,
+                'category': 'Memo Required'
+            },
+            {
+                'name': 'unknown_destination_skipped',
+                'description': 'Skips a destination Horizon does not know and lets the network report it',
+                'requirements': 'HTTP 404 handling on account lookup',
+                'required': True,
+                'category': 'Memo Required'
+            },
+            {
+                'name': 'check_memo_required_method',
+                'description': 'Public check without submitting',
+                'requirements': 'checkMemoRequired(AbstractTransaction) method',
+                'required': True,
+                'category': 'Memo Required'
+            },
+            {
+                'name': 'submit_transaction_opt_out',
+                'description': 'submitTransaction runs the check unless skipMemoRequiredCheck is true',
+                'requirements': 'submitTransaction skipMemoRequiredCheck parameter',
+                'required': True,
+                'category': 'Memo Required'
+            },
+            {
+                'name': 'submit_fee_bump_transaction_opt_out',
+                'description': 'submitFeeBumpTransaction runs the check unless skipMemoRequiredCheck is true',
+                'requirements': 'submitFeeBumpTransaction skipMemoRequiredCheck parameter',
+                'required': True,
+                'category': 'Memo Required'
+            },
+            {
+                'name': 'submit_async_transaction_opt_out',
+                'description': 'submitAsyncTransaction runs the check unless skipMemoRequiredCheck is true',
+                'requirements': 'submitAsyncTransaction skipMemoRequiredCheck parameter',
+                'required': True,
+                'category': 'Memo Required'
+            },
+            {
+                'name': 'submit_async_fee_bump_transaction_opt_out',
+                'description': 'submitAsyncFeeBumpTransaction runs the check unless skipMemoRequiredCheck is true',
+                'requirements': 'submitAsyncFeeBumpTransaction skipMemoRequiredCheck parameter',
+                'required': True,
+                'category': 'Memo Required'
+            },
+            {
+                'name': 'submit_transaction_envelope_opt_out',
+                'description': 'submitTransactionEnvelopeXdrBase64 runs the check unless skipMemoRequiredCheck is true',
+                'requirements': 'submitTransactionEnvelopeXdrBase64 skipMemoRequiredCheck parameter',
+                'required': True,
+                'category': 'Memo Required'
+            },
+            {
+                'name': 'submit_async_transaction_envelope_opt_out',
+                'description': 'submitAsyncTransactionEnvelopeXdrBase64 runs the check unless skipMemoRequiredCheck is true',
+                'requirements': 'submitAsyncTransactionEnvelopeXdrBase64 skipMemoRequiredCheck parameter',
+                'required': True,
+                'category': 'Memo Required'
+            },
+            {
+                'name': 'account_requires_memo_exception',
+                'description': 'Dedicated exception carrying the account id and the operation index',
+                'requirements': 'AccountRequiresMemoException class',
+                'required': True,
+                'category': 'Memo Required'
+            },
+        ]
+
+        data['sections'].append({
+            'title': 'Memo Required',
+            'key': 'memo_required',
+            'content': 'Checking payment destinations for the config.memo_required data entry before submission',
+            'memo_required_features': memo_required_fields,
+            'feature_count': len(memo_required_fields)
+        })
+
+        print(f"{Colors.GREEN}  ✓ Found {len(memo_required_fields)} memo required features{Colors.END}")
+        print(f"{Colors.GREEN}  ✓ Total: {len(memo_required_fields)} SEP-29 features{Colors.END}")
+
+        return data
+
     def parse_sep_53(self) -> Dict[str, Any]:
         """
         Build the SEP-53 (Sign and Verify Messages) definition.
@@ -6114,6 +6290,8 @@ class SEPParser:
             self.parsed_data = self.parse_sep_12()
         elif self.sep_number == '0024':
             self.parsed_data = self.parse_sep_24()
+        elif self.sep_number == '0029':
+            self.parsed_data = self.parse_sep_29()
         elif self.sep_number == '0030':
             self.parsed_data = self.parse_sep_30()
         elif self.sep_number == '0011':
@@ -6215,7 +6393,7 @@ def main():
 
     try:
         # Fetch SEP markdown, except for SEPs defined from an enumerated
-        # capability set (cryptographic specifications with no endpoints).
+        # capability set (specifications with no endpoints).
         if parser.sep_number not in SEPParser.HARDCODED_SEPS:
             if not parser.fetch_sep_markdown():
                 print(f"\n{Colors.RED}Failed to fetch SEP-{sep_number}{Colors.END}")

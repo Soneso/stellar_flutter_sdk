@@ -101,6 +101,15 @@ final class NetworkConstants {
   /// Default: 300 (HTTP redirection and error codes)
   static const int HTTP_ERROR_STATUS_THRESHOLD = 300;
 
+  /// HTTP 404 Not Found status code.
+  ///
+  /// Indicates that the server has no resource at the requested URL. Horizon
+  /// answers with this code when the requested account does not exist on the
+  /// network.
+  ///
+  /// Reference: RFC 9110 - HTTP Semantics, Section 15.5.5 (404 Not Found)
+  static const int HTTP_NOT_FOUND = 404;
+
   /// HTTP 429 Too Many Requests status code.
   ///
   /// Indicates that the client has sent too many requests in a given time period
