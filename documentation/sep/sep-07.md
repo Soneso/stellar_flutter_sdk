@@ -334,7 +334,7 @@ if (uriScheme.verifySignature(uri, signingKey)) {
 
 ## Signing and submitting transactions
 
-Use `signAndSubmitTransaction()` to sign a transaction from a URI and submit it. The method handles submission to either a callback URL or directly to the Stellar network.
+Use `signAndSubmitTransaction()` to sign a transaction from a URI and submit it. The method handles submission to either a callback URL or directly to the Stellar network. Direct submission to the network runs the [SEP-29](sep-29.md) memo-required check, so the method can throw `AccountRequiresMemoException` when the transaction has no memo and a destination account requires one.
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';

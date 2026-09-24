@@ -432,7 +432,7 @@ For complete security patterns and platform-specific key storage:
 
 ## 11. SEP Implementations
 
-The Flutter SDK implements 18 Stellar Ecosystem Proposals (SEPs) — authentication, deposit/withdrawal, federation, KYC, XDR-JSON, and more. Sixteen have a reference page; SEP-23 (StrKey) and SEP-29 (memo requirements) are covered inside other topics.
+The Flutter SDK implements 18 Stellar Ecosystem Proposals (SEPs) — authentication, deposit/withdrawal, federation, KYC, XDR-JSON, and more. Seventeen have a reference page; SEP-23 (StrKey) is covered inside other topics.
 
 For all SEP examples with code: [SEP Implementations Guide](./references/sep.md)
 
