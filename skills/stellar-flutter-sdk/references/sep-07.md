@@ -317,7 +317,7 @@ Returns `false` if: `signerPublicKey` is invalid, URI is invalid, URI has no `si
 
 ## 6. Sign and Submit a Transaction
 
-`signAndSubmitTransaction()` extracts the transaction from a `web+stellar:tx?` URI, signs it, and submits it either to a callback URL or directly to the Stellar network.
+`signAndSubmitTransaction()` extracts the transaction from a `web+stellar:tx?` URI, signs it, and submits it either to a callback URL or directly to the Stellar network. Direct submission to the network runs the SEP-29 memo-required check (see [sep-29.md](sep-29.md)), so the method can throw `AccountRequiresMemoException` when the transaction has no memo and a destination account requires one.
 
 - If `callback` parameter starts with `url:` — POSTs signed XDR to that URL with `Content-Type: application/x-www-form-urlencoded`, body `xdr=<url-encoded-xdr>`.
 - Otherwise — submits directly to the Stellar network (PUBLIC or TESTNET based on `network` param).
@@ -373,6 +373,8 @@ try {
 - Operation type is not `tx`
 - `xdr` parameter is absent
 - XDR cannot be parsed as a valid transaction
+
+Direct network submission runs the SEP-29 memo-required check and can throw `AccountRequiresMemoException`.
 
 It also supports `FeeBumpTransaction` in addition to regular `Transaction`.
 

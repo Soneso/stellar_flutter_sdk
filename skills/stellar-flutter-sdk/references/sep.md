@@ -2,10 +2,9 @@
 
 The Flutter SDK implements 18 Stellar Ecosystem Proposals (SEPs) that cover authentication, asset transfers, identity verification, data rendering, and other standardized protocols for integrating with anchors and other Stellar services.
 
-Sixteen of them have a reference page here. The remaining two have no page of their own:
+Seventeen of them have a reference page here. The remaining one has no page of its own:
 
 - SEP-23 (StrKey) is the address and key encoding, exposed as the `StrKey` class and used throughout the SDK. The [Security Guide](security.md) covers the validation patterns; `api_reference.md` has the full signature list.
-- SEP-29 (Account Memo Requirements) is signalled by a `config.memo_required` data entry on the destination account. The SDK has no dedicated API for it; read the destination's data entries before submitting a payment.
 
 ## SEP Reference Table
 
@@ -22,6 +21,7 @@ Sixteen of them have a reference page here. The remaining two have no page of th
 | SEP-11 | Txrep | Convert transactions to human-readable format | [Details](sep-11.md) |
 | SEP-12 | KYC API | Submit and manage customer information | [Details](sep-12.md) |
 | SEP-24 | Interactive Deposit/Withdrawal | Interactive web flows for fiat on/off ramps | [Details](sep-24.md) |
+| SEP-29 | Account Memo Requirements | Check destinations for a memo requirement before submitting a payment | [Details](sep-29.md) |
 | SEP-30 | Account Recovery | Recover access to accounts via identity verification | [Details](sep-30.md) |
 | SEP-38 | Anchor RFQ API | Get exchange quotes for asset conversions | [Details](sep-38.md) |
 | SEP-45 | Web Auth for Contracts | Authenticate Soroban contract accounts | [Details](sep-45.md) |
@@ -67,4 +67,4 @@ The following SEPs depend on other SEPs:
 - **SEP-38 (Anchor RFQ API)** → Requires SEP-10 for authentication; used with SEP-06 or SEP-24
 - **SEP-45 (Web Auth for Contracts)** → Requires SEP-01 to discover web auth endpoint for contract accounts
 
-No dependencies: SEP-02, SEP-05, SEP-07, SEP-08, SEP-09, SEP-11, SEP-51, SEP-53
+No dependencies: SEP-02, SEP-05, SEP-07, SEP-08, SEP-09, SEP-11, SEP-29, SEP-51, SEP-53
