@@ -404,7 +404,8 @@ void main() {
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
-        final response = await sdk.submitTransaction(transaction);
+        final response = await sdk.submitTransaction(transaction,
+            skipMemoRequiredCheck: true);
 
         expect(response, isA<SubmitTransactionResponse>());
         expect(response.success, isTrue);
@@ -452,7 +453,8 @@ void main() {
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
-        final response = await sdk.submitTransaction(transaction);
+        final response = await sdk.submitTransaction(transaction,
+            skipMemoRequiredCheck: true);
 
         expect(response, isA<SubmitTransactionResponse>());
         expect(response.success, isFalse);
@@ -494,7 +496,8 @@ void main() {
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
         expect(
-          () => sdk.submitTransaction(transaction),
+          () => sdk.submitTransaction(transaction,
+              skipMemoRequiredCheck: true),
           throwsA(isA<SubmitTransactionTimeoutResponseException>()),
         );
       });
@@ -526,7 +529,8 @@ void main() {
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
         expect(
-          () => sdk.submitTransaction(transaction),
+          () => sdk.submitTransaction(transaction,
+              skipMemoRequiredCheck: true),
           throwsA(isA<UnknownResponse>()),
         );
       });
@@ -597,7 +601,8 @@ void main() {
 
         feeBumpTx.sign(feeSourceKeyPair, Network.TESTNET);
 
-        final response = await sdk.submitFeeBumpTransaction(feeBumpTx);
+        final response = await sdk.submitFeeBumpTransaction(feeBumpTx,
+            skipMemoRequiredCheck: true);
 
         expect(response, isA<SubmitTransactionResponse>());
         expect(response.success, isTrue);
@@ -641,7 +646,8 @@ void main() {
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
-        final response = await sdk.submitAsyncTransaction(transaction);
+        final response = await sdk.submitAsyncTransaction(transaction,
+            skipMemoRequiredCheck: true);
 
         expect(response, isA<SubmitAsyncTransactionResponse>());
         expect(response.txStatus, equals('PENDING'));
@@ -680,7 +686,8 @@ void main() {
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
-        final response = await sdk.submitAsyncTransaction(transaction);
+        final response = await sdk.submitAsyncTransaction(transaction,
+            skipMemoRequiredCheck: true);
 
         expect(response, isA<SubmitAsyncTransactionResponse>());
         expect(response.txStatus, equals('ERROR'));
@@ -720,7 +727,8 @@ void main() {
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
         expect(
-          () => sdk.submitAsyncTransaction(transaction),
+          () => sdk.submitAsyncTransaction(transaction,
+              skipMemoRequiredCheck: true),
           throwsA(isA<SubmitAsyncTransactionProblem>()),
         );
       });
@@ -773,7 +781,8 @@ void main() {
 
         feeBumpTx.sign(feeSourceKeyPair, Network.TESTNET);
 
-        final response = await sdk.submitAsyncFeeBumpTransaction(feeBumpTx);
+        final response = await sdk.submitAsyncFeeBumpTransaction(feeBumpTx,
+            skipMemoRequiredCheck: true);
 
         expect(response, isA<SubmitAsyncTransactionResponse>());
         expect(response.txStatus, equals('PENDING'));
@@ -835,7 +844,8 @@ void main() {
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
         final xdrBase64 = transaction.toEnvelopeXdrBase64();
-        final response = await sdk.submitTransactionEnvelopeXdrBase64(xdrBase64);
+        final response = await sdk.submitTransactionEnvelopeXdrBase64(xdrBase64,
+            skipMemoRequiredCheck: true);
 
         expect(response, isA<SubmitTransactionResponse>());
         expect(response.success, isTrue);
@@ -880,7 +890,9 @@ void main() {
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
         final xdrBase64 = transaction.toEnvelopeXdrBase64();
-        final response = await sdk.submitAsyncTransactionEnvelopeXdrBase64(xdrBase64);
+        final response = await sdk.submitAsyncTransactionEnvelopeXdrBase64(
+            xdrBase64,
+            skipMemoRequiredCheck: true);
 
         expect(response, isA<SubmitAsyncTransactionResponse>());
         expect(response.txStatus, equals('PENDING'));
@@ -922,7 +934,9 @@ void main() {
           transaction.sign(sourceKeyPair, Network.TESTNET);
 
           final xdrBase64 = transaction.toEnvelopeXdrBase64();
-          final response = await sdk.submitAsyncTransactionEnvelopeXdrBase64(xdrBase64);
+          final response = await sdk.submitAsyncTransactionEnvelopeXdrBase64(
+              xdrBase64,
+              skipMemoRequiredCheck: true);
 
           expect(response, isA<SubmitAsyncTransactionResponse>());
           expect(response.txStatus, equals('ERROR'));

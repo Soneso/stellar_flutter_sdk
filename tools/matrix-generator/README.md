@@ -6,7 +6,7 @@ It analyzes three areas:
 
 - **Horizon API** -- all REST endpoints defined in `stellar-horizon`
 - **Soroban RPC** -- all JSON-RPC methods defined in `stellar-rpc`, with the response structs from `go-stellar-sdk`
-- **SEPs** -- 19 Stellar Ecosystem Proposals (SEP-01 through SEP-53)
+- **SEPs** -- 20 Stellar Ecosystem Proposals (SEP-01 through SEP-53)
 
 ## Requirements
 
@@ -124,7 +124,7 @@ Each stage carries a dispatch table as well as the code it dispatches to, so a n
 
 1. Add the SEP number to `KNOWN_SEPS` in `sep/sep_parser.py`
 2. Add a `parse_sep_NN()` in `sep/sep_parser.py` if the spec has non-standard structure, plus its branch in `SEPParser.parse()`
-3. Add an `analyze_sep_NN()` and a `map_sep_NN_features()` in `sep/sep_analyzer.py`, plus the branch in `SEPAnalyzer.analyze()`. A SEP with no `lib/src/sep/<n>/` directory bypasses `find_sep_files()` and names its own paths, as SEP-46, SEP-51 and SEP-53 do
+3. Add an `analyze_sep_NN()` and a `map_sep_NN_features()` in `sep/sep_analyzer.py`, plus the branch in `SEPAnalyzer.analyze()`. A SEP with no `lib/src/sep/<n>/` directory bypasses `find_sep_files()` and names its own paths, as SEP-29, SEP-46, SEP-51 and SEP-53 do
 4. Add a `_compare_sep_NN_features()` in `sep/generate_sep_comparison.py`, plus its branch in `compare_fields()`. That dispatch keys on the shape of `implemented_features`, not on the SEP number, so the branch must test a key combination no other SEP produces
 5. Add the three script entries to `self.scripts` in `run_analysis.py`
 6. Run `python3 tools/matrix-generator/run_analysis.py` to verify

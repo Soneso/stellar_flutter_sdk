@@ -1,5 +1,8 @@
 @Timeout(const Duration(seconds: 300))
 
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -1153,5 +1156,75 @@ void main() {
     Transaction transaction2 = abstractTransaction as Transaction;
     assert(transaction.sourceAccount.accountId ==
         transaction2.sourceAccount.accountId);
+  });
+
+  test('sep-29 memo required check on submit', () async {
+    KeyPair keyPairA = KeyPair.random();
+    String accountAId = keyPairA.accountId;
+    KeyPair keyPairB = KeyPair.random();
+    String accountBId = keyPairB.accountId;
+    await fundTestAccountAndAwaitVisibility(accountAId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(accountBId,
+        horizon: sdk, useFuturenet: testOn != 'testnet');
+
+    // B requires a memo on incoming payments.
+    AccountResponse accountB = await sdk.accounts.account(accountBId);
+    Transaction transaction = TransactionBuilder(accountB)
+        .addOperation(ManageDataOperationBuilder('config.memo_required',
+                Uint8List.fromList(utf8.encode('1')))
+            .build())
+        .build();
+    transaction.sign(keyPairB, network);
+    SubmitTransactionResponse response =
+        await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    // A memo-less payment from A to B is refused before submission.
+    AccountResponse accountA = await sdk.accounts.account(accountAId);
+    transaction = TransactionBuilder(accountA)
+        .addOperation(
+            PaymentOperationBuilder(accountBId, Asset.NATIVE, '10').build())
+        .build();
+    transaction.sign(keyPairA, network);
+
+    try {
+      await sdk.submitTransaction(transaction);
+      fail('submitTransaction did not throw AccountRequiresMemoException');
+    } on AccountRequiresMemoException catch (e) {
+      assert(e.accountId == accountBId);
+      assert(e.operationIndex == 0);
+    }
+
+    try {
+      await sdk.checkMemoRequired(transaction);
+      fail('checkMemoRequired did not throw AccountRequiresMemoException');
+    } on AccountRequiresMemoException catch (e) {
+      assert(e.accountId == accountBId);
+      assert(e.operationIndex == 0);
+    }
+
+    // The same payment with a memo is submitted.
+    accountA = await sdk.accounts.account(accountAId);
+    transaction = TransactionBuilder(accountA)
+        .addOperation(
+            PaymentOperationBuilder(accountBId, Asset.NATIVE, '10').build())
+        .addMemo(MemoText('sep-29'))
+        .build();
+    transaction.sign(keyPairA, network);
+    response = await sdk.submitTransaction(transaction);
+    assert(response.success);
+
+    // The network does not enforce SEP-29: without the check, the memo-less
+    // payment is accepted.
+    accountA = await sdk.accounts.account(accountAId);
+    transaction = TransactionBuilder(accountA)
+        .addOperation(
+            PaymentOperationBuilder(accountBId, Asset.NATIVE, '10').build())
+        .build();
+    transaction.sign(keyPairA, network);
+    response =
+        await sdk.submitTransaction(transaction, skipMemoRequiredCheck: true);
+    assert(response.success);
   });
 }
