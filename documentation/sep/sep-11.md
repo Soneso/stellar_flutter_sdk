@@ -54,7 +54,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 StellarSDK sdk = StellarSDK.TESTNET;
 
 // Build a transaction
-KeyPair sourceKeyPair = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CPMLIHJPFV5RXN5M6CSS');
+KeyPair sourceKeyPair = KeyPair.fromSecretSeed('SCPUGMKJ4R3TW4PF5RDPF5QCVTZD2EK5FCQJWZ64BYVUY4JSFMZPWR4I');
 AccountResponse sourceAccount = await sdk.accounts.account(sourceKeyPair.accountId);
 
 PaymentOperation payment = PaymentOperationBuilder(

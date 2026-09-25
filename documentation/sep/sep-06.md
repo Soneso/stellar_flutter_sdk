@@ -18,7 +18,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 // 1. Authenticate with the anchor via SEP-10
 WebAuth webAuth = await WebAuth.fromDomain("testanchor.stellar.org", Network.TESTNET);
-KeyPair userKeyPair = KeyPair.fromSecretSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
+KeyPair userKeyPair = KeyPair.fromSecretSeed("SBUFKERJDFHSPHX6NFJ3YZJ7HWDBHSTPSGCWDJZ2MCCN566MTPKINC3V");
 String jwtToken = await webAuth.jwtToken(userKeyPair.accountId, [userKeyPair]);
 
 // 2. Create transfer service and request deposit
@@ -692,7 +692,7 @@ This example shows a complete deposit flow: authentication, info discovery, depo
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 String anchorDomain = "testanchor.stellar.org";
-KeyPair userKeyPair = KeyPair.fromSecretSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34CJDQ66EQ7DZTPBRJFN4A");
+KeyPair userKeyPair = KeyPair.fromSecretSeed("SBUFKERJDFHSPHX6NFJ3YZJ7HWDBHSTPSGCWDJZ2MCCN566MTPKINC3V");
 
 // 1. Authenticate via SEP-10
 WebAuth webAuth = await WebAuth.fromDomain(anchorDomain, Network.TESTNET);

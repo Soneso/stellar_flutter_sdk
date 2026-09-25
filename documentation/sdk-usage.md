@@ -30,7 +30,7 @@ print(keyPair.accountId);   // G... public key
 print(keyPair.secretSeed);  // S... secret seed
 
 // Create from existing secret seed
-KeyPair keyPair = KeyPair.fromSecretSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV");
+KeyPair keyPair = KeyPair.fromSecretSeed("SCZKREUX6MLD26HUQK2PGDGUDA2RA6RXHYYYECEZ6VGVANDMWZNYNRRN");
 
 // Create public-key-only keypair (cannot sign)
 KeyPair publicOnly = KeyPair.fromAccountId("GABC123...");
@@ -180,7 +180,7 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 StellarSDK sdk = StellarSDK.TESTNET;
 
-KeyPair senderKeyPair = KeyPair.fromSecretSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV");
+KeyPair senderKeyPair = KeyPair.fromSecretSeed("SCZKREUX6MLD26HUQK2PGDGUDA2RA6RXHYYYECEZ6VGVANDMWZNYNRRN");
 AccountResponse sender = await sdk.accounts.account(senderKeyPair.accountId);
 
 // Build payment
@@ -2266,7 +2266,7 @@ import 'dart:typed_data';
 import 'dart:convert';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-KeyPair keyPair = KeyPair.fromSecretSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV");
+KeyPair keyPair = KeyPair.fromSecretSeed("SCZKREUX6MLD26HUQK2PGDGUDA2RA6RXHYYYECEZ6VGVANDMWZNYNRRN");
 
 // Sign a message
 String message = "Please sign this message to verify your identity";
@@ -2286,7 +2286,7 @@ import 'dart:typed_data';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 // Verify with the signing keypair
-KeyPair keyPair = KeyPair.fromSecretSeed("SCZANGBA5YHTNYVVV3C7CAZMTQDBJHJG6C34JFD6XVEAEPTBED53FETV");
+KeyPair keyPair = KeyPair.fromSecretSeed("SCZKREUX6MLD26HUQK2PGDGUDA2RA6RXHYYYECEZ6VGVANDMWZNYNRRN");
 
 String message = "Please sign this message to verify your identity";
 Uint8List signature = keyPair.signMessageString(message);
