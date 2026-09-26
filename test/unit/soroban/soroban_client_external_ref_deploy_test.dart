@@ -162,6 +162,21 @@ Map<String, dynamic> deploySuccessResult(Uint8List createdContractIdBytes) {
   return deployResultWithReturnValue(XdrSCVal.forAddress(createdAddress));
 }
 
+/// Expects an [Exception] whose string form is exactly `Exception: [message]`.
+Matcher throwsExceptionWithMessage(String message) => throwsA(isA<Exception>()
+    .having((e) => e.toString(), 'toString', 'Exception: $message'));
+
+/// The deploy error for a contract [owner] without a wasm hash entry under
+/// the [renderedTag].
+String unresolvedMessage(String owner, String renderedTag) =>
+    'external reference does not resolve: owner $owner holds no 32-byte '
+    'wasm hash entry under tag $renderedTag';
+
+/// The deploy error for an [owner] that is not a contract.
+String nonContractOwnerMessage(String owner) =>
+    'external reference owner $owner is not a contract: the executable owner '
+    'of an external reference must be a contract';
+
 void main() {
   const rpcUrl = 'https://soroban-testnet.stellar.org';
   const txHash =
@@ -502,8 +517,10 @@ void main() {
           keyPair, requestLog, <XdrLedgerKey>[], <String>[],
           tagEntryExists: false);
 
-      try {
-        await SorobanClient.deployFromExternalRef(
+      // A contract owner is spelled as its "C..." strkey. The tag renders
+      // through TxRepHelper.escapeBytes; an ASCII tag appears quoted.
+      await expectLater(
+        SorobanClient.deployFromExternalRef(
             deployRequest: DeployFromExternalRefRequest.forTagString(
           sourceAccountKeyPair: keyPair,
           network: Network.TESTNET,
@@ -511,17 +528,11 @@ void main() {
           executableOwner: Address.forContractId(ownerContractIdHex),
           tag: executableTag,
           server: server,
-        ));
-        fail('expected an exception for an unresolvable reference');
-      } on Exception catch (e) {
-        expect(e.toString(), contains('does not resolve'));
-        // A contract owner is spelled as its "C..." strkey.
-        expect(e.toString(),
-            contains(StrKey.encodeContractIdHex(ownerContractIdHex)));
-        // The tag renders through TxRepHelper.escapeBytes; an ASCII tag
-        // appears quoted.
-        expect(e.toString(), contains('under tag "$executableTag"'));
-      }
+        )),
+        throwsExceptionWithMessage(unresolvedMessage(
+            StrKey.encodeContractIdHex(ownerContractIdHex),
+            '"$executableTag"')),
+      );
       // The failure happened before anything was submitted.
       expect(requestLog, ['tag']);
     });
@@ -534,8 +545,10 @@ void main() {
           keyPair, requestLog, <XdrLedgerKey>[], <String>[],
           tagEntryExists: false);
 
-      try {
-        await SorobanClient.deployFromExternalRef(
+      // TxRepHelper.escapeBytes writes non-printable bytes as \xNN escapes
+      // inside double quotes.
+      await expectLater(
+        SorobanClient.deployFromExternalRef(
             deployRequest: DeployFromExternalRefRequest(
           sourceAccountKeyPair: keyPair,
           network: Network.TESTNET,
@@ -543,29 +556,25 @@ void main() {
           executableOwner: Address.forContractId(ownerContractIdHex),
           tag: Uint8List.fromList([0xC0, 0x00, 0xFF, 0xFE]),
           server: server,
-        ));
-        fail('expected an exception for an unresolvable reference');
-      } on Exception catch (e) {
-        expect(e.toString(), contains('does not resolve'));
-        // TxRepHelper.escapeBytes writes non-printable bytes as \xNN
-        // escapes inside double quotes.
-        expect(e.toString(), contains(r'under tag "\xc0\x00\xff\xfe"'));
-      }
+        )),
+        throwsExceptionWithMessage(unresolvedMessage(
+            StrKey.encodeContractIdHex(ownerContractIdHex),
+            r'"\xc0\x00\xff\xfe"')),
+      );
       expect(requestLog, ['tag']);
     });
 
     test('throws naming an account owner without any request', () async {
-      // The resolver answers null for a non-contract owner before issuing any
-      // request, so the deploy error must name the account and nothing may
-      // reach the server.
+      // Only a contract can hold the tag entry, so the deploy refuses an
+      // account owner, naming it, and nothing reaches the server.
       final keyPair = KeyPair.random();
       final ownerKeyPair = KeyPair.random();
       final requestLog = <String>[];
       final server = externalRefDeployFlowMockServer(
           keyPair, requestLog, <XdrLedgerKey>[], <String>[]);
 
-      try {
-        await SorobanClient.deployFromExternalRef(
+      await expectLater(
+        SorobanClient.deployFromExternalRef(
             deployRequest: DeployFromExternalRefRequest.forTagString(
           sourceAccountKeyPair: keyPair,
           network: Network.TESTNET,
@@ -573,21 +582,16 @@ void main() {
           executableOwner: Address.forAccountId(ownerKeyPair.accountId),
           tag: executableTag,
           server: server,
-        ));
-        fail('expected an exception for a non-contract owner');
-      } on Exception catch (e) {
-        expect(e.toString(), contains('does not resolve'));
-        expect(e.toString(), contains(ownerKeyPair.accountId));
-        // The tag renders through TxRepHelper.escapeBytes; an ASCII tag
-        // appears quoted.
-        expect(e.toString(), contains('under tag "$executableTag"'));
-      }
+        )),
+        throwsExceptionWithMessage(
+            nonContractOwnerMessage(ownerKeyPair.accountId)),
+      );
       expect(requestLog, isEmpty);
     });
 
     test('spells muxed, claimable balance and liquidity pool owners', () async {
-      // The resolver answers null for every non-contract owner before issuing
-      // any request; the deploy error must name the owner as given.
+      // The deploy refuses every non-contract owner before issuing any
+      // request; the error names the owner as given.
       const muxedOwner =
           'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK';
       const claimableBalanceOwner =
@@ -606,8 +610,8 @@ void main() {
           keyPair, requestLog, <XdrLedgerKey>[], <String>[]);
 
       for (final (owner, spelling) in owners) {
-        try {
-          await SorobanClient.deployFromExternalRef(
+        await expectLater(
+          SorobanClient.deployFromExternalRef(
               deployRequest: DeployFromExternalRefRequest.forTagString(
             sourceAccountKeyPair: keyPair,
             network: Network.TESTNET,
@@ -615,12 +619,10 @@ void main() {
             executableOwner: owner,
             tag: executableTag,
             server: server,
-          ));
-          fail('expected an exception for a non-contract owner');
-        } on Exception catch (e) {
-          expect(e.toString(), contains('does not resolve'));
-          expect(e.toString(), contains(spelling));
-        }
+          )),
+          throwsExceptionWithMessage(nonContractOwnerMessage(spelling)),
+          reason: spelling,
+        );
       }
       expect(requestLog, isEmpty);
     });

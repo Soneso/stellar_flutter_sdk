@@ -260,7 +260,7 @@ class Transaction extends AbstractTransaction {
   Uint8List signatureBase(Network network) {
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
     // Hashed NetworkID
-    xdrOutputStream.write(network.networkId!);
+    xdrOutputStream.write(network.networkId);
     // Envelope Type - 4 bytes
     List<int> typeTx = List<int>.filled(4, 0);
     typeTx[3] = XdrEnvelopeType.ENVELOPE_TYPE_TX.value;
@@ -733,7 +733,7 @@ class FeeBumpTransaction extends AbstractTransaction {
   Uint8List signatureBase(Network network) {
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
     // Hashed NetworkID
-    xdrOutputStream.write(network.networkId!);
+    xdrOutputStream.write(network.networkId);
     // Envelope Type - 4 bytes
     List<int> typeTx = List<int>.filled(4, 0);
     typeTx[3] = XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP.value;

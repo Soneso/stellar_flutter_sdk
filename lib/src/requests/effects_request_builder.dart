@@ -5,8 +5,6 @@
 import 'dart:async';
 
 import 'package:http/http.dart' as http;
-import 'package:stellar_flutter_sdk/src/key_pair.dart';
-import 'package:stellar_flutter_sdk/src/util.dart';
 
 import '../responses/effects/effect_responses.dart';
 import '../responses/response.dart';
@@ -92,15 +90,11 @@ class EffectsRequestBuilder extends RequestBuilder {
   /// Effects request builder for a specific liquidity pool identified by [poolId].
   /// The pool ID can be provided in either hex format or Stellar-encoded format (starting with 'L').
   /// See: [Stellar developer docs](https://developers.stellar.org)
+  ///
+  /// Throws [ArgumentError] if the id is neither a liquidity pool strkey (L...)
+  /// nor the hex of a 32 byte pool hash.
   EffectsRequestBuilder forLiquidityPool(String poolId) {
-    var id = poolId;
-    if (id.startsWith("L")) {
-      try {
-        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(poolId));
-      } catch (_) {
-        throw ArgumentError("invalid liquidity pool id: $poolId");
-      }
-    }
+    final id = RequestBuilder.liquidityPoolIdHorizonHex(poolId);
     this.setSegments(["liquidity_pools", id, "effects"]);
     return this;
   }

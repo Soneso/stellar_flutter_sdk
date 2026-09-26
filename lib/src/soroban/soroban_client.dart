@@ -240,13 +240,29 @@ class SorobanClient {
   /// [deploy] does. For the plain CREATE_CONTRACT form, build the operation
   /// directly with [CreateContractFromExternalRefHostFunction].
   ///
-  /// The reference is resolved before the transaction is built, so an
-  /// unresolvable reference fails here with an [Exception] naming the owner
-  /// and the tag. One message covers every miss: no entry under the tag, an
-  /// owner that is not a contract, or an entry that does not hold a 32-byte
-  /// wasm hash.
+  /// Only a contract can hold the tag entry, so a
+  /// [DeployFromExternalRefRequest.executableOwner] that is not a contract
+  /// address fails with an [Exception] naming the owner before any RPC
+  /// request is made.
+  ///
+  /// For a contract owner the reference is resolved before the transaction is
+  /// built, so an unresolvable reference fails here with an [Exception]
+  /// naming the owner and the tag. One message covers both misses: no entry
+  /// under the tag, or an entry that does not hold a 32-byte wasm hash.
   static Future<SorobanClient> deployFromExternalRef(
       {required DeployFromExternalRefRequest deployRequest}) async {
+    final ownerAddress = deployRequest.executableOwner;
+    if (ownerAddress.type != Address.TYPE_CONTRACT) {
+      // A non-contract owner is spelled as given.
+      final owner = ownerAddress.accountId ??
+          ownerAddress.muxedAccountId ??
+          ownerAddress.claimableBalanceId ??
+          ownerAddress.liquidityPoolId!;
+      throw Exception(
+          "external reference owner $owner is not a contract: the executable "
+          "owner of an external reference must be a contract");
+    }
+
     SorobanServer server;
     if (deployRequest.server != null) {
       server = deployRequest.server!;
@@ -256,24 +272,14 @@ class SorobanClient {
     }
 
     final tagBytes = deployRequest.tag;
-    final ref = XdrContractExecutableExternalRef(
-        deployRequest.executableOwner.toXdr(), tagBytes);
+    final ref = XdrContractExecutableExternalRef(ownerAddress.toXdr(), tagBytes);
     final wasmHash = await server.getExternalRefWasmHash(ref);
     if (wasmHash == null) {
-      final ownerAddress = deployRequest.executableOwner;
-      String owner;
-      if (ownerAddress.contractId != null) {
-        // Spell a contract owner as its "C..." strkey; the field may already
-        // hold that spelling.
-        final id = ownerAddress.contractId!;
-        owner =
-            StrKey.isValidContractId(id) ? id : StrKey.encodeContractIdHex(id);
-      } else {
-        owner = ownerAddress.accountId ??
-            ownerAddress.muxedAccountId ??
-            ownerAddress.claimableBalanceId ??
-            ownerAddress.liquidityPoolId!;
-      }
+      // Spell the contract owner as its "C..." strkey; the field may already
+      // hold that spelling.
+      final id = ownerAddress.contractId!;
+      final owner =
+          StrKey.isValidContractId(id) ? id : StrKey.encodeContractIdHex(id);
       throw Exception(
           "external reference does not resolve: owner $owner holds no 32-byte "
           "wasm hash entry under tag ${TxRepHelper.escapeBytes(deployRequest.tag)}");
@@ -1631,10 +1637,13 @@ class ClientOptions {
   /// - Local: 'http://localhost:8000/soroban/rpc'
   String rpcUrl;
 
-  /// Enable detailed logging of RPC server requests and responses.
+  /// Enable logging of RPC server responses.
   ///
-  /// When true, prints all RPC calls and responses to console.
-  /// Useful for debugging contract interactions. Default: false.
+  /// When true, a server constructed from [rpcUrl] reports each RPC response
+  /// through `dart:developer` `log`. To receive the messages in a sink of
+  /// your own, pass a [server] whose [SorobanServer.logger] is set; a
+  /// provided server keeps its own logging setting. Useful for debugging
+  /// contract interactions. Default: false.
   bool enableServerLogging = false;
 
   /// Optional: A preconfigured [SorobanServer] to use for all RPC calls
@@ -1861,6 +1870,10 @@ class AssembledTransactionOptions {
   List<XdrSCVal>? arguments;
 
   /// Enable soroban server logging (helpful for debugging). Default: false.
+  ///
+  /// A server constructed from [ClientOptions.rpcUrl] reports each RPC
+  /// response through `dart:developer` `log`; a server provided as
+  /// [ClientOptions.server] reports through its own [SorobanServer.logger].
   bool enableSorobanServerLogging = false;
 
   /// Creates configuration options for assembling a Soroban contract method call transaction.
@@ -1908,6 +1921,10 @@ class InstallRequest {
   String rpcUrl;
 
   /// Optional: Enable soroban server logging (helpful for debugging). Default: false.
+  ///
+  /// A server constructed from [rpcUrl] reports each RPC response through
+  /// `dart:developer` `log`. To receive the messages in a sink of your own,
+  /// pass a [server] whose [SorobanServer.logger] is set.
   bool enableSorobanServerLogging = false;
 
   /// Optional: A preconfigured [SorobanServer] to use for all RPC calls
@@ -1979,6 +1996,10 @@ class DeployRequest {
   late MethodOptions methodOptions;
 
   /// Optional: Enable soroban server logging (helpful for debugging). Default: false.
+  ///
+  /// A server constructed from [rpcUrl] reports each RPC response through
+  /// `dart:developer` `log`. To receive the messages in a sink of your own,
+  /// pass a [server] whose [SorobanServer.logger] is set.
   bool enableSorobanServerLogging = false;
 
   /// Optional: A preconfigured [SorobanServer] to use for all RPC calls
@@ -2075,6 +2096,10 @@ class DeployFromExternalRefRequest {
   late MethodOptions methodOptions;
 
   /// Optional: Enable soroban server logging (helpful for debugging). Default: false.
+  ///
+  /// A server constructed from [rpcUrl] reports each RPC response through
+  /// `dart:developer` `log`. To receive the messages in a sink of your own,
+  /// pass a [server] whose [SorobanServer.logger] is set.
   bool enableSorobanServerLogging = false;
 
   /// Optional: A preconfigured [SorobanServer] to use for all RPC calls

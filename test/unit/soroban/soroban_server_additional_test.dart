@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -418,34 +420,112 @@ void main() {
     });
 
     group('Logging', () {
-      test('enables logging when enableLogging is set to true', () async {
-        var mockDio = dio.Dio();
+      final healthBody = jsonEncode({
+        'jsonrpc': '2.0',
+        'id': 1,
+        'result': {
+          'status': 'healthy',
+          'ledgerRetentionWindow': 17280,
+          'latestLedger': 100000,
+          'oldestLedger': 82720,
+        }
+      });
+
+      dio.Dio healthDio() {
+        final mockDio = dio.Dio();
         mockDio.httpClientAdapter = MockDioAdapter((options) {
           return dio.ResponseBody.fromString(
-            jsonEncode({
-              'jsonrpc': '2.0',
-              'id': 1,
-              'result': {
-                'status': 'healthy',
-                'ledgerRetentionWindow': 17280,
-                'latestLedger': 100000,
-                'oldestLedger': 82720,
-              }
-            }),
+            healthBody,
             200,
             headers: {
               'content-type': [dio.Headers.jsonContentType]
             },
           );
         });
+        return mockDio;
+      }
 
-        var server = SorobanServer('https://soroban-testnet.stellar.org',
-            httpClient: mockDio);
+      test('reports the response line to the logger when enabled', () async {
+        final messages = <String>[];
+        final server = SorobanServer('https://soroban-testnet.stellar.org',
+            httpClient: healthDio(), logger: messages.add);
         server.enableLogging = true;
 
-        // Should not throw and logging should work (printed to console)
         final response = await server.getHealth();
+
         expect(response.status, 'healthy');
+        expect(messages, equals(['getHealth response: $healthBody']));
+      });
+
+      test('reports to a logger assigned after construction', () async {
+        final messages = <String>[];
+        final server = SorobanServer('https://soroban-testnet.stellar.org',
+            httpClient: healthDio());
+        server.logger = messages.add;
+        server.enableLogging = true;
+
+        await server.getHealth();
+
+        expect(messages, equals(['getHealth response: $healthBody']));
+      });
+
+      test('reports nothing while logging is disabled', () async {
+        final messages = <String>[];
+        final server = SorobanServer('https://soroban-testnet.stellar.org',
+            httpClient: healthDio(), logger: messages.add);
+
+        expect(server.enableLogging, isFalse);
+        final response = await server.getHealth();
+
+        expect(response.status, 'healthy');
+        expect(messages, isEmpty);
+      });
+
+      test('reports the TLS warning to the logger when overrides are enabled',
+          () {
+        final messages = <String>[];
+        final server = SorobanServer('https://soroban-testnet.stellar.org',
+            httpClient: healthDio(), logger: messages.add);
+
+        server.httpOverrides = true;
+
+        // The overrides, and with them the warning, exist on the non-web
+        // platforms only.
+        expect(messages,
+            equals(kIsWeb ? <String>[] : [SorobanServer.tlsOverridesWarning]));
+        expect(SorobanServer.tlsOverridesWarning,
+            contains('WARNING: TLS certificate validation is DISABLED'));
+        expect(SorobanServer.tlsOverridesWarning,
+            contains('NEVER use this setting in production builds'));
+      });
+
+      test('reports nothing when overrides are disabled', () {
+        final messages = <String>[];
+        final server = SorobanServer('https://soroban-testnet.stellar.org',
+            httpClient: healthDio(), logger: messages.add);
+
+        server.httpOverrides = false;
+
+        expect(messages, isEmpty);
+      });
+
+      test('writes nothing to stdout without a logger', () async {
+        final printed = <String>[];
+        await runZoned(
+          () async {
+            final server = SorobanServer('https://soroban-testnet.stellar.org',
+                httpClient: healthDio());
+            server.enableLogging = true;
+            server.httpOverrides = true;
+            final response = await server.getHealth();
+            expect(response.status, 'healthy');
+          },
+          zoneSpecification: ZoneSpecification(
+            print: (self, parent, zone, line) => printed.add(line),
+          ),
+        );
+
+        expect(printed, isEmpty);
       });
     });
 

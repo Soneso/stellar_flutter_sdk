@@ -446,8 +446,9 @@ SEP51_TYPE_RENDERERS = {
   },
 
   # A claimable balance identifier renders as a B-strkey, whose payload is the
-  # discriminant tag followed by the hash. The tag is part of the value rather
-  # than of the envelope, so the reader takes the arm from it.
+  # discriminant tag followed by the hash. StrKey.decodeClaimableBalanceId
+  # refuses a tag that names no balance id type, so every payload the reader
+  # receives carries the CLAIMABLE_BALANCE_ID_TYPE_V0 tag and names that arm.
   'XdrClaimableBalanceID' => {
     to: lambda { |public_name|
       [
@@ -466,11 +467,6 @@ SEP51_TYPE_RENDERERS = {
                                  'null', length: SEP51_STRKEY_BALANCE_BYTES)
       [
         "final Uint8List bytes = #{decode};",
-        'if (bytes[0] !=',
-        '    XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0.value) {',
-        "  XdrJsonHelper.fail(#{quoted},",
-        "      'carries the unknown discriminant ${bytes[0]}');",
-        '}',
         "final #{context[:result_type]} decoded = #{context[:build].call(
           'XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0'
         )};",

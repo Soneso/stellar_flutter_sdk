@@ -165,7 +165,7 @@ class PasskeyUtils {
     contractIdPreimage.address = XdrSCAddress.forContractId(factoryContractId);
     contractIdPreimage.salt = XdrUint256(contractSalt);
     final preimageCID = XdrHashIDPreimageContractID(
-        XdrHash(network.networkId!), contractIdPreimage);
+        XdrHash(network.networkId), contractIdPreimage);
     preimage.contractID = preimageCID;
     XdrDataOutputStream xdrOutputStream = XdrDataOutputStream();
     XdrHashIDPreimage.encode(xdrOutputStream, preimage);

@@ -5,8 +5,6 @@
 import 'dart:async';
 
 import 'package:http/http.dart' as http;
-import 'package:stellar_flutter_sdk/src/key_pair.dart';
-import 'package:stellar_flutter_sdk/src/util.dart';
 
 import '../responses/operations/operation_responses.dart';
 import '../responses/response.dart';
@@ -116,15 +114,11 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// Returns successful operations for a specific liquidity pool identified by [liquidityPoolId].
   /// The pool ID can be provided in either hex format or Stellar-encoded format (starting with 'L').
   /// See: [Stellar developer docs](https://developers.stellar.org)
+  ///
+  /// Throws [ArgumentError] if the id is neither a liquidity pool strkey (L...)
+  /// nor the hex of a 32 byte pool hash.
   OperationsRequestBuilder forLiquidityPool(String liquidityPoolId) {
-    var id = liquidityPoolId;
-    if (id.startsWith("L")) {
-      try {
-        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(liquidityPoolId));
-      } catch (_) {
-        throw ArgumentError("invalid liquidity pool id: $liquidityPoolId");
-      }
-    }
+    final id = RequestBuilder.liquidityPoolIdHorizonHex(liquidityPoolId);
     this.setSegments(["liquidity_pools", id, "operations"]);
     return this;
   }

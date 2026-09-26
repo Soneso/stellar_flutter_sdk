@@ -335,6 +335,15 @@ final class StellarProtocolConstants {
   /// Reference: RFC 4506 section 4.15 (Discriminated Union)
   static const int XDR_UNION_DISCRIMINANT_BYTES = 4;
 
+  /// Alignment of every XDR item in bytes.
+  ///
+  /// Each item occupies a multiple of four bytes. Opaque data, strings and
+  /// the payload of a signed payload signer are followed by NUL bytes up to
+  /// the next multiple of four.
+  ///
+  /// Reference: RFC 4506 section 3 (Basic Block Size)
+  static const int XDR_ALIGNMENT_BYTES = 4;
+
   // ============================================================================
   // CLAIMABLE BALANCE CONSTANTS
   // ============================================================================

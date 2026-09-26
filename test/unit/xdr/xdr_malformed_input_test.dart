@@ -2,11 +2,11 @@
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file.
 
-// Decoding of malformed XDR: array counts the remaining bytes cannot hold and
-// union discriminants without a matching arm, at stream level and through the
-// public decoders. Each decoder vector is built with the SDK's own encoder and
-// patched at a computed offset; the test checks the original bytes at that
-// offset before patching.
+// Decoding of malformed XDR: array counts and string or opaque lengths the
+// remaining bytes cannot hold and union discriminants without a matching arm,
+// at stream level and through the public decoders. Each decoder vector is
+// built with the SDK's own encoder and patched at a computed offset; the test
+// checks the original bytes at that offset before patching.
 
 import 'dart:convert';
 import 'dart:typed_data';
@@ -55,7 +55,55 @@ void main() {
 
     test('rejects a count that is cut off', () {
       final input = XdrDataInputStream(bytes([0x00, 0x00, 0x01]));
-      expect(() => input.readArrayLength(), throwsRangeError);
+      expect(
+        () => input.readArrayLength(),
+        throwsA(isA<RangeError>().having((e) => e.message, 'message',
+            'XDR read of 4 bytes exceeds the 3 remaining bytes')),
+      );
+      expect(input.offset, equals(0));
+    });
+  });
+
+  group('XdrDataInputStream fixed-width reads', () {
+    test('reject a read past the end without moving the offset', () {
+      final input = XdrDataInputStream(bytes([0x00, 0x01, 0x02, 0x03, 0x04]));
+      expect(input.readInt(), equals(0x00010203));
+      final reads = <String, void Function()>{
+        'readShort': () => input.readShort(),
+        'readUnsignedShort': () => input.readUnsignedShort(),
+        'readInt': () => input.readInt(),
+        'readUint32': () => input.readUint32(),
+        'readBigInt64': () => input.readBigInt64(),
+        'readBigInt64Signed': () => input.readBigInt64Signed(),
+        'readFloat': () => input.readFloat(),
+        'readDouble': () => input.readDouble(),
+      };
+      final widths = {
+        'readShort': 2,
+        'readUnsignedShort': 2,
+        'readInt': 4,
+        'readUint32': 4,
+        'readBigInt64': 8,
+        'readBigInt64Signed': 8,
+        'readFloat': 4,
+        'readDouble': 8,
+      };
+      reads.forEach((name, read) {
+        expect(
+          read,
+          throwsA(isA<RangeError>().having((e) => e.message, 'message',
+              'XDR read of ${widths[name]} bytes exceeds the 1 remaining bytes')),
+          reason: name,
+        );
+        expect(input.offset, equals(4), reason: name);
+      });
+      expect(input.readByte(), equals(4));
+    });
+
+    test('accept a read that ends exactly at the end', () {
+      final input = XdrDataInputStream(bytes([0, 0, 0, 0, 0, 0, 0, 1]));
+      expect(input.readBigInt64(), equals(BigInt.one));
+      expect(input.offset, equals(8));
     });
   });
 
@@ -88,6 +136,103 @@ void main() {
     test('readDoubleArray rejects a negative count', () {
       final input = XdrDataInputStream(withCount(-1, 8));
       expect(() => input.readDoubleArray(), throwsNegativeCount(-1));
+    });
+  });
+
+  group('XdrDataInputStream string and opaque lengths', () {
+    test('readString rejects a negative length without moving back', () {
+      final input = XdrDataInputStream(withCount(-1, 8));
+      expect(() => input.readString(), throwsNegativeByteCount(-1));
+      expect(input.offset, equals(4));
+    });
+
+    test('readStringBytes rejects a length with only the high bit set', () {
+      final input = XdrDataInputStream(withCount(-2147483648, 8));
+      expect(
+        () => input.readStringBytes(),
+        throwsNegativeByteCount(-2147483648),
+      );
+      expect(input.offset, equals(4));
+    });
+
+    test('readBytes rejects a negative opaque length', () {
+      final input = XdrDataInputStream(withCount(-4, 8));
+      expect(
+        () => input.readBytes(input.readInt()),
+        throwsNegativeByteCount(-4),
+      );
+      expect(input.offset, equals(4));
+    });
+
+    test('readString rejects a length beyond the remaining bytes', () {
+      final input = XdrDataInputStream(withCount(9, 8));
+      expect(() => input.readString(), throwsByteCountExceeded(9, 8));
+      expect(input.offset, equals(4));
+    });
+
+    test('readStringBytes accepts a length whose padding ends the input', () {
+      final input = XdrDataInputStream(withCount(5, 8));
+      expect(input.readStringBytes(), equals(Uint8List(5)));
+      expect(input.offset, equals(12));
+    });
+  });
+
+  group('String and opaque lengths through the public decoders', () {
+    test('SCV_SYMBOL negative length', () {
+      final vector = scValLengthVector(XdrSCVal.forSymbol('abc'), 3);
+
+      expect(
+        () => XdrSCVal.fromBase64EncodedXdrString(
+          base64Encode(patchInt(vector.bytes, vector.countOffset, -1)),
+        ),
+        throwsNegativeByteCount(-1),
+      );
+    });
+
+    test('SCV_STRING length beyond the remaining bytes', () {
+      final vector = scValLengthVector(XdrSCVal.forString('abcd'), 4);
+      final remaining = vector.bytes.length - vector.countOffset - 4;
+      expect(remaining, equals(4));
+
+      expect(
+        () => XdrSCVal.fromBase64EncodedXdrString(
+          base64Encode(
+            patchInt(vector.bytes, vector.countOffset, remaining + 1),
+          ),
+        ),
+        throwsByteCountExceeded(remaining + 1, remaining),
+      );
+    });
+
+    test('SCV_BYTES negative length', () {
+      final vector = scValLengthVector(
+        XdrSCVal.forBytes(Uint8List.fromList([1, 2, 3])),
+        3,
+      );
+
+      expect(
+        () => XdrSCVal.fromBase64EncodedXdrString(
+          base64Encode(patchInt(vector.bytes, vector.countOffset, -3)),
+        ),
+        throwsNegativeByteCount(-3),
+      );
+    });
+
+    test('SCV_BYTES length beyond the remaining bytes', () {
+      final vector = scValLengthVector(
+        XdrSCVal.forBytes(Uint8List.fromList([1, 2, 3])),
+        3,
+      );
+      final remaining = vector.bytes.length - vector.countOffset - 4;
+
+      expect(
+        () => XdrSCVal.fromBase64EncodedXdrString(
+          base64Encode(
+            patchInt(vector.bytes, vector.countOffset, remaining + 1),
+          ),
+        ),
+        throwsByteCountExceeded(remaining + 1, remaining),
+      );
     });
   });
 
@@ -511,6 +656,34 @@ Matcher throwsCountRejected(int count, int remaining) => throwsA(
     'message',
     'XDR array count $count exceeds the maximum of ${remaining ~/ 4} '
         'for the $remaining remaining bytes',
+  ),
+);
+
+/// A string, symbol or bytes [value] of [length] bytes and the offset of its
+/// length prefix, which directly follows the value type.
+CountVector scValLengthVector(XdrSCVal value, int length) {
+  final encoded = base64Decode(value.toBase64EncodedXdrString());
+  const lengthOffset = 4;
+  expect(readIntAt(encoded, 0), equals(value.discriminant.value));
+  expect(readIntAt(encoded, lengthOffset), equals(length));
+  return CountVector(encoded, lengthOffset);
+}
+
+Matcher throwsNegativeByteCount(int count) => throwsA(
+  isA<RangeError>().having(
+    (e) => e.message,
+    'message',
+    'XDR byte count cannot be negative, got $count',
+  ),
+);
+
+/// Expects the byte count diagnostic for [count] and the [remaining] bytes
+/// after the length prefix.
+Matcher throwsByteCountExceeded(int count, int remaining) => throwsA(
+  isA<RangeError>().having(
+    (e) => e.message,
+    'message',
+    'XDR byte count $count exceeds the $remaining remaining bytes',
   ),
 );
 

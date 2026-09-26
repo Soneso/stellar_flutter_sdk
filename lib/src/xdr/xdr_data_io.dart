@@ -6,6 +6,7 @@
 import "dart:typed_data";
 import "dart:convert";
 import '../constants/bit_constants.dart';
+import '../constants/stellar_protocol_constants.dart';
 
 class DataInput {
   Uint8List? data;
@@ -17,43 +18,54 @@ class DataInput {
 
   int? get fileLength => _fileLength;
 
+  /// Reads from [data], which may be a view on part of a larger buffer; only
+  /// the bytes of [data] itself are read.
   DataInput.fromUint8List(this.data) {
-    this.view = ByteData.view(data!.buffer);
+    this.view = ByteData.sublistView(data!);
     _fileLength = data!.lengthInBytes;
   }
 
-  /// Returns the byte(-128 - 127) at [offset]. if [eofException] is false then
-  /// if it reaches the end of the stream it will return -129.
-  /// Otherwise it will throw an exception.
+  /// Returns the byte (-128 to 127) at [offset]. At the end of the input it
+  /// returns -129 if [eofException] is false and throws a [RangeError]
+  /// otherwise.
   int readByte([bool eofException = true]) {
-    if (offset! < fileLength!) {
-      int old = _offset!;
-      _offset = _offset! + 1;
-      return view!.getInt8(old);
-    } else if (eofException)
-      throw RangeError("Reached end of file");
-    else
+    if (!eofException && offset! >= fileLength!) {
       return -129;
+    }
+    return view!.getInt8(_advance(1));
   }
 
+  /// Reads [numBytes] bytes and skips the padding to the next multiple of
+  /// four.
+  ///
+  /// XDR `string` and variable-length `opaque` values pass the length prefix
+  /// read from the input as [numBytes], so the count is checked before the
+  /// offset moves. Throws a [RangeError] naming the count if it is negative
+  /// or exceeds the remaining bytes.
   Uint8List readBytes(int numBytes) {
-    if ((_offset! + numBytes) <= fileLength!) {
-      int oldOffset = _offset!;
-      _offset = _offset! + numBytes;
-      pad();
-      return Uint8List.fromList(
-        data!.getRange(oldOffset, oldOffset + numBytes).toList(),
+    if (numBytes < 0) {
+      throw RangeError("XDR byte count cannot be negative, got $numBytes");
+    }
+    int remaining = fileLength! - _offset!;
+    if (numBytes > remaining) {
+      throw RangeError(
+        "XDR byte count $numBytes exceeds the $remaining remaining bytes",
       );
-    } else
-      throw RangeError("Reached end of file");
+    }
+    int oldOffset = _offset!;
+    _offset = _offset! + numBytes;
+    pad();
+    return Uint8List.fromList(
+      data!.getRange(oldOffset, oldOffset + numBytes).toList(),
+    );
   }
 
   // add xdr
   void pad() {
     int pad = 0;
-    int mod = _offset! % 4;
+    int mod = _offset! % StellarProtocolConstants.XDR_ALIGNMENT_BYTES;
     if (mod > 0) {
-      pad = 4 - mod;
+      pad = StellarProtocolConstants.XDR_ALIGNMENT_BYTES - mod;
     }
 
     while (pad-- > 0) {
@@ -67,55 +79,54 @@ class DataInput {
     }
   }
 
-  /// Returns the byte(0-255) at [offset]. if [eofException] is false then
-  /// if it reaches the end of the stream it will return -1, Otherwise it will
-  /// throw an exception.
+  /// Returns the byte (0 to 255) at [offset]. At the end of the input it
+  /// returns -129 if [eofException] is false and throws a [RangeError]
+  /// otherwise.
   int readUnsignedByte([bool eofException = true]) {
-    if (offset! < fileLength!) {
-      int old = _offset!;
-      _offset = _offset! + 1;
-      return view!.getUint8(old);
-    } else if (eofException)
-      throw RangeError("Reached end of file");
-    else
+    if (!eofException && offset! >= fileLength!) {
       return -129;
+    }
+    return view!.getUint8(_advance(1));
+  }
+
+  /// Reserves the next [width] bytes for a fixed-width read and returns the
+  /// offset they start at. Throws a [RangeError] naming the width and the
+  /// remaining bytes when the input is too short; the offset does not move.
+  int _advance(int width) {
+    int remaining = fileLength! - _offset!;
+    if (width > remaining) {
+      throw RangeError(
+        "XDR read of $width bytes exceeds the $remaining remaining bytes",
+      );
+    }
+    int oldOffset = _offset!;
+    _offset = oldOffset + width;
+    return oldOffset;
   }
 
   int readShort([Endian endian = Endian.big]) {
-    var oldOffset = _offset;
-    // _offset += 2;
-    _offset = _offset! + 2;
-    return view!.getInt16(oldOffset!, endian);
+    return view!.getInt16(_advance(2), endian);
   }
 
   int readUnsignedShort([Endian endian = Endian.big]) {
-    var oldOffset = _offset;
-    // _offset += 2;
-    _offset = _offset! + 2;
-    return view!.getUint16(oldOffset!, endian);
+    return view!.getUint16(_advance(2), endian);
   }
 
   int readInt([Endian endian = Endian.big]) {
-    var oldOffset = _offset;
-    // _offset += 4;
-    _offset = _offset! + 4;
-    return view!.getInt32(oldOffset!, endian);
+    return view!.getInt32(_advance(4), endian);
   }
 
   int readUint32([Endian endian = Endian.big]) {
-    var oldOffset = _offset;
-    _offset = _offset! + 4;
-    return view!.getUint32(oldOffset!, endian);
+    return view!.getUint32(_advance(4), endian);
   }
 
   BigInt readBigInt64([Endian endian = Endian.big]) {
-    var oldOffset = _offset;
-    _offset = _offset! + 8;
+    int oldOffset = _advance(8);
 
     // Read 8 bytes directly from the buffer (big-endian)
     BigInt result = BigInt.zero;
     for (int i = 0; i < 8; i++) {
-      result = (result << 8) | BigInt.from(data![oldOffset! + i] & 0xFF);
+      result = (result << 8) | BigInt.from(data![oldOffset + i] & 0xFF);
     }
     return result;
   }
@@ -126,17 +137,11 @@ class DataInput {
   }
 
   double readFloat([Endian endian = Endian.big]) {
-    var oldOffset = _offset;
-    // _offset += 4;
-    _offset = _offset! + 4;
-    return view!.getFloat32(oldOffset!, endian);
+    return view!.getFloat32(_advance(4), endian);
   }
 
   double readDouble([Endian endian = Endian.big]) {
-    var oldOffset = _offset;
-    // _offset += 8;
-    _offset = _offset! + 8;
-    return view!.getFloat64(oldOffset!, endian);
+    return view!.getFloat64(_advance(8), endian);
   }
 
   String? readLine([Endian endian = Endian.big]) {
@@ -225,9 +230,9 @@ class DataOutput {
   // add xdr
   void pad() {
     int pad = 0;
-    int mod = offset! % 4;
+    int mod = offset! % StellarProtocolConstants.XDR_ALIGNMENT_BYTES;
     if (mod > 0) {
-      pad = 4 - mod;
+      pad = StellarProtocolConstants.XDR_ALIGNMENT_BYTES - mod;
     }
     while (pad-- > 0) {
       writeByte(0);
@@ -345,6 +350,8 @@ class XdrDataInputStream extends DataInput {
   ///
   /// An XDR `string` carries arbitrary bytes, so the payload is returned
   /// unexamined; only a caller that wants text applies an encoding to it.
+  /// Throws a [RangeError] if the length prefix is negative or exceeds the
+  /// remaining bytes (see [readBytes]).
   Uint8List readStringBytes() {
     int length = readInt();
     return readBytes(length);
