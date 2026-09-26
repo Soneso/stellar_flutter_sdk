@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio;
 import 'soroban_http_stub.dart' if (dart.library.io) 'soroban_http_io.dart';
@@ -60,12 +61,41 @@ export 'soroban_transaction_responses.dart';
 /// final resourceFee = simulation.minResourceFee;
 /// ```
 ///
+/// Logging: the server writes nothing to stdout. With [enableLogging] set,
+/// each RPC response is reported, and enabling [httpOverrides] reports a TLS
+/// warning. Both go to [logger] when one is set, otherwise to
+/// `dart:developer` `log` under the name [logName].
+///
 /// See also:
 /// - [Soroban RPC API Reference](https://developers.stellar.org/network/soroban-rpc/api-reference)
 /// - [SorobanClient] for higher-level contract interaction
 /// - [AssembledTransaction] for transaction building and signing
 class SorobanServer {
+  /// Name under which messages are passed to `dart:developer` `log` when no
+  /// [logger] is set.
+  static const String logName = 'stellar_flutter_sdk.SorobanServer';
+
+  /// The warning reported when [httpOverrides] is enabled.
+  static const String tlsOverridesWarning =
+      '================================================================\n'
+      'WARNING: TLS certificate validation is DISABLED\n'
+      'This should ONLY be used in local development environments\n'
+      'Your connection is NOT secure against man-in-the-middle attacks\n'
+      'NEVER use this setting in production builds\n'
+      '================================================================';
+
+  /// Whether each RPC response is reported, as `<method> response: <body>`,
+  /// through [logger] or, when none is set, `dart:developer` `log`.
+  ///
+  /// Responses can carry account and contract data, so enable this for
+  /// debugging only. Default: false.
   bool enableLogging = false;
+
+  /// Receives the messages this server reports: the RPC responses while
+  /// [enableLogging] is set, and the TLS warning when [httpOverrides] is
+  /// enabled. When null, messages go to `dart:developer` `log` under the name
+  /// [logName].
+  void Function(String message)? logger;
 
   String _serverUrl;
   late Map<String, String> _headers;
@@ -79,6 +109,8 @@ class SorobanServer {
   ///   Provide one to customize networking, e.g. proxies, interceptors,
   ///   timeouts or certificate pinning. If omitted, a default instance is
   ///   created. The SDK request headers are applied per request either way.
+  /// - [logger] Optional receiver of the messages this server reports; see
+  ///   [SorobanServer.logger].
   ///
   /// Initializes the client with default HTTP headers for JSON-RPC communication.
   /// For most use cases, this is the primary constructor for connecting to Soroban RPC endpoints.
@@ -92,7 +124,7 @@ class SorobanServer {
   ///   httpClient: customDio,
   /// );
   /// ```
-  SorobanServer(this._serverUrl, {dio.Dio? httpClient}) {
+  SorobanServer(this._serverUrl, {dio.Dio? httpClient, this.logger}) {
     if (httpClient != null) {
       _dio = httpClient;
     }
@@ -122,18 +154,26 @@ class SorobanServer {
   /// injected via the constructor's httpClient parameter; the instance is
   /// kept, not replaced. Instances with a non-IO HTTP client adapter are
   /// left unchanged.
+  ///
+  /// Enabling the overrides on a non-web platform reports
+  /// [tlsOverridesWarning] through [logger], or `dart:developer` `log` when
+  /// no logger is set, regardless of [enableLogging]. On the web the setter
+  /// does nothing.
   set httpOverrides(bool setOverrides) {
     if (!kIsWeb && setOverrides) {
-      print('');
-      print('================================================================');
-      print('WARNING: TLS certificate validation is DISABLED');
-      print('This should ONLY be used in local development environments');
-      print('Your connection is NOT secure against man-in-the-middle attacks');
-      print('NEVER use this setting in production builds');
-      print('================================================================');
-      print('');
-
+      _log(tlsOverridesWarning);
       configureHttpOverrides(_dio, setOverrides);
+    }
+  }
+
+  /// Passes [message] to [logger], or to `dart:developer` `log` under
+  /// [logName] when no logger is set.
+  void _log(String message) {
+    final sink = logger;
+    if (sink != null) {
+      sink(message);
+    } else {
+      developer.log(message, name: logName);
     }
   }
 
@@ -146,7 +186,7 @@ class SorobanServer {
     dio.Response response = await _dio.post(_serverUrl,
         data: json.encode(request), options: dio.Options(headers: _headers));
     if (enableLogging) {
-      print("$method response: $response");
+      _log("$method response: $response");
     }
     return fromJson(response.data);
   }

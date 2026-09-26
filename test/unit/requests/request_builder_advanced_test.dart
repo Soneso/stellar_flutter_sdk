@@ -67,11 +67,11 @@ void main() {
 
     test('forLiquidityPool adds liquidity_pool query parameter', () {
       final builder = AccountsRequestBuilder(httpClient, serverUri);
-      final poolId = 'abc123';
-      builder.forLiquidityPool(poolId);
+      builder.forLiquidityPool(testLiquidityPoolId.toUpperCase());
       final uri = builder.buildUri();
 
-      expect(uri.queryParameters['liquidity_pool'], equals(poolId));
+      expect(
+          uri.queryParameters['liquidity_pool'], equals(testLiquidityPoolId));
     });
 
     test('combining forSigner with limit and order', () {

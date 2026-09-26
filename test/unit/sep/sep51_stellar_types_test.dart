@@ -359,9 +359,9 @@ void main() {
       // refuses the tag itself.
       //
       // The reader resolves the strkey through
-      // StrKey.decodeClaimableBalanceId, which refuses an undeclared tag
-      // before the reader compares it, so the codec is the layer that answers
-      // and its wording is what the report carries.
+      // StrKey.decodeClaimableBalanceId, which refuses an undeclared tag, so
+      // the codec is the layer that answers and its wording is what the
+      // report carries.
       for (final int tag in <int>[1, 7, 255]) {
         final String tagged = craftStrKey(
           VersionByte.CLAIMABLE_BALANCE.getValue(),

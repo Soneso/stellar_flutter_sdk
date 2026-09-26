@@ -5,8 +5,6 @@
 import 'dart:async';
 
 import 'package:http/http.dart' as http;
-import 'package:stellar_flutter_sdk/src/key_pair.dart';
-import 'package:stellar_flutter_sdk/src/util.dart';
 
 import '../asset_type_credit_alphanum.dart';
 import '../assets.dart';
@@ -243,15 +241,11 @@ class TradesRequestBuilder extends RequestBuilder {
   ///     .liquidityPoolId(poolId)
   ///     .execute();
   /// ```
+  ///
+  /// Throws [ArgumentError] if the id is neither a liquidity pool strkey (L...)
+  /// nor the hex of a 32 byte pool hash.
   TradesRequestBuilder liquidityPoolId(String poolId) {
-    var id = poolId;
-    if (id.startsWith("L")) {
-      try {
-        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(poolId));
-      } catch (_) {
-        throw ArgumentError("invalid liquidity pool id: $poolId");
-      }
-    }
+    final id = RequestBuilder.liquidityPoolIdHorizonHex(poolId);
     queryParameters.addAll({"liquidity_pool_id": id});
     return this;
   }

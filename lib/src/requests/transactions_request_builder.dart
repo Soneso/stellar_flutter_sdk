@@ -5,8 +5,6 @@
 import 'dart:async';
 
 import 'package:http/http.dart' as http;
-import 'package:stellar_flutter_sdk/src/key_pair.dart';
-import 'package:stellar_flutter_sdk/src/util.dart';
 
 import '../responses/response.dart';
 import '../responses/transaction_response.dart';
@@ -172,15 +170,11 @@ class TransactionsRequestBuilder extends RequestBuilder {
   ///     .forLiquidityPool(poolId)
   ///     .execute();
   /// ```
+  ///
+  /// Throws [ArgumentError] if the id is neither a liquidity pool strkey (L...)
+  /// nor the hex of a 32 byte pool hash.
   TransactionsRequestBuilder forLiquidityPool(String liquidityPoolId) {
-    var id = liquidityPoolId;
-    if (id.startsWith("L")) {
-      try {
-        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(liquidityPoolId));
-      } catch (_) {
-        throw ArgumentError("invalid liquidity pool id: $liquidityPoolId");
-      }
-    }
+    final id = RequestBuilder.liquidityPoolIdHorizonHex(liquidityPoolId);
     this.setSegments(["liquidity_pools", id, "transactions"]);
     return this;
   }

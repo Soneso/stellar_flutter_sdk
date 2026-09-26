@@ -11,6 +11,7 @@ import 'package:stellar_flutter_sdk/src/asset_type_credit_alphanum.dart';
 import 'package:stellar_flutter_sdk/src/asset_type_native.dart';
 import 'package:stellar_flutter_sdk/src/constants/network_constants.dart';
 import 'package:stellar_flutter_sdk/src/stellar_sdk.dart';
+import 'package:stellar_flutter_sdk/src/util.dart';
 import 'package:stellar_flutter_sdk/src/xdr/xdr_claimable_balance_id.dart';
 
 import '../assets.dart';
@@ -221,6 +222,22 @@ abstract class RequestBuilder {
     } on FormatException catch (e) {
       throw ArgumentError(
           "invalid claimable balance id: $claimableBalanceId (${e.message})");
+    }
+  }
+
+  /// Resolves [liquidityPoolId], given as a liquidity pool strkey (L...) or as
+  /// the hex of the 32 byte pool hash in either letter case, to the 64
+  /// lowercase hex characters of the hash, which is the id Horizon serves.
+  ///
+  /// Throws [ArgumentError], naming the id and the reason, when the id holds
+  /// neither spelling.
+  static String liquidityPoolIdHorizonHex(String liquidityPoolId) {
+    try {
+      return Util.bytesToHex(
+          Util.liquidityPoolIdToXdrHash(liquidityPoolId).hash);
+    } on FormatException catch (e) {
+      throw ArgumentError(
+          "invalid liquidity pool id: $liquidityPoolId (${e.message})");
     }
   }
 

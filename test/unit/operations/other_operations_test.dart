@@ -1602,4 +1602,52 @@ void main() {
                 'invalid liquidity pool id: ${entry.key} (${entry.value})')));
       });
     }
-  });}
+  });
+
+  group('LiquidityPoolDeposit prices round trip through the XDR builder', () {
+    const poolId =
+        'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
+    const pairs = [
+      [1, 10000000],
+      [1, 3],
+      [355, 113],
+      [2147483647, 1],
+    ];
+    // A second price for the other bound, so min and max differ.
+    const otherPair = [3, 2];
+
+    XdrPrice xdrPrice(List<int> pair) =>
+        XdrPrice(XdrInt32(pair[0]), XdrInt32(pair[1]));
+
+    XdrLiquidityPoolDepositOp depositOp(List<int> min, List<int> max) =>
+        XdrLiquidityPoolDepositOp(
+          XdrHash(Util.hexToBytes(poolId)),
+          XdrInt64(BigInt.from(1000000000)),
+          XdrInt64(BigInt.from(500000000)),
+          xdrPrice(min),
+          xdrPrice(max),
+        );
+
+    for (final pair in pairs) {
+      test('min price ${pair[0]}/${pair[1]}', () {
+        final operation =
+            LiquidityPoolDepositOperation.builder(depositOp(pair, otherPair))
+                .build();
+
+        final op = operation.toXdr().body.liquidityPoolDepositOp!;
+        expect([op.minPrice.n.int32, op.minPrice.d.int32], equals(pair));
+        expect([op.maxPrice.n.int32, op.maxPrice.d.int32], equals(otherPair));
+      });
+
+      test('max price ${pair[0]}/${pair[1]}', () {
+        final operation =
+            LiquidityPoolDepositOperation.builder(depositOp(otherPair, pair))
+                .build();
+
+        final op = operation.toXdr().body.liquidityPoolDepositOp!;
+        expect([op.minPrice.n.int32, op.minPrice.d.int32], equals(otherPair));
+        expect([op.maxPrice.n.int32, op.maxPrice.d.int32], equals(pair));
+      });
+    }
+  });
+}

@@ -356,8 +356,7 @@ class GeneratedTypeValidator
       when AST::Declarations::String
         expected_type = "String"
       when AST::Declarations::Array
-        element_type = @gen.dart_type_for_typespec(decl.type)
-        expected_type = "List<#{element_type}>"
+        expected_type = "List<#{@gen.array_element_dart_type(decl)}>"
       else
         resolved_type = @gen.resolve_typedef_type(decl.respond_to?(:type) ? decl.type : nil)
         if resolved_type
@@ -666,8 +665,7 @@ class GeneratorHelper
 
     case decl
     when AST::Declarations::Array
-      element_type = dart_type_for_typespec(decl.type)
-      "List<#{element_type}>"
+      "List<#{array_element_dart_type(decl)}>"
     when AST::Declarations::Opaque
       "Uint8List"
     when AST::Declarations::String
@@ -784,7 +782,7 @@ class GeneratorHelper
 
     case decl
     when AST::Declarations::Array
-      element_type = dart_type_for_typespec(decl.type)
+      element_type = array_element_dart_type(decl)
       {
         dart_type: "List<#{element_type}>",
         encode_style: :array,
@@ -917,6 +915,19 @@ class GeneratorHelper
     resolved.declaration.type.sub_type == :optional
   rescue
     false
+  end
+
+  # True for an array whose elements the .x declares optional. The grammar admits
+  # no optional element inside an array declaration, so the only way to declare
+  # one is through a typedef whose own declaration is optional.
+  def array_element_optional?(decl)
+    decl.is_a?(AST::Declarations::Array) && typedef_is_optional?(decl.type)
+  end
+
+  # Dart element type of an array declaration, nullable when the element is optional.
+  def array_element_dart_type(decl)
+    element_type = dart_type_for_typespec(decl.type)
+    array_element_optional?(decl) ? "#{element_type}?" : element_type
   end
 end
 

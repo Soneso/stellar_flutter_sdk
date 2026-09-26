@@ -146,13 +146,6 @@ class XdrClaimableBalanceIDBase {
       decode: StrKey.decodeClaimableBalanceId,
       expectedLength: 33,
     );
-    if (bytes[0] !=
-        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0.value) {
-      XdrJsonHelper.fail(
-        'XdrClaimableBalanceID',
-        'carries the unknown discriminant ${bytes[0]}',
-      );
-    }
     final T decoded = constructor(
       XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0,
     );

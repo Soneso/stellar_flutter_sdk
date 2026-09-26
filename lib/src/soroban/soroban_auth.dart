@@ -252,7 +252,7 @@ class Address {
       throw ArgumentError(
           "salt must be exactly 32 bytes, got ${salt.length}");
     }
-    final networkId = network.networkId!;
+    final networkId = network.networkId;
 
     final contractIdPreimage = XdrContractIDPreimage(
         XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
@@ -1025,7 +1025,7 @@ class SorobanAuthorizationEntry {
     if (arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS) {
       // Legacy preimage: no address binding
       final authPreimage = XdrHashIDPreimageSorobanAuthorization(
-        XdrHash(network.networkId!),
+        XdrHash(network.networkId),
         XdrInt64(inner.nonce),
         XdrUint32(inner.signatureExpirationLedger),
         rootInvocation.toXdr(),
@@ -1038,7 +1038,7 @@ class SorobanAuthorizationEntry {
                arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
       // Address-bound preimage; address is always the top-level credential address
       final authPreimage = XdrHashIDPreimageSorobanAuthorizationWithAddress(
-        XdrHash(network.networkId!),
+        XdrHash(network.networkId),
         XdrInt64(inner.nonce),
         XdrUint32(inner.signatureExpirationLedger),
         inner.address.toXdr(),

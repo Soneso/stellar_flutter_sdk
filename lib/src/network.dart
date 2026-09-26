@@ -78,6 +78,6 @@ class Network {
   String get networkPassphrase => _networkPassphrase;
 
   /// Returns the network id (SHA-256 hashed networkPassphrase).
-  Uint8List? get networkId =>
+  Uint8List get networkId =>
       Util.hash(Uint8List.fromList(utf8.encode(this.networkPassphrase)));
 }

@@ -31,16 +31,6 @@ final class NetworkConstants {
   /// Default: 300 seconds (5 minutes)
   static const int DEFAULT_TIMEOUT_SECONDS = 300;
 
-  /// Transaction time buffer in seconds.
-  ///
-  /// Unused by the SDK: Soroban transactions set no lower time bound
-  /// (minTime = 0). A lower bound derived from the client clock is seen as
-  /// lying in the future by any submission node whose clock or ledger state
-  /// lags the client, which rejects the transaction with tx_too_early.
-  @Deprecated(
-      'Unused by the SDK; Soroban transactions set no lower time bound (minTime = 0).')
-  static const int TRANSACTION_TIME_BUFFER_SECONDS = 10;
-
   /// WebAuth challenge grace period in seconds.
   ///
   /// The time window during which a WebAuth challenge transaction is considered

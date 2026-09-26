@@ -1354,4 +1354,53 @@ void main() {
       expect(buyOffer.price, equals('1.1234567'));
     });
   });
+
+  group('Offer prices round trip through the XDR builders', () {
+    final usd = AssetTypeCreditAlphaNum4(
+        'USD', 'GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ');
+    final amount = XdrInt64(BigInt.from(1000000000));
+    const pairs = [
+      [1, 10000000],
+      [1, 3],
+      [355, 113],
+      [2147483647, 1],
+    ];
+
+    XdrPrice xdrPrice(List<int> pair) =>
+        XdrPrice(XdrInt32(pair[0]), XdrInt32(pair[1]));
+
+    void expectPrice(XdrPrice price, List<int> pair) {
+      expect([price.n.int32, price.d.int32], equals(pair));
+    }
+
+    for (final pair in pairs) {
+      test('ManageBuyOffer ${pair[0]}/${pair[1]}', () {
+        final op = XdrManageBuyOfferOp(Asset.NATIVE.toXdr(), usd.toXdr(),
+            amount, xdrPrice(pair), XdrUint64(BigInt.zero));
+
+        final operation = ManageBuyOfferOperation.builder(op).build();
+
+        expectPrice(operation.toXdr().body.manageBuyOfferOp!.price, pair);
+      });
+
+      test('ManageSellOffer ${pair[0]}/${pair[1]}', () {
+        final op = XdrManageSellOfferOp(Asset.NATIVE.toXdr(), usd.toXdr(),
+            amount, xdrPrice(pair), XdrUint64(BigInt.zero));
+
+        final operation = ManageSellOfferOperation.builder(op).build();
+
+        expectPrice(operation.toXdr().body.manageSellOfferOp!.price, pair);
+      });
+
+      test('CreatePassiveSellOffer ${pair[0]}/${pair[1]}', () {
+        final op = XdrCreatePassiveSellOfferOp(
+            Asset.NATIVE.toXdr(), usd.toXdr(), amount, xdrPrice(pair));
+
+        final operation = CreatePassiveSellOfferOperation.builder(op).build();
+
+        expectPrice(
+            operation.toXdr().body.createPassiveSellOfferOp!.price, pair);
+      });
+    }
+  });
 }
