@@ -49,7 +49,7 @@ class XdrStellarValue {
   static XdrStellarValue decode(XdrDataInputStream stream) {
     XdrHash txSetHash = XdrHash.decode(stream);
     XdrUint64 closeTime = XdrUint64.decode(stream);
-    int upgradessize = stream.readInt();
+    int upgradessize = stream.readArrayLength();
     List<XdrUpgradeType> upgrades = List<XdrUpgradeType>.empty(growable: true);
     for (int i = 0; i < upgradessize; i++) {
       upgrades.add(XdrUpgradeType.decode(stream));

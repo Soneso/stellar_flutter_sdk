@@ -83,19 +83,19 @@ class XdrLedgerCloseMetaV0 {
     XdrLedgerHeaderHistoryEntry ledgerHeader =
         XdrLedgerHeaderHistoryEntry.decode(stream);
     XdrTransactionSet txSet = XdrTransactionSet.decode(stream);
-    int txProcessingsize = stream.readInt();
+    int txProcessingsize = stream.readArrayLength();
     List<XdrTransactionResultMeta> txProcessing =
         List<XdrTransactionResultMeta>.empty(growable: true);
     for (int i = 0; i < txProcessingsize; i++) {
       txProcessing.add(XdrTransactionResultMeta.decode(stream));
     }
-    int upgradesProcessingsize = stream.readInt();
+    int upgradesProcessingsize = stream.readArrayLength();
     List<XdrUpgradeEntryMeta> upgradesProcessing =
         List<XdrUpgradeEntryMeta>.empty(growable: true);
     for (int i = 0; i < upgradesProcessingsize; i++) {
       upgradesProcessing.add(XdrUpgradeEntryMeta.decode(stream));
     }
-    int scpInfosize = stream.readInt();
+    int scpInfosize = stream.readArrayLength();
     List<XdrSCPHistoryEntry> scpInfo = List<XdrSCPHistoryEntry>.empty(
       growable: true,
     );

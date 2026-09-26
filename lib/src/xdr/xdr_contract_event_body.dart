@@ -52,7 +52,9 @@ class XdrContractEventBody {
         decodedContractEventBody._v0 = XdrContractEventV0.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrContractEventBody discriminant: ${decodedContractEventBody.discriminant}",
+        );
     }
     return decodedContractEventBody;
   }

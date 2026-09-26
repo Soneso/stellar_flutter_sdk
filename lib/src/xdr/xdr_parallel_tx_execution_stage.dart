@@ -34,7 +34,7 @@ class XdrParallelTxExecutionStage {
   }
 
   static XdrParallelTxExecutionStage decode(XdrDataInputStream stream) {
-    int size = stream.readInt();
+    int size = stream.readArrayLength();
     List<XdrDependentTxCluster> items = List<XdrDependentTxCluster>.empty(
       growable: true,
     );

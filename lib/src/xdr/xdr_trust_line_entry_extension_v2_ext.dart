@@ -42,7 +42,9 @@ class XdrTrustLineEntryExtensionV2Ext {
       case 0:
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrTrustLineEntryExtensionV2Ext discriminant: ${decodedTrustLineEntryExtensionV2Ext.discriminant}",
+        );
     }
     return decodedTrustLineEntryExtensionV2Ext;
   }

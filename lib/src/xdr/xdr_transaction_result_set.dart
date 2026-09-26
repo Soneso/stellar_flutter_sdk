@@ -32,7 +32,7 @@ class XdrTransactionResultSet {
   }
 
   static XdrTransactionResultSet decode(XdrDataInputStream stream) {
-    int resultssize = stream.readInt();
+    int resultssize = stream.readArrayLength();
     List<XdrTransactionResultPair> results =
         List<XdrTransactionResultPair>.empty(growable: true);
     for (int i = 0; i < resultssize; i++) {

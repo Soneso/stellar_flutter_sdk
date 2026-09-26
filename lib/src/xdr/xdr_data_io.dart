@@ -354,8 +354,35 @@ class XdrDataInputStream extends DataInput {
     return utf8.decode(readStringBytes());
   }
 
+  /// Reads the element count of a variable-length XDR array and checks it
+  /// against the remaining bytes before the caller decodes any element.
+  ///
+  /// Every XDR array element occupies at least 4 bytes (scalars, enum and
+  /// union discriminants, optional flags and length prefixes are 4 bytes;
+  /// fixed opaque data is padded to 4), so a count above a quarter of the
+  /// remaining bytes cannot be satisfied by the input.
+  ///
+  /// Returns the count, between 0 and a quarter of the remaining bytes
+  /// (inclusive). Throws a [RangeError] if the count is negative, exceeds a
+  /// quarter of the remaining bytes or fewer than 4 bytes remain.
+  int readArrayLength() {
+    int count = readInt();
+    if (count < 0) {
+      throw RangeError("XDR array count cannot be negative, got $count");
+    }
+    int remaining = fileLength! - offset!;
+    int maxCount = remaining ~/ 4;
+    if (count > maxCount) {
+      throw RangeError(
+        "XDR array count $count exceeds the maximum of $maxCount for the "
+        "$remaining remaining bytes",
+      );
+    }
+    return count;
+  }
+
   List<int?> readIntArray() {
-    var l = readInt();
+    var l = readArrayLength();
     // var result = List<int>(l);
     List<int?> result = []..length = l;
     for (int i = 0; i < l; i++) {
@@ -365,7 +392,7 @@ class XdrDataInputStream extends DataInput {
   }
 
   List<double?> readFloatArray() {
-    var l = readInt();
+    var l = readArrayLength();
     // var result = List<double>(l);
     List<double?> result = []..length = l;
     for (int i = 0; i < l; i++) {
@@ -375,7 +402,7 @@ class XdrDataInputStream extends DataInput {
   }
 
   List<double?> readDoubleArray() {
-    var l = readInt();
+    var l = readArrayLength();
     // var result = List<double>(l);
     List<double?> result = []..length = l;
     for (int i = 0; i < l; i++) {

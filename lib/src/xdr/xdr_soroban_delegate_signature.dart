@@ -55,7 +55,7 @@ class XdrSorobanDelegateSignature {
     try {
       XdrSCAddress address = XdrSCAddress.decode(stream);
       XdrSCVal signature = XdrSCVal.decode(stream);
-      int nestedDelegatessize = stream.readInt();
+      int nestedDelegatessize = stream.readArrayLength();
       List<XdrSorobanDelegateSignature> nestedDelegates =
           List<XdrSorobanDelegateSignature>.empty(growable: true);
       for (int i = 0; i < nestedDelegatessize; i++) {

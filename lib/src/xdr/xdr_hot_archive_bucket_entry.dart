@@ -87,8 +87,6 @@ class XdrHotArchiveBucketEntry {
           stream,
         );
         break;
-      default:
-        break;
     }
     return decodedHotArchiveBucketEntry;
   }

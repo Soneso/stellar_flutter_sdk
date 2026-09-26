@@ -44,7 +44,9 @@ class XdrTransactionV0Ext {
       case 0:
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrTransactionV0Ext discriminant: ${decodedTransactionV0Ext.discriminant}",
+        );
     }
     return decodedTransactionV0Ext;
   }

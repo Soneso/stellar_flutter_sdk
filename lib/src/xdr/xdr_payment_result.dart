@@ -43,7 +43,15 @@ class XdrPaymentResult {
     switch (decodedPaymentResult.discriminant) {
       case XdrPaymentResultCode.PAYMENT_SUCCESS:
         break;
-      default:
+      case XdrPaymentResultCode.PAYMENT_MALFORMED:
+      case XdrPaymentResultCode.PAYMENT_UNDERFUNDED:
+      case XdrPaymentResultCode.PAYMENT_SRC_NO_TRUST:
+      case XdrPaymentResultCode.PAYMENT_SRC_NOT_AUTHORIZED:
+      case XdrPaymentResultCode.PAYMENT_NO_DESTINATION:
+      case XdrPaymentResultCode.PAYMENT_NO_TRUST:
+      case XdrPaymentResultCode.PAYMENT_NOT_AUTHORIZED:
+      case XdrPaymentResultCode.PAYMENT_LINE_FULL:
+      case XdrPaymentResultCode.PAYMENT_NO_ISSUER:
         break;
     }
     return decodedPaymentResult;

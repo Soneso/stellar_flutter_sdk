@@ -34,7 +34,7 @@ class XdrContractCostParams {
   }
 
   static XdrContractCostParams decode(XdrDataInputStream stream) {
-    int size = stream.readInt();
+    int size = stream.readArrayLength();
     List<XdrContractCostParamEntry> items =
         List<XdrContractCostParamEntry>.empty(growable: true);
     for (int i = 0; i < size; i++) {

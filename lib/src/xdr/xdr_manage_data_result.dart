@@ -43,7 +43,10 @@ class XdrManageDataResult {
     switch (decodedManageDataResult.discriminant) {
       case XdrManageDataResultCode.MANAGE_DATA_SUCCESS:
         break;
-      default:
+      case XdrManageDataResultCode.MANAGE_DATA_NOT_SUPPORTED_YET:
+      case XdrManageDataResultCode.MANAGE_DATA_NAME_NOT_FOUND:
+      case XdrManageDataResultCode.MANAGE_DATA_LOW_RESERVE:
+      case XdrManageDataResultCode.MANAGE_DATA_INVALID_NAME:
         break;
     }
     return decodedManageDataResult;

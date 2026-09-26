@@ -66,7 +66,7 @@ class XdrAsset {
         decodedAsset._alphaNum12 = XdrAssetAlphaNum12.decode(stream);
         break;
       default:
-        break;
+        throw Exception("Unknown XdrAsset discriminant: ${decodedAsset.discriminant.value}");
     }
     return decodedAsset;
   }

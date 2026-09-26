@@ -116,19 +116,19 @@ class XdrLedgerCloseMetaV2 {
     XdrGeneralizedTransactionSet txSet = XdrGeneralizedTransactionSet.decode(
       stream,
     );
-    int txProcessingsize = stream.readInt();
+    int txProcessingsize = stream.readArrayLength();
     List<XdrTransactionResultMetaV1> txProcessing =
         List<XdrTransactionResultMetaV1>.empty(growable: true);
     for (int i = 0; i < txProcessingsize; i++) {
       txProcessing.add(XdrTransactionResultMetaV1.decode(stream));
     }
-    int upgradesProcessingsize = stream.readInt();
+    int upgradesProcessingsize = stream.readArrayLength();
     List<XdrUpgradeEntryMeta> upgradesProcessing =
         List<XdrUpgradeEntryMeta>.empty(growable: true);
     for (int i = 0; i < upgradesProcessingsize; i++) {
       upgradesProcessing.add(XdrUpgradeEntryMeta.decode(stream));
     }
-    int scpInfosize = stream.readInt();
+    int scpInfosize = stream.readArrayLength();
     List<XdrSCPHistoryEntry> scpInfo = List<XdrSCPHistoryEntry>.empty(
       growable: true,
     );
@@ -136,7 +136,7 @@ class XdrLedgerCloseMetaV2 {
       scpInfo.add(XdrSCPHistoryEntry.decode(stream));
     }
     XdrUint64 totalByteSizeOfLiveSorobanState = XdrUint64.decode(stream);
-    int evictedKeyssize = stream.readInt();
+    int evictedKeyssize = stream.readArrayLength();
     List<XdrLedgerKey> evictedKeys = List<XdrLedgerKey>.empty(growable: true);
     for (int i = 0; i < evictedKeyssize; i++) {
       evictedKeys.add(XdrLedgerKey.decode(stream));

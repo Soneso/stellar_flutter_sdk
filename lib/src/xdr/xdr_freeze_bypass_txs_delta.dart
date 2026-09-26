@@ -38,12 +38,12 @@ class XdrFreezeBypassTxsDelta {
   }
 
   static XdrFreezeBypassTxsDelta decode(XdrDataInputStream stream) {
-    int addTxssize = stream.readInt();
+    int addTxssize = stream.readArrayLength();
     List<XdrHash> addTxs = List<XdrHash>.empty(growable: true);
     for (int i = 0; i < addTxssize; i++) {
       addTxs.add(XdrHash.decode(stream));
     }
-    int removeTxssize = stream.readInt();
+    int removeTxssize = stream.readArrayLength();
     List<XdrHash> removeTxs = List<XdrHash>.empty(growable: true);
     for (int i = 0; i < removeTxssize; i++) {
       removeTxs.add(XdrHash.decode(stream));

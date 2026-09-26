@@ -47,8 +47,6 @@ class XdrBumpSequenceResult {
         break;
       case XdrBumpSequenceResultCode.BUMP_SEQUENCE_BAD_SEQ:
         break;
-      default:
-        break;
     }
     return decodedBumpSequenceResult;
   }

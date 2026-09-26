@@ -71,8 +71,6 @@ class XdrRevokeSponsorshipOp {
           stream,
         );
         break;
-      default:
-        break;
     }
     return decodedRevokeSponsorshipOp;
   }

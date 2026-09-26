@@ -135,7 +135,9 @@ class XdrHashIDPreimage {
             XdrHashIDPreimageSorobanAuthorizationWithAddress.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrHashIDPreimage discriminant: ${decodedHashIDPreimage.discriminant.value}",
+        );
     }
     return decodedHashIDPreimage;
   }

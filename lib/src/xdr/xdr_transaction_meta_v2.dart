@@ -55,7 +55,7 @@ class XdrTransactionMetaV2 {
     XdrLedgerEntryChanges txChangesBefore = XdrLedgerEntryChanges.decode(
       stream,
     );
-    int operationssize = stream.readInt();
+    int operationssize = stream.readArrayLength();
     List<XdrOperationMeta> operations = List<XdrOperationMeta>.empty(
       growable: true,
     );

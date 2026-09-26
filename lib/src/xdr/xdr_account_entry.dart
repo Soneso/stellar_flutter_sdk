@@ -109,7 +109,7 @@ class XdrAccountEntry {
     XdrUint32 flags = XdrUint32.decode(stream);
     XdrString32 homeDomain = XdrString32.decode(stream);
     XdrThresholds thresholds = XdrThresholds.decode(stream);
-    int signerssize = stream.readInt();
+    int signerssize = stream.readArrayLength();
     List<XdrSigner> signers = List<XdrSigner>.empty(growable: true);
     for (int i = 0; i < signerssize; i++) {
       signers.add(XdrSigner.decode(stream));

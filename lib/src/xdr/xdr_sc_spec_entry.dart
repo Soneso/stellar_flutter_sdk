@@ -123,8 +123,6 @@ class XdrSCSpecEntry {
       case XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0:
         decodedSCSpecEntry._eventV0 = XdrSCSpecEventV0.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedSCSpecEntry;
   }

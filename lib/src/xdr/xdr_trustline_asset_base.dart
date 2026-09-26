@@ -89,8 +89,6 @@ class XdrTrustlineAssetBase {
       case XdrAssetType.ASSET_TYPE_POOL_SHARE:
         decoded._liquidityPoolID = XdrHash.decode(stream);
         break;
-      default:
-        break;
     }
     return decoded;
   }

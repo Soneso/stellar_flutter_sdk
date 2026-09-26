@@ -42,7 +42,9 @@ class XdrClaimableBalanceEntryExtV1Ext {
       case 0:
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrClaimableBalanceEntryExtV1Ext discriminant: ${decodedClaimableBalanceEntryExtV1Ext.discriminant}",
+        );
     }
     return decodedClaimableBalanceEntryExtV1Ext;
   }

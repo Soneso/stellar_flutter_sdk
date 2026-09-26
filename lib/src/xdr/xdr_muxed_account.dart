@@ -68,7 +68,9 @@ class XdrMuxedAccount {
         decodedMuxedAccount._med25519 = XdrMuxedAccountMed25519.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrMuxedAccount discriminant: ${decodedMuxedAccount.discriminant.value}",
+        );
     }
     return decodedMuxedAccount;
   }

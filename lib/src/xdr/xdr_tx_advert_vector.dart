@@ -29,7 +29,7 @@ class XdrTxAdvertVector {
   }
 
   static XdrTxAdvertVector decode(XdrDataInputStream stream) {
-    int size = stream.readInt();
+    int size = stream.readArrayLength();
     List<XdrHash> items = List<XdrHash>.empty(growable: true);
     for (int i = 0; i < size; i++) {
       items.add(XdrHash.decode(stream));

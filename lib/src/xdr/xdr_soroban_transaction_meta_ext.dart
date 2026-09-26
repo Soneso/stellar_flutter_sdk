@@ -59,7 +59,9 @@ class XdrSorobanTransactionMetaExt {
             XdrSorobanTransactionMetaExtV1.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrSorobanTransactionMetaExt discriminant: ${decodedSorobanTransactionMetaExt.discriminant}",
+        );
     }
     return decodedSorobanTransactionMetaExt;
   }

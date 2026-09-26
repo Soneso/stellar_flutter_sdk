@@ -79,7 +79,7 @@ class XdrTransaction {
     XdrSequenceNumber seqNum = XdrSequenceNumber.decode(stream);
     XdrPreconditions cond = XdrPreconditions.decode(stream);
     XdrMemo memo = XdrMemo.decode(stream);
-    int operationssize = stream.readInt();
+    int operationssize = stream.readArrayLength();
     List<XdrOperation> operations = List<XdrOperation>.empty(growable: true);
     for (int i = 0; i < operationssize; i++) {
       operations.add(XdrOperation.decode(stream));

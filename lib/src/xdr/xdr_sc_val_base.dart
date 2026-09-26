@@ -324,7 +324,7 @@ class XdrSCValBase {
       case XdrSCValType.SCV_VEC:
         int vecPresent = stream.readInt();
         if (vecPresent != 0) {
-          int vecLen = stream.readInt();
+          int vecLen = stream.readArrayLength();
           decoded._vec = List<XdrSCVal>.empty(growable: true);
           for (int veci = 0; veci < vecLen; veci++) {
             decoded._vec!.add(XdrSCVal.decode(stream));
@@ -334,7 +334,7 @@ class XdrSCValBase {
       case XdrSCValType.SCV_MAP:
         int mapPresent = stream.readInt();
         if (mapPresent != 0) {
-          int mapLen = stream.readInt();
+          int mapLen = stream.readArrayLength();
           decoded._map = List<XdrSCMapEntry>.empty(growable: true);
           for (int mapi = 0; mapi < mapLen; mapi++) {
             decoded._map!.add(XdrSCMapEntry.decode(stream));
@@ -354,8 +354,6 @@ class XdrSCValBase {
         break;
       case XdrSCValType.SCV_EXECUTABLE_TAG:
         decoded._executableTag = stream.readStringBytes();
-        break;
-      default:
         break;
     }
     return decoded;

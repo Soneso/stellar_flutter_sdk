@@ -363,6 +363,45 @@ void main() {
       expect(decoded.discriminant.value, equals(original.discriminant.value));
     });
 
+    test(
+      'XdrSCSpecTypeDef void arm of XdrSCSpecType.SC_SPEC_TYPE_VAL roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrSCSpecType.SC_SPEC_TYPE_VAL,
+          XdrSCSpecType.SC_SPEC_TYPE_BOOL,
+          XdrSCSpecType.SC_SPEC_TYPE_VOID,
+          XdrSCSpecType.SC_SPEC_TYPE_ERROR,
+          XdrSCSpecType.SC_SPEC_TYPE_U32,
+          XdrSCSpecType.SC_SPEC_TYPE_I32,
+          XdrSCSpecType.SC_SPEC_TYPE_U64,
+          XdrSCSpecType.SC_SPEC_TYPE_I64,
+          XdrSCSpecType.SC_SPEC_TYPE_TIMEPOINT,
+          XdrSCSpecType.SC_SPEC_TYPE_DURATION,
+          XdrSCSpecType.SC_SPEC_TYPE_U128,
+          XdrSCSpecType.SC_SPEC_TYPE_I128,
+          XdrSCSpecType.SC_SPEC_TYPE_U256,
+          XdrSCSpecType.SC_SPEC_TYPE_I256,
+          XdrSCSpecType.SC_SPEC_TYPE_BYTES,
+          XdrSCSpecType.SC_SPEC_TYPE_STRING,
+          XdrSCSpecType.SC_SPEC_TYPE_SYMBOL,
+          XdrSCSpecType.SC_SPEC_TYPE_ADDRESS,
+          XdrSCSpecType.SC_SPEC_TYPE_MUXED_ADDRESS,
+        ]) {
+          var original = XdrSCSpecTypeDefBase(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrSCSpecTypeDefBase.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrSCSpecTypeDefBase.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
     test('XdrSCSpecUDTStructFieldV0 struct roundtrip', () {
       var original = XdrSCSpecUDTStructFieldV0(
         'test_string',

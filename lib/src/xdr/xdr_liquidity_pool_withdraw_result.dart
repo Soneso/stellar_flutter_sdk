@@ -45,7 +45,15 @@ class XdrLiquidityPoolWithdrawResult {
     switch (decodedLiquidityPoolWithdrawResult.discriminant) {
       case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_SUCCESS:
         break;
-      default:
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_MALFORMED:
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_NO_TRUST:
+      case XdrLiquidityPoolWithdrawResultCode
+          .LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED:
+      case XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_LINE_FULL:
+      case XdrLiquidityPoolWithdrawResultCode
+          .LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM:
+      case XdrLiquidityPoolWithdrawResultCode
+          .LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN:
         break;
     }
     return decodedLiquidityPoolWithdrawResult;

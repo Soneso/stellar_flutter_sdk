@@ -52,7 +52,9 @@ class XdrSCPHistoryEntry {
         decodedSCPHistoryEntry._v0 = XdrSCPHistoryEntryV0.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrSCPHistoryEntry discriminant: ${decodedSCPHistoryEntry.discriminant}",
+        );
     }
     return decodedSCPHistoryEntry;
   }

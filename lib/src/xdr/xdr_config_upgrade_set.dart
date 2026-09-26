@@ -33,7 +33,7 @@ class XdrConfigUpgradeSet {
   }
 
   static XdrConfigUpgradeSet decode(XdrDataInputStream stream) {
-    int updatedEntrysize = stream.readInt();
+    int updatedEntrysize = stream.readArrayLength();
     List<XdrConfigSettingEntry> updatedEntry =
         List<XdrConfigSettingEntry>.empty(growable: true);
     for (int i = 0; i < updatedEntrysize; i++) {

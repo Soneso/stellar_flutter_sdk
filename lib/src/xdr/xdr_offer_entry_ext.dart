@@ -41,7 +41,9 @@ class XdrOfferEntryExt {
       case 0:
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrOfferEntryExt discriminant: ${decodedOfferEntryExt.discriminant}",
+        );
     }
     return decodedOfferEntryExt;
   }

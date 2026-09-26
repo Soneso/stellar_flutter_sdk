@@ -89,8 +89,6 @@ class XdrMemo {
       case XdrMemoType.MEMO_RETURN:
         decodedMemo._retHash = XdrHash.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedMemo;
   }

@@ -61,7 +61,9 @@ class XdrBucketMetadataExt {
         );
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrBucketMetadataExt discriminant: ${decodedBucketMetadataExt.discriminant}",
+        );
     }
     return decodedBucketMetadataExt;
   }

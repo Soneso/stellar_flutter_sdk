@@ -39,12 +39,12 @@ class XdrLedgerFootprint {
   }
 
   static XdrLedgerFootprint decode(XdrDataInputStream stream) {
-    int readOnlysize = stream.readInt();
+    int readOnlysize = stream.readArrayLength();
     List<XdrLedgerKey> readOnly = List<XdrLedgerKey>.empty(growable: true);
     for (int i = 0; i < readOnlysize; i++) {
       readOnly.add(XdrLedgerKey.decode(stream));
     }
-    int readWritesize = stream.readInt();
+    int readWritesize = stream.readArrayLength();
     List<XdrLedgerKey> readWrite = List<XdrLedgerKey>.empty(growable: true);
     for (int i = 0; i < readWritesize; i++) {
       readWrite.add(XdrLedgerKey.decode(stream));

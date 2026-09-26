@@ -36,7 +36,7 @@ class XdrTransactionSet {
 
   static XdrTransactionSet decode(XdrDataInputStream stream) {
     XdrHash previousLedgerHash = XdrHash.decode(stream);
-    int txssize = stream.readInt();
+    int txssize = stream.readArrayLength();
     List<XdrTransactionEnvelope> txs = List<XdrTransactionEnvelope>.empty(
       growable: true,
     );

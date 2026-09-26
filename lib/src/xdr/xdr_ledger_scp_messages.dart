@@ -36,7 +36,7 @@ class XdrLedgerSCPMessages {
 
   static XdrLedgerSCPMessages decode(XdrDataInputStream stream) {
     XdrUint32 ledgerSeq = XdrUint32.decode(stream);
-    int messagessize = stream.readInt();
+    int messagessize = stream.readArrayLength();
     List<XdrSCPEnvelope> messages = List<XdrSCPEnvelope>.empty(growable: true);
     for (int i = 0; i < messagessize; i++) {
       messages.add(XdrSCPEnvelope.decode(stream));

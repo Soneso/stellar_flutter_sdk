@@ -65,7 +65,9 @@ class XdrPersistedSCPState {
         decodedPersistedSCPState._v1 = XdrPersistedSCPStateV1.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrPersistedSCPState discriminant: ${decodedPersistedSCPState.discriminant}",
+        );
     }
     return decodedPersistedSCPState;
   }

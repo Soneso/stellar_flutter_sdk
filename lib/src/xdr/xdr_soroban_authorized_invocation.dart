@@ -47,7 +47,7 @@ class XdrSorobanAuthorizedInvocation {
     XdrSorobanAuthorizedFunction function = XdrSorobanAuthorizedFunction.decode(
       stream,
     );
-    int subInvocationssize = stream.readInt();
+    int subInvocationssize = stream.readArrayLength();
     List<XdrSorobanAuthorizedInvocation> subInvocations =
         List<XdrSorobanAuthorizedInvocation>.empty(growable: true);
     for (int i = 0; i < subInvocationssize; i++) {

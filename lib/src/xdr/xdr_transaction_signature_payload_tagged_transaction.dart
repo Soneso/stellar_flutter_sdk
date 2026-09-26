@@ -81,7 +81,9 @@ class XdrTransactionSignaturePayloadTaggedTransaction {
             XdrFeeBumpTransaction.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrTransactionSignaturePayloadTaggedTransaction discriminant: ${decodedTransactionSignaturePayloadTaggedTransaction.discriminant.value}",
+        );
     }
     return decodedTransactionSignaturePayloadTaggedTransaction;
   }

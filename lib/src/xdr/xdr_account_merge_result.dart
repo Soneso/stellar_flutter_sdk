@@ -58,7 +58,13 @@ class XdrAccountMergeResult {
           stream,
         );
         break;
-      default:
+      case XdrAccountMergeResultCode.ACCOUNT_MERGE_MALFORMED:
+      case XdrAccountMergeResultCode.ACCOUNT_MERGE_NO_ACCOUNT:
+      case XdrAccountMergeResultCode.ACCOUNT_MERGE_IMMUTABLE_SET:
+      case XdrAccountMergeResultCode.ACCOUNT_MERGE_HAS_SUB_ENTRIES:
+      case XdrAccountMergeResultCode.ACCOUNT_MERGE_SEQNUM_TOO_FAR:
+      case XdrAccountMergeResultCode.ACCOUNT_MERGE_DEST_FULL:
+      case XdrAccountMergeResultCode.ACCOUNT_MERGE_IS_SPONSOR:
         break;
     }
     return decodedAccountMergeResult;

@@ -59,8 +59,6 @@ class XdrClaimableBalanceIDBase {
       case XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0:
         decoded._v0 = XdrHash.decode(stream);
         break;
-      default:
-        break;
     }
     return decoded;
   }

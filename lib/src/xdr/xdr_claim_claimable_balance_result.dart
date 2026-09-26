@@ -45,7 +45,16 @@ class XdrClaimClaimableBalanceResult {
     switch (decodedClaimClaimableBalanceResult.discriminant) {
       case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_SUCCESS:
         break;
-      default:
+      case XdrClaimClaimableBalanceResultCode
+          .CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST:
+      case XdrClaimClaimableBalanceResultCode
+          .CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM:
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_LINE_FULL:
+      case XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_NO_TRUST:
+      case XdrClaimClaimableBalanceResultCode
+          .CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED:
+      case XdrClaimClaimableBalanceResultCode
+          .CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN:
         break;
     }
     return decodedClaimClaimableBalanceResult;

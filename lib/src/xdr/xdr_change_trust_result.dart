@@ -43,7 +43,14 @@ class XdrChangeTrustResult {
     switch (decodedChangeTrustResult.discriminant) {
       case XdrChangeTrustResultCode.CHANGE_TRUST_SUCCESS:
         break;
-      default:
+      case XdrChangeTrustResultCode.CHANGE_TRUST_MALFORMED:
+      case XdrChangeTrustResultCode.CHANGE_TRUST_NO_ISSUER:
+      case XdrChangeTrustResultCode.CHANGE_TRUST_INVALID_LIMIT:
+      case XdrChangeTrustResultCode.CHANGE_TRUST_LOW_RESERVE:
+      case XdrChangeTrustResultCode.CHANGE_TRUST_SELF_NOT_ALLOWED:
+      case XdrChangeTrustResultCode.CHANGE_TRUST_TRUST_LINE_MISSING:
+      case XdrChangeTrustResultCode.CHANGE_TRUST_CANNOT_DELETE:
+      case XdrChangeTrustResultCode.CHANGE_TRUST_NOT_AUTH_MAINTAIN_LIABILITIES:
         break;
     }
     return decodedChangeTrustResult;

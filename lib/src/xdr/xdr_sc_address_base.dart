@@ -115,8 +115,6 @@ class XdrSCAddressBase {
       case XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL:
         decoded._liquidityPoolId = XdrHash.decode(stream);
         break;
-      default:
-        break;
     }
     return decoded;
   }

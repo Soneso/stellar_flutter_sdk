@@ -105,8 +105,6 @@ class XdrSorobanAuthorizedFunctionBase {
           stream,
         );
         break;
-      default:
-        break;
     }
     return decoded;
   }

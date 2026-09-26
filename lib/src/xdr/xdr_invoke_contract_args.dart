@@ -43,7 +43,7 @@ class XdrInvokeContractArgs {
   static XdrInvokeContractArgs decode(XdrDataInputStream stream) {
     XdrSCAddress contractAddress = XdrSCAddress.decode(stream);
     String functionName = stream.readString();
-    int argssize = stream.readInt();
+    int argssize = stream.readArrayLength();
     List<XdrSCVal> args = List<XdrSCVal>.empty(growable: true);
     for (int i = 0; i < argssize; i++) {
       args.add(XdrSCVal.decode(stream));

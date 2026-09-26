@@ -195,8 +195,6 @@ class XdrLedgerKeyBase {
       case XdrLedgerEntryType.TTL:
         decoded._ttl = XdrLedgerKeyTTL.decode(stream);
         break;
-      default:
-        break;
     }
     return decoded;
   }

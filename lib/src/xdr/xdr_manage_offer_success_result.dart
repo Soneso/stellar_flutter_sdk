@@ -42,7 +42,7 @@ class XdrManageOfferSuccessResult {
   }
 
   static XdrManageOfferSuccessResult decode(XdrDataInputStream stream) {
-    int offersClaimedsize = stream.readInt();
+    int offersClaimedsize = stream.readArrayLength();
     List<XdrClaimAtom> offersClaimed = List<XdrClaimAtom>.empty(growable: true);
     for (int i = 0; i < offersClaimedsize; i++) {
       offersClaimed.add(XdrClaimAtom.decode(stream));

@@ -99,8 +99,6 @@ class XdrSorobanCredentialsBase {
         decoded._addressWithDelegates =
             XdrSorobanAddressCredentialsWithDelegates.decode(stream);
         break;
-      default:
-        break;
     }
     return decoded;
   }

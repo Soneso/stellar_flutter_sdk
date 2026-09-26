@@ -56,7 +56,9 @@ class XdrLedgerHeaderExt {
         decodedLedgerHeaderExt._v1 = XdrLedgerHeaderExtensionV1.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrLedgerHeaderExt discriminant: ${decodedLedgerHeaderExt.discriminant}",
+        );
     }
     return decodedLedgerHeaderExt;
   }

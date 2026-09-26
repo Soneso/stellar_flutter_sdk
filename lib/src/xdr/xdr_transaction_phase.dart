@@ -72,7 +72,7 @@ class XdrTransactionPhase {
     );
     switch (decodedTransactionPhase.discriminant) {
       case 0:
-        int v0Componentssize = stream.readInt();
+        int v0Componentssize = stream.readArrayLength();
         decodedTransactionPhase._v0Components = List<XdrTxSetComponent>.empty(
           growable: true,
         );
@@ -87,7 +87,9 @@ class XdrTransactionPhase {
             XdrParallelTxsComponent.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrTransactionPhase discriminant: ${decodedTransactionPhase.discriminant}",
+        );
     }
     return decodedTransactionPhase;
   }

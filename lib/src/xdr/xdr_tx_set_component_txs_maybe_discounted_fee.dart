@@ -54,7 +54,7 @@ class XdrTxSetComponentTxsMaybeDiscountedFee {
     if (baseFeePresent != 0) {
       baseFee = XdrInt64.decode(stream);
     }
-    int txssize = stream.readInt();
+    int txssize = stream.readArrayLength();
     List<XdrTransactionEnvelope> txs = List<XdrTransactionEnvelope>.empty(
       growable: true,
     );

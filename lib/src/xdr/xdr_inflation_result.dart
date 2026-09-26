@@ -59,7 +59,7 @@ class XdrInflationResult {
     );
     switch (decodedInflationResult.discriminant) {
       case XdrInflationResultCode.INFLATION_SUCCESS:
-        int payoutssize = stream.readInt();
+        int payoutssize = stream.readArrayLength();
         decodedInflationResult._payouts = List<XdrInflationPayout>.empty(
           growable: true,
         );
@@ -70,8 +70,6 @@ class XdrInflationResult {
         }
         break;
       case XdrInflationResultCode.INFLATION_NOT_TIME:
-        break;
-      default:
         break;
     }
     return decodedInflationResult;

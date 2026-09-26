@@ -867,7 +867,7 @@ class WebAuthForContracts {
       final xdrBuffer = XdrDataInputStream(xdr);
 
       // Decode as array of SorobanAuthorizationEntry
-      final count = xdrBuffer.readInt();
+      final count = xdrBuffer.readArrayLength();
       final entries = <SorobanAuthorizationEntry>[];
       for (int i = 0; i < count; i++) {
         entries.add(SorobanAuthorizationEntry.fromXdr(

@@ -43,7 +43,9 @@ class XdrFeeBumpTransactionExt {
       case 0:
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrFeeBumpTransactionExt discriminant: ${decodedFeeBumpTransactionExt.discriminant}",
+        );
     }
     return decodedFeeBumpTransactionExt;
   }

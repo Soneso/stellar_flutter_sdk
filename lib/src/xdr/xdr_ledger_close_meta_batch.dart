@@ -51,7 +51,7 @@ class XdrLedgerCloseMetaBatch {
   static XdrLedgerCloseMetaBatch decode(XdrDataInputStream stream) {
     XdrUint32 startSequence = XdrUint32.decode(stream);
     XdrUint32 endSequence = XdrUint32.decode(stream);
-    int ledgerCloseMetassize = stream.readInt();
+    int ledgerCloseMetassize = stream.readArrayLength();
     List<XdrLedgerCloseMeta> ledgerCloseMetas = List<XdrLedgerCloseMeta>.empty(
       growable: true,
     );
