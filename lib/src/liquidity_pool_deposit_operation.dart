@@ -151,10 +151,10 @@ class LiquidityPoolDepositOperation extends Operation {
     String maxB = Util.stroopsToDecimalString(op.maxAmountB.int64);
     int n = op.minPrice.n.int32;
     int d = op.minPrice.d.int32;
-    String minP = removeTailZero((BigInt.from(n) / BigInt.from(d)).toString());
+    String minP = Price(n, d).toDecimalString();
     n = op.maxPrice.n.int32;
     d = op.maxPrice.d.int32;
-    String maxP = removeTailZero((BigInt.from(n) / BigInt.from(d)).toString());
+    String maxP = Price(n, d).toDecimalString();
 
     return LiquidityPoolDepositOperationBuilder(
         liquidityPoolId: lpId,
