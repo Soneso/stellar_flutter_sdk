@@ -952,7 +952,7 @@ void main() {
       );
       preimage.sorobanAuthorizationWithAddress =
           XdrHashIDPreimageSorobanAuthorizationWithAddress(
-        XdrHash(Network.TESTNET.networkId!),
+        XdrHash(Network.TESTNET.networkId),
         creds.nonce,
         creds.signatureExpirationLedger,
         creds.address,
@@ -1030,7 +1030,7 @@ void main() {
         XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION,
       );
       preimage.sorobanAuthorization = XdrHashIDPreimageSorobanAuthorization(
-        XdrHash(Network.TESTNET.networkId!),
+        XdrHash(Network.TESTNET.networkId),
         creds.nonce,
         creds.signatureExpirationLedger,
         converted.rootInvocation,

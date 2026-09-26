@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 import 'package:http/http.dart' as http;
-import 'package:stellar_flutter_sdk/src/key_pair.dart';
-import 'package:stellar_flutter_sdk/src/util.dart';
 import '../responses/trade_response.dart';
 import '../assets.dart';
 import '../responses/liquidity_pool_response.dart';
@@ -64,15 +62,11 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
 
   /// Requests details about the liquidity pool to fetch by [poolId].
   /// See [Stellar developer docs](https://developers.stellar.org)
+  ///
+  /// Throws [ArgumentError] if the id is neither a liquidity pool strkey (L...)
+  /// nor the hex of a 32 byte pool hash.
   Future<LiquidityPoolResponse> forPoolId(String poolId) {
-    var id = poolId;
-    if (id.startsWith("L")) {
-      try {
-        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(poolId));
-      } catch (_) {
-        throw ArgumentError("invalid liquidity pool id: $poolId");
-      }
-    }
+    final id = RequestBuilder.liquidityPoolIdHorizonHex(poolId);
     this.setSegments(["liquidity_pools", id]);
     return this.liquidityPool(this.buildUri());
   }
@@ -188,15 +182,11 @@ class LiquidityPoolTradesRequestBuilder extends RequestBuilder {
   /// This method must be called before executing the request.
   ///
   /// See: [Stellar developer docs](https://developers.stellar.org)
+  ///
+  /// Throws [ArgumentError] if the id is neither a liquidity pool strkey (L...)
+  /// nor the hex of a 32 byte pool hash.
   LiquidityPoolTradesRequestBuilder forPoolId(String poolId) {
-    var id = poolId;
-    if (id.startsWith("L")) {
-      try {
-        id = Util.bytesToHex(StrKey.decodeLiquidityPoolId(poolId));
-      } catch (_) {
-        throw ArgumentError("invalid liquidity pool id: $poolId");
-      }
-    }
+    final id = RequestBuilder.liquidityPoolIdHorizonHex(poolId);
     this.setSegments(["liquidity_pools", id, "trades"]);
     return this;
   }

@@ -418,7 +418,8 @@ class StrKey {
       return bound;
     }
 
-    final int padded = length + (-length) % 4;
+    final int padded =
+        length + (-length) % StellarProtocolConstants.XDR_ALIGNMENT_BYTES;
     if (region.length != prefix + padded) {
       return 'is ${region.length} bytes, but a $length-byte payload '
           'occupies ${prefix + padded}';

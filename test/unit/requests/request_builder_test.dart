@@ -356,13 +356,11 @@ void main() {
       );
       final response = http.Response('', 429, headers: {'retry-after': '60'});
 
-      try {
-        handler.handleResponse(response);
-        fail('Expected TooManyRequestsException');
-      } catch (e) {
-        expect(e, isA<TooManyRequestsException>());
-        expect((e as TooManyRequestsException).retryAfter, equals(60));
-      }
+      expect(
+        () => handler.handleResponse(response),
+        throwsA(isA<TooManyRequestsException>()
+            .having((e) => e.retryAfter, 'retryAfter', 60)),
+      );
     });
 
     test('throws ErrorResponse on 400 status', () {
@@ -445,6 +443,187 @@ void main() {
       final message = exception.toString();
 
       expect(message, contains('rate limit'));
+    });
+  });
+
+  group('RequestBuilder.liquidityPoolIdHorizonHex', () {
+    const poolHex =
+        'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
+    final poolStrKey = StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHex));
+
+    Matcher throwsInvalidPoolId(String id, String reason) => throwsA(
+          isA<ArgumentError>().having(
+            (e) => e.message,
+            'message',
+            'invalid liquidity pool id: $id ($reason)',
+          ),
+        );
+
+    test('decodes an L strkey to the lowercase hex of the pool hash', () {
+      expect(poolStrKey, startsWith('L'));
+      expect(RequestBuilder.liquidityPoolIdHorizonHex(poolStrKey),
+          equals(poolHex));
+    });
+
+    test('returns a lowercase hex id unchanged', () {
+      expect(
+          RequestBuilder.liquidityPoolIdHorizonHex(poolHex), equals(poolHex));
+    });
+
+    test('lowercases an uppercase hex id', () {
+      expect(RequestBuilder.liquidityPoolIdHorizonHex(poolHex.toUpperCase()),
+          equals(poolHex));
+    });
+
+    test('refuses 63 hex characters', () {
+      final id = poolHex.substring(1);
+      expect(id.length, equals(63));
+      expect(() => RequestBuilder.liquidityPoolIdHorizonHex(id),
+          throwsInvalidPoolId(id, 'Invalid input length, must be even.'));
+    });
+
+    test('refuses 65 hex characters', () {
+      final id = '${poolHex}a';
+      expect(id.length, equals(65));
+      expect(() => RequestBuilder.liquidityPoolIdHorizonHex(id),
+          throwsInvalidPoolId(id, 'Invalid input length, must be even.'));
+    });
+
+    test('refuses an even hex width other than 64 characters', () {
+      final id = poolHex.substring(2);
+      expect(
+          () => RequestBuilder.liquidityPoolIdHorizonHex(id),
+          throwsInvalidPoolId(id,
+              'Liquidity pool id must be hex of a 32 byte hash; 31 bytes given'));
+    });
+
+    test('refuses an empty id', () {
+      expect(
+          () => RequestBuilder.liquidityPoolIdHorizonHex(''),
+          throwsInvalidPoolId('',
+              'Liquidity pool id must be hex of a 32 byte hash; 0 bytes given'));
+    });
+
+    test('refuses 64 characters that are not hex', () {
+      final id = 'g' * 64;
+      expect(() => RequestBuilder.liquidityPoolIdHorizonHex(id),
+          throwsInvalidPoolId(id, 'Invalid hexadecimal code unit U+0067.'));
+    });
+
+    test('refuses an L strkey with a broken checksum', () {
+      final last = poolStrKey.endsWith('A') ? 'B' : 'A';
+      final id = poolStrKey.substring(0, poolStrKey.length - 1) + last;
+      expect(() => RequestBuilder.liquidityPoolIdHorizonHex(id),
+          throwsInvalidPoolId(id, 'Checksum invalid'));
+    });
+
+    test('refuses a truncated L strkey', () {
+      expect(
+          () => RequestBuilder.liquidityPoolIdHorizonHex('LINVALID'),
+          throwsInvalidPoolId(
+              'LINVALID', 'Encoded string must be 56 characters, got 8'));
+    });
+
+    group('request builders send the normalized hex', () {
+      final serverUri = Uri.parse('https://horizon-testnet.stellar.org');
+      final unusedClient = MockClient((request) async {
+        fail('no request expected, got ${request.url}');
+      });
+
+      test('AccountsRequestBuilder.forLiquidityPool', () {
+        final uri = AccountsRequestBuilder(unusedClient, serverUri)
+            .forLiquidityPool(poolStrKey)
+            .buildUri();
+        expect(uri.queryParameters['liquidity_pool'], equals(poolHex));
+      });
+
+      test('TradesRequestBuilder.liquidityPoolId', () {
+        final uri = TradesRequestBuilder(unusedClient, serverUri)
+            .liquidityPoolId(poolStrKey)
+            .buildUri();
+        expect(uri.queryParameters['liquidity_pool_id'], equals(poolHex));
+      });
+
+      test('EffectsRequestBuilder.forLiquidityPool', () {
+        final uri = EffectsRequestBuilder(unusedClient, serverUri)
+            .forLiquidityPool(poolStrKey)
+            .buildUri();
+        expect(uri.pathSegments,
+            equals(['liquidity_pools', poolHex, 'effects']));
+      });
+
+      test('OperationsRequestBuilder.forLiquidityPool', () {
+        final uri = OperationsRequestBuilder(unusedClient, serverUri)
+            .forLiquidityPool(poolStrKey)
+            .buildUri();
+        expect(uri.pathSegments,
+            equals(['liquidity_pools', poolHex, 'operations']));
+      });
+
+      test('TransactionsRequestBuilder.forLiquidityPool', () {
+        final uri = TransactionsRequestBuilder(unusedClient, serverUri)
+            .forLiquidityPool(poolStrKey)
+            .buildUri();
+        expect(uri.pathSegments,
+            equals(['liquidity_pools', poolHex, 'transactions']));
+      });
+
+      test('LiquidityPoolTradesRequestBuilder.forPoolId', () {
+        final uri = LiquidityPoolTradesRequestBuilder(unusedClient, serverUri)
+            .forPoolId(poolStrKey)
+            .buildUri();
+        expect(
+            uri.pathSegments, equals(['liquidity_pools', poolHex, 'trades']));
+      });
+
+      test('LiquidityPoolsRequestBuilder.forPoolId', () async {
+        final requested = <Uri>[];
+        final client = MockClient((request) async {
+          requested.add(request.url);
+          return http.Response('{}', 404);
+        });
+        await expectLater(
+          LiquidityPoolsRequestBuilder(client, serverUri).forPoolId(poolStrKey),
+          throwsA(isA<ErrorResponse>()),
+        );
+        expect(requested, hasLength(1));
+        expect(requested.single.pathSegments,
+            equals(['liquidity_pools', poolHex]));
+      });
+
+      test('a hex id of the wrong width is refused before any request', () {
+        final id = poolHex.substring(2);
+        final expected = throwsInvalidPoolId(id,
+            'Liquidity pool id must be hex of a 32 byte hash; 31 bytes given');
+        expect(
+            () => AccountsRequestBuilder(unusedClient, serverUri)
+                .forLiquidityPool(id),
+            expected);
+        expect(
+            () => TradesRequestBuilder(unusedClient, serverUri)
+                .liquidityPoolId(id),
+            expected);
+        expect(
+            () => EffectsRequestBuilder(unusedClient, serverUri)
+                .forLiquidityPool(id),
+            expected);
+        expect(
+            () => OperationsRequestBuilder(unusedClient, serverUri)
+                .forLiquidityPool(id),
+            expected);
+        expect(
+            () => TransactionsRequestBuilder(unusedClient, serverUri)
+                .forLiquidityPool(id),
+            expected);
+        expect(
+            () => LiquidityPoolTradesRequestBuilder(unusedClient, serverUri)
+                .forPoolId(id),
+            expected);
+        expect(
+            () => LiquidityPoolsRequestBuilder(unusedClient, serverUri)
+                .forPoolId(id),
+            expected);
+      });
     });
   });
 }

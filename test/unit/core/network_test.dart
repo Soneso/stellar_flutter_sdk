@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
-import 'dart:typed_data';
 
 void main() {
   group('Network', () {
@@ -56,47 +55,59 @@ void main() {
     });
 
     group('Network ID computation', () {
-      test('Network.PUBLIC has non-null network ID', () {
+      test('Network.PUBLIC network ID is the SHA-256 of its passphrase', () {
         final network = Network.PUBLIC;
         final networkId = network.networkId;
 
-        expect(networkId, isNotNull);
-        expect(networkId, isA<Uint8List>());
+        expect(
+          Util.bytesToHex(networkId),
+          equals(
+            '7ac33997544e3175d266bd022439b22cdb16508c01163f26e5cb2a3e1045a979',
+          ),
+        );
       });
 
-      test('Network.TESTNET has non-null network ID', () {
+      test('Network.TESTNET network ID is the SHA-256 of its passphrase', () {
         final network = Network.TESTNET;
         final networkId = network.networkId;
 
-        expect(networkId, isNotNull);
-        expect(networkId, isA<Uint8List>());
+        expect(
+          Util.bytesToHex(networkId),
+          equals(
+            'cee0302d59844d32bdca915c8203dd44b33fbb7edc19051ea37abedf28ecd472',
+          ),
+        );
       });
 
-      test('Network.FUTURENET has non-null network ID', () {
+      test('Network.FUTURENET network ID is the SHA-256 of its passphrase', () {
         final network = Network.FUTURENET;
         final networkId = network.networkId;
 
-        expect(networkId, isNotNull);
-        expect(networkId, isA<Uint8List>());
+        expect(
+          Util.bytesToHex(networkId),
+          equals(
+            'a3a1c6a78286713e29be0e9785670fa838d13917cd8eaeb4a3579ff1debc7fd5',
+          ),
+        );
       });
 
       test('Network ID is 32 bytes for PUBLIC network', () {
         final network = Network.PUBLIC;
         final networkId = network.networkId;
 
-        expect(networkId!.length, equals(32));
+        expect(networkId.length, equals(32));
       });
 
       test('Network ID is 32 bytes for TESTNET network', () {
         final network = Network.TESTNET;
         final networkId = network.networkId;
 
-        expect(networkId!.length, equals(32));
+        expect(networkId.length, equals(32));
       });
 
       test('Different networks have different network IDs', () {
         final publicId = Network.PUBLIC.networkId;
-        final testnetId = Network.TESTNET;
+        final testnetId = Network.TESTNET.networkId;
         final futurenetId = Network.FUTURENET.networkId;
 
         expect(publicId, isNot(equals(testnetId)));
@@ -118,8 +129,7 @@ void main() {
         final network = Network('Custom Network ; Test');
         final networkId = network.networkId;
 
-        expect(networkId, isNotNull);
-        expect(networkId!.length, equals(32));
+        expect(networkId.length, equals(32));
       });
     });
 
