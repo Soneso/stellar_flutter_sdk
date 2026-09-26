@@ -151,11 +151,11 @@ void main() {
         expect(Price.fromString("2147483647").denominator, equals(1));
       });
 
-      test('refuses a fraction below the reciprocal double resolution', () {
-        // 308 to 322 leading zeros give a fraction whose reciprocal
-        // overflows a double. The expansion ends on the convergents it
-        // holds, so a value with none is refused with the documented
-        // exception rather than an internal error escaping.
+      test('stops at the whole part when the next quotient exceeds int32', () {
+        // With 308 to 322 leading zeros the value is 1/10^309 to 1/10^323.
+        // Its whole part is 0 and the next partial quotient is 10^309 to
+        // 10^323, far beyond int32, so the expansion stops at 0/1 and the
+        // value is refused with the documented exception.
         for (final zeros in [308, 315, 322]) {
           final value = "0.${"0" * zeros}1";
           expect(
@@ -169,8 +169,8 @@ void main() {
           );
         }
 
-        // With a whole part the dropped remainder leaves the whole part
-        // as the closest int32 fraction.
+        // With a whole part of 12345 the next partial quotient is 10^311,
+        // so the expansion stops at 12345/1.
         final kept = Price.fromString("12345.${"0" * 310}1");
         expect(kept.numerator, equals(12345));
         expect(kept.denominator, equals(1));
@@ -230,6 +230,123 @@ void main() {
 
         final decimalValue = price.numerator! / price.denominator!;
         expect(decimalValue, closeTo(3.14159, 0.0001));
+      });
+    });
+
+    group('Price.toDecimalString', () {
+      test('writes a small price without exponent notation', () {
+        expect(Price(1, 10000000).toDecimalString(), equals("0.0000001"));
+      });
+
+      test('writes a terminating fraction', () {
+        expect(Price(3, 2).toDecimalString(), equals("1.5"));
+      });
+
+      test('writes a whole price without a decimal point', () {
+        expect(Price(1, 1).toDecimalString(), equals("1"));
+        expect(Price(100, 1).toDecimalString(), equals("100"));
+        expect(Price(2147483647, 1).toDecimalString(), equals("2147483647"));
+      });
+
+      test('cuts a non-terminating fraction after 20 digits', () {
+        expect(Price(1, 3).toDecimalString(), equals("0.33333333333333333333"));
+        expect(Price(355, 113).toDecimalString(), equals("3.14159292035398230088"));
+        expect(Price(2, 3).toDecimalString(), equals("0.66666666666666666666"));
+      });
+
+      test('writes the smallest int32 fraction to 20 digits', () {
+        expect(Price(1, 2147483647).toDecimalString(), equals("0.00000000046566128752"));
+      });
+
+      test('removes zeros left at the cut', () {
+        // The first 20 digits of 1/111 are 00900900900900900900.
+        expect(Price(1, 111).toDecimalString(), equals("0.009009009009009009"));
+      });
+
+      test('writes a negative price with a leading sign', () {
+        expect(Price(-1, 2).toDecimalString(), equals("-0.5"));
+        expect(Price(1, -2).toDecimalString(), equals("-0.5"));
+        expect(Price(-1, -2).toDecimalString(), equals("0.5"));
+      });
+
+      test('writes zero as 0', () {
+        expect(Price(0, 1).toDecimalString(), equals("0"));
+        expect(Price(0, -1).toDecimalString(), equals("0"));
+      });
+
+      test('rejects a zero denominator', () {
+        expect(() => Price(1, 0).toDecimalString(), throwsArgumentError);
+      });
+
+      test('is parsed back by Price.fromString', () {
+        final price = Price.fromString(Price(1, 10000000).toDecimalString());
+        expect(price.n, equals(1));
+        expect(price.d, equals(10000000));
+      });
+    });
+
+    group('Price.fromString decimal round trips', () {
+      // Each price is rendered by toDecimalString and parsed back. A fraction
+      // whose lowest terms fit an int32 fraction comes back in lowest terms;
+      // any other comes back as its closest int32 convergent.
+      void expectRoundTrip(int n, int d, int expectedN, int expectedD) {
+        final decimal = Price(n, d).toDecimalString();
+        final parsed = Price.fromString(decimal);
+        expect([parsed.n, parsed.d], equals([expectedN, expectedD]),
+            reason: '$n/$d rendered as "$decimal"');
+      }
+
+      test('recovers fractions with large powers of five', () {
+        expectRoundTrip(1, 244140625, 1, 244140625);
+        expectRoundTrip(-1, 48828125, -1, 48828125);
+        expectRoundTrip(2147483647, 244140625, 2147483647, 244140625);
+        expectRoundTrip(-1, 19531250, -1, 19531250);
+        expectRoundTrip(1, 1220703125, 1, 1220703125);
+      });
+
+      test('recovers a power of two cut after 20 digits', () {
+        // 1/2^30 has 30 fractional digits; the first 20 still lead back to it.
+        expectRoundTrip(1, 1073741824, 1, 1073741824);
+      });
+
+      test('recovers fractions next to one', () {
+        expectRoundTrip(2147483646, 2147483647, 2147483646, 2147483647);
+        expectRoundTrip(99999999, 100000000, 99999999, 100000000);
+      });
+
+      test('recovers a fraction in lowest terms', () {
+        // 123456789/987654321 reduces by 9.
+        expectRoundTrip(123456789, 987654321, 13717421, 109739369);
+      });
+
+      test('gives the closest convergent when the fraction does not fit', () {
+        // The sign moves to the numerator, and 2147483648 does not fit a
+        // positive int32 denominator.
+        expectRoundTrip(2147483647, -2147483648, -2147483646, 2147483647);
+      });
+
+      test('parses a value just above 1/2147483648 to 1/2147483647', () {
+        // The value is above 1/2147483648, so the closest int32 fraction is
+        // 1/2147483647.
+        final price = Price.fromString("0.0000000004656612873077392578126");
+        expect([price.n, price.d], equals([1, 2147483647]));
+      });
+
+      test('refuses a value just below -2147483648', () {
+        // The value is below INT32_MIN, so no int32 fraction carries it.
+        final value = "-2147483648.${"0" * 323}1";
+        expect(
+          () => Price.fromString(value),
+          throwsA(predicate((e) =>
+              e is Exception &&
+              e.toString() ==
+                  "Exception: Not a price an int32 fraction can carry: $value")),
+        );
+      });
+
+      test('parses an exact decimal to its exact fraction', () {
+        final price = Price.fromString("0.99999999");
+        expect([price.n, price.d], equals([99999999, 100000000]));
       });
     });
 

@@ -178,10 +178,17 @@ class Price {
   /// The denominator is the bottom number in the fraction representation.
   int? get denominator => d;
 
-  /// Approximates a decimal price string to a rational fraction.
+  /// Converts a decimal price string to a fraction of two int32 values.
   ///
-  /// This method uses the continued fractions algorithm to find a fraction
-  /// that approximates the given decimal value, constrained by 32-bit integers.
+  /// The decimal is read exactly, as an integer over a power of ten, and
+  /// expanded into a continued fraction with integer arithmetic. The result
+  /// is the last convergent whose numerator and denominator both fit an
+  /// int32, so it is always in lowest terms:
+  /// - A nonzero decimal whose fraction in lowest terms, with a positive
+  ///   denominator, fits int32 yields that fraction: "0.000000004096" is
+  ///   1/244140625 and "0.99999999" is 99999999/100000000.
+  /// - Any other decimal yields the closest convergent within the int32
+  ///   bounds: "0.33333333333333333333" is 1/3.
   ///
   /// Surrounding whitespace is removed. What remains must be digits, then
   /// optionally a decimal point and any further digits, after at most one
@@ -190,7 +197,8 @@ class Price {
   /// Parameters:
   /// - [price] Decimal price as string (e.g., "1.5", "0.333", "123.456")
   ///
-  /// Returns: Price object with numerator and denominator approximating the input
+  /// Returns: Price object with the numerator and denominator of the value
+  /// or of its closest int32 convergent
   ///
   /// Throws:
   /// - [Exception] If the price is not a decimal number
@@ -198,34 +206,23 @@ class Price {
   ///   too small for any int32 fraction, or a value beyond the int32
   ///   boundaries
   ///
-  /// Warning: This function can give unexpected results for values that cannot
-  /// be exactly represented as a fraction with 32-bit numerator and denominator.
-  /// For precise prices, use the [Price] constructor directly with exact fractions.
-  ///
   /// Example:
   /// ```dart
-  /// // Simple decimal approximation
   /// Price p1 = Price.fromString("1.5");
-  /// print("${p1.numerator}/${p1.denominator}"); // May print: 3/2
+  /// print("${p1.numerator}/${p1.denominator}"); // 3/2
   ///
-  /// // Repeating decimal approximation
-  /// Price p2 = Price.fromString("0.333333");
-  /// print("${p2.numerator}/${p2.denominator}"); // Approximates 1/3
+  /// Price p2 = Price.fromString("0.0000001");
+  /// print("${p2.numerator}/${p2.denominator}"); // 1/10000000
   ///
-  /// // Complex decimal
-  /// Price p3 = Price.fromString("3.14159");
-  /// // Will approximate π, but may not be exact
-  ///
-  /// // For exact prices, prefer direct construction
-  /// Price exact = Price(355, 113); // Exact fraction for π approximation
+  /// // A decimal beyond int32 precision yields its closest convergent
+  /// Price p3 = Price.fromString("3.14159265358979");
   /// ```
   ///
   /// Algorithm notes:
-  /// - Uses continued fractions for best rational approximation
   /// - Numerator and denominator are bounded by INT32_MAX_VALUE, and the
   ///   numerator also by INT32_MIN_VALUE
-  /// - May not converge for some decimal values
-  /// - Precision depends on the decimal's representability as a fraction
+  /// - A negative value is expanded from its floor, so its numerator carries
+  ///   the sign and its denominator stays positive
   ///
   /// See also:
   /// - [Price] constructor for creating exact fractions
@@ -238,34 +235,32 @@ class Price {
       throw Exception("Not a decimal price: $price");
     }
 
+    // The value is exactly numerator / denominator, with the sign on the
+    // numerator and a power of ten as the denominator.
     List<String> two = trimmed.split(".");
-    BigInt number = BigInt.parse(two[0]);
-    double f = 0.0;
-    if (two.length == 2) {
-      f = double.parse("0.${two[1]}");
-    }
+    String fractionDigits = two.length == 2 ? two[1] : "";
+    BigInt numerator = BigInt.parse(two[0] + fractionDigits);
+    BigInt denominator = BigInt.from(10).pow(fractionDigits.length);
 
-    // The expansion below consumes the floor of the value and the remainder
-    // above it. Splitting on the point gives the part truncated towards zero
-    // and an unsigned fraction, which for a negative value is one too high:
-    // -1.5 is floor -2 with remainder 0.5, not -1 with remainder 0.5.
-    if (trimmed.startsWith("-") && f > 0.0) {
-      number -= BigInt.one;
-      f = 1.0 - f;
-    }
     BigInt maxInt = BigInt.from(BitConstants.INT32_MAX_VALUE);
     BigInt minInt = BigInt.from(BitConstants.INT32_MIN_VALUE);
-    BigInt a;
-    // List<List<BigInt>> fractions = List<List<BigInt>>();
     List<List<BigInt>> fractions = [];
     fractions.add([BigInt.zero, BigInt.one]);
     fractions.add([BigInt.one, BigInt.zero]);
     int i = 2;
     while (true) {
-      if (number > maxInt) {
+      // Each term is the floor of the remaining quotient. BigInt division
+      // truncates towards zero, which for a negative value is one too high:
+      // -1.5 is floor -2 with remainder 0.5, not -1 with remainder -0.5.
+      BigInt a = numerator ~/ denominator;
+      BigInt remainder = numerator - a * denominator;
+      if (remainder.isNegative) {
+        a -= BigInt.one;
+        remainder += denominator;
+      }
+      if (a > maxInt) {
         break;
       }
-      a = number;
       BigInt h = a * (fractions[i - 1][0]) + (fractions[i - 2][0]);
       BigInt k = a * (fractions[i - 1][1]) + (fractions[i - 2][1]);
       // A negative price leaves no numerator positive, so an upper bound alone
@@ -276,19 +271,12 @@ class Price {
         break;
       }
       fractions.add([h, k]);
-      if (f == 0.0) {
+      // A zero remainder means the convergent just recorded is the value.
+      if (remainder == BigInt.zero) {
         break;
       }
-      double point = 1 / f;
-      // A remainder so small its reciprocal overflows a double carries
-      // nothing further the expansion can consume: the convergents recorded
-      // so far are the closest an int32 fraction gets. A value with no
-      // convergent at all falls through to the rejection below.
-      if (!point.isFinite) {
-        break;
-      }
-      number = BigInt.from(point);
-      f = point - number.toDouble();
+      numerator = denominator;
+      denominator = remainder;
       i = i + 1;
     }
     BigInt n = fractions[fractions.length - 1][0];
@@ -301,6 +289,62 @@ class Price {
       throw Exception("Not a price an int32 fraction can carry: $price");
     }
     return new Price(n.toInt(), d.toInt());
+  }
+
+  /// The number of fractional digits after which [toDecimalString] stops.
+  ///
+  /// Cutting after 20 digits keeps the string within 10^-20 of n / d. For a
+  /// nonzero n / d whose lowest terms, with a positive denominator, fit int32,
+  /// that is closer than half the square of 1 / d, so the continued fraction
+  /// of the string passes through n / d in lowest terms and the convergent
+  /// after it no longer fits an int32: [Price.fromString] recovers n / d.
+  static const int _maxDecimalFractionDigits = 20;
+
+  /// Returns the value n / d as a plain decimal string.
+  ///
+  /// The string is the form [Price.fromString] parses, which accepts plain
+  /// decimal digits only, so the expansion is computed by integer long
+  /// division and never uses exponent notation: 1/10000000 is "0.0000001".
+  /// The fractional digits end where the division terminates or, for a
+  /// non-terminating value such as 1/3, after 20 digits (truncated, not
+  /// rounded). Trailing zeros are removed and a whole value has no decimal
+  /// point: 3/1 is "3" and 0/1 is "0". A negative value starts with "-".
+  ///
+  /// Throws:
+  /// - [ArgumentError] If the denominator is zero
+  ///
+  /// Example:
+  /// ```dart
+  /// Price(3, 2).toDecimalString(); // "1.5"
+  /// Price(1, 3).toDecimalString(); // "0.33333333333333333333"
+  /// ```
+  String toDecimalString() {
+    if (d == 0) {
+      throw ArgumentError("Price denominator must not be zero: $n/$d");
+    }
+    BigInt numerator = BigInt.from(n).abs();
+    BigInt denominator = BigInt.from(d).abs();
+    bool negative = n != 0 && (n < 0) != (d < 0);
+
+    String integerPart = (numerator ~/ denominator).toString();
+    BigInt remainder = numerator.remainder(denominator);
+    StringBuffer fraction = StringBuffer();
+    for (int i = 0;
+        i < _maxDecimalFractionDigits && remainder != BigInt.zero;
+        i++) {
+      remainder *= BigInt.from(10);
+      fraction.write(remainder ~/ denominator);
+      remainder = remainder.remainder(denominator);
+    }
+    // A terminating expansion ends on a non-zero digit; only the cut after
+    // the last digit taken can leave zeros behind.
+    String fractionDigits =
+        fraction.toString().replaceFirst(RegExp(r'0+$'), '');
+
+    String value = fractionDigits.isEmpty
+        ? integerPart
+        : "$integerPart.$fractionDigits";
+    return negative ? "-$value" : value;
   }
 
   /// Converts this Price to its XDR (External Data Representation) format.

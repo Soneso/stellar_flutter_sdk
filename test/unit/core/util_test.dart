@@ -98,10 +98,14 @@ void main() {
       expect(removeTailZero('1.10000'), equals('1.1'));
     });
 
-    test('handles strings without decimals', () {
-      // removeTailZero removes trailing zeros even from integers
-      expect(removeTailZero('100'), equals('1'));
+    test('returns strings without a decimal point unchanged', () {
+      expect(removeTailZero('100'), equals('100'));
       expect(removeTailZero('42'), equals('42'));
+      expect(removeTailZero('0'), equals('0'));
+    });
+
+    test('removes a trailing decimal point', () {
+      expect(removeTailZero('100.'), equals('100'));
     });
   });
 
