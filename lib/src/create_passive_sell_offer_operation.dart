@@ -111,7 +111,7 @@ class CreatePassiveSellOfferOperation extends Operation {
         Asset.fromXdr(op.selling),
         Asset.fromXdr(op.buying),
         Util.stroopsToDecimalString(op.amount.int64),
-        removeTailZero((BigInt.from(n) / BigInt.from(d)).toString()));
+        Price(n, d).toDecimalString());
   }
 }
 

@@ -69,9 +69,9 @@ void main() {
         expect(removeTailZero("123.45"), equals("123.45"));
       });
 
-      test('should handle strings without decimal point', () {
+      test('should return strings without decimal point unchanged', () {
         expect(removeTailZero("123"), equals("123"));
-        expect(removeTailZero("100"), equals("1"));
+        expect(removeTailZero("100"), equals("100"));
       });
 
       test('should handle very small decimals', () {

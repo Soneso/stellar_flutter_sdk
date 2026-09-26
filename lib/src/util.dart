@@ -75,8 +75,11 @@ checkArgument(bool expression, String errorMessage) {
 
 /// Removes trailing zeros from a numeric string.
 ///
-/// Removes trailing zeros after the decimal point, and also removes
-/// the decimal point itself if no significant digits remain after it.
+/// A string without a decimal point is returned unchanged: its trailing zeros
+/// are significant digits of the integer part. In a string with a decimal
+/// point, the trailing zeros after the point are removed, and the point itself
+/// too when no digits remain after it ("100." becomes "100"). If nothing is
+/// left of such a string (".0"), the result is "0".
 ///
 /// Parameters:
 /// - [src] The numeric string to process
@@ -88,8 +91,12 @@ checkArgument(bool expression, String errorMessage) {
 /// removeTailZero("123.4500"); // Returns "123.45"
 /// removeTailZero("100.000");  // Returns "100"
 /// removeTailZero("5.0");      // Returns "5"
+/// removeTailZero("100");      // Returns "100"
 /// ```
 String removeTailZero(String src) {
+  if (!src.contains('.')) {
+    return src;
+  }
   int pos = 0;
   for (int i = src.length - 1; i >= 0; i--) {
     if (src[i] == '0')
