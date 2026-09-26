@@ -159,6 +159,33 @@ void main() {
       },
     );
 
+    test(
+      'XdrAllowTrustOpAsset decode rejects a discriminant without an arm',
+      () {
+        var original = (XdrAllowTrustOpAsset(
+          XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4,
+        )..assetCode4 = Uint8List.fromList([1, 2, 3, 4]));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrAllowTrustOpAsset.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant.value),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 0);
+        expect(
+          () => XdrAllowTrustOpAsset.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals('Exception: Unknown XdrAllowTrustOpAsset discriminant: 0'),
+            ),
+          ),
+        );
+      },
+    );
+
     test('XdrAssetAlphaNum4 struct roundtrip', () {
       var original = XdrAssetAlphaNum4(
         Uint8List.fromList(List<int>.filled(4, 0xAB)),
@@ -282,6 +309,28 @@ void main() {
         expect(base64Decoded.alphaNum12, isNotNull);
       },
     );
+
+    test('XdrAsset decode rejects a discriminant without an arm', () {
+      var original = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrAsset.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      expect(
+        XdrDataInputStream(encoded).readInt(),
+        equals(original.discriminant.value),
+      );
+      ByteData.sublistView(encoded).setInt32(0, 3);
+      expect(
+        () => XdrAsset.decode(XdrDataInputStream(encoded)),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'toString',
+            equals('Exception: Unknown XdrAsset discriminant: 3'),
+          ),
+        ),
+      );
+    });
 
     test('XdrPrice struct roundtrip', () {
       var original = XdrPrice(XdrInt32(7), XdrInt32(7));
@@ -507,6 +556,31 @@ void main() {
       expect(base64Decoded.v3, isNotNull);
     });
 
+    test(
+      'XdrAccountEntryV2Ext decode rejects a discriminant without an arm',
+      () {
+        var original = XdrAccountEntryV2Ext(0);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrAccountEntryV2Ext.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 4);
+        expect(
+          () => XdrAccountEntryV2Ext.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals('Exception: Unknown XdrAccountEntryV2Ext discriminant: 4'),
+            ),
+          ),
+        );
+      },
+    );
+
     test('XdrAccountEntryV2 struct roundtrip', () {
       var original = XdrAccountEntryV2(XdrUint32(42), XdrUint32(42), [
         XdrAccountID(
@@ -579,6 +653,31 @@ void main() {
       expect(base64Decoded.v2, isNotNull);
     });
 
+    test(
+      'XdrAccountEntryV1Ext decode rejects a discriminant without an arm',
+      () {
+        var original = XdrAccountEntryV1Ext(0);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrAccountEntryV1Ext.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 3);
+        expect(
+          () => XdrAccountEntryV1Ext.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals('Exception: Unknown XdrAccountEntryV1Ext discriminant: 3'),
+            ),
+          ),
+        );
+      },
+    );
+
     test('XdrAccountEntryV1 struct roundtrip', () {
       var original = XdrAccountEntryV1(
         XdrLiabilities(
@@ -634,6 +733,28 @@ void main() {
       expect(base64Decoded.discriminant, equals(original.discriminant));
       // Verify arm field is not null
       expect(base64Decoded.v1, isNotNull);
+    });
+
+    test('XdrAccountEntryExt decode rejects a discriminant without an arm', () {
+      var original = XdrAccountEntryExt(0);
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrAccountEntryExt.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      expect(
+        XdrDataInputStream(encoded).readInt(),
+        equals(original.discriminant),
+      );
+      ByteData.sublistView(encoded).setInt32(0, 2);
+      expect(
+        () => XdrAccountEntryExt.decode(XdrDataInputStream(encoded)),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'toString',
+            equals('Exception: Unknown XdrAccountEntryExt discriminant: 2'),
+          ),
+        ),
+      );
     });
 
     test('XdrAccountEntry struct roundtrip', () {
@@ -874,6 +995,35 @@ void main() {
       expect(base64Decoded.discriminant, equals(original.discriminant));
     });
 
+    test(
+      'XdrTrustLineEntryExtensionV2Ext decode rejects a discriminant without an arm',
+      () {
+        var original = XdrTrustLineEntryExtensionV2Ext(0);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTrustLineEntryExtensionV2Ext.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 1);
+        expect(
+          () => XdrTrustLineEntryExtensionV2Ext.decode(
+            XdrDataInputStream(encoded),
+          ),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals(
+                'Exception: Unknown XdrTrustLineEntryExtensionV2Ext discriminant: 1',
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
     test('XdrTrustLineEntryExtensionV2 struct roundtrip', () {
       var original = XdrTrustLineEntryExtensionV2(
         XdrInt32(7),
@@ -934,6 +1084,33 @@ void main() {
       expect(base64Decoded.v2, isNotNull);
     });
 
+    test(
+      'XdrTrustLineEntryV1Ext decode rejects a discriminant without an arm',
+      () {
+        var original = XdrTrustLineEntryV1Ext(0);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTrustLineEntryV1Ext.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 3);
+        expect(
+          () => XdrTrustLineEntryV1Ext.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals(
+                'Exception: Unknown XdrTrustLineEntryV1Ext discriminant: 3',
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
     test('XdrTrustLineEntryV1 struct roundtrip', () {
       var original = XdrTrustLineEntryV1(
         XdrLiabilities(
@@ -990,6 +1167,31 @@ void main() {
       // Verify arm field is not null
       expect(base64Decoded.v1, isNotNull);
     });
+
+    test(
+      'XdrTrustLineEntryExt decode rejects a discriminant without an arm',
+      () {
+        var original = XdrTrustLineEntryExt(0);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTrustLineEntryExt.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 2);
+        expect(
+          () => XdrTrustLineEntryExt.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals('Exception: Unknown XdrTrustLineEntryExt discriminant: 2'),
+            ),
+          ),
+        );
+      },
+    );
 
     test('XdrTrustLineEntry struct roundtrip', () {
       var original = XdrTrustLineEntry(
@@ -1059,6 +1261,28 @@ void main() {
       expect(base64Decoded.discriminant, equals(original.discriminant));
     });
 
+    test('XdrOfferEntryExt decode rejects a discriminant without an arm', () {
+      var original = XdrOfferEntryExt(0);
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrOfferEntryExt.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      expect(
+        XdrDataInputStream(encoded).readInt(),
+        equals(original.discriminant),
+      );
+      ByteData.sublistView(encoded).setInt32(0, 1);
+      expect(
+        () => XdrOfferEntryExt.decode(XdrDataInputStream(encoded)),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'toString',
+            equals('Exception: Unknown XdrOfferEntryExt discriminant: 1'),
+          ),
+        ),
+      );
+    });
+
     test('XdrOfferEntry struct roundtrip', () {
       var original = XdrOfferEntry(
         XdrAccountID(
@@ -1103,6 +1327,28 @@ void main() {
         original.toBase64EncodedXdrString(),
       );
       expect(base64Decoded.discriminant, equals(original.discriminant));
+    });
+
+    test('XdrDataEntryExt decode rejects a discriminant without an arm', () {
+      var original = XdrDataEntryExt(0);
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrDataEntryExt.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      expect(
+        XdrDataInputStream(encoded).readInt(),
+        equals(original.discriminant),
+      );
+      ByteData.sublistView(encoded).setInt32(0, 1);
+      expect(
+        () => XdrDataEntryExt.decode(XdrDataInputStream(encoded)),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'toString',
+            equals('Exception: Unknown XdrDataEntryExt discriminant: 1'),
+          ),
+        ),
+      );
     });
 
     test('XdrDataEntry struct roundtrip', () {
@@ -1442,6 +1688,35 @@ void main() {
       expect(base64Decoded.discriminant, equals(original.discriminant));
     });
 
+    test(
+      'XdrClaimableBalanceEntryExtV1Ext decode rejects a discriminant without an arm',
+      () {
+        var original = XdrClaimableBalanceEntryExtV1Ext(0);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrClaimableBalanceEntryExtV1Ext.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 1);
+        expect(
+          () => XdrClaimableBalanceEntryExtV1Ext.decode(
+            XdrDataInputStream(encoded),
+          ),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals(
+                'Exception: Unknown XdrClaimableBalanceEntryExtV1Ext discriminant: 1',
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
     test('XdrClaimableBalanceEntryExtV1 struct roundtrip', () {
       var original = XdrClaimableBalanceEntryExtV1(
         XdrClaimableBalanceEntryExtV1Ext(0),
@@ -1497,6 +1772,33 @@ void main() {
       // Verify arm field is not null
       expect(base64Decoded.v1, isNotNull);
     });
+
+    test(
+      'XdrClaimableBalanceEntryExt decode rejects a discriminant without an arm',
+      () {
+        var original = XdrClaimableBalanceEntryExt(0);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrClaimableBalanceEntryExt.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 2);
+        expect(
+          () => XdrClaimableBalanceEntryExt.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals(
+                'Exception: Unknown XdrClaimableBalanceEntryExt discriminant: 2',
+              ),
+            ),
+          ),
+        );
+      },
+    );
 
     test('XdrClaimableBalanceEntry struct roundtrip', () {
       var original = XdrClaimableBalanceEntry(
@@ -1872,6 +2174,33 @@ void main() {
       expect(base64Decoded.v1, isNotNull);
     });
 
+    test(
+      'XdrContractCodeEntryExt decode rejects a discriminant without an arm',
+      () {
+        var original = XdrContractCodeEntryExt(0);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrContractCodeEntryExt.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 2);
+        expect(
+          () => XdrContractCodeEntryExt.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals(
+                'Exception: Unknown XdrContractCodeEntryExt discriminant: 2',
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
     test('XdrContractCodeEntry struct roundtrip', () {
       var original = XdrContractCodeEntry(
         XdrContractCodeEntryExt(0),
@@ -1930,6 +2259,31 @@ void main() {
       );
       expect(base64Decoded.discriminant, equals(original.discriminant));
     });
+
+    test(
+      'XdrLedgerEntryV1Ext decode rejects a discriminant without an arm',
+      () {
+        var original = XdrLedgerEntryV1Ext(0);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrLedgerEntryV1Ext.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 1);
+        expect(
+          () => XdrLedgerEntryV1Ext.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals('Exception: Unknown XdrLedgerEntryV1Ext discriminant: 1'),
+            ),
+          ),
+        );
+      },
+    );
 
     test('XdrLedgerEntryV1 struct roundtrip', () {
       var original = XdrLedgerEntryV1(null, XdrLedgerEntryV1Ext(0));
@@ -2286,6 +2640,28 @@ void main() {
       expect(base64Decoded.discriminant, equals(original.discriminant));
       // Verify arm field is not null
       expect(base64Decoded.v1, isNotNull);
+    });
+
+    test('XdrLedgerEntryExt decode rejects a discriminant without an arm', () {
+      var original = XdrLedgerEntryExt(0);
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrLedgerEntryExt.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      expect(
+        XdrDataInputStream(encoded).readInt(),
+        equals(original.discriminant),
+      );
+      ByteData.sublistView(encoded).setInt32(0, 2);
+      expect(
+        () => XdrLedgerEntryExt.decode(XdrDataInputStream(encoded)),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'toString',
+            equals('Exception: Unknown XdrLedgerEntryExt discriminant: 2'),
+          ),
+        ),
+      );
     });
 
     test('XdrLedgerEntry struct roundtrip', () {
@@ -2957,6 +3333,31 @@ void main() {
       // Verify arm field is not null
       expect(base64Decoded.bucketListType, isNotNull);
     });
+
+    test(
+      'XdrBucketMetadataExt decode rejects a discriminant without an arm',
+      () {
+        var original = XdrBucketMetadataExt(0);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrBucketMetadataExt.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 2);
+        expect(
+          () => XdrBucketMetadataExt.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals('Exception: Unknown XdrBucketMetadataExt discriminant: 2'),
+            ),
+          ),
+        );
+      },
+    );
 
     test('XdrBucketMetadata struct roundtrip', () {
       var original = XdrBucketMetadata(XdrUint32(42), XdrBucketMetadataExt(0));

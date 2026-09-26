@@ -94,7 +94,9 @@ class XdrTransactionEnvelopeBase {
         decoded._feeBump = XdrFeeBumpTransactionEnvelope.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrTransactionEnvelope discriminant: ${decoded.discriminant.value}",
+        );
     }
     return decoded;
   }

@@ -43,7 +43,10 @@ class XdrClawbackResult {
     switch (decodedClawbackResult.discriminant) {
       case XdrClawbackResultCode.CLAWBACK_SUCCESS:
         break;
-      default:
+      case XdrClawbackResultCode.CLAWBACK_MALFORMED:
+      case XdrClawbackResultCode.CLAWBACK_NOT_CLAWBACK_ENABLED:
+      case XdrClawbackResultCode.CLAWBACK_NO_TRUST:
+      case XdrClawbackResultCode.CLAWBACK_UNDERFUNDED:
         break;
     }
     return decodedClawbackResult;

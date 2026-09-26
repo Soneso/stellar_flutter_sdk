@@ -92,8 +92,6 @@ class XdrChangeTrustAssetBase {
       case XdrAssetType.ASSET_TYPE_POOL_SHARE:
         decoded._liquidityPool = XdrLiquidityPoolParameters.decode(stream);
         break;
-      default:
-        break;
     }
     return decoded;
   }

@@ -75,8 +75,6 @@ class XdrContractIDPreimageBase {
       case XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET:
         decoded._fromAsset = XdrAsset.decode(stream);
         break;
-      default:
-        break;
     }
     return decoded;
   }

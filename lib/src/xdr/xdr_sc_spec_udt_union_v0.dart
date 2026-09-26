@@ -47,7 +47,7 @@ class XdrSCSpecUDTUnionV0 {
     String doc = stream.readString();
     String lib = stream.readString();
     String name = stream.readString();
-    int casessize = stream.readInt();
+    int casessize = stream.readArrayLength();
     List<XdrSCSpecUDTUnionCaseV0> cases = List<XdrSCSpecUDTUnionCaseV0>.empty(
       growable: true,
     );

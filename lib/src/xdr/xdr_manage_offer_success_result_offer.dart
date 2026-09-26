@@ -62,8 +62,6 @@ class XdrManageOfferSuccessResultOffer {
         break;
       case XdrManageOfferEffect.MANAGE_OFFER_DELETED:
         break;
-      default:
-        break;
     }
     return decodedManageOfferSuccessResultOffer;
   }

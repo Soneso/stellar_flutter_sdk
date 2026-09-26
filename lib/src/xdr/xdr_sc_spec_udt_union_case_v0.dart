@@ -72,8 +72,6 @@ class XdrSCSpecUDTUnionCaseV0 {
         decodedSCSpecUDTUnionCaseV0._tupleCase =
             XdrSCSpecUDTUnionCaseTupleV0.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedSCSpecUDTUnionCaseV0;
   }

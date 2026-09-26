@@ -549,8 +549,6 @@ class XdrOperationResultTr {
         decodedOperationResultTr._restoreFootprintResult =
             XdrRestoreFootprintResult.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedOperationResultTr;
   }

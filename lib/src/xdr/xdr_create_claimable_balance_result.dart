@@ -58,7 +58,16 @@ class XdrCreateClaimableBalanceResult {
         decodedCreateClaimableBalanceResult._balanceID =
             XdrClaimableBalanceID.decode(stream);
         break;
-      default:
+      case XdrCreateClaimableBalanceResultCode
+          .CREATE_CLAIMABLE_BALANCE_MALFORMED:
+      case XdrCreateClaimableBalanceResultCode
+          .CREATE_CLAIMABLE_BALANCE_LOW_RESERVE:
+      case XdrCreateClaimableBalanceResultCode
+          .CREATE_CLAIMABLE_BALANCE_NO_TRUST:
+      case XdrCreateClaimableBalanceResultCode
+          .CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED:
+      case XdrCreateClaimableBalanceResultCode
+          .CREATE_CLAIMABLE_BALANCE_UNDERFUNDED:
         break;
     }
     return decodedCreateClaimableBalanceResult;

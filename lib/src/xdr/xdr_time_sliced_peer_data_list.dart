@@ -34,7 +34,7 @@ class XdrTimeSlicedPeerDataList {
   }
 
   static XdrTimeSlicedPeerDataList decode(XdrDataInputStream stream) {
-    int size = stream.readInt();
+    int size = stream.readArrayLength();
     List<XdrTimeSlicedPeerData> items = List<XdrTimeSlicedPeerData>.empty(
       growable: true,
     );

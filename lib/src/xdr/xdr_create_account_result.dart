@@ -43,7 +43,10 @@ class XdrCreateAccountResult {
     switch (decodedCreateAccountResult.discriminant) {
       case XdrCreateAccountResultCode.CREATE_ACCOUNT_SUCCESS:
         break;
-      default:
+      case XdrCreateAccountResultCode.CREATE_ACCOUNT_MALFORMED:
+      case XdrCreateAccountResultCode.CREATE_ACCOUNT_UNDERFUNDED:
+      case XdrCreateAccountResultCode.CREATE_ACCOUNT_LOW_RESERVE:
+      case XdrCreateAccountResultCode.CREATE_ACCOUNT_ALREADY_EXIST:
         break;
     }
     return decodedCreateAccountResult;

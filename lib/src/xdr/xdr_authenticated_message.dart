@@ -56,7 +56,9 @@ class XdrAuthenticatedMessage {
         );
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrAuthenticatedMessage discriminant: ${decodedAuthenticatedMessage.discriminant}",
+        );
     }
     return decodedAuthenticatedMessage;
   }

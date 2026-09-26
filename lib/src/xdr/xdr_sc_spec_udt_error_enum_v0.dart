@@ -50,7 +50,7 @@ class XdrSCSpecUDTErrorEnumV0 {
     String doc = stream.readString();
     String lib = stream.readString();
     String name = stream.readString();
-    int casessize = stream.readInt();
+    int casessize = stream.readArrayLength();
     List<XdrSCSpecUDTErrorEnumCaseV0> cases =
         List<XdrSCSpecUDTErrorEnumCaseV0>.empty(growable: true);
     for (int i = 0; i < casessize; i++) {

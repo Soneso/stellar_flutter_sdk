@@ -52,8 +52,6 @@ class XdrSCMetaEntry {
       case XdrSCMetaKind.SC_META_V0:
         decodedSCMetaEntry._v0 = XdrSCMetaV0.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedSCMetaEntry;
   }

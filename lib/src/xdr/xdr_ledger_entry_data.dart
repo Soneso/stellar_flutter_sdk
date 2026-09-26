@@ -196,8 +196,6 @@ class XdrLedgerEntryData {
       case XdrLedgerEntryType.TTL:
         decodedLedgerEntryData._ttl = XdrTTLEntry.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedLedgerEntryData;
   }

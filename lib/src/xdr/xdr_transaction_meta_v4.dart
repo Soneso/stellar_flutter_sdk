@@ -105,7 +105,7 @@ class XdrTransactionMetaV4 {
     XdrLedgerEntryChanges txChangesBefore = XdrLedgerEntryChanges.decode(
       stream,
     );
-    int operationssize = stream.readInt();
+    int operationssize = stream.readArrayLength();
     List<XdrOperationMetaV2> operations = List<XdrOperationMetaV2>.empty(
       growable: true,
     );
@@ -118,14 +118,14 @@ class XdrTransactionMetaV4 {
     if (sorobanMetaPresent != 0) {
       sorobanMeta = XdrSorobanTransactionMetaV2.decode(stream);
     }
-    int eventssize = stream.readInt();
+    int eventssize = stream.readArrayLength();
     List<XdrTransactionEvent> events = List<XdrTransactionEvent>.empty(
       growable: true,
     );
     for (int i = 0; i < eventssize; i++) {
       events.add(XdrTransactionEvent.decode(stream));
     }
-    int diagnosticEventssize = stream.readInt();
+    int diagnosticEventssize = stream.readArrayLength();
     List<XdrDiagnosticEvent> diagnosticEvents = List<XdrDiagnosticEvent>.empty(
       growable: true,
     );

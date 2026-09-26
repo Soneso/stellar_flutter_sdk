@@ -63,7 +63,7 @@ class XdrAccountEntryV2 {
   static XdrAccountEntryV2 decode(XdrDataInputStream stream) {
     XdrUint32 numSponsored = XdrUint32.decode(stream);
     XdrUint32 numSponsoring = XdrUint32.decode(stream);
-    int signerSponsoringIDssize = stream.readInt();
+    int signerSponsoringIDssize = stream.readArrayLength();
     List<XdrAccountID?> signerSponsoringIDs = List<XdrAccountID?>.empty(
       growable: true,
     );

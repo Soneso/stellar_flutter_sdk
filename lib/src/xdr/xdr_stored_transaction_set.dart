@@ -69,7 +69,9 @@ class XdrStoredTransactionSet {
             XdrGeneralizedTransactionSet.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrStoredTransactionSet discriminant: ${decodedStoredTransactionSet.discriminant}",
+        );
     }
     return decodedStoredTransactionSet;
   }

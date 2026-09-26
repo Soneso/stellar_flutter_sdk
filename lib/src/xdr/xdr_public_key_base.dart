@@ -59,8 +59,6 @@ class XdrPublicKeyBase {
       case XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519:
         decoded._ed25519 = XdrUint256.decode(stream);
         break;
-      default:
-        break;
     }
     return decoded;
   }

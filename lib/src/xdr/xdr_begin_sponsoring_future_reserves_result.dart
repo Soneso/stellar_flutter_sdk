@@ -54,7 +54,12 @@ class XdrBeginSponsoringFutureReservesResult {
       case XdrBeginSponsoringFutureReservesResultCode
           .BEGIN_SPONSORING_FUTURE_RESERVES_SUCCESS:
         break;
-      default:
+      case XdrBeginSponsoringFutureReservesResultCode
+          .BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED:
+      case XdrBeginSponsoringFutureReservesResultCode
+          .BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED:
+      case XdrBeginSponsoringFutureReservesResultCode
+          .BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE:
         break;
     }
     return decodedBeginSponsoringFutureReservesResult;

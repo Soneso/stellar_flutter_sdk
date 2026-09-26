@@ -35,7 +35,7 @@ class XdrPathPaymentResultSuccess {
   }
 
   static XdrPathPaymentResultSuccess decode(XdrDataInputStream stream) {
-    int offerssize = stream.readInt();
+    int offerssize = stream.readArrayLength();
     List<XdrClaimAtom> offers = List<XdrClaimAtom>.empty(growable: true);
     for (int i = 0; i < offerssize; i++) {
       offers.add(XdrClaimAtom.decode(stream));

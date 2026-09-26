@@ -79,8 +79,6 @@ class XdrContractExecutableBase {
       case XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF:
         decoded._externalRef = XdrContractExecutableExternalRef.decode(stream);
         break;
-      default:
-        break;
     }
     return decoded;
   }

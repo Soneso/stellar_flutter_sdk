@@ -59,7 +59,9 @@ class XdrClaimableBalanceEntryExt {
             XdrClaimableBalanceEntryExtV1.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrClaimableBalanceEntryExt discriminant: ${decodedClaimableBalanceEntryExt.discriminant}",
+        );
     }
     return decodedClaimableBalanceEntryExt;
   }

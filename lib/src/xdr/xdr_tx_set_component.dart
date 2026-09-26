@@ -58,8 +58,6 @@ class XdrTxSetComponent {
         decodedTxSetComponent._txsMaybeDiscountedFee =
             XdrTxSetComponentTxsMaybeDiscountedFee.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedTxSetComponent;
   }

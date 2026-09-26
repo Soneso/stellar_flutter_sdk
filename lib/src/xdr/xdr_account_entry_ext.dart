@@ -56,7 +56,9 @@ class XdrAccountEntryExt {
         decodedAccountEntryExt._v1 = XdrAccountEntryV1.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrAccountEntryExt discriminant: ${decodedAccountEntryExt.discriminant}",
+        );
     }
     return decodedAccountEntryExt;
   }

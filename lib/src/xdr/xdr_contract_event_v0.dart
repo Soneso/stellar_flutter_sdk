@@ -34,7 +34,7 @@ class XdrContractEventV0 {
   }
 
   static XdrContractEventV0 decode(XdrDataInputStream stream) {
-    int topicssize = stream.readInt();
+    int topicssize = stream.readArrayLength();
     List<XdrSCVal> topics = List<XdrSCVal>.empty(growable: true);
     for (int i = 0; i < topicssize; i++) {
       topics.add(XdrSCVal.decode(stream));

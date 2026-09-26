@@ -75,12 +75,34 @@ class XdrPathPaymentStrictReceiveResult {
             XdrPathPaymentResultSuccess.decode(stream);
         break;
       case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_MALFORMED:
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED:
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST:
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED:
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION:
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST:
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED:
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL:
+        break;
+      case XdrPathPaymentStrictReceiveResultCode
           .PATH_PAYMENT_STRICT_RECEIVE_NO_ISSUER:
         decodedPathPaymentStrictReceiveResult._noIssuer = XdrAsset.decode(
           stream,
         );
         break;
-      default:
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS:
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF:
+      case XdrPathPaymentStrictReceiveResultCode
+          .PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX:
         break;
     }
     return decodedPathPaymentStrictReceiveResult;

@@ -474,8 +474,6 @@ class XdrOperationBody {
           stream,
         );
         break;
-      default:
-        break;
     }
     return decodedOperationBody;
   }

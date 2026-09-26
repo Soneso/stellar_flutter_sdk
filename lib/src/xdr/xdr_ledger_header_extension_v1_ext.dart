@@ -42,7 +42,9 @@ class XdrLedgerHeaderExtensionV1Ext {
       case 0:
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrLedgerHeaderExtensionV1Ext discriminant: ${decodedLedgerHeaderExtensionV1Ext.discriminant}",
+        );
     }
     return decodedLedgerHeaderExtensionV1Ext;
   }

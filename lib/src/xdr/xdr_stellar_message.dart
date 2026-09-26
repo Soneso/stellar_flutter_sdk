@@ -309,7 +309,7 @@ class XdrStellarMessage {
         decodedStellarMessage._dontHave = XdrDontHave.decode(stream);
         break;
       case XdrMessageType.PEERS:
-        int peerssize = stream.readInt();
+        int peerssize = stream.readArrayLength();
         decodedStellarMessage._peers = List<XdrPeerAddress>.empty(
           growable: true,
         );
@@ -372,8 +372,6 @@ class XdrStellarMessage {
         break;
       case XdrMessageType.FLOOD_DEMAND:
         decodedStellarMessage._floodDemand = XdrFloodDemand.decode(stream);
-        break;
-      default:
         break;
     }
     return decodedStellarMessage;

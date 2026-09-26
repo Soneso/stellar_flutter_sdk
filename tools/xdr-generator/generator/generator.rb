@@ -428,7 +428,7 @@ class Generator < Xdrgen::Generators::Base
 
     # Decode
     if is_base
-      render_union_decode_base(out, actual_class_name, disc_info, arms)
+      render_union_decode_base(out, union_name, actual_class_name, disc_info, arms)
     else
       render_union_decode(out, union_name, disc_info, arms)
     end
@@ -491,35 +491,12 @@ class Generator < Xdrgen::Generators::Base
       disc_type = disc_info[:dart_name]
       out.puts "    #{union_name} #{var} = #{union_name}(#{disc_type}.decode(stream));"
     end
-    out.puts "    switch (#{var}.discriminant) {"
-
-    has_default = arms.any? { |a| a[:is_default] }
-
-    arms.each do |arm|
-      next if arm[:void] && !arm[:is_default] && !has_default && arm[:case_labels].size > 1
-
-      arm[:case_labels].each do |label|
-        out.puts "      case #{label}:"
-      end
-      if arm[:void]
-        out.puts "        break;"
-      else
-        render_decode_arm_value(out, var, arm)
-        out.puts "        break;"
-      end
-    end
-
-    unless has_default
-      out.puts "      default:"
-      out.puts "        break;"
-    end
-
-    out.puts "    }"
+    render_union_decode_switch(out, union_name, var, disc_info, arms)
     out.puts "    return #{var};"
     out.puts "  }"
   end
 
-  def render_union_decode_base(out, base_class_name, disc_info, arms)
+  def render_union_decode_base(out, union_name, base_class_name, disc_info, arms)
     # Static decode for the base class itself
     out.puts "  static #{base_class_name} decode(XdrDataInputStream stream) {"
     out.puts "    return decodeAs(stream, #{base_class_name}.new);"
@@ -541,32 +518,53 @@ class Generator < Xdrgen::Generators::Base
       out.puts "  ) {"
       out.puts "    T decoded = constructor(#{disc_type}.decode(stream));"
     end
-    out.puts "    switch (decoded.discriminant) {"
+    render_union_decode_switch(out, union_name, "decoded", disc_info, arms)
+    out.puts "    return decoded;"
+    out.puts "  }"
+  end
+
+  # Emits the arm switch of a union decoder. Every arm is emitted with all of
+  # its case labels, void arms included, so each valid discriminant has a
+  # case; a discriminant without one is rejected with the exception type the
+  # enum decoders throw.
+  def render_union_decode_switch(out, union_name, target, disc_info, arms)
+    out.puts "    switch (#{target}.discriminant) {"
 
     has_default = arms.any? { |a| a[:is_default] }
 
     arms.each do |arm|
-      next if arm[:void] && !arm[:is_default] && !has_default && arm[:case_labels].size > 1
-
       arm[:case_labels].each do |label|
         out.puts "      case #{label}:"
       end
       if arm[:void]
         out.puts "        break;"
       else
-        render_decode_arm_value(out, "decoded", arm)
+        render_decode_arm_value(out, target, arm)
         out.puts "        break;"
       end
     end
 
-    unless has_default
+    if !has_default && union_default_reachable?(disc_info, arms)
+      value = disc_info[:kind] == :enum ? "#{target}.discriminant.value" : "#{target}.discriminant"
       out.puts "      default:"
-      out.puts "        break;"
+      out.puts "        throw Exception(\"Unknown #{union_name} discriminant: ${#{value}}\");"
     end
 
     out.puts "    }"
-    out.puts "    return decoded;"
-    out.puts "  }"
+  end
+
+  # Whether a union decoder can read a discriminant value that no case arm
+  # handles. An int discriminant can carry any value. An enum discriminant
+  # only carries values the enum decoder accepts (the enum's members), so
+  # the default is reachable only when one of those values has no arm.
+  def union_default_reachable?(disc_info, arms)
+    return true if disc_info[:kind] == :int
+
+    member_values = disc_info[:enum_defn].members.to_h { |m| [m.name.to_s, Integer(m.value)] }
+    covered = arms.reject { |a| a[:is_default] }.flat_map { |a| a[:cases] }.map do |c|
+      c.value.is_a?(AST::Identifier) ? member_values.fetch(c.value.name.to_s) : Integer(c.value.value)
+    end
+    !(member_values.values - covered).empty?
   end
 
   # ---------------------------------------------------------------------------
@@ -847,7 +845,7 @@ class Generator < Xdrgen::Generators::Base
       out.puts "    List<#{element_type}> items = List<#{element_type}>.empty(growable: true);"
       out.puts "    for (int i = 0; i < #{size}; i++) {"
     else
-      out.puts "    int size = stream.readInt();"
+      out.puts "    int size = stream.readArrayLength();"
       out.puts "    List<#{element_type}> items = List<#{element_type}>.empty(growable: true);"
       out.puts "    for (int i = 0; i < size; i++) {"
     end
@@ -980,7 +978,7 @@ class Generator < Xdrgen::Generators::Base
       if decl.fixed?
         count = resolve_size(decl).to_s
       else
-        out.puts "    int #{local_name}size = stream.readInt();"
+        out.puts "    int #{local_name}size = stream.readArrayLength();"
         count = "#{local_name}size"
       end
       out.puts "    List<#{declared_type}> #{local_name} = List<#{declared_type}>.empty(growable: true);"
@@ -1024,7 +1022,7 @@ class Generator < Xdrgen::Generators::Base
           out.puts "    #{type_str} #{local_name} = stream.readBytes(#{field_info[:fixed_opaque_size]});"
         elsif type_str =~ /\AList<(.+)>\z/
           element_type = $1
-          out.puts "    int #{local_name}size = stream.readInt();"
+          out.puts "    int #{local_name}size = stream.readArrayLength();"
           out.puts "    #{type_str} #{local_name} = List<#{element_type}>.empty(growable: true);"
           out.puts "    for (int i = 0; i < #{local_name}size; i++) {"
           out.puts "      #{local_name}.add(#{decode_type_call(element_type)});"
@@ -1091,7 +1089,7 @@ class Generator < Xdrgen::Generators::Base
       out.puts "        #{target}.#{pfield} = XdrDataValue.decode(stream);"
     when :array
       element_type = arm[:element_type]
-      out.puts "        int #{field}size = stream.readInt();"
+      out.puts "        int #{field}size = stream.readArrayLength();"
       out.puts "        #{target}.#{pfield} = List<#{element_type}>.empty(growable: true);"
       out.puts "        for (int i = 0; i < #{field}size; i++) {"
       out.puts "          #{target}.#{pfield}!.add(#{decode_type_call(element_type)});"
@@ -1442,7 +1440,7 @@ class Generator < Xdrgen::Generators::Base
   def decode_list_lines(element_type, target_expr, indent, force_unwrap: true, var_suffix: "")
     lines = []
     bang = force_unwrap ? "!" : ""
-    lines << "#{indent}int #{var_suffix}Len = stream.readInt();"
+    lines << "#{indent}int #{var_suffix}Len = stream.readArrayLength();"
     lines << "#{indent}#{target_expr} = List<#{element_type}>.empty(growable: true);"
     lines << "#{indent}for (int #{var_suffix}i = 0; #{var_suffix}i < #{var_suffix}Len; #{var_suffix}i++) {"
     lines << "#{indent}  #{target_expr}#{bang}.add(#{decode_type_call(element_type)});"

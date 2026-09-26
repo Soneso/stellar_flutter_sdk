@@ -58,7 +58,7 @@ class XdrCreateContractArgsV2 {
       stream,
     );
     XdrContractExecutable executable = XdrContractExecutable.decode(stream);
-    int constructorArgssize = stream.readInt();
+    int constructorArgssize = stream.readArrayLength();
     List<XdrSCVal> constructorArgs = List<XdrSCVal>.empty(growable: true);
     for (int i = 0; i < constructorArgssize; i++) {
       constructorArgs.add(XdrSCVal.decode(stream));

@@ -92,6 +92,29 @@ void main() {
       },
     );
 
+    test('XdrMuxedAccount decode rejects a discriminant without an arm', () {
+      var original = (XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)
+        ..ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))));
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrMuxedAccount.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      expect(
+        XdrDataInputStream(encoded).readInt(),
+        equals(original.discriminant.value),
+      );
+      ByteData.sublistView(encoded).setInt32(0, 1);
+      expect(
+        () => XdrMuxedAccount.decode(XdrDataInputStream(encoded)),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'toString',
+            equals('Exception: Unknown XdrMuxedAccount discriminant: 1'),
+          ),
+        ),
+      );
+    });
+
     test('XdrDecoratedSignature struct roundtrip', () {
       var original = XdrDecoratedSignature(
         XdrSignatureHint(Uint8List.fromList(List<int>.filled(4, 0xAB))),
@@ -3189,6 +3212,38 @@ void main() {
       },
     );
 
+    test('XdrHashIDPreimage decode rejects a discriminant without an arm', () {
+      var original = (XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_OP_ID)
+        ..operationID = (XdrHashIDPreimageOperationID(
+          XdrAccountID(
+            (XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)
+              ..ed25519 = XdrUint256(
+                Uint8List.fromList(List<int>.filled(32, 0xAB)),
+              )),
+          ),
+          XdrSequenceNumber(BigInt.from(1)),
+          XdrUint32(0),
+        )));
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrHashIDPreimage.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      expect(
+        XdrDataInputStream(encoded).readInt(),
+        equals(original.discriminant.value),
+      );
+      ByteData.sublistView(encoded).setInt32(0, 0);
+      expect(
+        () => XdrHashIDPreimage.decode(XdrDataInputStream(encoded)),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'toString',
+            equals('Exception: Unknown XdrHashIDPreimage discriminant: 0'),
+          ),
+        ),
+      );
+    });
+
     test('XdrMemoType enum roundtrip', () {
       final members = [
         XdrMemoType.MEMO_NONE,
@@ -3611,6 +3666,34 @@ void main() {
       expect(base64Decoded.resourceExt, isNotNull);
     });
 
+    test(
+      'XdrSorobanTransactionDataExt decode rejects a discriminant without an arm',
+      () {
+        var original = XdrSorobanTransactionDataExt(0);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSorobanTransactionDataExt.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 2);
+        expect(
+          () =>
+              XdrSorobanTransactionDataExt.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals(
+                'Exception: Unknown XdrSorobanTransactionDataExt discriminant: 2',
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
     test('XdrSorobanTransactionData struct roundtrip', () {
       var original = XdrSorobanTransactionData(
         XdrSorobanTransactionDataExt(0),
@@ -3650,6 +3733,31 @@ void main() {
       );
       expect(base64Decoded.discriminant, equals(original.discriminant));
     });
+
+    test(
+      'XdrTransactionV0Ext decode rejects a discriminant without an arm',
+      () {
+        var original = XdrTransactionV0Ext(0);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionV0Ext.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 1);
+        expect(
+          () => XdrTransactionV0Ext.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals('Exception: Unknown XdrTransactionV0Ext discriminant: 1'),
+            ),
+          ),
+        );
+      },
+    );
 
     test('XdrTransactionV0 struct roundtrip', () {
       var original = XdrTransactionV0(
@@ -3741,6 +3849,28 @@ void main() {
       expect(base64Decoded.discriminant, equals(original.discriminant));
       // Verify arm field is not null
       expect(base64Decoded.sorobanData, isNotNull);
+    });
+
+    test('XdrTransactionExt decode rejects a discriminant without an arm', () {
+      var original = XdrTransactionExt(0);
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrTransactionExt.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      expect(
+        XdrDataInputStream(encoded).readInt(),
+        equals(original.discriminant),
+      );
+      ByteData.sublistView(encoded).setInt32(0, 2);
+      expect(
+        () => XdrTransactionExt.decode(XdrDataInputStream(encoded)),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'toString',
+            equals('Exception: Unknown XdrTransactionExt discriminant: 2'),
+          ),
+        ),
+      );
     });
 
     test('XdrTransaction struct roundtrip', () {
@@ -3846,6 +3976,57 @@ void main() {
       },
     );
 
+    test(
+      'XdrFeeBumpTransactionInnerTx decode rejects a discriminant without an arm',
+      () {
+        var original =
+            (XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX)
+              ..v1 = (XdrTransactionV1Envelope(
+                XdrTransaction(
+                  (XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)
+                    ..ed25519 = XdrUint256(
+                      Uint8List.fromList(List<int>.filled(32, 0xAB)),
+                    )),
+                  XdrUint32(42),
+                  XdrSequenceNumber(BigInt.from(100)),
+                  XdrPreconditions(XdrPreconditionType.PRECOND_NONE),
+                  XdrMemo(XdrMemoType.MEMO_NONE),
+                  [],
+                  XdrTransactionExt(0),
+                ),
+                [
+                  XdrDecoratedSignature(
+                    XdrSignatureHint(
+                      Uint8List.fromList(List<int>.filled(4, 0xAB)),
+                    ),
+                    XdrSignature(Uint8List.fromList([1, 2, 3])),
+                  ),
+                ],
+              )));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrFeeBumpTransactionInnerTx.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant.value),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 0);
+        expect(
+          () =>
+              XdrFeeBumpTransactionInnerTx.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals(
+                'Exception: Unknown XdrFeeBumpTransactionInnerTx discriminant: 0',
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
     test('XdrFeeBumpTransactionExt 0 void arm roundtrip', () {
       var original = XdrFeeBumpTransactionExt(0);
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -3859,6 +4040,33 @@ void main() {
       );
       expect(base64Decoded.discriminant, equals(original.discriminant));
     });
+
+    test(
+      'XdrFeeBumpTransactionExt decode rejects a discriminant without an arm',
+      () {
+        var original = XdrFeeBumpTransactionExt(0);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrFeeBumpTransactionExt.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 1);
+        expect(
+          () => XdrFeeBumpTransactionExt.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals(
+                'Exception: Unknown XdrFeeBumpTransactionExt discriminant: 1',
+              ),
+            ),
+          ),
+        );
+      },
+    );
 
     test('XdrFeeBumpTransaction struct roundtrip', () {
       var original = XdrFeeBumpTransaction(
@@ -4105,6 +4313,46 @@ void main() {
     );
 
     test(
+      'XdrTransactionEnvelope decode rejects a discriminant without an arm',
+      () {
+        var original =
+            (XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0)
+              ..v0 = XdrTransactionV0Envelope(
+                XdrTransactionV0(
+                  XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))),
+                  XdrUint32(100),
+                  XdrSequenceNumber(BigInt.from(1)),
+                  null,
+                  XdrMemo(XdrMemoType.MEMO_NONE),
+                  [],
+                  XdrTransactionV0Ext(0),
+                ),
+                [],
+              ));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionEnvelope.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant.value),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 1);
+        expect(
+          () => XdrTransactionEnvelope.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals(
+                'Exception: Unknown XdrTransactionEnvelope discriminant: 1',
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
       'XdrTransactionSignaturePayloadTaggedTransaction XdrEnvelopeType.ENVELOPE_TYPE_TX arm roundtrip',
       () {
         var original = XdrTransactionSignaturePayloadTaggedTransaction(
@@ -4208,6 +4456,53 @@ void main() {
         );
         // Verify arm field is not null
         expect(base64Decoded.feeBump, isNotNull);
+      },
+    );
+
+    test(
+      'XdrTransactionSignaturePayloadTaggedTransaction decode rejects a discriminant without an arm',
+      () {
+        var original =
+            (XdrTransactionSignaturePayloadTaggedTransaction(
+                XdrEnvelopeType.ENVELOPE_TYPE_TX,
+              )
+              ..tx = (XdrTransaction(
+                (XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519)
+                  ..ed25519 = XdrUint256(
+                    Uint8List.fromList(List<int>.filled(32, 0xAB)),
+                  )),
+                XdrUint32(42),
+                XdrSequenceNumber(BigInt.from(100)),
+                XdrPreconditions(XdrPreconditionType.PRECOND_NONE),
+                XdrMemo(XdrMemoType.MEMO_NONE),
+                [],
+                XdrTransactionExt(0),
+              )));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionSignaturePayloadTaggedTransaction.encode(
+          output,
+          original,
+        );
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant.value),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 0);
+        expect(
+          () => XdrTransactionSignaturePayloadTaggedTransaction.decode(
+            XdrDataInputStream(encoded),
+          ),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals(
+                'Exception: Unknown XdrTransactionSignaturePayloadTaggedTransaction discriminant: 0',
+              ),
+            ),
+          ),
+        );
       },
     );
 
@@ -4541,6 +4836,30 @@ void main() {
       },
     );
 
+    test(
+      'XdrCreateAccountResult void arm of XdrCreateAccountResultCode.CREATE_ACCOUNT_MALFORMED roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrCreateAccountResultCode.CREATE_ACCOUNT_MALFORMED,
+          XdrCreateAccountResultCode.CREATE_ACCOUNT_UNDERFUNDED,
+          XdrCreateAccountResultCode.CREATE_ACCOUNT_LOW_RESERVE,
+          XdrCreateAccountResultCode.CREATE_ACCOUNT_ALREADY_EXIST,
+        ]) {
+          var original = XdrCreateAccountResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrCreateAccountResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrCreateAccountResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
     test('XdrPaymentResultCode enum roundtrip', () {
       final members = [
         XdrPaymentResultCode.PAYMENT_SUCCESS,
@@ -4613,6 +4932,35 @@ void main() {
           base64Decoded.discriminant.value,
           equals(original.discriminant.value),
         );
+      },
+    );
+
+    test(
+      'XdrPaymentResult void arm of XdrPaymentResultCode.PAYMENT_MALFORMED roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrPaymentResultCode.PAYMENT_MALFORMED,
+          XdrPaymentResultCode.PAYMENT_UNDERFUNDED,
+          XdrPaymentResultCode.PAYMENT_SRC_NO_TRUST,
+          XdrPaymentResultCode.PAYMENT_SRC_NOT_AUTHORIZED,
+          XdrPaymentResultCode.PAYMENT_NO_DESTINATION,
+          XdrPaymentResultCode.PAYMENT_NO_TRUST,
+          XdrPaymentResultCode.PAYMENT_NOT_AUTHORIZED,
+          XdrPaymentResultCode.PAYMENT_LINE_FULL,
+          XdrPaymentResultCode.PAYMENT_NO_ISSUER,
+        ]) {
+          var original = XdrPaymentResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrPaymentResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrPaymentResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
       },
     );
 
@@ -4837,6 +5185,68 @@ void main() {
       },
     );
 
+    test(
+      'XdrPathPaymentStrictReceiveResult void arm of XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_MALFORMED roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_MALFORMED,
+          XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_UNDERFUNDED,
+          XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_SRC_NO_TRUST,
+          XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_SRC_NOT_AUTHORIZED,
+          XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_NO_DESTINATION,
+          XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_NO_TRUST,
+          XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_NOT_AUTHORIZED,
+          XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_LINE_FULL,
+        ]) {
+          var original = XdrPathPaymentStrictReceiveResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrPathPaymentStrictReceiveResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrPathPaymentStrictReceiveResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
+    test(
+      'XdrPathPaymentStrictReceiveResult void arm of XdrPathPaymentStrictReceiveResultCode.PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_TOO_FEW_OFFERS,
+          XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_OFFER_CROSS_SELF,
+          XdrPathPaymentStrictReceiveResultCode
+              .PATH_PAYMENT_STRICT_RECEIVE_OVER_SENDMAX,
+        ]) {
+          var original = XdrPathPaymentStrictReceiveResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrPathPaymentStrictReceiveResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrPathPaymentStrictReceiveResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
     test('XdrPathPaymentStrictSendResultCode enum roundtrip', () {
       final members = [
         XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_SUCCESS,
@@ -4993,6 +5403,65 @@ void main() {
           base64Decoded.discriminant.value,
           equals(original.discriminant.value),
         );
+      },
+    );
+
+    test(
+      'XdrPathPaymentStrictSendResult void arm of XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_MALFORMED roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_MALFORMED,
+          XdrPathPaymentStrictSendResultCode
+              .PATH_PAYMENT_STRICT_SEND_UNDERFUNDED,
+          XdrPathPaymentStrictSendResultCode
+              .PATH_PAYMENT_STRICT_SEND_SRC_NO_TRUST,
+          XdrPathPaymentStrictSendResultCode
+              .PATH_PAYMENT_STRICT_SEND_SRC_NOT_AUTHORIZED,
+          XdrPathPaymentStrictSendResultCode
+              .PATH_PAYMENT_STRICT_SEND_NO_DESTINATION,
+          XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_NO_TRUST,
+          XdrPathPaymentStrictSendResultCode
+              .PATH_PAYMENT_STRICT_SEND_NOT_AUTHORIZED,
+          XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_LINE_FULL,
+        ]) {
+          var original = XdrPathPaymentStrictSendResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrPathPaymentStrictSendResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrPathPaymentStrictSendResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
+    test(
+      'XdrPathPaymentStrictSendResult void arm of XdrPathPaymentStrictSendResultCode.PATH_PAYMENT_STRICT_SEND_TOO_FEW_OFFERS roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrPathPaymentStrictSendResultCode
+              .PATH_PAYMENT_STRICT_SEND_TOO_FEW_OFFERS,
+          XdrPathPaymentStrictSendResultCode
+              .PATH_PAYMENT_STRICT_SEND_OFFER_CROSS_SELF,
+          XdrPathPaymentStrictSendResultCode
+              .PATH_PAYMENT_STRICT_SEND_UNDER_DESTMIN,
+        ]) {
+          var original = XdrPathPaymentStrictSendResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrPathPaymentStrictSendResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrPathPaymentStrictSendResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
       },
     );
 
@@ -5208,6 +5677,38 @@ void main() {
       },
     );
 
+    test(
+      'XdrManageOfferResult void arm of XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED,
+          XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NO_TRUST,
+          XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NO_TRUST,
+          XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NOT_AUTHORIZED,
+          XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NOT_AUTHORIZED,
+          XdrManageOfferResultCode.MANAGE_SELL_OFFER_LINE_FULL,
+          XdrManageOfferResultCode.MANAGE_SELL_OFFER_UNDERFUNDED,
+          XdrManageOfferResultCode.MANAGE_SELL_OFFER_CROSS_SELF,
+          XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NO_ISSUER,
+          XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NO_ISSUER,
+          XdrManageOfferResultCode.MANAGE_SELL_OFFER_NOT_FOUND,
+          XdrManageOfferResultCode.MANAGE_SELL_OFFER_LOW_RESERVE,
+        ]) {
+          var original = XdrManageOfferResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrManageOfferResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrManageOfferResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
     test('XdrSetOptionsResultCode enum roundtrip', () {
       final members = [
         XdrSetOptionsResultCode.SET_OPTIONS_SUCCESS,
@@ -5285,6 +5786,36 @@ void main() {
           base64Decoded.discriminant.value,
           equals(original.discriminant.value),
         );
+      },
+    );
+
+    test(
+      'XdrSetOptionsResult void arm of XdrSetOptionsResultCode.SET_OPTIONS_LOW_RESERVE roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrSetOptionsResultCode.SET_OPTIONS_LOW_RESERVE,
+          XdrSetOptionsResultCode.SET_OPTIONS_TOO_MANY_SIGNERS,
+          XdrSetOptionsResultCode.SET_OPTIONS_BAD_FLAGS,
+          XdrSetOptionsResultCode.SET_OPTIONS_INVALID_INFLATION,
+          XdrSetOptionsResultCode.SET_OPTIONS_CANT_CHANGE,
+          XdrSetOptionsResultCode.SET_OPTIONS_UNKNOWN_FLAG,
+          XdrSetOptionsResultCode.SET_OPTIONS_THRESHOLD_OUT_OF_RANGE,
+          XdrSetOptionsResultCode.SET_OPTIONS_BAD_SIGNER,
+          XdrSetOptionsResultCode.SET_OPTIONS_INVALID_HOME_DOMAIN,
+          XdrSetOptionsResultCode.SET_OPTIONS_AUTH_REVOCABLE_REQUIRED,
+        ]) {
+          var original = XdrSetOptionsResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrSetOptionsResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrSetOptionsResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
       },
     );
 
@@ -5366,6 +5897,34 @@ void main() {
       },
     );
 
+    test(
+      'XdrChangeTrustResult void arm of XdrChangeTrustResultCode.CHANGE_TRUST_MALFORMED roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrChangeTrustResultCode.CHANGE_TRUST_MALFORMED,
+          XdrChangeTrustResultCode.CHANGE_TRUST_NO_ISSUER,
+          XdrChangeTrustResultCode.CHANGE_TRUST_INVALID_LIMIT,
+          XdrChangeTrustResultCode.CHANGE_TRUST_LOW_RESERVE,
+          XdrChangeTrustResultCode.CHANGE_TRUST_SELF_NOT_ALLOWED,
+          XdrChangeTrustResultCode.CHANGE_TRUST_TRUST_LINE_MISSING,
+          XdrChangeTrustResultCode.CHANGE_TRUST_CANNOT_DELETE,
+          XdrChangeTrustResultCode.CHANGE_TRUST_NOT_AUTH_MAINTAIN_LIABILITIES,
+        ]) {
+          var original = XdrChangeTrustResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrChangeTrustResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrChangeTrustResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
     test('XdrAllowTrustResultCode enum roundtrip', () {
       final members = [
         XdrAllowTrustResultCode.ALLOW_TRUST_SUCCESS,
@@ -5439,6 +5998,32 @@ void main() {
           base64Decoded.discriminant.value,
           equals(original.discriminant.value),
         );
+      },
+    );
+
+    test(
+      'XdrAllowTrustResult void arm of XdrAllowTrustResultCode.ALLOW_TRUST_MALFORMED roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrAllowTrustResultCode.ALLOW_TRUST_MALFORMED,
+          XdrAllowTrustResultCode.ALLOW_TRUST_NO_TRUST_LINE,
+          XdrAllowTrustResultCode.ALLOW_TRUST_TRUST_NOT_REQUIRED,
+          XdrAllowTrustResultCode.ALLOW_TRUST_CANT_REVOKE,
+          XdrAllowTrustResultCode.ALLOW_TRUST_SELF_NOT_ALLOWED,
+          XdrAllowTrustResultCode.ALLOW_TRUST_LOW_RESERVE,
+        ]) {
+          var original = XdrAllowTrustResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrAllowTrustResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrAllowTrustResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
       },
     );
 
@@ -5526,6 +6111,33 @@ void main() {
           base64Decoded.discriminant.value,
           equals(original.discriminant.value),
         );
+      },
+    );
+
+    test(
+      'XdrAccountMergeResult void arm of XdrAccountMergeResultCode.ACCOUNT_MERGE_MALFORMED roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrAccountMergeResultCode.ACCOUNT_MERGE_MALFORMED,
+          XdrAccountMergeResultCode.ACCOUNT_MERGE_NO_ACCOUNT,
+          XdrAccountMergeResultCode.ACCOUNT_MERGE_IMMUTABLE_SET,
+          XdrAccountMergeResultCode.ACCOUNT_MERGE_HAS_SUB_ENTRIES,
+          XdrAccountMergeResultCode.ACCOUNT_MERGE_SEQNUM_TOO_FAR,
+          XdrAccountMergeResultCode.ACCOUNT_MERGE_DEST_FULL,
+          XdrAccountMergeResultCode.ACCOUNT_MERGE_IS_SPONSOR,
+        ]) {
+          var original = XdrAccountMergeResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrAccountMergeResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrAccountMergeResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
       },
     );
 
@@ -5711,6 +6323,30 @@ void main() {
       },
     );
 
+    test(
+      'XdrManageDataResult void arm of XdrManageDataResultCode.MANAGE_DATA_NOT_SUPPORTED_YET roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrManageDataResultCode.MANAGE_DATA_NOT_SUPPORTED_YET,
+          XdrManageDataResultCode.MANAGE_DATA_NAME_NOT_FOUND,
+          XdrManageDataResultCode.MANAGE_DATA_LOW_RESERVE,
+          XdrManageDataResultCode.MANAGE_DATA_INVALID_NAME,
+        ]) {
+          var original = XdrManageDataResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrManageDataResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrManageDataResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
     test('XdrBumpSequenceResultCode enum roundtrip', () {
       final members = [
         XdrBumpSequenceResultCode.BUMP_SEQUENCE_SUCCESS,
@@ -5872,6 +6508,35 @@ void main() {
       },
     );
 
+    test(
+      'XdrCreateClaimableBalanceResult void arm of XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_MALFORMED roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrCreateClaimableBalanceResultCode
+              .CREATE_CLAIMABLE_BALANCE_MALFORMED,
+          XdrCreateClaimableBalanceResultCode
+              .CREATE_CLAIMABLE_BALANCE_LOW_RESERVE,
+          XdrCreateClaimableBalanceResultCode.CREATE_CLAIMABLE_BALANCE_NO_TRUST,
+          XdrCreateClaimableBalanceResultCode
+              .CREATE_CLAIMABLE_BALANCE_NOT_AUTHORIZED,
+          XdrCreateClaimableBalanceResultCode
+              .CREATE_CLAIMABLE_BALANCE_UNDERFUNDED,
+        ]) {
+          var original = XdrCreateClaimableBalanceResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrCreateClaimableBalanceResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrCreateClaimableBalanceResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
     test('XdrClaimClaimableBalanceResultCode enum roundtrip', () {
       final members = [
         XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_SUCCESS,
@@ -5955,6 +6620,36 @@ void main() {
       },
     );
 
+    test(
+      'XdrClaimClaimableBalanceResult void arm of XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrClaimClaimableBalanceResultCode
+              .CLAIM_CLAIMABLE_BALANCE_DOES_NOT_EXIST,
+          XdrClaimClaimableBalanceResultCode
+              .CLAIM_CLAIMABLE_BALANCE_CANNOT_CLAIM,
+          XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_LINE_FULL,
+          XdrClaimClaimableBalanceResultCode.CLAIM_CLAIMABLE_BALANCE_NO_TRUST,
+          XdrClaimClaimableBalanceResultCode
+              .CLAIM_CLAIMABLE_BALANCE_NOT_AUTHORIZED,
+          XdrClaimClaimableBalanceResultCode
+              .CLAIM_CLAIMABLE_BALANCE_TRUSTLINE_FROZEN,
+        ]) {
+          var original = XdrClaimClaimableBalanceResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrClaimClaimableBalanceResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrClaimClaimableBalanceResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
     test('XdrBeginSponsoringFutureReservesResultCode enum roundtrip', () {
       final members = [
         XdrBeginSponsoringFutureReservesResultCode
@@ -6034,6 +6729,32 @@ void main() {
           base64Decoded.discriminant.value,
           equals(original.discriminant.value),
         );
+      },
+    );
+
+    test(
+      'XdrBeginSponsoringFutureReservesResult void arm of XdrBeginSponsoringFutureReservesResultCode.BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrBeginSponsoringFutureReservesResultCode
+              .BEGIN_SPONSORING_FUTURE_RESERVES_MALFORMED,
+          XdrBeginSponsoringFutureReservesResultCode
+              .BEGIN_SPONSORING_FUTURE_RESERVES_ALREADY_SPONSORED,
+          XdrBeginSponsoringFutureReservesResultCode
+              .BEGIN_SPONSORING_FUTURE_RESERVES_RECURSIVE,
+        ]) {
+          var original = XdrBeginSponsoringFutureReservesResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrBeginSponsoringFutureReservesResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrBeginSponsoringFutureReservesResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
       },
     );
 
@@ -6193,6 +6914,31 @@ void main() {
       },
     );
 
+    test(
+      'XdrRevokeSponsorshipResult void arm of XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_DOES_NOT_EXIST roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_DOES_NOT_EXIST,
+          XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_NOT_SPONSOR,
+          XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_LOW_RESERVE,
+          XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE,
+          XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_MALFORMED,
+        ]) {
+          var original = XdrRevokeSponsorshipResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrRevokeSponsorshipResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrRevokeSponsorshipResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
     test('XdrClawbackResultCode enum roundtrip', () {
       final members = [
         XdrClawbackResultCode.CLAWBACK_SUCCESS,
@@ -6264,6 +7010,30 @@ void main() {
           base64Decoded.discriminant.value,
           equals(original.discriminant.value),
         );
+      },
+    );
+
+    test(
+      'XdrClawbackResult void arm of XdrClawbackResultCode.CLAWBACK_MALFORMED roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrClawbackResultCode.CLAWBACK_MALFORMED,
+          XdrClawbackResultCode.CLAWBACK_NOT_CLAWBACK_ENABLED,
+          XdrClawbackResultCode.CLAWBACK_NO_TRUST,
+          XdrClawbackResultCode.CLAWBACK_UNDERFUNDED,
+        ]) {
+          var original = XdrClawbackResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrClawbackResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrClawbackResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
       },
     );
 
@@ -6349,6 +7119,32 @@ void main() {
       },
     );
 
+    test(
+      'XdrClawbackClaimableBalanceResult void arm of XdrClawbackClaimableBalanceResultCode.CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrClawbackClaimableBalanceResultCode
+              .CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST,
+          XdrClawbackClaimableBalanceResultCode
+              .CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER,
+          XdrClawbackClaimableBalanceResultCode
+              .CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED,
+        ]) {
+          var original = XdrClawbackClaimableBalanceResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrClawbackClaimableBalanceResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrClawbackClaimableBalanceResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
     test('XdrSetTrustLineFlagsResultCode enum roundtrip', () {
       final members = [
         XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_SUCCESS,
@@ -6424,6 +7220,31 @@ void main() {
           base64Decoded.discriminant.value,
           equals(original.discriminant.value),
         );
+      },
+    );
+
+    test(
+      'XdrSetTrustLineFlagsResult void arm of XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_MALFORMED roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_MALFORMED,
+          XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_NO_TRUST_LINE,
+          XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_CANT_REVOKE,
+          XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_INVALID_STATE,
+          XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_LOW_RESERVE,
+        ]) {
+          var original = XdrSetTrustLineFlagsResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrSetTrustLineFlagsResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrSetTrustLineFlagsResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
       },
     );
 
@@ -6509,6 +7330,36 @@ void main() {
       },
     );
 
+    test(
+      'XdrLiquidityPoolDepositResult void arm of XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_MALFORMED roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_MALFORMED,
+          XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_NO_TRUST,
+          XdrLiquidityPoolDepositResultCode
+              .LIQUIDITY_POOL_DEPOSIT_NOT_AUTHORIZED,
+          XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_UNDERFUNDED,
+          XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_LINE_FULL,
+          XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_BAD_PRICE,
+          XdrLiquidityPoolDepositResultCode.LIQUIDITY_POOL_DEPOSIT_POOL_FULL,
+          XdrLiquidityPoolDepositResultCode
+              .LIQUIDITY_POOL_DEPOSIT_TRUSTLINE_FROZEN,
+        ]) {
+          var original = XdrLiquidityPoolDepositResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrLiquidityPoolDepositResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrLiquidityPoolDepositResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
     test('XdrLiquidityPoolWithdrawResultCode enum roundtrip', () {
       final members = [
         XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_SUCCESS,
@@ -6587,6 +7438,35 @@ void main() {
           base64Decoded.discriminant.value,
           equals(original.discriminant.value),
         );
+      },
+    );
+
+    test(
+      'XdrLiquidityPoolWithdrawResult void arm of XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_MALFORMED roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_MALFORMED,
+          XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_NO_TRUST,
+          XdrLiquidityPoolWithdrawResultCode
+              .LIQUIDITY_POOL_WITHDRAW_UNDERFUNDED,
+          XdrLiquidityPoolWithdrawResultCode.LIQUIDITY_POOL_WITHDRAW_LINE_FULL,
+          XdrLiquidityPoolWithdrawResultCode
+              .LIQUIDITY_POOL_WITHDRAW_UNDER_MINIMUM,
+          XdrLiquidityPoolWithdrawResultCode
+              .LIQUIDITY_POOL_WITHDRAW_TRUSTLINE_FROZEN,
+        ]) {
+          var original = XdrLiquidityPoolWithdrawResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrLiquidityPoolWithdrawResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrLiquidityPoolWithdrawResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
       },
     );
 
@@ -6675,6 +7555,33 @@ void main() {
       },
     );
 
+    test(
+      'XdrInvokeHostFunctionResult void arm of XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED,
+          XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED,
+          XdrInvokeHostFunctionResultCode
+              .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED,
+          XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED,
+          XdrInvokeHostFunctionResultCode
+              .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE,
+        ]) {
+          var original = XdrInvokeHostFunctionResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrInvokeHostFunctionResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrInvokeHostFunctionResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
     test('XdrExtendFootprintTTLResultCode enum roundtrip', () {
       final members = [
         XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_SUCCESS,
@@ -6753,6 +7660,31 @@ void main() {
       },
     );
 
+    test(
+      'XdrExtendFootprintTTLResult void arm of XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_MALFORMED roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrExtendFootprintTTLResultCode.EXTEND_FOOTPRINT_TTL_MALFORMED,
+          XdrExtendFootprintTTLResultCode
+              .EXTEND_FOOTPRINT_TTL_RESOURCE_LIMIT_EXCEEDED,
+          XdrExtendFootprintTTLResultCode
+              .EXTEND_FOOTPRINT_TTL_INSUFFICIENT_REFUNDABLE_FEE,
+        ]) {
+          var original = XdrExtendFootprintTTLResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrExtendFootprintTTLResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrExtendFootprintTTLResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
     test('XdrRestoreFootprintResultCode enum roundtrip', () {
       final members = [
         XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_SUCCESS,
@@ -6827,6 +7759,31 @@ void main() {
           base64Decoded.discriminant.value,
           equals(original.discriminant.value),
         );
+      },
+    );
+
+    test(
+      'XdrRestoreFootprintResult void arm of XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_MALFORMED roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrRestoreFootprintResultCode.RESTORE_FOOTPRINT_MALFORMED,
+          XdrRestoreFootprintResultCode
+              .RESTORE_FOOTPRINT_RESOURCE_LIMIT_EXCEEDED,
+          XdrRestoreFootprintResultCode
+              .RESTORE_FOOTPRINT_INSUFFICIENT_REFUNDABLE_FEE,
+        ]) {
+          var original = XdrRestoreFootprintResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrRestoreFootprintResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrRestoreFootprintResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
       },
     );
 
@@ -7655,6 +8612,32 @@ void main() {
       },
     );
 
+    test(
+      'XdrOperationResult void arm of XdrOperationResultCode.opBAD_AUTH roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrOperationResultCode.opBAD_AUTH,
+          XdrOperationResultCode.opNO_ACCOUNT,
+          XdrOperationResultCode.opNOT_SUPPORTED,
+          XdrOperationResultCode.opTOO_MANY_SUBENTRIES,
+          XdrOperationResultCode.opEXCEEDED_WORK_LIMIT,
+          XdrOperationResultCode.opTOO_MANY_SPONSORING,
+        ]) {
+          var original = XdrOperationResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrOperationResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrOperationResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
     test('XdrTransactionResultCode enum roundtrip', () {
       final members = [
         XdrTransactionResultCode.txFEE_BUMP_INNER_SUCCESS,
@@ -7753,6 +8736,73 @@ void main() {
       },
     );
 
+    test(
+      'XdrInnerTransactionResultResult void arm of XdrTransactionResultCode.txTOO_EARLY roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrTransactionResultCode.txTOO_EARLY,
+          XdrTransactionResultCode.txTOO_LATE,
+          XdrTransactionResultCode.txMISSING_OPERATION,
+          XdrTransactionResultCode.txBAD_SEQ,
+          XdrTransactionResultCode.txBAD_AUTH,
+          XdrTransactionResultCode.txINSUFFICIENT_BALANCE,
+          XdrTransactionResultCode.txNO_ACCOUNT,
+          XdrTransactionResultCode.txINSUFFICIENT_FEE,
+          XdrTransactionResultCode.txBAD_AUTH_EXTRA,
+          XdrTransactionResultCode.txINTERNAL_ERROR,
+          XdrTransactionResultCode.txNOT_SUPPORTED,
+          XdrTransactionResultCode.txBAD_SPONSORSHIP,
+          XdrTransactionResultCode.txBAD_MIN_SEQ_AGE_OR_GAP,
+          XdrTransactionResultCode.txMALFORMED,
+          XdrTransactionResultCode.txSOROBAN_INVALID,
+          XdrTransactionResultCode.txFROZEN_KEY_ACCESSED,
+        ]) {
+          var original = XdrInnerTransactionResultResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrInnerTransactionResultResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrInnerTransactionResultResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
+    test(
+      'XdrInnerTransactionResultResult decode rejects a discriminant without an arm',
+      () {
+        var original = XdrInnerTransactionResultResult(
+          XdrTransactionResultCode.txTOO_EARLY,
+        );
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrInnerTransactionResultResult.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant.value),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 1);
+        expect(
+          () => XdrInnerTransactionResultResult.decode(
+            XdrDataInputStream(encoded),
+          ),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals(
+                'Exception: Unknown XdrInnerTransactionResultResult discriminant: 1',
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
     test('XdrInnerTransactionResultExt 0 void arm roundtrip', () {
       var original = XdrInnerTransactionResultExt(0);
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -7767,6 +8817,34 @@ void main() {
           );
       expect(base64Decoded.discriminant, equals(original.discriminant));
     });
+
+    test(
+      'XdrInnerTransactionResultExt decode rejects a discriminant without an arm',
+      () {
+        var original = XdrInnerTransactionResultExt(0);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrInnerTransactionResultExt.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 1);
+        expect(
+          () =>
+              XdrInnerTransactionResultExt.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals(
+                'Exception: Unknown XdrInnerTransactionResultExt discriminant: 1',
+              ),
+            ),
+          ),
+        );
+      },
+    );
 
     test('XdrInnerTransactionResult struct roundtrip', () {
       var original = XdrInnerTransactionResult(
@@ -7904,6 +8982,42 @@ void main() {
       },
     );
 
+    test(
+      'XdrTransactionResultResult void arm of XdrTransactionResultCode.txTOO_EARLY roundtrip for every case label',
+      () {
+        for (var discriminant in [
+          XdrTransactionResultCode.txTOO_EARLY,
+          XdrTransactionResultCode.txTOO_LATE,
+          XdrTransactionResultCode.txMISSING_OPERATION,
+          XdrTransactionResultCode.txBAD_SEQ,
+          XdrTransactionResultCode.txBAD_AUTH,
+          XdrTransactionResultCode.txINSUFFICIENT_BALANCE,
+          XdrTransactionResultCode.txNO_ACCOUNT,
+          XdrTransactionResultCode.txINSUFFICIENT_FEE,
+          XdrTransactionResultCode.txBAD_AUTH_EXTRA,
+          XdrTransactionResultCode.txINTERNAL_ERROR,
+          XdrTransactionResultCode.txNOT_SUPPORTED,
+          XdrTransactionResultCode.txBAD_SPONSORSHIP,
+          XdrTransactionResultCode.txBAD_MIN_SEQ_AGE_OR_GAP,
+          XdrTransactionResultCode.txMALFORMED,
+          XdrTransactionResultCode.txSOROBAN_INVALID,
+          XdrTransactionResultCode.txFROZEN_KEY_ACCESSED,
+        ]) {
+          var original = XdrTransactionResultResult(discriminant);
+          XdrDataOutputStream output = XdrDataOutputStream();
+          XdrTransactionResultResult.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = XdrTransactionResultResult.decode(input);
+          expect(
+            decoded.discriminant.value,
+            equals(original.discriminant.value),
+          );
+          expect(input.offset, equals(encoded.length));
+        }
+      },
+    );
+
     test('XdrTransactionResultExt 0 void arm roundtrip', () {
       var original = XdrTransactionResultExt(0);
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -7917,6 +9031,33 @@ void main() {
       );
       expect(base64Decoded.discriminant, equals(original.discriminant));
     });
+
+    test(
+      'XdrTransactionResultExt decode rejects a discriminant without an arm',
+      () {
+        var original = XdrTransactionResultExt(0);
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrTransactionResultExt.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 1);
+        expect(
+          () => XdrTransactionResultExt.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals(
+                'Exception: Unknown XdrTransactionResultExt discriminant: 1',
+              ),
+            ),
+          ),
+        );
+      },
+    );
 
     test('XdrTransactionResult struct roundtrip', () {
       var original = XdrTransactionResult(

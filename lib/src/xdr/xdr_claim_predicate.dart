@@ -115,7 +115,7 @@ class XdrClaimPredicate {
       case XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL:
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_AND:
-        int andPredicatessize = stream.readInt();
+        int andPredicatessize = stream.readArrayLength();
         decodedClaimPredicate._andPredicates = List<XdrClaimPredicate>.empty(
           growable: true,
         );
@@ -126,7 +126,7 @@ class XdrClaimPredicate {
         }
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_OR:
-        int orPredicatessize = stream.readInt();
+        int orPredicatessize = stream.readArrayLength();
         decodedClaimPredicate._orPredicates = List<XdrClaimPredicate>.empty(
           growable: true,
         );
@@ -149,8 +149,6 @@ class XdrClaimPredicate {
         break;
       case XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME:
         decodedClaimPredicate._relBefore = XdrInt64.decode(stream);
-        break;
-      default:
         break;
     }
     return decodedClaimPredicate;

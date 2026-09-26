@@ -44,7 +44,7 @@ class XdrCreateClaimableBalanceOp {
   static XdrCreateClaimableBalanceOp decode(XdrDataInputStream stream) {
     XdrAsset asset = XdrAsset.decode(stream);
     XdrInt64 amount = XdrInt64.decode(stream);
-    int claimantssize = stream.readInt();
+    int claimantssize = stream.readArrayLength();
     List<XdrClaimant> claimants = List<XdrClaimant>.empty(growable: true);
     for (int i = 0; i < claimantssize; i++) {
       claimants.add(XdrClaimant.decode(stream));

@@ -46,14 +46,14 @@ class XdrFrozenLedgerKeysDelta {
   }
 
   static XdrFrozenLedgerKeysDelta decode(XdrDataInputStream stream) {
-    int keysToFreezesize = stream.readInt();
+    int keysToFreezesize = stream.readArrayLength();
     List<XdrEncodedLedgerKey> keysToFreeze = List<XdrEncodedLedgerKey>.empty(
       growable: true,
     );
     for (int i = 0; i < keysToFreezesize; i++) {
       keysToFreeze.add(XdrEncodedLedgerKey.decode(stream));
     }
-    int keysToUnfreezesize = stream.readInt();
+    int keysToUnfreezesize = stream.readArrayLength();
     List<XdrEncodedLedgerKey> keysToUnfreeze = List<XdrEncodedLedgerKey>.empty(
       growable: true,
     );

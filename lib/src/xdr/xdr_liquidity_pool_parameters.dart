@@ -58,8 +58,6 @@ class XdrLiquidityPoolParameters {
         decodedLiquidityPoolParameters._constantProduct =
             XdrLiquidityPoolConstantProductParameters.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedLiquidityPoolParameters;
   }

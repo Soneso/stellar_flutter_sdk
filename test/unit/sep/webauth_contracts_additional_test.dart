@@ -253,7 +253,7 @@ void main() {
       expect(entries, isEmpty);
     });
 
-    test('handles invalid base64 gracefully', () {
+    test('rejects a negative entry count', () {
       final webAuth = WebAuthForContracts(
         'https://testanchor.stellar.org/auth',
         'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
@@ -262,15 +262,65 @@ void main() {
         Network.TESTNET,
       );
 
-      // Test that invalid input is handled (may throw or return empty)
-      try {
-        webAuth.decodeAuthorizationEntries('INVALID_BASE64!!!');
-        // If no exception, that's also acceptable behavior
-      } on ContractChallengeValidationException {
-        // Expected exception
-      } on FormatException {
-        // Also acceptable - base64 decode error
-      }
+      // Count ff ff ff ff
+      expect(
+        () => webAuth.decodeAuthorizationEntries('/////w=='),
+        throwsA(
+          isA<ContractChallengeValidationException>().having(
+            (e) => e.message,
+            'message',
+            'Failed to decode authorization entries: '
+                'RangeError: XDR array count cannot be negative, got -1',
+          ),
+        ),
+      );
+    });
+
+    test('rejects an entry count beyond the remaining bytes', () {
+      final webAuth = WebAuthForContracts(
+        'https://testanchor.stellar.org/auth',
+        'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
+        'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
+        'testanchor.stellar.org',
+        Network.TESTNET,
+      );
+
+      // Count 40 00 00 00 and nothing after it
+      expect(
+        () => webAuth.decodeAuthorizationEntries('QAAAAA=='),
+        throwsA(
+          isA<ContractChallengeValidationException>().having(
+            (e) => e.message,
+            'message',
+            'Failed to decode authorization entries: '
+                'RangeError: XDR array count 1073741824 exceeds the maximum '
+                'of 0 for the 0 remaining bytes',
+          ),
+        ),
+      );
+    });
+
+    test('rejects invalid base64', () {
+      final webAuth = WebAuthForContracts(
+        'https://testanchor.stellar.org/auth',
+        'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
+        'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
+        'testanchor.stellar.org',
+        Network.TESTNET,
+      );
+
+      expect(
+        () => webAuth.decodeAuthorizationEntries('INVALID_BASE64!!!'),
+        throwsA(
+          isA<ContractChallengeValidationException>().having(
+            (e) => e.message,
+            'message',
+            startsWith(
+              'Failed to decode authorization entries: FormatException: ',
+            ),
+          ),
+        ),
+      );
     });
   });
 

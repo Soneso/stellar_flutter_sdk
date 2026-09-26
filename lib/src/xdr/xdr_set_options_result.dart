@@ -43,7 +43,16 @@ class XdrSetOptionsResult {
     switch (decodedSetOptionsResult.discriminant) {
       case XdrSetOptionsResultCode.SET_OPTIONS_SUCCESS:
         break;
-      default:
+      case XdrSetOptionsResultCode.SET_OPTIONS_LOW_RESERVE:
+      case XdrSetOptionsResultCode.SET_OPTIONS_TOO_MANY_SIGNERS:
+      case XdrSetOptionsResultCode.SET_OPTIONS_BAD_FLAGS:
+      case XdrSetOptionsResultCode.SET_OPTIONS_INVALID_INFLATION:
+      case XdrSetOptionsResultCode.SET_OPTIONS_CANT_CHANGE:
+      case XdrSetOptionsResultCode.SET_OPTIONS_UNKNOWN_FLAG:
+      case XdrSetOptionsResultCode.SET_OPTIONS_THRESHOLD_OUT_OF_RANGE:
+      case XdrSetOptionsResultCode.SET_OPTIONS_BAD_SIGNER:
+      case XdrSetOptionsResultCode.SET_OPTIONS_INVALID_HOME_DOMAIN:
+      case XdrSetOptionsResultCode.SET_OPTIONS_AUTH_REVOCABLE_REQUIRED:
         break;
     }
     return decodedSetOptionsResult;

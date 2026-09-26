@@ -72,7 +72,7 @@ class XdrPathPaymentStrictReceiveOp {
     XdrMuxedAccount destination = XdrMuxedAccount.decode(stream);
     XdrAsset destAsset = XdrAsset.decode(stream);
     XdrInt64 destAmount = XdrInt64.decode(stream);
-    int pathsize = stream.readInt();
+    int pathsize = stream.readArrayLength();
     List<XdrAsset> path = List<XdrAsset>.empty(growable: true);
     for (int i = 0; i < pathsize; i++) {
       path.add(XdrAsset.decode(stream));

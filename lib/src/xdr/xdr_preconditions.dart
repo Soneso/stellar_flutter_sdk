@@ -70,8 +70,6 @@ class XdrPreconditions {
       case XdrPreconditionType.PRECOND_V2:
         decodedPreconditions._v2 = XdrPreconditionsV2.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedPreconditions;
   }

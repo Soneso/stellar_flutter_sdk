@@ -44,7 +44,11 @@ class XdrRevokeSponsorshipResult {
     switch (decodedRevokeSponsorshipResult.discriminant) {
       case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_SUCCESS:
         break;
-      default:
+      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_DOES_NOT_EXIST:
+      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_NOT_SPONSOR:
+      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_LOW_RESERVE:
+      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_ONLY_TRANSFERABLE:
+      case XdrRevokeSponsorshipResultCode.REVOKE_SPONSORSHIP_MALFORMED:
         break;
     }
     return decodedRevokeSponsorshipResult;

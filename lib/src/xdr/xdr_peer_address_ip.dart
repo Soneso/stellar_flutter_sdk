@@ -65,8 +65,6 @@ class XdrPeerAddressIp {
         int ipv6size = 16;
         decodedPeerAddressIp._ipv6 = stream.readBytes(ipv6size);
         break;
-      default:
-        break;
     }
     return decodedPeerAddressIp;
   }

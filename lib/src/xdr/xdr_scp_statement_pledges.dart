@@ -106,8 +106,6 @@ class XdrSCPStatementPledges {
       case XdrSCPStatementType.SCP_ST_NOMINATE:
         decodedSCPStatementPledges._nominate = XdrSCPNomination.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedSCPStatementPledges;
   }

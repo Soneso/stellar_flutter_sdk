@@ -36,7 +36,7 @@ class XdrTransactionMetaV1 {
 
   static XdrTransactionMetaV1 decode(XdrDataInputStream stream) {
     XdrLedgerEntryChanges txChanges = XdrLedgerEntryChanges.decode(stream);
-    int operationssize = stream.readInt();
+    int operationssize = stream.readArrayLength();
     List<XdrOperationMeta> operations = List<XdrOperationMeta>.empty(
       growable: true,
     );

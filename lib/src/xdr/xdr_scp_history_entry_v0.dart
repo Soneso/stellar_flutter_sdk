@@ -39,7 +39,7 @@ class XdrSCPHistoryEntryV0 {
   }
 
   static XdrSCPHistoryEntryV0 decode(XdrDataInputStream stream) {
-    int quorumSetssize = stream.readInt();
+    int quorumSetssize = stream.readArrayLength();
     List<XdrSCPQuorumSet> quorumSets = List<XdrSCPQuorumSet>.empty(
       growable: true,
     );

@@ -48,8 +48,6 @@ class XdrClaimant {
       case XdrClaimantType.CLAIMANT_TYPE_V0:
         decodedClaimant._v0 = XdrClaimantV0.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedClaimant;
   }

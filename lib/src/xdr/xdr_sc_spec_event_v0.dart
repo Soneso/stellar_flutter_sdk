@@ -69,12 +69,12 @@ class XdrSCSpecEventV0 {
     String doc = stream.readString();
     String lib = stream.readString();
     String name = stream.readString();
-    int prefixTopicssize = stream.readInt();
+    int prefixTopicssize = stream.readArrayLength();
     List<String> prefixTopics = List<String>.empty(growable: true);
     for (int i = 0; i < prefixTopicssize; i++) {
       prefixTopics.add(stream.readString());
     }
-    int paramssize = stream.readInt();
+    int paramssize = stream.readArrayLength();
     List<XdrSCSpecEventParamV0> params = List<XdrSCSpecEventParamV0>.empty(
       growable: true,
     );

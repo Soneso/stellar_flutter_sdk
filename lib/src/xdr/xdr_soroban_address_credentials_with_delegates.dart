@@ -54,7 +54,7 @@ class XdrSorobanAddressCredentialsWithDelegates {
   ) {
     XdrSorobanAddressCredentials addressCredentials =
         XdrSorobanAddressCredentials.decode(stream);
-    int delegatessize = stream.readInt();
+    int delegatessize = stream.readArrayLength();
     List<XdrSorobanDelegateSignature> delegates =
         List<XdrSorobanDelegateSignature>.empty(growable: true);
     for (int i = 0; i < delegatessize; i++) {

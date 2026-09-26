@@ -78,7 +78,9 @@ class XdrLedgerCloseMeta {
         decodedLedgerCloseMeta._v2 = XdrLedgerCloseMetaV2.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrLedgerCloseMeta discriminant: ${decodedLedgerCloseMeta.discriminant}",
+        );
     }
     return decodedLedgerCloseMeta;
   }

@@ -1744,5 +1744,38 @@ void main() {
       // Verify arm field is not null
       expect(base64Decoded.v0, isNotNull);
     });
+
+    test(
+      'XdrAuthenticatedMessage decode rejects a discriminant without an arm',
+      () {
+        var original = (XdrAuthenticatedMessage(0)
+          ..v0 = (XdrAuthenticatedMessageV0(
+            XdrUint64(BigInt.zero),
+            (XdrStellarMessage(XdrMessageType.ERROR_MSG)
+              ..error = XdrError(XdrErrorCode.ERR_MISC, 'test')),
+            XdrHmacSha256Mac(Uint8List.fromList(List<int>.filled(32, 0x00))),
+          )));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrAuthenticatedMessage.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 1);
+        expect(
+          () => XdrAuthenticatedMessage.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals(
+                'Exception: Unknown XdrAuthenticatedMessage discriminant: 1',
+              ),
+            ),
+          ),
+        );
+      },
+    );
   });
 }

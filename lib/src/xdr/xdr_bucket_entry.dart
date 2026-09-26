@@ -80,8 +80,6 @@ class XdrBucketEntry {
       case XdrBucketEntryType.METAENTRY:
         decodedBucketEntry._metaEntry = XdrBucketMetadata.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedBucketEntry;
   }

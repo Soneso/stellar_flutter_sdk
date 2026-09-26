@@ -61,7 +61,9 @@ class XdrTransactionExt {
         );
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrTransactionExt discriminant: ${decodedTransactionExt.discriminant}",
+        );
     }
     return decodedTransactionExt;
   }

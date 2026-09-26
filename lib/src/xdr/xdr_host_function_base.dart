@@ -109,8 +109,6 @@ class XdrHostFunctionBase {
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2:
         decoded._createContractV2 = XdrCreateContractArgsV2.decode(stream);
         break;
-      default:
-        break;
     }
     return decoded;
   }

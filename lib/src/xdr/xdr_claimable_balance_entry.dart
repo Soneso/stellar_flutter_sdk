@@ -66,7 +66,7 @@ class XdrClaimableBalanceEntry {
 
   static XdrClaimableBalanceEntry decode(XdrDataInputStream stream) {
     XdrClaimableBalanceID balanceID = XdrClaimableBalanceID.decode(stream);
-    int claimantssize = stream.readInt();
+    int claimantssize = stream.readArrayLength();
     List<XdrClaimant> claimants = List<XdrClaimant>.empty(growable: true);
     for (int i = 0; i < claimantssize; i++) {
       claimants.add(XdrClaimant.decode(stream));

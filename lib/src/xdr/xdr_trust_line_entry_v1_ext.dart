@@ -61,7 +61,9 @@ class XdrTrustLineEntryV1Ext {
         );
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrTrustLineEntryV1Ext discriminant: ${decodedTrustLineEntryV1Ext.discriminant}",
+        );
     }
     return decodedTrustLineEntryV1Ext;
   }

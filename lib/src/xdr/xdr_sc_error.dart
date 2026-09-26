@@ -77,8 +77,6 @@ class XdrSCError {
       case XdrSCErrorType.SCE_AUTH:
         decodedSCError._code = XdrSCErrorCode.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedSCError;
   }

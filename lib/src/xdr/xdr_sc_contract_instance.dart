@@ -44,7 +44,7 @@ class XdrSCContractInstance {
     List<XdrSCMapEntry>? storage;
     int storagePresent = stream.readInt();
     if (storagePresent != 0) {
-      int storageLen = stream.readInt();
+      int storageLen = stream.readArrayLength();
       storage = List<XdrSCMapEntry>.empty(growable: true);
       for (int storagei = 0; storagei < storageLen; storagei++) {
         storage.add(XdrSCMapEntry.decode(stream));

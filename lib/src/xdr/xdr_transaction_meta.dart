@@ -96,7 +96,7 @@ class XdrTransactionMeta {
     );
     switch (decodedTransactionMeta.discriminant) {
       case 0:
-        int operationssize = stream.readInt();
+        int operationssize = stream.readArrayLength();
         decodedTransactionMeta._operations = List<XdrOperationMeta>.empty(
           growable: true,
         );
@@ -119,7 +119,9 @@ class XdrTransactionMeta {
         decodedTransactionMeta._v4 = XdrTransactionMetaV4.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrTransactionMeta discriminant: ${decodedTransactionMeta.discriminant}",
+        );
     }
     return decodedTransactionMeta;
   }

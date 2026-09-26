@@ -29,7 +29,7 @@ class XdrFrozenLedgerKeys {
   }
 
   static XdrFrozenLedgerKeys decode(XdrDataInputStream stream) {
-    int keyssize = stream.readInt();
+    int keyssize = stream.readArrayLength();
     List<XdrEncodedLedgerKey> keys = List<XdrEncodedLedgerKey>.empty(
       growable: true,
     );

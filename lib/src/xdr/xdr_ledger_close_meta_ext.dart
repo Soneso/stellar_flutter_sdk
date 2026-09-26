@@ -56,7 +56,9 @@ class XdrLedgerCloseMetaExt {
         decodedLedgerCloseMetaExt._v1 = XdrLedgerCloseMetaExtV1.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrLedgerCloseMetaExt discriminant: ${decodedLedgerCloseMetaExt.discriminant}",
+        );
     }
     return decodedLedgerCloseMetaExt;
   }

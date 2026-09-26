@@ -60,7 +60,9 @@ class XdrSorobanTransactionDataExt {
             XdrSorobanResourcesExtV0.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrSorobanTransactionDataExt discriminant: ${decodedSorobanTransactionDataExt.discriminant}",
+        );
     }
     return decodedSorobanTransactionDataExt;
   }

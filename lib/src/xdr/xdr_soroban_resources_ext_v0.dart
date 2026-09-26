@@ -35,7 +35,7 @@ class XdrSorobanResourcesExtV0 {
   }
 
   static XdrSorobanResourcesExtV0 decode(XdrDataInputStream stream) {
-    int archivedSorobanEntriessize = stream.readInt();
+    int archivedSorobanEntriessize = stream.readArrayLength();
     List<XdrUint32> archivedSorobanEntries = List<XdrUint32>.empty(
       growable: true,
     );

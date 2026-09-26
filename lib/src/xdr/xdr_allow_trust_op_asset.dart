@@ -69,7 +69,9 @@ class XdrAllowTrustOpAsset {
         );
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrAllowTrustOpAsset discriminant: ${decodedAllowTrustOpAsset.discriminant.value}",
+        );
     }
     return decodedAllowTrustOpAsset;
   }

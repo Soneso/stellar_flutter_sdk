@@ -67,7 +67,7 @@ class XdrSorobanTransactionMeta {
     XdrSorobanTransactionMetaExt ext = XdrSorobanTransactionMetaExt.decode(
       stream,
     );
-    int eventssize = stream.readInt();
+    int eventssize = stream.readArrayLength();
     List<XdrContractEvent> events = List<XdrContractEvent>.empty(
       growable: true,
     );
@@ -75,7 +75,7 @@ class XdrSorobanTransactionMeta {
       events.add(XdrContractEvent.decode(stream));
     }
     XdrSCVal returnValue = XdrSCVal.decode(stream);
-    int diagnosticEventssize = stream.readInt();
+    int diagnosticEventssize = stream.readArrayLength();
     List<XdrDiagnosticEvent> diagnosticEvents = List<XdrDiagnosticEvent>.empty(
       growable: true,
     );
