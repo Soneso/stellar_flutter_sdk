@@ -58,8 +58,6 @@ class XdrLiquidityPoolBody {
         decodedLiquidityPoolBody._constantProduct =
             XdrLiquidityPoolEntryConstantProduct.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedLiquidityPoolBody;
   }

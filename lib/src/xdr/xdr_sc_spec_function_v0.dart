@@ -54,13 +54,13 @@ class XdrSCSpecFunctionV0 {
   static XdrSCSpecFunctionV0 decode(XdrDataInputStream stream) {
     String doc = stream.readString();
     String name = stream.readString();
-    int inputssize = stream.readInt();
+    int inputssize = stream.readArrayLength();
     List<XdrSCSpecFunctionInputV0> inputs =
         List<XdrSCSpecFunctionInputV0>.empty(growable: true);
     for (int i = 0; i < inputssize; i++) {
       inputs.add(XdrSCSpecFunctionInputV0.decode(stream));
     }
-    int outputssize = stream.readInt();
+    int outputssize = stream.readArrayLength();
     List<XdrSCSpecTypeDef> outputs = List<XdrSCSpecTypeDef>.empty(
       growable: true,
     );

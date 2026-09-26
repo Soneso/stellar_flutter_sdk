@@ -57,7 +57,18 @@ class XdrManageOfferResult {
           stream,
         );
         break;
-      default:
+      case XdrManageOfferResultCode.MANAGE_SELL_OFFER_MALFORMED:
+      case XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NO_TRUST:
+      case XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NO_TRUST:
+      case XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NOT_AUTHORIZED:
+      case XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NOT_AUTHORIZED:
+      case XdrManageOfferResultCode.MANAGE_SELL_OFFER_LINE_FULL:
+      case XdrManageOfferResultCode.MANAGE_SELL_OFFER_UNDERFUNDED:
+      case XdrManageOfferResultCode.MANAGE_SELL_OFFER_CROSS_SELF:
+      case XdrManageOfferResultCode.MANAGE_SELL_OFFER_SELL_NO_ISSUER:
+      case XdrManageOfferResultCode.MANAGE_SELL_OFFER_BUY_NO_ISSUER:
+      case XdrManageOfferResultCode.MANAGE_SELL_OFFER_NOT_FOUND:
+      case XdrManageOfferResultCode.MANAGE_SELL_OFFER_LOW_RESERVE:
         break;
     }
     return decodedManageOfferResult;

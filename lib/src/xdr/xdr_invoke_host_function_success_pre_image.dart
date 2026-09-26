@@ -45,7 +45,7 @@ class XdrInvokeHostFunctionSuccessPreImage {
     XdrDataInputStream stream,
   ) {
     XdrSCVal returnValue = XdrSCVal.decode(stream);
-    int eventssize = stream.readInt();
+    int eventssize = stream.readArrayLength();
     List<XdrContractEvent> events = List<XdrContractEvent>.empty(
       growable: true,
     );

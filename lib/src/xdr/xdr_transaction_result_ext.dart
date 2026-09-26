@@ -42,7 +42,9 @@ class XdrTransactionResultExt {
       case 0:
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrTransactionResultExt discriminant: ${decodedTransactionResultExt.discriminant}",
+        );
     }
     return decodedTransactionResultExt;
   }

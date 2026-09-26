@@ -40,7 +40,7 @@ class XdrInvokeHostFunctionOp {
 
   static XdrInvokeHostFunctionOp decode(XdrDataInputStream stream) {
     XdrHostFunction function = XdrHostFunction.decode(stream);
-    int authsize = stream.readInt();
+    int authsize = stream.readArrayLength();
     List<XdrSorobanAuthorizationEntry> auth =
         List<XdrSorobanAuthorizationEntry>.empty(growable: true);
     for (int i = 0; i < authsize; i++) {

@@ -60,7 +60,9 @@ class XdrTransactionHistoryEntryExt {
             XdrGeneralizedTransactionSet.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrTransactionHistoryEntryExt discriminant: ${decodedTransactionHistoryEntryExt.discriminant}",
+        );
     }
     return decodedTransactionHistoryEntryExt;
   }

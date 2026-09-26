@@ -403,7 +403,7 @@ class XdrConfigSettingEntry {
             XdrConfigSettingContractExecutionLanesV0.decode(stream);
         break;
       case XdrConfigSettingID.CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW:
-        int liveSorobanStateSizeWindowsize = stream.readInt();
+        int liveSorobanStateSizeWindowsize = stream.readArrayLength();
         decodedConfigSettingEntry._liveSorobanStateSizeWindow =
             List<XdrUint64>.empty(growable: true);
         for (int i = 0; i < liveSorobanStateSizeWindowsize; i++) {
@@ -444,8 +444,6 @@ class XdrConfigSettingEntry {
       case XdrConfigSettingID.CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA:
         decodedConfigSettingEntry._freezeBypassTxsDelta =
             XdrFreezeBypassTxsDelta.decode(stream);
-        break;
-      default:
         break;
     }
     return decodedConfigSettingEntry;

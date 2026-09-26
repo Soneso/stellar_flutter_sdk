@@ -45,12 +45,12 @@ class XdrSCPNomination {
 
   static XdrSCPNomination decode(XdrDataInputStream stream) {
     XdrHash quorumSetHash = XdrHash.decode(stream);
-    int votessize = stream.readInt();
+    int votessize = stream.readArrayLength();
     List<XdrValue> votes = List<XdrValue>.empty(growable: true);
     for (int i = 0; i < votessize; i++) {
       votes.add(XdrValue.decode(stream));
     }
-    int acceptedsize = stream.readInt();
+    int acceptedsize = stream.readArrayLength();
     List<XdrValue> accepted = List<XdrValue>.empty(growable: true);
     for (int i = 0; i < acceptedsize; i++) {
       accepted.add(XdrValue.decode(stream));

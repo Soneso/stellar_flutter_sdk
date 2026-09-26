@@ -39,14 +39,14 @@ class XdrPersistedSCPStateV1 {
   }
 
   static XdrPersistedSCPStateV1 decode(XdrDataInputStream stream) {
-    int scpEnvelopessize = stream.readInt();
+    int scpEnvelopessize = stream.readArrayLength();
     List<XdrSCPEnvelope> scpEnvelopes = List<XdrSCPEnvelope>.empty(
       growable: true,
     );
     for (int i = 0; i < scpEnvelopessize; i++) {
       scpEnvelopes.add(XdrSCPEnvelope.decode(stream));
     }
-    int quorumSetssize = stream.readInt();
+    int quorumSetssize = stream.readArrayLength();
     List<XdrSCPQuorumSet> quorumSets = List<XdrSCPQuorumSet>.empty(
       growable: true,
     );

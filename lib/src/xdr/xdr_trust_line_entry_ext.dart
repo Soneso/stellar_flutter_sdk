@@ -56,7 +56,9 @@ class XdrTrustLineEntryExt {
         decodedTrustLineEntryExt._v1 = XdrTrustLineEntryV1.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrTrustLineEntryExt discriminant: ${decodedTrustLineEntryExt.discriminant}",
+        );
     }
     return decodedTrustLineEntryExt;
   }

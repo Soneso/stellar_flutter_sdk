@@ -54,7 +54,9 @@ class XdrLedgerEntryExt {
         decodedLedgerEntryExt._v1 = XdrLedgerEntryV1.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrLedgerEntryExt discriminant: ${decodedLedgerEntryExt.discriminant}",
+        );
     }
     return decodedLedgerEntryExt;
   }

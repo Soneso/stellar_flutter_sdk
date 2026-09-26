@@ -101,8 +101,6 @@ class XdrLedgerEntryChange {
       case XdrLedgerEntryChangeType.LEDGER_ENTRY_RESTORED:
         decodedLedgerEntryChange._restored = XdrLedgerEntry.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedLedgerEntryChange;
   }

@@ -47,7 +47,7 @@ class XdrSCSpecUDTEnumV0 {
     String doc = stream.readString();
     String lib = stream.readString();
     String name = stream.readString();
-    int casessize = stream.readInt();
+    int casessize = stream.readArrayLength();
     List<XdrSCSpecUDTEnumCaseV0> cases = List<XdrSCSpecUDTEnumCaseV0>.empty(
       growable: true,
     );

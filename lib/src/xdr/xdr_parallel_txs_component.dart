@@ -51,7 +51,7 @@ class XdrParallelTxsComponent {
     if (baseFeePresent != 0) {
       baseFee = XdrInt64.decode(stream);
     }
-    int executionStagessize = stream.readInt();
+    int executionStagessize = stream.readArrayLength();
     List<XdrParallelTxExecutionStage> executionStages =
         List<XdrParallelTxExecutionStage>.empty(growable: true);
     for (int i = 0; i < executionStagessize; i++) {

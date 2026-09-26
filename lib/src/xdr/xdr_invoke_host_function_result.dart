@@ -53,7 +53,13 @@ class XdrInvokeHostFunctionResult {
       case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_SUCCESS:
         decodedInvokeHostFunctionResult._success = XdrHash.decode(stream);
         break;
-      default:
+      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_MALFORMED:
+      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_TRAPPED:
+      case XdrInvokeHostFunctionResultCode
+          .INVOKE_HOST_FUNCTION_RESOURCE_LIMIT_EXCEEDED:
+      case XdrInvokeHostFunctionResultCode.INVOKE_HOST_FUNCTION_ENTRY_ARCHIVED:
+      case XdrInvokeHostFunctionResultCode
+          .INVOKE_HOST_FUNCTION_INSUFFICIENT_REFUNDABLE_FEE:
         break;
     }
     return decodedInvokeHostFunctionResult;

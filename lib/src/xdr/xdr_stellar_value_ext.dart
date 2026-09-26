@@ -79,8 +79,6 @@ class XdrStellarValueExt {
         decodedStellarValueExt._proposedValue =
             XdrStellarValueProposedValue.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedStellarValueExt;
   }

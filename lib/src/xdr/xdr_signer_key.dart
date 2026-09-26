@@ -91,8 +91,6 @@ class XdrSignerKey {
       case XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD:
         decodedSignerKey._signedPayload = XdrSignedPayload.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedSignerKey;
   }

@@ -52,6 +52,37 @@ void main() {
       expect(base64Decoded.generalizedTxSet, isNotNull);
     });
 
+    test(
+      'XdrStoredTransactionSet decode rejects a discriminant without an arm',
+      () {
+        var original = (XdrStoredTransactionSet(0)
+          ..txSet = XdrTransactionSet(
+            XdrHash(Uint8List.fromList(List<int>.filled(32, 0x00))),
+            [],
+          ));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrStoredTransactionSet.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 2);
+        expect(
+          () => XdrStoredTransactionSet.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals(
+                'Exception: Unknown XdrStoredTransactionSet discriminant: 2',
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
     test('XdrStoredDebugTransactionSet struct roundtrip', () {
       var original = XdrStoredDebugTransactionSet(
         (XdrStoredTransactionSet(0)
@@ -214,5 +245,31 @@ void main() {
       // Verify arm field is not null
       expect(base64Decoded.v1, isNotNull);
     });
+
+    test(
+      'XdrPersistedSCPState decode rejects a discriminant without an arm',
+      () {
+        var original = (XdrPersistedSCPState(0)
+          ..v0 = XdrPersistedSCPStateV0([], [], []));
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrPersistedSCPState.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(
+          XdrDataInputStream(encoded).readInt(),
+          equals(original.discriminant),
+        );
+        ByteData.sublistView(encoded).setInt32(0, 2);
+        expect(
+          () => XdrPersistedSCPState.decode(XdrDataInputStream(encoded)),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'toString',
+              equals('Exception: Unknown XdrPersistedSCPState discriminant: 2'),
+            ),
+          ),
+        );
+      },
+    );
   });
 }

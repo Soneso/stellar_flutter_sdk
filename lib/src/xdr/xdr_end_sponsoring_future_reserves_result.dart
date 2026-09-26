@@ -60,8 +60,6 @@ class XdrEndSponsoringFutureReservesResult {
       case XdrEndSponsoringFutureReservesResultCode
           .END_SPONSORING_FUTURE_RESERVES_NOT_SPONSORED:
         break;
-      default:
-        break;
     }
     return decodedEndSponsoringFutureReservesResult;
   }

@@ -45,12 +45,12 @@ class XdrSCPQuorumSet {
 
   static XdrSCPQuorumSet decode(XdrDataInputStream stream) {
     XdrUint32 threshold = XdrUint32.decode(stream);
-    int validatorssize = stream.readInt();
+    int validatorssize = stream.readArrayLength();
     List<XdrNodeID> validators = List<XdrNodeID>.empty(growable: true);
     for (int i = 0; i < validatorssize; i++) {
       validators.add(XdrNodeID.decode(stream));
     }
-    int innerSetssize = stream.readInt();
+    int innerSetssize = stream.readArrayLength();
     List<XdrSCPQuorumSet> innerSets = List<XdrSCPQuorumSet>.empty(
       growable: true,
     );

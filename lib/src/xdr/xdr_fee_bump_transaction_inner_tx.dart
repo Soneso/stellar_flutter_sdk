@@ -58,7 +58,9 @@ class XdrFeeBumpTransactionInnerTx {
         );
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrFeeBumpTransactionInnerTx discriminant: ${decodedFeeBumpTransactionInnerTx.discriminant.value}",
+        );
     }
     return decodedFeeBumpTransactionInnerTx;
   }

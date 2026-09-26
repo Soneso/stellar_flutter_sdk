@@ -34,7 +34,7 @@ class XdrDependentTxCluster {
   }
 
   static XdrDependentTxCluster decode(XdrDataInputStream stream) {
-    int size = stream.readInt();
+    int size = stream.readArrayLength();
     List<XdrTransactionEnvelope> items = List<XdrTransactionEnvelope>.empty(
       growable: true,
     );

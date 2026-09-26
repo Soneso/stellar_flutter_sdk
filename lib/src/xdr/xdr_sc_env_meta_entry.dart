@@ -58,8 +58,6 @@ class XdrSCEnvMetaEntry {
         decodedSCEnvMetaEntry._interfaceVersion =
             XdrSCEnvMetaEntryInterfaceVersion.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedSCEnvMetaEntry;
   }

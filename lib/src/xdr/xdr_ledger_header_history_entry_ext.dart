@@ -42,7 +42,9 @@ class XdrLedgerHeaderHistoryEntryExt {
       case 0:
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrLedgerHeaderHistoryEntryExt discriminant: ${decodedLedgerHeaderHistoryEntryExt.discriminant}",
+        );
     }
     return decodedLedgerHeaderHistoryEntryExt;
   }

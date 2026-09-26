@@ -126,8 +126,6 @@ class XdrLedgerUpgrade {
       case XdrLedgerUpgradeType.LEDGER_UPGRADE_MAX_SOROBAN_TX_SET_SIZE:
         decodedLedgerUpgrade._newMaxSorobanTxSetSize = XdrUint32.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedLedgerUpgrade;
   }

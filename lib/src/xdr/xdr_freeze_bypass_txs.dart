@@ -29,7 +29,7 @@ class XdrFreezeBypassTxs {
   }
 
   static XdrFreezeBypassTxs decode(XdrDataInputStream stream) {
-    int txHashessize = stream.readInt();
+    int txHashessize = stream.readArrayLength();
     List<XdrHash> txHashes = List<XdrHash>.empty(growable: true);
     for (int i = 0; i < txHashessize; i++) {
       txHashes.add(XdrHash.decode(stream));

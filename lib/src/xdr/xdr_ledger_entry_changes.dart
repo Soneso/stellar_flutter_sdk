@@ -33,7 +33,7 @@ class XdrLedgerEntryChanges {
   }
 
   static XdrLedgerEntryChanges decode(XdrDataInputStream stream) {
-    int size = stream.readInt();
+    int size = stream.readArrayLength();
     List<XdrLedgerEntryChange> items = List<XdrLedgerEntryChange>.empty(
       growable: true,
     );

@@ -47,7 +47,12 @@ class XdrClawbackClaimableBalanceResult {
       case XdrClawbackClaimableBalanceResultCode
           .CLAWBACK_CLAIMABLE_BALANCE_SUCCESS:
         break;
-      default:
+      case XdrClawbackClaimableBalanceResultCode
+          .CLAWBACK_CLAIMABLE_BALANCE_DOES_NOT_EXIST:
+      case XdrClawbackClaimableBalanceResultCode
+          .CLAWBACK_CLAIMABLE_BALANCE_NOT_ISSUER:
+      case XdrClawbackClaimableBalanceResultCode
+          .CLAWBACK_CLAIMABLE_BALANCE_NOT_CLAWBACK_ENABLED:
         break;
     }
     return decodedClawbackClaimableBalanceResult;

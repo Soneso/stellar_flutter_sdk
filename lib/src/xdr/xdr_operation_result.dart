@@ -52,7 +52,12 @@ class XdrOperationResult {
       case XdrOperationResultCode.opINNER:
         decodedOperationResult._tr = XdrOperationResultTr.decode(stream);
         break;
-      default:
+      case XdrOperationResultCode.opBAD_AUTH:
+      case XdrOperationResultCode.opNO_ACCOUNT:
+      case XdrOperationResultCode.opNOT_SUPPORTED:
+      case XdrOperationResultCode.opTOO_MANY_SUBENTRIES:
+      case XdrOperationResultCode.opEXCEEDED_WORK_LIMIT:
+      case XdrOperationResultCode.opTOO_MANY_SPONSORING:
         break;
     }
     return decodedOperationResult;

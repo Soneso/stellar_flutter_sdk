@@ -42,7 +42,9 @@ class XdrInnerTransactionResultExt {
       case 0:
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrInnerTransactionResultExt discriminant: ${decodedInnerTransactionResultExt.discriminant}",
+        );
     }
     return decodedInnerTransactionResultExt;
   }

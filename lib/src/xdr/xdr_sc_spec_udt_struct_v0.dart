@@ -50,7 +50,7 @@ class XdrSCSpecUDTStructV0 {
     String doc = stream.readString();
     String lib = stream.readString();
     String name = stream.readString();
-    int fieldssize = stream.readInt();
+    int fieldssize = stream.readArrayLength();
     List<XdrSCSpecUDTStructFieldV0> fields =
         List<XdrSCSpecUDTStructFieldV0>.empty(growable: true);
     for (int i = 0; i < fieldssize; i++) {

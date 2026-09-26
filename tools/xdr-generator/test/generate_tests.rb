@@ -534,6 +534,17 @@ class TestGenerator
       tests << wrapper_test if wrapper_test
     end
 
+    # Every case label of a void arm that shares its case with other labels
+    arms.each do |arm|
+      next unless arm[:void] && !arm[:is_default] && arm[:case_labels].size > 1
+
+      tests << generate_grouped_void_arm_test(dart_name, class_name, arm, disc_info, disc_uses_wrapper, disc_assert)
+    end
+
+    # Discriminant without a matching arm
+    unknown_disc_test = generate_union_unknown_discriminant_test(dart_name, union_defn, disc_info, disc_uses_wrapper, disc_getter)
+    tests << unknown_disc_test if unknown_disc_test
+
     tests
   end
 
@@ -564,6 +575,99 @@ class TestGenerator
         var decoded = #{dart_name}.decode(input);
 
         #{disc_assert}
+      });
+    DART
+  end
+
+  # A roundtrip of every case label of a void arm with several labels. The
+  # generated decoder lists each of those labels as its own case.
+  def generate_grouped_void_arm_test(dart_name, class_name, arm, disc_info, disc_uses_wrapper, disc_assert)
+    disc_values = arm[:case_labels].map do |label|
+      disc_info[:kind] == :int && disc_uses_wrapper ? "XdrUint32(#{label})" : label
+    end
+
+    <<~DART
+      test('#{dart_name} void arm of #{arm[:case_labels].first} roundtrip for every case label', () {
+        for (var discriminant in [#{disc_values.join(', ')}]) {
+          var original = #{class_name}(discriminant);
+
+          XdrDataOutputStream output = XdrDataOutputStream();
+          #{class_name}.encode(output, original);
+          Uint8List encoded = Uint8List.fromList(output.bytes);
+
+          XdrDataInputStream input = XdrDataInputStream(encoded);
+          var decoded = #{class_name}.decode(input);
+
+          #{disc_assert}
+          expect(input.offset, equals(encoded.length));
+        }
+      });
+    DART
+  end
+
+  # ---------------------------------------------------------------------------
+  # Union decode of a discriminant without a matching arm
+  #
+  # The generator emits a throwing default arm for every union whose decoder
+  # can read a discriminant that no case handles: any int discriminant, and an
+  # enum discriminant when one of the enum's members has no arm. The test
+  # encodes a valid instance, replaces its leading discriminant word with such
+  # a value and expects the public decoder to reject it.
+  # ---------------------------------------------------------------------------
+
+  # The discriminant value without a matching arm, or nil when every value the
+  # decoder can read has an arm (the generated union then has no default arm).
+  def unhandled_discriminant_value(dart_name, union_defn, disc_info)
+    if disc_info[:kind] == :enum
+      member_values = disc_info[:enum_defn].members.to_h { |m| [m.name.to_s, Integer(m.value)] }
+      covered = union_defn.normal_arms.flat_map(&:cases).map do |c|
+        c.value.is_a?(AST::Identifier) ? member_values.fetch(c.value.name.to_s) : Integer(c.value.value)
+      end
+      (member_values.values - covered).first
+    else
+      covered = union_defn.normal_arms.flat_map(&:cases).map do |c|
+        raise "int discriminant case #{c.value.name} of #{dart_name} is not a literal" if c.value.is_a?(AST::Identifier)
+        Integer(c.value.value)
+      end
+      covered.max + 1
+    end
+  end
+
+  def generate_union_unknown_discriminant_test(dart_name, union_defn, disc_info, disc_uses_wrapper, disc_getter)
+    return nil if union_defn.default_arm.present?
+
+    unhandled = unhandled_discriminant_value(dart_name, union_defn, disc_info)
+    return nil if unhandled.nil?
+
+    value_expr = generate_union_value(dart_name, union_defn, 1)
+    unless value_expr
+      puts "  SKIP unknown discriminant test for #{dart_name}: no constructible value"
+      return nil
+    end
+
+    disc_value = if disc_info[:kind] == :enum
+                   "original.#{disc_getter}.value"
+                 elsif disc_uses_wrapper
+                   "original.#{disc_getter}.uint32"
+                 else
+                   "original.#{disc_getter}"
+                 end
+
+    <<~DART
+      test('#{dart_name} decode rejects a discriminant without an arm', () {
+        var original = #{value_expr};
+
+        XdrDataOutputStream output = XdrDataOutputStream();
+        #{dart_name}.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        expect(XdrDataInputStream(encoded).readInt(), equals(#{disc_value}));
+
+        ByteData.sublistView(encoded).setInt32(0, #{unhandled});
+        expect(
+          () => #{dart_name}.decode(XdrDataInputStream(encoded)),
+          throwsA(isA<Exception>().having((e) => e.toString(), 'toString',
+              equals('Exception: Unknown #{dart_name} discriminant: #{unhandled}'))),
+        );
       });
     DART
   end

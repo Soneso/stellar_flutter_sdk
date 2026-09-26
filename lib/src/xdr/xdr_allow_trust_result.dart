@@ -43,7 +43,12 @@ class XdrAllowTrustResult {
     switch (decodedAllowTrustResult.discriminant) {
       case XdrAllowTrustResultCode.ALLOW_TRUST_SUCCESS:
         break;
-      default:
+      case XdrAllowTrustResultCode.ALLOW_TRUST_MALFORMED:
+      case XdrAllowTrustResultCode.ALLOW_TRUST_NO_TRUST_LINE:
+      case XdrAllowTrustResultCode.ALLOW_TRUST_TRUST_NOT_REQUIRED:
+      case XdrAllowTrustResultCode.ALLOW_TRUST_CANT_REVOKE:
+      case XdrAllowTrustResultCode.ALLOW_TRUST_SELF_NOT_ALLOWED:
+      case XdrAllowTrustResultCode.ALLOW_TRUST_LOW_RESERVE:
         break;
     }
     return decodedAllowTrustResult;

@@ -55,7 +55,9 @@ class XdrContractCodeEntryExt {
         decodedContractCodeEntryExt._v1 = XdrContractCodeEntryV1.decode(stream);
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrContractCodeEntryExt discriminant: ${decodedContractCodeEntryExt.discriminant}",
+        );
     }
     return decodedContractCodeEntryExt;
   }

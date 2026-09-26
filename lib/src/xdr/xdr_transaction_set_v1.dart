@@ -36,7 +36,7 @@ class XdrTransactionSetV1 {
 
   static XdrTransactionSetV1 decode(XdrDataInputStream stream) {
     XdrHash previousLedgerHash = XdrHash.decode(stream);
-    int phasessize = stream.readInt();
+    int phasessize = stream.readArrayLength();
     List<XdrTransactionPhase> phases = List<XdrTransactionPhase>.empty(
       growable: true,
     );

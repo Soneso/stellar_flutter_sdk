@@ -60,7 +60,7 @@ class XdrInnerTransactionResultResult {
     switch (decodedInnerTransactionResultResult.discriminant) {
       case XdrTransactionResultCode.txSUCCESS:
       case XdrTransactionResultCode.txFAILED:
-        int resultssize = stream.readInt();
+        int resultssize = stream.readArrayLength();
         decodedInnerTransactionResultResult._results =
             List<XdrOperationResult>.empty(growable: true);
         for (int i = 0; i < resultssize; i++) {
@@ -69,8 +69,27 @@ class XdrInnerTransactionResultResult {
           );
         }
         break;
-      default:
+      case XdrTransactionResultCode.txTOO_EARLY:
+      case XdrTransactionResultCode.txTOO_LATE:
+      case XdrTransactionResultCode.txMISSING_OPERATION:
+      case XdrTransactionResultCode.txBAD_SEQ:
+      case XdrTransactionResultCode.txBAD_AUTH:
+      case XdrTransactionResultCode.txINSUFFICIENT_BALANCE:
+      case XdrTransactionResultCode.txNO_ACCOUNT:
+      case XdrTransactionResultCode.txINSUFFICIENT_FEE:
+      case XdrTransactionResultCode.txBAD_AUTH_EXTRA:
+      case XdrTransactionResultCode.txINTERNAL_ERROR:
+      case XdrTransactionResultCode.txNOT_SUPPORTED:
+      case XdrTransactionResultCode.txBAD_SPONSORSHIP:
+      case XdrTransactionResultCode.txBAD_MIN_SEQ_AGE_OR_GAP:
+      case XdrTransactionResultCode.txMALFORMED:
+      case XdrTransactionResultCode.txSOROBAN_INVALID:
+      case XdrTransactionResultCode.txFROZEN_KEY_ACCESSED:
         break;
+      default:
+        throw Exception(
+          "Unknown XdrInnerTransactionResultResult discriminant: ${decodedInnerTransactionResultResult.discriminant.value}",
+        );
     }
     return decodedInnerTransactionResultResult;
   }

@@ -41,7 +41,9 @@ class XdrDataEntryExt {
       case 0:
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrDataEntryExt discriminant: ${decodedDataEntryExt.discriminant}",
+        );
     }
     return decodedDataEntryExt;
   }

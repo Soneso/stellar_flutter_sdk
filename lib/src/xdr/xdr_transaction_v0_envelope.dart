@@ -40,7 +40,7 @@ class XdrTransactionV0Envelope {
 
   static XdrTransactionV0Envelope decode(XdrDataInputStream stream) {
     XdrTransactionV0 tx = XdrTransactionV0.decode(stream);
-    int signaturessize = stream.readInt();
+    int signaturessize = stream.readArrayLength();
     List<XdrDecoratedSignature> signatures = List<XdrDecoratedSignature>.empty(
       growable: true,
     );

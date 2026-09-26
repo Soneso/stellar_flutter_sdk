@@ -99,7 +99,7 @@ class XdrPreconditionsV2 {
     }
     XdrUint64 minSeqAge = XdrUint64.decode(stream);
     XdrUint32 minSeqLedgerGap = XdrUint32.decode(stream);
-    int extraSignerssize = stream.readInt();
+    int extraSignerssize = stream.readArrayLength();
     List<XdrSignerKey> extraSigners = List<XdrSignerKey>.empty(growable: true);
     for (int i = 0; i < extraSignerssize; i++) {
       extraSigners.add(XdrSignerKey.decode(stream));

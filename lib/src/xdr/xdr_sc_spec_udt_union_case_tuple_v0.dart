@@ -41,7 +41,7 @@ class XdrSCSpecUDTUnionCaseTupleV0 {
   static XdrSCSpecUDTUnionCaseTupleV0 decode(XdrDataInputStream stream) {
     String doc = stream.readString();
     String name = stream.readString();
-    int typesize = stream.readInt();
+    int typesize = stream.readArrayLength();
     List<XdrSCSpecTypeDef> type = List<XdrSCSpecTypeDef>.empty(growable: true);
     for (int i = 0; i < typesize; i++) {
       type.add(XdrSCSpecTypeDef.decode(stream));

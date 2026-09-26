@@ -43,7 +43,9 @@ class XdrLedgerEntryV1Ext {
       case 0:
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrLedgerEntryV1Ext discriminant: ${decodedLedgerEntryV1Ext.discriminant}",
+        );
     }
     return decodedLedgerEntryV1Ext;
   }

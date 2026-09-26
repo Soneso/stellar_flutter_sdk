@@ -40,7 +40,7 @@ class XdrFeeBumpTransactionEnvelope {
 
   static XdrFeeBumpTransactionEnvelope decode(XdrDataInputStream stream) {
     XdrFeeBumpTransaction tx = XdrFeeBumpTransaction.decode(stream);
-    int signaturessize = stream.readInt();
+    int signaturessize = stream.readArrayLength();
     List<XdrDecoratedSignature> signatures = List<XdrDecoratedSignature>.empty(
       growable: true,
     );

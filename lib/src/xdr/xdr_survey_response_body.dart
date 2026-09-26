@@ -58,8 +58,6 @@ class XdrSurveyResponseBody {
         decodedSurveyResponseBody._topologyResponseBodyV2 =
             XdrTopologyResponseBodyV2.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedSurveyResponseBody;
   }

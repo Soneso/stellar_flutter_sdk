@@ -79,8 +79,6 @@ class XdrClaimAtom {
       case XdrClaimAtomType.CLAIM_ATOM_TYPE_LIQUIDITY_POOL:
         decodedClaimAtom._liquidityPool = XdrClaimLiquidityAtom.decode(stream);
         break;
-      default:
-        break;
     }
     return decodedClaimAtom;
   }

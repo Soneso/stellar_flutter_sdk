@@ -56,7 +56,9 @@ class XdrGeneralizedTransactionSet {
         );
         break;
       default:
-        break;
+        throw Exception(
+          "Unknown XdrGeneralizedTransactionSet discriminant: ${decodedGeneralizedTransactionSet.discriminant}",
+        );
     }
     return decodedGeneralizedTransactionSet;
   }

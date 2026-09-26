@@ -106,6 +106,28 @@ void main() {
       expect(base64Decoded.discriminant, equals(original.discriminant));
     });
 
+    test('XdrExtensionPoint decode rejects a discriminant without an arm', () {
+      var original = XdrExtensionPoint(0);
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrExtensionPoint.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      expect(
+        XdrDataInputStream(encoded).readInt(),
+        equals(original.discriminant),
+      );
+      ByteData.sublistView(encoded).setInt32(0, 1);
+      expect(
+        () => XdrExtensionPoint.decode(XdrDataInputStream(encoded)),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'toString',
+            equals('Exception: Unknown XdrExtensionPoint discriminant: 1'),
+          ),
+        ),
+      );
+    });
+
     test('XdrCryptoKeyType enum roundtrip', () {
       final members = [
         XdrCryptoKeyType.KEY_TYPE_ED25519,

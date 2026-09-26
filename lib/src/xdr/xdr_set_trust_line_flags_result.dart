@@ -44,7 +44,11 @@ class XdrSetTrustLineFlagsResult {
     switch (decodedSetTrustLineFlagsResult.discriminant) {
       case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_SUCCESS:
         break;
-      default:
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_MALFORMED:
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_NO_TRUST_LINE:
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_CANT_REVOKE:
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_INVALID_STATE:
+      case XdrSetTrustLineFlagsResultCode.SET_TRUST_LINE_FLAGS_LOW_RESERVE:
         break;
     }
     return decodedSetTrustLineFlagsResult;
