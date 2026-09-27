@@ -3,7 +3,7 @@
 **Purpose:** Refuse to submit a transaction without a memo when one of its payment destinations requires a memo. Exchanges and custodians set this requirement to credit incoming payments to the right customer.
 **Prerequisites:** None
 **SDK Class:** `StellarSDK` (`checkMemoRequired()` and the six submit methods), `AccountRequiresMemoException`
-**Specification:** SEP-0029 v0.5.0, Active
+**Specification:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md
 
 ## Overview
 

@@ -66,7 +66,7 @@ final signedTxUri = uriScheme.addSignature(txUri, signerKeyPair);
 
 `generatePayOperationURI()` creates a `web+stellar:pay?` URI. The wallet can choose the payment path (direct payment or path payment) and source asset.
 
-### Minimum (destination only — donation/open amount)
+### Minimum (destination only, donation/open amount)
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -232,7 +232,7 @@ URI_REQUEST_SIGNING_KEY = "GBCD..."  # public key of signerKeyPair
 
 ### Structure validation (no network request)
 
-`isValidSep7Url()` validates URI structure, parameter formats, and values without fetching stellar.toml. Returns `IsValidSep7UrlResult` with `result` (bool) and `reason` (String? — only set when `result` is `false`).
+`isValidSep7Url()` validates URI structure, parameter formats, and values without fetching stellar.toml. Returns `IsValidSep7UrlResult` with `result` (bool) and `reason` (String?, only set when `result` is `false`).
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -275,7 +275,7 @@ final uri = 'web+stellar:tx?xdr=...&origin_domain=example.com&signature=...';
 
 final result = await uriScheme.isValidSep7SignedUrl(uri);
 if (result.result) {
-  // URI is valid and signature verified — safe to display origin_domain to user
+  // URI is valid and signature verified: safe to display origin_domain to user
   final parsed = uriScheme.tryParseSep7Url(uri);
   print('Verified request from: ${parsed?.queryParameters[URIScheme.originDomainParameterName]}');
 } else {
@@ -285,13 +285,13 @@ if (result.result) {
 ```
 
 `isValidSep7SignedUrl()` failure reasons:
-- `"Missing parameter 'origin_domain'"` — origin_domain absent
-- `"Missing parameter 'signature'"` — signature absent
-- `"The 'origin_domain' parameter is not a fully qualified domain name"` — bad domain
-- `"Toml not found or invalid for 'domain'"` — HTTP error fetching stellar.toml
-- `"No signing key found in toml from 'domain'"` — stellar.toml has no URI_REQUEST_SIGNING_KEY
-- `"Signing key found in toml from 'domain' is not valid"` — URI_REQUEST_SIGNING_KEY is not a valid G... address
-- `"Signature is not from the signing key '...' found in the toml data of 'domain'"` — signature verification failed
+- `"Missing parameter 'origin_domain'"`: origin_domain absent
+- `"Missing parameter 'signature'"`: signature absent
+- `"The 'origin_domain' parameter is not a fully qualified domain name"`: bad domain
+- `"Toml not found or invalid for 'domain'"`: HTTP error fetching stellar.toml
+- `"No signing key found in toml from 'domain'"`: stellar.toml has no URI_REQUEST_SIGNING_KEY
+- `"Signing key found in toml from 'domain' is not valid"`: URI_REQUEST_SIGNING_KEY is not a valid G... address
+- `"Signature is not from the signing key '...' found in the toml data of 'domain'"`: signature verification failed
 
 ### Signature verification with known public key
 
@@ -317,10 +317,10 @@ Returns `false` if: `signerPublicKey` is invalid, URI is invalid, URI has no `si
 
 ## 6. Sign and Submit a Transaction
 
-`signAndSubmitTransaction()` extracts the transaction from a `web+stellar:tx?` URI, signs it, and submits it either to a callback URL or directly to the Stellar network. Direct submission to the network runs the SEP-29 memo-required check (see [sep-29.md](sep-29.md)), so the method can throw `AccountRequiresMemoException` when the transaction has no memo and a destination account requires one.
+`signAndSubmitTransaction()` extracts the transaction from a `web+stellar:tx?` URI, signs it, and submits it either to a callback URL or directly to the Stellar network. Direct submission to the network runs the SEP-29 memo-required check (see [sep-29.md](sep-29.md)), so the method can throw `AccountRequiresMemoException` when the transaction has no memo and a destination account requires one. The method has no `skipMemoRequiredCheck` parameter.
 
-- If `callback` parameter starts with `url:` — POSTs signed XDR to that URL with `Content-Type: application/x-www-form-urlencoded`, body `xdr=<url-encoded-xdr>`.
-- Otherwise — submits directly to the Stellar network (PUBLIC or TESTNET based on `network` param).
+- If `callback` parameter starts with `url:`, it POSTs signed XDR to that URL with `Content-Type: application/x-www-form-urlencoded`, body `xdr=<url-encoded-xdr>`.
+- Otherwise, it submits directly to the Stellar network (PUBLIC or TESTNET based on `network` param).
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -382,7 +382,7 @@ It also supports `FeeBumpTransaction` in addition to regular `Transaction`.
 
 ## 7. Parse URI Parameters
 
-`tryParseSep7Url()` returns `ParsedSep7UrlResult?` — `null` if the URI is invalid. The result contains `operationType` (String — `"tx"` or `"pay"`) and `queryParameters` (Map<String, String> — URL-decoded values).
+`tryParseSep7Url()` returns `ParsedSep7UrlResult?`, which is `null` if the URI is invalid. The result contains `operationType` (String: `"tx"` or `"pay"`) and `queryParameters` (Map<String, String>, URL-decoded values).
 
 ```dart
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -483,8 +483,8 @@ if (parsed != null) {
 `UriSchemeReplacement` constructor: `UriSchemeReplacement(String id, String path, String hint)`.
 
 Field path format (Txrep SEP-11 notation):
-- `sourceAccount` — top-level field
-- `operations[0].destination` — indexed operation field
+- `sourceAccount`: top-level field
+- `operations[0].destination`: indexed operation field
 - No `tx.` prefix; no metadata fields (`_present`, `len`)
 
 ---
@@ -498,10 +498,10 @@ Returned by `signAndSubmitTransaction()`. Exactly one of the two fields is non-n
 final txResponse = response.submitTransactionResponse; // SubmitTransactionResponse?
 if (txResponse != null) {
   txResponse.success;           // bool
-  txResponse.hash;              // String? — transaction hash
+  txResponse.hash;              // String?, transaction hash
   txResponse.ledger;            // int?
-  txResponse.envelopeXdr;       // String? — signed envelope XDR
-  txResponse.resultXdr;         // String? — result XDR
+  txResponse.envelopeXdr;       // String?, signed envelope XDR
+  txResponse.resultXdr;         // String?, result XDR
   txResponse.extras?.resultCodes?.transactionResultCode; // String? e.g. "tx_failed"
   txResponse.extras?.resultCodes?.operationsResultCodes; // List<String>?
 }
@@ -509,8 +509,8 @@ if (txResponse != null) {
 // Callback URL submission:
 final httpResponse = response.response; // http.Response?
 if (httpResponse != null) {
-  httpResponse.statusCode;   // int — HTTP status code
-  httpResponse.body;         // String — response body (use body, not getBody())
+  httpResponse.statusCode;   // int, HTTP status code
+  httpResponse.body;         // String, response body (use body, not getBody())
   httpResponse.headers;      // Map<String, String>
 }
 ```
@@ -597,15 +597,15 @@ uriScheme.httpClient = http.Client();
 ### Mock toml failure scenarios
 
 ```dart
-// TOML not found (404) — isValidSep7SignedUrl returns result=false,
+// TOML not found (404): isValidSep7SignedUrl returns result=false,
 // reason="Toml not found or invalid for 'domain'"
 uriScheme.httpClient = MockClient((_) async => http.Response('Not Found', 404));
 
-// TOML has no URI_REQUEST_SIGNING_KEY — reason="No signing key found in toml from 'domain'"
+// TOML has no URI_REQUEST_SIGNING_KEY: reason="No signing key found in toml from 'domain'"
 final tomlWithoutKey = '[DOCUMENTATION]\nORG_NAME="Example"\n';
 uriScheme.httpClient = MockClient((_) async => http.Response(tomlWithoutKey, 200));
 
-// TOML with wrong key — reason="Signature is not from the signing key..."
+// TOML with wrong key: reason="Signature is not from the signing key..."
 final wrongKey = 'URI_REQUEST_SIGNING_KEY="GCCHBLJOZUFBVAUZP55N7ZU6ZB5VGEDHSXT23QC6UIVDQNGI6QDQTOOR"';
 uriScheme.httpClient = MockClient((_) async => http.Response(wrongKey, 200));
 ```
@@ -621,15 +621,15 @@ All constants are static on `URIScheme`:
 | `URIScheme.uriSchemeName` | `web+stellar:` | URI prefix |
 | `URIScheme.operationTypeTx` | `tx` | tx URI operation string |
 | `URIScheme.operationTypePay` | `pay` | pay URI operation string |
-| `URIScheme.xdrParameterName` | `xdr` | tx URI — transaction XDR |
-| `URIScheme.replaceParameterName` | `replace` | tx URI — Txrep field spec |
-| `URIScheme.callbackParameterName` | `callback` | both — callback URL |
-| `URIScheme.publicKeyParameterName` | `pubkey` | tx URI — required signer |
-| `URIScheme.chainParameterName` | `chain` | tx URI — nested URI |
-| `URIScheme.messageParameterName` | `msg` | both — user-facing message |
+| `URIScheme.xdrParameterName` | `xdr` | tx URI: transaction XDR |
+| `URIScheme.replaceParameterName` | `replace` | tx URI: Txrep field spec |
+| `URIScheme.callbackParameterName` | `callback` | both: callback URL |
+| `URIScheme.publicKeyParameterName` | `pubkey` | tx URI: required signer |
+| `URIScheme.chainParameterName` | `chain` | tx URI: nested URI |
+| `URIScheme.messageParameterName` | `msg` | both: user-facing message |
 | `URIScheme.networkPassphraseParameterName` | `network_passphrase` | both |
-| `URIScheme.originDomainParameterName` | `origin_domain` | both — for signing |
-| `URIScheme.signatureParameterName` | `signature` | both — URI signature |
+| `URIScheme.originDomainParameterName` | `origin_domain` | both: for signing |
+| `URIScheme.signatureParameterName` | `signature` | both: URI signature |
 | `URIScheme.destinationParameterName` | `destination` | pay URI |
 | `URIScheme.amountParameterName` | `amount` | pay URI |
 | `URIScheme.assetCodeParameterName` | `asset_code` | pay URI |
@@ -649,7 +649,7 @@ All constants are static on `URIScheme`:
 **Use `addSignature()`, not the deprecated `signURI()`:**
 
 ```dart
-// WRONG: signURI() is @Deprecated — use addSignature() instead
+// WRONG: signURI() is @Deprecated, use addSignature() instead
 final signedUri = uriScheme.signURI(uri, signerKeyPair); // deprecated
 
 // CORRECT: addSignature() is the current API
@@ -674,7 +674,7 @@ if (!result.result) {
 **Callback value must be prefixed with `url:`:**
 
 ```dart
-// WRONG: raw URL — signAndSubmitTransaction() will NOT route to callback
+// WRONG: raw URL, signAndSubmitTransaction() will NOT route to callback
 final uri = uriScheme.generateSignTransactionURI(
   xdrBase64,
   callback: 'https://example.com/submit',  // missing "url:" prefix
@@ -694,7 +694,7 @@ final uri = uriScheme.generateSignTransactionURI(
 // WRONG: generate without origin_domain, then sign
 final uri = uriScheme.generateSignTransactionURI(xdrBase64);
 final signed = uriScheme.addSignature(uri, keyPair);
-// signed URI has no origin_domain — isValidSep7SignedUrl() returns false:
+// signed URI has no origin_domain, so isValidSep7SignedUrl() returns false:
 // "Missing parameter 'origin_domain'"
 
 // CORRECT: include origin_domain at generation time
@@ -722,7 +722,7 @@ final signed = uriScheme.addSignature(uri, keyPair); // uri has no signature yet
 ```dart
 // WRONG: omitting network for testnet transactions
 final response = await uriScheme.signAndSubmitTransaction(uri, keyPair);
-// submits to PUBLIC network — testnet transactions fail with tx_bad_seq or are lost
+// submits to PUBLIC network, so testnet transactions fail with tx_bad_seq or are lost
 
 // CORRECT: always pass the network explicitly
 final response = await uriScheme.signAndSubmitTransaction(
@@ -751,10 +751,10 @@ final callback = Uri.decodeComponent(encodedCallback);
 // CORRECT: tryParseSep7Url() returns URL-decoded values in queryParameters
 final parsed = uriScheme.tryParseSep7Url(uri);
 final callback = parsed?.queryParameters['callback'];
-// already decoded — e.g. "url:https://example.com/submit"
+// already decoded, e.g. "url:https://example.com/submit"
 ```
 
-**Deprecated `getParameterValue()` — use `tryParseSep7Url()` instead:**
+**Use `tryParseSep7Url()`, not the deprecated `getParameterValue()`:**
 
 ```dart
 // WRONG: getParameterValue() is @Deprecated

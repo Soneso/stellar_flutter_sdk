@@ -75,7 +75,7 @@ The two envelope-string methods decode the base64 envelope to check it. An envel
 
 Pass `skipMemoRequiredCheck: true` to any submit method to submit without the check and without any account lookup.
 
-To run the check without submitting, call `sdk.checkMemoRequired(transaction)`. It takes a `Transaction` or a `FeeBumpTransaction`, throws the same `AccountRequiresMemoException`, and completes normally when the transaction may be sent. Use it to validate a payment before you show a confirmation screen.
+To run the check without submitting, call `sdk.checkMemoRequired(transaction)`. It takes an `AbstractTransaction`: a `Transaction` is checked directly, a `FeeBumpTransaction` through its inner transaction. It throws the same `AccountRequiresMemoException` and completes normally when the transaction may be sent. Use it to validate a payment before you show a confirmation screen.
 
 ## Detailed Usage
 
@@ -322,7 +322,7 @@ Skip the check only when you have already run it, for example with `checkMemoReq
 
 ## Integration with Payment Flows
 
-### Integration sendPayment function
+### A sendPayment helper
 
 A payment helper can turn the exception into a result the UI understands. This one loads the sender account on every call, so a retry with a memo uses the current sequence number:
 
@@ -428,15 +428,14 @@ SubmitTransactionResponse response =
 
 A destination lookup that fails for another reason stops the check, and the submit method throws that error without submitting: `ErrorResponse` for an HTTP status other than 404 or 429, `TooManyRequestsException` when Horizon rate limits the lookup, or `http.ClientException` (from `package:http`) for a transport failure. `checkMemoRequired()` throws the same errors.
 
-**Important notes:**
-- The check validates memo *presence*, not memo *type*. SEP-29 leaves the memo type to the recipient, so any memo passes.
+The check validates memo presence, not memo type. SEP-29 leaves the memo type to the recipient, so any memo passes.
 
 ## Related SEPs
 
-- **[SEP-07](sep-07.md)** -- URI scheme (`signAndSubmitTransaction()` runs the check when it submits to the network)
-- **[SEP-10](sep-10.md)** -- Web authentication (often used by exchanges that require memos)
-- **[SEP-23](sep-23.md)** -- Muxed accounts (M-addresses, which the check skips)
-- **[SEP-24](sep-24.md)** -- Interactive deposit/withdrawal (anchors provide deposit memos)
+- **[SEP-07](sep-07.md)** - URI scheme (`signAndSubmitTransaction()` runs the check when it submits to the network)
+- **[SEP-10](sep-10.md)** - Web authentication (often used by exchanges that require memos)
+- **[SEP-23](sep-23.md)** - Muxed accounts (M-addresses, which the check skips)
+- **[SEP-24](sep-24.md)** - Interactive deposit/withdrawal (anchors provide deposit memos)
 
 ---
 
