@@ -2,10 +2,10 @@
 name: stellar-flutter-sdk
 description: Builds Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, XDR-JSON, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with async/await and Stream patterns across Android, iOS, and Web. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing in a Flutter app.
 license: Apache 2.0
-compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.7.0
+compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.8.0
 metadata:
-  version: "1.5.0"
-  sdk_version: "3.7.0"
+  version: "1.6.0"
+  sdk_version: "3.8.0"
 ---
 
 # Stellar SDK for Flutter
@@ -18,7 +18,7 @@ The Stellar Flutter SDK (`stellar_flutter_sdk`) is a full-featured Dart library 
 
 ```yaml
 dependencies:
-  stellar_flutter_sdk: ^3.7.0
+  stellar_flutter_sdk: ^3.8.0
 ```
 
 > iOS: set the app's deployment target to 15.0 or higher. Passkey smart-account features need iOS 16 at runtime.
@@ -66,7 +66,7 @@ for (Balance balance in account.balances) {
   }
 }
 
-// Check account existence (no built-in helper — use try/catch)
+// Check account existence (no built-in helper: use try/catch)
 bool exists = true;
 try { await sdk.accounts.account(accountId); } on ErrorResponse catch (e) {
   if (e.code == 404) exists = false;
@@ -144,7 +144,7 @@ for (AccountResponse acct in bySigner.records) {
 ```dart
 StellarSDK sdk = StellarSDK.TESTNET;
 
-// Same builder pattern as accounts — forAccount(), limit(), order(), cursor()
+// Same builder pattern as accounts: forAccount(), limit(), order(), cursor()
 Page<TransactionResponse> txPage = await sdk.transactions
     .forAccount(accountId)
     .order(RequestBuilderOrder.DESC)
@@ -168,7 +168,7 @@ Real-time update patterns using Server-Sent Events (SSE). Set cursor to `"now"` 
 ### Stream Payments
 
 ```dart
-// Stream pattern — same for payments, transactions, ledgers, operations, effects, offers
+// Stream pattern: same for payments, transactions, ledgers, operations, effects, offers
 StreamSubscription<OperationResponse> subscription = sdk.payments
     .forAccount(accountId)
     .cursor('now')
@@ -331,9 +331,9 @@ For contract authorization, multi-auth workflows, protocol 27 credentials (ADDRE
 
 Passkey-authenticated Soroban smart accounts: biometric auth, multiple signers (passkey / delegated / Ed25519), context rules, policies, and optional fee sponsoring via a relayer. Entry point: `OZSmartAccountKit.create(config:)`.
 
-- [Smart Accounts Guide](./references/smart_accounts.md) — kit config, wallet create/connect, signer types, transactions, credentials, events, `submit` / `fundWallet`, the `externalSigners` manager, indexer
-- [Context Rules & Policies](./references/smart_accounts_policies.md) — signer management, context rules, policies, multi-signer operations, common scenarios (recovery, rotation, `__check_auth` debugging), contract error codes
-- [WebAuthn Platform Setup](./references/smart_accounts_webauthn.md) — Android, iOS, and Web WebAuthn providers and storage adapters, DAL / AASA / RP-ID, cross-device passkeys
+- [Smart Accounts Guide](./references/smart_accounts.md): kit config, wallet create/connect, signer types, transactions, credentials, events, `submit` / `fundWallet`, the `externalSigners` manager, indexer
+- [Context Rules & Policies](./references/smart_accounts_policies.md): signer management, context rules, policies, multi-signer operations, common scenarios (recovery, rotation, `__check_auth` debugging), contract error codes
+- [WebAuthn Platform Setup](./references/smart_accounts_webauthn.md): Android, iOS, and Web WebAuthn providers and storage adapters, DAL / AASA / RP-ID, cross-device passkeys
 
 ## 8. XDR Encoding & Decoding
 
@@ -432,7 +432,7 @@ For complete security patterns and platform-specific key storage:
 
 ## 11. SEP Implementations
 
-The Flutter SDK implements 18 Stellar Ecosystem Proposals (SEPs) — authentication, deposit/withdrawal, federation, KYC, XDR-JSON, and more. Sixteen have a reference page; SEP-23 (StrKey) and SEP-29 (memo requirements) are covered inside other topics.
+The Flutter SDK implements 18 Stellar Ecosystem Proposals (SEPs): authentication, deposit/withdrawal, federation, KYC, XDR-JSON, and more. Seventeen have a reference page; SEP-23 (StrKey) is covered inside other topics.
 
 For all SEP examples with code: [SEP Implementations Guide](./references/sep.md)
 
@@ -455,18 +455,18 @@ For all SEP examples with code: [SEP Implementations Guide](./references/sep.md)
 
 ## Common Pitfalls
 
-**Dart null safety:** A bare `KeyPair kp;` declaration is a compile error — assign immediately, use `late KeyPair kp;` (throws if read before assignment), or declare nullable `KeyPair? kp;` and null-check before use.
+**Dart null safety:** A bare `KeyPair kp;` declaration is a compile error. Assign immediately, use `late KeyPair kp;` (throws if read before assignment), or declare nullable `KeyPair? kp;` and null-check before use.
 
-**Amounts and prices are always Strings:** Payment amounts and balances are decimal strings with at most seven significant fractional digits after trailing zeros are ignored; the network carries them as 64-bit integer stroops (1 XLM = 10,000,000 stroops). Prices are decimal strings too, but `Price.fromString` approximates them to a signed-int32 fraction, so no seven-digit rule applies — it rejects malformed syntax, zero, and any value no int32 fraction can carry.
+**Amounts and prices are always Strings:** Payment amounts and balances are decimal strings with at most seven significant fractional digits after trailing zeros are ignored; the network carries them as 64-bit integer stroops (1 XLM = 10,000,000 stroops). Prices are decimal strings too, but `Price.fromString` approximates them to a signed-int32 fraction, so no seven-digit rule applies. It rejects malformed syntax, zero, and any value no int32 fraction can carry.
 ```dart
-// WRONG: numeric amount — loses precision
+// WRONG: numeric amount, loses precision
 double amount = 100.1234567;
 
 // CORRECT: string amount
 String amount = '100.1234567';
 ```
 
-**Sequence number management:** `TransactionBuilder.build()` mutates the source account's sequence number. A good practice is to reload the account from Horizon before building a new transaction. Don't increment manually unless you have a specific reason — `build()` handles it. Stale sequence numbers cause `tx_bad_seq` errors.
+**Sequence number management:** `TransactionBuilder.build()` mutates the source account's sequence number. A good practice is to reload the account from Horizon before building a new transaction. Don't increment manually unless you have a specific reason. `build()` handles it. Stale sequence numbers cause `tx_bad_seq` errors.
 
 ```dart
 // CORRECT: reload account, build() increments sequence internally
@@ -474,10 +474,10 @@ AccountResponse account = await sdk.accounts.account(accountId); // on-chain seq
 Transaction tx = TransactionBuilder(account).addOperation(op).build(); // uses seq N+1
 await sdk.submitTransaction(tx);
 
-// WRONG: manually incrementing — build() already does this
+// WRONG: manually incrementing, build() already does this
 AccountResponse account = await sdk.accounts.account(accountId); // on-chain seq N
 account.incrementSequenceNumber(); // now N+1
-Transaction tx = TransactionBuilder(account).addOperation(op).build(); // seq N+2 — tx_bad_seq
+Transaction tx = TransactionBuilder(account).addOperation(op).build(); // seq N+2: tx_bad_seq
 ```
 
 When a transaction must carry a specific future sequence (pre-authorized transactions), see Manual Sequence Numbers in [Advanced Features](./references/advanced.md).

@@ -298,6 +298,47 @@ def _classify_operator(line: str, info: ClassInfo) -> bool:
     return True
 
 
+_FIELD_MODIFIER_PREFIX_RE = re.compile(
+    r'^((?:(?:static|late|final|var|const)\s+)*)(.*)$'
+)
+
+
+def _classify_func_type_field(line: str, info: ClassInfo) -> bool:
+    """
+    Append a field whose type is a function type, e.g.:
+        void Function(String message)? logger
+        final void Function() onDone
+        static final int Function(int)? hook = null
+
+    The general field pattern cannot hold the parentheses of a function type,
+    and the method pattern reads `Function(` as a method named `Function`, so
+    these declarations need their own branch. Returns True if matched.
+    """
+    mods_m = _FIELD_MODIFIER_PREFIX_RE.match(line)
+    modifiers = compact_whitespace(mods_m.group(1) or "")
+    rest = mods_m.group(2)
+    fm = _FUNC_TYPE_RETURN_RE.match(rest)
+    if not fm:
+        return False
+    func_paren_close = balance_parens(rest, fm.end() - 1)
+    type_str = compact_whitespace(rest[:func_paren_close + 1])
+    remainder = rest[func_paren_close + 1:].lstrip()
+    if remainder.startswith('?'):
+        type_str += '?'
+        remainder = remainder[1:].lstrip()
+    # A field name is followed by nothing or by an initializer; a method name
+    # is followed by a generic clause or a parameter list.
+    name_m = re.match(r'(\w+)\s*(?:=.*)?$', remainder)
+    if not name_m:
+        return False
+    name = name_m.group(1)
+    if is_private(name):
+        return True  # consumed
+    prefix = f"{modifiers} " if modifiers else ""
+    info.fields.append(f"{prefix}{type_str} {name}")
+    return True
+
+
 def _classify_method(line: str, info: ClassInfo, class_name: str) -> bool:
     """Append a method signature if `line` declares one. Returns True if matched."""
     m = _METHOD_RE.match(line)
@@ -383,6 +424,12 @@ def _classify_func_type_return_method(
     remainder = line[func_paren_close + 1:].lstrip()
     if not remainder:
         return False
+
+    # A nullable function type (`void Function(String message)? logger`)
+    # carries its `?` between the closing `)` and the name.
+    if remainder.startswith('?'):
+        return_type += '?'
+        remainder = remainder[1:].lstrip()
 
     # Extract real method name.
     name_m = re.match(r'(\w+)', remainder)
@@ -600,6 +647,10 @@ def _classify_member(line: str, info: ClassInfo, class_name: str) -> None:
             sig += f"{modifier} "
         sig += f"{ctor_name}({params})"
         info.constructors.append(sig)
+        return
+
+    # --- Function-typed fields: `[modifiers] R Function(P)? name [= init]` ---
+    if _classify_func_type_field(line, info):
         return
 
     # --- Methods (including generic methods and void) ---

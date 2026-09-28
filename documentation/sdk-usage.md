@@ -2132,6 +2132,26 @@ if (asyncResponse.txStatus == SubmitAsyncTransactionResponse.txStatusPending) {
 }
 ```
 
+#### Memo Requirements (SEP-29)
+
+The submit methods check memo requirements before sending. If the transaction has no memo and a payment, path payment or account merge goes to a non-multiplexed destination account whose `config.memo_required` data entry is `1`, they throw `AccountRequiresMemoException` and submit nothing. The check makes no request when the transaction carries a memo, and at most one account lookup per distinct non-muxed destination otherwise; pass `skipMemoRequiredCheck: true` to submit without it.
+
+```dart
+import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
+
+StellarSDK sdk = StellarSDK.TESTNET;
+
+try {
+  SubmitTransactionResponse response = await sdk.submitTransaction(transaction);
+  print("Hash: ${response.hash}");
+} on AccountRequiresMemoException catch (e) {
+  // Nothing was submitted: rebuild with a memo from a reloaded source account
+  print("Account ${e.accountId} (operation ${e.operationIndex}) requires a memo");
+}
+```
+
+See [SEP-29: Account Memo Requirements](sep/sep-29.md) for fee bumps, muxed destinations and running the check without submitting.
+
 ### Fee Statistics
 
 Query current network fee levels to set appropriate fees for your transactions. All values are in stroops (1 XLM = 10,000,000 stroops).
