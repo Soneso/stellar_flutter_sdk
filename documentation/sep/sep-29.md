@@ -17,11 +17,10 @@ The submit methods of `StellarSDK` check the destinations before sending. If the
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 StellarSDK sdk = StellarSDK.TESTNET;
-KeyPair senderKeyPair = KeyPair.fromSecretSeed("SDAYCKMBSHSMI5MDI3M3CUOV73ARJGPHKW7YQFCHOMSE3FGM7XNTBTVV");
-// An account whose config.memo_required data entry is set to 1
-KeyPair destinationKeyPair = KeyPair.fromAccountId("GC5K7EUJIROBOQHHG4TFUAGZVWVALJTNESW7ZQLYMEFZGZFHNWFEKTHF");
+// senderSecretSeed: String for your funded sender account, loaded from secure storage
+// destinationId: String for an existing account with config.memo_required set to 1
+KeyPair senderKeyPair = KeyPair.fromSecretSeed(senderSecretSeed);
 
-String destinationId = destinationKeyPair.accountId;
 AccountResponse senderAccount =
     await sdk.accounts.account(senderKeyPair.accountId);
 
@@ -121,7 +120,8 @@ To remove the requirement, pass `null` as the value. This deletes the data entry
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 StellarSDK sdk = StellarSDK.TESTNET;
-KeyPair exchangeKeyPair = KeyPair.fromSecretSeed("SAVSYZG4KFDZTL4OHPALGT5VVG3XKIEDFE2CJIWLWK2FTKWDNDMXT4WB");
+// exchangeSecretSeed: String for the account that set config.memo_required, loaded from secure storage
+KeyPair exchangeKeyPair = KeyPair.fromSecretSeed(exchangeSecretSeed);
 
 AccountResponse exchangeAccount =
     await sdk.accounts.account(exchangeKeyPair.accountId);
@@ -148,21 +148,19 @@ When a transaction pays several accounts, the exception tells you which one need
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 StellarSDK sdk = StellarSDK.TESTNET;
-KeyPair senderKeyPair = KeyPair.fromSecretSeed("SDAYCKMBSHSMI5MDI3M3CUOV73ARJGPHKW7YQFCHOMSE3FGM7XNTBTVV");
-KeyPair walletKeyPair = KeyPair.fromAccountId("GB2HGBJLC5NL5J4REQHUXXHTYLIQLKLFA4UEPUN7X5JCPWREODUR2EWG");
-// An account whose config.memo_required data entry is set to 1
-KeyPair exchangeKeyPair = KeyPair.fromAccountId("GC5K7EUJIROBOQHHG4TFUAGZVWVALJTNESW7ZQLYMEFZGZFHNWFEKTHF");
+// senderSecretSeed: String for your funded sender account, loaded from secure storage
+// walletId: String for an existing account without a config.memo_required entry
+// exchangeId: String for an existing account with config.memo_required set to 1
+KeyPair senderKeyPair = KeyPair.fromSecretSeed(senderSecretSeed);
 
 AccountResponse senderAccount =
     await sdk.accounts.account(senderKeyPair.accountId);
 
 Transaction transaction = TransactionBuilder(senderAccount)
-    .addOperation(PaymentOperationBuilder(
-            walletKeyPair.accountId, Asset.NATIVE, "10.0")
-        .build())
-    .addOperation(PaymentOperationBuilder(
-            exchangeKeyPair.accountId, Asset.NATIVE, "25.0")
-        .build())
+    .addOperation(
+        PaymentOperationBuilder(walletId, Asset.NATIVE, "10.0").build())
+    .addOperation(
+        PaymentOperationBuilder(exchangeId, Asset.NATIVE, "25.0").build())
     .build();
 transaction.sign(senderKeyPair, Network.TESTNET);
 
@@ -184,11 +182,10 @@ The check also covers `AccountMergeOperation`, since a merge sends the whole bal
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 StellarSDK sdk = StellarSDK.TESTNET;
-KeyPair sourceKeyPair = KeyPair.fromSecretSeed("SCHGTSKTV3BRZCWCFHBVDRVBHII3LB52KNRG2TP4FIKGTNACZP5OL3VT");
-// An account whose config.memo_required data entry is set to 1
-KeyPair destinationKeyPair = KeyPair.fromAccountId("GC5K7EUJIROBOQHHG4TFUAGZVWVALJTNESW7ZQLYMEFZGZFHNWFEKTHF");
+// sourceSecretSeed: String for the funded account to merge, loaded from secure storage
+// destinationId: String for an existing account with config.memo_required set to 1
+KeyPair sourceKeyPair = KeyPair.fromSecretSeed(sourceSecretSeed);
 
-String destinationId = destinationKeyPair.accountId;
 AccountResponse sourceAccount =
     await sdk.accounts.account(sourceKeyPair.accountId);
 
@@ -225,16 +222,16 @@ SEP-29 excludes multiplexed destinations from the check. A muxed account (M-addr
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 StellarSDK sdk = StellarSDK.TESTNET;
-KeyPair senderKeyPair = KeyPair.fromSecretSeed("SDAYCKMBSHSMI5MDI3M3CUOV73ARJGPHKW7YQFCHOMSE3FGM7XNTBTVV");
-// An account whose config.memo_required data entry is set to 1
-KeyPair baseKeyPair = KeyPair.fromAccountId("GC5K7EUJIROBOQHHG4TFUAGZVWVALJTNESW7ZQLYMEFZGZFHNWFEKTHF");
+// senderSecretSeed: String for your funded sender account, loaded from secure storage
+// baseAccountId: String for an existing account with config.memo_required set to 1
+KeyPair senderKeyPair = KeyPair.fromSecretSeed(senderSecretSeed);
 
 AccountResponse senderAccount =
     await sdk.accounts.account(senderKeyPair.accountId);
 
 // The muxed id identifies the customer, so no memo is needed
 MuxedAccount muxedDestination =
-    MuxedAccount(baseKeyPair.accountId, BigInt.from(12345));
+    MuxedAccount(baseAccountId, BigInt.from(12345));
 
 Transaction transaction = TransactionBuilder(senderAccount)
     .addOperation(PaymentOperationBuilder.forMuxedDestinationAccount(
@@ -258,12 +255,12 @@ A fee bump envelope carries no memo and no operations of its own, so `submitFeeB
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 StellarSDK sdk = StellarSDK.TESTNET;
-KeyPair senderKeyPair = KeyPair.fromSecretSeed("SDAYCKMBSHSMI5MDI3M3CUOV73ARJGPHKW7YQFCHOMSE3FGM7XNTBTVV");
-KeyPair feePayerKeyPair = KeyPair.fromSecretSeed("SAWVUHBTLOYJUOZO5B5PRDFYWVUCLWVTEB5MTWT5XGHUPE52WXXOFTLU");
-// An account whose config.memo_required data entry is set to 1
-KeyPair destinationKeyPair = KeyPair.fromAccountId("GC5K7EUJIROBOQHHG4TFUAGZVWVALJTNESW7ZQLYMEFZGZFHNWFEKTHF");
+// senderSecretSeed: String for your funded sender account, loaded from secure storage
+// feePayerSecretSeed: String for the funded account that pays the fee, loaded from secure storage
+// destinationId: String for an existing account with config.memo_required set to 1
+KeyPair senderKeyPair = KeyPair.fromSecretSeed(senderSecretSeed);
+KeyPair feePayerKeyPair = KeyPair.fromSecretSeed(feePayerSecretSeed);
 
-String destinationId = destinationKeyPair.accountId;
 AccountResponse senderAccount =
     await sdk.accounts.account(senderKeyPair.accountId);
 
@@ -299,17 +296,17 @@ Pass `skipMemoRequiredCheck: true` to submit without the check. No destination a
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 StellarSDK sdk = StellarSDK.TESTNET;
-KeyPair senderKeyPair = KeyPair.fromSecretSeed("SDAYCKMBSHSMI5MDI3M3CUOV73ARJGPHKW7YQFCHOMSE3FGM7XNTBTVV");
-// An account whose config.memo_required data entry is set to 1
-KeyPair destinationKeyPair = KeyPair.fromAccountId("GC5K7EUJIROBOQHHG4TFUAGZVWVALJTNESW7ZQLYMEFZGZFHNWFEKTHF");
+// senderSecretSeed: String for your funded sender account, loaded from secure storage
+// destinationId: String for an existing account with config.memo_required set to 1
+KeyPair senderKeyPair = KeyPair.fromSecretSeed(senderSecretSeed);
 
 AccountResponse senderAccount =
     await sdk.accounts.account(senderKeyPair.accountId);
 
 Transaction transaction = TransactionBuilder(senderAccount)
-    .addOperation(PaymentOperationBuilder(
-            destinationKeyPair.accountId, Asset.NATIVE, "100.0")
-        .build())
+    .addOperation(
+        PaymentOperationBuilder(destinationId, Asset.NATIVE, "100.0")
+            .build())
     .build();
 transaction.sign(senderKeyPair, Network.TESTNET);
 
@@ -374,21 +371,21 @@ Calling it without a memo for an account that requires one returns `'success': f
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 StellarSDK sdk = StellarSDK.TESTNET;
-KeyPair senderKeyPair = KeyPair.fromSecretSeed("SDAYCKMBSHSMI5MDI3M3CUOV73ARJGPHKW7YQFCHOMSE3FGM7XNTBTVV");
-// An account whose config.memo_required data entry is set to 1
-KeyPair destinationKeyPair = KeyPair.fromAccountId("GC5K7EUJIROBOQHHG4TFUAGZVWVALJTNESW7ZQLYMEFZGZFHNWFEKTHF");
+// senderSecretSeed: String for your funded sender account, loaded from secure storage
+// destinationId: String for an existing account with config.memo_required set to 1
+KeyPair senderKeyPair = KeyPair.fromSecretSeed(senderSecretSeed);
 
 Map<String, dynamic> result = await sendPayment(
   sdk,
   senderKeyPair,
-  destinationKeyPair.accountId,
+  destinationId,
   "10.0",
 );
 
 result = await sendPayment(
   sdk,
   senderKeyPair,
-  destinationKeyPair.accountId,
+  destinationId,
   "10.0",
   memo: "user-123",
 );
@@ -402,7 +399,8 @@ The check skips destinations Horizon does not know. A payment to an account that
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 StellarSDK sdk = StellarSDK.TESTNET;
-KeyPair senderKeyPair = KeyPair.fromSecretSeed("SDAYCKMBSHSMI5MDI3M3CUOV73ARJGPHKW7YQFCHOMSE3FGM7XNTBTVV");
+// senderSecretSeed: String for your funded sender account, loaded from secure storage
+KeyPair senderKeyPair = KeyPair.fromSecretSeed(senderSecretSeed);
 
 // A valid account id that does not exist on the network
 String destinationId = KeyPair.random().accountId;

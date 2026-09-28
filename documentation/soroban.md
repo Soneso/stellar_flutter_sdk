@@ -1568,7 +1568,7 @@ Future<void> signSimulatedAuth(
 
 ## Contract Parser
 
-Parse contract bytecode to access specifications, metadata, and environment information without deploying.
+Parse contract bytecode to access specifications (SEP-48), metadata (SEP-46), the SEPs a contract declares (SEP-47), and environment information without deploying.
 
 ### Parse from Bytecode
 
@@ -1589,6 +1589,9 @@ for (XdrSCSpecEntry entry in contractInfo.specEntries) {
 
 // Contract meta (arbitrary metadata as key-value pairs)
 Map<String, String> meta = contractInfo.metaEntries;
+
+// SEP numbers declared in the contract's "sep" meta entries
+List<String> supportedSeps = contractInfo.supportedSeps;
 ```
 
 ### Parse from Network

@@ -1,10 +1,10 @@
 ---
 name: stellar-flutter-sdk
-description: Builds Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, XDR-JSON, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 18 SEP implementations with async/await and Stream patterns across Android, iOS, and Web. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing in a Flutter app.
+description: Builds Stellar blockchain applications in Flutter/Dart using stellar_flutter_sdk. Use when generating Dart code for transaction building, signing, Horizon API queries, Soroban RPC, smart contract deployment and invocation, smart accounts (OpenZeppelin) with passkey / WebAuthn authentication, XDR encoding/decoding, XDR-JSON, and SEP protocol integration. Covers 26+ operations, 50 Horizon endpoints, 12 RPC methods, and 21 SEP implementations with async/await and Stream patterns across Android, iOS, and Web. Reach for it when the developer mentions Stellar, blockchain, passkey, smart wallet, or biometric signing in a Flutter app.
 license: Apache 2.0
 compatibility: Requires Dart SDK >=3.8.0 <4.0.0 and stellar_flutter_sdk ^3.8.0
 metadata:
-  version: "1.6.0"
+  version: "1.7.0"
   sdk_version: "3.8.0"
 ---
 
@@ -12,7 +12,7 @@ metadata:
 
 ## Overview
 
-The Stellar Flutter SDK (`stellar_flutter_sdk`) is a full-featured Dart library for building Stellar blockchain applications on Android, iOS, and Web. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), and 18 SEP implementations. All APIs use Dart `Future` (async/await) for asynchronous operations and `Stream` for real-time event subscriptions. Version 3.0.0+ uses `BigInt` for all 64-bit integer types to ensure full web platform compatibility.
+The Stellar Flutter SDK (`stellar_flutter_sdk`) is a full-featured Dart library for building Stellar blockchain applications on Android, iOS, and Web. It provides 100% Horizon API coverage (50/50 endpoints), 100% Soroban RPC coverage (12/12 methods), and 21 SEP implementations. All APIs use Dart `Future` (async/await) for asynchronous operations and `Stream` for real-time event subscriptions. Version 3.0.0+ uses `BigInt` for all 64-bit integer types to ensure full web platform compatibility.
 
 ## Installation
 
@@ -432,7 +432,7 @@ For complete security patterns and platform-specific key storage:
 
 ## 11. SEP Implementations
 
-The Flutter SDK implements 18 Stellar Ecosystem Proposals (SEPs): authentication, deposit/withdrawal, federation, KYC, XDR-JSON, and more. Seventeen have a reference page; SEP-23 (StrKey) is covered inside other topics.
+The Flutter SDK implements 21 Stellar Ecosystem Proposals (SEPs): authentication, deposit/withdrawal, federation, KYC, contract metadata and specs, XDR-JSON, and more. Seventeen have a reference page; SEP-46, SEP-47 and SEP-48 are covered by the Smart Contracts Guide, and SEP-23 (StrKey) inside other topics.
 
 For all SEP examples with code: [SEP Implementations Guide](./references/sep.md)
 
@@ -449,7 +449,7 @@ For all SEP examples with code: [SEP Implementations Guide](./references/sep.md)
 - [XDR Guide](./references/xdr.md) - XDR encoding/decoding and debugging
 - [Troubleshooting Guide](./references/troubleshooting.md) - Error codes, platform & environment info
 - [Security Guide](./references/security.md) - Platform-specific key storage, production deployment
-- [SEP Implementations](./references/sep.md) - 18 SEP protocols: TOML, Federation, Web Auth, deposits, KYC
+- [SEP Implementations](./references/sep.md) - 21 SEP protocols: TOML, Federation, Web Auth, deposits, KYC
 - [Advanced Features](./references/advanced.md) - Multi-sig, sponsorship, fee bumps, liquidity pools, muxed accounts, async submission
 - [API Reference (Signatures)](./references/api_reference.md) - All public class/method signatures (grep for any class or method not covered above)
 

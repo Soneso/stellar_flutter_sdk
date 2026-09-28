@@ -1,8 +1,8 @@
 # SEP Implementations
 
-The Flutter SDK implements 18 Stellar Ecosystem Proposals (SEPs) that cover authentication, asset transfers, identity verification, data rendering, and other standardized protocols for integrating with anchors and other Stellar services.
+The Flutter SDK implements 21 Stellar Ecosystem Proposals (SEPs) that cover authentication, asset transfers, identity verification, data rendering, and other standardized protocols for integrating with anchors and other Stellar services.
 
-Seventeen of them have a reference page here. The remaining one has no page of its own:
+Seventeen of them have a reference page here. The contract introspection section of the [Smart Contracts Guide](soroban_contracts.md#contract-introspection) covers SEP-46, SEP-47 and SEP-48. The remaining one has no page of its own:
 
 - SEP-23 (StrKey) is the address and key encoding, exposed as the `StrKey` class and used throughout the SDK. The [Security Guide](security.md) covers the validation patterns; `api_reference.md` has the full signature list.
 
@@ -20,11 +20,15 @@ Seventeen of them have a reference page here. The remaining one has no page of i
 | SEP-10 | Web Authentication | Authenticate accounts and obtain JWT tokens | [Details](sep-10.md) |
 | SEP-11 | Txrep | Convert transactions to human-readable format | [Details](sep-11.md) |
 | SEP-12 | KYC API | Submit and manage customer information | [Details](sep-12.md) |
+| SEP-23 | StrKey Encoding | Encode, decode and validate G, S, M, T, X, P, C, L and B strkeys | [Details](security.md#address-validation) |
 | SEP-24 | Interactive Deposit/Withdrawal | Interactive web flows for fiat on/off ramps | [Details](sep-24.md) |
 | SEP-29 | Account Memo Requirements | Check destinations for a memo requirement before submitting a payment | [Details](sep-29.md) |
 | SEP-30 | Account Recovery | Recover access to accounts via identity verification | [Details](sep-30.md) |
 | SEP-38 | Anchor RFQ API | Get exchange quotes for asset conversions | [Details](sep-38.md) |
 | SEP-45 | Web Auth for Contracts | Authenticate Soroban contract accounts | [Details](sep-45.md) |
+| SEP-46 | Contract Meta | Read key-value metadata embedded in contract WASM | [Details](soroban_contracts.md#contract-introspection) |
+| SEP-47 | Contract Interface Discovery | List the SEPs a contract declares in its `sep` meta entries | [Details](soroban_contracts.md#contract-introspection) |
+| SEP-48 | Contract Interface Specification | Parse function, type, and event specs from contract WASM | [Details](soroban_contracts.md#contract-introspection) |
 | SEP-51 | XDR-JSON | Render any XDR value as canonical JSON and read it back | [Details](sep-51.md) |
 | SEP-53 | Sign/Verify Messages | Sign and verify arbitrary messages with keypairs | [Details](sep-53.md) |
 
@@ -66,5 +70,6 @@ The following SEPs depend on other SEPs:
 - **SEP-30 (Account Recovery)** → Requires SEP-10 for authentication
 - **SEP-38 (Anchor RFQ API)** → Requires SEP-10 for authentication; used with SEP-06 or SEP-24
 - **SEP-45 (Web Auth for Contracts)** → Requires SEP-01 to discover web auth endpoint for contract accounts
+- **SEP-47 (Contract Interface Discovery)** → Reads the `sep` entries of SEP-46 contract meta
 
-No dependencies: SEP-02, SEP-05, SEP-07, SEP-08, SEP-09, SEP-11, SEP-29, SEP-51, SEP-53
+No dependencies: SEP-02, SEP-05, SEP-07, SEP-08, SEP-09, SEP-11, SEP-29, SEP-46, SEP-48, SEP-51, SEP-53
