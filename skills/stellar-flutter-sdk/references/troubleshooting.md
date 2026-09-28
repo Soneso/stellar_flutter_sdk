@@ -400,7 +400,7 @@ transaction.addResourceFee(bufferedFee);
 
 ## Debugging Techniques
 
-1. **Enable Soroban logging:** Set `server.enableLogging = true` on `SorobanServer` to see raw JSON-RPC request/response pairs in the console.
+1. **Enable Soroban logging:** Set `server.enableLogging = true` on `SorobanServer` to receive each raw JSON-RPC response line. Assign `server.logger = (message) => ...` to route the lines to your own sink; without a logger they go to the `dart:developer` log under the name `stellar_flutter_sdk.SorobanServer`, which developer tooling shows and the console does not.
 
 2. **Inspect transaction XDR before submission:**
    ```dart

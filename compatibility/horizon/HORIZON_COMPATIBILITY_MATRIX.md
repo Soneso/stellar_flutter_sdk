@@ -2,8 +2,8 @@
 
 **Horizon Version:** v28.0.1 (released 2026-08-27)  
 **Horizon Source:** [v28.0.1](https://github.com/stellar/stellar-horizon/releases/tag/v28.0.1)  
-**SDK Version:** 3.7.0  
-**Generated:** 2026-09-15 16:14:38
+**SDK Version:** 3.8.0  
+**Generated:** 2026-09-28 01:09:07
 
 **Horizon Endpoints Discovered:** 52  
 **Public API Endpoints (in matrix):** 50
