@@ -17,7 +17,7 @@ jobs:
 
     strategy:
       matrix:
-        flutter-version: ['3.32.x', '3.35.x', '3.38.x', '3.47.x']
+        flutter-version: ['3.32.x', '3.44.x', '3.47.x']
 
     steps:
       - name: Checkout repository
@@ -36,15 +36,15 @@ jobs:
         run: dart analyze lib/ --fatal-warnings
 
       - name: Run unit tests (without coverage)
-        if: matrix.flutter-version != '3.38.x'
+        if: matrix.flutter-version != '3.47.x'
         run: flutter test test/unit/
 
       - name: Run unit tests with coverage
-        if: matrix.flutter-version == '3.38.x'
+        if: matrix.flutter-version == '3.47.x'
         run: flutter test test/unit/ --coverage
 
       - name: Upload coverage to Codecov
-        if: matrix.flutter-version == '3.38.x'
+        if: matrix.flutter-version == '3.47.x'
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -68,7 +68,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
-          flutter-version: '3.38.x'
+          flutter-version: '3.47.x'
           channel: 'stable'
 
       # dart2wasm output runs under a Node ESM loader, and WasmGC needs a Node with it
