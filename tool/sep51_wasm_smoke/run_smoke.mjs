@@ -20,5 +20,14 @@ if (!modulePath || !loaderPath) {
 
 const loader = await import(loaderPath);
 const compiled = await loader.compile(await readFile(modulePath));
-const instance = await loader.instantiate(compiled, {});
-await loader.invoke(instance);
+
+// The init file's shape depends on the Dart SDK that emitted it. Dart 3.13 and
+// later return a CompiledApp whose instantiate() yields an InstantiatedApp with
+// invokeMain(); earlier SDKs export module-level instantiate() and invoke().
+if (typeof compiled.instantiate === 'function') {
+  const app = await compiled.instantiate({});
+  await app.invokeMain();
+} else {
+  const instance = await loader.instantiate(compiled, {});
+  await loader.invoke(instance);
+}
