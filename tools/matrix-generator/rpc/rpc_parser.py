@@ -9,13 +9,13 @@ This module provides tools to:
 - Parse RPC method registrations from Go source code
 - Extract method names following the pattern: protocol.GetXxxMethodName -> getXxx
 - Generate structured JSON output with method metadata
-- Support both local file and GitHub-based parsing
+
+Pipeline module of rpc/run_rpc_analysis.py, which supplies the source and the
+release metadata.
 """
 
-import argparse
 import json
 import re
-import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any
@@ -33,7 +33,7 @@ class RPCMethodParser:
     }
 
     Attributes:
-        version_info: Optional version metadata for the RPC release
+        version_info: Version metadata for the RPC release
         methods: Dictionary of parsed method definitions
     """
 
@@ -57,8 +57,11 @@ class RPCMethodParser:
         r'(\w+)\s+[\w\.\*\[\]]+\s+`json:"([^,"]+)(?:,[^"]*)?"`'
     )
 
-    # Known method descriptions and parameters
-    # This serves as fallback data since parsing Go structs for parameters is complex
+    # Embedded struct: a struct body line that holds only a type name
+    EMBEDDED_STRUCT_PATTERN = re.compile(r'\s+(\w+)\s*')
+
+    # Description and parameters of each method; jsonrpc.go registers only the
+    # method names, and the request structs are not parsed.
     METHOD_METADATA: Dict[str, Dict[str, Any]] = {
         "getHealth": {
             "description": "General node health check",
@@ -122,19 +125,18 @@ class RPCMethodParser:
         }
     }
 
-    def __init__(self, version_info: Optional[Dict[str, str]] = None) -> None:
+    def __init__(self, version_info: Dict[str, str]) -> None:
         """
         Initialize the RPC method parser.
 
         Args:
-            version_info: Optional dictionary containing version metadata:
-                - version: RPC version (e.g., "v22.0.0")
+            version_info: Version metadata of the RPC release:
+                - version: RPC version (e.g., "v28.0.1")
                 - release_date: Release date (ISO format)
                 - release_url: GitHub release URL
         """
-        self.version_info = version_info or {}
+        self.version_info = version_info
         self.methods: Dict[str, Dict[str, Any]] = {}
-        self._source_type: str = "Unknown"
 
     def parse(self, content: str) -> "RPCMethodParser":
         """
@@ -170,28 +172,6 @@ class RPCMethodParser:
                 self.methods[method_name] = self._get_method_metadata(method_name)
 
         return self
-
-    def parse_from_file(self, file_path: str) -> "RPCMethodParser":
-        """
-        Parse RPC method definitions from a local Go source file.
-
-        Args:
-            file_path: Path to the jsonrpc.go file
-
-        Returns:
-            Self for method chaining
-
-        Raises:
-            FileNotFoundError: If the file does not exist
-            ValueError: If no methods are found in the file
-        """
-        path = Path(file_path)
-        if not path.exists():
-            raise FileNotFoundError(f"File not found: {file_path}")
-
-        self._source_type = "Local"
-        content = path.read_text(encoding="utf-8")
-        return self.parse(content)
 
     def _convert_method_name(self, protocol_name: str) -> Optional[str]:
         """
@@ -237,58 +217,67 @@ class RPCMethodParser:
             "optional_params": []
         }
 
-    def parse_response_fields(self, response_content: str) -> List[Dict[str, str]]:
+    def parse_response_fields(self, response_content: str, sources: List[str]) -> List[Dict[str, str]]:
         """
         Parse response struct fields from Go source code.
 
+        An embedded struct contributes its fields in its place. It resolves
+        across sources, since a response can embed a struct that another
+        method's protocol file declares (GetTransactionResponse embeds
+        TransactionDetails from get_transactions.go).
+
         Args:
             response_content: Go source code containing response struct definition
+            sources: Go sources of every fetched protocol file
 
         Returns:
             List of dictionaries with field name and JSON tag
             Example: [{"field_name": "Hash", "json_name": "id"}, ...]
-        """
-        fields = []
 
-        # Find the response struct
+        Raises:
+            ValueError: If no source declares an embedded struct
+        """
         struct_match = self.RESPONSE_STRUCT_PATTERN.search(response_content)
         if not struct_match:
-            return fields
+            return []
+        return self._struct_fields(struct_match.group(1), struct_match.group(2), sources)
 
-        struct_body = struct_match.group(2)
-
-        # Extract all fields with JSON tags
-        for field_match in self.STRUCT_FIELD_PATTERN.finditer(struct_body):
-            field_name = field_match.group(1)
-            json_name = field_match.group(2)
-
-            # Skip fields with special JSON tags
-            if json_name in ["-", ""]:
+    def _struct_fields(self, struct_name: str, struct_body: str,
+                       sources: List[str]) -> List[Dict[str, str]]:
+        """JSON-tagged fields of a struct body, the fields of embedded structs included."""
+        fields = []
+        for line in struct_body.splitlines():
+            embedded = self.EMBEDDED_STRUCT_PATTERN.fullmatch(line)
+            if embedded:
+                pattern = re.compile(rf'type\s+{embedded.group(1)}\s+struct\s*\{{([^}}]+)\}}')
+                body = next((m.group(1) for m in map(pattern.search, sources) if m), None)
+                if body is None:
+                    raise ValueError(
+                        f"{struct_name} embeds {embedded.group(1)}, which no fetched protocol "
+                        f"file declares")
+                fields.extend(self._struct_fields(embedded.group(1), body, sources))
                 continue
-
-            fields.append({
-                "field_name": field_name,
-                "json_name": json_name
-            })
-
+            field_match = self.STRUCT_FIELD_PATTERN.search(line)
+            # Skip fields with special JSON tags
+            if field_match and field_match.group(2) not in ("-", ""):
+                fields.append({"field_name": field_match.group(1), "json_name": field_match.group(2)})
         return fields
 
-    def add_response_fields_to_method(self, method_name: str, response_content: str) -> None:
+    def add_response_fields_to_method(self, method_name: str, response_content: str,
+                                      sources: List[str]) -> None:
         """
         Parse and add response fields to an existing method.
 
         Args:
             method_name: The camelCase method name (e.g., "getLatestLedger")
             response_content: Go source code containing the response struct
+            sources: Go sources of every fetched protocol file
 
         Raises:
             ValueError: If the content holds no response struct with a
                 JSON-tagged field
         """
-        if method_name not in self.methods:
-            return
-
-        response_fields = self.parse_response_fields(response_content)
+        response_fields = self.parse_response_fields(response_content, sources)
         if not response_fields:
             raise ValueError(f"No response fields parsed for {method_name}")
         self.methods[method_name]["response_fields"] = response_fields
@@ -316,8 +305,9 @@ class RPCMethodParser:
                 f"{len(method_names)} parsed RPC methods: {', '.join(missing)}"
             )
 
+        sources = list(response_files.values())
         for method_name in method_names:
-            self.add_response_fields_to_method(method_name, response_files[method_name])
+            self.add_response_fields_to_method(method_name, response_files[method_name], sources)
 
     def to_json(self) -> Dict[str, Any]:
         """
@@ -328,11 +318,10 @@ class RPCMethodParser:
         """
         return {
             "metadata": {
-                "source": self._source_type,
                 "generated_at": datetime.now().isoformat(),
-                "rpc_version": self.version_info.get("version", "unknown"),
-                "rpc_release_date": self.version_info.get("release_date", "unknown"),
-                "rpc_release_url": self.version_info.get("release_url", ""),
+                "rpc_version": self.version_info["version"],
+                "rpc_release_date": self.version_info["release_date"],
+                "rpc_release_url": self.version_info["release_url"],
                 "total_methods": len(self.methods)
             },
             "methods": self.methods
@@ -374,87 +363,3 @@ class RPCMethodParser:
             Sorted list of method names
         """
         return sorted(self.methods.keys())
-
-
-def main() -> int:
-    """
-    Command-line interface for the RPC method parser.
-
-    Returns:
-        Exit code (0 for success, non-zero for failure)
-    """
-    parser = argparse.ArgumentParser(
-        description="Parse Soroban RPC method definitions from Go source code",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  # Parse from local file
-  python rpc_parser.py --local /path/to/jsonrpc.go --output rpc_methods.json
-        """
-    )
-
-    parser.add_argument(
-        "--local",
-        metavar="PATH",
-        required=True,
-        help="Path to local jsonrpc.go file"
-    )
-
-    parser.add_argument(
-        "--output",
-        "-o",
-        default="rpc_methods.json",
-        help="Output JSON file path (default: rpc_methods.json)"
-    )
-
-    parser.add_argument(
-        "--version",
-        help="RPC version tag (e.g., v22.0.0)"
-    )
-
-    parser.add_argument(
-        "--release-date",
-        help="RPC release date (ISO format: YYYY-MM-DD)"
-    )
-
-    parser.add_argument(
-        "--release-url",
-        help="GitHub release URL"
-    )
-
-    args = parser.parse_args()
-
-    # Prepare version info
-    version_info = {}
-    if args.version:
-        version_info["version"] = args.version
-    if args.release_date:
-        version_info["release_date"] = args.release_date
-    if args.release_url:
-        version_info["release_url"] = args.release_url
-
-    try:
-        rpc_parser = RPCMethodParser(version_info=version_info if version_info else None)
-
-        print(f"Parsing local file: {args.local}")
-        rpc_parser.parse_from_file(args.local)
-
-        # Display summary
-        method_names = rpc_parser.get_method_names()
-        print(f"\nFound {rpc_parser.get_method_count()} RPC methods:")
-        for name in method_names:
-            print(f"  - {name}")
-
-        # Save to file
-        print(f"\nSaving to: {args.output}")
-        rpc_parser.save_json(args.output)
-
-        return 0
-
-    except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
-        return 1
-
-
-if __name__ == "__main__":
-    sys.exit(main())

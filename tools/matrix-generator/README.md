@@ -17,7 +17,9 @@ It analyzes three areas:
 
 Horizon sources are fetched from GitHub at the tag of the latest release. RPC sources are fetched at the tag of the newest stable release: the highest `vX.Y.Z` tag with `draft` and `prerelease` false, across every page of the release list. `--rpc-version` must name a non-draft `v*` server release. The local clones back the `--local` modes below, and `run_analysis.py` checks for them up front: `stellar-horizon` must carry `internal/httpx/router.go`.
 
-A pipeline exits non-zero and writes no matrix when `pubspec.yaml` has no readable version, when no RPC release qualifies, or when the response struct of any RPC method cannot be fetched or yields no fields. The SEP-23 pipeline does the same when the specification lacks its Specification or Tests section, or when the version byte table or a test case list is missing or empty. It also stops when a file it reads is missing or unreadable, or when a key type has no entry in its name table. A class, `VersionByte` member, constant, or `StrKey` function it maps that is absent stops it too, and so does a version byte value in a form it cannot evaluate. `run_analysis.py` stops at the first failed step.
+A pipeline exits non-zero and writes no matrix when `pubspec.yaml` has no readable version or no RPC release qualifies. The RPC pipeline does the same when the response struct of a method cannot be fetched, yields no fields, or embeds a struct that no fetched go-stellar-sdk protocol file declares. The SEP-23 pipeline does the same when the specification lacks its Specification or Tests section, or when the version byte table or a test case list is missing or empty. It also stops when a file it reads is missing or unreadable, or when a key type has no entry in its name table. A class, `VersionByte` member, constant, or `StrKey` function it maps that is absent stops it too, and so does a version byte value in a form it cannot evaluate. `run_analysis.py` stops at the first failed step.
+
+The response fields of a method include the fields of the structs its response struct embeds. Fields ending in `Json` are the JSON-format variants of XDR fields and are not counted, because the SDK decodes XDR.
 
 Optional: set `GITHUB_TOKEN` for higher API rate limits (5,000 vs 60 requests/hour).
 
@@ -51,7 +53,7 @@ Each subsystem can be run independently.
 python3 tools/matrix-generator/horizon/run_horizon_analysis.py
 
 # Use a specific Horizon version
-python3 tools/matrix-generator/horizon/run_horizon_analysis.py --horizon-version v2.30.0
+python3 tools/matrix-generator/horizon/run_horizon_analysis.py --horizon-version v28.0.1
 
 # Use a local router.go file
 python3 tools/matrix-generator/horizon/run_horizon_analysis.py --local /path/to/router.go
@@ -91,15 +93,15 @@ tools/matrix-generator/
 ├── run_analysis.py              # Master orchestrator (runs all 65 steps)
 ├── common.py                    # Shared utilities (colors, paths, version)
 ├── github_fetcher.py            # GitHub API client (release + source fetching)
-├── sdk_analyzer.py              # Dart source file analyzer (used by Horizon)
+├── sdk_analyzer.py              # Pipeline module: analyzes the SDK request builders for Horizon
 ├── horizon/
 │   ├── run_horizon_analysis.py  # Horizon pipeline orchestrator
-│   ├── horizon_parser.py        # Parses router.go for endpoint definitions
-│   └── generate_horizon_comparison.py
+│   ├── horizon_parser.py        # Pipeline module: parses router.go for endpoint definitions
+│   └── generate_horizon_comparison.py  # Pipeline module: compares and writes the matrix
 ├── rpc/
 │   ├── run_rpc_analysis.py      # RPC pipeline orchestrator
-│   ├── rpc_parser.py            # Parses jsonrpc.go for RPC method definitions
-│   └── generate_rpc_comparison.py
+│   ├── rpc_parser.py            # Pipeline module: parses jsonrpc.go for RPC method definitions
+│   └── generate_rpc_comparison.py  # Pipeline module: compares and writes the matrix
 ├── sep/
 │   ├── sep_parser.py            # Fetches and parses SEP specs from stellar.org
 │   ├── sep_analyzer.py          # Analyzes SDK source for SEP implementation
@@ -133,11 +135,10 @@ The tests patch every network call. The SEP fixtures in `tests/fixtures/` are co
 
 ## Adding a New SEP
 
-Each stage carries a dispatch table as well as the code it dispatches to, so a new SEP needs both halves in all three of them.
+Each stage finds the code for a SEP by its number and stops for a number it has no code for.
 
-1. Add the SEP number to `KNOWN_SEPS` in `sep/sep_parser.py`
-2. Add a `parse_sep_NN()` in `sep/sep_parser.py` if the spec has non-standard structure, plus its branch in `SEPParser.parse()`
-3. Add an `analyze_sep_NN()` and a `map_sep_NN_features()` in `sep/sep_analyzer.py`, plus the branch in `SEPAnalyzer.analyze()`. A SEP with no `lib/src/sep/<n>/` directory bypasses `find_sep_files()` and names its own paths, as SEP-23, SEP-29, SEP-46, SEP-51 and SEP-53 do. SEP-23 also reads its test vectors from `test/unit/strkey_test.dart`
-4. Add a `_compare_sep_NN_features()` in `sep/generate_sep_comparison.py`, plus its branch in `compare_fields()`. That dispatch keys on the shape of `implemented_features`, not on the SEP number, so the branch must test a key combination no other SEP produces
-5. Add the three script entries to `self.scripts` in `run_analysis.py`
-6. Run `python3 tools/matrix-generator/run_analysis.py` to verify
+1. Add a `parse_sep_NN()` to `sep/sep_parser.py`
+2. Add an `analyze_sep_NN()` and a `map_sep_NN_features()` to `sep/sep_analyzer.py`. A SEP with no `lib/src/sep/<n>/` directory bypasses `find_sep_files()` and names its own paths, as SEP-23, SEP-29, SEP-46, SEP-51 and SEP-53 do. SEP-23 also reads its test vectors from `test/unit/strkey_test.dart`
+3. Add the titles of its analysis categories to `SECTION_TITLES` in `sep/generate_sep_comparison.py`
+4. Add the SEP to `SEPS` in `run_analysis.py`
+5. Run `python3 tools/matrix-generator/run_analysis.py` to verify

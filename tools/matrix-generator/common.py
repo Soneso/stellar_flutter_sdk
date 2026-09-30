@@ -4,7 +4,6 @@ Shared utilities for the compatibility matrix generator.
 """
 
 import re
-import sys
 import time
 from pathlib import Path
 from typing import Any, Dict
@@ -12,8 +11,6 @@ from typing import Any, Dict
 # Root directories resolved from this file's location
 TOOLS_DIR = Path(__file__).parent
 SDK_ROOT = TOOLS_DIR.parent.parent
-DATA_DIR = TOOLS_DIR / 'data'
-COMPATIBILITY_DIR = SDK_ROOT / 'compatibility'
 
 
 class Colors:

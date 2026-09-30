@@ -419,7 +419,7 @@ class ResponseFileFetchTest(unittest.TestCase):
 
 class ResponseFieldEnrichmentTest(unittest.TestCase):
     def make_parser(self) -> RPCMethodParser:
-        parser = RPCMethodParser()
+        parser = RPCMethodParser(version_info={})
         parser.parse(JSONRPC_SOURCE)
         return parser
 
@@ -454,6 +454,57 @@ class ResponseFieldEnrichmentTest(unittest.TestCase):
             json_names('getNetwork'),
             ['friendbotUrl', 'passphrase', 'protocolVersion']
         )
+
+    def enrich_get_transaction(self, get_transactions_source: str) -> RPCMethodParser:
+        parser = RPCMethodParser(version_info={})
+        parser.methods = {'getTransaction': {}, 'getTransactions': {}}
+        parser.add_response_fields_to_all_methods({
+            'getTransaction': 'type GetTransactionResponse struct {\n'
+                              '\tLatestLedger uint32 `json:"latestLedger"`\n'
+                              '\tTransactionDetails\n'
+                              '\tLedgerCloseTime int64 `json:"createdAt,string"`\n}\n',
+            'getTransactions': get_transactions_source,
+        })
+        return parser
+
+    def test_embedded_struct_from_another_file_adds_its_fields_in_place(self):
+        parser = self.enrich_get_transaction(
+            'type TransactionDetails struct {\n\tStatus string `json:"status"`\n'
+            '\tTransactionHash string `json:"txHash"`\n}\n\n'
+            'type GetTransactionsResponse struct {\n\tCursor string `json:"cursor"`\n}\n')
+        self.assertEqual(
+            [f['json_name'] for f in parser.methods['getTransaction']['response_fields']],
+            ['latestLedger', 'status', 'txHash', 'createdAt'])
+
+    def test_embedded_struct_declared_nowhere_fails_naming_it(self):
+        with self.assertRaisesRegex(ValueError, 'GetTransactionResponse embeds TransactionDetails, which no fetched'):
+            self.enrich_get_transaction(
+                'type GetTransactionsResponse struct {\n\tCursor string `json:"cursor"`\n}\n')
+
+
+class ResponseFieldComparisonTest(unittest.TestCase):
+    def test_json_format_variants_are_left_out(self):
+        analyzer = generate_rpc_comparison.RPCComparisonAnalyzer({'metadata': dict.fromkeys(
+            ('rpc_version', 'rpc_release_date', 'rpc_release_url'), '')}, {})
+        coverage = analyzer._compare_response_fields('getTransaction', [
+            {'json_name': 'envelopeXdr'}, {'json_name': 'envelopeJson'}], ['envelopeXdr'])
+        self.assertEqual((coverage.total, coverage.missing), (1, []))
+
+    def test_json_format_variants_are_left_out_of_a_missing_method(self):
+        analyzer = generate_rpc_comparison.RPCComparisonAnalyzer({'metadata': dict.fromkeys(
+            ('rpc_version', 'rpc_release_date', 'rpc_release_url'), ''), 'methods': {'getTransaction': {
+                'response_fields': [{'json_name': 'envelopeXdr'}, {'json_name': 'envelopeJson'}]}}}, {})
+        analyzer.analyze()
+        self.assertEqual(analyzer.comparisons[0].response_fields.missing, ['envelopeXdr'])
+
+    def test_missing_method_shows_a_dash_for_the_flutter_method(self):
+        analyzer = generate_rpc_comparison.RPCComparisonAnalyzer({'metadata': dict.fromkeys(
+            ('rpc_version', 'rpc_release_date', 'rpc_release_url'), ''), 'methods': {'getHealth': {}}}, {})
+        analyzer.analyze()
+        with tempfile.TemporaryDirectory() as out, redirect_stdout(io.StringIO()):
+            analyzer.generate_markdown_report(str(Path(out) / 'matrix.md'))
+            matrix = (Path(out) / 'matrix.md').read_text(encoding='utf-8')
+        self.assertIn('| `getHealth` | ❌ Not Supported | - |', matrix)
 
 
 class RpcPipelineTest(FakeGitHubTestCase):

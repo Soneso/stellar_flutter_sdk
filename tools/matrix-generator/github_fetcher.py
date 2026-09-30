@@ -19,23 +19,18 @@ Authentication:
 
 Example usage:
     from github_fetcher import (
-        get_latest_release, fetch_router_source, fetch_latest_horizon_source,
-        get_latest_rpc_release, get_rpc_release, fetch_rpc_jsonrpc_source,
-        fetch_latest_rpc_source
+        get_horizon_release, fetch_router_source,
+        get_latest_rpc_release, get_rpc_release, fetch_rpc_jsonrpc_source
     )
 
     # Horizon
-    release = get_latest_release()
-    print(f"Latest Horizon version: {release.version}")
-    source = fetch_router_source("v25.0.0")
-    release, source = fetch_latest_horizon_source()
+    release = get_horizon_release()
+    source = fetch_router_source(release.version)
 
     # RPC
     rpc_release = get_latest_rpc_release()
-    print(f"Newest stable RPC version: {rpc_release.version}")
     pinned_release = get_rpc_release("v28.0.1")
-    jsonrpc_source = fetch_rpc_jsonrpc_source("v21.5.0")
-    rpc_release, jsonrpc_source = fetch_latest_rpc_source()
+    jsonrpc_source = fetch_rpc_jsonrpc_source(pinned_release.version)
 """
 
 import json
@@ -57,7 +52,6 @@ class GitHubRelease:
     version: str
     published_at: Optional[datetime]
     html_url: str
-    commit_sha: Optional[str] = None
 
     @classmethod
     def from_api_response(cls, data: Dict) -> 'GitHubRelease':
@@ -82,13 +76,10 @@ class GitHubRelease:
                 '%Y-%m-%dT%H:%M:%SZ'
             )
 
-        commit_sha = data.get('target_commitish')
-
         return cls(
             version=data['tag_name'],
             published_at=published_at,
-            html_url=data['html_url'],
-            commit_sha=commit_sha
+            html_url=data['html_url']
         )
 
 
@@ -244,9 +235,12 @@ def _make_request_with_headers(
         ) from e
 
 
-def get_latest_release() -> HorizonRelease:
+def get_horizon_release(tag: Optional[str] = None) -> HorizonRelease:
     """
-    Fetch the latest Horizon release metadata from GitHub API.
+    Fetch a Horizon release record from GitHub API.
+
+    Args:
+        tag: Release tag (e.g. 'v28.0.1'). None selects the latest release.
 
     Returns:
         HorizonRelease instance with release metadata
@@ -255,7 +249,9 @@ def get_latest_release() -> HorizonRelease:
         ReleaseNotFoundError: If no release is found
         GitHubFetchError: If API request fails
     """
-    api_url = 'https://api.github.com/repos/stellar/stellar-horizon/releases/latest'
+    api_url = 'https://api.github.com/repos/stellar/stellar-horizon/releases/' + (
+        f'tags/{tag}' if tag else 'latest'
+    )
 
     try:
         response_data = _make_request(api_url)
@@ -285,7 +281,7 @@ def fetch_router_source(tag: str) -> str:
     Fetch router.go source code for a specific Horizon release tag.
 
     Args:
-        tag: Git tag name (e.g., 'v2.31.0')
+        tag: Git tag name (e.g., 'v28.0.1')
 
     Returns:
         Content of router.go as string
@@ -310,27 +306,6 @@ def fetch_router_source(tag: str) -> str:
         raise SourceFileNotFoundError(
             f"Failed to fetch router.go for tag {tag}: {e}"
         ) from e
-
-
-def fetch_latest_horizon_source() -> Tuple[HorizonRelease, str]:
-    """
-    Convenience function to fetch both release metadata and router source.
-
-    This function combines get_latest_release() and fetch_router_source()
-    to retrieve the latest Horizon release information and its router.go
-    source code in a single operation.
-
-    Returns:
-        Tuple of (HorizonRelease metadata, router.go source code)
-
-    Raises:
-        ReleaseNotFoundError: If no release is found
-        SourceFileNotFoundError: If source file cannot be fetched
-        GitHubFetchError: If any request fails
-    """
-    release = get_latest_release()
-    source = fetch_router_source(release.version)
-    return release, source
 
 
 _RPC_RELEASES_URL = (
@@ -553,27 +528,6 @@ def fetch_rpc_jsonrpc_source(tag: str) -> str:
         ) from e
 
 
-def fetch_latest_rpc_source() -> Tuple[RPCRelease, str]:
-    """
-    Convenience function to fetch both RPC release metadata and jsonrpc source.
-
-    This function combines get_latest_rpc_release() and fetch_rpc_jsonrpc_source()
-    to retrieve the latest RPC release information and its jsonrpc.go
-    source code in a single operation.
-
-    Returns:
-        Tuple of (RPCRelease metadata, jsonrpc.go source code)
-
-    Raises:
-        ReleaseNotFoundError: If no release is found
-        SourceFileNotFoundError: If source file cannot be fetched
-        GitHubFetchError: If any request fails
-    """
-    release = get_latest_rpc_release()
-    source = fetch_rpc_jsonrpc_source(release.version)
-    return release, source
-
-
 # Cache of resolved go-stellar-sdk refs, keyed by the stellar-rpc tag, so the
 # dependency is read from go.mod at most once per analysis run.
 _GO_STELLAR_SDK_REF_CACHE: Dict[str, str] = {}
@@ -721,65 +675,3 @@ def _camel_to_snake(name: str) -> str:
             result.append('_')
         result.append(char.lower())
     return ''.join(result)
-
-
-def main() -> None:
-    """
-    Main function for standalone testing.
-
-    Fetches latest Horizon release and displays information.
-    """
-    print("GitHub Fetcher for Stellar Horizon")
-    print("-" * 60)
-
-    # Show authentication status
-    if is_authenticated():
-        print("Authentication: Enabled (5,000 requests/hour)")
-    else:
-        print("Authentication: Not configured (60 requests/hour)")
-        print("  Tip: Set GITHUB_TOKEN env var for higher rate limits")
-    print("-" * 60)
-
-    print("Fetching latest Horizon release...")
-
-    try:
-        release, source = fetch_latest_horizon_source()
-
-        print(f"Version: {release.version}")
-        print(f"Published: {release.published_at.strftime('%Y-%m-%d %H:%M:%S UTC')}")
-        print(f"URL: {release.html_url}")
-        if release.commit_sha:
-            print(f"Commit SHA: {release.commit_sha}")
-        print("-" * 60)
-        print(f"Router source length: {len(source)} bytes")
-        print(f"Router source lines: {source.count(chr(10)) + 1}")
-        print("-" * 60)
-
-        # Display first 20 lines of router.go
-        lines = source.split('\n')
-        print("First 20 lines of router.go:")
-        for i, line in enumerate(lines[:20], 1):
-            print(f"{i:3d}: {line}")
-
-        if len(lines) > 20:
-            print(f"... ({len(lines) - 20} more lines)")
-
-        print("-" * 60)
-        print("Fetch successful!")
-
-    except ReleaseNotFoundError as e:
-        print(f"ERROR: {e}")
-        return
-    except SourceFileNotFoundError as e:
-        print(f"ERROR: {e}")
-        return
-    except GitHubFetchError as e:
-        print(f"ERROR: {e}")
-        return
-    except Exception as e:
-        print(f"UNEXPECTED ERROR: {e}")
-        raise
-
-
-if __name__ == '__main__':
-    main()

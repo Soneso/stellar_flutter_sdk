@@ -27,33 +27,26 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from common import Colors, evaluate_shift_expression
 
 
+def section(title: str, key: str, content: str, features: List[Dict[str, Any]],
+            features_key: str = 'api_features', count_key: str = 'feature_count') -> Dict[str, Any]:
+    """Definition section with its feature list and feature count."""
+    return {'title': title, 'key': key, 'content': content, features_key: features,
+            count_key: len(features)}
+
+
+def spec_item(name: str, description: str, required: bool = False, requirements: Optional[str] = None,
+              **extra: Any) -> Dict[str, Any]:
+    """Specified feature or field; requirements precedes required when given."""
+    item = {'name': name, 'description': description}
+    if requirements is not None:
+        item['requirements'] = requirements
+    item['required'] = required
+    item.update(extra)
+    return item
+
+
 class SEPParser:
     """Parser for Stellar Ecosystem Proposal (SEP) documentation"""
-
-    # Known SEPs and their titles (can be expanded)
-    KNOWN_SEPS = {
-        '0001': 'stellar.toml',
-        '0002': 'Federation Protocol',
-        '0005': 'Key Derivation Methods for Stellar Keys',
-        '0006': 'Anchor/Client Interoperability',
-        '0007': 'URI Scheme to facilitate delegated signing',
-        '0008': 'Regulated Assets',
-        '0009': 'Standard KYC / AML fields',
-        '0010': 'Stellar Web Authentication',
-        '0011': 'Txrep: Human-Readable Low-Level Representation of Stellar Transactions',
-        '0012': 'Anchor/Client customer info transfer',
-        '0023': 'Strkeys',
-        '0024': 'Hosted Deposit and Withdrawal',
-        '0029': 'Account Memo Requirements',
-        '0030': 'Account Recovery',
-        '0038': 'Anchor RFQ API',
-        '0045': 'Web Authentication for Contract Accounts',
-        '0046': 'Contract Meta',
-        '0047': 'Contract Interface Discovery',
-        '0048': 'Smart Contract Specifications',
-        '0051': 'XDR-JSON',
-        '0053': 'Sign and Verify Messages',
-    }
 
     def __init__(self, sep_number: str):
         """
@@ -280,7 +273,6 @@ class SEPParser:
             description = f"Example: {clean_value[:100]}"
 
             # Try to find a description in comments above this field
-            field_pos = match.start()
             comment_pattern = rf'#\s*([^\n]+)\n\s*{re.escape(field_name)}\s*='
             comment_match = re.search(comment_pattern, content)
             if comment_match:
@@ -462,19 +454,12 @@ class SEPParser:
 
         # Extract query parameters
         query_params = [
-            {
-                'name': 'q',
-                'description': 'String to look up (stellar address, account ID, or transaction ID)',
-                'required': True,
-                'type': 'string'
-            },
-            {
-                'name': 'type',
-                'description': 'Type of lookup (name, id, txid, or forward)',
-                'required': True,
-                'type': 'string',
-                'values': ['name', 'id', 'txid', 'forward']
-            }
+            spec_item(
+                'q', 'String to look up (stellar address, account ID, or transaction ID)',
+                required=True, type='string'),
+            spec_item(
+                'type', 'Type of lookup (name, id, txid, or forward)', required=True, type='string',
+                values=['name', 'id', 'txid', 'forward'])
         ]
         api_structure['request_parameters'] = query_params
 
@@ -482,26 +467,13 @@ class SEPParser:
         # For SEP-02, we know the response fields from the spec, so hardcode them
         # The parsing regex has issues with multiline descriptions
         api_structure['response_fields'] = [
-            {
-                'name': 'stellar_address',
-                'description': 'stellar address',
-                'required': True
-            },
-            {
-                'name': 'account_id',
-                'description': 'Stellar public key / account ID',
-                'required': True
-            },
-            {
-                'name': 'memo_type',
-                'description': 'type of memo to attach to transaction, one of text, id or hash',
-                'required': False
-            },
-            {
-                'name': 'memo',
-                'description': 'value of memo to attach to transaction, for hash this should be base64-encoded. This field should always be of type string (even when memo_type is equal id) to support parsing value in languages that don\'t support big numbers',
-                'required': False
-            }
+            spec_item('stellar_address', 'stellar address', required=True),
+            spec_item('account_id', 'Stellar public key / account ID', required=True),
+            spec_item(
+                'memo_type', 'type of memo to attach to transaction, one of text, id or hash'),
+            spec_item(
+                'memo',
+                "value of memo to attach to transaction, for hash this should be base64-encoded. This field should always be of type string (even when memo_type is equal id) to support parsing value in languages that don't support big numbers")
         ]
 
         # Store API structure as a section
@@ -515,9 +487,9 @@ class SEPParser:
 
         # Extract other sections for context
         general_sections = self.extract_sections()
-        for section in general_sections:
-            if section['title'] not in ['Preamble', 'Summary', 'Simple Summary']:
-                data['sections'].append(section)
+        for extracted in general_sections:
+            if extracted['title'] not in ['Preamble', 'Summary', 'Simple Summary']:
+                data['sections'].append(extracted)
 
         print(f"{Colors.GREEN}  ✓ Found {len(api_structure['request_types'])} request types{Colors.END}")
         print(f"{Colors.GREEN}  ✓ Found {len(api_structure['request_parameters'])} request parameters{Colors.END}")
@@ -550,228 +522,136 @@ class SEPParser:
 
         # Authentication Endpoints (GET and POST /auth)
         auth_features['authentication_endpoints'] = [
-            {
-                'name': 'get_auth_challenge',
-                'description': 'GET /auth endpoint - Returns challenge transaction',
-                'required': True,
-                'category': 'Authentication Endpoint',
-                'method': 'GET',
-                'parameters': ['account', 'memo', 'home_domain', 'client_domain']
-            },
-            {
-                'name': 'post_auth_token',
-                'description': 'POST /auth endpoint - Validates signed challenge and returns JWT token',
-                'required': True,
-                'category': 'Authentication Endpoint',
-                'method': 'POST',
-                'parameters': ['transaction']
-            }
+            spec_item(
+                'get_auth_challenge', 'GET /auth endpoint - Returns challenge transaction',
+                required=True, category='Authentication Endpoint', method='GET',
+                parameters=['account', 'memo', 'home_domain', 'client_domain']),
+            spec_item(
+                'post_auth_token',
+                'POST /auth endpoint - Validates signed challenge and returns JWT token',
+                required=True, category='Authentication Endpoint', method='POST',
+                parameters=['transaction'])
         ]
 
         # Challenge Transaction Features
         auth_features['challenge_transaction_features'] = [
-            {
-                'name': 'challenge_transaction_generation',
-                'description': 'Generate challenge transaction with proper structure',
-                'required': True,
-                'category': 'Challenge Transaction'
-            },
-            {
-                'name': 'transaction_envelope_format',
-                'description': 'Challenge uses proper Stellar transaction envelope format',
-                'required': True,
-                'category': 'Challenge Transaction'
-            },
-            {
-                'name': 'sequence_number_zero',
-                'description': 'Challenge transaction has sequence number 0',
-                'required': True,
-                'category': 'Challenge Transaction'
-            },
-            {
-                'name': 'manage_data_operations',
-                'description': 'Challenge uses ManageData operations for auth data',
-                'required': True,
-                'category': 'Challenge Transaction'
-            },
-            {
-                'name': 'home_domain_operation',
-                'description': 'First operation contains home_domain + " auth" as data name',
-                'required': True,
-                'category': 'Challenge Transaction'
-            },
-            {
-                'name': 'web_auth_domain_operation',
-                'description': 'Optional operation with web_auth_domain for domain verification',
-                'required': False,
-                'category': 'Challenge Transaction'
-            },
-            {
-                'name': 'timebounds_enforcement',
-                'description': 'Challenge transaction has timebounds for expiration',
-                'required': True,
-                'category': 'Challenge Transaction'
-            },
-            {
-                'name': 'server_signature',
-                'description': 'Challenge is signed by server before sending to client',
-                'required': True,
-                'category': 'Challenge Transaction'
-            },
-            {
-                'name': 'nonce_generation',
-                'description': 'Random nonce in ManageData operation value',
-                'required': True,
-                'category': 'Challenge Transaction'
-            }
+            spec_item(
+                'challenge_transaction_generation',
+                'Generate challenge transaction with proper structure', required=True,
+                category='Challenge Transaction'),
+            spec_item(
+                'transaction_envelope_format',
+                'Challenge uses proper Stellar transaction envelope format', required=True,
+                category='Challenge Transaction'),
+            spec_item(
+                'sequence_number_zero', 'Challenge transaction has sequence number 0',
+                required=True, category='Challenge Transaction'),
+            spec_item(
+                'manage_data_operations', 'Challenge uses ManageData operations for auth data',
+                required=True, category='Challenge Transaction'),
+            spec_item(
+                'home_domain_operation',
+                'First operation contains home_domain + " auth" as data name', required=True,
+                category='Challenge Transaction'),
+            spec_item(
+                'web_auth_domain_operation',
+                'Optional operation with web_auth_domain for domain verification',
+                category='Challenge Transaction'),
+            spec_item(
+                'timebounds_enforcement', 'Challenge transaction has timebounds for expiration',
+                required=True, category='Challenge Transaction'),
+            spec_item(
+                'server_signature', 'Challenge is signed by server before sending to client',
+                required=True, category='Challenge Transaction'),
+            spec_item(
+                'nonce_generation', 'Random nonce in ManageData operation value', required=True,
+                category='Challenge Transaction')
         ]
 
         # JWT Token Features
         auth_features['jwt_token_features'] = [
-            {
-                'name': 'jwt_token_generation',
-                'description': 'Generate JWT token after successful challenge validation',
-                'required': True,
-                'category': 'JWT Token'
-            },
-            {
-                'name': 'jwt_token_response',
-                'description': 'Return JWT token in JSON response with "token" field',
-                'required': True,
-                'category': 'JWT Token'
-            },
-            {
-                'name': 'jwt_token_validation',
-                'description': 'Validate JWT token structure and signature',
-                'required': True,
-                'category': 'JWT Token',
-                'server_side_only': True,
-                'client_note': 'This is a server-side validation feature. Client SDKs only need to receive, store, and send the JWT as a bearer token.'
-            },
-            {
-                'name': 'jwt_expiration',
-                'description': 'JWT token includes expiration time',
-                'required': True,
-                'category': 'JWT Token'
-            },
-            {
-                'name': 'jwt_claims',
-                'description': 'JWT token includes required claims (sub, iat, exp)',
-                'required': True,
-                'category': 'JWT Token'
-            }
+            spec_item(
+                'jwt_token_generation', 'Generate JWT token after successful challenge validation',
+                required=True, category='JWT Token'),
+            spec_item(
+                'jwt_token_response', 'Return JWT token in JSON response with "token" field',
+                required=True, category='JWT Token'),
+            spec_item(
+                'jwt_token_validation', 'Validate JWT token structure and signature', required=True,
+                category='JWT Token', server_side_only=True,
+                client_note='This is a server-side validation feature. Client SDKs only need to receive, store, and send the JWT as a bearer token.'),
+            spec_item(
+                'jwt_expiration', 'JWT token includes expiration time', required=True,
+                category='JWT Token'),
+            spec_item(
+                'jwt_claims', 'JWT token includes required claims (sub, iat, exp)', required=True,
+                category='JWT Token')
         ]
 
         # Client Domain Features
         auth_features['client_domain_features'] = [
-            {
-                'name': 'client_domain_parameter',
-                'description': 'Support optional client_domain parameter in GET /auth',
-                'required': False,
-                'category': 'Client Domain'
-            },
-            {
-                'name': 'client_domain_operation',
-                'description': 'Add client_domain ManageData operation to challenge',
-                'required': False,
-                'category': 'Client Domain'
-            },
-            {
-                'name': 'client_domain_verification',
-                'description': 'Verify client domain by checking stellar.toml',
-                'required': False,
-                'category': 'Client Domain',
-                'server_side_only': True,
-                'client_note': 'This is a server-side verification feature. Client SDKs only need to support the client_domain parameter and signing.'
-            },
-            {
-                'name': 'client_domain_signature',
-                'description': 'Require signature from client domain account',
-                'required': False,
-                'category': 'Client Domain'
-            }
+            spec_item(
+                'client_domain_parameter', 'Support optional client_domain parameter in GET /auth',
+                category='Client Domain'),
+            spec_item(
+                'client_domain_operation', 'Add client_domain ManageData operation to challenge',
+                category='Client Domain'),
+            spec_item(
+                'client_domain_verification', 'Verify client domain by checking stellar.toml',
+                category='Client Domain', server_side_only=True,
+                client_note='This is a server-side verification feature. Client SDKs only need to support the client_domain parameter and signing.'),
+            spec_item(
+                'client_domain_signature', 'Require signature from client domain account',
+                category='Client Domain')
         ]
 
         # Verification Features
         auth_features['verification_features'] = [
-            {
-                'name': 'challenge_validation',
-                'description': 'Validate challenge transaction structure and content',
-                'required': True,
-                'category': 'Verification'
-            },
-            {
-                'name': 'signature_verification',
-                'description': 'Verify all signatures on challenge transaction',
-                'required': True,
-                'category': 'Verification'
-            },
-            {
-                'name': 'multi_signature_support',
-                'description': 'Support multiple signatures on challenge (client account + signers)',
-                'required': True,
-                'category': 'Verification'
-            },
-            {
-                'name': 'timebounds_validation',
-                'description': 'Validate challenge is within valid time window',
-                'required': True,
-                'category': 'Verification'
-            },
-            {
-                'name': 'home_domain_validation',
-                'description': 'Validate home domain in challenge matches server',
-                'required': True,
-                'category': 'Verification'
-            },
-            {
-                'name': 'memo_support',
-                'description': 'Support optional memo in challenge for muxed accounts',
-                'required': False,
-                'category': 'Verification'
-            }
+            spec_item(
+                'challenge_validation', 'Validate challenge transaction structure and content',
+                required=True, category='Verification'),
+            spec_item(
+                'signature_verification', 'Verify all signatures on challenge transaction',
+                required=True, category='Verification'),
+            spec_item(
+                'multi_signature_support',
+                'Support multiple signatures on challenge (client account + signers)',
+                required=True, category='Verification'),
+            spec_item(
+                'timebounds_validation', 'Validate challenge is within valid time window',
+                required=True, category='Verification'),
+            spec_item(
+                'home_domain_validation', 'Validate home domain in challenge matches server',
+                required=True, category='Verification'),
+            spec_item(
+                'memo_support', 'Support optional memo in challenge for muxed accounts',
+                category='Verification')
         ]
 
         # Store auth features as sections
-        data['sections'].append({
-            'title': 'Authentication Endpoints',
-            'key': 'auth_endpoints',
-            'content': 'GET and POST /auth endpoints for challenge-response authentication',
-            'auth_features': auth_features['authentication_endpoints'],
-            'feature_count': len(auth_features['authentication_endpoints'])
-        })
+        data['sections'].append(section(
+            'Authentication Endpoints', 'auth_endpoints',
+            'GET and POST /auth endpoints for challenge-response authentication',
+            auth_features['authentication_endpoints'], features_key='auth_features'))
 
-        data['sections'].append({
-            'title': 'Challenge Transaction Features',
-            'key': 'challenge_transaction',
-            'content': 'Challenge transaction structure, operations, and requirements',
-            'auth_features': auth_features['challenge_transaction_features'],
-            'feature_count': len(auth_features['challenge_transaction_features'])
-        })
+        data['sections'].append(section(
+            'Challenge Transaction Features', 'challenge_transaction',
+            'Challenge transaction structure, operations, and requirements',
+            auth_features['challenge_transaction_features'], features_key='auth_features'))
 
-        data['sections'].append({
-            'title': 'JWT Token Features',
-            'key': 'jwt_token',
-            'content': 'JWT token generation, validation, and structure',
-            'auth_features': auth_features['jwt_token_features'],
-            'feature_count': len(auth_features['jwt_token_features'])
-        })
+        data['sections'].append(section(
+            'JWT Token Features', 'jwt_token', 'JWT token generation, validation, and structure',
+            auth_features['jwt_token_features'], features_key='auth_features'))
 
-        data['sections'].append({
-            'title': 'Client Domain Features',
-            'key': 'client_domain',
-            'content': 'Optional client domain verification and signing',
-            'auth_features': auth_features['client_domain_features'],
-            'feature_count': len(auth_features['client_domain_features'])
-        })
+        data['sections'].append(section(
+            'Client Domain Features', 'client_domain',
+            'Optional client domain verification and signing',
+            auth_features['client_domain_features'], features_key='auth_features'))
 
-        data['sections'].append({
-            'title': 'Verification Features',
-            'key': 'verification',
-            'content': 'Challenge validation, signature verification, and security checks',
-            'auth_features': auth_features['verification_features'],
-            'feature_count': len(auth_features['verification_features'])
-        })
+        data['sections'].append(section(
+            'Verification Features', 'verification',
+            'Challenge validation, signature verification, and security checks',
+            auth_features['verification_features'], features_key='auth_features'))
 
         # Calculate totals
         total_features = (
@@ -816,202 +696,107 @@ class SEPParser:
 
         # BIP-39 Mnemonic features (core requirement)
         crypto_features['bip39_features'] = [
-            {
-                'name': 'mnemonic_generation_12_words',
-                'description': 'Generate 12-word BIP-39 mnemonic phrase',
-                'required': True,
-                'category': 'BIP-39 Mnemonic Generation'
-            },
-            {
-                'name': 'mnemonic_generation_24_words',
-                'description': 'Generate 24-word BIP-39 mnemonic phrase',
-                'required': True,
-                'category': 'BIP-39 Mnemonic Generation'
-            },
-            {
-                'name': 'mnemonic_validation',
-                'description': 'Validate BIP-39 mnemonic phrase (word list and checksum)',
-                'required': True,
-                'category': 'BIP-39 Mnemonic Validation'
-            },
-            {
-                'name': 'mnemonic_to_seed',
-                'description': 'Convert BIP-39 mnemonic to seed using PBKDF2',
-                'required': True,
-                'category': 'BIP-39 Seed Generation'
-            },
-            {
-                'name': 'passphrase_support',
-                'description': 'Support optional BIP-39 passphrase (25th word)',
-                'required': False,
-                'category': 'BIP-39 Passphrase'
-            }
+            spec_item(
+                'mnemonic_generation_12_words', 'Generate 12-word BIP-39 mnemonic phrase',
+                required=True, category='BIP-39 Mnemonic Generation'),
+            spec_item(
+                'mnemonic_generation_24_words', 'Generate 24-word BIP-39 mnemonic phrase',
+                required=True, category='BIP-39 Mnemonic Generation'),
+            spec_item(
+                'mnemonic_validation', 'Validate BIP-39 mnemonic phrase (word list and checksum)',
+                required=True, category='BIP-39 Mnemonic Validation'),
+            spec_item(
+                'mnemonic_to_seed', 'Convert BIP-39 mnemonic to seed using PBKDF2', required=True,
+                category='BIP-39 Seed Generation'),
+            spec_item(
+                'passphrase_support', 'Support optional BIP-39 passphrase (25th word)',
+                category='BIP-39 Passphrase')
         ]
 
         # BIP-32 Hierarchical Deterministic Key Derivation
         crypto_features['bip32_features'] = [
-            {
-                'name': 'hd_key_derivation',
-                'description': 'BIP-32 hierarchical deterministic key derivation',
-                'required': True,
-                'category': 'BIP-32 Key Derivation'
-            },
-            {
-                'name': 'ed25519_curve',
-                'description': 'Support Ed25519 curve for Stellar keys',
-                'required': True,
-                'category': 'BIP-32 Curve Support'
-            },
-            {
-                'name': 'master_key_generation',
-                'description': 'Generate master key from seed',
-                'required': True,
-                'category': 'BIP-32 Master Key'
-            },
-            {
-                'name': 'child_key_derivation',
-                'description': 'Derive child keys from parent keys',
-                'required': True,
-                'category': 'BIP-32 Child Derivation'
-            }
+            spec_item(
+                'hd_key_derivation', 'BIP-32 hierarchical deterministic key derivation',
+                required=True, category='BIP-32 Key Derivation'),
+            spec_item(
+                'ed25519_curve', 'Support Ed25519 curve for Stellar keys', required=True,
+                category='BIP-32 Curve Support'),
+            spec_item(
+                'master_key_generation', 'Generate master key from seed', required=True,
+                category='BIP-32 Master Key'),
+            spec_item(
+                'child_key_derivation', 'Derive child keys from parent keys', required=True,
+                category='BIP-32 Child Derivation')
         ]
 
         # BIP-44 Multi-Account Hierarchy
         crypto_features['bip44_features'] = [
-            {
-                'name': 'stellar_derivation_path',
-                'description': "Support Stellar's BIP-44 derivation path: m/44'/148'/account'",
-                'required': True,
-                'category': 'BIP-44 Derivation Path'
-            },
-            {
-                'name': 'multiple_accounts',
-                'description': 'Derive multiple Stellar accounts from single seed',
-                'required': True,
-                'category': 'BIP-44 Multiple Accounts'
-            },
-            {
-                'name': 'account_index_support',
-                'description': 'Support account index parameter in derivation',
-                'required': True,
-                'category': 'BIP-44 Account Index'
-            }
+            spec_item(
+                'stellar_derivation_path',
+                "Support Stellar's BIP-44 derivation path: m/44'/148'/account'", required=True,
+                category='BIP-44 Derivation Path'),
+            spec_item(
+                'multiple_accounts', 'Derive multiple Stellar accounts from single seed',
+                required=True, category='BIP-44 Multiple Accounts'),
+            spec_item(
+                'account_index_support', 'Support account index parameter in derivation',
+                required=True, category='BIP-44 Account Index')
         ]
 
         # Key Derivation Methods
         crypto_features['key_derivation_methods'] = [
-            {
-                'name': 'keypair_from_mnemonic',
-                'description': 'Generate Stellar KeyPair from mnemonic',
-                'required': True,
-                'category': 'Key Derivation'
-            },
-            {
-                'name': 'account_id_from_mnemonic',
-                'description': 'Get Stellar account ID from mnemonic',
-                'required': True,
-                'category': 'Account Derivation'
-            },
-            {
-                'name': 'seed_from_mnemonic',
-                'description': 'Convert mnemonic to raw seed bytes',
-                'required': True,
-                'category': 'Seed Derivation'
-            }
+            spec_item(
+                'keypair_from_mnemonic', 'Generate Stellar KeyPair from mnemonic', required=True,
+                category='Key Derivation'),
+            spec_item(
+                'account_id_from_mnemonic', 'Get Stellar account ID from mnemonic', required=True,
+                category='Account Derivation'),
+            spec_item(
+                'seed_from_mnemonic', 'Convert mnemonic to raw seed bytes', required=True,
+                category='Seed Derivation')
         ]
 
         # Language Support
         crypto_features['language_support'] = [
-            {
-                'name': 'english',
-                'description': 'English BIP-39 word list (2048 words)',
-                'required': True,
-                'category': 'Language Support'
-            },
-            {
-                'name': 'chinese_simplified',
-                'description': 'Chinese Simplified BIP-39 word list',
-                'required': False,
-                'category': 'Language Support'
-            },
-            {
-                'name': 'chinese_traditional',
-                'description': 'Chinese Traditional BIP-39 word list',
-                'required': False,
-                'category': 'Language Support'
-            },
-            {
-                'name': 'french',
-                'description': 'French BIP-39 word list',
-                'required': False,
-                'category': 'Language Support'
-            },
-            {
-                'name': 'italian',
-                'description': 'Italian BIP-39 word list',
-                'required': False,
-                'category': 'Language Support'
-            },
-            {
-                'name': 'japanese',
-                'description': 'Japanese BIP-39 word list',
-                'required': False,
-                'category': 'Language Support'
-            },
-            {
-                'name': 'korean',
-                'description': 'Korean BIP-39 word list',
-                'required': False,
-                'category': 'Language Support'
-            },
-            {
-                'name': 'spanish',
-                'description': 'Spanish BIP-39 word list',
-                'required': False,
-                'category': 'Language Support'
-            }
+            spec_item(
+                'english', 'English BIP-39 word list (2048 words)', required=True,
+                category='Language Support'),
+            spec_item(
+                'chinese_simplified', 'Chinese Simplified BIP-39 word list',
+                category='Language Support'),
+            spec_item(
+                'chinese_traditional', 'Chinese Traditional BIP-39 word list',
+                category='Language Support'),
+            spec_item('french', 'French BIP-39 word list', category='Language Support'),
+            spec_item('italian', 'Italian BIP-39 word list', category='Language Support'),
+            spec_item('japanese', 'Japanese BIP-39 word list', category='Language Support'),
+            spec_item('korean', 'Korean BIP-39 word list', category='Language Support'),
+            spec_item('spanish', 'Spanish BIP-39 word list', category='Language Support')
         ]
 
         # Store crypto features as sections
-        data['sections'].append({
-            'title': 'BIP-39 Mnemonic Features',
-            'key': 'bip39',
-            'content': 'BIP-39 mnemonic generation, validation, and seed derivation',
-            'crypto_features': crypto_features['bip39_features'],
-            'feature_count': len(crypto_features['bip39_features'])
-        })
+        data['sections'].append(section(
+            'BIP-39 Mnemonic Features', 'bip39',
+            'BIP-39 mnemonic generation, validation, and seed derivation',
+            crypto_features['bip39_features'], features_key='crypto_features'))
 
-        data['sections'].append({
-            'title': 'BIP-32 Key Derivation',
-            'key': 'bip32',
-            'content': 'BIP-32 hierarchical deterministic key derivation',
-            'crypto_features': crypto_features['bip32_features'],
-            'feature_count': len(crypto_features['bip32_features'])
-        })
+        data['sections'].append(section(
+            'BIP-32 Key Derivation', 'bip32', 'BIP-32 hierarchical deterministic key derivation',
+            crypto_features['bip32_features'], features_key='crypto_features'))
 
-        data['sections'].append({
-            'title': 'BIP-44 Multi-Account Support',
-            'key': 'bip44',
-            'content': "BIP-44 multi-account hierarchy for Stellar (m/44'/148'/account')",
-            'crypto_features': crypto_features['bip44_features'],
-            'feature_count': len(crypto_features['bip44_features'])
-        })
+        data['sections'].append(section(
+            'BIP-44 Multi-Account Support', 'bip44',
+            "BIP-44 multi-account hierarchy for Stellar (m/44'/148'/account')",
+            crypto_features['bip44_features'], features_key='crypto_features'))
 
-        data['sections'].append({
-            'title': 'Key Derivation Methods',
-            'key': 'key_derivation',
-            'content': 'Methods for deriving Stellar keys from mnemonics',
-            'crypto_features': crypto_features['key_derivation_methods'],
-            'feature_count': len(crypto_features['key_derivation_methods'])
-        })
+        data['sections'].append(section(
+            'Key Derivation Methods', 'key_derivation',
+            'Methods for deriving Stellar keys from mnemonics',
+            crypto_features['key_derivation_methods'], features_key='crypto_features'))
 
-        data['sections'].append({
-            'title': 'Language Support',
-            'key': 'languages',
-            'content': 'BIP-39 word list language support',
-            'crypto_features': crypto_features['language_support'],
-            'feature_count': len(crypto_features['language_support'])
-        })
+        data['sections'].append(section(
+            'Language Support', 'languages', 'BIP-39 word list language support',
+            crypto_features['language_support'], features_key='crypto_features'))
 
         # Calculate totals
         total_features = (
@@ -1045,561 +830,197 @@ class SEPParser:
             'sections': []
         }
 
-        # Define comprehensive API structure for SEP-06
+        # API structure of SEP-06
         api_structure = {
-            'info_endpoint': {
-                'name': 'info_endpoint',
-                'description': 'GET /info - Provides anchor capabilities and asset information',
-                'required': True,
-                'method': 'GET',
-                'path': '/info',
-                'category': 'Info Endpoint'
-            },
+            'info_endpoint': spec_item(
+                'info_endpoint',
+                'GET /info - Provides anchor capabilities and asset information',
+                required=True, method='GET', path='/info',
+                category='Info Endpoint'),
             'deposit_endpoints': [
-                {
-                    'name': 'deposit',
-                    'description': 'GET /deposit - Initiates a deposit transaction for on-chain assets',
-                    'required': True,
-                    'method': 'GET',
-                    'path': '/deposit',
-                    'category': 'Deposit Endpoint'
-                },
-                {
-                    'name': 'deposit_exchange',
-                    'description': 'GET /deposit-exchange - Initiates a deposit with asset exchange (SEP-38 integration)',
-                    'required': False,
-                    'method': 'GET',
-                    'path': '/deposit-exchange',
-                    'category': 'Deposit Endpoint'
-                }
+                spec_item(
+                    'deposit', 'GET /deposit - Initiates a deposit transaction for on-chain assets',
+                    required=True, method='GET', path='/deposit', category='Deposit Endpoint'),
+                spec_item(
+                    'deposit_exchange',
+                    'GET /deposit-exchange - Initiates a deposit with asset exchange (SEP-38 integration)',
+                    method='GET', path='/deposit-exchange', category='Deposit Endpoint')
             ],
             'withdraw_endpoints': [
-                {
-                    'name': 'withdraw',
-                    'description': 'GET /withdraw - Initiates a withdrawal transaction for off-chain assets',
-                    'required': True,
-                    'method': 'GET',
-                    'path': '/withdraw',
-                    'category': 'Withdraw Endpoint'
-                },
-                {
-                    'name': 'withdraw_exchange',
-                    'description': 'GET /withdraw-exchange - Initiates a withdrawal with asset exchange (SEP-38 integration)',
-                    'required': False,
-                    'method': 'GET',
-                    'path': '/withdraw-exchange',
-                    'category': 'Withdraw Endpoint'
-                }
+                spec_item(
+                    'withdraw',
+                    'GET /withdraw - Initiates a withdrawal transaction for off-chain assets',
+                    required=True, method='GET', path='/withdraw', category='Withdraw Endpoint'),
+                spec_item(
+                    'withdraw_exchange',
+                    'GET /withdraw-exchange - Initiates a withdrawal with asset exchange (SEP-38 integration)',
+                    method='GET', path='/withdraw-exchange', category='Withdraw Endpoint')
             ],
             'transaction_endpoints': [
-                {
-                    'name': 'transactions',
-                    'description': 'GET /transactions - Retrieves transaction history for an account',
-                    'required': True,
-                    'method': 'GET',
-                    'path': '/transactions',
-                    'category': 'Transaction Endpoint'
-                },
-                {
-                    'name': 'transaction',
-                    'description': 'GET /transaction - Retrieves details for a single transaction',
-                    'required': True,
-                    'method': 'GET',
-                    'path': '/transaction',
-                    'category': 'Transaction Endpoint'
-                },
-                {
-                    'name': 'patch_transaction',
-                    'description': 'PATCH /transaction - Updates transaction fields (for debugging/testing)',
-                    'required': False,
-                    'method': 'PATCH',
-                    'path': '/transaction',
-                    'category': 'Transaction Endpoint'
-                }
+                spec_item(
+                    'transactions',
+                    'GET /transactions - Retrieves transaction history for an account',
+                    required=True, method='GET', path='/transactions',
+                    category='Transaction Endpoint'),
+                spec_item(
+                    'transaction', 'GET /transaction - Retrieves details for a single transaction',
+                    required=True, method='GET', path='/transaction',
+                    category='Transaction Endpoint'),
+                spec_item(
+                    'patch_transaction',
+                    'PATCH /transaction - Updates transaction fields (for debugging/testing)',
+                    method='PATCH', path='/transaction', category='Transaction Endpoint')
             ],
-            'fee_endpoint': {
-                'name': 'fee_endpoint',
-                'description': 'GET /fee - Calculates fees for a deposit or withdrawal operation',
-                'required': False,
-                'method': 'GET',
-                'path': '/fee',
-                'category': 'Fee Endpoint'
-            },
+            'fee_endpoint': spec_item(
+                'fee_endpoint',
+                'GET /fee - Calculates fees for a deposit or withdrawal operation',
+                method='GET', path='/fee', category='Fee Endpoint'),
             'deposit_request_parameters': [
-                {
-                    'name': 'asset_code',
-                    'description': 'Code of the on-chain asset the user wants to receive',
-                    'required': True,
-                    'type': 'string'
-                },
-                {
-                    'name': 'account',
-                    'description': 'Stellar account ID of the user',
-                    'required': True,
-                    'type': 'string'
-                },
-                {
-                    'name': 'memo_type',
-                    'description': 'Type of memo to attach to transaction (text, id, or hash)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'memo',
-                    'description': 'Value of memo to attach to transaction',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'email_address',
-                    'description': 'Email address of the user (for notifications)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'type',
-                    'description': 'Type of deposit method (e.g., bank_account, cash, mobile_money)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'wallet_name',
-                    'description': 'Name of the wallet the user is using',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'wallet_url',
-                    'description': 'URL of the wallet the user is using',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'lang',
-                    'description': 'Language code for response messages (ISO 639-1)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'on_change_callback',
-                    'description': 'URL for anchor to send callback when transaction status changes',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'amount',
-                    'description': 'Amount of on-chain asset the user wants to receive',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'country_code',
-                    'description': 'Country code of the user (ISO 3166-1 alpha-3)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'claimable_balance_supported',
-                    'description': 'Whether the client supports receiving claimable balances',
-                    'required': False,
-                    'type': 'boolean'
-                },
-                {
-                    'name': 'customer_id',
-                    'description': 'ID of the customer from SEP-12 KYC process',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'location_id',
-                    'description': 'ID of the physical location for cash pickup',
-                    'required': False,
-                    'type': 'string'
-                }
+                spec_item(
+                    'asset_code', 'Code of the on-chain asset the user wants to receive',
+                    required=True, type='string'),
+                spec_item(
+                    'account', 'Stellar account ID of the user', required=True, type='string'),
+                spec_item(
+                    'memo_type', 'Type of memo to attach to transaction (text, id, or hash)',
+                    type='string'),
+                spec_item('memo', 'Value of memo to attach to transaction', type='string'),
+                spec_item(
+                    'email_address', 'Email address of the user (for notifications)', type='string'),
+                spec_item(
+                    'type', 'Type of deposit method (e.g., bank_account, cash, mobile_money)',
+                    type='string'),
+                spec_item('wallet_name', 'Name of the wallet the user is using', type='string'),
+                spec_item('wallet_url', 'URL of the wallet the user is using', type='string'),
+                spec_item('lang', 'Language code for response messages (ISO 639-1)', type='string'),
+                spec_item(
+                    'on_change_callback',
+                    'URL for anchor to send callback when transaction status changes',
+                    type='string'),
+                spec_item(
+                    'amount', 'Amount of on-chain asset the user wants to receive', type='string'),
+                spec_item(
+                    'country_code', 'Country code of the user (ISO 3166-1 alpha-3)', type='string'),
+                spec_item(
+                    'claimable_balance_supported',
+                    'Whether the client supports receiving claimable balances', type='boolean'),
+                spec_item(
+                    'customer_id', 'ID of the customer from SEP-12 KYC process', type='string'),
+                spec_item(
+                    'location_id', 'ID of the physical location for cash pickup', type='string')
             ],
             'withdraw_request_parameters': [
-                {
-                    'name': 'asset_code',
-                    'description': 'Code of the on-chain asset the user wants to send',
-                    'required': True,
-                    'type': 'string'
-                },
-                {
-                    'name': 'type',
-                    'description': 'Type of withdrawal method (e.g., bank_account, cash, mobile_money)',
-                    'required': True,
-                    'type': 'string'
-                },
-                {
-                    'name': 'dest',
-                    'description': 'Destination for withdrawal (bank account number, etc.)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'dest_extra',
-                    'description': 'Extra information for destination (routing number, etc.)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'account',
-                    'description': 'Stellar account ID of the user',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'memo',
-                    'description': 'Memo to identify the user if account is shared',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'memo_type',
-                    'description': 'Type of memo (text, id, or hash)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'wallet_name',
-                    'description': 'Name of the wallet the user is using',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'wallet_url',
-                    'description': 'URL of the wallet the user is using',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'lang',
-                    'description': 'Language code for response messages (ISO 639-1)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'on_change_callback',
-                    'description': 'URL for anchor to send callback when transaction status changes',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'amount',
-                    'description': 'Amount of on-chain asset the user wants to send',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'country_code',
-                    'description': 'Country code of the user (ISO 3166-1 alpha-3)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'refund_memo',
-                    'description': 'Memo to use for refund transaction if withdrawal fails',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'refund_memo_type',
-                    'description': 'Type of refund memo (text, id, or hash)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'customer_id',
-                    'description': 'ID of the customer from SEP-12 KYC process',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'location_id',
-                    'description': 'ID of the physical location for cash pickup',
-                    'required': False,
-                    'type': 'string'
-                }
+                spec_item(
+                    'asset_code', 'Code of the on-chain asset the user wants to send',
+                    required=True, type='string'),
+                spec_item(
+                    'type', 'Type of withdrawal method (e.g., bank_account, cash, mobile_money)',
+                    required=True, type='string'),
+                spec_item(
+                    'dest', 'Destination for withdrawal (bank account number, etc.)', type='string'),
+                spec_item(
+                    'dest_extra', 'Extra information for destination (routing number, etc.)',
+                    type='string'),
+                spec_item('account', 'Stellar account ID of the user', type='string'),
+                spec_item('memo', 'Memo to identify the user if account is shared', type='string'),
+                spec_item('memo_type', 'Type of memo (text, id, or hash)', type='string'),
+                spec_item('wallet_name', 'Name of the wallet the user is using', type='string'),
+                spec_item('wallet_url', 'URL of the wallet the user is using', type='string'),
+                spec_item('lang', 'Language code for response messages (ISO 639-1)', type='string'),
+                spec_item(
+                    'on_change_callback',
+                    'URL for anchor to send callback when transaction status changes',
+                    type='string'),
+                spec_item(
+                    'amount', 'Amount of on-chain asset the user wants to send', type='string'),
+                spec_item(
+                    'country_code', 'Country code of the user (ISO 3166-1 alpha-3)', type='string'),
+                spec_item(
+                    'refund_memo', 'Memo to use for refund transaction if withdrawal fails',
+                    type='string'),
+                spec_item(
+                    'refund_memo_type', 'Type of refund memo (text, id, or hash)', type='string'),
+                spec_item(
+                    'customer_id', 'ID of the customer from SEP-12 KYC process', type='string'),
+                spec_item(
+                    'location_id', 'ID of the physical location for cash pickup', type='string')
             ],
             'deposit_response_fields': [
-                {
-                    'name': 'how',
-                    'description': 'Instructions for how to deposit the asset',
-                    'required': True
-                },
-                {
-                    'name': 'id',
-                    'description': 'Persistent transaction identifier',
-                    'required': False
-                },
-                {
-                    'name': 'eta',
-                    'description': 'Estimated seconds until deposit completes',
-                    'required': False
-                },
-                {
-                    'name': 'min_amount',
-                    'description': 'Minimum deposit amount',
-                    'required': False
-                },
-                {
-                    'name': 'max_amount',
-                    'description': 'Maximum deposit amount',
-                    'required': False
-                },
-                {
-                    'name': 'fee_fixed',
-                    'description': 'Fixed fee for deposit',
-                    'required': False
-                },
-                {
-                    'name': 'fee_percent',
-                    'description': 'Percentage fee for deposit',
-                    'required': False
-                },
-                {
-                    'name': 'extra_info',
-                    'description': 'Additional information about the deposit',
-                    'required': False
-                }
+                spec_item('how', 'Instructions for how to deposit the asset', required=True),
+                spec_item('id', 'Persistent transaction identifier'),
+                spec_item('eta', 'Estimated seconds until deposit completes'),
+                spec_item('min_amount', 'Minimum deposit amount'),
+                spec_item('max_amount', 'Maximum deposit amount'),
+                spec_item('fee_fixed', 'Fixed fee for deposit'),
+                spec_item('fee_percent', 'Percentage fee for deposit'),
+                spec_item('extra_info', 'Additional information about the deposit')
             ],
             'withdraw_response_fields': [
-                {
-                    'name': 'account_id',
-                    'description': 'Stellar account to send withdrawn assets to',
-                    'required': True
-                },
-                {
-                    'name': 'memo_type',
-                    'description': 'Type of memo to attach to transaction',
-                    'required': False
-                },
-                {
-                    'name': 'memo',
-                    'description': 'Value of memo to attach to transaction',
-                    'required': False
-                },
-                {
-                    'name': 'id',
-                    'description': 'Persistent transaction identifier',
-                    'required': True
-                },
-                {
-                    'name': 'eta',
-                    'description': 'Estimated seconds until withdrawal completes',
-                    'required': False
-                },
-                {
-                    'name': 'min_amount',
-                    'description': 'Minimum withdrawal amount',
-                    'required': False
-                },
-                {
-                    'name': 'max_amount',
-                    'description': 'Maximum withdrawal amount',
-                    'required': False
-                },
-                {
-                    'name': 'fee_fixed',
-                    'description': 'Fixed fee for withdrawal',
-                    'required': False
-                },
-                {
-                    'name': 'fee_percent',
-                    'description': 'Percentage fee for withdrawal',
-                    'required': False
-                },
-                {
-                    'name': 'extra_info',
-                    'description': 'Additional information about the withdrawal',
-                    'required': False
-                }
+                spec_item(
+                    'account_id', 'Stellar account to send withdrawn assets to', required=True),
+                spec_item('memo_type', 'Type of memo to attach to transaction'),
+                spec_item('memo', 'Value of memo to attach to transaction'),
+                spec_item('id', 'Persistent transaction identifier', required=True),
+                spec_item('eta', 'Estimated seconds until withdrawal completes'),
+                spec_item('min_amount', 'Minimum withdrawal amount'),
+                spec_item('max_amount', 'Maximum withdrawal amount'),
+                spec_item('fee_fixed', 'Fixed fee for withdrawal'),
+                spec_item('fee_percent', 'Percentage fee for withdrawal'),
+                spec_item('extra_info', 'Additional information about the withdrawal')
             ],
             'transaction_status_values': [
-                {
-                    'name': 'incomplete',
-                    'description': 'Deposit/withdrawal has not yet been submitted',
-                    'required': True
-                },
-                {
-                    'name': 'pending_user_transfer_start',
-                    'description': 'Waiting for user to initiate off-chain transfer',
-                    'required': True
-                },
-                {
-                    'name': 'pending_user_transfer_complete',
-                    'description': 'Off-chain transfer has been initiated',
-                    'required': False
-                },
-                {
-                    'name': 'pending_external',
-                    'description': 'Waiting for external action (banking system, etc.)',
-                    'required': False
-                },
-                {
-                    'name': 'pending_anchor',
-                    'description': 'Anchor is processing the transaction',
-                    'required': True
-                },
-                {
-                    'name': 'pending_stellar',
-                    'description': 'Stellar transaction has been submitted',
-                    'required': False
-                },
-                {
-                    'name': 'pending_trust',
-                    'description': 'User needs to add trustline for asset',
-                    'required': False
-                },
-                {
-                    'name': 'pending_user',
-                    'description': 'Waiting for user action (accepting claimable balance)',
-                    'required': False
-                },
-                {
-                    'name': 'completed',
-                    'description': 'Transaction completed successfully',
-                    'required': True
-                },
-                {
-                    'name': 'refunded',
-                    'description': 'Transaction refunded',
-                    'required': False
-                },
-                {
-                    'name': 'expired',
-                    'description': 'Transaction expired without completion',
-                    'required': False
-                },
-                {
-                    'name': 'error',
-                    'description': 'Transaction failed with error',
-                    'required': False
-                }
+                spec_item(
+                    'incomplete', 'Deposit/withdrawal has not yet been submitted', required=True),
+                spec_item(
+                    'pending_user_transfer_start',
+                    'Waiting for user to initiate off-chain transfer', required=True),
+                spec_item(
+                    'pending_user_transfer_complete', 'Off-chain transfer has been initiated'),
+                spec_item('pending_external', 'Waiting for external action (banking system, etc.)'),
+                spec_item('pending_anchor', 'Anchor is processing the transaction', required=True),
+                spec_item('pending_stellar', 'Stellar transaction has been submitted'),
+                spec_item('pending_trust', 'User needs to add trustline for asset'),
+                spec_item('pending_user', 'Waiting for user action (accepting claimable balance)'),
+                spec_item('completed', 'Transaction completed successfully', required=True),
+                spec_item('refunded', 'Transaction refunded'),
+                spec_item('expired', 'Transaction expired without completion'),
+                spec_item('error', 'Transaction failed with error')
             ],
             'transaction_fields': [
-                {
-                    'name': 'id',
-                    'description': 'Unique transaction identifier',
-                    'required': True
-                },
-                {
-                    'name': 'kind',
-                    'description': 'Kind of transaction (deposit, withdrawal, deposit-exchange, withdrawal-exchange)',
-                    'required': True
-                },
-                {
-                    'name': 'status',
-                    'description': 'Current status of the transaction',
-                    'required': True
-                },
-                {
-                    'name': 'status_eta',
-                    'description': 'Estimated seconds until status changes',
-                    'required': False
-                },
-                {
-                    'name': 'amount_in',
-                    'description': 'Amount received by anchor',
-                    'required': False
-                },
-                {
-                    'name': 'amount_out',
-                    'description': 'Amount sent by anchor to user',
-                    'required': False
-                },
-                {
-                    'name': 'amount_fee',
-                    'description': 'Total fee charged for transaction',
-                    'required': False
-                },
-                {
-                    'name': 'started_at',
-                    'description': 'When transaction was created (ISO 8601)',
-                    'required': True
-                },
-                {
-                    'name': 'completed_at',
-                    'description': 'When transaction completed (ISO 8601)',
-                    'required': False
-                },
-                {
-                    'name': 'stellar_transaction_id',
-                    'description': 'Hash of the Stellar transaction',
-                    'required': False
-                },
-                {
-                    'name': 'external_transaction_id',
-                    'description': 'Identifier from external system',
-                    'required': False
-                },
-                {
-                    'name': 'from',
-                    'description': 'Stellar account that initiated the transaction',
-                    'required': False
-                },
-                {
-                    'name': 'to',
-                    'description': 'Stellar account receiving the transaction',
-                    'required': False
-                },
-                {
-                    'name': 'refunded',
-                    'description': 'Whether transaction was refunded',
-                    'required': False
-                },
-                {
-                    'name': 'refunds',
-                    'description': 'Refund information if applicable',
-                    'required': False
-                },
-                {
-                    'name': 'message',
-                    'description': 'Human-readable message about transaction',
-                    'required': False
-                }
+                spec_item('id', 'Unique transaction identifier', required=True),
+                spec_item(
+                    'kind',
+                    'Kind of transaction (deposit, withdrawal, deposit-exchange, withdrawal-exchange)',
+                    required=True),
+                spec_item('status', 'Current status of the transaction', required=True),
+                spec_item('status_eta', 'Estimated seconds until status changes'),
+                spec_item('amount_in', 'Amount received by anchor'),
+                spec_item('amount_out', 'Amount sent by anchor to user'),
+                spec_item('amount_fee', 'Total fee charged for transaction'),
+                spec_item('started_at', 'When transaction was created (ISO 8601)', required=True),
+                spec_item('completed_at', 'When transaction completed (ISO 8601)'),
+                spec_item('stellar_transaction_id', 'Hash of the Stellar transaction'),
+                spec_item('external_transaction_id', 'Identifier from external system'),
+                spec_item('from', 'Stellar account that initiated the transaction'),
+                spec_item('to', 'Stellar account receiving the transaction'),
+                spec_item('refunded', 'Whether transaction was refunded'),
+                spec_item('refunds', 'Refund information if applicable'),
+                spec_item('message', 'Human-readable message about transaction')
             ],
             'info_response_fields': [
-                {
-                    'name': 'deposit',
-                    'description': 'Map of asset codes to deposit asset information',
-                    'required': True
-                },
-                {
-                    'name': 'deposit-exchange',
-                    'description': 'Map of asset codes to deposit-exchange asset information',
-                    'required': False
-                },
-                {
-                    'name': 'withdraw',
-                    'description': 'Map of asset codes to withdraw asset information',
-                    'required': True
-                },
-                {
-                    'name': 'withdraw-exchange',
-                    'description': 'Map of asset codes to withdraw-exchange asset information',
-                    'required': False
-                },
-                {
-                    'name': 'fee',
-                    'description': 'Fee endpoint information',
-                    'required': False
-                },
-                {
-                    'name': 'transactions',
-                    'description': 'Transaction history endpoint information',
-                    'required': False
-                },
-                {
-                    'name': 'transaction',
-                    'description': 'Single transaction endpoint information',
-                    'required': False
-                },
-                {
-                    'name': 'features',
-                    'description': 'Feature flags supported by the anchor',
-                    'required': False
-                }
+                spec_item(
+                    'deposit', 'Map of asset codes to deposit asset information', required=True),
+                spec_item(
+                    'deposit-exchange', 'Map of asset codes to deposit-exchange asset information'),
+                spec_item(
+                    'withdraw', 'Map of asset codes to withdraw asset information', required=True),
+                spec_item(
+                    'withdraw-exchange',
+                    'Map of asset codes to withdraw-exchange asset information'),
+                spec_item('fee', 'Fee endpoint information'),
+                spec_item('transactions', 'Transaction history endpoint information'),
+                spec_item('transaction', 'Single transaction endpoint information'),
+                spec_item('features', 'Feature flags supported by the anchor')
             ],
             'authentication': {
                 'type': 'SEP-10',
@@ -1618,101 +1039,62 @@ class SEPParser:
         }
 
         # Store API structure components as sections
-        data['sections'].append({
-            'title': 'Info Endpoint',
-            'key': 'info_endpoint',
-            'content': 'Endpoint for querying anchor capabilities',
-            'api_features': [api_structure['info_endpoint']],
-            'feature_count': 1
-        })
+        data['sections'].append(section(
+            'Info Endpoint', 'info_endpoint', 'Endpoint for querying anchor capabilities',
+            [api_structure['info_endpoint']]))
 
-        data['sections'].append({
-            'title': 'Deposit Endpoints',
-            'key': 'deposit_endpoints',
-            'content': 'Endpoints for initiating deposit transactions',
-            'api_features': api_structure['deposit_endpoints'],
-            'feature_count': len(api_structure['deposit_endpoints'])
-        })
+        data['sections'].append(section(
+            'Deposit Endpoints', 'deposit_endpoints',
+            'Endpoints for initiating deposit transactions',
+            api_structure['deposit_endpoints']))
 
-        data['sections'].append({
-            'title': 'Withdraw Endpoints',
-            'key': 'withdraw_endpoints',
-            'content': 'Endpoints for initiating withdrawal transactions',
-            'api_features': api_structure['withdraw_endpoints'],
-            'feature_count': len(api_structure['withdraw_endpoints'])
-        })
+        data['sections'].append(section(
+            'Withdraw Endpoints', 'withdraw_endpoints',
+            'Endpoints for initiating withdrawal transactions',
+            api_structure['withdraw_endpoints']))
 
-        data['sections'].append({
-            'title': 'Transaction Endpoints',
-            'key': 'transaction_endpoints',
-            'content': 'Endpoints for tracking and managing transactions',
-            'api_features': api_structure['transaction_endpoints'],
-            'feature_count': len(api_structure['transaction_endpoints'])
-        })
+        data['sections'].append(section(
+            'Transaction Endpoints', 'transaction_endpoints',
+            'Endpoints for tracking and managing transactions',
+            api_structure['transaction_endpoints']))
 
-        data['sections'].append({
-            'title': 'Fee Endpoint',
-            'key': 'fee_endpoint',
-            'content': 'Endpoint for calculating transaction fees',
-            'api_features': [api_structure['fee_endpoint']],
-            'feature_count': 1
-        })
+        data['sections'].append(section(
+            'Fee Endpoint', 'fee_endpoint', 'Endpoint for calculating transaction fees',
+            [api_structure['fee_endpoint']]))
 
-        data['sections'].append({
-            'title': 'Deposit Request Parameters',
-            'key': 'deposit_request_parameters',
-            'content': 'Parameters for deposit endpoint requests',
-            'api_features': api_structure['deposit_request_parameters'],
-            'feature_count': len(api_structure['deposit_request_parameters'])
-        })
+        data['sections'].append(section(
+            'Deposit Request Parameters', 'deposit_request_parameters',
+            'Parameters for deposit endpoint requests',
+            api_structure['deposit_request_parameters']))
 
-        data['sections'].append({
-            'title': 'Withdraw Request Parameters',
-            'key': 'withdraw_request_parameters',
-            'content': 'Parameters for withdraw endpoint requests',
-            'api_features': api_structure['withdraw_request_parameters'],
-            'feature_count': len(api_structure['withdraw_request_parameters'])
-        })
+        data['sections'].append(section(
+            'Withdraw Request Parameters', 'withdraw_request_parameters',
+            'Parameters for withdraw endpoint requests',
+            api_structure['withdraw_request_parameters']))
 
-        data['sections'].append({
-            'title': 'Deposit Response Fields',
-            'key': 'deposit_response_fields',
-            'content': 'Fields returned in deposit endpoint responses',
-            'api_features': api_structure['deposit_response_fields'],
-            'feature_count': len(api_structure['deposit_response_fields'])
-        })
+        data['sections'].append(section(
+            'Deposit Response Fields', 'deposit_response_fields',
+            'Fields returned in deposit endpoint responses',
+            api_structure['deposit_response_fields']))
 
-        data['sections'].append({
-            'title': 'Withdraw Response Fields',
-            'key': 'withdraw_response_fields',
-            'content': 'Fields returned in withdraw endpoint responses',
-            'api_features': api_structure['withdraw_response_fields'],
-            'feature_count': len(api_structure['withdraw_response_fields'])
-        })
+        data['sections'].append(section(
+            'Withdraw Response Fields', 'withdraw_response_fields',
+            'Fields returned in withdraw endpoint responses',
+            api_structure['withdraw_response_fields']))
 
-        data['sections'].append({
-            'title': 'Transaction Status Values',
-            'key': 'transaction_status_values',
-            'content': 'Possible transaction status values',
-            'api_features': api_structure['transaction_status_values'],
-            'feature_count': len(api_structure['transaction_status_values'])
-        })
+        data['sections'].append(section(
+            'Transaction Status Values', 'transaction_status_values',
+            'Possible transaction status values',
+            api_structure['transaction_status_values']))
 
-        data['sections'].append({
-            'title': 'Transaction Fields',
-            'key': 'transaction_fields',
-            'content': 'Fields returned in transaction objects',
-            'api_features': api_structure['transaction_fields'],
-            'feature_count': len(api_structure['transaction_fields'])
-        })
+        data['sections'].append(section(
+            'Transaction Fields', 'transaction_fields', 'Fields returned in transaction objects',
+            api_structure['transaction_fields']))
 
-        data['sections'].append({
-            'title': 'Info Response Fields',
-            'key': 'info_response_fields',
-            'content': 'Fields returned in info endpoint response',
-            'api_features': api_structure['info_response_fields'],
-            'feature_count': len(api_structure['info_response_fields'])
-        })
+        data['sections'].append(section(
+            'Info Response Fields', 'info_response_fields',
+            'Fields returned in info endpoint response',
+            api_structure['info_response_fields']))
 
         # Calculate totals
         total_features = (
@@ -1766,128 +1148,158 @@ class SEPParser:
 
         # Natural Person Fields
         field_categories['natural_person_fields'] = [
-            {'name': 'last_name', 'description': 'Family or last name', 'required': False},
-            {'name': 'first_name', 'description': 'Given or first name', 'required': False},
-            {'name': 'additional_name', 'description': 'Middle name or other additional name', 'required': False},
-            {'name': 'address_country_code', 'description': 'Country code for current address', 'required': False},
-            {'name': 'state_or_province', 'description': 'Name of state/province/region/prefecture', 'required': False},
-            {'name': 'city', 'description': 'Name of city/town', 'required': False},
-            {'name': 'postal_code', 'description': 'Postal or other code identifying user\'s locale', 'required': False},
-            {'name': 'address', 'description': 'Entire address (country, state, postal code, street address, etc.) as a multi-line string', 'required': False},
-            {'name': 'mobile_number', 'description': 'Mobile phone number with country code, in E.164 format', 'required': False},
-            {'name': 'mobile_number_format', 'description': 'Expected format of the mobile_number field (E.164, hash, etc.)', 'required': False},
-            {'name': 'email_address', 'description': 'Email address', 'required': False},
-            {'name': 'birth_date', 'description': 'Date of birth (e.g., 1976-07-04)', 'required': False},
-            {'name': 'birth_place', 'description': 'Place of birth (city, state, country; as on passport)', 'required': False},
-            {'name': 'birth_country_code', 'description': 'ISO Code of country of birth (ISO 3166-1 alpha-3)', 'required': False},
-            {'name': 'tax_id', 'description': 'Tax identifier of user in their country (social security number in US)', 'required': False},
-            {'name': 'tax_id_name', 'description': 'Name of the tax ID (SSN or ITIN in the US)', 'required': False},
-            {'name': 'occupation', 'description': 'Occupation ISCO code', 'required': False},
-            {'name': 'employer_name', 'description': 'Name of employer', 'required': False},
-            {'name': 'employer_address', 'description': 'Address of employer', 'required': False},
-            {'name': 'language_code', 'description': 'Primary language (ISO 639-1)', 'required': False},
-            {'name': 'id_type', 'description': 'Type of ID (passport, drivers_license, id_card, etc.)', 'required': False},
-            {'name': 'id_country_code', 'description': 'Country issuing passport or photo ID (ISO 3166-1 alpha-3)', 'required': False},
-            {'name': 'id_issue_date', 'description': 'ID issue date', 'required': False},
-            {'name': 'id_expiration_date', 'description': 'ID expiration date', 'required': False},
-            {'name': 'id_number', 'description': 'Passport or ID number', 'required': False},
-            {'name': 'photo_id_front', 'description': 'Image of front of user\'s photo ID or passport', 'required': False, 'type': 'binary'},
-            {'name': 'photo_id_back', 'description': 'Image of back of user\'s photo ID or passport', 'required': False, 'type': 'binary'},
-            {'name': 'notary_approval_of_photo_id', 'description': 'Image of notary\'s approval of photo ID or passport', 'required': False, 'type': 'binary'},
-            {'name': 'ip_address', 'description': 'IP address of customer\'s computer', 'required': False},
-            {'name': 'photo_proof_residence', 'description': 'Image of a utility bill, bank statement or similar with the user\'s name and address', 'required': False, 'type': 'binary'},
-            {'name': 'sex', 'description': 'Gender (male, female, or other)', 'required': False},
-            {'name': 'proof_of_income', 'description': 'Image of user\'s proof of income document', 'required': False, 'type': 'binary'},
-            {'name': 'proof_of_liveness', 'description': 'Video or image file of user as a liveness proof', 'required': False, 'type': 'binary'},
-            {'name': 'referral_id', 'description': 'User\'s origin (such as an id in another application) or a referral code', 'required': False}
+            spec_item('last_name', 'Family or last name'),
+            spec_item('first_name', 'Given or first name'),
+            spec_item('additional_name', 'Middle name or other additional name'),
+            spec_item('address_country_code', 'Country code for current address'),
+            spec_item('state_or_province', 'Name of state/province/region/prefecture'),
+            spec_item('city', 'Name of city/town'),
+            spec_item('postal_code', "Postal or other code identifying user's locale"),
+            spec_item(
+                'address',
+                'Entire address (country, state, postal code, street address, etc.) as a multi-line string'),
+            spec_item('mobile_number', 'Mobile phone number with country code, in E.164 format'),
+            spec_item(
+                'mobile_number_format',
+                'Expected format of the mobile_number field (E.164, hash, etc.)'),
+            spec_item('email_address', 'Email address'),
+            spec_item('birth_date', 'Date of birth (e.g., 1976-07-04)'),
+            spec_item('birth_place', 'Place of birth (city, state, country; as on passport)'),
+            spec_item('birth_country_code', 'ISO Code of country of birth (ISO 3166-1 alpha-3)'),
+            spec_item(
+                'tax_id', 'Tax identifier of user in their country (social security number in US)'),
+            spec_item('tax_id_name', 'Name of the tax ID (SSN or ITIN in the US)'),
+            spec_item('occupation', 'Occupation ISCO code'),
+            spec_item('employer_name', 'Name of employer'),
+            spec_item('employer_address', 'Address of employer'),
+            spec_item('language_code', 'Primary language (ISO 639-1)'),
+            spec_item('id_type', 'Type of ID (passport, drivers_license, id_card, etc.)'),
+            spec_item(
+                'id_country_code', 'Country issuing passport or photo ID (ISO 3166-1 alpha-3)'),
+            spec_item('id_issue_date', 'ID issue date'),
+            spec_item('id_expiration_date', 'ID expiration date'),
+            spec_item('id_number', 'Passport or ID number'),
+            spec_item(
+                'photo_id_front', "Image of front of user's photo ID or passport", type='binary'),
+            spec_item(
+                'photo_id_back', "Image of back of user's photo ID or passport", type='binary'),
+            spec_item(
+                'notary_approval_of_photo_id', "Image of notary's approval of photo ID or passport",
+                type='binary'),
+            spec_item('ip_address', "IP address of customer's computer"),
+            spec_item(
+                'photo_proof_residence',
+                "Image of a utility bill, bank statement or similar with the user's name and address",
+                type='binary'),
+            spec_item('sex', 'Gender (male, female, or other)'),
+            spec_item('proof_of_income', "Image of user's proof of income document", type='binary'),
+            spec_item(
+                'proof_of_liveness', 'Video or image file of user as a liveness proof',
+                type='binary'),
+            spec_item(
+                'referral_id',
+                "User's origin (such as an id in another application) or a referral code")
         ]
 
         # Organization Fields (prefixed with "organization.")
         field_categories['organization_fields'] = [
-            {'name': 'organization.name', 'description': 'Full organization name as on the incorporation papers', 'required': False},
-            {'name': 'organization.VAT_number', 'description': 'Organization VAT number', 'required': False},
-            {'name': 'organization.registration_number', 'description': 'Organization registration number', 'required': False},
-            {'name': 'organization.registration_date', 'description': 'Date the organization was registered', 'required': False},
-            {'name': 'organization.registered_address', 'description': 'Organization registered address', 'required': False},
-            {'name': 'organization.number_of_shareholders', 'description': 'Organization shareholder number', 'required': False},
-            {'name': 'organization.shareholder_name', 'description': 'Name of shareholder (can be organization or person)', 'required': False},
-            {'name': 'organization.photo_incorporation_doc', 'description': 'Image of incorporation documents', 'required': False, 'type': 'binary'},
-            {'name': 'organization.photo_proof_address', 'description': 'Image of a utility bill, bank statement with the organization\'s name and address', 'required': False, 'type': 'binary'},
-            {'name': 'organization.address_country_code', 'description': 'Country code for current address', 'required': False},
-            {'name': 'organization.state_or_province', 'description': 'Name of state/province/region/prefecture', 'required': False},
-            {'name': 'organization.city', 'description': 'Name of city/town', 'required': False},
-            {'name': 'organization.postal_code', 'description': 'Postal or other code identifying organization\'s locale', 'required': False},
-            {'name': 'organization.director_name', 'description': 'Organization registered managing director', 'required': False},
-            {'name': 'organization.website', 'description': 'Organization website', 'required': False},
-            {'name': 'organization.email', 'description': 'Organization contact email', 'required': False},
-            {'name': 'organization.phone', 'description': 'Organization contact phone', 'required': False}
+            spec_item('organization.name', 'Full organization name as on the incorporation papers'),
+            spec_item('organization.VAT_number', 'Organization VAT number'),
+            spec_item('organization.registration_number', 'Organization registration number'),
+            spec_item('organization.registration_date', 'Date the organization was registered'),
+            spec_item('organization.registered_address', 'Organization registered address'),
+            spec_item('organization.number_of_shareholders', 'Organization shareholder number'),
+            spec_item(
+                'organization.shareholder_name',
+                'Name of shareholder (can be organization or person)'),
+            spec_item(
+                'organization.photo_incorporation_doc', 'Image of incorporation documents',
+                type='binary'),
+            spec_item(
+                'organization.photo_proof_address',
+                "Image of a utility bill, bank statement with the organization's name and address",
+                type='binary'),
+            spec_item('organization.address_country_code', 'Country code for current address'),
+            spec_item('organization.state_or_province', 'Name of state/province/region/prefecture'),
+            spec_item('organization.city', 'Name of city/town'),
+            spec_item(
+                'organization.postal_code',
+                "Postal or other code identifying organization's locale"),
+            spec_item('organization.director_name', 'Organization registered managing director'),
+            spec_item('organization.website', 'Organization website'),
+            spec_item('organization.email', 'Organization contact email'),
+            spec_item('organization.phone', 'Organization contact phone')
         ]
 
         # Financial Account Fields
         field_categories['financial_account_fields'] = [
-            {'name': 'bank_name', 'description': 'Name of the bank', 'required': False},
-            {'name': 'bank_account_type', 'description': 'Type of bank account', 'required': False},
-            {'name': 'bank_account_number', 'description': 'Number identifying bank account', 'required': False},
-            {'name': 'bank_number', 'description': 'Number identifying bank in national banking system (routing number in US)', 'required': False},
-            {'name': 'bank_phone_number', 'description': 'Phone number with country code for bank', 'required': False},
-            {'name': 'bank_branch_number', 'description': 'Number identifying bank branch', 'required': False},
-            {'name': 'external_transfer_memo', 'description': 'A destination tag/memo used to identify a transaction', 'required': False},
-            {'name': 'clabe_number', 'description': 'Bank account number for Mexico', 'required': False},
-            {'name': 'cbu_number', 'description': 'Clave Bancaria Uniforme (CBU) or Clave Virtual Uniforme (CVU)', 'required': False},
-            {'name': 'cbu_alias', 'description': 'The alias for a CBU or CVU', 'required': False},
-            {'name': 'mobile_money_number', 'description': 'Mobile phone number in E.164 format with which a mobile money account is associated', 'required': False},
-            {'name': 'mobile_money_provider', 'description': 'Name of the mobile money service provider', 'required': False},
-            {'name': 'crypto_address', 'description': 'Address for a cryptocurrency account', 'required': False},
-            {'name': 'crypto_memo', 'description': 'A destination tag/memo used to identify a transaction', 'required': False}
+            spec_item('bank_name', 'Name of the bank'),
+            spec_item('bank_account_type', 'Type of bank account'),
+            spec_item('bank_account_number', 'Number identifying bank account'),
+            spec_item(
+                'bank_number',
+                'Number identifying bank in national banking system (routing number in US)'),
+            spec_item('bank_phone_number', 'Phone number with country code for bank'),
+            spec_item('bank_branch_number', 'Number identifying bank branch'),
+            spec_item(
+                'external_transfer_memo', 'A destination tag/memo used to identify a transaction'),
+            spec_item('clabe_number', 'Bank account number for Mexico'),
+            spec_item(
+                'cbu_number', 'Clave Bancaria Uniforme (CBU) or Clave Virtual Uniforme (CVU)'),
+            spec_item('cbu_alias', 'The alias for a CBU or CVU'),
+            spec_item(
+                'mobile_money_number',
+                'Mobile phone number in E.164 format with which a mobile money account is associated'),
+            spec_item('mobile_money_provider', 'Name of the mobile money service provider'),
+            spec_item('crypto_address', 'Address for a cryptocurrency account'),
+            spec_item('crypto_memo', 'A destination tag/memo used to identify a transaction')
         ]
 
         # Card Fields (prefixed with "card.")
         field_categories['card_fields'] = [
-            {'name': 'card.number', 'description': 'Card number', 'required': False},
-            {'name': 'card.expiration_date', 'description': 'Expiration month and year in YY-MM format (e.g., 29-11, November 2029)', 'required': False},
-            {'name': 'card.cvc', 'description': 'CVC number (Digits on the back of the card)', 'required': False},
-            {'name': 'card.holder_name', 'description': 'Name of the card holder', 'required': False},
-            {'name': 'card.network', 'description': 'Brand of the card/network it operates within (e.g., Visa, Mastercard, AmEx, etc.)', 'required': False},
-            {'name': 'card.postal_code', 'description': 'Billing address postal code', 'required': False},
-            {'name': 'card.country_code', 'description': 'Billing address country code in ISO 3166-1 alpha-2 code (e.g., US)', 'required': False},
-            {'name': 'card.state_or_province', 'description': 'Name of state/province/region/prefecture in ISO 3166-2 format', 'required': False},
-            {'name': 'card.city', 'description': 'Name of city/town', 'required': False},
-            {'name': 'card.address', 'description': 'Entire address (country, state, postal code, street address, etc.) as a multi-line string', 'required': False},
-            {'name': 'card.token', 'description': 'Token representation of the card in some external payment system (e.g., Stripe)', 'required': False}
+            spec_item('card.number', 'Card number'),
+            spec_item(
+                'card.expiration_date',
+                'Expiration month and year in YY-MM format (e.g., 29-11, November 2029)'),
+            spec_item('card.cvc', 'CVC number (Digits on the back of the card)'),
+            spec_item('card.holder_name', 'Name of the card holder'),
+            spec_item(
+                'card.network',
+                'Brand of the card/network it operates within (e.g., Visa, Mastercard, AmEx, etc.)'),
+            spec_item('card.postal_code', 'Billing address postal code'),
+            spec_item(
+                'card.country_code',
+                'Billing address country code in ISO 3166-1 alpha-2 code (e.g., US)'),
+            spec_item(
+                'card.state_or_province',
+                'Name of state/province/region/prefecture in ISO 3166-2 format'),
+            spec_item('card.city', 'Name of city/town'),
+            spec_item(
+                'card.address',
+                'Entire address (country, state, postal code, street address, etc.) as a multi-line string'),
+            spec_item(
+                'card.token',
+                'Token representation of the card in some external payment system (e.g., Stripe)')
         ]
 
         # Store field categories as sections
-        data['sections'].append({
-            'title': 'Natural Person Fields',
-            'key': 'natural_person_fields',
-            'content': 'Standard KYC fields for natural persons',
-            'fields': field_categories['natural_person_fields'],
-            'field_count': len(field_categories['natural_person_fields'])
-        })
+        data['sections'].append(section(
+            'Natural Person Fields', 'natural_person_fields',
+            'Standard KYC fields for natural persons',
+            field_categories['natural_person_fields'], features_key='fields', count_key='field_count'))
 
-        data['sections'].append({
-            'title': 'Organization Fields',
-            'key': 'organization_fields',
-            'content': 'Standard KYC fields for organizations',
-            'fields': field_categories['organization_fields'],
-            'field_count': len(field_categories['organization_fields'])
-        })
+        data['sections'].append(section(
+            'Organization Fields', 'organization_fields', 'Standard KYC fields for organizations',
+            field_categories['organization_fields'], features_key='fields', count_key='field_count'))
 
-        data['sections'].append({
-            'title': 'Financial Account Fields',
-            'key': 'financial_account_fields',
-            'content': 'Standard fields for financial account information',
-            'fields': field_categories['financial_account_fields'],
-            'field_count': len(field_categories['financial_account_fields'])
-        })
+        data['sections'].append(section(
+            'Financial Account Fields', 'financial_account_fields',
+            'Standard fields for financial account information',
+            field_categories['financial_account_fields'], features_key='fields', count_key='field_count'))
 
-        data['sections'].append({
-            'title': 'Card Fields',
-            'key': 'card_fields',
-            'content': 'Standard fields for card payment information',
-            'fields': field_categories['card_fields'],
-            'field_count': len(field_categories['card_fields'])
-        })
+        data['sections'].append(section(
+            'Card Fields', 'card_fields', 'Standard fields for card payment information',
+            field_categories['card_fields'], features_key='fields', count_key='field_count'))
 
         # Calculate totals
         total_fields = (
@@ -1926,361 +1338,203 @@ class SEPParser:
         # SEP-11 is about format conversion, not HTTP API
         txrep_features = {
             'encoding_features': [
-                {
-                    'name': 'encode_transaction',
-                    'description': 'Convert transaction envelope XDR to txrep text format',
-                    'required': True,
-                    'category': 'Encoding'
-                },
-                {
-                    'name': 'encode_fee_bump_transaction',
-                    'description': 'Convert fee bump transaction envelope to txrep format',
-                    'required': True,
-                    'category': 'Encoding'
-                },
-                {
-                    'name': 'encode_source_account',
-                    'description': 'Encode source account (including muxed accounts)',
-                    'required': True,
-                    'category': 'Encoding'
-                },
-                {
-                    'name': 'encode_memo',
-                    'description': 'Encode all memo types (NONE, TEXT, ID, HASH, RETURN)',
-                    'required': True,
-                    'category': 'Encoding'
-                },
-                {
-                    'name': 'encode_operations',
-                    'description': 'Encode all Stellar operation types',
-                    'required': True,
-                    'category': 'Encoding'
-                },
-                {
-                    'name': 'encode_preconditions',
-                    'description': 'Encode transaction preconditions (time bounds, ledger bounds, min seq num, etc.)',
-                    'required': True,
-                    'category': 'Encoding'
-                },
-                {
-                    'name': 'encode_signatures',
-                    'description': 'Encode transaction signatures',
-                    'required': True,
-                    'category': 'Encoding'
-                },
-                {
-                    'name': 'encode_soroban_data',
-                    'description': 'Encode Soroban transaction data (resources, footprint, etc.)',
-                    'required': True,
-                    'category': 'Encoding'
-                }
+                spec_item(
+                    'encode_transaction', 'Convert transaction envelope XDR to txrep text format',
+                    required=True, category='Encoding'),
+                spec_item(
+                    'encode_fee_bump_transaction',
+                    'Convert fee bump transaction envelope to txrep format', required=True,
+                    category='Encoding'),
+                spec_item(
+                    'encode_source_account', 'Encode source account (including muxed accounts)',
+                    required=True, category='Encoding'),
+                spec_item(
+                    'encode_memo', 'Encode all memo types (NONE, TEXT, ID, HASH, RETURN)',
+                    required=True, category='Encoding'),
+                spec_item(
+                    'encode_operations', 'Encode all Stellar operation types', required=True,
+                    category='Encoding'),
+                spec_item(
+                    'encode_preconditions',
+                    'Encode transaction preconditions (time bounds, ledger bounds, min seq num, etc.)',
+                    required=True, category='Encoding'),
+                spec_item(
+                    'encode_signatures', 'Encode transaction signatures', required=True,
+                    category='Encoding'),
+                spec_item(
+                    'encode_soroban_data',
+                    'Encode Soroban transaction data (resources, footprint, etc.)', required=True,
+                    category='Encoding')
             ],
             'decoding_features': [
-                {
-                    'name': 'decode_transaction',
-                    'description': 'Parse txrep text format to transaction envelope XDR',
-                    'required': True,
-                    'category': 'Decoding'
-                },
-                {
-                    'name': 'decode_fee_bump_transaction',
-                    'description': 'Parse fee bump transaction from txrep format',
-                    'required': True,
-                    'category': 'Decoding'
-                },
-                {
-                    'name': 'decode_source_account',
-                    'description': 'Parse source account (including muxed accounts)',
-                    'required': True,
-                    'category': 'Decoding'
-                },
-                {
-                    'name': 'decode_memo',
-                    'description': 'Parse all memo types from txrep',
-                    'required': True,
-                    'category': 'Decoding'
-                },
-                {
-                    'name': 'decode_operations',
-                    'description': 'Parse all Stellar operation types from txrep',
-                    'required': True,
-                    'category': 'Decoding'
-                },
-                {
-                    'name': 'decode_preconditions',
-                    'description': 'Parse transaction preconditions from txrep',
-                    'required': True,
-                    'category': 'Decoding'
-                },
-                {
-                    'name': 'decode_signatures',
-                    'description': 'Parse transaction signatures from txrep',
-                    'required': True,
-                    'category': 'Decoding'
-                },
-                {
-                    'name': 'decode_soroban_data',
-                    'description': 'Parse Soroban transaction data from txrep',
-                    'required': True,
-                    'category': 'Decoding'
-                }
+                spec_item(
+                    'decode_transaction', 'Parse txrep text format to transaction envelope XDR',
+                    required=True, category='Decoding'),
+                spec_item(
+                    'decode_fee_bump_transaction', 'Parse fee bump transaction from txrep format',
+                    required=True, category='Decoding'),
+                spec_item(
+                    'decode_source_account', 'Parse source account (including muxed accounts)',
+                    required=True, category='Decoding'),
+                spec_item(
+                    'decode_memo', 'Parse all memo types from txrep', required=True,
+                    category='Decoding'),
+                spec_item(
+                    'decode_operations', 'Parse all Stellar operation types from txrep',
+                    required=True, category='Decoding'),
+                spec_item(
+                    'decode_preconditions', 'Parse transaction preconditions from txrep',
+                    required=True, category='Decoding'),
+                spec_item(
+                    'decode_signatures', 'Parse transaction signatures from txrep', required=True,
+                    category='Decoding'),
+                spec_item(
+                    'decode_soroban_data', 'Parse Soroban transaction data from txrep',
+                    required=True, category='Decoding')
             ],
             'asset_encoding': [
-                {
-                    'name': 'encode_native_asset',
-                    'description': 'Encode native XLM asset in txrep format',
-                    'required': True,
-                    'category': 'Asset Encoding'
-                },
-                {
-                    'name': 'encode_alphanumeric4_asset',
-                    'description': 'Encode 4-character alphanumeric asset',
-                    'required': True,
-                    'category': 'Asset Encoding'
-                },
-                {
-                    'name': 'encode_alphanumeric12_asset',
-                    'description': 'Encode 12-character alphanumeric asset',
-                    'required': True,
-                    'category': 'Asset Encoding'
-                }
+                spec_item(
+                    'encode_native_asset', 'Encode native XLM asset in txrep format', required=True,
+                    category='Asset Encoding'),
+                spec_item(
+                    'encode_alphanumeric4_asset', 'Encode 4-character alphanumeric asset',
+                    required=True, category='Asset Encoding'),
+                spec_item(
+                    'encode_alphanumeric12_asset', 'Encode 12-character alphanumeric asset',
+                    required=True, category='Asset Encoding')
             ],
             'operation_types': [
-                {
-                    'name': 'create_account',
-                    'description': 'Encode/decode CREATE_ACCOUNT operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'payment',
-                    'description': 'Encode/decode PAYMENT operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'path_payment_strict_receive',
-                    'description': 'Encode/decode PATH_PAYMENT_STRICT_RECEIVE operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'path_payment_strict_send',
-                    'description': 'Encode/decode PATH_PAYMENT_STRICT_SEND operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'manage_sell_offer',
-                    'description': 'Encode/decode MANAGE_SELL_OFFER operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'manage_buy_offer',
-                    'description': 'Encode/decode MANAGE_BUY_OFFER operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'create_passive_sell_offer',
-                    'description': 'Encode/decode CREATE_PASSIVE_SELL_OFFER operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'set_options',
-                    'description': 'Encode/decode SET_OPTIONS operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'change_trust',
-                    'description': 'Encode/decode CHANGE_TRUST operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'allow_trust',
-                    'description': 'Encode/decode ALLOW_TRUST operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'account_merge',
-                    'description': 'Encode/decode ACCOUNT_MERGE operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'manage_data',
-                    'description': 'Encode/decode MANAGE_DATA operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'bump_sequence',
-                    'description': 'Encode/decode BUMP_SEQUENCE operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'create_claimable_balance',
-                    'description': 'Encode/decode CREATE_CLAIMABLE_BALANCE operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'claim_claimable_balance',
-                    'description': 'Encode/decode CLAIM_CLAIMABLE_BALANCE operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'begin_sponsoring_future_reserves',
-                    'description': 'Encode/decode BEGIN_SPONSORING_FUTURE_RESERVES operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'end_sponsoring_future_reserves',
-                    'description': 'Encode/decode END_SPONSORING_FUTURE_RESERVES operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'revoke_sponsorship',
-                    'description': 'Encode/decode REVOKE_SPONSORSHIP operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'clawback',
-                    'description': 'Encode/decode CLAWBACK operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'clawback_claimable_balance',
-                    'description': 'Encode/decode CLAWBACK_CLAIMABLE_BALANCE operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'set_trust_line_flags',
-                    'description': 'Encode/decode SET_TRUST_LINE_FLAGS operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'liquidity_pool_deposit',
-                    'description': 'Encode/decode LIQUIDITY_POOL_DEPOSIT operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'liquidity_pool_withdraw',
-                    'description': 'Encode/decode LIQUIDITY_POOL_WITHDRAW operation',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'invoke_host_function',
-                    'description': 'Encode/decode INVOKE_HOST_FUNCTION operation (Soroban)',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'extend_footprint_ttl',
-                    'description': 'Encode/decode EXTEND_FOOTPRINT_TTL operation (Soroban)',
-                    'required': True,
-                    'category': 'Operation Type'
-                },
-                {
-                    'name': 'restore_footprint',
-                    'description': 'Encode/decode RESTORE_FOOTPRINT operation (Soroban)',
-                    'required': True,
-                    'category': 'Operation Type'
-                }
+                spec_item(
+                    'create_account', 'Encode/decode CREATE_ACCOUNT operation', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'payment', 'Encode/decode PAYMENT operation', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'path_payment_strict_receive',
+                    'Encode/decode PATH_PAYMENT_STRICT_RECEIVE operation', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'path_payment_strict_send', 'Encode/decode PATH_PAYMENT_STRICT_SEND operation',
+                    required=True, category='Operation Type'),
+                spec_item(
+                    'manage_sell_offer', 'Encode/decode MANAGE_SELL_OFFER operation', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'manage_buy_offer', 'Encode/decode MANAGE_BUY_OFFER operation', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'create_passive_sell_offer',
+                    'Encode/decode CREATE_PASSIVE_SELL_OFFER operation', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'set_options', 'Encode/decode SET_OPTIONS operation', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'change_trust', 'Encode/decode CHANGE_TRUST operation', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'allow_trust', 'Encode/decode ALLOW_TRUST operation', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'account_merge', 'Encode/decode ACCOUNT_MERGE operation', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'manage_data', 'Encode/decode MANAGE_DATA operation', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'bump_sequence', 'Encode/decode BUMP_SEQUENCE operation', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'create_claimable_balance', 'Encode/decode CREATE_CLAIMABLE_BALANCE operation',
+                    required=True, category='Operation Type'),
+                spec_item(
+                    'claim_claimable_balance', 'Encode/decode CLAIM_CLAIMABLE_BALANCE operation',
+                    required=True, category='Operation Type'),
+                spec_item(
+                    'begin_sponsoring_future_reserves',
+                    'Encode/decode BEGIN_SPONSORING_FUTURE_RESERVES operation', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'end_sponsoring_future_reserves',
+                    'Encode/decode END_SPONSORING_FUTURE_RESERVES operation', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'revoke_sponsorship', 'Encode/decode REVOKE_SPONSORSHIP operation',
+                    required=True, category='Operation Type'),
+                spec_item(
+                    'clawback', 'Encode/decode CLAWBACK operation', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'clawback_claimable_balance',
+                    'Encode/decode CLAWBACK_CLAIMABLE_BALANCE operation', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'set_trust_line_flags', 'Encode/decode SET_TRUST_LINE_FLAGS operation',
+                    required=True, category='Operation Type'),
+                spec_item(
+                    'liquidity_pool_deposit', 'Encode/decode LIQUIDITY_POOL_DEPOSIT operation',
+                    required=True, category='Operation Type'),
+                spec_item(
+                    'liquidity_pool_withdraw', 'Encode/decode LIQUIDITY_POOL_WITHDRAW operation',
+                    required=True, category='Operation Type'),
+                spec_item(
+                    'invoke_host_function',
+                    'Encode/decode INVOKE_HOST_FUNCTION operation (Soroban)', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'extend_footprint_ttl',
+                    'Encode/decode EXTEND_FOOTPRINT_TTL operation (Soroban)', required=True,
+                    category='Operation Type'),
+                spec_item(
+                    'restore_footprint', 'Encode/decode RESTORE_FOOTPRINT operation (Soroban)',
+                    required=True, category='Operation Type')
             ],
             'format_features': [
-                {
-                    'name': 'comment_support',
-                    'description': 'Support for comments in txrep format',
-                    'required': True,
-                    'category': 'Format Feature'
-                },
-                {
-                    'name': 'dot_notation',
-                    'description': 'Use dot notation for nested structures',
-                    'required': True,
-                    'category': 'Format Feature'
-                },
-                {
-                    'name': 'array_indexing',
-                    'description': 'Support array indexing in txrep format',
-                    'required': True,
-                    'category': 'Format Feature'
-                },
-                {
-                    'name': 'hex_encoding',
-                    'description': 'Hexadecimal encoding for binary data',
-                    'required': True,
-                    'category': 'Format Feature'
-                },
-                {
-                    'name': 'string_escaping',
-                    'description': 'Proper string escaping with double quotes',
-                    'required': True,
-                    'category': 'Format Feature'
-                }
+                spec_item(
+                    'comment_support', 'Support for comments in txrep format', required=True,
+                    category='Format Feature'),
+                spec_item(
+                    'dot_notation', 'Use dot notation for nested structures', required=True,
+                    category='Format Feature'),
+                spec_item(
+                    'array_indexing', 'Support array indexing in txrep format', required=True,
+                    category='Format Feature'),
+                spec_item(
+                    'hex_encoding', 'Hexadecimal encoding for binary data', required=True,
+                    category='Format Feature'),
+                spec_item(
+                    'string_escaping', 'Proper string escaping with double quotes', required=True,
+                    category='Format Feature')
             ]
         }
 
         # Add encoding features section
-        data['sections'].append({
-            'title': 'Encoding Features',
-            'key': 'encoding_features',
-            'content': 'Features for converting transaction envelope XDR to txrep format',
-            'txrep_features': txrep_features['encoding_features'],
-            'feature_count': len(txrep_features['encoding_features'])
-        })
+        data['sections'].append(section(
+            'Encoding Features', 'encoding_features',
+            'Features for converting transaction envelope XDR to txrep format',
+            txrep_features['encoding_features'], features_key='txrep_features'))
 
         # Add decoding features section
-        data['sections'].append({
-            'title': 'Decoding Features',
-            'key': 'decoding_features',
-            'content': 'Features for parsing txrep format to transaction envelope XDR',
-            'txrep_features': txrep_features['decoding_features'],
-            'feature_count': len(txrep_features['decoding_features'])
-        })
+        data['sections'].append(section(
+            'Decoding Features', 'decoding_features',
+            'Features for parsing txrep format to transaction envelope XDR',
+            txrep_features['decoding_features'], features_key='txrep_features'))
 
         # Add asset encoding section
-        data['sections'].append({
-            'title': 'Asset Encoding',
-            'key': 'asset_encoding',
-            'content': 'Asset type encoding in txrep format',
-            'txrep_features': txrep_features['asset_encoding'],
-            'feature_count': len(txrep_features['asset_encoding'])
-        })
+        data['sections'].append(section(
+            'Asset Encoding', 'asset_encoding', 'Asset type encoding in txrep format',
+            txrep_features['asset_encoding'], features_key='txrep_features'))
 
         # Add operation types section
-        data['sections'].append({
-            'title': 'Operation Types',
-            'key': 'operation_types',
-            'content': 'All supported Stellar operation types',
-            'txrep_features': txrep_features['operation_types'],
-            'feature_count': len(txrep_features['operation_types'])
-        })
+        data['sections'].append(section(
+            'Operation Types', 'operation_types', 'All supported Stellar operation types',
+            txrep_features['operation_types'], features_key='txrep_features'))
 
         # Add format features section
-        data['sections'].append({
-            'title': 'Format Features',
-            'key': 'format_features',
-            'content': 'Txrep format specification features',
-            'txrep_features': txrep_features['format_features'],
-            'feature_count': len(txrep_features['format_features'])
-        })
+        data['sections'].append(section(
+            'Format Features', 'format_features', 'Txrep format specification features',
+            txrep_features['format_features'], features_key='txrep_features'))
 
         # Calculate totals
         total_features = sum(len(features) for features in txrep_features.values())
@@ -2356,76 +1610,28 @@ class SEPParser:
                 }
             ],
             'request_parameters': [
-                {
-                    'name': 'id',
-                    'description': 'ID of the customer as returned in previous PUT request',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'account',
-                    'description': 'Stellar account ID (G...) of the customer',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'memo',
-                    'description': 'Memo that uniquely identifies a customer in shared accounts',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'memo_type',
-                    'description': 'Type of memo: text, id, or hash',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'type',
-                    'description': 'Type of action the customer is being KYCd for',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'transaction_id',
-                    'description': 'Transaction ID with which customer info is associated',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'lang',
-                    'description': 'Language code (ISO 639-1) for human-readable responses',
-                    'required': False,
-                    'type': 'string'
-                }
+                spec_item(
+                    'id', 'ID of the customer as returned in previous PUT request', type='string'),
+                spec_item('account', 'Stellar account ID (G...) of the customer', type='string'),
+                spec_item(
+                    'memo', 'Memo that uniquely identifies a customer in shared accounts',
+                    type='string'),
+                spec_item('memo_type', 'Type of memo: text, id, or hash', type='string'),
+                spec_item('type', 'Type of action the customer is being KYCd for', type='string'),
+                spec_item(
+                    'transaction_id', 'Transaction ID with which customer info is associated',
+                    type='string'),
+                spec_item(
+                    'lang', 'Language code (ISO 639-1) for human-readable responses', type='string')
             ],
             'response_fields': [
-                {
-                    'name': 'id',
-                    'description': 'ID of the customer',
-                    'required': False
-                },
-                {
-                    'name': 'status',
-                    'description': 'Status of customer KYC process',
-                    'required': True,
-                    'values': ['ACCEPTED', 'PROCESSING', 'NEEDS_INFO', 'REJECTED']
-                },
-                {
-                    'name': 'fields',
-                    'description': 'Fields the anchor has not yet received',
-                    'required': False
-                },
-                {
-                    'name': 'provided_fields',
-                    'description': 'Fields the anchor has received',
-                    'required': False
-                },
-                {
-                    'name': 'message',
-                    'description': 'Human readable message describing KYC status',
-                    'required': False
-                }
+                spec_item('id', 'ID of the customer'),
+                spec_item(
+                    'status', 'Status of customer KYC process', required=True,
+                    values=['ACCEPTED', 'PROCESSING', 'NEEDS_INFO', 'REJECTED']),
+                spec_item('fields', 'Fields the anchor has not yet received'),
+                spec_item('provided_fields', 'Fields the anchor has received'),
+                spec_item('message', 'Human readable message describing KYC status')
             ],
             'field_types': [
                 {
@@ -2433,32 +1639,13 @@ class SEPParser:
                     'description': 'Data type of field value',
                     'values': ['string', 'binary', 'number', 'date']
                 },
-                {
-                    'name': 'description',
-                    'description': 'Human-readable description of the field',
-                    'required': False
-                },
-                {
-                    'name': 'choices',
-                    'description': 'Array of valid values for this field',
-                    'required': False
-                },
-                {
-                    'name': 'optional',
-                    'description': 'Whether this field is required to proceed',
-                    'required': False
-                },
-                {
-                    'name': 'status',
-                    'description': 'Status of provided field',
-                    'required': False,
-                    'values': ['ACCEPTED', 'PROCESSING', 'REJECTED', 'VERIFICATION_REQUIRED']
-                },
-                {
-                    'name': 'error',
-                    'description': 'Description of why field was rejected',
-                    'required': False
-                }
+                spec_item('description', 'Human-readable description of the field'),
+                spec_item('choices', 'Array of valid values for this field'),
+                spec_item('optional', 'Whether this field is required to proceed'),
+                spec_item(
+                    'status', 'Status of provided field',
+                    values=['ACCEPTED', 'PROCESSING', 'REJECTED', 'VERIFICATION_REQUIRED']),
+                spec_item('error', 'Description of why field was rejected')
             ],
             'authentication': {
                 'type': 'SEP-10',
@@ -2490,9 +1677,9 @@ class SEPParser:
 
         # Extract other sections for context
         general_sections = self.extract_sections()
-        for section in general_sections:
-            if section['title'].lower() not in ['preamble', 'summary']:
-                data['sections'].append(section)
+        for extracted in general_sections:
+            if extracted['title'].lower() not in ['preamble', 'summary']:
+                data['sections'].append(extracted)
 
         # Print summary
         total_features = (len(api_structure['endpoints']) +
@@ -2522,360 +1709,160 @@ class SEPParser:
             'sections': []
         }
 
-        # Define comprehensive API structure for SEP-38
+        # API structure of SEP-38
         api_structure = {
-            'info_endpoint': {
-                'name': 'info_endpoint',
-                'description': 'GET /info - Returns supported Stellar and off-chain assets available for trading',
-                'required': True,
-                'method': 'GET',
-                'path': '/info',
-                'category': 'Info Endpoint'
-            },
-            'prices_endpoint': {
-                'name': 'prices_endpoint',
-                'description': 'GET /prices - Returns indicative prices of off-chain assets in exchange for Stellar assets',
-                'required': True,
-                'method': 'GET',
-                'path': '/prices',
-                'category': 'Prices Endpoint'
-            },
-            'price_endpoint': {
-                'name': 'price_endpoint',
-                'description': 'GET /price - Returns indicative price for a specific asset pair',
-                'required': True,
-                'method': 'GET',
-                'path': '/price',
-                'category': 'Price Endpoint'
-            },
-            'post_quote_endpoint': {
-                'name': 'post_quote_endpoint',
-                'description': 'POST /quote - Request a firm quote for asset exchange',
-                'required': True,
-                'method': 'POST',
-                'path': '/quote',
-                'category': 'Quote Endpoint'
-            },
-            'get_quote_endpoint': {
-                'name': 'get_quote_endpoint',
-                'description': 'GET /quote/:id - Fetch a previously-provided firm quote',
-                'required': True,
-                'method': 'GET',
-                'path': '/quote/:id',
-                'category': 'Quote Endpoint'
-            },
+            'info_endpoint': spec_item(
+                'info_endpoint',
+                'GET /info - Returns supported Stellar and off-chain assets available for trading',
+                required=True, method='GET', path='/info',
+                category='Info Endpoint'),
+            'prices_endpoint': spec_item(
+                'prices_endpoint',
+                'GET /prices - Returns indicative prices of off-chain assets in exchange for Stellar assets',
+                required=True, method='GET', path='/prices',
+                category='Prices Endpoint'),
+            'price_endpoint': spec_item(
+                'price_endpoint',
+                'GET /price - Returns indicative price for a specific asset pair',
+                required=True, method='GET', path='/price',
+                category='Price Endpoint'),
+            'post_quote_endpoint': spec_item(
+                'post_quote_endpoint',
+                'POST /quote - Request a firm quote for asset exchange',
+                required=True, method='POST', path='/quote',
+                category='Quote Endpoint'),
+            'get_quote_endpoint': spec_item(
+                'get_quote_endpoint',
+                'GET /quote/:id - Fetch a previously-provided firm quote',
+                required=True, method='GET', path='/quote/:id',
+                category='Quote Endpoint'),
             'info_response_fields': [
-                {
-                    'name': 'assets',
-                    'description': 'Array of asset objects supported for trading',
-                    'required': True
-                }
+                spec_item('assets', 'Array of asset objects supported for trading', required=True)
             ],
             'asset_fields': [
-                {
-                    'name': 'asset',
-                    'description': 'Asset identifier in Asset Identification Format',
-                    'required': True
-                },
-                {
-                    'name': 'sell_delivery_methods',
-                    'description': 'Array of delivery methods for selling this asset',
-                    'required': False
-                },
-                {
-                    'name': 'buy_delivery_methods',
-                    'description': 'Array of delivery methods for buying this asset',
-                    'required': False
-                },
-                {
-                    'name': 'country_codes',
-                    'description': 'Array of ISO 3166-2 or ISO 3166-1 alpha-2 country codes',
-                    'required': False
-                }
+                spec_item(
+                    'asset', 'Asset identifier in Asset Identification Format', required=True),
+                spec_item(
+                    'sell_delivery_methods', 'Array of delivery methods for selling this asset'),
+                spec_item(
+                    'buy_delivery_methods', 'Array of delivery methods for buying this asset'),
+                spec_item(
+                    'country_codes', 'Array of ISO 3166-2 or ISO 3166-1 alpha-2 country codes')
             ],
             'delivery_method_fields': [
-                {
-                    'name': 'name',
-                    'description': 'Delivery method name identifier',
-                    'required': True
-                },
-                {
-                    'name': 'description',
-                    'description': 'Human-readable description of the delivery method',
-                    'required': True
-                }
+                spec_item('name', 'Delivery method name identifier', required=True),
+                spec_item(
+                    'description', 'Human-readable description of the delivery method',
+                    required=True)
             ],
             'prices_request_parameters': [
-                {
-                    'name': 'sell_asset',
-                    'description': 'Asset to sell using Asset Identification Format',
-                    'required': True,
-                    'type': 'string'
-                },
-                {
-                    'name': 'sell_amount',
-                    'description': 'Amount of sell_asset to exchange',
-                    'required': True,
-                    'type': 'string'
-                },
-                {
-                    'name': 'sell_delivery_method',
-                    'description': 'Delivery method for off-chain sell asset',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'buy_delivery_method',
-                    'description': 'Delivery method for off-chain buy asset',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'country_code',
-                    'description': 'ISO 3166-2 or ISO 3166-1 alpha-2 country code',
-                    'required': False,
-                    'type': 'string'
-                }
+                spec_item(
+                    'sell_asset', 'Asset to sell using Asset Identification Format', required=True,
+                    type='string'),
+                spec_item(
+                    'sell_amount', 'Amount of sell_asset to exchange', required=True, type='string'),
+                spec_item(
+                    'sell_delivery_method', 'Delivery method for off-chain sell asset',
+                    type='string'),
+                spec_item(
+                    'buy_delivery_method', 'Delivery method for off-chain buy asset', type='string'),
+                spec_item(
+                    'country_code', 'ISO 3166-2 or ISO 3166-1 alpha-2 country code', type='string')
             ],
             'prices_response_fields': [
-                {
-                    'name': 'buy_assets',
-                    'description': 'Array of buy asset objects with prices',
-                    'required': True
-                }
+                spec_item('buy_assets', 'Array of buy asset objects with prices', required=True)
             ],
             'buy_asset_fields': [
-                {
-                    'name': 'asset',
-                    'description': 'Asset identifier in Asset Identification Format',
-                    'required': True
-                },
-                {
-                    'name': 'price',
-                    'description': 'Price offered by anchor for one unit of buy_asset',
-                    'required': True
-                },
-                {
-                    'name': 'decimals',
-                    'description': 'Number of decimals for the buy asset',
-                    'required': True
-                }
+                spec_item(
+                    'asset', 'Asset identifier in Asset Identification Format', required=True),
+                spec_item(
+                    'price', 'Price offered by anchor for one unit of buy_asset', required=True),
+                spec_item('decimals', 'Number of decimals for the buy asset', required=True)
             ],
             'price_request_parameters': [
-                {
-                    'name': 'context',
-                    'description': 'Context for quote usage (sep6 or sep31)',
-                    'required': True,
-                    'type': 'string',
-                    'values': ['sep6', 'sep31']
-                },
-                {
-                    'name': 'sell_asset',
-                    'description': 'Asset client would like to sell',
-                    'required': True,
-                    'type': 'string'
-                },
-                {
-                    'name': 'buy_asset',
-                    'description': 'Asset client would like to exchange for sell_asset',
-                    'required': True,
-                    'type': 'string'
-                },
-                {
-                    'name': 'sell_amount',
-                    'description': 'Amount of sell_asset to exchange (mutually exclusive with buy_amount)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'buy_amount',
-                    'description': 'Amount of buy_asset to exchange for (mutually exclusive with sell_amount)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'sell_delivery_method',
-                    'description': 'Delivery method for off-chain sell asset',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'buy_delivery_method',
-                    'description': 'Delivery method for off-chain buy asset',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'country_code',
-                    'description': 'ISO 3166-2 or ISO 3166-1 alpha-2 country code',
-                    'required': False,
-                    'type': 'string'
-                }
+                spec_item(
+                    'context', 'Context for quote usage (sep6 or sep31)', required=True,
+                    type='string', values=['sep6', 'sep31']),
+                spec_item(
+                    'sell_asset', 'Asset client would like to sell', required=True, type='string'),
+                spec_item(
+                    'buy_asset', 'Asset client would like to exchange for sell_asset',
+                    required=True, type='string'),
+                spec_item(
+                    'sell_amount',
+                    'Amount of sell_asset to exchange (mutually exclusive with buy_amount)',
+                    type='string'),
+                spec_item(
+                    'buy_amount',
+                    'Amount of buy_asset to exchange for (mutually exclusive with sell_amount)',
+                    type='string'),
+                spec_item(
+                    'sell_delivery_method', 'Delivery method for off-chain sell asset',
+                    type='string'),
+                spec_item(
+                    'buy_delivery_method', 'Delivery method for off-chain buy asset', type='string'),
+                spec_item(
+                    'country_code', 'ISO 3166-2 or ISO 3166-1 alpha-2 country code', type='string')
             ],
             'price_response_fields': [
-                {
-                    'name': 'total_price',
-                    'description': 'Total conversion price including fees',
-                    'required': True
-                },
-                {
-                    'name': 'price',
-                    'description': 'Base conversion price excluding fees',
-                    'required': True
-                },
-                {
-                    'name': 'sell_amount',
-                    'description': 'Amount of sell_asset that will be exchanged',
-                    'required': True
-                },
-                {
-                    'name': 'buy_amount',
-                    'description': 'Amount of buy_asset that will be received',
-                    'required': True
-                },
-                {
-                    'name': 'fee',
-                    'description': 'Fee object with total, asset, and optional details',
-                    'required': True
-                }
+                spec_item('total_price', 'Total conversion price including fees', required=True),
+                spec_item('price', 'Base conversion price excluding fees', required=True),
+                spec_item(
+                    'sell_amount', 'Amount of sell_asset that will be exchanged', required=True),
+                spec_item('buy_amount', 'Amount of buy_asset that will be received', required=True),
+                spec_item(
+                    'fee', 'Fee object with total, asset, and optional details', required=True)
             ],
             'post_quote_request_fields': [
-                {
-                    'name': 'context',
-                    'description': 'Context for quote usage (sep6 or sep31)',
-                    'required': True,
-                    'type': 'string',
-                    'values': ['sep6', 'sep31']
-                },
-                {
-                    'name': 'sell_asset',
-                    'description': 'Asset client would like to sell',
-                    'required': True,
-                    'type': 'string'
-                },
-                {
-                    'name': 'buy_asset',
-                    'description': 'Asset client would like to exchange for sell_asset',
-                    'required': True,
-                    'type': 'string'
-                },
-                {
-                    'name': 'sell_amount',
-                    'description': 'Amount of sell_asset to exchange (mutually exclusive with buy_amount)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'buy_amount',
-                    'description': 'Amount of buy_asset to exchange for (mutually exclusive with sell_amount)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'expire_after',
-                    'description': 'Requested expiration timestamp for the quote (ISO 8601)',
-                    'required': False,
-                    'type': 'datetime'
-                },
-                {
-                    'name': 'sell_delivery_method',
-                    'description': 'Delivery method for off-chain sell asset',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'buy_delivery_method',
-                    'description': 'Delivery method for off-chain buy asset',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'country_code',
-                    'description': 'ISO 3166-2 or ISO 3166-1 alpha-2 country code',
-                    'required': False,
-                    'type': 'string'
-                }
+                spec_item(
+                    'context', 'Context for quote usage (sep6 or sep31)', required=True,
+                    type='string', values=['sep6', 'sep31']),
+                spec_item(
+                    'sell_asset', 'Asset client would like to sell', required=True, type='string'),
+                spec_item(
+                    'buy_asset', 'Asset client would like to exchange for sell_asset',
+                    required=True, type='string'),
+                spec_item(
+                    'sell_amount',
+                    'Amount of sell_asset to exchange (mutually exclusive with buy_amount)',
+                    type='string'),
+                spec_item(
+                    'buy_amount',
+                    'Amount of buy_asset to exchange for (mutually exclusive with sell_amount)',
+                    type='string'),
+                spec_item(
+                    'expire_after', 'Requested expiration timestamp for the quote (ISO 8601)',
+                    type='datetime'),
+                spec_item(
+                    'sell_delivery_method', 'Delivery method for off-chain sell asset',
+                    type='string'),
+                spec_item(
+                    'buy_delivery_method', 'Delivery method for off-chain buy asset', type='string'),
+                spec_item(
+                    'country_code', 'ISO 3166-2 or ISO 3166-1 alpha-2 country code', type='string')
             ],
             'quote_response_fields': [
-                {
-                    'name': 'id',
-                    'description': 'Unique identifier for the quote',
-                    'required': True
-                },
-                {
-                    'name': 'expires_at',
-                    'description': 'Expiration timestamp for the quote (ISO 8601)',
-                    'required': True
-                },
-                {
-                    'name': 'total_price',
-                    'description': 'Total conversion price including fees',
-                    'required': True
-                },
-                {
-                    'name': 'price',
-                    'description': 'Base conversion price excluding fees',
-                    'required': True
-                },
-                {
-                    'name': 'sell_asset',
-                    'description': 'Asset to be sold',
-                    'required': True
-                },
-                {
-                    'name': 'sell_amount',
-                    'description': 'Amount of sell_asset to be exchanged',
-                    'required': True
-                },
-                {
-                    'name': 'buy_asset',
-                    'description': 'Asset to be bought',
-                    'required': True
-                },
-                {
-                    'name': 'buy_amount',
-                    'description': 'Amount of buy_asset to be received',
-                    'required': True
-                },
-                {
-                    'name': 'fee',
-                    'description': 'Fee object with total, asset, and optional details',
-                    'required': True
-                }
+                spec_item('id', 'Unique identifier for the quote', required=True),
+                spec_item(
+                    'expires_at', 'Expiration timestamp for the quote (ISO 8601)', required=True),
+                spec_item('total_price', 'Total conversion price including fees', required=True),
+                spec_item('price', 'Base conversion price excluding fees', required=True),
+                spec_item('sell_asset', 'Asset to be sold', required=True),
+                spec_item('sell_amount', 'Amount of sell_asset to be exchanged', required=True),
+                spec_item('buy_asset', 'Asset to be bought', required=True),
+                spec_item('buy_amount', 'Amount of buy_asset to be received', required=True),
+                spec_item(
+                    'fee', 'Fee object with total, asset, and optional details', required=True)
             ],
             'fee_fields': [
-                {
-                    'name': 'total',
-                    'description': 'Total fee amount as decimal string',
-                    'required': True
-                },
-                {
-                    'name': 'asset',
-                    'description': 'Asset identifier for the fee',
-                    'required': True
-                },
-                {
-                    'name': 'details',
-                    'description': 'Optional array of fee breakdown objects',
-                    'required': False
-                }
+                spec_item('total', 'Total fee amount as decimal string', required=True),
+                spec_item('asset', 'Asset identifier for the fee', required=True),
+                spec_item('details', 'Optional array of fee breakdown objects')
             ],
             'fee_details_fields': [
-                {
-                    'name': 'name',
-                    'description': 'Name identifier for the fee component',
-                    'required': True
-                },
-                {
-                    'name': 'amount',
-                    'description': 'Fee amount as decimal string',
-                    'required': True
-                },
-                {
-                    'name': 'description',
-                    'description': 'Human-readable description of the fee',
-                    'required': False
-                }
+                spec_item('name', 'Name identifier for the fee component', required=True),
+                spec_item('amount', 'Fee amount as decimal string', required=True),
+                spec_item('description', 'Human-readable description of the fee')
             ],
             'authentication': {
                 'type': 'SEP-10',
@@ -2886,141 +1873,84 @@ class SEPParser:
         }
 
         # Store API structure components as sections
-        data['sections'].append({
-            'title': 'Info Endpoint',
-            'key': 'info_endpoint',
-            'content': 'Endpoint for querying supported assets for trading',
-            'api_features': [api_structure['info_endpoint']],
-            'feature_count': 1
-        })
+        data['sections'].append(section(
+            'Info Endpoint', 'info_endpoint', 'Endpoint for querying supported assets for trading',
+            [api_structure['info_endpoint']]))
 
-        data['sections'].append({
-            'title': 'Prices Endpoint',
-            'key': 'prices_endpoint',
-            'content': 'Endpoint for fetching indicative prices for multiple buy assets',
-            'api_features': [api_structure['prices_endpoint']],
-            'feature_count': 1
-        })
+        data['sections'].append(section(
+            'Prices Endpoint', 'prices_endpoint',
+            'Endpoint for fetching indicative prices for multiple buy assets',
+            [api_structure['prices_endpoint']]))
 
-        data['sections'].append({
-            'title': 'Price Endpoint',
-            'key': 'price_endpoint',
-            'content': 'Endpoint for fetching indicative price for specific asset pair',
-            'api_features': [api_structure['price_endpoint']],
-            'feature_count': 1
-        })
+        data['sections'].append(section(
+            'Price Endpoint', 'price_endpoint',
+            'Endpoint for fetching indicative price for specific asset pair',
+            [api_structure['price_endpoint']]))
 
-        data['sections'].append({
-            'title': 'Post Quote Endpoint',
-            'key': 'post_quote_endpoint',
-            'content': 'Endpoint for requesting firm quote',
-            'api_features': [api_structure['post_quote_endpoint']],
-            'feature_count': 1
-        })
+        data['sections'].append(section(
+            'Post Quote Endpoint', 'post_quote_endpoint', 'Endpoint for requesting firm quote',
+            [api_structure['post_quote_endpoint']]))
 
-        data['sections'].append({
-            'title': 'Get Quote Endpoint',
-            'key': 'get_quote_endpoint',
-            'content': 'Endpoint for fetching previously provided firm quote',
-            'api_features': [api_structure['get_quote_endpoint']],
-            'feature_count': 1
-        })
+        data['sections'].append(section(
+            'Get Quote Endpoint', 'get_quote_endpoint',
+            'Endpoint for fetching previously provided firm quote',
+            [api_structure['get_quote_endpoint']]))
 
-        data['sections'].append({
-            'title': 'Info Response Fields',
-            'key': 'info_response_fields',
-            'content': 'Fields returned in info endpoint response',
-            'api_features': api_structure['info_response_fields'],
-            'feature_count': len(api_structure['info_response_fields'])
-        })
+        data['sections'].append(section(
+            'Info Response Fields', 'info_response_fields',
+            'Fields returned in info endpoint response',
+            api_structure['info_response_fields']))
 
-        data['sections'].append({
-            'title': 'Asset Fields',
-            'key': 'asset_fields',
-            'content': 'Fields in asset objects',
-            'api_features': api_structure['asset_fields'],
-            'feature_count': len(api_structure['asset_fields'])
-        })
+        data['sections'].append(section(
+            'Asset Fields', 'asset_fields', 'Fields in asset objects',
+            api_structure['asset_fields']))
 
-        data['sections'].append({
-            'title': 'Delivery Method Fields',
-            'key': 'delivery_method_fields',
-            'content': 'Fields in delivery method objects',
-            'api_features': api_structure['delivery_method_fields'],
-            'feature_count': len(api_structure['delivery_method_fields'])
-        })
+        data['sections'].append(section(
+            'Delivery Method Fields', 'delivery_method_fields', 'Fields in delivery method objects',
+            api_structure['delivery_method_fields']))
 
-        data['sections'].append({
-            'title': 'Prices Request Parameters',
-            'key': 'prices_request_parameters',
-            'content': 'Parameters for prices endpoint requests',
-            'api_features': api_structure['prices_request_parameters'],
-            'feature_count': len(api_structure['prices_request_parameters'])
-        })
+        data['sections'].append(section(
+            'Prices Request Parameters', 'prices_request_parameters',
+            'Parameters for prices endpoint requests',
+            api_structure['prices_request_parameters']))
 
-        data['sections'].append({
-            'title': 'Prices Response Fields',
-            'key': 'prices_response_fields',
-            'content': 'Fields returned in prices endpoint response',
-            'api_features': api_structure['prices_response_fields'],
-            'feature_count': len(api_structure['prices_response_fields'])
-        })
+        data['sections'].append(section(
+            'Prices Response Fields', 'prices_response_fields',
+            'Fields returned in prices endpoint response',
+            api_structure['prices_response_fields']))
 
-        data['sections'].append({
-            'title': 'Buy Asset Fields',
-            'key': 'buy_asset_fields',
-            'content': 'Fields in buy asset objects from prices response',
-            'api_features': api_structure['buy_asset_fields'],
-            'feature_count': len(api_structure['buy_asset_fields'])
-        })
+        data['sections'].append(section(
+            'Buy Asset Fields', 'buy_asset_fields',
+            'Fields in buy asset objects from prices response',
+            api_structure['buy_asset_fields']))
 
-        data['sections'].append({
-            'title': 'Price Request Parameters',
-            'key': 'price_request_parameters',
-            'content': 'Parameters for price endpoint requests',
-            'api_features': api_structure['price_request_parameters'],
-            'feature_count': len(api_structure['price_request_parameters'])
-        })
+        data['sections'].append(section(
+            'Price Request Parameters', 'price_request_parameters',
+            'Parameters for price endpoint requests',
+            api_structure['price_request_parameters']))
 
-        data['sections'].append({
-            'title': 'Price Response Fields',
-            'key': 'price_response_fields',
-            'content': 'Fields returned in price endpoint response',
-            'api_features': api_structure['price_response_fields'],
-            'feature_count': len(api_structure['price_response_fields'])
-        })
+        data['sections'].append(section(
+            'Price Response Fields', 'price_response_fields',
+            'Fields returned in price endpoint response',
+            api_structure['price_response_fields']))
 
-        data['sections'].append({
-            'title': 'Post Quote Request Fields',
-            'key': 'post_quote_request_fields',
-            'content': 'Fields in POST /quote request body',
-            'api_features': api_structure['post_quote_request_fields'],
-            'feature_count': len(api_structure['post_quote_request_fields'])
-        })
+        data['sections'].append(section(
+            'Post Quote Request Fields', 'post_quote_request_fields',
+            'Fields in POST /quote request body',
+            api_structure['post_quote_request_fields']))
 
-        data['sections'].append({
-            'title': 'Quote Response Fields',
-            'key': 'quote_response_fields',
-            'content': 'Fields returned in quote endpoint responses',
-            'api_features': api_structure['quote_response_fields'],
-            'feature_count': len(api_structure['quote_response_fields'])
-        })
+        data['sections'].append(section(
+            'Quote Response Fields', 'quote_response_fields',
+            'Fields returned in quote endpoint responses',
+            api_structure['quote_response_fields']))
 
-        data['sections'].append({
-            'title': 'Fee Fields',
-            'key': 'fee_fields',
-            'content': 'Fields in fee objects',
-            'api_features': api_structure['fee_fields'],
-            'feature_count': len(api_structure['fee_fields'])
-        })
+        data['sections'].append(section(
+            'Fee Fields', 'fee_fields', 'Fields in fee objects',
+            api_structure['fee_fields']))
 
-        data['sections'].append({
-            'title': 'Fee Details Fields',
-            'key': 'fee_details_fields',
-            'content': 'Fields in fee details objects',
-            'api_features': api_structure['fee_details_fields'],
-            'feature_count': len(api_structure['fee_details_fields'])
-        })
+        data['sections'].append(section(
+            'Fee Details Fields', 'fee_details_fields', 'Fields in fee details objects',
+            api_structure['fee_details_fields']))
 
         # Calculate totals
         total_features = sum(section['feature_count'] for section in data['sections'])
@@ -3048,664 +1978,254 @@ class SEPParser:
             'sections': []
         }
 
-        # Define comprehensive API structure for SEP-24
+        # API structure of SEP-24
         # SEP-24 is similar to SEP-06 but uses POST for interactive flows
         api_structure = {
-            'info_endpoint': {
-                'name': 'info_endpoint',
-                'description': 'GET /info - Provides anchor capabilities and supported assets for interactive deposits/withdrawals',
-                'required': True,
-                'method': 'GET',
-                'path': '/info',
-                'category': 'Info Endpoint'
-            },
-            'interactive_deposit_endpoint': {
-                'name': 'interactive_deposit',
-                'description': 'POST /transactions/deposit/interactive - Initiates an interactive deposit transaction',
-                'required': True,
-                'method': 'POST',
-                'path': '/transactions/deposit/interactive',
-                'category': 'Deposit Endpoint'
-            },
-            'interactive_withdraw_endpoint': {
-                'name': 'interactive_withdraw',
-                'description': 'POST /transactions/withdraw/interactive - Initiates an interactive withdrawal transaction',
-                'required': True,
-                'method': 'POST',
-                'path': '/transactions/withdraw/interactive',
-                'category': 'Withdraw Endpoint'
-            },
+            'info_endpoint': spec_item(
+                'info_endpoint',
+                'GET /info - Provides anchor capabilities and supported assets for interactive deposits/withdrawals',
+                required=True, method='GET', path='/info',
+                category='Info Endpoint'),
+            'interactive_deposit_endpoint': spec_item(
+                'interactive_deposit',
+                'POST /transactions/deposit/interactive - Initiates an interactive deposit transaction',
+                required=True, method='POST',
+                path='/transactions/deposit/interactive',
+                category='Deposit Endpoint'),
+            'interactive_withdraw_endpoint': spec_item(
+                'interactive_withdraw',
+                'POST /transactions/withdraw/interactive - Initiates an interactive withdrawal transaction',
+                required=True, method='POST',
+                path='/transactions/withdraw/interactive',
+                category='Withdraw Endpoint'),
             'transaction_endpoints': [
-                {
-                    'name': 'transactions',
-                    'description': 'GET /transactions - Retrieves transaction history for authenticated account',
-                    'required': True,
-                    'method': 'GET',
-                    'path': '/transactions',
-                    'category': 'Transaction Endpoint'
-                },
-                {
-                    'name': 'transaction',
-                    'description': 'GET /transaction - Retrieves details for a single transaction',
-                    'required': True,
-                    'method': 'GET',
-                    'path': '/transaction',
-                    'category': 'Transaction Endpoint'
-                }
+                spec_item(
+                    'transactions',
+                    'GET /transactions - Retrieves transaction history for authenticated account',
+                    required=True, method='GET', path='/transactions',
+                    category='Transaction Endpoint'),
+                spec_item(
+                    'transaction', 'GET /transaction - Retrieves details for a single transaction',
+                    required=True, method='GET', path='/transaction',
+                    category='Transaction Endpoint')
             ],
-            'fee_endpoint': {
-                'name': 'fee_endpoint',
-                'description': 'GET /fee - Calculates fees for a deposit or withdrawal operation (optional)',
-                'required': False,
-                'method': 'GET',
-                'path': '/fee',
-                'category': 'Fee Endpoint'
-            },
+            'fee_endpoint': spec_item(
+                'fee_endpoint',
+                'GET /fee - Calculates fees for a deposit or withdrawal operation (optional)',
+                method='GET', path='/fee', category='Fee Endpoint'),
             'deposit_request_parameters': [
-                {
-                    'name': 'asset_code',
-                    'description': 'Code of the Stellar asset the user wants to receive',
-                    'required': True,
-                    'type': 'string'
-                },
-                {
-                    'name': 'asset_issuer',
-                    'description': 'Issuer of the Stellar asset (optional if anchor is issuer)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'source_asset',
-                    'description': 'Off-chain asset user wants to deposit (in SEP-38 format)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'amount',
-                    'description': 'Amount of asset to deposit',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'quote_id',
-                    'description': 'ID from SEP-38 quote (for asset exchange)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'account',
-                    'description': 'Stellar or muxed account for receiving deposit',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'memo',
-                    'description': 'Memo value for transaction identification',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'memo_type',
-                    'description': 'Type of memo (text, id, or hash)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'wallet_name',
-                    'description': 'Name of wallet for user communication',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'wallet_url',
-                    'description': 'URL to link in transaction notifications',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'lang',
-                    'description': 'Language code for UI and messages (RFC 4646)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'claimable_balance_supported',
-                    'description': 'Whether client supports claimable balances',
-                    'required': False,
-                    'type': 'boolean'
-                }
+                spec_item(
+                    'asset_code', 'Code of the Stellar asset the user wants to receive',
+                    required=True, type='string'),
+                spec_item(
+                    'asset_issuer', 'Issuer of the Stellar asset (optional if anchor is issuer)',
+                    type='string'),
+                spec_item(
+                    'source_asset', 'Off-chain asset user wants to deposit (in SEP-38 format)',
+                    type='string'),
+                spec_item('amount', 'Amount of asset to deposit', type='string'),
+                spec_item('quote_id', 'ID from SEP-38 quote (for asset exchange)', type='string'),
+                spec_item(
+                    'account', 'Stellar or muxed account for receiving deposit', type='string'),
+                spec_item('memo', 'Memo value for transaction identification', type='string'),
+                spec_item('memo_type', 'Type of memo (text, id, or hash)', type='string'),
+                spec_item('wallet_name', 'Name of wallet for user communication', type='string'),
+                spec_item('wallet_url', 'URL to link in transaction notifications', type='string'),
+                spec_item('lang', 'Language code for UI and messages (RFC 4646)', type='string'),
+                spec_item(
+                    'claimable_balance_supported', 'Whether client supports claimable balances',
+                    type='boolean')
             ],
             'withdraw_request_parameters': [
-                {
-                    'name': 'asset_code',
-                    'description': 'Code of the Stellar asset user wants to send',
-                    'required': True,
-                    'type': 'string'
-                },
-                {
-                    'name': 'asset_issuer',
-                    'description': 'Issuer of the Stellar asset (optional if anchor is issuer)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'destination_asset',
-                    'description': 'Off-chain asset user wants to receive (in SEP-38 format)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'amount',
-                    'description': 'Amount of asset to withdraw',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'quote_id',
-                    'description': 'ID from SEP-38 quote (for asset exchange)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'account',
-                    'description': 'Stellar or muxed account that will send the withdrawal',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'memo',
-                    'description': 'Memo for identifying the withdrawal transaction',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'memo_type',
-                    'description': 'Type of memo (text, id, or hash)',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'wallet_name',
-                    'description': 'Name of wallet for user communication',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'wallet_url',
-                    'description': 'URL to link in transaction notifications',
-                    'required': False,
-                    'type': 'string'
-                },
-                {
-                    'name': 'lang',
-                    'description': 'Language code for UI and messages (RFC 4646)',
-                    'required': False,
-                    'type': 'string'
-                }
+                spec_item(
+                    'asset_code', 'Code of the Stellar asset user wants to send', required=True,
+                    type='string'),
+                spec_item(
+                    'asset_issuer', 'Issuer of the Stellar asset (optional if anchor is issuer)',
+                    type='string'),
+                spec_item(
+                    'destination_asset', 'Off-chain asset user wants to receive (in SEP-38 format)',
+                    type='string'),
+                spec_item('amount', 'Amount of asset to withdraw', type='string'),
+                spec_item('quote_id', 'ID from SEP-38 quote (for asset exchange)', type='string'),
+                spec_item(
+                    'account', 'Stellar or muxed account that will send the withdrawal',
+                    type='string'),
+                spec_item('memo', 'Memo for identifying the withdrawal transaction', type='string'),
+                spec_item('memo_type', 'Type of memo (text, id, or hash)', type='string'),
+                spec_item('wallet_name', 'Name of wallet for user communication', type='string'),
+                spec_item('wallet_url', 'URL to link in transaction notifications', type='string'),
+                spec_item('lang', 'Language code for UI and messages (RFC 4646)', type='string')
             ],
             'interactive_response_fields': [
-                {
-                    'name': 'type',
-                    'description': 'Always "interactive_customer_info_needed" for SEP-24',
-                    'required': True
-                },
-                {
-                    'name': 'url',
-                    'description': 'URL for interactive flow popup/iframe',
-                    'required': True
-                },
-                {
-                    'name': 'id',
-                    'description': 'Unique transaction identifier',
-                    'required': True
-                }
+                spec_item(
+                    'type', 'Always "interactive_customer_info_needed" for SEP-24', required=True),
+                spec_item('url', 'URL for interactive flow popup/iframe', required=True),
+                spec_item('id', 'Unique transaction identifier', required=True)
             ],
             'transaction_status_values': [
-                {
-                    'name': 'incomplete',
-                    'description': 'Customer information still being collected via interactive flow',
-                    'required': True
-                },
-                {
-                    'name': 'pending_user_transfer_start',
-                    'description': 'Waiting for user to send funds (deposits)',
-                    'required': True
-                },
-                {
-                    'name': 'pending_user_transfer_complete',
-                    'description': 'User transfer detected, awaiting confirmations',
-                    'required': False
-                },
-                {
-                    'name': 'pending_external',
-                    'description': 'Transaction being processed by external system',
-                    'required': False
-                },
-                {
-                    'name': 'pending_anchor',
-                    'description': 'Anchor processing the transaction',
-                    'required': True
-                },
-                {
-                    'name': 'pending_stellar',
-                    'description': 'Transaction submitted to Stellar network',
-                    'required': False
-                },
-                {
-                    'name': 'pending_trust',
-                    'description': 'User needs to establish trustline',
-                    'required': False
-                },
-                {
-                    'name': 'pending_user',
-                    'description': 'Waiting for user action (e.g., accepting claimable balance)',
-                    'required': False
-                },
-                {
-                    'name': 'completed',
-                    'description': 'Transaction completed successfully',
-                    'required': True
-                },
-                {
-                    'name': 'refunded',
-                    'description': 'Transaction refunded',
-                    'required': False
-                },
-                {
-                    'name': 'expired',
-                    'description': 'Transaction expired before completion',
-                    'required': False
-                },
-                {
-                    'name': 'error',
-                    'description': 'Transaction encountered an error',
-                    'required': False
-                }
+                spec_item(
+                    'incomplete', 'Customer information still being collected via interactive flow',
+                    required=True),
+                spec_item(
+                    'pending_user_transfer_start', 'Waiting for user to send funds (deposits)',
+                    required=True),
+                spec_item(
+                    'pending_user_transfer_complete',
+                    'User transfer detected, awaiting confirmations'),
+                spec_item('pending_external', 'Transaction being processed by external system'),
+                spec_item('pending_anchor', 'Anchor processing the transaction', required=True),
+                spec_item('pending_stellar', 'Transaction submitted to Stellar network'),
+                spec_item('pending_trust', 'User needs to establish trustline'),
+                spec_item(
+                    'pending_user', 'Waiting for user action (e.g., accepting claimable balance)'),
+                spec_item('completed', 'Transaction completed successfully', required=True),
+                spec_item('refunded', 'Transaction refunded'),
+                spec_item('expired', 'Transaction expired before completion'),
+                spec_item('error', 'Transaction encountered an error')
             ],
             'transaction_fields': [
-                {
-                    'name': 'id',
-                    'description': 'Unique transaction identifier',
-                    'required': True
-                },
-                {
-                    'name': 'kind',
-                    'description': 'Kind of transaction (deposit or withdrawal)',
-                    'required': True
-                },
-                {
-                    'name': 'status',
-                    'description': 'Current status of the transaction',
-                    'required': True
-                },
-                {
-                    'name': 'status_eta',
-                    'description': 'Estimated seconds until status changes',
-                    'required': False
-                },
-                {
-                    'name': 'kyc_verified',
-                    'description': 'Whether KYC has been verified for this transaction',
-                    'required': False
-                },
-                {
-                    'name': 'more_info_url',
-                    'description': 'URL with additional transaction information',
-                    'required': True
-                },
-                {
-                    'name': 'amount_in',
-                    'description': 'Amount received by anchor',
-                    'required': False
-                },
-                {
-                    'name': 'amount_in_asset',
-                    'description': 'Asset received by anchor (SEP-38 format)',
-                    'required': False
-                },
-                {
-                    'name': 'amount_out',
-                    'description': 'Amount sent by anchor to user',
-                    'required': False
-                },
-                {
-                    'name': 'amount_out_asset',
-                    'description': 'Asset delivered to user (SEP-38 format)',
-                    'required': False
-                },
-                {
-                    'name': 'amount_fee',
-                    'description': 'Total fee charged for transaction',
-                    'required': False
-                },
-                {
-                    'name': 'amount_fee_asset',
-                    'description': 'Asset in which fees are calculated (SEP-38 format)',
-                    'required': False
-                },
-                {
-                    'name': 'quote_id',
-                    'description': 'ID of SEP-38 quote used for this transaction',
-                    'required': False
-                },
-                {
-                    'name': 'started_at',
-                    'description': 'When transaction was created (ISO 8601)',
-                    'required': True
-                },
-                {
-                    'name': 'completed_at',
-                    'description': 'When transaction completed (ISO 8601)',
-                    'required': False
-                },
-                {
-                    'name': 'updated_at',
-                    'description': 'When transaction status last changed (ISO 8601)',
-                    'required': False
-                },
-                {
-                    'name': 'user_action_required_by',
-                    'description': 'Deadline for user action (ISO 8601)',
-                    'required': False
-                },
-                {
-                    'name': 'stellar_transaction_id',
-                    'description': 'Hash of the Stellar transaction',
-                    'required': False
-                },
-                {
-                    'name': 'external_transaction_id',
-                    'description': 'Identifier from external system',
-                    'required': False
-                },
-                {
-                    'name': 'message',
-                    'description': 'Human-readable message about transaction',
-                    'required': False
-                },
-                {
-                    'name': 'refunded',
-                    'description': 'Whether transaction was refunded (deprecated)',
-                    'required': False
-                },
-                {
-                    'name': 'refunds',
-                    'description': 'Refund information object',
-                    'required': False
-                },
-                {
-                    'name': 'from',
-                    'description': 'Source address (Stellar for withdrawals, external for deposits)',
-                    'required': False
-                },
-                {
-                    'name': 'to',
-                    'description': 'Destination address (Stellar for deposits, external for withdrawals)',
-                    'required': False
-                },
-                {
-                    'name': 'deposit_memo',
-                    'description': 'Memo for deposit to Stellar address',
-                    'required': False
-                },
-                {
-                    'name': 'deposit_memo_type',
-                    'description': 'Type of deposit memo',
-                    'required': False
-                },
-                {
-                    'name': 'claimable_balance_id',
-                    'description': 'ID of claimable balance for deposit',
-                    'required': False
-                },
-                {
-                    'name': 'withdraw_anchor_account',
-                    'description': "Anchor's Stellar account for withdrawal payment",
-                    'required': False
-                },
-                {
-                    'name': 'withdraw_memo',
-                    'description': 'Memo for withdrawal to anchor account',
-                    'required': False
-                },
-                {
-                    'name': 'withdraw_memo_type',
-                    'description': 'Type of withdraw memo',
-                    'required': False
-                }
+                spec_item('id', 'Unique transaction identifier', required=True),
+                spec_item('kind', 'Kind of transaction (deposit or withdrawal)', required=True),
+                spec_item('status', 'Current status of the transaction', required=True),
+                spec_item('status_eta', 'Estimated seconds until status changes'),
+                spec_item('kyc_verified', 'Whether KYC has been verified for this transaction'),
+                spec_item(
+                    'more_info_url', 'URL with additional transaction information', required=True),
+                spec_item('amount_in', 'Amount received by anchor'),
+                spec_item('amount_in_asset', 'Asset received by anchor (SEP-38 format)'),
+                spec_item('amount_out', 'Amount sent by anchor to user'),
+                spec_item('amount_out_asset', 'Asset delivered to user (SEP-38 format)'),
+                spec_item('amount_fee', 'Total fee charged for transaction'),
+                spec_item('amount_fee_asset', 'Asset in which fees are calculated (SEP-38 format)'),
+                spec_item('quote_id', 'ID of SEP-38 quote used for this transaction'),
+                spec_item('started_at', 'When transaction was created (ISO 8601)', required=True),
+                spec_item('completed_at', 'When transaction completed (ISO 8601)'),
+                spec_item('updated_at', 'When transaction status last changed (ISO 8601)'),
+                spec_item('user_action_required_by', 'Deadline for user action (ISO 8601)'),
+                spec_item('stellar_transaction_id', 'Hash of the Stellar transaction'),
+                spec_item('external_transaction_id', 'Identifier from external system'),
+                spec_item('message', 'Human-readable message about transaction'),
+                spec_item('refunded', 'Whether transaction was refunded (deprecated)'),
+                spec_item('refunds', 'Refund information object'),
+                spec_item(
+                    'from', 'Source address (Stellar for withdrawals, external for deposits)'),
+                spec_item(
+                    'to', 'Destination address (Stellar for deposits, external for withdrawals)'),
+                spec_item('deposit_memo', 'Memo for deposit to Stellar address'),
+                spec_item('deposit_memo_type', 'Type of deposit memo'),
+                spec_item('claimable_balance_id', 'ID of claimable balance for deposit'),
+                spec_item(
+                    'withdraw_anchor_account', "Anchor's Stellar account for withdrawal payment"),
+                spec_item('withdraw_memo', 'Memo for withdrawal to anchor account'),
+                spec_item('withdraw_memo_type', 'Type of withdraw memo')
             ],
             'info_response_fields': [
-                {
-                    'name': 'deposit',
-                    'description': 'Map of asset codes to deposit asset information',
-                    'required': True
-                },
-                {
-                    'name': 'withdraw',
-                    'description': 'Map of asset codes to withdraw asset information',
-                    'required': True
-                },
-                {
-                    'name': 'fee',
-                    'description': 'Fee endpoint information object',
-                    'required': False
-                },
-                {
-                    'name': 'features',
-                    'description': 'Feature flags object',
-                    'required': False
-                }
+                spec_item(
+                    'deposit', 'Map of asset codes to deposit asset information', required=True),
+                spec_item(
+                    'withdraw', 'Map of asset codes to withdraw asset information', required=True),
+                spec_item('fee', 'Fee endpoint information object'),
+                spec_item('features', 'Feature flags object')
             ],
             'deposit_asset_fields': [
-                {
-                    'name': 'enabled',
-                    'description': 'Whether deposits are enabled for this asset',
-                    'required': True
-                },
-                {
-                    'name': 'min_amount',
-                    'description': 'Minimum deposit amount',
-                    'required': False
-                },
-                {
-                    'name': 'max_amount',
-                    'description': 'Maximum deposit amount',
-                    'required': False
-                },
-                {
-                    'name': 'fee_fixed',
-                    'description': 'Fixed deposit fee',
-                    'required': False
-                },
-                {
-                    'name': 'fee_percent',
-                    'description': 'Percentage deposit fee',
-                    'required': False
-                },
-                {
-                    'name': 'fee_minimum',
-                    'description': 'Minimum deposit fee',
-                    'required': False
-                }
+                spec_item('enabled', 'Whether deposits are enabled for this asset', required=True),
+                spec_item('min_amount', 'Minimum deposit amount'),
+                spec_item('max_amount', 'Maximum deposit amount'),
+                spec_item('fee_fixed', 'Fixed deposit fee'),
+                spec_item('fee_percent', 'Percentage deposit fee'),
+                spec_item('fee_minimum', 'Minimum deposit fee')
             ],
             'withdraw_asset_fields': [
-                {
-                    'name': 'enabled',
-                    'description': 'Whether withdrawals are enabled for this asset',
-                    'required': True
-                },
-                {
-                    'name': 'min_amount',
-                    'description': 'Minimum withdrawal amount',
-                    'required': False
-                },
-                {
-                    'name': 'max_amount',
-                    'description': 'Maximum withdrawal amount',
-                    'required': False
-                },
-                {
-                    'name': 'fee_fixed',
-                    'description': 'Fixed withdrawal fee',
-                    'required': False
-                },
-                {
-                    'name': 'fee_percent',
-                    'description': 'Percentage withdrawal fee',
-                    'required': False
-                },
-                {
-                    'name': 'fee_minimum',
-                    'description': 'Minimum withdrawal fee',
-                    'required': False
-                }
+                spec_item(
+                    'enabled', 'Whether withdrawals are enabled for this asset', required=True),
+                spec_item('min_amount', 'Minimum withdrawal amount'),
+                spec_item('max_amount', 'Maximum withdrawal amount'),
+                spec_item('fee_fixed', 'Fixed withdrawal fee'),
+                spec_item('fee_percent', 'Percentage withdrawal fee'),
+                spec_item('fee_minimum', 'Minimum withdrawal fee')
             ],
             'feature_flags_fields': [
-                {
-                    'name': 'account_creation',
-                    'description': 'Whether anchor supports creating accounts',
-                    'required': False
-                },
-                {
-                    'name': 'claimable_balances',
-                    'description': 'Whether anchor supports claimable balances',
-                    'required': False
-                }
+                spec_item('account_creation', 'Whether anchor supports creating accounts'),
+                spec_item('claimable_balances', 'Whether anchor supports claimable balances')
             ],
             'fee_endpoint_fields': [
-                {
-                    'name': 'enabled',
-                    'description': 'Whether fee endpoint is available',
-                    'required': True
-                },
-                {
-                    'name': 'authentication_required',
-                    'description': 'Whether authentication is required for fee endpoint',
-                    'required': False
-                }
+                spec_item('enabled', 'Whether fee endpoint is available', required=True),
+                spec_item(
+                    'authentication_required',
+                    'Whether authentication is required for fee endpoint')
             ]
         }
 
         # Store API structure components as sections
-        data['sections'].append({
-            'title': 'Info Endpoint',
-            'key': 'info_endpoint',
-            'content': 'Endpoint for querying anchor interactive deposit/withdrawal capabilities',
-            'api_features': [api_structure['info_endpoint']],
-            'feature_count': 1
-        })
+        data['sections'].append(section(
+            'Info Endpoint', 'info_endpoint',
+            'Endpoint for querying anchor interactive deposit/withdrawal capabilities',
+            [api_structure['info_endpoint']]))
 
-        data['sections'].append({
-            'title': 'Interactive Deposit Endpoint',
-            'key': 'interactive_deposit_endpoint',
-            'content': 'Endpoint for initiating interactive deposit flow',
-            'api_features': [api_structure['interactive_deposit_endpoint']],
-            'feature_count': 1
-        })
+        data['sections'].append(section(
+            'Interactive Deposit Endpoint', 'interactive_deposit_endpoint',
+            'Endpoint for initiating interactive deposit flow',
+            [api_structure['interactive_deposit_endpoint']]))
 
-        data['sections'].append({
-            'title': 'Interactive Withdraw Endpoint',
-            'key': 'interactive_withdraw_endpoint',
-            'content': 'Endpoint for initiating interactive withdrawal flow',
-            'api_features': [api_structure['interactive_withdraw_endpoint']],
-            'feature_count': 1
-        })
+        data['sections'].append(section(
+            'Interactive Withdraw Endpoint', 'interactive_withdraw_endpoint',
+            'Endpoint for initiating interactive withdrawal flow',
+            [api_structure['interactive_withdraw_endpoint']]))
 
-        data['sections'].append({
-            'title': 'Transaction Endpoints',
-            'key': 'transaction_endpoints',
-            'content': 'Endpoints for tracking and querying transactions',
-            'api_features': api_structure['transaction_endpoints'],
-            'feature_count': len(api_structure['transaction_endpoints'])
-        })
+        data['sections'].append(section(
+            'Transaction Endpoints', 'transaction_endpoints',
+            'Endpoints for tracking and querying transactions',
+            api_structure['transaction_endpoints']))
 
-        data['sections'].append({
-            'title': 'Fee Endpoint',
-            'key': 'fee_endpoint',
-            'content': 'Optional endpoint for calculating transaction fees',
-            'api_features': [api_structure['fee_endpoint']],
-            'feature_count': 1
-        })
+        data['sections'].append(section(
+            'Fee Endpoint', 'fee_endpoint', 'Optional endpoint for calculating transaction fees',
+            [api_structure['fee_endpoint']]))
 
-        data['sections'].append({
-            'title': 'Deposit Request Parameters',
-            'key': 'deposit_request_parameters',
-            'content': 'Parameters for interactive deposit endpoint',
-            'api_features': api_structure['deposit_request_parameters'],
-            'feature_count': len(api_structure['deposit_request_parameters'])
-        })
+        data['sections'].append(section(
+            'Deposit Request Parameters', 'deposit_request_parameters',
+            'Parameters for interactive deposit endpoint',
+            api_structure['deposit_request_parameters']))
 
-        data['sections'].append({
-            'title': 'Withdraw Request Parameters',
-            'key': 'withdraw_request_parameters',
-            'content': 'Parameters for interactive withdraw endpoint',
-            'api_features': api_structure['withdraw_request_parameters'],
-            'feature_count': len(api_structure['withdraw_request_parameters'])
-        })
+        data['sections'].append(section(
+            'Withdraw Request Parameters', 'withdraw_request_parameters',
+            'Parameters for interactive withdraw endpoint',
+            api_structure['withdraw_request_parameters']))
 
-        data['sections'].append({
-            'title': 'Interactive Response Fields',
-            'key': 'interactive_response_fields',
-            'content': 'Fields returned in interactive deposit/withdraw responses',
-            'api_features': api_structure['interactive_response_fields'],
-            'feature_count': len(api_structure['interactive_response_fields'])
-        })
+        data['sections'].append(section(
+            'Interactive Response Fields', 'interactive_response_fields',
+            'Fields returned in interactive deposit/withdraw responses',
+            api_structure['interactive_response_fields']))
 
-        data['sections'].append({
-            'title': 'Transaction Status Values',
-            'key': 'transaction_status_values',
-            'content': 'Possible transaction status values in SEP-24',
-            'api_features': api_structure['transaction_status_values'],
-            'feature_count': len(api_structure['transaction_status_values'])
-        })
+        data['sections'].append(section(
+            'Transaction Status Values', 'transaction_status_values',
+            'Possible transaction status values in SEP-24',
+            api_structure['transaction_status_values']))
 
-        data['sections'].append({
-            'title': 'Transaction Fields',
-            'key': 'transaction_fields',
-            'content': 'Fields returned in transaction objects',
-            'api_features': api_structure['transaction_fields'],
-            'feature_count': len(api_structure['transaction_fields'])
-        })
+        data['sections'].append(section(
+            'Transaction Fields', 'transaction_fields', 'Fields returned in transaction objects',
+            api_structure['transaction_fields']))
 
-        data['sections'].append({
-            'title': 'Info Response Fields',
-            'key': 'info_response_fields',
-            'content': 'Fields returned in info endpoint response',
-            'api_features': api_structure['info_response_fields'],
-            'feature_count': len(api_structure['info_response_fields'])
-        })
+        data['sections'].append(section(
+            'Info Response Fields', 'info_response_fields',
+            'Fields returned in info endpoint response',
+            api_structure['info_response_fields']))
 
-        data['sections'].append({
-            'title': 'Deposit Asset Fields',
-            'key': 'deposit_asset_fields',
-            'content': 'Fields in deposit asset objects',
-            'api_features': api_structure['deposit_asset_fields'],
-            'feature_count': len(api_structure['deposit_asset_fields'])
-        })
+        data['sections'].append(section(
+            'Deposit Asset Fields', 'deposit_asset_fields', 'Fields in deposit asset objects',
+            api_structure['deposit_asset_fields']))
 
-        data['sections'].append({
-            'title': 'Withdraw Asset Fields',
-            'key': 'withdraw_asset_fields',
-            'content': 'Fields in withdraw asset objects',
-            'api_features': api_structure['withdraw_asset_fields'],
-            'feature_count': len(api_structure['withdraw_asset_fields'])
-        })
+        data['sections'].append(section(
+            'Withdraw Asset Fields', 'withdraw_asset_fields', 'Fields in withdraw asset objects',
+            api_structure['withdraw_asset_fields']))
 
-        data['sections'].append({
-            'title': 'Feature Flags Fields',
-            'key': 'feature_flags_fields',
-            'content': 'Fields in feature flags object',
-            'api_features': api_structure['feature_flags_fields'],
-            'feature_count': len(api_structure['feature_flags_fields'])
-        })
+        data['sections'].append(section(
+            'Feature Flags Fields', 'feature_flags_fields', 'Fields in feature flags object',
+            api_structure['feature_flags_fields']))
 
-        data['sections'].append({
-            'title': 'Fee Endpoint Info Fields',
-            'key': 'fee_endpoint_fields',
-            'content': 'Fields in fee endpoint info object',
-            'api_features': api_structure['fee_endpoint_fields'],
-            'feature_count': len(api_structure['fee_endpoint_fields'])
-        })
+        data['sections'].append(section(
+            'Fee Endpoint Info Fields', 'fee_endpoint_fields', 'Fields in fee endpoint info object',
+            api_structure['fee_endpoint_fields']))
 
         # Calculate totals
         total_features = sum(section['feature_count'] for section in data['sections'])
@@ -3736,168 +2256,86 @@ class SEPParser:
             'sections': []
         }
 
-        # Define comprehensive API structure for SEP-30
+        # API structure of SEP-30
         # SEP-30 provides multi-party account recovery functionality
         api_structure = {
             'endpoints': [
-                {
-                    'name': 'register_account',
-                    'description': 'POST /accounts/{address} - Register an account for recovery',
-                    'required': True,
-                    'method': 'POST',
-                    'path': '/accounts/{address}',
-                    'category': 'Account Registration'
-                },
-                {
-                    'name': 'update_account',
-                    'description': 'PUT /accounts/{address} - Update identities for an account',
-                    'required': True,
-                    'method': 'PUT',
-                    'path': '/accounts/{address}',
-                    'category': 'Account Management'
-                },
-                {
-                    'name': 'get_account',
-                    'description': 'GET /accounts/{address} - Retrieve account details',
-                    'required': True,
-                    'method': 'GET',
-                    'path': '/accounts/{address}',
-                    'category': 'Account Information'
-                },
-                {
-                    'name': 'delete_account',
-                    'description': 'DELETE /accounts/{address} - Delete account record',
-                    'required': True,
-                    'method': 'DELETE',
-                    'path': '/accounts/{address}',
-                    'category': 'Account Management'
-                },
-                {
-                    'name': 'list_accounts',
-                    'description': 'GET /accounts - List accessible accounts',
-                    'required': True,
-                    'method': 'GET',
-                    'path': '/accounts',
-                    'category': 'Account Information'
-                },
-                {
-                    'name': 'sign_transaction',
-                    'description': 'POST /accounts/{address}/sign/{signing-address} - Sign a transaction',
-                    'required': True,
-                    'method': 'POST',
-                    'path': '/accounts/{address}/sign/{signing-address}',
-                    'category': 'Transaction Signing'
-                }
+                spec_item(
+                    'register_account',
+                    'POST /accounts/{address} - Register an account for recovery', required=True,
+                    method='POST', path='/accounts/{address}', category='Account Registration'),
+                spec_item(
+                    'update_account', 'PUT /accounts/{address} - Update identities for an account',
+                    required=True, method='PUT', path='/accounts/{address}',
+                    category='Account Management'),
+                spec_item(
+                    'get_account', 'GET /accounts/{address} - Retrieve account details',
+                    required=True, method='GET', path='/accounts/{address}',
+                    category='Account Information'),
+                spec_item(
+                    'delete_account', 'DELETE /accounts/{address} - Delete account record',
+                    required=True, method='DELETE', path='/accounts/{address}',
+                    category='Account Management'),
+                spec_item(
+                    'list_accounts', 'GET /accounts - List accessible accounts', required=True,
+                    method='GET', path='/accounts', category='Account Information'),
+                spec_item(
+                    'sign_transaction',
+                    'POST /accounts/{address}/sign/{signing-address} - Sign a transaction',
+                    required=True, method='POST', path='/accounts/{address}/sign/{signing-address}',
+                    category='Transaction Signing')
             ],
             'request_fields': [
-                {
-                    'name': 'identities',
-                    'description': 'Array of identity objects for account recovery',
-                    'required': True,
-                    'type': 'array'
-                },
-                {
-                    'name': 'role',
-                    'description': 'Role of the identity (owner or other)',
-                    'required': True,
-                    'type': 'string',
-                    'values': ['owner', 'other']
-                },
-                {
-                    'name': 'auth_methods',
-                    'description': 'Array of authentication methods for the identity',
-                    'required': True,
-                    'type': 'array'
-                },
-                {
-                    'name': 'type',
-                    'description': 'Type of authentication method',
-                    'required': True,
-                    'type': 'string',
-                    'values': ['stellar_address', 'phone_number', 'email', 'other']
-                },
-                {
-                    'name': 'value',
-                    'description': 'Value of the authentication method (address, phone, email, etc.)',
-                    'required': True,
-                    'type': 'string'
-                },
-                {
-                    'name': 'transaction',
-                    'description': 'Base64-encoded XDR transaction envelope to sign',
-                    'required': True,
-                    'type': 'string',
-                    'context': 'sign_transaction'
-                },
-                {
-                    'name': 'after',
-                    'description': 'Cursor for pagination in list accounts endpoint',
-                    'required': False,
-                    'type': 'string',
-                    'context': 'list_accounts'
-                }
+                spec_item(
+                    'identities', 'Array of identity objects for account recovery', required=True,
+                    type='array'),
+                spec_item(
+                    'role', 'Role of the identity (owner or other)', required=True, type='string',
+                    values=['owner', 'other']),
+                spec_item(
+                    'auth_methods', 'Array of authentication methods for the identity',
+                    required=True, type='array'),
+                spec_item(
+                    'type', 'Type of authentication method', required=True, type='string',
+                    values=['stellar_address', 'phone_number', 'email', 'other']),
+                spec_item(
+                    'value', 'Value of the authentication method (address, phone, email, etc.)',
+                    required=True, type='string'),
+                spec_item(
+                    'transaction', 'Base64-encoded XDR transaction envelope to sign', required=True,
+                    type='string', context='sign_transaction'),
+                spec_item(
+                    'after', 'Cursor for pagination in list accounts endpoint', type='string',
+                    context='list_accounts')
             ],
             'response_fields': [
-                {
-                    'name': 'address',
-                    'description': 'Stellar address of the registered account',
-                    'required': True,
-                    'type': 'string'
-                },
-                {
-                    'name': 'identities',
-                    'description': 'Array of registered identity objects',
-                    'required': True,
-                    'type': 'array'
-                },
-                {
-                    'name': 'signers',
-                    'description': 'Array of signer objects for the account',
-                    'required': True,
-                    'type': 'array'
-                },
-                {
-                    'name': 'role',
-                    'description': 'Role of the identity in response',
-                    'required': True,
-                    'type': 'string',
-                    'context': 'identity'
-                },
-                {
-                    'name': 'authenticated',
-                    'description': 'Whether the identity has been authenticated',
-                    'required': False,
-                    'type': 'boolean',
-                    'context': 'identity'
-                },
-                {
-                    'name': 'key',
-                    'description': 'Public key of the signer',
-                    'required': True,
-                    'type': 'string',
-                    'context': 'signer'
-                },
-                {
-                    'name': 'signature',
-                    'description': 'Base64-encoded signature of the transaction',
-                    'required': True,
-                    'type': 'string',
-                    'context': 'sign_response'
-                },
-                {
-                    'name': 'network_passphrase',
-                    'description': 'Network passphrase used for signing',
-                    'required': True,
-                    'type': 'string',
-                    'context': 'sign_response'
-                },
-                {
-                    'name': 'accounts',
-                    'description': 'Array of account objects in list response',
-                    'required': True,
-                    'type': 'array',
-                    'context': 'list_accounts'
-                }
+                spec_item(
+                    'address', 'Stellar address of the registered account', required=True,
+                    type='string'),
+                spec_item(
+                    'identities', 'Array of registered identity objects', required=True,
+                    type='array'),
+                spec_item(
+                    'signers', 'Array of signer objects for the account', required=True,
+                    type='array'),
+                spec_item(
+                    'role', 'Role of the identity in response', required=True, type='string',
+                    context='identity'),
+                spec_item(
+                    'authenticated', 'Whether the identity has been authenticated', type='boolean',
+                    context='identity'),
+                spec_item(
+                    'key', 'Public key of the signer', required=True, type='string',
+                    context='signer'),
+                spec_item(
+                    'signature', 'Base64-encoded signature of the transaction', required=True,
+                    type='string', context='sign_response'),
+                spec_item(
+                    'network_passphrase', 'Network passphrase used for signing', required=True,
+                    type='string', context='sign_response'),
+                spec_item(
+                    'accounts', 'Array of account objects in list response', required=True,
+                    type='array', context='list_accounts')
             ],
             'error_codes': [
                 {
@@ -3922,42 +2360,24 @@ class SEPParser:
                 }
             ],
             'features': [
-                {
-                    'name': 'multi_party_recovery',
-                    'description': 'Support for multi-server account recovery',
-                    'required': True,
-                    'category': 'Core Feature'
-                },
-                {
-                    'name': 'flexible_auth_methods',
-                    'description': 'Support for multiple authentication method types',
-                    'required': True,
-                    'category': 'Core Feature'
-                },
-                {
-                    'name': 'transaction_signing',
-                    'description': 'Server-side transaction signing for recovery',
-                    'required': True,
-                    'category': 'Core Feature'
-                },
-                {
-                    'name': 'account_sharing',
-                    'description': 'Support for shared account access',
-                    'required': False,
-                    'category': 'Optional Feature'
-                },
-                {
-                    'name': 'identity_roles',
-                    'description': 'Support for owner and other identity roles',
-                    'required': True,
-                    'category': 'Core Feature'
-                },
-                {
-                    'name': 'pagination',
-                    'description': 'Pagination support in list accounts endpoint',
-                    'required': False,
-                    'category': 'Optional Feature'
-                }
+                spec_item(
+                    'multi_party_recovery', 'Support for multi-server account recovery',
+                    required=True, category='Core Feature'),
+                spec_item(
+                    'flexible_auth_methods', 'Support for multiple authentication method types',
+                    required=True, category='Core Feature'),
+                spec_item(
+                    'transaction_signing', 'Server-side transaction signing for recovery',
+                    required=True, category='Core Feature'),
+                spec_item(
+                    'account_sharing', 'Support for shared account access',
+                    category='Optional Feature'),
+                spec_item(
+                    'identity_roles', 'Support for owner and other identity roles', required=True,
+                    category='Core Feature'),
+                spec_item(
+                    'pagination', 'Pagination support in list accounts endpoint',
+                    category='Optional Feature')
             ],
             'authentication': {
                 'type': 'SEP-10 or External',
@@ -3967,49 +2387,29 @@ class SEPParser:
         }
 
         # Store endpoints as a section
-        data['sections'].append({
-            'title': 'API Endpoints',
-            'key': 'api_endpoints',
-            'content': 'SEP-30 API endpoints for account recovery',
-            'api_features': api_structure['endpoints'],
-            'feature_count': len(api_structure['endpoints'])
-        })
+        data['sections'].append(section(
+            'API Endpoints', 'api_endpoints', 'SEP-30 API endpoints for account recovery',
+            api_structure['endpoints']))
 
         # Store request fields as a section
-        data['sections'].append({
-            'title': 'Request Fields',
-            'key': 'request_fields',
-            'content': 'Fields used in API requests',
-            'api_features': api_structure['request_fields'],
-            'feature_count': len(api_structure['request_fields'])
-        })
+        data['sections'].append(section(
+            'Request Fields', 'request_fields', 'Fields used in API requests',
+            api_structure['request_fields']))
 
         # Store response fields as a section
-        data['sections'].append({
-            'title': 'Response Fields',
-            'key': 'response_fields',
-            'content': 'Fields returned in API responses',
-            'api_features': api_structure['response_fields'],
-            'feature_count': len(api_structure['response_fields'])
-        })
+        data['sections'].append(section(
+            'Response Fields', 'response_fields', 'Fields returned in API responses',
+            api_structure['response_fields']))
 
         # Store error codes as a section
-        data['sections'].append({
-            'title': 'Error Codes',
-            'key': 'error_codes',
-            'content': 'HTTP error codes and their meanings',
-            'api_features': api_structure['error_codes'],
-            'feature_count': len(api_structure['error_codes'])
-        })
+        data['sections'].append(section(
+            'Error Codes', 'error_codes', 'HTTP error codes and their meanings',
+            api_structure['error_codes']))
 
         # Store features as a section
-        data['sections'].append({
-            'title': 'Recovery Features',
-            'key': 'recovery_features',
-            'content': 'Core and optional recovery features',
-            'api_features': api_structure['features'],
-            'feature_count': len(api_structure['features'])
-        })
+        data['sections'].append(section(
+            'Recovery Features', 'recovery_features', 'Core and optional recovery features',
+            api_structure['features']))
 
         # Store authentication info
         data['sections'].append({
@@ -4065,278 +2465,146 @@ class SEPParser:
 
         # Operation types
         uri_structure['operations'] = [
-            {
-                'name': 'tx',
-                'description': 'Transaction operation - Request to sign a transaction',
-                'required': True,
-                'category': 'URI Operation'
-            },
-            {
-                'name': 'pay',
-                'description': 'Payment operation - Request to pay a specific address',
-                'required': True,
-                'category': 'URI Operation'
-            }
+            spec_item(
+                'tx', 'Transaction operation - Request to sign a transaction', required=True,
+                category='URI Operation'),
+            spec_item(
+                'pay', 'Payment operation - Request to pay a specific address', required=True,
+                category='URI Operation')
         ]
 
         # TX operation parameters
         uri_structure['tx_operation_parameters'] = [
-            {
-                'name': 'xdr',
-                'description': 'Base64 encoded TransactionEnvelope XDR',
-                'required': True,
-                'operation': 'tx',
-                'type': 'string'
-            },
-            {
-                'name': 'replace',
-                'description': 'URL-encoded field replacement using Txrep (SEP-0011) format',
-                'required': False,
-                'operation': 'tx',
-                'type': 'string'
-            },
-            {
-                'name': 'callback',
-                'description': 'URL for transaction submission callback',
-                'required': False,
-                'operation': 'tx',
-                'type': 'string'
-            },
-            {
-                'name': 'pubkey',
-                'description': 'Stellar public key to specify which key should sign',
-                'required': False,
-                'operation': 'tx',
-                'type': 'string'
-            },
-            {
-                'name': 'chain',
-                'description': 'Nested SEP-0007 URL for transaction chaining',
-                'required': False,
-                'operation': 'tx',
-                'type': 'string'
-            }
+            spec_item(
+                'xdr', 'Base64 encoded TransactionEnvelope XDR', required=True, operation='tx',
+                type='string'),
+            spec_item(
+                'replace', 'URL-encoded field replacement using Txrep (SEP-0011) format',
+                operation='tx', type='string'),
+            spec_item(
+                'callback', 'URL for transaction submission callback', operation='tx',
+                type='string'),
+            spec_item(
+                'pubkey', 'Stellar public key to specify which key should sign', operation='tx',
+                type='string'),
+            spec_item(
+                'chain', 'Nested SEP-0007 URL for transaction chaining', operation='tx',
+                type='string')
         ]
 
         # PAY operation parameters
         uri_structure['pay_operation_parameters'] = [
-            {
-                'name': 'destination',
-                'description': 'Stellar account ID or payment address to receive payment',
-                'required': True,
-                'operation': 'pay',
-                'type': 'string'
-            },
-            {
-                'name': 'amount',
-                'description': 'Amount to send',
-                'required': False,
-                'operation': 'pay',
-                'type': 'string'
-            },
-            {
-                'name': 'asset_code',
-                'description': 'Asset code for the payment (e.g., USD, BTC)',
-                'required': False,
-                'operation': 'pay',
-                'type': 'string'
-            },
-            {
-                'name': 'asset_issuer',
-                'description': 'Stellar account ID of asset issuer',
-                'required': False,
-                'operation': 'pay',
-                'type': 'string'
-            },
-            {
-                'name': 'memo',
-                'description': 'Memo value to attach to transaction',
-                'required': False,
-                'operation': 'pay',
-                'type': 'string'
-            },
-            {
-                'name': 'memo_type',
-                'description': 'Type of memo (MEMO_TEXT, MEMO_ID, MEMO_HASH, MEMO_RETURN)',
-                'required': False,
-                'operation': 'pay',
-                'type': 'string',
-                'values': ['MEMO_TEXT', 'MEMO_ID', 'MEMO_HASH', 'MEMO_RETURN']
-            }
+            spec_item(
+                'destination', 'Stellar account ID or payment address to receive payment',
+                required=True, operation='pay', type='string'),
+            spec_item('amount', 'Amount to send', operation='pay', type='string'),
+            spec_item(
+                'asset_code', 'Asset code for the payment (e.g., USD, BTC)', operation='pay',
+                type='string'),
+            spec_item(
+                'asset_issuer', 'Stellar account ID of asset issuer', operation='pay',
+                type='string'),
+            spec_item(
+                'memo', 'Memo value to attach to transaction', operation='pay', type='string'),
+            spec_item(
+                'memo_type', 'Type of memo (MEMO_TEXT, MEMO_ID, MEMO_HASH, MEMO_RETURN)',
+                operation='pay', type='string',
+                values=['MEMO_TEXT', 'MEMO_ID', 'MEMO_HASH', 'MEMO_RETURN'])
         ]
 
         # Common parameters (used by both operations)
         uri_structure['common_parameters'] = [
-            {
-                'name': 'msg',
-                'description': 'Message for the user (max 300 characters)',
-                'required': False,
-                'operation': 'both',
-                'type': 'string'
-            },
-            {
-                'name': 'network_passphrase',
-                'description': 'Network passphrase for the transaction',
-                'required': False,
-                'operation': 'both',
-                'type': 'string'
-            },
-            {
-                'name': 'origin_domain',
-                'description': 'Fully qualified domain name of the service originating the request',
-                'required': False,
-                'operation': 'both',
-                'type': 'string'
-            },
-            {
-                'name': 'signature',
-                'description': 'Signature of the URL for verification',
-                'required': False,
-                'operation': 'both',
-                'type': 'string'
-            }
+            spec_item(
+                'msg', 'Message for the user (max 300 characters)', operation='both', type='string'),
+            spec_item(
+                'network_passphrase', 'Network passphrase for the transaction', operation='both',
+                type='string'),
+            spec_item(
+                'origin_domain',
+                'Fully qualified domain name of the service originating the request',
+                operation='both', type='string'),
+            spec_item(
+                'signature', 'Signature of the URL for verification', operation='both',
+                type='string')
         ]
 
         # Validation features
         uri_structure['validation_features'] = [
-            {
-                'name': 'validate_uri_scheme',
-                'description': 'Validate that URI starts with web+stellar:',
-                'required': True,
-                'category': 'URI Validation'
-            },
-            {
-                'name': 'validate_operation_type',
-                'description': 'Validate operation type is tx or pay',
-                'required': True,
-                'category': 'URI Validation'
-            },
-            {
-                'name': 'validate_xdr_parameter',
-                'description': 'Validate XDR parameter for tx operation',
-                'required': True,
-                'category': 'URI Validation'
-            },
-            {
-                'name': 'validate_destination_parameter',
-                'description': 'Validate destination parameter for pay operation',
-                'required': True,
-                'category': 'URI Validation'
-            },
-            {
-                'name': 'validate_stellar_address',
-                'description': 'Validate Stellar addresses (account IDs, muxed accounts, contract IDs)',
-                'required': True,
-                'category': 'URI Validation'
-            },
-            {
-                'name': 'validate_asset_code',
-                'description': 'Validate asset code length and format',
-                'required': True,
-                'category': 'URI Validation'
-            },
-            {
-                'name': 'validate_memo_type',
-                'description': 'Validate memo type is one of allowed types',
-                'required': True,
-                'category': 'URI Validation'
-            },
-            {
-                'name': 'validate_memo_value',
-                'description': 'Validate memo value based on memo type',
-                'required': True,
-                'category': 'URI Validation'
-            },
-            {
-                'name': 'validate_message_length',
-                'description': 'Validate message parameter length (max 300 chars)',
-                'required': True,
-                'category': 'URI Validation'
-            },
-            {
-                'name': 'validate_origin_domain',
-                'description': 'Validate origin_domain is fully qualified domain name',
-                'required': True,
-                'category': 'URI Validation'
-            },
-            {
-                'name': 'validate_chain_nesting',
-                'description': 'Validate chain parameter nesting depth (max 7 levels)',
-                'required': True,
-                'category': 'URI Validation'
-            }
+            spec_item(
+                'validate_uri_scheme', 'Validate that URI starts with web+stellar:', required=True,
+                category='URI Validation'),
+            spec_item(
+                'validate_operation_type', 'Validate operation type is tx or pay', required=True,
+                category='URI Validation'),
+            spec_item(
+                'validate_xdr_parameter', 'Validate XDR parameter for tx operation', required=True,
+                category='URI Validation'),
+            spec_item(
+                'validate_destination_parameter',
+                'Validate destination parameter for pay operation', required=True,
+                category='URI Validation'),
+            spec_item(
+                'validate_stellar_address',
+                'Validate Stellar addresses (account IDs, muxed accounts, contract IDs)',
+                required=True, category='URI Validation'),
+            spec_item(
+                'validate_asset_code', 'Validate asset code length and format', required=True,
+                category='URI Validation'),
+            spec_item(
+                'validate_memo_type', 'Validate memo type is one of allowed types', required=True,
+                category='URI Validation'),
+            spec_item(
+                'validate_memo_value', 'Validate memo value based on memo type', required=True,
+                category='URI Validation'),
+            spec_item(
+                'validate_message_length', 'Validate message parameter length (max 300 chars)',
+                required=True, category='URI Validation'),
+            spec_item(
+                'validate_origin_domain', 'Validate origin_domain is fully qualified domain name',
+                required=True, category='URI Validation'),
+            spec_item(
+                'validate_chain_nesting', 'Validate chain parameter nesting depth (max 7 levels)',
+                required=True, category='URI Validation')
         ]
 
         # Signature features
         uri_structure['signature_features'] = [
-            {
-                'name': 'sign_uri',
-                'description': 'Sign a SEP-0007 URI with a keypair',
-                'required': True,
-                'category': 'URI Signing'
-            },
-            {
-                'name': 'verify_signature',
-                'description': 'Verify URI signature with a public key',
-                'required': True,
-                'category': 'URI Signing'
-            },
-            {
-                'name': 'verify_signed_uri',
-                'description': 'Verify signed URI by fetching signing key from origin domain TOML',
-                'required': True,
-                'category': 'URI Signing'
-            }
+            spec_item(
+                'sign_uri', 'Sign a SEP-0007 URI with a keypair', required=True,
+                category='URI Signing'),
+            spec_item(
+                'verify_signature', 'Verify URI signature with a public key', required=True,
+                category='URI Signing'),
+            spec_item(
+                'verify_signed_uri',
+                'Verify signed URI by fetching signing key from origin domain TOML', required=True,
+                category='URI Signing')
         ]
 
         # Store URI structure as sections
-        data['sections'].append({
-            'title': 'URI Operations',
-            'key': 'operations',
-            'content': 'URI scheme operations (tx and pay)',
-            'uri_features': uri_structure['operations'],
-            'feature_count': len(uri_structure['operations'])
-        })
+        data['sections'].append(section(
+            'URI Operations', 'operations', 'URI scheme operations (tx and pay)',
+            uri_structure['operations'], features_key='uri_features'))
 
-        data['sections'].append({
-            'title': 'TX Operation Parameters',
-            'key': 'tx_parameters',
-            'content': 'Parameters for tx operation',
-            'uri_features': uri_structure['tx_operation_parameters'],
-            'feature_count': len(uri_structure['tx_operation_parameters'])
-        })
+        data['sections'].append(section(
+            'TX Operation Parameters', 'tx_parameters', 'Parameters for tx operation',
+            uri_structure['tx_operation_parameters'], features_key='uri_features'))
 
-        data['sections'].append({
-            'title': 'PAY Operation Parameters',
-            'key': 'pay_parameters',
-            'content': 'Parameters for pay operation',
-            'uri_features': uri_structure['pay_operation_parameters'],
-            'feature_count': len(uri_structure['pay_operation_parameters'])
-        })
+        data['sections'].append(section(
+            'PAY Operation Parameters', 'pay_parameters', 'Parameters for pay operation',
+            uri_structure['pay_operation_parameters'], features_key='uri_features'))
 
-        data['sections'].append({
-            'title': 'Common Parameters',
-            'key': 'common_parameters',
-            'content': 'Parameters common to both operations',
-            'uri_features': uri_structure['common_parameters'],
-            'feature_count': len(uri_structure['common_parameters'])
-        })
+        data['sections'].append(section(
+            'Common Parameters', 'common_parameters', 'Parameters common to both operations',
+            uri_structure['common_parameters'], features_key='uri_features'))
 
-        data['sections'].append({
-            'title': 'Validation Features',
-            'key': 'validation_features',
-            'content': 'URI validation capabilities',
-            'uri_features': uri_structure['validation_features'],
-            'feature_count': len(uri_structure['validation_features'])
-        })
+        data['sections'].append(section(
+            'Validation Features', 'validation_features', 'URI validation capabilities',
+            uri_structure['validation_features'], features_key='uri_features'))
 
-        data['sections'].append({
-            'title': 'Signature Features',
-            'key': 'signature_features',
-            'content': 'URI signing and verification capabilities',
-            'uri_features': uri_structure['signature_features'],
-            'feature_count': len(uri_structure['signature_features'])
-        })
+        data['sections'].append(section(
+            'Signature Features', 'signature_features', 'URI signing and verification capabilities',
+            uri_structure['signature_features'], features_key='uri_features'))
 
         # Calculate totals
         total_features = (
@@ -4389,335 +2657,208 @@ class SEPParser:
 
         # Approval endpoint
         regulated_assets_structure['approval_endpoint'] = [
-            {
-                'name': 'tx_approve',
-                'description': 'POST /tx_approve - Approval server endpoint that receives a signed transaction, checks for compliance, and signs it on success',
-                'required': True,
-                'method': 'POST',
-                'path': '/tx_approve',
-                'category': 'Approval Endpoint'
-            }
+            spec_item(
+                'tx_approve',
+                'POST /tx_approve - Approval server endpoint that receives a signed transaction, checks for compliance, and signs it on success',
+                required=True, method='POST', path='/tx_approve', category='Approval Endpoint')
         ]
 
         # Request parameters
         regulated_assets_structure['request_parameters'] = [
-            {
-                'name': 'tx',
-                'description': 'A base64 encoded transaction envelope XDR signed by the user. This is the transaction that will be tested for compliance and signed on success.',
-                'required': True,
-                'type': 'string'
-            }
+            spec_item(
+                'tx',
+                'A base64 encoded transaction envelope XDR signed by the user. This is the transaction that will be tested for compliance and signed on success.',
+                required=True, type='string')
         ]
 
         # Response statuses
         regulated_assets_structure['response_statuses'] = [
-            {
-                'name': 'success',
-                'description': 'Transaction was found compliant and signed without being revised',
-                'required': True,
-                'http_status': 200,
-                'category': 'Response Status'
-            },
-            {
-                'name': 'revised',
-                'description': 'Transaction was revised to be made compliant',
-                'required': True,
-                'http_status': 200,
-                'category': 'Response Status'
-            },
-            {
-                'name': 'pending',
-                'description': 'Issuer could not determine whether to approve the transaction at the time of receiving it',
-                'required': True,
-                'http_status': 200,
-                'category': 'Response Status'
-            },
-            {
-                'name': 'action_required',
-                'description': 'User must complete an action before this transaction can be approved',
-                'required': True,
-                'http_status': 200,
-                'category': 'Response Status'
-            },
-            {
-                'name': 'rejected',
-                'description': 'Transaction is not compliant and could not be revised to be made compliant',
-                'required': True,
-                'http_status': 400,
-                'category': 'Response Status'
-            }
+            spec_item(
+                'success', 'Transaction was found compliant and signed without being revised',
+                required=True, http_status=200, category='Response Status'),
+            spec_item(
+                'revised', 'Transaction was revised to be made compliant', required=True,
+                http_status=200, category='Response Status'),
+            spec_item(
+                'pending',
+                'Issuer could not determine whether to approve the transaction at the time of receiving it',
+                required=True, http_status=200, category='Response Status'),
+            spec_item(
+                'action_required',
+                'User must complete an action before this transaction can be approved',
+                required=True, http_status=200, category='Response Status'),
+            spec_item(
+                'rejected',
+                'Transaction is not compliant and could not be revised to be made compliant',
+                required=True, http_status=400, category='Response Status')
         ]
 
         # Success response fields
         regulated_assets_structure['success_response_fields'] = [
-            {
-                'name': 'status',
-                'description': 'Status value "success"',
-                'required': True,
-                'type': 'string'
-            },
-            {
-                'name': 'tx',
-                'description': 'Transaction envelope XDR, base64 encoded. This transaction will have both the original signature(s) from the request as well as one or multiple additional signatures from the issuer.',
-                'required': True,
-                'type': 'string'
-            },
-            {
-                'name': 'message',
-                'description': 'A human readable string containing information to pass on to the user',
-                'required': False,
-                'type': 'string'
-            }
+            spec_item('status', 'Status value "success"', required=True, type='string'),
+            spec_item(
+                'tx',
+                'Transaction envelope XDR, base64 encoded. This transaction will have both the original signature(s) from the request as well as one or multiple additional signatures from the issuer.',
+                required=True, type='string'),
+            spec_item(
+                'message', 'A human readable string containing information to pass on to the user',
+                type='string')
         ]
 
         # Revised response fields
         regulated_assets_structure['revised_response_fields'] = [
-            {
-                'name': 'status',
-                'description': 'Status value "revised"',
-                'required': True,
-                'type': 'string'
-            },
-            {
-                'name': 'tx',
-                'description': 'Transaction envelope XDR, base64 encoded. This transaction is a revised compliant version of the original request transaction, signed by the issuer.',
-                'required': True,
-                'type': 'string'
-            },
-            {
-                'name': 'message',
-                'description': 'A human readable string explaining the modifications made to the transaction to make it compliant',
-                'required': True,
-                'type': 'string'
-            }
+            spec_item('status', 'Status value "revised"', required=True, type='string'),
+            spec_item(
+                'tx',
+                'Transaction envelope XDR, base64 encoded. This transaction is a revised compliant version of the original request transaction, signed by the issuer.',
+                required=True, type='string'),
+            spec_item(
+                'message',
+                'A human readable string explaining the modifications made to the transaction to make it compliant',
+                required=True, type='string')
         ]
 
         # Pending response fields
         regulated_assets_structure['pending_response_fields'] = [
-            {
-                'name': 'status',
-                'description': 'Status value "pending"',
-                'required': True,
-                'type': 'string'
-            },
-            {
-                'name': 'timeout',
-                'description': 'Number of milliseconds to wait before submitting the same transaction again. Use 0 if the wait time cannot be determined.',
-                'required': True,
-                'type': 'integer'
-            },
-            {
-                'name': 'message',
-                'description': 'A human readable string containing information to pass on to the user',
-                'required': False,
-                'type': 'string'
-            }
+            spec_item('status', 'Status value "pending"', required=True, type='string'),
+            spec_item(
+                'timeout',
+                'Number of milliseconds to wait before submitting the same transaction again. Use 0 if the wait time cannot be determined.',
+                required=True, type='integer'),
+            spec_item(
+                'message', 'A human readable string containing information to pass on to the user',
+                type='string')
         ]
 
         # Action required response fields
         regulated_assets_structure['action_required_response_fields'] = [
-            {
-                'name': 'status',
-                'description': 'Status value "action_required"',
-                'required': True,
-                'type': 'string'
-            },
-            {
-                'name': 'message',
-                'description': 'A human readable string containing information regarding the action required',
-                'required': True,
-                'type': 'string'
-            },
-            {
-                'name': 'action_url',
-                'description': 'A URL that allows the user to complete the actions required to have the transaction approved',
-                'required': True,
-                'type': 'string'
-            },
-            {
-                'name': 'action_method',
-                'description': 'GET or POST, indicating the type of request that should be made to the action_url. If not provided, GET is assumed.',
-                'required': False,
-                'type': 'string'
-            },
-            {
-                'name': 'action_fields',
-                'description': 'An array of additional fields defined by SEP-9 Standard KYC / AML fields that the client may optionally provide to the approval service when sending the request to the action_url',
-                'required': False,
-                'type': 'string[]'
-            }
+            spec_item('status', 'Status value "action_required"', required=True, type='string'),
+            spec_item(
+                'message',
+                'A human readable string containing information regarding the action required',
+                required=True, type='string'),
+            spec_item(
+                'action_url',
+                'A URL that allows the user to complete the actions required to have the transaction approved',
+                required=True, type='string'),
+            spec_item(
+                'action_method',
+                'GET or POST, indicating the type of request that should be made to the action_url. If not provided, GET is assumed.',
+                type='string'),
+            spec_item(
+                'action_fields',
+                'An array of additional fields defined by SEP-9 Standard KYC / AML fields that the client may optionally provide to the approval service when sending the request to the action_url',
+                type='string[]')
         ]
 
         # Rejected response fields
         regulated_assets_structure['rejected_response_fields'] = [
-            {
-                'name': 'status',
-                'description': 'Status value "rejected"',
-                'required': True,
-                'type': 'string'
-            },
-            {
-                'name': 'error',
-                'description': 'A human readable string explaining why the transaction is not compliant and could not be made compliant',
-                'required': True,
-                'type': 'string'
-            }
+            spec_item('status', 'Status value "rejected"', required=True, type='string'),
+            spec_item(
+                'error',
+                'A human readable string explaining why the transaction is not compliant and could not be made compliant',
+                required=True, type='string')
         ]
 
         # Action URL handling features
         regulated_assets_structure['action_url_handling'] = [
-            {
-                'name': 'action_url_get',
-                'description': 'Support for GET method to action_url with query parameters',
-                'required': True,
-                'category': 'Action URL Handling'
-            },
-            {
-                'name': 'action_url_post',
-                'description': 'Support for POST method to action_url with JSON body',
-                'required': True,
-                'category': 'Action URL Handling'
-            },
-            {
-                'name': 'action_url_post_response_no_further_action',
-                'description': 'Handle POST response with result "no_further_action_required"',
-                'required': True,
-                'category': 'Action URL Handling'
-            },
-            {
-                'name': 'action_url_post_response_follow_next_url',
-                'description': 'Handle POST response with result "follow_next_url" and next_url field',
-                'required': True,
-                'category': 'Action URL Handling'
-            }
+            spec_item(
+                'action_url_get', 'Support for GET method to action_url with query parameters',
+                required=True, category='Action URL Handling'),
+            spec_item(
+                'action_url_post', 'Support for POST method to action_url with JSON body',
+                required=True, category='Action URL Handling'),
+            spec_item(
+                'action_url_post_response_no_further_action',
+                'Handle POST response with result "no_further_action_required"', required=True,
+                category='Action URL Handling'),
+            spec_item(
+                'action_url_post_response_follow_next_url',
+                'Handle POST response with result "follow_next_url" and next_url field',
+                required=True, category='Action URL Handling')
         ]
 
         # stellar.toml fields for regulated assets
         regulated_assets_structure['stellar_toml_fields'] = [
-            {
-                'name': 'regulated',
-                'description': 'A boolean indicating whether or not this is a regulated asset. If missing, false is assumed.',
-                'required': True,
-                'type': 'boolean'
-            },
-            {
-                'name': 'approval_server',
-                'description': 'The URL of an approval service that signs validated transactions',
-                'required': True,
-                'type': 'string'
-            },
-            {
-                'name': 'approval_criteria',
-                'description': "A human readable string that explains the issuer's requirements for approving transactions",
-                'required': False,
-                'type': 'string'
-            }
+            spec_item(
+                'regulated',
+                'A boolean indicating whether or not this is a regulated asset. If missing, false is assumed.',
+                required=True, type='boolean'),
+            spec_item(
+                'approval_server',
+                'The URL of an approval service that signs validated transactions', required=True,
+                type='string'),
+            spec_item(
+                'approval_criteria',
+                "A human readable string that explains the issuer's requirements for approving transactions",
+                type='string')
         ]
 
         # Authorization flags
         regulated_assets_structure['authorization_flags'] = [
-            {
-                'name': 'authorization_required',
-                'description': 'Authorization Required flag must be set on issuer account',
-                'required': True,
-                'category': 'Authorization Flag'
-            },
-            {
-                'name': 'authorization_revocable',
-                'description': 'Authorization Revocable flag must be set on issuer account',
-                'required': True,
-                'category': 'Authorization Flag'
-            }
+            spec_item(
+                'authorization_required',
+                'Authorization Required flag must be set on issuer account', required=True,
+                category='Authorization Flag'),
+            spec_item(
+                'authorization_revocable',
+                'Authorization Revocable flag must be set on issuer account', required=True,
+                category='Authorization Flag')
         ]
 
         # Store structure as sections
-        data['sections'].append({
-            'title': 'Approval Endpoint',
-            'key': 'approval_endpoint',
-            'content': 'POST /tx_approve endpoint for transaction approval',
-            'api_features': regulated_assets_structure['approval_endpoint'],
-            'feature_count': len(regulated_assets_structure['approval_endpoint'])
-        })
+        data['sections'].append(section(
+            'Approval Endpoint', 'approval_endpoint',
+            'POST /tx_approve endpoint for transaction approval',
+            regulated_assets_structure['approval_endpoint']))
 
-        data['sections'].append({
-            'title': 'Request Parameters',
-            'key': 'request_parameters',
-            'content': 'Parameters for POST /tx_approve request',
-            'api_features': regulated_assets_structure['request_parameters'],
-            'feature_count': len(regulated_assets_structure['request_parameters'])
-        })
+        data['sections'].append(section(
+            'Request Parameters', 'request_parameters', 'Parameters for POST /tx_approve request',
+            regulated_assets_structure['request_parameters']))
 
-        data['sections'].append({
-            'title': 'Response Statuses',
-            'key': 'response_statuses',
-            'content': 'All possible response status values',
-            'api_features': regulated_assets_structure['response_statuses'],
-            'feature_count': len(regulated_assets_structure['response_statuses'])
-        })
+        data['sections'].append(section(
+            'Response Statuses', 'response_statuses', 'All possible response status values',
+            regulated_assets_structure['response_statuses']))
 
-        data['sections'].append({
-            'title': 'Success Response Fields',
-            'key': 'success_response_fields',
-            'content': 'Fields returned in success response',
-            'api_features': regulated_assets_structure['success_response_fields'],
-            'feature_count': len(regulated_assets_structure['success_response_fields'])
-        })
+        data['sections'].append(section(
+            'Success Response Fields', 'success_response_fields',
+            'Fields returned in success response',
+            regulated_assets_structure['success_response_fields']))
 
-        data['sections'].append({
-            'title': 'Revised Response Fields',
-            'key': 'revised_response_fields',
-            'content': 'Fields returned in revised response',
-            'api_features': regulated_assets_structure['revised_response_fields'],
-            'feature_count': len(regulated_assets_structure['revised_response_fields'])
-        })
+        data['sections'].append(section(
+            'Revised Response Fields', 'revised_response_fields',
+            'Fields returned in revised response',
+            regulated_assets_structure['revised_response_fields']))
 
-        data['sections'].append({
-            'title': 'Pending Response Fields',
-            'key': 'pending_response_fields',
-            'content': 'Fields returned in pending response',
-            'api_features': regulated_assets_structure['pending_response_fields'],
-            'feature_count': len(regulated_assets_structure['pending_response_fields'])
-        })
+        data['sections'].append(section(
+            'Pending Response Fields', 'pending_response_fields',
+            'Fields returned in pending response',
+            regulated_assets_structure['pending_response_fields']))
 
-        data['sections'].append({
-            'title': 'Action Required Response Fields',
-            'key': 'action_required_response_fields',
-            'content': 'Fields returned in action_required response',
-            'api_features': regulated_assets_structure['action_required_response_fields'],
-            'feature_count': len(regulated_assets_structure['action_required_response_fields'])
-        })
+        data['sections'].append(section(
+            'Action Required Response Fields', 'action_required_response_fields',
+            'Fields returned in action_required response',
+            regulated_assets_structure['action_required_response_fields']))
 
-        data['sections'].append({
-            'title': 'Rejected Response Fields',
-            'key': 'rejected_response_fields',
-            'content': 'Fields returned in rejected response',
-            'api_features': regulated_assets_structure['rejected_response_fields'],
-            'feature_count': len(regulated_assets_structure['rejected_response_fields'])
-        })
+        data['sections'].append(section(
+            'Rejected Response Fields', 'rejected_response_fields',
+            'Fields returned in rejected response',
+            regulated_assets_structure['rejected_response_fields']))
 
-        data['sections'].append({
-            'title': 'Action URL Handling',
-            'key': 'action_url_handling',
-            'content': 'Features for handling action_url in action_required response',
-            'api_features': regulated_assets_structure['action_url_handling'],
-            'feature_count': len(regulated_assets_structure['action_url_handling'])
-        })
+        data['sections'].append(section(
+            'Action URL Handling', 'action_url_handling',
+            'Features for handling action_url in action_required response',
+            regulated_assets_structure['action_url_handling']))
 
-        data['sections'].append({
-            'title': 'Stellar TOML Fields',
-            'key': 'stellar_toml_fields',
-            'content': 'Fields in stellar.toml for regulated assets',
-            'api_features': regulated_assets_structure['stellar_toml_fields'],
-            'feature_count': len(regulated_assets_structure['stellar_toml_fields'])
-        })
+        data['sections'].append(section(
+            'Stellar TOML Fields', 'stellar_toml_fields',
+            'Fields in stellar.toml for regulated assets',
+            regulated_assets_structure['stellar_toml_fields']))
 
-        data['sections'].append({
-            'title': 'Authorization Flags',
-            'key': 'authorization_flags',
-            'content': 'Required authorization flags on issuer account',
-            'api_features': regulated_assets_structure['authorization_flags'],
-            'feature_count': len(regulated_assets_structure['authorization_flags'])
-        })
+        data['sections'].append(section(
+            'Authorization Flags', 'authorization_flags',
+            'Required authorization flags on issuer account',
+            regulated_assets_structure['authorization_flags']))
 
         # Calculate totals
         total_features = (
@@ -4775,298 +2916,177 @@ class SEPParser:
 
         # Authentication Endpoints (GET and POST /auth)
         auth_features['authentication_endpoints'] = [
-            {
-                'name': 'get_auth_challenge',
-                'description': 'GET /auth endpoint - Returns authorization entries for contract accounts',
-                'required': True,
-                'category': 'Authentication Endpoint',
-                'method': 'GET',
-                'parameters': ['account', 'home_domain', 'client_domain']
-            },
-            {
-                'name': 'post_auth_token',
-                'description': 'POST /auth endpoint - Validates signed authorization entries and returns JWT token',
-                'required': True,
-                'category': 'Authentication Endpoint',
-                'method': 'POST',
-                'parameters': ['authorization_entries']
-            }
+            spec_item(
+                'get_auth_challenge',
+                'GET /auth endpoint - Returns authorization entries for contract accounts',
+                required=True, category='Authentication Endpoint', method='GET',
+                parameters=['account', 'home_domain', 'client_domain']),
+            spec_item(
+                'post_auth_token',
+                'POST /auth endpoint - Validates signed authorization entries and returns JWT token',
+                required=True, category='Authentication Endpoint', method='POST',
+                parameters=['authorization_entries'])
         ]
 
         # Challenge Features (SorobanAuthorizationEntry based)
         auth_features['challenge_features'] = [
-            {
-                'name': 'authorization_entry_decoding',
-                'description': 'Decode base64 XDR encoded authorization entries from server',
-                'required': True,
-                'category': 'Challenge'
-            },
-            {
-                'name': 'authorization_entry_encoding',
-                'description': 'Encode signed authorization entries to base64 XDR for submission',
-                'required': True,
-                'category': 'Challenge'
-            },
-            {
-                'name': 'contract_invocation_parsing',
-                'description': 'Parse web_auth_verify contract invocation from authorization entries',
-                'required': True,
-                'category': 'Challenge'
-            },
-            {
-                'name': 'signature_expiration_ledger',
-                'description': 'Support signature expiration ledger for replay protection',
-                'required': True,
-                'category': 'Challenge'
-            },
-            {
-                'name': 'auto_signature_expiration',
-                'description': 'Automatically fetch and set signature expiration from Soroban RPC',
-                'required': False,
-                'category': 'Challenge'
-            },
-            {
-                'name': 'nonce_consistency',
-                'description': 'Verify nonce is consistent across all authorization entries',
-                'required': True,
-                'category': 'Challenge'
-            },
-            {
-                'name': 'server_entry_signing',
-                'description': 'Server entry is pre-signed in challenge',
-                'required': True,
-                'category': 'Challenge'
-            },
-            {
-                'name': 'client_entry_signing',
-                'description': 'Sign client authorization entry with provided signers',
-                'required': True,
-                'category': 'Challenge'
-            }
+            spec_item(
+                'authorization_entry_decoding',
+                'Decode base64 XDR encoded authorization entries from server', required=True,
+                category='Challenge'),
+            spec_item(
+                'authorization_entry_encoding',
+                'Encode signed authorization entries to base64 XDR for submission', required=True,
+                category='Challenge'),
+            spec_item(
+                'contract_invocation_parsing',
+                'Parse web_auth_verify contract invocation from authorization entries',
+                required=True, category='Challenge'),
+            spec_item(
+                'signature_expiration_ledger',
+                'Support signature expiration ledger for replay protection', required=True,
+                category='Challenge'),
+            spec_item(
+                'auto_signature_expiration',
+                'Automatically fetch and set signature expiration from Soroban RPC',
+                category='Challenge'),
+            spec_item(
+                'nonce_consistency', 'Verify nonce is consistent across all authorization entries',
+                required=True, category='Challenge'),
+            spec_item(
+                'server_entry_signing', 'Server entry is pre-signed in challenge', required=True,
+                category='Challenge'),
+            spec_item(
+                'client_entry_signing', 'Sign client authorization entry with provided signers',
+                required=True, category='Challenge')
         ]
 
         # JWT Token Features
         auth_features['jwt_token_features'] = [
-            {
-                'name': 'jwt_token_response',
-                'description': 'Parse JWT token from server response',
-                'required': True,
-                'category': 'JWT Token'
-            },
-            {
-                'name': 'jwt_token_generation',
-                'description': 'Generate JWT token after successful challenge validation',
-                'required': True,
-                'category': 'JWT Token',
-                'server_side_only': True,
-                'client_note': 'Server-side feature. Client SDKs receive and use the JWT token.'
-            },
-            {
-                'name': 'complete_auth_flow',
-                'description': 'Execute complete authentication flow via jwtToken method',
-                'required': True,
-                'category': 'JWT Token'
-            }
+            spec_item(
+                'jwt_token_response', 'Parse JWT token from server response', required=True,
+                category='JWT Token'),
+            spec_item(
+                'jwt_token_generation', 'Generate JWT token after successful challenge validation',
+                required=True, category='JWT Token', server_side_only=True,
+                client_note='Server-side feature. Client SDKs receive and use the JWT token.'),
+            spec_item(
+                'complete_auth_flow', 'Execute complete authentication flow via jwtToken method',
+                required=True, category='JWT Token')
         ]
 
         # Client Domain Features
         auth_features['client_domain_features'] = [
-            {
-                'name': 'client_domain_parameter',
-                'description': 'Support optional client_domain parameter in challenge request',
-                'required': False,
-                'category': 'Client Domain'
-            },
-            {
-                'name': 'client_domain_entry',
-                'description': 'Handle client domain authorization entry in challenge',
-                'required': False,
-                'category': 'Client Domain'
-            },
-            {
-                'name': 'client_domain_local_signing',
-                'description': 'Sign client domain entry with local keypair',
-                'required': False,
-                'category': 'Client Domain'
-            },
-            {
-                'name': 'client_domain_callback_signing',
-                'description': 'Sign client domain entry via remote callback',
-                'required': False,
-                'category': 'Client Domain'
-            },
-            {
-                'name': 'client_domain_toml_lookup',
-                'description': 'Lookup client domain signing key from stellar.toml',
-                'required': False,
-                'category': 'Client Domain'
-            }
+            spec_item(
+                'client_domain_parameter',
+                'Support optional client_domain parameter in challenge request',
+                category='Client Domain'),
+            spec_item(
+                'client_domain_entry', 'Handle client domain authorization entry in challenge',
+                category='Client Domain'),
+            spec_item(
+                'client_domain_local_signing', 'Sign client domain entry with local keypair',
+                category='Client Domain'),
+            spec_item(
+                'client_domain_callback_signing', 'Sign client domain entry via remote callback',
+                category='Client Domain'),
+            spec_item(
+                'client_domain_toml_lookup', 'Lookup client domain signing key from stellar.toml',
+                category='Client Domain')
         ]
 
         # Validation Features
         auth_features['validation_features'] = [
-            {
-                'name': 'contract_address_validation',
-                'description': 'Validate contract address matches WEB_AUTH_CONTRACT_ID from stellar.toml',
-                'required': True,
-                'category': 'Validation'
-            },
-            {
-                'name': 'function_name_validation',
-                'description': 'Validate function name is web_auth_verify',
-                'required': True,
-                'category': 'Validation'
-            },
-            {
-                'name': 'sub_invocations_check',
-                'description': 'Reject authorization entries with sub-invocations',
-                'required': True,
-                'category': 'Validation'
-            },
-            {
-                'name': 'server_signature_verification',
-                'description': 'Verify server signature on server authorization entry',
-                'required': True,
-                'category': 'Validation'
-            },
-            {
-                'name': 'server_entry_presence',
-                'description': 'Validate server authorization entry is present',
-                'required': True,
-                'category': 'Validation'
-            },
-            {
-                'name': 'client_entry_presence',
-                'description': 'Validate client authorization entry is present',
-                'required': True,
-                'category': 'Validation'
-            },
-            {
-                'name': 'home_domain_validation',
-                'description': 'Validate home_domain argument matches expected domain',
-                'required': True,
-                'category': 'Validation'
-            },
-            {
-                'name': 'web_auth_domain_validation',
-                'description': 'Validate web_auth_domain argument matches server domain',
-                'required': True,
-                'category': 'Validation'
-            },
-            {
-                'name': 'account_validation',
-                'description': 'Validate account argument matches client contract account',
-                'required': True,
-                'category': 'Validation'
-            },
-            {
-                'name': 'network_passphrase_validation',
-                'description': 'Validate network passphrase if provided in response',
-                'required': False,
-                'category': 'Validation'
-            }
+            spec_item(
+                'contract_address_validation',
+                'Validate contract address matches WEB_AUTH_CONTRACT_ID from stellar.toml',
+                required=True, category='Validation'),
+            spec_item(
+                'function_name_validation', 'Validate function name is web_auth_verify',
+                required=True, category='Validation'),
+            spec_item(
+                'sub_invocations_check', 'Reject authorization entries with sub-invocations',
+                required=True, category='Validation'),
+            spec_item(
+                'server_signature_verification',
+                'Verify server signature on server authorization entry', required=True,
+                category='Validation'),
+            spec_item(
+                'server_entry_presence', 'Validate server authorization entry is present',
+                required=True, category='Validation'),
+            spec_item(
+                'client_entry_presence', 'Validate client authorization entry is present',
+                required=True, category='Validation'),
+            spec_item(
+                'home_domain_validation', 'Validate home_domain argument matches expected domain',
+                required=True, category='Validation'),
+            spec_item(
+                'web_auth_domain_validation',
+                'Validate web_auth_domain argument matches server domain', required=True,
+                category='Validation'),
+            spec_item(
+                'account_validation', 'Validate account argument matches client contract account',
+                required=True, category='Validation'),
+            spec_item(
+                'network_passphrase_validation',
+                'Validate network passphrase if provided in response', category='Validation')
         ]
 
         # Exception Types
         auth_features['exception_types'] = [
-            {
-                'name': 'invalid_contract_address_exception',
-                'description': 'Exception for contract address mismatch',
-                'required': True,
-                'category': 'Exception'
-            },
-            {
-                'name': 'invalid_function_name_exception',
-                'description': 'Exception for invalid function name',
-                'required': True,
-                'category': 'Exception'
-            },
-            {
-                'name': 'sub_invocations_exception',
-                'description': 'Exception when sub-invocations found',
-                'required': True,
-                'category': 'Exception'
-            },
-            {
-                'name': 'invalid_server_signature_exception',
-                'description': 'Exception for invalid server signature',
-                'required': True,
-                'category': 'Exception'
-            },
-            {
-                'name': 'missing_server_entry_exception',
-                'description': 'Exception when server entry is missing',
-                'required': True,
-                'category': 'Exception'
-            },
-            {
-                'name': 'missing_client_entry_exception',
-                'description': 'Exception when client entry is missing',
-                'required': True,
-                'category': 'Exception'
-            },
-            {
-                'name': 'challenge_request_error_exception',
-                'description': 'Exception for challenge request errors',
-                'required': True,
-                'category': 'Exception'
-            },
-            {
-                'name': 'submit_challenge_error_exception',
-                'description': 'Exception for challenge submission errors',
-                'required': True,
-                'category': 'Exception'
-            }
+            spec_item(
+                'invalid_contract_address_exception', 'Exception for contract address mismatch',
+                required=True, category='Exception'),
+            spec_item(
+                'invalid_function_name_exception', 'Exception for invalid function name',
+                required=True, category='Exception'),
+            spec_item(
+                'sub_invocations_exception', 'Exception when sub-invocations found', required=True,
+                category='Exception'),
+            spec_item(
+                'invalid_server_signature_exception', 'Exception for invalid server signature',
+                required=True, category='Exception'),
+            spec_item(
+                'missing_server_entry_exception', 'Exception when server entry is missing',
+                required=True, category='Exception'),
+            spec_item(
+                'missing_client_entry_exception', 'Exception when client entry is missing',
+                required=True, category='Exception'),
+            spec_item(
+                'challenge_request_error_exception', 'Exception for challenge request errors',
+                required=True, category='Exception'),
+            spec_item(
+                'submit_challenge_error_exception', 'Exception for challenge submission errors',
+                required=True, category='Exception')
         ]
 
         # Store sections
-        data['sections'].append({
-            'title': 'Authentication Endpoints',
-            'key': 'auth_endpoints',
-            'content': 'GET and POST /auth endpoints for contract account authentication',
-            'auth_features': auth_features['authentication_endpoints'],
-            'feature_count': len(auth_features['authentication_endpoints'])
-        })
+        data['sections'].append(section(
+            'Authentication Endpoints', 'auth_endpoints',
+            'GET and POST /auth endpoints for contract account authentication',
+            auth_features['authentication_endpoints'], features_key='auth_features'))
 
-        data['sections'].append({
-            'title': 'Challenge Features',
-            'key': 'challenge_features',
-            'content': 'SorobanAuthorizationEntry challenge handling features',
-            'auth_features': auth_features['challenge_features'],
-            'feature_count': len(auth_features['challenge_features'])
-        })
+        data['sections'].append(section(
+            'Challenge Features', 'challenge_features',
+            'SorobanAuthorizationEntry challenge handling features',
+            auth_features['challenge_features'], features_key='auth_features'))
 
-        data['sections'].append({
-            'title': 'JWT Token Features',
-            'key': 'jwt_token',
-            'content': 'JWT token handling and authentication flow',
-            'auth_features': auth_features['jwt_token_features'],
-            'feature_count': len(auth_features['jwt_token_features'])
-        })
+        data['sections'].append(section(
+            'JWT Token Features', 'jwt_token', 'JWT token handling and authentication flow',
+            auth_features['jwt_token_features'], features_key='auth_features'))
 
-        data['sections'].append({
-            'title': 'Client Domain Features',
-            'key': 'client_domain',
-            'content': 'Optional client domain verification features',
-            'auth_features': auth_features['client_domain_features'],
-            'feature_count': len(auth_features['client_domain_features'])
-        })
+        data['sections'].append(section(
+            'Client Domain Features', 'client_domain',
+            'Optional client domain verification features',
+            auth_features['client_domain_features'], features_key='auth_features'))
 
-        data['sections'].append({
-            'title': 'Validation Features',
-            'key': 'validation',
-            'content': 'Challenge validation and security checks',
-            'auth_features': auth_features['validation_features'],
-            'feature_count': len(auth_features['validation_features'])
-        })
+        data['sections'].append(section(
+            'Validation Features', 'validation', 'Challenge validation and security checks',
+            auth_features['validation_features'], features_key='auth_features'))
 
-        data['sections'].append({
-            'title': 'Exception Types',
-            'key': 'exception_types',
-            'content': 'Specific exception types for error handling',
-            'auth_features': auth_features['exception_types'],
-            'feature_count': len(auth_features['exception_types'])
-        })
+        data['sections'].append(section(
+            'Exception Types', 'exception_types', 'Specific exception types for error handling',
+            auth_features['exception_types'], features_key='auth_features'))
 
         # Add metadata
         data['metadata'] = {
@@ -5110,94 +3130,60 @@ class SEPParser:
 
         # Metadata storage features
         contract_meta_features['metadata_storage'] = [
-            {
-                'name': 'contractmetav0_section',
-                'description': 'Support for storing metadata in "contractmetav0" Wasm custom sections',
-                'required': True,
-                'category': 'Metadata Storage'
-            },
-            {
-                'name': 'multiple_entries_single_section',
-                'description': 'Support for multiple metadata entries in a single custom section',
-                'required': True,
-                'category': 'Metadata Storage'
-            },
-            {
-                'name': 'multiple_sections',
-                'description': 'Support for multiple "contractmetav0" sections interpreted sequentially',
-                'required': True,
-                'category': 'Metadata Storage'
-            }
+            spec_item(
+                'contractmetav0_section',
+                'Support for storing metadata in "contractmetav0" Wasm custom sections',
+                required=True, category='Metadata Storage'),
+            spec_item(
+                'multiple_entries_single_section',
+                'Support for multiple metadata entries in a single custom section', required=True,
+                category='Metadata Storage'),
+            spec_item(
+                'multiple_sections',
+                'Support for multiple "contractmetav0" sections interpreted sequentially',
+                required=True, category='Metadata Storage')
         ]
 
         # Encoding format features
         contract_meta_features['encoding_format'] = [
-            {
-                'name': 'scmetaentry_xdr',
-                'description': 'Use SCMetaEntry XDR type for structuring metadata',
-                'required': True,
-                'category': 'Encoding Format'
-            },
-            {
-                'name': 'binary_stream_encoding',
-                'description': 'Encode entries as a stream of binary values',
-                'required': True,
-                'category': 'Encoding Format'
-            },
-            {
-                'name': 'key_value_pairs',
-                'description': 'Store metadata as key-value string pairs',
-                'required': True,
-                'category': 'Encoding Format'
-            }
+            spec_item(
+                'scmetaentry_xdr', 'Use SCMetaEntry XDR type for structuring metadata',
+                required=True, category='Encoding Format'),
+            spec_item(
+                'binary_stream_encoding', 'Encode entries as a stream of binary values',
+                required=True, category='Encoding Format'),
+            spec_item(
+                'key_value_pairs', 'Store metadata as key-value string pairs', required=True,
+                category='Encoding Format')
         ]
 
         # Implementation support features
         contract_meta_features['implementation_support'] = [
-            {
-                'name': 'parse_contract_meta',
-                'description': 'Parse contract metadata from contract bytecode',
-                'required': True,
-                'category': 'Implementation Support'
-            },
-            {
-                'name': 'extract_meta_entries',
-                'description': 'Extract meta entries as key-value pairs from contract',
-                'required': True,
-                'category': 'Implementation Support'
-            },
-            {
-                'name': 'decode_scmetaentry',
-                'description': 'Decode SCMetaEntry XDR structures',
-                'required': True,
-                'category': 'Implementation Support'
-            }
+            spec_item(
+                'parse_contract_meta', 'Parse contract metadata from contract bytecode',
+                required=True, category='Implementation Support'),
+            spec_item(
+                'extract_meta_entries', 'Extract meta entries as key-value pairs from contract',
+                required=True, category='Implementation Support'),
+            spec_item(
+                'decode_scmetaentry', 'Decode SCMetaEntry XDR structures', required=True,
+                category='Implementation Support')
         ]
 
         # Store features as sections
-        data['sections'].append({
-            'title': 'Contract Metadata Storage',
-            'key': 'metadata_storage',
-            'content': 'Features for storing metadata in Wasm custom sections',
-            'contract_meta_features': contract_meta_features['metadata_storage'],
-            'feature_count': len(contract_meta_features['metadata_storage'])
-        })
+        data['sections'].append(section(
+            'Contract Metadata Storage', 'metadata_storage',
+            'Features for storing metadata in Wasm custom sections',
+            contract_meta_features['metadata_storage'], features_key='contract_meta_features'))
 
-        data['sections'].append({
-            'title': 'Encoding Format',
-            'key': 'encoding_format',
-            'content': 'XDR encoding format for metadata entries',
-            'contract_meta_features': contract_meta_features['encoding_format'],
-            'feature_count': len(contract_meta_features['encoding_format'])
-        })
+        data['sections'].append(section(
+            'Encoding Format', 'encoding_format', 'XDR encoding format for metadata entries',
+            contract_meta_features['encoding_format'], features_key='contract_meta_features'))
 
-        data['sections'].append({
-            'title': 'Implementation Support',
-            'key': 'implementation_support',
-            'content': 'SDK support for parsing and extracting contract metadata',
-            'contract_meta_features': contract_meta_features['implementation_support'],
-            'feature_count': len(contract_meta_features['implementation_support'])
-        })
+        data['sections'].append(section(
+            'Implementation Support', 'implementation_support',
+            'SDK support for parsing and extracting contract metadata',
+            contract_meta_features['implementation_support'], features_key='contract_meta_features'))
 
         total_features = (
             len(contract_meta_features['metadata_storage']) +
@@ -5235,94 +3221,61 @@ class SEPParser:
 
         # SEP declaration features
         interface_discovery_features['sep_declaration'] = [
-            {
-                'name': 'sep_meta_key',
-                'description': 'Support for "sep" meta entry key to indicate implemented SEPs',
-                'required': True,
-                'category': 'SEP Declaration'
-            },
-            {
-                'name': 'comma_separated_list',
-                'description': 'Parse comma-separated list of SEP numbers from meta value',
-                'required': True,
-                'category': 'SEP Declaration'
-            },
-            {
-                'name': 'multiple_sep_entries',
-                'description': 'Support for multiple "sep" meta entries with combined values',
-                'required': True,
-                'category': 'SEP Declaration'
-            }
+            spec_item(
+                'sep_meta_key', 'Support for "sep" meta entry key to indicate implemented SEPs',
+                required=True, category='SEP Declaration'),
+            spec_item(
+                'comma_separated_list', 'Parse comma-separated list of SEP numbers from meta value',
+                required=True, category='SEP Declaration'),
+            spec_item(
+                'multiple_sep_entries',
+                'Support for multiple "sep" meta entries with combined values', required=True,
+                category='SEP Declaration')
         ]
 
         # Meta entry format features
         interface_discovery_features['meta_entry_format'] = [
-            {
-                'name': 'sep_number_format',
-                'description': 'Parse SEP numbers in various formats (e.g., "41", "0041", "SEP-41")',
-                'required': True,
-                'category': 'Meta Entry Format'
-            },
-            {
-                'name': 'whitespace_handling',
-                'description': 'Trim whitespace from SEP numbers in comma-separated list',
-                'required': True,
-                'category': 'Meta Entry Format'
-            },
-            {
-                'name': 'empty_value_handling',
-                'description': 'Handle empty or missing "sep" meta entries gracefully',
-                'required': True,
-                'category': 'Meta Entry Format'
-            }
+            spec_item(
+                'sep_number_format',
+                'Parse SEP numbers in various formats (e.g., "41", "0041", "SEP-41")',
+                required=True, category='Meta Entry Format'),
+            spec_item(
+                'whitespace_handling', 'Trim whitespace from SEP numbers in comma-separated list',
+                required=True, category='Meta Entry Format'),
+            spec_item(
+                'empty_value_handling', 'Handle empty or missing "sep" meta entries gracefully',
+                required=True, category='Meta Entry Format')
         ]
 
         # Implementation support features
         interface_discovery_features['implementation_support'] = [
-            {
-                'name': 'parse_supported_seps',
-                'description': 'Parse and extract list of supported SEPs from contract metadata',
-                'required': True,
-                'category': 'Implementation Support'
-            },
-            {
-                'name': 'expose_supported_seps',
-                'description': 'Expose supportedSeps property on contract info object',
-                'required': True,
-                'category': 'Implementation Support'
-            },
-            {
-                'name': 'validate_sep_format',
-                'description': 'Validate SEP number format and filter invalid entries',
-                'required': True,
-                'category': 'Implementation Support'
-            }
+            spec_item(
+                'parse_supported_seps',
+                'Parse and extract list of supported SEPs from contract metadata', required=True,
+                category='Implementation Support'),
+            spec_item(
+                'expose_supported_seps', 'Expose supportedSeps property on contract info object',
+                required=True, category='Implementation Support'),
+            spec_item(
+                'validate_sep_format', 'Validate SEP number format and filter invalid entries',
+                required=True, category='Implementation Support')
         ]
 
         # Store features as sections
-        data['sections'].append({
-            'title': 'SEP Declaration',
-            'key': 'sep_declaration',
-            'content': 'Features for declaring implemented SEPs in contract metadata',
-            'contract_meta_features': interface_discovery_features['sep_declaration'],
-            'feature_count': len(interface_discovery_features['sep_declaration'])
-        })
+        data['sections'].append(section(
+            'SEP Declaration', 'sep_declaration',
+            'Features for declaring implemented SEPs in contract metadata',
+            interface_discovery_features['sep_declaration'], features_key='contract_meta_features'))
 
-        data['sections'].append({
-            'title': 'Meta Entry Format',
-            'key': 'meta_entry_format',
-            'content': 'Parsing and format handling for SEP meta entries',
-            'contract_meta_features': interface_discovery_features['meta_entry_format'],
-            'feature_count': len(interface_discovery_features['meta_entry_format'])
-        })
+        data['sections'].append(section(
+            'Meta Entry Format', 'meta_entry_format',
+            'Parsing and format handling for SEP meta entries',
+            interface_discovery_features['meta_entry_format'], features_key='contract_meta_features'))
 
-        data['sections'].append({
-            'title': 'Implementation Support',
-            'key': 'implementation_support',
-            'content': 'SDK support for parsing and exposing supported SEPs',
-            'contract_meta_features': interface_discovery_features['implementation_support'],
-            'feature_count': len(interface_discovery_features['implementation_support'])
-        })
+        data['sections'].append(section(
+            'Implementation Support', 'implementation_support',
+            'SDK support for parsing and exposing supported SEPs',
+            interface_discovery_features['implementation_support'], features_key='contract_meta_features'))
 
         total_features = (
             len(interface_discovery_features['sep_declaration']) +
@@ -5363,262 +3316,155 @@ class SEPParser:
 
         # Wasm custom section features
         contract_spec_features['wasm_section'] = [
-            {
-                'name': 'contractspecv0_section',
-                'description': 'Support for "contractspecv0" Wasm custom section',
-                'required': True,
-                'category': 'Wasm Custom Section'
-            },
-            {
-                'name': 'contractenvmetav0_section',
-                'description': 'Support for "contractenvmetav0" Wasm custom section for environment metadata',
-                'required': True,
-                'category': 'Wasm Custom Section'
-            },
-            {
-                'name': 'contractmetav0_section',
-                'description': 'Support for "contractmetav0" Wasm custom section for contract metadata',
-                'required': True,
-                'category': 'Wasm Custom Section'
-            },
-            {
-                'name': 'xdr_binary_encoding',
-                'description': 'Parse XDR binary encoded specification entries',
-                'required': True,
-                'category': 'Wasm Custom Section'
-            }
+            spec_item(
+                'contractspecv0_section', 'Support for "contractspecv0" Wasm custom section',
+                required=True, category='Wasm Custom Section'),
+            spec_item(
+                'contractenvmetav0_section',
+                'Support for "contractenvmetav0" Wasm custom section for environment metadata',
+                required=True, category='Wasm Custom Section'),
+            spec_item(
+                'contractmetav0_section',
+                'Support for "contractmetav0" Wasm custom section for contract metadata',
+                required=True, category='Wasm Custom Section'),
+            spec_item(
+                'xdr_binary_encoding', 'Parse XDR binary encoded specification entries',
+                required=True, category='Wasm Custom Section')
         ]
 
         # Entry types - all 6 specified in SEP-48
         contract_spec_features['entry_types'] = [
-            {
-                'name': 'function_specs',
-                'description': 'Parse function specification entries (SC_SPEC_ENTRY_FUNCTION_V0)',
-                'required': True,
-                'category': 'Entry Types'
-            },
-            {
-                'name': 'struct_specs',
-                'description': 'Parse struct type specification entries (SC_SPEC_ENTRY_UDT_STRUCT_V0)',
-                'required': True,
-                'category': 'Entry Types'
-            },
-            {
-                'name': 'union_specs',
-                'description': 'Parse union type specification entries (SC_SPEC_ENTRY_UDT_UNION_V0)',
-                'required': True,
-                'category': 'Entry Types'
-            },
-            {
-                'name': 'enum_specs',
-                'description': 'Parse enum type specification entries (SC_SPEC_ENTRY_UDT_ENUM_V0)',
-                'required': True,
-                'category': 'Entry Types'
-            },
-            {
-                'name': 'error_enum_specs',
-                'description': 'Parse error enum specification entries (SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0)',
-                'required': True,
-                'category': 'Entry Types'
-            },
-            {
-                'name': 'event_specs',
-                'description': 'Parse event specification entries (SC_SPEC_ENTRY_EVENT_V0)',
-                'required': True,
-                'category': 'Entry Types'
-            }
+            spec_item(
+                'function_specs',
+                'Parse function specification entries (SC_SPEC_ENTRY_FUNCTION_V0)', required=True,
+                category='Entry Types'),
+            spec_item(
+                'struct_specs',
+                'Parse struct type specification entries (SC_SPEC_ENTRY_UDT_STRUCT_V0)',
+                required=True, category='Entry Types'),
+            spec_item(
+                'union_specs',
+                'Parse union type specification entries (SC_SPEC_ENTRY_UDT_UNION_V0)',
+                required=True, category='Entry Types'),
+            spec_item(
+                'enum_specs', 'Parse enum type specification entries (SC_SPEC_ENTRY_UDT_ENUM_V0)',
+                required=True, category='Entry Types'),
+            spec_item(
+                'error_enum_specs',
+                'Parse error enum specification entries (SC_SPEC_ENTRY_UDT_ERROR_ENUM_V0)',
+                required=True, category='Entry Types'),
+            spec_item(
+                'event_specs', 'Parse event specification entries (SC_SPEC_ENTRY_EVENT_V0)',
+                required=True, category='Entry Types')
         ]
 
         # Type system - primitive types
         contract_spec_features['type_system_primitive'] = [
-            {
-                'name': 'boolean_type',
-                'description': 'Support for boolean type (SC_SPEC_TYPE_BOOL)',
-                'required': True,
-                'category': 'Type System - Primitive'
-            },
-            {
-                'name': 'void_type',
-                'description': 'Support for void type (SC_SPEC_TYPE_VOID)',
-                'required': True,
-                'category': 'Type System - Primitive'
-            },
-            {
-                'name': 'numeric_types',
-                'description': 'Support for numeric types (u32, i32, u64, i64, u128, i128, u256, i256)',
-                'required': True,
-                'category': 'Type System - Primitive'
-            },
-            {
-                'name': 'timepoint_duration',
-                'description': 'Support for timepoint and duration types',
-                'required': True,
-                'category': 'Type System - Primitive'
-            },
-            {
-                'name': 'bytes_string_symbol',
-                'description': 'Support for bytes, string, and symbol types',
-                'required': True,
-                'category': 'Type System - Primitive'
-            },
-            {
-                'name': 'address_type',
-                'description': 'Support for address type (SC_SPEC_TYPE_ADDRESS)',
-                'required': True,
-                'category': 'Type System - Primitive'
-            }
+            spec_item(
+                'boolean_type', 'Support for boolean type (SC_SPEC_TYPE_BOOL)', required=True,
+                category='Type System - Primitive'),
+            spec_item(
+                'void_type', 'Support for void type (SC_SPEC_TYPE_VOID)', required=True,
+                category='Type System - Primitive'),
+            spec_item(
+                'numeric_types',
+                'Support for numeric types (u32, i32, u64, i64, u128, i128, u256, i256)',
+                required=True, category='Type System - Primitive'),
+            spec_item(
+                'timepoint_duration', 'Support for timepoint and duration types', required=True,
+                category='Type System - Primitive'),
+            spec_item(
+                'bytes_string_symbol', 'Support for bytes, string, and symbol types', required=True,
+                category='Type System - Primitive'),
+            spec_item(
+                'address_type', 'Support for address type (SC_SPEC_TYPE_ADDRESS)', required=True,
+                category='Type System - Primitive')
         ]
 
         # Type system - compound types
         contract_spec_features['type_system_compound'] = [
-            {
-                'name': 'option_type',
-                'description': 'Support for Option<T> type (SC_SPEC_TYPE_OPTION)',
-                'required': True,
-                'category': 'Type System - Compound'
-            },
-            {
-                'name': 'result_type',
-                'description': 'Support for Result<T, E> type (SC_SPEC_TYPE_RESULT)',
-                'required': True,
-                'category': 'Type System - Compound'
-            },
-            {
-                'name': 'vector_type',
-                'description': 'Support for Vec<T> type (SC_SPEC_TYPE_VEC)',
-                'required': True,
-                'category': 'Type System - Compound'
-            },
-            {
-                'name': 'map_type',
-                'description': 'Support for Map<K, V> type (SC_SPEC_TYPE_MAP)',
-                'required': True,
-                'category': 'Type System - Compound'
-            },
-            {
-                'name': 'tuple_type',
-                'description': 'Support for tuple types (SC_SPEC_TYPE_TUPLE)',
-                'required': True,
-                'category': 'Type System - Compound'
-            },
-            {
-                'name': 'bytes_n_type',
-                'description': 'Support for fixed-length bytes type (SC_SPEC_TYPE_BYTES_N)',
-                'required': True,
-                'category': 'Type System - Compound'
-            },
-            {
-                'name': 'user_defined_type',
-                'description': 'Support for user-defined types (SC_SPEC_TYPE_UDT)',
-                'required': True,
-                'category': 'Type System - Compound'
-            }
+            spec_item(
+                'option_type', 'Support for Option<T> type (SC_SPEC_TYPE_OPTION)', required=True,
+                category='Type System - Compound'),
+            spec_item(
+                'result_type', 'Support for Result<T, E> type (SC_SPEC_TYPE_RESULT)', required=True,
+                category='Type System - Compound'),
+            spec_item(
+                'vector_type', 'Support for Vec<T> type (SC_SPEC_TYPE_VEC)', required=True,
+                category='Type System - Compound'),
+            spec_item(
+                'map_type', 'Support for Map<K, V> type (SC_SPEC_TYPE_MAP)', required=True,
+                category='Type System - Compound'),
+            spec_item(
+                'tuple_type', 'Support for tuple types (SC_SPEC_TYPE_TUPLE)', required=True,
+                category='Type System - Compound'),
+            spec_item(
+                'bytes_n_type', 'Support for fixed-length bytes type (SC_SPEC_TYPE_BYTES_N)',
+                required=True, category='Type System - Compound'),
+            spec_item(
+                'user_defined_type', 'Support for user-defined types (SC_SPEC_TYPE_UDT)',
+                required=True, category='Type System - Compound')
         ]
 
         # Parsing support
         contract_spec_features['parsing_support'] = [
-            {
-                'name': 'parse_contract_bytecode',
-                'description': 'Parse contract specifications from Wasm bytecode',
-                'required': True,
-                'category': 'Parsing Support'
-            },
-            {
-                'name': 'extract_spec_entries',
-                'description': 'Extract and decode all specification entries',
-                'required': True,
-                'category': 'Parsing Support'
-            },
-            {
-                'name': 'parse_environment_meta',
-                'description': 'Parse environment metadata (interface version)',
-                'required': True,
-                'category': 'Parsing Support'
-            },
-            {
-                'name': 'parse_contract_meta',
-                'description': 'Parse contract metadata key-value pairs',
-                'required': True,
-                'category': 'Parsing Support'
-            }
+            spec_item(
+                'parse_contract_bytecode', 'Parse contract specifications from Wasm bytecode',
+                required=True, category='Parsing Support'),
+            spec_item(
+                'extract_spec_entries', 'Extract and decode all specification entries',
+                required=True, category='Parsing Support'),
+            spec_item(
+                'parse_environment_meta', 'Parse environment metadata (interface version)',
+                required=True, category='Parsing Support'),
+            spec_item(
+                'parse_contract_meta', 'Parse contract metadata key-value pairs', required=True,
+                category='Parsing Support')
         ]
 
         # XDR support
         contract_spec_features['xdr_support'] = [
-            {
-                'name': 'decode_scspecentry',
-                'description': 'Decode SCSpecEntry XDR structures',
-                'required': True,
-                'category': 'XDR Support'
-            },
-            {
-                'name': 'decode_scspectypedef',
-                'description': 'Decode SCSpecTypeDef XDR structures for type definitions',
-                'required': True,
-                'category': 'XDR Support'
-            },
-            {
-                'name': 'decode_scenvmetaentry',
-                'description': 'Decode SCEnvMetaEntry XDR structures',
-                'required': True,
-                'category': 'XDR Support'
-            },
-            {
-                'name': 'decode_scmetaentry',
-                'description': 'Decode SCMetaEntry XDR structures',
-                'required': True,
-                'category': 'XDR Support'
-            }
+            spec_item(
+                'decode_scspecentry', 'Decode SCSpecEntry XDR structures', required=True,
+                category='XDR Support'),
+            spec_item(
+                'decode_scspectypedef', 'Decode SCSpecTypeDef XDR structures for type definitions',
+                required=True, category='XDR Support'),
+            spec_item(
+                'decode_scenvmetaentry', 'Decode SCEnvMetaEntry XDR structures', required=True,
+                category='XDR Support'),
+            spec_item(
+                'decode_scmetaentry', 'Decode SCMetaEntry XDR structures', required=True,
+                category='XDR Support')
         ]
 
         # Store features as sections
-        data['sections'].append({
-            'title': 'Wasm Custom Section',
-            'key': 'wasm_section',
-            'content': 'Support for parsing contract specifications from Wasm custom sections',
-            'contract_spec_features': contract_spec_features['wasm_section'],
-            'feature_count': len(contract_spec_features['wasm_section'])
-        })
+        data['sections'].append(section(
+            'Wasm Custom Section', 'wasm_section',
+            'Support for parsing contract specifications from Wasm custom sections',
+            contract_spec_features['wasm_section'], features_key='contract_spec_features'))
 
-        data['sections'].append({
-            'title': 'Entry Types',
-            'key': 'entry_types',
-            'content': 'Support for all 6 specification entry types',
-            'contract_spec_features': contract_spec_features['entry_types'],
-            'feature_count': len(contract_spec_features['entry_types'])
-        })
+        data['sections'].append(section(
+            'Entry Types', 'entry_types', 'Support for all 6 specification entry types',
+            contract_spec_features['entry_types'], features_key='contract_spec_features'))
 
-        data['sections'].append({
-            'title': 'Type System - Primitive Types',
-            'key': 'type_system_primitive',
-            'content': 'Support for primitive Soroban types',
-            'contract_spec_features': contract_spec_features['type_system_primitive'],
-            'feature_count': len(contract_spec_features['type_system_primitive'])
-        })
+        data['sections'].append(section(
+            'Type System - Primitive Types', 'type_system_primitive',
+            'Support for primitive Soroban types',
+            contract_spec_features['type_system_primitive'], features_key='contract_spec_features'))
 
-        data['sections'].append({
-            'title': 'Type System - Compound Types',
-            'key': 'type_system_compound',
-            'content': 'Support for compound Soroban types',
-            'contract_spec_features': contract_spec_features['type_system_compound'],
-            'feature_count': len(contract_spec_features['type_system_compound'])
-        })
+        data['sections'].append(section(
+            'Type System - Compound Types', 'type_system_compound',
+            'Support for compound Soroban types',
+            contract_spec_features['type_system_compound'], features_key='contract_spec_features'))
 
-        data['sections'].append({
-            'title': 'Parsing Support',
-            'key': 'parsing_support',
-            'content': 'SDK support for parsing contract specifications',
-            'contract_spec_features': contract_spec_features['parsing_support'],
-            'feature_count': len(contract_spec_features['parsing_support'])
-        })
+        data['sections'].append(section(
+            'Parsing Support', 'parsing_support', 'SDK support for parsing contract specifications',
+            contract_spec_features['parsing_support'], features_key='contract_spec_features'))
 
-        data['sections'].append({
-            'title': 'XDR Support',
-            'key': 'xdr_support',
-            'content': 'XDR decoding support for specification structures',
-            'contract_spec_features': contract_spec_features['xdr_support'],
-            'feature_count': len(contract_spec_features['xdr_support'])
-        })
+        data['sections'].append(section(
+            'XDR Support', 'xdr_support', 'XDR decoding support for specification structures',
+            contract_spec_features['xdr_support'], features_key='contract_spec_features'))
 
         total_features = (
             len(contract_spec_features['wasm_section']) +
@@ -5672,273 +3518,158 @@ class SEPParser:
 
         # XDR data type mappings (SEP-51 Specification -> XDR Data Types).
         xdr_json_features['xdr_data_types'] = [
-            {
-                'name': 'integer_32',
-                'description': '32-bit signed integer maps to a JSON number',
-                'required': True,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'unsigned_integer_32',
-                'description': '32-bit unsigned integer maps to a JSON number',
-                'required': True,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'hyper_integer',
-                'description': '64-bit signed integer maps to a base-10 JSON string',
-                'required': True,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'unsigned_hyper_integer',
-                'description': '64-bit unsigned integer maps to a base-10 JSON string',
-                'required': True,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'hyper_number_input',
-                'description': 'Deserializes a JSON number for Hyper, for XDR-JSON v1 compatibility',
-                'required': False,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'unsigned_hyper_number_input',
-                'description': 'Deserializes a JSON number for Unsigned Hyper, for XDR-JSON v1 compatibility',
-                'required': False,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'boolean',
-                'description': 'Boolean maps to a JSON boolean',
-                'required': True,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'opaque_fixed',
-                'description': 'Fixed-length opaque data maps to a hexadecimal string',
-                'required': True,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'opaque_variable',
-                'description': 'Variable-length opaque data maps to a hexadecimal string',
-                'required': True,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'string_escaping',
-                'description': 'String is escaped per the specification ladder: \\0, \\t, \\n, \\r, \\\\, printable ASCII verbatim, \\xNN otherwise',
-                'required': True,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'array_fixed',
-                'description': 'Fixed-length array maps to a JSON array',
-                'required': True,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'array_variable',
-                'description': 'Variable-length array maps to a JSON array',
-                'required': True,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'enum',
-                'description': 'Enum maps to a snake_case string with any shared prefix removed',
-                'required': True,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'struct',
-                'description': 'Struct maps to a JSON object keyed by the snake_case field name',
-                'required': True,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'union_void_arm',
-                'description': 'Union with a void arm maps to a bare discriminant string',
-                'required': True,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'union_value_arm',
-                'description': 'Union with a value arm maps to a single-key object keyed by the discriminant',
-                'required': True,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'union_integer_cases',
-                'description': 'Union with integer cases keys on the discriminant name suffixed by the integer',
-                'required': True,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'void',
-                'description': 'Void is omitted in JSON',
-                'required': True,
-                'category': 'XDR Data Types'
-            },
-            {
-                'name': 'optional',
-                'description': 'Optional data maps to null when unset and to the value when set',
-                'required': True,
-                'category': 'XDR Data Types'
-            },
+            spec_item(
+                'integer_32', '32-bit signed integer maps to a JSON number', required=True,
+                category='XDR Data Types'),
+            spec_item(
+                'unsigned_integer_32', '32-bit unsigned integer maps to a JSON number',
+                required=True, category='XDR Data Types'),
+            spec_item(
+                'hyper_integer', '64-bit signed integer maps to a base-10 JSON string',
+                required=True, category='XDR Data Types'),
+            spec_item(
+                'unsigned_hyper_integer', '64-bit unsigned integer maps to a base-10 JSON string',
+                required=True, category='XDR Data Types'),
+            spec_item(
+                'hyper_number_input',
+                'Deserializes a JSON number for Hyper, for XDR-JSON v1 compatibility',
+                category='XDR Data Types'),
+            spec_item(
+                'unsigned_hyper_number_input',
+                'Deserializes a JSON number for Unsigned Hyper, for XDR-JSON v1 compatibility',
+                category='XDR Data Types'),
+            spec_item(
+                'boolean', 'Boolean maps to a JSON boolean', required=True,
+                category='XDR Data Types'),
+            spec_item(
+                'opaque_fixed', 'Fixed-length opaque data maps to a hexadecimal string',
+                required=True, category='XDR Data Types'),
+            spec_item(
+                'opaque_variable', 'Variable-length opaque data maps to a hexadecimal string',
+                required=True, category='XDR Data Types'),
+            spec_item(
+                'string_escaping',
+                'String is escaped per the specification ladder: \\0, \\t, \\n, \\r, \\\\, printable ASCII verbatim, \\xNN otherwise',
+                required=True, category='XDR Data Types'),
+            spec_item(
+                'array_fixed', 'Fixed-length array maps to a JSON array', required=True,
+                category='XDR Data Types'),
+            spec_item(
+                'array_variable', 'Variable-length array maps to a JSON array', required=True,
+                category='XDR Data Types'),
+            spec_item(
+                'enum', 'Enum maps to a snake_case string with any shared prefix removed',
+                required=True, category='XDR Data Types'),
+            spec_item(
+                'struct', 'Struct maps to a JSON object keyed by the snake_case field name',
+                required=True, category='XDR Data Types'),
+            spec_item(
+                'union_void_arm', 'Union with a void arm maps to a bare discriminant string',
+                required=True, category='XDR Data Types'),
+            spec_item(
+                'union_value_arm',
+                'Union with a value arm maps to a single-key object keyed by the discriminant',
+                required=True, category='XDR Data Types'),
+            spec_item(
+                'union_integer_cases',
+                'Union with integer cases keys on the discriminant name suffixed by the integer',
+                required=True, category='XDR Data Types'),
+            spec_item('void', 'Void is omitted in JSON', required=True, category='XDR Data Types'),
+            spec_item(
+                'optional', 'Optional data maps to null when unset and to the value when set',
+                required=True, category='XDR Data Types'),
         ]
 
         # Stellar-specific renderings (SEP-51 Stellar-Specific Types).
         xdr_json_features['stellar_specific_types'] = [
-            {
-                'name': 'sc_address',
-                'description': 'ScAddress renders as a G, C, M, B or L strkey by arm',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'account_id',
-                'description': 'AccountID renders as a G strkey',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'contract_id',
-                'description': 'ContractID renders as a C strkey',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'muxed_account',
-                'description': 'MuxedAccount renders as a G strkey (ed25519) or an M strkey (muxed ed25519)',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'muxed_account_med25519',
-                'description': 'MuxedAccountMed25519 renders as an M strkey',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'muxed_ed25519_account',
-                'description': 'MuxedEd25519Account renders as an M strkey',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'pool_id',
-                'description': 'PoolID renders as an L strkey',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'claimable_balance_id',
-                'description': 'ClaimableBalanceID renders as a B strkey',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'public_key',
-                'description': 'PublicKey renders as a G strkey',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'node_id',
-                'description': 'NodeID renders as a G strkey',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'signer_key',
-                'description': 'SignerKey renders as a G, T, X or P strkey by arm',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'signer_key_ed25519_signed_payload',
-                'description': 'SignerKeyEd25519SignedPayload renders as a P strkey',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'asset_code',
-                'description': 'AssetCode renders as the string of its AssetCode4 or AssetCode12 arm',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'asset_code_4',
-                'description': 'AssetCode4 drops trailing zero bytes, then takes the string escape ladder',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'asset_code_12',
-                'description': 'AssetCode12 drops trailing zero bytes down to five, then takes the string escape ladder',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'int128_parts',
-                'description': 'Int128Parts renders as one base-10 string of the reassembled integer',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'uint128_parts',
-                'description': 'UInt128Parts renders as one base-10 string of the reassembled integer',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'int256_parts',
-                'description': 'Int256Parts renders as one base-10 string of the reassembled integer',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
-            {
-                'name': 'uint256_parts',
-                'description': 'UInt256Parts renders as one base-10 string of the reassembled integer',
-                'required': True,
-                'category': 'Stellar-Specific Types'
-            },
+            spec_item(
+                'sc_address', 'ScAddress renders as a G, C, M, B or L strkey by arm', required=True,
+                category='Stellar-Specific Types'),
+            spec_item(
+                'account_id', 'AccountID renders as a G strkey', required=True,
+                category='Stellar-Specific Types'),
+            spec_item(
+                'contract_id', 'ContractID renders as a C strkey', required=True,
+                category='Stellar-Specific Types'),
+            spec_item(
+                'muxed_account',
+                'MuxedAccount renders as a G strkey (ed25519) or an M strkey (muxed ed25519)',
+                required=True, category='Stellar-Specific Types'),
+            spec_item(
+                'muxed_account_med25519', 'MuxedAccountMed25519 renders as an M strkey',
+                required=True, category='Stellar-Specific Types'),
+            spec_item(
+                'muxed_ed25519_account', 'MuxedEd25519Account renders as an M strkey',
+                required=True, category='Stellar-Specific Types'),
+            spec_item(
+                'pool_id', 'PoolID renders as an L strkey', required=True,
+                category='Stellar-Specific Types'),
+            spec_item(
+                'claimable_balance_id', 'ClaimableBalanceID renders as a B strkey', required=True,
+                category='Stellar-Specific Types'),
+            spec_item(
+                'public_key', 'PublicKey renders as a G strkey', required=True,
+                category='Stellar-Specific Types'),
+            spec_item(
+                'node_id', 'NodeID renders as a G strkey', required=True,
+                category='Stellar-Specific Types'),
+            spec_item(
+                'signer_key', 'SignerKey renders as a G, T, X or P strkey by arm', required=True,
+                category='Stellar-Specific Types'),
+            spec_item(
+                'signer_key_ed25519_signed_payload',
+                'SignerKeyEd25519SignedPayload renders as a P strkey', required=True,
+                category='Stellar-Specific Types'),
+            spec_item(
+                'asset_code',
+                'AssetCode renders as the string of its AssetCode4 or AssetCode12 arm',
+                required=True, category='Stellar-Specific Types'),
+            spec_item(
+                'asset_code_4',
+                'AssetCode4 drops trailing zero bytes, then takes the string escape ladder',
+                required=True, category='Stellar-Specific Types'),
+            spec_item(
+                'asset_code_12',
+                'AssetCode12 drops trailing zero bytes down to five, then takes the string escape ladder',
+                required=True, category='Stellar-Specific Types'),
+            spec_item(
+                'int128_parts',
+                'Int128Parts renders as one base-10 string of the reassembled integer',
+                required=True, category='Stellar-Specific Types'),
+            spec_item(
+                'uint128_parts',
+                'UInt128Parts renders as one base-10 string of the reassembled integer',
+                required=True, category='Stellar-Specific Types'),
+            spec_item(
+                'int256_parts',
+                'Int256Parts renders as one base-10 string of the reassembled integer',
+                required=True, category='Stellar-Specific Types'),
+            spec_item(
+                'uint256_parts',
+                'UInt256Parts renders as one base-10 string of the reassembled integer',
+                required=True, category='Stellar-Specific Types'),
         ]
 
         # JSON Schema property (SEP-51 JSON Schema).
         xdr_json_features['json_schema'] = [
-            {
-                'name': 'schema_property',
-                'description': 'JSON objects allow, but do not require, a $schema property',
-                'required': False,
-                'category': 'JSON Schema'
-            },
+            spec_item(
+                'schema_property', 'JSON objects allow, but do not require, a $schema property',
+                category='JSON Schema'),
         ]
 
-        data['sections'].append({
-            'title': 'XDR Data Types',
-            'key': 'xdr_data_types',
-            'content': 'Mapping of the XDR data types to their JSON representation',
-            'xdr_json_features': xdr_json_features['xdr_data_types'],
-            'feature_count': len(xdr_json_features['xdr_data_types'])
-        })
+        data['sections'].append(section(
+            'XDR Data Types', 'xdr_data_types',
+            'Mapping of the XDR data types to their JSON representation',
+            xdr_json_features['xdr_data_types'], features_key='xdr_json_features'))
 
-        data['sections'].append({
-            'title': 'Stellar-Specific Types',
-            'key': 'stellar_specific_types',
-            'content': 'Strkey, asset code and multi-limb integer renderings',
-            'xdr_json_features': xdr_json_features['stellar_specific_types'],
-            'feature_count': len(xdr_json_features['stellar_specific_types'])
-        })
+        data['sections'].append(section(
+            'Stellar-Specific Types', 'stellar_specific_types',
+            'Strkey, asset code and multi-limb integer renderings',
+            xdr_json_features['stellar_specific_types'], features_key='xdr_json_features'))
 
-        data['sections'].append({
-            'title': 'JSON Schema',
-            'key': 'json_schema',
-            'content': 'Optional $schema property on JSON objects',
-            'xdr_json_features': xdr_json_features['json_schema'],
-            'feature_count': len(xdr_json_features['json_schema'])
-        })
+        data['sections'].append(section(
+            'JSON Schema', 'json_schema', 'Optional $schema property on JSON objects',
+            xdr_json_features['json_schema'], features_key='xdr_json_features'))
 
         total_features = (
             len(xdr_json_features['xdr_data_types']) +
@@ -6123,141 +3854,99 @@ class SEPParser:
 
         # Memo required check capability fields.
         memo_required_fields = [
-            {
-                'name': 'memo_required_data_entry',
-                'description': 'Reads the destination account\'s config.memo_required data entry and compares its decoded value with 1',
-                'requirements': 'config.memo_required data entry lookup',
-                'required': True,
-                'category': 'Memo Required'
-            },
-            {
-                'name': 'set_memo_required_flag',
-                'description': 'Sets or removes the data entry with a manage data operation',
-                'requirements': 'ManageDataOperationBuilder',
-                'required': True,
-                'category': 'Memo Required'
-            },
-            {
-                'name': 'payment_destination',
-                'description': 'Checks the destination of a payment operation',
-                'requirements': 'PaymentOperation destination check',
-                'required': True,
-                'category': 'Memo Required'
-            },
-            {
-                'name': 'path_payment_strict_send_destination',
-                'description': 'Checks the destination of a path payment strict send operation',
-                'requirements': 'PathPaymentStrictSendOperation destination check',
-                'required': True,
-                'category': 'Memo Required'
-            },
-            {
-                'name': 'path_payment_strict_receive_destination',
-                'description': 'Checks the destination of a path payment strict receive operation',
-                'requirements': 'PathPaymentStrictReceiveOperation destination check',
-                'required': True,
-                'category': 'Memo Required'
-            },
-            {
-                'name': 'account_merge_destination',
-                'description': 'Checks the destination of an account merge operation',
-                'requirements': 'AccountMergeOperation destination check',
-                'required': True,
-                'category': 'Memo Required'
-            },
-            {
-                'name': 'muxed_destination_exempt',
-                'description': 'Skips multiplexed destinations',
-                'requirements': 'Multiplexed destination detection',
-                'required': True,
-                'category': 'Memo Required'
-            },
-            {
-                'name': 'memo_present_skips_lookup',
-                'description': 'Performs no lookup when the transaction carries a memo',
-                'requirements': 'Memo presence short-circuit',
-                'required': True,
-                'category': 'Memo Required'
-            },
-            {
-                'name': 'fee_bump_inner_transaction',
-                'description': 'Checks a fee bump transaction through its inner transaction',
-                'requirements': 'Fee bump inner transaction unwrap',
-                'required': True,
-                'category': 'Memo Required'
-            },
-            {
-                'name': 'unknown_destination_skipped',
-                'description': 'Skips a destination Horizon does not know and lets the network report it',
-                'requirements': 'HTTP 404 handling on account lookup',
-                'required': True,
-                'category': 'Memo Required'
-            },
-            {
-                'name': 'check_memo_required_method',
-                'description': 'Public check without submitting',
-                'requirements': 'checkMemoRequired(AbstractTransaction) method',
-                'required': True,
-                'category': 'Memo Required'
-            },
-            {
-                'name': 'submit_transaction_opt_out',
-                'description': 'submitTransaction runs the check unless skipMemoRequiredCheck is true',
-                'requirements': 'submitTransaction skipMemoRequiredCheck parameter',
-                'required': True,
-                'category': 'Memo Required'
-            },
-            {
-                'name': 'submit_fee_bump_transaction_opt_out',
-                'description': 'submitFeeBumpTransaction runs the check unless skipMemoRequiredCheck is true',
-                'requirements': 'submitFeeBumpTransaction skipMemoRequiredCheck parameter',
-                'required': True,
-                'category': 'Memo Required'
-            },
-            {
-                'name': 'submit_async_transaction_opt_out',
-                'description': 'submitAsyncTransaction runs the check unless skipMemoRequiredCheck is true',
-                'requirements': 'submitAsyncTransaction skipMemoRequiredCheck parameter',
-                'required': True,
-                'category': 'Memo Required'
-            },
-            {
-                'name': 'submit_async_fee_bump_transaction_opt_out',
-                'description': 'submitAsyncFeeBumpTransaction runs the check unless skipMemoRequiredCheck is true',
-                'requirements': 'submitAsyncFeeBumpTransaction skipMemoRequiredCheck parameter',
-                'required': True,
-                'category': 'Memo Required'
-            },
-            {
-                'name': 'submit_transaction_envelope_opt_out',
-                'description': 'submitTransactionEnvelopeXdrBase64 runs the check unless skipMemoRequiredCheck is true',
-                'requirements': 'submitTransactionEnvelopeXdrBase64 skipMemoRequiredCheck parameter',
-                'required': True,
-                'category': 'Memo Required'
-            },
-            {
-                'name': 'submit_async_transaction_envelope_opt_out',
-                'description': 'submitAsyncTransactionEnvelopeXdrBase64 runs the check unless skipMemoRequiredCheck is true',
-                'requirements': 'submitAsyncTransactionEnvelopeXdrBase64 skipMemoRequiredCheck parameter',
-                'required': True,
-                'category': 'Memo Required'
-            },
-            {
-                'name': 'account_requires_memo_exception',
-                'description': 'Dedicated exception carrying the account id and the operation index',
-                'requirements': 'AccountRequiresMemoException class',
-                'required': True,
-                'category': 'Memo Required'
-            },
+            spec_item(
+                'memo_required_data_entry',
+                "Reads the destination account's config.memo_required data entry and compares its decoded value with 1",
+                required=True, requirements='config.memo_required data entry lookup',
+                category='Memo Required'),
+            spec_item(
+                'set_memo_required_flag',
+                'Sets or removes the data entry with a manage data operation', required=True,
+                requirements='ManageDataOperationBuilder', category='Memo Required'),
+            spec_item(
+                'payment_destination', 'Checks the destination of a payment operation',
+                required=True, requirements='PaymentOperation destination check',
+                category='Memo Required'),
+            spec_item(
+                'path_payment_strict_send_destination',
+                'Checks the destination of a path payment strict send operation', required=True,
+                requirements='PathPaymentStrictSendOperation destination check',
+                category='Memo Required'),
+            spec_item(
+                'path_payment_strict_receive_destination',
+                'Checks the destination of a path payment strict receive operation', required=True,
+                requirements='PathPaymentStrictReceiveOperation destination check',
+                category='Memo Required'),
+            spec_item(
+                'account_merge_destination', 'Checks the destination of an account merge operation',
+                required=True, requirements='AccountMergeOperation destination check',
+                category='Memo Required'),
+            spec_item(
+                'muxed_destination_exempt', 'Skips multiplexed destinations', required=True,
+                requirements='Multiplexed destination detection', category='Memo Required'),
+            spec_item(
+                'memo_present_skips_lookup',
+                'Performs no lookup when the transaction carries a memo', required=True,
+                requirements='Memo presence short-circuit', category='Memo Required'),
+            spec_item(
+                'fee_bump_inner_transaction',
+                'Checks a fee bump transaction through its inner transaction', required=True,
+                requirements='Fee bump inner transaction unwrap', category='Memo Required'),
+            spec_item(
+                'unknown_destination_skipped',
+                'Skips a destination Horizon does not know and lets the network report it',
+                required=True, requirements='HTTP 404 handling on account lookup',
+                category='Memo Required'),
+            spec_item(
+                'check_memo_required_method', 'Public check without submitting', required=True,
+                requirements='checkMemoRequired(AbstractTransaction) method',
+                category='Memo Required'),
+            spec_item(
+                'submit_transaction_opt_out',
+                'submitTransaction runs the check unless skipMemoRequiredCheck is true',
+                required=True, requirements='submitTransaction skipMemoRequiredCheck parameter',
+                category='Memo Required'),
+            spec_item(
+                'submit_fee_bump_transaction_opt_out',
+                'submitFeeBumpTransaction runs the check unless skipMemoRequiredCheck is true',
+                required=True,
+                requirements='submitFeeBumpTransaction skipMemoRequiredCheck parameter',
+                category='Memo Required'),
+            spec_item(
+                'submit_async_transaction_opt_out',
+                'submitAsyncTransaction runs the check unless skipMemoRequiredCheck is true',
+                required=True,
+                requirements='submitAsyncTransaction skipMemoRequiredCheck parameter',
+                category='Memo Required'),
+            spec_item(
+                'submit_async_fee_bump_transaction_opt_out',
+                'submitAsyncFeeBumpTransaction runs the check unless skipMemoRequiredCheck is true',
+                required=True,
+                requirements='submitAsyncFeeBumpTransaction skipMemoRequiredCheck parameter',
+                category='Memo Required'),
+            spec_item(
+                'submit_transaction_envelope_opt_out',
+                'submitTransactionEnvelopeXdrBase64 runs the check unless skipMemoRequiredCheck is true',
+                required=True,
+                requirements='submitTransactionEnvelopeXdrBase64 skipMemoRequiredCheck parameter',
+                category='Memo Required'),
+            spec_item(
+                'submit_async_transaction_envelope_opt_out',
+                'submitAsyncTransactionEnvelopeXdrBase64 runs the check unless skipMemoRequiredCheck is true',
+                required=True,
+                requirements='submitAsyncTransactionEnvelopeXdrBase64 skipMemoRequiredCheck parameter',
+                category='Memo Required'),
+            spec_item(
+                'account_requires_memo_exception',
+                'Dedicated exception carrying the account id and the operation index',
+                required=True, requirements='AccountRequiresMemoException class',
+                category='Memo Required'),
         ]
 
-        data['sections'].append({
-            'title': 'Memo Required',
-            'key': 'memo_required',
-            'content': 'Checking payment destinations for the config.memo_required data entry before submission',
-            'memo_required_features': memo_required_fields,
-            'feature_count': len(memo_required_fields)
-        })
+        data['sections'].append(section(
+            'Memo Required', 'memo_required',
+            'Checking payment destinations for the config.memo_required data entry before submission',
+            memo_required_fields, features_key='memo_required_features'))
 
         print(f"{Colors.GREEN}  ✓ Found {len(memo_required_fields)} memo required features{Colors.END}")
         print(f"{Colors.GREEN}  ✓ Total: {len(memo_required_fields)} SEP-29 features{Colors.END}")
@@ -6290,95 +3979,42 @@ class SEPParser:
 
         # Message signing and verification capability fields.
         message_signing_fields = [
-            {
-                'name': 'message_prefix',
-                'description': 'Uses "Stellar Signed Message:\\n" prefix before hashing',
-                'requirements': 'Message prefix per SEP-53 specification',
-                'required': True,
-                'category': 'Message Signing'
-            },
-            {
-                'name': 'sha256_hashing',
-                'description': 'SHA-256 hash of the prefixed message',
-                'requirements': 'SHA-256 hash computation',
-                'required': True,
-                'category': 'Message Signing'
-            },
-            {
-                'name': 'sign_message_binary',
-                'description': 'Sign a binary message per SEP-53',
-                'requirements': 'signMessage(Uint8List) method',
-                'required': True,
-                'category': 'Message Signing'
-            },
-            {
-                'name': 'sign_message_string',
-                'description': 'Sign a UTF-8 string message per SEP-53',
-                'requirements': 'signMessageString(String) method',
-                'required': True,
-                'category': 'Message Signing'
-            },
-            {
-                'name': 'verify_message_binary',
-                'description': 'Verify a binary message signature per SEP-53',
-                'requirements': 'verifyMessage(Uint8List, Uint8List) method',
-                'required': True,
-                'category': 'Message Signing'
-            },
-            {
-                'name': 'verify_message_string',
-                'description': 'Verify a UTF-8 string message signature per SEP-53',
-                'requirements': 'verifyMessageString(String, Uint8List) method',
-                'required': True,
-                'category': 'Message Signing'
-            },
-            {
-                'name': 'ed25519_signature',
-                'description': '64-byte Ed25519 signature output',
-                'requirements': 'Ed25519 signing via sign method',
-                'required': True,
-                'category': 'Message Signing'
-            },
-            {
-                'name': 'utf8_encoding',
-                'description': 'UTF-8 encoding for string messages',
-                'requirements': 'utf8.encode usage for string encoding',
-                'required': True,
-                'category': 'Message Signing'
-            },
+            spec_item(
+                'message_prefix', 'Uses "Stellar Signed Message:\\n" prefix before hashing',
+                required=True, requirements='Message prefix per SEP-53 specification',
+                category='Message Signing'),
+            spec_item(
+                'sha256_hashing', 'SHA-256 hash of the prefixed message', required=True,
+                requirements='SHA-256 hash computation', category='Message Signing'),
+            spec_item(
+                'sign_message_binary', 'Sign a binary message per SEP-53', required=True,
+                requirements='signMessage(Uint8List) method', category='Message Signing'),
+            spec_item(
+                'sign_message_string', 'Sign a UTF-8 string message per SEP-53', required=True,
+                requirements='signMessageString(String) method', category='Message Signing'),
+            spec_item(
+                'verify_message_binary', 'Verify a binary message signature per SEP-53',
+                required=True, requirements='verifyMessage(Uint8List, Uint8List) method',
+                category='Message Signing'),
+            spec_item(
+                'verify_message_string', 'Verify a UTF-8 string message signature per SEP-53',
+                required=True, requirements='verifyMessageString(String, Uint8List) method',
+                category='Message Signing'),
+            spec_item(
+                'ed25519_signature', '64-byte Ed25519 signature output', required=True,
+                requirements='Ed25519 signing via sign method', category='Message Signing'),
+            spec_item(
+                'utf8_encoding', 'UTF-8 encoding for string messages', required=True,
+                requirements='utf8.encode usage for string encoding', category='Message Signing'),
         ]
 
-        data['sections'].append({
-            'title': 'Message Signing',
-            'key': 'message_signing',
-            'content': 'Signing and verifying arbitrary messages with Stellar key pairs',
-            'message_signing_features': message_signing_fields,
-            'feature_count': len(message_signing_fields)
-        })
+        data['sections'].append(section(
+            'Message Signing', 'message_signing',
+            'Signing and verifying arbitrary messages with Stellar key pairs',
+            message_signing_fields, features_key='message_signing_features'))
 
         print(f"{Colors.GREEN}  ✓ Found {len(message_signing_fields)} message signing features{Colors.END}")
         print(f"{Colors.GREEN}  ✓ Total: {len(message_signing_fields)} SEP-53 features{Colors.END}")
-
-        return data
-
-    def parse_generic_sep(self) -> Dict[str, Any]:
-        """
-        Parse a generic SEP structure.
-
-        Returns:
-            Structured SEP data
-        """
-        data = {
-            'sep_number': self.sep_number,
-            'preamble': self.extract_preamble(),
-            'summary': self.extract_summary(),
-            'sections': self.extract_sections()
-        }
-
-        # Extract field definitions from specification sections
-        for section in data['sections']:
-            if 'specification' in section['title'].lower() or 'fields' in section['title'].lower():
-                section['fields'] = self.extract_field_definitions(section['content'])
 
         return data
 
@@ -6388,57 +4024,19 @@ class SEPParser:
 
         Returns:
             Parsed SEP data dictionary
+
+        Raises:
+            ValueError: If no content was fetched or no parser is defined for the SEP number.
         """
         if not self.raw_content:
             raise ValueError("No content to parse. Call fetch_sep_markdown() first.")
 
-        print(f"\n{Colors.CYAN}Parsing SEP-{self.sep_number}...{Colors.END}")
+        parse_sep = getattr(self, f'parse_sep_{int(self.sep_number):02d}', None)
+        if parse_sep is None:
+            raise ValueError(f"No parser defined for SEP-{self.sep_number}")
 
-        # Use specialized parsers for specific SEPs
-        if self.sep_number == '0053':
-            self.parsed_data = self.parse_sep_53()
-        elif self.sep_number == '0001':
-            self.parsed_data = self.parse_sep_01()
-        elif self.sep_number == '0002':
-            self.parsed_data = self.parse_sep_02()
-        elif self.sep_number == '0005':
-            self.parsed_data = self.parse_sep_05()
-        elif self.sep_number == '0006':
-            self.parsed_data = self.parse_sep_06()
-        elif self.sep_number == '0007':
-            self.parsed_data = self.parse_sep_07()
-        elif self.sep_number == '0008':
-            self.parsed_data = self.parse_sep_08()
-        elif self.sep_number == '0009':
-            self.parsed_data = self.parse_sep_09()
-        elif self.sep_number == '0010':
-            self.parsed_data = self.parse_sep_10()
-        elif self.sep_number == '0012':
-            self.parsed_data = self.parse_sep_12()
-        elif self.sep_number == '0023':
-            self.parsed_data = self.parse_sep_23()
-        elif self.sep_number == '0024':
-            self.parsed_data = self.parse_sep_24()
-        elif self.sep_number == '0029':
-            self.parsed_data = self.parse_sep_29()
-        elif self.sep_number == '0030':
-            self.parsed_data = self.parse_sep_30()
-        elif self.sep_number == '0011':
-            self.parsed_data = self.parse_sep_11()
-        elif self.sep_number == '0038':
-            self.parsed_data = self.parse_sep_38()
-        elif self.sep_number == '0045':
-            self.parsed_data = self.parse_sep_45()
-        elif self.sep_number == '0046':
-            self.parsed_data = self.parse_sep_46()
-        elif self.sep_number == '0047':
-            self.parsed_data = self.parse_sep_47()
-        elif self.sep_number == '0048':
-            self.parsed_data = self.parse_sep_48()
-        elif self.sep_number == '0051':
-            self.parsed_data = self.parse_sep_51()
-        else:
-            self.parsed_data = self.parse_generic_sep()
+        print(f"\n{Colors.CYAN}Parsing SEP-{self.sep_number}...{Colors.END}")
+        self.parsed_data = parse_sep()
 
         # Add metadata
         self.parsed_data['metadata'] = {
