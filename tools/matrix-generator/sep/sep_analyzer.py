@@ -10,18 +10,84 @@ License: Apache-2.0
 """
 
 import json
+import os
 import re
 import sys
 import traceback
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Any, NamedTuple, Optional, Tuple
 
 
 # Add parent dir to path for shared modules
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from common import Colors
+from common import Colors, evaluate_shift_expression
+
+
+class StrKeyTypeNames(NamedTuple):
+    """SDK names of one SEP-23 key type."""
+    version_byte: str  # VersionByte member
+    encode: str        # StrKey encode function
+    decode: str        # StrKey decode function
+
+
+# SEP-23 key type, as the specification prints it, to its SDK names. None
+# marks a key type the SDK does not implement.
+SEP_23_KEY_TYPE_NAMES: Dict[str, Optional[StrKeyTypeNames]] = {
+    'STRKEY_PUBKEY': StrKeyTypeNames('ACCOUNT_ID', 'encodeStellarAccountId', 'decodeStellarAccountId'),
+    'STRKEY_MUXED': StrKeyTypeNames(
+        'MUXED_ACCOUNT_ID', 'encodeStellarMuxedAccountId', 'decodeStellarMuxedAccountId'),
+    'STRKEY_PRIVKEY': StrKeyTypeNames('SEED', 'encodeStellarSecretSeed', 'decodeStellarSecretSeed'),
+    'STRKEY_PRE_AUTH_TX': StrKeyTypeNames('PRE_AUTH_TX', 'encodePreAuthTx', 'decodePreAuthTx'),
+    'STRKEY_HASH_X': StrKeyTypeNames('SHA256_HASH', 'encodeSha256Hash', 'decodeSha256Hash'),
+    'STRKEY_SIGNED_PAYLOAD': StrKeyTypeNames(
+        'SIGNED_PAYLOAD', 'encodeSignedPayload', 'decodeSignedPayload'),
+    'STRKEY_CONTRACT': StrKeyTypeNames('CONTRACT_ID', 'encodeContractId', 'decodeContractId'),
+    'STRKEY_LIQUIDITY_POOL': StrKeyTypeNames(
+        'LIQUIDITY_POOL', 'encodeLiquidityPoolId', 'decodeLiquidityPoolId'),
+    'STRKEY_CLAIMABLE_BALANCE': StrKeyTypeNames(
+        'CLAIMABLE_BALANCE', 'encodeClaimableBalanceId', 'decodeClaimableBalanceId'),
+}
+
+# Files the SEP-23 analysis reads, relative to the SDK root.
+SEP_23_KEY_PAIR_FILE = Path('lib/src/key_pair.dart')
+SEP_23_CONSTANTS_FILE = Path('lib/src/constants/stellar_protocol_constants.dart')
+SEP_23_TEST_FILE = Path('test/unit/strkey_test.dart')
+
+
+def read_sep_23_input(path: Path, sdk_root: Path) -> str:
+    """
+    Read one input of the SEP-23 analysis.
+
+    Raises:
+        RuntimeError: If the file is missing, unreadable, or not UTF-8,
+            naming the path relative to sdk_root.
+    """
+    try:
+        return path.read_text(encoding='utf-8')
+    except (OSError, UnicodeDecodeError) as e:
+        reason = e.strerror if isinstance(e, OSError) and e.strerror else str(e)
+        shown = Path(os.path.relpath(path, sdk_root)).as_posix()
+        raise RuntimeError(f'SEP-23 cannot read {shown}: {reason}') from e
+
+
+def dart_class_body(source: str, class_name: str, path: Path) -> str:
+    """
+    Return the text between the braces of a Dart class, by plain brace counting.
+
+    Raises:
+        ValueError: If the source declares no such class.
+    """
+    declaration = re.search(r'\bclass\s+' + re.escape(class_name) + r'\b[^{}]*\{', source)
+    if declaration is None:
+        raise ValueError(f'SEP-23 class {class_name} not found in {path.as_posix()}')
+    depth = 1
+    for brace in re.finditer(r'[{}]', source[declaration.end():]):
+        depth += 1 if brace.group() == '{' else -1
+        if depth == 0:
+            return source[declaration.end():declaration.end() + brace.start()]
+    return source[declaration.end():]
 
 
 class SEPAnalyzer:
@@ -1340,6 +1406,160 @@ class SEPAnalyzer:
             'percentage': round((implemented_count / total_fields * 100) if total_fields > 0 else 0, 2)
         }
 
+        return implemented
+
+    def analyze_sep_23(self) -> Dict[str, Any]:
+        """
+        Analyze SEP-23 (Strkeys) implementation.
+
+        Key types are checked against lib/src/key_pair.dart (VersionByte and
+        StrKey) and lib/src/constants/stellar_protocol_constants.dart; test
+        vectors against test/unit/strkey_test.dart, the one file under test/
+        that a SEP analysis reads.
+
+        Raises:
+            RuntimeError: If the definition or one of the three files cannot
+                be read.
+            ValueError: As map_sep_23_features describes.
+        """
+        sep_definition = json.loads(read_sep_23_input(
+            self.data_dir / f'sep_{self.sep_number}_definition.json', self.sdk_path
+        ))
+        key_pair_content, constants_content, test_content = (
+            read_sep_23_input(self.sdk_path / path, self.sdk_path)
+            for path in (SEP_23_KEY_PAIR_FILE, SEP_23_CONSTANTS_FILE, SEP_23_TEST_FILE)
+        )
+
+        # Report the two SEP-23 classes, each with its role.
+        documentation = {
+            'StrKey': 'Strkey encoding and decoding: an encode, a decode, and a validity '
+                      'check per key type, plus encodeCheck and decodeCheck for any version byte',
+            'VersionByte': 'Version byte of each strkey type, bound to its value in '
+                           'StellarProtocolConstants',
+        }
+        all_classes = [
+            dict(cls, documentation=documentation[cls['name']])
+            for cls in self.extract_class_info(self.sdk_path / SEP_23_KEY_PAIR_FILE)
+            if cls['name'] in documentation
+        ]
+
+        implemented_features = self.map_sep_23_features(
+            key_pair_content, constants_content, test_content, sep_definition
+        )
+
+        return {
+            'implemented': True,
+            'files': [
+                SEP_23_KEY_PAIR_FILE.as_posix(),
+                SEP_23_CONSTANTS_FILE.as_posix(),
+                SEP_23_TEST_FILE.as_posix(),
+            ],
+            'classes': all_classes,
+            'implemented_features': implemented_features,
+            'total_classes': len(all_classes),
+            'total_methods': sum(len(c['methods']) for c in all_classes),
+            'total_properties': sum(len(c['properties']) for c in all_classes)
+        }
+
+    def map_sep_23_features(self, key_pair_content: str, constants_content: str,
+                            test_content: str,
+                            sep_definition: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Map the StrKey sources and unit tests to SEP-23 key types and vectors.
+
+        A key type is implemented when the value of its VersionByte member,
+        the member's integer argument or the StellarProtocolConstants constant
+        it names, equals the base value of the specification. Its encode and
+        decode functions must be declared as static methods in
+        lib/src/key_pair.dart. Declarations are matched by pattern on the
+        source text.
+
+        A test vector is implemented when it appears as a complete quoted
+        string literal, '...' or "...", in the unit test file. The closing
+        quote is part of the match, because several valid vectors are
+        prefixes of invalid ones. Presence is all this proves: it does not
+        show that a test asserts the vector or in which direction.
+
+        Raises:
+            ValueError: If a class, member, constant, or function it maps is
+                absent, a key type has no entry in SEP_23_KEY_TYPE_NAMES, a
+                value has a form it cannot evaluate, or the definition lists
+                no key type or no test vector.
+        """
+        implemented = {'strkey_type_features': {}, 'strkey_vector_features': {}}
+        key_pair = SEP_23_KEY_PAIR_FILE.as_posix()
+        version_bytes = dart_class_body(key_pair_content, 'VersionByte', SEP_23_KEY_PAIR_FILE)
+        constants = dart_class_body(
+            constants_content, 'StellarProtocolConstants', SEP_23_CONSTANTS_FILE
+        )
+        # Static method declarations: return type, name, opening parenthesis.
+        static_functions = set(re.findall(
+            r'\bstatic\s+(?:[\w<>?,]+\s+)+(\w+)\s*\(', key_pair_content
+        ))
+
+        def version_byte_value(member: str) -> int:
+            declaration = re.search(
+                rf'\bstatic\s+const\s+(?:VersionByte\s+)?{member}\s*=\s*(?:const\s+)?'
+                rf'VersionByte\._internal\(\s*([^),]*?)\s*,?\s*\)', version_bytes
+            )
+            if declaration is None:
+                raise ValueError(f'SEP-23 VersionByte.{member} not found in {key_pair}')
+            label, path, value = f'VersionByte.{member}', key_pair, declaration.group(1)
+            reference = re.fullmatch(r'StellarProtocolConstants\.(\w+)', value)
+            if reference:
+                label, path = (f'StellarProtocolConstants.{reference.group(1)}',
+                               SEP_23_CONSTANTS_FILE.as_posix())
+                constant = re.search(
+                    rf'\bstatic\s+const\s+(?:int\s+)?{reference.group(1)}\s*=\s*([^;]+);',
+                    constants
+                )
+                if constant is None:
+                    raise ValueError(f'SEP-23 {label} not found in {path}')
+                value = constant.group(1).strip()
+            try:
+                return evaluate_shift_expression(value)
+            except ValueError as e:
+                raise ValueError(
+                    f'SEP-23 {label} in {path} has a value this reader cannot evaluate: {value!r}'
+                ) from e
+
+        def detect_key_type(name: str, base_value: int) -> Optional[str]:
+            if name not in SEP_23_KEY_TYPE_NAMES:
+                raise ValueError(f'SEP-23 key type {name} has no entry in SEP_23_KEY_TYPE_NAMES')
+            names = SEP_23_KEY_TYPE_NAMES[name]
+            if names is None:
+                return None
+            for function in (names.encode, names.decode):
+                if function not in static_functions:
+                    raise ValueError(f'SEP-23 StrKey.{function} not found in {key_pair}')
+            if version_byte_value(names.version_byte) != base_value:
+                return None
+            return f'StrKey.{names.encode} / {names.decode}'
+
+        for section in sep_definition.get('sections', []):
+            for feature in section.get('strkey_type_features', []):
+                sdk_method = detect_key_type(feature['name'], feature['base_value'])
+                implemented['strkey_type_features'][feature['name']] = {
+                    'required': feature.get('required', False),
+                    'implemented': sdk_method is not None,
+                    'sdk_method': sdk_method,
+                    'description': feature.get('description', '')
+                }
+            for feature in section.get('strkey_vector_features', []):
+                quoted = re.search(r'([\'"])' + re.escape(feature['vector']) + r'\1', test_content)
+                sdk_method = SEP_23_TEST_FILE.as_posix() if quoted else None
+                # A title's closing period is dropped so the phrase can follow it.
+                title = re.sub(r'\.$', '', feature.get('description', ''))
+                implemented['strkey_vector_features'][feature['name']] = {
+                    'required': feature.get('required', False),
+                    'implemented': sdk_method is not None,
+                    'sdk_method': sdk_method,
+                    'description': f'{title}, quoted in `{SEP_23_TEST_FILE.as_posix()}`'
+                }
+
+        for key, features in implemented.items():
+            if not features:
+                raise ValueError(f'SEP-23 definition lists no {key}')
         return implemented
 
     def analyze_sep_29(self) -> Dict[str, Any]:
@@ -5664,6 +5884,8 @@ class SEPAnalyzer:
             self.analysis_data = self.analyze_sep_11()
         elif self.sep_number == '0012':
             self.analysis_data = self.analyze_sep_12()
+        elif self.sep_number == '0023':
+            self.analysis_data = self.analyze_sep_23()
         elif self.sep_number == '0024':
             self.analysis_data = self.analyze_sep_24()
         elif self.sep_number == '0029':

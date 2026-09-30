@@ -24,7 +24,7 @@ from urllib.error import URLError, HTTPError
 # Add parent dir to path for shared modules
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from common import Colors
+from common import Colors, evaluate_shift_expression
 
 
 class SEPParser:
@@ -42,6 +42,7 @@ class SEPParser:
         '0010': 'Stellar Web Authentication',
         '0011': 'Txrep: Human-Readable Low-Level Representation of Stellar Transactions',
         '0012': 'Anchor/Client customer info transfer',
+        '0023': 'Strkeys',
         '0024': 'Hosted Deposit and Withdrawal',
         '0029': 'Account Memo Requirements',
         '0030': 'Account Recovery',
@@ -5952,6 +5953,148 @@ class SEPParser:
 
         return data
 
+    SEP_23_SPECIFICATION_SECTION = re.compile(
+        r'^##[ \t]+Specification[ \t]*\n(.*?)(?=^##[ \t]|\Z)', re.MULTILINE | re.DOTALL
+    )
+    # SEP-23 version byte table: the header row names the 'Key type' and
+    # 'First char' columns, a separator row follows, then one row per type.
+    SEP_23_TYPE_TABLE = re.compile(
+        r'^\|(?=[^\n]*\bKey type\b)(?=[^\n]*\bFirst char\b)([^\n]*)\|[ \t]*\n'
+        r'\|[-:| \t]+\|[ \t]*\n'
+        r'((?:\|[^\n]*(?:\n|\Z))*)',
+        re.MULTILINE
+    )
+    SEP_23_TESTS_SECTION = re.compile(
+        r'^##[ \t]+Tests[ \t]*\n(.*?)(?=^##[ \t]|\Z)', re.MULTILINE | re.DOTALL
+    )
+    # A numbered test case at column 0, up to the next one.
+    SEP_23_TEST_CASE = re.compile(
+        r'^[0-9]+\.[ \t]+(.*?)(?=^[0-9]+\.[ \t]|\Z)', re.MULTILINE | re.DOTALL
+    )
+    # The vector is on the '- Strkey' line or on the line after '- Strkey:'.
+    SEP_23_VECTOR = re.compile(r'- Strkey:?\s*`([^`]+)`')
+
+    def parse_sep_23(self) -> Dict[str, Any]:
+        """
+        Parse SEP-23 (Strkeys) from the fetched markdown document.
+
+        Each row of the version byte table in Specification is a key type, and
+        each numbered case of the valid and invalid lists in Tests is a test
+        vector, so the counts follow the document.
+
+        Raises:
+            ValueError: If a section, the table, or a list is missing or
+                empty, or a row or case does not parse.
+        """
+        specification = self.SEP_23_SPECIFICATION_SECTION.search(self.raw_content)
+        if not specification:
+            raise ValueError("SEP-23 document has no '## Specification' section")
+        key_types = self._parse_sep_23_key_types(specification.group(1))
+        tests = self.SEP_23_TESTS_SECTION.search(self.raw_content)
+        if not tests:
+            raise ValueError("SEP-23 document has no '## Tests' section")
+        vectors = (
+            self._parse_sep_23_vectors(tests.group(1), 'Valid test cases', 'valid')
+            + self._parse_sep_23_vectors(tests.group(1), 'Invalid test cases', 'invalid')
+        )
+
+        print(f"{Colors.GREEN}  ✓ Found {len(key_types)} key types and "
+              f"{len(vectors)} test vectors{Colors.END}")
+        return {
+            'sep_number': self.sep_number,
+            'preamble': self.extract_preamble(),
+            'summary': self.extract_summary(),
+            'sections': [
+                {'title': 'Key types', 'key': 'key_types', 'strkey_type_features': key_types},
+                {'title': 'Test vectors quoted in the StrKey unit test files',
+                 'key': 'test_vectors_quoted_in_the_strkey_unit_test_files',
+                 'strkey_vector_features': vectors},
+            ]
+        }
+
+    def _parse_sep_23_key_types(self, specification: str) -> List[Dict[str, Any]]:
+        """
+        Read one key type per row of the version byte table in the text of the
+        Specification section. The base value is evaluated to an integer, so
+        the analyzer compares values, not spelling.
+        """
+        table = self.SEP_23_TYPE_TABLE.search(specification)
+        if not table:
+            raise ValueError(
+                "SEP-23 Specification section has no version byte table "
+                "with 'Key type' and 'First char' columns"
+            )
+
+        header = [cell.strip() for cell in table.group(1).split('|')]
+        columns = {}
+        for label in ('Key type', 'Base value', 'First char'):
+            if label not in header:
+                raise ValueError(f"SEP-23 version byte table has no '{label}' column")
+            columns[label] = header.index(label)
+
+        key_types = []
+        for row in table.group(2).splitlines():
+            cells = [cell.strip() for cell in row.strip().strip('|').split('|')]
+            if len(cells) != len(header):
+                raise ValueError(
+                    f"SEP-23 version byte table row {row!r} has {len(cells)} cells, "
+                    f"the header {len(header)}"
+                )
+            name = cells[columns['Key type']]
+            base_text = ' '.join(cells[columns['Base value']].split())
+            first_char = cells[columns['First char']]
+            try:
+                base_value = evaluate_shift_expression(base_text)
+            except ValueError as e:
+                raise ValueError(f"SEP-23 version byte table row {row!r}: {e}") from e
+
+            key_types.append({
+                'name': name, 'required': True, 'base_value': base_value, 'first_char': first_char,
+                'description': f'Base value {base_text} ({base_value}), first character {first_char}',
+            })
+
+        if not key_types:
+            raise ValueError("SEP-23 version byte table has no rows")
+        return key_types
+
+    def _parse_sep_23_vectors(self, tests: str, subsection: str,
+                              prefix: str) -> List[Dict[str, Any]]:
+        """
+        Read one test vector per numbered case of the '### <subsection>' list
+        in the text of the Tests section.
+
+        Items are named '<prefix>_01', '<prefix>_02', ... in document order;
+        the zero padding keeps that order when the matrix sorts rows by name.
+        The description is the case title up to the first blank line, with
+        line breaks collapsed.
+        """
+        pattern = rf'^###[ \t]+{re.escape(subsection)}[ \t]*\n(.*?)(?=^#{{2,3}}[ \t]|\Z)'
+        match = re.search(pattern, tests, re.MULTILINE | re.DOTALL)
+        if not match:
+            raise ValueError(f"SEP-23 Tests section has no '### {subsection}' subsection")
+
+        # The paragraph starting 'You can paste' ends the case list; the C
+        # array after it repeats the invalid keys.
+        cases_text = re.split(r'^You can paste', match.group(1), maxsplit=1,
+                              flags=re.MULTILINE)[0]
+
+        vectors = []
+        for index, case in enumerate(self.SEP_23_TEST_CASE.finditer(cases_text), start=1):
+            body = case.group(1)
+            title = ' '.join(re.split(r'\n[ \t]*\n', body, maxsplit=1)[0].split())
+            found = self.SEP_23_VECTOR.findall(body)
+            if len(found) != 1:
+                raise ValueError(
+                    f"SEP-23 case {index} of '{subsection}' ({title!r}) carries "
+                    f"{len(found)} Strkey vectors, expected 1"
+                )
+            vectors.append({'name': f'{prefix}_{index:02d}', 'description': title,
+                            'required': True, 'vector': found[0]})
+
+        if not vectors:
+            raise ValueError(f"SEP-23 '### {subsection}' lists no test cases")
+        return vectors
+
     def parse_sep_29(self) -> Dict[str, Any]:
         """
         Build the SEP-29 (Account Memo Requirements) definition.
@@ -6272,6 +6415,8 @@ class SEPParser:
             self.parsed_data = self.parse_sep_10()
         elif self.sep_number == '0012':
             self.parsed_data = self.parse_sep_12()
+        elif self.sep_number == '0023':
+            self.parsed_data = self.parse_sep_23()
         elif self.sep_number == '0024':
             self.parsed_data = self.parse_sep_24()
         elif self.sep_number == '0029':

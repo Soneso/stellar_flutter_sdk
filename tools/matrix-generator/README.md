@@ -6,7 +6,7 @@ It analyzes three areas:
 
 - **Horizon API** -- all REST endpoints defined in `stellar-horizon`
 - **Soroban RPC** -- all JSON-RPC methods defined in `stellar-rpc`, with the response structs from `go-stellar-sdk`
-- **SEPs** -- 20 Stellar Ecosystem Proposals (SEP-01 through SEP-53)
+- **SEPs** -- 21 Stellar Ecosystem Proposals (SEP-01 through SEP-53)
 
 ## Requirements
 
@@ -17,13 +17,13 @@ It analyzes three areas:
 
 Horizon sources are fetched from GitHub at the tag of the latest release. RPC sources are fetched at the tag of the newest stable release: the highest `vX.Y.Z` tag with `draft` and `prerelease` false, across every page of the release list. `--rpc-version` must name a non-draft `v*` server release. The local clones back the `--local` modes below, and `run_analysis.py` checks for them up front: `stellar-horizon` must carry `internal/httpx/router.go`.
 
-A pipeline exits non-zero and writes no matrix when `pubspec.yaml` has no readable version, when no RPC release qualifies, or when the response struct of any RPC method cannot be fetched or yields no fields. `run_analysis.py` stops at the first failed step.
+A pipeline exits non-zero and writes no matrix when `pubspec.yaml` has no readable version, when no RPC release qualifies, or when the response struct of any RPC method cannot be fetched or yields no fields. The SEP-23 pipeline does the same when the specification lacks its Specification or Tests section, or when the version byte table or a test case list is missing or empty. It also stops when a file it reads is missing or unreadable, or when a key type has no entry in its name table. A class, `VersionByte` member, constant, or `StrKey` function it maps that is absent stops it too, and so does a version byte value in a form it cannot evaluate. `run_analysis.py` stops at the first failed step.
 
 Optional: set `GITHUB_TOKEN` for higher API rate limits (5,000 vs 60 requests/hour).
 
 ## Quick Start
 
-Run all 59 analysis steps at once:
+Run all 65 analysis steps at once:
 
 ```bash
 python3 tools/matrix-generator/run_analysis.py
@@ -88,7 +88,7 @@ python3 tools/matrix-generator/sep/generate_sep_comparison.py 0010
 
 ```
 tools/matrix-generator/
-├── run_analysis.py              # Master orchestrator (runs all 59 steps)
+├── run_analysis.py              # Master orchestrator (runs all 65 steps)
 ├── common.py                    # Shared utilities (colors, paths, version)
 ├── github_fetcher.py            # GitHub API client (release + source fetching)
 ├── sdk_analyzer.py              # Dart source file analyzer (used by Horizon)
@@ -137,7 +137,7 @@ Each stage carries a dispatch table as well as the code it dispatches to, so a n
 
 1. Add the SEP number to `KNOWN_SEPS` in `sep/sep_parser.py`
 2. Add a `parse_sep_NN()` in `sep/sep_parser.py` if the spec has non-standard structure, plus its branch in `SEPParser.parse()`
-3. Add an `analyze_sep_NN()` and a `map_sep_NN_features()` in `sep/sep_analyzer.py`, plus the branch in `SEPAnalyzer.analyze()`. A SEP with no `lib/src/sep/<n>/` directory bypasses `find_sep_files()` and names its own paths, as SEP-29, SEP-46, SEP-51 and SEP-53 do
+3. Add an `analyze_sep_NN()` and a `map_sep_NN_features()` in `sep/sep_analyzer.py`, plus the branch in `SEPAnalyzer.analyze()`. A SEP with no `lib/src/sep/<n>/` directory bypasses `find_sep_files()` and names its own paths, as SEP-23, SEP-29, SEP-46, SEP-51 and SEP-53 do. SEP-23 also reads its test vectors from `test/unit/strkey_test.dart`
 4. Add a `_compare_sep_NN_features()` in `sep/generate_sep_comparison.py`, plus its branch in `compare_fields()`. That dispatch keys on the shape of `implemented_features`, not on the SEP number, so the branch must test a key combination no other SEP produces
 5. Add the three script entries to `self.scripts` in `run_analysis.py`
 6. Run `python3 tools/matrix-generator/run_analysis.py` to verify

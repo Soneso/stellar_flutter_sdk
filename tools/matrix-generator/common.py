@@ -62,6 +62,31 @@ def get_sdk_version() -> str:
     return match.group(1)
 
 
+# Decimal or hexadecimal digits, with Dart's '_' separators between digits.
+_DECIMAL = r'[0-9](?:_*[0-9])*'
+_SHIFT_EXPRESSION = re.compile(
+    rf'\s*(0[xX][0-9a-fA-F](?:_*[0-9a-fA-F])*|{_DECIMAL})\s*(?:<<\s*({_DECIMAL})\s*)?'
+)
+
+
+def evaluate_shift_expression(expression: str) -> int:
+    """
+    Evaluate a decimal or hexadecimal literal, or a left shift of one by a
+    decimal count, such as '6 << 3'; '_' may separate digits. SEP-23 prints
+    its base values this way and the SDK declares its version bytes the same
+    way.
+
+    Raises:
+        ValueError: If the expression has any other form.
+    """
+    match = _SHIFT_EXPRESSION.fullmatch(expression)
+    if not match:
+        raise ValueError(f"Not an integer or shift expression: {expression!r}")
+    literal, shift = (group.replace('_', '') if group else group for group in match.groups())
+    value = int(literal, 16) if literal[:2].lower() == '0x' else int(literal)
+    return value << int(shift) if shift is not None else value
+
+
 class ProgressTracker:
     """Track and display progress of pipeline steps."""
 

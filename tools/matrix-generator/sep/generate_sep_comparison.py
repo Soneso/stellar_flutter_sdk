@@ -195,6 +195,9 @@ class SEPComparator:
             elif 'memo_required' in features:
                 # SEP-29 style: memo required check capability comparison
                 self._compare_sep_29_features()
+            elif 'strkey_type_features' in features and 'strkey_vector_features' in features:
+                # SEP-23 style: strkey type and test vector comparison
+                self._compare_sep_23_features()
             else:
                 # SEP-02 style: API feature comparison
                 self._compare_sep_02_features()
@@ -1427,6 +1430,38 @@ class SEPComparator:
                 self.comparisons.append(comparison)
 
         print(f"{Colors.GREEN}✓ Compared {len(self.comparisons)} XDR-JSON features{Colors.END}")
+
+    def _compare_sep_23_features(self) -> None:
+        """Compare SEP-23 style features (Strkeys)"""
+        implemented_features = self.sdk_data.get('implemented_features', {})
+
+        # Key types from the version byte table and the test vectors of the
+        # specification's Tests section.
+        section_titles = {
+            'strkey_type_features': 'Key types',
+            'strkey_vector_features': 'Test vectors quoted in the StrKey unit test files',
+        }
+
+        for category_key, category_title in section_titles.items():
+            category_features = implemented_features.get(category_key, {})
+
+            for feature_name, feature_info in category_features.items():
+                comparison = FieldComparison(
+                    section=category_title,
+                    field_name=feature_name,
+                    required=feature_info.get('required', False),
+                    implemented=feature_info.get('implemented', False),
+                    sdk_property=feature_info.get('sdk_method'),
+                    description=feature_info.get('description', ''),
+                    priority=self.determine_field_priority(
+                        feature_name,
+                        feature_info.get('required', False),
+                        category_key
+                    ) if not feature_info.get('implemented') else None
+                )
+                self.comparisons.append(comparison)
+
+        print(f"{Colors.GREEN}✓ Compared {len(self.comparisons)} strkey features{Colors.END}")
 
     def _compare_sep_29_features(self) -> None:
         """Compare SEP-29 style features (Account Memo Requirements)"""
