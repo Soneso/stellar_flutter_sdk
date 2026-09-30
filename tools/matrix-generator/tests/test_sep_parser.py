@@ -1,13 +1,13 @@
 """Tests for SEP preamble handling in sep/sep_parser.py.
 
-The fixtures are copies of ecosystem/sep-0029.md and ecosystem/sep-0053.md
-from stellar/stellar-protocol master.
+The fixtures are copies of ecosystem/sep-0023.md, ecosystem/sep-0029.md and
+ecosystem/sep-0053.md from stellar/stellar-protocol master.
 """
 
 import io
 import sys
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest import mock
 
@@ -118,6 +118,18 @@ class UniformFetchTest(unittest.TestCase):
                 self.assertEqual(fetch.call_args.args[0].sep_number, sep_number)
                 saved = save.call_args.args[0].parsed_data
                 self.assertEqual(saved['preamble']['version'], expected_version)
+
+    def test_main_writes_nothing_when_sep_0023_does_not_parse(self):
+        def fetch_without_tests(parser):
+            parser.raw_content = replace_once(load_fixture('0023'), '## Tests\n', '## Test data\n')
+            return True
+
+        with redirect_stderr(io.StringIO()):
+            exit_code, fetch, save = self.run_main('0023', fetch_without_tests)
+
+        self.assertEqual(exit_code, 1)
+        fetch.assert_called_once()
+        save.assert_not_called()
 
     def test_main_fails_when_the_fetch_fails(self):
         for sep_number in ('0029', '0053'):
