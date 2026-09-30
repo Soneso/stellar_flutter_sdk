@@ -54,10 +54,6 @@ class SEPParser:
         '0053': 'Sign and Verify Messages',
     }
 
-    # SEPs defined entirely from an enumerated capability set rather than a
-    # fetched markdown document (specifications with no endpoints).
-    HARDCODED_SEPS = {'0029', '0053'}
-
     def __init__(self, sep_number: str):
         """
         Initialize SEP parser for a specific SEP number.
@@ -5961,21 +5957,15 @@ class SEPParser:
         Build the SEP-29 (Account Memo Requirements) definition.
 
         SEP-29 defines a client-side check with no HTTP endpoints of its own, so
-        the capability set is enumerated here rather than parsed from a fetched
-        markdown document. Preamble, summary, and source URL are set explicitly
-        from the specification.
+        the capability set and the summary are enumerated here. The preamble is
+        read from the fetched markdown document.
 
         Returns:
             Structured SEP-29 data with memo required capability fields
         """
         data = {
             'sep_number': self.sep_number,
-            'preamble': {
-                'sep': '0029',
-                'title': 'Account Memo Requirements',
-                'status': 'Active',
-                'version': '0.5.0',
-            },
+            'preamble': self.extract_preamble(),
             'summary': (
                 'An account signals that incoming payments must carry a memo by '
                 'setting the data entry "config.memo_required" to the value "1". '
@@ -6136,21 +6126,15 @@ class SEPParser:
         Build the SEP-53 (Sign and Verify Messages) definition.
 
         SEP-53 is a cryptographic specification with no HTTP endpoints, so the
-        capability set is enumerated here rather than parsed from a fetched
-        markdown document. Preamble, summary, and source URL are set explicitly
-        from the specification.
+        capability set and the summary are enumerated here. The preamble is
+        read from the fetched markdown document.
 
         Returns:
             Structured SEP-53 data with message signing capability fields
         """
         data = {
             'sep_number': self.sep_number,
-            'preamble': {
-                'sep': '0053',
-                'title': 'Sign and Verify Messages',
-                'status': 'Final Comment Period (Final)',
-                'version': '0.0.1',
-            },
+            'preamble': self.extract_preamble(),
             'summary': (
                 'A canonical method for signing and verifying arbitrary messages '
                 'using Stellar key pairs. Messages are prefixed with '
@@ -6262,7 +6246,7 @@ class SEPParser:
         Returns:
             Parsed SEP data dictionary
         """
-        if not self.raw_content and self.sep_number not in self.HARDCODED_SEPS:
+        if not self.raw_content:
             raise ValueError("No content to parse. Call fetch_sep_markdown() first.")
 
         print(f"\n{Colors.CYAN}Parsing SEP-{self.sep_number}...{Colors.END}")
@@ -6392,12 +6376,9 @@ def main():
     parser = SEPParser(sep_number)
 
     try:
-        # Fetch SEP markdown, except for SEPs defined from an enumerated
-        # capability set (specifications with no endpoints).
-        if parser.sep_number not in SEPParser.HARDCODED_SEPS:
-            if not parser.fetch_sep_markdown():
-                print(f"\n{Colors.RED}Failed to fetch SEP-{sep_number}{Colors.END}")
-                return 1
+        if not parser.fetch_sep_markdown():
+            print(f"\n{Colors.RED}Failed to fetch SEP-{sep_number}{Colors.END}")
+            return 1
 
         # Parse content
         parser.parse()

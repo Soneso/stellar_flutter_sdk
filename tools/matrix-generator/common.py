@@ -40,16 +40,26 @@ def get_sdk_version() -> str:
     """
     Extract SDK version from pubspec.yaml.
 
+    Every matrix header prints this value, so a pubspec.yaml that is missing,
+    unreadable, or without a version field raises.
+
     Returns:
-        Version string (e.g. '3.0.3') or 'Unknown' if not found.
+        Version string (e.g. '3.0.3').
+
+    Raises:
+        RuntimeError: If pubspec.yaml cannot be read or carries no version.
     """
     pubspec_path = SDK_ROOT / 'pubspec.yaml'
-    if pubspec_path.exists():
+    try:
         content = pubspec_path.read_text(encoding='utf-8')
-        match = re.search(r'version:\s*([0-9.]+)', content)
-        if match:
-            return match.group(1)
-    return 'Unknown'
+    except (OSError, UnicodeDecodeError) as e:
+        raise RuntimeError(
+            f"Cannot read the SDK version from {pubspec_path}: {e}"
+        ) from e
+    match = re.search(r'version:\s*([0-9.]+)', content)
+    if not match:
+        raise RuntimeError(f"No version field in {pubspec_path}")
+    return match.group(1)
 
 
 class ProgressTracker:

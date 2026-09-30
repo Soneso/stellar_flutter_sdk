@@ -148,7 +148,7 @@ class AnalysisOrchestrator:
 
     def run_all(self) -> bool:
         """
-        Run all analysis scripts in sequence
+        Run all analysis scripts in sequence, stopping at the first failure
 
         Returns:
             True if all scripts succeeded, False otherwise
@@ -178,11 +178,8 @@ class AnalysisOrchestrator:
                 print(f"{Colors.RED}✗ {description} failed{Colors.END}")
                 print(f"{Colors.RED}{output}{Colors.END}")
                 all_success = False
-
-                # Stop on first failure for critical pipeline scripts
-                if script_name in ['horizon/run_horizon_analysis.py', 'rpc/run_rpc_analysis.py']:
-                    print(f"\n{Colors.YELLOW}Stopping analysis due to critical script failure{Colors.END}")
-                    break
+                # Later stages read the files earlier stages write.
+                break
 
         return all_success
 
