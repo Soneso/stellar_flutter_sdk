@@ -280,12 +280,44 @@ class RPCMethodParser:
         Args:
             method_name: The camelCase method name (e.g., "getLatestLedger")
             response_content: Go source code containing the response struct
+
+        Raises:
+            ValueError: If the content holds no response struct with a
+                JSON-tagged field
         """
         if method_name not in self.methods:
             return
 
         response_fields = self.parse_response_fields(response_content)
+        if not response_fields:
+            raise ValueError(f"No response fields parsed for {method_name}")
         self.methods[method_name]["response_fields"] = response_fields
+
+    def add_response_fields_to_all_methods(self, response_files: Dict[str, str]) -> None:
+        """
+        Parse and add response fields to every parsed method.
+
+        The Response Field Coverage table covers every method, so each parsed
+        method needs its response file.
+
+        Args:
+            response_files: Mapping of camelCase method name to the Go source
+                containing its response struct
+
+        Raises:
+            ValueError: If a parsed method has no response file (the message
+                lists every such method) or a response file yields no fields
+        """
+        method_names = self.get_method_names()
+        missing = [name for name in method_names if name not in response_files]
+        if missing:
+            raise ValueError(
+                f"No response struct file for {len(missing)} of the "
+                f"{len(method_names)} parsed RPC methods: {', '.join(missing)}"
+            )
+
+        for method_name in method_names:
+            self.add_response_fields_to_method(method_name, response_files[method_name])
 
     def to_json(self) -> Dict[str, Any]:
         """

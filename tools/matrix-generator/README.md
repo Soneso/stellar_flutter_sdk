@@ -15,7 +15,9 @@ It analyzes three areas:
 - Internet access (fetches specs from GitHub and stellar.org)
 - Local clones of `stellar-horizon` and `stellar-rpc` as siblings of the SDK root
 
-Horizon and RPC sources are fetched from GitHub at the tag of the latest release. The local clones back the `--local` modes below, and `run_analysis.py` checks for them up front: `stellar-horizon` must carry `internal/httpx/router.go`.
+Horizon sources are fetched from GitHub at the tag of the latest release. RPC sources are fetched at the tag of the newest stable release: the highest `vX.Y.Z` tag with `draft` and `prerelease` false, across every page of the release list. `--rpc-version` must name a non-draft `v*` server release. The local clones back the `--local` modes below, and `run_analysis.py` checks for them up front: `stellar-horizon` must carry `internal/httpx/router.go`.
+
+A pipeline exits non-zero and writes no matrix when `pubspec.yaml` has no readable version, when no RPC release qualifies, or when the response struct of any RPC method cannot be fetched or yields no fields. `run_analysis.py` stops at the first failed step.
 
 Optional: set `GITHUB_TOKEN` for higher API rate limits (5,000 vs 60 requests/hour).
 
@@ -60,8 +62,8 @@ python3 tools/matrix-generator/horizon/run_horizon_analysis.py --local /path/to/
 ```bash
 python3 tools/matrix-generator/rpc/run_rpc_analysis.py
 
-# Use a specific RPC version
-python3 tools/matrix-generator/rpc/run_rpc_analysis.py --rpc-version v22.0.0
+# Cite a specific RPC release
+python3 tools/matrix-generator/rpc/run_rpc_analysis.py --rpc-version v28.0.1
 
 # Use a local jsonrpc.go file
 python3 tools/matrix-generator/rpc/run_rpc_analysis.py --local /path/to/jsonrpc.go
@@ -102,6 +104,7 @@ tools/matrix-generator/
 │   ├── sep_parser.py            # Fetches and parses SEP specs from stellar.org
 │   ├── sep_analyzer.py          # Analyzes SDK source for SEP implementation
 │   └── generate_sep_comparison.py
+├── tests/                       # unittest suite (offline, network calls patched)
 └── data/                        # Intermediate JSON (gitignored)
     ├── horizon/
     ├── rpc/
@@ -117,6 +120,16 @@ Each pipeline follows the same pattern:
 3. **Compare** the two and generate a Markdown compatibility matrix with coverage percentages
 
 Intermediate JSON files are written to `data/` for debugging. Only the final Markdown reports in `compatibility/` are committed.
+
+## Tests
+
+Run from the repository root:
+
+```bash
+python3 -m unittest discover -s tools/matrix-generator/tests
+```
+
+The tests patch every network call. The SEP fixtures in `tests/fixtures/` are copies of the upstream SEP markdown.
 
 ## Adding a New SEP
 

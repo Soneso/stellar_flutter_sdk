@@ -3,7 +3,7 @@
 Soroban RPC Compatibility Matrix Generator - Complete Automation Pipeline
 
 This script automates the complete Soroban RPC compatibility analysis workflow:
-1. Fetches the latest RPC release from GitHub
+1. Fetches the newest stable RPC release from GitHub
 2. Downloads and parses the jsonrpc.go source code
 3. Analyzes the Flutter SDK Soroban implementation
 4. Generates comparison reports and compatibility matrices
@@ -17,7 +17,7 @@ Usage:
     python run_rpc_analysis.py
 
     # Use specific RPC version
-    python run_rpc_analysis.py --rpc-version v22.0.0
+    python run_rpc_analysis.py --rpc-version v28.0.1
 
     # Use local jsonrpc.go (for testing/development)
     python run_rpc_analysis.py --local /path/to/jsonrpc.go
@@ -41,6 +41,7 @@ try:
     from common import ProgressTracker
     from github_fetcher import (
         get_latest_rpc_release,
+        get_rpc_release,
         fetch_rpc_jsonrpc_source,
         fetch_all_rpc_response_files,
         GitHubFetchError,
@@ -72,7 +73,7 @@ class RPCAnalysisPipeline:
         Initialize the pipeline.
 
         Args:
-            rpc_version: Specific RPC version tag (e.g., 'v22.0.0'). None = latest
+            rpc_version: Specific RPC version tag (e.g., 'v22.0.0'). None = newest stable release
             local_jsonrpc_path: Path to local jsonrpc.go file. None = fetch from GitHub
             verbose: Enable verbose output
         """
@@ -172,26 +173,25 @@ class RPCAnalysisPipeline:
                     self.progress.log("  Tip: Set GITHUB_TOKEN for higher limits", force=True)
 
                 if self.rpc_version:
-                    # Use specific version
-                    self.progress.log(f"Fetching RPC version: {self.rpc_version}", force=True)
-                    self.jsonrpc_source = fetch_rpc_jsonrpc_source(self.rpc_version)
-                    self.release_info = {
-                        'version': self.rpc_version,
-                        'published_at': 'unknown',
-                        'html_url': f'https://github.com/stellar/stellar-rpc/releases/tag/{self.rpc_version}',
-                        'source': 'GitHub'
-                    }
+                    self.progress.log(f"Fetching RPC release: {self.rpc_version}", force=True)
+                    release = get_rpc_release(self.rpc_version)
                 else:
-                    # Fetch latest release
-                    self.progress.log("Fetching latest RPC release...", force=True)
+                    self.progress.log("Fetching newest stable RPC release...", force=True)
                     release = get_latest_rpc_release()
-                    self.jsonrpc_source = fetch_rpc_jsonrpc_source(release.version)
-                    self.release_info = {
-                        'version': release.version,
-                        'published_at': release.published_at.strftime('%Y-%m-%d'),
-                        'html_url': release.html_url,
-                        'source': 'GitHub'
-                    }
+
+                self.jsonrpc_source = fetch_rpc_jsonrpc_source(release.version)
+                # Version, release date, and source URL all come from the one
+                # release record; a record without published_at prints as
+                # "(released unknown)".
+                self.release_info = {
+                    'version': release.version,
+                    'published_at': (
+                        release.published_at.strftime('%Y-%m-%d')
+                        if release.published_at is not None else 'unknown'
+                    ),
+                    'html_url': release.html_url,
+                    'source': 'GitHub'
+                }
 
                 self.progress.log(f"Version: {self.release_info['version']}", force=True)
                 self.progress.log(f"Published: {self.release_info['published_at']}", force=True)
@@ -234,20 +234,7 @@ class RPCAnalysisPipeline:
 
                 self.progress.log(f"Found {len(response_files)} response struct files", force=True)
 
-                # Every method has a response struct in go-stellar-sdk. Zero
-                # fetched files means the source resolution is broken (not that
-                # the methods have no responses) — fail loudly instead of
-                # emitting a matrix with an empty Response Field Coverage table.
-                if method_names and not response_files:
-                    raise GitHubFetchError(
-                        "No response struct files could be fetched for any of "
-                        f"the {len(method_names)} RPC methods; refusing to "
-                        "generate a matrix without response field data"
-                    )
-
-                # Parse response fields for each method
-                for method_name, response_content in response_files.items():
-                    parser.add_response_fields_to_method(method_name, response_content)
+                parser.add_response_fields_to_all_methods(response_files)
 
             except GitHubFetchError as e:
                 self.progress.log(f"Error: Could not fetch response files: {e}", force=True)
@@ -355,11 +342,11 @@ def main() -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Run full automated analysis (fetch latest RPC release)
+  # Run full automated analysis (fetch the newest stable RPC release)
   %(prog)s
 
   # Use specific RPC version
-  %(prog)s --rpc-version v22.0.0
+  %(prog)s --rpc-version v28.0.1
 
   # Use local jsonrpc.go file (for testing/development)
   %(prog)s --local /path/to/jsonrpc.go
@@ -368,7 +355,7 @@ Examples:
   %(prog)s --verbose
 
   # Combine options
-  %(prog)s --rpc-version v21.5.0 --verbose
+  %(prog)s --rpc-version v28.0.1 --verbose
         """
     )
 
@@ -376,7 +363,8 @@ Examples:
         '--rpc-version',
         type=str,
         metavar='VERSION',
-        help='Specific RPC version tag (e.g., v22.0.0). Default: latest release'
+        help='RPC release tag to cite (e.g., v22.0.0); must name a non-draft '
+             'v* server release. Default: newest stable release'
     )
 
     parser.add_argument(
