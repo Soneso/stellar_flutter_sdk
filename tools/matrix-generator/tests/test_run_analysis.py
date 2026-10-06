@@ -79,7 +79,7 @@ class FailedStageStopsTheRunTest(unittest.TestCase):
         return exit_code, invoked, matrix_before, matrix.read_bytes()
 
     def test_failed_parser_stage_stops_the_run(self):
-        all_steps = [script for script, _, _ in run_analysis.AnalysisOrchestrator().scripts]
+        all_steps = [script for script, _ in run_analysis.AnalysisOrchestrator().scripts]
 
         for sep_number in ('0029', '0053'):
             with self.subTest(sep=sep_number):

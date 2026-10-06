@@ -7,22 +7,18 @@ methods, parameters, and streaming capabilities. Outputs structured JSON data
 for compatibility analysis.
 
 This parser handles chi router's nested Route() blocks and complex routing patterns.
+Pipeline module of horizon/run_horizon_analysis.py, which supplies the router
+source and the release metadata.
 
 Author: Stellar Flutter SDK Team
 License: Apache-2.0
 """
 
-import argparse
 import json
 import re
-import sys
-import traceback
 from datetime import datetime
 from pathlib import Path
-
-# Add parent dir to path for shared modules
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from typing import Dict, List, Set, Tuple, Optional
+from typing import Dict, List, Set, Tuple
 
 
 class HorizonEndpoint:
@@ -92,42 +88,20 @@ class HorizonRouterParser:
         "tx": {"description": "Transaction envelope XDR"},
     }
 
-    def __init__(self, router_path: Optional[str] = None, version_info: Optional[Dict] = None):
+    def __init__(self, version_info: Dict[str, str]):
         """
-        Initialize parser with path to router.go
+        Initialize the parser.
 
         Args:
-            router_path: Path to Horizon router.go file (optional if using parse_from_content)
-            version_info: Optional version metadata dict with keys:
-                - horizon_version: Version tag (e.g., "v2.30.0")
+            version_info: Version metadata of the Horizon release:
+                - horizon_version: Version tag (e.g., "v28.0.1")
                 - published_at: Release publication date
                 - release_url: GitHub release URL
         """
-        self.router_path = Path(router_path) if router_path else None
-        self.version_info = version_info or {}
+        self.version_info = version_info
         self.endpoints: List[HorizonEndpoint] = []
         self.categories: Dict[str, List[HorizonEndpoint]] = {}
         self.seen_endpoints: Set[Tuple[str, str]] = set()  # Track (path, method) to avoid duplicates
-
-    def parse(self) -> None:
-        """Parse the router.go file and extract endpoints"""
-        if not self.router_path:
-            raise ValueError("router_path must be provided when using parse() method")
-
-        print(f"Parsing Horizon router: {self.router_path}")
-
-        if not self.router_path.exists():
-            raise FileNotFoundError(f"Router file not found: {self.router_path}")
-
-        content = self.router_path.read_text()
-
-        # Extract route definitions from addRoutes method
-        self._parse_add_routes_method(content)
-
-        # Organize by category
-        self._organize_by_category()
-
-        print(f"Extracted {len(self.endpoints)} endpoints across {len(self.categories)} categories")
 
     def parse_from_content(self, content: str) -> None:
         """
@@ -594,20 +568,14 @@ class HorizonRouterParser:
     def to_json(self) -> Dict:
         """Convert parsed data to JSON structure"""
         metadata = {
-            "source": str(self.router_path) if self.router_path else "GitHub",
+            "source": "GitHub",
             "generated_at": datetime.now().isoformat(),
             "total_endpoints": len(self.endpoints),
-            "total_categories": len(self.categories)
+            "total_categories": len(self.categories),
+            "horizon_version": self.version_info["horizon_version"],
+            "horizon_release_date": self.version_info["published_at"],
+            "horizon_release_url": self.version_info["release_url"],
         }
-
-        # Add version information if available
-        if self.version_info:
-            if "horizon_version" in self.version_info:
-                metadata["horizon_version"] = self.version_info["horizon_version"]
-            if "published_at" in self.version_info:
-                metadata["horizon_release_date"] = self.version_info["published_at"]
-            if "release_url" in self.version_info:
-                metadata["horizon_release_url"] = self.version_info["release_url"]
 
         return {
             "metadata": metadata,
@@ -632,110 +600,3 @@ class HorizonRouterParser:
             json.dump(data, f, indent=2, ensure_ascii=False)
 
         print(f"Saved endpoint data to: {output_path}")
-
-
-def parse_from_local(router_path: Path, output_path: Path) -> int:
-    """
-    Parse from local file (backwards compatibility mode)
-
-    Args:
-        router_path: Path to local router.go file
-        output_path: Path to output JSON file
-
-    Returns:
-        Exit code (0 for success, 1 for failure)
-    """
-    # Verify input file exists
-    if not router_path.exists():
-        print(f"ERROR: Router file not found: {router_path}")
-        print("Please ensure the stellar-horizon repository is cloned locally.")
-        return 1
-
-    try:
-        # Parse router
-        parser = HorizonRouterParser(str(router_path))
-        parser.parse()
-
-        # Save results
-        parser.save_json(str(output_path))
-
-        # Print summary
-        print()
-        print("=" * 70)
-        print("SUMMARY")
-        print("=" * 70)
-        print(f"Total Endpoints: {len(parser.endpoints)}")
-        print(f"Total Categories: {len(parser.categories)}")
-        print()
-        print("Endpoints by Category:")
-        for category, endpoints in sorted(parser.categories.items()):
-            print(f"  {category:25s}: {len(endpoints):3d} endpoints")
-        print()
-        print("=" * 70)
-        print("Parsing completed successfully!")
-        print("=" * 70)
-
-        return 0
-
-    except Exception as e:
-        print(f"\nERROR: {str(e)}")
-        traceback.print_exc()
-        return 1
-
-
-def main():
-    """Main entry point"""
-    from common import SDK_ROOT
-
-    parser = argparse.ArgumentParser(
-        description="Parse Horizon API endpoints from router.go",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  # Parse from local file (default, expects stellar-horizon as sibling of SDK)
-  %(prog)s
-
-  # Parse local file with custom paths
-  %(prog)s --local /path/to/router.go --output /path/to/output.json
-        """
-    )
-
-    parser.add_argument(
-        '--local',
-        type=str,
-        help='Path to local router.go file (default: ../stellar-horizon relative to SDK root)'
-    )
-
-    parser.add_argument(
-        '--output',
-        type=str,
-        help='Path to output JSON file'
-    )
-
-    args = parser.parse_args()
-
-    print("=" * 70)
-    print("Horizon API Endpoint Parser")
-    print("=" * 70)
-    print()
-
-    # Determine output path
-    if args.output:
-        output_path = Path(args.output)
-    else:
-        output_path = Path(__file__).parent.parent / "data" / "horizon" / "horizon_endpoints.json"
-
-    print("Mode: Local file")
-    print()
-
-    # Determine router path
-    if args.local:
-        router_path = Path(args.local)
-    else:
-        router_path = SDK_ROOT.parent / "stellar-horizon" / "internal" / "httpx" / "router.go"
-
-    return parse_from_local(router_path, output_path)
-
-
-if __name__ == '__main__':
-    sys.exit(main())

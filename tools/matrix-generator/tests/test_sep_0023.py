@@ -479,7 +479,7 @@ class Sep0023MatrixTest(unittest.TestCase):
         self.assertIn('**Total Coverage:** 100.0% (32/32 fields)', lines)
 
     def test_run_analysis_runs_sep_0023_after_sep_0012(self):
-        steps = [script for script, _, _ in run_analysis.AnalysisOrchestrator().scripts]
+        steps = [script for script, _ in run_analysis.AnalysisOrchestrator().scripts]
         start = steps.index('sep/sep_parser.py 0023')
         self.assertEqual(steps[start - 1:start + 4], [
             'sep/generate_sep_comparison.py 0012', 'sep/sep_parser.py 0023',

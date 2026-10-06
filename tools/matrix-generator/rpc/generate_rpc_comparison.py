@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
 """
-Stellar RPC API vs Flutter SDK Soroban Comparison Generator
+Stellar RPC API vs Flutter SDK Soroban Comparison
 
-This script compares the Stellar RPC API methods with the Flutter SDK Soroban implementation
-and generates detailed comparison data including coverage statistics, gaps analysis,
-and prioritized recommendations.
+Pipeline module of rpc/run_rpc_analysis.py: analyzes the Flutter SDK Soroban
+implementation, compares it with the parsed RPC methods and writes the comparison
+data, coverage statistics and the markdown matrix.
 
 Author: Stellar Flutter SDK Team
 License: Apache-2.0
 """
 
-import json
 import re
 import sys
-import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Any
@@ -43,29 +41,11 @@ class Priority(Enum):
 
 
 @dataclass
-class ParameterComparison:
-    """Comparison data for method parameters"""
+class Coverage:
+    """Supported and missing names of a method's parameters or response fields"""
     total: int = 0
     supported: int = 0
     missing: List[str] = field(default_factory=list)
-
-    @property
-    def percentage(self) -> float:
-        """Calculate support percentage"""
-        return (self.supported / self.total * 100) if self.total > 0 else 0.0
-
-
-@dataclass
-class ResponseFieldComparison:
-    """Comparison data for response fields"""
-    total: int = 0
-    supported: int = 0
-    missing: List[str] = field(default_factory=list)
-
-    @property
-    def percentage(self) -> float:
-        """Calculate support percentage"""
-        return (self.supported / self.total * 100) if self.total > 0 else 0.0
 
 
 @dataclass
@@ -73,8 +53,8 @@ class MethodComparison:
     """Complete comparison data for a single RPC method"""
     rpc_method: str
     sdk_implementation: Dict[str, Any] = field(default_factory=dict)
-    parameters: Dict[str, ParameterComparison] = field(default_factory=dict)
-    response_fields: Optional[ResponseFieldComparison] = None
+    parameters: Dict[str, Coverage] = field(default_factory=dict)
+    response_fields: Optional[Coverage] = None
     status: str = SupportStatus.NOT_SUPPORTED.value
     notes: str = ""
     priority: str = Priority.MEDIUM.value
@@ -86,14 +66,14 @@ class MethodComparison:
             "sdk_implementation": self.sdk_implementation,
             "parameters": {
                 "required": {
-                    "total": self.parameters.get("required", ParameterComparison()).total,
-                    "supported": self.parameters.get("required", ParameterComparison()).supported,
-                    "missing": self.parameters.get("required", ParameterComparison()).missing,
+                    "total": self.parameters.get("required", Coverage()).total,
+                    "supported": self.parameters.get("required", Coverage()).supported,
+                    "missing": self.parameters.get("required", Coverage()).missing,
                 },
                 "optional": {
-                    "total": self.parameters.get("optional", ParameterComparison()).total,
-                    "supported": self.parameters.get("optional", ParameterComparison()).supported,
-                    "missing": self.parameters.get("optional", ParameterComparison()).missing,
+                    "total": self.parameters.get("optional", Coverage()).total,
+                    "supported": self.parameters.get("optional", Coverage()).supported,
+                    "missing": self.parameters.get("optional", Coverage()).missing,
                 }
             },
             "status": self.status,
@@ -110,69 +90,6 @@ class MethodComparison:
             }
 
         return result
-
-
-class RPCMethodExtractor:
-    """Extract RPC methods from the go-stellar-sdk RPC protocol files"""
-
-    # Import fallback method metadata from the parser module
-    from rpc_parser import RPCMethodParser as _RPCMethodParser
-    RPC_METHODS = _RPCMethodParser.METHOD_METADATA
-
-    def __init__(self, rpc_protocol_path: str, rpc_methods_file: Optional[Path] = None):
-        """
-        Initialize with path to the RPC protocol directory
-
-        Args:
-            rpc_protocol_path: Path to the go-stellar-sdk protocols/rpc directory
-            rpc_methods_file: Optional path to existing rpc_methods.json file
-        """
-        self.protocol_path = Path(rpc_protocol_path)
-        self.rpc_methods_file = rpc_methods_file
-
-    def load_methods_from_json(self) -> Optional[Dict[str, Any]]:
-        """
-        Load RPC methods from existing JSON file
-
-        Returns:
-            Dictionary containing methods and metadata, or None if file not found
-        """
-        if not self.rpc_methods_file or not self.rpc_methods_file.exists():
-            return None
-
-        try:
-            with open(self.rpc_methods_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                # Validate structure
-                if "methods" in data:
-                    return data
-        except (json.JSONDecodeError, IOError):
-            pass
-
-        return None
-
-    def extract_methods(self) -> Dict[str, Any]:
-        """
-        Extract RPC methods and return structured data
-
-        First attempts to load from JSON file, falls back to hardcoded methods
-        """
-        # Try loading from existing JSON file
-        loaded_data = self.load_methods_from_json()
-        if loaded_data:
-            print("  ✓ Loaded RPC methods from existing JSON file")
-            return loaded_data
-
-        # Fallback to hardcoded methods
-        print("  ℹ Using hardcoded RPC methods (JSON file not found)")
-        return {
-            "metadata": {
-                "source": str(self.protocol_path),
-                "generated_at": datetime.now().isoformat(),
-                "total_methods": len(self.RPC_METHODS)
-            },
-            "methods": self.RPC_METHODS
-        }
 
 
 class SorobanSDKAnalyzer:
@@ -357,7 +274,7 @@ class SorobanSDKAnalyzer:
 
         # Extract parameter names from map['paramName'] = value patterns
         param_names = re.findall(r"map\[['\"](\w+)['\"]\]", method_body)
-        for param_name in set(param_names):  # Use set to avoid duplicates
+        for param_name in sorted(set(param_names)):
             params.append({
                 "name": param_name,
                 "type": "request_object",
@@ -472,16 +389,11 @@ class RPCComparisonAnalyzer:
     #   but the simple regex analysis doesn't detect this pattern
     IGNORED_OPTIONAL_PARAMS = {"xdrFormat", "cursor", "limit"}
 
-    # Response fields to ignore in compatibility checks. These are the JSON-format
-    # variants the server returns only when the request sets xdrFormat=json; the
-    # SDK does not support the JSON format (by design, see IGNORED_OPTIONAL_PARAMS),
-    # so the XDR-variant fields are the supported surface.
-    IGNORED_RESPONSE_FIELDS = {
-        "errorResultJson",
-        "diagnosticEventsJson",
-        "transactionDataJson",
-        "eventsJson",
-    }
+    # Suffix of response fields to ignore in compatibility checks. These are the
+    # JSON-format variants the server returns only when the request sets
+    # xdrFormat=json; the SDK does not support the JSON format (by design, see
+    # IGNORED_OPTIONAL_PARAMS), so the XDR-variant fields are the supported surface.
+    IGNORED_RESPONSE_SUFFIXES = ("Json",)
 
     # Wire-key -> SDK-field aliases: the SDK parses these response keys into
     # fields whose Dart names differ from the JSON name.
@@ -504,18 +416,12 @@ class RPCComparisonAnalyzer:
         self.rpc_data = rpc_data
         self.flutter_data = flutter_data
         self.comparisons: List[MethodComparison] = []
-        self.sdk_version = self._get_sdk_version()
+        self.sdk_version = get_sdk_version()
 
-        # Extract RPC version information from metadata
-        metadata = rpc_data.get("metadata", {})
-        self.rpc_version = metadata.get("rpc_version", "Unknown")
-        self.rpc_release_date = metadata.get("rpc_release_date", "Unknown")
-        self.rpc_release_url = metadata.get("rpc_release_url", "")
-
-    @staticmethod
-    def _get_sdk_version() -> str:
-        """Extract SDK version from pubspec.yaml."""
-        return get_sdk_version()
+        metadata = rpc_data["metadata"]
+        self.rpc_version = metadata["rpc_version"]
+        self.rpc_release_date = metadata["rpc_release_date"]
+        self.rpc_release_url = metadata["rpc_release_url"]
 
     def analyze(self) -> None:
         """Perform complete comparison analysis"""
@@ -554,25 +460,22 @@ class RPCComparisonAnalyzer:
             }
 
             # Count all parameters as missing
-            comparison.parameters["required"] = ParameterComparison(
+            comparison.parameters["required"] = Coverage(
                 total=len(rpc_method.get("required_params", [])),
                 supported=0,
                 missing=rpc_method.get("required_params", [])
             )
-            comparison.parameters["optional"] = ParameterComparison(
+            comparison.parameters["optional"] = Coverage(
                 total=len(rpc_method.get("optional_params", [])),
                 supported=0,
                 missing=rpc_method.get("optional_params", [])
             )
 
-            # Count all response fields as missing
+            # Every response field except the Json variants counts as missing
             rpc_response_fields = rpc_method.get("response_fields", [])
             if rpc_response_fields:
-                comparison.response_fields = ResponseFieldComparison(
-                    total=len(rpc_response_fields),
-                    supported=0,
-                    missing=[f["json_name"] for f in rpc_response_fields]
-                )
+                comparison.response_fields = self._compare_response_fields(
+                    method_name, rpc_response_fields, [])
 
             return comparison
 
@@ -608,7 +511,7 @@ class RPCComparisonAnalyzer:
         self,
         rpc_method: Dict[str, Any],
         flutter_params: List[Dict[str, Any]]
-    ) -> Dict[str, ParameterComparison]:
+    ) -> Dict[str, Coverage]:
         """Compare required and optional parameters"""
         result = {}
         flutter_param_names = {p["name"] for p in flutter_params if p.get("supported", False)}
@@ -630,7 +533,7 @@ class RPCComparisonAnalyzer:
                 else:
                     missing_params.append(param)
 
-            result[param_type] = ParameterComparison(
+            result[param_type] = Coverage(
                 total=total,
                 supported=len(supported_params),
                 missing=missing_params
@@ -643,11 +546,11 @@ class RPCComparisonAnalyzer:
         method_name: str,
         rpc_response_fields: List[Dict[str, str]],
         flutter_response_fields: List[str]
-    ) -> ResponseFieldComparison:
+    ) -> Coverage:
         """
         Compare RPC response fields with Flutter SDK response class fields.
 
-        Fields in IGNORED_RESPONSE_FIELDS (xdrFormat=json variants) are excluded
+        Fields ending in IGNORED_RESPONSE_SUFFIXES (xdrFormat=json variants) are excluded
         from the comparison; RESPONSE_FIELD_ALIASES maps wire keys the SDK parses
         into differently named Dart fields.
 
@@ -657,7 +560,7 @@ class RPCComparisonAnalyzer:
             flutter_response_fields: List of field names from Flutter SDK response class
 
         Returns:
-            ResponseFieldComparison with total, supported, and missing counts
+            Coverage with total, supported, and missing counts
         """
         # Convert Flutter field names to lowercase for case-insensitive comparison
         flutter_field_map = {name.lower(): name for name in flutter_response_fields}
@@ -666,7 +569,7 @@ class RPCComparisonAnalyzer:
 
         compared_fields = [
             f for f in rpc_response_fields
-            if f["json_name"] not in self.IGNORED_RESPONSE_FIELDS
+            if not f["json_name"].endswith(self.IGNORED_RESPONSE_SUFFIXES)
         ]
 
         total = len(compared_fields)
@@ -684,7 +587,7 @@ class RPCComparisonAnalyzer:
             else:
                 missing_fields.append(json_name)
 
-        return ResponseFieldComparison(
+        return Coverage(
             total=total,
             supported=len(supported_fields),
             missing=missing_fields
@@ -692,8 +595,8 @@ class RPCComparisonAnalyzer:
 
     def _determine_status(self, comparison: MethodComparison) -> Tuple[str, str]:
         """Determine the implementation status based on parameter and response field support"""
-        required_params = comparison.parameters.get("required", ParameterComparison())
-        optional_params = comparison.parameters.get("optional", ParameterComparison())
+        required_params = comparison.parameters.get("required", Coverage())
+        optional_params = comparison.parameters.get("optional", Coverage())
         response_fields = comparison.response_fields
 
         issues = []
@@ -741,7 +644,7 @@ class RPCComparisonAnalyzer:
             return Priority.MEDIUM.value
 
         # If method has missing required parameters
-        required_params = comparison.parameters.get("required", ParameterComparison())
+        required_params = comparison.parameters.get("required", Coverage())
         if required_params.missing:
             return Priority.CRITICAL.value
 
@@ -823,11 +726,11 @@ class RPCComparisonAnalyzer:
 
         # Parameter stats
         required_total = sum(
-            c.parameters.get("required", ParameterComparison()).total
+            c.parameters.get("required", Coverage()).total
             for c in self.comparisons
         )
         required_supported = sum(
-            c.parameters.get("required", ParameterComparison()).supported
+            c.parameters.get("required", Coverage()).supported
             for c in self.comparisons
         )
 
@@ -880,13 +783,8 @@ class RPCComparisonAnalyzer:
             f.write("# Soroban RPC vs Flutter SDK Compatibility Matrix\n\n")
 
             # Version information section
-            f.write(f"**RPC Version:** {self.rpc_version}")
-            if self.rpc_release_date != "Unknown":
-                f.write(f" (released {self.rpc_release_date})")
-            f.write("  \n")
-
-            if self.rpc_release_url:
-                f.write(f"**RPC Source:** [{self.rpc_release_url}]({self.rpc_release_url})  \n")
+            f.write(f"**RPC Version:** {self.rpc_version} (released {self.rpc_release_date})  \n")
+            f.write(f"**RPC Source:** [{self.rpc_release_url}]({self.rpc_release_url})  \n")
 
             f.write(f"**SDK Version:** {self.sdk_version}  \n")
             f.write(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
@@ -905,8 +803,9 @@ class RPCComparisonAnalyzer:
             f.write("|------------|--------|----------------|-----------------|-----------------|-------|\n")
 
             for comp in sorted(self.comparisons, key=lambda x: x.rpc_method):
-                dart_method = comp.sdk_implementation.get("dart_method", "-")
-                required = comp.parameters.get("required", ParameterComparison())
+                dart_method = comp.sdk_implementation.get("dart_method")
+                dart_cell = f"`{dart_method}`" if dart_method else "-"
+                required = comp.parameters.get("required", Coverage())
                 param_status = f"{required.supported}/{required.total}" if required.total > 0 else "N/A"
 
                 # Add response fields status
@@ -916,7 +815,7 @@ class RPCComparisonAnalyzer:
                     response_status = "N/A"
 
                 f.write(f"| `{comp.rpc_method}` | {comp.status} | "
-                       f"`{dart_method}` | {param_status} | {response_status} | {comp.notes} |\n")
+                       f"{dart_cell} | {param_status} | {response_status} | {comp.notes} |\n")
 
             f.write("\n")
 
@@ -955,115 +854,3 @@ class RPCComparisonAnalyzer:
                         f.write("\n")
 
         print(f"✓ Markdown report written to {output_path}")
-
-
-def main():
-    """Main execution function"""
-    print("=" * 70)
-    print("Stellar RPC API vs Flutter SDK Comparison Generator")
-    print("=" * 70)
-    print()
-
-    # Define paths
-    sdk_root = Path(__file__).parent.parent.parent.parent
-    base_dir = sdk_root / 'compatibility'
-    rpc_protocol_path = sdk_root.parent / "go-stellar-sdk" / "protocols" / "rpc"
-    soroban_server_path = sdk_root / "lib" / "src" / "soroban" / "soroban_server.dart"
-
-    data_dir = Path(__file__).parent.parent / "data" / "rpc"
-    rpc_methods_file = data_dir / "rpc_methods.json"
-    flutter_implementation_file = data_dir / "flutter_soroban_implementation.json"
-    comparison_output_file = data_dir / "rpc_comparison.json"
-    stats_output_file = data_dir / "rpc_coverage_stats.json"
-    markdown_output_file = base_dir / "rpc" / "RPC_COMPATIBILITY_MATRIX.md"
-
-    try:
-        # Extract RPC methods
-        print(f"Extracting RPC methods from: {rpc_protocol_path}")
-        rpc_extractor = RPCMethodExtractor(str(rpc_protocol_path), rpc_methods_file)
-        rpc_data = rpc_extractor.extract_methods()
-
-        # Save RPC methods
-        data_dir.mkdir(parents=True, exist_ok=True)
-        with open(rpc_methods_file, 'w', encoding='utf-8') as f:
-            json.dump(rpc_data, f, indent=2, ensure_ascii=False)
-        print(f"✓ Saved RPC methods to: {rpc_methods_file}")
-
-        # Analyze Flutter Soroban implementation
-        print(f"\nAnalyzing Flutter Soroban implementation: {soroban_server_path}")
-        soroban_analyzer = SorobanSDKAnalyzer(str(soroban_server_path))
-        flutter_data = soroban_analyzer.analyze()
-
-        # Save Flutter implementation
-        with open(flutter_implementation_file, 'w', encoding='utf-8') as f:
-            json.dump(flutter_data, f, indent=2, ensure_ascii=False)
-        print(f"✓ Saved Flutter implementation to: {flutter_implementation_file}")
-
-        # Perform comparison
-        print("\nAnalyzing compatibility...")
-        analyzer = RPCComparisonAnalyzer(rpc_data, flutter_data)
-        analyzer.analyze()
-
-        # Generate comparison data
-        comparison_data = analyzer.generate_comparison_data()
-        with open(comparison_output_file, 'w', encoding='utf-8') as f:
-            json.dump(comparison_data, f, indent=2, ensure_ascii=False)
-        print(f"✓ Saved comparison to: {comparison_output_file}")
-
-        # Generate coverage statistics
-        coverage_stats = analyzer.generate_coverage_stats()
-        with open(stats_output_file, 'w', encoding='utf-8') as f:
-            json.dump(coverage_stats, f, indent=2, ensure_ascii=False)
-        print(f"✓ Saved statistics to: {stats_output_file}")
-
-        # Generate markdown report
-        analyzer.generate_markdown_report(str(markdown_output_file))
-
-        # Print summary
-        print("\n" + "=" * 70)
-        print("SUMMARY")
-        print("=" * 70)
-        metadata = comparison_data['metadata']
-        print(f"RPC Version: {metadata['rpc_version']}")
-        if metadata['rpc_release_date'] != "Unknown":
-            print(f"RPC Release Date: {metadata['rpc_release_date']}")
-        print(f"SDK Version: {metadata['sdk_version']}")
-        print()
-        print(f"Total RPC Methods: {metadata['rpc_methods']}")
-        print(f"SDK Methods: {metadata['sdk_methods']}")
-        print(f"Overall Coverage: {metadata['coverage_percentage']}%")
-        print()
-
-        overall = coverage_stats['overall']
-        print(f"✅ Fully Supported: {overall['fully_supported']}")
-        print(f"⚠️  Partially Supported: {overall['partially_supported']}")
-        print(f"❌ Not Supported: {overall['not_supported']}")
-        print()
-
-        gaps = comparison_data['gaps']
-        if gaps['missing_methods']:
-            print(f"Missing Methods: {len(gaps['missing_methods'])}")
-        if gaps['partial_implementations']:
-            print(f"Partial Implementations: {len(gaps['partial_implementations'])}")
-
-        print()
-        print("=" * 70)
-        print("✓ Comparison completed successfully!")
-        print("=" * 70)
-
-        return 0
-
-    except FileNotFoundError as e:
-        print(f"ERROR: {e}", file=sys.stderr)
-        return 1
-    except json.JSONDecodeError as e:
-        print(f"ERROR: Invalid JSON: {e}", file=sys.stderr)
-        return 1
-    except Exception as e:
-        print(f"ERROR: Unexpected error: {e}", file=sys.stderr)
-        traceback.print_exc()
-        return 1
-
-
-if __name__ == "__main__":
-    sys.exit(main())

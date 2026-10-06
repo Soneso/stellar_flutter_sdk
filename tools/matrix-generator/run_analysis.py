@@ -2,8 +2,7 @@
 """
 Compatibility Analysis Orchestrator
 
-Runs all compatibility analysis scripts in sequence with colored terminal output
-and comprehensive error handling.
+Runs all compatibility analysis scripts in sequence with colored terminal output.
 
 Author: Stellar Flutter SDK Team
 License: Apache-2.0
@@ -18,6 +17,32 @@ from datetime import datetime
 from common import Colors, SDK_ROOT
 
 
+# SEPs in run order, with the name the step descriptions give them.
+SEPS = (
+    ('0001', 'stellar.toml'),
+    ('0002', 'Federation'),
+    ('0005', 'Key Derivation'),
+    ('0006', 'Deposit and Withdrawal API'),
+    ('0007', 'URI Scheme'),
+    ('0008', 'Regulated Assets'),
+    ('0009', 'Standard KYC/AML fields'),
+    ('0010', 'Web Auth'),
+    ('0011', 'Txrep'),
+    ('0012', 'KYC API'),
+    ('0023', 'Strkeys'),
+    ('0024', 'Hosted Deposit/Withdrawal'),
+    ('0029', 'Account Memo Requirements'),
+    ('0030', 'Account Recovery'),
+    ('0038', 'Anchor RFQ API'),
+    ('0045', 'Web Auth for Contract Accounts'),
+    ('0046', 'Contract Meta'),
+    ('0047', 'Contract Interface Discovery'),
+    ('0048', 'Smart Contract Specifications'),
+    ('0051', 'XDR-JSON'),
+    ('0053', 'Sign and Verify Messages'),
+)
+
+
 class AnalysisOrchestrator:
     """Orchestrates the execution of all analysis scripts"""
 
@@ -25,73 +50,17 @@ class AnalysisOrchestrator:
         """Initialize orchestrator"""
         self.tools_dir = Path(__file__).parent
         self.base_dir = self.tools_dir.parent.parent  # Go up two levels to SDK root
-        self.scripts: List[Tuple[str, str, str]] = [
-            ("horizon/run_horizon_analysis.py", "Generating Horizon compatibility report", "horizon"),
-            ("rpc/run_rpc_analysis.py", "Generating RPC compatibility report", "rpc"),
-            ("sep/sep_parser.py 0001", "Parsing SEP-01 (stellar.toml) specification", "sep"),
-            ("sep/sep_analyzer.py 0001", "Analyzing SEP-01 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0001", "Generating SEP-01 compatibility report", "sep"),
-            ("sep/sep_parser.py 0002", "Parsing SEP-02 (Federation) specification", "sep"),
-            ("sep/sep_analyzer.py 0002", "Analyzing SEP-02 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0002", "Generating SEP-02 compatibility report", "sep"),
-            ("sep/sep_parser.py 0005", "Parsing SEP-05 (Key Derivation) specification", "sep"),
-            ("sep/sep_analyzer.py 0005", "Analyzing SEP-05 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0005", "Generating SEP-05 compatibility report", "sep"),
-            ("sep/sep_parser.py 0006", "Parsing SEP-06 (Deposit and Withdrawal API) specification", "sep"),
-            ("sep/sep_analyzer.py 0006", "Analyzing SEP-06 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0006", "Generating SEP-06 compatibility report", "sep"),
-            ("sep/sep_parser.py 0007", "Parsing SEP-07 (URI Scheme) specification", "sep"),
-            ("sep/sep_analyzer.py 0007", "Analyzing SEP-07 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0007", "Generating SEP-07 compatibility report", "sep"),
-            ("sep/sep_parser.py 0008", "Parsing SEP-08 (Regulated Assets) specification", "sep"),
-            ("sep/sep_analyzer.py 0008", "Analyzing SEP-08 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0008", "Generating SEP-08 compatibility report", "sep"),
-            ("sep/sep_parser.py 0009", "Parsing SEP-09 (Standard KYC/AML fields) specification", "sep"),
-            ("sep/sep_analyzer.py 0009", "Analyzing SEP-09 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0009", "Generating SEP-09 compatibility report", "sep"),
-            ("sep/sep_parser.py 0010", "Parsing SEP-10 (Web Auth) specification", "sep"),
-            ("sep/sep_analyzer.py 0010", "Analyzing SEP-10 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0010", "Generating SEP-10 compatibility report", "sep"),
-            ("sep/sep_parser.py 0011", "Parsing SEP-11 (Txrep) specification", "sep"),
-            ("sep/sep_analyzer.py 0011", "Analyzing SEP-11 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0011", "Generating SEP-11 compatibility report", "sep"),
-            ("sep/sep_parser.py 0012", "Parsing SEP-12 (KYC API) specification", "sep"),
-            ("sep/sep_analyzer.py 0012", "Analyzing SEP-12 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0012", "Generating SEP-12 compatibility report", "sep"),
-            ("sep/sep_parser.py 0023", "Parsing SEP-23 (Strkeys) specification", "sep"),
-            ("sep/sep_analyzer.py 0023", "Analyzing SEP-23 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0023", "Generating SEP-23 compatibility report", "sep"),
-            ("sep/sep_parser.py 0024", "Parsing SEP-24 (Hosted Deposit/Withdrawal) specification", "sep"),
-            ("sep/sep_analyzer.py 0024", "Analyzing SEP-24 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0024", "Generating SEP-24 compatibility report", "sep"),
-            ("sep/sep_parser.py 0029", "Parsing SEP-29 (Account Memo Requirements) specification", "sep"),
-            ("sep/sep_analyzer.py 0029", "Analyzing SEP-29 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0029", "Generating SEP-29 compatibility report", "sep"),
-            ("sep/sep_parser.py 0030", "Parsing SEP-30 (Account Recovery) specification", "sep"),
-            ("sep/sep_analyzer.py 0030", "Analyzing SEP-30 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0030", "Generating SEP-30 compatibility report", "sep"),
-            ("sep/sep_parser.py 0038", "Parsing SEP-38 (Anchor RFQ API) specification", "sep"),
-            ("sep/sep_analyzer.py 0038", "Analyzing SEP-38 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0038", "Generating SEP-38 compatibility report", "sep"),
-            ("sep/sep_parser.py 0045", "Parsing SEP-45 (Web Auth for Contract Accounts) specification", "sep"),
-            ("sep/sep_analyzer.py 0045", "Analyzing SEP-45 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0045", "Generating SEP-45 compatibility report", "sep"),
-            ("sep/sep_parser.py 0046", "Parsing SEP-46 (Contract Meta) specification", "sep"),
-            ("sep/sep_analyzer.py 0046", "Analyzing SEP-46 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0046", "Generating SEP-46 compatibility report", "sep"),
-            ("sep/sep_parser.py 0047", "Parsing SEP-47 (Contract Interface Discovery) specification", "sep"),
-            ("sep/sep_analyzer.py 0047", "Analyzing SEP-47 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0047", "Generating SEP-47 compatibility report", "sep"),
-            ("sep/sep_parser.py 0048", "Parsing SEP-48 (Smart Contract Specifications) specification", "sep"),
-            ("sep/sep_analyzer.py 0048", "Analyzing SEP-48 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0048", "Generating SEP-48 compatibility report", "sep"),
-            ("sep/sep_parser.py 0051", "Parsing SEP-51 (XDR-JSON) specification", "sep"),
-            ("sep/sep_analyzer.py 0051", "Analyzing SEP-51 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0051", "Generating SEP-51 compatibility report", "sep"),
-            ("sep/sep_parser.py 0053", "Parsing SEP-53 (Sign and Verify Messages) specification", "sep"),
-            ("sep/sep_analyzer.py 0053", "Analyzing SEP-53 implementation in SDK", "sep"),
-            ("sep/generate_sep_comparison.py 0053", "Generating SEP-53 compatibility report", "sep"),
+        self.scripts: List[Tuple[str, str]] = [
+            ("horizon/run_horizon_analysis.py", "Generating Horizon compatibility report"),
+            ("rpc/run_rpc_analysis.py", "Generating RPC compatibility report"),
         ]
+        for number, name in SEPS:
+            label = f"SEP-{number[2:]}"
+            self.scripts += [
+                (f"sep/sep_parser.py {number}", f"Parsing {label} ({name}) specification"),
+                (f"sep/sep_analyzer.py {number}", f"Analyzing {label} implementation in SDK"),
+                (f"sep/generate_sep_comparison.py {number}", f"Generating {label} compatibility report"),
+            ]
         self.results: List[Tuple[str, bool, str]] = []
 
     def print_header(self):
@@ -106,14 +75,12 @@ class AnalysisOrchestrator:
         print(f"\n{Colors.BOLD}{Colors.CYAN}[{step_num}/{total}] {description}{Colors.END}")
         print(f"{Colors.CYAN}{'-' * 70}{Colors.END}")
 
-    def run_script(self, script_name: str, description: str, category: str) -> Tuple[bool, str]:
+    def run_script(self, script_name: str) -> Tuple[bool, str]:
         """
         Run a single script and capture output
 
         Args:
             script_name: Name of the script to run (may include arguments)
-            description: Description of what the script does
-            category: Category (horizon, rpc, or sep)
 
         Returns:
             Tuple of (success, output)
@@ -161,11 +128,11 @@ class AnalysisOrchestrator:
         total_steps = len(self.scripts)
         all_success = True
 
-        for step_num, (script_name, description, category) in enumerate(self.scripts, 1):
+        for step_num, (script_name, description) in enumerate(self.scripts, 1):
             self.print_step(step_num, total_steps, description)
 
             # Run script
-            success, output = self.run_script(script_name, description, category)
+            success, output = self.run_script(script_name)
 
             # Store result
             self.results.append((description, success, output))
@@ -216,12 +183,7 @@ class AnalysisOrchestrator:
             ("RPC Coverage Statistics", "tools/matrix-generator/data/rpc/rpc_coverage_stats.json"),
         ]
 
-        # Extract SEP numbers from the scripts list
-        sep_numbers = sorted(set(
-            parts[1] for script, _, _ in self.scripts
-            if (parts := script.split()) and parts[0] == "sep/sep_parser.py" and len(parts) > 1
-        ))
-        for sep in sep_numbers:
+        for sep, _ in SEPS:
             sep_label = f"SEP-{int(sep):02d}"
             reports.extend([
                 (f"{sep_label} Definition", f"tools/matrix-generator/data/sep/sep_{sep}_definition.json"),

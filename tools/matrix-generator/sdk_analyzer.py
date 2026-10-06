@@ -7,6 +7,7 @@ details including supported endpoints, parameters, filters, and streaming capabi
 
 Uses dynamic code analysis to detect endpoints and filter parameters from source code,
 reducing maintenance burden when builders are added or modified.
+Pipeline module of horizon/run_horizon_analysis.py.
 
 Author: Stellar Flutter SDK Team
 License: Apache-2.0
@@ -14,12 +15,10 @@ License: Apache-2.0
 
 import json
 import re
-import sys
-import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Set, Optional, Tuple
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 
 from common import get_sdk_version
@@ -29,7 +28,6 @@ class DetectionSource(Enum):
     """Source of detection for endpoints and parameters"""
     DYNAMIC = "dynamic"  # Detected from code analysis
     FALLBACK = "fallback"  # From hardcoded fallback mapping
-    HYBRID = "hybrid"  # Combination of both
 
 
 @dataclass
@@ -301,7 +299,7 @@ class FlutterSDKAnalyzer:
                 "return_type": "RootResponse",
                 "implemented": True
             }
-            print(f"  Found direct endpoint: GET / -> root()")
+            print("  Found direct endpoint: GET / -> root()")
 
         # Find all methods that construct URIs with pathSegments
         # Pattern: _serverURI.replace(pathSegments: ["path"])
@@ -361,7 +359,7 @@ class FlutterSDKAnalyzer:
                 "implemented": True,
                 "notes": "Testnet/Futurenet only"
             }
-            print(f"  Found direct endpoint: GET /friendbot -> FriendBot.fundTestAccount()")
+            print("  Found direct endpoint: GET /friendbot -> FriendBot.fundTestAccount()")
 
     def _analyze_request_builders(self) -> None:
         """Analyze all request builder files"""
@@ -602,7 +600,7 @@ class FlutterSDKAnalyzer:
 
             if param_names:
                 # Successfully extracted parameter names dynamically
-                for param_name in param_names:
+                for param_name in sorted(param_names):
                     filter_methods.append({
                         "method": method_name,
                         "parameter": param_name,
@@ -850,7 +848,7 @@ class FlutterSDKAnalyzer:
                     "class": builder.class_name,
                     "streaming": builder.streaming_support,
                     "deprecated": False,
-                    "filters": list(set(filters)),
+                    "filters": sorted(set(filters)),
                     "notes": f"Implemented via {builder.class_name}" if implemented else ""
                 }
 
@@ -960,11 +958,9 @@ class FlutterSDKAnalyzer:
 
     def to_json(self) -> Dict:
         """Convert analyzed data to JSON structure"""
-        sdk_version = self._get_sdk_version()
-
         return {
             "metadata": {
-                "sdk_version": sdk_version,
+                "sdk_version": get_sdk_version(),
                 "analyzed_at": datetime.now().isoformat(),
                 "total_request_builders": len(self.builders),
                 "exposed_builders": len(self.exposed_builders),
@@ -974,11 +970,6 @@ class FlutterSDKAnalyzer:
             "request_builders": [builder.to_dict() for builder in self.builders],
             "sdk_methods": self.sdk_methods
         }
-
-    @staticmethod
-    def _get_sdk_version() -> str:
-        """Extract SDK version from pubspec.yaml."""
-        return get_sdk_version()
 
     def save_json(self, output_path: str) -> None:
         """Save analyzed data to JSON file"""
@@ -991,59 +982,3 @@ class FlutterSDKAnalyzer:
             json.dump(data, f, indent=2, ensure_ascii=False)
 
         print(f"Saved SDK analysis to: {output_path}")
-
-
-def main():
-    """Main entry point"""
-    print("=" * 70)
-    print("Flutter SDK Implementation Analyzer")
-    print("=" * 70)
-    print()
-
-    # Define paths
-    base_dir = Path(__file__).parent.parent.parent
-    sdk_root = base_dir
-    output_path = Path(__file__).parent / "data" / "horizon" / "flutter_sdk_implementation.json"
-
-    try:
-        # Analyze SDK
-        analyzer = FlutterSDKAnalyzer(str(sdk_root))
-        analyzer.analyze()
-
-        # Save results
-        analyzer.save_json(str(output_path))
-
-        # Print summary
-        print()
-        print("=" * 70)
-        print("SUMMARY")
-        print("=" * 70)
-        print(f"SDK Version: {analyzer._get_sdk_version()}")
-        print(f"Total Request Builders: {len(analyzer.builders)}")
-        print(f"Exposed in StellarSDK: {len(analyzer.exposed_builders)}")
-        print()
-        print("Request Builders:")
-        for builder in sorted(analyzer.builders, key=lambda b: b.class_name):
-            status = "✓" if builder.exposed_in_sdk else " "
-            streaming = "S" if builder.streaming_support else " "
-            detection = "D" if builder.endpoint_detection_source == DetectionSource.DYNAMIC.value else "F"
-            confidence = f"{builder.filter_detection_confidence:.0%}"
-            print(f"  [{status}] [{streaming}] [{detection}] {builder.class_name:40s} "
-                  f"({len(builder.endpoints)} endpoints, {len(builder.filter_methods)} filters, {confidence} confidence)")
-        print()
-        print("Legend: [✓] = Exposed in SDK, [S] = Streaming support, [D] = Dynamic detection, [F] = Fallback")
-        print()
-        print("=" * 70)
-        print("Analysis completed successfully!")
-        print("=" * 70)
-
-        return 0
-
-    except Exception as e:
-        print(f"\nERROR: {str(e)}")
-        traceback.print_exc()
-        return 1
-
-
-if __name__ == '__main__':
-    sys.exit(main())
