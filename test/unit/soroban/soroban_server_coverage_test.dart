@@ -939,15 +939,39 @@ void main() {
             'status': GetTransactionResponse.STATUS_SUCCESS,
             'latestLedger': 100,
             'events': {
-              'diagnosticEventsXdr': ['diag1'],
               'transactionEventsXdr': ['tx1'],
+              'contractEventsXdr': [
+                ['ev1']
+              ],
             },
           }
         });
 
         expect(response.events, isNotNull);
-        expect(response.events!.diagnosticEventsXdr, ['diag1']);
         expect(response.events!.transactionEventsXdr, ['tx1']);
+        expect(response.events!.contractEventsXdr, [
+          ['ev1']
+        ]);
+      });
+
+      test('parses top-level diagnosticEventsXdr', () {
+        // DiagnosticEvent XDR from the recorded getTransaction response in
+        // test/integration/soroban_test.dart.
+        const fnReturnEvent =
+            'AAAAAQAAAAAAAAAB3+uRtuHcrdavl7t8RV+X83R3Cn949pVzuZ9dW/hJznwAAAACAAAAAAAAAAIAAAAPAAAACWZuX3JldHVybgAAAAAAAA8AAAANY3JlYXRlX2VzY3JvdwAAAAAAAAE=';
+        const coreMetricsEvent =
+            'AAAAAAAAAAAAAAAAAAAAAgAAAAAAAAACAAAADwAAAAxjb3JlX21ldHJpY3MAAAAPAAAACnJlYWRfZW50cnkAAAAAAAUAAAAAAAAAAw==';
+        final response = GetTransactionResponse.fromJson({
+          'jsonrpc': '2.0',
+          'id': 1,
+          'result': {
+            'status': GetTransactionResponse.STATUS_SUCCESS,
+            'latestLedger': 100,
+            'diagnosticEventsXdr': [fnReturnEvent, coreMetricsEvent],
+          }
+        });
+
+        expect(response.diagnosticEventsXdr, [fnReturnEvent, coreMetricsEvent]);
       });
 
       test('xdr getters decode envelope, result and meta', () {

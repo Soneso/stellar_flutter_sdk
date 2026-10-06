@@ -1060,6 +1060,7 @@ class SorobanServer {
   /// - resultXdr: Transaction result XDR (if SUCCESS or FAILED)
   /// - resultMetaXdr: Transaction metadata XDR with contract return values
   /// - envelopeXdr: Original transaction envelope
+  /// - diagnosticEventsXdr: Base64-encoded diagnostic events
   ///
   /// Status values:
   /// - SUCCESS: Transaction completed successfully
@@ -1302,7 +1303,8 @@ class SorobanServer {
   /// - resultXdr: Transaction execution result
   /// - resultMetaXdr: Metadata including state changes and return values
   /// - status: SUCCESS, FAILED, or NOT_FOUND
-  /// - events: Diagnostic and contract events (protocol >= 23)
+  /// - diagnosticEventsXdr: Base64-encoded diagnostic events
+  /// - events: Transaction and contract events (protocol >= 23)
   ///
   /// Throws:
   /// - Exception: If startLedger is outside retention window or request fails
