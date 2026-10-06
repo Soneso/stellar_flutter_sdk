@@ -118,16 +118,140 @@ void main() {
       );
     });
 
-    // SponsorshipDescriptor is `AccountID*`, so every element of
-    // signerSponsoringIDs carries a four-byte presence flag ahead of its value
-    // and an unsponsored signer is written as the flag alone. The base64 in
-    // these cases is the encoding the XDR-JSON reference implementation named
-    // by SEP-0051 produces for the same value.
     const String sponsorA =
         'GAAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQDZ7H';
     const String sponsorB =
         'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
 
+    // The millisecond arms carry the close time as a uint64 count of
+    // milliseconds, rendered in XDR-JSON as a decimal string. The reference
+    // build the SEP-0051 corpus is pinned to predates these arms, so the
+    // documents below are derived from the specification's rules.
+    const String closeSignatureJson =
+        '"lc_value_signature":{"node_id":"$sponsorA","signature":"0a141e28"}';
+    String hashHex(int byte) => byte.toRadixString(16).padLeft(2, '0') * 32;
+
+    XdrLedgerCloseValueSignature closeSignature() {
+      var pk = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
+      pk.setEd25519(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x01))));
+      return XdrLedgerCloseValueSignature(
+        XdrNodeID(pk),
+        XdrSignature(Uint8List.fromList(<int>[10, 20, 30, 40])),
+      );
+    }
+
+    XdrStellarValue stellarValue(XdrStellarValueExt ext) => XdrStellarValue(
+      XdrHash(Uint8List.fromList(List<int>.filled(32, 0x88))),
+      XdrUint64(BigInt.from(1700000000)),
+      [],
+      ext,
+    );
+
+    // Decodes the value from its own bytes and from its XDR-JSON; the JSON
+    // decoding must encode to those same bytes.
+    List<XdrStellarValue> decodeFromBytesAndJson(XdrStellarValue value) {
+      final String xdr = value.toBase64EncodedXdrString();
+      final XdrStellarValue fromJson = XdrStellarValue.fromXdrJson(
+        value.toXdrJson(),
+      );
+      expect(fromJson.toBase64EncodedXdrString(), equals(xdr));
+      return [XdrStellarValue.fromBase64EncodedXdrString(xdr), fromJson];
+    }
+
+    test('XdrStellarValue signed ms ext round-trips bytes and JSON', () {
+      var ext = XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_SIGNED_MS);
+      // Built with placeholders; the setters store the asserted values.
+      var signedMs = XdrStellarValueSignedMsValue(
+        XdrUint64(BigInt.zero),
+        closeSignature()..signature = XdrSignature(Uint8List(0)),
+      );
+      signedMs.closeTimeMs = XdrUint64(BigInt.from(1700000000123));
+      signedMs.lcValueSignature = closeSignature();
+      ext.signedMsValue = signedMs;
+      var original = stellarValue(ext);
+
+      expect(
+        original.toXdrJson(),
+        equals(
+          '{"tx_set_hash":"${hashHex(0x88)}","close_time":"1700000000",'
+          '"upgrades":[],"ext":{"signed_ms":{"close_time_ms":"1700000000123",'
+          '$closeSignatureJson}}}',
+        ),
+      );
+      for (final XdrStellarValue decoded in decodeFromBytesAndJson(original)) {
+        expect(
+          decoded.ext.discriminant,
+          equals(XdrStellarValueType.STELLAR_VALUE_SIGNED_MS),
+        );
+        var arm = decoded.ext.signedMsValue!;
+        expect(arm.closeTimeMs.uint64, equals(BigInt.from(1700000000123)));
+        expect(
+          arm.lcValueSignature.nodeID.nodeID.getEd25519()!.uint256,
+          equals(List<int>.filled(32, 0x01)),
+        );
+        expect(
+          arm.lcValueSignature.signature.signature,
+          equals(<int>[10, 20, 30, 40]),
+        );
+      }
+    });
+
+    test('XdrStellarValue empty tx set ms ext round-trips bytes and JSON', () {
+      var ext = XdrStellarValueExt(
+        XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS,
+      );
+      // Built with placeholders; the setters store the asserted values.
+      var proposedMs = XdrStellarValueProposedMsValue(
+        XdrUint64(BigInt.zero),
+        XdrHash(Uint8List(32)),
+        XdrHash(Uint8List(32)),
+        XdrUint32(0),
+        closeSignature()..signature = XdrSignature(Uint8List(0)),
+      );
+      proposedMs.closeTimeMs = XdrUint64(BigInt.from(1700000000456));
+      proposedMs.txSetHash = XdrHash(
+        Uint8List.fromList(List<int>.filled(32, 0x33)),
+      );
+      proposedMs.previousLedgerHash = XdrHash(
+        Uint8List.fromList(List<int>.filled(32, 0x44)),
+      );
+      proposedMs.previousLedgerVersion = XdrUint32(29);
+      proposedMs.lcValueSignature = closeSignature();
+      ext.proposedMsValue = proposedMs;
+      var original = stellarValue(ext);
+
+      expect(
+        original.toXdrJson(),
+        equals(
+          '{"tx_set_hash":"${hashHex(0x88)}","close_time":"1700000000",'
+          '"upgrades":[],"ext":{"empty_tx_set_ms":{'
+          '"close_time_ms":"1700000000456","tx_set_hash":"${hashHex(0x33)}",'
+          '"previous_ledger_hash":"${hashHex(0x44)}",'
+          '"previous_ledger_version":29,$closeSignatureJson}}}',
+        ),
+      );
+      for (final XdrStellarValue decoded in decodeFromBytesAndJson(original)) {
+        expect(
+          decoded.ext.discriminant,
+          equals(XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS),
+        );
+        var arm = decoded.ext.proposedMsValue!;
+        expect(arm.closeTimeMs.uint64, equals(BigInt.from(1700000000456)));
+        expect(arm.txSetHash.hash, equals(List<int>.filled(32, 0x33)));
+        expect(arm.previousLedgerHash.hash, equals(List<int>.filled(32, 0x44)));
+        expect(arm.previousLedgerVersion.uint32, equals(29));
+        expect(
+          arm.lcValueSignature.signature.signature,
+          equals(<int>[10, 20, 30, 40]),
+        );
+      }
+    });
+
+    // SponsorshipDescriptor is `AccountID*`, so every element of
+    // signerSponsoringIDs carries a four-byte presence flag ahead of its value
+    // and an unsponsored signer is written as the flag alone. The base64 in
+    // these cases is the encoding the XDR-JSON reference implementation named
+    // by SEP-0051 produces for the same value.
     test('XdrAccountEntryV2 with empty signerSponsoringIDs encode/decode', () {
       var original = XdrAccountEntryV2(
         XdrUint32(0),

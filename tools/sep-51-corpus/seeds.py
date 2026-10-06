@@ -1283,6 +1283,8 @@ SEEDS = [
           "Envelope type enum member is stripped of its shared prefix."),
     _seed("EnvelopeType", "XdrEnvelopeType", "soroban_authorization",
           "Multi-word envelope type enum member."),
+    _seed("StellarValueType", "XdrStellarValueType", "empty_tx_set",
+          "Stellar value type enum member is stripped of its shared prefix."),
     _seed("ContractCostType", "XdrContractCostType", "wasm_insn_exec",
           "Contract cost type enum member."),
     _seed("ClaimAtom", "XdrClaimAtom",

@@ -29,6 +29,9 @@ class XdrStellarValueType {
   static const STELLAR_VALUE_EMPTY_TX_SET = const XdrStellarValueType._internal(
     2,
   );
+  static const STELLAR_VALUE_SIGNED_MS = const XdrStellarValueType._internal(3);
+  static const STELLAR_VALUE_EMPTY_TX_SET_MS =
+      const XdrStellarValueType._internal(4);
 
   static XdrStellarValueType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -39,6 +42,10 @@ class XdrStellarValueType {
         return STELLAR_VALUE_SIGNED;
       case 2:
         return STELLAR_VALUE_EMPTY_TX_SET;
+      case 3:
+        return STELLAR_VALUE_SIGNED_MS;
+      case 4:
+        return STELLAR_VALUE_EMPTY_TX_SET_MS;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -79,6 +86,10 @@ class XdrStellarValueType {
         return 'signed';
       case 2:
         return 'empty_tx_set';
+      case 3:
+        return 'signed_ms';
+      case 4:
+        return 'empty_tx_set_ms';
       default:
         XdrJsonHelper.fail(
           'XdrStellarValueType',
@@ -97,6 +108,10 @@ class XdrStellarValueType {
           return XdrStellarValueType.STELLAR_VALUE_SIGNED;
         case 'empty_tx_set':
           return XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET;
+        case 'signed_ms':
+          return XdrStellarValueType.STELLAR_VALUE_SIGNED_MS;
+        case 'empty_tx_set_ms':
+          return XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS;
       }
     }
     XdrJsonHelper.fail(

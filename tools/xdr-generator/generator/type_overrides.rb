@@ -11,10 +11,11 @@ TYPE_OVERRIDES = {
   # SequenceNumber is typedef int64 -> Dart wraps as XdrInt64
   # but the SDK uses XdrSequenceNumber directly (no override needed)
 
-  # Duration/TimePoint are typedef uint64 but SDK has no separate classes.
-  # Map to XdrUint64 which is the wrapper the SDK uses in struct fields.
+  # Duration/TimePoint/TimePointMs are typedef uint64 but SDK has no separate
+  # classes. Map to XdrUint64 which is the wrapper the SDK uses in struct fields.
   "XdrTimePoint" => "XdrUint64",
   "XdrDuration" => "XdrUint64",
+  "XdrTimePointMs" => "XdrUint64",
 
   # Fixed-opaque typedefs that the SDK uses as raw Uint8List (no wrapper class).
   # AssetCode4/AssetCode12 are typedef opaque[4]/opaque[12]; the hand-written SDK

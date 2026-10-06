@@ -9,7 +9,9 @@ import 'dart:typed_data';
 import 'xdr_data_io.dart';
 import 'xdr_json_helper.dart';
 import 'xdr_ledger_close_value_signature.dart';
+import 'xdr_stellar_value_proposed_ms_value.dart';
 import 'xdr_stellar_value_proposed_value.dart';
+import 'xdr_stellar_value_signed_ms_value.dart';
 import 'xdr_stellar_value_type.dart';
 
 class XdrStellarValueExt {
@@ -31,6 +33,14 @@ class XdrStellarValueExt {
 
   XdrStellarValueProposedValue? get proposedValue => this._proposedValue;
 
+  XdrStellarValueSignedMsValue? _signedMsValue;
+
+  XdrStellarValueSignedMsValue? get signedMsValue => this._signedMsValue;
+
+  XdrStellarValueProposedMsValue? _proposedMsValue;
+
+  XdrStellarValueProposedMsValue? get proposedMsValue => this._proposedMsValue;
+
   XdrStellarValueExt(this._v);
 
   set lcValueSignature(XdrLedgerCloseValueSignature? value) =>
@@ -38,6 +48,12 @@ class XdrStellarValueExt {
 
   set proposedValue(XdrStellarValueProposedValue? value) =>
       this._proposedValue = value;
+
+  set signedMsValue(XdrStellarValueSignedMsValue? value) =>
+      this._signedMsValue = value;
+
+  set proposedMsValue(XdrStellarValueProposedMsValue? value) =>
+      this._proposedMsValue = value;
 
   static void encode(
     XdrDataOutputStream stream,
@@ -59,6 +75,18 @@ class XdrStellarValueExt {
           encodedStellarValueExt._proposedValue!,
         );
         break;
+      case XdrStellarValueType.STELLAR_VALUE_SIGNED_MS:
+        XdrStellarValueSignedMsValue.encode(
+          stream,
+          encodedStellarValueExt._signedMsValue!,
+        );
+        break;
+      case XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS:
+        XdrStellarValueProposedMsValue.encode(
+          stream,
+          encodedStellarValueExt._proposedMsValue!,
+        );
+        break;
       default:
         break;
     }
@@ -78,6 +106,14 @@ class XdrStellarValueExt {
       case XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET:
         decodedStellarValueExt._proposedValue =
             XdrStellarValueProposedValue.decode(stream);
+        break;
+      case XdrStellarValueType.STELLAR_VALUE_SIGNED_MS:
+        decodedStellarValueExt._signedMsValue =
+            XdrStellarValueSignedMsValue.decode(stream);
+        break;
+      case XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS:
+        decodedStellarValueExt._proposedMsValue =
+            XdrStellarValueProposedMsValue.decode(stream);
         break;
     }
     return decodedStellarValueExt;
@@ -115,6 +151,12 @@ class XdrStellarValueExt {
       case 2:
         return <String, Object?>{
           'empty_tx_set': _proposedValue!.toXdrJsonValue(),
+        };
+      case 3:
+        return <String, Object?>{'signed_ms': _signedMsValue!.toXdrJsonValue()};
+      case 4:
+        return <String, Object?>{
+          'empty_tx_set_ms': _proposedMsValue!.toXdrJsonValue(),
         };
     }
     XdrJsonHelper.fail(
@@ -156,6 +198,22 @@ class XdrStellarValueExt {
           arm.value,
         );
         return arm1;
+      case 'signed_ms':
+        final XdrStellarValueExt arm2 = XdrStellarValueExt(
+          XdrStellarValueType.STELLAR_VALUE_SIGNED_MS,
+        );
+        arm2.signedMsValue = XdrStellarValueSignedMsValue.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm2;
+      case 'empty_tx_set_ms':
+        final XdrStellarValueExt arm3 = XdrStellarValueExt(
+          XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS,
+        );
+        arm3.proposedMsValue = XdrStellarValueProposedMsValue.fromXdrJsonValue(
+          arm.value,
+        );
+        return arm3;
     }
     XdrJsonHelper.fail(
       'XdrStellarValueExt',

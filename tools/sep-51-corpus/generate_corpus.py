@@ -542,15 +542,13 @@ def check_completeness(name_map, index):
     seeded_types = {seed["type"] for seed in SEEDS}
     problems = []
 
-    # Anything the reference could not resolve when the name table was built is
-    # undiffed there, so the corpus has to carry it explicitly. Both lists are
-    # empty while the two XDR pins agree closely enough.
-    for xdr_name in verification["struct_types_unresolvable"]:
-        oracle = oracle_name_for(index, xdr_name)
-        if oracle is None or oracle not in seeded_types:
-            problems.append(
-                "the reference cannot resolve the type %s, so the corpus must seed "
-                "it; no seed names it" % xdr_name)
+    # An enum member the reference could not resolve when the name table was
+    # built is undiffed there, so the corpus seeds a resolvable member of the
+    # same enum, which shares the prefix rule. A struct the reference cannot
+    # resolve gets no entry, because every seed is encoded by the reference;
+    # its field keys are pinned by the name table through emitted_names.rb and
+    # by a hand-written round-trip test. Both lists are empty while the two
+    # XDR pins agree closely enough.
     for member in verification["enum_members_unresolvable"]:
         enum_name = member.split(".", 1)[0]
         oracle = oracle_name_for(index, enum_name)
