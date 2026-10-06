@@ -1,4 +1,5 @@
 ## [Unreleased]
+- XDR definitions updated to stellar-xdr commit `c2612cf` (CAP-0088 millisecond close time). `XdrStellarValueType` gains `STELLAR_VALUE_SIGNED_MS` (3) and `STELLAR_VALUE_EMPTY_TX_SET_MS` (4), and `XdrStellarValueExt` the arms `signedMsValue` (`XdrStellarValueSignedMsValue`: `closeTimeMs`, `lcValueSignature`) and `proposedMsValue` (`XdrStellarValueProposedMsValue`: the `XdrStellarValueProposedValue` fields plus `closeTimeMs`). `closeTimeMs` is the ledger close time in milliseconds, the new `uint64` typedef `TimePointMs`, carried as `XdrUint64` like `TimePoint` and `Duration`. XDR-JSON keys: `signed_ms`, `empty_tx_set_ms`, `close_time_ms`; existing members, arms, and renderings keep their values and keys. `XdrStellarValueType` is a class of constants, not a Dart enum, so a `switch` statement that omits the new members gets no analyzer diagnostic and runs no case for them; a `switch` expression over it already needs a wildcard. Existing code compiles unchanged.
 - SEP-23 compatibility matrix: [compatibility/sep/SEP-0023_COMPATIBILITY_MATRIX.md](compatibility/sep/SEP-0023_COMPATIBILITY_MATRIX.md).
 
 ## [3.8.0] - 28.Sep.2026.

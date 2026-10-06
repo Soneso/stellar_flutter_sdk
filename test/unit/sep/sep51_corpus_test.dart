@@ -611,6 +611,12 @@ _Binding _bindingFor(String dartType) => switch (dartType) {
     (XdrSorobanTransactionMetaExt v) => v.toXdrJson(),
     (XdrSorobanTransactionMetaExt v) => v.toBase64EncodedXdrString(),
   ),
+  'XdrStellarValueType' => _bind<XdrStellarValueType>(
+    XdrStellarValueType.fromXdrJson,
+    XdrStellarValueType.fromBase64EncodedXdrString,
+    (XdrStellarValueType v) => v.toXdrJson(),
+    (XdrStellarValueType v) => v.toBase64EncodedXdrString(),
+  ),
   'XdrTTLEntry' => _bind<XdrTTLEntry>(
     XdrTTLEntry.fromXdrJson,
     XdrTTLEntry.fromBase64EncodedXdrString,
@@ -716,7 +722,7 @@ void main() {
       );
       expect(
         sep51CorpusMetadata['sdk_xdr_commit'],
-        'c40231c76bf2ebce76b24aa11c72508ac3eaa329',
+        'c2612cf534e4448fa263e252afe1bdbac5512d14',
       );
     });
 
@@ -725,12 +731,21 @@ void main() {
       expect(sep51Corpus, isNotEmpty);
     });
 
-    test('leaves no type or member unresolved by the reference build', () {
-      // A non-empty list means the reference could not address part of the
-      // type set, so the affected expected values were never compared against
-      // it and need spec-derived fixtures instead.
-      expect(sep51CorpusMetadata['unresolvable_enum_members'], '');
-      expect(sep51CorpusMetadata['unresolvable_struct_types'], '');
+    test('names the types and members the reference build cannot resolve', () {
+      // The reference build vendors an older XDR commit than this SDK
+      // generates from, so these names were never compared against it. Their
+      // renderings are pinned from the specification's rules by the
+      // 'signed ms ext' and 'empty tx set ms ext' round-trip tests in
+      // test/unit/xdr/xdr_ledger_scp_values_test.dart.
+      expect(
+        sep51CorpusMetadata['unresolvable_enum_members'],
+        'StellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS, '
+        'StellarValueType.STELLAR_VALUE_SIGNED_MS',
+      );
+      expect(
+        sep51CorpusMetadata['unresolvable_struct_types'],
+        'StellarValueProposedMsValue, StellarValueSignedMsValue',
+      );
     });
 
     test('holds a live divergence for every incomparable entry', () {

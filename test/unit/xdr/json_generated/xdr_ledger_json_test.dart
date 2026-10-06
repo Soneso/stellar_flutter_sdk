@@ -65,6 +65,41 @@ void main() {
         expect(XdrStellarValueType.fromXdrJsonValue('empty_tx_set').value, 2);
       },
     );
+    test(
+      'XdrStellarValueType STELLAR_VALUE_SIGNED_MS renders as signed_ms',
+      () {
+        var member = XdrStellarValueType.STELLAR_VALUE_SIGNED_MS;
+        expect(member.value, 3);
+        expect(member.toXdrJsonValue(), 'signed_ms');
+        expect(member.toXdrJson(), '"signed_ms"');
+        var parsed = XdrStellarValueType.fromXdrJson('"signed_ms"');
+        expect(parsed.value, 3);
+        expect(
+          parsed.toBase64EncodedXdrString(),
+          member.toBase64EncodedXdrString(),
+        );
+        expect(XdrStellarValueType.fromXdrJsonValue('signed_ms').value, 3);
+      },
+    );
+    test(
+      'XdrStellarValueType STELLAR_VALUE_EMPTY_TX_SET_MS renders as empty_tx_set_ms',
+      () {
+        var member = XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS;
+        expect(member.value, 4);
+        expect(member.toXdrJsonValue(), 'empty_tx_set_ms');
+        expect(member.toXdrJson(), '"empty_tx_set_ms"');
+        var parsed = XdrStellarValueType.fromXdrJson('"empty_tx_set_ms"');
+        expect(parsed.value, 4);
+        expect(
+          parsed.toBase64EncodedXdrString(),
+          member.toBase64EncodedXdrString(),
+        );
+        expect(
+          XdrStellarValueType.fromXdrJsonValue('empty_tx_set_ms').value,
+          4,
+        );
+      },
+    );
     test('XdrStellarValueType rejects an undeclared member name', () {
       expect(
         () =>
@@ -74,7 +109,7 @@ void main() {
     });
     test('XdrStellarValueType rejects an undeclared value', () {
       expect(
-        () => XdrStellarValueType(3).toXdrJsonValue(),
+        () => XdrStellarValueType(5).toXdrJsonValue(),
         throwsA(isA<FormatException>()),
       );
     });
@@ -178,6 +213,114 @@ void main() {
         throwsA(isA<FormatException>()),
       );
     });
+    test('XdrStellarValueSignedMsValue round trip', () {
+      var original = XdrStellarValueSignedMsValue(
+        XdrUint64(BigInt.from(123456)),
+        XdrLedgerCloseValueSignature(
+          XdrNodeID(
+            XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)
+              ..ed25519 = XdrUint256(
+                Uint8List.fromList(List<int>.filled(32, 0xAB)),
+              ),
+          ),
+          XdrSignature(Uint8List.fromList([4, 5, 6])),
+        ),
+      );
+      var json = original.toXdrJson();
+      var fromDocument = XdrStellarValueSignedMsValue.fromXdrJson(json);
+      expect(fromDocument.toXdrJson(), json);
+      expect(
+        fromDocument.toBase64EncodedXdrString(),
+        original.toBase64EncodedXdrString(),
+      );
+      var fromTree = XdrStellarValueSignedMsValue.fromXdrJsonValue(
+        original.toXdrJsonValue(),
+      );
+      expect(fromTree.toXdrJsonValue(), original.toXdrJsonValue());
+      expect(
+        fromTree.toBase64EncodedXdrString(),
+        original.toBase64EncodedXdrString(),
+      );
+    });
+    test('XdrStellarValueSignedMsValue rejects an undeclared key', () {
+      var original = XdrStellarValueSignedMsValue(
+        XdrUint64(BigInt.from(123456)),
+        XdrLedgerCloseValueSignature(
+          XdrNodeID(
+            XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)
+              ..ed25519 = XdrUint256(
+                Uint8List.fromList(List<int>.filled(32, 0xAB)),
+              ),
+          ),
+          XdrSignature(Uint8List.fromList([4, 5, 6])),
+        ),
+      );
+      var object = <String, Object?>{
+        ...(original.toXdrJsonValue() as Map<String, Object?>),
+        'xdr_json_undeclared_key': null,
+      };
+      expect(
+        () => XdrStellarValueSignedMsValue.fromXdrJsonValue(object),
+        throwsA(isA<FormatException>()),
+      );
+    });
+    test('XdrStellarValueProposedMsValue round trip', () {
+      var original = XdrStellarValueProposedMsValue(
+        XdrUint64(BigInt.from(123456)),
+        XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))),
+        XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))),
+        XdrUint32(42),
+        XdrLedgerCloseValueSignature(
+          XdrNodeID(
+            XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)
+              ..ed25519 = XdrUint256(
+                Uint8List.fromList(List<int>.filled(32, 0xAB)),
+              ),
+          ),
+          XdrSignature(Uint8List.fromList([4, 5, 6])),
+        ),
+      );
+      var json = original.toXdrJson();
+      var fromDocument = XdrStellarValueProposedMsValue.fromXdrJson(json);
+      expect(fromDocument.toXdrJson(), json);
+      expect(
+        fromDocument.toBase64EncodedXdrString(),
+        original.toBase64EncodedXdrString(),
+      );
+      var fromTree = XdrStellarValueProposedMsValue.fromXdrJsonValue(
+        original.toXdrJsonValue(),
+      );
+      expect(fromTree.toXdrJsonValue(), original.toXdrJsonValue());
+      expect(
+        fromTree.toBase64EncodedXdrString(),
+        original.toBase64EncodedXdrString(),
+      );
+    });
+    test('XdrStellarValueProposedMsValue rejects an undeclared key', () {
+      var original = XdrStellarValueProposedMsValue(
+        XdrUint64(BigInt.from(123456)),
+        XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))),
+        XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))),
+        XdrUint32(42),
+        XdrLedgerCloseValueSignature(
+          XdrNodeID(
+            XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)
+              ..ed25519 = XdrUint256(
+                Uint8List.fromList(List<int>.filled(32, 0xAB)),
+              ),
+          ),
+          XdrSignature(Uint8List.fromList([4, 5, 6])),
+        ),
+      );
+      var object = <String, Object?>{
+        ...(original.toXdrJsonValue() as Map<String, Object?>),
+        'xdr_json_undeclared_key': null,
+      };
+      expect(
+        () => XdrStellarValueProposedMsValue.fromXdrJsonValue(object),
+        throwsA(isA<FormatException>()),
+      );
+    });
     test('XdrStellarValueExt basic arm round trip', () {
       var original = XdrStellarValueExt(
         XdrStellarValueType.STELLAR_VALUE_BASIC,
@@ -270,9 +413,84 @@ void main() {
         original.toBase64EncodedXdrString(),
       );
     });
+    test('XdrStellarValueExt signed_ms arm round trip', () {
+      var original = XdrStellarValueExt(
+        XdrStellarValueType.STELLAR_VALUE_SIGNED_MS,
+      );
+      original.signedMsValue = (XdrStellarValueSignedMsValue(
+        XdrUint64(BigInt.from(123456)),
+        XdrLedgerCloseValueSignature(
+          XdrNodeID(
+            XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)
+              ..ed25519 = XdrUint256(
+                Uint8List.fromList(List<int>.filled(32, 0xAB)),
+              ),
+          ),
+          XdrSignature(Uint8List.fromList([4, 5, 6])),
+        ),
+      ));
+      expect(
+        (original.toXdrJsonValue() as Map<String, Object?>).keys.single,
+        'signed_ms',
+      );
+      var json = original.toXdrJson();
+      var fromDocument = XdrStellarValueExt.fromXdrJson(json);
+      expect(fromDocument.toXdrJson(), json);
+      expect(
+        fromDocument.toBase64EncodedXdrString(),
+        original.toBase64EncodedXdrString(),
+      );
+      var fromTree = XdrStellarValueExt.fromXdrJsonValue(
+        original.toXdrJsonValue(),
+      );
+      expect(fromTree.toXdrJsonValue(), original.toXdrJsonValue());
+      expect(
+        fromTree.toBase64EncodedXdrString(),
+        original.toBase64EncodedXdrString(),
+      );
+    });
+    test('XdrStellarValueExt empty_tx_set_ms arm round trip', () {
+      var original = XdrStellarValueExt(
+        XdrStellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS,
+      );
+      original.proposedMsValue = (XdrStellarValueProposedMsValue(
+        XdrUint64(BigInt.from(123456)),
+        XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))),
+        XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))),
+        XdrUint32(42),
+        XdrLedgerCloseValueSignature(
+          XdrNodeID(
+            XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519)
+              ..ed25519 = XdrUint256(
+                Uint8List.fromList(List<int>.filled(32, 0xAB)),
+              ),
+          ),
+          XdrSignature(Uint8List.fromList([4, 5, 6])),
+        ),
+      ));
+      expect(
+        (original.toXdrJsonValue() as Map<String, Object?>).keys.single,
+        'empty_tx_set_ms',
+      );
+      var json = original.toXdrJson();
+      var fromDocument = XdrStellarValueExt.fromXdrJson(json);
+      expect(fromDocument.toXdrJson(), json);
+      expect(
+        fromDocument.toBase64EncodedXdrString(),
+        original.toBase64EncodedXdrString(),
+      );
+      var fromTree = XdrStellarValueExt.fromXdrJsonValue(
+        original.toXdrJsonValue(),
+      );
+      expect(fromTree.toXdrJsonValue(), original.toXdrJsonValue());
+      expect(
+        fromTree.toBase64EncodedXdrString(),
+        original.toBase64EncodedXdrString(),
+      );
+    });
     test('XdrStellarValueExt rejects an undeclared discriminant', () {
       expect(
-        () => XdrStellarValueExt(XdrStellarValueType(3)).toXdrJsonValue(),
+        () => XdrStellarValueExt(XdrStellarValueType(5)).toXdrJsonValue(),
         throwsA(isA<FormatException>()),
       );
     });

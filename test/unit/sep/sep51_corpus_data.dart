@@ -32,10 +32,12 @@ const Map<String, String> sep51CorpusMetadata = <String, String>{
   'reference_tool': 'stellar-xdr',
   'reference_version': '28.0.1',
   'reference_xdr_commit': '9c9c145953e80990d6ff1ae3a6a973a0ce6d0694',
-  'sdk_xdr_commit': 'c40231c76bf2ebce76b24aa11c72508ac3eaa329',
-  'entry_count': '359',
-  'unresolvable_enum_members': '',
-  'unresolvable_struct_types': '',
+  'sdk_xdr_commit': 'c2612cf534e4448fa263e252afe1bdbac5512d14',
+  'entry_count': '360',
+  'unresolvable_enum_members':
+      'StellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS, StellarValueType.STELLAR_VALUE_SIGNED_MS',
+  'unresolvable_struct_types':
+      'StellarValueProposedMsValue, StellarValueSignedMsValue',
   'type_field_types':
       'ContractEvent, DontHave, SCSpecEventParamV0, SCSpecFunctionInputV0, SCSpecUDTStructFieldV0, SCSpecUDTUnionCaseTupleV0, SerializedBinaryFuseFilter',
   'type_field_alias':
@@ -3142,6 +3144,14 @@ const List<Sep51CorpusEntry> sep51Corpus = <Sep51CorpusEntry>[
     json: '"soroban_authorization"',
     oracle: 'reference',
     note: 'Multi-word envelope type enum member.',
+  ),
+  Sep51CorpusEntry(
+    type: 'StellarValueType',
+    dartType: 'XdrStellarValueType',
+    xdr: 'AAAAAg==',
+    json: '"empty_tx_set"',
+    oracle: 'reference',
+    note: 'Stellar value type enum member is stripped of its shared prefix.',
   ),
   Sep51CorpusEntry(
     type: 'ContractCostType',
