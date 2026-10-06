@@ -709,7 +709,7 @@ void main() {
   group('SEP-0051 corpus provenance', () {
     test('records the reference build the expected values come from', () {
       expect(sep51CorpusMetadata['reference_tool'], 'stellar-xdr');
-      expect(sep51CorpusMetadata['reference_version'], '28.0.0');
+      expect(sep51CorpusMetadata['reference_version'], '28.0.1');
       expect(
         sep51CorpusMetadata['reference_xdr_commit'],
         '9c9c145953e80990d6ff1ae3a6a973a0ce6d0694',

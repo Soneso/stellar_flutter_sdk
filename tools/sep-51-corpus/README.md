@@ -30,7 +30,7 @@ the web platform, which has no file to read.
 ## Installing the reference
 
 ```bash
-cargo install stellar-xdr --features cli --version 28.0.0 --locked
+cargo install stellar-xdr --features cli --version 28.0.1 --locked
 ```
 
 The exact build is pinned in `../sep-51-oracle/oracle-pin.json` by version and by
