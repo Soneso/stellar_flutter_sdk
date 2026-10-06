@@ -343,6 +343,9 @@ class GetTransactionResponse extends SorobanRpcResponse {
   /// hex-encoded transaction hash string. Only available for protocol version >= 22
   String? txHash;
 
+  /// (optional) Base64-encoded DiagnosticEvent XDR structs emitted while applying this transaction. Decode an entry with [XdrDiagnosticEvent.fromBase64EncodedXdrString].
+  List<String>? diagnosticEventsXdr;
+
   /// events for the transaction. Only available for protocol version >= 23
   TransactionEvents? events;
 
@@ -369,6 +372,10 @@ class GetTransactionResponse extends SorobanRpcResponse {
       response.resultXdr = json['result']['resultXdr'];
       response.resultMetaXdr = json['result']['resultMetaXdr'];
       response.txHash = json['result']['txHash'];
+      if (json['result']['diagnosticEventsXdr'] != null) {
+        response.diagnosticEventsXdr =
+            List<String>.from(json['result']['diagnosticEventsXdr']);
+      }
       if (json['result']['events'] != null) {
         response.events = TransactionEvents.fromJson(json['result']['events']);
       }
@@ -564,7 +571,7 @@ class GetTransactionsResponse extends SorobanRpcResponse {
 /// The class includes:
 /// - Execution metadata (status, ledger, timestamp)
 /// - XDR-encoded transaction data (envelope, result, metadata)
-/// - Transaction events (contract events, diagnostic events)
+/// - Diagnostic events, transaction-level events and contract events
 /// - Transaction hash for identification
 ///
 /// Fields:
@@ -577,7 +584,7 @@ class GetTransactionsResponse extends SorobanRpcResponse {
 /// - [ledger]: Ledger sequence number containing the transaction
 /// - [createdAt]: Unix timestamp when transaction was included
 /// - [txHash]: Transaction hash (protocol 23+)
-/// - [diagnosticEventsXdr]: Diagnostic events (deprecated, protocol < 24)
+/// - [diagnosticEventsXdr]: Base64-encoded diagnostic events
 /// - [events]: Transaction events including contract events (protocol 23+)
 ///
 /// Example - Analyzing transaction results:
@@ -656,7 +663,7 @@ class TransactionInfo {
   /// hex-encoded transaction hash string. Only available for protocol version > 22
   String? txHash;
 
-  /// deprecated and will be removed in protocol 24
+  /// (optional) Base64-encoded DiagnosticEvent XDR structs emitted while applying this transaction. Decode an entry with [XdrDiagnosticEvent.fromBase64EncodedXdrString].
   List<String>? diagnosticEventsXdr;
 
   /// events for the transaction. Only available for protocol version >= 23
@@ -732,16 +739,12 @@ class TransactionInfo {
 /// Events emitted during transaction execution on the Soroban network.
 ///
 /// TransactionEvents contains XDR-encoded events generated during smart contract execution.
-/// Events are organized by type and provide visibility into contract behavior, state changes,
-/// and diagnostic information. This data is essential for monitoring, debugging, and
-/// analyzing contract interactions.
+/// Events are organized by type and provide visibility into contract behavior and state
+/// changes. This data is essential for monitoring, debugging, and analyzing contract
+/// interactions. Diagnostic events are in [GetTransactionResponse.diagnosticEventsXdr]
+/// and [TransactionInfo.diagnosticEventsXdr].
 ///
 /// Event Categories:
-///
-/// Diagnostic Events ([diagnosticEventsXdr]):
-/// - Internal events for debugging and diagnostics
-/// - Include contract logging and system information
-/// - Useful for troubleshooting failed transactions
 ///
 /// Transaction Events ([transactionEventsXdr]):
 /// - General transaction-level events
@@ -753,11 +756,10 @@ class TransactionInfo {
 /// - Used for application-level notifications and state tracking
 /// - Can be filtered and subscribed to via getEvents RPC method
 ///
-/// All events are base64-encoded XDR strings that can be decoded using XdrContractEvent
-/// or XdrDiagnosticEvent for analysis.
+/// All events are base64-encoded XDR strings that can be decoded using XdrTransactionEvent
+/// or XdrContractEvent for analysis.
 ///
 /// Fields:
-/// - [diagnosticEventsXdr]: Base64-encoded diagnostic events
 /// - [transactionEventsXdr]: Base64-encoded transaction events
 /// - [contractEventsXdr]: Nested lists of base64-encoded contract events per operation
 ///
@@ -765,16 +767,16 @@ class TransactionInfo {
 /// ```dart
 /// final txInfo = response.transactions!.first;
 ///
+/// // Process diagnostic events
+/// if (txInfo.diagnosticEventsXdr != null) {
+///   for (var eventXdr in txInfo.diagnosticEventsXdr!) {
+///     final event = XdrDiagnosticEvent.fromBase64EncodedXdrString(eventXdr);
+///     print('Diagnostic: ${event.inSuccessfulContractCall}');
+///   }
+/// }
+///
 /// if (txInfo.events != null) {
 ///   final events = txInfo.events!;
-///
-///   // Process diagnostic events
-///   if (events.diagnosticEventsXdr != null) {
-///     for (var eventXdr in events.diagnosticEventsXdr!) {
-///       final event = XdrDiagnosticEvent.fromBase64EncodedXdrString(eventXdr);
-///       print('Diagnostic: ${event.inSuccessfulContractCall}');
-///     }
-///   }
 ///
 ///   // Process contract events
 ///   if (events.contractEventsXdr != null) {
@@ -814,13 +816,16 @@ class TransactionInfo {
 /// - [XdrContractEvent] for decoding contract events
 /// - [XdrDiagnosticEvent] for decoding diagnostic events
 class TransactionEvents {
+  @Deprecated(
+      'stellar-rpc does not send this field; read diagnosticEventsXdr of '
+      'GetTransactionResponse or TransactionInfo.')
   List<String>? diagnosticEventsXdr;
   List<String>? transactionEventsXdr;
   List<List<String>>? contractEventsXdr;
 
   /// Creates a TransactionEvents with event XDR lists.
   ///
-  /// Contains diagnostic, transaction, and contract event data.
+  /// Contains transaction and contract event data.
   TransactionEvents(this.diagnosticEventsXdr, this.transactionEventsXdr,
       this.contractEventsXdr);
 
