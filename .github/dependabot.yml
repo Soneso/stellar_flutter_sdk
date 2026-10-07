@@ -5,20 +5,19 @@ updates:
     schedule:
       interval: monthly
   - package-ecosystem: pub
-    directories:
-      - /
-      - /example
+    directory: /
     schedule:
       interval: monthly
+    versioning-strategy: widen
     groups:
       pub:
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: gradle
-    # The plugin and the example app are separate Gradle builds.
-    directories:
-      - /android
-      - /example/android
+    directory: /android
     schedule:
       interval: monthly
     groups:
@@ -28,6 +27,14 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      - dependency-name: "org.jetbrains.kotlin.plugin.serialization"
+      - dependency-name: "org.jetbrains.kotlinx:kotlinx-serialization-json"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "org.jetbrains.kotlinx:kotlinx-coroutines-android"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: "org.jetbrains.kotlinx:kotlinx-coroutines-test"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
   - package-ecosystem: swift
     directory: /ios/stellar_flutter_sdk
     schedule:
