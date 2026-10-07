@@ -8,7 +8,7 @@ import 'package:meta/meta.dart';
 import '../../soroban/soroban_auth.dart';
 import '../../util.dart';
 import '../../xdr/xdr.dart';
-import '../core/sc_val_host_order.dart';
+import '../../soroban/sc_val_host_order.dart';
 import '../core/smart_account_errors.dart';
 import 'oz_internal_pipeline_interfaces.dart';
 import 'oz_selected_signer.dart';

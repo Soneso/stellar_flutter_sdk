@@ -5,6 +5,7 @@
 import 'dart:typed_data';
 import '../xdr/xdr.dart';
 import '../util.dart';
+import 'sc_val_host_order.dart';
 
 /// Utility class for working with Soroban contract specifications.
 ///
@@ -269,8 +270,10 @@ class ContractSpec {
   /// [val] The native Dart value to convert
   /// [ty] The target type specification
   ///
-  /// Returns the converted XdrSCVal.
-  /// Throws ContractSpecException for invalid types or conversion failures.
+  /// Returns the converted XdrSCVal. Maps and map-encoded structs carry their
+  /// keys in the Soroban host's order ([sortedScMap]).
+  /// Throws ContractSpecException for invalid types or conversion failures,
+  /// and an ArgumentError for a map with two equal keys.
   XdrSCVal nativeToXdrSCVal(dynamic val, XdrSCSpecTypeDef ty) {
     // Handle null values
     if (val == null) {
@@ -431,7 +434,7 @@ class ContractSpec {
       final entries = val.entries.map((e) {
         return XdrSCMapEntry(_inferType(e.key), _inferType(e.value));
       }).toList();
-      return XdrSCVal.forMap(entries);
+      return sortedScMap(entries);
     }
     throw ContractSpecException.invalidType(
         'Cannot infer type for value: ${val.runtimeType}');
@@ -624,7 +627,7 @@ class ContractSpec {
       entries.add(XdrSCMapEntry(keyVal, valueVal));
     }
 
-    return XdrSCVal.forMap(entries);
+    return sortedScMap(entries);
   }
 
   /// Infer type and convert value when we don't have type information
@@ -723,7 +726,7 @@ class ContractSpec {
       entries.add(XdrSCMapEntry(keyVal, valueVal));
     }
 
-    return XdrSCVal.forMap(entries);
+    return sortedScMap(entries);
   }
 
   /// Handle tuple type
@@ -830,7 +833,7 @@ class ContractSpec {
         final valueVal = nativeToXdrSCVal(val[field.name], field.type);
         entries.add(XdrSCMapEntry(keyVal, valueVal));
       }
-      return XdrSCVal.forMap(entries);
+      return sortedScMap(entries);
     } else {
       // Use vector representation (all fields are numeric)
       final scValues = <XdrSCVal>[];

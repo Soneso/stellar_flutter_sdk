@@ -1246,16 +1246,24 @@ class AssembledTransaction {
   /// - ADDRESS and ADDRESS_V2: matches on the top-level credential address.
   /// - ADDRESS_WITH_DELEGATES: matches on the top-level address AND on every
   ///   delegate node at any depth (depth-first). When the signer address
-  ///   matches a delegate node, the expiration is stamped on the top-level
-  ///   credentials and the signature is routed into that delegate node via
-  ///   [SorobanAuthorizationEntry.sign] with `forAddress`. A delegate signer
-  ///   never silently matches no entry — if [signerKeyPair.accountId] appears
-  ///   in [needsNonInvokerSigningBy] but no entry matches during the signing
-  ///   walk, an exception is thrown.
+  ///   matches a delegate node, the signature is routed into that delegate
+  ///   node via [SorobanAuthorizationEntry.sign] with `forAddress`. A
+  ///   delegate signer never silently matches no entry: if
+  ///   [signerKeyPair.accountId] appears in [needsNonInvokerSigningBy] but no
+  ///   entry matches during the signing walk, an exception is thrown.
   ///
   /// SOURCE_ACCOUNT entries are skipped. Unknown/unrecognized arms fail fast.
   ///
   /// The credential arm is preserved after signing; V2 entries stay V2.
+  ///
+  /// Every signature on an entry commits to the entry's single
+  /// `signatureExpirationLedger`. When any node of a matching entry already
+  /// carries a signature (any value other than `SCV_VOID`), the stored
+  /// expiration is kept; this includes the signer's own nodes, because new
+  /// signatures are appended to the ones a node holds. Otherwise the
+  /// expiration is set to [validUntilLedgerSeq] or its default before
+  /// signing. Matching entries are signed on copies; the transaction's auth
+  /// entries are replaced only after every matching entry has been signed.
   ///
   /// Use [needsNonInvokerSigningBy] to determine which addresses need to sign.
   ///
@@ -1263,14 +1271,23 @@ class AssembledTransaction {
   /// - [signerKeyPair] KeyPair of the signer (must include private key unless
   ///   [authorizeEntryDelegate] is provided)
   /// - [authorizeEntryDelegate] Optional custom signing function (e.g. for
-  ///   remote or HSM signing). When provided the validation checks are skipped
-  ///   and the returned entry replaces the original.
-  /// - [validUntilLedgerSeq] Signature expiration ledger. Defaults to the
-  ///   latest ledger sequence plus [NetworkConstants.DEFAULT_LEDGER_EXPIRATION_OFFSET].
+  ///   remote or HSM signing). When provided, the checks that the signer has
+  ///   an unsigned node in [needsNonInvokerSigningBy] and that [signerKeyPair]
+  ///   holds a private key are skipped; the expiration check still applies.
+  ///   The function receives a copy of each matching entry with its
+  ///   expiration set, and the entry it returns replaces the original.
+  /// - [validUntilLedgerSeq] Signature expiration ledger for entries that
+  ///   carry no signature yet. Defaults to the latest ledger sequence plus
+  ///   [NetworkConstants.DEFAULT_LEDGER_EXPIRATION_OFFSET]; the latest ledger
+  ///   is fetched at most once per call, and only when an entry needs the
+  ///   default.
   ///
   /// Throws:
   /// - Exception If no entries need signing, keypair lacks a private key, or
   ///   the signer address is not found in any entry.
+  /// - ArgumentError If [validUntilLedgerSeq] differs from the stored
+  ///   expiration of a matching entry that already carries a signature.
+  ///   The transaction keeps its auth entries.
   ///
   /// Example - Local signing:
   /// ```dart
@@ -1326,16 +1343,6 @@ class AssembledTransaction {
     if (tx == null) {
       throw Exception("Transaction has not yet been simulated");
     }
-    var expirationLedger = validUntilLedgerSeq;
-    if (expirationLedger == null) {
-      final getLatestLedgerResponse = await server.getLatestLedger();
-      if (getLatestLedgerResponse.sequence == null) {
-        throw Exception("Could not fetch latest ledger sequence from server");
-      }
-      expirationLedger = getLatestLedgerResponse.sequence! +
-          NetworkConstants.DEFAULT_LEDGER_EXPIRATION_OFFSET;
-    }
-
     final ops = tx!.operations;
     if (ops.isEmpty) {
       throw Exception("Unexpected Transaction type; no operations found.");
@@ -1346,9 +1353,13 @@ class AssembledTransaction {
           "Unexpected Transaction type; no invoke host function operations found.");
     }
 
-    var authEntries = invokeHostFuncOp.auth;
+    final authEntries =
+        List<SorobanAuthorizationEntry>.of(invokeHostFuncOp.auth);
+    int? defaultExpirationLedger;
     for (var i = 0; i < authEntries.length; i++) {
-      final entry = authEntries[i];
+      // Sign a copy so that a failure leaves the transaction's entries intact.
+      final entry = SorobanAuthorizationEntry.fromBase64EncodedXdr(
+          authEntries[i].toBase64EncodedXdrString());
       final arm = entry.credentials.arm;
 
       if (arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT) {
@@ -1380,12 +1391,14 @@ class AssembledTransaction {
       final bool matchesTopLevel = topLevelStrKey == signerAddress;
 
       bool matchesDelegate = false;
+      bool delegateSigned = false;
       if (arm == XdrSorobanCredentialsType
           .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
         final withDelegates =
             entry.credentials.addressWithDelegatesCredentials!;
         matchesDelegate =
             _delegateListContains(withDelegates.delegates, signerAddress, 0);
+        delegateSigned = _delegateListHasSignature(withDelegates.delegates, 0);
       }
 
       if (!matchesTopLevel && !matchesDelegate) {
@@ -1393,9 +1406,23 @@ class AssembledTransaction {
         continue;
       }
 
-      // Stamp expiration before signing — the preimage is built from the
-      // current expiration value.
-      inner.signatureExpirationLedger = expirationLedger;
+      // Every signature on the entry commits to its stored expiration, so it
+      // changes only while no node carries a signature.
+      final storedExpiration = inner.signatureExpirationLedger;
+      if (delegateSigned ||
+          inner.signature.discriminant != XdrSCValType.SCV_VOID) {
+        if (validUntilLedgerSeq != null &&
+            validUntilLedgerSeq != storedExpiration) {
+          throw ArgumentError.value(
+              validUntilLedgerSeq,
+              'validUntilLedgerSeq',
+              'Auth entry $i already carries a signature committed to '
+                  'signatureExpirationLedger $storedExpiration');
+        }
+      } else {
+        inner.signatureExpirationLedger = validUntilLedgerSeq ??
+            (defaultExpirationLedger ??= await _defaultExpirationLedger());
+      }
 
       if (authorizeEntryDelegate != null) {
         // Hand the matching entry off to the external signer.
@@ -1420,6 +1447,33 @@ class AssembledTransaction {
       authEntries[i] = entry;
     }
     tx!.setSorobanAuth(authEntries);
+  }
+
+  /// Returns the latest ledger sequence plus
+  /// [NetworkConstants.DEFAULT_LEDGER_EXPIRATION_OFFSET].
+  Future<int> _defaultExpirationLedger() async {
+    final getLatestLedgerResponse = await server.getLatestLedger();
+    if (getLatestLedgerResponse.sequence == null) {
+      throw Exception("Could not fetch latest ledger sequence from server");
+    }
+    return getLatestLedgerResponse.sequence! +
+        NetworkConstants.DEFAULT_LEDGER_EXPIRATION_OFFSET;
+  }
+
+  /// Returns true when a node in [delegates] or their nested delegates
+  /// (depth-first) carries a signature other than `SCV_VOID`.
+  static bool _delegateListHasSignature(
+      List<SorobanDelegateSignature> delegates, int depth) {
+    if (depth > 128) {
+      throw Exception('Delegate tree traversal depth limit (128) exceeded');
+    }
+    for (final node in delegates) {
+      if (node.signature.discriminant != XdrSCValType.SCV_VOID ||
+          _delegateListHasSignature(node.nestedDelegates, depth + 1)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /// Returns true when [targetStrKey] appears as the address of any delegate

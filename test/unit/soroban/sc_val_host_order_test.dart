@@ -5,15 +5,125 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stellar_flutter_sdk/src/smartaccount/core/sc_val_host_order.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
-/// Host-order ScMap key comparator (`compareScValHostOrder`) and its effect
-/// on the smart-account signer maps. The Soroban host orders keys by content
-/// (Rust slice `Ord`), with length only a tiebreaker on a common prefix.
-/// Sorting by the length-major XDR-byte encoding instead diverges for
-/// variable-length keys whose lengths differ, producing a map the host
-/// rejects with `InvalidInput`; this suite pins the correct order.
+final _max64 = BigInt.parse('18446744073709551615');
+
+/// The shared host-order vector, ascending: rs-soroban-env
+/// `soroban-env-host/src/host/comparison.rs`, `Compare<ScVal>`.
+List<XdrSCVal> _hostOrderVector() {
+  XdrSCVal error(
+    XdrSCErrorType type, {
+    int? contractCode,
+    XdrSCErrorCode? code,
+  }) {
+    final e = XdrSCError(type)..code = code;
+    if (contractCode != null) e.contractCode = XdrUint32(contractCode);
+    return XdrSCVal.forError(e);
+  }
+
+  Uint8List filled(int byte) => Uint8List(32)..fillRange(0, 32, byte);
+  XdrSCVal muxed(int id, int byte) => XdrSCVal.forAddress(
+    XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT)
+      ..muxedAccount = XdrMuxedAccountMed25519(
+        XdrUint64(BigInt.from(id)),
+        XdrUint256(filled(byte)),
+      ),
+  );
+  XdrSCVal bytes(List<int> v) => XdrSCVal.forBytes(Uint8List.fromList(v));
+  XdrSCVal map(int k, int v) =>
+      XdrSCVal.forMap([XdrSCMapEntry(XdrSCVal.forU32(k), XdrSCVal.forU32(v))]);
+  final big = BigInt.from;
+
+  return [
+    XdrSCVal.forBool(false),
+    XdrSCVal.forBool(true),
+    XdrSCVal.forVoid(),
+    error(XdrSCErrorType.SCE_CONTRACT, contractCode: 1),
+    error(XdrSCErrorType.SCE_CONTRACT, contractCode: 2),
+    error(XdrSCErrorType.SCE_WASM_VM, code: XdrSCErrorCode.SCEC_INVALID_INPUT),
+    XdrSCVal.forU32(0),
+    XdrSCVal.forU32(4294967295),
+    XdrSCVal.forI32(-2147483648),
+    XdrSCVal.forI32(-1),
+    XdrSCVal.forI32(0),
+    XdrSCVal.forI32(1),
+    XdrSCVal.forU64(BigInt.zero),
+    XdrSCVal.forU64(_max64),
+    XdrSCVal.forI64(BigInt.parse('-9223372036854775808')),
+    XdrSCVal.forI64(big(-1)),
+    XdrSCVal.forI64(BigInt.zero),
+    XdrSCVal.forTimepoint(BigInt.zero),
+    XdrSCVal.forTimepoint(BigInt.one),
+    XdrSCVal.forDuration(BigInt.zero),
+    XdrSCVal.forU128Parts(BigInt.zero, BigInt.one),
+    XdrSCVal.forU128Parts(BigInt.zero, _max64),
+    XdrSCVal.forU128Parts(BigInt.one, BigInt.zero),
+    XdrSCVal.forI128Parts(big(-1), _max64),
+    XdrSCVal.forI128Parts(BigInt.zero, BigInt.zero),
+    XdrSCVal.forI128Parts(BigInt.zero, _max64),
+    XdrSCVal.forI128Parts(BigInt.one, BigInt.zero),
+    XdrSCVal.forU256Parts(BigInt.zero, BigInt.zero, BigInt.zero, BigInt.one),
+    XdrSCVal.forU256Parts(BigInt.one, BigInt.zero, BigInt.zero, BigInt.zero),
+    XdrSCVal.forI256Parts(big(-1), _max64, _max64, _max64),
+    XdrSCVal.forI256Parts(BigInt.zero, BigInt.zero, BigInt.zero, BigInt.zero),
+    bytes([]),
+    bytes([0x01]),
+    bytes([0x01, 0x00]),
+    bytes([0x02]),
+    bytes([0xff]),
+    XdrSCVal.forString(''),
+    XdrSCVal.forString('a'),
+    XdrSCVal.forString('ab'),
+    XdrSCVal.forString('b'),
+    XdrSCVal.forSymbol('A'),
+    XdrSCVal.forSymbol('AB'),
+    XdrSCVal.forSymbol('B'),
+    XdrSCVal.forSymbol('_'),
+    XdrSCVal.forSymbol('a'),
+    XdrSCVal.forVec([]),
+    XdrSCVal.forVec([XdrSCVal.forU32(1)]),
+    XdrSCVal.forVec([XdrSCVal.forU32(1), XdrSCVal.forU32(0)]),
+    XdrSCVal.forVec([XdrSCVal.forU32(2)]),
+    XdrSCVal.forVec([XdrSCVal.forI32(-1)]),
+    XdrSCVal.forMap([]),
+    map(1, 1),
+    map(1, 2),
+    map(2, 0),
+    XdrSCVal.forAccountAddress(StrKey.encodeStellarAccountId(filled(0x00))),
+    XdrSCVal.forAccountAddress(StrKey.encodeStellarAccountId(filled(0xff))),
+    XdrSCVal.forContractAddress(StrKey.encodeContractId(filled(0x00))),
+    XdrSCVal.forContractAddress(StrKey.encodeContractId(filled(0xff))),
+    muxed(0, 0xff),
+    muxed(1, 0x00),
+    XdrSCVal.forLedgerKeyContractInstance(),
+    XdrSCVal.forLedgerKeyNonce(-1),
+    XdrSCVal.forLedgerKeyNonce(0),
+  ];
+}
+
+/// The fixed shuffle: reverse, then swap each pair of neighbours.
+List<T> _shuffled<T>(List<T> items) {
+  final out = items.reversed.toList();
+  for (var i = 0; i + 1 < out.length; i += 2) {
+    final first = out[i];
+    out[i] = out[i + 1];
+    out[i + 1] = first;
+  }
+  return out;
+}
+
+List<String> _keysXdr(XdrSCVal map) =>
+    map.map!.map((e) => e.key.toBase64EncodedXdrString()).toList();
+
+List<String> _xdrList(Iterable<XdrSCVal> values) =>
+    values.map((v) => v.toBase64EncodedXdrString()).toList();
+
+/// Host-order ScMap key comparator (`compareScValHostOrder`), the sorted map
+/// builder (`sortedScMap`), and their effect on the ContractSpec conversions
+/// and the smart-account signer maps. The Soroban host orders keys by content
+/// (Rust slice `Ord`), with length only a tiebreaker on a common prefix, and
+/// rejects an out-of-order map with `InvalidInput`.
 void main() {
   const verifier = 'CB26VN37RCVNTHJZDEPK6IRO2MMTS3Z2IEO5JD5BINY2OOJ5KKJG7NKY';
   const verifierOther =
@@ -328,6 +438,212 @@ void main() {
         reason: 'smaller pubkey content must sort first despite longer keyData',
       );
       expect(xdrBytes(signerKeys[1]), xdrBytes(signerA.toScVal()));
+    });
+  });
+
+  group('host order vector', () {
+    void expectAscending(List<XdrSCVal> keys) {
+      for (var i = 0; i < keys.length; i++) {
+        expect(compareScValHostOrder(keys[i], keys[i]), 0, reason: '#${i + 1}');
+        for (var j = i + 1; j < keys.length; j++) {
+          expect(
+            compareScValHostOrder(keys[i], keys[j]) < 0,
+            isTrue,
+            reason: '#${i + 1} < #${j + 1}',
+          );
+          expect(
+            compareScValHostOrder(keys[j], keys[i]) > 0,
+            isTrue,
+            reason: '#${j + 1} > #${i + 1}',
+          );
+        }
+      }
+    }
+
+    test('every pair of the vector compares in vector order', () {
+      final keys = _hostOrderVector();
+      expect(keys.length, 63);
+      expectAscending(keys);
+    });
+
+    test('ContractInstance compares by executable, then storage', () {
+      XdrSCVal instance(
+        XdrContractExecutable executable, [
+        Map<int, int>? storage,
+      ]) => XdrSCVal.forContractInstance(
+        XdrSCContractInstance(
+          executable,
+          storage?.entries
+              .map(
+                (e) => XdrSCMapEntry(
+                  XdrSCVal.forU32(e.key),
+                  XdrSCVal.forI32(e.value),
+                ),
+              )
+              .toList(),
+        ),
+      );
+      final wasm = XdrContractExecutable.forWasm(Uint8List(32));
+      final owner = XdrSCAddress.forContractId(
+        StrKey.encodeContractId(Uint8List(32)),
+      );
+      expectAscending([
+        instance(wasm),
+        instance(wasm, {1: -1}),
+        instance(wasm, {1: 0}),
+        instance(wasm, {1: 0, 2: 0}),
+        instance(wasm, {2: 0}),
+        instance(XdrContractExecutable.forWasm(Uint8List(32)..[0] = 1)),
+        instance(XdrContractExecutable.forAsset()),
+        instance(XdrContractExecutable.forExternalRef(owner, 'ab')),
+        instance(XdrContractExecutable.forExternalRef(owner, 'b')),
+      ]);
+    });
+
+    test('sortedScMap restores the vector order from the fixed shuffle', () {
+      final keys = _hostOrderVector();
+      final entries = [
+        for (var i = 0; i < keys.length; i++)
+          XdrSCMapEntry(keys[i], XdrSCVal.forU32(i)),
+      ];
+      final shuffled = _shuffled(entries);
+      final map = sortedScMap(shuffled);
+      expect(_keysXdr(map), _xdrList(keys));
+      expect(
+        map.map!.map((e) => e.val.u32!.uint32),
+        orderedEquals(List.generate(keys.length, (i) => i)),
+      );
+      expect(
+        _xdrList(shuffled.map((e) => e.key)),
+        _xdrList(_shuffled(keys)),
+        reason: 'the input list is left unchanged',
+      );
+    });
+
+    test('sortedScMap rejects a duplicate key built separately', () {
+      final entries = [
+        XdrSCMapEntry(XdrSCVal.forSymbol('owner'), XdrSCVal.forU32(1)),
+        XdrSCMapEntry(XdrSCVal.forU32(7), XdrSCVal.forU32(2)),
+        XdrSCMapEntry(XdrSCVal.forSymbol('owner'), XdrSCVal.forU32(3)),
+      ];
+      expect(
+        () => sortedScMap(entries),
+        throwsA(
+          isA<ArgumentError>().having(
+            (e) => e.toString(),
+            'message',
+            contains('owner'),
+          ),
+        ),
+      );
+    });
+  });
+
+  group('ContractSpec map conversions', () {
+    final spec = ContractSpec([]);
+
+    test('spec-driven map emits keys in host order', () {
+      final keys = _hostOrderVector();
+      final mapType = XdrSCSpecTypeDef.forMap(
+        XdrSCSpecTypeMap(XdrSCSpecTypeDef.forVal(), XdrSCSpecTypeDef.forU32()),
+      );
+      final result = spec.nativeToXdrSCVal({
+        for (final key in _shuffled(keys)) key: 1,
+      }, mapType);
+      expect(_keysXdr(result), _xdrList(keys));
+    });
+
+    test('inferred map emits keys in host order', () {
+      // Vector entries a Dart value infers to, by 1-based vector position.
+      final native = <int, Object>{
+        1: false,
+        2: true,
+        7: 0,
+        8: 4294967295,
+        9: -2147483648,
+        10: -1,
+        15: -9223372036854775808,
+        24: BigInt.from(-1),
+        25: BigInt.zero,
+        26: _max64,
+        27: _max64 + BigInt.one,
+        32: Uint8List(0),
+        33: Uint8List.fromList([0x01]),
+        34: Uint8List.fromList([0x01, 0x00]),
+        35: Uint8List.fromList([0x02]),
+        36: Uint8List.fromList([0xff]),
+        37: '',
+        38: 'a',
+        39: 'ab',
+        40: 'b',
+        46: <int>[],
+        47: [1],
+        48: [1, 0],
+        49: [2],
+        50: [-1],
+        51: <int, int>{},
+        52: {1: 1},
+        53: {1: 2},
+        54: {2: 0},
+      };
+      final vector = _hostOrderVector();
+      final result = spec.nativeToXdrSCVal({
+        for (final position in _shuffled(native.keys.toList()))
+          native[position]: position,
+      }, XdrSCSpecTypeDef.forVal());
+      expect(
+        _keysXdr(result),
+        _xdrList(native.keys.map((position) => vector[position - 1])),
+      );
+    });
+
+    test('map-encoded struct emits field keys in host order', () {
+      final structEntry =
+          XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_STRUCT_V0)
+            ..udtStructV0 = XdrSCSpecUDTStructV0('', '', 'Pair', [
+              XdrSCSpecUDTStructFieldV0('', 'zeta', XdrSCSpecTypeDef.forU32()),
+              XdrSCSpecUDTStructFieldV0('', 'alpha', XdrSCSpecTypeDef.forU32()),
+            ]);
+      final result = ContractSpec([structEntry]).nativeToXdrSCVal({
+        'zeta': 1,
+        'alpha': 2,
+      }, XdrSCSpecTypeDef.forUdt(XdrSCSpecTypeUDT('Pair')));
+      expect(
+        result.map!.map((e) => e.key.sym),
+        orderedEquals(['alpha', 'zeta']),
+      );
+    });
+
+    test('a map with two keys equal in host order throws', () {
+      final mapType = XdrSCSpecTypeDef.forMap(
+        XdrSCSpecTypeMap(
+          XdrSCSpecTypeDef.forBytes(),
+          XdrSCSpecTypeDef.forU32(),
+        ),
+      );
+      expect(
+        () => spec.nativeToXdrSCVal({
+          Uint8List.fromList([0x01]): 1,
+          Uint8List.fromList([0x01]): 2,
+        }, mapType),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+
+    test('a decoded map keeps its key order when encoded again', () {
+      final unordered = XdrSCVal.forMap([
+        XdrSCMapEntry(XdrSCVal.forI32(1), XdrSCVal.forU32(0)),
+        XdrSCMapEntry(XdrSCVal.forI32(-1), XdrSCVal.forU32(1)),
+      ]).toBase64EncodedXdrString();
+      final decoded = XdrSCVal.fromBase64EncodedXdrString(unordered);
+      expect(decoded.toBase64EncodedXdrString(), unordered);
+      final mapType = XdrSCSpecTypeDef.forMap(
+        XdrSCSpecTypeMap(XdrSCSpecTypeDef.forI32(), XdrSCSpecTypeDef.forU32()),
+      );
+      expect(
+        spec.nativeToXdrSCVal(decoded, mapType).toBase64EncodedXdrString(),
+        unordered,
+      );
     });
   });
 }

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'assets.dart';
+import 'key_pair.dart';
 import 'constants/stellar_protocol_constants.dart';
 import 'xdr/xdr.dart';
 import 'asset_type_credit_alphanum.dart';
@@ -16,7 +17,8 @@ import 'asset_type_credit_alphanum.dart';
 ///
 /// Pool characteristics:
 /// - Created from two assets (assetA and assetB)
-/// - Assets must be sorted: Native < AlphaNum4 < AlphaNum12, then by code, then by issuer
+/// - Assets must be sorted: Native < AlphaNum4 < AlphaNum12, then by code,
+///   then by the issuer's raw public key bytes
 /// - Pool shares can be used in payment and trustline operations
 /// - Share value fluctuates with pool reserves and trading activity
 ///
@@ -82,7 +84,9 @@ class AssetTypePoolShare extends Asset {
   /// The assets must be provided in sorted order according to:
   /// 1. Asset type: Native < AlphaNum4 < AlphaNum12
   /// 2. Asset code: Lexicographic ordering
-  /// 3. Issuer: Lexicographic ordering of account IDs
+  /// 3. Issuer: the raw 32-byte ed25519 public keys, compared as unsigned
+  ///    bytes, as stellar-core validates them. The G... strkey text does not
+  ///    follow this order.
   ///
   /// Parameters:
   /// - [assetA] The first asset (must sort before assetB)
@@ -124,17 +128,22 @@ class AssetTypePoolShare extends Asset {
         if (codeCompare > 0) {
           sortError = true;
         } else if (codeCompare == 0) {
-          String issuerA = (assetA as AssetTypeCreditAlphaNum).issuerId;
-          String issuerB = (assetB as AssetTypeCreditAlphaNum).issuerId;
-          if (issuerA.compareTo(issuerB) > 0) {
-            sortError = true;
+          final issuerA = StrKey.decodeStellarAccountId(
+              (assetA as AssetTypeCreditAlphaNum).issuerId);
+          final issuerB = StrKey.decodeStellarAccountId(
+              (assetB as AssetTypeCreditAlphaNum).issuerId);
+          for (int i = 0; i < issuerA.length; i++) {
+            if (issuerA[i] != issuerB[i]) {
+              sortError = issuerA[i] > issuerB[i];
+              break;
+            }
           }
         }
       }
     }
     if (sortError) {
       throw Exception(
-          "Assets are in wrong order. Sort by: Native < AlphaNum4 < AlphaNum12, then by Code, then by Issuer, using lexicographic ordering.");
+          "Assets are in wrong order: assetA ${Asset.canonicalForm(assetA)} sorts after assetB ${Asset.canonicalForm(assetB)}. Sort by: Native < AlphaNum4 < AlphaNum12, then by Code, then by the Issuer's raw public key bytes.");
     }
   }
 
