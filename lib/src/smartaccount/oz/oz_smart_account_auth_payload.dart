@@ -5,7 +5,7 @@
 import 'dart:typed_data';
 
 import '../../xdr/xdr.dart';
-import '../core/sc_val_host_order.dart';
+import '../../soroban/sc_val_host_order.dart';
 import '../core/smart_account_errors.dart';
 import 'oz_address_strkey.dart';
 import 'oz_smart_account_builders.dart';

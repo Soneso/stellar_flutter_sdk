@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -333,6 +335,69 @@ void main() {
       expect(pool1, equals(pool2));
       expect(pool1.hashCode, equals(pool2.hashCode));
     });
+
+    group('same-code issuers ordered by raw public key bytes', () {
+      // The strkey text sorts Y before X; the raw keys (0x68... and 0x74...)
+      // sort X before Y, which is the order stellar-core validates.
+      const issuerX = 'GBUACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6CLH';
+      const issuerY = 'GB2ACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB7BZ4';
+      const paramsXdr = 'AAAAAAAAAAFVU0RDAAAAAGgBAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZG'
+          'hscHR4fAAAAAVVTREMAAAAAdAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8AAAAe';
+      final usdcX = AssetTypeCreditAlphaNum4('USDC', issuerX);
+      final usdcY = AssetTypeCreditAlphaNum4('USDC', issuerY);
+
+      Uint8List encodeOperation(XdrOperation op) {
+        final out = XdrDataOutputStream();
+        XdrOperation.encode(out, op);
+        return Uint8List.fromList(out.bytes);
+      }
+
+      test('constructor accepts (X, Y) and rejects (Y, X)', () {
+        final pool = AssetTypePoolShare(assetA: usdcX, assetB: usdcY);
+        expect(pool.assetA, equals(usdcX));
+        expect(
+          () => AssetTypePoolShare(assetA: usdcY, assetB: usdcX),
+          throwsA(isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              allOf(contains('USDC:$issuerY'), contains('USDC:$issuerX')))),
+        );
+      });
+
+      test('pool parameters and pool id match the stellar-core vector', () {
+        final params = AssetTypePoolShare(assetA: usdcX, assetB: usdcY)
+            .toXdrChangeTrustAsset()
+            .liquidityPool!;
+        expect(params.toBase64EncodedXdrString(), equals(paramsXdr));
+        final out = XdrDataOutputStream();
+        XdrLiquidityPoolParameters.encode(out, params);
+        final poolId = Util.hash(Uint8List.fromList(out.bytes));
+        expect(
+            Util.bytesToHex(poolId),
+            equals('2c325546b1bf03f8d1b9c0b74974cdef'
+                '7609c60202d72a30e34f393ccf5eed1c'));
+        expect(StrKey.encodeLiquidityPoolId(poolId),
+            equals('LAWDEVKGWG7QH6GRXHALOSLUZXXXMCOGAIBNOKRQ4NHTSPGPL3WRYKDA'));
+      });
+
+      test('change trust operation with the pool round-trips byte-identically',
+          () {
+        final line = XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_POOL_SHARE)
+          ..liquidityPool =
+              XdrLiquidityPoolParameters.fromBase64EncodedXdrString(paramsXdr);
+        final body = XdrOperationBody(XdrOperationType.CHANGE_TRUST)
+          ..changeTrustOp =
+              XdrChangeTrustOp(line, XdrInt64(BigInt.from(1000000000)));
+        final bytes = encodeOperation(XdrOperation(null, body));
+
+        final decoded = Operation.fromXdr(
+            XdrOperation.decode(XdrDataInputStream(bytes)));
+        final pool = (decoded as ChangeTrustOperation).asset;
+        expect((pool as AssetTypePoolShare).assetA, equals(usdcX));
+        expect(pool.assetB, equals(usdcY));
+        expect(encodeOperation(decoded.toXdr()), equals(bytes));
+      });
+    });
   });
 
   group('Edge cases', () {
@@ -538,12 +603,10 @@ void main() {
       final usd1 = AssetTypeCreditAlphaNum4('USD', issuer1);
       final usd2 = AssetTypeCreditAlphaNum4('USD', issuer2);
 
-      // Correct order based on lexicographic issuer comparison
-      if (issuer1.compareTo(issuer2) < 0) {
-        expect(() => AssetTypePoolShare(assetA: usd1, assetB: usd2), returnsNormally);
-      } else {
-        expect(() => AssetTypePoolShare(assetA: usd2, assetB: usd1), returnsNormally);
-      }
+      // issuer1's raw public key (0x3b...) sorts before issuer2's (0xfa...).
+      expect(() => AssetTypePoolShare(assetA: usd1, assetB: usd2), returnsNormally);
+      expect(() => AssetTypePoolShare(assetA: usd2, assetB: usd1),
+          throwsA(isA<Exception>()));
     });
   });
 }

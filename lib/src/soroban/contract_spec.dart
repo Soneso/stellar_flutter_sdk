@@ -5,6 +5,7 @@
 import 'dart:typed_data';
 import '../xdr/xdr.dart';
 import '../util.dart';
+import 'sc_val_host_order.dart';
 
 /// Utility class for working with Soroban contract specifications.
 ///
@@ -269,8 +270,10 @@ class ContractSpec {
   /// [val] The native Dart value to convert
   /// [ty] The target type specification
   ///
-  /// Returns the converted XdrSCVal.
-  /// Throws ContractSpecException for invalid types or conversion failures.
+  /// Returns the converted XdrSCVal. Maps and map-encoded structs carry their
+  /// keys in the Soroban host's order ([sortedScMap]).
+  /// Throws ContractSpecException for invalid types or conversion failures,
+  /// and an ArgumentError for a map with two equal keys.
   XdrSCVal nativeToXdrSCVal(dynamic val, XdrSCSpecTypeDef ty) {
     // Handle null values
     if (val == null) {
@@ -431,7 +434,7 @@ class ContractSpec {
       final entries = val.entries.map((e) {
         return XdrSCMapEntry(_inferType(e.key), _inferType(e.value));
       }).toList();
-      return XdrSCVal.forMap(entries);
+      return sortedScMap(entries);
     }
     throw ContractSpecException.invalidType(
         'Cannot infer type for value: ${val.runtimeType}');
@@ -593,63 +596,6 @@ class ContractSpec {
         'Expected String address, got ${val.runtimeType}');
   }
 
-  /// Handle vector value type (for generic SCV_VEC)
-  XdrSCVal _handleVecValue(dynamic val) {
-    if (val is! List) {
-      throw ContractSpecException.invalidType(
-          'Expected List, got ${val.runtimeType}');
-    }
-
-    final scValues = <XdrSCVal>[];
-    for (final item in val) {
-      // For generic vectors, we don't know the element type
-      // So we'll try to infer it from the value
-      scValues.add(_inferAndConvert(item));
-    }
-
-    return XdrSCVal.forVec(scValues);
-  }
-
-  /// Handle map value type (for generic SCV_MAP)
-  XdrSCVal _handleMapValue(dynamic val) {
-    if (val is! Map) {
-      throw ContractSpecException.invalidType(
-          'Expected Map, got ${val.runtimeType}');
-    }
-
-    final entries = <XdrSCMapEntry>[];
-    for (final entry in val.entries) {
-      final keyVal = _inferAndConvert(entry.key);
-      final valueVal = _inferAndConvert(entry.value);
-      entries.add(XdrSCMapEntry(keyVal, valueVal));
-    }
-
-    return XdrSCVal.forMap(entries);
-  }
-
-  /// Infer type and convert value when we don't have type information
-  XdrSCVal _inferAndConvert(dynamic val) {
-    if (val == null) return XdrSCVal.forVoid();
-    if (val is XdrSCVal) return val;
-    if (val is bool) return XdrSCVal.forBool(val);
-    if (val is int) {
-      // Choose appropriate integer type based on value
-      if (val >= 0 && val <= 0xFFFFFFFF) {
-        return XdrSCVal.forU32(val);
-      } else if (val >= -0x80000000 && val <= 0x7FFFFFFF) {
-        return XdrSCVal.forI32(val);
-      } else {
-        return XdrSCVal.forI64(BigInt.from(val));
-      }
-    }
-    if (val is String) return XdrSCVal.forString(val);
-    if (val is List) return _handleVecValue(val);
-    if (val is Map) return _handleMapValue(val);
-
-    throw ContractSpecException.invalidType(
-        'Cannot infer type for ${val.runtimeType}');
-  }
-
   /// Handle option type (nullable values)
   XdrSCVal _handleOptionType(dynamic val, XdrSCSpecTypeDef ty) {
     final optionType = ty.option;
@@ -723,7 +669,7 @@ class ContractSpec {
       entries.add(XdrSCMapEntry(keyVal, valueVal));
     }
 
-    return XdrSCVal.forMap(entries);
+    return sortedScMap(entries);
   }
 
   /// Handle tuple type
@@ -830,7 +776,7 @@ class ContractSpec {
         final valueVal = nativeToXdrSCVal(val[field.name], field.type);
         entries.add(XdrSCMapEntry(keyVal, valueVal));
       }
-      return XdrSCVal.forMap(entries);
+      return sortedScMap(entries);
     } else {
       // Use vector representation (all fields are numeric)
       final scValues = <XdrSCVal>[];

@@ -5,7 +5,6 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stellar_flutter_sdk/src/smartaccount/core/sc_val_host_order.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 // ---------------------------------------------------------------------------

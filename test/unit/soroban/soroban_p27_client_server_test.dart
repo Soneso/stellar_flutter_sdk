@@ -64,6 +64,17 @@ SorobanAuthorizationEntry _makeWithDelegatesEntry(
   return SorobanAuthorizationEntry.withDelegates(base, [desc], _kExpiration);
 }
 
+/// Returns true when a signature in the vector [signature] verifies for
+/// [signer] against the payload hash of [entry]'s current preimage.
+bool _signatureVerifies(
+    SorobanAuthorizationEntry entry, XdrSCVal signature, KeyPair signer) {
+  final out = XdrDataOutputStream();
+  XdrHashIDPreimage.encode(out, entry.buildPreimage(Network.TESTNET));
+  final payload = Util.hash(Uint8List.fromList(out.bytes));
+  return signature.vec!.any((sig) => signer.verify(payload,
+      sig.map!.firstWhere((e) => e.key.sym == 'signature').val.bytes!.sCBytes));
+}
+
 /// Encodes a [SorobanAuthorizationEntry] to base64 XDR (for mock responses).
 String _entryToBase64(SorobanAuthorizationEntry entry) =>
     entry.toBase64EncodedXdrString();
@@ -107,6 +118,8 @@ String _buildSorobanTransactionDataXdr() {
 
 /// Starts a local HTTP server that:
 /// - Returns [accountXdr] for any `getLedgerEntries` call.
+/// - Returns [latestLedgerSequence] as the `getLatestLedger` sequence, and no
+///   sequence when it is null.
 /// - Returns a simulate response containing [authEntries] as base64 XDR.
 /// - Records the last `simulateTransaction` request body to [capturedRequest].
 /// Returns a Future<[httpServer, capturedRequestHolder]> tuple.
@@ -114,6 +127,7 @@ Future<(HttpServer, Map<String, dynamic>)> _startMockRpcServer({
   required String accountId,
   required BigInt seqNum,
   List<SorobanAuthorizationEntry>? authEntries,
+  int? latestLedgerSequence = 1000,
 }) async {
   final accountXdr = _buildAccountLedgerEntryXdr(accountId, seqNum);
   final sorobanDataXdr = _buildSorobanTransactionDataXdr();
@@ -164,10 +178,14 @@ Future<(HttpServer, Map<String, dynamic>)> _startMockRpcServer({
         }
       });
     } else if (method == 'getLatestLedger') {
+      capturedRequest.update('getLatestLedgerCalls', (n) => n + 1,
+          ifAbsent: () => 1);
       responseJson = json.encode({
         'jsonrpc': '2.0',
         'id': parsed['id'],
-        'result': {'sequence': 1000},
+        'result': {
+          if (latestLedgerSequence != null) 'sequence': latestLedgerSequence,
+        },
       });
     } else {
       responseJson = json.encode({
@@ -1076,6 +1094,266 @@ void main() {
       } finally {
         await server.close();
       }
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // GROUP 10: signAuthEntries keeps the expiration that existing signatures
+  // commit to and writes the auth entries back atomically
+  // -------------------------------------------------------------------------
+  group('signAuthEntries shared signature expiration', () {
+    final topKp = KeyPair.fromSecretSeed(_kSeed);
+    final topId = topKp.accountId;
+    final delegateKp = KeyPair.random();
+    final delegateId = delegateKp.accountId;
+    late HttpServer server;
+    late Map<String, dynamic> captured;
+
+    setUp(() async {
+      (server, captured) =
+          await _startMockRpcServer(accountId: topId, seqNum: BigInt.from(100));
+    });
+    tearDown(() async => server.close());
+
+    Future<AssembledTransaction> withAuth(
+        List<SorobanAuthorizationEntry> entries,
+        {HttpServer? rpcServer}) async {
+      final assembled = await _buildAssembledTx(
+          'http://127.0.0.1:${(rpcServer ?? server).port}', topId, topKp);
+      final invokeOp = InvokeContractHostFunction(_kContractId, 'hello',
+          arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
+      assembled.tx = TransactionBuilder(Account(topId, BigInt.from(100)))
+          .addOperation(InvokeHostFuncOpBuilder(invokeOp).build())
+          .build();
+      assembled.tx!.setSorobanAuth(entries);
+      return assembled;
+    }
+
+    List<SorobanAuthorizationEntry> authOf(AssembledTransaction assembled) =>
+        (assembled.tx!.operations.first as InvokeHostFunctionOperation).auth;
+
+    /// WITH_DELEGATES entry for [topId] with a chain of [depth] nested
+    /// delegate nodes; the first node is [delegateId], the leaf carries
+    /// [leafSignature].
+    SorobanAuthorizationEntry delegateChainEntry(
+        int depth, XdrSCVal leafSignature) {
+      final nestedId = KeyPair.random().accountId;
+      var node = SorobanDelegateSignature(
+          XdrSCAddress.forAccountId(nestedId), leafSignature, []);
+      for (var level = depth - 2; level >= 0; level--) {
+        node = SorobanDelegateSignature(
+            XdrSCAddress.forAccountId(level == 0 ? delegateId : nestedId),
+            XdrSCVal.forVoid(),
+            [node]);
+      }
+      final inner = _makeV2Entry(topId).credentials.innerAddressCredentials!;
+      return _makeEntry(SorobanCredentials.forAddressWithDelegates(
+          SorobanAddressCredentialsWithDelegates(inner, [node])));
+    }
+
+    /// WITH_DELEGATES entry whose delegate node is signed at [_kExpiration].
+    SorobanAuthorizationEntry delegateSignedEntry() {
+      final entry = _makeWithDelegatesEntry(topId, delegateId);
+      entry.sign(delegateKp, Network.TESTNET, forAddress: delegateId);
+      return entry;
+    }
+
+    test('second signer keeps the stored expiration; both signatures verify',
+        () async {
+      final assembled =
+          await withAuth([_makeWithDelegatesEntry(topId, delegateId)]);
+      await assembled.signAuthEntries(
+          signerKeyPair: topKp, validUntilLedgerSeq: 5000);
+      await assembled.signAuthEntries(signerKeyPair: delegateKp);
+
+      final entry = authOf(assembled).single;
+      final inner = entry.credentials.innerAddressCredentials!;
+      final delegate =
+          entry.credentials.addressWithDelegatesCredentials!.delegates.single;
+      expect(inner.signatureExpirationLedger, equals(5000));
+      expect(captured['getLatestLedgerCalls'], isNull,
+          reason: 'a stored expiration needs no latest-ledger fetch');
+      expect(_signatureVerifies(entry, inner.signature, topKp), isTrue);
+      expect(_signatureVerifies(entry, delegate.signature, delegateKp), isTrue);
+    });
+
+    test('conflicting explicit expiration throws and leaves the entry intact',
+        () async {
+      final assembled = await withAuth([delegateSignedEntry()]);
+      final before = authOf(assembled).single.toBase64EncodedXdrString();
+
+      await expectLater(
+        assembled.signAuthEntries(
+            signerKeyPair: topKp, validUntilLedgerSeq: 5000),
+        throwsA(isA<ArgumentError>().having((e) => e.toString(), 'message',
+            allOf(contains('5000'), contains('$_kExpiration')))),
+      );
+      expect(authOf(assembled).single.toBase64EncodedXdrString(),
+          equals(before));
+    });
+
+    test('a failing entry leaves earlier entries of the same call unsigned',
+        () async {
+      final assembled =
+          await withAuth([_makeV2Entry(topId), delegateSignedEntry()]);
+      final before =
+          authOf(assembled).map((e) => e.toBase64EncodedXdrString()).toList();
+
+      await expectLater(
+        assembled.signAuthEntries(
+            signerKeyPair: topKp, validUntilLedgerSeq: 5000),
+        throwsA(isA<ArgumentError>()),
+      );
+      expect(authOf(assembled).map((e) => e.toBase64EncodedXdrString()),
+          orderedEquals(before));
+    });
+
+    test('a callback failing on the second entry leaves every entry intact',
+        () async {
+      final assembled =
+          await withAuth([_makeV2Entry(topId), _makeLegacyEntry(topId)]);
+      final before =
+          authOf(assembled).map((e) => e.toBase64EncodedXdrString()).toList();
+      var calls = 0;
+
+      await expectLater(
+        assembled.signAuthEntries(
+          signerKeyPair: KeyPair.fromAccountId(topId),
+          validUntilLedgerSeq: 5000,
+          authorizeEntryDelegate: (entry, network) async {
+            if (++calls == 2) throw StateError('remote signer unavailable');
+            entry.sign(topKp, network);
+            return entry;
+          },
+        ),
+        throwsA(isA<StateError>()),
+      );
+      expect(calls, equals(2));
+      expect(authOf(assembled).map((e) => e.toBase64EncodedXdrString()),
+          orderedEquals(before));
+    });
+
+    test('explicit expiration equal to the stored one signs', () async {
+      final assembled = await withAuth([delegateSignedEntry()]);
+      await assembled.signAuthEntries(
+          signerKeyPair: topKp, validUntilLedgerSeq: _kExpiration);
+
+      final entry = authOf(assembled).single;
+      final inner = entry.credentials.innerAddressCredentials!;
+      final delegate =
+          entry.credentials.addressWithDelegatesCredentials!.delegates.single;
+      expect(inner.signatureExpirationLedger, equals(_kExpiration));
+      expect(_signatureVerifies(entry, inner.signature, topKp), isTrue);
+      expect(_signatureVerifies(entry, delegate.signature, delegateKp), isTrue);
+    });
+
+    test('a cosigner of a signed multisig node keeps the stored expiration',
+        () async {
+      final cosigner1 = KeyPair.random();
+      final cosigner2 = KeyPair.random();
+      final entry = _makeV2Entry(topId)..sign(cosigner1, Network.TESTNET);
+      final assembled = await withAuth([entry]);
+      Future<SorobanAuthorizationEntry> remote(
+          SorobanAuthorizationEntry e, Network network) async {
+        e.sign(cosigner2, network);
+        return e;
+      }
+
+      await expectLater(
+        assembled.signAuthEntries(
+            signerKeyPair: KeyPair.fromAccountId(topId),
+            authorizeEntryDelegate: remote,
+            validUntilLedgerSeq: 5000),
+        throwsA(isA<ArgumentError>()),
+      );
+      await assembled.signAuthEntries(
+          signerKeyPair: KeyPair.fromAccountId(topId),
+          authorizeEntryDelegate: remote);
+
+      final signed = authOf(assembled).single;
+      final inner = signed.credentials.innerAddressCredentials!;
+      expect(inner.signatureExpirationLedger, equals(_kExpiration));
+      expect(inner.signature.vec!.length, equals(2));
+      expect(_signatureVerifies(signed, inner.signature, cosigner1), isTrue);
+      expect(_signatureVerifies(signed, inner.signature, cosigner2), isTrue);
+    });
+
+    test('a latest-ledger response without sequence throws, entries intact',
+        () async {
+      final (noSequenceServer, _) = await _startMockRpcServer(
+          accountId: topId,
+          seqNum: BigInt.from(100),
+          latestLedgerSequence: null);
+      try {
+        final assembled = await withAuth([_makeV2Entry(topId)],
+            rpcServer: noSequenceServer);
+        final before = authOf(assembled).single.toBase64EncodedXdrString();
+
+        await expectLater(
+          assembled.signAuthEntries(signerKeyPair: topKp),
+          throwsA(isA<Exception>().having((e) => e.toString(), 'message',
+              contains('Could not fetch latest ledger sequence from server'))),
+        );
+        expect(authOf(assembled).single.toBase64EncodedXdrString(),
+            equals(before));
+      } finally {
+        await noSequenceServer.close();
+      }
+    });
+
+    test('a delegate chain deeper than 128 levels throws, entries intact',
+        () async {
+      final assembled =
+          await withAuth([delegateChainEntry(129, XdrSCVal.forVoid())]);
+      final before = authOf(assembled).single.toBase64EncodedXdrString();
+      await expectLater(
+        assembled.signAuthEntries(
+          signerKeyPair: KeyPair.fromAccountId(delegateId),
+          authorizeEntryDelegate: (entry, network) async => entry,
+        ),
+        throwsA(isA<Exception>().having((e) => e.toString(), 'message',
+            contains('XDR decode depth limit exceeded (128)'))),
+      );
+      expect(authOf(assembled).single.toBase64EncodedXdrString(),
+          equals(before));
+    });
+
+    test('a signed leaf at depth 128 keeps the stored expiration', () async {
+      final assembled = await withAuth(
+          [delegateChainEntry(128, XdrSCVal.forBytes(Uint8List(64)))]);
+      await assembled.signAuthEntries(signerKeyPair: topKp);
+
+      final entry = authOf(assembled).single;
+      final inner = entry.credentials.innerAddressCredentials!;
+      expect(inner.signatureExpirationLedger, equals(_kExpiration));
+      expect(_signatureVerifies(entry, inner.signature, topKp), isTrue);
+      expect(captured['getLatestLedgerCalls'], isNull);
+    });
+
+    test('unsigned entries get the explicit expiration', () async {
+      final assembled = await withAuth([_makeV2Entry(topId)]);
+      await assembled.signAuthEntries(
+          signerKeyPair: topKp, validUntilLedgerSeq: 5000);
+
+      final entry = authOf(assembled).single;
+      final inner = entry.credentials.innerAddressCredentials!;
+      expect(inner.signatureExpirationLedger, equals(5000));
+      expect(_signatureVerifies(entry, inner.signature, topKp), isTrue);
+      expect(captured['getLatestLedgerCalls'], isNull);
+    });
+
+    test('unsigned entries get the default from one latest-ledger fetch',
+        () async {
+      final assembled =
+          await withAuth([_makeV2Entry(topId), _makeLegacyEntry(topId)]);
+      await assembled.signAuthEntries(signerKeyPair: topKp);
+
+      for (final entry in authOf(assembled)) {
+        final inner = entry.credentials.innerAddressCredentials!;
+        expect(inner.signatureExpirationLedger, equals(1000 + 100));
+        expect(_signatureVerifies(entry, inner.signature, topKp), isTrue);
+      }
+      expect(captured['getLatestLedgerCalls'], equals(1));
     });
   });
 }
