@@ -4,3 +4,46 @@ updates:
     directory: /
     schedule:
       interval: monthly
+  - package-ecosystem: pub
+    directories:
+      - /
+      - /example
+    schedule:
+      interval: monthly
+    groups:
+      pub:
+        patterns:
+          - "*"
+  - package-ecosystem: gradle
+    # The plugin and the example app are separate Gradle builds.
+    directories:
+      - /android
+      - /example/android
+    schedule:
+      interval: monthly
+    groups:
+      gradle:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+  - package-ecosystem: swift
+    directory: /ios/stellar_flutter_sdk
+    schedule:
+      interval: monthly
+    groups:
+      swift:
+        patterns:
+          - "*"
+  - package-ecosystem: bundler
+    directory: /tools/xdr-generator
+    schedule:
+      interval: monthly
+    groups:
+      bundler:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
