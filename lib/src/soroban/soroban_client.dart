@@ -1398,7 +1398,7 @@ class AssembledTransaction {
             entry.credentials.addressWithDelegatesCredentials!;
         matchesDelegate =
             _delegateListContains(withDelegates.delegates, signerAddress, 0);
-        delegateSigned = _delegateListHasSignature(withDelegates.delegates, 0);
+        delegateSigned = _delegateListHasSignature(withDelegates.delegates);
       }
 
       if (!matchesTopLevel && !matchesDelegate) {
@@ -1461,15 +1461,15 @@ class AssembledTransaction {
   }
 
   /// Returns true when a node in [delegates] or their nested delegates
-  /// (depth-first) carries a signature other than `SCV_VOID`.
+  /// (depth-first) carries a signature other than `SCV_VOID`. The recursion
+  /// is bounded: [signAuthEntries] walks XDR-decoded copies, and
+  /// [XdrDataInputStream] caps delegate nesting at
+  /// [XdrDataInputStream.maxRecursiveDecodeDepth] levels.
   static bool _delegateListHasSignature(
-      List<SorobanDelegateSignature> delegates, int depth) {
-    if (depth > 128) {
-      throw Exception('Delegate tree traversal depth limit (128) exceeded');
-    }
+      List<SorobanDelegateSignature> delegates) {
     for (final node in delegates) {
       if (node.signature.discriminant != XdrSCValType.SCV_VOID ||
-          _delegateListHasSignature(node.nestedDelegates, depth + 1)) {
+          _delegateListHasSignature(node.nestedDelegates)) {
         return true;
       }
     }

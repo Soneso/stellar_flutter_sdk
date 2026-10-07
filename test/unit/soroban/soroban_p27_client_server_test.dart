@@ -118,6 +118,8 @@ String _buildSorobanTransactionDataXdr() {
 
 /// Starts a local HTTP server that:
 /// - Returns [accountXdr] for any `getLedgerEntries` call.
+/// - Returns [latestLedgerSequence] as the `getLatestLedger` sequence, and no
+///   sequence when it is null.
 /// - Returns a simulate response containing [authEntries] as base64 XDR.
 /// - Records the last `simulateTransaction` request body to [capturedRequest].
 /// Returns a Future<[httpServer, capturedRequestHolder]> tuple.
@@ -125,6 +127,7 @@ Future<(HttpServer, Map<String, dynamic>)> _startMockRpcServer({
   required String accountId,
   required BigInt seqNum,
   List<SorobanAuthorizationEntry>? authEntries,
+  int? latestLedgerSequence = 1000,
 }) async {
   final accountXdr = _buildAccountLedgerEntryXdr(accountId, seqNum);
   final sorobanDataXdr = _buildSorobanTransactionDataXdr();
@@ -180,7 +183,9 @@ Future<(HttpServer, Map<String, dynamic>)> _startMockRpcServer({
       responseJson = json.encode({
         'jsonrpc': '2.0',
         'id': parsed['id'],
-        'result': {'sequence': 1000},
+        'result': {
+          if (latestLedgerSequence != null) 'sequence': latestLedgerSequence,
+        },
       });
     } else {
       responseJson = json.encode({
@@ -1111,9 +1116,10 @@ void main() {
     tearDown(() async => server.close());
 
     Future<AssembledTransaction> withAuth(
-        List<SorobanAuthorizationEntry> entries) async {
+        List<SorobanAuthorizationEntry> entries,
+        {HttpServer? rpcServer}) async {
       final assembled = await _buildAssembledTx(
-          'http://127.0.0.1:${server.port}', topId, topKp);
+          'http://127.0.0.1:${(rpcServer ?? server).port}', topId, topKp);
       final invokeOp = InvokeContractHostFunction(_kContractId, 'hello',
           arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
       assembled.tx = TransactionBuilder(Account(topId, BigInt.from(100)))
@@ -1125,6 +1131,25 @@ void main() {
 
     List<SorobanAuthorizationEntry> authOf(AssembledTransaction assembled) =>
         (assembled.tx!.operations.first as InvokeHostFunctionOperation).auth;
+
+    /// WITH_DELEGATES entry for [topId] with a chain of [depth] nested
+    /// delegate nodes; the first node is [delegateId], the leaf carries
+    /// [leafSignature].
+    SorobanAuthorizationEntry delegateChainEntry(
+        int depth, XdrSCVal leafSignature) {
+      final nestedId = KeyPair.random().accountId;
+      var node = SorobanDelegateSignature(
+          XdrSCAddress.forAccountId(nestedId), leafSignature, []);
+      for (var level = depth - 2; level >= 0; level--) {
+        node = SorobanDelegateSignature(
+            XdrSCAddress.forAccountId(level == 0 ? delegateId : nestedId),
+            XdrSCVal.forVoid(),
+            [node]);
+      }
+      final inner = _makeV2Entry(topId).credentials.innerAddressCredentials!;
+      return _makeEntry(SorobanCredentials.forAddressWithDelegates(
+          SorobanAddressCredentialsWithDelegates(inner, [node])));
+    }
 
     /// WITH_DELEGATES entry whose delegate node is signed at [_kExpiration].
     SorobanAuthorizationEntry delegateSignedEntry() {
@@ -1251,6 +1276,58 @@ void main() {
       expect(inner.signature.vec!.length, equals(2));
       expect(_signatureVerifies(signed, inner.signature, cosigner1), isTrue);
       expect(_signatureVerifies(signed, inner.signature, cosigner2), isTrue);
+    });
+
+    test('a latest-ledger response without sequence throws, entries intact',
+        () async {
+      final (noSequenceServer, _) = await _startMockRpcServer(
+          accountId: topId,
+          seqNum: BigInt.from(100),
+          latestLedgerSequence: null);
+      try {
+        final assembled = await withAuth([_makeV2Entry(topId)],
+            rpcServer: noSequenceServer);
+        final before = authOf(assembled).single.toBase64EncodedXdrString();
+
+        await expectLater(
+          assembled.signAuthEntries(signerKeyPair: topKp),
+          throwsA(isA<Exception>().having((e) => e.toString(), 'message',
+              contains('Could not fetch latest ledger sequence from server'))),
+        );
+        expect(authOf(assembled).single.toBase64EncodedXdrString(),
+            equals(before));
+      } finally {
+        await noSequenceServer.close();
+      }
+    });
+
+    test('a delegate chain deeper than 128 levels throws, entries intact',
+        () async {
+      final assembled =
+          await withAuth([delegateChainEntry(129, XdrSCVal.forVoid())]);
+      final before = authOf(assembled).single.toBase64EncodedXdrString();
+      await expectLater(
+        assembled.signAuthEntries(
+          signerKeyPair: KeyPair.fromAccountId(delegateId),
+          authorizeEntryDelegate: (entry, network) async => entry,
+        ),
+        throwsA(isA<Exception>().having((e) => e.toString(), 'message',
+            contains('XDR decode depth limit exceeded (128)'))),
+      );
+      expect(authOf(assembled).single.toBase64EncodedXdrString(),
+          equals(before));
+    });
+
+    test('a signed leaf at depth 128 keeps the stored expiration', () async {
+      final assembled = await withAuth(
+          [delegateChainEntry(128, XdrSCVal.forBytes(Uint8List(64)))]);
+      await assembled.signAuthEntries(signerKeyPair: topKp);
+
+      final entry = authOf(assembled).single;
+      final inner = entry.credentials.innerAddressCredentials!;
+      expect(inner.signatureExpirationLedger, equals(_kExpiration));
+      expect(_signatureVerifies(entry, inner.signature, topKp), isTrue);
+      expect(captured['getLatestLedgerCalls'], isNull);
     });
 
     test('unsigned entries get the explicit expiration', () async {

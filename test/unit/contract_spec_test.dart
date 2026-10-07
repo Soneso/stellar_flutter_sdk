@@ -2083,7 +2083,7 @@ void _runRoundtripTests() {
       );
     });
 
-    test('_handleVecValue with non-List throws', () {
+    test('_handleVecType with non-List throws', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
       vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_U32));
@@ -2094,7 +2094,7 @@ void _runRoundtripTests() {
       );
     });
 
-    test('_handleMapValue with non-Map throws', () {
+    test('_handleMapType with non-Map throws', () {
       final spec = ContractSpec([]);
       final mapType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_MAP);
       mapType.map = XdrSCSpecTypeMap(
@@ -2108,7 +2108,7 @@ void _runRoundtripTests() {
       );
     });
 
-    test('_inferAndConvert with null returns void', () {
+    test('Vec<Val> element null returns void', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
       vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
@@ -2120,7 +2120,7 @@ void _runRoundtripTests() {
       expect(result.vec![0].discriminant, equals(XdrSCValType.SCV_VOID));
     });
 
-    test('_inferAndConvert with negative int in i32 range returns i32', () {
+    test('Vec<Val> element negative int in i32 range returns i32', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
       vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
@@ -2130,7 +2130,7 @@ void _runRoundtripTests() {
       expect(result.vec![0].discriminant, equals(XdrSCValType.SCV_I32));
     });
 
-    test('_inferAndConvert with large positive int returns i64', () {
+    test('Vec<Val> element large positive int returns i64', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
       vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
@@ -2141,7 +2141,7 @@ void _runRoundtripTests() {
       expect(result.vec![0].discriminant, equals(XdrSCValType.SCV_I64));
     });
 
-    test('_inferAndConvert with nested List', () {
+    test('Vec<Val> element nested List', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
       vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
@@ -2151,7 +2151,7 @@ void _runRoundtripTests() {
       expect(result.vec![0].discriminant, equals(XdrSCValType.SCV_VEC));
     });
 
-    test('_inferAndConvert with nested Map', () {
+    test('Vec<Val> element nested Map', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
       vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
@@ -2161,7 +2161,7 @@ void _runRoundtripTests() {
       expect(result.vec![0].discriminant, equals(XdrSCValType.SCV_MAP));
     });
 
-    test('_inferAndConvert with unsupported type throws', () {
+    test('Vec<Val> element unsupported type throws', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
       vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
@@ -2363,7 +2363,7 @@ void _runRoundtripTests() {
       expect(result.map!.length, equals(2));
     });
 
-    test('_inferAndConvert with XdrSCVal returns as-is', () {
+    test('Vec<Val> element XdrSCVal returns as-is', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
       vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
@@ -2374,7 +2374,7 @@ void _runRoundtripTests() {
       expect(result.vec![0], equals(scVal));
     });
 
-    test('_inferAndConvert with bool returns bool', () {
+    test('Vec<Val> element bool returns bool', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
       vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
@@ -2385,7 +2385,7 @@ void _runRoundtripTests() {
       expect(result.vec![0].b, equals(true));
     });
 
-    test('_inferAndConvert with string returns string', () {
+    test('Vec<Val> element string returns string', () {
       final spec = ContractSpec([]);
       final vecType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VEC);
       vecType.vec = XdrSCSpecTypeVec(XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_VAL));
