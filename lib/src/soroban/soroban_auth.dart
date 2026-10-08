@@ -1043,6 +1043,14 @@ class SorobanAuthorizationEntry {
     return base64Encode(xdrOutputStream.bytes);
   }
 
+  /// The message refusing a muxed account or muxed contract address in the
+  /// [role] where Soroban auth takes an account or contract address, naming
+  /// the address given as [strKey] when there is one.
+  static String _muxedAddressMessage(String role, [String? strKey]) =>
+      'Muxed account (M...) and muxed contract (W...) addresses are not '
+      'valid Soroban auth $role${strKey == null ? '' : ': $strKey'}; '
+      'use the underlying G... or C... address instead';
+
   /// Builds the XdrHashIDPreimage for this entry based on its credential arm.
   ///
   /// Arm selection:
@@ -1140,7 +1148,8 @@ class SorobanAuthorizationEntry {
   /// into every node (top-level or delegate, depth-first) whose address matches.
   /// Throws if no node's address matches [forAddress].
   /// Muxed account (M...) and muxed contract (W...) addresses are rejected as
-  /// Soroban auth targets.
+  /// Soroban auth targets, and so is an entry whose credential address is one
+  /// of them.
   ///
   /// Append semantics: appends to existing signatures; void becomes one-element
   /// vector. The arm is preserved on write-back.
@@ -1158,12 +1167,17 @@ class SorobanAuthorizationEntry {
       throw Exception('No address credentials found for signing');
     }
 
+    final XdrSCAddress credentialAddress = inner.address.toXdr();
+    final XdrSCAddressType credentialType = credentialAddress.discriminant;
+    if (credentialType == XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT ||
+        credentialType == XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT) {
+      throw Exception(_muxedAddressMessage(
+          'credential addresses', credentialAddress.toStrKey()));
+    }
+
     if (forAddress != null &&
         (forAddress.startsWith('M') || forAddress.startsWith('W'))) {
-      throw Exception(
-          'Muxed account (M...) and muxed contract (W...) addresses are not '
-          'valid Soroban auth targets; use the underlying G... or C... '
-          'address instead');
+      throw Exception(_muxedAddressMessage('targets'));
     }
 
     // Build the payload once; all nodes (top-level and delegates) sign this same hash.
