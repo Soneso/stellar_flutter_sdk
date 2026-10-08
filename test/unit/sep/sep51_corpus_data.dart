@@ -32,12 +32,12 @@ const Map<String, String> sep51CorpusMetadata = <String, String>{
   'reference_tool': 'stellar-xdr',
   'reference_version': '28.0.1',
   'reference_xdr_commit': '9c9c145953e80990d6ff1ae3a6a973a0ce6d0694',
-  'sdk_xdr_commit': 'c2612cf534e4448fa263e252afe1bdbac5512d14',
-  'entry_count': '360',
+  'sdk_xdr_commit': '579a90b2654e3811e8b672e128a5e094c7325b27',
+  'entry_count': '361',
   'unresolvable_enum_members':
-      'StellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS, StellarValueType.STELLAR_VALUE_SIGNED_MS',
+      'ContractCostType.MlDsa44DecodeSignature, ContractCostType.MlDsa44DecodeVerifyingKey, ContractCostType.MlDsa65DecodeSignature, ContractCostType.MlDsa65DecodeVerifyingKey, ContractCostType.MlDsa87DecodeSignature, ContractCostType.MlDsa87DecodeVerifyingKey, ContractCostType.VerifyMlDsa44Sig, ContractCostType.VerifyMlDsa65Sig, ContractCostType.VerifyMlDsa87Sig, SCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT, StellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS, StellarValueType.STELLAR_VALUE_SIGNED_MS',
   'unresolvable_struct_types':
-      'StellarValueProposedMsValue, StellarValueSignedMsValue',
+      'MuxedContract, StellarValueProposedMsValue, StellarValueSignedMsValue',
   'type_field_types':
       'ContractEvent, DontHave, SCSpecEventParamV0, SCSpecFunctionInputV0, SCSpecUDTStructFieldV0, SCSpecUDTUnionCaseTupleV0, SerializedBinaryFuseFilter',
   'type_field_alias':
@@ -3152,6 +3152,14 @@ const List<Sep51CorpusEntry> sep51Corpus = <Sep51CorpusEntry>[
     json: '"empty_tx_set"',
     oracle: 'reference',
     note: 'Stellar value type enum member is stripped of its shared prefix.',
+  ),
+  Sep51CorpusEntry(
+    type: 'ScAddressType',
+    dartType: 'XdrSCAddressType',
+    xdr: 'AAAAAg==',
+    json: '"muxed_account"',
+    oracle: 'reference',
+    note: 'Contract address type enum member is stripped of its shared prefix.',
   ),
   Sep51CorpusEntry(
     type: 'ContractCostType',

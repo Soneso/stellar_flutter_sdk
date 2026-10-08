@@ -34,6 +34,8 @@ class XdrSCAddressType {
       const XdrSCAddressType._internal(3);
   static const SC_ADDRESS_TYPE_LIQUIDITY_POOL =
       const XdrSCAddressType._internal(4);
+  static const SC_ADDRESS_TYPE_MUXED_CONTRACT =
+      const XdrSCAddressType._internal(5);
 
   static XdrSCAddressType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -48,6 +50,8 @@ class XdrSCAddressType {
         return SC_ADDRESS_TYPE_CLAIMABLE_BALANCE;
       case 4:
         return SC_ADDRESS_TYPE_LIQUIDITY_POOL;
+      case 5:
+        return SC_ADDRESS_TYPE_MUXED_CONTRACT;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -84,6 +88,8 @@ class XdrSCAddressType {
         return 'SC_ADDRESS_TYPE_CLAIMABLE_BALANCE';
       case 4:
         return 'SC_ADDRESS_TYPE_LIQUIDITY_POOL';
+      case 5:
+        return 'SC_ADDRESS_TYPE_MUXED_CONTRACT';
       default:
         return 'XdrSCAddressType#$_value';
     }
@@ -107,6 +113,8 @@ class XdrSCAddressType {
         return SC_ADDRESS_TYPE_CLAIMABLE_BALANCE;
       case 'SC_ADDRESS_TYPE_LIQUIDITY_POOL':
         return SC_ADDRESS_TYPE_LIQUIDITY_POOL;
+      case 'SC_ADDRESS_TYPE_MUXED_CONTRACT':
+        return SC_ADDRESS_TYPE_MUXED_CONTRACT;
       default:
         if (name.startsWith('XdrSCAddressType#')) {
           int? val = int.tryParse(name.substring('XdrSCAddressType#'.length));
@@ -138,6 +146,8 @@ class XdrSCAddressType {
         return 'claimable_balance';
       case 4:
         return 'liquidity_pool';
+      case 5:
+        return 'muxed_contract';
       default:
         XdrJsonHelper.fail(
           'XdrSCAddressType',
@@ -160,6 +170,8 @@ class XdrSCAddressType {
           return XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE;
         case 'liquidity_pool':
           return XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL;
+        case 'muxed_contract':
+          return XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT;
       }
     }
     XdrJsonHelper.fail(

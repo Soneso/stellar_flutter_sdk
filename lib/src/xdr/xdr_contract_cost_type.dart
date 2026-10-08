@@ -137,6 +137,21 @@ class XdrContractCostType {
   static const Bn254FrPow = const XdrContractCostType._internal(83);
   static const Bn254FrInv = const XdrContractCostType._internal(84);
   static const Bn254G1Msm = const XdrContractCostType._internal(85);
+  static const MlDsa44DecodeVerifyingKey = const XdrContractCostType._internal(
+    86,
+  );
+  static const MlDsa65DecodeVerifyingKey = const XdrContractCostType._internal(
+    87,
+  );
+  static const MlDsa87DecodeVerifyingKey = const XdrContractCostType._internal(
+    88,
+  );
+  static const MlDsa44DecodeSignature = const XdrContractCostType._internal(89);
+  static const MlDsa65DecodeSignature = const XdrContractCostType._internal(90);
+  static const MlDsa87DecodeSignature = const XdrContractCostType._internal(91);
+  static const VerifyMlDsa44Sig = const XdrContractCostType._internal(92);
+  static const VerifyMlDsa65Sig = const XdrContractCostType._internal(93);
+  static const VerifyMlDsa87Sig = const XdrContractCostType._internal(94);
 
   static XdrContractCostType decode(XdrDataInputStream stream) {
     int value = stream.readInt();
@@ -313,6 +328,24 @@ class XdrContractCostType {
         return Bn254FrInv;
       case 85:
         return Bn254G1Msm;
+      case 86:
+        return MlDsa44DecodeVerifyingKey;
+      case 87:
+        return MlDsa65DecodeVerifyingKey;
+      case 88:
+        return MlDsa87DecodeVerifyingKey;
+      case 89:
+        return MlDsa44DecodeSignature;
+      case 90:
+        return MlDsa65DecodeSignature;
+      case 91:
+        return MlDsa87DecodeSignature;
+      case 92:
+        return VerifyMlDsa44Sig;
+      case 93:
+        return VerifyMlDsa65Sig;
+      case 94:
+        return VerifyMlDsa87Sig;
       default:
         throw Exception("Unknown enum value: $value");
     }
@@ -519,6 +552,24 @@ class XdrContractCostType {
         return 'bn254_fr_inv';
       case 85:
         return 'bn254_g1_msm';
+      case 86:
+        return 'ml_dsa44_decode_verifying_key';
+      case 87:
+        return 'ml_dsa65_decode_verifying_key';
+      case 88:
+        return 'ml_dsa87_decode_verifying_key';
+      case 89:
+        return 'ml_dsa44_decode_signature';
+      case 90:
+        return 'ml_dsa65_decode_signature';
+      case 91:
+        return 'ml_dsa87_decode_signature';
+      case 92:
+        return 'verify_ml_dsa44_sig';
+      case 93:
+        return 'verify_ml_dsa65_sig';
+      case 94:
+        return 'verify_ml_dsa87_sig';
       default:
         XdrJsonHelper.fail(
           'XdrContractCostType',
@@ -703,6 +754,24 @@ class XdrContractCostType {
           return XdrContractCostType.Bn254FrInv;
         case 'bn254_g1_msm':
           return XdrContractCostType.Bn254G1Msm;
+        case 'ml_dsa44_decode_verifying_key':
+          return XdrContractCostType.MlDsa44DecodeVerifyingKey;
+        case 'ml_dsa65_decode_verifying_key':
+          return XdrContractCostType.MlDsa65DecodeVerifyingKey;
+        case 'ml_dsa87_decode_verifying_key':
+          return XdrContractCostType.MlDsa87DecodeVerifyingKey;
+        case 'ml_dsa44_decode_signature':
+          return XdrContractCostType.MlDsa44DecodeSignature;
+        case 'ml_dsa65_decode_signature':
+          return XdrContractCostType.MlDsa65DecodeSignature;
+        case 'ml_dsa87_decode_signature':
+          return XdrContractCostType.MlDsa87DecodeSignature;
+        case 'verify_ml_dsa44_sig':
+          return XdrContractCostType.VerifyMlDsa44Sig;
+        case 'verify_ml_dsa65_sig':
+          return XdrContractCostType.VerifyMlDsa65Sig;
+        case 'verify_ml_dsa87_sig':
+          return XdrContractCostType.VerifyMlDsa87Sig;
       }
     }
     XdrJsonHelper.fail(

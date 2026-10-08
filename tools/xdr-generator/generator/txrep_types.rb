@@ -1,4 +1,4 @@
-# Types that should have toTxRep()/fromTxRep() methods generated (143 types).
+# Types that should have toTxRep()/fromTxRep() methods generated (146 types).
 #
 # Computed by tracing the type graph from TransactionEnvelope, Transaction,
 # FeeBumpTransaction, and DecoratedSignature roots (see trace_txrep_types.rb).
@@ -85,6 +85,7 @@ TXREP_TYPES = Set[
   'XdrMemoType',
   'XdrMuxedAccount',
   'XdrMuxedAccountMed25519',
+  'XdrMuxedContract',
   'XdrOperation',
   'XdrOperationBody',
   'XdrOperationType',

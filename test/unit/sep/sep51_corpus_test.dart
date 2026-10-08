@@ -459,6 +459,12 @@ _Binding _bindingFor(String dartType) => switch (dartType) {
     (XdrSCAddress v) => v.toXdrJson(),
     (XdrSCAddress v) => v.toBase64EncodedXdrString(),
   ),
+  'XdrSCAddressType' => _bind<XdrSCAddressType>(
+    XdrSCAddressType.fromXdrJson,
+    XdrSCAddressType.fromBase64EncodedXdrString,
+    (XdrSCAddressType v) => v.toXdrJson(),
+    (XdrSCAddressType v) => v.toBase64EncodedXdrString(),
+  ),
   'XdrSCBytes' => _bind<XdrSCBytes>(
     XdrSCBytes.fromXdrJson,
     XdrSCBytes.fromBase64EncodedXdrString,
@@ -722,7 +728,7 @@ void main() {
       );
       expect(
         sep51CorpusMetadata['sdk_xdr_commit'],
-        'c2612cf534e4448fa263e252afe1bdbac5512d14',
+        '579a90b2654e3811e8b672e128a5e094c7325b27',
       );
     });
 
@@ -736,15 +742,31 @@ void main() {
       // generates from, so these names were never compared against it. Their
       // renderings are pinned from the specification's rules by the
       // 'signed ms ext' and 'empty tx set ms ext' round-trip tests in
-      // test/unit/xdr/xdr_ledger_scp_values_test.dart.
+      // test/unit/xdr/xdr_ledger_scp_values_test.dart. The generated suites
+      // test/unit/xdr/json_generated/xdr_contract_json_test.dart and
+      // xdr_contract_config_json_test.dart pin the values and names of the
+      // new XdrSCAddressType and XdrContractCostType members, and
+      // test/unit/xdr/xdr_muxed_contract_test.dart pins the W strkey
+      // rendering and the binary layout of XdrMuxedContract and of the
+      // XdrSCAddress arm.
       expect(
         sep51CorpusMetadata['unresolvable_enum_members'],
+        'ContractCostType.MlDsa44DecodeSignature, '
+        'ContractCostType.MlDsa44DecodeVerifyingKey, '
+        'ContractCostType.MlDsa65DecodeSignature, '
+        'ContractCostType.MlDsa65DecodeVerifyingKey, '
+        'ContractCostType.MlDsa87DecodeSignature, '
+        'ContractCostType.MlDsa87DecodeVerifyingKey, '
+        'ContractCostType.VerifyMlDsa44Sig, '
+        'ContractCostType.VerifyMlDsa65Sig, '
+        'ContractCostType.VerifyMlDsa87Sig, '
+        'SCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT, '
         'StellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS, '
         'StellarValueType.STELLAR_VALUE_SIGNED_MS',
       );
       expect(
         sep51CorpusMetadata['unresolvable_struct_types'],
-        'StellarValueProposedMsValue, StellarValueSignedMsValue',
+        'MuxedContract, StellarValueProposedMsValue, StellarValueSignedMsValue',
       );
     });
 

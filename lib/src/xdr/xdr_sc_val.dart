@@ -248,6 +248,13 @@ class XdrSCVal extends XdrSCValBase {
     return val;
   }
 
+  static XdrSCVal forMuxedContractAddress(String muxedContractId) {
+    final address = Address.forMuxedContractId(muxedContractId);
+    XdrSCVal val = XdrSCVal(XdrSCValType.SCV_ADDRESS);
+    val.address = address.toXdr();
+    return val;
+  }
+
   static XdrSCVal forAddressStrKey(String address) {
     if (StrKey.isValidStellarAccountId(address)) {
       return XdrSCVal.forAccountAddress(address);
@@ -259,6 +266,8 @@ class XdrSCVal extends XdrSCValBase {
       return XdrSCVal.forClaimableBalanceAddress(address);
     } else if (StrKey.isValidLiquidityPoolId(address)) {
       return XdrSCVal.forLiquidityPoolAddress(address);
+    } else if (StrKey.isValidMuxedContractId(address)) {
+      return XdrSCVal.forMuxedContractAddress(address);
     }
     throw Exception("Unknown StrKey address type: $address");
   }

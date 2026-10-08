@@ -13,6 +13,7 @@ import 'xdr_claimable_balance_id.dart';
 import 'xdr_data_io.dart';
 import 'xdr_json_helper.dart';
 import 'xdr_muxed_account_med25519.dart';
+import 'xdr_muxed_contract.dart';
 import 'xdr_sc_address_base.dart';
 import 'xdr_sc_address_type.dart';
 
@@ -35,6 +36,7 @@ class XdrSCAddress extends XdrSCAddressBase {
     result.muxedAccount = b.muxedAccount;
     result.claimableBalanceId = b.claimableBalanceId;
     result.liquidityPoolId = b.liquidityPoolId;
+    result.muxedContract = b.muxedContract;
     return result;
   }
 
@@ -105,6 +107,20 @@ class XdrSCAddress extends XdrSCAddressBase {
     return result;
   }
 
+  /// Builds a muxed contract address from its strkey rendering
+  /// [muxedContractId] (W...).
+  ///
+  /// Throws:
+  /// - [FormatException]: if [muxedContractId] is not a valid muxed contract
+  ///   strkey
+  static XdrSCAddress forMuxedContractId(String muxedContractId) {
+    XdrSCAddress result = XdrSCAddress(
+      XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT,
+    );
+    result.muxedContract = XdrMuxedContract.forMuxedContractId(muxedContractId);
+    return result;
+  }
+
   String toStrKey() {
     switch (discriminant) {
       case XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT:
@@ -120,6 +136,8 @@ class XdrSCAddress extends XdrSCAddressBase {
         );
       case XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL:
         return StrKey.encodeLiquidityPoolId(liquidityPoolId!.hash);
+      case XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT:
+        return muxedContract!.muxedContractId;
     }
     throw Exception("unknown address type: $discriminant");
   }

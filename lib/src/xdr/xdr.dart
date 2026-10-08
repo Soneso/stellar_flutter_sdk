@@ -256,6 +256,8 @@ export 'xdr_message_type.dart';
 export 'xdr_muxed_account.dart';
 export 'xdr_muxed_account_med25519.dart';
 export 'xdr_muxed_account_med25519_base.dart';
+export 'xdr_muxed_contract.dart';
+export 'xdr_muxed_contract_base.dart';
 export 'xdr_node_id.dart';
 export 'xdr_offer_entry.dart';
 export 'xdr_offer_entry_ext.dart';

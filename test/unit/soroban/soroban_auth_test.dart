@@ -721,6 +721,97 @@ void main() {
 
   });
 
+  group('Address muxed contract', () {
+    // SEP-0023 vector: the contract below paired with the id 123456.
+    const contractId = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
+    const contractHex =
+        '363eaa3867841fbad0f4ed88c779e4fe66e56a2470dc98c0ec9c073d05c7b103';
+    const muxedContractId =
+        'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+
+    test('round trips through XdrSCAddress and XdrSCVal', () {
+      final address = Address.forMuxedContractId(muxedContractId);
+      expect(address.type, Address.TYPE_MUXED_CONTRACT);
+
+      final xdr = address.toXdr();
+      expect(xdr.discriminant, XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT);
+      expect(xdr.muxedContract!.id.uint64, BigInt.from(123456));
+      final restored = Address.fromXdr(xdr);
+      expect(restored.type, Address.TYPE_MUXED_CONTRACT);
+      expect(restored.muxedContractId, muxedContractId);
+      expect(restored.contractId, isNull);
+
+      final scVal = address.toXdrSCVal();
+      expect(Address.fromXdrSCVal(scVal).muxedContractId, muxedContractId);
+      final native = scVal.toNative();
+      expect(native, isA<Address>());
+      expect((native as Address).muxedContractId, muxedContractId);
+      expect(XdrSCVal.forAddressStrKey(muxedContractId).address!.toStrKey(),
+          muxedContractId);
+    });
+
+    test('refuses a muxed contract address without its id', () {
+      expect(() => Address(Address.TYPE_MUXED_CONTRACT),
+          throwsA(isA<Exception>().having((Exception e) => e.toString(),
+              'toString', 'Exception: invalid arguments')));
+
+      final address = Address.forMuxedContractId(muxedContractId)
+        ..muxedContractId = null;
+      expect(
+          () => address.toXdr(),
+          throwsA(isA<Exception>().having((Exception e) => e.toString(),
+              'toString',
+              'Exception: invalid address, has no muxed contract id')));
+    });
+
+    test('forMuxedContract pairs a contract id with an id', () {
+      final fromStrKey =
+          Address.forMuxedContract(contractId: contractId, id: BigInt.from(123456));
+      expect(fromStrKey.type, Address.TYPE_MUXED_CONTRACT);
+      expect(fromStrKey.muxedContractId, muxedContractId);
+      final fromHex =
+          Address.forMuxedContract(contractId: contractHex, id: BigInt.from(123456));
+      expect(fromHex.muxedContractId, muxedContractId);
+      expect(
+          Address.forMuxedContract(
+                  contractId:
+                      'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA',
+                  id: BigInt.zero)
+              .muxedContractId,
+          'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC');
+      final maxId = (BigInt.one << 64) - BigInt.one;
+      expect(
+          Address.forMuxedContract(contractId: contractId, id: maxId)
+              .toXdr()
+              .muxedContract!
+              .id
+              .uint64,
+          maxId);
+    });
+
+    test('forMuxedContract refuses an id or contract id out of range', () {
+      for (final id in [BigInt.from(-1), BigInt.one << 64]) {
+        expect(
+            () => Address.forMuxedContract(contractId: contractId, id: id),
+            throwsA(isA<ArgumentError>()
+                .having((ArgumentError e) => e.name, 'name', 'id')
+                .having((ArgumentError e) => e.invalidValue, 'value', id)));
+      }
+      for (final malformed in [
+        'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXF',
+        contractHex.substring(2),
+        muxedContractId,
+      ]) {
+        expect(
+            () => Address.forMuxedContract(
+                contractId: malformed, id: BigInt.one),
+            throwsA(isA<ArgumentError>()
+                .having((ArgumentError e) => e.name, 'name', 'contractId')
+                .having((ArgumentError e) => e.invalidValue, 'value', malformed)));
+      }
+    });
+  });
+
   group('SorobanAddressCredentials - deep', () {
     test('creates credentials with all fields', () {
       final address = Address.forAccountId(

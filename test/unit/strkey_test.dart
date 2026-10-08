@@ -301,6 +301,8 @@ void main() {
     });
     expect(() => StrKey.encodeStellarMuxedAccountId(Uint8List(39)),
         throwsExceptionWith("Payload must be 40 bytes, got 39"));
+    expect(() => StrKey.encodeMuxedContractId(Uint8List(39)),
+        throwsExceptionWith("Payload must be 40 bytes, got 39"));
   });
 
   test('test sep-23 contract and muxed id 0 vectors', () async {
@@ -321,6 +323,37 @@ void main() {
     final muxed = MuxedAccount.fromAccountId(muxedIdZero)!;
     assert(muxed.id == BigInt.zero);
     assert(muxed.accountId == muxedIdZero);
+  });
+
+  // The muxed contract strkeys SEP-0023 lists as valid: the contract, the id
+  // and the W strkey pairing them.
+  final muxedContracts = <(String, BigInt, String)>[
+    (
+      "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA",
+      BigInt.zero,
+      "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC"
+    ),
+    (
+      "CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA",
+      BigInt.parse("9223372036854775808"),
+      "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY"
+    ),
+    (
+      "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE",
+      BigInt.from(123456),
+      "WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG"
+    ),
+  ];
+
+  test('test muxed contracts', () async {
+    for (final (contract, id, muxedContract) in muxedContracts) {
+      expect(StrKey.isValidMuxedContractId(muxedContract), isTrue);
+      expect(StrKey.isValidContractId(muxedContract), isFalse);
+      final raw = StrKey.decodeMuxedContractId(muxedContract);
+      expect(raw.sublist(0, 32), StrKey.decodeContractId(contract));
+      expect(BigInt.parse(Util.bytesToHex(raw.sublist(32)), radix: 16), id);
+      expect(StrKey.encodeMuxedContractId(raw), muxedContract);
+    }
   });
 
   test('test signed payloads', () async {
@@ -458,6 +491,46 @@ void main() {
   final claimableBalanceOfUnknownType =
       "BAAT6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGXACA";
 
+  // The muxed contract strkeys SEP-0023 and the reference implementation list
+  // as invalid, each with the refusal the codec gives it.
+  final invalidMuxedContracts = <(String, String)>[
+    // The unused trailing bit is set.
+    (
+      "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWD",
+      "Invalid encoded string"
+    ),
+    // The length is congruent to 6 mod 8.
+    (
+      "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWCA",
+      "Encoded string must be 69 characters, got 70"
+    ),
+    // Base-32 decoding yields 44 bytes, not 43.
+    (
+      "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAAIOUI",
+      "Encoded string must be 69 characters, got 71"
+    ),
+    // The low 3 bits of the version byte are 7, checksum recomputed.
+    (
+      "W47QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAADXHW",
+      "Version byte is invalid"
+    ),
+    // The low 3 bits of the version byte are 7, checksum not recomputed.
+    (
+      "W47QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC",
+      "Version byte is invalid"
+    ),
+    // The checksum does not match.
+    (
+      "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWA",
+      "Checksum invalid"
+    ),
+    // Padding is not allowed.
+    (
+      "WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC===",
+      "Encoded string must be 69 characters, got 72"
+    ),
+  ];
+
   // The two signed payload strkeys SEP-0023 lists as valid.
   final signedPayloadOf32Bytes =
       "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAQACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IBZGM";
@@ -529,6 +602,10 @@ void main() {
 
     // Invalid claimable balance type (first byte of binary key is not 0)
     assert(!StrKey.isValidClaimableBalanceId(claimableBalanceOfUnknownType));
+
+    for (final (strKey, _) in invalidMuxedContracts) {
+      expect(StrKey.isValidMuxedContractId(strKey), isFalse, reason: strKey);
+    }
   });
 
   group('strkey decode refuses malformed input', () {
@@ -589,6 +666,14 @@ void main() {
           () => StrKey.decodeSignedPayload(overLongSignedPayload),
           throwsFormat(
               "Encoded string must be 69 to 165 characters, got 320000"));
+    });
+
+    test('refuses the muxed contracts SEP-0023 lists as invalid', () {
+      for (final (strKey, message) in invalidMuxedContracts) {
+        expect(() => StrKey.decodeMuxedContractId(strKey),
+            throwsFormat(message),
+            reason: strKey);
+      }
     });
 
     test('refuses a version byte belonging to another type', () {
@@ -946,6 +1031,11 @@ void main() {
           (String a) => StrKey.encodeClaimableBalanceId(
               StrKey.decodeClaimableBalanceId(a))
         ),
+        (
+          muxedContracts.last.$3,
+          (String a) =>
+              StrKey.encodeMuxedContractId(StrKey.decodeMuxedContractId(a))
+        ),
       ];
 
       for (final (address, reencode) in addresses) {
@@ -960,15 +1050,14 @@ void main() {
     // it decodes anything. A row added below for a version byte the table does
     // not hold therefore fails on "Unrecognized version byte".
     final hash = Uint8List.fromList(List<int>.filled(32, 1));
-    final muxedAccount =
-        Uint8List.fromList([...hash, ...List<int>.filled(8, 2)]);
+    final hashAndId = Uint8List.fromList([...hash, ...List<int>.filled(8, 2)]);
     final claimableBalance = Uint8List.fromList([0, ...hash]);
     final signedPayload =
         Uint8List.fromList([...hash, 0, 0, 0, 4, 9, 9, 9, 9]);
 
     final payloads = <(VersionByte, Uint8List)>[
       (VersionByte.ACCOUNT_ID, hash),
-      (VersionByte.MUXED_ACCOUNT_ID, muxedAccount),
+      (VersionByte.MUXED_ACCOUNT_ID, hashAndId),
       (VersionByte.SEED, hash),
       (VersionByte.PRE_AUTH_TX, hash),
       (VersionByte.SHA256_HASH, hash),
@@ -976,10 +1065,11 @@ void main() {
       (VersionByte.CONTRACT_ID, hash),
       (VersionByte.LIQUIDITY_POOL, hash),
       (VersionByte.CLAIMABLE_BALANCE, claimableBalance),
+      (VersionByte.MUXED_CONTRACT, hashAndId),
     ];
 
     test('decodes an address of every type the codec names', () {
-      expect(payloads.length, 9);
+      expect(payloads.length, 10);
       for (final (versionByte, payload) in payloads) {
         final encoded = StrKey.encodeCheck(versionByte, payload);
         expect(StrKey.decodeCheck(versionByte, encoded), payload,

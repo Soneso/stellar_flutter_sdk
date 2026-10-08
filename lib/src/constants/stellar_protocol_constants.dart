@@ -84,6 +84,16 @@ final class StellarProtocolConstants {
   /// Example: CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA
   static const int STRKEY_CONTRACT_ID_LENGTH = 56;
 
+  /// Length of a muxed contract address in strkey format (W...).
+  ///
+  /// Format: 1 byte version + 32 bytes contract ID + 8 bytes ID + 2 bytes checksum = 43 bytes
+  /// Base32 encoded: ceil(43 * 8 / 5) = 69 characters
+  ///
+  /// Muxed contract addresses pair a contract with a multiplexing id. Defined in CAP-0084.
+  ///
+  /// Example: WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC
+  static const int STRKEY_MUXED_CONTRACT_LENGTH = 69;
+
   /// Length of a claimable balance ID in strkey format (B...).
   ///
   /// Format: 1 byte version + 32 bytes balance ID + 2 bytes checksum = 35 bytes
@@ -201,6 +211,16 @@ final class StellarProtocolConstants {
   /// Used for claimable balance identifiers. Defined in CAP-0023.
   static const int VERSION_BYTE_CLAIMABLE_BALANCE = 1 << 3;
 
+  /// Version byte for muxed contract strkey encoding.
+  ///
+  /// Results in 'W' prefix: 22 << 3 = 176 (0xB0)
+  ///
+  /// Used for contract addresses multiplexed with a 64-bit id. Defined in
+  /// SEP-0023 and CAP-0084.
+  ///
+  /// Example: WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC
+  static const int VERSION_BYTE_MUXED_CONTRACT = 22 << 3;
+
   // ============================================================================
   // CRYPTOGRAPHIC CONSTANTS
   // ============================================================================
@@ -245,6 +265,12 @@ final class StellarProtocolConstants {
   /// Consists of Ed25519 public key (32 bytes) + muxed ID (8 bytes) = 40 bytes total.
   /// Defined in CAP-0027.
   static const int MUXED_ACCOUNT_DECODED_LENGTH = ED25519_PUBLIC_KEY_LENGTH_BYTES + MUXED_ACCOUNT_ID_LENGTH_BYTES;
+
+  /// Length of decoded muxed contract data in bytes.
+  ///
+  /// Consists of the contract ID (32 bytes) + muxed ID (8 bytes) = 40 bytes total.
+  /// Defined in CAP-0084.
+  static const int MUXED_CONTRACT_DECODED_LENGTH = SHA256_HASH_LENGTH_BYTES + MUXED_ACCOUNT_ID_LENGTH_BYTES;
 
   // ============================================================================
   // ASSET CODE LENGTHS

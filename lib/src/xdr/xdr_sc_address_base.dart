@@ -14,6 +14,7 @@ import 'xdr_data_io.dart';
 import 'xdr_hash.dart';
 import 'xdr_json_helper.dart';
 import 'xdr_muxed_account_med25519.dart';
+import 'xdr_muxed_contract.dart';
 import 'xdr_sc_address_type.dart';
 
 class XdrSCAddressBase {
@@ -47,6 +48,10 @@ class XdrSCAddressBase {
 
   XdrHash? get liquidityPoolId => this._liquidityPoolId;
 
+  XdrMuxedContract? _muxedContract;
+
+  XdrMuxedContract? get muxedContract => this._muxedContract;
+
   XdrSCAddressBase(this._type);
 
   set accountId(XdrAccountID? value) => this._accountId = value;
@@ -60,6 +65,8 @@ class XdrSCAddressBase {
       this._claimableBalanceId = value;
 
   set liquidityPoolId(XdrHash? value) => this._liquidityPoolId = value;
+
+  set muxedContract(XdrMuxedContract? value) => this._muxedContract = value;
 
   static void encode(
     XdrDataOutputStream stream,
@@ -84,6 +91,9 @@ class XdrSCAddressBase {
         break;
       case XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL:
         XdrHash.encode(stream, encodedSCAddress._liquidityPoolId!);
+        break;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT:
+        XdrMuxedContract.encode(stream, encodedSCAddress._muxedContract!);
         break;
       default:
         break;
@@ -114,6 +124,9 @@ class XdrSCAddressBase {
         break;
       case XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL:
         decoded._liquidityPoolId = XdrHash.decode(stream);
+        break;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT:
+        decoded._muxedContract = XdrMuxedContract.decode(stream);
         break;
     }
     return decoded;
@@ -149,6 +162,9 @@ class XdrSCAddressBase {
         break;
       case XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL:
         _liquidityPoolId!.toTxRep('$prefix.liquidityPoolId', lines);
+        break;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT:
+        _muxedContract!.toTxRep('$prefix.muxedContract', lines);
         break;
       default:
         break;
@@ -187,6 +203,12 @@ class XdrSCAddressBase {
           '$prefix.liquidityPoolId',
         );
         break;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT:
+        result._muxedContract = XdrMuxedContract.fromTxRep(
+          map,
+          '$prefix.muxedContract',
+        );
+        break;
       default:
         break;
     }
@@ -215,6 +237,8 @@ class XdrSCAddressBase {
         return _claimableBalanceId!.toXdrJsonValue();
       case XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL:
         return StrKey.encodeLiquidityPoolId(_liquidityPoolId!.hash);
+      case XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT:
+        return _muxedContract!.toXdrJsonValue();
     }
     XdrJsonHelper.fail(
       'XdrSCAddress',
@@ -274,10 +298,16 @@ class XdrSCAddressBase {
           ),
         );
         return arm4;
+      case 'W':
+        final T arm5 = constructor(
+          XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT,
+        );
+        arm5.muxedContract = XdrMuxedContract.fromXdrJsonValue(value);
+        return arm5;
     }
     XdrJsonHelper.fail(
       'XdrSCAddress',
-      'expects a G, C, M, B or L strkey but found ${XdrJsonHelper.preview(value)}',
+      'expects a G, C, M, B, L or W strkey but found ${XdrJsonHelper.preview(value)}',
     );
   }
 }

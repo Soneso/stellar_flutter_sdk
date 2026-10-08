@@ -1909,6 +1909,201 @@ void main() {
       );
       expect(XdrContractCostType.fromXdrJsonValue('bn254_g1_msm').value, 85);
     });
+    test(
+      'XdrContractCostType MlDsa44DecodeVerifyingKey renders as ml_dsa44_decode_verifying_key',
+      () {
+        var member = XdrContractCostType.MlDsa44DecodeVerifyingKey;
+        expect(member.value, 86);
+        expect(member.toXdrJsonValue(), 'ml_dsa44_decode_verifying_key');
+        expect(member.toXdrJson(), '"ml_dsa44_decode_verifying_key"');
+        var parsed = XdrContractCostType.fromXdrJson(
+          '"ml_dsa44_decode_verifying_key"',
+        );
+        expect(parsed.value, 86);
+        expect(
+          parsed.toBase64EncodedXdrString(),
+          member.toBase64EncodedXdrString(),
+        );
+        expect(
+          XdrContractCostType.fromXdrJsonValue(
+            'ml_dsa44_decode_verifying_key',
+          ).value,
+          86,
+        );
+      },
+    );
+    test(
+      'XdrContractCostType MlDsa65DecodeVerifyingKey renders as ml_dsa65_decode_verifying_key',
+      () {
+        var member = XdrContractCostType.MlDsa65DecodeVerifyingKey;
+        expect(member.value, 87);
+        expect(member.toXdrJsonValue(), 'ml_dsa65_decode_verifying_key');
+        expect(member.toXdrJson(), '"ml_dsa65_decode_verifying_key"');
+        var parsed = XdrContractCostType.fromXdrJson(
+          '"ml_dsa65_decode_verifying_key"',
+        );
+        expect(parsed.value, 87);
+        expect(
+          parsed.toBase64EncodedXdrString(),
+          member.toBase64EncodedXdrString(),
+        );
+        expect(
+          XdrContractCostType.fromXdrJsonValue(
+            'ml_dsa65_decode_verifying_key',
+          ).value,
+          87,
+        );
+      },
+    );
+    test(
+      'XdrContractCostType MlDsa87DecodeVerifyingKey renders as ml_dsa87_decode_verifying_key',
+      () {
+        var member = XdrContractCostType.MlDsa87DecodeVerifyingKey;
+        expect(member.value, 88);
+        expect(member.toXdrJsonValue(), 'ml_dsa87_decode_verifying_key');
+        expect(member.toXdrJson(), '"ml_dsa87_decode_verifying_key"');
+        var parsed = XdrContractCostType.fromXdrJson(
+          '"ml_dsa87_decode_verifying_key"',
+        );
+        expect(parsed.value, 88);
+        expect(
+          parsed.toBase64EncodedXdrString(),
+          member.toBase64EncodedXdrString(),
+        );
+        expect(
+          XdrContractCostType.fromXdrJsonValue(
+            'ml_dsa87_decode_verifying_key',
+          ).value,
+          88,
+        );
+      },
+    );
+    test(
+      'XdrContractCostType MlDsa44DecodeSignature renders as ml_dsa44_decode_signature',
+      () {
+        var member = XdrContractCostType.MlDsa44DecodeSignature;
+        expect(member.value, 89);
+        expect(member.toXdrJsonValue(), 'ml_dsa44_decode_signature');
+        expect(member.toXdrJson(), '"ml_dsa44_decode_signature"');
+        var parsed = XdrContractCostType.fromXdrJson(
+          '"ml_dsa44_decode_signature"',
+        );
+        expect(parsed.value, 89);
+        expect(
+          parsed.toBase64EncodedXdrString(),
+          member.toBase64EncodedXdrString(),
+        );
+        expect(
+          XdrContractCostType.fromXdrJsonValue(
+            'ml_dsa44_decode_signature',
+          ).value,
+          89,
+        );
+      },
+    );
+    test(
+      'XdrContractCostType MlDsa65DecodeSignature renders as ml_dsa65_decode_signature',
+      () {
+        var member = XdrContractCostType.MlDsa65DecodeSignature;
+        expect(member.value, 90);
+        expect(member.toXdrJsonValue(), 'ml_dsa65_decode_signature');
+        expect(member.toXdrJson(), '"ml_dsa65_decode_signature"');
+        var parsed = XdrContractCostType.fromXdrJson(
+          '"ml_dsa65_decode_signature"',
+        );
+        expect(parsed.value, 90);
+        expect(
+          parsed.toBase64EncodedXdrString(),
+          member.toBase64EncodedXdrString(),
+        );
+        expect(
+          XdrContractCostType.fromXdrJsonValue(
+            'ml_dsa65_decode_signature',
+          ).value,
+          90,
+        );
+      },
+    );
+    test(
+      'XdrContractCostType MlDsa87DecodeSignature renders as ml_dsa87_decode_signature',
+      () {
+        var member = XdrContractCostType.MlDsa87DecodeSignature;
+        expect(member.value, 91);
+        expect(member.toXdrJsonValue(), 'ml_dsa87_decode_signature');
+        expect(member.toXdrJson(), '"ml_dsa87_decode_signature"');
+        var parsed = XdrContractCostType.fromXdrJson(
+          '"ml_dsa87_decode_signature"',
+        );
+        expect(parsed.value, 91);
+        expect(
+          parsed.toBase64EncodedXdrString(),
+          member.toBase64EncodedXdrString(),
+        );
+        expect(
+          XdrContractCostType.fromXdrJsonValue(
+            'ml_dsa87_decode_signature',
+          ).value,
+          91,
+        );
+      },
+    );
+    test(
+      'XdrContractCostType VerifyMlDsa44Sig renders as verify_ml_dsa44_sig',
+      () {
+        var member = XdrContractCostType.VerifyMlDsa44Sig;
+        expect(member.value, 92);
+        expect(member.toXdrJsonValue(), 'verify_ml_dsa44_sig');
+        expect(member.toXdrJson(), '"verify_ml_dsa44_sig"');
+        var parsed = XdrContractCostType.fromXdrJson('"verify_ml_dsa44_sig"');
+        expect(parsed.value, 92);
+        expect(
+          parsed.toBase64EncodedXdrString(),
+          member.toBase64EncodedXdrString(),
+        );
+        expect(
+          XdrContractCostType.fromXdrJsonValue('verify_ml_dsa44_sig').value,
+          92,
+        );
+      },
+    );
+    test(
+      'XdrContractCostType VerifyMlDsa65Sig renders as verify_ml_dsa65_sig',
+      () {
+        var member = XdrContractCostType.VerifyMlDsa65Sig;
+        expect(member.value, 93);
+        expect(member.toXdrJsonValue(), 'verify_ml_dsa65_sig');
+        expect(member.toXdrJson(), '"verify_ml_dsa65_sig"');
+        var parsed = XdrContractCostType.fromXdrJson('"verify_ml_dsa65_sig"');
+        expect(parsed.value, 93);
+        expect(
+          parsed.toBase64EncodedXdrString(),
+          member.toBase64EncodedXdrString(),
+        );
+        expect(
+          XdrContractCostType.fromXdrJsonValue('verify_ml_dsa65_sig').value,
+          93,
+        );
+      },
+    );
+    test(
+      'XdrContractCostType VerifyMlDsa87Sig renders as verify_ml_dsa87_sig',
+      () {
+        var member = XdrContractCostType.VerifyMlDsa87Sig;
+        expect(member.value, 94);
+        expect(member.toXdrJsonValue(), 'verify_ml_dsa87_sig');
+        expect(member.toXdrJson(), '"verify_ml_dsa87_sig"');
+        var parsed = XdrContractCostType.fromXdrJson('"verify_ml_dsa87_sig"');
+        expect(parsed.value, 94);
+        expect(
+          parsed.toBase64EncodedXdrString(),
+          member.toBase64EncodedXdrString(),
+        );
+        expect(
+          XdrContractCostType.fromXdrJsonValue('verify_ml_dsa87_sig').value,
+          94,
+        );
+      },
+    );
     test('XdrContractCostType rejects an undeclared member name', () {
       expect(
         () =>
@@ -1918,7 +2113,7 @@ void main() {
     });
     test('XdrContractCostType rejects an undeclared value', () {
       expect(
-        () => XdrContractCostType(86).toXdrJsonValue(),
+        () => XdrContractCostType(95).toXdrJsonValue(),
         throwsA(isA<FormatException>()),
       );
     });

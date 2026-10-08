@@ -77,7 +77,7 @@ Generated test output goes to `test/unit/xdr/generated/`.
 
 ## Base/wrapper pattern
 
-22 types generate a `*_base.dart` file instead of a plain `*.dart` file. These are types where the SDK has hand-maintained helper methods (factory constructors, convenience getters, BigInt conversions, etc.) that cannot be derived from the XDR spec alone.
+23 types generate a `*_base.dart` file instead of a plain `*.dart` file. These are types where the SDK has hand-maintained helper methods (factory constructors, convenience getters, BigInt conversions, etc.) that cannot be derived from the XDR spec alone.
 
 The hand-maintained wrapper file extends the generated base class:
 

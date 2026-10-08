@@ -257,7 +257,8 @@ class SorobanClient {
       final owner = ownerAddress.accountId ??
           ownerAddress.muxedAccountId ??
           ownerAddress.claimableBalanceId ??
-          ownerAddress.liquidityPoolId!;
+          ownerAddress.liquidityPoolId ??
+          ownerAddress.muxedContractId!;
       throw Exception(
           "external reference owner $owner is not a contract: the executable "
           "owner of an external reference must be a contract");

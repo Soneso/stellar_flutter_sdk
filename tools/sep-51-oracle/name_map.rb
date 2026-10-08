@@ -97,12 +97,14 @@ ORACLE_TYPE_ESCAPES = {
 }.freeze
 
 # Structs that SEP-0051 renders as a single JSON string rather than an object:
-# the integer-parts types become one base-10 decimal, and the account and
-# signed-payload types become strkeys. They carry no JSON field names, so the
-# field-name diff does not apply to them and reports them separately. Names are
-# the qualified .x identifiers, so a nested type is unambiguous. A struct
-# appearing here unexpectedly means a new type needs a string rendering; one
-# disappearing means a type that used to be a string is now an object.
+# the integer-parts types become one base-10 decimal, and the account, muxed
+# contract and signed-payload types become strkeys. They carry no JSON field
+# names, so the field-name diff does not apply to them and reports them
+# separately. Names are the qualified .x identifiers, so a nested type is
+# unambiguous. A struct appearing here unexpectedly means a new type needs a
+# string rendering; one disappearing means a type that used to be a string is
+# now an object. One the reference cannot resolve is recorded in the
+# verification block as declared rather than confirmed.
 STRING_RENDERED_STRUCTS = %w[
   Int128Parts
   Int256Parts
@@ -110,6 +112,7 @@ STRING_RENDERED_STRUCTS = %w[
   UInt256Parts
   MuxedEd25519Account
   MuxedAccountMed25519
+  MuxedContract
   SignerKeyEd25519SignedPayload
 ].freeze
 
@@ -703,6 +706,8 @@ def main
         'struct_types_field_comparable' => result[:struct_checked],
         'struct_types_string_rendered' => result[:string_rendered].sort,
         'struct_types_unresolvable' => result[:struct_unresolvable].sort,
+        'struct_types_string_rendered_unresolvable' =>
+          (STRING_RENDERED_STRUCTS & result[:struct_unresolvable]).sort,
         'union_types_string_rendered' => result[:union_string_rendered].sort,
         'mismatches' => result[:mismatches]
       } : 'not verified in this run; re-run with --diff',

@@ -31,6 +31,7 @@ import 'constants/bit_constants.dart';
 /// - C: Smart contract ID (CONTRACT_ID)
 /// - L: Liquidity pool ID (LIQUIDITY_POOL)
 /// - B: Claimable balance ID (CLAIMABLE_BALANCE)
+/// - W: Muxed contract address (MUXED_CONTRACT)
 ///
 /// Example usage:
 /// ```dart
@@ -85,6 +86,9 @@ class VersionByte {
 
   /// Version byte for claimable balance IDs (B...).
   static const CLAIMABLE_BALANCE = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_CLAIMABLE_BALANCE);
+
+  /// Version byte for muxed contract addresses (W...).
+  static const MUXED_CONTRACT = const VersionByte._internal(StellarProtocolConstants.VERSION_BYTE_MUXED_CONTRACT);
 }
 
 /// The lengths one strkey type admits.
@@ -139,6 +143,7 @@ class _StrKeyLengths {
 /// - Contract IDs (C...): Soroban smart contracts
 /// - Liquidity Pool IDs (L...): AMM liquidity pools
 /// - Claimable Balance IDs (B...): Claimable balance identifiers
+/// - Muxed Contract Addresses (W...): Contracts multiplexed with an id (CAP-0084)
 ///
 /// All encoding/decoding operations include CRC16 checksum verification
 /// to detect transcription errors.
@@ -205,6 +210,9 @@ class StrKey {
             StellarProtocolConstants.STRKEY_CLAIMABLE_BALANCE_LENGTH,
             StellarProtocolConstants.CLAIMABLE_BALANCE_DISCRIMINANT_BYTES +
                 StellarProtocolConstants.SHA256_HASH_LENGTH_BYTES),
+    StellarProtocolConstants.VERSION_BYTE_MUXED_CONTRACT: _StrKeyLengths.fixed(
+        StellarProtocolConstants.STRKEY_MUXED_CONTRACT_LENGTH,
+        StellarProtocolConstants.MUXED_CONTRACT_DECODED_LENGTH),
   };
 
   /// Encodes [data] to strkey account id (G...).
@@ -471,6 +479,32 @@ class StrKey {
   static String decodeContractIdHex(String strKeyContractId) {
     return Util.bytesToHex(
         decodeCheck(VersionByte.CONTRACT_ID, strKeyContractId));
+  }
+
+  /// Encodes [data] to strkey muxed contract address (W...).
+  ///
+  /// [data] is the 32-byte contract id followed by the 8-byte big-endian
+  /// multiplexing id.
+  static String encodeMuxedContractId(Uint8List data) {
+    return encodeCheck(VersionByte.MUXED_CONTRACT, data);
+  }
+
+  /// Decodes strkey muxed contract address [muxedContractId] (W...) to raw
+  /// data: the 32-byte contract id followed by the 8-byte big-endian
+  /// multiplexing id.
+  static Uint8List decodeMuxedContractId(String muxedContractId) {
+    return decodeCheck(VersionByte.MUXED_CONTRACT, muxedContractId);
+  }
+
+  /// Checks if the given [muxedContractId] is a valid muxed contract address.
+  /// Must start with "W". If it starts with "C" use [isValidContractId].
+  static bool isValidMuxedContractId(String muxedContractId) {
+    try {
+      decodeMuxedContractId(muxedContractId);
+      return true;
+    } on Exception catch (_) {
+      return false;
+    }
   }
 
   /// Describes how the [discriminant] a claimable balance id leads with names
