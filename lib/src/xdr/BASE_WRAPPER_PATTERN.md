@@ -2,7 +2,7 @@
 
 ## Why
 
-22 XDR classes have hand-written helper methods (factories, base64 encoding,
+23 XDR classes have hand-written helper methods (factories, base64 encoding,
 BigInt helpers, etc.) that must survive xdrgen regeneration. The solution:
 split each into a **base file** (replaceable by xdrgen) and a **wrapper file**
 (hand-maintained).
@@ -136,8 +136,8 @@ For types extending `XdrAsset`:
 
 ## Files
 
-- 22 base files (`*_base.dart`)
-- 22 wrapper files, each extending its base and carrying the public type name
+- 23 base files (`*_base.dart`)
+- 23 wrapper files, each extending its base and carrying the public type name
 - The set is `BASE_WRAPPER_TYPES` in
   `tools/xdr-generator/generator/type_overrides.rb`, which is what decides
   whether a type is emitted to `xdr_foo_base.dart` or to `xdr_foo.dart`.

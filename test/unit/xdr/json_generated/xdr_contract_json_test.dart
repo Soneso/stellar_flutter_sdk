@@ -1099,6 +1099,22 @@ void main() {
         expect(XdrSCAddressType.fromXdrJsonValue('liquidity_pool').value, 4);
       },
     );
+    test(
+      'XdrSCAddressType SC_ADDRESS_TYPE_MUXED_CONTRACT renders as muxed_contract',
+      () {
+        var member = XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT;
+        expect(member.value, 5);
+        expect(member.toXdrJsonValue(), 'muxed_contract');
+        expect(member.toXdrJson(), '"muxed_contract"');
+        var parsed = XdrSCAddressType.fromXdrJson('"muxed_contract"');
+        expect(parsed.value, 5);
+        expect(
+          parsed.toBase64EncodedXdrString(),
+          member.toBase64EncodedXdrString(),
+        );
+        expect(XdrSCAddressType.fromXdrJsonValue('muxed_contract').value, 5);
+      },
+    );
     test('XdrSCAddressType rejects an undeclared member name', () {
       expect(
         () => XdrSCAddressType.fromXdrJsonValue('xdr_json_undeclared_member'),
@@ -1107,7 +1123,7 @@ void main() {
     });
     test('XdrSCAddressType rejects an undeclared value', () {
       expect(
-        () => XdrSCAddressType(5).toXdrJsonValue(),
+        () => XdrSCAddressType(6).toXdrJsonValue(),
         throwsA(isA<FormatException>()),
       );
     });
@@ -1141,6 +1157,33 @@ void main() {
         );
       },
     );
+    test('XdrMuxedContract round trip', () {
+      var original = XdrMuxedContract(
+        XdrUint64(BigInt.from(123456)),
+        XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))),
+      );
+      var json = original.toXdrJson();
+      var fromDocument = XdrMuxedContract.fromXdrJson(json);
+      expect(fromDocument.toXdrJson(), json);
+      expect(
+        fromDocument.toBase64EncodedXdrString(),
+        original.toBase64EncodedXdrString(),
+      );
+      var fromTree = XdrMuxedContract.fromXdrJsonValue(
+        original.toXdrJsonValue(),
+      );
+      expect(fromTree.toXdrJsonValue(), original.toXdrJsonValue());
+      expect(
+        fromTree.toBase64EncodedXdrString(),
+        original.toBase64EncodedXdrString(),
+      );
+    });
+    test('XdrMuxedContract rejects a rendering that is not a string', () {
+      expect(
+        () => XdrMuxedContract.fromXdrJsonValue(<String, Object?>{}),
+        throwsA(isA<FormatException>()),
+      );
+    });
     test('XdrSCAddress account arm round trip', () {
       var original = XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT);
       original.accountId = (XdrAccountID(
@@ -1245,9 +1288,31 @@ void main() {
         original.toBase64EncodedXdrString(),
       );
     });
+    test('XdrSCAddress muxed_contract arm round trip', () {
+      var original = XdrSCAddress(
+        XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT,
+      );
+      original.muxedContract = XdrMuxedContract(
+        XdrUint64(BigInt.from(123456)),
+        XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))),
+      );
+      var json = original.toXdrJson();
+      var fromDocument = XdrSCAddress.fromXdrJson(json);
+      expect(fromDocument.toXdrJson(), json);
+      expect(
+        fromDocument.toBase64EncodedXdrString(),
+        original.toBase64EncodedXdrString(),
+      );
+      var fromTree = XdrSCAddress.fromXdrJsonValue(original.toXdrJsonValue());
+      expect(fromTree.toXdrJsonValue(), original.toXdrJsonValue());
+      expect(
+        fromTree.toBase64EncodedXdrString(),
+        original.toBase64EncodedXdrString(),
+      );
+    });
     test('XdrSCAddress rejects an undeclared discriminant', () {
       expect(
-        () => XdrSCAddress(XdrSCAddressType(5)).toXdrJsonValue(),
+        () => XdrSCAddress(XdrSCAddressType(6)).toXdrJsonValue(),
         throwsA(isA<FormatException>()),
       );
     });

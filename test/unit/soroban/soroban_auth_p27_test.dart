@@ -840,6 +840,23 @@ void main() {
       );
     });
 
+    test('muxed contract address (W...) as delegate throws', () {
+      const muxedContract =
+          'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+      final entry = SorobanAuthorizationEntry(
+          SorobanCredentials.forAddressV2(inner), rootInvocation);
+
+      expect(
+        () => SorobanAuthorizationEntry.withDelegates(
+            entry, [SorobanDelegateDescriptor(muxedContract)], _kExpiration),
+        throwsA(isA<ArgumentError>().having(
+            (ArgumentError e) => e.message,
+            'message',
+            'Muxed account (M...) and muxed contract (W...) addresses are not '
+                'valid Soroban delegate addresses: $muxedContract')),
+      );
+    });
+
     test(
         'withDelegates from ADDRESS arm source produces WITH_DELEGATES result',
         () {
@@ -994,6 +1011,27 @@ void main() {
         () => entry.sign(signer, Network.TESTNET, forAddress: muxed),
         throwsException,
         reason: 'Muxed address target must throw',
+      );
+    });
+
+    test('forAddress with muxed contract address (W...) throws', () {
+      final creds = SorobanCredentials.forAddress(
+          Address.forAccountId(signer.accountId),
+          _kNonce,
+          _kExpiration,
+          XdrSCVal.forVoid());
+      final entry = SorobanAuthorizationEntry(creds, rootInvocation);
+      const muxedContract =
+          'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+
+      expect(
+        () => entry.sign(signer, Network.TESTNET, forAddress: muxedContract),
+        throwsA(isA<Exception>().having(
+            (Exception e) => e.toString(),
+            'toString',
+            'Exception: Muxed account (M...) and muxed contract (W...) '
+                'addresses are not valid Soroban auth targets; use the '
+                'underlying G... or C... address instead')),
       );
     });
 

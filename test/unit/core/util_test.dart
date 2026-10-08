@@ -155,12 +155,21 @@ void main() {
       expect(address.accountId, equals(accountId));
     });
 
-    test('returns null for contract ID (not supported by addressFromId)', () {
+    test('returns null for a malformed contract strkey', () {
       final contractId = 'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4';
       final address = addressFromId(contractId);
 
-      // addressFromId does not support contract IDs
+      // The string is four characters short of a contract strkey.
       expect(address, isNull);
+    });
+
+    test('creates address from contract ID', () {
+      final contractId = 'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA';
+      final address = addressFromId(contractId);
+
+      expect(address, isNotNull);
+      expect(address!.type, equals(Address.TYPE_CONTRACT));
+      expect(address.contractId, equals(contractId));
     });
 
     test('creates address from hex contract ID', () {
@@ -179,6 +188,16 @@ void main() {
 
       expect(address, isNotNull);
       expect(address!.type, equals(Address.TYPE_MUXED_ACCOUNT));
+    });
+
+    test('creates address from muxed contract ID', () {
+      final muxedContractId =
+          'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+      final address = addressFromId(muxedContractId);
+
+      expect(address, isNotNull);
+      expect(address!.type, equals(Address.TYPE_MUXED_CONTRACT));
+      expect(address.muxedContractId, equals(muxedContractId));
     });
 
     test('returns null for invalid ID', () {

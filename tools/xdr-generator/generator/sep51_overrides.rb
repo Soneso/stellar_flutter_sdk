@@ -45,7 +45,7 @@ SEP51_STRKEY_IMPORT = "../key_pair.dart".freeze
 # kind and the wrong length decodes cleanly and would build an instance the
 # binary encoder then writes as malformed XDR.
 SEP51_STRKEY_KEY_BYTES = 32       # G, T, X, C and L: one 32-byte key or hash
-SEP51_STRKEY_MUXED_BYTES = 40     # M: the key, then the subaccount id
+SEP51_STRKEY_MUXED_BYTES = 40     # M and W: the key or contract hash, then the id
 SEP51_STRKEY_BALANCE_BYTES = 33   # B: the discriminant tag, then the hash
 
 # The two widths an asset code is declared with.
@@ -308,6 +308,10 @@ SEP51_TYPE_RENDERERS = {
         member: 'SC_ADDRESS_TYPE_LIQUIDITY_POOL', field: 'liquidityPoolId', prefix: 'L',
         typedef: 'XdrPoolID'
       ),
+      sep51_delegating_arm(
+        member: 'SC_ADDRESS_TYPE_MUXED_CONTRACT', field: 'muxedContract', prefix: 'W',
+        type: 'XdrMuxedContract'
+      ),
     ]
   ),
 
@@ -358,6 +362,32 @@ SEP51_TYPE_RENDERERS = {
         'final XdrUint256 ed25519 = XdrUint256.decode(stream);',
         'final XdrUint64 id = XdrUint64.decode(stream);',
         "return #{context[:build].call('id, ed25519')};",
+      ]
+    },
+    imports: [SEP51_STRKEY_IMPORT],
+  },
+
+  # A muxed contract renders as a W-strkey, whose payload carries the contract
+  # hash before the id, the layout of the M-strkey with the hash in place of
+  # the key. The XDR codec reorders the two fields as it does there.
+  'XdrMuxedContract' => {
+    to: lambda { |_public_name|
+      [
+        'final XdrDataOutputStream stream = XdrDataOutputStream();',
+        'XdrHash.encode(stream, _contractId);',
+        'XdrUint64.encode(stream, _id);',
+        'return StrKey.encodeMuxedContractId(Uint8List.fromList(stream.bytes));',
+      ]
+    },
+    from: lambda { |context|
+      decode = sep51_strkey_from('StrKey.decodeMuxedContractId', 'value',
+                                 "'#{context[:public_name]}'", 'null',
+                                 length: SEP51_STRKEY_MUXED_BYTES)
+      [
+        "final XdrDataInputStream stream = XdrDataInputStream(#{decode});",
+        'final XdrHash contractId = XdrHash.decode(stream);',
+        'final XdrUint64 id = XdrUint64.decode(stream);',
+        "return #{context[:build].call('id, contractId')};",
       ]
     },
     imports: [SEP51_STRKEY_IMPORT],

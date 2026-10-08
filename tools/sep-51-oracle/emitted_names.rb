@@ -29,11 +29,13 @@ NAME_MAP = File.join(SCRIPT_DIR, 'name-map.json')
 
 require File.join(ROOT, 'tools/xdr-generator/generator/type_overrides')
 
-# The verification-block lists naming the types the reference renders as a single string
-# rather than as an object or a keyed arm. A type in one of these carries no derived names,
-# so it is checked by its rendering instead of by its keys.
+# The verification-block lists naming the types rendered as a single string rather than as
+# an object or a keyed arm: those the reference renders so, and those the name table declares
+# so but the reference cannot resolve. A type in one of these carries no derived names, so it
+# is checked by its rendering instead of by its keys.
 STRING_RENDERED_KEYS = %w[
   struct_types_string_rendered
+  struct_types_string_rendered_unresolvable
   union_types_string_rendered
 ].freeze
 
@@ -324,7 +326,7 @@ class Diff
     @counts[:string_rendered] += 1
     source = read(group.dart_name, kind)
     if source && json_object_body(source)
-      @problems << "#{kind} #{group.dart_name}: the reference renders this as a string, " \
+      @problems << "#{kind} #{group.dart_name}: SEP-0051 renders this as a string, " \
                    'but it still emits a JSON object'
     end
     true
@@ -348,7 +350,9 @@ def main
 
   # Read from the oracle's own verdict rather than from the generator's registry, so a type
   # the generator forgot to override is reported instead of being excused by the same
-  # omission. The name map records these under their .x names, one list per definition kind.
+  # omission. A type the oracle cannot resolve has no verdict, so the name table's own
+  # declaration stands in for it. The name map records these under their .x names, one list
+  # per definition kind.
   #
   # A kind the verification block does not record yet reads as empty rather than failing, so
   # the list of kinds can grow in the name map without a matching edit here.

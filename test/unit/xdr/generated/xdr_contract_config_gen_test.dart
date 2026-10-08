@@ -473,6 +473,15 @@ void main() {
         XdrContractCostType.Bn254FrPow,
         XdrContractCostType.Bn254FrInv,
         XdrContractCostType.Bn254G1Msm,
+        XdrContractCostType.MlDsa44DecodeVerifyingKey,
+        XdrContractCostType.MlDsa65DecodeVerifyingKey,
+        XdrContractCostType.MlDsa87DecodeVerifyingKey,
+        XdrContractCostType.MlDsa44DecodeSignature,
+        XdrContractCostType.MlDsa65DecodeSignature,
+        XdrContractCostType.MlDsa87DecodeSignature,
+        XdrContractCostType.VerifyMlDsa44Sig,
+        XdrContractCostType.VerifyMlDsa65Sig,
+        XdrContractCostType.VerifyMlDsa87Sig,
       ];
       for (var member in members) {
         XdrDataOutputStream output = XdrDataOutputStream();

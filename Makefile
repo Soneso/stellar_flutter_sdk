@@ -11,7 +11,7 @@ XDRS = xdr/Stellar-SCP.x xdr/Stellar-ledger-entries.x xdr/Stellar-ledger.x \
        xdr/Stellar-internal.x xdr/Stellar-contract-config-setting.x \
        xdr/Stellar-exporter.x
 
-XDR_COMMIT = c2612cf534e4448fa263e252afe1bdbac5512d14
+XDR_COMMIT = 579a90b2654e3811e8b672e128a5e094c7325b27
 RUBY_IMAGE = ruby:3.4
 
 # The test emitters replace their output files rather than overwriting them, so a

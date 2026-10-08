@@ -589,7 +589,9 @@ void main() {
       expect(requestLog, isEmpty);
     });
 
-    test('spells muxed, claimable balance and liquidity pool owners', () async {
+    test(
+        'spells muxed account, claimable balance, liquidity pool and muxed '
+        'contract owners', () async {
       // The deploy refuses every non-contract owner before issuing any
       // request; the error names the owner as given.
       const muxedOwner =
@@ -598,11 +600,14 @@ void main() {
           '000000003f0918bf77f7e30fe942e4bc2ce903ffa2d80e7f3e1f82ba58877f0eb73df0b7';
       const liquidityPoolOwner =
           '3f0918bf77f7e30fe942e4bc2ce903ffa2d80e7f3e1f82ba58877f0eb73df0b7';
+      const muxedContractOwner =
+          'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
       final owners = [
         (Address.forMuxedAccountId(muxedOwner), muxedOwner),
         (Address.forClaimableBalanceId(claimableBalanceOwner),
             claimableBalanceOwner),
         (Address.forLiquidityPoolId(liquidityPoolOwner), liquidityPoolOwner),
+        (Address.forMuxedContractId(muxedContractOwner), muxedContractOwner),
       ];
       final keyPair = KeyPair.random();
       final requestLog = <String>[];

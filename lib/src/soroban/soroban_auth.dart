@@ -5,6 +5,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import '../key_pair.dart';
+import '../muxed_contract.dart';
 import '../network.dart';
 import '../util.dart';
 import '../xdr/xdr.dart';
@@ -17,6 +18,7 @@ import '../xdr/xdr.dart';
 /// - Muxed Accounts: Multiplexed accounts (M... addresses, protocol >= 23)
 /// - Claimable Balances: Claimable balance entries (protocol >= 23)
 /// - Liquidity Pools: Liquidity pool entries (protocol >= 23)
+/// - Muxed Contracts: Contracts multiplexed with an id (W... addresses, protocol >= 30)
 ///
 /// Addresses are used as arguments to contract functions and can represent
 /// different authorization contexts in Soroban transactions.
@@ -27,6 +29,8 @@ import '../xdr/xdr.dart';
 /// - [Address.forMuxedAccountId]: Create from muxed account (M...)
 /// - [Address.forClaimableBalanceId]: Create from claimable balance ID
 /// - [Address.forLiquidityPoolId]: Create from liquidity pool ID
+/// - [Address.forMuxedContractId]: Create from muxed contract address (W...)
+/// - [Address.forMuxedContract]: Create from a contract ID and a multiplexing id
 /// - [Address.fromXdr]: Create from XdrSCAddress
 /// - [Address.fromXdrSCVal]: Create from XdrSCVal containing an address
 ///
@@ -79,6 +83,9 @@ class Address {
   /// Liquidity pool address type. Requires protocol version 23 or higher.
   static const int TYPE_LIQUIDITY_POOL = 4;
 
+  /// Muxed contract address type (W... addresses). Requires protocol version 30 or higher.
+  static const int TYPE_MUXED_CONTRACT = 5;
+
   int _type;
 
   /// The type of the Address (TYPE_ACCOUNT or TYPE_CONTRACT).
@@ -103,20 +110,26 @@ class Address {
   /// The id of the liquidity pool if type is TYPE_LIQUIDITY_POOL otherwise null.
   String? liquidityPoolId;
 
+  /// The muxed contract address ("W...") if type is TYPE_MUXED_CONTRACT otherwise null.
+  String? muxedContractId;
+
   /// Constructs an [Address] for the given [type] which can
   /// be one of: [Address.TYPE_ACCOUNT], [Address.TYPE_CONTRACT],
-  /// [Address.TYPE_CLAIMABLE_BALANCE], [Address.TYPE_LIQUIDITY_POOL].
+  /// [Address.TYPE_MUXED_ACCOUNT], [Address.TYPE_CLAIMABLE_BALANCE],
+  /// [Address.TYPE_LIQUIDITY_POOL], [Address.TYPE_MUXED_CONTRACT].
   ///
   /// If [Address.TYPE_ACCOUNT] one must provide [accountId].
   /// If [Address.TYPE_CONTRACT] one must provide [contractId].
   /// If [Address.TYPE_MUXED_ACCOUNT] one must provide [muxedAccountId].
   /// If [Address.TYPE_CLAIMABLE_BALANCE] one must provide [claimableBalanceId].
   /// If [Address.TYPE_LIQUIDITY_POOL] one must provide [liquidityPoolId].
+  /// If [Address.TYPE_MUXED_CONTRACT] one must provide [muxedContractId].
   Address(this._type, {this.accountId, this.contractId, this.muxedAccountId,
-    this.claimableBalanceId, this.liquidityPoolId}) {
+    this.claimableBalanceId, this.liquidityPoolId, this.muxedContractId}) {
     if (this._type != TYPE_ACCOUNT && this._type != TYPE_CONTRACT &&
         this._type != TYPE_MUXED_ACCOUNT  && this._type != TYPE_CLAIMABLE_BALANCE
-        && this._type != TYPE_LIQUIDITY_POOL) {
+        && this._type != TYPE_LIQUIDITY_POOL &&
+        this._type != TYPE_MUXED_CONTRACT) {
       throw new Exception("unknown type");
     }
 
@@ -137,6 +150,10 @@ class Address {
     }
 
     if (this._type == TYPE_LIQUIDITY_POOL && this.liquidityPoolId == null) {
+      throw new Exception("invalid arguments");
+    }
+
+    if (this._type == TYPE_MUXED_CONTRACT && this.muxedContractId == null) {
       throw new Exception("invalid arguments");
     }
   }
@@ -166,6 +183,21 @@ class Address {
     return Address(TYPE_LIQUIDITY_POOL, liquidityPoolId: liquidityPoolId);
   }
 
+  /// Constructs an [Address] of type [Address.TYPE_MUXED_CONTRACT] for the given [muxedContractId] ("W...").
+  static Address forMuxedContractId(String muxedContractId) {
+    return Address(TYPE_MUXED_CONTRACT, muxedContractId: muxedContractId);
+  }
+
+  /// Constructs an [Address] of type [Address.TYPE_MUXED_CONTRACT] that pairs
+  /// the contract [contractId] with the multiplexing [id].
+  ///
+  /// The arguments and the [ArgumentError] they can raise are those of
+  /// [MuxedContract.new].
+  static Address forMuxedContract(
+      {required String contractId, required BigInt id}) {
+    return MuxedContract(contractId, id).toAddress();
+  }
+
   /// Constructs an [Address] from the given [xdr].
   static Address fromXdr(XdrSCAddress xdr) {
     if (xdr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT) {
@@ -182,6 +214,9 @@ class Address {
     } else if (xdr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL) {
       return Address(TYPE_LIQUIDITY_POOL,
           liquidityPoolId: Util.bytesToHex(xdr.liquidityPoolId!.hash));
+    } else if (xdr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT) {
+      return Address(TYPE_MUXED_CONTRACT,
+          muxedContractId: xdr.muxedContract!.muxedContractId);
     } else {
       throw Exception("unknown address type " + xdr.discriminant.toString());
     }
@@ -214,6 +249,11 @@ class Address {
         throw Exception("invalid address, has no liquidity pool id");
       }
       return XdrSCAddress.forLiquidityPoolId(liquidityPoolId!);
+    } else if (_type == TYPE_MUXED_CONTRACT) {
+      if (muxedContractId == null) {
+        throw Exception("invalid address, has no muxed contract id");
+      }
+      return XdrSCAddress.forMuxedContractId(muxedContractId!);
     } else {
       throw Exception("unknown address type " + _type.toString());
     }
@@ -905,8 +945,9 @@ class SorobanAuthorizedInvocation {
 /// tree. The [signature] field defaults to void (the normal pre-signing state).
 /// [nestedDelegates] lists child delegates authorized by this node.
 ///
-/// Muxed addresses (M...) are not valid Soroban auth delegate addresses and
-/// will be rejected by [SorobanAuthorizationEntry.withDelegates].
+/// Muxed account (M...) and muxed contract (W...) addresses are not valid
+/// Soroban auth delegate addresses and are rejected by
+/// [SorobanAuthorizationEntry.withDelegates].
 class SorobanDelegateDescriptor {
   /// The strkey of this delegate (G... account or C... contract).
   final String addressStrKey;
@@ -1098,7 +1139,8 @@ class SorobanAuthorizationEntry {
   /// (strkey of a G... account or C... contract), the signature is routed
   /// into every node (top-level or delegate, depth-first) whose address matches.
   /// Throws if no node's address matches [forAddress].
-  /// Muxed addresses (M...) are rejected as Soroban auth delegate targets.
+  /// Muxed account (M...) and muxed contract (W...) addresses are rejected as
+  /// Soroban auth targets.
   ///
   /// Append semantics: appends to existing signatures; void becomes one-element
   /// vector. The arm is preserved on write-back.
@@ -1116,10 +1158,12 @@ class SorobanAuthorizationEntry {
       throw Exception('No address credentials found for signing');
     }
 
-    if (forAddress != null && forAddress.startsWith('M')) {
+    if (forAddress != null &&
+        (forAddress.startsWith('M') || forAddress.startsWith('W'))) {
       throw Exception(
-          'Muxed addresses (M...) are not valid Soroban auth targets; '
-          'use the underlying G... account address instead');
+          'Muxed account (M...) and muxed contract (W...) addresses are not '
+          'valid Soroban auth targets; use the underlying G... or C... '
+          'address instead');
     }
 
     // Build the payload once; all nodes (top-level and delegates) sign this same hash.
@@ -1273,7 +1317,8 @@ class SorobanAuthorizationEntry {
   /// - [source] must be ADDRESS or ADDRESS_V2; throws if it is already WITH_DELEGATES
   ///   or SOURCE_ACCOUNT.
   /// - The top-level signature is defaulted to void (delegates-only pattern).
-  /// - Each delegate's [address] must be a G... or C... strkey; M... is rejected.
+  /// - Each delegate's [address] must be a G... or C... strkey; M... and W...
+  ///   are rejected.
   /// - Within each delegate array (top-level and each nestedDelegates), entries are
   ///   sorted ascending by the lexicographic comparison of the complete XDR-encoded
   ///   XdrSCAddress bytes. Strkey order is NOT used for sorting.
@@ -1332,10 +1377,11 @@ class SorobanAuthorizationEntry {
 
     final List<_DelegateSortable> items = [];
     for (final desc in descriptors) {
-      if (desc.addressStrKey.startsWith('M')) {
+      if (desc.addressStrKey.startsWith('M') ||
+          desc.addressStrKey.startsWith('W')) {
         throw ArgumentError(
-            'Muxed addresses (M...) are not valid Soroban delegate addresses: '
-            '${desc.addressStrKey}');
+            'Muxed account (M...) and muxed contract (W...) addresses are not '
+            'valid Soroban delegate addresses: ${desc.addressStrKey}');
       }
 
       final xdrAddr = _strKeyToXdrAddress(desc.addressStrKey);

@@ -109,6 +109,7 @@ export 'src/responses/effects/soroban_effects_responses.dart';
 // Stellar
 export 'src/account.dart';
 export 'src/muxed_account.dart';
+export 'src/muxed_contract.dart';
 export 'src/account_flag.dart';
 export 'src/assets.dart';
 export 'src/asset_type_native.dart';

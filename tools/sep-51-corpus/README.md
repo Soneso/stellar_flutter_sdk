@@ -60,8 +60,9 @@ for typedefs. The named class must also exist under `lib/src/xdr/` and declare
 `fromXdrJsonValue`, so a seed can never name a type the corpus cannot be driven
 through.
 
-A struct the pinned reference cannot resolve gets no seed; a hand-written
-bytes-and-JSON round-trip test with a spec-derived document pins it instead.
+A struct or union arm the pinned reference cannot resolve gets no seed; a
+hand-written bytes-and-JSON round-trip test with a spec-derived document pins
+it instead.
 
 ## Comparable and incomparable entries
 

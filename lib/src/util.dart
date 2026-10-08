@@ -139,11 +139,11 @@ bool isHexString(String input) {
 ///
 /// Attempts to parse the given [id] as any of the following Stellar
 /// address types: contract ID, account ID, muxed account ID, claimable
-/// balance ID, or liquidity pool ID. The function tries each type in
-/// sequence until a valid match is found.
+/// balance ID, liquidity pool ID, or muxed contract ID. The function tries
+/// each type in sequence until a valid match is found.
 ///
 /// The [id] can be provided either as a hexadecimal string or as a
-/// strkey-encoded address (G..., M..., C..., B..., L...).
+/// strkey-encoded address (G..., M..., C..., B..., L..., W...).
 ///
 /// Parameters:
 /// - [id] The identifier to convert (hex or strkey format)
@@ -203,6 +203,9 @@ Address? addressFromId(String id) {
     }
     if (StrKey.isValidLiquidityPoolId(id)) {
       return Address.forLiquidityPoolId(id);
+    }
+    if (StrKey.isValidMuxedContractId(id)) {
+      return Address.forMuxedContractId(id);
     }
   }
   return null;

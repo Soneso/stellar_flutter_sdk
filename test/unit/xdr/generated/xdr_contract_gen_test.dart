@@ -312,6 +312,7 @@ void main() {
         XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT,
         XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE,
         XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL,
+        XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT,
       ];
       for (var member in members) {
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -351,6 +352,25 @@ void main() {
             original.toBase64EncodedXdrString(),
           );
       expect(base64Decoded.id.uint64, equals(original.id.uint64));
+    });
+
+    test('XdrMuxedContract struct roundtrip', () {
+      var original = XdrMuxedContractBase(
+        XdrUint64(BigInt.from(123456)),
+        XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))),
+      );
+      XdrDataOutputStream output = XdrDataOutputStream();
+      XdrMuxedContractBase.encode(output, original);
+      Uint8List encoded = Uint8List.fromList(output.bytes);
+      XdrDataInputStream input = XdrDataInputStream(encoded);
+      var decoded = XdrMuxedContractBase.decode(input);
+      expect(decoded.id.uint64, equals(original.id.uint64));
+      expect(decoded.contractId.hash, equals(original.contractId.hash));
+      var base64Decoded = XdrMuxedContractBase.fromBase64EncodedXdrString(
+        original.toBase64EncodedXdrString(),
+      );
+      expect(base64Decoded.id.uint64, equals(original.id.uint64));
+      expect(base64Decoded.contractId.hash, equals(original.contractId.hash));
     });
 
     test(
@@ -504,6 +524,36 @@ void main() {
           base64Decoded.liquidityPoolId!.hash,
           equals(original.liquidityPoolId!.hash),
         );
+      },
+    );
+
+    test(
+      'XdrSCAddress XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT arm roundtrip',
+      () {
+        var original = XdrSCAddressBase(
+          XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT,
+        );
+        original.muxedContract = XdrMuxedContract(
+          XdrUint64(BigInt.from(123456)),
+          XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))),
+        );
+        XdrDataOutputStream output = XdrDataOutputStream();
+        XdrSCAddressBase.encode(output, original);
+        Uint8List encoded = Uint8List.fromList(output.bytes);
+        XdrDataInputStream input = XdrDataInputStream(encoded);
+        var decoded = XdrSCAddressBase.decode(input);
+        expect(decoded.discriminant.value, equals(original.discriminant.value));
+        // Verify arm field is not null
+        expect(decoded.muxedContract, isNotNull);
+        var base64Decoded = XdrSCAddressBase.fromBase64EncodedXdrString(
+          original.toBase64EncodedXdrString(),
+        );
+        expect(
+          base64Decoded.discriminant.value,
+          equals(original.discriminant.value),
+        );
+        // Verify arm field is not null
+        expect(base64Decoded.muxedContract, isNotNull);
       },
     );
 
@@ -2019,6 +2069,20 @@ void main() {
       );
     });
 
+    test('XdrSCAddressType TxRep roundtrip SC_ADDRESS_TYPE_MUXED_CONTRACT', () {
+      var original = XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT;
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrSCAddressType.fromTxRep(map, 'tx');
+      expect(
+        reconstructed.toBase64EncodedXdrString(),
+        equals(original.toBase64EncodedXdrString()),
+        reason:
+            'TxRep roundtrip failed for XdrSCAddressType SC_ADDRESS_TYPE_MUXED_CONTRACT',
+      );
+    });
+
     test('XdrMuxedAccountMed25519 TxRep roundtrip', () {
       var original = XdrMuxedAccountMed25519(
         XdrUint64(BigInt.from(123456)),
@@ -2032,6 +2096,22 @@ void main() {
         reconstructed.toBase64EncodedXdrString(),
         equals(original.toBase64EncodedXdrString()),
         reason: 'TxRep roundtrip failed for XdrMuxedAccountMed25519',
+      );
+    });
+
+    test('XdrMuxedContract TxRep roundtrip', () {
+      var original = XdrMuxedContract(
+        XdrUint64(BigInt.from(123456)),
+        XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))),
+      );
+      List<String> lines = [];
+      original.toTxRep('tx', lines);
+      Map<String, String> map = parseTxRepLines(lines);
+      var reconstructed = XdrMuxedContract.fromTxRep(map, 'tx');
+      expect(
+        reconstructed.toBase64EncodedXdrString(),
+        equals(original.toBase64EncodedXdrString()),
+        reason: 'TxRep roundtrip failed for XdrMuxedContract',
       );
     });
 
@@ -2142,6 +2222,28 @@ void main() {
           equals(original.toBase64EncodedXdrString()),
           reason:
               'TxRep roundtrip failed for XdrSCAddress XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL',
+        );
+      },
+    );
+
+    test(
+      'XdrSCAddress TxRep roundtrip XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT',
+      () {
+        var original =
+            (XdrSCAddressBase(XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT)
+              ..muxedContract = XdrMuxedContract(
+                XdrUint64(BigInt.from(123456)),
+                XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB))),
+              ));
+        List<String> lines = [];
+        original.toTxRep('tx', lines);
+        Map<String, String> map = parseTxRepLines(lines);
+        var reconstructed = XdrSCAddress.fromTxRep(map, 'tx');
+        expect(
+          reconstructed.toBase64EncodedXdrString(),
+          equals(original.toBase64EncodedXdrString()),
+          reason:
+              'TxRep roundtrip failed for XdrSCAddress XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT',
         );
       },
     );
