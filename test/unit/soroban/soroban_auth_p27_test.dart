@@ -1035,6 +1035,34 @@ void main() {
       );
     });
 
+    test('muxed account or muxed contract credential address throws', () {
+      const muxedAccount =
+          'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK';
+      const muxedContract =
+          'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+      for (final (address, strKey) in [
+        (Address.forMuxedAccountId(muxedAccount), muxedAccount),
+        (Address.forMuxedContractId(muxedContract), muxedContract),
+      ]) {
+        final entry = SorobanAuthorizationEntry(
+            SorobanCredentials.forAddress(
+                address, _kNonce, _kExpiration, XdrSCVal.forVoid()),
+            rootInvocation);
+
+        expect(
+          () => entry.sign(signer, Network.TESTNET),
+          throwsA(isA<Exception>().having(
+              (Exception e) => e.toString(),
+              'toString',
+              'Exception: Muxed account (M...) and muxed contract (W...) '
+                  'addresses are not valid Soroban auth credential '
+                  'addresses: $strKey; use the underlying G... or C... '
+                  'address instead')),
+          reason: strKey,
+        );
+      }
+    });
+
     test('signing source-account credentials throws', () {
       final entry = SorobanAuthorizationEntry(
           SorobanCredentials.forSourceAccount(), rootInvocation);
