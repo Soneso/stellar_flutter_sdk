@@ -750,6 +750,20 @@ void main() {
           muxedContractId);
     });
 
+    test('refuses a muxed contract address without its id', () {
+      expect(() => Address(Address.TYPE_MUXED_CONTRACT),
+          throwsA(isA<Exception>().having((Exception e) => e.toString(),
+              'toString', 'Exception: invalid arguments')));
+
+      final address = Address.forMuxedContractId(muxedContractId)
+        ..muxedContractId = null;
+      expect(
+          () => address.toXdr(),
+          throwsA(isA<Exception>().having((Exception e) => e.toString(),
+              'toString',
+              'Exception: invalid address, has no muxed contract id')));
+    });
+
     test('forMuxedContract pairs a contract id with an id', () {
       final fromStrKey =
           Address.forMuxedContract(contractId: contractId, id: BigInt.from(123456));

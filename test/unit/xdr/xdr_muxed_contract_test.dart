@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -17,9 +18,14 @@ void main() {
 
   group('XdrMuxedContract', () {
     test('round trips through XDR with the id ahead of the hash', () {
-      final muxed = XdrMuxedContract.forMuxedContractId(muxedContractId);
+      // Built with placeholders; the setters store the asserted values.
+      final muxed =
+          XdrMuxedContract(XdrUint64(BigInt.zero), XdrHash(Uint8List(32)));
+      muxed.id = XdrUint64(BigInt.from(123456));
+      muxed.contractId = XdrHash(Util.hexToBytes(contractHex));
       expect(muxed.id.uint64, BigInt.from(123456));
       expect(Util.bytesToHex(muxed.contractId.hash), contractHex);
+      expect(muxed.muxedContractId, muxedContractId);
 
       final base64 = muxed.toBase64EncodedXdrString();
       expect(Util.bytesToHex(base64Decode(base64)), '$idHex$contractHex');
@@ -35,6 +41,12 @@ void main() {
       expect(muxed.toXdrJson(), '"$muxedContractId"');
 
       final parsed = XdrMuxedContract.fromXdrJson('"$muxedContractId"');
+      expect(parsed.id.uint64, BigInt.from(123456));
+      expect(Util.bytesToHex(parsed.contractId.hash), contractHex);
+    });
+
+    test('the base class reads the W strkey from XDR-JSON', () {
+      final parsed = XdrMuxedContractBase.fromXdrJson('"$muxedContractId"');
       expect(parsed.id.uint64, BigInt.from(123456));
       expect(Util.bytesToHex(parsed.contractId.hash), contractHex);
     });
