@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import '../xdr/xdr.dart';
 import '../util.dart';
 import 'sc_val_host_order.dart';
+import 'soroban_auth.dart';
 
 /// Utility class for working with Soroban contract specifications.
 ///
@@ -272,6 +273,13 @@ class ContractSpec {
   ///
   /// Returns the converted XdrSCVal. Maps and map-encoded structs carry their
   /// keys in the Soroban host's order ([sortedScMap]).
+  ///
+  /// An `Address` parameter accepts an account (G...) or contract (C...)
+  /// strkey, the 64-character hex of a contract's 32-byte hash, or an
+  /// [Address] of either type. A `MuxedAddress` parameter accepts those and
+  /// a muxed account (M...) or muxed contract (W...) strkey, or an [Address]
+  /// of either muxed type.
+  ///
   /// Throws ContractSpecException for invalid types or conversion failures,
   /// and an ArgumentError for a map with two equal keys.
   XdrSCVal nativeToXdrSCVal(dynamic val, XdrSCSpecTypeDef ty) {
@@ -402,7 +410,8 @@ class ContractSpec {
         }
         return XdrSCVal.forSymbol(val);
       case XdrSCSpecType.SC_SPEC_TYPE_ADDRESS:
-        return _handleAddressType(val);
+      case XdrSCSpecType.SC_SPEC_TYPE_MUXED_ADDRESS:
+        return _handleAddressType(val, ty);
       default:
         throw ContractSpecException.invalidType(
             'Unsupported value type: ${ty.discriminant}');
@@ -577,23 +586,72 @@ class ContractSpec {
         'Expected Uint8List, List<int>, or hex String, got ${val.runtimeType}');
   }
 
-  /// Handle address type conversion
-  XdrSCVal _handleAddressType(dynamic val) {
+  /// Converts [val] for a parameter of spec type `Address` or `MuxedAddress`.
+  ///
+  /// [val] is a strkey, the 64-character hex of a contract's 32-byte hash,
+  /// which converts to that contract, or an [Address]. An `Address` parameter
+  /// takes an account (G...) or a contract (C...); a `MuxedAddress` parameter
+  /// also takes a muxed account (M...) or a muxed contract (W...). A
+  /// claimable balance (B...) or liquidity pool (L...) address is produced by
+  /// the host and is not a contract input. Anything else, including hex of
+  /// another length, throws a ContractSpecException naming the parameter
+  /// type, the kinds it takes and the value given.
+  XdrSCVal _handleAddressType(dynamic val, XdrSCSpecTypeDef ty) {
+    final bool muxed =
+        ty.discriminant == XdrSCSpecType.SC_SPEC_TYPE_MUXED_ADDRESS;
+    final String expected = muxed
+        ? 'MuxedAddress takes an account (G...), muxed account (M...), '
+            'contract (C...) or muxed contract (W...) address'
+        : 'Address takes an account (G...) or contract (C...) address';
+
+    final XdrSCVal scVal;
     if (val is String) {
-      // Detect address type by prefix
-      if (val.startsWith('C')) {
-        // Contract address
-        return XdrSCVal.forContractAddress(val);
-      } else if (val.startsWith('G')) {
-        // Account address
-        return XdrSCVal.forAccountAddress(val);
-      } else {
-        throw ContractSpecException.invalidType('Invalid address format: $val');
+      try {
+        scVal = isHexString(val) && val.length == 64
+            ? XdrSCVal.forAddress(XdrSCAddress.forContractId(val))
+            : XdrSCVal.forAddressStrKey(val);
+      } on Exception {
+        throw ContractSpecException.invalidType(
+            'Invalid address format: $val; $expected');
       }
+    } else if (val is Address) {
+      try {
+        scVal = val.toXdrSCVal();
+      } on Exception catch (e) {
+        throw ContractSpecException.invalidType(
+            '$expected, got an Address that does not encode: $e');
+      }
+    } else {
+      throw ContractSpecException.invalidType(
+          '$expected, got ${val.runtimeType}');
     }
 
+    final XdrSCAddress address = scVal.address!;
+    switch (address.discriminant) {
+      case XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT:
+      case XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT:
+        return scVal;
+      case XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT:
+      case XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT:
+        if (muxed) {
+          return scVal;
+        }
+        throw ContractSpecException.invalidType(
+            '$expected, got the muxed address ${address.toStrKey()}, which '
+            'needs a MuxedAddress parameter');
+      case XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
+        throw ContractSpecException.invalidType(
+            '$expected, got the claimable balance address '
+            '${address.toStrKey()}, which is produced by the host and is not '
+            'a contract input');
+      case XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL:
+        throw ContractSpecException.invalidType(
+            '$expected, got the liquidity pool address '
+            '${address.toStrKey()}, which is produced by the host and is not '
+            'a contract input');
+    }
     throw ContractSpecException.invalidType(
-        'Expected String address, got ${val.runtimeType}');
+        '$expected, got an address of type ${address.discriminant.value}');
   }
 
   /// Handle option type (nullable values)

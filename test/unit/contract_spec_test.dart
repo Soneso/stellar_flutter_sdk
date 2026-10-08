@@ -6,6 +6,35 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
+// Address strkeys of every kind; M, W, B and L are SEP-0023 vectors.
+const _kAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+const _kContractId = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
+const _kMuxedAccountId =
+    'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK';
+const _kMuxedContractId =
+    'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG';
+const _kClaimableBalanceId =
+    'BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU';
+const _kLiquidityPoolId =
+    'LA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN';
+// The hash of _kContractId, and a hash whose hex leads with C.
+const _kContractHashHex =
+    '363eaa3867841fbad0f4ed88c779e4fe66e56a2470dc98c0ec9c073d05c7b103';
+const _kCLeadingHashHex =
+    'C0FFEE0000000000000000000000000000000000000000000000000000000000';
+const _kCLeadingContractId =
+    'CDAP73QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABFTB';
+const _kHostProduced = 'is produced by the host and is not a contract input';
+const _kBalanceRefused =
+    'claimable balance address $_kClaimableBalanceId, which $_kHostProduced';
+const _kPoolRefused =
+    'liquidity pool address $_kLiquidityPoolId, which $_kHostProduced';
+
+/// Matches a ContractSpecException whose message contains every fragment.
+Matcher _throwsSpecMessage(List<String> fragments) =>
+    throwsA(isA<ContractSpecException>().having((ContractSpecException e) =>
+        e.message, 'message', allOf(fragments.map(contains).toList())));
+
 void main() {
   group('ContractSpec', () {
     late ContractSpec spec;
@@ -1235,13 +1264,120 @@ void _runRoundtripTests() {
       );
     });
 
-    test('throws when address type is not string', () {
+    test('throws when address value is neither a string nor an Address', () {
       final addressType = XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_ADDRESS);
 
       expect(
         () => spec.nativeToXdrSCVal(123, addressType),
         throwsA(isA<ContractSpecException>()),
       );
+    });
+
+    test('accepts account and contract strkeys and Address values', () {
+      final addressType = XdrSCSpecTypeDef.forAddress();
+      for (final (val, strKey) in <(Object, String)>[
+        (_kAccountId, _kAccountId),
+        (_kContractId, _kContractId),
+        (Address.forAccountId(_kAccountId), _kAccountId),
+        (Address.forContractId(_kContractId), _kContractId),
+        (_kContractHashHex, _kContractId),
+        (_kCLeadingHashHex, _kCLeadingContractId),
+      ]) {
+        final result = spec.nativeToXdrSCVal(val, addressType);
+        expect(result.discriminant, XdrSCValType.SCV_ADDRESS);
+        expect(result.address!.toStrKey(), strKey);
+      }
+    });
+
+    test('refuses every other value, naming the parameter type', () {
+      final addressType = XdrSCSpecTypeDef.forAddress();
+      const takes = 'Address takes an account (G...) or contract (C...) address';
+      for (final (val, given) in <(Object, String)>[
+        (_kMuxedAccountId, 'needs a MuxedAddress parameter'),
+        (_kMuxedContractId, 'needs a MuxedAddress parameter'),
+        (Address.forMuxedAccountId(_kMuxedAccountId),
+            'muxed address $_kMuxedAccountId'),
+        (Address.forMuxedContractId(_kMuxedContractId),
+            'muxed address $_kMuxedContractId'),
+        (_kClaimableBalanceId, _kBalanceRefused),
+        (Address.forClaimableBalanceId(_kClaimableBalanceId), _kBalanceRefused),
+        (_kLiquidityPoolId, _kPoolRefused),
+        (Address.forLiquidityPoolId(_kLiquidityPoolId), _kPoolRefused),
+        ('INVALID', 'Invalid address format: INVALID'),
+        (_kContractHashHex.substring(2),
+            'Invalid address format: ${_kContractHashHex.substring(2)}'),
+        (Address.forAccountId('GBAD'), 'got an Address that does not encode'),
+        (123, 'got int'),
+      ]) {
+        expect(() => spec.nativeToXdrSCVal(val, addressType),
+            _throwsSpecMessage([takes, given]),
+            reason: '$val');
+      }
+    });
+  });
+
+  group('ContractSpec - MuxedAddress Types', () {
+    final spec = ContractSpec([]);
+    final muxedType =
+        XdrSCSpecTypeDef(XdrSCSpecType.SC_SPEC_TYPE_MUXED_ADDRESS);
+    const takes = 'MuxedAddress takes an account (G...), muxed account (M...), '
+        'contract (C...) or muxed contract (W...) address';
+
+    test('accepts G, M, C and W strkeys and Address values', () {
+      for (final (val, strKey) in <(Object, String)>[
+        (_kAccountId, _kAccountId),
+        (_kMuxedAccountId, _kMuxedAccountId),
+        (_kContractId, _kContractId),
+        (_kMuxedContractId, _kMuxedContractId),
+        (Address.forAccountId(_kAccountId), _kAccountId),
+        (Address.forMuxedAccountId(_kMuxedAccountId), _kMuxedAccountId),
+        (Address.forContractId(_kContractId), _kContractId),
+        (Address.forMuxedContractId(_kMuxedContractId), _kMuxedContractId),
+        (_kContractHashHex, _kContractId),
+        (_kCLeadingHashHex, _kCLeadingContractId),
+      ]) {
+        final result = spec.nativeToXdrSCVal(val, muxedType);
+        expect(result.discriminant, XdrSCValType.SCV_ADDRESS);
+        expect(result.address!.toStrKey(), strKey, reason: '$val');
+      }
+    });
+
+    test('refuses balance and pool addresses and other values', () {
+      for (final (val, given) in <(Object, String)>[
+        (_kClaimableBalanceId, _kBalanceRefused),
+        (Address.forClaimableBalanceId(_kClaimableBalanceId), _kBalanceRefused),
+        (_kLiquidityPoolId, _kPoolRefused),
+        (Address.forLiquidityPoolId(_kLiquidityPoolId), _kPoolRefused),
+        ('INVALID', 'Invalid address format: INVALID'),
+        (_kContractHashHex.substring(2),
+            'Invalid address format: ${_kContractHashHex.substring(2)}'),
+        (123, 'got int'),
+      ]) {
+        expect(() => spec.nativeToXdrSCVal(val, muxedType),
+            _throwsSpecMessage([takes, given]),
+            reason: '$val');
+      }
+    });
+
+    test('converts a transfer to a muxed contract', () {
+      final entry = XdrSCSpecEntry(XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0)
+        ..functionV0 = XdrSCSpecFunctionV0('', 'transfer', [
+          XdrSCSpecFunctionInputV0('', 'from', XdrSCSpecTypeDef.forAddress()),
+          XdrSCSpecFunctionInputV0('', 'to', muxedType),
+          XdrSCSpecFunctionInputV0('', 'amount', XdrSCSpecTypeDef.forI128()),
+        ], []);
+      final values = ContractSpec([entry]).funcArgsToXdrSCValues('transfer', {
+        'from': _kAccountId,
+        'to': _kMuxedContractId,
+        'amount': BigInt.from(100),
+      });
+
+      expect(values.length, 3);
+      expect(values[0].address!.toStrKey(), _kAccountId);
+      expect(values[1].address!.discriminant,
+          XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT);
+      expect(values[1].address!.toStrKey(), _kMuxedContractId);
+      expect(values[2].discriminant, XdrSCValType.SCV_I128);
     });
   });
 
