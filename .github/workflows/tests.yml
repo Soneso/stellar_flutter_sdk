@@ -5,8 +5,6 @@ on:
     branches:
       - master
   pull_request:
-    branches:
-      - master
 
 permissions:
   contents: read
@@ -128,3 +126,17 @@ jobs:
             exit 1
           fi
           exit "$status"
+
+  # Every path AGENTS.md names exists; the check needs the checkout and the runner's Python.
+  agents-md-paths:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Run the path checker's tests
+        run: python3 .github/scripts/test_check_agents_md_paths.py
+
+      - name: Check the paths AGENTS.md names
+        run: python3 .github/scripts/check_agents_md_paths.py

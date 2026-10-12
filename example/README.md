@@ -1,11 +1,7 @@
+# Demo app
 
-**This folder contains our demo app.**<br/>
-**If you are looking for our source code examples, you can find them [here](https://github.com/Soneso/stellar_flutter_sdk/tree/master/documentation/sdk_examples).**
-
-## Demo App
-
-The implementation of the app is currently in progress.
+This folder contains the demo app of the Flutter Stellar SDK.
 
 ## Start the app
 
-Start the app: flutter run
+Start the app from this folder: `flutter run`
