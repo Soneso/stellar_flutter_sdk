@@ -124,9 +124,9 @@ void main() {
         'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
 
     // The millisecond arms carry the close time as a uint64 count of
-    // milliseconds, rendered in XDR-JSON as a decimal string. The reference
-    // build the SEP-0051 corpus is pinned to predates these arms, so the
-    // documents below are derived from the specification's rules.
+    // milliseconds, rendered in XDR-JSON as a decimal string. The documents
+    // below are the renderings of the reference build the SEP-0051 corpus is
+    // pinned to.
     const String closeSignatureJson =
         '"lc_value_signature":{"node_id":"$sponsorA","signature":"0a141e28"}';
     String hashHex(int byte) => byte.toRadixString(16).padLeft(2, '0') * 32;

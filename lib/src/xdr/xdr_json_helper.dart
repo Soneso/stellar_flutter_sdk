@@ -819,11 +819,15 @@ class XdrJsonHelper {
   /// Byte count of the fixed opaque an `AssetCode12` carries.
   static const int _assetCode12Width = 12;
 
-  /// Shortest rendering an `AssetCode12` takes.
+  /// Shortest rendering an `AssetCode12` takes, counted in bytes after
+  /// unescaping.
   ///
   /// The code of a twelve-byte asset is five to twelve characters, so trimming
   /// one below five would render it as something the four-byte form could also
-  /// produce. Padding back to five keeps the two widths distinguishable.
+  /// produce. Padding back to five keeps the two widths distinguishable. A
+  /// rendering that unescapes to fewer bytes is refused on input: SEP-0051
+  /// states that an `AssetCode12` is always five encoded characters or more,
+  /// and the reference implementation refuses a shorter one.
   static const int _assetCode12MinRendered = 5;
 
   /// Resolves a strkey to the bytes it carries.
@@ -922,17 +926,28 @@ class XdrJsonHelper {
   }) => _readAssetCode(value, type: type, key: key, width: _assetCode4Width);
 
   /// Reads a twelve-byte asset code, restoring the trailing NUL padding.
+  ///
+  /// The string has to unescape to at least [_assetCode12MinRendered] bytes,
+  /// escaped NUL bytes included, so a three-character code is written
+  /// `ABC\0\0`.
   static Uint8List readAssetCode12(
     Object? value, {
     required String type,
     String? key,
-  }) => _readAssetCode(value, type: type, key: key, width: _assetCode12Width);
+  }) => _readAssetCode(
+    value,
+    type: type,
+    key: key,
+    width: _assetCode12Width,
+    minLength: _assetCode12MinRendered,
+  );
 
   static Uint8List _readAssetCode(
     Object? value, {
     required String type,
     required String? key,
     required int width,
+    int minLength = 0,
   }) {
     final Uint8List bytes = readEscapedBytes(
       value,
@@ -940,6 +955,13 @@ class XdrJsonHelper {
       key: key,
       maxLength: width,
     );
+    if (bytes.length < minLength) {
+      fail(
+        type,
+        '${_at(key)}holds ${bytes.length} bytes, fewer than the minimum of '
+        '$minLength; a shorter code is written with escaped NUL padding',
+      );
+    }
     final Uint8List padded = Uint8List(width);
     padded.setAll(0, bytes);
     return padded;

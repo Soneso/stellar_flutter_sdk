@@ -1747,6 +1747,61 @@ void main() {
       );
     });
 
+    test('reads a twelve-byte code that unescapes to five bytes or more', () {
+      expect(
+        XdrJsonHelper.readAssetCode12(r'ABC\0\0', type: 'T'),
+        padded('ABC'.codeUnits, 12),
+      );
+      expect(
+        XdrJsonHelper.readAssetCode12(r'ABCD\0', type: 'T'),
+        padded('ABCD'.codeUnits, 12),
+      );
+      expect(
+        XdrJsonHelper.readAssetCode12('ABCDE', type: 'T'),
+        padded('ABCDE'.codeUnits, 12),
+      );
+      expect(
+        XdrJsonHelper.readAssetCode12('ABCDEFGHIJKL', type: 'T'),
+        Uint8List.fromList('ABCDEFGHIJKL'.codeUnits),
+      );
+    });
+
+    test(
+      'rejects a twelve-byte code that unescapes to fewer than five bytes',
+      () {
+        for (final (String code, int bytes) in <(String, int)>[
+          ('ABC', 3),
+          ('ABCD', 4),
+          (r'ABC\0', 4),
+          ('', 0),
+        ]) {
+          expect(
+            () => XdrJsonHelper.readAssetCode12(
+              code,
+              type: 'XdrAssetAlphaNum12',
+              key: 'asset_code',
+            ),
+            formatFailure(
+              'XDR-JSON XdrAssetAlphaNum12 key "asset_code" holds $bytes bytes, '
+              'fewer than the minimum of 5',
+            ),
+            reason: code,
+          );
+        }
+      },
+    );
+
+    test('rejects a twelve-byte code carrying an unrecognised escape', () {
+      expect(
+        () => XdrJsonHelper.readAssetCode12(
+          r'ABC\q\0',
+          type: 'XdrAssetAlphaNum12',
+          key: 'asset_code',
+        ),
+        formatFailure(r'key "asset_code" holds the unrecognised escape \q'),
+      );
+    });
+
     test('round-trips every four-byte code through its rendering', () {
       for (final Uint8List code in <Uint8List>[
         padded('USD'.codeUnits, 4),
