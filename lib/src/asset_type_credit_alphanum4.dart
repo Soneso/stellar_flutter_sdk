@@ -88,7 +88,7 @@ class AssetTypeCreditAlphaNum4 extends AssetTypeCreditAlphaNum {
   /// );
   /// ```
   AssetTypeCreditAlphaNum4(String code, String issuerId)
-      : super(code, issuerId) {
+    : super(code, issuerId) {
     if (code.length < 1 || code.length > 4) {
       throw new AssetCodeLengthInvalidException();
     }
@@ -104,11 +104,14 @@ class AssetTypeCreditAlphaNum4 extends AssetTypeCreditAlphaNum {
   XdrAsset toXdr() {
     XdrAsset xdrAsset = XdrAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4);
 
-    XdrAccountID accountID =
-        XdrAccountID(KeyPair.fromAccountId(issuerId).xdrPublicKey);
+    XdrAccountID accountID = XdrAccountID(
+      KeyPair.fromAccountId(issuerId).xdrPublicKey,
+    );
 
-    XdrAssetAlphaNum4 credit =
-        XdrAssetAlphaNum4(Util.paddedByteArrayString(mCode, 4), accountID);
+    XdrAssetAlphaNum4 credit = XdrAssetAlphaNum4(
+      Util.paddedByteArrayString(mCode, 4),
+      accountID,
+    );
     xdrAsset.alphaNum4 = credit;
     return xdrAsset;
   }

@@ -16,17 +16,24 @@ void main() {
       const eventCount = 100;
       final jobs = <Future<void>>[];
       for (var i = 1; i <= eventCount; i++) {
-        jobs.add(Future<void>(() {
-          emitter.emit(OZSmartAccountEventTransactionSubmitted(
-            hash: 'hash-$i',
-            success: true,
-          ));
-        }));
+        jobs.add(
+          Future<void>(() {
+            emitter.emit(
+              OZSmartAccountEventTransactionSubmitted(
+                hash: 'hash-$i',
+                success: true,
+              ),
+            );
+          }),
+        );
       }
       await Future.wait(jobs);
 
-      expect(count, eventCount,
-          reason: 'All $eventCount events must be delivered');
+      expect(
+        count,
+        eventCount,
+        reason: 'All $eventCount events must be delivered',
+      );
     });
 
     test('testConcurrentEmit_noExceptionWithMultipleListeners', () async {
@@ -38,12 +45,16 @@ void main() {
 
       final jobs = <Future<void>>[];
       for (var i = 1; i <= 50; i++) {
-        jobs.add(Future<void>(() {
-          emitter.emit(OZSmartAccountEventWalletConnected(
-            contractId: 'contract-$i',
-            credentialId: 'cred-$i',
-          ));
-        }));
+        jobs.add(
+          Future<void>(() {
+            emitter.emit(
+              OZSmartAccountEventWalletConnected(
+                contractId: 'contract-$i',
+                credentialId: 'cred-$i',
+              ),
+            );
+          }),
+        );
       }
       await Future.wait(jobs);
     });
@@ -53,17 +64,23 @@ void main() {
 
       final jobs = <Future<void>>[];
       for (var i = 1; i <= 30; i++) {
-        jobs.add(Future<void>(() {
-          emitter.emit(OZSmartAccountEventTransactionSubmitted(
-            hash: 'hash-$i',
-            success: i % 2 == 0,
-          ));
-        }));
+        jobs.add(
+          Future<void>(() {
+            emitter.emit(
+              OZSmartAccountEventTransactionSubmitted(
+                hash: 'hash-$i',
+                success: i % 2 == 0,
+              ),
+            );
+          }),
+        );
       }
       for (var i = 1; i <= 20; i++) {
-        jobs.add(Future<void>(() {
-          emitter.addListener((_) {});
-        }));
+        jobs.add(
+          Future<void>(() {
+            emitter.addListener((_) {});
+          }),
+        );
       }
 
       await Future.wait(jobs);
@@ -79,10 +96,13 @@ void main() {
 
       final jobs = <Future<void>>[];
       for (var i = 1; i <= 30; i++) {
-        jobs.add(Future<void>(() {
-          emitter.emit(
-              OZSmartAccountEventWalletDisconnected(contractId: 'c-$i'));
-        }));
+        jobs.add(
+          Future<void>(() {
+            emitter.emit(
+              OZSmartAccountEventWalletDisconnected(contractId: 'c-$i'),
+            );
+          }),
+        );
       }
       for (final unsub in unsubscribers) {
         jobs.add(Future<void>(unsub));
@@ -96,27 +116,35 @@ void main() {
 
       final subscribeJobs = <Future<void>>[];
       for (var i = 1; i <= 10; i++) {
-        subscribeJobs.add(Future<void>(() {
-          emitter.on<OZSmartAccountEventWalletConnected>((_) {});
-        }));
+        subscribeJobs.add(
+          Future<void>(() {
+            emitter.on<OZSmartAccountEventWalletConnected>((_) {});
+          }),
+        );
       }
       await Future.wait(subscribeJobs);
 
       final emitJobs = <Future<void>>[];
       for (var i = 1; i <= 40; i++) {
-        emitJobs.add(Future<void>(() {
-          if (i % 2 == 0) {
-            emitter.emit(OZSmartAccountEventWalletConnected(
-              contractId: 'c-$i',
-              credentialId: 'cred-$i',
-            ));
-          } else {
-            emitter.emit(OZSmartAccountEventTransactionSubmitted(
-              hash: 'h-$i',
-              success: true,
-            ));
-          }
-        }));
+        emitJobs.add(
+          Future<void>(() {
+            if (i % 2 == 0) {
+              emitter.emit(
+                OZSmartAccountEventWalletConnected(
+                  contractId: 'c-$i',
+                  credentialId: 'cred-$i',
+                ),
+              );
+            } else {
+              emitter.emit(
+                OZSmartAccountEventTransactionSubmitted(
+                  hash: 'h-$i',
+                  success: true,
+                ),
+              );
+            }
+          }),
+        );
       }
       await Future.wait(emitJobs);
     });
@@ -128,12 +156,16 @@ void main() {
 
       final jobs = <Future<void>>[];
       for (var i = 1; i <= 60; i++) {
-        jobs.add(Future<void>(() {
-          emitter.emit(OZSmartAccountEventSessionExpired(
-            contractId: 'c-$i',
-            credentialId: 'cred-$i',
-          ));
-        }));
+        jobs.add(
+          Future<void>(() {
+            emitter.emit(
+              OZSmartAccountEventSessionExpired(
+                contractId: 'c-$i',
+                credentialId: 'cred-$i',
+              ),
+            );
+          }),
+        );
       }
       await Future.wait(jobs);
 
@@ -151,10 +183,13 @@ void main() {
 
       final jobs = <Future<void>>[];
       for (var i = 1; i <= 20; i++) {
-        jobs.add(Future<void>(() {
-          emitter.emit(
-              OZSmartAccountEventCredentialDeleted(credentialId: 'cred-$i'));
-        }));
+        jobs.add(
+          Future<void>(() {
+            emitter.emit(
+              OZSmartAccountEventCredentialDeleted(credentialId: 'cred-$i'),
+            );
+          }),
+        );
       }
       jobs.add(Future<void>(() => emitter.removeAllListeners()));
 

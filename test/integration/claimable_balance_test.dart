@@ -5,16 +5,20 @@ import '../tests_util.dart';
 
 void main() {
   String testOn = 'testnet'; //'futurenet';
-  StellarSDK sdk =
-      testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
+  StellarSDK sdk = testOn == 'testnet'
+      ? StellarSDK.TESTNET
+      : StellarSDK.FUTURENET;
   Network network = testOn == 'testnet' ? Network.TESTNET : Network.FUTURENET;
 
   test('test claimable balance', () async {
     KeyPair sourceAccountKeyxPair = KeyPair.random();
     String sourceAccountId = sourceAccountKeyxPair.accountId;
 
-    await fundTestAccountAndAwaitVisibility(sourceAccountId,
-        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(
+      sourceAccountId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
 
     AccountResponse sourceAccount = await sdk.accounts.account(sourceAccountId);
 
@@ -24,16 +28,22 @@ void main() {
 
     String fistClaimantId = firstClaimantKp.accountId;
     KeyPair secondClaimantKp = KeyPair.random();
-    Claimant firstClaimant =
-        Claimant(fistClaimantId, Claimant.predicateUnconditional());
+    Claimant firstClaimant = Claimant(
+      fistClaimantId,
+      Claimant.predicateUnconditional(),
+    );
     XdrClaimPredicate predicateA = Claimant.predicateBeforeRelativeTime(100);
-    XdrClaimPredicate predicateB =
-        Claimant.predicateBeforeAbsoluteTime(1634000400);
+    XdrClaimPredicate predicateB = Claimant.predicateBeforeAbsoluteTime(
+      1634000400,
+    );
     XdrClaimPredicate predicateC = Claimant.predicateNot(predicateA);
-    XdrClaimPredicate predicateD =
-        Claimant.predicateAnd(predicateC, predicateB);
-    XdrClaimPredicate predicateE =
-        Claimant.predicateBeforeAbsoluteTime(1601671345);
+    XdrClaimPredicate predicateD = Claimant.predicateAnd(
+      predicateC,
+      predicateB,
+    );
+    XdrClaimPredicate predicateE = Claimant.predicateBeforeAbsoluteTime(
+      1601671345,
+    );
     XdrClaimPredicate predicateF = Claimant.predicateOr(predicateD, predicateE);
     Claimant secondClaimant = Claimant(secondClaimantKp.accountId, predicateF);
     List<Claimant> claimants = [];
@@ -41,7 +51,10 @@ void main() {
     claimants.add(secondClaimant);
     CreateClaimableBalanceOperationBuilder opb =
         CreateClaimableBalanceOperationBuilder(
-            claimants, Asset.NATIVE, "12.33");
+          claimants,
+          Asset.NATIVE,
+          "12.33",
+        );
 
     Transaction transaction = new TransactionBuilder(sourceAccount)
         .addOperation(opb.build())
@@ -50,8 +63,9 @@ void main() {
 
     transaction.sign(sourceAccountKeyxPair, network);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
     final createdBalanceIdHash = response.getClaimableBalanceIdIdFromResult(0);
@@ -82,11 +96,14 @@ void main() {
     assert(bid != null);
     // The id from the transaction result and the id from the effect name one
     // balance, whichever spelling the effect carries.
-    assert(XdrClaimableBalanceID.forId(createdBalanceIdHash!).paddedBalanceIdHex ==
-        XdrClaimableBalanceID.forId(bid!).paddedBalanceIdHex);
+    assert(
+      XdrClaimableBalanceID.forId(createdBalanceIdHash!).paddedBalanceIdHex ==
+          XdrClaimableBalanceID.forId(bid!).paddedBalanceIdHex,
+    );
 
-    var operationsPage =
-        await sdk.operations.forAccount(sourceAccountId).execute();
+    var operationsPage = await sdk.operations
+        .forAccount(sourceAccountId)
+        .execute();
     assert(operationsPage.records.isNotEmpty);
 
     Page<ClaimableBalanceResponse> claimableBalances = await sdk
@@ -96,14 +113,18 @@ void main() {
     assert(claimableBalances.records.length == 1);
     ClaimableBalanceResponse cb = claimableBalances.records[0];
 
-    await fundTestAccountAndAwaitVisibility(fistClaimantId,
-        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(
+      fistClaimantId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
 
     ClaimClaimableBalanceOperationBuilder opc =
         ClaimClaimableBalanceOperationBuilder(cb.balanceId);
 
-    AccountResponse claimant =
-        await sdk.accounts.account(firstClaimantKp.accountId);
+    AccountResponse claimant = await sdk.accounts.account(
+      firstClaimantKp.accountId,
+    );
     transaction = new TransactionBuilder(claimant)
         .addOperation(opc.build())
         .addMemo(Memo.text("claimclaimablebalance"))
@@ -117,11 +138,13 @@ void main() {
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
-    operationsPage =
-        await sdk.operations.forAccount(firstClaimantKp.accountId).execute();
+    operationsPage = await sdk.operations
+        .forAccount(firstClaimantKp.accountId)
+        .execute();
     assert(operationsPage.records.isNotEmpty);
-    effectsPage =
-        await sdk.effects.forAccount(firstClaimantKp.accountId).execute();
+    effectsPage = await sdk.effects
+        .forAccount(firstClaimantKp.accountId)
+        .execute();
     assert(effectsPage.records.isNotEmpty);
   });
 }

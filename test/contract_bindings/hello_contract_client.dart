@@ -55,9 +55,7 @@ class HelloContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forSymbol(to),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forSymbol(to)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -82,9 +80,7 @@ class HelloContract {
     required String to,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      XdrSCVal.forSymbol(to),
-    ];
+    final List<XdrSCVal> args = [XdrSCVal.forSymbol(to)];
 
     return await _client.buildInvokeMethodTx(
       name: 'hello',

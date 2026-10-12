@@ -54,7 +54,7 @@ class AssetsRequestBuilder extends RequestBuilder {
   /// - [httpClient] HTTP client for making requests to Horizon
   /// - [serverURI] Base URI of the Horizon server
   AssetsRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["assets"]);
+    : super(httpClient, serverURI, ["assets"]);
 
   /// Filter assets by asset code.
   ///
@@ -96,7 +96,9 @@ class AssetsRequestBuilder extends RequestBuilder {
   ///
   /// Internal method that performs the actual HTTP GET request to the Horizon server.
   static Future<Page<AssetResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
+    http.Client httpClient,
+    Uri uri,
+  ) async {
     return RequestBuilder.requestExecute<Page<AssetResponse>>(httpClient, uri);
   }
 
@@ -116,7 +118,9 @@ class AssetsRequestBuilder extends RequestBuilder {
   /// ```
   Future<Page<AssetResponse>> execute() {
     return AssetsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+      this.httpClient,
+      this.buildUri(),
+    );
   }
 
   /// Sets the cursor for pagination.

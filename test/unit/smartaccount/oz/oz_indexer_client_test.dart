@@ -38,11 +38,17 @@ OZIndexerClient _client(
 void main() {
   group('OZIndexerClient - constructor validation', () {
     test('testConstructor_blankUrl_throwsConfigurationException', () {
-      expect(() => OZIndexerClient(''), throwsA(isA<SmartAccountInvalidConfig>()));
+      expect(
+        () => OZIndexerClient(''),
+        throwsA(isA<SmartAccountInvalidConfig>()),
+      );
     });
 
     test('testConstructor_whitespaceUrl_throwsConfigurationException', () {
-      expect(() => OZIndexerClient('   '), throwsA(isA<SmartAccountInvalidConfig>()));
+      expect(
+        () => OZIndexerClient('   '),
+        throwsA(isA<SmartAccountInvalidConfig>()),
+      );
     });
 
     test('testConstructor_httpUrl_throwsConfigurationException', () {
@@ -115,32 +121,39 @@ void main() {
 
   group('OZIndexerClient - getDefaultUrl', () {
     test('testGetDefaultUrl_testnetReturnsUrl', () {
-      final url =
-          OZIndexerClient.getDefaultUrl(Network.TESTNET.networkPassphrase);
+      final url = OZIndexerClient.getDefaultUrl(
+        Network.TESTNET.networkPassphrase,
+      );
       expect(url, isNotNull);
       expect(url!.startsWith('https://'), isTrue);
     });
 
     test('testGetDefaultUrl_unknownNetworkReturnsNull', () {
-      final url =
-          OZIndexerClient.getDefaultUrl('Unknown Network ; January 2099');
+      final url = OZIndexerClient.getDefaultUrl(
+        'Unknown Network ; January 2099',
+      );
       expect(url, isNull);
     });
 
     test('testGetDefaultUrl_mainnetReturnsNullOrUrl', () {
-      final url =
-          OZIndexerClient.getDefaultUrl(Network.PUBLIC.networkPassphrase);
+      final url = OZIndexerClient.getDefaultUrl(
+        Network.PUBLIC.networkPassphrase,
+      );
       if (url != null) {
-        expect(url.startsWith('https://'), isTrue,
-            reason: 'If mainnet URL is set, it must use HTTPS');
+        expect(
+          url.startsWith('https://'),
+          isTrue,
+          reason: 'If mainnet URL is set, it must use HTTPS',
+        );
       }
     });
   });
 
   group('OZIndexerClient - forNetwork', () {
     test('testForNetwork_testnetReturnsClient', () async {
-      final client =
-          OZIndexerClient.forNetwork(Network.TESTNET.networkPassphrase);
+      final client = OZIndexerClient.forNetwork(
+        Network.TESTNET.networkPassphrase,
+      );
       expect(client, isNotNull);
       await client!.close();
     });
@@ -151,10 +164,12 @@ void main() {
     });
 
     test('testForNetwork_mainnetReturnsNullCurrently', () async {
-      final url =
-          OZIndexerClient.getDefaultUrl(Network.PUBLIC.networkPassphrase);
-      final client =
-          OZIndexerClient.forNetwork(Network.PUBLIC.networkPassphrase);
+      final url = OZIndexerClient.getDefaultUrl(
+        Network.PUBLIC.networkPassphrase,
+      );
+      final client = OZIndexerClient.forNetwork(
+        Network.PUBLIC.networkPassphrase,
+      );
       if (url == null) {
         expect(client, isNull);
       } else {
@@ -166,7 +181,8 @@ void main() {
 
   group('OZIndexerClient - lookupByCredentialId', () {
     test('testLookupByCredentialId_success', () async {
-      final body = '''
+      final body =
+          '''
 {
     "credentialId": "aabbccdd",
     "contracts": [$_contractSummaryJson],
@@ -187,12 +203,13 @@ void main() {
       }
     });
 
-    test('testLookupByCredentialId_acceptsStringEncodedNumericFields',
-        () async {
-      // The production indexer service serialises numeric columns (counts,
-      // ledger numbers) as JSON strings to preserve precision; the SDK must
-      // accept them alongside JSON numbers.
-      const body = '''
+    test(
+      'testLookupByCredentialId_acceptsStringEncodedNumericFields',
+      () async {
+        // The production indexer service serialises numeric columns (counts,
+        // ledger numbers) as JSON strings to preserve precision; the SDK must
+        // accept them alongside JSON numbers.
+        const body = '''
 {
     "credentialId": "aabbccdd",
     "contracts": [
@@ -210,24 +227,25 @@ void main() {
     "count": "1"
 }
 ''';
-      final adapter = MockDioAdapter.json(body);
-      final indexer = _client(adapter);
-      try {
-        final result = await indexer.lookupByCredentialId('qrvM3Q');
-        expect(result.count, 1);
-        expect(result.contracts.length, 1);
-        final summary = result.contracts[0];
-        expect(summary.contextRuleCount, 2);
-        expect(summary.externalSignerCount, 1);
-        expect(summary.delegatedSignerCount, 1);
-        expect(summary.nativeSignerCount, 0);
-        expect(summary.firstSeenLedger, 100000);
-        expect(summary.lastSeenLedger, 200000);
-        expect(summary.contextRuleIds, [0, 1]);
-      } finally {
-        await indexer.close();
-      }
-    });
+        final adapter = MockDioAdapter.json(body);
+        final indexer = _client(adapter);
+        try {
+          final result = await indexer.lookupByCredentialId('qrvM3Q');
+          expect(result.count, 1);
+          expect(result.contracts.length, 1);
+          final summary = result.contracts[0];
+          expect(summary.contextRuleCount, 2);
+          expect(summary.externalSignerCount, 1);
+          expect(summary.delegatedSignerCount, 1);
+          expect(summary.nativeSignerCount, 0);
+          expect(summary.firstSeenLedger, 100000);
+          expect(summary.lastSeenLedger, 200000);
+          expect(summary.contextRuleIds, [0, 1]);
+        } finally {
+          await indexer.close();
+        }
+      },
+    );
 
     test('testLookupByCredentialId_verifiesUrlPath', () async {
       final body = '''
@@ -242,28 +260,36 @@ void main() {
       try {
         await indexer.lookupByCredentialId('qrvM3Q');
         expect(adapter.capturedUrl, isNotNull);
-        expect(adapter.capturedUrl!.contains('/api/lookup/'), isTrue,
-            reason: 'Request URL must contain /api/lookup/ path');
-        expect(adapter.capturedUrl!.endsWith('aabbccdd'), isTrue,
-            reason: 'Request URL must end with hex-encoded credential ID');
-      } finally {
-        await indexer.close();
-      }
-    });
-
-    test('testLookupByCredentialId_invalidBase64url_throwsValidationException',
-        () async {
-      final adapter = MockDioAdapter.json('{}');
-      final indexer = _client(adapter);
-      try {
-        await expectLater(
-          indexer.lookupByCredentialId('!!!invalid-base64url!!!'),
-          throwsA(isA<SmartAccountInvalidInput>()),
+        expect(
+          adapter.capturedUrl!.contains('/api/lookup/'),
+          isTrue,
+          reason: 'Request URL must contain /api/lookup/ path',
+        );
+        expect(
+          adapter.capturedUrl!.endsWith('aabbccdd'),
+          isTrue,
+          reason: 'Request URL must end with hex-encoded credential ID',
         );
       } finally {
         await indexer.close();
       }
     });
+
+    test(
+      'testLookupByCredentialId_invalidBase64url_throwsValidationException',
+      () async {
+        final adapter = MockDioAdapter.json('{}');
+        final indexer = _client(adapter);
+        try {
+          await expectLater(
+            indexer.lookupByCredentialId('!!!invalid-base64url!!!'),
+            throwsA(isA<SmartAccountInvalidInput>()),
+          );
+        } finally {
+          await indexer.close();
+        }
+      },
+    );
 
     test('testLookupByCredentialId_http404_throwsIndexerException', () async {
       final adapter = MockDioAdapter.response(
@@ -301,27 +327,30 @@ void main() {
       }
     });
 
-    test('testLookupByCredentialId_nonJsonResponse_throwsIndexerException',
-        () async {
-      final adapter = MockDioAdapter.response(
-        responseBody: '<html>Not JSON</html>',
-        contentType: 'text/html',
-      );
-      final indexer = _client(adapter);
-      try {
-        await expectLater(
-          indexer.lookupByCredentialId('qrvM3Q'),
-          throwsA(isA<SmartAccountIndexerRequestFailed>()),
+    test(
+      'testLookupByCredentialId_nonJsonResponse_throwsIndexerException',
+      () async {
+        final adapter = MockDioAdapter.response(
+          responseBody: '<html>Not JSON</html>',
+          contentType: 'text/html',
         );
-      } finally {
-        await indexer.close();
-      }
-    });
+        final indexer = _client(adapter);
+        try {
+          await expectLater(
+            indexer.lookupByCredentialId('qrvM3Q'),
+            throwsA(isA<SmartAccountIndexerRequestFailed>()),
+          );
+        } finally {
+          await indexer.close();
+        }
+      },
+    );
   });
 
   group('OZIndexerClient - lookupByAddress', () {
     test('testLookupByAddress_successWithGAddress', () async {
-      final body = '''
+      final body =
+          '''
 {
     "signerAddress": "$_testAccountId",
     "contracts": [$_contractSummaryJson],
@@ -341,7 +370,8 @@ void main() {
     });
 
     test('testLookupByAddress_successWithCAddress', () async {
-      final body = '''
+      final body =
+          '''
 {
     "signerAddress": "$_testContractId",
     "contracts": [$_contractSummaryJson],
@@ -360,7 +390,8 @@ void main() {
     });
 
     test('testLookupByAddress_verifiesUrlPath', () async {
-      final body = '''
+      final body =
+          '''
 {
     "signerAddress": "$_testAccountId",
     "contracts": [],
@@ -372,28 +403,36 @@ void main() {
       try {
         await indexer.lookupByAddress(_testAccountId);
         expect(adapter.capturedUrl, isNotNull);
-        expect(adapter.capturedUrl!.contains('/api/lookup/address/'), isTrue,
-            reason: 'Request URL must contain /api/lookup/address/ path');
-        expect(adapter.capturedUrl!.endsWith(_testAccountId), isTrue,
-            reason: 'Request URL must end with the address');
-      } finally {
-        await indexer.close();
-      }
-    });
-
-    test('testLookupByAddress_invalidAddress_throwsValidationException',
-        () async {
-      final adapter = MockDioAdapter.json('{}');
-      final indexer = _client(adapter);
-      try {
-        await expectLater(
-          indexer.lookupByAddress('INVALID_ADDRESS'),
-          throwsA(isA<SmartAccountInvalidAddress>()),
+        expect(
+          adapter.capturedUrl!.contains('/api/lookup/address/'),
+          isTrue,
+          reason: 'Request URL must contain /api/lookup/address/ path',
+        );
+        expect(
+          adapter.capturedUrl!.endsWith(_testAccountId),
+          isTrue,
+          reason: 'Request URL must end with the address',
         );
       } finally {
         await indexer.close();
       }
     });
+
+    test(
+      'testLookupByAddress_invalidAddress_throwsValidationException',
+      () async {
+        final adapter = MockDioAdapter.json('{}');
+        final indexer = _client(adapter);
+        try {
+          await expectLater(
+            indexer.lookupByAddress('INVALID_ADDRESS'),
+            throwsA(isA<SmartAccountInvalidAddress>()),
+          );
+        } finally {
+          await indexer.close();
+        }
+      },
+    );
 
     test('testLookupByAddress_httpError_throwsIndexerException', () async {
       final adapter = MockDioAdapter.response(
@@ -414,7 +453,8 @@ void main() {
 
   group('OZIndexerClient - getContract', () {
     test('testGetContract_success', () async {
-      final body = '''
+      final body =
+          '''
 {
     "contractId": "$_testContractId",
     "summary": $_contractSummaryJson,
@@ -485,7 +525,8 @@ void main() {
     });
 
     test('testGetContract_verifiesUrlPath', () async {
-      final body = '''
+      final body =
+          '''
 {
     "contractId": "$_testContractId",
     "summary": $_contractSummaryJson,
@@ -497,28 +538,36 @@ void main() {
       try {
         await indexer.getContract(_testContractId);
         expect(adapter.capturedUrl, isNotNull);
-        expect(adapter.capturedUrl!.contains('/api/contract/'), isTrue,
-            reason: 'Request URL must contain /api/contract/ path');
-        expect(adapter.capturedUrl!.endsWith(_testContractId), isTrue,
-            reason: 'Request URL must end with the contract ID');
-      } finally {
-        await indexer.close();
-      }
-    });
-
-    test('testGetContract_invalidContractId_throwsValidationException',
-        () async {
-      final adapter = MockDioAdapter.json('{}');
-      final indexer = _client(adapter);
-      try {
-        await expectLater(
-          indexer.getContract(_testAccountId),
-          throwsA(isA<SmartAccountInvalidAddress>()),
+        expect(
+          adapter.capturedUrl!.contains('/api/contract/'),
+          isTrue,
+          reason: 'Request URL must contain /api/contract/ path',
+        );
+        expect(
+          adapter.capturedUrl!.endsWith(_testContractId),
+          isTrue,
+          reason: 'Request URL must end with the contract ID',
         );
       } finally {
         await indexer.close();
       }
     });
+
+    test(
+      'testGetContract_invalidContractId_throwsValidationException',
+      () async {
+        final adapter = MockDioAdapter.json('{}');
+        final indexer = _client(adapter);
+        try {
+          await expectLater(
+            indexer.getContract(_testAccountId),
+            throwsA(isA<SmartAccountInvalidAddress>()),
+          );
+        } finally {
+          await indexer.close();
+        }
+      },
+    );
 
     test('testGetContract_httpError_throwsIndexerException', () async {
       final adapter = MockDioAdapter.response(
@@ -594,8 +643,11 @@ void main() {
       try {
         await indexer.getStats();
         expect(adapter.capturedUrl, isNotNull);
-        expect(adapter.capturedUrl!.endsWith('/api/stats'), isTrue,
-            reason: 'Request URL must end with /api/stats');
+        expect(
+          adapter.capturedUrl!.endsWith('/api/stats'),
+          isTrue,
+          reason: 'Request URL must end with /api/stats',
+        );
       } finally {
         await indexer.close();
       }
@@ -633,10 +685,16 @@ void main() {
           await indexer.lookupByCredentialId('qrvM3Q');
           fail('expected SmartAccountIndexerRequestFailed');
         } on SmartAccountIndexerRequestFailed catch (e) {
-          expect(e.message.contains('...'), isTrue,
-              reason: 'Long error body must be truncated with ellipsis');
-          expect(e.message.contains('x' * 201), isFalse,
-              reason: 'Error body must be truncated to at most 200 characters');
+          expect(
+            e.message.contains('...'),
+            isTrue,
+            reason: 'Long error body must be truncated with ellipsis',
+          );
+          expect(
+            e.message.contains('x' * 201),
+            isFalse,
+            reason: 'Error body must be truncated to at most 200 characters',
+          );
         }
       } finally {
         await indexer.close();
@@ -656,8 +714,11 @@ void main() {
           fail('expected SmartAccountIndexerRequestFailed');
         } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('short error'), isTrue);
-          expect(e.message.endsWith('...'), isFalse,
-              reason: 'Short error body must not be truncated');
+          expect(
+            e.message.endsWith('...'),
+            isFalse,
+            reason: 'Short error body must not be truncated',
+          );
         }
       } finally {
         await indexer.close();
@@ -677,30 +738,35 @@ void main() {
           await indexer.getStats();
           fail('expected SmartAccountIndexerTimeout');
         } on SmartAccountIndexerTimeout catch (e) {
-          expect(e.message.contains('timed out'), isTrue,
-              reason: 'Timeout exception message must indicate timeout');
+          expect(
+            e.message.contains('timed out'),
+            isTrue,
+            reason: 'Timeout exception message must indicate timeout',
+          );
         }
       } finally {
         await indexer.close();
       }
     });
 
-    test('testPerformRequest_genericException_wrappedAsRequestFailed',
-        () async {
-      final genericException = Exception('unexpected network failure');
-      final adapter = MockDioAdapter.throwing(genericException);
-      final indexer = _client(adapter);
-      try {
+    test(
+      'testPerformRequest_genericException_wrappedAsRequestFailed',
+      () async {
+        final genericException = Exception('unexpected network failure');
+        final adapter = MockDioAdapter.throwing(genericException);
+        final indexer = _client(adapter);
         try {
-          await indexer.lookupByCredentialId('qrvM3Q');
-          fail('expected SmartAccountIndexerRequestFailed');
-        } on SmartAccountIndexerRequestFailed catch (e) {
-          expect(e.message.contains('unexpected network failure'), isTrue);
+          try {
+            await indexer.lookupByCredentialId('qrvM3Q');
+            fail('expected SmartAccountIndexerRequestFailed');
+          } on SmartAccountIndexerRequestFailed catch (e) {
+            expect(e.message.contains('unexpected network failure'), isTrue);
+          }
+        } finally {
+          await indexer.close();
         }
-      } finally {
-        await indexer.close();
-      }
-    });
+      },
+    );
   });
 
   group('OZIndexerClient - isHealthy', () {
@@ -753,8 +819,11 @@ void main() {
       try {
         await indexer.isHealthy();
         expect(adapter.capturedUrl, isNotNull);
-        expect(adapter.capturedUrl!.endsWith('/'), isTrue,
-            reason: 'Health check URL must be the root endpoint');
+        expect(
+          adapter.capturedUrl!.endsWith('/'),
+          isTrue,
+          reason: 'Health check URL must be the root endpoint',
+        );
       } finally {
         await indexer.close();
       }
@@ -781,17 +850,25 @@ void main() {
         '{"credentialId": "aabbccdd", "contracts": [], "count": 0}',
       );
       mockDio.httpClientAdapter = adapter;
-      final injected =
-          OZIndexerClient.withDio('https://indexer.example.com', mockDio);
+      final injected = OZIndexerClient.withDio(
+        'https://indexer.example.com',
+        mockDio,
+      );
       try {
         await injected.lookupByCredentialId('qrvM3Q');
       } finally {
         await injected.close();
       }
-      expect(adapter.capturedFollowRedirects, isFalse,
-          reason: 'Every emitted request must carry followRedirects=false');
-      expect(adapter.capturedMaxRedirects, 0,
-          reason: 'Every emitted request must carry maxRedirects=0');
+      expect(
+        adapter.capturedFollowRedirects,
+        isFalse,
+        reason: 'Every emitted request must carry followRedirects=false',
+      );
+      expect(
+        adapter.capturedMaxRedirects,
+        0,
+        reason: 'Every emitted request must carry maxRedirects=0',
+      );
     });
 
     test('testWithDio_doesNotMutateInjectedClientOptions', () async {
@@ -804,19 +881,25 @@ void main() {
       // constructor must not overwrite this caller-owned configuration.
       mockDio.options.followRedirects = true;
       mockDio.options.maxRedirects = 7;
-      final injected =
-          OZIndexerClient.withDio('https://indexer.example.com', mockDio);
+      final injected = OZIndexerClient.withDio(
+        'https://indexer.example.com',
+        mockDio,
+      );
       try {
         await injected.lookupByCredentialId('qrvM3Q');
       } finally {
         await injected.close();
       }
-      expect(mockDio.options.followRedirects, isTrue,
-          reason:
-              'withDio must not mutate the injected client default options');
-      expect(mockDio.options.maxRedirects, 7,
-          reason:
-              'withDio must not mutate the injected client default options');
+      expect(
+        mockDio.options.followRedirects,
+        isTrue,
+        reason: 'withDio must not mutate the injected client default options',
+      );
+      expect(
+        mockDio.options.maxRedirects,
+        7,
+        reason: 'withDio must not mutate the injected client default options',
+      );
     });
 
     test('testLookup_oversizedResponseBody_throwsRequestFailed', () async {
@@ -831,7 +914,9 @@ void main() {
       try {
         try {
           await indexer.lookupByCredentialId('qrvM3Q');
-          fail('expected SmartAccountIndexerRequestFailed for oversized response');
+          fail(
+            'expected SmartAccountIndexerRequestFailed for oversized response',
+          );
         } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('exceeds maximum size'), isTrue);
         }
@@ -842,22 +927,27 @@ void main() {
   });
 
   group('OZIndexerClient - Content-Type validation', () {
-    test('testPerformRequest_textHtmlContentType_throwsRequestFailed',
-        () async {
+    test('testPerformRequest_textHtmlContentType_throwsRequestFailed', () async {
       // A server emitting a JSON-shaped body under a non-JSON Content-Type
       // is rejected before parsing so callers receive a precise error.
       final adapter = MockDioAdapter.response(
-        responseBody: '{"credentialId": "aabbccdd", "contracts": [], "count": 0}',
+        responseBody:
+            '{"credentialId": "aabbccdd", "contracts": [], "count": 0}',
         contentType: 'text/html',
       );
       final indexer = _client(adapter);
       try {
         try {
           await indexer.lookupByCredentialId('qrvM3Q');
-          fail('expected SmartAccountIndexerRequestFailed for non-JSON Content-Type');
+          fail(
+            'expected SmartAccountIndexerRequestFailed for non-JSON Content-Type',
+          );
         } on SmartAccountIndexerRequestFailed catch (e) {
-          expect(e.message.contains('Unexpected Content-Type'), isTrue,
-              reason: 'Error message must identify the unexpected type');
+          expect(
+            e.message.contains('Unexpected Content-Type'),
+            isTrue,
+            reason: 'Error message must identify the unexpected type',
+          );
           expect(e.message.contains('text/html'), isTrue);
         }
       } finally {
@@ -872,10 +962,13 @@ void main() {
       );
       final indexer = _client(adapter);
       try {
-        expect(await indexer.isHealthy(), isFalse,
-            reason:
-                'Health check must reject responses without an application/json '
-                'Content-Type');
+        expect(
+          await indexer.isHealthy(),
+          isFalse,
+          reason:
+              'Health check must reject responses without an application/json '
+              'Content-Type',
+        );
       } finally {
         await indexer.close();
       }
@@ -883,50 +976,64 @@ void main() {
   });
 
   group('OZIndexerClient - JSON body parsing', () {
-    test('testLookup_validJsonContentTypeWithMalformedBody_throwsFailedToParse',
-        () async {
-      final adapter = MockDioAdapter.response(
-        responseBody: 'not-json-at-all',
-        contentType: 'application/json',
-      );
-      final indexer = _client(adapter);
-      try {
+    test(
+      'testLookup_validJsonContentTypeWithMalformedBody_throwsFailedToParse',
+      () async {
+        final adapter = MockDioAdapter.response(
+          responseBody: 'not-json-at-all',
+          contentType: 'application/json',
+        );
+        final indexer = _client(adapter);
         try {
-          await indexer.lookupByCredentialId('qrvM3Q');
-          fail('expected SmartAccountIndexerRequestFailed for malformed JSON body');
-        } on SmartAccountIndexerRequestFailed catch (e) {
-          expect(e.message.contains('Failed to parse'), isTrue,
+          try {
+            await indexer.lookupByCredentialId('qrvM3Q');
+            fail(
+              'expected SmartAccountIndexerRequestFailed for malformed JSON body',
+            );
+          } on SmartAccountIndexerRequestFailed catch (e) {
+            expect(
+              e.message.contains('Failed to parse'),
+              isTrue,
               reason:
                   'A malformed JSON body under application/json must surface '
-                  'as Failed-to-parse, not as a FormatException');
+                  'as Failed-to-parse, not as a FormatException',
+            );
+          }
+        } finally {
+          await indexer.close();
         }
-      } finally {
-        await indexer.close();
-      }
-    });
+      },
+    );
 
-    test('testLookup_validJsonContentTypeWithNonObjectBody_throwsNotAJsonObject',
-        () async {
-      final adapter = MockDioAdapter.response(
-        responseBody: '[1,2,3]',
-        contentType: 'application/json',
-      );
-      final indexer = _client(adapter);
-      try {
+    test(
+      'testLookup_validJsonContentTypeWithNonObjectBody_throwsNotAJsonObject',
+      () async {
+        final adapter = MockDioAdapter.response(
+          responseBody: '[1,2,3]',
+          contentType: 'application/json',
+        );
+        final indexer = _client(adapter);
         try {
-          await indexer.lookupByCredentialId('qrvM3Q');
-          fail('expected SmartAccountIndexerRequestFailed for non-object JSON body');
-        } on SmartAccountIndexerRequestFailed catch (e) {
-          expect(e.message.contains('is not a JSON object'), isTrue,
+          try {
+            await indexer.lookupByCredentialId('qrvM3Q');
+            fail(
+              'expected SmartAccountIndexerRequestFailed for non-object JSON body',
+            );
+          } on SmartAccountIndexerRequestFailed catch (e) {
+            expect(
+              e.message.contains('is not a JSON object'),
+              isTrue,
               reason:
                   'A non-object JSON body must surface as a typed '
                   'is-not-a-JSON-object error rather than as a typed-cast '
-                  'crash');
+                  'crash',
+            );
+          }
+        } finally {
+          await indexer.close();
         }
-      } finally {
-        await indexer.close();
-      }
-    });
+      },
+    );
   });
 
   group('OZIndexerClient - timeout-variant mapping', () {
@@ -935,8 +1042,7 @@ void main() {
       dio.DioExceptionType.connectionTimeout,
       dio.DioExceptionType.sendTimeout,
     ]) {
-      test('testPerformRequest_${variant.name}_throwsIndexerTimeout',
-          () async {
+      test('testPerformRequest_${variant.name}_throwsIndexerTimeout', () async {
         final timeoutException = dio.DioException(
           requestOptions: dio.RequestOptions(path: '/'),
           type: variant,
@@ -949,8 +1055,11 @@ void main() {
             await indexer.getStats();
             fail('expected SmartAccountIndexerTimeout for $variant');
           } on SmartAccountIndexerTimeout catch (e) {
-            expect(e.message.contains('timed out'), isTrue,
-                reason: 'Timeout exception message must indicate timeout');
+            expect(
+              e.message.contains('timed out'),
+              isTrue,
+              reason: 'Timeout exception message must indicate timeout',
+            );
           }
         } finally {
           await indexer.close();
@@ -968,16 +1077,25 @@ void main() {
       try {
         await indexer.lookupByCredentialId('qrvM3Q');
         final headers = adapter.capturedHeaders;
-        final nameHeader = headers[OZConstants.clientNameHeader] ??
+        final nameHeader =
+            headers[OZConstants.clientNameHeader] ??
             headers[OZConstants.clientNameHeader.toLowerCase()];
-        final versionHeader = headers[OZConstants.clientVersionHeader] ??
+        final versionHeader =
+            headers[OZConstants.clientVersionHeader] ??
             headers[OZConstants.clientVersionHeader.toLowerCase()];
-        expect(nameHeader, isNull,
-            reason: 'Custom headers force a CORS preflight in browsers and '
-                'indexer providers only allowlist standard headers, so the '
-                'indexer client must not send X-Client-Name');
-        expect(versionHeader, isNull,
-            reason: 'The indexer client must not send X-Client-Version');
+        expect(
+          nameHeader,
+          isNull,
+          reason:
+              'Custom headers force a CORS preflight in browsers and '
+              'indexer providers only allowlist standard headers, so the '
+              'indexer client must not send X-Client-Name',
+        );
+        expect(
+          versionHeader,
+          isNull,
+          reason: 'The indexer client must not send X-Client-Version',
+        );
       } finally {
         await indexer.close();
       }
@@ -1012,12 +1130,16 @@ void main() {
       final indexer = _client(adapter);
       final cancelToken = dio.CancelToken();
       try {
-        final future =
-            indexer.lookupByCredentialId('qrvM3Q', cancelToken: cancelToken);
+        final future = indexer.lookupByCredentialId(
+          'qrvM3Q',
+          cancelToken: cancelToken,
+        );
         cancelToken.cancel('test cancellation');
         try {
           await future;
-          fail('expected SmartAccountIndexerRequestFailed for cancelled request');
+          fail(
+            'expected SmartAccountIndexerRequestFailed for cancelled request',
+          );
         } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('Request cancelled'), isTrue);
         }
@@ -1034,12 +1156,16 @@ void main() {
       final indexer = _client(adapter);
       final cancelToken = dio.CancelToken();
       try {
-        final future =
-            indexer.lookupByAddress(_testAccountId, cancelToken: cancelToken);
+        final future = indexer.lookupByAddress(
+          _testAccountId,
+          cancelToken: cancelToken,
+        );
         cancelToken.cancel('test cancellation');
         try {
           await future;
-          fail('expected SmartAccountIndexerRequestFailed for cancelled request');
+          fail(
+            'expected SmartAccountIndexerRequestFailed for cancelled request',
+          );
         } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('Request cancelled'), isTrue);
         }
@@ -1057,12 +1183,16 @@ void main() {
       final indexer = _client(adapter);
       final cancelToken = dio.CancelToken();
       try {
-        final future =
-            indexer.getContract(_testContractId, cancelToken: cancelToken);
+        final future = indexer.getContract(
+          _testContractId,
+          cancelToken: cancelToken,
+        );
         cancelToken.cancel('test cancellation');
         try {
           await future;
-          fail('expected SmartAccountIndexerRequestFailed for cancelled request');
+          fail(
+            'expected SmartAccountIndexerRequestFailed for cancelled request',
+          );
         } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('Request cancelled'), isTrue);
         }
@@ -1085,7 +1215,9 @@ void main() {
         cancelToken.cancel('test cancellation');
         try {
           await future;
-          fail('expected SmartAccountIndexerRequestFailed for cancelled request');
+          fail(
+            'expected SmartAccountIndexerRequestFailed for cancelled request',
+          );
         } on SmartAccountIndexerRequestFailed catch (e) {
           expect(e.message.contains('Request cancelled'), isTrue);
         }
@@ -1104,8 +1236,11 @@ void main() {
       try {
         final future = indexer.isHealthy(cancelToken: cancelToken);
         cancelToken.cancel('test cancellation');
-        expect(await future, isFalse,
-            reason: 'Cancelled health check must return false');
+        expect(
+          await future,
+          isFalse,
+          reason: 'Cancelled health check must return false',
+        );
       } finally {
         await indexer.close();
       }
@@ -1272,16 +1407,12 @@ void main() {
     test('testOZIndexedContextRule_equalityWithIdenticalFields', () {
       const a = OZIndexedContextRule(
         contextRuleId: 0,
-        signers: <OZIndexedSigner>[
-          OZIndexedSigner(signerType: 'Native'),
-        ],
+        signers: <OZIndexedSigner>[OZIndexedSigner(signerType: 'Native')],
         policies: <OZIndexedPolicy>[],
       );
       const b = OZIndexedContextRule(
         contextRuleId: 0,
-        signers: <OZIndexedSigner>[
-          OZIndexedSigner(signerType: 'Native'),
-        ],
+        signers: <OZIndexedSigner>[OZIndexedSigner(signerType: 'Native')],
         policies: <OZIndexedPolicy>[],
       );
       expect(a, equals(b));
@@ -1646,12 +1777,16 @@ void main() {
       // Non-const so deepEquality path executes.
       final a = OZIndexedContextRule(
         contextRuleId: 0,
-        signers: <OZIndexedSigner>[const OZIndexedSigner(signerType: 'Delegated')],
+        signers: <OZIndexedSigner>[
+          const OZIndexedSigner(signerType: 'Delegated'),
+        ],
         policies: <OZIndexedPolicy>[],
       );
       final b = OZIndexedContextRule(
         contextRuleId: 0,
-        signers: <OZIndexedSigner>[const OZIndexedSigner(signerType: 'Delegated')],
+        signers: <OZIndexedSigner>[
+          const OZIndexedSigner(signerType: 'Delegated'),
+        ],
         policies: <OZIndexedPolicy>[],
       );
       final c = OZIndexedContextRule(
@@ -1665,8 +1800,14 @@ void main() {
     });
 
     test('OZIndexedSigner_equalityWithNonConstInstances', () {
-      final a = OZIndexedSigner(signerType: 'Delegated', signerAddress: _testAccountId);
-      final b = OZIndexedSigner(signerType: 'Delegated', signerAddress: _testAccountId);
+      final a = OZIndexedSigner(
+        signerType: 'Delegated',
+        signerAddress: _testAccountId,
+      );
+      final b = OZIndexedSigner(
+        signerType: 'Delegated',
+        signerAddress: _testAccountId,
+      );
       final c = OZIndexedSigner(signerType: 'External', credentialId: 'abc');
       expect(a, equals(b));
       expect(a.hashCode, equals(b.hashCode));
@@ -1779,8 +1920,14 @@ void main() {
     });
 
     test('OZIndexedSigner_equality', () {
-      const a = OZIndexedSigner(signerType: 'Delegated', signerAddress: _testAccountId);
-      const b = OZIndexedSigner(signerType: 'Delegated', signerAddress: _testAccountId);
+      const a = OZIndexedSigner(
+        signerType: 'Delegated',
+        signerAddress: _testAccountId,
+      );
+      const b = OZIndexedSigner(
+        signerType: 'Delegated',
+        signerAddress: _testAccountId,
+      );
       const c = OZIndexedSigner(signerType: 'External', credentialId: 'abc123');
       expect(a, equals(b));
       expect(a.hashCode, equals(b.hashCode));
@@ -1871,17 +2018,20 @@ void main() {
       await client.close();
     });
 
-    test('lookupByCredentialId_malformedJson_throwsIndexerRequestFailed', () async {
-      final adapter = MockDioAdapter.json('{bad json{{');
-      final client = _client(adapter);
-      const credId = 'aGVsbG8tc21hcnQtYWNjb3VudA';
+    test(
+      'lookupByCredentialId_malformedJson_throwsIndexerRequestFailed',
+      () async {
+        final adapter = MockDioAdapter.json('{bad json{{');
+        final client = _client(adapter);
+        const credId = 'aGVsbG8tc21hcnQtYWNjb3VudA';
 
-      await expectLater(
-        client.lookupByCredentialId(credId),
-        throwsA(isA<SmartAccountIndexerRequestFailed>()),
-      );
-      await client.close();
-    });
+        await expectLater(
+          client.lookupByCredentialId(credId),
+          throwsA(isA<SmartAccountIndexerRequestFailed>()),
+        );
+        await client.close();
+      },
+    );
 
     test('lookupByAddress_500_throwsIndexerRequestFailed', () async {
       final adapter = MockDioAdapter.response(
@@ -1955,20 +2105,23 @@ void main() {
       await client.close();
     });
 
-    test('lookupByCredentialId_nonJsonContentType_throwsIndexerRequestFailed', () async {
-      final adapter = MockDioAdapter.response(
-        responseBody: '<html>Error</html>',
-        statusCode: 200,
-        contentType: 'text/html',
-      );
-      final client = _client(adapter);
-      const credId = 'aGVsbG8tc21hcnQtYWNjb3VudA';
+    test(
+      'lookupByCredentialId_nonJsonContentType_throwsIndexerRequestFailed',
+      () async {
+        final adapter = MockDioAdapter.response(
+          responseBody: '<html>Error</html>',
+          statusCode: 200,
+          contentType: 'text/html',
+        );
+        final client = _client(adapter);
+        const credId = 'aGVsbG8tc21hcnQtYWNjb3VudA';
 
-      await expectLater(
-        client.lookupByCredentialId(credId),
-        throwsA(isA<SmartAccountIndexerRequestFailed>()),
-      );
-      await client.close();
-    });
+        await expectLater(
+          client.lookupByCredentialId(credId),
+          throwsA(isA<SmartAccountIndexerRequestFailed>()),
+        );
+        await client.close();
+      },
+    );
   });
 }

@@ -193,10 +193,13 @@ abstract class Asset {
   /// ```
   static Asset createNonNativeAsset(String code, String issuer) {
     if (code.length >= StellarProtocolConstants.ASSET_CODE_MIN_LENGTH &&
-        code.length <= StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH) {
+        code.length <=
+            StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH) {
       return new AssetTypeCreditAlphaNum4(code, issuer);
-    } else if (code.length >= StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MIN_LENGTH &&
-               code.length <= StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH) {
+    } else if (code.length >=
+            StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MIN_LENGTH &&
+        code.length <=
+            StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH) {
       return new AssetTypeCreditAlphaNum12(code, issuer);
     } else {
       throw new AssetCodeLengthInvalidException();
@@ -245,9 +248,11 @@ abstract class Asset {
       } else {
         String code = components[0].trim();
         String issuerId = components[1].trim();
-        if (code.length <= StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH) {
+        if (code.length <=
+            StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_4_MAX_LENGTH) {
           return AssetTypeCreditAlphaNum4(code, issuerId);
-        } else if (code.length <= StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH) {
+        } else if (code.length <=
+            StellarProtocolConstants.ASSET_CODE_ALPHANUMERIC_12_MAX_LENGTH) {
           return AssetTypeCreditAlphaNum12(code, issuerId);
         }
       }
@@ -315,20 +320,25 @@ abstract class Asset {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         return new AssetTypeNative();
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        String assetCode4 =
-            Util.paddedByteArrayToString(xdrAsset.alphaNum4!.assetCode);
-        KeyPair issuer4 =
-            KeyPair.fromXdrPublicKey(xdrAsset.alphaNum4!.issuer.accountID);
+        String assetCode4 = Util.paddedByteArrayToString(
+          xdrAsset.alphaNum4!.assetCode,
+        );
+        KeyPair issuer4 = KeyPair.fromXdrPublicKey(
+          xdrAsset.alphaNum4!.issuer.accountID,
+        );
         return AssetTypeCreditAlphaNum4(assetCode4, issuer4.accountId);
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        String assetCode12 =
-            Util.paddedByteArrayToString(xdrAsset.alphaNum12!.assetCode);
-        KeyPair issuer12 =
-            KeyPair.fromXdrPublicKey(xdrAsset.alphaNum12!.issuer.accountID);
+        String assetCode12 = Util.paddedByteArrayToString(
+          xdrAsset.alphaNum12!.assetCode,
+        );
+        KeyPair issuer12 = KeyPair.fromXdrPublicKey(
+          xdrAsset.alphaNum12!.issuer.accountID,
+        );
         return AssetTypeCreditAlphaNum12(assetCode12, issuer12.accountId);
       default:
         throw Exception(
-            "Unknown asset type ${xdrAsset.discriminant.toString()}");
+          "Unknown asset type ${xdrAsset.discriminant.toString()}",
+        );
     }
   }
 
@@ -341,25 +351,32 @@ abstract class Asset {
       case XdrAssetType.ASSET_TYPE_NATIVE:
         return AssetTypeNative();
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-        String assetCode4 =
-            Util.paddedByteArrayToString(xdrAsset.alphaNum4!.assetCode);
-        KeyPair issuer4 =
-            KeyPair.fromXdrPublicKey(xdrAsset.alphaNum4!.issuer.accountID);
+        String assetCode4 = Util.paddedByteArrayToString(
+          xdrAsset.alphaNum4!.assetCode,
+        );
+        KeyPair issuer4 = KeyPair.fromXdrPublicKey(
+          xdrAsset.alphaNum4!.issuer.accountID,
+        );
         return AssetTypeCreditAlphaNum4(assetCode4, issuer4.accountId);
       case XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-        String assetCode12 =
-            Util.paddedByteArrayToString(xdrAsset.alphaNum12!.assetCode);
-        KeyPair issuer12 =
-            KeyPair.fromXdrPublicKey(xdrAsset.alphaNum12!.issuer.accountID);
+        String assetCode12 = Util.paddedByteArrayToString(
+          xdrAsset.alphaNum12!.assetCode,
+        );
+        KeyPair issuer12 = KeyPair.fromXdrPublicKey(
+          xdrAsset.alphaNum12!.issuer.accountID,
+        );
         return AssetTypeCreditAlphaNum12(assetCode12, issuer12.accountId);
       case XdrAssetType.ASSET_TYPE_POOL_SHARE:
         XdrAsset a = xdrAsset.liquidityPool!.constantProduct!.assetA;
         XdrAsset b = xdrAsset.liquidityPool!.constantProduct!.assetB;
         return AssetTypePoolShare(
-            assetA: Asset.fromXdr(a), assetB: Asset.fromXdr(b));
+          assetA: Asset.fromXdr(a),
+          assetB: Asset.fromXdr(b),
+        );
       default:
         throw Exception(
-            "Unknown asset type ${xdrAsset.discriminant.toString()}");
+          "Unknown asset type ${xdrAsset.discriminant.toString()}",
+        );
     }
   }
 
@@ -411,7 +428,9 @@ abstract class Asset {
       return new AssetTypeNative();
     } else {
       return Asset.createNonNativeAsset(
-          json['asset_code'], json['asset_issuer']);
+        json['asset_code'],
+        json['asset_issuer'],
+      );
     }
   }
 }

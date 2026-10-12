@@ -57,10 +57,10 @@ class PlatformWebAuthnProvider implements WebAuthnProvider {
     this.timeout = WebAuthnProvider.defaultTimeoutMs,
     this.authenticatorAttachment,
     MethodChannel? methodChannel,
-  })  : assert(rpId.isNotEmpty, 'rpId must not be empty'),
-        assert(rpName.isNotEmpty, 'rpName must not be empty'),
-        assert(timeout > 0, 'timeout must be positive'),
-        _channel = methodChannel ?? const MethodChannel(_webAuthnChannelName);
+  }) : assert(rpId.isNotEmpty, 'rpId must not be empty'),
+       assert(rpName.isNotEmpty, 'rpName must not be empty'),
+       assert(timeout > 0, 'timeout must be positive'),
+       _channel = methodChannel ?? const MethodChannel(_webAuthnChannelName);
 
   /// Relying-party identifier (a domain name such as `example.com`). Must
   /// match the domain declared in the platform's associated-domains
@@ -145,18 +145,22 @@ class PlatformWebAuthnProvider implements WebAuthnProvider {
       'challenge': challenge,
       if (allowCredentials != null)
         'allowCredentials': allowCredentials
-            .map((credential) => <String, Object?>{
-                  'id': credential.id,
-                  if (credential.transports != null)
-                    'transports': List<String>.from(credential.transports!),
-                })
+            .map(
+              (credential) => <String, Object?>{
+                'id': credential.id,
+                if (credential.transports != null)
+                  'transports': List<String>.from(credential.transports!),
+              },
+            )
             .toList(growable: false),
     };
 
     final Map<Object?, Object?>? raw;
     try {
-      raw =
-          await _channel.invokeMapMethod<Object?, Object?>('authenticate', args);
+      raw = await _channel.invokeMapMethod<Object?, Object?>(
+        'authenticate',
+        args,
+      );
     } on PlatformException catch (e) {
       throw _mapAuthenticationException(e);
     }
@@ -172,11 +176,17 @@ class PlatformWebAuthnProvider implements WebAuthnProvider {
   WebAuthnRegistrationResult _decodeRegistrationResult(
     Map<Object?, Object?> raw,
   ) {
-    final credentialId =
-        _requireBytes(raw, 'credentialId', _codeRegistrationFailed);
+    final credentialId = _requireBytes(
+      raw,
+      'credentialId',
+      _codeRegistrationFailed,
+    );
     final publicKey = _requireBytes(raw, 'publicKey', _codeRegistrationFailed);
-    final attestationObject =
-        _requireBytes(raw, 'attestationObject', _codeRegistrationFailed);
+    final attestationObject = _requireBytes(
+      raw,
+      'attestationObject',
+      _codeRegistrationFailed,
+    );
     final transports = _optionalStringList(raw['transports']);
     final deviceType = _optionalString(raw['deviceType']);
     final backedUp = _optionalBool(raw['backedUp']);
@@ -194,13 +204,26 @@ class PlatformWebAuthnProvider implements WebAuthnProvider {
   WebAuthnAuthenticationResult _decodeAuthenticationResult(
     Map<Object?, Object?> raw,
   ) {
-    final credentialId =
-        _requireBytes(raw, 'credentialId', _codeAuthenticationFailed);
-    final authenticatorData =
-        _requireBytes(raw, 'authenticatorData', _codeAuthenticationFailed);
-    final clientDataJSON =
-        _requireBytes(raw, 'clientDataJSON', _codeAuthenticationFailed);
-    final signature = _requireBytes(raw, 'signature', _codeAuthenticationFailed);
+    final credentialId = _requireBytes(
+      raw,
+      'credentialId',
+      _codeAuthenticationFailed,
+    );
+    final authenticatorData = _requireBytes(
+      raw,
+      'authenticatorData',
+      _codeAuthenticationFailed,
+    );
+    final clientDataJSON = _requireBytes(
+      raw,
+      'clientDataJSON',
+      _codeAuthenticationFailed,
+    );
+    final signature = _requireBytes(
+      raw,
+      'signature',
+      _codeAuthenticationFailed,
+    );
 
     return WebAuthnAuthenticationResult(
       credentialId: credentialId,
@@ -230,7 +253,8 @@ class PlatformWebAuthnProvider implements WebAuthnProvider {
       default:
         return WebAuthnRegistrationFailed(
           'WebAuthn registration failed: unexpected platform error '
-          '${e.code} ${e.message ?? ""}'.trimRight(),
+                  '${e.code} ${e.message ?? ""}'
+              .trimRight(),
           e,
         );
     }
@@ -256,7 +280,8 @@ class PlatformWebAuthnProvider implements WebAuthnProvider {
       default:
         return WebAuthnAuthenticationFailed(
           'WebAuthn authentication failed: unexpected platform error '
-          '${e.code} ${e.message ?? ""}'.trimRight(),
+                  '${e.code} ${e.message ?? ""}'
+              .trimRight(),
           e,
         );
     }
@@ -290,7 +315,7 @@ WebAuthnException _missingBytesException(
   final reason = actual == null
       ? 'Missing required byte field "$field" in native response'
       : 'Field "$field" in native response has unexpected type '
-          '${actual.runtimeType}; expected Uint8List';
+            '${actual.runtimeType}; expected Uint8List';
   if (contextCode == _codeRegistrationFailed) {
     return WebAuthnException.registrationFailed(reason);
   }

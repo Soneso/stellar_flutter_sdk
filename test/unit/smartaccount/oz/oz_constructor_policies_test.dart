@@ -73,14 +73,14 @@ Account _deployerAccount(KeyPair deployer, {int seq = 1}) {
 
 /// Deterministic, valid policy contract C-address derived from [seed].
 String _policyAddress(int seed) => StrKey.encodeContractId(
-      Uint8List.fromList(List<int>.generate(32, (j) => (seed + j) & 0xFF)),
-    );
+  Uint8List.fromList(List<int>.generate(32, (j) => (seed + j) & 0xFF)),
+);
 
 OZPolicyInstallParams _installParams() =>
     const OZSimpleThresholdPolicyParams(threshold: 1);
 
-Map<String, OZPolicyInstallParams> _policies(int n) => <String,
-        OZPolicyInstallParams>{
+Map<String, OZPolicyInstallParams> _policies(int n) =>
+    <String, OZPolicyInstallParams>{
       for (var i = 0; i < n; i++) _policyAddress(i): _installParams(),
     };
 
@@ -101,24 +101,30 @@ OZSmartAccountConfig _config({
 
 /// Queues a successful WebAuthn registration on [provider].
 void _queueRegistration(RecordingWebAuthnProvider provider) {
-  provider.registerResponses.add(WebAuthnRegistrationResult(
-    credentialId: base64Url.decode(base64Url.normalize(_credentialIdB64)),
-    publicKey: _validSecp256r1PublicKey(),
-    attestationObject: _bytes(37, 0xAA),
-  ));
+  provider.registerResponses.add(
+    WebAuthnRegistrationResult(
+      credentialId: base64Url.decode(base64Url.normalize(_credentialIdB64)),
+      publicKey: _validSecp256r1PublicKey(),
+      attestationObject: _bytes(37, 0xAA),
+    ),
+  );
 }
 
 /// Decodes the signed deploy envelope and returns the CreateContractV2
 /// constructor arguments `[signers, policies]`.
 List<XdrSCVal> _constructorArgs(String signedTransactionXdr) {
-  final envelope =
-      XdrTransactionEnvelope.fromEnvelopeXdrString(signedTransactionXdr);
+  final envelope = XdrTransactionEnvelope.fromEnvelopeXdrString(
+    signedTransactionXdr,
+  );
   final operations = envelope.v1!.tx.operations;
   expect(operations, hasLength(1));
   final hostFunction = operations.single.body.invokeHostFunctionOp!.function;
   final createContractV2 = hostFunction.createContractV2;
-  expect(createContractV2, isNotNull,
-      reason: 'deploy must use the CreateContractV2 host function');
+  expect(
+    createContractV2,
+    isNotNull,
+    reason: 'deploy must use the CreateContractV2 host function',
+  );
   return createContractV2!.constructorArgs;
 }
 
@@ -154,8 +160,9 @@ void main() {
       // Constructing a config with an over-limit default map succeeds; the
       // map is validated when a wallet operation resolves it.
       expect(
-        _config(defaultPolicies: _policies(OZConstants.maxPolicies + 1))
-            .defaultPolicies,
+        _config(
+          defaultPolicies: _policies(OZConstants.maxPolicies + 1),
+        ).defaultPolicies,
         hasLength(OZConstants.maxPolicies + 1),
       );
     });
@@ -176,60 +183,81 @@ void main() {
       expect(copied.defaultPolicies, equals(p));
       // Omitting the argument keeps the current value.
       expect(
-        _config(defaultPolicies: p).copyWith(rpcUrl: 'https://other.test')
-            .defaultPolicies,
+        _config(
+          defaultPolicies: p,
+        ).copyWith(rpcUrl: 'https://other.test').defaultPolicies,
         equals(p),
       );
     });
   });
 
   group('createWallet constructor-policy validation before the ceremony', () {
-    test('testCreateWallet_invalidPerCallPolicies_throwsBeforeCeremony',
-        () async {
-      final provider = RecordingWebAuthnProvider();
-      final kit = FakePipelineKit(config: _config(provider: provider));
-      final ops = OZWalletOperations(kit);
+    test(
+      'testCreateWallet_invalidPerCallPolicies_throwsBeforeCeremony',
+      () async {
+        final provider = RecordingWebAuthnProvider();
+        final kit = FakePipelineKit(config: _config(provider: provider));
+        final ops = OZWalletOperations(kit);
 
-      await expectLater(
-        () => ops.createWallet(policies: <String, OZPolicyInstallParams>{
-          'not-a-contract': _installParams(),
-        }),
-        throwsA(isA<SmartAccountInvalidAddress>()),
-      );
-      expect(provider.registerCalls, isEmpty,
-          reason: 'policy validation must run before the passkey ceremony');
-    });
+        await expectLater(
+          () => ops.createWallet(
+            policies: <String, OZPolicyInstallParams>{
+              'not-a-contract': _installParams(),
+            },
+          ),
+          throwsA(isA<SmartAccountInvalidAddress>()),
+        );
+        expect(
+          provider.registerCalls,
+          isEmpty,
+          reason: 'policy validation must run before the passkey ceremony',
+        );
+      },
+    );
 
-    test('testCreateWallet_tooManyPerCallPolicies_throwsBeforeCeremony',
-        () async {
-      final provider = RecordingWebAuthnProvider();
-      final kit = FakePipelineKit(config: _config(provider: provider));
-      final ops = OZWalletOperations(kit);
+    test(
+      'testCreateWallet_tooManyPerCallPolicies_throwsBeforeCeremony',
+      () async {
+        final provider = RecordingWebAuthnProvider();
+        final kit = FakePipelineKit(config: _config(provider: provider));
+        final ops = OZWalletOperations(kit);
 
-      await expectLater(
-        () => ops.createWallet(policies: _policies(OZConstants.maxPolicies + 1)),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-      expect(provider.registerCalls, isEmpty);
-    });
+        await expectLater(
+          () => ops.createWallet(
+            policies: _policies(OZConstants.maxPolicies + 1),
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+        expect(provider.registerCalls, isEmpty);
+      },
+    );
 
-    test('testCreateWallet_structurallyInvalidParams_throwsBeforeCeremony',
-        () async {
-      final provider = RecordingWebAuthnProvider();
-      final kit = FakePipelineKit(config: _config(provider: provider));
-      final ops = OZWalletOperations(kit);
+    test(
+      'testCreateWallet_structurallyInvalidParams_throwsBeforeCeremony',
+      () async {
+        final provider = RecordingWebAuthnProvider();
+        final kit = FakePipelineKit(config: _config(provider: provider));
+        final ops = OZWalletOperations(kit);
 
-      await expectLater(
-        () => ops.createWallet(policies: <String, OZPolicyInstallParams>{
-          _policyAddress(0):
-              const OZSimpleThresholdPolicyParams(threshold: 0),
-        }),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-      expect(provider.registerCalls, isEmpty,
-          reason: 'install params are encoded before the passkey ceremony, '
-              'so a structurally invalid value must not orphan a credential');
-    });
+        await expectLater(
+          () => ops.createWallet(
+            policies: <String, OZPolicyInstallParams>{
+              _policyAddress(0): const OZSimpleThresholdPolicyParams(
+                threshold: 0,
+              ),
+            },
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+        expect(
+          provider.registerCalls,
+          isEmpty,
+          reason:
+              'install params are encoded before the passkey ceremony, '
+              'so a structurally invalid value must not orphan a credential',
+        );
+      },
+    );
 
     test('testCreateWallet_usesConfigDefaultWhenNoOverride', () async {
       // No per-call policies -> the invalid config default is used ->
@@ -275,38 +303,45 @@ void main() {
         autoSubmit: false,
       );
 
-      expect(provider.registerCalls, hasLength(1),
-          reason:
-              'a valid per-call override must supersede the invalid config default');
+      expect(
+        provider.registerCalls,
+        hasLength(1),
+        reason:
+            'a valid per-call override must supersede the invalid config default',
+      );
       // The explicit empty override encodes the empty ScMap.
       final args = _constructorArgs(result.signedTransactionXdr);
       expect(args, hasLength(2));
       expect(
         OZPolicyManager.scValToXdrBytes(args[1]),
-        equals(OZPolicyManager.scValToXdrBytes(
-          XdrSCVal.forMap(const <XdrSCMapEntry>[]),
-        )),
+        equals(
+          OZPolicyManager.scValToXdrBytes(
+            XdrSCVal.forMap(const <XdrSCMapEntry>[]),
+          ),
+        ),
       );
     });
   });
 
   group('deployPendingCredential constructor-policy validation', () {
-    test('testDeployPending_invalidPolicies_throwsBeforeCredentialLookup',
-        () async {
-      // Policy validation runs before the stored-credential lookup: an
-      // unknown credential with an over-limit policies map fails with the
-      // validation error, not with credential-not-found.
-      final kit = FakePipelineKit(config: _config());
-      final ops = OZWalletOperations(kit);
+    test(
+      'testDeployPending_invalidPolicies_throwsBeforeCredentialLookup',
+      () async {
+        // Policy validation runs before the stored-credential lookup: an
+        // unknown credential with an over-limit policies map fails with the
+        // validation error, not with credential-not-found.
+        final kit = FakePipelineKit(config: _config());
+        final ops = OZWalletOperations(kit);
 
-      await expectLater(
-        () => ops.deployPendingCredential(
-          credentialId: 'unknown-credential',
-          policies: _policies(OZConstants.maxPolicies + 1),
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
+        await expectLater(
+          () => ops.deployPendingCredential(
+            credentialId: 'unknown-credential',
+            policies: _policies(OZConstants.maxPolicies + 1),
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
   });
 
   group('deploy transaction constructor-policies wiring', () {
@@ -327,10 +362,9 @@ void main() {
         sorobanServer: mock,
         deployer: deployer,
       );
-      return OZWalletOperations(kit).createWallet(
-        policies: policies,
-        autoSubmit: false,
-      );
+      return OZWalletOperations(
+        kit,
+      ).createWallet(policies: policies, autoSubmit: false);
     }
 
     test('testCreateWallet_noPolicies_encodesEmptyMap', () async {
@@ -340,9 +374,11 @@ void main() {
       expect(args[0].discriminant, equals(XdrSCValType.SCV_VEC));
       expect(
         OZPolicyManager.scValToXdrBytes(args[1]),
-        equals(OZPolicyManager.scValToXdrBytes(
-          XdrSCVal.forMap(const <XdrSCMapEntry>[]),
-        )),
+        equals(
+          OZPolicyManager.scValToXdrBytes(
+            XdrSCVal.forMap(const <XdrSCMapEntry>[]),
+          ),
+        ),
       );
     });
 
@@ -356,16 +392,18 @@ void main() {
       );
     });
 
-    test('testCreateWallet_configDefaultPolicies_reachConstructorArgs',
-        () async {
-      final p = _policies(1);
-      final result = await createWallet(defaultPolicies: p);
-      final args = _constructorArgs(result.signedTransactionXdr);
-      expect(
-        OZPolicyManager.scValToXdrBytes(args[1]),
-        equals(_expectedPoliciesBytes(p)),
-      );
-    });
+    test(
+      'testCreateWallet_configDefaultPolicies_reachConstructorArgs',
+      () async {
+        final p = _policies(1);
+        final result = await createWallet(defaultPolicies: p);
+        final args = _constructorArgs(result.signedTransactionXdr);
+        expect(
+          OZPolicyManager.scValToXdrBytes(args[1]),
+          equals(_expectedPoliciesBytes(p)),
+        );
+      },
+    );
 
     test('testCreateWallet_perCallPolicies_overrideConfigDefault', () async {
       final perCall = <String, OZPolicyInstallParams>{
@@ -376,22 +414,24 @@ void main() {
         policies: perCall,
         defaultPolicies: configDefault,
       );
-      final encoded =
-          OZPolicyManager.scValToXdrBytes(_constructorArgs(result.signedTransactionXdr)[1]);
+      final encoded = OZPolicyManager.scValToXdrBytes(
+        _constructorArgs(result.signedTransactionXdr)[1],
+      );
       expect(encoded, equals(_expectedPoliciesBytes(perCall)));
       expect(encoded, isNot(equals(_expectedPoliciesBytes(configDefault))));
     });
 
-    test('testDeployPendingCredential_policies_reachConstructorArgs',
-        () async {
+    test('testDeployPendingCredential_policies_reachConstructorArgs', () async {
       final deployer = KeyPair.random();
       final mock = MockSorobanServer();
       final credentialManager = StubCredentialManager();
-      credentialManager.inject(OZStoredCredential(
-        credentialId: _credentialIdB64,
-        publicKey: _validSecp256r1PublicKey(),
-        contractId: _contractA,
-      ));
+      credentialManager.inject(
+        OZStoredCredential(
+          credentialId: _credentialIdB64,
+          publicKey: _validSecp256r1PublicKey(),
+          contractId: _contractA,
+        ),
+      );
       mock.getAccountResponses.add(_deployerAccount(deployer));
       mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 500));
 

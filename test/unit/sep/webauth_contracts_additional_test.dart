@@ -78,70 +78,89 @@ void main() {
   });
 
   group('WebAuthForContracts - jwtToken Invalid Parameters', () {
-    test('throws error when clientAccountId is not a contract address', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response('{}', 200);
-      });
+    test(
+      'throws error when clientAccountId is not a contract address',
+      () async {
+        final mockClient = MockClient((request) async {
+          return http.Response('{}', 200);
+        });
 
-      final webAuth = WebAuthForContracts(
-        'https://testanchor.stellar.org/auth',
-        'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
-        'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
-        'testanchor.stellar.org',
-        Network.TESTNET,
-        httpClient: mockClient,
-      );
-
-      expect(
-        () => webAuth.jwtToken('GABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345', []),
-        throwsA(isA<ArgumentError>()),
-      );
-    });
-
-    test('ignores clientDomainSigningCallback when clientDomain not provided', () async {
-      // When clientDomain is null, the clientDomainSigningCallback is ignored
-      // and the flow proceeds without client domain signing
-      final mockClient = MockClient((request) async {
-        if (request.url.path.contains('/auth')) {
-          // Return empty authorization entries to avoid decoding issues
-          return http.Response(json.encode({
-            'authorization_entries': 'AAAAAA==',
-            'token': 'test-jwt-token',
-          }), 200);
-        }
-        return http.Response('{}', 200);
-      });
-
-      final webAuth = WebAuthForContracts(
-        'https://testanchor.stellar.org/auth',
-        'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
-        'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
-        'testanchor.stellar.org',
-        Network.TESTNET,
-        httpClient: mockClient,
-      );
-
-      // The callback is provided but clientDomain is null, so the callback
-      // should be ignored and the flow should proceed (may fail for other reasons
-      // like invalid auth entries, but not due to the callback)
-      try {
-        await webAuth.jwtToken(
+        final webAuth = WebAuthForContracts(
+          'https://testanchor.stellar.org/auth',
           'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
-          [],
-          clientDomainSigningCallback: (entry) async => entry,
+          'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
+          'testanchor.stellar.org',
+          Network.TESTNET,
+          httpClient: mockClient,
         );
-      } on ContractChallengeValidationException {
-        // Expected - empty auth entries will fail validation
-      }
-    });
+
+        expect(
+          () => webAuth.jwtToken(
+            'GABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
+            [],
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+      },
+    );
+
+    test(
+      'ignores clientDomainSigningCallback when clientDomain not provided',
+      () async {
+        // When clientDomain is null, the clientDomainSigningCallback is ignored
+        // and the flow proceeds without client domain signing
+        final mockClient = MockClient((request) async {
+          if (request.url.path.contains('/auth')) {
+            // Return empty authorization entries to avoid decoding issues
+            return http.Response(
+              json.encode({
+                'authorization_entries': 'AAAAAA==',
+                'token': 'test-jwt-token',
+              }),
+              200,
+            );
+          }
+          return http.Response('{}', 200);
+        });
+
+        final webAuth = WebAuthForContracts(
+          'https://testanchor.stellar.org/auth',
+          'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
+          'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
+          'testanchor.stellar.org',
+          Network.TESTNET,
+          httpClient: mockClient,
+        );
+
+        // The callback is provided but clientDomain is null, so the callback
+        // should be ignored and the flow should proceed (may fail for other reasons
+        // like invalid auth entries, but not due to the callback)
+        try {
+          await webAuth.jwtToken(
+            'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
+            [],
+            clientDomainSigningCallback: (entry) async => entry,
+          );
+        } on ContractChallengeValidationException {
+          // Expected - empty auth entries will fail validation
+        }
+      },
+    );
 
     test('uses server home domain when homeDomain not provided', () async {
       final mockClient = MockClient((request) async {
         if (request.url.path.contains('/auth')) {
-          expect(request.url.queryParameters['home_domain'], 'testanchor.stellar.org');
-          return http.Response(json.encode({
-            'authorization_entries': 'AAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
-          }), 200);
+          expect(
+            request.url.queryParameters['home_domain'],
+            'testanchor.stellar.org',
+          );
+          return http.Response(
+            json.encode({
+              'authorization_entries':
+                  'AAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+            }),
+            200,
+          );
         }
         return http.Response('{}', 200);
       });
@@ -156,7 +175,10 @@ void main() {
       );
 
       try {
-        await webAuth.jwtToken('CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE', []);
+        await webAuth.jwtToken(
+          'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
+          [],
+        );
       } catch (e) {
         // Expected to fail due to invalid auth entries, but we verified the home_domain parameter
       }
@@ -182,23 +204,26 @@ void main() {
       );
     });
 
-    test('uses server home domain when homeDomain not provided in validation', () {
-      final webAuth = WebAuthForContracts(
-        'https://testanchor.stellar.org/auth',
-        'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
-        'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
-        'testanchor.stellar.org',
-        Network.TESTNET,
-      );
-
-      expect(
-        () => webAuth.validateChallenge(
-          [],
+    test(
+      'uses server home domain when homeDomain not provided in validation',
+      () {
+        final webAuth = WebAuthForContracts(
+          'https://testanchor.stellar.org/auth',
           'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
-        ),
-        throwsA(isA<ContractChallengeValidationException>()),
-      );
-    });
+          'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
+          'testanchor.stellar.org',
+          Network.TESTNET,
+        );
+
+        expect(
+          () => webAuth.validateChallenge(
+            [],
+            'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
+          ),
+          throwsA(isA<ContractChallengeValidationException>()),
+        );
+      },
+    );
 
     test('extracts web_auth_domain with port from auth endpoint', () {
       final webAuth = WebAuthForContracts(
@@ -458,51 +483,56 @@ void main() {
   });
 
   group('WebAuthForContracts - Response Handling Edge Cases', () {
-    test('sendSignedChallenge handles response with only token field', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'token': 'jwt-token-only',
-        }), 200);
-      });
+    test(
+      'sendSignedChallenge handles response with only token field',
+      () async {
+        final mockClient = MockClient((request) async {
+          return http.Response(json.encode({'token': 'jwt-token-only'}), 200);
+        });
 
-      final webAuth = WebAuthForContracts(
-        'https://testanchor.stellar.org/auth',
-        'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
-        'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
-        'testanchor.stellar.org',
-        Network.TESTNET,
-        httpClient: mockClient,
-      );
+        final webAuth = WebAuthForContracts(
+          'https://testanchor.stellar.org/auth',
+          'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
+          'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
+          'testanchor.stellar.org',
+          Network.TESTNET,
+          httpClient: mockClient,
+        );
 
-      final token = await webAuth.sendSignedChallenge([]);
-      expect(token, 'jwt-token-only');
-    });
+        final token = await webAuth.sendSignedChallenge([]);
+        expect(token, 'jwt-token-only');
+      },
+    );
 
-    test('sendSignedChallenge throws on empty response with 200 status', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response(json.encode({}), 200);
-      });
+    test(
+      'sendSignedChallenge throws on empty response with 200 status',
+      () async {
+        final mockClient = MockClient((request) async {
+          return http.Response(json.encode({}), 200);
+        });
 
-      final webAuth = WebAuthForContracts(
-        'https://testanchor.stellar.org/auth',
-        'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
-        'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
-        'testanchor.stellar.org',
-        Network.TESTNET,
-        httpClient: mockClient,
-      );
+        final webAuth = WebAuthForContracts(
+          'https://testanchor.stellar.org/auth',
+          'CABC1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ABCDE',
+          'GBSERVER1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12345',
+          'testanchor.stellar.org',
+          Network.TESTNET,
+          httpClient: mockClient,
+        );
 
-      expect(
-        () => webAuth.sendSignedChallenge([]),
-        throwsA(isA<SubmitContractChallengeErrorResponseException>()),
-      );
-    });
+        expect(
+          () => webAuth.sendSignedChallenge([]),
+          throwsA(isA<SubmitContractChallengeErrorResponseException>()),
+        );
+      },
+    );
 
     test('sendSignedChallenge handles HTTP 400 with error field', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Invalid authorization entries',
-        }), 400);
+        return http.Response(
+          json.encode({'error': 'Invalid authorization entries'}),
+          400,
+        );
       });
 
       final webAuth = WebAuthForContracts(

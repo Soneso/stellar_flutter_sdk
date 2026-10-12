@@ -56,8 +56,10 @@ class MockDioAdapter implements dio.HttpClientAdapter {
 SorobanServer createMockServer(Function(dio.RequestOptions) onRequest) {
   var mockDio = dio.Dio();
   mockDio.httpClientAdapter = MockDioAdapter(onRequest);
-  return SorobanServer('https://soroban-testnet.stellar.org',
-      httpClient: mockDio);
+  return SorobanServer(
+    'https://soroban-testnet.stellar.org',
+    httpClient: mockDio,
+  );
 }
 
 void main() {
@@ -274,11 +276,7 @@ void main() {
         rpcUrl: 'https://test.example.com',
       );
 
-      final args = [
-        XdrSCVal.forU32(1),
-        XdrSCVal.forU32(2),
-        XdrSCVal.forU32(3),
-      ];
+      final args = [XdrSCVal.forU32(1), XdrSCVal.forU32(2), XdrSCVal.forU32(3)];
 
       final options = AssembledTransactionOptions(
         clientOptions: clientOptions,
@@ -509,10 +507,14 @@ void main() {
 
       final result = SimulateHostFunctionResult(null, txData, returnVal);
 
-      expect(result.transactionData.resources.footprint.readOnly.length,
-          equals(1));
-      expect(result.transactionData.resources.footprint.readWrite.length,
-          equals(1));
+      expect(
+        result.transactionData.resources.footprint.readOnly.length,
+        equals(1),
+      );
+      expect(
+        result.transactionData.resources.footprint.readWrite.length,
+        equals(1),
+      );
     });
 
     test('creates with different return value types', () {
@@ -527,17 +529,28 @@ void main() {
         XdrInt64(BigInt.zero),
       );
 
-      final resultU32 =
-          SimulateHostFunctionResult(null, txData, XdrSCVal.forU32(123));
+      final resultU32 = SimulateHostFunctionResult(
+        null,
+        txData,
+        XdrSCVal.forU32(123),
+      );
       expect(resultU32.returnedValue.u32, isNotNull);
 
-      final resultVoid =
-          SimulateHostFunctionResult(null, txData, XdrSCVal.forVoid());
+      final resultVoid = SimulateHostFunctionResult(
+        null,
+        txData,
+        XdrSCVal.forVoid(),
+      );
       expect(
-          resultVoid.returnedValue.discriminant, equals(XdrSCValType.SCV_VOID));
+        resultVoid.returnedValue.discriminant,
+        equals(XdrSCValType.SCV_VOID),
+      );
 
-      final resultBool =
-          SimulateHostFunctionResult(null, txData, XdrSCVal.forBool(true));
+      final resultBool = SimulateHostFunctionResult(
+        null,
+        txData,
+        XdrSCVal.forBool(true),
+      );
       expect(resultBool.returnedValue.b, equals(true));
     });
 
@@ -654,7 +667,9 @@ void main() {
 
         expect(options.fee, NetworkConstants.DEFAULT_SOROBAN_BASE_FEE);
         expect(
-            options.timeoutInSeconds, NetworkConstants.DEFAULT_TIMEOUT_SECONDS);
+          options.timeoutInSeconds,
+          NetworkConstants.DEFAULT_TIMEOUT_SECONDS,
+        );
         expect(options.simulate, true);
         expect(options.restore, false);
       });
@@ -827,10 +842,7 @@ void main() {
       test('creates request with custom method options', () {
         final wasmHash =
             '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
-        final methodOptions = MethodOptions(
-          fee: 200,
-          timeoutInSeconds: 60,
-        );
+        final methodOptions = MethodOptions(fee: 200, timeoutInSeconds: 60);
 
         final request = DeployRequest(
           sourceAccountKeyPair: sourceKeyPair,
@@ -884,18 +896,19 @@ void main() {
       });
 
       test(
-          'needsNonInvokerSigningBy returns empty list for non-InvokeHostFunction op',
-          () async {
-        // Skip on web: uses HttpServer.bind which is unsupported in browser
-        if (identical(0, 0.0))
-          return; // dart2js identity check for web platform
+        'needsNonInvokerSigningBy returns empty list for non-InvokeHostFunction op',
+        () async {
+          // Skip on web: uses HttpServer.bind which is unsupported in browser
+          if (identical(0, 0.0))
+            return; // dart2js identity check for web platform
 
-        final keyPair = KeyPair.random();
+          final keyPair = KeyPair.random();
 
-        // Build a valid XDR ledger entry for the mock account response
-        final xdrAccountId =
-            XdrAccountID(KeyPair.fromAccountId(keyPair.accountId).xdrPublicKey);
-        final accountEntry = XdrAccountEntry(
+          // Build a valid XDR ledger entry for the mock account response
+          final xdrAccountId = XdrAccountID(
+            KeyPair.fromAccountId(keyPair.accountId).xdrPublicKey,
+          );
+          final accountEntry = XdrAccountEntry(
             xdrAccountId,
             XdrInt64(BigInt.from(100000000)),
             XdrSequenceNumber(BigInt.from(12345)),
@@ -905,65 +918,73 @@ void main() {
             XdrString32(''), // homeDomain
             XdrThresholds(Uint8List.fromList([1, 0, 0, 0])),
             [], // signers
-            XdrAccountEntryExt(0));
-        final ledgerEntryData = XdrLedgerEntryData(XdrLedgerEntryType.ACCOUNT);
-        ledgerEntryData.account = accountEntry;
-        final entryXdr = ledgerEntryData.toBase64EncodedXdrString();
-
-        // Start a local HTTP server to mock the Soroban RPC
-        final httpServer = await HttpServer.bind('127.0.0.1', 0);
-        final mockRpcUrl = 'http://127.0.0.1:${httpServer.port}';
-
-        httpServer.listen((request) async {
-          request.response
-            ..statusCode = 200
-            ..headers.contentType = ContentType.json
-            ..write(json.encode({
-              "jsonrpc": "2.0",
-              "id": 1,
-              "result": {
-                "entries": [
-                  {
-                    "key": "AAAAAAAAAA==",
-                    "xdr": entryXdr,
-                    "lastModifiedLedgerSeq": 100
-                  }
-                ],
-                "latestLedger": 1000
-              }
-            }));
-          await request.response.close();
-        });
-
-        try {
-          final clientOptions = ClientOptions(
-            sourceAccountKeyPair: keyPair,
-            contractId: contractId,
-            network: Network.TESTNET,
-            rpcUrl: mockRpcUrl,
+            XdrAccountEntryExt(0),
           );
-
-          final assembledOptions = AssembledTransactionOptions(
-            clientOptions: clientOptions,
-            methodOptions: MethodOptions(simulate: false),
-            method: 'test_method',
+          final ledgerEntryData = XdrLedgerEntryData(
+            XdrLedgerEntryType.ACCOUNT,
           );
+          ledgerEntryData.account = accountEntry;
+          final entryXdr = ledgerEntryData.toBase64EncodedXdrString();
 
-          final assembledTx =
-              await AssembledTransaction.build(options: assembledOptions);
+          // Start a local HTTP server to mock the Soroban RPC
+          final httpServer = await HttpServer.bind('127.0.0.1', 0);
+          final mockRpcUrl = 'http://127.0.0.1:${httpServer.port}';
 
-          // Replace tx with a RestoreFootprintOperation transaction
-          final account = Account(keyPair.accountId, BigInt.from(12345));
-          final restoreOp = RestoreFootprintOperation();
-          assembledTx.tx =
-              TransactionBuilder(account).addOperation(restoreOp).build();
+          httpServer.listen((request) async {
+            request.response
+              ..statusCode = 200
+              ..headers.contentType = ContentType.json
+              ..write(
+                json.encode({
+                  "jsonrpc": "2.0",
+                  "id": 1,
+                  "result": {
+                    "entries": [
+                      {
+                        "key": "AAAAAAAAAA==",
+                        "xdr": entryXdr,
+                        "lastModifiedLedgerSeq": 100,
+                      },
+                    ],
+                    "latestLedger": 1000,
+                  },
+                }),
+              );
+            await request.response.close();
+          });
 
-          final signers = assembledTx.needsNonInvokerSigningBy();
-          expect(signers, isEmpty);
-        } finally {
-          await httpServer.close();
-        }
-      });
+          try {
+            final clientOptions = ClientOptions(
+              sourceAccountKeyPair: keyPair,
+              contractId: contractId,
+              network: Network.TESTNET,
+              rpcUrl: mockRpcUrl,
+            );
+
+            final assembledOptions = AssembledTransactionOptions(
+              clientOptions: clientOptions,
+              methodOptions: MethodOptions(simulate: false),
+              method: 'test_method',
+            );
+
+            final assembledTx = await AssembledTransaction.build(
+              options: assembledOptions,
+            );
+
+            // Replace tx with a RestoreFootprintOperation transaction
+            final account = Account(keyPair.accountId, BigInt.from(12345));
+            final restoreOp = RestoreFootprintOperation();
+            assembledTx.tx = TransactionBuilder(
+              account,
+            ).addOperation(restoreOp).build();
+
+            final signers = assembledTx.needsNonInvokerSigningBy();
+            expect(signers, isEmpty);
+          } finally {
+            await httpServer.close();
+          }
+        },
+      );
 
       test('validates transaction fails without proper server', () async {
         final clientOptions = ClientOptions(

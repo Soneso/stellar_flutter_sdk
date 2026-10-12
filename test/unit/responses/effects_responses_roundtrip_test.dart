@@ -12,7 +12,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('AccountSponsorshipCreatedEffectResponse fromJson', () {
@@ -35,11 +35,13 @@ void main() {
       expect(response.createdAt, equals('2021-01-01T00:00:00Z'));
       expect(response.pagingToken, equals('token-123'));
       expect(
-          response.account,
-          equals(
-              'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'));
-      expect(response.sponsor,
-          equals('GASPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
+        response.account,
+        equals('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H'),
+      );
+      expect(
+        response.sponsor,
+        equals('GASPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
       expect(response.links, isNotNull);
     });
 
@@ -52,8 +54,7 @@ void main() {
         'paging_token': 'token-124',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
         'new_sponsor': 'GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         ...testLinks,
       };
 
@@ -62,10 +63,14 @@ void main() {
       expect(response.id, equals('effect-124'));
       expect(response.type_i, equals(61));
       expect(response.type, equals('account_sponsorship_updated'));
-      expect(response.newSponsor,
-          equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
+      expect(
+        response.newSponsor,
+        equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
+      expect(
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
     });
 
     test('AccountSponsorshipRemovedEffectResponse fromJson', () {
@@ -76,8 +81,7 @@ void main() {
         'created_at': '2021-01-03T00:00:00Z',
         'paging_token': 'token-125',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         ...testLinks,
       };
 
@@ -86,8 +90,10 @@ void main() {
       expect(response.id, equals('effect-125'));
       expect(response.type_i, equals(62));
       expect(response.type, equals('account_sponsorship_removed'));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
+      expect(
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
     });
 
     test('TrustlineSponsorshipCreatedEffectResponse fromJson - asset', () {
@@ -105,15 +111,18 @@ void main() {
         ...testLinks,
       };
 
-      final response =
-          TrustlineSponsorshipCreatedEffectResponse.fromJson(json);
+      final response = TrustlineSponsorshipCreatedEffectResponse.fromJson(json);
 
       expect(response.id, equals('effect-126'));
       expect(response.type_i, equals(63));
-      expect(response.sponsor,
-          equals('GASPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-      expect(response.asset,
-          equals('USD:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'));
+      expect(
+        response.sponsor,
+        equals('GASPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
+      expect(
+        response.asset,
+        equals('USD:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'),
+      );
       expect(response.assetType, equals('credit_alphanum4'));
       expect(response.liquidityPoolId, isNull);
     });
@@ -133,8 +142,7 @@ void main() {
         ...testLinks,
       };
 
-      final response =
-          TrustlineSponsorshipCreatedEffectResponse.fromJson(json);
+      final response = TrustlineSponsorshipCreatedEffectResponse.fromJson(json);
 
       expect(response.assetType, equals('liquidity_pool_shares'));
       expect(response.asset, isNull);
@@ -150,24 +158,28 @@ void main() {
         'paging_token': 'token-128',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
         'new_sponsor': 'GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         'asset': 'EUR:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
         'asset_type': 'credit_alphanum4',
         'liquidity_pool_id': null,
         ...testLinks,
       };
 
-      final response =
-          TrustlineSponsorshipUpdatedEffectResponse.fromJson(json);
+      final response = TrustlineSponsorshipUpdatedEffectResponse.fromJson(json);
 
       expect(response.type_i, equals(64));
-      expect(response.newSponsor,
-          equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
-      expect(response.asset,
-          equals('EUR:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'));
+      expect(
+        response.newSponsor,
+        equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
+      expect(
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
+      expect(
+        response.asset,
+        equals('EUR:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'),
+      );
     });
 
     test('TrustlineSponsorshipRemovedEffectResponse fromJson', () {
@@ -178,22 +190,24 @@ void main() {
         'created_at': '2021-01-07T00:00:00Z',
         'paging_token': 'token-129',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         'asset': 'GBP:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
         'asset_type': 'credit_alphanum4',
         'liquidity_pool_id': null,
         ...testLinks,
       };
 
-      final response =
-          TrustlineSponsorshipRemovedEffectResponse.fromJson(json);
+      final response = TrustlineSponsorshipRemovedEffectResponse.fromJson(json);
 
       expect(response.type_i, equals(65));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
-      expect(response.asset,
-          equals('GBP:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'));
+      expect(
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
+      expect(
+        response.asset,
+        equals('GBP:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'),
+      );
     });
 
     test('DataSponsorshipCreatedEffectResponse fromJson', () {
@@ -212,8 +226,10 @@ void main() {
       final response = DataSponsorshipCreatedEffectResponse.fromJson(json);
 
       expect(response.type_i, equals(66));
-      expect(response.sponsor,
-          equals('GASPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
+      expect(
+        response.sponsor,
+        equals('GASPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
       expect(response.dataName, equals('config_key'));
     });
 
@@ -226,8 +242,7 @@ void main() {
         'paging_token': 'token-131',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
         'new_sponsor': 'GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         'data_name': 'config_key',
         ...testLinks,
       };
@@ -235,10 +250,14 @@ void main() {
       final response = DataSponsorshipUpdatedEffectResponse.fromJson(json);
 
       expect(response.type_i, equals(67));
-      expect(response.newSponsor,
-          equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
+      expect(
+        response.newSponsor,
+        equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
+      expect(
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
       expect(response.dataName, equals('config_key'));
     });
 
@@ -250,8 +269,7 @@ void main() {
         'created_at': '2021-01-10T00:00:00Z',
         'paging_token': 'token-132',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         'data_name': 'config_key',
         ...testLinks,
       };
@@ -259,8 +277,10 @@ void main() {
       final response = DataSponsorshipRemovedEffectResponse.fromJson(json);
 
       expect(response.type_i, equals(68));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
+      expect(
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
       expect(response.dataName, equals('config_key'));
     });
 
@@ -282,12 +302,16 @@ void main() {
           ClaimableBalanceSponsorshipCreatedEffectResponse.fromJson(json);
 
       expect(response.type_i, equals(69));
-      expect(response.sponsor,
-          equals('GASPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
       expect(
-          response.balanceId,
-          equals(
-              '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072'));
+        response.sponsor,
+        equals('GASPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
+      expect(
+        response.balanceId,
+        equals(
+          '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
+        ),
+      );
     });
 
     test('ClaimableBalanceSponsorshipUpdatedEffectResponse fromJson', () {
@@ -299,8 +323,7 @@ void main() {
         'paging_token': 'token-134',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
         'new_sponsor': 'GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         'balance_id':
             '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
         ...testLinks,
@@ -310,14 +333,20 @@ void main() {
           ClaimableBalanceSponsorshipUpdatedEffectResponse.fromJson(json);
 
       expect(response.type_i, equals(70));
-      expect(response.newSponsor,
-          equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
       expect(
-          response.balanceId,
-          equals(
-              '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072'));
+        response.newSponsor,
+        equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
+      expect(
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
+      expect(
+        response.balanceId,
+        equals(
+          '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
+        ),
+      );
     });
 
     test('ClaimableBalanceSponsorshipRemovedEffectResponse fromJson', () {
@@ -328,8 +357,7 @@ void main() {
         'created_at': '2021-01-13T00:00:00Z',
         'paging_token': 'token-135',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         'balance_id':
             '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
         ...testLinks,
@@ -339,12 +367,16 @@ void main() {
           ClaimableBalanceSponsorshipRemovedEffectResponse.fromJson(json);
 
       expect(response.type_i, equals(71));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
       expect(
-          response.balanceId,
-          equals(
-              '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072'));
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
+      expect(
+        response.balanceId,
+        equals(
+          '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
+        ),
+      );
     });
 
     test('SignerSponsorshipCreatedEffectResponse fromJson', () {
@@ -363,10 +395,14 @@ void main() {
       final response = SignerSponsorshipCreatedEffectResponse.fromJson(json);
 
       expect(response.type_i, equals(72));
-      expect(response.sponsor,
-          equals('GASPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-      expect(response.signer,
-          equals('GASIGNER123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
+      expect(
+        response.sponsor,
+        equals('GASPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
+      expect(
+        response.signer,
+        equals('GASIGNER123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
     });
 
     test('SignerSponsorshipUpdatedEffectResponse fromJson', () {
@@ -378,8 +414,7 @@ void main() {
         'paging_token': 'token-137',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
         'new_sponsor': 'GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         'signer': 'GASIGNER123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
         ...testLinks,
       };
@@ -387,12 +422,18 @@ void main() {
       final response = SignerSponsorshipUpdatedEffectResponse.fromJson(json);
 
       expect(response.type_i, equals(73));
-      expect(response.newSponsor,
-          equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
-      expect(response.signer,
-          equals('GASIGNER123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
+      expect(
+        response.newSponsor,
+        equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
+      expect(
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
+      expect(
+        response.signer,
+        equals('GASIGNER123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
     });
 
     test('SignerSponsorshipRemovedEffectResponse fromJson', () {
@@ -403,8 +444,7 @@ void main() {
         'created_at': '2021-01-16T00:00:00Z',
         'paging_token': 'token-138',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         'signer': 'GASIGNER123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
         ...testLinks,
       };
@@ -412,10 +452,14 @@ void main() {
       final response = SignerSponsorshipRemovedEffectResponse.fromJson(json);
 
       expect(response.type_i, equals(74));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
-      expect(response.signer,
-          equals('GASIGNER123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
+      expect(
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
+      expect(
+        response.signer,
+        equals('GASIGNER123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
     });
 
     test('ClaimableBalanceClawedBackEffectResponse fromJson', () {
@@ -431,14 +475,15 @@ void main() {
         ...testLinks,
       };
 
-      final response =
-          ClaimableBalanceClawedBackEffectResponse.fromJson(json);
+      final response = ClaimableBalanceClawedBackEffectResponse.fromJson(json);
 
       expect(response.type_i, equals(80));
       expect(
-          response.balanceId,
-          equals(
-              '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072'));
+        response.balanceId,
+        equals(
+          '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
+        ),
+      );
     });
   });
 
@@ -448,7 +493,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('AccountCreatedEffectResponse fromJson', () {
@@ -533,8 +578,10 @@ void main() {
       expect(response.amount, equals('50.0000000'));
       expect(response.assetType, equals('credit_alphanum4'));
       expect(response.assetCode, equals('USD'));
-      expect(response.assetIssuer,
-          equals('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'));
+      expect(
+        response.assetIssuer,
+        equals('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'),
+      );
       expect((response.asset as AssetTypeCreditAlphaNum).code, equals('USD'));
     });
 
@@ -628,7 +675,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('TradeEffectResponse fromJson - native to credit', () {
@@ -658,8 +705,10 @@ void main() {
       final response = TradeEffectResponse.fromJson(json);
 
       expect(response.type_i, equals(33));
-      expect(response.seller,
-          equals('GASELLER123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
+      expect(
+        response.seller,
+        equals('GASELLER123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
       expect(response.offerId, equals('12345'));
       expect(response.soldAmount, equals('100.0000000'));
       expect(response.soldAssetType, equals('native'));
@@ -667,7 +716,9 @@ void main() {
       expect(response.boughtAssetCode, equals('USD'));
       expect(response.soldAsset.type, equals('native'));
       expect(
-          (response.boughtAsset as AssetTypeCreditAlphaNum).code, equals('USD'));
+        (response.boughtAsset as AssetTypeCreditAlphaNum).code,
+        equals('USD'),
+      );
     });
 
     test('TradeEffectResponse fromJson - credit to credit', () {
@@ -701,9 +752,14 @@ void main() {
       expect(response.soldAssetCode, equals('EUR'));
       expect(response.boughtAmount, equals('220.0000000'));
       expect(response.boughtAssetCode, equals('USD'));
-      expect((response.soldAsset as AssetTypeCreditAlphaNum).code, equals('EUR'));
       expect(
-          (response.boughtAsset as AssetTypeCreditAlphaNum).code, equals('USD'));
+        (response.soldAsset as AssetTypeCreditAlphaNum).code,
+        equals('EUR'),
+      );
+      expect(
+        (response.boughtAsset as AssetTypeCreditAlphaNum).code,
+        equals('USD'),
+      );
     });
   });
 
@@ -713,7 +769,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('ClaimableBalanceCreatedEffectResponse fromJson', () {
@@ -735,9 +791,11 @@ void main() {
 
       expect(response.type_i, equals(50));
       expect(
-          response.balanceId,
-          equals(
-              '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072'));
+        response.balanceId,
+        equals(
+          '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
+        ),
+      );
       expect(response.asset.type, equals('native'));
       expect(response.amount, equals('100.0000000'));
     });
@@ -758,8 +816,9 @@ void main() {
         ...testLinks,
       };
 
-      final response =
-          ClaimableBalanceClaimantCreatedEffectResponse.fromJson(json);
+      final response = ClaimableBalanceClaimantCreatedEffectResponse.fromJson(
+        json,
+      );
 
       expect(response.type_i, equals(51));
       expect(response.amount, equals('100.0000000'));
@@ -794,7 +853,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('LiquidityPoolDepositedEffectResponse fromJson', () {
@@ -816,17 +875,17 @@ void main() {
             {
               'asset':
                   'USD:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
-              'amount': '500.0000000'
-            }
-          ]
+              'amount': '500.0000000',
+            },
+          ],
         },
         'reserves_deposited': [
           {'asset': 'native', 'amount': '10.0000000'},
           {
             'asset':
                 'USD:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
-            'amount': '10.0000000'
-          }
+            'amount': '10.0000000',
+          },
         ],
         'shares_received': '20.0000000',
         ...testLinks,
@@ -860,17 +919,17 @@ void main() {
             {
               'asset':
                   'USD:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
-              'amount': '490.0000000'
-            }
-          ]
+              'amount': '490.0000000',
+            },
+          ],
         },
         'reserves_received': [
           {'asset': 'native', 'amount': '10.0000000'},
           {
             'asset':
                 'USD:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
-            'amount': '10.0000000'
-          }
+            'amount': '10.0000000',
+          },
         ],
         'shares_redeemed': '20.0000000',
         ...testLinks,
@@ -902,15 +961,15 @@ void main() {
             {
               'asset':
                   'USD:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
-              'amount': '485.0000000'
-            }
-          ]
+              'amount': '485.0000000',
+            },
+          ],
         },
         'sold': {'asset': 'native', 'amount': '5.0000000'},
         'bought': {
           'asset':
               'USD:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
-          'amount': '5.0000000'
+          'amount': '5.0000000',
         },
         ...testLinks,
       };
@@ -941,9 +1000,9 @@ void main() {
             {
               'asset':
                   'EUR:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
-              'amount': '0.0000000'
-            }
-          ]
+              'amount': '0.0000000',
+            },
+          ],
         },
         ...testLinks,
       };
@@ -992,22 +1051,22 @@ void main() {
             {
               'asset':
                   'USD:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
-              'amount': '480.0000000'
-            }
-          ]
+              'amount': '480.0000000',
+            },
+          ],
         },
         'reserves_revoked': [
           {
             'asset': 'native',
             'amount': '10.0000000',
-            'claimable_balance_id': 'balance-id-1'
+            'claimable_balance_id': 'balance-id-1',
           },
           {
             'asset':
                 'USD:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
             'amount': '10.0000000',
-            'claimable_balance_id': 'balance-id-2'
-          }
+            'claimable_balance_id': 'balance-id-2',
+          },
         ],
         'shares_revoked': '20.0000000',
         ...testLinks,
@@ -1018,8 +1077,10 @@ void main() {
       expect(response.type_i, equals(95));
       expect(response.sharesRevoked, equals('20.0000000'));
       expect(response.reservesRevoked.length, equals(2));
-      expect(response.reservesRevoked[0].claimableBalanceId,
-          equals('balance-id-1'));
+      expect(
+        response.reservesRevoked[0].claimableBalanceId,
+        equals('balance-id-1'),
+      );
     });
   });
 
@@ -1029,7 +1090,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('Effect with muxed account fields', () {
@@ -1040,7 +1101,8 @@ void main() {
         'created_at': '2021-06-01T00:00:00Z',
         'paging_token': 'token-600',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
-        'account_muxed': 'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6',
+        'account_muxed':
+            'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6',
         'account_muxed_id': '123456789',
         'amount': '100.0000000',
         'asset_type': 'native',
@@ -1051,8 +1113,12 @@ void main() {
 
       final response = AccountCreditedEffectResponse.fromJson(json);
 
-      expect(response.accountMuxed,
-          equals('MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6'));
+      expect(
+        response.accountMuxed,
+        equals(
+          'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6',
+        ),
+      );
       expect(response.accountMuxedId, equals('123456789'));
     });
 
@@ -1065,7 +1131,8 @@ void main() {
         'paging_token': 'token-601',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
         'seller': 'GASELLER123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        'seller_muxed': 'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6',
+        'seller_muxed':
+            'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6',
         'seller_muxed_id': '987654321',
         'offer_id': '11111',
         'sold_amount': '10.0000000',
@@ -1081,8 +1148,12 @@ void main() {
 
       final response = TradeEffectResponse.fromJson(json);
 
-      expect(response.sellerMuxed,
-          equals('MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6'));
+      expect(
+        response.sellerMuxed,
+        equals(
+          'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6',
+        ),
+      );
       expect(response.sellerMuxedId, equals('987654321'));
     });
   });
@@ -1093,7 +1164,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('AccountInflationDestinationUpdatedEffectResponse fromJson', () {
@@ -1160,7 +1231,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('SignerCreatedEffectResponse fromJson', () {
@@ -1181,8 +1252,10 @@ void main() {
 
       expect(response.type_i, equals(10));
       expect(response.weight, equals(5));
-      expect(response.publicKey,
-          equals('GASIGNER123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
+      expect(
+        response.publicKey,
+        equals('GASIGNER123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
       expect(response.key, equals('signer_key'));
     });
 
@@ -1233,7 +1306,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('TrustlineCreatedEffectResponse fromJson', () {
@@ -1324,8 +1397,10 @@ void main() {
 
       expect(response.type_i, equals(23));
       expect(response.assetCode, equals('JPY'));
-      expect(response.trustor,
-          equals('GATRUSTEE123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
+      expect(
+        response.trustor,
+        equals('GATRUSTEE123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
     });
 
     test('TrustlineDeauthorizedEffectResponse fromJson', () {
@@ -1350,8 +1425,7 @@ void main() {
       expect(response.assetCode, equals('CNY'));
     });
 
-    test('TrustlineAuthorizedToMaintainLiabilitiesEffectResponse fromJson',
-        () {
+    test('TrustlineAuthorizedToMaintainLiabilitiesEffectResponse fromJson', () {
       final json = {
         'id': 'effect-trustline-maintain-liabilities',
         'type_i': 25,
@@ -1406,7 +1480,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('OfferCreatedEffectResponse fromJson', () {
@@ -1467,7 +1541,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('DataCreatedEffectResponse fromJson', () {
@@ -1535,7 +1609,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('SequenceBumpedEffectResponse fromJson', () {
@@ -1563,7 +1637,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('ContractCreditedEffectResponse fromJson', () {
@@ -1574,8 +1648,7 @@ void main() {
         'created_at': '2021-07-01T00:00:00Z',
         'paging_token': 'token-contract-credited',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
-        'contract':
-            'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
+        'contract': 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
         'asset_type': 'native',
         'amount': '100.0000000',
         ...testLinks,
@@ -1584,8 +1657,10 @@ void main() {
       final response = ContractCreditedEffectResponse.fromJson(json);
 
       expect(response.type_i, equals(96));
-      expect(response.contract,
-          equals('CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC'));
+      expect(
+        response.contract,
+        equals('CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC'),
+      );
       expect(response.amount, equals('100.0000000'));
       expect(response.assetType, equals('native'));
     });
@@ -1598,8 +1673,7 @@ void main() {
         'created_at': '2021-07-02T00:00:00Z',
         'paging_token': 'token-contract-debited',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
-        'contract':
-            'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
+        'contract': 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
         'asset_type': 'credit_alphanum4',
         'asset_code': 'USDC',
         'asset_issuer':
@@ -1611,8 +1685,10 @@ void main() {
       final response = ContractDebitedEffectResponse.fromJson(json);
 
       expect(response.type_i, equals(97));
-      expect(response.contract,
-          equals('CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC'));
+      expect(
+        response.contract,
+        equals('CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC'),
+      );
       expect(response.amount, equals('50.0000000'));
       expect(response.assetCode, equals('USDC'));
     });
@@ -1628,18 +1704,33 @@ void main() {
 
       final links = EffectResponseLinks.fromJson(json);
 
-      expect(links.operation.href,
-          equals('https://horizon.stellar.org/operations/456'));
-      expect(links.precedes.href,
-          equals('https://horizon.stellar.org/effects?cursor=789'));
-      expect(links.succeeds.href,
-          equals('https://horizon.stellar.org/effects?cursor=012'));
+      expect(
+        links.operation.href,
+        equals('https://horizon.stellar.org/operations/456'),
+      );
+      expect(
+        links.precedes.href,
+        equals('https://horizon.stellar.org/effects?cursor=789'),
+      );
+      expect(
+        links.succeeds.href,
+        equals('https://horizon.stellar.org/effects?cursor=012'),
+      );
     });
 
     test('toJson converts links back to JSON', () {
-      final link1 = Link.fromJson({'href': 'https://horizon.stellar.org/operations/123', 'templated': false});
-      final link2 = Link.fromJson({'href': 'https://horizon.stellar.org/effects?cursor=prev', 'templated': false});
-      final link3 = Link.fromJson({'href': 'https://horizon.stellar.org/effects?cursor=next', 'templated': false});
+      final link1 = Link.fromJson({
+        'href': 'https://horizon.stellar.org/operations/123',
+        'templated': false,
+      });
+      final link2 = Link.fromJson({
+        'href': 'https://horizon.stellar.org/effects?cursor=prev',
+        'templated': false,
+      });
+      final link3 = Link.fromJson({
+        'href': 'https://horizon.stellar.org/effects?cursor=next',
+        'templated': false,
+      });
 
       final links = EffectResponseLinks(link1, link2, link3);
 
@@ -1653,10 +1744,7 @@ void main() {
 
   group('AssetAmount', () {
     test('fromJson with native asset', () {
-      final json = {
-        'amount': '100.0000000',
-        'asset': 'native',
-      };
+      final json = {'amount': '100.0000000', 'asset': 'native'};
 
       final assetAmount = AssetAmount.fromJson(json);
 
@@ -1668,22 +1756,21 @@ void main() {
     test('fromJson with credit asset', () {
       final json = {
         'amount': '50.5000000',
-        'asset':
-            'USD:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
+        'asset': 'USD:GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
       };
 
       final assetAmount = AssetAmount.fromJson(json);
 
       expect(assetAmount.amount, equals('50.5000000'));
       expect(assetAmount.asset, isNotNull);
-      expect((assetAmount.asset as AssetTypeCreditAlphaNum).code, equals('USD'));
+      expect(
+        (assetAmount.asset as AssetTypeCreditAlphaNum).code,
+        equals('USD'),
+      );
     });
 
     test('fromJson handles null asset', () {
-      final json = {
-        'amount': '0.0000000',
-        'asset': null,
-      };
+      final json = {'amount': '0.0000000', 'asset': null};
 
       final assetAmount = AssetAmount.fromJson(json);
 
@@ -1698,7 +1785,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('throws exception for unknown effect type', () {
@@ -1739,47 +1826,53 @@ void main() {
         expect(effect, isA<AccountRemovedEffectResponse>());
       });
 
-      test('fromJson creates AccountThresholdsUpdatedEffectResponse (type 4)', () {
-        final json = {
-          'id': 'effect_id',
-          'type_i': 4,
-          'type': 'account_thresholds_updated',
-          'created_at': '2024-01-01T00:00:00Z',
-          'paging_token': 'token',
-          'account': 'GABC123',
-          'low_threshold': 1,
-          'med_threshold': 2,
-          'high_threshold': 3,
-          '_links': {
-            'operation': {'href': 'op_link'},
-            'precedes': {'href': 'pre_link'},
-            'succeeds': {'href': 'succ_link'},
-          },
-        };
+      test(
+        'fromJson creates AccountThresholdsUpdatedEffectResponse (type 4)',
+        () {
+          final json = {
+            'id': 'effect_id',
+            'type_i': 4,
+            'type': 'account_thresholds_updated',
+            'created_at': '2024-01-01T00:00:00Z',
+            'paging_token': 'token',
+            'account': 'GABC123',
+            'low_threshold': 1,
+            'med_threshold': 2,
+            'high_threshold': 3,
+            '_links': {
+              'operation': {'href': 'op_link'},
+              'precedes': {'href': 'pre_link'},
+              'succeeds': {'href': 'succ_link'},
+            },
+          };
 
-        final effect = EffectResponse.fromJson(json);
-        expect(effect, isA<AccountThresholdsUpdatedEffectResponse>());
-      });
+          final effect = EffectResponse.fromJson(json);
+          expect(effect, isA<AccountThresholdsUpdatedEffectResponse>());
+        },
+      );
 
-      test('fromJson creates AccountHomeDomainUpdatedEffectResponse (type 5)', () {
-        final json = {
-          'id': 'effect_id',
-          'type_i': 5,
-          'type': 'account_home_domain_updated',
-          'created_at': '2024-01-01T00:00:00Z',
-          'paging_token': 'token',
-          'account': 'GABC123',
-          'home_domain': 'example.com',
-          '_links': {
-            'operation': {'href': 'op_link'},
-            'precedes': {'href': 'pre_link'},
-            'succeeds': {'href': 'succ_link'},
-          },
-        };
+      test(
+        'fromJson creates AccountHomeDomainUpdatedEffectResponse (type 5)',
+        () {
+          final json = {
+            'id': 'effect_id',
+            'type_i': 5,
+            'type': 'account_home_domain_updated',
+            'created_at': '2024-01-01T00:00:00Z',
+            'paging_token': 'token',
+            'account': 'GABC123',
+            'home_domain': 'example.com',
+            '_links': {
+              'operation': {'href': 'op_link'},
+              'precedes': {'href': 'pre_link'},
+              'succeeds': {'href': 'succ_link'},
+            },
+          };
 
-        final effect = EffectResponse.fromJson(json);
-        expect(effect, isA<AccountHomeDomainUpdatedEffectResponse>());
-      });
+          final effect = EffectResponse.fromJson(json);
+          expect(effect, isA<AccountHomeDomainUpdatedEffectResponse>());
+        },
+      );
 
       test('fromJson creates AccountFlagsUpdatedEffectResponse (type 6)', () {
         final json = {
@@ -1800,24 +1893,30 @@ void main() {
         expect(effect, isA<AccountFlagsUpdatedEffectResponse>());
       });
 
-      test('fromJson creates AccountInflationDestinationUpdatedEffectResponse (type 7)', () {
-        final json = {
-          'id': 'effect_id',
-          'type_i': 7,
-          'type': 'account_inflation_destination_updated',
-          'created_at': '2024-01-01T00:00:00Z',
-          'paging_token': 'token',
-          'account': 'GABC123',
-          '_links': {
-            'operation': {'href': 'op_link'},
-            'precedes': {'href': 'pre_link'},
-            'succeeds': {'href': 'succ_link'},
-          },
-        };
+      test(
+        'fromJson creates AccountInflationDestinationUpdatedEffectResponse (type 7)',
+        () {
+          final json = {
+            'id': 'effect_id',
+            'type_i': 7,
+            'type': 'account_inflation_destination_updated',
+            'created_at': '2024-01-01T00:00:00Z',
+            'paging_token': 'token',
+            'account': 'GABC123',
+            '_links': {
+              'operation': {'href': 'op_link'},
+              'precedes': {'href': 'pre_link'},
+              'succeeds': {'href': 'succ_link'},
+            },
+          };
 
-        final effect = EffectResponse.fromJson(json);
-        expect(effect, isA<AccountInflationDestinationUpdatedEffectResponse>());
-      });
+          final effect = EffectResponse.fromJson(json);
+          expect(
+            effect,
+            isA<AccountInflationDestinationUpdatedEffectResponse>(),
+          );
+        },
+      );
 
       test('fromJson creates SignerUpdatedEffectResponse (type 12)', () {
         final json = {
@@ -1887,28 +1986,31 @@ void main() {
         expect(effect, isA<TrustlineUpdatedEffectResponse>());
       });
 
-      test('fromJson creates TrustLineFlagsUpdatedEffectResponse (type 26)', () {
-        final json = {
-          'id': 'effect_id',
-          'type_i': 26,
-          'type': 'trustline_flags_updated',
-          'created_at': '2024-01-01T00:00:00Z',
-          'paging_token': 'token',
-          'account': 'GABC123',
-          'asset_type': 'credit_alphanum4',
-          'asset_code': 'USD',
-          'asset_issuer': 'GDEF456',
-          'trustor': 'GABC123',
-          '_links': {
-            'operation': {'href': 'op_link'},
-            'precedes': {'href': 'pre_link'},
-            'succeeds': {'href': 'succ_link'},
-          },
-        };
+      test(
+        'fromJson creates TrustLineFlagsUpdatedEffectResponse (type 26)',
+        () {
+          final json = {
+            'id': 'effect_id',
+            'type_i': 26,
+            'type': 'trustline_flags_updated',
+            'created_at': '2024-01-01T00:00:00Z',
+            'paging_token': 'token',
+            'account': 'GABC123',
+            'asset_type': 'credit_alphanum4',
+            'asset_code': 'USD',
+            'asset_issuer': 'GDEF456',
+            'trustor': 'GABC123',
+            '_links': {
+              'operation': {'href': 'op_link'},
+              'precedes': {'href': 'pre_link'},
+              'succeeds': {'href': 'succ_link'},
+            },
+          };
 
-        final effect = EffectResponse.fromJson(json);
-        expect(effect, isA<TrustLineFlagsUpdatedEffectResponse>());
-      });
+          final effect = EffectResponse.fromJson(json);
+          expect(effect, isA<TrustLineFlagsUpdatedEffectResponse>());
+        },
+      );
 
       test('fromJson creates OfferRemovedEffectResponse (type 31)', () {
         final json = {
@@ -2013,296 +2115,342 @@ void main() {
         expect(effect, isA<SequenceBumpedEffectResponse>());
       });
 
-      test('fromJson creates ClaimableBalanceClaimantCreatedEffectResponse (type 51)', () {
-        final json = {
-          'id': 'effect_id',
-          'type_i': 51,
-          'type': 'claimable_balance_claimant_created',
-          'created_at': '2024-01-01T00:00:00Z',
-          'paging_token': 'token',
-          'account': 'GABC123',
-          'balance_id': 'balance_123',
-          'asset': 'native',
-          'amount': '100.0',
-          'predicate': {'unconditional': true},
-          '_links': {
-            'operation': {'href': 'op_link'},
-            'precedes': {'href': 'pre_link'},
-            'succeeds': {'href': 'succ_link'},
-          },
-        };
+      test(
+        'fromJson creates ClaimableBalanceClaimantCreatedEffectResponse (type 51)',
+        () {
+          final json = {
+            'id': 'effect_id',
+            'type_i': 51,
+            'type': 'claimable_balance_claimant_created',
+            'created_at': '2024-01-01T00:00:00Z',
+            'paging_token': 'token',
+            'account': 'GABC123',
+            'balance_id': 'balance_123',
+            'asset': 'native',
+            'amount': '100.0',
+            'predicate': {'unconditional': true},
+            '_links': {
+              'operation': {'href': 'op_link'},
+              'precedes': {'href': 'pre_link'},
+              'succeeds': {'href': 'succ_link'},
+            },
+          };
 
-        final effect = EffectResponse.fromJson(json);
-        expect(effect, isA<ClaimableBalanceClaimantCreatedEffectResponse>());
-        final claimant = effect as ClaimableBalanceClaimantCreatedEffectResponse;
-        expect(claimant.balanceId, 'balance_123');
-        expect(claimant.amount, '100.0');
-        expect(claimant.predicate.unconditional, true);
-      });
+          final effect = EffectResponse.fromJson(json);
+          expect(effect, isA<ClaimableBalanceClaimantCreatedEffectResponse>());
+          final claimant =
+              effect as ClaimableBalanceClaimantCreatedEffectResponse;
+          expect(claimant.balanceId, 'balance_123');
+          expect(claimant.amount, '100.0');
+          expect(claimant.predicate.unconditional, true);
+        },
+      );
 
-      test('fromJson creates ClaimableBalanceClaimedEffectResponse (type 52)', () {
-        final json = {
-          'id': 'effect_id',
-          'type_i': 52,
-          'type': 'claimable_balance_claimed',
-          'created_at': '2024-01-01T00:00:00Z',
-          'paging_token': 'token',
-          'account': 'GABC123',
-          'balance_id': 'balance_123',
-          'asset': 'native',
-          'amount': '100.0',
-          '_links': {
-            'operation': {'href': 'op_link'},
-            'precedes': {'href': 'pre_link'},
-            'succeeds': {'href': 'succ_link'},
-          },
-        };
+      test(
+        'fromJson creates ClaimableBalanceClaimedEffectResponse (type 52)',
+        () {
+          final json = {
+            'id': 'effect_id',
+            'type_i': 52,
+            'type': 'claimable_balance_claimed',
+            'created_at': '2024-01-01T00:00:00Z',
+            'paging_token': 'token',
+            'account': 'GABC123',
+            'balance_id': 'balance_123',
+            'asset': 'native',
+            'amount': '100.0',
+            '_links': {
+              'operation': {'href': 'op_link'},
+              'precedes': {'href': 'pre_link'},
+              'succeeds': {'href': 'succ_link'},
+            },
+          };
 
-        final effect = EffectResponse.fromJson(json);
-        expect(effect, isA<ClaimableBalanceClaimedEffectResponse>());
-      });
+          final effect = EffectResponse.fromJson(json);
+          expect(effect, isA<ClaimableBalanceClaimedEffectResponse>());
+        },
+      );
 
-      test('fromJson creates AccountSponsorshipUpdatedEffectResponse (type 61)', () {
-        final json = {
-          'id': 'effect_id',
-          'type_i': 61,
-          'type': 'account_sponsorship_updated',
-          'created_at': '2024-01-01T00:00:00Z',
-          'paging_token': 'token',
-          'account': 'GABC123',
-          'former_sponsor': 'GDEF456',
-          'new_sponsor': 'GHIJ789',
-          '_links': {
-            'operation': {'href': 'op_link'},
-            'precedes': {'href': 'pre_link'},
-            'succeeds': {'href': 'succ_link'},
-          },
-        };
+      test(
+        'fromJson creates AccountSponsorshipUpdatedEffectResponse (type 61)',
+        () {
+          final json = {
+            'id': 'effect_id',
+            'type_i': 61,
+            'type': 'account_sponsorship_updated',
+            'created_at': '2024-01-01T00:00:00Z',
+            'paging_token': 'token',
+            'account': 'GABC123',
+            'former_sponsor': 'GDEF456',
+            'new_sponsor': 'GHIJ789',
+            '_links': {
+              'operation': {'href': 'op_link'},
+              'precedes': {'href': 'pre_link'},
+              'succeeds': {'href': 'succ_link'},
+            },
+          };
 
-        final effect = EffectResponse.fromJson(json);
-        expect(effect, isA<AccountSponsorshipUpdatedEffectResponse>());
-      });
+          final effect = EffectResponse.fromJson(json);
+          expect(effect, isA<AccountSponsorshipUpdatedEffectResponse>());
+        },
+      );
 
-      test('fromJson creates AccountSponsorshipRemovedEffectResponse (type 62)', () {
-        final json = {
-          'id': 'effect_id',
-          'type_i': 62,
-          'type': 'account_sponsorship_removed',
-          'created_at': '2024-01-01T00:00:00Z',
-          'paging_token': 'token',
-          'account': 'GABC123',
-          'former_sponsor': 'GDEF456',
-          '_links': {
-            'operation': {'href': 'op_link'},
-            'precedes': {'href': 'pre_link'},
-            'succeeds': {'href': 'succ_link'},
-          },
-        };
+      test(
+        'fromJson creates AccountSponsorshipRemovedEffectResponse (type 62)',
+        () {
+          final json = {
+            'id': 'effect_id',
+            'type_i': 62,
+            'type': 'account_sponsorship_removed',
+            'created_at': '2024-01-01T00:00:00Z',
+            'paging_token': 'token',
+            'account': 'GABC123',
+            'former_sponsor': 'GDEF456',
+            '_links': {
+              'operation': {'href': 'op_link'},
+              'precedes': {'href': 'pre_link'},
+              'succeeds': {'href': 'succ_link'},
+            },
+          };
 
-        final effect = EffectResponse.fromJson(json);
-        expect(effect, isA<AccountSponsorshipRemovedEffectResponse>());
-      });
+          final effect = EffectResponse.fromJson(json);
+          expect(effect, isA<AccountSponsorshipRemovedEffectResponse>());
+        },
+      );
 
-      test('fromJson creates TrustlineSponsorshipUpdatedEffectResponse (type 64)', () {
-        final json = {
-          'id': 'effect_id',
-          'type_i': 64,
-          'type': 'trustline_sponsorship_updated',
-          'created_at': '2024-01-01T00:00:00Z',
-          'paging_token': 'token',
-          'account': 'GABC123',
-          'asset': 'native',
-          'asset_type': 'native',
-          'former_sponsor': 'GDEF456',
-          'new_sponsor': 'GHIJ789',
-          '_links': {
-            'operation': {'href': 'op_link'},
-            'precedes': {'href': 'pre_link'},
-            'succeeds': {'href': 'succ_link'},
-          },
-        };
+      test(
+        'fromJson creates TrustlineSponsorshipUpdatedEffectResponse (type 64)',
+        () {
+          final json = {
+            'id': 'effect_id',
+            'type_i': 64,
+            'type': 'trustline_sponsorship_updated',
+            'created_at': '2024-01-01T00:00:00Z',
+            'paging_token': 'token',
+            'account': 'GABC123',
+            'asset': 'native',
+            'asset_type': 'native',
+            'former_sponsor': 'GDEF456',
+            'new_sponsor': 'GHIJ789',
+            '_links': {
+              'operation': {'href': 'op_link'},
+              'precedes': {'href': 'pre_link'},
+              'succeeds': {'href': 'succ_link'},
+            },
+          };
 
-        final effect = EffectResponse.fromJson(json);
-        expect(effect, isA<TrustlineSponsorshipUpdatedEffectResponse>());
-        final updated = effect as TrustlineSponsorshipUpdatedEffectResponse;
-        expect(updated.formerSponsor, 'GDEF456');
-        expect(updated.newSponsor, 'GHIJ789');
-        expect(updated.assetType, 'native');
-      });
+          final effect = EffectResponse.fromJson(json);
+          expect(effect, isA<TrustlineSponsorshipUpdatedEffectResponse>());
+          final updated = effect as TrustlineSponsorshipUpdatedEffectResponse;
+          expect(updated.formerSponsor, 'GDEF456');
+          expect(updated.newSponsor, 'GHIJ789');
+          expect(updated.assetType, 'native');
+        },
+      );
 
-      test('fromJson creates TrustlineSponsorshipRemovedEffectResponse (type 65)', () {
-        final json = {
-          'id': 'effect_id',
-          'type_i': 65,
-          'type': 'trustline_sponsorship_removed',
-          'created_at': '2024-01-01T00:00:00Z',
-          'paging_token': 'token',
-          'account': 'GABC123',
-          'asset': 'native',
-          'asset_type': 'native',
-          'former_sponsor': 'GDEF456',
-          '_links': {
-            'operation': {'href': 'op_link'},
-            'precedes': {'href': 'pre_link'},
-            'succeeds': {'href': 'succ_link'},
-          },
-        };
+      test(
+        'fromJson creates TrustlineSponsorshipRemovedEffectResponse (type 65)',
+        () {
+          final json = {
+            'id': 'effect_id',
+            'type_i': 65,
+            'type': 'trustline_sponsorship_removed',
+            'created_at': '2024-01-01T00:00:00Z',
+            'paging_token': 'token',
+            'account': 'GABC123',
+            'asset': 'native',
+            'asset_type': 'native',
+            'former_sponsor': 'GDEF456',
+            '_links': {
+              'operation': {'href': 'op_link'},
+              'precedes': {'href': 'pre_link'},
+              'succeeds': {'href': 'succ_link'},
+            },
+          };
 
-        final effect = EffectResponse.fromJson(json);
-        expect(effect, isA<TrustlineSponsorshipRemovedEffectResponse>());
-        final removed = effect as TrustlineSponsorshipRemovedEffectResponse;
-        expect(removed.formerSponsor, 'GDEF456');
-        expect(removed.assetType, 'native');
-      });
+          final effect = EffectResponse.fromJson(json);
+          expect(effect, isA<TrustlineSponsorshipRemovedEffectResponse>());
+          final removed = effect as TrustlineSponsorshipRemovedEffectResponse;
+          expect(removed.formerSponsor, 'GDEF456');
+          expect(removed.assetType, 'native');
+        },
+      );
 
-      test('fromJson creates DataSponsorshipUpdatedEffectResponse (type 67)', () {
-        final json = {
-          'id': 'effect_id',
-          'type_i': 67,
-          'type': 'data_sponsorship_updated',
-          'created_at': '2024-01-01T00:00:00Z',
-          'paging_token': 'token',
-          'account': 'GABC123',
-          'data_name': 'test_data',
-          'former_sponsor': 'GDEF456',
-          'new_sponsor': 'GHIJ789',
-          '_links': {
-            'operation': {'href': 'op_link'},
-            'precedes': {'href': 'pre_link'},
-            'succeeds': {'href': 'succ_link'},
-          },
-        };
+      test(
+        'fromJson creates DataSponsorshipUpdatedEffectResponse (type 67)',
+        () {
+          final json = {
+            'id': 'effect_id',
+            'type_i': 67,
+            'type': 'data_sponsorship_updated',
+            'created_at': '2024-01-01T00:00:00Z',
+            'paging_token': 'token',
+            'account': 'GABC123',
+            'data_name': 'test_data',
+            'former_sponsor': 'GDEF456',
+            'new_sponsor': 'GHIJ789',
+            '_links': {
+              'operation': {'href': 'op_link'},
+              'precedes': {'href': 'pre_link'},
+              'succeeds': {'href': 'succ_link'},
+            },
+          };
 
-        final effect = EffectResponse.fromJson(json);
-        expect(effect, isA<DataSponsorshipUpdatedEffectResponse>());
-      });
+          final effect = EffectResponse.fromJson(json);
+          expect(effect, isA<DataSponsorshipUpdatedEffectResponse>());
+        },
+      );
 
-      test('fromJson creates DataSponsorshipRemovedEffectResponse (type 68)', () {
-        final json = {
-          'id': 'effect_id',
-          'type_i': 68,
-          'type': 'data_sponsorship_removed',
-          'created_at': '2024-01-01T00:00:00Z',
-          'paging_token': 'token',
-          'account': 'GABC123',
-          'data_name': 'test_data',
-          'former_sponsor': 'GDEF456',
-          '_links': {
-            'operation': {'href': 'op_link'},
-            'precedes': {'href': 'pre_link'},
-            'succeeds': {'href': 'succ_link'},
-          },
-        };
+      test(
+        'fromJson creates DataSponsorshipRemovedEffectResponse (type 68)',
+        () {
+          final json = {
+            'id': 'effect_id',
+            'type_i': 68,
+            'type': 'data_sponsorship_removed',
+            'created_at': '2024-01-01T00:00:00Z',
+            'paging_token': 'token',
+            'account': 'GABC123',
+            'data_name': 'test_data',
+            'former_sponsor': 'GDEF456',
+            '_links': {
+              'operation': {'href': 'op_link'},
+              'precedes': {'href': 'pre_link'},
+              'succeeds': {'href': 'succ_link'},
+            },
+          };
 
-        final effect = EffectResponse.fromJson(json);
-        expect(effect, isA<DataSponsorshipRemovedEffectResponse>());
-      });
+          final effect = EffectResponse.fromJson(json);
+          expect(effect, isA<DataSponsorshipRemovedEffectResponse>());
+        },
+      );
 
-      test('fromJson creates ClaimableBalanceSponsorshipUpdatedEffectResponse (type 70)', () {
-        final json = {
-          'id': 'effect_id',
-          'type_i': 70,
-          'type': 'claimable_balance_sponsorship_updated',
-          'created_at': '2024-01-01T00:00:00Z',
-          'paging_token': 'token',
-          'account': 'GABC123',
-          'balance_id': 'balance_123',
-          'former_sponsor': 'GDEF456',
-          'new_sponsor': 'GHIJ789',
-          '_links': {
-            'operation': {'href': 'op_link'},
-            'precedes': {'href': 'pre_link'},
-            'succeeds': {'href': 'succ_link'},
-          },
-        };
+      test(
+        'fromJson creates ClaimableBalanceSponsorshipUpdatedEffectResponse (type 70)',
+        () {
+          final json = {
+            'id': 'effect_id',
+            'type_i': 70,
+            'type': 'claimable_balance_sponsorship_updated',
+            'created_at': '2024-01-01T00:00:00Z',
+            'paging_token': 'token',
+            'account': 'GABC123',
+            'balance_id': 'balance_123',
+            'former_sponsor': 'GDEF456',
+            'new_sponsor': 'GHIJ789',
+            '_links': {
+              'operation': {'href': 'op_link'},
+              'precedes': {'href': 'pre_link'},
+              'succeeds': {'href': 'succ_link'},
+            },
+          };
 
-        final effect = EffectResponse.fromJson(json);
-        expect(effect, isA<ClaimableBalanceSponsorshipUpdatedEffectResponse>());
-      });
+          final effect = EffectResponse.fromJson(json);
+          expect(
+            effect,
+            isA<ClaimableBalanceSponsorshipUpdatedEffectResponse>(),
+          );
+        },
+      );
 
-      test('fromJson creates ClaimableBalanceSponsorshipRemovedEffectResponse (type 71)', () {
-        final json = {
-          'id': 'effect_id',
-          'type_i': 71,
-          'type': 'claimable_balance_sponsorship_removed',
-          'created_at': '2024-01-01T00:00:00Z',
-          'paging_token': 'token',
-          'account': 'GABC123',
-          'balance_id': 'balance_123',
-          'former_sponsor': 'GDEF456',
-          '_links': {
-            'operation': {'href': 'op_link'},
-            'precedes': {'href': 'pre_link'},
-            'succeeds': {'href': 'succ_link'},
-          },
-        };
+      test(
+        'fromJson creates ClaimableBalanceSponsorshipRemovedEffectResponse (type 71)',
+        () {
+          final json = {
+            'id': 'effect_id',
+            'type_i': 71,
+            'type': 'claimable_balance_sponsorship_removed',
+            'created_at': '2024-01-01T00:00:00Z',
+            'paging_token': 'token',
+            'account': 'GABC123',
+            'balance_id': 'balance_123',
+            'former_sponsor': 'GDEF456',
+            '_links': {
+              'operation': {'href': 'op_link'},
+              'precedes': {'href': 'pre_link'},
+              'succeeds': {'href': 'succ_link'},
+            },
+          };
 
-        final effect = EffectResponse.fromJson(json);
-        expect(effect, isA<ClaimableBalanceSponsorshipRemovedEffectResponse>());
-      });
+          final effect = EffectResponse.fromJson(json);
+          expect(
+            effect,
+            isA<ClaimableBalanceSponsorshipRemovedEffectResponse>(),
+          );
+        },
+      );
 
-      test('fromJson creates SignerSponsorshipUpdatedEffectResponse (type 73)', () {
-        final json = {
-          'id': 'effect_id',
-          'type_i': 73,
-          'type': 'signer_sponsorship_updated',
-          'created_at': '2024-01-01T00:00:00Z',
-          'paging_token': 'token',
-          'account': 'GABC123',
-          'signer': 'GDEF456',
-          'former_sponsor': 'GDEF456',
-          'new_sponsor': 'GHIJ789',
-          '_links': {
-            'operation': {'href': 'op_link'},
-            'precedes': {'href': 'pre_link'},
-            'succeeds': {'href': 'succ_link'},
-          },
-        };
+      test(
+        'fromJson creates SignerSponsorshipUpdatedEffectResponse (type 73)',
+        () {
+          final json = {
+            'id': 'effect_id',
+            'type_i': 73,
+            'type': 'signer_sponsorship_updated',
+            'created_at': '2024-01-01T00:00:00Z',
+            'paging_token': 'token',
+            'account': 'GABC123',
+            'signer': 'GDEF456',
+            'former_sponsor': 'GDEF456',
+            'new_sponsor': 'GHIJ789',
+            '_links': {
+              'operation': {'href': 'op_link'},
+              'precedes': {'href': 'pre_link'},
+              'succeeds': {'href': 'succ_link'},
+            },
+          };
 
-        final effect = EffectResponse.fromJson(json);
-        expect(effect, isA<SignerSponsorshipUpdatedEffectResponse>());
-      });
+          final effect = EffectResponse.fromJson(json);
+          expect(effect, isA<SignerSponsorshipUpdatedEffectResponse>());
+        },
+      );
 
-      test('fromJson creates SignerSponsorshipRemovedEffectResponse (type 74)', () {
-        final json = {
-          'id': 'effect_id',
-          'type_i': 74,
-          'type': 'signer_sponsorship_removed',
-          'created_at': '2024-01-01T00:00:00Z',
-          'paging_token': 'token',
-          'account': 'GABC123',
-          'signer': 'GDEF456',
-          'former_sponsor': 'GDEF456',
-          '_links': {
-            'operation': {'href': 'op_link'},
-            'precedes': {'href': 'pre_link'},
-            'succeeds': {'href': 'succ_link'},
-          },
-        };
+      test(
+        'fromJson creates SignerSponsorshipRemovedEffectResponse (type 74)',
+        () {
+          final json = {
+            'id': 'effect_id',
+            'type_i': 74,
+            'type': 'signer_sponsorship_removed',
+            'created_at': '2024-01-01T00:00:00Z',
+            'paging_token': 'token',
+            'account': 'GABC123',
+            'signer': 'GDEF456',
+            'former_sponsor': 'GDEF456',
+            '_links': {
+              'operation': {'href': 'op_link'},
+              'precedes': {'href': 'pre_link'},
+              'succeeds': {'href': 'succ_link'},
+            },
+          };
 
-        final effect = EffectResponse.fromJson(json);
-        expect(effect, isA<SignerSponsorshipRemovedEffectResponse>());
-      });
+          final effect = EffectResponse.fromJson(json);
+          expect(effect, isA<SignerSponsorshipRemovedEffectResponse>());
+        },
+      );
 
-      test('fromJson creates ClaimableBalanceClawedBackEffectResponse (type 80)', () {
-        final json = {
-          'id': 'effect_id',
-          'type_i': 80,
-          'type': 'claimable_balance_clawed_back',
-          'created_at': '2024-01-01T00:00:00Z',
-          'paging_token': 'token',
-          'account': 'GABC123',
-          'balance_id': 'balance_123',
-          '_links': {
-            'operation': {'href': 'op_link'},
-            'precedes': {'href': 'pre_link'},
-            'succeeds': {'href': 'succ_link'},
-          },
-        };
+      test(
+        'fromJson creates ClaimableBalanceClawedBackEffectResponse (type 80)',
+        () {
+          final json = {
+            'id': 'effect_id',
+            'type_i': 80,
+            'type': 'claimable_balance_clawed_back',
+            'created_at': '2024-01-01T00:00:00Z',
+            'paging_token': 'token',
+            'account': 'GABC123',
+            'balance_id': 'balance_123',
+            '_links': {
+              'operation': {'href': 'op_link'},
+              'precedes': {'href': 'pre_link'},
+              'succeeds': {'href': 'succ_link'},
+            },
+          };
 
-        final effect = EffectResponse.fromJson(json);
-        expect(effect, isA<ClaimableBalanceClawedBackEffectResponse>());
-      });
+          final effect = EffectResponse.fromJson(json);
+          expect(effect, isA<ClaimableBalanceClawedBackEffectResponse>());
+        },
+      );
 
       test('fromJson creates LiquidityPoolRemovedEffectResponse (type 94)', () {
         final json = {
@@ -2383,10 +2531,7 @@ void main() {
           },
         };
 
-        expect(
-          () => EffectResponse.fromJson(json),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => EffectResponse.fromJson(json), throwsA(isA<Exception>()));
       });
     });
 
@@ -2414,7 +2559,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('TrustlineSponsorshipUpdatedEffectResponse fromJson with asset', () {
@@ -2428,8 +2573,7 @@ void main() {
         'asset': 'USD:GCRCUE2C5TBNIPYHMEP7NK5RWTT2WBSZ75CMARH7GDOHDDCQH3XANFOB',
         'asset_type': 'credit_alphanum4',
         'new_sponsor': 'GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         ...testLinks,
       };
 
@@ -2440,41 +2584,53 @@ void main() {
       expect(response.type, equals('trustline_sponsorship_updated'));
       expect(response.asset, isNotNull);
       expect(response.assetType, equals('credit_alphanum4'));
-      expect(response.newSponsor,
-          equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
+      expect(
+        response.newSponsor,
+        equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
+      expect(
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
     });
 
     test(
-        'TrustlineSponsorshipUpdatedEffectResponse fromJson with liquidity pool',
-        () {
-      final json = {
-        'id': 'effect-64-lp',
-        'type_i': 64,
-        'type': 'trustline_sponsorship_updated',
-        'created_at': '2021-01-05T00:00:00Z',
-        'paging_token': 'token-64-lp',
-        'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
-        'asset_type': 'liquidity_pool_shares',
-        'liquidity_pool_id':
+      'TrustlineSponsorshipUpdatedEffectResponse fromJson with liquidity pool',
+      () {
+        final json = {
+          'id': 'effect-64-lp',
+          'type_i': 64,
+          'type': 'trustline_sponsorship_updated',
+          'created_at': '2021-01-05T00:00:00Z',
+          'paging_token': 'token-64-lp',
+          'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+          'asset_type': 'liquidity_pool_shares',
+          'liquidity_pool_id':
+              'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
+          'new_sponsor': 'GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+          'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+          ...testLinks,
+        };
+
+        final response = TrustlineSponsorshipUpdatedEffectResponse.fromJson(
+          json,
+        );
+
+        expect(response.type_i, equals(64));
+        expect(response.assetType, equals('liquidity_pool_shares'));
+        expect(response.liquidityPoolId, isNotNull);
+        expect(
+          response.liquidityPoolId,
+          equals(
             'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
-        'new_sponsor': 'GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
-        ...testLinks,
-      };
-
-      final response = TrustlineSponsorshipUpdatedEffectResponse.fromJson(json);
-
-      expect(response.type_i, equals(64));
-      expect(response.assetType, equals('liquidity_pool_shares'));
-      expect(response.liquidityPoolId, isNotNull);
-      expect(response.liquidityPoolId,
-          equals('dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7'));
-      expect(response.newSponsor,
-          equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-    });
+          ),
+        );
+        expect(
+          response.newSponsor,
+          equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+        );
+      },
+    );
 
     test('TrustlineSponsorshipRemovedEffectResponse fromJson with asset', () {
       final json = {
@@ -2486,8 +2642,7 @@ void main() {
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
         'asset': 'EUR:GCRCUE2C5TBNIPYHMEP7NK5RWTT2WBSZ75CMARH7GDOHDDCQH3XANFOB',
         'asset_type': 'credit_alphanum4',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         ...testLinks,
       };
 
@@ -2498,38 +2653,48 @@ void main() {
       expect(response.type, equals('trustline_sponsorship_removed'));
       expect(response.asset, isNotNull);
       expect(response.assetType, equals('credit_alphanum4'));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
+      expect(
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
     });
 
     test(
-        'TrustlineSponsorshipRemovedEffectResponse fromJson with liquidity pool',
-        () {
-      final json = {
-        'id': 'effect-65-lp',
-        'type_i': 65,
-        'type': 'trustline_sponsorship_removed',
-        'created_at': '2021-01-06T00:00:00Z',
-        'paging_token': 'token-65-lp',
-        'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
-        'asset_type': 'liquidity_pool_shares',
-        'liquidity_pool_id':
+      'TrustlineSponsorshipRemovedEffectResponse fromJson with liquidity pool',
+      () {
+        final json = {
+          'id': 'effect-65-lp',
+          'type_i': 65,
+          'type': 'trustline_sponsorship_removed',
+          'created_at': '2021-01-06T00:00:00Z',
+          'paging_token': 'token-65-lp',
+          'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+          'asset_type': 'liquidity_pool_shares',
+          'liquidity_pool_id':
+              'aa7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
+          'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+          ...testLinks,
+        };
+
+        final response = TrustlineSponsorshipRemovedEffectResponse.fromJson(
+          json,
+        );
+
+        expect(response.type_i, equals(65));
+        expect(response.assetType, equals('liquidity_pool_shares'));
+        expect(response.liquidityPoolId, isNotNull);
+        expect(
+          response.liquidityPoolId,
+          equals(
             'aa7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
-        ...testLinks,
-      };
-
-      final response = TrustlineSponsorshipRemovedEffectResponse.fromJson(json);
-
-      expect(response.type_i, equals(65));
-      expect(response.assetType, equals('liquidity_pool_shares'));
-      expect(response.liquidityPoolId, isNotNull);
-      expect(response.liquidityPoolId,
-          equals('aa7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7'));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
-    });
+          ),
+        );
+        expect(
+          response.formerSponsor,
+          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+        );
+      },
+    );
   });
 
   group('Sponsorship Effects - Data', () {
@@ -2538,7 +2703,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('DataSponsorshipUpdatedEffectResponse fromJson', () {
@@ -2551,8 +2716,7 @@ void main() {
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
         'data_name': 'config',
         'new_sponsor': 'GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         ...testLinks,
       };
 
@@ -2562,10 +2726,14 @@ void main() {
       expect(response.type_i, equals(67));
       expect(response.type, equals('data_sponsorship_updated'));
       expect(response.dataName, equals('config'));
-      expect(response.newSponsor,
-          equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
+      expect(
+        response.newSponsor,
+        equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
+      expect(
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
     });
 
     test('DataSponsorshipRemovedEffectResponse fromJson', () {
@@ -2577,8 +2745,7 @@ void main() {
         'paging_token': 'token-68',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
         'data_name': 'settings',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         ...testLinks,
       };
 
@@ -2588,8 +2755,10 @@ void main() {
       expect(response.type_i, equals(68));
       expect(response.type, equals('data_sponsorship_removed'));
       expect(response.dataName, equals('settings'));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
+      expect(
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
     });
   });
 
@@ -2599,7 +2768,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('ClaimableBalanceSponsorshipUpdatedEffectResponse fromJson', () {
@@ -2613,8 +2782,7 @@ void main() {
         'balance_id':
             '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
         'new_sponsor': 'GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         ...testLinks,
       };
 
@@ -2624,12 +2792,20 @@ void main() {
       expect(response.id, equals('effect-70'));
       expect(response.type_i, equals(70));
       expect(response.type, equals('claimable_balance_sponsorship_updated'));
-      expect(response.balanceId,
-          equals('00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072'));
-      expect(response.newSponsor,
-          equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
+      expect(
+        response.balanceId,
+        equals(
+          '00000000929b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
+        ),
+      );
+      expect(
+        response.newSponsor,
+        equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
+      expect(
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
     });
 
     test('ClaimableBalanceSponsorshipRemovedEffectResponse fromJson', () {
@@ -2642,8 +2818,7 @@ void main() {
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
         'balance_id':
             '00000000a29b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         ...testLinks,
       };
 
@@ -2653,10 +2828,16 @@ void main() {
       expect(response.id, equals('effect-71'));
       expect(response.type_i, equals(71));
       expect(response.type, equals('claimable_balance_sponsorship_removed'));
-      expect(response.balanceId,
-          equals('00000000a29b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072'));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
+      expect(
+        response.balanceId,
+        equals(
+          '00000000a29b20b72e5890ab51c24f1cc46fa01c4f318d8d33367d24dd614cfdf5491072',
+        ),
+      );
+      expect(
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
     });
   });
 
@@ -2666,7 +2847,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('SignerSponsorshipUpdatedEffectResponse fromJson', () {
@@ -2679,8 +2860,7 @@ void main() {
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
         'signer': 'GASIGNER123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
         'new_sponsor': 'GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         ...testLinks,
       };
 
@@ -2689,12 +2869,18 @@ void main() {
       expect(response.id, equals('effect-73'));
       expect(response.type_i, equals(73));
       expect(response.type, equals('signer_sponsorship_updated'));
-      expect(response.signer,
-          equals('GASIGNER123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-      expect(response.newSponsor,
-          equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
+      expect(
+        response.signer,
+        equals('GASIGNER123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
+      expect(
+        response.newSponsor,
+        equals('GANEWSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+      );
+      expect(
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
     });
 
     test('SignerSponsorshipRemovedEffectResponse fromJson', () {
@@ -2706,8 +2892,7 @@ void main() {
         'paging_token': 'token-74',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
         'signer': 'GASIGNER987654321ZYXWVUTSRQPONMLKJIHGFEDCBA',
-        'former_sponsor':
-            'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
+        'former_sponsor': 'GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW',
         ...testLinks,
       };
 
@@ -2716,10 +2901,14 @@ void main() {
       expect(response.id, equals('effect-74'));
       expect(response.type_i, equals(74));
       expect(response.type, equals('signer_sponsorship_removed'));
-      expect(response.signer,
-          equals('GASIGNER987654321ZYXWVUTSRQPONMLKJIHGFEDCBA'));
-      expect(response.formerSponsor,
-          equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'));
+      expect(
+        response.signer,
+        equals('GASIGNER987654321ZYXWVUTSRQPONMLKJIHGFEDCBA'),
+      );
+      expect(
+        response.formerSponsor,
+        equals('GAFORMERSPONSOR123456789ABCDEFGHIJKLMNOPQRSTUVW'),
+      );
     });
   });
 
@@ -2729,7 +2918,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('fromJson throws exception for unknown effect type', () {
@@ -2762,10 +2951,7 @@ void main() {
     });
 
     test('AssetAmount fromJson with null asset for failed transaction', () {
-      final json = {
-        'amount': '100.0000000',
-        'asset': null,
-      };
+      final json = {'amount': '100.0000000', 'asset': null};
 
       final assetAmount = AssetAmount.fromJson(json);
 
@@ -2774,10 +2960,7 @@ void main() {
     });
 
     test('AssetAmount fromJson with native asset', () {
-      final json = {
-        'amount': '50.5000000',
-        'asset': 'native',
-      };
+      final json = {'amount': '50.5000000', 'asset': 'native'};
 
       final assetAmount = AssetAmount.fromJson(json);
 
@@ -2804,7 +2987,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('AccountCreatedEffectResponse with muxed account', () {
@@ -2824,8 +3007,12 @@ void main() {
 
       final response = AccountCreatedEffectResponse.fromJson(json);
 
-      expect(response.accountMuxed,
-          equals('MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6'));
+      expect(
+        response.accountMuxed,
+        equals(
+          'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6',
+        ),
+      );
       expect(response.accountMuxedId, equals('1234567890'));
     });
 
@@ -2847,8 +3034,12 @@ void main() {
 
       final response = AccountCreditedEffectResponse.fromJson(json);
 
-      expect(response.accountMuxed,
-          equals('MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6'));
+      expect(
+        response.accountMuxed,
+        equals(
+          'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6',
+        ),
+      );
       expect(response.accountMuxedId, equals('9876543210'));
     });
 
@@ -2880,11 +3071,19 @@ void main() {
 
       final response = TradeEffectResponse.fromJson(json);
 
-      expect(response.accountMuxed,
-          equals('MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6'));
+      expect(
+        response.accountMuxed,
+        equals(
+          'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6',
+        ),
+      );
       expect(response.accountMuxedId, equals('1111111111'));
-      expect(response.sellerMuxed,
-          equals('MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL7'));
+      expect(
+        response.sellerMuxed,
+        equals(
+          'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL7',
+        ),
+      );
       expect(response.sellerMuxedId, equals('2222222222'));
     });
   });
@@ -2895,7 +3094,7 @@ void main() {
         'operation': {'href': 'https://horizon.stellar.org/operations/123'},
         'precedes': {'href': 'https://horizon.stellar.org/effects?cursor=prev'},
         'succeeds': {'href': 'https://horizon.stellar.org/effects?cursor=next'},
-      }
+      },
     };
 
     test('LiquidityPoolDepositedEffectResponse with detailed reserves', () {
@@ -2907,7 +3106,8 @@ void main() {
         'paging_token': 'token-lp-deposit',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
         'liquidity_pool': {
-          'id': 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
+          'id':
+              'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
           'fee_bp': 30,
           'type': 'constant_product',
           'total_trustlines': '300',
@@ -2915,22 +3115,26 @@ void main() {
           'reserves': [
             {
               'amount': '1000.0000000',
-              'asset': 'EURT:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S'
+              'asset':
+                  'EURT:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S',
             },
             {
               'amount': '2000.0000000',
-              'asset': 'PHP:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S'
+              'asset':
+                  'PHP:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S',
             },
-          ]
+          ],
         },
         'reserves_deposited': [
           {
             'amount': '100.0000000',
-            'asset': 'EURT:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S'
+            'asset':
+                'EURT:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S',
           },
           {
             'amount': '200.0000000',
-            'asset': 'PHP:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S'
+            'asset':
+                'PHP:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S',
           },
         ],
         'shares_received': '150.0000000',
@@ -2957,7 +3161,8 @@ void main() {
         'paging_token': 'token-lp-withdraw',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
         'liquidity_pool': {
-          'id': 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
+          'id':
+              'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
           'fee_bp': 30,
           'type': 'constant_product',
           'total_trustlines': '250',
@@ -2965,22 +3170,26 @@ void main() {
           'reserves': [
             {
               'amount': '900.0000000',
-              'asset': 'EURT:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S'
+              'asset':
+                  'EURT:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S',
             },
             {
               'amount': '1800.0000000',
-              'asset': 'PHP:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S'
+              'asset':
+                  'PHP:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S',
             },
-          ]
+          ],
         },
         'reserves_received': [
           {
             'amount': '50.0000000',
-            'asset': 'EURT:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S'
+            'asset':
+                'EURT:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S',
           },
           {
             'amount': '100.0000000',
-            'asset': 'PHP:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S'
+            'asset':
+                'PHP:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S',
           },
         ],
         'shares_redeemed': '75.0000000',
@@ -3007,7 +3216,8 @@ void main() {
         'paging_token': 'token-lp-trade',
         'account': 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
         'liquidity_pool': {
-          'id': 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
+          'id':
+              'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
           'fee_bp': 30,
           'type': 'constant_product',
           'total_trustlines': '260',
@@ -3015,21 +3225,25 @@ void main() {
           'reserves': [
             {
               'amount': '920.0000000',
-              'asset': 'EURT:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S'
+              'asset':
+                  'EURT:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S',
             },
             {
               'amount': '1840.0000000',
-              'asset': 'PHP:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S'
+              'asset':
+                  'PHP:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S',
             },
-          ]
+          ],
         },
         'sold': {
           'amount': '20.0000000',
-          'asset': 'EURT:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S'
+          'asset':
+              'EURT:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S',
         },
         'bought': {
           'amount': '40.0000000',
-          'asset': 'PHP:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S'
+          'asset':
+              'PHP:GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S',
         },
         ...testLinks,
       };

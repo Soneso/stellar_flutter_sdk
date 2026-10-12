@@ -66,9 +66,24 @@ void main() {
 
     test('transactionResult_equalityWithNonConstInstances', () {
       // Non-const instances so identical() returns false, exercising the == body.
-      final a = OZTransactionResult(success: true, hash: 'h', ledger: 1, error: null);
-      final b = OZTransactionResult(success: true, hash: 'h', ledger: 1, error: null);
-      final c = OZTransactionResult(success: true, hash: 'h', ledger: 1, error: 'e');
+      final a = OZTransactionResult(
+        success: true,
+        hash: 'h',
+        ledger: 1,
+        error: null,
+      );
+      final b = OZTransactionResult(
+        success: true,
+        hash: 'h',
+        ledger: 1,
+        error: null,
+      );
+      final c = OZTransactionResult(
+        success: true,
+        hash: 'h',
+        ledger: 1,
+        error: 'e',
+      );
       expect(a, equals(b));
       expect(a.hashCode, equals(b.hashCode));
       expect(a == c, isFalse);
@@ -90,7 +105,6 @@ void main() {
       expect(a == c, isFalse);
       expect(a == d, isFalse);
     });
-
   });
 
   group('OZSubmissionMethod enum behavior', () {
@@ -101,7 +115,9 @@ void main() {
     });
 
     test('submissionMethod_valueOf', () {
-      final byName = OZSubmissionMethod.values.firstWhere((e) => e.name == 'relayer');
+      final byName = OZSubmissionMethod.values.firstWhere(
+        (e) => e.name == 'relayer',
+      );
       expect(byName, equals(OZSubmissionMethod.relayer));
     });
 
@@ -115,8 +131,7 @@ void main() {
 
   group('OZResolveContextRuleIds typealias behavior', () {
     test('resolveContextRuleIds_lambdaUsable', () async {
-      OZResolveContextRuleIds resolver =
-          (entry, idx) async => <int>[1, 2, 3];
+      OZResolveContextRuleIds resolver = (entry, idx) async => <int>[1, 2, 3];
       final dummy = _dummyAuthEntry();
       final result = await resolver(dummy, 0);
       expect(result, equals(<int>[1, 2, 3]));
@@ -130,8 +145,12 @@ void main() {
     });
 
     test('resolveContextRuleIds_multipleIds', () async {
-      OZResolveContextRuleIds resolver =
-          (entry, idx) async => <int>[7, 8, 9, 10];
+      OZResolveContextRuleIds resolver = (entry, idx) async => <int>[
+        7,
+        8,
+        9,
+        10,
+      ];
       final dummy = _dummyAuthEntry();
       final result = await resolver(dummy, 2);
       expect(result, equals(<int>[7, 8, 9, 10]));
@@ -171,11 +190,8 @@ void main() {
         ..setConnected(credentialId: _credentialId, contractId: _contractA);
       final ops = OZTransactionOperations(kit);
       await expectLater(
-        () => ops.transfer(
-          tokenContract: _contractA,
-          recipient: '',
-          amount: '1',
-        ),
+        () =>
+            ops.transfer(tokenContract: _contractA, recipient: '', amount: '1'),
         throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
@@ -376,10 +392,7 @@ void main() {
       final kit = FakePipelineKit();
       final ops = OZTransactionOperations(kit);
       await expectLater(
-        () => ops.contractCall(
-          target: _contractA,
-          targetFn: 'hello',
-        ),
+        () => ops.contractCall(target: _contractA, targetFn: 'hello'),
         throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
@@ -389,10 +402,7 @@ void main() {
         ..setConnected(credentialId: _credentialId, contractId: _contractA);
       final ops = OZTransactionOperations(kit);
       await expectLater(
-        () => ops.contractCall(
-          target: 'garbage',
-          targetFn: 'hello',
-        ),
+        () => ops.contractCall(target: 'garbage', targetFn: 'hello'),
         throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
@@ -415,10 +425,7 @@ void main() {
         ..setConnected(credentialId: _credentialId, contractId: _contractA);
       final ops = OZTransactionOperations(kit);
       await expectLater(
-        () => ops.contractCall(
-          target: '',
-          targetFn: 'hello',
-        ),
+        () => ops.contractCall(target: '', targetFn: 'hello'),
         throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
@@ -428,10 +435,7 @@ void main() {
         ..setConnected(credentialId: _credentialId, contractId: _contractA);
       final ops = OZTransactionOperations(kit);
       await expectLater(
-        () => ops.contractCall(
-          target: _contractA,
-          targetFn: '',
-        ),
+        () => ops.contractCall(target: _contractA, targetFn: ''),
         throwsA(
           isA<SmartAccountInvalidInput>().having(
             (e) => e.message,
@@ -447,10 +451,7 @@ void main() {
         ..setConnected(credentialId: _credentialId, contractId: _contractA);
       final ops = OZTransactionOperations(kit);
       await expectLater(
-        () => ops.contractCall(
-          target: _contractA,
-          targetFn: '   ',
-        ),
+        () => ops.contractCall(target: _contractA, targetFn: '   '),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -460,10 +461,7 @@ void main() {
         ..setConnected(credentialId: _credentialId, contractId: _contractA);
       final ops = OZTransactionOperations(kit);
       try {
-        await ops.contractCall(
-          target: _contractA,
-          targetFn: 'hello',
-        );
+        await ops.contractCall(target: _contractA, targetFn: 'hello');
       } catch (e) {
         expect(e, isNot(isA<SmartAccountInvalidAddress>()));
         expect(e, isNot(isA<SmartAccountInvalidInput>()));
@@ -476,10 +474,7 @@ void main() {
       final kit = FakePipelineKit();
       final ops = OZTransactionOperations(kit);
       await expectLater(
-        () => ops.executeAndSubmit(
-          target: _contractA,
-          targetFn: 'hello',
-        ),
+        () => ops.executeAndSubmit(target: _contractA, targetFn: 'hello'),
         throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
@@ -489,10 +484,7 @@ void main() {
         ..setConnected(credentialId: _credentialId, contractId: _contractA);
       final ops = OZTransactionOperations(kit);
       await expectLater(
-        () => ops.executeAndSubmit(
-          target: 'garbage',
-          targetFn: 'hello',
-        ),
+        () => ops.executeAndSubmit(target: 'garbage', targetFn: 'hello'),
         throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
@@ -502,10 +494,7 @@ void main() {
         ..setConnected(credentialId: _credentialId, contractId: _contractA);
       final ops = OZTransactionOperations(kit);
       await expectLater(
-        () => ops.executeAndSubmit(
-          target: _accountA,
-          targetFn: 'hello',
-        ),
+        () => ops.executeAndSubmit(target: _accountA, targetFn: 'hello'),
         throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
@@ -515,27 +504,23 @@ void main() {
         ..setConnected(credentialId: _credentialId, contractId: _contractA);
       final ops = OZTransactionOperations(kit);
       await expectLater(
-        () => ops.executeAndSubmit(
-          target: '',
-          targetFn: 'hello',
-        ),
+        () => ops.executeAndSubmit(target: '', targetFn: 'hello'),
         throwsA(isA<SmartAccountInvalidAddress>()),
       );
     });
 
-    test('executeAndSubmit_emptyFunctionName_throwsValidationException',
-        () async {
-      final kit = FakePipelineKit()
-        ..setConnected(credentialId: _credentialId, contractId: _contractA);
-      final ops = OZTransactionOperations(kit);
-      await expectLater(
-        () => ops.executeAndSubmit(
-          target: _contractA,
-          targetFn: '',
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
+    test(
+      'executeAndSubmit_emptyFunctionName_throwsValidationException',
+      () async {
+        final kit = FakePipelineKit()
+          ..setConnected(credentialId: _credentialId, contractId: _contractA);
+        final ops = OZTransactionOperations(kit);
+        await expectLater(
+          () => ops.executeAndSubmit(target: _contractA, targetFn: ''),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
   });
 
   group('order-of-validation tests', () {
@@ -572,10 +557,7 @@ void main() {
       final kit = FakePipelineKit();
       final ops = OZTransactionOperations(kit);
       await expectLater(
-        () => ops.contractCall(
-          target: 'garbage',
-          targetFn: 'hello',
-        ),
+        () => ops.contractCall(target: 'garbage', targetFn: 'hello'),
         throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
@@ -584,10 +566,7 @@ void main() {
       final kit = FakePipelineKit();
       final ops = OZTransactionOperations(kit);
       await expectLater(
-        () => ops.executeAndSubmit(
-          target: 'garbage',
-          targetFn: 'hello',
-        ),
+        () => ops.executeAndSubmit(target: 'garbage', targetFn: 'hello'),
         throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
@@ -674,10 +653,8 @@ void main() {
       final ops = OZTransactionOperations(kit);
 
       await expectLater(
-        () => ops.executeAndSubmit(
-          target: _contractA,
-          targetFn: 'some_function',
-        ),
+        () =>
+            ops.executeAndSubmit(target: _contractA, targetFn: 'some_function'),
         throwsA(isA<SmartAccountException>()),
       );
     });
@@ -690,10 +667,7 @@ void main() {
       final ops = OZTransactionOperations(kit);
 
       await expectLater(
-        () => ops.executeAndSubmit(
-          target: _contractA,
-          targetFn: '',
-        ),
+        () => ops.executeAndSubmit(target: _contractA, targetFn: ''),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -704,10 +678,7 @@ void main() {
       final ops = OZTransactionOperations(kit);
 
       await expectLater(
-        () => ops.executeAndSubmit(
-          target: _contractA,
-          targetFn: '   ',
-        ),
+        () => ops.executeAndSubmit(target: _contractA, targetFn: '   '),
         throwsA(isA<SmartAccountInvalidInput>()),
       );
     });
@@ -816,33 +787,36 @@ void main() {
       );
     });
 
-    test('simulationEmptyResultsList_throwsTransactionSimulationFailed', () async {
-      // Same as simulationNullResults but with an explicitly empty results list.
-      final deployer = KeyPair.random();
-      final mock = MockSorobanServer();
-      mock.getAccountDefault = Account(deployer.accountId, BigInt.from(1));
+    test(
+      'simulationEmptyResultsList_throwsTransactionSimulationFailed',
+      () async {
+        // Same as simulationNullResults but with an explicitly empty results list.
+        final deployer = KeyPair.random();
+        final mock = MockSorobanServer();
+        mock.getAccountDefault = Account(deployer.accountId, BigInt.from(1));
 
-      final simResp = SimulateTransactionResponse(<String, dynamic>{});
-      simResp.results = <SimulateTransactionResult>[];
-      mock.simulateDefault = simResp;
+        final simResp = SimulateTransactionResponse(<String, dynamic>{});
+        simResp.results = <SimulateTransactionResult>[];
+        mock.simulateDefault = simResp;
 
-      final kit = FakePipelineKit(sorobanServer: mock, deployer: deployer)
-        ..setConnected(credentialId: _credentialId, contractId: _contractA);
-      final ops = OZTransactionOperations(kit);
+        final kit = FakePipelineKit(sorobanServer: mock, deployer: deployer)
+          ..setConnected(credentialId: _credentialId, contractId: _contractA);
+        final ops = OZTransactionOperations(kit);
 
-      final hostFn = XdrHostFunction.forInvokingContractWithArgs(
-        XdrInvokeContractArgs(
-          Address.forContractId(_contractA).toXdr(),
-          'query',
-          const <XdrSCVal>[],
-        ),
-      );
+        final hostFn = XdrHostFunction.forInvokingContractWithArgs(
+          XdrInvokeContractArgs(
+            Address.forContractId(_contractA).toXdr(),
+            'query',
+            const <XdrSCVal>[],
+          ),
+        );
 
-      await expectLater(
-        ops.simulateAndExtractResult(hostFn),
-        throwsA(isA<SmartAccountTransactionSimulationFailed>()),
-      );
-    });
+        await expectLater(
+          ops.simulateAndExtractResult(hostFn),
+          throwsA(isA<SmartAccountTransactionSimulationFailed>()),
+        );
+      },
+    );
   });
 
   group('submit pipeline: re-simulation error branches', () {
@@ -928,10 +902,9 @@ void main() {
       final authEntry = _makeAddressCredsEntryForOps(_contractA);
       final simResp = SimulateTransactionResponse(<String, dynamic>{});
       simResp.results = <SimulateTransactionResult>[
-        SimulateTransactionResult(
-          '',
-          <String>[authEntry.toBase64EncodedXdrString()],
-        ),
+        SimulateTransactionResult('', <String>[
+          authEntry.toBase64EncodedXdrString(),
+        ]),
       ];
       simResp.minResourceFee = 100;
       mock.simulateResponses.add(simResp);
@@ -942,21 +915,28 @@ void main() {
 
       // WebAuthn provider.
       final provider = RecordingWebAuthnProvider();
-      final credIdBytes = base64Url.decode(
-        base64Url.normalize(_credentialId),
-      );
-      provider.authenticateResponses.add(WebAuthnAuthenticationResult(
-        credentialId: credIdBytes,
-        authenticatorData: Uint8List.fromList(List<int>.generate(37, (i) => i)),
-        clientDataJSON: Uint8List.fromList(
-          utf8.encode('{"type":"webauthn.get","challenge":"abc"}'),
+      final credIdBytes = base64Url.decode(base64Url.normalize(_credentialId));
+      provider.authenticateResponses.add(
+        WebAuthnAuthenticationResult(
+          credentialId: credIdBytes,
+          authenticatorData: Uint8List.fromList(
+            List<int>.generate(37, (i) => i),
+          ),
+          clientDataJSON: Uint8List.fromList(
+            utf8.encode('{"type":"webauthn.get","challenge":"abc"}'),
+          ),
+          signature: Uint8List.fromList(<int>[
+            0x30,
+            0x44,
+            0x02,
+            0x20,
+            ...List<int>.generate(32, (i) => i + 1),
+            0x02,
+            0x20,
+            ...List<int>.generate(32, (i) => i + 2),
+          ]),
         ),
-        signature: Uint8List.fromList(<int>[
-          0x30, 0x44,
-          0x02, 0x20, ...List<int>.generate(32, (i) => i + 1),
-          0x02, 0x20, ...List<int>.generate(32, (i) => i + 2),
-        ]),
-      ));
+      );
 
       final config = OZSmartAccountConfig(
         rpcUrl: 'https://soroban-testnet.stellar.org',
@@ -971,12 +951,14 @@ void main() {
       final pk = Uint8List(65);
       pk[0] = 0x04;
       for (var i = 1; i < 65; i++) pk[i] = i & 0xFF;
-      await storage.save(OZStoredCredential(
-        credentialId: _credentialId,
-        publicKey: pk,
-        contractId: _contractA,
-        createdAt: 1700000000000,
-      ));
+      await storage.save(
+        OZStoredCredential(
+          credentialId: _credentialId,
+          publicKey: pk,
+          contractId: _contractA,
+          createdAt: 1700000000000,
+        ),
+      );
 
       final kit = FakePipelineKit(
         config: config,
@@ -999,81 +981,100 @@ void main() {
         throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
 
-      expect(resolverCalled, isTrue, reason: 'Custom resolver should have been called');
+      expect(
+        resolverCalled,
+        isTrue,
+        reason: 'Custom resolver should have been called',
+      );
     });
   });
 
   group('submit pipeline: credential mismatch', () {
-    test('webauthn_returns_wrong_credentialId_throwsCredentialException', () async {
-      // When the WebAuthn provider returns a different credentialId than
-      // requested, the signing path throws SmartAccountCredentialException (line 667).
-      final deployer = KeyPair.random();
-      final mock = MockSorobanServer();
-      mock.getAccountResponses.add(Account(deployer.accountId, BigInt.from(1)));
+    test(
+      'webauthn_returns_wrong_credentialId_throwsCredentialException',
+      () async {
+        // When the WebAuthn provider returns a different credentialId than
+        // requested, the signing path throws SmartAccountCredentialException (line 667).
+        final deployer = KeyPair.random();
+        final mock = MockSorobanServer();
+        mock.getAccountResponses.add(
+          Account(deployer.accountId, BigInt.from(1)),
+        );
 
-      final authEntry = _makeAddressCredsEntryForOps(_contractA);
-      final simResp = SimulateTransactionResponse(<String, dynamic>{});
-      simResp.results = <SimulateTransactionResult>[
-        SimulateTransactionResult(
-          '',
-          <String>[authEntry.toBase64EncodedXdrString()],
-        ),
-      ];
-      simResp.minResourceFee = 100;
-      mock.simulateResponses.add(simResp);
-      mock.latestLedgerDefault = _makeLedgerResponse(1000);
+        final authEntry = _makeAddressCredsEntryForOps(_contractA);
+        final simResp = SimulateTransactionResponse(<String, dynamic>{});
+        simResp.results = <SimulateTransactionResult>[
+          SimulateTransactionResult('', <String>[
+            authEntry.toBase64EncodedXdrString(),
+          ]),
+        ];
+        simResp.minResourceFee = 100;
+        mock.simulateResponses.add(simResp);
+        mock.latestLedgerDefault = _makeLedgerResponse(1000);
 
-      final provider = RecordingWebAuthnProvider();
-      // Return a DIFFERENT credentialId than the one stored.
-      final wrongCredId = Uint8List.fromList(<int>[0x99, 0x99, 0x99]);
-      provider.authenticateResponses.add(WebAuthnAuthenticationResult(
-        credentialId: wrongCredId,
-        authenticatorData: Uint8List.fromList(List<int>.generate(37, (i) => i)),
-        clientDataJSON: Uint8List.fromList(
-          utf8.encode('{"type":"webauthn.get","challenge":"abc"}'),
-        ),
-        signature: Uint8List.fromList(<int>[
-          0x30, 0x44,
-          0x02, 0x20, ...List<int>.generate(32, (i) => i + 1),
-          0x02, 0x20, ...List<int>.generate(32, (i) => i + 2),
-        ]),
-      ));
+        final provider = RecordingWebAuthnProvider();
+        // Return a DIFFERENT credentialId than the one stored.
+        final wrongCredId = Uint8List.fromList(<int>[0x99, 0x99, 0x99]);
+        provider.authenticateResponses.add(
+          WebAuthnAuthenticationResult(
+            credentialId: wrongCredId,
+            authenticatorData: Uint8List.fromList(
+              List<int>.generate(37, (i) => i),
+            ),
+            clientDataJSON: Uint8List.fromList(
+              utf8.encode('{"type":"webauthn.get","challenge":"abc"}'),
+            ),
+            signature: Uint8List.fromList(<int>[
+              0x30,
+              0x44,
+              0x02,
+              0x20,
+              ...List<int>.generate(32, (i) => i + 1),
+              0x02,
+              0x20,
+              ...List<int>.generate(32, (i) => i + 2),
+            ]),
+          ),
+        );
 
-      final config = OZSmartAccountConfig(
-        rpcUrl: 'https://soroban-testnet.stellar.org',
-        networkPassphrase: Network.TESTNET.networkPassphrase,
-        accountWasmHash: '0' * 64,
-        webauthnVerifierAddress: _contractA,
-        webauthnProvider: provider,
-      );
+        final config = OZSmartAccountConfig(
+          rpcUrl: 'https://soroban-testnet.stellar.org',
+          networkPassphrase: Network.TESTNET.networkPassphrase,
+          accountWasmHash: '0' * 64,
+          webauthnVerifierAddress: _contractA,
+          webauthnProvider: provider,
+        );
 
-      final storage = OZInMemoryStorageAdapter();
-      final pk = Uint8List(65);
-      pk[0] = 0x04;
-      for (var i = 1; i < 65; i++) pk[i] = i & 0xFF;
-      await storage.save(OZStoredCredential(
-        credentialId: _credentialId,
-        publicKey: pk,
-        contractId: _contractA,
-        createdAt: 1700000000000,
-      ));
+        final storage = OZInMemoryStorageAdapter();
+        final pk = Uint8List(65);
+        pk[0] = 0x04;
+        for (var i = 1; i < 65; i++) pk[i] = i & 0xFF;
+        await storage.save(
+          OZStoredCredential(
+            credentialId: _credentialId,
+            publicKey: pk,
+            contractId: _contractA,
+            createdAt: 1700000000000,
+          ),
+        );
 
-      final kit = FakePipelineKit(
-        config: config,
-        sorobanServer: mock,
-        deployer: deployer,
-        storage: storage,
-      )..setConnected(credentialId: _credentialId, contractId: _contractA);
+        final kit = FakePipelineKit(
+          config: config,
+          sorobanServer: mock,
+          deployer: deployer,
+          storage: storage,
+        )..setConnected(credentialId: _credentialId, contractId: _contractA);
 
-      final ops = OZTransactionOperations(kit);
-      await expectLater(
-        () => ops.submit(
-          hostFunction: _makeSimpleHostFunction(_contractA),
-          auth: const <XdrSorobanAuthorizationEntry>[],
-        ),
-        throwsA(isA<SmartAccountCredentialInvalid>()),
-      );
-    });
+        final ops = OZTransactionOperations(kit);
+        await expectLater(
+          () => ops.submit(
+            hostFunction: _makeSimpleHostFunction(_contractA),
+            auth: const <XdrSorobanAuthorizationEntry>[],
+          ),
+          throwsA(isA<SmartAccountCredentialInvalid>()),
+        );
+      },
+    );
   });
 
   group('submit pipeline: credential lookup from context rules', () {
@@ -1087,10 +1088,9 @@ void main() {
       final authEntry = _makeAddressCredsEntryForOps(_contractA);
       final simResp = SimulateTransactionResponse(<String, dynamic>{});
       simResp.results = <SimulateTransactionResult>[
-        SimulateTransactionResult(
-          '',
-          <String>[authEntry.toBase64EncodedXdrString()],
-        ),
+        SimulateTransactionResult('', <String>[
+          authEntry.toBase64EncodedXdrString(),
+        ]),
       ];
       simResp.minResourceFee = 100;
       mock.simulateResponses.add(simResp);
@@ -1155,10 +1155,9 @@ void main() {
       final authEntry = _makeAddressCredsEntryForOps(_contractA);
       final simResp = SimulateTransactionResponse(<String, dynamic>{});
       simResp.results = <SimulateTransactionResult>[
-        SimulateTransactionResult(
-          '',
-          <String>[authEntry.toBase64EncodedXdrString()],
-        ),
+        SimulateTransactionResult('', <String>[
+          authEntry.toBase64EncodedXdrString(),
+        ]),
       ];
       simResp.minResourceFee = 100;
       mock.simulateResponses.add(simResp);
@@ -1195,10 +1194,9 @@ void main() {
 
       final simResp = SimulateTransactionResponse(<String, dynamic>{});
       simResp.results = <SimulateTransactionResult>[
-        SimulateTransactionResult(
-          '',
-          <String>[authEntry.toBase64EncodedXdrString()],
-        ),
+        SimulateTransactionResult('', <String>[
+          authEntry.toBase64EncodedXdrString(),
+        ]),
       ];
       simResp.minResourceFee = 100;
       mock.simulateResponses.add(simResp);
@@ -1322,7 +1320,8 @@ void main() {
         () => ops.submit(
           hostFunction: _makeSimpleHostFunction(_contractA),
           auth: const <XdrSorobanAuthorizationEntry>[],
-          forceMethod: OZSubmissionMethod.relayer, // relayer forced but not configured
+          forceMethod:
+              OZSubmissionMethod.relayer, // relayer forced but not configured
         ),
         throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
@@ -1472,10 +1471,7 @@ void main() {
     });
 
     test('rejects decimals above the maximum', () {
-      expect(
-        OZTransactionOperations.maxTokenDecimals,
-        equals(38),
-      );
+      expect(OZTransactionOperations.maxTokenDecimals, equals(38));
       expect(
         () => OZTransactionOperations.amountToBaseUnits(
           '1',
@@ -1544,23 +1540,27 @@ void main() {
       expect(decimals, equals(6));
     });
 
-    test('invalid contract address throws SmartAccountInvalidAddress', () async {
-      final kit = FakePipelineKit()
-        ..setConnected(credentialId: _credentialId, contractId: _contractA);
-      final ops = OZTransactionOperations(kit);
-      await expectLater(
-        () => ops.fetchTokenDecimals('not-a-contract'),
-        throwsA(isA<SmartAccountInvalidAddress>()),
-      );
-    });
+    test(
+      'invalid contract address throws SmartAccountInvalidAddress',
+      () async {
+        final kit = FakePipelineKit()
+          ..setConnected(credentialId: _credentialId, contractId: _contractA);
+        final ops = OZTransactionOperations(kit);
+        await expectLater(
+          () => ops.fetchTokenDecimals('not-a-contract'),
+          throwsA(isA<SmartAccountInvalidAddress>()),
+        );
+      },
+    );
 
     test('non-u32 result throws simulationFailed', () async {
       final deployer = KeyPair.random();
       final mock = MockSorobanServer();
       mock.getAccountDefault = Account(deployer.accountId, BigInt.from(1));
       // The contract returns a string instead of a u32.
-      mock.simulateDefault =
-          _scValSimResponse(XdrSCVal.forString('not-a-number'));
+      mock.simulateDefault = _scValSimResponse(
+        XdrSCVal.forString('not-a-number'),
+      );
 
       final kit = FakePipelineKit(sorobanServer: mock, deployer: deployer)
         ..setConnected(credentialId: _credentialId, contractId: _contractA);
@@ -1592,29 +1592,32 @@ void main() {
       expect(args[2].i128!.lo.uint64, equals(BigInt.from(1500000)));
     });
 
-    test('auto-fetch path: decimals() simulate drives the base units', () async {
-      final deployer = KeyPair.random();
-      final mock = MockSorobanServer();
-      mock.getAccountDefault = Account(deployer.accountId, BigInt.from(1));
-      // decimals() simulate returns u32 = 6.
-      mock.simulateDefault = _u32SimResponse(6);
+    test(
+      'auto-fetch path: decimals() simulate drives the base units',
+      () async {
+        final deployer = KeyPair.random();
+        final mock = MockSorobanServer();
+        mock.getAccountDefault = Account(deployer.accountId, BigInt.from(1));
+        // decimals() simulate returns u32 = 6.
+        mock.simulateDefault = _u32SimResponse(6);
 
-      final kit = FakePipelineKit(sorobanServer: mock, deployer: deployer)
-        ..setConnected(credentialId: _credentialId, contractId: _contractA);
-      final ops = _CapturingContractCallOps(kit);
+        final kit = FakePipelineKit(sorobanServer: mock, deployer: deployer)
+          ..setConnected(credentialId: _credentialId, contractId: _contractA);
+        final ops = _CapturingContractCallOps(kit);
 
-      await ops.transfer(
-        tokenContract: _contractA,
-        recipient: _accountA,
-        amount: '2.5', // 2.5 at 6 decimals = 2_500_000 base units.
-      );
+        await ops.transfer(
+          tokenContract: _contractA,
+          recipient: _accountA,
+          amount: '2.5', // 2.5 at 6 decimals = 2_500_000 base units.
+        );
 
-      final args = ops.contractCallCalls.single.targetArgs;
-      expect(args[2].discriminant, equals(XdrSCValType.SCV_I128));
-      expect(args[2].i128!.lo.uint64, equals(BigInt.from(2500000)));
-      // The decimals() simulate must have run exactly once.
-      expect(mock.simulateCalls.length, equals(1));
-    });
+        final args = ops.contractCallCalls.single.targetArgs;
+        expect(args[2].discriminant, equals(XdrSCValType.SCV_I128));
+        expect(args[2].i128!.lo.uint64, equals(BigInt.from(2500000)));
+        // The decimals() simulate must have run exactly once.
+        expect(mock.simulateCalls.length, equals(1));
+      },
+    );
 
     test('out-of-i128 amount throws tagged invalidAmount', () async {
       final kit = FakePipelineKit()
@@ -1630,8 +1633,11 @@ void main() {
           decimals: 18,
         ),
         throwsA(
-          isA<SmartAccountInvalidAmount>()
-              .having((e) => e.message, 'message', contains('i128')),
+          isA<SmartAccountInvalidAmount>().having(
+            (e) => e.message,
+            'message',
+            contains('i128'),
+          ),
         ),
       );
       expect(ops.contractCallCalls, isEmpty);
@@ -1657,30 +1663,33 @@ void main() {
       expect(args[2].i128!.lo.uint64, equals(BigInt.from(1500000)));
     });
 
-    test('auto-fetch path: decimals() simulate drives the base units', () async {
-      final deployer = KeyPair.random();
-      final mock = MockSorobanServer();
-      mock.getAccountDefault = Account(deployer.accountId, BigInt.from(1));
-      mock.simulateDefault = _u32SimResponse(6);
+    test(
+      'auto-fetch path: decimals() simulate drives the base units',
+      () async {
+        final deployer = KeyPair.random();
+        final mock = MockSorobanServer();
+        mock.getAccountDefault = Account(deployer.accountId, BigInt.from(1));
+        mock.simulateDefault = _u32SimResponse(6);
 
-      final kit = FakePipelineKit(sorobanServer: mock, deployer: deployer)
-        ..setConnected(credentialId: _credentialId, contractId: _contractA);
-      // multiSignerTransfer fetches decimals via kit.transactionOperations,
-      // so the kit's bound ops must hit the same mock server.
-      final manager = _CapturingMultiSignerManager(kit);
+        final kit = FakePipelineKit(sorobanServer: mock, deployer: deployer)
+          ..setConnected(credentialId: _credentialId, contractId: _contractA);
+        // multiSignerTransfer fetches decimals via kit.transactionOperations,
+        // so the kit's bound ops must hit the same mock server.
+        final manager = _CapturingMultiSignerManager(kit);
 
-      await manager.multiSignerTransfer(
-        tokenContract: _contractA,
-        recipient: _accountA,
-        amount: '2.5',
-        selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
-      );
+        await manager.multiSignerTransfer(
+          tokenContract: _contractA,
+          recipient: _accountA,
+          amount: '2.5',
+          selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
+        );
 
-      final args = manager.contractCallCalls.single.targetArgs;
-      expect(args[2].discriminant, equals(XdrSCValType.SCV_I128));
-      expect(args[2].i128!.lo.uint64, equals(BigInt.from(2500000)));
-      expect(mock.simulateCalls.length, equals(1));
-    });
+        final args = manager.contractCallCalls.single.targetArgs;
+        expect(args[2].discriminant, equals(XdrSCValType.SCV_I128));
+        expect(args[2].i128!.lo.uint64, equals(BigInt.from(2500000)));
+        expect(mock.simulateCalls.length, equals(1));
+      },
+    );
 
     test('empty amount throws invalidAmount before routing', () async {
       final kit = FakePipelineKit()
@@ -1718,24 +1727,28 @@ void main() {
       expect(manager.contractCallCalls, isEmpty);
     });
 
-    test('excess fractional digits throw invalidAmount before routing',
-        () async {
-      final kit = FakePipelineKit()
-        ..setConnected(credentialId: _credentialId, contractId: _contractA);
-      final manager = _CapturingMultiSignerManager(kit);
+    test(
+      'excess fractional digits throw invalidAmount before routing',
+      () async {
+        final kit = FakePipelineKit()
+          ..setConnected(credentialId: _credentialId, contractId: _contractA);
+        final manager = _CapturingMultiSignerManager(kit);
 
-      await expectLater(
-        () => manager.multiSignerTransfer(
-          tokenContract: _contractA,
-          recipient: _accountA,
-          amount: '1.123', // 3 fractional digits > 2 decimals.
-          decimals: 2,
-          selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
-        ),
-        throwsA(isA<SmartAccountInvalidAmount>()),
-      );
-      expect(manager.contractCallCalls, isEmpty);
-    });
+        await expectLater(
+          () => manager.multiSignerTransfer(
+            tokenContract: _contractA,
+            recipient: _accountA,
+            amount: '1.123', // 3 fractional digits > 2 decimals.
+            decimals: 2,
+            selectedSigners: const <OZSelectedSigner>[
+              OZSelectedSignerPasskey(),
+            ],
+          ),
+          throwsA(isA<SmartAccountInvalidAmount>()),
+        );
+        expect(manager.contractCallCalls, isEmpty);
+      },
+    );
 
     test('out-of-i128 amount throws tagged invalidAmount', () async {
       final kit = FakePipelineKit()
@@ -1751,8 +1764,11 @@ void main() {
           selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
         ),
         throwsA(
-          isA<SmartAccountInvalidAmount>()
-              .having((e) => e.message, 'message', contains('i128')),
+          isA<SmartAccountInvalidAmount>().having(
+            (e) => e.message,
+            'message',
+            contains('i128'),
+          ),
         ),
       );
       expect(manager.contractCallCalls, isEmpty);
@@ -1768,7 +1784,7 @@ class _CapturingContractCallOps extends OZTransactionOperations {
   _CapturingContractCallOps(super.kit);
 
   final List<({String target, String targetFn, List<XdrSCVal> targetArgs})>
-      contractCallCalls =
+  contractCallCalls =
       <({String target, String targetFn, List<XdrSCVal> targetArgs})>[];
 
   @override
@@ -1796,7 +1812,7 @@ class _CapturingMultiSignerManager extends OZMultiSignerManager {
   _CapturingMultiSignerManager(super.kit);
 
   final List<({String target, String targetFn, List<XdrSCVal> targetArgs})>
-      contractCallCalls =
+  contractCallCalls =
       <({String target, String targetFn, List<XdrSCVal> targetArgs})>[];
 
   @override
@@ -1837,7 +1853,9 @@ SimulateTransactionResponse _scValSimResponse(XdrSCVal scVal) {
 SimulateTransactionResponse _u32SimResponse(int value) =>
     _scValSimResponse(XdrSCVal.forU32(value));
 
-XdrSorobanAuthorizationEntry _makeAddressCredsEntryForOps(String contractAddress) {
+XdrSorobanAuthorizationEntry _makeAddressCredsEntryForOps(
+  String contractAddress,
+) {
   final invokeArgs = XdrInvokeContractArgs(
     Address.forContractId(contractAddress).toXdr(),
     'noop',

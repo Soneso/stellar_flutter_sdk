@@ -70,46 +70,49 @@ class CreateClaimableBalanceOperationResponse extends OperationResponse {
   /// - [transaction] Full parent transaction
   /// - [sponsor] Account sponsoring the operation (if applicable)
   CreateClaimableBalanceOperationResponse(
-      this.asset,
-      this.amount,
-      this.claimants,
-      super.links,
-      super.id,
-      super.pagingToken,
-      super.transactionSuccessful,
-      super.sourceAccount,
-      super.sourceAccountMuxed,
-      super.sourceAccountMuxedId,
-      super.type,
-      super.type_i,
-      super.createdAt,
-      super.transactionHash,
-      super.transaction,
-      super.sponsor);
+    this.asset,
+    this.amount,
+    this.claimants,
+    super.links,
+    super.id,
+    super.pagingToken,
+    super.transactionSuccessful,
+    super.sourceAccount,
+    super.sourceAccountMuxed,
+    super.sourceAccountMuxedId,
+    super.type,
+    super.type_i,
+    super.createdAt,
+    super.transactionHash,
+    super.transaction,
+    super.sponsor,
+  );
 
   /// Deserializes a create claimable balance operation response from JSON.
   factory CreateClaimableBalanceOperationResponse.fromJson(
-          Map<String, dynamic> json) =>
-      CreateClaimableBalanceOperationResponse(
-          Asset.createFromCanonicalForm(json['asset'])!,
-          json['amount'],
-          List<ClaimantResponse>.from(
-              json['claimants'].map((e) => ClaimantResponse.fromJson(e))),
-          OperationResponseLinks.fromJson(json['_links']),
-          json['id'],
-          json['paging_token'],
-          json['transaction_successful'],
-          json['source_account'],
-          json['source_account_muxed'],
-          json['source_account_muxed_id'],
-          json['type'],
-          json['type_i'],
-          json['created_at'],
-          json['transaction_hash'],
-          json['transaction'] == null
-              ? null
-              : TransactionResponse.fromJson(json['transaction']),
-          json['sponsor']);
+    Map<String, dynamic> json,
+  ) => CreateClaimableBalanceOperationResponse(
+    Asset.createFromCanonicalForm(json['asset'])!,
+    json['amount'],
+    List<ClaimantResponse>.from(
+      json['claimants'].map((e) => ClaimantResponse.fromJson(e)),
+    ),
+    OperationResponseLinks.fromJson(json['_links']),
+    json['id'],
+    json['paging_token'],
+    json['transaction_successful'],
+    json['source_account'],
+    json['source_account_muxed'],
+    json['source_account_muxed_id'],
+    json['type'],
+    json['type_i'],
+    json['created_at'],
+    json['transaction_hash'],
+    json['transaction'] == null
+        ? null
+        : TransactionResponse.fromJson(json['transaction']),
+    json['sponsor'],
+  );
 }
 
 /// Represents a claim claimable balance operation response from Horizon.
@@ -180,45 +183,47 @@ class ClaimClaimableBalanceOperationResponse extends OperationResponse {
   /// - [transaction] Full parent transaction
   /// - [sponsor] Account sponsoring the operation (if applicable)
   ClaimClaimableBalanceOperationResponse(
-      this.balanceId,
-      this.claimantAccountId,
-      this.claimantMuxed,
-      this.claimantMuxedId,
-      super.links,
-      super.id,
-      super.pagingToken,
-      super.transactionSuccessful,
-      super.sourceAccount,
-      super.sourceAccountMuxed,
-      super.sourceAccountMuxedId,
-      super.type,
-      super.type_i,
-      super.createdAt,
-      super.transactionHash,
-      super.transaction,
-      super.sponsor);
+    this.balanceId,
+    this.claimantAccountId,
+    this.claimantMuxed,
+    this.claimantMuxedId,
+    super.links,
+    super.id,
+    super.pagingToken,
+    super.transactionSuccessful,
+    super.sourceAccount,
+    super.sourceAccountMuxed,
+    super.sourceAccountMuxedId,
+    super.type,
+    super.type_i,
+    super.createdAt,
+    super.transactionHash,
+    super.transaction,
+    super.sponsor,
+  );
 
   /// Deserializes a claim claimable balance operation response from JSON.
   factory ClaimClaimableBalanceOperationResponse.fromJson(
-          Map<String, dynamic> json) =>
-      ClaimClaimableBalanceOperationResponse(
-          json['balance_id'],
-          json['claimant'],
-          json['claimant_muxed'],
-          json['claimant_muxed_id'],
-          OperationResponseLinks.fromJson(json['_links']),
-          json['id'],
-          json['paging_token'],
-          json['transaction_successful'],
-          json['source_account'],
-          json['source_account_muxed'],
-          json['source_account_muxed_id'],
-          json['type'],
-          json['type_i'],
-          json['created_at'],
-          json['transaction_hash'],
-          json['transaction'] == null
-              ? null
-              : TransactionResponse.fromJson(json['transaction']),
-          json['sponsor']);
+    Map<String, dynamic> json,
+  ) => ClaimClaimableBalanceOperationResponse(
+    json['balance_id'],
+    json['claimant'],
+    json['claimant_muxed'],
+    json['claimant_muxed_id'],
+    OperationResponseLinks.fromJson(json['_links']),
+    json['id'],
+    json['paging_token'],
+    json['transaction_successful'],
+    json['source_account'],
+    json['source_account_muxed'],
+    json['source_account_muxed_id'],
+    json['type'],
+    json['type_i'],
+    json['created_at'],
+    json['transaction_hash'],
+    json['transaction'] == null
+        ? null
+        : TransactionResponse.fromJson(json['transaction']),
+    json['sponsor'],
+  );
 }

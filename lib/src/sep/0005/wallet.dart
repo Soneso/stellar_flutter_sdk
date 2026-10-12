@@ -97,9 +97,13 @@ class Wallet {
   /// String mnemonic = await Wallet.generate12WordsMnemonic();
   /// // Output: "witch collapse practice feed shame open despair creek road again ice least"
   /// ```
-  static Future<String> generate12WordsMnemonic(
-      {String language = LANGUAGE_ENGLISH}) async {
-    return generate(MnemonicConstants.MNEMONIC_ENTROPY_BITS_12_WORDS, language: language);
+  static Future<String> generate12WordsMnemonic({
+    String language = LANGUAGE_ENGLISH,
+  }) async {
+    return generate(
+      MnemonicConstants.MNEMONIC_ENTROPY_BITS_12_WORDS,
+      language: language,
+    );
   }
 
   /// Generates an 18-word BIP-39 mnemonic phrase.
@@ -111,9 +115,13 @@ class Wallet {
   /// - [language] The language for the word list (default: [LANGUAGE_ENGLISH])
   ///
   /// Returns: A space-separated string of 18 mnemonic words
-  static Future<String> generate18WordsMnemonic(
-      {String language = LANGUAGE_ENGLISH}) async {
-    return generate(MnemonicConstants.MNEMONIC_ENTROPY_BITS_18_WORDS, language: language);
+  static Future<String> generate18WordsMnemonic({
+    String language = LANGUAGE_ENGLISH,
+  }) async {
+    return generate(
+      MnemonicConstants.MNEMONIC_ENTROPY_BITS_18_WORDS,
+      language: language,
+    );
   }
 
   /// Generates a 24-word BIP-39 mnemonic phrase.
@@ -130,9 +138,13 @@ class Wallet {
   /// ```dart
   /// String mnemonic = await Wallet.generate24WordsMnemonic();
   /// ```
-  static Future<String> generate24WordsMnemonic(
-      {String language = LANGUAGE_ENGLISH}) async {
-    return generate(MnemonicConstants.MNEMONIC_ENTROPY_BITS_24_WORDS, language: language);
+  static Future<String> generate24WordsMnemonic({
+    String language = LANGUAGE_ENGLISH,
+  }) async {
+    return generate(
+      MnemonicConstants.MNEMONIC_ENTROPY_BITS_24_WORDS,
+      language: language,
+    );
   }
 
   /// Generates a mnemonic phrase with custom entropy strength.
@@ -142,10 +154,14 @@ class Wallet {
   /// - [language] The language for the word list (default: [LANGUAGE_ENGLISH])
   ///
   /// Returns: A space-separated string of mnemonic words
-  static Future<String> generate(int strength,
-      {String language = LANGUAGE_ENGLISH}) async {
+  static Future<String> generate(
+    int strength, {
+    String language = LANGUAGE_ENGLISH,
+  }) async {
     return generateMnemonic(
-        strength: strength, wordList: _wordListForLanguage(language));
+      strength: strength,
+      wordList: _wordListForLanguage(language),
+    );
   }
 
   /// Validates a BIP-39 mnemonic phrase.
@@ -167,8 +183,10 @@ class Wallet {
   ///   "witch collapse practice feed shame open despair creek road again ice least"
   /// );
   /// ```
-  static Future<bool> validate(String mnemonic,
-      {String language = LANGUAGE_ENGLISH}) async {
+  static Future<bool> validate(
+    String mnemonic, {
+    String language = LANGUAGE_ENGLISH,
+  }) async {
     return validateMnemonic(mnemonic, _wordListForLanguage(language));
   }
 
@@ -195,8 +213,11 @@ class Wallet {
   /// // With passphrase for additional security
   /// Wallet secureWallet = await Wallet.from(mnemonic, passphrase: "my secret phrase");
   /// ```
-  static Future<Wallet> from(String mnemonic,
-      {String language = LANGUAGE_ENGLISH, String passphrase = ''}) async {
+  static Future<Wallet> from(
+    String mnemonic, {
+    String language = LANGUAGE_ENGLISH,
+    String passphrase = '',
+  }) async {
     if (!(await validate(mnemonic, language: language))) {
       throw ArgumentError('Invalid mnemonic');
     }
@@ -262,7 +283,9 @@ class Wallet {
   /// - [BIP-44](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
   Future<KeyPair> getKeyPair({int index = 0}) async {
     final key = this._derivePath("m/44'/148'/$index'");
-    return KeyPair.fromSecretSeedList(key.sublist(0, MnemonicConstants.WALLET_DERIVED_KEY_BYTES));
+    return KeyPair.fromSecretSeedList(
+      key.sublist(0, MnemonicConstants.WALLET_DERIVED_KEY_BYTES),
+    );
   }
 
   /// Gets the Stellar account ID at the specified index without the full keypair.
@@ -313,7 +336,10 @@ class Wallet {
     Uint8List data = new Uint8List(MnemonicConstants.HD_DERIVATION_DATA_LENGTH);
     data[0] = 0x00;
     data.setRange(1, MnemonicConstants.WALLET_DERIVED_KEY_BYTES + 1, seed);
-    data.buffer.asByteData().setUint32(MnemonicConstants.WALLET_DERIVED_KEY_BYTES + 1, y);
+    data.buffer.asByteData().setUint32(
+      MnemonicConstants.WALLET_DERIVED_KEY_BYTES + 1,
+      y,
+    );
     var output = _hMacSHA512(chainCode, data);
     return output;
   }
@@ -326,7 +352,9 @@ class Wallet {
       splitPath = splitPath.sublist(1);
     }
     final seed = _hMacSHA512(
-        Uint8List.fromList(utf8.encode("ed25519 seed")), this._seed);
+      Uint8List.fromList(utf8.encode("ed25519 seed")),
+      this._seed,
+    );
     Uint8List result = splitPath.fold(seed, (Uint8List prev, String indexStr) {
       int index;
       if (indexStr.substring(indexStr.length - 1) == "'") {
@@ -335,15 +363,19 @@ class Wallet {
         index = int.parse(indexStr);
       }
       return _derive(
-          prev.sublist(0, MnemonicConstants.WALLET_DERIVED_KEY_BYTES),
-          prev.sublist(MnemonicConstants.WALLET_DERIVED_KEY_BYTES),
-          index);
+        prev.sublist(0, MnemonicConstants.WALLET_DERIVED_KEY_BYTES),
+        prev.sublist(MnemonicConstants.WALLET_DERIVED_KEY_BYTES),
+        index,
+      );
     });
     return result;
   }
 
   Uint8List _hMacSHA512(Uint8List key, Uint8List data) {
-    final _tmp = new HMac(new SHA512Digest(), MnemonicConstants.PBKDF2_BLOCK_LENGTH_BYTES)..init(new KeyParameter(key));
+    final _tmp = new HMac(
+      new SHA512Digest(),
+      MnemonicConstants.PBKDF2_BLOCK_LENGTH_BYTES,
+    )..init(new KeyParameter(key));
     return _tmp.process(data);
   }
 }

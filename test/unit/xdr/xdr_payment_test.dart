@@ -11,7 +11,9 @@ void main() {
     test('XdrPathPaymentStrictReceiveOp encode/decode with empty path', () {
       var sendAsset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
       var destAsset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
-      var destAccount = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      var destAccount = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       var destination = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       destination.ed25519 = destAccount.accountID.getEd25519();
 
@@ -39,7 +41,9 @@ void main() {
     test('XdrPathPaymentStrictSendOp encode/decode with empty path', () {
       var sendAsset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
       var destAsset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
-      var destAccount = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      var destAccount = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       var destination = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       destination.ed25519 = destAccount.accountID.getEd25519();
 

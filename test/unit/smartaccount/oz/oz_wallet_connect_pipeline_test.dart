@@ -126,27 +126,32 @@ void main() {
   });
 
   group('OZWalletOperations.connectWallet authentication error paths', () {
-    test('webAuthnThrowsGenericException_wrapsAsAuthenticationFailed', () async {
-      // When the WebAuthn provider throws a non-WebAuthnException during
-      // connectWallet, lines 715-717 wrap it.
-      final provider = RecordingWebAuthnProvider();
-      provider.authenticateResponses.add(Exception('network error'));
+    test(
+      'webAuthnThrowsGenericException_wrapsAsAuthenticationFailed',
+      () async {
+        // When the WebAuthn provider throws a non-WebAuthnException during
+        // connectWallet, lines 715-717 wrap it.
+        final provider = RecordingWebAuthnProvider();
+        provider.authenticateResponses.add(Exception('network error'));
 
-      final config = OZSmartAccountConfig(
-        rpcUrl: 'https://soroban-testnet.stellar.org',
-        networkPassphrase: Network.TESTNET.networkPassphrase,
-        accountWasmHash: '0' * 64,
-        webauthnVerifierAddress: _contractA,
-        webauthnProvider: provider,
-      );
-      final kit = FakePipelineKit(config: config);
-      final ops = OZWalletOperations(kit);
+        final config = OZSmartAccountConfig(
+          rpcUrl: 'https://soroban-testnet.stellar.org',
+          networkPassphrase: Network.TESTNET.networkPassphrase,
+          accountWasmHash: '0' * 64,
+          webauthnVerifierAddress: _contractA,
+          webauthnProvider: provider,
+        );
+        final kit = FakePipelineKit(config: config);
+        final ops = OZWalletOperations(kit);
 
-      await expectLater(
-        () => ops.connectWallet(options: const OZConnectWalletOptions(prompt: true)),
-        throwsA(isA<WebAuthnAuthenticationFailed>()),
-      );
-    });
+        await expectLater(
+          () => ops.connectWallet(
+            options: const OZConnectWalletOptions(prompt: true),
+          ),
+          throwsA(isA<WebAuthnAuthenticationFailed>()),
+        );
+      },
+    );
 
     test('connectWallet_derivedContractOnChain_returnsConnected', () async {
       // _resolveViaDerivation finds the contract on-chain (lines 725-735).
@@ -154,18 +159,29 @@ void main() {
       // The credential manager has no credential → storage lookup returns null.
       // Then derivation is tried: deriveContractAddress + verifyContractExists.
       final provider = RecordingWebAuthnProvider();
-      final credIdBytes = base64Url.decode(base64Url.normalize(_credentialIdB64));
+      final credIdBytes = base64Url.decode(
+        base64Url.normalize(_credentialIdB64),
+      );
       final sig = Uint8List.fromList(<int>[
-        0x30, 0x44,
-        0x02, 0x20, ..._bytes(32, 1),
-        0x02, 0x20, ..._bytes(32, 2),
+        0x30,
+        0x44,
+        0x02,
+        0x20,
+        ..._bytes(32, 1),
+        0x02,
+        0x20,
+        ..._bytes(32, 2),
       ]);
-      provider.authenticateResponses.add(WebAuthnAuthenticationResult(
-        credentialId: credIdBytes,
-        authenticatorData: _bytes(37, 3),
-        clientDataJSON: utf8.encode('{"type":"webauthn.get","challenge":"abc","origin":"https://test"}'),
-        signature: sig,
-      ));
+      provider.authenticateResponses.add(
+        WebAuthnAuthenticationResult(
+          credentialId: credIdBytes,
+          authenticatorData: _bytes(37, 3),
+          clientDataJSON: utf8.encode(
+            '{"type":"webauthn.get","challenge":"abc","origin":"https://test"}',
+          ),
+          signature: sig,
+        ),
+      );
 
       final mock = MockSorobanServer();
       // getContractData returns a LedgerEntry → contract is on-chain (derivation succeeds).
@@ -197,18 +213,29 @@ void main() {
     test('indexerReturnsEmpty_throwsWalletNotFound', () async {
       // _resolveViaIndexer with empty candidates → line 1258 throws SmartAccountWalletNotFound.
       final provider = RecordingWebAuthnProvider();
-      final credIdBytes = base64Url.decode(base64Url.normalize(_credentialIdB64));
+      final credIdBytes = base64Url.decode(
+        base64Url.normalize(_credentialIdB64),
+      );
       final sig = Uint8List.fromList(<int>[
-        0x30, 0x44,
-        0x02, 0x20, ..._bytes(32, 1),
-        0x02, 0x20, ..._bytes(32, 2),
+        0x30,
+        0x44,
+        0x02,
+        0x20,
+        ..._bytes(32, 1),
+        0x02,
+        0x20,
+        ..._bytes(32, 2),
       ]);
-      provider.authenticateResponses.add(WebAuthnAuthenticationResult(
-        credentialId: credIdBytes,
-        authenticatorData: _bytes(37),
-        clientDataJSON: utf8.encode('{"type":"webauthn.get","challenge":"abc"}'),
-        signature: sig,
-      ));
+      provider.authenticateResponses.add(
+        WebAuthnAuthenticationResult(
+          credentialId: credIdBytes,
+          authenticatorData: _bytes(37),
+          clientDataJSON: utf8.encode(
+            '{"type":"webauthn.get","challenge":"abc"}',
+          ),
+          signature: sig,
+        ),
+      );
 
       final mock = MockSorobanServer();
       // Storage: no credential. Derivation: not on-chain.
@@ -237,7 +264,9 @@ void main() {
       final ops = OZWalletOperations(kit);
 
       await expectLater(
-        () => ops.connectWallet(options: const OZConnectWalletOptions(prompt: true)),
+        () => ops.connectWallet(
+          options: const OZConnectWalletOptions(prompt: true),
+        ),
         throwsA(isA<SmartAccountWalletNotFound>()),
       );
     });
@@ -248,18 +277,29 @@ void main() {
       // _resolveViaIndexer with one candidate that verifies → OZConnectWalletConnected.
       // Covers lines 1262-1265 in oz_wallet_operations.dart.
       final provider = RecordingWebAuthnProvider();
-      final credIdBytes = base64Url.decode(base64Url.normalize(_credentialIdB64));
+      final credIdBytes = base64Url.decode(
+        base64Url.normalize(_credentialIdB64),
+      );
       final sig = Uint8List.fromList(<int>[
-        0x30, 0x44,
-        0x02, 0x20, ..._bytes(32, 1),
-        0x02, 0x20, ..._bytes(32, 2),
+        0x30,
+        0x44,
+        0x02,
+        0x20,
+        ..._bytes(32, 1),
+        0x02,
+        0x20,
+        ..._bytes(32, 2),
       ]);
-      provider.authenticateResponses.add(WebAuthnAuthenticationResult(
-        credentialId: credIdBytes,
-        authenticatorData: _bytes(37, 3),
-        clientDataJSON: utf8.encode('{"type":"webauthn.get","challenge":"abc","origin":"https://test"}'),
-        signature: sig,
-      ));
+      provider.authenticateResponses.add(
+        WebAuthnAuthenticationResult(
+          credentialId: credIdBytes,
+          authenticatorData: _bytes(37, 3),
+          clientDataJSON: utf8.encode(
+            '{"type":"webauthn.get","challenge":"abc","origin":"https://test"}',
+          ),
+          signature: sig,
+        ),
+      );
 
       // No credential in storage → storage lookup returns null.
       // No contract at derived address → derivation returns null.
@@ -348,63 +388,75 @@ void main() {
   });
 
   group('OZWalletOperations.connectWallet WebAuthn prompt pipeline', () {
-    test('promptConnect_credentialFoundInStorage_contractOnChain_returnsConnected', () async {
-      // Prompt=true + WebAuthn auth → credential found in storage → contract on-chain.
-      final credentials = StubCredentialManager();
-      final pubKey = _validSecp256r1PublicKey();
-      credentials.inject(OZStoredCredential(
-        credentialId: _credentialIdB64,
-        publicKey: pubKey,
-        contractId: _contractA,
-        deploymentStatus: OZCredentialDeploymentStatus.pending,
-        createdAt: 1700000000000,
-      ));
+    test(
+      'promptConnect_credentialFoundInStorage_contractOnChain_returnsConnected',
+      () async {
+        // Prompt=true + WebAuthn auth → credential found in storage → contract on-chain.
+        final credentials = StubCredentialManager();
+        final pubKey = _validSecp256r1PublicKey();
+        credentials.inject(
+          OZStoredCredential(
+            credentialId: _credentialIdB64,
+            publicKey: pubKey,
+            contractId: _contractA,
+            deploymentStatus: OZCredentialDeploymentStatus.pending,
+            createdAt: 1700000000000,
+          ),
+        );
 
-      final provider = RecordingWebAuthnProvider();
-      final credIdBytes = base64Url.decode(
-        base64Url.normalize(_credentialIdB64),
-      );
-      final sig = Uint8List.fromList(<int>[
-        0x30, 0x44,
-        0x02, 0x20, ..._bytes(32, 1),
-        0x02, 0x20, ..._bytes(32, 2),
-      ]);
-      provider.authenticateResponses.add(WebAuthnAuthenticationResult(
-        credentialId: credIdBytes,
-        authenticatorData: _bytes(37, 3),
-        clientDataJSON: utf8.encode(
-          '{"type":"webauthn.get","challenge":"abc","origin":"https://test"}',
-        ),
-        signature: sig,
-      ));
+        final provider = RecordingWebAuthnProvider();
+        final credIdBytes = base64Url.decode(
+          base64Url.normalize(_credentialIdB64),
+        );
+        final sig = Uint8List.fromList(<int>[
+          0x30,
+          0x44,
+          0x02,
+          0x20,
+          ..._bytes(32, 1),
+          0x02,
+          0x20,
+          ..._bytes(32, 2),
+        ]);
+        provider.authenticateResponses.add(
+          WebAuthnAuthenticationResult(
+            credentialId: credIdBytes,
+            authenticatorData: _bytes(37, 3),
+            clientDataJSON: utf8.encode(
+              '{"type":"webauthn.get","challenge":"abc","origin":"https://test"}',
+            ),
+            signature: sig,
+          ),
+        );
 
-      final mock = MockSorobanServer();
-      // getContractData returns a LedgerEntry (contract is on-chain).
-      mock.getContractDataResponses.add(_fakeLedgerEntry());
+        final mock = MockSorobanServer();
+        // getContractData returns a LedgerEntry (contract is on-chain).
+        mock.getContractDataResponses.add(_fakeLedgerEntry());
 
-      final config = OZSmartAccountConfig(
-        rpcUrl: 'https://soroban-testnet.stellar.org',
-        networkPassphrase: Network.TESTNET.networkPassphrase,
-        accountWasmHash: '0' * 64,
-        webauthnVerifierAddress: _contractA,
-        webauthnProvider: provider,
-      );
-      final kit = FakePipelineKit(
-        config: config,
-        sorobanServer: mock,
-        credentialManager: credentials,
-      );
-      final ops = OZWalletOperations(kit);
+        final config = OZSmartAccountConfig(
+          rpcUrl: 'https://soroban-testnet.stellar.org',
+          networkPassphrase: Network.TESTNET.networkPassphrase,
+          accountWasmHash: '0' * 64,
+          webauthnVerifierAddress: _contractA,
+          webauthnProvider: provider,
+        );
+        final kit = FakePipelineKit(
+          config: config,
+          sorobanServer: mock,
+          credentialManager: credentials,
+        );
+        final ops = OZWalletOperations(kit);
 
-      final result = await ops.connectWallet(
-        options: const OZConnectWalletOptions(prompt: true),
-      );
+        final result = await ops.connectWallet(
+          options: const OZConnectWalletOptions(prompt: true),
+        );
 
-      expect(result, isNotNull);
-      expect(result, isA<OZConnectWalletConnected>());
-      final connected = result as OZConnectWalletConnected;
-      expect(connected.contractId, equals(_contractA));
-    });
+        expect(result, isNotNull);
+        expect(result, isA<OZConnectWalletConnected>());
+        final connected = result as OZConnectWalletConnected;
+        expect(connected.contractId, equals(_contractA));
+      },
+    );
   });
 
   group('OZWalletOperations.authenticatePasskey edge cases', () {
@@ -434,16 +486,22 @@ void main() {
       // When the WebAuthn signature is malformed, normalizeSignature throws
       // SmartAccountValidationException which is rethrown via line 906 of oz_wallet_operations.
       final provider = RecordingWebAuthnProvider();
-      final credIdBytes = base64Url.decode(base64Url.normalize(_credentialIdB64));
+      final credIdBytes = base64Url.decode(
+        base64Url.normalize(_credentialIdB64),
+      );
       // Invalid DER signature (wrong prefix).
       final invalidSig = Uint8List.fromList(<int>[0xFF, 0x00, 0x01]);
 
-      provider.authenticateResponses.add(WebAuthnAuthenticationResult(
-        credentialId: credIdBytes,
-        authenticatorData: _bytes(37),
-        clientDataJSON: utf8.encode('{"type":"webauthn.get","challenge":"abc"}'),
-        signature: invalidSig,
-      ));
+      provider.authenticateResponses.add(
+        WebAuthnAuthenticationResult(
+          credentialId: credIdBytes,
+          authenticatorData: _bytes(37),
+          clientDataJSON: utf8.encode(
+            '{"type":"webauthn.get","challenge":"abc"}',
+          ),
+          signature: invalidSig,
+        ),
+      );
 
       final config = OZSmartAccountConfig(
         rpcUrl: 'https://soroban-testnet.stellar.org',
@@ -466,19 +524,31 @@ void main() {
       // doesn't match, line 892 throws SmartAccountCredentialInvalid.
       final provider = RecordingWebAuthnProvider();
       final requestedCredIdBytes = Uint8List.fromList(<int>[0x01, 0x02, 0x03]);
-      final returnedCredIdBytes = Uint8List.fromList(<int>[0x99, 0x98]); // different
+      final returnedCredIdBytes = Uint8List.fromList(<int>[
+        0x99,
+        0x98,
+      ]); // different
 
       final sig = Uint8List.fromList(<int>[
-        0x30, 0x44,
-        0x02, 0x20, ..._bytes(32, 1),
-        0x02, 0x20, ..._bytes(32, 2),
+        0x30,
+        0x44,
+        0x02,
+        0x20,
+        ..._bytes(32, 1),
+        0x02,
+        0x20,
+        ..._bytes(32, 2),
       ]);
-      provider.authenticateResponses.add(WebAuthnAuthenticationResult(
-        credentialId: returnedCredIdBytes, // different from requested
-        authenticatorData: _bytes(37),
-        clientDataJSON: utf8.encode('{"type":"webauthn.get","challenge":"abc"}'),
-        signature: sig,
-      ));
+      provider.authenticateResponses.add(
+        WebAuthnAuthenticationResult(
+          credentialId: returnedCredIdBytes, // different from requested
+          authenticatorData: _bytes(37),
+          clientDataJSON: utf8.encode(
+            '{"type":"webauthn.get","challenge":"abc"}',
+          ),
+          signature: sig,
+        ),
+      );
 
       final config = OZSmartAccountConfig(
         rpcUrl: 'https://soroban-testnet.stellar.org',
@@ -507,18 +577,25 @@ void main() {
         base64Url.normalize(_credentialIdB64),
       );
       final sig = Uint8List.fromList(<int>[
-        0x30, 0x44,
-        0x02, 0x20, ..._bytes(32, 1),
-        0x02, 0x20, ..._bytes(32, 2),
+        0x30,
+        0x44,
+        0x02,
+        0x20,
+        ..._bytes(32, 1),
+        0x02,
+        0x20,
+        ..._bytes(32, 2),
       ]);
-      provider.authenticateResponses.add(WebAuthnAuthenticationResult(
-        credentialId: credIdBytes,
-        authenticatorData: _bytes(37, 3),
-        clientDataJSON: utf8.encode(
-          '{"type":"webauthn.get","challenge":"abc","origin":"https://test"}',
+      provider.authenticateResponses.add(
+        WebAuthnAuthenticationResult(
+          credentialId: credIdBytes,
+          authenticatorData: _bytes(37, 3),
+          clientDataJSON: utf8.encode(
+            '{"type":"webauthn.get","challenge":"abc","origin":"https://test"}',
+          ),
+          signature: sig,
         ),
-        signature: sig,
-      ));
+      );
 
       final config = OZSmartAccountConfig(
         rpcUrl: 'https://soroban-testnet.stellar.org',
@@ -542,18 +619,25 @@ void main() {
         base64Url.normalize(_credentialIdB64),
       );
       final sig = Uint8List.fromList(<int>[
-        0x30, 0x44,
-        0x02, 0x20, ..._bytes(32, 1),
-        0x02, 0x20, ..._bytes(32, 2),
+        0x30,
+        0x44,
+        0x02,
+        0x20,
+        ..._bytes(32, 1),
+        0x02,
+        0x20,
+        ..._bytes(32, 2),
       ]);
-      provider.authenticateResponses.add(WebAuthnAuthenticationResult(
-        credentialId: credIdBytes,
-        authenticatorData: _bytes(37),
-        clientDataJSON: utf8.encode(
-          '{"type":"webauthn.get","challenge":"xyz","origin":"https://test"}',
+      provider.authenticateResponses.add(
+        WebAuthnAuthenticationResult(
+          credentialId: credIdBytes,
+          authenticatorData: _bytes(37),
+          clientDataJSON: utf8.encode(
+            '{"type":"webauthn.get","challenge":"xyz","origin":"https://test"}',
+          ),
+          signature: sig,
         ),
-        signature: sig,
-      ));
+      );
 
       final config = OZSmartAccountConfig(
         rpcUrl: 'https://soroban-testnet.stellar.org',

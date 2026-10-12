@@ -9,15 +9,20 @@ void main() {
     late String destinationAccountId;
 
     setUp(() {
-      sourceKeyPair = KeyPair.fromSecretSeed('SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
+      sourceKeyPair = KeyPair.fromSecretSeed(
+        'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
+      );
       sourceAccountId = sourceKeyPair.accountId;
-      destinationKeyPair = KeyPair.fromSecretSeed('SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY');
+      destinationKeyPair = KeyPair.fromSecretSeed(
+        'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY',
+      );
       destinationAccountId = destinationKeyPair.accountId;
     });
 
     group('Basic Transaction Parsing', () {
       test('Parse simple payment transaction', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -44,7 +49,8 @@ signatures.len: 0
       });
 
       test('Parse transaction with CREATE_ACCOUNT operation', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -70,7 +76,8 @@ signatures.len: 0
 
     group('MANAGE_DATA Operation Parsing', () {
       test('Parse MANAGE_DATA with value', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -96,7 +103,8 @@ signatures.len: 0
       });
 
       test('Parse MANAGE_DATA delete (null value)', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -124,7 +132,8 @@ signatures.len: 0
 
     group('SET_OPTIONS Operation Parsing', () {
       test('Parse SET_OPTIONS with inflation destination only', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -157,7 +166,8 @@ signatures.len: 0
       });
 
       test('Parse SET_OPTIONS with clearFlags only', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -190,7 +200,8 @@ signatures.len: 0
       });
 
       test('Parse SET_OPTIONS with setFlags only', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -223,7 +234,8 @@ signatures.len: 0
       });
 
       test('Parse SET_OPTIONS with masterWeight only', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -256,7 +268,8 @@ signatures.len: 0
       });
 
       test('Parse SET_OPTIONS with lowThreshold only', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -289,7 +302,8 @@ signatures.len: 0
       });
 
       test('Parse SET_OPTIONS with medThreshold only', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -322,7 +336,8 @@ signatures.len: 0
       });
 
       test('Parse SET_OPTIONS with highThreshold only', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -355,7 +370,8 @@ signatures.len: 0
       });
 
       test('Parse SET_OPTIONS with homeDomain only', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -390,7 +406,8 @@ signatures.len: 0
 
     group('ALLOW_TRUST Operation Parsing', () {
       test('Parse ALLOW_TRUST with authorize = 0', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -416,7 +433,8 @@ signatures.len: 0
       });
 
       test('Parse ALLOW_TRUST with authorize = 1', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -442,7 +460,8 @@ signatures.len: 0
       });
 
       test('Parse ALLOW_TRUST with authorize = 2', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -470,7 +489,8 @@ signatures.len: 0
 
     group('Preconditions Parsing', () {
       test('Parse PRECOND_TIME', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -500,7 +520,8 @@ signatures.len: 0
 
       test('Parse PRECOND_V2 with all fields', () {
         final extraSigner = KeyPair.random().accountId;
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -539,7 +560,8 @@ signatures.len: 0
       });
 
       test('Parse PRECOND_V2 with minSeqAge and minSeqLedgerGap only', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -573,7 +595,8 @@ signatures.len: 0
       test('Parse PRECOND_V2 with multiple extra signers', () {
         final extraSigner1 = KeyPair.random().accountId;
         final extraSigner2 = KeyPair.random().accountId;
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -608,7 +631,8 @@ signatures.len: 0
 
     group('Memo Parsing', () {
       test('Parse MEMO_TEXT', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -635,7 +659,8 @@ signatures.len: 0
       });
 
       test('Parse MEMO_ID', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -662,7 +687,8 @@ signatures.len: 0
       });
 
       test('Parse MEMO_HASH', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -690,7 +716,8 @@ signatures.len: 0
 
     group('Asset Parsing', () {
       test('Parse native asset (XLM)', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -716,7 +743,8 @@ signatures.len: 0
 
       test('Parse alphanum4 asset', () {
         final issuerKeyPair = KeyPair.random();
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -742,7 +770,8 @@ signatures.len: 0
 
       test('Parse alphanum12 asset', () {
         final issuerKeyPair = KeyPair.random();
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -770,7 +799,8 @@ signatures.len: 0
     group('Operation with Source Account', () {
       test('Parse operation with source account present', () {
         final opSourceKeyPair = KeyPair.random();
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -798,7 +828,8 @@ signatures.len: 0
 
     group('Multiple Operations', () {
       test('Parse transaction with 3 operations', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 300
@@ -835,7 +866,8 @@ signatures.len: 0
 
     group('Signatures Parsing', () {
       test('Parse transaction with signature', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -862,7 +894,8 @@ signatures[0].signature: 0102030405060708090a0b0c0d0e0f101112131415161718191a1b1
       });
 
       test('Parse transaction with multiple signatures', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -894,7 +927,8 @@ signatures[1].signature: 0102030405060708090a0b0c0d0e0f101112131415161718191a1b1
     group('Fee Bump Transaction Parsing', () {
       test('Parse fee bump transaction', () {
         final feeSourceKeyPair = KeyPair.random();
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX_FEE_BUMP
 feeBump.tx.feeSource: ${feeSourceKeyPair.accountId}
 feeBump.tx.fee: 200
@@ -944,7 +978,8 @@ signatures.len: 0
       });
 
       test('Throws on missing fee', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.seqNum: 2908908335136769
@@ -962,7 +997,8 @@ signatures.len: 0
       });
 
       test('Throws on missing sequence number', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -999,7 +1035,8 @@ signatures.len: 0
       });
 
       test('Throws on invalid fee', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: invalid
@@ -1018,7 +1055,8 @@ signatures.len: 0
       });
 
       test('Throws on invalid sequence number', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -1037,7 +1075,8 @@ signatures.len: 0
       });
 
       test('Throws on missing memo type', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -1054,7 +1093,8 @@ signatures.len: 0
       });
 
       test('Throws on missing operations length', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -1071,7 +1111,8 @@ signatures.len: 0
       });
 
       test('Throws on invalid operations length', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -1090,7 +1131,8 @@ signatures.len: 0
       });
 
       test('Throws on missing operation type', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -1110,7 +1152,8 @@ signatures.len: 0
       });
 
       test('Throws on invalid ALLOW_TRUST authorize value', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -1136,7 +1179,8 @@ signatures.len: 0
 
     group('Amount Parsing Edge Cases', () {
       test('Parse payment with decimal amount', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -1161,7 +1205,8 @@ signatures.len: 0
       });
 
       test('Parse payment with small amount', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100

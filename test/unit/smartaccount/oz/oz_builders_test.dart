@@ -43,10 +43,14 @@ void main() {
 
   group('createCallContractContextType', () {
     test('testCreateCallContractContext_validAddress', () {
-      final result = OZBuilders.createCallContractContextType(_kValidContractId);
+      final result = OZBuilders.createCallContractContextType(
+        _kValidContractId,
+      );
       expect(result, isA<OZContextRuleTypeCallContract>());
-      expect((result as OZContextRuleTypeCallContract).contractAddress,
-          _kValidContractId);
+      expect(
+        (result as OZContextRuleTypeCallContract).contractAddress,
+        _kValidContractId,
+      );
     });
 
     test('testCreateCallContractContext_invalidAddress_throws', () {
@@ -111,7 +115,8 @@ void main() {
 
     test('testCreateCreateContractContext_wrongSizeBytes_throws', () {
       expect(
-        () => OZBuilders.createCreateContractContextTypeFromBytes(Uint8List(16)),
+        () =>
+            OZBuilders.createCreateContractContextTypeFromBytes(Uint8List(16)),
         throwsA(isA<SmartAccountValidationException>()),
       );
     });
@@ -120,48 +125,56 @@ void main() {
   group('collectUniqueSignersFromRules', () {
     test('testCollectUniqueSignersFromRules_emptyRules', () {
       final result = OZBuilders.collectUniqueSignersFromRules(
-          const <OZParsedContextRule>[]);
+        const <OZParsedContextRule>[],
+      );
       expect(result, isEmpty);
     });
 
     test(
-        'test_collectUniqueSignersFromRules_overlappingSignersDeduplicatedAcrossRules',
-        () {
-      final addressA = KeyPair.random().accountId;
-      final addressB = KeyPair.random().accountId;
-      final addressC = KeyPair.random().accountId;
-      final addressD = KeyPair.random().accountId;
+      'test_collectUniqueSignersFromRules_overlappingSignersDeduplicatedAcrossRules',
+      () {
+        final addressA = KeyPair.random().accountId;
+        final addressB = KeyPair.random().accountId;
+        final addressC = KeyPair.random().accountId;
+        final addressD = KeyPair.random().accountId;
 
-      final signerA = _delegatedSigner(addressA);
-      final signerB = _delegatedSigner(addressB);
-      final signerC = _delegatedSigner(addressC);
-      final signerD = _delegatedSigner(addressD);
+        final signerA = _delegatedSigner(addressA);
+        final signerB = _delegatedSigner(addressB);
+        final signerC = _delegatedSigner(addressC);
+        final signerD = _delegatedSigner(addressD);
 
-      final ruleA = _ruleWith(1, [signerA, signerB], name: 'A');
-      final ruleB = _ruleWith(
-        2,
-        [_delegatedSigner(addressB), signerC],
-        name: 'B',
-        contextType: OZContextRuleTypeCallContract(_kValidContractId),
-      );
-      final ruleC = _ruleWith(
-        3,
-        [_delegatedSigner(addressA), signerD],
-        name: 'C',
-        contextType: OZContextRuleTypeCallContract(_kValidContractIdAlt),
-      );
+        final ruleA = _ruleWith(1, [signerA, signerB], name: 'A');
+        final ruleB = _ruleWith(
+          2,
+          [_delegatedSigner(addressB), signerC],
+          name: 'B',
+          contextType: OZContextRuleTypeCallContract(_kValidContractId),
+        );
+        final ruleC = _ruleWith(
+          3,
+          [_delegatedSigner(addressA), signerD],
+          name: 'C',
+          contextType: OZContextRuleTypeCallContract(_kValidContractIdAlt),
+        );
 
-      final result =
-          OZBuilders.collectUniqueSignersFromRules([ruleA, ruleB, ruleC]);
+        final result = OZBuilders.collectUniqueSignersFromRules([
+          ruleA,
+          ruleB,
+          ruleC,
+        ]);
 
-      expect(result, hasLength(4),
-          reason: 'duplicate signers across rules must be collapsed');
-      final keys = result.map((s) => s.uniqueKey).toList();
-      expect(keys, contains('delegated:$addressA'));
-      expect(keys, contains('delegated:$addressB'));
-      expect(keys, contains('delegated:$addressC'));
-      expect(keys, contains('delegated:$addressD'));
-    });
+        expect(
+          result,
+          hasLength(4),
+          reason: 'duplicate signers across rules must be collapsed',
+        );
+        final keys = result.map((s) => s.uniqueKey).toList();
+        expect(keys, contains('delegated:$addressA'));
+        expect(keys, contains('delegated:$addressB'));
+        expect(keys, contains('delegated:$addressC'));
+        expect(keys, contains('delegated:$addressD'));
+      },
+    );
   });
 
   group('OZContextRuleType equality', () {
@@ -191,8 +204,12 @@ void main() {
     test('ContextRuleTypeCreateContract_equalityWithNonConstInstances', () {
       final wasm = Uint8List.fromList(List<int>.generate(32, (i) => i));
       final a = OZContextRuleTypeCreateContract(wasm);
-      final b = OZContextRuleTypeCreateContract(Uint8List.fromList(List<int>.generate(32, (i) => i)));
-      final c = OZContextRuleTypeCreateContract(Uint8List.fromList(List<int>.generate(32, (i) => i + 1)));
+      final b = OZContextRuleTypeCreateContract(
+        Uint8List.fromList(List<int>.generate(32, (i) => i)),
+      );
+      final c = OZContextRuleTypeCreateContract(
+        Uint8List.fromList(List<int>.generate(32, (i) => i + 1)),
+      );
       expect(a, equals(b));
       expect(a.hashCode, equals(b.hashCode));
       expect(a == c, isFalse);
@@ -224,8 +241,11 @@ void main() {
         policies: const <String>[],
         policyIds: const <int>[],
       );
-      expect(a == b, isFalse,
-          reason: 'Different signer-list lengths must produce inequality');
+      expect(
+        a == b,
+        isFalse,
+        reason: 'Different signer-list lengths must produce inequality',
+      );
     });
 
     test('ParsedContextRule_sameLengthDifferentContent_notEqual', () {
@@ -250,8 +270,11 @@ void main() {
         policies: const <String>[],
         policyIds: const <int>[],
       );
-      expect(a == b, isFalse,
-          reason: 'Different signer instances must produce inequality');
+      expect(
+        a == b,
+        isFalse,
+        reason: 'Different signer instances must produce inequality',
+      );
     });
 
     test('ParsedContextRule_equal_instances', () {

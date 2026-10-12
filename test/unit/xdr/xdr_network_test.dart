@@ -16,7 +16,9 @@ void main() {
       XdrDataOutputStream output = XdrDataOutputStream();
       output.writeInt(99);
 
-      XdrDataInputStream input = XdrDataInputStream(Uint8List.fromList(output.bytes));
+      XdrDataInputStream input = XdrDataInputStream(
+        Uint8List.fromList(output.bytes),
+      );
 
       expect(() => XdrIPAddrType.decode(input), throwsException);
     });
@@ -34,7 +36,9 @@ void main() {
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrPeerAddress.encode(output, original);
 
-      XdrDataInputStream input = XdrDataInputStream(Uint8List.fromList(output.bytes));
+      XdrDataInputStream input = XdrDataInputStream(
+        Uint8List.fromList(output.bytes),
+      );
       XdrPeerAddress decoded = XdrPeerAddress.decode(input);
 
       expect(decoded.port.uint32, equals(65535));
@@ -66,7 +70,7 @@ void main() {
       XdrPeerAddress peerAddr = XdrPeerAddress(
         ip,
         XdrUint32(9000),
-        XdrUint32(3)
+        XdrUint32(3),
       );
 
       expect(peerAddr.ip.ipv4, equals(ipv4));

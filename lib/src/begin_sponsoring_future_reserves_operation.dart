@@ -76,10 +76,12 @@ class BeginSponsoringFutureReservesOperation extends Operation {
   /// Returns: XDR OperationBody for this begin sponsoring future reserves operation.
   @override
   XdrOperationBody toOperationBody() {
-    XdrOperationBody body =
-        XdrOperationBody(XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES);
+    XdrOperationBody body = XdrOperationBody(
+      XdrOperationType.BEGIN_SPONSORING_FUTURE_RESERVES,
+    );
     body.beginSponsoringFutureReservesOp = XdrBeginSponsoringFutureReservesOp(
-        XdrAccountID(KeyPair.fromAccountId(this.sponsoredId).xdrPublicKey));
+      XdrAccountID(KeyPair.fromAccountId(this.sponsoredId).xdrPublicKey),
+    );
     return body;
   }
 
@@ -92,9 +94,11 @@ class BeginSponsoringFutureReservesOperation extends Operation {
   ///
   /// Returns: A configured operation instance with the sponsored account.
   static BeginSponsoringFutureReservesOperation builder(
-      XdrBeginSponsoringFutureReservesOp op) {
-    String sponsoredId =
-        KeyPair.fromXdrPublicKey(op.sponsoredID.accountID).accountId;
+    XdrBeginSponsoringFutureReservesOp op,
+  ) {
+    String sponsoredId = KeyPair.fromXdrPublicKey(
+      op.sponsoredID.accountID,
+    ).accountId;
     return BeginSponsoringFutureReservesOperation(sponsoredId);
   }
 }

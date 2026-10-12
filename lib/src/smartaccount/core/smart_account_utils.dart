@@ -235,15 +235,15 @@ abstract class SmartAccountUtils {
     if (publicKey != null && publicKey.isNotEmpty) {
       final candidate =
           publicKey.length > SmartAccountConstants.secp256r1PublicKeySize
-              ? Uint8List.fromList(publicKey.sublist(
-                  publicKey.length -
-                      SmartAccountConstants.secp256r1PublicKeySize,
-                  publicKey.length,
-                ))
-              : Uint8List.fromList(publicKey);
+          ? Uint8List.fromList(
+              publicKey.sublist(
+                publicKey.length - SmartAccountConstants.secp256r1PublicKeySize,
+                publicKey.length,
+              ),
+            )
+          : Uint8List.fromList(publicKey);
 
-      if (candidate.length ==
-              SmartAccountConstants.secp256r1PublicKeySize &&
+      if (candidate.length == SmartAccountConstants.secp256r1PublicKeySize &&
           candidate[0] == SmartAccountConstants.uncompressedPubkeyPrefix) {
         _validatePointOnCurve(
           Uint8List.sublistView(candidate, 1, 33),
@@ -267,8 +267,9 @@ abstract class SmartAccountUtils {
     }
 
     if (authenticatorData != null) {
-      final extracted =
-          extractPublicKeyFromAuthenticatorData(authenticatorData);
+      final extracted = extractPublicKeyFromAuthenticatorData(
+        authenticatorData,
+      );
       if (extracted != null) {
         return extracted;
       }
@@ -421,7 +422,9 @@ abstract class SmartAccountUtils {
     // Prefix present; delegate full parsing to WebAuthnCborParser. Its pattern
     // fallback locates the prefix and strictly validates the [0x22, 0x58, 0x20]
     // Y-coordinate separator.
-    final key = WebAuthnCborParser.extractPublicKeyFromCoseKey(attestationObject);
+    final key = WebAuthnCborParser.extractPublicKeyFromCoseKey(
+      attestationObject,
+    );
     if (key == null) {
       throw SmartAccountValidationException.invalidInput(
         'attestationObject',
@@ -445,9 +448,7 @@ abstract class SmartAccountUtils {
   /// credential ID maps to a unique smart-account contract address. The
   /// salt is the SHA-256 hash of the credential ID.
   static Uint8List getContractSalt(Uint8List credentialId) {
-    return Uint8List.fromList(
-      crypto.sha256.convert(credentialId).bytes,
-    );
+    return Uint8List.fromList(crypto.sha256.convert(credentialId).bytes);
   }
 
   /// Derives the smart-account contract address from a credential ID and

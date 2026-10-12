@@ -52,8 +52,10 @@ sealed class OZContextRuleType {
           XdrSCVal.forAddress(scAddress),
         ]);
       } catch (e) {
-        throw SmartAccountValidationException.invalidAddress(self.contractAddress,
-            cause: e);
+        throw SmartAccountValidationException.invalidAddress(
+          self.contractAddress,
+          cause: e,
+        );
       }
     }
     if (self is OZContextRuleTypeCreateContract) {
@@ -105,7 +107,7 @@ final class OZContextRuleTypeCreateContract extends OZContextRuleType {
   /// The bytes are copied so the caller may mutate the source buffer
   /// afterwards without affecting the rule.
   OZContextRuleTypeCreateContract(Uint8List wasmHash)
-      : wasmHash = Uint8List.fromList(wasmHash);
+    : wasmHash = Uint8List.fromList(wasmHash);
 
   /// WASM hash (32 bytes) the rule matches against.
   final Uint8List wasmHash;
@@ -189,15 +191,15 @@ class OZParsedContextRule {
 
   @override
   int get hashCode => Object.hash(
-        id,
-        contextType,
-        name,
-        Object.hashAll(signers),
-        Object.hashAll(signerIds),
-        Object.hashAll(policies),
-        Object.hashAll(policyIds),
-        validUntil,
-      );
+    id,
+    contextType,
+    name,
+    Object.hashAll(signers),
+    Object.hashAll(signerIds),
+    Object.hashAll(policies),
+    Object.hashAll(policyIds),
+    validUntil,
+  );
 
   static bool _listEquals<T>(List<T> a, List<T> b) {
     if (identical(a, b)) return true;
@@ -232,7 +234,9 @@ class OZBuilders {
   ///
   /// Throws an [SmartAccountInvalidAddress] validation exception when [contractAddress]
   /// is not a valid contract address.
-  static OZContextRuleType createCallContractContextType(String contractAddress) {
+  static OZContextRuleType createCallContractContextType(
+    String contractAddress,
+  ) {
     requireContractAddress(contractAddress, fieldName: 'contractAddress');
     return OZContextRuleTypeCallContract(contractAddress);
   }
@@ -248,8 +252,9 @@ class OZBuilders {
   static OZContextRuleType createCreateContractContextTypeFromHex(
     String wasmHashHex,
   ) {
-    final cleanHash =
-        wasmHashHex.startsWith('0x') ? wasmHashHex.substring(2) : wasmHashHex;
+    final cleanHash = wasmHashHex.startsWith('0x')
+        ? wasmHashHex.substring(2)
+        : wasmHashHex;
     if (cleanHash.length != 64) {
       throw SmartAccountValidationException.invalidInput(
         'wasmHash',

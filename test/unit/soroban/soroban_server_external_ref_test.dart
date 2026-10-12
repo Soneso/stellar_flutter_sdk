@@ -163,18 +163,20 @@ void main() {
       },
     );
 
-    test('getExternalRefWasmHash returns the hash the tag entry holds',
-        () async {
-      final server = mockedServer([
-        tagEntryData(XdrSCVal.forBytes(Util.hexToBytes(wasmId))),
-      ], <String>[]);
-      final ref = externalRefExecutable().externalRef!;
+    test(
+      'getExternalRefWasmHash returns the hash the tag entry holds',
+      () async {
+        final server = mockedServer([
+          tagEntryData(XdrSCVal.forBytes(Util.hexToBytes(wasmId))),
+        ], <String>[]);
+        final ref = externalRefExecutable().externalRef!;
 
-      final wasmHash = await server.getExternalRefWasmHash(ref);
+        final wasmHash = await server.getExternalRefWasmHash(ref);
 
-      expect(wasmHash, isNotNull);
-      expect(wasmHash, Util.hexToBytes(wasmId));
-    });
+        expect(wasmHash, isNotNull);
+        expect(wasmHash, Util.hexToBytes(wasmId));
+      },
+    );
 
     test('a binary tag reaches the lookup key as its own bytes', () async {
       // The tag bytes spell no text, so any decode-and-reencode hop on the
@@ -480,13 +482,12 @@ void main() {
       hostFunction.tag = Uint8List.fromList(utf8.encode('token-v2'));
       hostFunction.salt = otherSalt;
 
-      final expected =
-          CreateContractFromExternalRefHostFunction.forTagString(
-            otherDeployer,
-            otherOwner,
-            'token-v2',
-            salt: otherSalt,
-          );
+      final expected = CreateContractFromExternalRefHostFunction.forTagString(
+        otherDeployer,
+        otherOwner,
+        'token-v2',
+        salt: otherSalt,
+      );
       expect(hostFunction.address.contractId, otherDeployer.contractId);
       expect(
         hostFunction.toXdr().toBase64EncodedXdrString(),

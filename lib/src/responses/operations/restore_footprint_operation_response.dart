@@ -36,39 +36,41 @@ class RestoreFootprintOperationResponse extends OperationResponse {
   /// - [transaction] Full parent transaction
   /// - [sponsor] Account sponsoring the operation (if applicable)
   RestoreFootprintOperationResponse(
-      super.links,
-      super.id,
-      super.pagingToken,
-      super.transactionSuccessful,
-      super.sourceAccount,
-      super.sourceAccountMuxed,
-      super.sourceAccountMuxedId,
-      super.type,
-      super.type_i,
-      super.createdAt,
-      super.transactionHash,
-      super.transaction,
-      super.sponsor);
+    super.links,
+    super.id,
+    super.pagingToken,
+    super.transactionSuccessful,
+    super.sourceAccount,
+    super.sourceAccountMuxed,
+    super.sourceAccountMuxedId,
+    super.type,
+    super.type_i,
+    super.createdAt,
+    super.transactionHash,
+    super.transaction,
+    super.sponsor,
+  );
 
   /// Deserializes a restore footprint operation response from JSON.
   ///
   /// Converts a JSON map from the Horizon API into a RestoreFootprintOperationResponse object.
   factory RestoreFootprintOperationResponse.fromJson(
-          Map<String, dynamic> json) =>
-      RestoreFootprintOperationResponse(
-          OperationResponseLinks.fromJson(json['_links']),
-          json['id'],
-          json['paging_token'],
-          json['transaction_successful'],
-          json['source_account'],
-          json['source_account_muxed'],
-          json['source_account_muxed_id'],
-          json['type'],
-          json['type_i'],
-          json['created_at'],
-          json['transaction_hash'],
-          json['transaction'] == null
-              ? null
-              : TransactionResponse.fromJson(json['transaction']),
-          json['sponsor']);
+    Map<String, dynamic> json,
+  ) => RestoreFootprintOperationResponse(
+    OperationResponseLinks.fromJson(json['_links']),
+    json['id'],
+    json['paging_token'],
+    json['transaction_successful'],
+    json['source_account'],
+    json['source_account_muxed'],
+    json['source_account_muxed_id'],
+    json['type'],
+    json['type_i'],
+    json['created_at'],
+    json['transaction_hash'],
+    json['transaction'] == null
+        ? null
+        : TransactionResponse.fromJson(json['transaction']),
+    json['sponsor'],
+  );
 }

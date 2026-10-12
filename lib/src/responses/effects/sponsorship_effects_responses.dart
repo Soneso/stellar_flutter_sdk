@@ -38,18 +38,20 @@ class AccountSponsorshipCreatedEffectResponse extends EffectResponse {
   /// Parameters:
   /// - [sponsor] Account ID of the sponsor
   AccountSponsorshipCreatedEffectResponse(
-      this.sponsor,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.sponsor,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates an account sponsorship created effect from Horizon API JSON response.
   factory AccountSponsorshipCreatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       AccountSponsorshipCreatedEffectResponse(
           json['sponsor'],
           json['id'],
@@ -58,7 +60,8 @@ class AccountSponsorshipCreatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -101,19 +104,21 @@ class AccountSponsorshipUpdatedEffectResponse extends EffectResponse {
   /// - [newSponsor] Account ID of the new sponsor
   /// - [formerSponsor] Account ID of the former sponsor
   AccountSponsorshipUpdatedEffectResponse(
-      this.newSponsor,
-      this.formerSponsor,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.newSponsor,
+    this.formerSponsor,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates an account sponsorship updated effect from Horizon API JSON response.
   factory AccountSponsorshipUpdatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       AccountSponsorshipUpdatedEffectResponse(
           json['new_sponsor'],
           json['former_sponsor'],
@@ -123,7 +128,8 @@ class AccountSponsorshipUpdatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -162,18 +168,20 @@ class AccountSponsorshipRemovedEffectResponse extends EffectResponse {
   /// Parameters:
   /// - [formerSponsor] Account ID of the former sponsor
   AccountSponsorshipRemovedEffectResponse(
-      this.formerSponsor,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.formerSponsor,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates an account sponsorship removed effect from Horizon API JSON response.
   factory AccountSponsorshipRemovedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       AccountSponsorshipRemovedEffectResponse(
           json['former_sponsor'],
           json['id'],
@@ -182,7 +190,8 @@ class AccountSponsorshipRemovedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -234,21 +243,23 @@ class TrustlineSponsorshipCreatedEffectResponse extends EffectResponse {
   /// - [assetType] Type of asset being trusted
   /// - [liquidityPoolId] Liquidity pool ID if trustline is for pool shares
   TrustlineSponsorshipCreatedEffectResponse(
-      this.sponsor,
-      this.asset,
-      this.assetType,
-      this.liquidityPoolId,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.sponsor,
+    this.asset,
+    this.assetType,
+    this.liquidityPoolId,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a trustline sponsorship created effect from Horizon API JSON response.
   factory TrustlineSponsorshipCreatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       TrustlineSponsorshipCreatedEffectResponse(
           json['sponsor'],
           json['asset'],
@@ -260,7 +271,8 @@ class TrustlineSponsorshipCreatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -315,22 +327,24 @@ class TrustlineSponsorshipUpdatedEffectResponse extends EffectResponse {
   /// - [assetType] Type of asset being trusted
   /// - [liquidityPoolId] Liquidity pool ID if trustline is for pool shares
   TrustlineSponsorshipUpdatedEffectResponse(
-      this.newSponsor,
-      this.formerSponsor,
-      this.asset,
-      this.assetType,
-      this.liquidityPoolId,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.newSponsor,
+    this.formerSponsor,
+    this.asset,
+    this.assetType,
+    this.liquidityPoolId,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a trustline sponsorship updated effect from Horizon API JSON response.
   factory TrustlineSponsorshipUpdatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       TrustlineSponsorshipUpdatedEffectResponse(
           json['new_sponsor'],
           json['former_sponsor'],
@@ -343,7 +357,8 @@ class TrustlineSponsorshipUpdatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -394,21 +409,23 @@ class TrustlineSponsorshipRemovedEffectResponse extends EffectResponse {
   /// - [assetType] Type of asset being trusted
   /// - [liquidityPoolId] Liquidity pool ID if trustline is for pool shares
   TrustlineSponsorshipRemovedEffectResponse(
-      this.formerSponsor,
-      this.asset,
-      this.assetType,
-      this.liquidityPoolId,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.formerSponsor,
+    this.asset,
+    this.assetType,
+    this.liquidityPoolId,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a trustline sponsorship removed effect from Horizon API JSON response.
   factory TrustlineSponsorshipRemovedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       TrustlineSponsorshipRemovedEffectResponse(
           json['former_sponsor'],
           json['asset'],
@@ -420,7 +437,8 @@ class TrustlineSponsorshipRemovedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -463,19 +481,21 @@ class DataSponsorshipCreatedEffectResponse extends EffectResponse {
   /// - [dataName] Name (key) of the sponsored data entry
   /// - [sponsor] Account ID of the sponsor
   DataSponsorshipCreatedEffectResponse(
-      this.dataName,
-      this.sponsor,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.dataName,
+    this.sponsor,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a data sponsorship created effect from Horizon API JSON response.
   factory DataSponsorshipCreatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       DataSponsorshipCreatedEffectResponse(
           json['data_name'],
           json['sponsor'],
@@ -485,7 +505,8 @@ class DataSponsorshipCreatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -531,20 +552,22 @@ class DataSponsorshipUpdatedEffectResponse extends EffectResponse {
   /// - [newSponsor] Account ID of the new sponsor
   /// - [formerSponsor] Account ID of the former sponsor
   DataSponsorshipUpdatedEffectResponse(
-      this.dataName,
-      this.newSponsor,
-      this.formerSponsor,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.dataName,
+    this.newSponsor,
+    this.formerSponsor,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a data sponsorship updated effect from Horizon API JSON response.
   factory DataSponsorshipUpdatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       DataSponsorshipUpdatedEffectResponse(
           json['data_name'],
           json['new_sponsor'],
@@ -555,7 +578,8 @@ class DataSponsorshipUpdatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -597,19 +621,21 @@ class DataSponsorshipRemovedEffectResponse extends EffectResponse {
   /// - [dataName] Name (key) of the data entry
   /// - [formerSponsor] Account ID of the former sponsor
   DataSponsorshipRemovedEffectResponse(
-      this.dataName,
-      this.formerSponsor,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.dataName,
+    this.formerSponsor,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a data sponsorship removed effect from Horizon API JSON response.
   factory DataSponsorshipRemovedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       DataSponsorshipRemovedEffectResponse(
           json['data_name'],
           json['former_sponsor'],
@@ -619,7 +645,8 @@ class DataSponsorshipRemovedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -662,19 +689,21 @@ class ClaimableBalanceSponsorshipCreatedEffectResponse extends EffectResponse {
   /// - [sponsor] Account ID of the sponsor
   /// - [balanceId] Unique identifier of the sponsored claimable balance
   ClaimableBalanceSponsorshipCreatedEffectResponse(
-      this.sponsor,
-      this.balanceId,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.sponsor,
+    this.balanceId,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a claimable balance sponsorship created effect from Horizon API JSON response.
   factory ClaimableBalanceSponsorshipCreatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       ClaimableBalanceSponsorshipCreatedEffectResponse(
           json['sponsor'],
           json['balance_id'],
@@ -684,7 +713,8 @@ class ClaimableBalanceSponsorshipCreatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -730,20 +760,22 @@ class ClaimableBalanceSponsorshipUpdatedEffectResponse extends EffectResponse {
   /// - [formerSponsor] Account ID of the former sponsor
   /// - [balanceId] Unique identifier of the claimable balance
   ClaimableBalanceSponsorshipUpdatedEffectResponse(
-      this.newSponsor,
-      this.formerSponsor,
-      this.balanceId,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.newSponsor,
+    this.formerSponsor,
+    this.balanceId,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a claimable balance sponsorship updated effect from Horizon API JSON response.
   factory ClaimableBalanceSponsorshipUpdatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       ClaimableBalanceSponsorshipUpdatedEffectResponse(
           json['new_sponsor'],
           json['former_sponsor'],
@@ -754,7 +786,8 @@ class ClaimableBalanceSponsorshipUpdatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -796,19 +829,21 @@ class ClaimableBalanceSponsorshipRemovedEffectResponse extends EffectResponse {
   /// - [formerSponsor] Account ID of the former sponsor
   /// - [balanceId] Unique identifier of the claimable balance
   ClaimableBalanceSponsorshipRemovedEffectResponse(
-      this.formerSponsor,
-      this.balanceId,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.formerSponsor,
+    this.balanceId,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a claimable balance sponsorship removed effect from Horizon API JSON response.
   factory ClaimableBalanceSponsorshipRemovedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       ClaimableBalanceSponsorshipRemovedEffectResponse(
           json['former_sponsor'],
           json['balance_id'],
@@ -818,7 +853,8 @@ class ClaimableBalanceSponsorshipRemovedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -861,19 +897,21 @@ class SignerSponsorshipCreatedEffectResponse extends EffectResponse {
   /// - [signer] Public key of the sponsored signer
   /// - [sponsor] Account ID of the sponsor
   SignerSponsorshipCreatedEffectResponse(
-      this.signer,
-      this.sponsor,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.signer,
+    this.sponsor,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a signer sponsorship created effect from Horizon API JSON response.
   factory SignerSponsorshipCreatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       SignerSponsorshipCreatedEffectResponse(
           json['signer'],
           json['sponsor'],
@@ -883,7 +921,8 @@ class SignerSponsorshipCreatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -929,20 +968,22 @@ class SignerSponsorshipUpdatedEffectResponse extends EffectResponse {
   /// - [newSponsor] Account ID of the new sponsor
   /// - [formerSponsor] Account ID of the former sponsor
   SignerSponsorshipUpdatedEffectResponse(
-      this.signer,
-      this.newSponsor,
-      this.formerSponsor,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.signer,
+    this.newSponsor,
+    this.formerSponsor,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a signer sponsorship updated effect from Horizon API JSON response.
   factory SignerSponsorshipUpdatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       SignerSponsorshipUpdatedEffectResponse(
           json['signer'],
           json['new_sponsor'],
@@ -953,7 +994,8 @@ class SignerSponsorshipUpdatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -996,19 +1038,21 @@ class SignerSponsorshipRemovedEffectResponse extends EffectResponse {
   /// - [signer] Public key of the signer
   /// - [formerSponsor] Account ID of the former sponsor
   SignerSponsorshipRemovedEffectResponse(
-      this.signer,
-      this.formerSponsor,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.signer,
+    this.formerSponsor,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a signer sponsorship removed effect from Horizon API JSON response.
   factory SignerSponsorshipRemovedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       SignerSponsorshipRemovedEffectResponse(
           json['signer'],
           json['former_sponsor'],
@@ -1018,7 +1062,8 @@ class SignerSponsorshipRemovedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }

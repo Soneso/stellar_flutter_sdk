@@ -6,11 +6,13 @@ void main() {
     group('fromJson', () {
       test('parses complete account response with all fields', () {
         final json = {
-          'account_id': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'account_id':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'sequence': '123456789012345',
           'paging_token': '123456789012345',
           'subentry_count': 5,
-          'inflation_destination': 'GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
+          'inflation_destination':
+              'GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
           'home_domain': 'example.com',
           'last_modified_ledger': 987654,
           'last_modified_time': '2024-01-15T10:30:00Z',
@@ -60,15 +62,24 @@ void main() {
 
         final account = AccountResponse.fromJson(json);
 
-        expect(account.accountId, equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'));
+        expect(
+          account.accountId,
+          equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'),
+        );
         expect(account.sequenceNumber, equals(BigInt.parse('123456789012345')));
         expect(account.pagingToken, equals('123456789012345'));
         expect(account.subentryCount, equals(5));
-        expect(account.inflationDestination, equals('GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'));
+        expect(
+          account.inflationDestination,
+          equals('GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'),
+        );
         expect(account.homeDomain, equals('example.com'));
         expect(account.lastModifiedLedger, equals(987654));
         expect(account.lastModifiedTime, equals('2024-01-15T10:30:00Z'));
-        expect(account.sponsor, equals('GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL'));
+        expect(
+          account.sponsor,
+          equals('GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL'),
+        );
         expect(account.numSponsoring, equals(2));
         expect(account.numSponsored, equals(1));
         expect(account.sequenceLedger, equals(987650));
@@ -77,7 +88,8 @@ void main() {
 
       test('parses account response with null optional fields', () {
         final json = {
-          'account_id': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'account_id':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'sequence': '100',
           'paging_token': '100',
           'subentry_count': 0,
@@ -112,7 +124,10 @@ void main() {
 
         final account = AccountResponse.fromJson(json);
 
-        expect(account.accountId, equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'));
+        expect(
+          account.accountId,
+          equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'),
+        );
         expect(account.inflationDestination, isNull);
         expect(account.homeDomain, isNull);
         expect(account.lastModifiedTime, isNull);
@@ -125,7 +140,8 @@ void main() {
 
       test('parses multiple balances correctly', () {
         final json = {
-          'account_id': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'account_id':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'sequence': '100',
           'paging_token': '100',
           'subentry_count': 3,
@@ -151,7 +167,8 @@ void main() {
             {
               'asset_type': 'credit_alphanum4',
               'asset_code': 'USD',
-              'asset_issuer': 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
+              'asset_issuer':
+                  'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
               'balance': '100.0000000',
               'limit': '1000.0000000',
               'buying_liabilities': '0.0000000',
@@ -161,7 +178,8 @@ void main() {
             {
               'asset_type': 'credit_alphanum12',
               'asset_code': 'LONGCOIN',
-              'asset_issuer': 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
+              'asset_issuer':
+                  'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
               'balance': '250.5000000',
               'limit': '5000.0000000',
               'buying_liabilities': '1.0000000',
@@ -199,7 +217,10 @@ void main() {
         final usdBalance = account.balances[1];
         expect(usdBalance.assetType, equals('credit_alphanum4'));
         expect(usdBalance.assetCode, equals('USD'));
-        expect(usdBalance.assetIssuer, equals('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'));
+        expect(
+          usdBalance.assetIssuer,
+          equals('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'),
+        );
         expect(usdBalance.balance, equals('100.0000000'));
         expect(usdBalance.limit, equals('1000.0000000'));
         expect(usdBalance.isAuthorized, equals(true));
@@ -211,7 +232,8 @@ void main() {
 
       test('parses multiple signers correctly', () {
         final json = {
-          'account_id': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'account_id':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'sequence': '100',
           'paging_token': '100',
           'subentry_count': 2,
@@ -266,14 +288,20 @@ void main() {
         expect(account.signers.length, equals(3));
 
         final masterSigner = account.signers[0];
-        expect(masterSigner.key, equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'));
+        expect(
+          masterSigner.key,
+          equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'),
+        );
         expect(masterSigner.type, equals('ed25519_public_key'));
         expect(masterSigner.weight, equals(1));
         expect(masterSigner.sponsor, isNull);
 
         final secondSigner = account.signers[1];
         expect(secondSigner.weight, equals(2));
-        expect(secondSigner.sponsor, equals('GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL'));
+        expect(
+          secondSigner.sponsor,
+          equals('GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL'),
+        );
 
         final preauthSigner = account.signers[2];
         expect(preauthSigner.type, equals('preauth_tx'));
@@ -282,7 +310,8 @@ void main() {
 
       test('parses account data entries correctly', () {
         final json = {
-          'account_id': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'account_id':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'sequence': '100',
           'paging_token': '100',
           'subentry_count': 2,
@@ -331,7 +360,8 @@ void main() {
     group('TransactionBuilderAccount interface', () {
       test('implements keypair property', () {
         final json = {
-          'account_id': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'account_id':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'sequence': '100',
           'paging_token': '100',
           'subentry_count': 0,
@@ -367,12 +397,16 @@ void main() {
         final account = AccountResponse.fromJson(json);
         final keypair = account.keypair;
 
-        expect(keypair.accountId, equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'));
+        expect(
+          keypair.accountId,
+          equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'),
+        );
       });
 
       test('implements incrementedSequenceNumber correctly', () {
         final json = {
-          'account_id': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'account_id':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'sequence': '100',
           'paging_token': '100',
           'subentry_count': 0,
@@ -414,7 +448,8 @@ void main() {
 
       test('implements incrementSequenceNumber correctly', () {
         final json = {
-          'account_id': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'account_id':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'sequence': '100',
           'paging_token': '100',
           'subentry_count': 0,
@@ -458,7 +493,8 @@ void main() {
 
       test('implements muxedAccount correctly', () {
         final json = {
-          'account_id': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'account_id':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'sequence': '100',
           'paging_token': '100',
           'subentry_count': 0,
@@ -494,7 +530,10 @@ void main() {
         final account = AccountResponse.fromJson(json);
         final muxedAccount = account.muxedAccount;
 
-        expect(muxedAccount.accountId, equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'));
+        expect(
+          muxedAccount.accountId,
+          equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'),
+        );
         expect(muxedAccount.id, isNull);
       });
     });
@@ -587,7 +626,8 @@ void main() {
         final json = {
           'asset_type': 'credit_alphanum4',
           'asset_code': 'USD',
-          'asset_issuer': 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
+          'asset_issuer':
+              'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
           'balance': '100.0000000',
           'limit': '1000.0000000',
           'buying_liabilities': '0.0000000',
@@ -601,7 +641,10 @@ void main() {
 
         expect(balance.assetType, equals('credit_alphanum4'));
         expect(balance.assetCode, equals('USD'));
-        expect(balance.assetIssuer, equals('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'));
+        expect(
+          balance.assetIssuer,
+          equals('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'),
+        );
         expect(balance.balance, equals('100.0000000'));
         expect(balance.limit, equals('1000.0000000'));
         expect(balance.isAuthorized, isTrue);
@@ -612,7 +655,8 @@ void main() {
       test('parses liquidity pool shares balance', () {
         final json = {
           'asset_type': 'liquidity_pool_shares',
-          'liquidity_pool_id': 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+          'liquidity_pool_id':
+              'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
           'balance': '500.0000000',
           'limit': '10000.0000000',
           'buying_liabilities': '0.0000000',
@@ -622,15 +666,17 @@ void main() {
         final balance = Balance.fromJson(json);
 
         expect(balance.assetType, equals('liquidity_pool_shares'));
-        expect(balance.liquidityPoolId, equals('abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'));
+        expect(
+          balance.liquidityPoolId,
+          equals(
+            'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+          ),
+        );
         expect(balance.balance, equals('500.0000000'));
       });
 
       test('returns correct Asset for native balance', () {
-        final json = {
-          'asset_type': 'native',
-          'balance': '1000.0000000',
-        };
+        final json = {'asset_type': 'native', 'balance': '1000.0000000'};
 
         final balance = Balance.fromJson(json);
         final asset = balance.asset;
@@ -643,7 +689,8 @@ void main() {
         final json = {
           'asset_type': 'credit_alphanum4',
           'asset_code': 'USD',
-          'asset_issuer': 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
+          'asset_issuer':
+              'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
           'balance': '100.0000000',
           'limit': '1000.0000000',
         };
@@ -665,11 +712,17 @@ void main() {
 
         final signer = Signer.fromJson(json);
 
-        expect(signer.key, equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'));
+        expect(
+          signer.key,
+          equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'),
+        );
         expect(signer.type, equals('ed25519_public_key'));
         expect(signer.weight, equals(1));
         expect(signer.sponsor, isNull);
-        expect(signer.accountId, equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'));
+        expect(
+          signer.accountId,
+          equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'),
+        );
       });
 
       test('parses sponsored signer', () {
@@ -683,7 +736,10 @@ void main() {
         final signer = Signer.fromJson(json);
 
         expect(signer.weight, equals(2));
-        expect(signer.sponsor, equals('GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL'));
+        expect(
+          signer.sponsor,
+          equals('GBSPONSOR1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPL'),
+        );
       });
 
       test('parses preauth_tx signer', () {
@@ -728,10 +784,7 @@ void main() {
       });
 
       test('provides keys iterable', () {
-        final dataMap = {
-          'key1': 'value1',
-          'key2': 'value2',
-        };
+        final dataMap = {'key1': 'value1', 'key2': 'value2'};
 
         final data = AccountResponseData(dataMap);
 
@@ -750,9 +803,7 @@ void main() {
       });
 
       test('decodes base64 data correctly', () {
-        final dataMap = {
-          'test': 'dGVzdF92YWx1ZQ==',
-        };
+        final dataMap = {'test': 'dGVzdF92YWx1ZQ=='};
 
         final data = AccountResponseData(dataMap);
         final decoded = data.getDecoded('test');

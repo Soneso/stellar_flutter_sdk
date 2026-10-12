@@ -103,12 +103,13 @@ class LiquidityPoolDepositOperation extends Operation {
   /// - [maxAmountB] Maximum amount of asset B to deposit.
   /// - [minPrice] Minimum acceptable price ratio (A/B).
   /// - [maxPrice] Maximum acceptable price ratio (A/B).
-  LiquidityPoolDepositOperation(
-      {required this.liquidityPoolId,
-      required this.maxAmountA,
-      required this.maxAmountB,
-      required this.minPrice,
-      required this.maxPrice});
+  LiquidityPoolDepositOperation({
+    required this.liquidityPoolId,
+    required this.maxAmountA,
+    required this.maxAmountB,
+    required this.minPrice,
+    required this.maxPrice,
+  });
 
   /// Converts this operation to its XDR representation.
   ///
@@ -124,17 +125,24 @@ class LiquidityPoolDepositOperation extends Operation {
       xLiquidityPoolID = Util.liquidityPoolIdToXdrHash(liquidityPoolId);
     } on FormatException catch (e) {
       throw ArgumentError(
-          "invalid liquidity pool id: $liquidityPoolId (${e.message})");
+        "invalid liquidity pool id: $liquidityPoolId (${e.message})",
+      );
     }
     var amountA = XdrInt64(Util.decimalStringToStroops(this.maxAmountA));
     var amountB = XdrInt64(Util.decimalStringToStroops(this.maxAmountB));
     XdrPrice xMinPrice = Price.fromString(minPrice).toXdr();
     XdrPrice xMaxPrice = Price.fromString(maxPrice).toXdr();
 
-    XdrOperationBody body =
-        XdrOperationBody(XdrOperationType.LIQUIDITY_POOL_DEPOSIT);
+    XdrOperationBody body = XdrOperationBody(
+      XdrOperationType.LIQUIDITY_POOL_DEPOSIT,
+    );
     body.liquidityPoolDepositOp = XdrLiquidityPoolDepositOp(
-        xLiquidityPoolID, amountA, amountB, xMinPrice, xMaxPrice);
+      xLiquidityPoolID,
+      amountA,
+      amountB,
+      xMinPrice,
+      xMaxPrice,
+    );
     return body;
   }
 
@@ -145,7 +153,8 @@ class LiquidityPoolDepositOperation extends Operation {
   ///
   /// Returns: Builder initialized with operation parameters.
   static LiquidityPoolDepositOperationBuilder builder(
-      XdrLiquidityPoolDepositOp op) {
+    XdrLiquidityPoolDepositOp op,
+  ) {
     String lpId = Util.bytesToHex(op.liquidityPoolID.hash);
     String maxA = Util.stroopsToDecimalString(op.maxAmountA.int64);
     String maxB = Util.stroopsToDecimalString(op.maxAmountB.int64);
@@ -157,11 +166,12 @@ class LiquidityPoolDepositOperation extends Operation {
     String maxP = Price(n, d).toDecimalString();
 
     return LiquidityPoolDepositOperationBuilder(
-        liquidityPoolId: lpId,
-        maxAmountA: maxA,
-        maxAmountB: maxB,
-        minPrice: minP,
-        maxPrice: maxP);
+      liquidityPoolId: lpId,
+      maxAmountA: maxA,
+      maxAmountB: maxB,
+      minPrice: minP,
+      maxPrice: maxP,
+    );
   }
 }
 
@@ -204,23 +214,25 @@ class LiquidityPoolDepositOperationBuilder
   /// - [maxAmountB] Maximum amount of asset B to deposit.
   /// - [minPrice] Minimum acceptable price ratio (A/B).
   /// - [maxPrice] Maximum acceptable price ratio (A/B).
-  LiquidityPoolDepositOperationBuilder(
-      {required this.liquidityPoolId,
-      required this.maxAmountA,
-      required this.maxAmountB,
-      required this.minPrice,
-      required this.maxPrice});
+  LiquidityPoolDepositOperationBuilder({
+    required this.liquidityPoolId,
+    required this.maxAmountA,
+    required this.maxAmountB,
+    required this.minPrice,
+    required this.maxPrice,
+  });
 
   /// Builds the liquidity pool deposit operation.
   ///
   /// Returns: A configured [LiquidityPoolDepositOperation] instance.
   LiquidityPoolDepositOperation build() {
     LiquidityPoolDepositOperation operation = LiquidityPoolDepositOperation(
-        liquidityPoolId: liquidityPoolId,
-        maxAmountA: maxAmountA,
-        maxAmountB: maxAmountB,
-        minPrice: minPrice,
-        maxPrice: maxPrice);
+      liquidityPoolId: liquidityPoolId,
+      maxAmountA: maxAmountA,
+      maxAmountB: maxAmountB,
+      minPrice: minPrice,
+      maxPrice: maxPrice,
+    );
     return applySourceAccount(operation);
   }
 }

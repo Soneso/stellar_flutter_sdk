@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 600))
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 import '../tests_util.dart';
@@ -24,23 +23,27 @@ void main() {
 
     test('send XLM payment', () async {
       // Snippet from README.md "Send a payment"
-      AccountResponse senderAccount =
-          await sdk.accounts.account(senderKeyPair.accountId);
+      AccountResponse senderAccount = await sdk.accounts.account(
+        senderKeyPair.accountId,
+      );
       String receiverId = receiverKeyPair.accountId;
 
       Transaction transaction = TransactionBuilder(senderAccount)
           .addOperation(
-              PaymentOperationBuilder(receiverId, Asset.NATIVE, '100').build())
+            PaymentOperationBuilder(receiverId, Asset.NATIVE, '100').build(),
+          )
           .build();
       transaction.sign(senderKeyPair, Network.TESTNET);
-      SubmitTransactionResponse response =
-          await sdk.submitTransaction(transaction);
+      SubmitTransactionResponse response = await sdk.submitTransaction(
+        transaction,
+      );
 
       expect(response.success, true);
 
       // Verify receiver got the payment
-      AccountResponse receiverAccount =
-          await sdk.accounts.account(receiverKeyPair.accountId);
+      AccountResponse receiverAccount = await sdk.accounts.account(
+        receiverKeyPair.accountId,
+      );
       for (Balance balance in receiverAccount.balances) {
         if (balance.assetType == Asset.TYPE_NATIVE) {
           expect(double.parse(balance.balance), greaterThanOrEqualTo(10100.0));
@@ -63,24 +66,30 @@ void main() {
     test('create trustline for USDC', () async {
       // Snippet from README.md "Trust an asset"
       String issuerAccountId = issuerKeyPair.accountId;
-      AccountResponse account =
-          await sdk.accounts.account(accountKeyPair.accountId);
+      AccountResponse account = await sdk.accounts.account(
+        accountKeyPair.accountId,
+      );
 
       Asset usdc = Asset.createNonNativeAsset('USDC', issuerAccountId);
       Transaction transaction = TransactionBuilder(account)
-          .addOperation(ChangeTrustOperationBuilder(
-                  usdc, ChangeTrustOperationBuilder.MAX_LIMIT)
-              .build())
+          .addOperation(
+            ChangeTrustOperationBuilder(
+              usdc,
+              ChangeTrustOperationBuilder.MAX_LIMIT,
+            ).build(),
+          )
           .build();
       transaction.sign(accountKeyPair, Network.TESTNET);
-      SubmitTransactionResponse response =
-          await sdk.submitTransaction(transaction);
+      SubmitTransactionResponse response = await sdk.submitTransaction(
+        transaction,
+      );
 
       expect(response.success, true);
 
       // Verify trustline was created
-      AccountResponse updatedAccount =
-          await sdk.accounts.account(accountKeyPair.accountId);
+      AccountResponse updatedAccount = await sdk.accounts.account(
+        accountKeyPair.accountId,
+      );
       bool foundUsdcTrustline = false;
       for (Balance balance in updatedAccount.balances) {
         if (balance.assetCode == 'USDC' &&
@@ -127,7 +136,9 @@ void main() {
       // SorobanClient.forClientOptions is the alternative way to create a client
       // for an already-deployed contract. Here we use the deployed client directly.
       XdrSCVal result = await helloClient.invokeMethod(
-          name: 'hello', args: [XdrSCVal.forSymbol('World')]);
+        name: 'hello',
+        args: [XdrSCVal.forSymbol('World')],
+      );
 
       expect(result, isNotNull);
     });
@@ -144,7 +155,9 @@ void main() {
       );
 
       XdrSCVal result = await client.invokeMethod(
-          name: 'hello', args: [XdrSCVal.forSymbol('World')]);
+        name: 'hello',
+        args: [XdrSCVal.forSymbol('World')],
+      );
 
       expect(result, isNotNull);
     });

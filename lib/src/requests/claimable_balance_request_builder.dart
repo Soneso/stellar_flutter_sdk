@@ -52,13 +52,15 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   /// - [httpClient] HTTP client for making requests to Horizon
   /// - [serverURI] Base URI of the Horizon server
   ClaimableBalancesRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["claimable_balances"]);
+    : super(httpClient, serverURI, ["claimable_balances"]);
 
   /// Requests specific [uri] and returns ClaimableBalancesResponse.
   /// This method is helpful for getting the links.
   Future<ClaimableBalanceResponse> claimableBalance(Uri uri) async {
     return RequestBuilder.requestExecute<ClaimableBalanceResponse>(
-        httpClient, uri);
+      httpClient,
+      uri,
+    );
   }
 
   /// Requests details about the claimable balance to fetch by [balanceId].
@@ -102,15 +104,21 @@ class ClaimableBalancesRequestBuilder extends RequestBuilder {
   /// Requests specific uri and returns Page of ClaimableBalanceResponse.
   /// This method is helpful for getting the next set of results.
   static Future<Page<ClaimableBalanceResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
+    http.Client httpClient,
+    Uri uri,
+  ) async {
     return RequestBuilder.requestExecute<Page<ClaimableBalanceResponse>>(
-        httpClient, uri);
+      httpClient,
+      uri,
+    );
   }
 
   /// Build and execute request.
   Future<Page<ClaimableBalanceResponse>> execute() {
     return ClaimableBalancesRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+      this.httpClient,
+      this.buildUri(),
+    );
   }
 
   /// Sets the cursor for pagination.

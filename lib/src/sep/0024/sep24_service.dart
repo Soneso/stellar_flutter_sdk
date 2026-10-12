@@ -139,22 +139,35 @@ class TransferServerSEP24Service {
   /// Creates a TransferServerSEP24Service with explicit transfer server address.
   ///
   /// Initializes the service with HTTP client for making SEP-24 API requests.
-  TransferServerSEP24Service(this._transferServiceAddress,
-      {http.Client? httpClient, this.httpRequestHeaders}) {
+  TransferServerSEP24Service(
+    this._transferServiceAddress, {
+    http.Client? httpClient,
+    this.httpRequestHeaders,
+  }) {
     this.httpClient = httpClient ?? http.Client();
   }
 
   /// Creates an instance of this class by loading the transfer server sep 24 url from the given [domain] stellar toml file.
-  static Future<TransferServerSEP24Service> fromDomain(String domain,
-      {http.Client? httpClient,
-      Map<String, String>? httpRequestHeaders}) async {
-    StellarToml toml = await StellarToml.fromDomain(domain,
-        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
+  static Future<TransferServerSEP24Service> fromDomain(
+    String domain, {
+    http.Client? httpClient,
+    Map<String, String>? httpRequestHeaders,
+  }) async {
+    StellarToml toml = await StellarToml.fromDomain(
+      domain,
+      httpClient: httpClient,
+      httpRequestHeaders: httpRequestHeaders,
+    );
     String? addr = toml.generalInformation.transferServerSep24;
     checkNotNull(
-        addr, "Transfer server SEP 24 not available for domain " + domain);
-    return TransferServerSEP24Service(addr!,
-        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
+      addr,
+      "Transfer server SEP 24 not available for domain " + domain,
+    );
+    return TransferServerSEP24Service(
+      addr!,
+      httpClient: httpClient,
+      httpRequestHeaders: httpRequestHeaders,
+    );
   }
 
   /// Get the anchors basic info about what their TRANSFER_SERVER_SEP0024 support to wallets and clients.
@@ -163,8 +176,10 @@ class TransferServerSEP24Service {
     Uri serverURI = Util.appendEndpointToUrl(_transferServiceAddress, 'info');
 
     _InfoRequestBuilder requestBuilder = _InfoRequestBuilder(
-        httpClient, serverURI,
-        httpRequestHeaders: this.httpRequestHeaders);
+      httpClient,
+      serverURI,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
 
     final Map<String, String> queryParams = {};
 
@@ -172,8 +187,9 @@ class TransferServerSEP24Service {
       queryParams["lang"] = lang;
     }
 
-    SEP24InfoResponse response =
-        await requestBuilder.forQueryParameters(queryParams).execute();
+    SEP24InfoResponse response = await requestBuilder
+        .forQueryParameters(queryParams)
+        .execute();
 
     return response;
   }
@@ -189,8 +205,10 @@ class TransferServerSEP24Service {
     Uri serverURI = Util.appendEndpointToUrl(_transferServiceAddress, 'fee');
 
     _FeeRequestBuilder requestBuilder = _FeeRequestBuilder(
-        httpClient, serverURI,
-        httpRequestHeaders: this.httpRequestHeaders);
+      httpClient,
+      serverURI,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
 
     final Map<String, String> queryParams = {
       "operation": request.operation,
@@ -247,11 +265,15 @@ class TransferServerSEP24Service {
   /// Throws a [SEP24AuthenticationRequiredException] if the server responds with an authentication_required error.
   Future<SEP24InteractiveResponse> deposit(SEP24DepositRequest request) async {
     Uri serverURI = Util.appendEndpointToUrl(
-        _transferServiceAddress, 'transactions/deposit/interactive');
+      _transferServiceAddress,
+      'transactions/deposit/interactive',
+    );
 
     _PostRequestBuilder requestBuilder = _PostRequestBuilder(
-        httpClient, serverURI,
-        httpRequestHeaders: this.httpRequestHeaders);
+      httpClient,
+      serverURI,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
 
     final Map<String, String> fields = {"asset_code": request.assetCode};
     final Map<String, Uint8List> files = {};
@@ -347,13 +369,18 @@ class TransferServerSEP24Service {
   /// Throws a [RequestErrorException] if the server responds with an error and corresponding error message.
   /// Throws a [SEP24AuthenticationRequiredException] if the server responds with an authentication_required error.
   Future<SEP24InteractiveResponse> withdraw(
-      SEP24WithdrawRequest request) async {
+    SEP24WithdrawRequest request,
+  ) async {
     Uri serverURI = Util.appendEndpointToUrl(
-        _transferServiceAddress, 'transactions/withdraw/interactive');
+      _transferServiceAddress,
+      'transactions/withdraw/interactive',
+    );
 
     _PostRequestBuilder requestBuilder = _PostRequestBuilder(
-        httpClient, serverURI,
-        httpRequestHeaders: this.httpRequestHeaders);
+      httpClient,
+      serverURI,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
 
     final Map<String, String> fields = {"asset_code": request.assetCode};
     final Map<String, Uint8List> files = {};
@@ -456,17 +483,21 @@ class TransferServerSEP24Service {
   /// Throws a [RequestErrorException] if the server responds with an error and corresponding error message.
   /// Throws a [SEP24AuthenticationRequiredException] if the server responds with an authentication_required error.
   Future<SEP24TransactionsResponse> transactions(
-      SEP24TransactionsRequest request) async {
-    Uri serverURI =
-        Util.appendEndpointToUrl(_transferServiceAddress, 'transactions');
+    SEP24TransactionsRequest request,
+  ) async {
+    Uri serverURI = Util.appendEndpointToUrl(
+      _transferServiceAddress,
+      'transactions',
+    );
 
     _AnchorTransactionsRequestBuilder requestBuilder =
-        _AnchorTransactionsRequestBuilder(httpClient, serverURI,
-            httpRequestHeaders: this.httpRequestHeaders);
+        _AnchorTransactionsRequestBuilder(
+          httpClient,
+          serverURI,
+          httpRequestHeaders: this.httpRequestHeaders,
+        );
 
-    final Map<String, String> queryParams = {
-      "asset_code": request.assetCode,
-    };
+    final Map<String, String> queryParams = {"asset_code": request.assetCode};
 
     if (request.noOlderThan != null) {
       queryParams["no_older_than"] = request.noOlderThan!.toIso8601String();
@@ -512,13 +543,19 @@ class TransferServerSEP24Service {
   /// Throws a [SEP24AuthenticationRequiredException] if the server responds with an authentication_required error.
   /// Throws a [SEP24TransactionNotFoundException] if the server could not find the transaction.
   Future<SEP24TransactionResponse> transaction(
-      SEP24TransactionRequest request) async {
-    Uri serverURI =
-        Util.appendEndpointToUrl(_transferServiceAddress, 'transaction');
+    SEP24TransactionRequest request,
+  ) async {
+    Uri serverURI = Util.appendEndpointToUrl(
+      _transferServiceAddress,
+      'transaction',
+    );
 
     _AnchorTransactionRequestBuilder requestBuilder =
-        _AnchorTransactionRequestBuilder(httpClient, serverURI,
-            httpRequestHeaders: this.httpRequestHeaders);
+        _AnchorTransactionRequestBuilder(
+          httpClient,
+          serverURI,
+          httpRequestHeaders: this.httpRequestHeaders,
+        );
 
     final Map<String, String> queryParams = {};
 
@@ -591,18 +628,25 @@ class SEP24DepositAsset extends Response {
   /// Creates a SEP24DepositAsset with deposit configuration.
   ///
   /// Contains limits and fee structure for depositing this asset.
-  SEP24DepositAsset(this.enabled, this.minAmount, this.maxAmount, this.feeFixed,
-      this.feePercent, this.feeMinimum);
+  SEP24DepositAsset(
+    this.enabled,
+    this.minAmount,
+    this.maxAmount,
+    this.feeFixed,
+    this.feePercent,
+    this.feeMinimum,
+  );
 
   /// Creates a SEP24DepositAsset from JSON response data.
   factory SEP24DepositAsset.fromJson(Map<String, dynamic> json) {
     return SEP24DepositAsset(
-        json['enabled'],
-        convertDouble(json['min_amount']),
-        convertDouble(json['max_amount']),
-        convertDouble(json['fee_fixed']),
-        convertDouble(json['fee_percent']),
-        convertDouble(json['fee_minimum']));
+      json['enabled'],
+      convertDouble(json['min_amount']),
+      convertDouble(json['max_amount']),
+      convertDouble(json['fee_fixed']),
+      convertDouble(json['fee_percent']),
+      convertDouble(json['fee_minimum']),
+    );
   }
 }
 
@@ -640,18 +684,25 @@ class SEP24WithdrawAsset extends Response {
   /// Creates a SEP24WithdrawAsset with withdrawal configuration.
   ///
   /// Contains limits and fee structure for withdrawing this asset.
-  SEP24WithdrawAsset(this.enabled, this.minAmount, this.maxAmount,
-      this.feeFixed, this.feePercent, this.feeMinimum);
+  SEP24WithdrawAsset(
+    this.enabled,
+    this.minAmount,
+    this.maxAmount,
+    this.feeFixed,
+    this.feePercent,
+    this.feeMinimum,
+  );
 
   /// Creates a SEP24WithdrawAsset from JSON response data.
   factory SEP24WithdrawAsset.fromJson(Map<String, dynamic> json) {
     return SEP24WithdrawAsset(
-        json['enabled'],
-        convertDouble(json['min_amount']),
-        convertDouble(json['max_amount']),
-        convertDouble(json['fee_fixed']),
-        convertDouble(json['fee_percent']),
-        convertDouble(json['fee_minimum']));
+      json['enabled'],
+      convertDouble(json['min_amount']),
+      convertDouble(json['max_amount']),
+      convertDouble(json['fee_fixed']),
+      convertDouble(json['fee_percent']),
+      convertDouble(json['fee_minimum']),
+    );
   }
 }
 
@@ -707,8 +758,10 @@ class FeatureFlags extends Response {
   factory FeatureFlags.fromJson(Map<String, dynamic> json) {
     bool? accCreation = json['account_creation'];
     bool? claimableB = json['claimable_balances'];
-    return FeatureFlags(accCreation != null ? accCreation : true,
-        claimableB != null ? claimableB : false);
+    return FeatureFlags(
+      accCreation != null ? accCreation : true,
+      claimableB != null ? claimableB : false,
+    );
   }
 }
 
@@ -747,13 +800,18 @@ class SEP24InfoResponse extends Response {
   /// Creates a SEP24InfoResponse with anchor capabilities.
   ///
   /// Contains supported assets and feature information from /info endpoint.
-  SEP24InfoResponse(this.depositAssets, this.withdrawAssets,
-      this.feeEndpointInfo, this.featureFlags);
+  SEP24InfoResponse(
+    this.depositAssets,
+    this.withdrawAssets,
+    this.feeEndpointInfo,
+    this.featureFlags,
+  );
 
   /// Creates a SEP24InfoResponse from JSON response data.
   factory SEP24InfoResponse.fromJson(Map<String, dynamic> json) {
-    Map<String, dynamic>? depositDynamic =
-        json['deposit'] == null ? null : json['deposit'];
+    Map<String, dynamic>? depositDynamic = json['deposit'] == null
+        ? null
+        : json['deposit'];
 
     Map<String, SEP24DepositAsset> depositMap = {};
     if (depositDynamic != null) {
@@ -761,8 +819,9 @@ class SEP24InfoResponse extends Response {
         depositMap[key] = SEP24DepositAsset.fromJson(value);
       });
     }
-    Map<String, dynamic>? withdrawDynamic =
-        json['withdraw'] == null ? null : json['withdraw'];
+    Map<String, dynamic>? withdrawDynamic = json['withdraw'] == null
+        ? null
+        : json['withdraw'];
 
     Map<String, SEP24WithdrawAsset> withdrawMap = {};
     if (withdrawDynamic != null) {
@@ -772,21 +831,22 @@ class SEP24InfoResponse extends Response {
     }
 
     return SEP24InfoResponse(
-        depositMap,
-        withdrawMap,
-        json['fee'] == null ? null : FeeEndpointInfo.fromJson(json['fee']),
-        json['features'] == null
-            ? null
-            : FeatureFlags.fromJson(json['features']));
+      depositMap,
+      withdrawMap,
+      json['fee'] == null ? null : FeeEndpointInfo.fromJson(json['fee']),
+      json['features'] == null ? null : FeatureFlags.fromJson(json['features']),
+    );
   }
 }
 
 /// Requests basic info about what the anchors TRANSFER_SERVER_SEP0024 supports to wallets and clients.
 class _InfoRequestBuilder extends RequestBuilder {
   Map<String, String>? httpRequestHeaders;
-  _InfoRequestBuilder(http.Client httpClient, Uri serverURI,
-      {this.httpRequestHeaders})
-      : super(httpClient, serverURI, null);
+  _InfoRequestBuilder(
+    http.Client httpClient,
+    Uri serverURI, {
+    this.httpRequestHeaders,
+  }) : super(httpClient, serverURI, null);
 
   /// Sets query parameters for the info request.
   _InfoRequestBuilder forQueryParameters(Map<String, String> queryParams) {
@@ -796,8 +856,10 @@ class _InfoRequestBuilder extends RequestBuilder {
 
   /// Executes info request without authentication.
   static Future<SEP24InfoResponse> requestExecute(
-      http.Client httpClient, Uri uri,
-      {Map<String, String>? httpRequestHeaders}) async {
+    http.Client httpClient,
+    Uri uri, {
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     TypeToken<SEP24InfoResponse> type = TypeToken<SEP24InfoResponse>();
     ResponseHandler<SEP24InfoResponse> responseHandler =
         ResponseHandler<SEP24InfoResponse>(type);
@@ -810,8 +872,11 @@ class _InfoRequestBuilder extends RequestBuilder {
 
   /// Executes the info request using configured parameters.
   Future<SEP24InfoResponse> execute() {
-    return _InfoRequestBuilder.requestExecute(this.httpClient, this.buildUri(),
-        httpRequestHeaders: this.httpRequestHeaders);
+    return _InfoRequestBuilder.requestExecute(
+      this.httpClient,
+      this.buildUri(),
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
   }
 }
 
@@ -882,9 +947,11 @@ class SEP24FeeResponse extends Response {
 /// Requests the fee data if available.
 class _FeeRequestBuilder extends RequestBuilder {
   Map<String, String>? httpRequestHeaders;
-  _FeeRequestBuilder(http.Client httpClient, Uri serverURI,
-      {this.httpRequestHeaders})
-      : super(httpClient, serverURI, null);
+  _FeeRequestBuilder(
+    http.Client httpClient,
+    Uri serverURI, {
+    this.httpRequestHeaders,
+  }) : super(httpClient, serverURI, null);
 
   /// Sets query parameters for the fee request.
   _FeeRequestBuilder forQueryParameters(Map<String, String> queryParams) {
@@ -894,8 +961,11 @@ class _FeeRequestBuilder extends RequestBuilder {
 
   /// Executes fee request with optional JWT authentication.
   static Future<SEP24FeeResponse> requestExecute(
-      http.Client httpClient, Uri uri, String? jwt,
-      {Map<String, String>? httpRequestHeaders}) async {
+    http.Client httpClient,
+    Uri uri,
+    String? jwt, {
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     TypeToken<SEP24FeeResponse> type = TypeToken<SEP24FeeResponse>();
     ResponseHandler<SEP24FeeResponse> responseHandler =
         ResponseHandler<SEP24FeeResponse>(type);
@@ -913,8 +983,11 @@ class _FeeRequestBuilder extends RequestBuilder {
   /// Executes the fee request using configured parameters and authentication.
   Future<SEP24FeeResponse> execute(String? jwt) {
     return _FeeRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt,
-        httpRequestHeaders: this.httpRequestHeaders);
+      this.httpClient,
+      this.buildUri(),
+      jwt,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
   }
 }
 
@@ -1060,9 +1133,11 @@ class _PostRequestBuilder extends RequestBuilder {
   Map<String, Uint8List>? _files;
   Map<String, String>? httpRequestHeaders;
 
-  _PostRequestBuilder(http.Client httpClient, Uri serverURI,
-      {this.httpRequestHeaders})
-      : super(httpClient, serverURI, null);
+  _PostRequestBuilder(
+    http.Client httpClient,
+    Uri serverURI, {
+    this.httpRequestHeaders,
+  }) : super(httpClient, serverURI, null);
 
   /// Sets fields for the interactive deposit or withdrawal request.
   _PostRequestBuilder forFields(Map<String, String> fields) {
@@ -1078,12 +1153,13 @@ class _PostRequestBuilder extends RequestBuilder {
 
   /// Executes interactive request with JWT authentication.
   static Future<SEP24InteractiveResponse> requestExecute(
-      http.Client httpClient,
-      Uri uri,
-      Map<String, String>? fields,
-      Map<String, Uint8List>? files,
-      String jwt,
-      {Map<String, String>? httpRequestHeaders}) async {
+    http.Client httpClient,
+    Uri uri,
+    Map<String, String>? fields,
+    Map<String, Uint8List>? files,
+    String jwt, {
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     TypeToken<SEP24InteractiveResponse> type =
         TypeToken<SEP24InteractiveResponse>();
     ResponseHandler<SEP24InteractiveResponse> responseHandler =
@@ -1111,8 +1187,13 @@ class _PostRequestBuilder extends RequestBuilder {
   /// Executes the interactive request using configured fields, files, and authentication.
   Future<SEP24InteractiveResponse> execute(String jwt) {
     return _PostRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), _fields, _files, jwt,
-        httpRequestHeaders: this.httpRequestHeaders);
+      this.httpClient,
+      this.buildUri(),
+      _fields,
+      _files,
+      jwt,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
   }
 }
 
@@ -1174,17 +1255,21 @@ class SEP24WithdrawRequest {
   /// Defaults to the account authenticated via SEP-10 if not specified.
   String? account;
 
-  @Deprecated('Use the sub value in the SEP-10 JWT instead. '
-      'This field was originally intended to differentiate users of the same Stellar account. '
-      'Anchors should use the sub value from the decoded SEP-10 JWT. '
-      'See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#shared-omnibus-or-pooled-accounts')
+  @Deprecated(
+    'Use the sub value in the SEP-10 JWT instead. '
+    'This field was originally intended to differentiate users of the same Stellar account. '
+    'Anchors should use the sub value from the decoded SEP-10 JWT. '
+    'See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#shared-omnibus-or-pooled-accounts',
+  )
   /// This field was originally intended to differentiate users of the same Stellar account.
   /// However, anchors should use the sub value included in the decoded SEP-10 JWT instead.
   /// Anchors should still support this parameter to maintain backward compatibility.
   String? memo;
 
-  @Deprecated('Use the sub value in the SEP-10 JWT instead. '
-      'Memos for user identification should always be of type id.')
+  @Deprecated(
+    'Use the sub value in the SEP-10 JWT instead. '
+    'Memos for user identification should always be of type id.',
+  )
   /// Type of memo. One of: text, id, or hash.
   /// Deprecated because memos used to identify users should always be of type id.
   String? memoType;
@@ -1379,8 +1464,10 @@ class SEP24Transaction extends Response {
   /// Human readable explanation of transaction status, if needed.
   String? message;
 
-  @Deprecated('Use the refunds object and refunded status instead. '
-      'This field is deprecated in favor of the refunds object and the refunded status.')
+  @Deprecated(
+    'Use the refunds object and refunded status instead. '
+    'This field is deprecated in favor of the refunds object and the refunded status.',
+  )
   /// True if the transaction was refunded in full.
   /// False if the transaction was partially refunded or not refunded.
   /// For more details about refunds, use the refunds object instead.
@@ -1423,36 +1510,37 @@ class SEP24Transaction extends Response {
   ///
   /// Contains comprehensive information about a deposit or withdrawal transaction.
   SEP24Transaction(
-      this.id,
-      this.kind,
-      this.status,
-      this.statusEta,
-      this.kycVerified,
-      this.moreInfoUrl,
-      this.amountIn,
-      this.amountInAsset,
-      this.amountOut,
-      this.amountOutAsset,
-      this.amountFee,
-      this.amountFeeAsset,
-      this.quoteId,
-      this.startedAt,
-      this.completedAt,
-      this.updatedAt,
-      this.userActionRequiredBy,
-      this.stellarTransactionId,
-      this.externalTransactionId,
-      this.message,
-      this.refunded,
-      this.refunds,
-      this.from,
-      this.to,
-      this.depositMemo,
-      this.depositMemoType,
-      this.claimableBalanceId,
-      this.withdrawAnchorAccount,
-      this.withdrawMemo,
-      this.withdrawMemoType);
+    this.id,
+    this.kind,
+    this.status,
+    this.statusEta,
+    this.kycVerified,
+    this.moreInfoUrl,
+    this.amountIn,
+    this.amountInAsset,
+    this.amountOut,
+    this.amountOutAsset,
+    this.amountFee,
+    this.amountFeeAsset,
+    this.quoteId,
+    this.startedAt,
+    this.completedAt,
+    this.updatedAt,
+    this.userActionRequiredBy,
+    this.stellarTransactionId,
+    this.externalTransactionId,
+    this.message,
+    this.refunded,
+    this.refunds,
+    this.from,
+    this.to,
+    this.depositMemo,
+    this.depositMemoType,
+    this.claimableBalanceId,
+    this.withdrawAnchorAccount,
+    this.withdrawMemo,
+    this.withdrawMemoType,
+  );
 
   /// Creates a SEP24Transaction from JSON response data.
   factory SEP24Transaction.fromJson(Map<String, dynamic> json) {
@@ -1461,36 +1549,37 @@ class SEP24Transaction extends Response {
       refunds = Refund.fromJson(json['refunds']);
     }
     return SEP24Transaction(
-        json['id'],
-        json['kind'],
-        json['status'],
-        convertInt(json['status_eta']),
-        json['kyc_verified'],
-        json['more_info_url'],
-        json['amount_in'],
-        json['amount_in_asset'],
-        json['amount_out'],
-        json['amount_out_asset'],
-        json['amount_fee'],
-        json['amount_fee_asset'],
-        json['quote_id'],
-        json['started_at'],
-        json['completed_at'],
-        json['updated_at'],
-        json['user_action_required_by'],
-        json['stellar_transaction_id'],
-        json['external_transaction_id'],
-        json['message'],
-        json['refunded'],
-        refunds,
-        json['from'],
-        json['to'],
-        json['deposit_memo'],
-        json['deposit_memo_type'],
-        json['claimable_balance_id'],
-        json['withdraw_anchor_account'],
-        json['withdraw_memo'],
-        json['withdraw_memo_type']);
+      json['id'],
+      json['kind'],
+      json['status'],
+      convertInt(json['status_eta']),
+      json['kyc_verified'],
+      json['more_info_url'],
+      json['amount_in'],
+      json['amount_in_asset'],
+      json['amount_out'],
+      json['amount_out_asset'],
+      json['amount_fee'],
+      json['amount_fee_asset'],
+      json['quote_id'],
+      json['started_at'],
+      json['completed_at'],
+      json['updated_at'],
+      json['user_action_required_by'],
+      json['stellar_transaction_id'],
+      json['external_transaction_id'],
+      json['message'],
+      json['refunded'],
+      refunds,
+      json['from'],
+      json['to'],
+      json['deposit_memo'],
+      json['deposit_memo_type'],
+      json['claimable_balance_id'],
+      json['withdraw_anchor_account'],
+      json['withdraw_memo'],
+      json['withdraw_memo_type'],
+    );
   }
 }
 
@@ -1514,30 +1603,38 @@ class SEP24TransactionsResponse extends Response {
 
   /// Creates a SEP24TransactionsResponse from JSON response data.
   factory SEP24TransactionsResponse.fromJson(Map<String, dynamic> json) =>
-      SEP24TransactionsResponse((json['transactions'] as List)
-          .map((e) => SEP24Transaction.fromJson(e))
-          .toList());
+      SEP24TransactionsResponse(
+        (json['transactions'] as List)
+            .map((e) => SEP24Transaction.fromJson(e))
+            .toList(),
+      );
 }
 
 // Requests the transaction history data.
 class _AnchorTransactionsRequestBuilder extends RequestBuilder {
   Map<String, String>? httpRequestHeaders;
 
-  _AnchorTransactionsRequestBuilder(http.Client httpClient, Uri serverURI,
-      {this.httpRequestHeaders})
-      : super(httpClient, serverURI, null);
+  _AnchorTransactionsRequestBuilder(
+    http.Client httpClient,
+    Uri serverURI, {
+    this.httpRequestHeaders,
+  }) : super(httpClient, serverURI, null);
 
   /// Sets query parameters for the transactions request.
   _AnchorTransactionsRequestBuilder forQueryParameters(
-      Map<String, String> queryParams) {
+    Map<String, String> queryParams,
+  ) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
   /// Executes transactions request with JWT authentication.
   static Future<SEP24TransactionsResponse> requestExecute(
-      http.Client httpClient, Uri uri, String jwt,
-      {Map<String, String>? httpRequestHeaders}) async {
+    http.Client httpClient,
+    Uri uri,
+    String jwt, {
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     TypeToken<SEP24TransactionsResponse> type =
         TypeToken<SEP24TransactionsResponse>();
     ResponseHandler<SEP24TransactionsResponse> responseHandler =
@@ -1555,8 +1652,11 @@ class _AnchorTransactionsRequestBuilder extends RequestBuilder {
   /// Executes the transactions request using configured parameters and authentication.
   Future<SEP24TransactionsResponse> execute(String jwt) {
     return _AnchorTransactionsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt,
-        httpRequestHeaders: this.httpRequestHeaders);
+      this.httpClient,
+      this.buildUri(),
+      jwt,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
   }
 }
 
@@ -1587,11 +1687,10 @@ class Refund extends Response {
 
   /// Creates a Refund from JSON response data.
   factory Refund.fromJson(Map<String, dynamic> json) => Refund(
-      json['amount_refunded'],
-      json['amount_fee'],
-      (json['payments'] as List)
-          .map((e) => RefundPayment.fromJson(e))
-          .toList());
+    json['amount_refunded'],
+    json['amount_fee'],
+    (json['payments'] as List).map((e) => RefundPayment.fromJson(e)).toList(),
+  );
 }
 
 /// Information about a single refund payment.
@@ -1697,21 +1796,27 @@ class SEP24TransactionResponse extends Response {
 class _AnchorTransactionRequestBuilder extends RequestBuilder {
   Map<String, String>? httpRequestHeaders;
 
-  _AnchorTransactionRequestBuilder(http.Client httpClient, Uri serverURI,
-      {this.httpRequestHeaders})
-      : super(httpClient, serverURI, null);
+  _AnchorTransactionRequestBuilder(
+    http.Client httpClient,
+    Uri serverURI, {
+    this.httpRequestHeaders,
+  }) : super(httpClient, serverURI, null);
 
   /// Sets query parameters for the transaction request.
   _AnchorTransactionRequestBuilder forQueryParameters(
-      Map<String, String> queryParams) {
+    Map<String, String> queryParams,
+  ) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
   /// Executes transaction request with JWT authentication.
   static Future<SEP24TransactionResponse> requestExecute(
-      http.Client httpClient, Uri uri, String jwt,
-      {Map<String, String>? httpRequestHeaders}) async {
+    http.Client httpClient,
+    Uri uri,
+    String jwt, {
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     TypeToken<SEP24TransactionResponse> type =
         TypeToken<SEP24TransactionResponse>();
     ResponseHandler<SEP24TransactionResponse> responseHandler =
@@ -1729,8 +1834,11 @@ class _AnchorTransactionRequestBuilder extends RequestBuilder {
   /// Executes the transaction request using configured parameters and authentication.
   Future<SEP24TransactionResponse> execute(String jwt) {
     return _AnchorTransactionRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt,
-        httpRequestHeaders: this.httpRequestHeaders);
+      this.httpClient,
+      this.buildUri(),
+      jwt,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
   }
 }
 

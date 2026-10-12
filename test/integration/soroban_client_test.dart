@@ -18,43 +18,53 @@ void main() {
   final HELLO_CONTRACT_PATH = 'test/wasm/soroban_hello_world_contract.wasm';
   final AUTH_CONTRACT_PATH = 'test/wasm/soroban_auth_contract.wasm';
   final SWAP_CONTRACT_PATH = 'test/wasm/soroban_atomic_swap_contract.wasm';
-  final TOKEN_CONTRACT_PATH =
-      'test/wasm/soroban_token_contract.wasm';
+  final TOKEN_CONTRACT_PATH = 'test/wasm/soroban_token_contract.wasm';
 
   final sourceAccountKeyPair = KeyPair.random();
 
   setUp(() async {
-    await fundTestAccountAndAwaitVisibility(sourceAccountKeyPair.accountId,
-        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(
+      sourceAccountKeyPair.accountId,
+      rpc: sorobanServer,
+      useFuturenet: testOn != 'testnet',
+    );
   });
 
   Future<String> installContract(String path) async {
     final contractCode = await loadContractCode(path);
     final installRequest = InstallRequest(
-        wasmBytes: contractCode,
-        sourceAccountKeyPair: sourceAccountKeyPair,
-        network: network,
-        rpcUrl: TESTNET_SERVER_URL,
-        server: sorobanServer,
-        enableSorobanServerLogging: true);
+      wasmBytes: contractCode,
+      sourceAccountKeyPair: sourceAccountKeyPair,
+      network: network,
+      rpcUrl: TESTNET_SERVER_URL,
+      server: sorobanServer,
+      enableSorobanServerLogging: true,
+    );
     return await SorobanClient.install(installRequest: installRequest);
   }
 
-  Future<SorobanClient> deployContract(String wasmHash,
-      {List<XdrSCVal>? constructorArgs}) async {
+  Future<SorobanClient> deployContract(
+    String wasmHash, {
+    List<XdrSCVal>? constructorArgs,
+  }) async {
     final deployRequest = DeployRequest(
-        sourceAccountKeyPair: sourceAccountKeyPair,
-        network: network,
-        rpcUrl: TESTNET_SERVER_URL,
-        wasmHash: wasmHash,
-        constructorArgs: constructorArgs,
-        server: sorobanServer,
-        enableSorobanServerLogging: true);
+      sourceAccountKeyPair: sourceAccountKeyPair,
+      network: network,
+      rpcUrl: TESTNET_SERVER_URL,
+      wasmHash: wasmHash,
+      constructorArgs: constructorArgs,
+      server: sorobanServer,
+      enableSorobanServerLogging: true,
+    );
     return await SorobanClient.deploy(deployRequest: deployRequest);
   }
 
-  Future<void> mint(SorobanClient tokenClient, KeyPair adminKp,
-      String toAccountId, int amount) async {
+  Future<void> mint(
+    SorobanClient tokenClient,
+    KeyPair adminKp,
+    String toAccountId,
+    int amount,
+  ) async {
     // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
 
     final methodName = "mint";
@@ -63,31 +73,41 @@ void main() {
 
     List<XdrSCVal> args = [toAddress, amountValue];
 
-    final tx =
-        await tokenClient.buildInvokeMethodTx(name: methodName, args: args);
+    final tx = await tokenClient.buildInvokeMethodTx(
+      name: methodName,
+      args: args,
+    );
     await tx.signAuthEntries(signerKeyPair: adminKp);
     await tx.signAndSend();
   }
 
   Future<BigInt> readBalance(
-      String forAccountId, SorobanClient tokenClient) async {
+    String forAccountId,
+    SorobanClient tokenClient,
+  ) async {
     // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
 
     final address = Address.forAccountId(forAccountId).toXdrSCVal();
     final methodName = "balance";
     List<XdrSCVal> args = [address];
-    final resultValue =
-        await tokenClient.invokeMethod(name: methodName, args: args);
+    final resultValue = await tokenClient.invokeMethod(
+      name: methodName,
+      args: args,
+    );
     assert(resultValue.i128 != null);
     return resultValue.i128!.lo.uint64;
   }
 
-  Future<void> mintWithSpec(SorobanClient tokenClient, KeyPair adminKp,
-      String toAccountId, int amount) async {
+  Future<void> mintWithSpec(
+    SorobanClient tokenClient,
+    KeyPair adminKp,
+    String toAccountId,
+    int amount,
+  ) async {
     // Using ContractSpec - automatic type conversion!
     final args = tokenClient.funcArgsToXdrSCValues("mint", {
       "to": toAccountId, // String -> Address automatic conversion
-      "amount": amount // int -> i128 automatic conversion
+      "amount": amount, // int -> i128 automatic conversion
     });
 
     final tx = await tokenClient.buildInvokeMethodTx(name: "mint", args: args);
@@ -96,14 +116,18 @@ void main() {
   }
 
   Future<BigInt> readBalanceWithSpec(
-      String forAccountId, SorobanClient tokenClient) async {
+    String forAccountId,
+    SorobanClient tokenClient,
+  ) async {
     // Using ContractSpec - cleaner argument passing!
     final args = tokenClient.funcArgsToXdrSCValues("balance", {
-      "id": forAccountId // String -> Address automatic conversion
+      "id": forAccountId, // String -> Address automatic conversion
     });
 
-    final resultValue =
-        await tokenClient.invokeMethod(name: "balance", args: args);
+    final resultValue = await tokenClient.invokeMethod(
+      name: "balance",
+      args: args,
+    );
     assert(resultValue.i128 != null);
     return resultValue.i128!.lo.uint64;
   }
@@ -120,8 +144,10 @@ void main() {
     assert(methodNames.first == "hello");
 
     // Manual XdrSCVal creation (original approach)
-    final result = await client
-        .invokeMethod(name: "hello", args: [XdrSCVal.forSymbol("John")]);
+    final result = await client.invokeMethod(
+      name: "hello",
+      args: [XdrSCVal.forSymbol("John")],
+    );
     assert(result.vec != null);
     assert(result.vec!.length == 2);
     assert(result.vec![0].sym != null);
@@ -188,17 +214,20 @@ void main() {
 
     final deployedClient = await deployContract(authContractWasmHash);
     print(
-        "Deployed auth contract contract id: ${deployedClient.getContractId()}");
+      "Deployed auth contract contract id: ${deployedClient.getContractId()}",
+    );
 
     // just a small test to check if it can load by contract id
     final client = await SorobanClient.forClientOptions(
-        options: ClientOptions(
-            sourceAccountKeyPair: sourceAccountKeyPair,
-            contractId: deployedClient.getContractId(),
-            network: network,
-            rpcUrl: TESTNET_SERVER_URL,
-            server: sorobanServer,
-            enableServerLogging: true));
+      options: ClientOptions(
+        sourceAccountKeyPair: sourceAccountKeyPair,
+        contractId: deployedClient.getContractId(),
+        network: network,
+        rpcUrl: TESTNET_SERVER_URL,
+        server: sorobanServer,
+        enableServerLogging: true,
+      ),
+    );
 
     assert(client.getContractId() == deployedClient.getContractId());
 
@@ -221,8 +250,11 @@ void main() {
     // we need to sign the auth entry
 
     final invokerKeyPair = KeyPair.random();
-    await fundTestAccountAndAwaitVisibility(invokerKeyPair.accountId,
-        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(
+      invokerKeyPair.accountId,
+      rpc: sorobanServer,
+      useFuturenet: testOn != 'testnet',
+    );
 
     invokerAddress = Address.forAccountId(invokerKeyPair.accountId);
     args = [invokerAddress.toXdrSCVal(), XdrSCVal.forU32(4)];
@@ -263,10 +295,12 @@ void main() {
     var invokerAddress = Address.forAccountId(sourceAccountKeyPair.accountId);
     List<XdrSCVal> manualArgs = [
       invokerAddress.toXdrSCVal(),
-      XdrSCVal.forU32(5)
+      XdrSCVal.forU32(5),
     ];
-    final manualResult =
-        await client.invokeMethod(name: "increment", args: manualArgs);
+    final manualResult = await client.invokeMethod(
+      name: "increment",
+      args: manualArgs,
+    );
     assert(manualResult.u32 != null);
     assert(manualResult.u32!.uint32 == 5);
     print("Manual result: ${manualResult.u32!.uint32}");
@@ -276,17 +310,21 @@ void main() {
     final specArgs = contractSpec.funcArgsToXdrSCValues("increment", {
       "user": sourceAccountKeyPair
           .accountId, // String account ID -> automatically converts to Address
-      "value": 7 // int -> automatically converts to u32
+      "value": 7, // int -> automatically converts to u32
     });
-    final specResult =
-        await client.invokeMethod(name: "increment", args: specArgs);
+    final specResult = await client.invokeMethod(
+      name: "increment",
+      args: specArgs,
+    );
     assert(specResult.u32 != null);
     assert(specResult.u32!.uint32 == 12); // 5 + 7
     print("ContractSpec result: ${specResult.u32!.uint32}");
 
     // Test convenience method
-    final args3 = client.funcArgsToXdrSCValues(
-        "increment", {"user": sourceAccountKeyPair.accountId, "value": 9});
+    final args3 = client.funcArgsToXdrSCValues("increment", {
+      "user": sourceAccountKeyPair.accountId,
+      "value": 9,
+    });
     final result3 = await client.invokeMethod(name: "increment", args: args3);
     assert(result3.u32!.uint32 == 21); // 5 + 7 + 9
     print("✓ SorobanClient convenience method: ${result3.u32!.uint32}");
@@ -307,32 +345,47 @@ void main() {
     final bobKeyPair = KeyPair.random();
     final bobId = bobKeyPair.accountId;
 
-    await fundTestAccountAndAwaitVisibility(adminKeyPair.accountId,
-        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
-    await fundTestAccountAndAwaitVisibility(aliceId,
-        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
-    await fundTestAccountAndAwaitVisibility(bobId,
-        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(
+      adminKeyPair.accountId,
+      rpc: sorobanServer,
+      useFuturenet: testOn != 'testnet',
+    );
+    await fundTestAccountAndAwaitVisibility(
+      aliceId,
+      rpc: sorobanServer,
+      useFuturenet: testOn != 'testnet',
+    );
+    await fundTestAccountAndAwaitVisibility(
+      bobId,
+      rpc: sorobanServer,
+      useFuturenet: testOn != 'testnet',
+    );
 
     final atomicSwapClient = await deployContract(swapContractWasmHash);
     print(
-        "Deployed atomic swap contract contract id: ${atomicSwapClient.getContractId()}");
+      "Deployed atomic swap contract contract id: ${atomicSwapClient.getContractId()}",
+    );
 
-    final adminAddress =
-        Address.forAccountId(adminKeyPair.accountId).toXdrSCVal();
+    final adminAddress = Address.forAccountId(
+      adminKeyPair.accountId,
+    ).toXdrSCVal();
     var tokenName = XdrSCVal.forString("TokenA");
     var tokenSymbol = XdrSCVal.forString("TokenA");
     final decimal = XdrSCVal.forU32(8);
 
-    final tokenAClient = await deployContract(tokenContractWasmHash,
-        constructorArgs: [adminAddress, decimal, tokenName, tokenSymbol]);
+    final tokenAClient = await deployContract(
+      tokenContractWasmHash,
+      constructorArgs: [adminAddress, decimal, tokenName, tokenSymbol],
+    );
     final tokenAContractId = tokenAClient.getContractId();
     print("Deployed token A contract contract id: $tokenAContractId");
 
     tokenName = XdrSCVal.forString("TokenB");
     tokenSymbol = XdrSCVal.forString("TokenB");
-    final tokenBClient = await deployContract(tokenContractWasmHash,
-        constructorArgs: [adminAddress, decimal, tokenName, tokenSymbol]);
+    final tokenBClient = await deployContract(
+      tokenContractWasmHash,
+      constructorArgs: [adminAddress, decimal, tokenName, tokenSymbol],
+    );
     final tokenBContractId = tokenBClient.getContractId();
     print("Deployed token B contract contract id: $tokenBContractId");
 
@@ -362,11 +415,13 @@ void main() {
       amountA,
       minBForA,
       amountB,
-      minAForB
+      minAForB,
     ];
 
     final tx = await atomicSwapClient.buildInvokeMethodTx(
-        name: swapMethodName, args: args);
+      name: swapMethodName,
+      args: args,
+    );
 
     final whoElseNeedsToSign = tx.needsNonInvokerSigningBy();
     assert(whoElseNeedsToSign.length == 2);
@@ -379,24 +434,27 @@ void main() {
     // test signing via delegate
     final bobPublicKeyKeyPair = KeyPair.fromAccountId(bobId);
     await tx.signAuthEntries(
-        signerKeyPair: bobPublicKeyKeyPair,
-        authorizeEntryDelegate: (entry, network) async {
-          print("Bob is signing");
-          // You can send it to some other server for signing by encoding it as a base64xdr string
-          final base64Entry = entry.toBase64EncodedXdrString();
-          // send for signing ...
-          // and on the other server you can decode it:
-          final entryToSign =
-              SorobanAuthorizationEntry.fromBase64EncodedXdr(base64Entry);
-          // sign it
-          entryToSign.sign(bobKeyPair, network);
-          // encode as a base64xdr string and send it back
-          final signedBase64Entry = entryToSign.toBase64EncodedXdrString();
-          print("Bob signed");
-          // here you can now decode it and return it
-          return SorobanAuthorizationEntry.fromBase64EncodedXdr(
-              signedBase64Entry);
-        });
+      signerKeyPair: bobPublicKeyKeyPair,
+      authorizeEntryDelegate: (entry, network) async {
+        print("Bob is signing");
+        // You can send it to some other server for signing by encoding it as a base64xdr string
+        final base64Entry = entry.toBase64EncodedXdrString();
+        // send for signing ...
+        // and on the other server you can decode it:
+        final entryToSign = SorobanAuthorizationEntry.fromBase64EncodedXdr(
+          base64Entry,
+        );
+        // sign it
+        entryToSign.sign(bobKeyPair, network);
+        // encode as a base64xdr string and send it back
+        final signedBase64Entry = entryToSign.toBase64EncodedXdrString();
+        print("Bob signed");
+        // here you can now decode it and return it
+        return SorobanAuthorizationEntry.fromBase64EncodedXdr(
+          signedBase64Entry,
+        );
+      },
+    );
 
     print("Signed by Bob");
 
@@ -406,122 +464,159 @@ void main() {
     assert(result!.discriminant == XdrSCValType.SCV_VOID);
   });
 
-  test('test atomic swap with ContractSpec',
-      timeout: Timeout(Duration(minutes: 2)), () async {
-    final swapContractWasmHash = await installContract(SWAP_CONTRACT_PATH);
-    print("Installed swap contract wasm hash: $swapContractWasmHash");
+  test(
+    'test atomic swap with ContractSpec',
+    timeout: Timeout(Duration(minutes: 2)),
+    () async {
+      final swapContractWasmHash = await installContract(SWAP_CONTRACT_PATH);
+      print("Installed swap contract wasm hash: $swapContractWasmHash");
 
-    final tokenContractWasmHash = await installContract(TOKEN_CONTRACT_PATH);
-    print("Installed token contract wasm hash: $tokenContractWasmHash");
+      final tokenContractWasmHash = await installContract(TOKEN_CONTRACT_PATH);
+      print("Installed token contract wasm hash: $tokenContractWasmHash");
 
-    final adminKeyPair = KeyPair.random();
-    final aliceKeyPair = KeyPair.random();
-    final aliceId = aliceKeyPair.accountId;
-    final bobKeyPair = KeyPair.random();
-    final bobId = bobKeyPair.accountId;
+      final adminKeyPair = KeyPair.random();
+      final aliceKeyPair = KeyPair.random();
+      final aliceId = aliceKeyPair.accountId;
+      final bobKeyPair = KeyPair.random();
+      final bobId = bobKeyPair.accountId;
 
-    await fundTestAccountAndAwaitVisibility(adminKeyPair.accountId,
-        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
-    await fundTestAccountAndAwaitVisibility(aliceId,
-        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
-    await fundTestAccountAndAwaitVisibility(bobId,
-        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
+      await fundTestAccountAndAwaitVisibility(
+        adminKeyPair.accountId,
+        rpc: sorobanServer,
+        useFuturenet: testOn != 'testnet',
+      );
+      await fundTestAccountAndAwaitVisibility(
+        aliceId,
+        rpc: sorobanServer,
+        useFuturenet: testOn != 'testnet',
+      );
+      await fundTestAccountAndAwaitVisibility(
+        bobId,
+        rpc: sorobanServer,
+        useFuturenet: testOn != 'testnet',
+      );
 
-    final atomicSwapClient = await deployContract(swapContractWasmHash);
-    print(
-        "Deployed atomic swap contract contract id: ${atomicSwapClient.getContractId()}");
+      final atomicSwapClient = await deployContract(swapContractWasmHash);
+      print(
+        "Deployed atomic swap contract contract id: ${atomicSwapClient.getContractId()}",
+      );
 
-    final adminAddress =
-        Address.forAccountId(adminKeyPair.accountId).toXdrSCVal();
-    var tokenName = XdrSCVal.forString("TokenA");
-    var tokenSymbol = XdrSCVal.forString("TokenA");
-    final decimal = XdrSCVal.forU32(0);
+      final adminAddress = Address.forAccountId(
+        adminKeyPair.accountId,
+      ).toXdrSCVal();
+      var tokenName = XdrSCVal.forString("TokenA");
+      var tokenSymbol = XdrSCVal.forString("TokenA");
+      final decimal = XdrSCVal.forU32(0);
 
-    final tokenAClient = await deployContract(tokenContractWasmHash,
-        constructorArgs: [adminAddress, decimal, tokenName, tokenSymbol]);
-    final tokenAContractId = tokenAClient.getContractId();
-    print("Deployed token A contract contract id: $tokenAContractId");
+      final tokenAClient = await deployContract(
+        tokenContractWasmHash,
+        constructorArgs: [adminAddress, decimal, tokenName, tokenSymbol],
+      );
+      final tokenAContractId = tokenAClient.getContractId();
+      print("Deployed token A contract contract id: $tokenAContractId");
 
-    tokenName = XdrSCVal.forString("TokenB");
-    tokenSymbol = XdrSCVal.forString("TokenB");
-    final tokenBClient = await deployContract(tokenContractWasmHash,
-        constructorArgs: [adminAddress, decimal, tokenName, tokenSymbol]);
-    final tokenBContractId = tokenBClient.getContractId();
-    print("Deployed token B contract contract id: $tokenBContractId");
+      tokenName = XdrSCVal.forString("TokenB");
+      tokenSymbol = XdrSCVal.forString("TokenB");
+      final tokenBClient = await deployContract(
+        tokenContractWasmHash,
+        constructorArgs: [adminAddress, decimal, tokenName, tokenSymbol],
+      );
+      final tokenBContractId = tokenBClient.getContractId();
+      print("Deployed token B contract contract id: $tokenBContractId");
 
-    // Use ContractSpec for token operations
-    print("=== Minting tokens with ContractSpec ===");
-    await mintWithSpec(tokenAClient, adminKeyPair, aliceId, 10000000000000);
-    await mintWithSpec(tokenBClient, adminKeyPair, bobId, 10000000000000);
-    print("✓ Alice and Bob funded using ContractSpec");
+      // Use ContractSpec for token operations
+      print("=== Minting tokens with ContractSpec ===");
+      await mintWithSpec(tokenAClient, adminKeyPair, aliceId, 10000000000000);
+      await mintWithSpec(tokenBClient, adminKeyPair, bobId, 10000000000000);
+      print("✓ Alice and Bob funded using ContractSpec");
 
-    final aliceTokenABalance = await readBalanceWithSpec(aliceId, tokenAClient);
-    assert(aliceTokenABalance == BigInt.from(10000000000000));
+      final aliceTokenABalance = await readBalanceWithSpec(
+        aliceId,
+        tokenAClient,
+      );
+      assert(aliceTokenABalance == BigInt.from(10000000000000));
 
-    final bobTokenBBalance = await readBalanceWithSpec(bobId, tokenBClient);
-    assert(bobTokenBBalance == BigInt.from(10000000000000));
-    print("✓ Balances verified using ContractSpec");
+      final bobTokenBBalance = await readBalanceWithSpec(bobId, tokenBClient);
+      assert(bobTokenBBalance == BigInt.from(10000000000000));
+      print("✓ Balances verified using ContractSpec");
 
-    print("=== Demonstrating ContractSpec for complex atomic swap ===");
-    print("--- Manual XdrSCVal creation (original approach) ---");
-    final manualAmountA = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(1000));
-    final manualMinBForA = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(4500));
-    final manualAmountB = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(5000));
-    final manualMinAForB = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(950));
+      print("=== Demonstrating ContractSpec for complex atomic swap ===");
+      print("--- Manual XdrSCVal creation (original approach) ---");
+      final manualAmountA = XdrSCVal.forI128Parts(
+        BigInt.zero,
+        BigInt.from(1000),
+      );
+      final manualMinBForA = XdrSCVal.forI128Parts(
+        BigInt.zero,
+        BigInt.from(4500),
+      );
+      final manualAmountB = XdrSCVal.forI128Parts(
+        BigInt.zero,
+        BigInt.from(5000),
+      );
+      final manualMinAForB = XdrSCVal.forI128Parts(
+        BigInt.zero,
+        BigInt.from(950),
+      );
 
-    List<XdrSCVal> manualArgs = [
-      Address.forAccountId(aliceId).toXdrSCVal(),
-      Address.forAccountId(bobId).toXdrSCVal(),
-      Address.forContractId(tokenAContractId).toXdrSCVal(),
-      Address.forContractId(tokenBContractId).toXdrSCVal(),
-      manualAmountA,
-      manualMinBForA,
-      manualAmountB,
-      manualMinAForB
-    ];
-    print("Manual args count: ${manualArgs.length}");
+      List<XdrSCVal> manualArgs = [
+        Address.forAccountId(aliceId).toXdrSCVal(),
+        Address.forAccountId(bobId).toXdrSCVal(),
+        Address.forContractId(tokenAContractId).toXdrSCVal(),
+        Address.forContractId(tokenBContractId).toXdrSCVal(),
+        manualAmountA,
+        manualMinBForA,
+        manualAmountB,
+        manualMinAForB,
+      ];
+      print("Manual args count: ${manualArgs.length}");
 
-    print("--- ContractSpec approach (new approach) ---");
-    // This is MUCH cleaner and more readable!
-    final contractSpec = atomicSwapClient.getContractSpec();
-    final specArgs = contractSpec.funcArgsToXdrSCValues("swap", {
-      "a": aliceId, // String -> Address (automatic)
-      "b": bobId, // String -> Address (automatic)
-      "token_a": tokenAContractId, // String -> Address (automatic)
-      "token_b": tokenBContractId, // String -> Address (automatic)
-      "amount_a": 1000, // int -> i128 (automatic)
-      "min_b_for_a": 4500, // int -> i128 (automatic)
-      "amount_b": 5000, // int -> i128 (automatic)
-      "min_a_for_b": 950 // int -> i128 (automatic)
-    });
-    print("ContractSpec args count: ${specArgs.length}");
-    print(
-        "✓ ContractSpec automatically converted 8 parameters with correct types");
+      print("--- ContractSpec approach (new approach) ---");
+      // This is MUCH cleaner and more readable!
+      final contractSpec = atomicSwapClient.getContractSpec();
+      final specArgs = contractSpec.funcArgsToXdrSCValues("swap", {
+        "a": aliceId, // String -> Address (automatic)
+        "b": bobId, // String -> Address (automatic)
+        "token_a": tokenAContractId, // String -> Address (automatic)
+        "token_b": tokenBContractId, // String -> Address (automatic)
+        "amount_a": 1000, // int -> i128 (automatic)
+        "min_b_for_a": 4500, // int -> i128 (automatic)
+        "amount_b": 5000, // int -> i128 (automatic)
+        "min_a_for_b": 950, // int -> i128 (automatic)
+      });
+      print("ContractSpec args count: ${specArgs.length}");
+      print(
+        "✓ ContractSpec automatically converted 8 parameters with correct types",
+      );
 
-    // Build and execute the transaction using ContractSpec args
-    final tx = await atomicSwapClient.buildInvokeMethodTx(
-        name: "swap", args: specArgs);
+      // Build and execute the transaction using ContractSpec args
+      final tx = await atomicSwapClient.buildInvokeMethodTx(
+        name: "swap",
+        args: specArgs,
+      );
 
-    final whoElseNeedsToSign = tx.needsNonInvokerSigningBy();
-    assert(whoElseNeedsToSign.length == 2);
-    assert(whoElseNeedsToSign.contains(aliceId));
-    assert(whoElseNeedsToSign.contains(bobId));
+      final whoElseNeedsToSign = tx.needsNonInvokerSigningBy();
+      assert(whoElseNeedsToSign.length == 2);
+      assert(whoElseNeedsToSign.contains(aliceId));
+      assert(whoElseNeedsToSign.contains(bobId));
 
-    await tx.signAuthEntries(signerKeyPair: aliceKeyPair);
-    print("✓ Signed by Alice");
+      await tx.signAuthEntries(signerKeyPair: aliceKeyPair);
+      print("✓ Signed by Alice");
 
-    await tx.signAuthEntries(signerKeyPair: bobKeyPair);
-    print("✓ Signed by Bob");
+      await tx.signAuthEntries(signerKeyPair: bobKeyPair);
+      print("✓ Signed by Bob");
 
-    final response = await tx.signAndSend();
-    final result = response.getResultValue();
-    assert(result != null);
-    assert(result!.discriminant == XdrSCValType.SCV_VOID);
+      final response = await tx.signAndSend();
+      final result = response.getResultValue();
+      assert(result != null);
+      assert(result!.discriminant == XdrSCValType.SCV_VOID);
 
-    print("✓ Atomic swap completed successfully using ContractSpec!");
-    print(
-        "✓ ContractSpec made complex contract invocation much simpler and more readable");
-  });
+      print("✓ Atomic swap completed successfully using ContractSpec!");
+      print(
+        "✓ ContractSpec made complex contract invocation much simpler and more readable",
+      );
+    },
+  );
 
   test('test hello contract with contract binding', () async {
     final helloContractWasmHash = await installContract(HELLO_CONTRACT_PATH);
@@ -529,7 +624,8 @@ void main() {
 
     final deployedClient = await deployContract(helloContractWasmHash);
     print(
-        "Deployed hello contract contract id: ${deployedClient.getContractId()}");
+      "Deployed hello contract contract id: ${deployedClient.getContractId()}",
+    );
 
     // Create HelloContract instance using the contract binding
     final helloContract = await HelloContract.forContractId(
@@ -561,7 +657,8 @@ void main() {
 
     final deployedClient = await deployContract(authContractWasmHash);
     print(
-        "Deployed auth contract contract id: ${deployedClient.getContractId()}");
+      "Deployed auth contract contract id: ${deployedClient.getContractId()}",
+    );
 
     // Create AuthContract instance using the contract binding
     final authContract = await AuthContract.forContractId(
@@ -583,22 +680,23 @@ void main() {
     );
     assert(result1 == 3);
     print(
-        "✓ AuthContract binding: increment without auth succeeded, result: $result1");
+      "✓ AuthContract binding: increment without auth succeeded, result: $result1",
+    );
 
     // Test 2: submitter and invoker are NOT the same (need to sign auth entry)
     final invokerKeyPair = KeyPair.random();
-    await fundTestAccountAndAwaitVisibility(invokerKeyPair.accountId,
-        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(
+      invokerKeyPair.accountId,
+      rpc: sorobanServer,
+      useFuturenet: testOn != 'testnet',
+    );
 
     invokerAddress = Address.forAccountId(invokerKeyPair.accountId);
 
     // First attempt without signing should fail
     var thrown = false;
     try {
-      await authContract.increment(
-        user: invokerAddress,
-        value: 4,
-      );
+      await authContract.increment(user: invokerAddress, value: 4);
       // should not reach here because of missing signature of invoker
     } catch (e) {
       thrown = true;
@@ -617,149 +715,171 @@ void main() {
     assert(resultVal?.u32 != null);
     assert(resultVal!.u32!.uint32 == 4);
     print(
-        "✓ AuthContract binding: increment with auth succeeded, result: ${resultVal!.u32!.uint32}");
+      "✓ AuthContract binding: increment with auth succeeded, result: ${resultVal!.u32!.uint32}",
+    );
   });
 
-  test('test atomic swap with contract binding',
-      timeout: Timeout(Duration(minutes: 2)), () async {
-    final swapContractWasmHash = await installContract(SWAP_CONTRACT_PATH);
-    print("Installed swap contract wasm hash: $swapContractWasmHash");
+  test(
+    'test atomic swap with contract binding',
+    timeout: Timeout(Duration(minutes: 2)),
+    () async {
+      final swapContractWasmHash = await installContract(SWAP_CONTRACT_PATH);
+      print("Installed swap contract wasm hash: $swapContractWasmHash");
 
-    final tokenContractWasmHash = await installContract(TOKEN_CONTRACT_PATH);
-    print("Installed token contract wasm hash: $tokenContractWasmHash");
+      final tokenContractWasmHash = await installContract(TOKEN_CONTRACT_PATH);
+      print("Installed token contract wasm hash: $tokenContractWasmHash");
 
-    final adminKeyPair = KeyPair.random();
-    final aliceKeyPair = KeyPair.random();
-    final aliceId = aliceKeyPair.accountId;
-    final bobKeyPair = KeyPair.random();
-    final bobId = bobKeyPair.accountId;
+      final adminKeyPair = KeyPair.random();
+      final aliceKeyPair = KeyPair.random();
+      final aliceId = aliceKeyPair.accountId;
+      final bobKeyPair = KeyPair.random();
+      final bobId = bobKeyPair.accountId;
 
-    await fundTestAccountAndAwaitVisibility(adminKeyPair.accountId,
-        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
-    await fundTestAccountAndAwaitVisibility(aliceId,
-        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
-    await fundTestAccountAndAwaitVisibility(bobId,
-        rpc: sorobanServer, useFuturenet: testOn != 'testnet');
+      await fundTestAccountAndAwaitVisibility(
+        adminKeyPair.accountId,
+        rpc: sorobanServer,
+        useFuturenet: testOn != 'testnet',
+      );
+      await fundTestAccountAndAwaitVisibility(
+        aliceId,
+        rpc: sorobanServer,
+        useFuturenet: testOn != 'testnet',
+      );
+      await fundTestAccountAndAwaitVisibility(
+        bobId,
+        rpc: sorobanServer,
+        useFuturenet: testOn != 'testnet',
+      );
 
-    // Deploy atomic swap contract
-    final atomicSwapDeployedClient = await deployContract(swapContractWasmHash);
-    print(
-        "Deployed atomic swap contract contract id: ${atomicSwapDeployedClient.getContractId()}");
+      // Deploy atomic swap contract
+      final atomicSwapDeployedClient = await deployContract(
+        swapContractWasmHash,
+      );
+      print(
+        "Deployed atomic swap contract contract id: ${atomicSwapDeployedClient.getContractId()}",
+      );
 
-    // Create AtomicSwapContract instance using the contract binding
-    final atomicSwapContract = await AtomicSwapContract.forContractId(
-      sourceAccountKeyPair: sourceAccountKeyPair,
-      contractId: atomicSwapDeployedClient.getContractId(),
-      network: network,
-      rpcUrl: TESTNET_SERVER_URL,
-      enableServerLogging: true,
-    );
+      // Create AtomicSwapContract instance using the contract binding
+      final atomicSwapContract = await AtomicSwapContract.forContractId(
+        sourceAccountKeyPair: sourceAccountKeyPair,
+        contractId: atomicSwapDeployedClient.getContractId(),
+        network: network,
+        rpcUrl: TESTNET_SERVER_URL,
+        enableServerLogging: true,
+      );
 
-    final adminAddress =
-        Address.forAccountId(adminKeyPair.accountId).toXdrSCVal();
-    var tokenName = XdrSCVal.forString("TokenA");
-    var tokenSymbol = XdrSCVal.forString("TokenA");
-    final decimal = XdrSCVal.forU32(0);
+      final adminAddress = Address.forAccountId(
+        adminKeyPair.accountId,
+      ).toXdrSCVal();
+      var tokenName = XdrSCVal.forString("TokenA");
+      var tokenSymbol = XdrSCVal.forString("TokenA");
+      final decimal = XdrSCVal.forU32(0);
 
-    // Deploy and create token A
-    final tokenADeployedClient = await deployContract(tokenContractWasmHash,
-        constructorArgs: [adminAddress, decimal, tokenName, tokenSymbol]);
-    final tokenAContractId = tokenADeployedClient.getContractId();
-    print("Deployed token A contract contract id: $tokenAContractId");
+      // Deploy and create token A
+      final tokenADeployedClient = await deployContract(
+        tokenContractWasmHash,
+        constructorArgs: [adminAddress, decimal, tokenName, tokenSymbol],
+      );
+      final tokenAContractId = tokenADeployedClient.getContractId();
+      print("Deployed token A contract contract id: $tokenAContractId");
 
-    final tokenAContract = await TokenContract.forContractId(
-      sourceAccountKeyPair: adminKeyPair,
-      contractId: tokenAContractId,
-      network: network,
-      rpcUrl: TESTNET_SERVER_URL,
-      enableServerLogging: true,
-    );
+      final tokenAContract = await TokenContract.forContractId(
+        sourceAccountKeyPair: adminKeyPair,
+        contractId: tokenAContractId,
+        network: network,
+        rpcUrl: TESTNET_SERVER_URL,
+        enableServerLogging: true,
+      );
 
-    tokenName = XdrSCVal.forString("TokenB");
-    tokenSymbol = XdrSCVal.forString("TokenB");
-    // Deploy and create token B
-    final tokenBDeployedClient = await deployContract(tokenContractWasmHash,
-        constructorArgs: [adminAddress, decimal, tokenName, tokenSymbol]);
-    final tokenBContractId = tokenBDeployedClient.getContractId();
-    print("Deployed token B contract contract id: $tokenBContractId");
+      tokenName = XdrSCVal.forString("TokenB");
+      tokenSymbol = XdrSCVal.forString("TokenB");
+      // Deploy and create token B
+      final tokenBDeployedClient = await deployContract(
+        tokenContractWasmHash,
+        constructorArgs: [adminAddress, decimal, tokenName, tokenSymbol],
+      );
+      final tokenBContractId = tokenBDeployedClient.getContractId();
+      print("Deployed token B contract contract id: $tokenBContractId");
 
-    final tokenBContract = await TokenContract.forContractId(
-      sourceAccountKeyPair: adminKeyPair,
-      contractId: tokenBContractId,
-      network: network,
-      rpcUrl: TESTNET_SERVER_URL,
-      enableServerLogging: true,
-    );
+      final tokenBContract = await TokenContract.forContractId(
+        sourceAccountKeyPair: adminKeyPair,
+        contractId: tokenBContractId,
+        network: network,
+        rpcUrl: TESTNET_SERVER_URL,
+        enableServerLogging: true,
+      );
 
-    // Mint tokens using contract bindings
-    final mintAmountAlice = BigInt.from(10000000000000);
-    final mintAmountBob = BigInt.from(10000000000000);
+      // Mint tokens using contract bindings
+      final mintAmountAlice = BigInt.from(10000000000000);
+      final mintAmountBob = BigInt.from(10000000000000);
 
-    // Mint Alice's tokens
-    // Note: Since admin is the source account, we don't need to sign auth entries separately
-    await tokenAContract.mint(
-      to: Address.forAccountId(aliceId),
-      amount: mintAmountAlice,
-    );
+      // Mint Alice's tokens
+      // Note: Since admin is the source account, we don't need to sign auth entries separately
+      await tokenAContract.mint(
+        to: Address.forAccountId(aliceId),
+        amount: mintAmountAlice,
+      );
 
-    // Mint Bob's tokens
-    await tokenBContract.mint(
-      to: Address.forAccountId(bobId),
-      amount: mintAmountBob,
-    );
-    print("Alice and Bob funded using contract bindings");
+      // Mint Bob's tokens
+      await tokenBContract.mint(
+        to: Address.forAccountId(bobId),
+        amount: mintAmountBob,
+      );
+      print("Alice and Bob funded using contract bindings");
 
-    // Check balances using contract bindings
-    final aliceTokenABalance = await tokenAContract.balance(
-      id: Address.forAccountId(aliceId),
-    );
-    assert(aliceTokenABalance == mintAmountAlice);
+      // Check balances using contract bindings
+      final aliceTokenABalance = await tokenAContract.balance(
+        id: Address.forAccountId(aliceId),
+      );
+      assert(aliceTokenABalance == mintAmountAlice);
 
-    final bobTokenBBalance = await tokenBContract.balance(
-      id: Address.forAccountId(bobId),
-    );
-    assert(bobTokenBBalance == mintAmountBob);
-    print("✓ Balances verified using contract bindings");
+      final bobTokenBBalance = await tokenBContract.balance(
+        id: Address.forAccountId(bobId),
+      );
+      assert(bobTokenBBalance == mintAmountBob);
+      print("✓ Balances verified using contract bindings");
 
-    // Prepare swap amounts
-    final amountA = BigInt.from(1000);
-    final minBForA = BigInt.from(4500);
-    final amountB = BigInt.from(5000);
-    final minAForB = BigInt.from(950);
+      // Prepare swap amounts
+      final amountA = BigInt.from(1000);
+      final minBForA = BigInt.from(4500);
+      final amountB = BigInt.from(5000);
+      final minAForB = BigInt.from(950);
 
-    // Build swap transaction using contract binding
-    final swapTx = await atomicSwapContract.buildSwapTx(
-      a: Address.forAccountId(aliceId),
-      b: Address.forAccountId(bobId),
-      tokenA: Address.forContractId(tokenAContractId),
-      tokenB: Address.forContractId(tokenBContractId),
-      amountA: amountA,
-      minBForA: minBForA,
-      amountB: amountB,
-      minAForB: minAForB,
-    );
+      // Build swap transaction using contract binding
+      final swapTx = await atomicSwapContract.buildSwapTx(
+        a: Address.forAccountId(aliceId),
+        b: Address.forAccountId(bobId),
+        tokenA: Address.forContractId(tokenAContractId),
+        tokenB: Address.forContractId(tokenBContractId),
+        amountA: amountA,
+        minBForA: minBForA,
+        amountB: amountB,
+        minAForB: minAForB,
+      );
 
-    // Check who needs to sign
-    final whoElseNeedsToSign = swapTx.needsNonInvokerSigningBy();
-    assert(whoElseNeedsToSign.length == 2);
-    assert(whoElseNeedsToSign.contains(aliceId));
-    assert(whoElseNeedsToSign.contains(bobId));
+      // Check who needs to sign
+      final whoElseNeedsToSign = swapTx.needsNonInvokerSigningBy();
+      assert(whoElseNeedsToSign.length == 2);
+      assert(whoElseNeedsToSign.contains(aliceId));
+      assert(whoElseNeedsToSign.contains(bobId));
 
-    // Sign auth entries
-    await swapTx.signAuthEntries(signerKeyPair: aliceKeyPair);
-    print("✓ Signed by Alice");
+      // Sign auth entries
+      await swapTx.signAuthEntries(signerKeyPair: aliceKeyPair);
+      print("✓ Signed by Alice");
 
-    await swapTx.signAuthEntries(signerKeyPair: bobKeyPair);
-    print("✓ Signed by Bob");
+      await swapTx.signAuthEntries(signerKeyPair: bobKeyPair);
+      print("✓ Signed by Bob");
 
-    // Execute swap
-    final response = await swapTx.signAndSend();
-    final result = response.getResultValue();
-    assert(result != null);
-    assert(result!.discriminant == XdrSCValType.SCV_VOID);
+      // Execute swap
+      final response = await swapTx.signAndSend();
+      final result = response.getResultValue();
+      assert(result != null);
+      assert(result!.discriminant == XdrSCValType.SCV_VOID);
 
-    print("✓ Atomic swap completed successfully using contract bindings!");
-    print(
-        "✓ Contract bindings provided type-safe method calls and simplified the interaction");
-  });
+      print("✓ Atomic swap completed successfully using contract bindings!");
+      print(
+        "✓ Contract bindings provided type-safe method calls and simplified the interaction",
+      );
+    },
+  );
 }

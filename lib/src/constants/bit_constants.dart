@@ -55,7 +55,10 @@ final class BitConstants {
   /// Binary: 16 consecutive 'F's in hexadecimal
   /// Hexadecimal: 0xFFFFFFFFFFFFFFFF
   /// Decimal: 18446744073709551615
-  static final BigInt uint64MaskBigInt = BigInt.parse('FFFFFFFFFFFFFFFF', radix: 16);
+  static final BigInt uint64MaskBigInt = BigInt.parse(
+    'FFFFFFFFFFFFFFFF',
+    radix: 16,
+  );
 
   // Cached int value for native platforms (lazily initialized)
   static int? _uint64MaskCache;
@@ -145,15 +148,19 @@ final class BitConstants {
   ///
   /// Hexadecimal: 0x7FFFFFFFFFFFFFFF
   /// Decimal: 9223372036854775807
-  static final BigInt int64MaxValueBigInt =
-      BigInt.parse('7FFFFFFFFFFFFFFF', radix: 16);
+  static final BigInt int64MaxValueBigInt = BigInt.parse(
+    '7FFFFFFFFFFFFFFF',
+    radix: 16,
+  );
 
   /// Minimum value for a signed 64-bit integer, as BigInt (web-safe).
   ///
   /// Hexadecimal: -0x8000000000000000
   /// Decimal: -9223372036854775808
-  static final BigInt int64MinValueBigInt =
-      -BigInt.parse('8000000000000000', radix: 16);
+  static final BigInt int64MinValueBigInt = -BigInt.parse(
+    '8000000000000000',
+    radix: 16,
+  );
 
   // ============================================================================
   // CRC16 CHECKSUM CONSTANTS

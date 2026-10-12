@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 300))
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
@@ -27,7 +26,10 @@ ORG_URL="https://example.com"
     expect(info.federationServer, 'https://example.com/federation');
     expect(info.transferServerSep24, 'https://example.com/sep24');
     expect(info.webAuthEndpoint, 'https://example.com/auth');
-    expect(info.signingKey, 'GCKX7PGTILCAM6NKST6PWNCBSMLHZJKFWXFHQLE4SUVKBQY3HOOYUNK');
+    expect(
+      info.signingKey,
+      'GCKX7PGTILCAM6NKST6PWNCBSMLHZJKFWXFHQLE4SUVKBQY3HOOYUNK',
+    );
 
     Documentation? docs = stellarToml.documentation;
     expect(docs, isNotNull);
@@ -69,7 +71,10 @@ ACCOUNTS=["GCKX7PGTILCAM6NKST6PWNCBSMLHZJKFWXFHQLE4SUVKBQY3HOOYUNK"]
     expect(info.directPaymentServer, 'https://example.com/sep31');
     expect(info.anchorQuoteServer, 'https://example.com/sep38');
     expect(info.webAuthForContractsEndpoint, 'https://example.com/sep45');
-    expect(info.webAuthContractId, 'CCXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+    expect(
+      info.webAuthContractId,
+      'CCXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+    );
     expect(info.signingKey, isNotNull);
     expect(info.uriRequestSigningKey, isNotNull);
     expect(info.authServer, 'https://example.com/compliance');

@@ -53,29 +53,29 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
     OZTransactionOperations? transactionOperations,
     Object? multiSignerManager,
     OZExternalSignerManager? externalSigners,
-  })  : _config = config ??
-            OZSmartAccountConfig(
-              rpcUrl: 'https://soroban-testnet.stellar.org',
-              networkPassphrase: Network.TESTNET.networkPassphrase,
-              accountWasmHash:
-                  '0' * 64, // placeholder 32-byte hex
-              webauthnVerifierAddress:
-                  'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
-            ),
-        _sorobanServer = sorobanServer ?? _NullSorobanServer(),
-        _indexerClient = indexerClient,
-        _relayerClient = relayerClient,
-        _deployer = deployer ?? KeyPair.random(),
-        _credentialManager = credentialManager ?? StubCredentialManager(),
-        _contextRuleManager =
-            contextRuleManager ?? StubContextRuleManager(),
-        _storage = storage ?? OZInMemoryStorageAdapter(),
-        _events = OZSmartAccountEventEmitter(),
-        _injectedMultiSignerManager = multiSignerManager,
-        _externalSigners = externalSigners ??
-            OZExternalSignerManager(
-              networkPassphrase: Network.TESTNET.networkPassphrase,
-            ) {
+  }) : _config =
+           config ??
+           OZSmartAccountConfig(
+             rpcUrl: 'https://soroban-testnet.stellar.org',
+             networkPassphrase: Network.TESTNET.networkPassphrase,
+             accountWasmHash: '0' * 64, // placeholder 32-byte hex
+             webauthnVerifierAddress:
+                 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+           ),
+       _sorobanServer = sorobanServer ?? _NullSorobanServer(),
+       _indexerClient = indexerClient,
+       _relayerClient = relayerClient,
+       _deployer = deployer ?? KeyPair.random(),
+       _credentialManager = credentialManager ?? StubCredentialManager(),
+       _contextRuleManager = contextRuleManager ?? StubContextRuleManager(),
+       _storage = storage ?? OZInMemoryStorageAdapter(),
+       _events = OZSmartAccountEventEmitter(),
+       _injectedMultiSignerManager = multiSignerManager,
+       _externalSigners =
+           externalSigners ??
+           OZExternalSignerManager(
+             networkPassphrase: Network.TESTNET.networkPassphrase,
+           ) {
     _transactionOperations =
         transactionOperations ?? OZTransactionOperations(this);
   }
@@ -129,7 +129,10 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
 
   /// Sets the connected state directly without going through the wallet
   /// lifecycle, useful for validation tests.
-  void setConnected({required String credentialId, required String contractId}) {
+  void setConnected({
+    required String credentialId,
+    required String contractId,
+  }) {
     _connectedCredentialId = credentialId;
     _connectedContractId = contractId;
   }
@@ -180,7 +183,8 @@ class FakePipelineKit implements OZSmartAccountWalletKitInterface {
   OZRelayerClient? get relayerClient => _relayerClient;
 
   @override
-  OZWalletCredentialManagerInterface get credentialManager => _credentialManager;
+  OZWalletCredentialManagerInterface get credentialManager =>
+      _credentialManager;
 
   @override
   OZContextRuleManagerInterface get contextRuleManager => _contextRuleManager;
@@ -424,9 +428,9 @@ class _NullSorobanServer extends SorobanServer {
   _NullSorobanServer() : super('https://unused.test/');
 
   Never _unsupported() => throw UnsupportedError(
-        'Test fixture has no SorobanServer configured; supply a '
-        'MockSorobanServer or alternative double to exercise this path.',
-      );
+    'Test fixture has no SorobanServer configured; supply a '
+    'MockSorobanServer or alternative double to exercise this path.',
+  );
 
   @override
   Future<GetHealthResponse> getHealth() => _unsupported();
@@ -452,14 +456,12 @@ class _NullSorobanServer extends SorobanServer {
     String contractId,
     XdrSCVal key,
     XdrContractDataDurability durability,
-  ) =>
-      _unsupported();
+  ) => _unsupported();
 
   @override
   Future<SimulateTransactionResponse> simulateTransaction(
     SimulateTransactionRequest request,
-  ) =>
-      _unsupported();
+  ) => _unsupported();
 
   @override
   Future<SendTransactionResponse> sendTransaction(Transaction transaction) =>
@@ -474,8 +476,7 @@ class _NullSorobanServer extends SorobanServer {
     String transactionHash, {
     int maxAttempts = 30,
     Duration Function(int)? sleepStrategy,
-  }) =>
-      _unsupported();
+  }) => _unsupported();
 }
 
 /// A scriptable [SorobanServer] subclass used by pipeline tests.
@@ -543,12 +544,17 @@ class MockSorobanServer extends SorobanServer {
 
   /// Captures every `getContractData` invocation as
   /// `(contractId, key, durability)`.
-  final List<({String contractId, XdrSCVal key, XdrContractDataDurability durability})>
-      getContractDataCalls = <({
-    String contractId,
-    XdrSCVal key,
-    XdrContractDataDurability durability
-  })>[];
+  final List<
+    ({String contractId, XdrSCVal key, XdrContractDataDurability durability})
+  >
+  getContractDataCalls =
+      <
+        ({
+          String contractId,
+          XdrSCVal key,
+          XdrContractDataDurability durability,
+        })
+      >[];
 
   /// Queue of `pollTransaction` outcomes.
   final List<Object> pollResponses = <Object>[];
@@ -567,7 +573,9 @@ class MockSorobanServer extends SorobanServer {
     if (fallback != null) {
       return _materialise<T>(fallback, methodName);
     }
-    throw StateError('MockSorobanServer.$methodName called but no response queued');
+    throw StateError(
+      'MockSorobanServer.$methodName called but no response queued',
+    );
   }
 
   T _materialise<T>(Object v, String methodName) {
@@ -593,7 +601,9 @@ class MockSorobanServer extends SorobanServer {
   }
 
   @override
-  Future<SendTransactionResponse> sendTransaction(Transaction transaction) async {
+  Future<SendTransactionResponse> sendTransaction(
+    Transaction transaction,
+  ) async {
     sendCalls.add(transaction);
     return _next<SendTransactionResponse>(
       sendResponses,
@@ -651,11 +661,7 @@ class MockSorobanServer extends SorobanServer {
 
   /// Variant of [_next] that allows a `null` queue entry (used by
   /// [getContractData] to express "no on-chain entry").
-  T _nextNullable<T>(
-    List<Object?> queue,
-    Object? fallback,
-    String methodName,
-  ) {
+  T _nextNullable<T>(List<Object?> queue, Object? fallback, String methodName) {
     if (queue.isNotEmpty) {
       final v = queue.removeAt(0);
       if (v == null) return null as T;
@@ -664,7 +670,9 @@ class MockSorobanServer extends SorobanServer {
     if (fallback != null) {
       return _materialise<T>(fallback, methodName);
     }
-    throw StateError('MockSorobanServer.$methodName called but no response queued');
+    throw StateError(
+      'MockSorobanServer.$methodName called but no response queued',
+    );
   }
 
   @override
@@ -690,17 +698,16 @@ class MockSorobanServer extends SorobanServer {
 /// responses populated by the test.
 class RecordingWebAuthnProvider implements WebAuthnProvider {
   final List<({Uint8List challenge, Uint8List userId, String userName})>
-      registerCalls = <({
-    Uint8List challenge,
-    Uint8List userId,
-    String userName
-  })>[];
+  registerCalls =
+      <({Uint8List challenge, Uint8List userId, String userName})>[];
 
-  final List<({Uint8List challenge, List<WebAuthnAllowCredential>? allowCredentials})>
-      authenticateCalls = <({
-    Uint8List challenge,
-    List<WebAuthnAllowCredential>? allowCredentials
-  })>[];
+  final List<
+    ({Uint8List challenge, List<WebAuthnAllowCredential>? allowCredentials})
+  >
+  authenticateCalls =
+      <
+        ({Uint8List challenge, List<WebAuthnAllowCredential>? allowCredentials})
+      >[];
 
   /// Queue of registration outcomes; can hold [WebAuthnRegistrationResult]
   /// or an exception to throw.
@@ -761,7 +768,7 @@ class RecordingWebAuthnProvider implements WebAuthnProvider {
 /// making real network calls.
 class RecordingIndexerClient extends OZIndexerClient {
   RecordingIndexerClient._(dio.Dio innerDio)
-      : super.withDio('https://indexer.test', innerDio);
+    : super.withDio('https://indexer.test', innerDio);
 
   factory RecordingIndexerClient(_RecordingDioAdapter adapter) {
     final inner = dio.Dio()..httpClientAdapter = adapter;
@@ -773,7 +780,7 @@ class RecordingIndexerClient extends OZIndexerClient {
 /// returns canned responses.
 class RecordingRelayerClient extends OZRelayerClient {
   RecordingRelayerClient._(dio.Dio innerDio)
-      : super.withDio('https://relayer.test', innerDio);
+    : super.withDio('https://relayer.test', innerDio);
 
   factory RecordingRelayerClient(_RecordingDioAdapter adapter) {
     final inner = dio.Dio()..httpClientAdapter = adapter;

@@ -13,7 +13,8 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 void main() {
   const domain = 'example.stellar.org';
   const authServer = 'https://auth.example.stellar.org';
-  const serverAccountId = 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP';
+  const serverAccountId =
+      'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP';
   const serverSecretSeed =
       'SAWDHXQG6ROJSU4QGCW7NSTYFHPTPIVC2NC7QKVTO7PZCSO2WEBGM54W';
   late KeyPair serverKeyPair;
@@ -41,39 +42,47 @@ void main() {
   }) {
     final mapEntries = <XdrSCMapEntry>[];
 
-    mapEntries.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('account'),
-      XdrSCVal.forString(account),
-    ));
-    mapEntries.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('home_domain'),
-      XdrSCVal.forString(homeDomain),
-    ));
-    mapEntries.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('web_auth_domain'),
-      XdrSCVal.forString(webAuthDomain),
-    ));
-    mapEntries.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('web_auth_domain_account'),
-      XdrSCVal.forString(webAuthDomainAccount),
-    ));
-    mapEntries.add(XdrSCMapEntry(
-      XdrSCVal.forSymbol('nonce'),
-      XdrSCVal.forString(nonce),
-    ));
+    mapEntries.add(
+      XdrSCMapEntry(XdrSCVal.forSymbol('account'), XdrSCVal.forString(account)),
+    );
+    mapEntries.add(
+      XdrSCMapEntry(
+        XdrSCVal.forSymbol('home_domain'),
+        XdrSCVal.forString(homeDomain),
+      ),
+    );
+    mapEntries.add(
+      XdrSCMapEntry(
+        XdrSCVal.forSymbol('web_auth_domain'),
+        XdrSCVal.forString(webAuthDomain),
+      ),
+    );
+    mapEntries.add(
+      XdrSCMapEntry(
+        XdrSCVal.forSymbol('web_auth_domain_account'),
+        XdrSCVal.forString(webAuthDomainAccount),
+      ),
+    );
+    mapEntries.add(
+      XdrSCMapEntry(XdrSCVal.forSymbol('nonce'), XdrSCVal.forString(nonce)),
+    );
 
     if (clientDomain != null) {
-      mapEntries.add(XdrSCMapEntry(
-        XdrSCVal.forSymbol('client_domain'),
-        XdrSCVal.forString(clientDomain),
-      ));
+      mapEntries.add(
+        XdrSCMapEntry(
+          XdrSCVal.forSymbol('client_domain'),
+          XdrSCVal.forString(clientDomain),
+        ),
+      );
     }
 
     if (clientDomainAccount != null) {
-      mapEntries.add(XdrSCMapEntry(
-        XdrSCVal.forSymbol('client_domain_account'),
-        XdrSCVal.forString(clientDomainAccount),
-      ));
+      mapEntries.add(
+        XdrSCMapEntry(
+          XdrSCVal.forSymbol('client_domain_account'),
+          XdrSCVal.forString(clientDomainAccount),
+        ),
+      );
     }
 
     return XdrSCVal.forMap(mapEntries);
@@ -115,7 +124,10 @@ void main() {
     );
 
     final function = SorobanAuthorizedFunction(contractFn: contractFn);
-    final invocation = SorobanAuthorizedInvocation(function, subInvocations: []);
+    final invocation = SorobanAuthorizedInvocation(
+      function,
+      subInvocations: [],
+    );
 
     return SorobanAuthorizationEntry(credentials, invocation);
   }
@@ -219,10 +231,7 @@ void main() {
           );
         } else {
           // Token request
-          return http.Response(
-            json.encode({'token': successJWTToken}),
-            200,
-          );
+          return http.Response(json.encode({'token': successJWTToken}), 200);
         }
       });
 
@@ -236,11 +245,9 @@ void main() {
       );
 
       final clientSigner = KeyPair.random();
-      final token = await webAuth.jwtToken(
-        clientContractId,
-        [clientSigner],
-        homeDomain: domain,
-      );
+      final token = await webAuth.jwtToken(clientContractId, [
+        clientSigner,
+      ], homeDomain: domain);
 
       expect(token, equals(successJWTToken));
     });
@@ -265,10 +272,7 @@ void main() {
             200,
           );
         } else {
-          return http.Response(
-            json.encode({'token': successJWTToken}),
-            200,
-          );
+          return http.Response(json.encode({'token': successJWTToken}), 200);
         }
       });
 
@@ -283,10 +287,7 @@ void main() {
 
       final clientSigner = KeyPair.random();
       // Not passing homeDomain parameter - should default to domain
-      final token = await webAuth.jwtToken(
-        clientContractId,
-        [clientSigner],
-      );
+      final token = await webAuth.jwtToken(clientContractId, [clientSigner]);
 
       expect(token, equals(successJWTToken));
     });
@@ -348,10 +349,10 @@ void main() {
 
       final clientSigner = KeyPair.random();
       expect(
-        () => webAuth.jwtToken(clientContractId, [clientSigner],
-            homeDomain: domain),
-        throwsA(
-            isA<ContractChallengeValidationErrorInvalidContractAddress>()),
+        () => webAuth.jwtToken(clientContractId, [
+          clientSigner,
+        ], homeDomain: domain),
+        throwsA(isA<ContractChallengeValidationErrorInvalidContractAddress>()),
       );
     });
 
@@ -408,8 +409,9 @@ void main() {
 
       final clientSigner = KeyPair.random();
       expect(
-        () => webAuth.jwtToken(clientContractId, [clientSigner],
-            homeDomain: domain),
+        () => webAuth.jwtToken(clientContractId, [
+          clientSigner,
+        ], homeDomain: domain),
         throwsA(isA<ContractChallengeValidationErrorInvalidFunctionName>()),
       );
     });
@@ -457,8 +459,9 @@ void main() {
 
       final clientSigner = KeyPair.random();
       expect(
-        () => webAuth.jwtToken(clientContractId, [clientSigner],
-            homeDomain: domain),
+        () => webAuth.jwtToken(clientContractId, [
+          clientSigner,
+        ], homeDomain: domain),
         throwsA(isA<ContractChallengeValidationErrorMissingServerEntry>()),
       );
     });
@@ -507,8 +510,9 @@ void main() {
 
       final clientSigner = KeyPair.random();
       expect(
-        () => webAuth.jwtToken(clientContractId, [clientSigner],
-            homeDomain: domain),
+        () => webAuth.jwtToken(clientContractId, [
+          clientSigner,
+        ], homeDomain: domain),
         throwsA(isA<ContractChallengeValidationErrorMissingClientEntry>()),
       );
     });
@@ -567,10 +571,10 @@ void main() {
 
       final clientSigner = KeyPair.random();
       expect(
-        () => webAuth.jwtToken(clientContractId, [clientSigner],
-            homeDomain: domain),
-        throwsA(
-            isA<ContractChallengeValidationErrorInvalidServerSignature>()),
+        () => webAuth.jwtToken(clientContractId, [
+          clientSigner,
+        ], homeDomain: domain),
+        throwsA(isA<ContractChallengeValidationErrorInvalidServerSignature>()),
       );
     });
 
@@ -637,8 +641,9 @@ void main() {
 
       final clientSigner = KeyPair.random();
       expect(
-        () => webAuth.jwtToken(clientContractId, [clientSigner],
-            homeDomain: domain),
+        () => webAuth.jwtToken(clientContractId, [
+          clientSigner,
+        ], homeDomain: domain),
         throwsA(isA<ContractChallengeValidationErrorInvalidNonce>()),
       );
     });
@@ -697,8 +702,9 @@ void main() {
 
       final clientSigner = KeyPair.random();
       expect(
-        () => webAuth.jwtToken(clientContractId, [clientSigner],
-            homeDomain: domain),
+        () => webAuth.jwtToken(clientContractId, [
+          clientSigner,
+        ], homeDomain: domain),
         throwsA(isA<ContractChallengeValidationErrorInvalidHomeDomain>()),
       );
     });
@@ -757,8 +763,9 @@ void main() {
 
       final clientSigner = KeyPair.random();
       expect(
-        () => webAuth.jwtToken(clientContractId, [clientSigner],
-            homeDomain: domain),
+        () => webAuth.jwtToken(clientContractId, [
+          clientSigner,
+        ], homeDomain: domain),
         throwsA(isA<ContractChallengeValidationErrorInvalidWebAuthDomain>()),
       );
     });
@@ -818,8 +825,9 @@ void main() {
 
       final clientSigner = KeyPair.random();
       expect(
-        () => webAuth.jwtToken(clientContractId, [clientSigner],
-            homeDomain: domain),
+        () => webAuth.jwtToken(clientContractId, [
+          clientSigner,
+        ], homeDomain: domain),
         throwsA(isA<ContractChallengeValidationErrorInvalidAccount>()),
       );
     });
@@ -860,10 +868,16 @@ void main() {
         [],
       );
       final subFunction = SorobanAuthorizedFunction(contractFn: subContractFn);
-      final subInvocation = SorobanAuthorizedInvocation(subFunction, subInvocations: []);
+      final subInvocation = SorobanAuthorizedInvocation(
+        subFunction,
+        subInvocations: [],
+      );
 
       // Create root invocation WITH sub-invocations (this is invalid)
-      final invocation = SorobanAuthorizedInvocation(function, subInvocations: [subInvocation]);
+      final invocation = SorobanAuthorizedInvocation(
+        function,
+        subInvocations: [subInvocation],
+      );
 
       final serverEntry = SorobanAuthorizationEntry(credentials, invocation);
       serverEntry.sign(serverKeyPair, Network.TESTNET);
@@ -889,8 +903,9 @@ void main() {
 
       final clientSigner = KeyPair.random();
       expect(
-        () => webAuth.jwtToken(clientContractId, [clientSigner],
-            homeDomain: domain),
+        () => webAuth.jwtToken(clientContractId, [
+          clientSigner,
+        ], homeDomain: domain),
         throwsA(isA<ContractChallengeValidationErrorSubInvocationsFound>()),
       );
     });
@@ -899,10 +914,7 @@ void main() {
   group('SEP-45 Error Response Cases', () {
     test('testGetChallengeError', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(
-          json.encode({'error': 'Invalid account'}),
-          400,
-        );
+        return http.Response(json.encode({'error': 'Invalid account'}), 400);
       });
 
       final webAuth = WebAuthForContracts(
@@ -916,8 +928,9 @@ void main() {
 
       final clientSigner = KeyPair.random();
       expect(
-        () => webAuth.jwtToken(clientContractId, [clientSigner],
-            homeDomain: domain),
+        () => webAuth.jwtToken(clientContractId, [
+          clientSigner,
+        ], homeDomain: domain),
         throwsA(isA<ContractChallengeRequestErrorResponse>()),
       );
     });
@@ -960,8 +973,9 @@ void main() {
 
       final clientSigner = KeyPair.random();
       expect(
-        () => webAuth.jwtToken(clientContractId, [clientSigner],
-            homeDomain: domain),
+        () => webAuth.jwtToken(clientContractId, [
+          clientSigner,
+        ], homeDomain: domain),
         throwsA(isA<SubmitContractChallengeErrorResponseException>()),
       );
     });
@@ -1001,8 +1015,9 @@ void main() {
 
       final clientSigner = KeyPair.random();
       expect(
-        () => webAuth.jwtToken(clientContractId, [clientSigner],
-            homeDomain: domain),
+        () => webAuth.jwtToken(clientContractId, [
+          clientSigner,
+        ], homeDomain: domain),
         throwsA(isA<SubmitContractChallengeTimeoutResponseException>()),
       );
     });
@@ -1107,10 +1122,7 @@ void main() {
             200,
           );
         } else {
-          return http.Response(
-            json.encode({'token': successJWTToken}),
-            200,
-          );
+          return http.Response(json.encode({'token': successJWTToken}), 200);
         }
       });
 
@@ -1184,19 +1196,15 @@ void main() {
 
         // Request 2: GET stellar.toml for client domain signing key
         if (requestCount == 2 &&
-            request.url.toString().contains('$clientDomain/.well-known/stellar.toml')) {
-          return http.Response(
-            'SIGNING_KEY = "$clientDomainAccount"',
-            200,
-          );
+            request.url.toString().contains(
+              '$clientDomain/.well-known/stellar.toml',
+            )) {
+          return http.Response('SIGNING_KEY = "$clientDomainAccount"', 200);
         }
 
         // Request 3: POST signed challenge for token
         if (requestCount == 3 && request.method == 'POST') {
-          return http.Response(
-            json.encode({'token': successJWTToken}),
-            200,
-          );
+          return http.Response(json.encode({'token': successJWTToken}), 200);
         }
 
         return http.Response('Unexpected request', 500);
@@ -1216,7 +1224,8 @@ void main() {
 
       // Create a callback that signs the client domain entry
       Future<SorobanAuthorizationEntry> callback(
-          SorobanAuthorizationEntry entry) async {
+        SorobanAuthorizationEntry entry,
+      ) async {
         callbackInvoked = true;
         // Set signature expiration ledger before signing
         entry.credentials.innerAddressCredentials!.signatureExpirationLedger =
@@ -1317,10 +1326,7 @@ void main() {
             request.headers['Content-Type'],
             contains('application/x-www-form-urlencoded'),
           );
-          return http.Response(
-            json.encode({'token': successJWTToken}),
-            200,
-          );
+          return http.Response(json.encode({'token': successJWTToken}), 200);
         }
       });
 
@@ -1335,11 +1341,9 @@ void main() {
       webAuth.useFormUrlEncoded = true;
 
       final clientSigner = KeyPair.random();
-      final token = await webAuth.jwtToken(
-        clientContractId,
-        [clientSigner],
-        homeDomain: domain,
-      );
+      final token = await webAuth.jwtToken(clientContractId, [
+        clientSigner,
+      ], homeDomain: domain);
 
       expect(token, equals(successJWTToken));
     });
@@ -1353,8 +1357,10 @@ void main() {
       final sourceKeyPair = KeyPair.random();
       print('Created test account: ${sourceKeyPair.accountId}');
 
-      await fundTestAccountAndAwaitVisibility(sourceKeyPair.accountId,
-          rpc: sorobanServer);
+      await fundTestAccountAndAwaitVisibility(
+        sourceKeyPair.accountId,
+        rpc: sorobanServer,
+      );
       print('Funded test account via Friendbot');
 
       // Step 2: Create signer keypair (used for both constructor and authentication)
@@ -1362,7 +1368,9 @@ void main() {
       print('Created signer keypair: ${signerKeyPair.accountId}');
 
       // Step 3: Load wasm file
-      final contractCode = await loadContractCode('test/wasm/sep_45_account.wasm');
+      final contractCode = await loadContractCode(
+        'test/wasm/sep_45_account.wasm',
+      );
 
       // Step 4: Install (upload) WASM using SorobanClient
       final installRequest = InstallRequest(
@@ -1372,11 +1380,15 @@ void main() {
         rpcUrl: rpcUrl,
         server: sorobanServer,
       );
-      final wasmHash = await SorobanClient.install(installRequest: installRequest);
+      final wasmHash = await SorobanClient.install(
+        installRequest: installRequest,
+      );
       print('Uploaded wasm, hash: $wasmHash');
 
       // Step 5: Build constructor arguments
-      final adminAddress = Address.forAccountId(sourceKeyPair.accountId).toXdrSCVal();
+      final adminAddress = Address.forAccountId(
+        sourceKeyPair.accountId,
+      ).toXdrSCVal();
       final signerPublicKey = XdrSCVal.forBytes(signerKeyPair.publicKey);
       final constructorArgs = [adminAddress, signerPublicKey];
 
@@ -1405,10 +1417,7 @@ void main() {
 
       try {
         print('Authenticating with testanchor.stellar.org...');
-        final jwt = await webAuth.jwtToken(
-          contractId,
-          [signerKeyPair],
-        );
+        final jwt = await webAuth.jwtToken(contractId, [signerKeyPair]);
 
         // Success - we received a real JWT token
         expect(jwt, isNotEmpty);
@@ -1437,8 +1446,10 @@ void main() {
       final sourceKeyPair = KeyPair.random();
       print('Created test account: ${sourceKeyPair.accountId}');
 
-      await fundTestAccountAndAwaitVisibility(sourceKeyPair.accountId,
-          rpc: sorobanServer);
+      await fundTestAccountAndAwaitVisibility(
+        sourceKeyPair.accountId,
+        rpc: sorobanServer,
+      );
       print('Funded test account via Friendbot');
 
       // Step 2: Create signer keypair (used for both constructor and authentication)
@@ -1446,7 +1457,9 @@ void main() {
       print('Created signer keypair: ${signerKeyPair.accountId}');
 
       // Step 3: Load wasm file
-      final contractCode = await loadContractCode('test/wasm/sep_45_account.wasm');
+      final contractCode = await loadContractCode(
+        'test/wasm/sep_45_account.wasm',
+      );
 
       // Step 4: Install (upload) WASM using SorobanClient
       final installRequest = InstallRequest(
@@ -1456,11 +1469,15 @@ void main() {
         rpcUrl: rpcUrl,
         server: sorobanServer,
       );
-      final wasmHash = await SorobanClient.install(installRequest: installRequest);
+      final wasmHash = await SorobanClient.install(
+        installRequest: installRequest,
+      );
       print('Uploaded wasm, hash: $wasmHash');
 
       // Step 5: Build constructor arguments
-      final adminAddress = Address.forAccountId(sourceKeyPair.accountId).toXdrSCVal();
+      final adminAddress = Address.forAccountId(
+        sourceKeyPair.accountId,
+      ).toXdrSCVal();
       final signerPublicKey = XdrSCVal.forBytes(signerKeyPair.publicKey);
       final constructorArgs = [adminAddress, signerPublicKey];
 
@@ -1491,14 +1508,16 @@ void main() {
       // Remote signer: https://github.com/Soneso/go-server-signer
       const clientDomain = 'testsigner.stellargate.com';
       const remoteSigningUrl = 'https://testsigner.stellargate.com/sign-sep-45';
-      const bearerToken = '7b23fe8428e7fb9b3335ed36c39fb5649d3cd7361af8bf88c2554d62e8ca3017';
+      const bearerToken =
+          '7b23fe8428e7fb9b3335ed36c39fb5649d3cd7361af8bf88c2554d62e8ca3017';
 
       // Track callback invocation
       var callbackInvoked = false;
 
       // Create callback that calls the remote signing server (single entry API)
       Future<SorobanAuthorizationEntry> signingCallback(
-          SorobanAuthorizationEntry entry) async {
+        SorobanAuthorizationEntry entry,
+      ) async {
         callbackInvoked = true;
         print('Callback invoked, sending entry to remote signing server...');
 
@@ -1533,7 +1552,8 @@ void main() {
 
           // Decode response back to SorobanAuthorizationEntry
           return SorobanAuthorizationEntry.fromBase64EncodedXdr(
-              jsonData['authorization_entry'] as String);
+            jsonData['authorization_entry'] as String,
+          );
         } finally {
           httpClient.close();
         }
@@ -1541,7 +1561,8 @@ void main() {
 
       try {
         print(
-            'Authenticating with testanchor.stellar.org using client domain: $clientDomain...');
+          'Authenticating with testanchor.stellar.org using client domain: $clientDomain...',
+        );
         final jwt = await webAuth.jwtToken(
           contractId,
           [signerKeyPair],
@@ -1559,7 +1580,9 @@ void main() {
         // the important part is that we successfully completed the full flow
         // including remote client domain signing via the callback
         print('Note: Token submission failed (expected): ${e.toString()}');
-        print('Contract deployment, challenge flow, and remote signing validated successfully');
+        print(
+          'Contract deployment, challenge flow, and remote signing validated successfully',
+        );
         expect(callbackInvoked, isTrue);
         expect(true, isTrue);
       }

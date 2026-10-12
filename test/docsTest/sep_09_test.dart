@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 300))
-
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -231,8 +230,10 @@ void main() {
     expect(allFields['cbu_alias'], 'john.doe.acme');
     expect(allFields['mobile_money_number'], '+254712345678');
     expect(allFields['mobile_money_provider'], 'M-Pesa');
-    expect(allFields['crypto_address'],
-        'GBH4TZYZ4IRCPO44CBOLFUHULU2WGALXTAVESQA6432MBJMABBB4GIYI');
+    expect(
+      allFields['crypto_address'],
+      'GBH4TZYZ4IRCPO44CBOLFUHULU2WGALXTAVESQA6432MBJMABBB4GIYI',
+    );
     expect(allFields['external_transfer_memo'], 'user-12345');
   });
 
@@ -303,32 +304,45 @@ void main() {
     expect(NaturalPersonKYCFields.last_name_field_key, 'last_name');
     expect(NaturalPersonKYCFields.email_address_field_key, 'email_address');
     expect(NaturalPersonKYCFields.birth_date_field_key, 'birth_date');
-    expect(NaturalPersonKYCFields.mobile_number_format_field_key,
-        'mobile_number_format');
     expect(
-        NaturalPersonKYCFields.photo_id_front_file_key, 'photo_id_front');
+      NaturalPersonKYCFields.mobile_number_format_field_key,
+      'mobile_number_format',
+    );
+    expect(NaturalPersonKYCFields.photo_id_front_file_key, 'photo_id_front');
     expect(NaturalPersonKYCFields.referral_id_field_key, 'referral_id');
 
     // Organization field keys (includes prefix)
     expect(OrganizationKYCFields.key_prefix, 'organization.');
     expect(OrganizationKYCFields.name_field_key, 'organization.name');
-    expect(OrganizationKYCFields.VAT_number_field_key,
-        'organization.VAT_number');
-    expect(OrganizationKYCFields.registration_number_field_key,
-        'organization.registration_number');
+    expect(
+      OrganizationKYCFields.VAT_number_field_key,
+      'organization.VAT_number',
+    );
+    expect(
+      OrganizationKYCFields.registration_number_field_key,
+      'organization.registration_number',
+    );
 
     // Financial account field keys
     expect(FinancialAccountKYCFields.bank_name_field_key, 'bank_name');
-    expect(FinancialAccountKYCFields.bank_account_type_field_key,
-        'bank_account_type');
+    expect(
+      FinancialAccountKYCFields.bank_account_type_field_key,
+      'bank_account_type',
+    );
     expect(FinancialAccountKYCFields.clabe_number_field_key, 'clabe_number');
     expect(FinancialAccountKYCFields.cbu_number_field_key, 'cbu_number');
-    expect(FinancialAccountKYCFields.mobile_money_number_field_key,
-        'mobile_money_number');
-    expect(FinancialAccountKYCFields.external_transfer_memo_field_key,
-        'external_transfer_memo');
     expect(
-        FinancialAccountKYCFields.crypto_address_field_key, 'crypto_address');
+      FinancialAccountKYCFields.mobile_money_number_field_key,
+      'mobile_money_number',
+    );
+    expect(
+      FinancialAccountKYCFields.external_transfer_memo_field_key,
+      'external_transfer_memo',
+    );
+    expect(
+      FinancialAccountKYCFields.crypto_address_field_key,
+      'crypto_address',
+    );
 
     // Card field keys (includes prefix)
     expect(CardKYCFields.number_field_key, 'card.number');
@@ -354,7 +368,9 @@ void main() {
     expect(kyc.organizationKYCFields, isNotNull);
     expect(kyc.naturalPersonKYCFields!.fields()['first_name'], 'John');
     expect(
-        kyc.organizationKYCFields!.fields()['organization.name'], 'Acme Corp');
+      kyc.organizationKYCFields!.fields()['organization.name'],
+      'Acme Corp',
+    );
   });
 
   test('sep-09: Organization card fields do not get org prefix', () {

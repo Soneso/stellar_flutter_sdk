@@ -37,7 +37,8 @@ class GetLedgersResponse extends SorobanRpcResponse {
     if (json['result'] != null) {
       if (json['result']['ledgers'] != null) {
         response.ledgers = List<LedgerInfo>.from(
-            json['result']['ledgers'].map((e) => LedgerInfo.fromJson(e)));
+          json['result']['ledgers'].map((e) => LedgerInfo.fromJson(e)),
+        );
       }
       response.latestLedger = json['result']['latestLedger'];
       response.latestLedgerCloseTime = json['result']['latestLedgerCloseTime'];
@@ -237,7 +238,8 @@ class GetEventsResponse extends SorobanRpcResponse {
     if (json['result'] != null) {
       if (json['result']['events'] != null) {
         response.events = List<EventInfo>.from(
-            json['result']['events'].map((e) => EventInfo.fromJson(e)));
+          json['result']['events'].map((e) => EventInfo.fromJson(e)),
+        );
       }
       response.latestLedger = json['result']['latestLedger'];
       response.cursor = json['result']['cursor'];

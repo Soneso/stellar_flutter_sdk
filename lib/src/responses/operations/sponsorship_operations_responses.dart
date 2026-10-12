@@ -57,40 +57,42 @@ class BeginSponsoringFutureReservesOperationResponse extends OperationResponse {
   /// - [transaction] Full parent transaction
   /// - [sponsor] Account sponsoring the operation (if applicable)
   BeginSponsoringFutureReservesOperationResponse(
-      this.sponsoredId,
-      super.links,
-      super.id,
-      super.pagingToken,
-      super.transactionSuccessful,
-      super.sourceAccount,
-      super.sourceAccountMuxed,
-      super.sourceAccountMuxedId,
-      super.type,
-      super.type_i,
-      super.createdAt,
-      super.transactionHash,
-      super.transaction,
-      super.sponsor);
+    this.sponsoredId,
+    super.links,
+    super.id,
+    super.pagingToken,
+    super.transactionSuccessful,
+    super.sourceAccount,
+    super.sourceAccountMuxed,
+    super.sourceAccountMuxedId,
+    super.type,
+    super.type_i,
+    super.createdAt,
+    super.transactionHash,
+    super.transaction,
+    super.sponsor,
+  );
 
   factory BeginSponsoringFutureReservesOperationResponse.fromJson(
-          Map<String, dynamic> json) =>
-      BeginSponsoringFutureReservesOperationResponse(
-          json['sponsored_id'],
-          OperationResponseLinks.fromJson(json['_links']),
-          json['id'],
-          json['paging_token'],
-          json['transaction_successful'],
-          json['source_account'],
-          json['source_account_muxed'],
-          json['source_account_muxed_id'],
-          json['type'],
-          json['type_i'],
-          json['created_at'],
-          json['transaction_hash'],
-          json['transaction'] == null
-              ? null
-              : TransactionResponse.fromJson(json['transaction']),
-          json['sponsor']);
+    Map<String, dynamic> json,
+  ) => BeginSponsoringFutureReservesOperationResponse(
+    json['sponsored_id'],
+    OperationResponseLinks.fromJson(json['_links']),
+    json['id'],
+    json['paging_token'],
+    json['transaction_successful'],
+    json['source_account'],
+    json['source_account_muxed'],
+    json['source_account_muxed_id'],
+    json['type'],
+    json['type_i'],
+    json['created_at'],
+    json['transaction_hash'],
+    json['transaction'] == null
+        ? null
+        : TransactionResponse.fromJson(json['transaction']),
+    json['sponsor'],
+  );
 }
 
 /// Represents an end sponsoring future reserves operation response from Horizon.
@@ -154,44 +156,46 @@ class EndSponsoringFutureReservesOperationResponse extends OperationResponse {
   /// - [transaction] Full parent transaction
   /// - [sponsor] Account sponsoring the operation (if applicable)
   EndSponsoringFutureReservesOperationResponse(
-      this.beginSponsor,
-      this.beginSponsorMuxed,
-      this.beginSponsorMuxedId,
-      super.links,
-      super.id,
-      super.pagingToken,
-      super.transactionSuccessful,
-      super.sourceAccount,
-      super.sourceAccountMuxed,
-      super.sourceAccountMuxedId,
-      super.type,
-      super.type_i,
-      super.createdAt,
-      super.transactionHash,
-      super.transaction,
-      super.sponsor);
+    this.beginSponsor,
+    this.beginSponsorMuxed,
+    this.beginSponsorMuxedId,
+    super.links,
+    super.id,
+    super.pagingToken,
+    super.transactionSuccessful,
+    super.sourceAccount,
+    super.sourceAccountMuxed,
+    super.sourceAccountMuxedId,
+    super.type,
+    super.type_i,
+    super.createdAt,
+    super.transactionHash,
+    super.transaction,
+    super.sponsor,
+  );
 
   factory EndSponsoringFutureReservesOperationResponse.fromJson(
-          Map<String, dynamic> json) =>
-      EndSponsoringFutureReservesOperationResponse(
-          json['begin_sponsor'],
-          json['begin_sponsor_muxed'],
-          json['begin_sponsor_muxed_id'],
-          OperationResponseLinks.fromJson(json['_links']),
-          json['id'],
-          json['paging_token'],
-          json['transaction_successful'],
-          json['source_account'],
-          json['source_account_muxed'],
-          json['source_account_muxed_id'],
-          json['type'],
-          json['type_i'],
-          json['created_at'],
-          json['transaction_hash'],
-          json['transaction'] == null
-              ? null
-              : TransactionResponse.fromJson(json['transaction']),
-          json['sponsor']);
+    Map<String, dynamic> json,
+  ) => EndSponsoringFutureReservesOperationResponse(
+    json['begin_sponsor'],
+    json['begin_sponsor_muxed'],
+    json['begin_sponsor_muxed_id'],
+    OperationResponseLinks.fromJson(json['_links']),
+    json['id'],
+    json['paging_token'],
+    json['transaction_successful'],
+    json['source_account'],
+    json['source_account_muxed'],
+    json['source_account_muxed_id'],
+    json['type'],
+    json['type_i'],
+    json['created_at'],
+    json['transaction_hash'],
+    json['transaction'] == null
+        ? null
+        : TransactionResponse.fromJson(json['transaction']),
+    json['sponsor'],
+  );
 }
 
 /// Represents a revoke sponsorship operation response from Horizon.
@@ -292,56 +296,58 @@ class RevokeSponsorshipOperationResponse extends OperationResponse {
   /// - [transaction] Full parent transaction
   /// - [sponsor] Account sponsoring the operation (if applicable)
   RevokeSponsorshipOperationResponse(
-      this.accountId,
-      this.claimableBalanceId,
-      this.dataAccountId,
-      this.dataName,
-      this.offerId,
-      this.trustlineAccountId,
-      this.trustlineLiquidityPoolID,
-      this.trustlineAsset,
-      this.signerAccountId,
-      this.signerKey,
-      super.links,
-      super.id,
-      super.pagingToken,
-      super.transactionSuccessful,
-      super.sourceAccount,
-      super.sourceAccountMuxed,
-      super.sourceAccountMuxedId,
-      super.type,
-      super.type_i,
-      super.createdAt,
-      super.transactionHash,
-      super.transaction,
-      super.sponsor);
+    this.accountId,
+    this.claimableBalanceId,
+    this.dataAccountId,
+    this.dataName,
+    this.offerId,
+    this.trustlineAccountId,
+    this.trustlineLiquidityPoolID,
+    this.trustlineAsset,
+    this.signerAccountId,
+    this.signerKey,
+    super.links,
+    super.id,
+    super.pagingToken,
+    super.transactionSuccessful,
+    super.sourceAccount,
+    super.sourceAccountMuxed,
+    super.sourceAccountMuxedId,
+    super.type,
+    super.type_i,
+    super.createdAt,
+    super.transactionHash,
+    super.transaction,
+    super.sponsor,
+  );
 
   factory RevokeSponsorshipOperationResponse.fromJson(
-          Map<String, dynamic> json) =>
-      RevokeSponsorshipOperationResponse(
-          json['account_id'],
-          json['claimable_balance_id'],
-          json['data_account_id'],
-          json['data_name'],
-          json['offer_id'],
-          json['trustline_account_id'],
-          json['trustline_liquidity_pool_id'],
-          json['trustline_asset'],
-          json['signer_account_id'],
-          json['signer_key'],
-          OperationResponseLinks.fromJson(json['_links']),
-          json['id'],
-          json['paging_token'],
-          json['transaction_successful'],
-          json['source_account'],
-          json['source_account_muxed'],
-          json['source_account_muxed_id'],
-          json['type'],
-          json['type_i'],
-          json['created_at'],
-          json['transaction_hash'],
-          json['transaction'] == null
-              ? null
-              : TransactionResponse.fromJson(json['transaction']),
-          json['sponsor']);
+    Map<String, dynamic> json,
+  ) => RevokeSponsorshipOperationResponse(
+    json['account_id'],
+    json['claimable_balance_id'],
+    json['data_account_id'],
+    json['data_name'],
+    json['offer_id'],
+    json['trustline_account_id'],
+    json['trustline_liquidity_pool_id'],
+    json['trustline_asset'],
+    json['signer_account_id'],
+    json['signer_key'],
+    OperationResponseLinks.fromJson(json['_links']),
+    json['id'],
+    json['paging_token'],
+    json['transaction_successful'],
+    json['source_account'],
+    json['source_account_muxed'],
+    json['source_account_muxed_id'],
+    json['type'],
+    json['type_i'],
+    json['created_at'],
+    json['transaction_hash'],
+    json['transaction'] == null
+        ? null
+        : TransactionResponse.fromJson(json['transaction']),
+    json['sponsor'],
+  );
 }

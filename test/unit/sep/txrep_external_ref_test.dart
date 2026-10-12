@@ -11,51 +11,88 @@ void main() {
   String envelopeFor(HostFunction hostFunction) {
     final account = Account(deployer, BigInt.one);
     final op = InvokeHostFuncOpBuilder(hostFunction).build();
-    return TransactionBuilder(account).addOperation(op).build().toEnvelopeXdrBase64();
+    return TransactionBuilder(
+      account,
+    ).addOperation(op).build().toEnvelopeXdrBase64();
   }
 
   group('external-ref create operations in TxRep envelopes', () {
-    test('a CREATE_CONTRACT envelope round-trips with a binary tag and names the reference', () {
-      final envelope = envelopeFor(CreateContractFromExternalRefHostFunction(
-          Address.forAccountId(deployer), Address.forContractId(ownerHex), binaryTag,
-          salt: salt));
+    test(
+      'a CREATE_CONTRACT envelope round-trips with a binary tag and names the reference',
+      () {
+        final envelope = envelopeFor(
+          CreateContractFromExternalRefHostFunction(
+            Address.forAccountId(deployer),
+            Address.forContractId(ownerHex),
+            binaryTag,
+            salt: salt,
+          ),
+        );
 
-      final txRep = TxRep.fromTransactionEnvelopeXdrBase64(envelope);
-      expect(
-          txRep,
-          contains('hostFunction.createContract.executable.type: '
-              'CONTRACT_EXECUTABLE_EXTERNAL_REF'));
-      expect(
-          txRep,
-          contains('hostFunction.createContract.executable.external_ref'
-              '.executable_owner.contractId: $ownerHex'));
-      expect(
-          txRep,
-          contains(
-              r'hostFunction.createContract.executable.external_ref.tag: "\xc0\x00\xff\xfe"'));
-
-      expect(TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep), equals(envelope));
-    });
-
-    test('a CREATE_CONTRACT_V2 envelope round-trips with a binary tag and args', () {
-      final envelope = envelopeFor(CreateContractFromExternalRefWithConstructorHostFunction(
-          Address.forAccountId(deployer), Address.forContractId(ownerHex), binaryTag,
-          [XdrSCVal.forU32(7)],
-          salt: salt));
-
-      final txRep = TxRep.fromTransactionEnvelopeXdrBase64(envelope);
-      expect(
-          txRep,
-          contains('hostFunction.createContractV2.executable.type: '
-              'CONTRACT_EXECUTABLE_EXTERNAL_REF'));
-      expect(
+        final txRep = TxRep.fromTransactionEnvelopeXdrBase64(envelope);
+        expect(
           txRep,
           contains(
-              r'hostFunction.createContractV2.executable.external_ref.tag: "\xc0\x00\xff\xfe"'));
-      expect(txRep, contains('createContractV2.constructorArgs.len: 1'));
-      expect(txRep, contains('createContractV2.constructorArgs[0].u32: 7'));
+            'hostFunction.createContract.executable.type: '
+            'CONTRACT_EXECUTABLE_EXTERNAL_REF',
+          ),
+        );
+        expect(
+          txRep,
+          contains(
+            'hostFunction.createContract.executable.external_ref'
+            '.executable_owner.contractId: $ownerHex',
+          ),
+        );
+        expect(
+          txRep,
+          contains(
+            r'hostFunction.createContract.executable.external_ref.tag: "\xc0\x00\xff\xfe"',
+          ),
+        );
 
-      expect(TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep), equals(envelope));
-    });
+        expect(
+          TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          equals(envelope),
+        );
+      },
+    );
+
+    test(
+      'a CREATE_CONTRACT_V2 envelope round-trips with a binary tag and args',
+      () {
+        final envelope = envelopeFor(
+          CreateContractFromExternalRefWithConstructorHostFunction(
+            Address.forAccountId(deployer),
+            Address.forContractId(ownerHex),
+            binaryTag,
+            [XdrSCVal.forU32(7)],
+            salt: salt,
+          ),
+        );
+
+        final txRep = TxRep.fromTransactionEnvelopeXdrBase64(envelope);
+        expect(
+          txRep,
+          contains(
+            'hostFunction.createContractV2.executable.type: '
+            'CONTRACT_EXECUTABLE_EXTERNAL_REF',
+          ),
+        );
+        expect(
+          txRep,
+          contains(
+            r'hostFunction.createContractV2.executable.external_ref.tag: "\xc0\x00\xff\xfe"',
+          ),
+        );
+        expect(txRep, contains('createContractV2.constructorArgs.len: 1'));
+        expect(txRep, contains('createContractV2.constructorArgs[0].u32: 7'));
+
+        expect(
+          TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+          equals(envelope),
+        );
+      },
+    );
   });
 }

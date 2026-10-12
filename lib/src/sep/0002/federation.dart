@@ -74,16 +74,21 @@ class Federation {
   ///   print('Include memo: ${response.memo} (type: ${response.memoType})');
   /// }
   /// ```
-  static Future<FederationResponse> resolveStellarAddress(String address,
-      {http.Client? httpClient,
-      Map<String, String>? httpRequestHeaders}) async {
+  static Future<FederationResponse> resolveStellarAddress(
+    String address, {
+    http.Client? httpClient,
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     if (!address.contains("*")) {
       throw Exception("invalid federation address: $address");
     }
 
     String domain = address.split("*").last;
-    StellarToml toml = await StellarToml.fromDomain(domain,
-        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
+    StellarToml toml = await StellarToml.fromDomain(
+      domain,
+      httpClient: httpClient,
+      httpRequestHeaders: httpRequestHeaders,
+    );
     String? federationServer = toml.generalInformation.federationServer;
     if (federationServer == null) {
       throw Exception("no federation server found for domain $domain");
@@ -93,8 +98,10 @@ class Federation {
     http.Client client = httpClient == null ? http.Client() : httpClient;
 
     _FederationRequestBuilder requestBuilder = _FederationRequestBuilder(
-        client, serverURI,
-        httpRequestHeaders: httpRequestHeaders);
+      client,
+      serverURI,
+      httpRequestHeaders: httpRequestHeaders,
+    );
     FederationResponse response = await requestBuilder
         .forStringToLookUp(address)
         .forType("name")
@@ -134,15 +141,19 @@ class Federation {
   /// print('Account belongs to: ${response.stellarAddress}');
   /// ```
   static Future<FederationResponse> resolveStellarAccountId(
-      String accountId, String federationServerUrl,
-      {http.Client? httpClient,
-      Map<String, String>? httpRequestHeaders}) async {
+    String accountId,
+    String federationServerUrl, {
+    http.Client? httpClient,
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     Uri serverURI = Uri.parse(federationServerUrl);
     http.Client client = httpClient == null ? http.Client() : httpClient;
 
     _FederationRequestBuilder requestBuilder = _FederationRequestBuilder(
-        client, serverURI,
-        httpRequestHeaders: httpRequestHeaders);
+      client,
+      serverURI,
+      httpRequestHeaders: httpRequestHeaders,
+    );
     FederationResponse response = await requestBuilder
         .forStringToLookUp(accountId)
         .forType("id")
@@ -179,17 +190,23 @@ class Federation {
   /// print('Payment received from: ${response.stellarAddress}');
   /// ```
   static Future<FederationResponse> resolveStellarTransactionId(
-      String txId, String federationServerUrl,
-      {http.Client? httpClient,
-      Map<String, String>? httpRequestHeaders}) async {
+    String txId,
+    String federationServerUrl, {
+    http.Client? httpClient,
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     Uri serverURI = Uri.parse(federationServerUrl);
     http.Client client = httpClient == null ? http.Client() : httpClient;
 
     _FederationRequestBuilder requestBuilder = _FederationRequestBuilder(
-        client, serverURI,
-        httpRequestHeaders: httpRequestHeaders);
-    FederationResponse response =
-        await requestBuilder.forStringToLookUp(txId).forType("txid").execute();
+      client,
+      serverURI,
+      httpRequestHeaders: httpRequestHeaders,
+    );
+    FederationResponse response = await requestBuilder
+        .forStringToLookUp(txId)
+        .forType("txid")
+        .execute();
     return response;
   }
 
@@ -232,15 +249,19 @@ class Federation {
   /// print('With memo: ${response.memo}');
   /// ```
   static Future<FederationResponse> resolveForward(
-      Map<String, String> forwardQueryParameters, String federationServerUrl,
-      {http.Client? httpClient,
-      Map<String, String>? httpRequestHeaders}) async {
+    Map<String, String> forwardQueryParameters,
+    String federationServerUrl, {
+    http.Client? httpClient,
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     Uri serverURI = Uri.parse(federationServerUrl);
     http.Client client = httpClient == null ? http.Client() : httpClient;
 
     _FederationRequestBuilder requestBuilder = _FederationRequestBuilder(
-        client, serverURI,
-        httpRequestHeaders: httpRequestHeaders);
+      client,
+      serverURI,
+      httpRequestHeaders: httpRequestHeaders,
+    );
     FederationResponse response = await requestBuilder
         .forType("forward")
         .forQueryParameters(forwardQueryParameters)
@@ -302,24 +323,31 @@ class FederationResponse extends Response {
   /// - [memoType] Type of memo to attach ("text", "id", or "hash", null if none required)
   /// - [memo] Memo value to attach to transactions as string (null if none required)
   FederationResponse(
-      this.stellarAddress, this.accountId, this.memoType, this.memo);
+    this.stellarAddress,
+    this.accountId,
+    this.memoType,
+    this.memo,
+  );
 
   /// Constructs a FederationResponse from JSON returned by federation server.
   factory FederationResponse.fromJson(Map<String, dynamic> json) =>
       FederationResponse(
-          json['stellar_address'],
-          json['account_id'],
-          json['memo_type'] == null ? null : json['memo_type'],
-          json['memo'] == null ? null : json['memo']);
+        json['stellar_address'],
+        json['account_id'],
+        json['memo_type'] == null ? null : json['memo_type'],
+        json['memo'] == null ? null : json['memo'],
+      );
 }
 
 // Requests the federation data.
 class _FederationRequestBuilder extends RequestBuilder {
   Map<String, String>? httpRequestHeaders;
 
-  _FederationRequestBuilder(http.Client httpClient, Uri serverURI,
-      {this.httpRequestHeaders})
-      : super(httpClient, serverURI, null);
+  _FederationRequestBuilder(
+    http.Client httpClient,
+    Uri serverURI, {
+    this.httpRequestHeaders,
+  }) : super(httpClient, serverURI, null);
 
   /// Executes federation request to the specified URI.
   Future<FederationResponse> federationURI(Uri uri) async {
@@ -327,9 +355,9 @@ class _FederationRequestBuilder extends RequestBuilder {
     ResponseHandler<FederationResponse> responseHandler =
         ResponseHandler<FederationResponse>(type);
 
-    return await httpClient
-        .get(uri, headers: httpRequestHeaders)
-        .then((response) {
+    return await httpClient.get(uri, headers: httpRequestHeaders).then((
+      response,
+    ) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -348,25 +376,25 @@ class _FederationRequestBuilder extends RequestBuilder {
 
   /// Adds additional query parameters for forward federation requests.
   _FederationRequestBuilder forQueryParameters(
-      Map<String, String> queryParams) {
+    Map<String, String> queryParams,
+  ) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
   /// Executes HTTP GET request to federation server and parses response.
   static Future<FederationResponse> requestExecute(
-      http.Client httpClient, Uri uri,
-      {Map<String, String>? httpRequestHeaders}) async {
+    http.Client httpClient,
+    Uri uri, {
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     TypeToken<FederationResponse> type = TypeToken<FederationResponse>();
     ResponseHandler<FederationResponse> responseHandler =
         ResponseHandler<FederationResponse>(type);
 
-    return await httpClient
-        .get(
-      uri,
-      headers: httpRequestHeaders,
-    )
-        .then((response) {
+    return await httpClient.get(uri, headers: httpRequestHeaders).then((
+      response,
+    ) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -374,6 +402,8 @@ class _FederationRequestBuilder extends RequestBuilder {
   /// Builds and executes the federation request with accumulated parameters.
   Future<FederationResponse> execute() {
     return _FederationRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+      this.httpClient,
+      this.buildUri(),
+    );
   }
 }

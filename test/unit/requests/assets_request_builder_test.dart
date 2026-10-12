@@ -86,7 +86,8 @@ void main() {
     });
 
     group('assetIssuer', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds asset_issuer query parameter', () {
         final builder = AssetsRequestBuilder(mockClient, serverUri);
@@ -170,7 +171,8 @@ void main() {
     });
 
     group('buildUri with combinations', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('builds URI with assetCode and pagination', () {
         final builder = AssetsRequestBuilder(mockClient, serverUri);
@@ -307,13 +309,13 @@ void main() {
       test('returns a page of assets', () async {
         final page = {
           '_links': {
-            'self': {'href': 'x'}
+            'self': {'href': 'x'},
           },
           '_embedded': {
             'records': [
               {
                 '_links': {
-                  'toml': {'href': 'https://example.com/.well-known/toml'}
+                  'toml': {'href': 'https://example.com/.well-known/toml'},
                 },
                 'asset_type': 'credit_alphanum4',
                 'asset_code': 'USD',
@@ -321,13 +323,13 @@ void main() {
                 'accounts': {
                   'authorized': 100,
                   'authorized_to_maintain_liabilities': 0,
-                  'unauthorized': 0
+                  'unauthorized': 0,
                 },
                 'num_claimable_balances': 5,
                 'balances': {
                   'authorized': '1000.0000000',
                   'authorized_to_maintain_liabilities': '0.0000000',
-                  'unauthorized': '0.0000000'
+                  'unauthorized': '0.0000000',
                 },
                 'claimable_balances_amount': '10.0000000',
                 'paging_token': 'USD_$issuerAccountId',
@@ -337,14 +339,14 @@ void main() {
                   'auth_required': false,
                   'auth_revocable': false,
                   'auth_immutable': false,
-                  'auth_clawback_enabled': false
+                  'auth_clawback_enabled': false,
                 },
                 'num_contracts': 1,
                 'contracts_amount': '5.0000000',
-                'contract_id': null
-              }
-            ]
-          }
+                'contract_id': null,
+              },
+            ],
+          },
         };
 
         final client = MockClient((request) async {

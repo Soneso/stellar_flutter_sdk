@@ -48,7 +48,7 @@ class EventSourceSubscriptionException extends Event implements Exception {
   /// - [statusCode]: HTTP status code from the server
   /// - [message]: Error message or response body
   EventSourceSubscriptionException(this.statusCode, this.message)
-      : super(event: "error");
+    : super(event: "error");
 }
 
 /// Client for consuming Server-Sent Events (SSE) streams.
@@ -188,13 +188,25 @@ class EventSource extends Stream<Event> {
     body = body ?? "";
     method = method ?? "GET";
     EventSource es = new EventSource._internal(
-        url, client, lastEventId, headers, body, method);
+      url,
+      client,
+      lastEventId,
+      headers,
+      body,
+      method,
+    );
     await es._start();
     return es;
   }
 
-  EventSource._internal(this.url, this.client, this._lastEventId, this.headers,
-      this._body, this._method) {
+  EventSource._internal(
+    this.url,
+    this.client,
+    this._lastEventId,
+    this.headers,
+    this._body,
+    this._method,
+  ) {
     _decoder = new EventSourceDecoder(retryIndicator: _updateRetryDelay);
   }
 
@@ -205,10 +217,17 @@ class EventSource extends Stream<Event> {
   ///
   /// Returns: Stream subscription for managing the event stream.
   @override
-  StreamSubscription<Event> listen(void onData(Event event)?,
-          {Function? onError, void onDone()?, bool? cancelOnError}) =>
-      _streamController.stream.listen(onData,
-          onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+  StreamSubscription<Event> listen(
+    void onData(Event event)?, {
+    Function? onError,
+    void onDone()?,
+    bool? cancelOnError,
+  }) => _streamController.stream.listen(
+    onData,
+    onError: onError,
+    onDone: onDone,
+    cancelOnError: cancelOnError,
+  );
 
   /// Attempt to start a new connection.
   Future _start() async {
@@ -233,17 +252,20 @@ class EventSource extends Stream<Event> {
     }
     _readyState = EventSourceReadyState.OPEN;
     // start streaming the data
-    _responseStreamSubscription = response.stream.transform(_decoder).listen(
-        (Event event) {
-      if (_readyState == EventSourceReadyState.CLOSED) {
-        return;
-      }
-      _streamController.add(event);
-      _lastEventId = event.id;
-    },
-        cancelOnError: true,
-        onError: _retry,
-        onDone: () => _readyState = EventSourceReadyState.CLOSED);
+    _responseStreamSubscription = response.stream
+        .transform(_decoder)
+        .listen(
+          (Event event) {
+            if (_readyState == EventSourceReadyState.CLOSED) {
+              return;
+            }
+            _streamController.add(event);
+            _lastEventId = event.id;
+          },
+          cancelOnError: true,
+          onError: _retry,
+          onDone: () => _readyState = EventSourceReadyState.CLOSED,
+        );
   }
 
   /// Retries until a new connection is established. Uses exponential backoff.

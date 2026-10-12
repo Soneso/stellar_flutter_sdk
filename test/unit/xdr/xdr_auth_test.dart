@@ -102,7 +102,10 @@ void main() {
       final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
       final decoded = XdrAuthenticatedMessageV0.decode(input);
 
-      expect(decoded.sequence.uint64, equals(BigInt.parse('18446744073709551615')));
+      expect(
+        decoded.sequence.uint64,
+        equals(BigInt.parse('18446744073709551615')),
+      );
     });
   });
 

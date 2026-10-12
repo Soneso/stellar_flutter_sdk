@@ -11,42 +11,35 @@ void main() {
         expect(request.url.path, endsWith('/info'));
         expect(request.headers['Content-Type'], 'application/json');
 
-        return http.Response(json.encode({
-          'assets': [
-            {
-              'asset': 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
-              'sell_delivery_methods': [
-                {
-                  'name': 'WIRE',
-                  'description': 'Wire transfer'
-                },
-                {
-                  'name': 'ACH',
-                  'description': 'ACH bank transfer'
-                }
-              ],
-              'buy_delivery_methods': [
-                {
-                  'name': 'WIRE',
-                  'description': 'Wire transfer'
-                }
-              ],
-              'country_codes': ['USA', 'CAN']
-            },
-            {
-              'asset': 'iso4217:USD',
-              'sell_delivery_methods': [
-                {
-                  'name': 'WIRE',
-                  'description': 'Wire transfer'
-                }
-              ]
-            },
-            {
-              'asset': 'stellar:BTC:GDXTJEK4JZNSTNQAWA53RZNS2GIKTDRPEUWDXELFMKU52XNECNVDVXDI'
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'assets': [
+              {
+                'asset':
+                    'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+                'sell_delivery_methods': [
+                  {'name': 'WIRE', 'description': 'Wire transfer'},
+                  {'name': 'ACH', 'description': 'ACH bank transfer'},
+                ],
+                'buy_delivery_methods': [
+                  {'name': 'WIRE', 'description': 'Wire transfer'},
+                ],
+                'country_codes': ['USA', 'CAN'],
+              },
+              {
+                'asset': 'iso4217:USD',
+                'sell_delivery_methods': [
+                  {'name': 'WIRE', 'description': 'Wire transfer'},
+                ],
+              },
+              {
+                'asset':
+                    'stellar:BTC:GDXTJEK4JZNSTNQAWA53RZNS2GIKTDRPEUWDXELFMKU52XNECNVDVXDI',
+              },
+            ],
+          }),
+          200,
+        );
       });
 
       final service = SEP38QuoteService(
@@ -59,7 +52,10 @@ void main() {
       expect(response.assets.length, 3);
 
       final usdc = response.assets[0];
-      expect(usdc.asset, 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5');
+      expect(
+        usdc.asset,
+        'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+      );
       expect(usdc.sellDeliveryMethods, isNotNull);
       expect(usdc.sellDeliveryMethods!.length, 2);
       expect(usdc.sellDeliveryMethods![0].name, 'WIRE');
@@ -84,9 +80,7 @@ void main() {
         expect(request.url.path, endsWith('/info'));
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'assets': []
-        }), 200);
+        return http.Response(json.encode({'assets': []}), 200);
       });
 
       final service = SEP38QuoteService(
@@ -105,20 +99,25 @@ void main() {
         expect(request.url.queryParameters['sell_asset'], 'iso4217:USD');
         expect(request.url.queryParameters['sell_amount'], '100');
 
-        return http.Response(json.encode({
-          'buy_assets': [
-            {
-              'asset': 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
-              'price': '0.99',
-              'decimals': 7
-            },
-            {
-              'asset': 'stellar:BTC:GDXTJEK4JZNSTNQAWA53RZNS2GIKTDRPEUWDXELFMKU52XNECNVDVXDI',
-              'price': '0.0000235',
-              'decimals': 7
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'buy_assets': [
+              {
+                'asset':
+                    'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+                'price': '0.99',
+                'decimals': 7,
+              },
+              {
+                'asset':
+                    'stellar:BTC:GDXTJEK4JZNSTNQAWA53RZNS2GIKTDRPEUWDXELFMKU52XNECNVDVXDI',
+                'price': '0.0000235',
+                'decimals': 7,
+              },
+            ],
+          }),
+          200,
+        );
       });
 
       final service = SEP38QuoteService(
@@ -153,9 +152,7 @@ void main() {
         expect(request.url.queryParameters['buy_delivery_method'], 'ACH');
         expect(request.url.queryParameters['country_code'], 'USA');
 
-        return http.Response(json.encode({
-          'buy_assets': []
-        }), 200);
+        return http.Response(json.encode({'buy_assets': []}), 200);
       });
 
       final service = SEP38QuoteService(
@@ -177,9 +174,7 @@ void main() {
         expect(request.url.path, endsWith('/prices'));
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'buy_assets': []
-        }), 200);
+        return http.Response(json.encode({'buy_assets': []}), 200);
       });
 
       final service = SEP38QuoteService(
@@ -201,31 +196,37 @@ void main() {
         expect(request.url.path, endsWith('/price'));
         expect(request.url.queryParameters['context'], 'sep6');
         expect(request.url.queryParameters['sell_asset'], 'iso4217:USD');
-        expect(request.url.queryParameters['buy_asset'], 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5');
+        expect(
+          request.url.queryParameters['buy_asset'],
+          'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        );
         expect(request.url.queryParameters['sell_amount'], '100');
 
-        return http.Response(json.encode({
-          'total_price': '1.01',
-          'price': '1.00',
-          'sell_amount': '100.00',
-          'buy_amount': '99.00',
-          'fee': {
-            'total': '1.00',
-            'asset': 'iso4217:USD',
-            'details': [
-              {
-                'name': 'Service fee',
-                'amount': '0.75',
-                'description': 'Processing fee'
-              },
-              {
-                'name': 'Network fee',
-                'amount': '0.25',
-                'description': 'Blockchain fee'
-              }
-            ]
-          }
-        }), 200);
+        return http.Response(
+          json.encode({
+            'total_price': '1.01',
+            'price': '1.00',
+            'sell_amount': '100.00',
+            'buy_amount': '99.00',
+            'fee': {
+              'total': '1.00',
+              'asset': 'iso4217:USD',
+              'details': [
+                {
+                  'name': 'Service fee',
+                  'amount': '0.75',
+                  'description': 'Processing fee',
+                },
+                {
+                  'name': 'Network fee',
+                  'amount': '0.25',
+                  'description': 'Blockchain fee',
+                },
+              ],
+            },
+          }),
+          200,
+        );
       });
 
       final service = SEP38QuoteService(
@@ -236,7 +237,8 @@ void main() {
       final response = await service.price(
         context: 'sep6',
         sellAsset: 'iso4217:USD',
-        buyAsset: 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        buyAsset:
+            'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
         sellAmount: '100',
       );
 
@@ -257,20 +259,27 @@ void main() {
       final mockClient = MockClient((request) async {
         expect(request.url.path, endsWith('/price'));
         expect(request.url.queryParameters['context'], 'sep31');
-        expect(request.url.queryParameters['sell_asset'], 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5');
+        expect(
+          request.url.queryParameters['sell_asset'],
+          'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        );
         expect(request.url.queryParameters['buy_asset'], 'iso4217:USD');
         expect(request.url.queryParameters['buy_amount'], '200');
 
-        return http.Response(json.encode({
-          'total_price': '1.02',
-          'price': '1.00',
-          'sell_amount': '204.00',
-          'buy_amount': '200.00',
-          'fee': {
-            'total': '4.00',
-            'asset': 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'
-          }
-        }), 200);
+        return http.Response(
+          json.encode({
+            'total_price': '1.02',
+            'price': '1.00',
+            'sell_amount': '204.00',
+            'buy_amount': '200.00',
+            'fee': {
+              'total': '4.00',
+              'asset':
+                  'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+            },
+          }),
+          200,
+        );
       });
 
       final service = SEP38QuoteService(
@@ -280,7 +289,8 @@ void main() {
 
       final response = await service.price(
         context: 'sep31',
-        sellAsset: 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        sellAsset:
+            'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
         buyAsset: 'iso4217:USD',
         buyAmount: '200',
       );
@@ -298,16 +308,16 @@ void main() {
         expect(request.url.queryParameters['buy_delivery_method'], 'ACH');
         expect(request.url.queryParameters['country_code'], 'CAN');
 
-        return http.Response(json.encode({
-          'total_price': '1.00',
-          'price': '1.00',
-          'sell_amount': '50.00',
-          'buy_amount': '50.00',
-          'fee': {
-            'total': '0.00',
-            'asset': 'iso4217:USD'
-          }
-        }), 200);
+        return http.Response(
+          json.encode({
+            'total_price': '1.00',
+            'price': '1.00',
+            'sell_amount': '50.00',
+            'buy_amount': '50.00',
+            'fee': {'total': '0.00', 'asset': 'iso4217:USD'},
+          }),
+          200,
+        );
       });
 
       final service = SEP38QuoteService(
@@ -338,23 +348,27 @@ void main() {
         final body = json.decode(request.body);
         expect(body['context'], 'sep6');
         expect(body['sell_asset'], 'iso4217:USD');
-        expect(body['buy_asset'], 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5');
+        expect(
+          body['buy_asset'],
+          'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        );
         expect(body['sell_amount'], '100');
 
-        return http.Response(json.encode({
-          'id': 'quote-123',
-          'expires_at': '2025-10-05T12:30:00Z',
-          'total_price': '1.01',
-          'price': '1.00',
-          'sell_asset': 'iso4217:USD',
-          'sell_amount': '100.00',
-          'buy_asset': 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
-          'buy_amount': '99.00',
-          'fee': {
-            'total': '1.00',
-            'asset': 'iso4217:USD'
-          }
-        }), 201);
+        return http.Response(
+          json.encode({
+            'id': 'quote-123',
+            'expires_at': '2025-10-05T12:30:00Z',
+            'total_price': '1.01',
+            'price': '1.00',
+            'sell_asset': 'iso4217:USD',
+            'sell_amount': '100.00',
+            'buy_asset':
+                'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+            'buy_amount': '99.00',
+            'fee': {'total': '1.00', 'asset': 'iso4217:USD'},
+          }),
+          201,
+        );
       });
 
       final service = SEP38QuoteService(
@@ -365,7 +379,8 @@ void main() {
       final request = SEP38PostQuoteRequest(
         context: 'sep6',
         sellAsset: 'iso4217:USD',
-        buyAsset: 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        buyAsset:
+            'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
         sellAmount: '100',
       );
 
@@ -391,20 +406,25 @@ void main() {
         final body = json.decode(request.body);
         expect(body['buy_amount'], '250');
 
-        return http.Response(json.encode({
-          'id': 'quote-456',
-          'expires_at': '2025-10-05T13:00:00Z',
-          'total_price': '1.02',
-          'price': '1.00',
-          'sell_asset': 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
-          'sell_amount': '255.00',
-          'buy_asset': 'iso4217:USD',
-          'buy_amount': '250.00',
-          'fee': {
-            'total': '5.00',
-            'asset': 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'
-          }
-        }), 200);
+        return http.Response(
+          json.encode({
+            'id': 'quote-456',
+            'expires_at': '2025-10-05T13:00:00Z',
+            'total_price': '1.02',
+            'price': '1.00',
+            'sell_asset':
+                'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+            'sell_amount': '255.00',
+            'buy_asset': 'iso4217:USD',
+            'buy_amount': '250.00',
+            'fee': {
+              'total': '5.00',
+              'asset':
+                  'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+            },
+          }),
+          200,
+        );
       });
 
       final service = SEP38QuoteService(
@@ -414,7 +434,8 @@ void main() {
 
       final request = SEP38PostQuoteRequest(
         context: 'sep31',
-        sellAsset: 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        sellAsset:
+            'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
         buyAsset: 'iso4217:USD',
         buyAmount: '250',
       );
@@ -433,20 +454,21 @@ void main() {
         final body = json.decode(request.body);
         expect(body['expire_after'], isNotNull);
 
-        return http.Response(json.encode({
-          'id': 'quote-789',
-          'expires_at': '2025-10-05T14:00:00Z',
-          'total_price': '1.00',
-          'price': '1.00',
-          'sell_asset': 'iso4217:USD',
-          'sell_amount': '50.00',
-          'buy_asset': 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
-          'buy_amount': '50.00',
-          'fee': {
-            'total': '0.00',
-            'asset': 'iso4217:USD'
-          }
-        }), 201);
+        return http.Response(
+          json.encode({
+            'id': 'quote-789',
+            'expires_at': '2025-10-05T14:00:00Z',
+            'total_price': '1.00',
+            'price': '1.00',
+            'sell_asset': 'iso4217:USD',
+            'sell_amount': '50.00',
+            'buy_asset':
+                'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+            'buy_amount': '50.00',
+            'fee': {'total': '0.00', 'asset': 'iso4217:USD'},
+          }),
+          201,
+        );
       });
 
       final service = SEP38QuoteService(
@@ -457,7 +479,8 @@ void main() {
       final request = SEP38PostQuoteRequest(
         context: 'sep6',
         sellAsset: 'iso4217:USD',
-        buyAsset: 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        buyAsset:
+            'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
         sellAmount: '50',
         expireAfter: DateTime.now().add(Duration(minutes: 5)),
       );
@@ -476,20 +499,21 @@ void main() {
         expect(body['buy_delivery_method'], 'ACH');
         expect(body['country_code'], 'USA');
 
-        return http.Response(json.encode({
-          'id': 'quote-999',
-          'expires_at': '2025-10-05T15:00:00Z',
-          'total_price': '1.00',
-          'price': '1.00',
-          'sell_asset': 'iso4217:USD',
-          'sell_amount': '75.00',
-          'buy_asset': 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
-          'buy_amount': '75.00',
-          'fee': {
-            'total': '0.00',
-            'asset': 'iso4217:USD'
-          }
-        }), 201);
+        return http.Response(
+          json.encode({
+            'id': 'quote-999',
+            'expires_at': '2025-10-05T15:00:00Z',
+            'total_price': '1.00',
+            'price': '1.00',
+            'sell_asset': 'iso4217:USD',
+            'sell_amount': '75.00',
+            'buy_asset':
+                'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+            'buy_amount': '75.00',
+            'fee': {'total': '0.00', 'asset': 'iso4217:USD'},
+          }),
+          201,
+        );
       });
 
       final service = SEP38QuoteService(
@@ -500,7 +524,8 @@ void main() {
       final request = SEP38PostQuoteRequest(
         context: 'sep6',
         sellAsset: 'iso4217:USD',
-        buyAsset: 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+        buyAsset:
+            'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
         sellAmount: '75',
         sellDeliveryMethod: 'WIRE',
         buyDeliveryMethod: 'ACH',
@@ -517,26 +542,27 @@ void main() {
         expect(request.url.path, endsWith('/quote/quote-123'));
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'id': 'quote-123',
-          'expires_at': '2025-10-05T12:30:00Z',
-          'total_price': '1.01',
-          'price': '1.00',
-          'sell_asset': 'iso4217:USD',
-          'sell_amount': '100.00',
-          'buy_asset': 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
-          'buy_amount': '99.00',
-          'fee': {
-            'total': '1.00',
-            'asset': 'iso4217:USD',
-            'details': [
-              {
-                'name': 'Processing',
-                'amount': '1.00'
-              }
-            ]
-          }
-        }), 200);
+        return http.Response(
+          json.encode({
+            'id': 'quote-123',
+            'expires_at': '2025-10-05T12:30:00Z',
+            'total_price': '1.01',
+            'price': '1.00',
+            'sell_asset': 'iso4217:USD',
+            'sell_amount': '100.00',
+            'buy_asset':
+                'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+            'buy_amount': '99.00',
+            'fee': {
+              'total': '1.00',
+              'asset': 'iso4217:USD',
+              'details': [
+                {'name': 'Processing', 'amount': '1.00'},
+              ],
+            },
+          }),
+          200,
+        );
       });
 
       final service = SEP38QuoteService(
@@ -562,32 +588,37 @@ void main() {
       final mockClient = MockClient((request) async {
         expect(request.url.path, endsWith('/quote/quote-456'));
 
-        return http.Response(json.encode({
-          'id': 'quote-456',
-          'expires_at': '2025-10-05T13:00:00Z',
-          'total_price': '1.05',
-          'price': '1.00',
-          'sell_asset': 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
-          'sell_amount': '105.00',
-          'buy_asset': 'iso4217:USD',
-          'buy_amount': '100.00',
-          'fee': {
-            'total': '5.00',
-            'asset': 'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
-            'details': [
-              {
-                'name': 'Service fee',
-                'amount': '3.00',
-                'description': 'Anchor processing fee'
-              },
-              {
-                'name': 'Network fee',
-                'amount': '2.00',
-                'description': 'Stellar network fee'
-              }
-            ]
-          }
-        }), 200);
+        return http.Response(
+          json.encode({
+            'id': 'quote-456',
+            'expires_at': '2025-10-05T13:00:00Z',
+            'total_price': '1.05',
+            'price': '1.00',
+            'sell_asset':
+                'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+            'sell_amount': '105.00',
+            'buy_asset': 'iso4217:USD',
+            'buy_amount': '100.00',
+            'fee': {
+              'total': '5.00',
+              'asset':
+                  'stellar:USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+              'details': [
+                {
+                  'name': 'Service fee',
+                  'amount': '3.00',
+                  'description': 'Anchor processing fee',
+                },
+                {
+                  'name': 'Network fee',
+                  'amount': '2.00',
+                  'description': 'Stellar network fee',
+                },
+              ],
+            },
+          }),
+          200,
+        );
       });
 
       final service = SEP38QuoteService(
@@ -609,9 +640,7 @@ void main() {
   group('SEP38QuoteService Error Handling', () {
     test('handle 400 bad request error from info endpoint', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Invalid request'
-        }), 400);
+        return http.Response(json.encode({'error': 'Invalid request'}), 400);
       });
 
       final service = SEP38QuoteService(
@@ -619,17 +648,15 @@ void main() {
         httpClient: mockClient,
       );
 
-      expect(
-        () => service.info(),
-        throwsA(isA<SEP38BadRequest>()),
-      );
+      expect(() => service.info(), throwsA(isA<SEP38BadRequest>()));
     });
 
     test('handle 400 bad request from price endpoint', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Both sell_amount and buy_amount provided'
-        }), 400);
+        return http.Response(
+          json.encode({'error': 'Both sell_amount and buy_amount provided'}),
+          400,
+        );
       });
 
       final service = SEP38QuoteService(
@@ -650,9 +677,10 @@ void main() {
 
     test('handle 403 permission denied from postQuote', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Invalid or expired JWT token'
-        }), 403);
+        return http.Response(
+          json.encode({'error': 'Invalid or expired JWT token'}),
+          403,
+        );
       });
 
       final service = SEP38QuoteService(
@@ -675,9 +703,7 @@ void main() {
 
     test('handle 404 not found from getQuote', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Quote not found'
-        }), 404);
+        return http.Response(json.encode({'error': 'Quote not found'}), 404);
       });
 
       final service = SEP38QuoteService(
@@ -695,17 +721,13 @@ void main() {
       final mockClient = MockClient((request) async {
         expect(request.headers['X-Custom-Header'], 'custom-value');
 
-        return http.Response(json.encode({
-          'assets': []
-        }), 200);
+        return http.Response(json.encode({'assets': []}), 200);
       });
 
       final service = SEP38QuoteService(
         'https://api.example.com',
         httpClient: mockClient,
-        httpRequestHeaders: {
-          'X-Custom-Header': 'custom-value',
-        },
+        httpRequestHeaders: {'X-Custom-Header': 'custom-value'},
       );
 
       await service.info();

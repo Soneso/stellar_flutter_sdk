@@ -110,8 +110,7 @@ abstract class OZSmartAccountAuthPayloadCodec {
       } else if (keyName == 'signers') {
         final signersMap = entry.val;
         if (signersMap.discriminant == XdrSCValType.SCV_MAP) {
-          for (final signerEntry
-              in signersMap.map ?? const <XdrSCMapEntry>[]) {
+          for (final signerEntry in signersMap.map ?? const <XdrSCMapEntry>[]) {
             final signer = signerFromScVal(signerEntry.key);
             final sigVal = signerEntry.val;
             if (sigVal.discriminant != XdrSCValType.SCV_BYTES ||
@@ -147,10 +146,7 @@ abstract class OZSmartAccountAuthPayloadCodec {
     final signerEntries = <XdrSCMapEntry>[];
     for (final entry in payload.signers.entries) {
       signerEntries.add(
-        XdrSCMapEntry(
-          entry.key.toScVal(),
-          XdrSCVal.forBytes(entry.value),
-        ),
+        XdrSCMapEntry(entry.key.toScVal(), XdrSCVal.forBytes(entry.value)),
       );
     }
 
@@ -174,10 +170,7 @@ abstract class OZSmartAccountAuthPayloadCodec {
         XdrSCVal.forSymbol('context_rule_ids'),
         contextRuleIdsScVal,
       ),
-      XdrSCMapEntry(
-        XdrSCVal.forSymbol('signers'),
-        signersMapScVal,
-      ),
+      XdrSCMapEntry(XdrSCVal.forSymbol('signers'), signersMapScVal),
     ]);
   }
 
@@ -256,8 +249,7 @@ abstract class OZSmartAccountAuthPayloadCodec {
             'Delegated signer second element is not an Address',
           );
         }
-        final addressStr =
-            _addressXdrToString(addressScVal.address!);
+        final addressStr = _addressXdrToString(addressScVal.address!);
         return OZDelegatedSigner(addressStr);
       case 'External':
         if (elements.length < 3) {
@@ -272,8 +264,7 @@ abstract class OZSmartAccountAuthPayloadCodec {
             'External signer second element is not an Address',
           );
         }
-        final verifierAddressStr =
-            _addressXdrToString(addressScVal.address!);
+        final verifierAddressStr = _addressXdrToString(addressScVal.address!);
         final keyDataScVal = elements[2];
         if (keyDataScVal.discriminant != XdrSCValType.SCV_BYTES ||
             keyDataScVal.bytes == null) {

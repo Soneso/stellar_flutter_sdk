@@ -114,5 +114,4 @@ abstract class AssetTypeCreditAlphaNum extends Asset {
   XdrTrustlineAsset toXdrTrustLineAsset() {
     return XdrTrustlineAsset.fromXdrAsset(toXdr());
   }
-
 }

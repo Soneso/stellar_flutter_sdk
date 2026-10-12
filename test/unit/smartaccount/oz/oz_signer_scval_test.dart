@@ -43,19 +43,25 @@ void main() {
 
     test('contract address variant produces contract Address', () {
       final sc = OZDelegatedSigner(kValidContractId).toScVal();
-      expect(sc.vec![1].address!.discriminant,
-          XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT);
+      expect(
+        sc.vec![1].address!.discriminant,
+        XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT,
+      );
     });
 
     test('account address variant produces account Address', () {
       final sc = OZDelegatedSigner(kValidGAddress).toScVal();
-      expect(sc.vec![1].address!.discriminant,
-          XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT);
+      expect(
+        sc.vec![1].address!.discriminant,
+        XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT,
+      );
     });
 
     test('invalid address throws SmartAccountInvalidAddress', () {
-      expect(() => OZDelegatedSigner('NOT_A_VALID'),
-          throwsA(isA<SmartAccountInvalidAddress>()));
+      expect(
+        () => OZDelegatedSigner('NOT_A_VALID'),
+        throwsA(isA<SmartAccountInvalidAddress>()),
+      );
     });
 
     test('toScVal called twice produces structurally identical Vecs', () {
@@ -83,8 +89,10 @@ void main() {
     test('second element is contract Address', () {
       final sc = OZExternalSigner(kValidContractId, _bytes(8)).toScVal();
       expect(sc.vec![1].discriminant, XdrSCValType.SCV_ADDRESS);
-      expect(sc.vec![1].address!.discriminant,
-          XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT);
+      expect(
+        sc.vec![1].address!.discriminant,
+        XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT,
+      );
     });
 
     test('third element is Bytes carrying keyData', () {
@@ -95,13 +103,17 @@ void main() {
     });
 
     test('invalid verifier address throws SmartAccountInvalidAddress', () {
-      expect(() => OZExternalSigner('NOT_VALID', _bytes(8)),
-          throwsA(isA<SmartAccountInvalidAddress>()));
+      expect(
+        () => OZExternalSigner('NOT_VALID', _bytes(8)),
+        throwsA(isA<SmartAccountInvalidAddress>()),
+      );
     });
 
     test('empty keyData throws SmartAccountInvalidInput', () {
-      expect(() => OZExternalSigner(kValidContractId, Uint8List(0)),
-          throwsA(isA<SmartAccountInvalidInput>()));
+      expect(
+        () => OZExternalSigner(kValidContractId, Uint8List(0)),
+        throwsA(isA<SmartAccountInvalidInput>()),
+      );
     });
 
     test('webAuthn factory produces 65+credId keyData', () {
@@ -202,8 +214,10 @@ void main() {
     });
 
     test('values support hashCode', () {
-      expect(OZSubmissionMethod.relayer.hashCode,
-          OZSubmissionMethod.relayer.hashCode);
+      expect(
+        OZSubmissionMethod.relayer.hashCode,
+        OZSubmissionMethod.relayer.hashCode,
+      );
     });
   });
 }

@@ -116,8 +116,9 @@ import '../network.dart';
 /// - [Soroban Documentation](https://developers.stellar.org/docs/build/smart-contracts/overview)
 class SorobanClient {
   static const _CONSTRUCTOR_FUNC = "__constructor";
-  List<XdrSCSpecEntry> _specEntries =
-      List<XdrSCSpecEntry>.empty(growable: true);
+  List<XdrSCSpecEntry> _specEntries = List<XdrSCSpecEntry>.empty(
+    growable: true,
+  );
 
   /// Client options for interacting with soroban.
   ClientOptions _options;
@@ -151,8 +152,9 @@ class SorobanClient {
 
   /// Loads the contract info for the contractId provided by the [options],
   /// and then constructs a SorobanClient by using the loaded contract info.
-  static Future<SorobanClient> forClientOptions(
-      {required ClientOptions options}) async {
+  static Future<SorobanClient> forClientOptions({
+    required ClientOptions options,
+  }) async {
     SorobanServer server;
     if (options.server != null) {
       server = options.server!;
@@ -165,15 +167,17 @@ class SorobanClient {
       return SorobanClient._(info.specEntries, options);
     } else {
       throw new Exception(
-          "Could not load contract info for the contract: ${options.contractId}");
+        "Could not load contract info for the contract: ${options.contractId}",
+      );
     }
   }
 
   /// After deploying the contract it creates and returns a new SorobanClient for the deployed contract.
   /// The contract must be installed before calling this method. You can use `SorobanClient.install`
   /// to install the contract.
-  static Future<SorobanClient> deploy(
-      {required DeployRequest deployRequest}) async {
+  static Future<SorobanClient> deploy({
+    required DeployRequest deployRequest,
+  }) async {
     // Load the spec from the wasm code entry before deploying: the code entry
     // was settled by the install transaction, while reading the contract
     // instance right after deployment races the RPC's ledger-entry ingestion,
@@ -187,35 +191,44 @@ class SorobanClient {
     }
     SorobanContractInfo? contractInfo;
     try {
-      contractInfo =
-          await server.loadContractInfoForWasmId(deployRequest.wasmHash);
+      contractInfo = await server.loadContractInfoForWasmId(
+        deployRequest.wasmHash,
+      );
     } on SorobanContractParserFailed {
       contractInfo = null; // code without a parseable spec: fall back below
     }
 
-    final sourceAddress =
-        Address.forAccountId(deployRequest.sourceAccountKeyPair.accountId);
+    final sourceAddress = Address.forAccountId(
+      deployRequest.sourceAccountKeyPair.accountId,
+    );
     final createContractHostFunction =
-        CreateContractWithConstructorHostFunction(sourceAddress,
-            deployRequest.wasmHash, deployRequest.constructorArgs ?? [],
-            salt: deployRequest.salt);
+        CreateContractWithConstructorHostFunction(
+          sourceAddress,
+          deployRequest.wasmHash,
+          deployRequest.constructorArgs ?? [],
+          salt: deployRequest.salt,
+        );
 
     final op = InvokeHostFuncOpBuilder(createContractHostFunction).build();
     final clientOptions = ClientOptions(
-        sourceAccountKeyPair: deployRequest.sourceAccountKeyPair,
-        contractId: "ignored",
-        network: deployRequest.network,
-        rpcUrl: deployRequest.rpcUrl,
-        server: deployRequest.server,
-        enableServerLogging: deployRequest.enableSorobanServerLogging);
+      sourceAccountKeyPair: deployRequest.sourceAccountKeyPair,
+      contractId: "ignored",
+      network: deployRequest.network,
+      rpcUrl: deployRequest.rpcUrl,
+      server: deployRequest.server,
+      enableServerLogging: deployRequest.enableSorobanServerLogging,
+    );
     final options = AssembledTransactionOptions(
-        clientOptions: clientOptions,
-        methodOptions: deployRequest.methodOptions,
-        method: SorobanClient._CONSTRUCTOR_FUNC,
-        arguments: deployRequest.constructorArgs,
-        enableSorobanServerLogging: deployRequest.enableSorobanServerLogging);
-    final tx =
-        await AssembledTransaction.buildWithOp(operation: op, options: options);
+      clientOptions: clientOptions,
+      methodOptions: deployRequest.methodOptions,
+      method: SorobanClient._CONSTRUCTOR_FUNC,
+      arguments: deployRequest.constructorArgs,
+      enableSorobanServerLogging: deployRequest.enableSorobanServerLogging,
+    );
+    final tx = await AssembledTransaction.buildWithOp(
+      operation: op,
+      options: options,
+    );
     final response = await tx.signAndSend();
     final contractId = response.getCreatedContractId();
     if (contractId == null) {
@@ -249,19 +262,22 @@ class SorobanClient {
   /// built, so an unresolvable reference fails here with an [Exception]
   /// naming the owner and the tag. One message covers both misses: no entry
   /// under the tag, or an entry that does not hold a 32-byte wasm hash.
-  static Future<SorobanClient> deployFromExternalRef(
-      {required DeployFromExternalRefRequest deployRequest}) async {
+  static Future<SorobanClient> deployFromExternalRef({
+    required DeployFromExternalRefRequest deployRequest,
+  }) async {
     final ownerAddress = deployRequest.executableOwner;
     if (ownerAddress.type != Address.TYPE_CONTRACT) {
       // A non-contract owner is spelled as given.
-      final owner = ownerAddress.accountId ??
+      final owner =
+          ownerAddress.accountId ??
           ownerAddress.muxedAccountId ??
           ownerAddress.claimableBalanceId ??
           ownerAddress.liquidityPoolId ??
           ownerAddress.muxedContractId!;
       throw Exception(
-          "external reference owner $owner is not a contract: the executable "
-          "owner of an external reference must be a contract");
+        "external reference owner $owner is not a contract: the executable "
+        "owner of an external reference must be a contract",
+      );
     }
 
     SorobanServer server;
@@ -273,17 +289,22 @@ class SorobanClient {
     }
 
     final tagBytes = deployRequest.tag;
-    final ref = XdrContractExecutableExternalRef(ownerAddress.toXdr(), tagBytes);
+    final ref = XdrContractExecutableExternalRef(
+      ownerAddress.toXdr(),
+      tagBytes,
+    );
     final wasmHash = await server.getExternalRefWasmHash(ref);
     if (wasmHash == null) {
       // Spell the contract owner as its "C..." strkey; the field may already
       // hold that spelling.
       final id = ownerAddress.contractId!;
-      final owner =
-          StrKey.isValidContractId(id) ? id : StrKey.encodeContractIdHex(id);
+      final owner = StrKey.isValidContractId(id)
+          ? id
+          : StrKey.encodeContractIdHex(id);
       throw Exception(
-          "external reference does not resolve: owner $owner holds no 32-byte "
-          "wasm hash entry under tag ${TxRepHelper.escapeBytes(deployRequest.tag)}");
+        "external reference does not resolve: owner $owner holds no 32-byte "
+        "wasm hash entry under tag ${TxRepHelper.escapeBytes(deployRequest.tag)}",
+      );
     }
 
     // Load the spec from the resolved code before deploying: the code entry
@@ -292,38 +313,45 @@ class SorobanClient {
     // deployment could surface as a load failure.
     SorobanContractInfo? contractInfo;
     try {
-      contractInfo =
-          await server.loadContractInfoForWasmId(Util.bytesToHex(wasmHash));
+      contractInfo = await server.loadContractInfoForWasmId(
+        Util.bytesToHex(wasmHash),
+      );
     } on SorobanContractParserFailed {
       contractInfo = null; // code without a parseable spec: fall back below
     }
 
-    final sourceAddress =
-        Address.forAccountId(deployRequest.sourceAccountKeyPair.accountId);
+    final sourceAddress = Address.forAccountId(
+      deployRequest.sourceAccountKeyPair.accountId,
+    );
     final createContractHostFunction =
         CreateContractFromExternalRefWithConstructorHostFunction(
-            sourceAddress,
-            deployRequest.executableOwner,
-            tagBytes,
-            deployRequest.constructorArgs ?? [],
-            salt: deployRequest.salt);
+          sourceAddress,
+          deployRequest.executableOwner,
+          tagBytes,
+          deployRequest.constructorArgs ?? [],
+          salt: deployRequest.salt,
+        );
 
     final op = InvokeHostFuncOpBuilder(createContractHostFunction).build();
     final clientOptions = ClientOptions(
-        sourceAccountKeyPair: deployRequest.sourceAccountKeyPair,
-        contractId: "ignored",
-        network: deployRequest.network,
-        rpcUrl: deployRequest.rpcUrl,
-        server: deployRequest.server,
-        enableServerLogging: deployRequest.enableSorobanServerLogging);
+      sourceAccountKeyPair: deployRequest.sourceAccountKeyPair,
+      contractId: "ignored",
+      network: deployRequest.network,
+      rpcUrl: deployRequest.rpcUrl,
+      server: deployRequest.server,
+      enableServerLogging: deployRequest.enableSorobanServerLogging,
+    );
     final options = AssembledTransactionOptions(
-        clientOptions: clientOptions,
-        methodOptions: deployRequest.methodOptions,
-        method: SorobanClient._CONSTRUCTOR_FUNC,
-        arguments: deployRequest.constructorArgs,
-        enableSorobanServerLogging: deployRequest.enableSorobanServerLogging);
-    final tx =
-        await AssembledTransaction.buildWithOp(operation: op, options: options);
+      clientOptions: clientOptions,
+      methodOptions: deployRequest.methodOptions,
+      method: SorobanClient._CONSTRUCTOR_FUNC,
+      arguments: deployRequest.constructorArgs,
+      enableSorobanServerLogging: deployRequest.enableSorobanServerLogging,
+    );
+    final tx = await AssembledTransaction.buildWithOp(
+      operation: op,
+      options: options,
+    );
     final response = await tx.signAndSend();
     final contractId = response.getCreatedContractId();
     if (contractId == null) {
@@ -338,25 +366,32 @@ class SorobanClient {
 
   /// Installs (uploads) the given contract code to soroban.
   /// If successfully it returns the wasm hash of the installed contract as a hex string.
-  static Future<String> install(
-      {required InstallRequest installRequest, bool force = false}) async {
-    final uploadContractHostFunction =
-        UploadContractWasmHostFunction(installRequest.wasmBytes);
+  static Future<String> install({
+    required InstallRequest installRequest,
+    bool force = false,
+  }) async {
+    final uploadContractHostFunction = UploadContractWasmHostFunction(
+      installRequest.wasmBytes,
+    );
     final op = InvokeHostFuncOpBuilder(uploadContractHostFunction).build();
     final clientOptions = ClientOptions(
-        sourceAccountKeyPair: installRequest.sourceAccountKeyPair,
-        contractId: "ignored",
-        network: installRequest.network,
-        rpcUrl: installRequest.rpcUrl,
-        server: installRequest.server,
-        enableServerLogging: installRequest.enableSorobanServerLogging);
+      sourceAccountKeyPair: installRequest.sourceAccountKeyPair,
+      contractId: "ignored",
+      network: installRequest.network,
+      rpcUrl: installRequest.rpcUrl,
+      server: installRequest.server,
+      enableServerLogging: installRequest.enableSorobanServerLogging,
+    );
     final options = AssembledTransactionOptions(
-        clientOptions: clientOptions,
-        methodOptions: MethodOptions(),
-        method: "ignored",
-        enableSorobanServerLogging: installRequest.enableSorobanServerLogging);
-    final tx =
-        await AssembledTransaction.buildWithOp(operation: op, options: options);
+      clientOptions: clientOptions,
+      methodOptions: MethodOptions(),
+      method: "ignored",
+      enableSorobanServerLogging: installRequest.enableSorobanServerLogging,
+    );
+    final tx = await AssembledTransaction.buildWithOp(
+      operation: op,
+      options: options,
+    );
 
     if (!force && tx.isReadCall()) {
       final simulationData = tx.getSimulationData();
@@ -446,13 +481,17 @@ class SorobanClient {
   /// - [buildInvokeMethodTx] for manual transaction control
   /// - [funcArgsToXdrSCValues] for convenient argument conversion
   /// - [MethodOptions] for customizing execution
-  Future<XdrSCVal> invokeMethod(
-      {required String name,
-      List<XdrSCVal>? args,
-      bool force = false,
-      MethodOptions? methodOptions}) async {
+  Future<XdrSCVal> invokeMethod({
+    required String name,
+    List<XdrSCVal>? args,
+    bool force = false,
+    MethodOptions? methodOptions,
+  }) async {
     final tx = await buildInvokeMethodTx(
-        name: name, args: args, methodOptions: methodOptions);
+      name: name,
+      args: args,
+      methodOptions: methodOptions,
+    );
 
     if (!force && tx.isReadCall()) {
       return tx.getSimulationData().returnedValue;
@@ -461,35 +500,40 @@ class SorobanClient {
     final response = await tx.signAndSend(force: force);
     if (response.error != null) {
       throw new Exception(
-          "Invoke '$name' failed with message: ${response.error!.message} and code: ${response.error!.code}");
+        "Invoke '$name' failed with message: ${response.error!.message} and code: ${response.error!.code}",
+      );
     }
     if (response.status != GetTransactionResponse.STATUS_SUCCESS) {
       throw new Exception(
-          "Invoke '$name' failed with result: ${response.resultXdr}");
+        "Invoke '$name' failed with result: ${response.resultXdr}",
+      );
     }
     final result = response.getResultValue();
     if (result == null) {
       throw new Exception(
-          "Could not extract return value from '$name' invocation");
+        "Could not extract return value from '$name' invocation",
+      );
     }
     return result;
   }
 
   /// Creates an  [AssembledTransaction] for invoking the given method by [name] with the args given by [args] if any.
   /// This is usefully if you need to manipulate the transaction before signing and sending.
-  Future<AssembledTransaction> buildInvokeMethodTx(
-      {required String name,
-      List<XdrSCVal>? args,
-      MethodOptions? methodOptions = null}) async {
+  Future<AssembledTransaction> buildInvokeMethodTx({
+    required String name,
+    List<XdrSCVal>? args,
+    MethodOptions? methodOptions = null,
+  }) async {
     if (!_methodNames.contains(name)) {
       throw Exception("Method '$name' does not exist");
     }
     final options = AssembledTransactionOptions(
-        clientOptions: _options,
-        methodOptions: methodOptions ?? MethodOptions(),
-        method: name,
-        arguments: args,
-        enableSorobanServerLogging: _options.enableServerLogging);
+      clientOptions: _options,
+      methodOptions: methodOptions ?? MethodOptions(),
+      method: name,
+      arguments: args,
+      enableSorobanServerLogging: _options.enableServerLogging,
+    );
     return await AssembledTransaction.build(options: options);
   }
 
@@ -534,7 +578,10 @@ class SorobanClient {
   /// final args = client.funcArgsToXdrSCValues('hello', {'to': 'World'});
   /// final result = await client.invokeHostFunction('hello', args);
   /// ```
-  List<XdrSCVal> funcArgsToXdrSCValues(String functionName, Map<String, dynamic> args) {
+  List<XdrSCVal> funcArgsToXdrSCValues(
+    String functionName,
+    Map<String, dynamic> args,
+  ) {
     return _contractSpec.funcArgsToXdrSCValues(functionName, args);
   }
 
@@ -791,11 +838,14 @@ class AssembledTransaction {
   ///
   /// If you need to create a soroban operation with a host function other than `InvokeContractHostFunction`, you
   /// can use `AssembledTransaction.buildWithOp` instead.
-  static Future<AssembledTransaction> build(
-      {required AssembledTransactionOptions options}) async {
+  static Future<AssembledTransaction> build({
+    required AssembledTransactionOptions options,
+  }) async {
     final invokeContractHostFunction = InvokeContractHostFunction(
-        options.clientOptions.contractId, options.method,
-        arguments: options.arguments);
+      options.clientOptions.contractId,
+      options.method,
+      arguments: options.arguments,
+    );
     final builder = InvokeHostFuncOpBuilder(invokeContractHostFunction);
     return await buildWithOp(operation: builder.build(), options: options);
   }
@@ -803,17 +853,19 @@ class AssembledTransaction {
   /// Construct a new AssembledTransaction, specifying a soroban operation with a host function other
   /// than `InvokeContractHostFunction` (the default used by `AssembledTransaction.build`).
   /// E.g. `CreateContractWithConstructorHostFunction`
-  static Future<AssembledTransaction> buildWithOp(
-      {required InvokeHostFunctionOperation operation,
-      required AssembledTransactionOptions options}) async {
+  static Future<AssembledTransaction> buildWithOp({
+    required InvokeHostFunctionOperation operation,
+    required AssembledTransactionOptions options,
+  }) async {
     final tx = AssembledTransaction._(options);
     tx._originalOp = operation;
     final account = await tx._getSourceAccount();
     tx.raw = TransactionBuilder(account);
     final timeBounds = TimeBounds(
-        0,
-        DateTime.now().millisecondsSinceEpoch ~/ 1000 +
-            tx.options.methodOptions.timeoutInSeconds);
+      0,
+      DateTime.now().millisecondsSinceEpoch ~/ 1000 +
+          tx.options.methodOptions.timeoutInSeconds,
+    );
     final preconditions = TransactionPreconditions();
     preconditions.timeBounds = timeBounds;
     tx.raw!.addPreconditions(preconditions);
@@ -831,7 +883,8 @@ class AssembledTransaction {
     if (tx == null) {
       if (raw == null) {
         throw Exception(
-            'Transaction has not yet been assembled; call "AssembledTransaction.build" first.');
+          'Transaction has not yet been assembled; call "AssembledTransaction.build" first.',
+        );
       }
       tx = raw!.build();
     }
@@ -839,24 +892,30 @@ class AssembledTransaction {
     var shouldRestore = restore ?? options.methodOptions.restore;
     _simulationResult = null;
     simulationResponse = await server.simulateTransaction(
-        SimulateTransactionRequest(tx!,
-            useUpgradedAuth: options.methodOptions.useUpgradedAuth));
+      SimulateTransactionRequest(
+        tx!,
+        useUpgradedAuth: options.methodOptions.useUpgradedAuth,
+      ),
+    );
     if (shouldRestore && simulationResponse!.restorePreamble != null) {
       if (options.clientOptions.sourceAccountKeyPair.privateKey == null) {
         throw new Exception(
-            'Source account keypair has no private key, but needed for automatic restore.');
+          'Source account keypair has no private key, but needed for automatic restore.',
+        );
       }
       final result = await restoreFootprint(
-          restorePreamble: simulationResponse!.restorePreamble!);
+        restorePreamble: simulationResponse!.restorePreamble!,
+      );
       if (result.status == GetTransactionResponse.STATUS_SUCCESS) {
         // Rebuild the transaction with the bumped account sequence number,
         // reusing the operation this transaction was originally built with.
         final sourceAccount = await _getSourceAccount();
         raw = TransactionBuilder(sourceAccount);
         final timeBounds = TimeBounds(
-            0,
-            DateTime.now().millisecondsSinceEpoch ~/ 1000 +
-                options.methodOptions.timeoutInSeconds);
+          0,
+          DateTime.now().millisecondsSinceEpoch ~/ 1000 +
+              options.methodOptions.timeoutInSeconds,
+        );
         final preconditions = TransactionPreconditions();
         preconditions.timeBounds = timeBounds;
         raw!.addPreconditions(preconditions);
@@ -867,8 +926,9 @@ class AssembledTransaction {
         return;
       }
       throw new Exception(
-          "Automatic restore failed! You set 'restore: true' but the attempted "
-          "restore did not work. Status: ${result.status} , transaction result xdr: ${result.resultXdr}");
+        "Automatic restore failed! You set 'restore: true' but the attempted "
+        "restore did not work. Status: ${result.status} , transaction result xdr: ${result.resultXdr}",
+      );
     }
     if (simulationResponse!.transactionData != null) {
       // success
@@ -884,8 +944,10 @@ class AssembledTransaction {
   /// If not completed after options->timeoutInSeconds it will throw an exception. Otherwise, returns the `GetTransactionResponse`.
   /// With [force] you can force signing and sending even if it is a read call. Default false.
   /// Returns the get transaction response received after sending and waiting for the transaction to complete.
-  Future<GetTransactionResponse> signAndSend(
-      {KeyPair? sourceAccountKeyPair = null, bool force = false}) async {
+  Future<GetTransactionResponse> signAndSend({
+    KeyPair? sourceAccountKeyPair = null,
+    bool force = false,
+  }) async {
     if (signed == null) {
       sign(sourceAccountKeyPair: sourceAccountKeyPair, force: force);
     }
@@ -896,13 +958,15 @@ class AssembledTransaction {
   Future<GetTransactionResponse> send() async {
     if (signed == null) {
       throw Exception(
-          "The transaction has not yet been signed. Run `sign` first, or use `signAndSend` instead.");
+        "The transaction has not yet been signed. Run `sign` first, or use `signAndSend` instead.",
+      );
     }
     final sendTxResponse = await server.sendTransaction(signed!);
     if (sendTxResponse.isErrorResponse) {
       if (sendTxResponse.error != null) {
         throw Exception(
-            "Could not send transaction. Rpc error code: ${sendTxResponse.error!.code}, message:  ${sendTxResponse.error!.message}");
+          "Could not send transaction. Rpc error code: ${sendTxResponse.error!.code}, message:  ${sendTxResponse.error!.message}",
+        );
       }
       throw Exception("Could not send transaction.");
     }
@@ -929,7 +993,8 @@ class AssembledTransaction {
     final hash = sendTxResponse.hash;
     if (hash == null) {
       throw Exception(
-          "Send transaction response contains no transaction hash.");
+        "Send transaction response contains no transaction hash.",
+      );
     }
     return await _pollStatus(hash);
   }
@@ -943,7 +1008,8 @@ class AssembledTransaction {
     while (status == GetTransactionResponse.STATUS_NOT_FOUND) {
       if (waited > options.methodOptions.timeoutInSeconds) {
         throw new Exception(
-            "Interrupted after waiting ${options.methodOptions.timeoutInSeconds} seconds (options.methodOptions.timeoutInSeconds) for the transaction $transactionId to complete.");
+          "Interrupted after waiting ${options.methodOptions.timeoutInSeconds} seconds (options.methodOptions.timeoutInSeconds) for the transaction $transactionId to complete.",
+        );
       }
       await Future.delayed(const Duration(seconds: waitTime), () {});
       waited += waitTime;
@@ -966,14 +1032,16 @@ class AssembledTransaction {
 
     if (!force && isReadCall()) {
       throw Exception(
-          "This is a read call. It requires no signature or sending. " +
-              "Use `force: true` to sign and send anyway.");
+        "This is a read call. It requires no signature or sending. " +
+            "Use `force: true` to sign and send anyway.",
+      );
     }
     final signerKp =
         sourceAccountKeyPair ?? options.clientOptions.sourceAccountKeyPair;
     if (signerKp.privateKey == null) {
       throw Exception(
-          'Source account keypair has no private key, but needed for signing.');
+        'Source account keypair has no private key, but needed for signing.',
+      );
     }
 
     // Use the send precheck: a WITH_DELEGATES entry whose top-level is void but
@@ -984,14 +1052,16 @@ class AssembledTransaction {
     final neededAccountSigners = _neededSignersForSend();
     if (neededAccountSigners.isNotEmpty) {
       throw new Exception(
-          "Transaction requires signatures from multiple signers. " +
-              "See `needsNonInvokerSigningBy` for details.");
+        "Transaction requires signatures from multiple signers. " +
+            "See `needsNonInvokerSigningBy` for details.",
+      );
     }
 
     // clone tx
     final envelopeXdr = tx!.toEnvelopeXdrBase64();
-    final clonedTxAbstract =
-        AbstractTransaction.fromEnvelopeXdrString(envelopeXdr);
+    final clonedTxAbstract = AbstractTransaction.fromEnvelopeXdrString(
+      envelopeXdr,
+    );
     if (clonedTxAbstract is Transaction) {
       clonedTxAbstract.sign(signerKp, options.clientOptions.network);
       signed = clonedTxAbstract;
@@ -1047,17 +1117,16 @@ class AssembledTransaction {
 
         if (arm != XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS &&
             arm != XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2 &&
-            arm != XdrSorobanCredentialsType
-                .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
-          throw Exception(
-              'Unknown credential arm in auth entry: $arm');
+            arm !=
+                XdrSorobanCredentialsType
+                    .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+          throw Exception('Unknown credential arm in auth entry: $arm');
         }
 
         final inner = entry.credentials.innerAddressCredentials;
         if (inner == null) {
           // Should not happen for any of the three address arms.
-          throw Exception(
-              'Address credentials missing for arm $arm');
+          throw Exception('Address credentials missing for arm $arm');
         }
 
         // Report the top-level address when its signature is void (or when
@@ -1065,20 +1134,24 @@ class AssembledTransaction {
         final topSigIsVoid =
             inner.signature.discriminant == XdrSCValType.SCV_VOID;
         if (includeAlreadySigned || topSigIsVoid) {
-          final signer =
-              inner.address.accountId ?? inner.address.contractId;
+          final signer = inner.address.accountId ?? inner.address.contractId;
           if (signer != null) {
             needed.add(signer);
           }
         }
 
         // For WITH_DELEGATES, also walk every delegate node at any depth.
-        if (arm == XdrSorobanCredentialsType
-            .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+        if (arm ==
+            XdrSorobanCredentialsType
+                .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
           final withDelegates =
               entry.credentials.addressWithDelegatesCredentials!;
           _collectUnsignedDelegates(
-              withDelegates.delegates, needed, includeAlreadySigned, 0);
+            withDelegates.delegates,
+            needed,
+            includeAlreadySigned,
+            0,
+          );
         }
       }
     }
@@ -1090,17 +1163,16 @@ class AssembledTransaction {
   /// [depth] guards against pathological nesting; uses the same limit as
   /// [SorobanAuthorizationEntry._maxDelegateTraversalDepth].
   static void _collectUnsignedDelegates(
-      List<SorobanDelegateSignature> delegates,
-      List<String> out,
-      bool includeAlreadySigned,
-      int depth) {
+    List<SorobanDelegateSignature> delegates,
+    List<String> out,
+    bool includeAlreadySigned,
+    int depth,
+  ) {
     if (depth > 128) {
-      throw Exception(
-          'Delegate tree traversal depth limit (128) exceeded');
+      throw Exception('Delegate tree traversal depth limit (128) exceeded');
     }
     for (final node in delegates) {
-      final isSigned =
-          node.signature.discriminant != XdrSCValType.SCV_VOID;
+      final isSigned = node.signature.discriminant != XdrSCValType.SCV_VOID;
       if (includeAlreadySigned || !isSigned) {
         final nodeAddr = _xdrAddressToStrKey(node.address);
         if (nodeAddr.isNotEmpty) {
@@ -1108,7 +1180,11 @@ class AssembledTransaction {
         }
       }
       _collectUnsignedDelegates(
-          node.nestedDelegates, out, includeAlreadySigned, depth + 1);
+        node.nestedDelegates,
+        out,
+        includeAlreadySigned,
+        depth + 1,
+      );
     }
   }
 
@@ -1154,15 +1230,15 @@ class AssembledTransaction {
     }
     for (final entry in invokeHostFuncOp.auth) {
       final arm = entry.credentials.arm;
-      if (arm ==
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT) {
+      if (arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT) {
         continue;
       }
 
       final inner = entry.credentials.innerAddressCredentials;
       if (inner == null) continue;
-      if (arm == XdrSorobanCredentialsType
-          .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+      if (arm ==
+          XdrSorobanCredentialsType
+              .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
         // Delegates-only pattern: top-level may be void; entry is satisfied
         // when every delegate node at any depth carries a non-void signature.
         final withDelegates =
@@ -1176,8 +1252,7 @@ class AssembledTransaction {
         final topSigIsVoid =
             inner.signature.discriminant == XdrSCValType.SCV_VOID;
         if (topSigIsVoid) {
-          final signer =
-              inner.address.accountId ?? inner.address.contractId;
+          final signer = inner.address.accountId ?? inner.address.contractId;
           if (signer != null && !signer.startsWith('C')) {
             needed.add(signer);
           }
@@ -1188,8 +1263,7 @@ class AssembledTransaction {
         final topSigIsVoid =
             inner.signature.discriminant == XdrSCValType.SCV_VOID;
         if (topSigIsVoid) {
-          final signer =
-              inner.address.accountId ?? inner.address.contractId;
+          final signer = inner.address.accountId ?? inner.address.contractId;
           if (signer != null && !signer.startsWith('C')) {
             needed.add(signer);
           }
@@ -1202,7 +1276,9 @@ class AssembledTransaction {
   /// Returns true when every delegate node in [delegates] (depth-first) has a
   /// non-void signature.
   static bool _allDelegatesSigned(
-      List<SorobanDelegateSignature> delegates, int depth) {
+    List<SorobanDelegateSignature> delegates,
+    int depth,
+  ) {
     if (depth > 128) {
       throw Exception('Delegate tree traversal depth limit (128) exceeded');
     }
@@ -1320,25 +1396,30 @@ class AssembledTransaction {
   /// See also:
   /// - [needsNonInvokerSigningBy] to check which addresses need to sign
   /// - [SorobanAuthorizationEntry] for authorization entry details
-  Future<void> signAuthEntries(
-      {required KeyPair signerKeyPair,
-      Future<SorobanAuthorizationEntry> Function(
-              SorobanAuthorizationEntry entry, Network network)?
-          authorizeEntryDelegate,
-      int? validUntilLedgerSeq}) async {
+  Future<void> signAuthEntries({
+    required KeyPair signerKeyPair,
+    Future<SorobanAuthorizationEntry> Function(
+      SorobanAuthorizationEntry entry,
+      Network network,
+    )?
+    authorizeEntryDelegate,
+    int? validUntilLedgerSeq,
+  }) async {
     final signerAddress = signerKeyPair.accountId;
     if (authorizeEntryDelegate == null) {
       final neededSigning = needsNonInvokerSigningBy();
       if (neededSigning.isEmpty) {
         throw Exception(
-            "No unsigned non-invoker auth entries; maybe you already signed?");
+          "No unsigned non-invoker auth entries; maybe you already signed?",
+        );
       }
       if (!neededSigning.contains(signerAddress)) {
         throw Exception("No auth entries for public key $signerAddress");
       }
       if (signerKeyPair.privateKey == null) {
         throw Exception(
-            "You must provide a signer keypair containing the private key.");
+          "You must provide a signer keypair containing the private key.",
+        );
       }
     }
     if (tx == null) {
@@ -1351,16 +1432,19 @@ class AssembledTransaction {
     final invokeHostFuncOp = ops.first;
     if (invokeHostFuncOp is! InvokeHostFunctionOperation) {
       throw Exception(
-          "Unexpected Transaction type; no invoke host function operations found.");
+        "Unexpected Transaction type; no invoke host function operations found.",
+      );
     }
 
-    final authEntries =
-        List<SorobanAuthorizationEntry>.of(invokeHostFuncOp.auth);
+    final authEntries = List<SorobanAuthorizationEntry>.of(
+      invokeHostFuncOp.auth,
+    );
     int? defaultExpirationLedger;
     for (var i = 0; i < authEntries.length; i++) {
       // Sign a copy so that a failure leaves the transaction's entries intact.
       final entry = SorobanAuthorizationEntry.fromBase64EncodedXdr(
-          authEntries[i].toBase64EncodedXdrString());
+        authEntries[i].toBase64EncodedXdrString(),
+      );
       final arm = entry.credentials.arm;
 
       if (arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT) {
@@ -1370,10 +1454,10 @@ class AssembledTransaction {
 
       if (arm != XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS &&
           arm != XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2 &&
-          arm != XdrSorobanCredentialsType
-              .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
-        throw Exception(
-            'Unknown credential arm in auth entry: $arm');
+          arm !=
+              XdrSorobanCredentialsType
+                  .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+        throw Exception('Unknown credential arm in auth entry: $arm');
       }
 
       final inner = entry.credentials.innerAddressCredentials;
@@ -1393,12 +1477,16 @@ class AssembledTransaction {
 
       bool matchesDelegate = false;
       bool delegateSigned = false;
-      if (arm == XdrSorobanCredentialsType
-          .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+      if (arm ==
+          XdrSorobanCredentialsType
+              .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
         final withDelegates =
             entry.credentials.addressWithDelegatesCredentials!;
-        matchesDelegate =
-            _delegateListContains(withDelegates.delegates, signerAddress, 0);
+        matchesDelegate = _delegateListContains(
+          withDelegates.delegates,
+          signerAddress,
+          0,
+        );
         delegateSigned = _delegateListHasSignature(withDelegates.delegates);
       }
 
@@ -1415,20 +1503,24 @@ class AssembledTransaction {
         if (validUntilLedgerSeq != null &&
             validUntilLedgerSeq != storedExpiration) {
           throw ArgumentError.value(
-              validUntilLedgerSeq,
-              'validUntilLedgerSeq',
-              'Auth entry $i already carries a signature committed to '
-                  'signatureExpirationLedger $storedExpiration');
+            validUntilLedgerSeq,
+            'validUntilLedgerSeq',
+            'Auth entry $i already carries a signature committed to '
+                'signatureExpirationLedger $storedExpiration',
+          );
         }
       } else {
-        inner.signatureExpirationLedger = validUntilLedgerSeq ??
+        inner.signatureExpirationLedger =
+            validUntilLedgerSeq ??
             (defaultExpirationLedger ??= await _defaultExpirationLedger());
       }
 
       if (authorizeEntryDelegate != null) {
         // Hand the matching entry off to the external signer.
-        final authorized =
-            await authorizeEntryDelegate(entry, options.clientOptions.network);
+        final authorized = await authorizeEntryDelegate(
+          entry,
+          options.clientOptions.network,
+        );
         authEntries[i] = authorized;
         continue;
       }
@@ -1442,8 +1534,11 @@ class AssembledTransaction {
         // address matches and every matching delegate node in one pass, so a
         // preceding plain sign() would write a duplicate top-level signature the
         // host rejects.
-        entry.sign(signerKeyPair, options.clientOptions.network,
-            forAddress: signerAddress);
+        entry.sign(
+          signerKeyPair,
+          options.clientOptions.network,
+          forAddress: signerAddress,
+        );
       }
       authEntries[i] = entry;
     }
@@ -1467,7 +1562,8 @@ class AssembledTransaction {
   /// [XdrDataInputStream] caps delegate nesting at
   /// [XdrDataInputStream.maxRecursiveDecodeDepth] levels.
   static bool _delegateListHasSignature(
-      List<SorobanDelegateSignature> delegates) {
+    List<SorobanDelegateSignature> delegates,
+  ) {
     for (final node in delegates) {
       if (node.signature.discriminant != XdrSCValType.SCV_VOID ||
           _delegateListHasSignature(node.nestedDelegates)) {
@@ -1480,16 +1576,21 @@ class AssembledTransaction {
   /// Returns true when [targetStrKey] appears as the address of any delegate
   /// node in [delegates] or their nested delegates (depth-first).
   static bool _delegateListContains(
-      List<SorobanDelegateSignature> delegates,
-      String targetStrKey,
-      int depth) {
+    List<SorobanDelegateSignature> delegates,
+    String targetStrKey,
+    int depth,
+  ) {
     if (depth > 128) {
       throw Exception('Delegate tree traversal depth limit (128) exceeded');
     }
     for (final node in delegates) {
       final nodeStr = _xdrAddressToStrKey(node.address);
       if (nodeStr == targetStrKey) return true;
-      if (_delegateListContains(node.nestedDelegates, targetStrKey, depth + 1)) {
+      if (_delegateListContains(
+        node.nestedDelegates,
+        targetStrKey,
+        depth + 1,
+      )) {
         return true;
       }
     }
@@ -1508,10 +1609,14 @@ class AssembledTransaction {
   /// Preconditions:
   /// - A `sourceAccountKeyPair` with private key must be provided during the Client initialization.
   ///
-  Future<GetTransactionResponse> restoreFootprint(
-      {required RestorePreamble restorePreamble}) async {
-    final restoreTx = await _buildFootprintRestoreTransaction(options,
-        restorePreamble.transactionData, restorePreamble.minResourceFee);
+  Future<GetTransactionResponse> restoreFootprint({
+    required RestorePreamble restorePreamble,
+  }) async {
+    final restoreTx = await _buildFootprintRestoreTransaction(
+      options,
+      restorePreamble.transactionData,
+      restorePreamble.minResourceFee,
+    );
     return await restoreTx.signAndSend();
   }
 
@@ -1527,14 +1632,16 @@ class AssembledTransaction {
         simulationResponse!.resultError != null ||
         simulationResponse!.transactionData == null) {
       throw new Exception(
-          "Transaction simulation failed: ${simulationResponse?.resultError}");
+        "Transaction simulation failed: ${simulationResponse?.resultError}",
+      );
     }
 
     if (simulationResponse!.restorePreamble != null) {
       throw Exception(
-          "You need to restore some contract state before you can invoke this method.\n" +
-              "You can set `restore` to true in the options in order to " +
-              "automatically restore the contract state when needed.");
+        "You need to restore some contract state before you can invoke this method.\n" +
+            "You can set `restore` to true in the options in order to " +
+            "automatically restore the contract state when needed.",
+      );
     }
 
     var resultValue = XdrSCVal.forVoid();
@@ -1545,23 +1652,26 @@ class AssembledTransaction {
       }
     }
     _simulationResult = SimulateHostFunctionResult(
-        simulationResponse!.sorobanAuth,
-        simulationResponse!.transactionData!,
-        resultValue);
+      simulationResponse!.sorobanAuth,
+      simulationResponse!.transactionData!,
+      resultValue,
+    );
     return _simulationResult!;
   }
 
   static Future<AssembledTransaction> _buildFootprintRestoreTransaction(
-      AssembledTransactionOptions options,
-      XdrSorobanTransactionData transactionData,
-      int fee) async {
+    AssembledTransactionOptions options,
+    XdrSorobanTransactionData transactionData,
+    int fee,
+  ) async {
     final restoreTx = AssembledTransaction._(options);
     final restoreOp = (RestoreFootprintOperationBuilder()).build();
     final sourceAccount = await restoreTx._getSourceAccount();
     final timeBounds = TimeBounds(
-        0,
-        DateTime.now().millisecondsSinceEpoch ~/ 1000 +
-            restoreTx.options.methodOptions.timeoutInSeconds);
+      0,
+      DateTime.now().millisecondsSinceEpoch ~/ 1000 +
+          restoreTx.options.methodOptions.timeoutInSeconds,
+    );
     final preconditions = TransactionPreconditions();
     preconditions.timeBounds = timeBounds;
     restoreTx.raw = TransactionBuilder(sourceAccount)
@@ -1575,11 +1685,13 @@ class AssembledTransaction {
   }
 
   Future<Account> _getSourceAccount() async {
-    var account = await server
-        .getAccount(options.clientOptions.sourceAccountKeyPair.accountId);
+    var account = await server.getAccount(
+      options.clientOptions.sourceAccountKeyPair.accountId,
+    );
     if (account == null) {
       throw Exception(
-          "Account: ${options.clientOptions.sourceAccountKeyPair.accountId} not found.");
+        "Account: ${options.clientOptions.sourceAccountKeyPair.accountId} not found.",
+      );
     }
     return account;
   }
@@ -1722,13 +1834,14 @@ class ClientOptions {
   /// - [rpcUrl]: Soroban RPC server URL
   /// - [enableServerLogging]: Enable debug logging (default: false)
   /// - [server]: Preconfigured SorobanServer to use instead of constructing one from [rpcUrl]
-  ClientOptions(
-      {required this.sourceAccountKeyPair,
-      required this.contractId,
-      required this.network,
-      required this.rpcUrl,
-      this.enableServerLogging = false,
-      this.server});
+  ClientOptions({
+    required this.sourceAccountKeyPair,
+    required this.contractId,
+    required this.network,
+    required this.rpcUrl,
+    this.enableServerLogging = false,
+    this.server,
+  });
 }
 
 /// Options for fine-tuning contract method invocation behavior.
@@ -1783,12 +1896,13 @@ class MethodOptions {
   ///   restore: true,
   /// );
   /// ```
-  MethodOptions(
-      {this.fee = NetworkConstants.DEFAULT_SOROBAN_BASE_FEE,
-      this.timeoutInSeconds = NetworkConstants.DEFAULT_TIMEOUT_SECONDS,
-      this.simulate = true,
-      this.restore = false,
-      this.useUpgradedAuth = true});
+  MethodOptions({
+    this.fee = NetworkConstants.DEFAULT_SOROBAN_BASE_FEE,
+    this.timeoutInSeconds = NetworkConstants.DEFAULT_TIMEOUT_SECONDS,
+    this.simulate = true,
+    this.restore = false,
+    this.useUpgradedAuth = true,
+  });
 }
 
 /// Configuration options for constructing an AssembledTransaction.
@@ -1949,12 +2063,13 @@ class AssembledTransactionOptions {
   ///   arguments: [fromArg, toArg, amountArg],
   /// );
   /// ```
-  AssembledTransactionOptions(
-      {required this.clientOptions,
-      required this.methodOptions,
-      required this.method,
-      this.arguments = null,
-      this.enableSorobanServerLogging = false});
+  AssembledTransactionOptions({
+    required this.clientOptions,
+    required this.methodOptions,
+    required this.method,
+    this.arguments = null,
+    this.enableSorobanServerLogging = false,
+  });
 }
 
 /// Request configuration for installing Soroban contract WASM code.
@@ -2011,13 +2126,14 @@ class InstallRequest {
   /// );
   /// final wasmHash = await SorobanClient.install(installRequest: request);
   /// ```
-  InstallRequest(
-      {required this.wasmBytes,
-      required this.sourceAccountKeyPair,
-      required this.network,
-      required this.rpcUrl,
-      this.enableSorobanServerLogging = false,
-      this.server});
+  InstallRequest({
+    required this.wasmBytes,
+    required this.sourceAccountKeyPair,
+    required this.network,
+    required this.rpcUrl,
+    this.enableSorobanServerLogging = false,
+    this.server,
+  });
 }
 
 /// Request configuration for deploying a Soroban smart contract.
@@ -2091,16 +2207,17 @@ class DeployRequest {
   /// );
   /// final client = await SorobanClient.deploy(deployRequest: request);
   /// ```
-  DeployRequest(
-      {required this.sourceAccountKeyPair,
-      required this.network,
-      required this.rpcUrl,
-      required this.wasmHash,
-      this.constructorArgs,
-      this.salt,
-      MethodOptions? methodOptions,
-      this.enableSorobanServerLogging = false,
-      this.server}) {
+  DeployRequest({
+    required this.sourceAccountKeyPair,
+    required this.network,
+    required this.rpcUrl,
+    required this.wasmHash,
+    this.constructorArgs,
+    this.salt,
+    MethodOptions? methodOptions,
+    this.enableSorobanServerLogging = false,
+    this.server,
+  }) {
     this.methodOptions = methodOptions ?? MethodOptions();
   }
 }
@@ -2190,43 +2307,45 @@ class DeployFromExternalRefRequest {
   /// final client =
   ///     await SorobanClient.deployFromExternalRef(deployRequest: request);
   /// ```
-  DeployFromExternalRefRequest(
-      {required this.sourceAccountKeyPair,
-      required this.network,
-      required this.rpcUrl,
-      required this.executableOwner,
-      required this.tag,
-      this.constructorArgs,
-      this.salt,
-      MethodOptions? methodOptions,
-      this.enableSorobanServerLogging = false,
-      this.server}) {
+  DeployFromExternalRefRequest({
+    required this.sourceAccountKeyPair,
+    required this.network,
+    required this.rpcUrl,
+    required this.executableOwner,
+    required this.tag,
+    this.constructorArgs,
+    this.salt,
+    MethodOptions? methodOptions,
+    this.enableSorobanServerLogging = false,
+    this.server,
+  }) {
     this.methodOptions = methodOptions ?? MethodOptions();
   }
 
   /// Creates a DeployFromExternalRefRequest over the UTF-8 encoding of [tag].
-  DeployFromExternalRefRequest.forTagString(
-      {required KeyPair sourceAccountKeyPair,
-      required Network network,
-      required String rpcUrl,
-      required Address executableOwner,
-      required String tag,
-      List<XdrSCVal>? constructorArgs,
-      XdrUint256? salt,
-      MethodOptions? methodOptions,
-      bool enableSorobanServerLogging = false,
-      SorobanServer? server})
-      : this(
-            sourceAccountKeyPair: sourceAccountKeyPair,
-            network: network,
-            rpcUrl: rpcUrl,
-            executableOwner: executableOwner,
-            tag: Uint8List.fromList(utf8.encode(tag)),
-            constructorArgs: constructorArgs,
-            salt: salt,
-            methodOptions: methodOptions,
-            enableSorobanServerLogging: enableSorobanServerLogging,
-            server: server);
+  DeployFromExternalRefRequest.forTagString({
+    required KeyPair sourceAccountKeyPair,
+    required Network network,
+    required String rpcUrl,
+    required Address executableOwner,
+    required String tag,
+    List<XdrSCVal>? constructorArgs,
+    XdrUint256? salt,
+    MethodOptions? methodOptions,
+    bool enableSorobanServerLogging = false,
+    SorobanServer? server,
+  }) : this(
+         sourceAccountKeyPair: sourceAccountKeyPair,
+         network: network,
+         rpcUrl: rpcUrl,
+         executableOwner: executableOwner,
+         tag: Uint8List.fromList(utf8.encode(tag)),
+         constructorArgs: constructorArgs,
+         salt: salt,
+         methodOptions: methodOptions,
+         enableSorobanServerLogging: enableSorobanServerLogging,
+         server: server,
+       );
 }
 
 /// Result data from simulating a Soroban contract invocation.
@@ -2327,5 +2446,8 @@ class SimulateHostFunctionResult {
   /// - [transactionData]: Soroban transaction data with resource info
   /// - [returnedValue]: Simulated return value from contract
   SimulateHostFunctionResult(
-      this.auth, this.transactionData, this.returnedValue);
+    this.auth,
+    this.transactionData,
+    this.returnedValue,
+  );
 }

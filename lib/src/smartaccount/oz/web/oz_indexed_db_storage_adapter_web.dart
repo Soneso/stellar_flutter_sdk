@@ -85,7 +85,7 @@ class OZIndexedDBStorageAdapter implements OZStorageAdapter {
 
   /// Constructs an [OZIndexedDBStorageAdapter] backed by `window.indexedDB`.
   OZIndexedDBStorageAdapter({this.dbName = defaultDbName})
-      : _injectedFactory = null;
+    : _injectedFactory = null;
 
   /// Constructs an [OZIndexedDBStorageAdapter] backed by an injected
   /// [web.IDBFactory]. Test seam — production code uses the unnamed
@@ -149,7 +149,8 @@ class OZIndexedDBStorageAdapter implements OZStorageAdapter {
         SmartAccountStorageException.readFailed(
           'indexedDB:open',
           cause: Exception(
-              "Failed to open IndexedDB '$dbName': ${e.toString()}"),
+            "Failed to open IndexedDB '$dbName': ${e.toString()}",
+          ),
         ),
       );
       return completer.future;
@@ -163,7 +164,8 @@ class OZIndexedDBStorageAdapter implements OZStorageAdapter {
           SmartAccountStorageException.readFailed(
             'indexedDB:open',
             cause: Exception(
-                "Failed to open IndexedDB '$dbName': result is not an IDBDatabase"),
+              "Failed to open IndexedDB '$dbName': result is not an IDBDatabase",
+            ),
           ),
         );
         return;
@@ -177,8 +179,7 @@ class OZIndexedDBStorageAdapter implements OZStorageAdapter {
       completer.completeError(
         SmartAccountStorageException.readFailed(
           'indexedDB:open',
-          cause: Exception(
-              "Failed to open IndexedDB '$dbName': $errorMsg"),
+          cause: Exception("Failed to open IndexedDB '$dbName': $errorMsg"),
         ),
       );
     }).toJS;
@@ -522,7 +523,8 @@ class OZIndexedDBStorageAdapter implements OZStorageAdapter {
         SmartAccountStorageException.writeFailed(
           'indexedDB:delete',
           cause: Exception(
-              "Failed to delete database '$target': ${e.toString()}"),
+            "Failed to delete database '$target': ${e.toString()}",
+          ),
         ),
       );
       return completer.future;
@@ -537,8 +539,7 @@ class OZIndexedDBStorageAdapter implements OZStorageAdapter {
       completer.completeError(
         SmartAccountStorageException.writeFailed(
           'indexedDB:delete',
-          cause: Exception(
-              "Failed to delete database '$target': $errorMsg"),
+          cause: Exception("Failed to delete database '$target': $errorMsg"),
         ),
       );
     }).toJS;
@@ -601,8 +602,7 @@ class OZIndexedDBStorageAdapter implements OZStorageAdapter {
     }).toJS;
     request.onerror = ((web.Event _) {
       if (completer.isCompleted) return;
-      final errorMsg =
-          request.error?.message ?? 'IndexedDB index query failed';
+      final errorMsg = request.error?.message ?? 'IndexedDB index query failed';
       completer.completeError(Exception(errorMsg));
     }).toJS;
     return completer.future;
@@ -658,15 +658,17 @@ class OZIndexedDBStorageAdapter implements OZStorageAdapter {
   }
 
   OZStoredCredential _jsToCredential(JSObject obj) {
-    final credentialId =
-        (obj.getProperty<JSString>('credentialId'.toJS)).toDart;
-    final publicKey =
-        _jsArrayToByteArray(obj.getProperty<JSAny?>('publicKey'.toJS));
+    final credentialId = (obj.getProperty<JSString>(
+      'credentialId'.toJS,
+    )).toDart;
+    final publicKey = _jsArrayToByteArray(
+      obj.getProperty<JSAny?>('publicKey'.toJS),
+    );
     final contractIdRaw = obj.getProperty<JSAny?>('contractId'.toJS);
-    final contractId =
-        contractIdRaw is JSString ? contractIdRaw.toDart : null;
-    final statusName =
-        (obj.getProperty<JSString>('deploymentStatus'.toJS)).toDart;
+    final contractId = contractIdRaw is JSString ? contractIdRaw.toDart : null;
+    final statusName = (obj.getProperty<JSString>(
+      'deploymentStatus'.toJS,
+    )).toDart;
     final deploymentStatus = _statusFromName(statusName);
     final deploymentErrorRaw = obj.getProperty<JSAny?>('deploymentError'.toJS);
     final deploymentError = deploymentErrorRaw is JSString
@@ -676,8 +678,7 @@ class OZIndexedDBStorageAdapter implements OZStorageAdapter {
     final lastUsedAt = _jsToInt(obj.getProperty<JSAny?>('lastUsedAt'.toJS));
     final nicknameRaw = obj.getProperty<JSAny?>('nickname'.toJS);
     final nickname = nicknameRaw is JSString ? nicknameRaw.toDart : null;
-    final isPrimary =
-        (obj.getProperty<JSBoolean>('isPrimary'.toJS)).toDart;
+    final isPrimary = (obj.getProperty<JSBoolean>('isPrimary'.toJS)).toDart;
     final transportsRaw = obj.getProperty<JSAny?>('transports'.toJS);
     List<String>? transports;
     if (transportsRaw is JSArray) {
@@ -686,8 +687,7 @@ class OZIndexedDBStorageAdapter implements OZStorageAdapter {
           .toList(growable: false);
     }
     final deviceTypeRaw = obj.getProperty<JSAny?>('deviceType'.toJS);
-    final deviceType =
-        deviceTypeRaw is JSString ? deviceTypeRaw.toDart : null;
+    final deviceType = deviceTypeRaw is JSString ? deviceTypeRaw.toDart : null;
     final backedUpRaw = obj.getProperty<JSAny?>('backedUp'.toJS);
     final backedUp = backedUpRaw is JSBoolean ? backedUpRaw.toDart : null;
     return OZStoredCredential(
@@ -718,8 +718,7 @@ class OZIndexedDBStorageAdapter implements OZStorageAdapter {
 
   OZStoredSession _jsToSession(JSObject obj) {
     return OZStoredSession(
-      credentialId:
-          (obj.getProperty<JSString>('credentialId'.toJS)).toDart,
+      credentialId: (obj.getProperty<JSString>('credentialId'.toJS)).toDart,
       contractId: (obj.getProperty<JSString>('contractId'.toJS)).toDart,
       connectedAt: _jsToInt(obj.getProperty<JSAny?>('connectedAt'.toJS))!,
       expiresAt: _jsToInt(obj.getProperty<JSAny?>('expiresAt'.toJS))!,

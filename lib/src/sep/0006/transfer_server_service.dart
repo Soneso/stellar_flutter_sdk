@@ -99,8 +99,11 @@ class TransferServerService {
   ///   httpRequestHeaders: {'X-Custom-Header': 'value'}
   /// );
   /// ```
-  TransferServerService(this._transferServiceAddress,
-      {http.Client? httpClient, this.httpRequestHeaders}) {
+  TransferServerService(
+    this._transferServiceAddress, {
+    http.Client? httpClient,
+    this.httpRequestHeaders,
+  }) {
     this.httpClient = httpClient == null ? http.Client() : httpClient;
   }
 
@@ -130,16 +133,26 @@ class TransferServerService {
   /// );
   /// final info = await service.info(jwt: authToken);
   /// ```
-  static Future<TransferServerService> fromDomain(String domain,
-      {http.Client? httpClient,
-      Map<String, String>? httpRequestHeaders}) async {
-    StellarToml toml = await StellarToml.fromDomain(domain,
-        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
+  static Future<TransferServerService> fromDomain(
+    String domain, {
+    http.Client? httpClient,
+    Map<String, String>? httpRequestHeaders,
+  }) async {
+    StellarToml toml = await StellarToml.fromDomain(
+      domain,
+      httpClient: httpClient,
+      httpRequestHeaders: httpRequestHeaders,
+    );
     String? transferServer = toml.generalInformation.transferServer;
-    checkNotNull(transferServer,
-        "transfer server not found in stellar toml of domain " + domain);
-    return TransferServerService(transferServer!,
-        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
+    checkNotNull(
+      transferServer,
+      "transfer server not found in stellar toml of domain " + domain,
+    );
+    return TransferServerService(
+      transferServer!,
+      httpClient: httpClient,
+      httpRequestHeaders: httpRequestHeaders,
+    );
   }
 
   /// Retrieves basic information about the anchor's transfer server capabilities.
@@ -157,8 +170,10 @@ class TransferServerService {
     Uri serverURI = Util.appendEndpointToUrl(_transferServiceAddress, 'info');
 
     _InfoRequestBuilder requestBuilder = _InfoRequestBuilder(
-        httpClient, serverURI,
-        httpRequestHeaders: this.httpRequestHeaders);
+      httpClient,
+      serverURI,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
 
     final Map<String, String> queryParams = {};
 
@@ -166,8 +181,9 @@ class TransferServerService {
       queryParams["lang"] = language;
     }
 
-    InfoResponse response =
-        await requestBuilder.forQueryParameters(queryParams).execute(jwt);
+    InfoResponse response = await requestBuilder
+        .forQueryParameters(queryParams)
+        .execute(jwt);
 
     return response;
   }
@@ -191,8 +207,10 @@ class TransferServerService {
   /// - [CustomerInformationStatusException] if KYC status needs to be checked
   /// - [AuthenticationRequiredException] if authentication is missing or invalid
   Future<DepositResponse> deposit(DepositRequest request) async {
-    Uri serverURI =
-        Util.appendEndpointToUrl(_transferServiceAddress, 'deposit');
+    Uri serverURI = Util.appendEndpointToUrl(
+      _transferServiceAddress,
+      'deposit',
+    );
 
     _DepositRequestBuilder requestBuilder = _DepositRequestBuilder(
       httpClient,
@@ -277,9 +295,12 @@ class TransferServerService {
   /// - [CustomerInformationStatusException] if KYC status needs to be checked
   /// - [AuthenticationRequiredException] if authentication is missing or invalid
   Future<DepositResponse> depositExchange(
-      DepositExchangeRequest request) async {
-    Uri serverURI =
-        Util.appendEndpointToUrl(_transferServiceAddress, 'deposit-exchange');
+    DepositExchangeRequest request,
+  ) async {
+    Uri serverURI = Util.appendEndpointToUrl(
+      _transferServiceAddress,
+      'deposit-exchange',
+    );
 
     _DepositRequestBuilder requestBuilder = _DepositRequestBuilder(
       httpClient,
@@ -369,8 +390,10 @@ class TransferServerService {
   /// - [CustomerInformationStatusException] if KYC status needs to be checked
   /// - [AuthenticationRequiredException] if authentication is missing or invalid
   Future<WithdrawResponse> withdraw(WithdrawRequest request) async {
-    Uri serverURI =
-        Util.appendEndpointToUrl(_transferServiceAddress, 'withdraw');
+    Uri serverURI = Util.appendEndpointToUrl(
+      _transferServiceAddress,
+      'withdraw',
+    );
 
     _WithdrawRequestBuilder requestBuilder = _WithdrawRequestBuilder(
       httpClient,
@@ -460,9 +483,12 @@ class TransferServerService {
   /// - [CustomerInformationStatusException] if KYC status needs to be checked
   /// - [AuthenticationRequiredException] if authentication is missing or invalid
   Future<WithdrawResponse> withdrawExchange(
-      WithdrawExchangeRequest request) async {
-    Uri serverURI =
-        Util.appendEndpointToUrl(_transferServiceAddress, 'withdraw-exchange');
+    WithdrawExchangeRequest request,
+  ) async {
+    Uri serverURI = Util.appendEndpointToUrl(
+      _transferServiceAddress,
+      'withdraw-exchange',
+    );
 
     _WithdrawRequestBuilder requestBuilder = _WithdrawRequestBuilder(
       httpClient,
@@ -545,10 +571,12 @@ class TransferServerService {
       String type = res["type"];
       if ("non_interactive_customer_info_needed" == type) {
         throw CustomerInformationNeededException(
-            CustomerInformationNeededResponse.fromJson(res));
+          CustomerInformationNeededResponse.fromJson(res),
+        );
       } else if ("customer_info_status" == type) {
         throw CustomerInformationStatusException(
-            CustomerInformationStatusResponse.fromJson(res));
+          CustomerInformationStatusResponse.fromJson(res),
+        );
       } else if ("authentication_required" == type) {
         throw AuthenticationRequiredException();
       }
@@ -589,8 +617,10 @@ class TransferServerService {
     Uri serverURI = Util.appendEndpointToUrl(_transferServiceAddress, 'fee');
 
     _FeeRequestBuilder requestBuilder = _FeeRequestBuilder(
-        httpClient, serverURI,
-        httpRequestHeaders: this.httpRequestHeaders);
+      httpClient,
+      serverURI,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
 
     final Map<String, String> queryParams = {
       "operation": request.operation,
@@ -620,20 +650,23 @@ class TransferServerService {
   ///
   /// Returns: List of transactions with their current status and details
   Future<AnchorTransactionsResponse> transactions(
-      AnchorTransactionsRequest request) async {
-    Uri serverURI =
-        Util.appendEndpointToUrl(_transferServiceAddress, 'transactions');
+    AnchorTransactionsRequest request,
+  ) async {
+    Uri serverURI = Util.appendEndpointToUrl(
+      _transferServiceAddress,
+      'transactions',
+    );
 
     _AnchorTransactionsRequestBuilder requestBuilder =
         _AnchorTransactionsRequestBuilder(
-      httpClient,
-      serverURI,
-      httpRequestHeaders: this.httpRequestHeaders,
-    );
+          httpClient,
+          serverURI,
+          httpRequestHeaders: this.httpRequestHeaders,
+        );
 
     final Map<String, String> queryParams = {
       "asset_code": request.assetCode,
-      "account": request.account
+      "account": request.account,
     };
 
     if (request.noOlderThan != null) {
@@ -674,13 +707,19 @@ class TransferServerService {
   ///
   /// Returns: Current status and details of the requested transaction
   Future<AnchorTransactionResponse> transaction(
-      AnchorTransactionRequest request) async {
-    Uri serverURI =
-        Util.appendEndpointToUrl(_transferServiceAddress, 'transaction');
+    AnchorTransactionRequest request,
+  ) async {
+    Uri serverURI = Util.appendEndpointToUrl(
+      _transferServiceAddress,
+      'transaction',
+    );
 
     _AnchorTransactionRequestBuilder requestBuilder =
-        _AnchorTransactionRequestBuilder(httpClient, serverURI,
-            httpRequestHeaders: this.httpRequestHeaders);
+        _AnchorTransactionRequestBuilder(
+          httpClient,
+          serverURI,
+          httpRequestHeaders: this.httpRequestHeaders,
+        );
 
     final Map<String, String> queryParams = {};
 
@@ -739,17 +778,24 @@ class TransferServerService {
   /// }
   /// ```
   Future<http.Response> patchTransaction(
-      PatchTransactionRequest request) async {
+    PatchTransactionRequest request,
+  ) async {
     checkNotNull(request.fields, "request.fields cannot be null");
     Uri serverURI = Util.appendEndpointToUrl(
-        _transferServiceAddress, 'transactions/${request.id}');
+      _transferServiceAddress,
+      'transactions/${request.id}',
+    );
 
     _PatchTransactionRequestBuilder requestBuilder =
-        _PatchTransactionRequestBuilder(httpClient, serverURI,
-            httpRequestHeaders: this.httpRequestHeaders);
+        _PatchTransactionRequestBuilder(
+          httpClient,
+          serverURI,
+          httpRequestHeaders: this.httpRequestHeaders,
+        );
 
-    http.Response response =
-        await requestBuilder.forFields(request.fields!).execute(request.jwt);
+    http.Response response = await requestBuilder
+        .forFields(request.fields!)
+        .execute(request.jwt);
     return response;
   }
 }
@@ -890,24 +936,25 @@ class DepositRequest {
   /// - [locationId] Optional location ID for cash drop-off
   /// - [extraFields] Optional additional fields required by the anchor
   /// - [jwt] JWT token from SEP-10 authentication flow
-  DepositRequest(
-      {required this.assetCode,
-      required this.account,
-      this.memoType,
-      this.memo,
-      this.emailAddress,
-      this.type,
-      this.walletName,
-      this.walletUrl,
-      this.lang,
-      this.onChangeCallback,
-      this.amount,
-      this.countryCode,
-      this.claimableBalanceSupported,
-      this.customerId,
-      this.locationId,
-      this.extraFields,
-      this.jwt});
+  DepositRequest({
+    required this.assetCode,
+    required this.account,
+    this.memoType,
+    this.memo,
+    this.emailAddress,
+    this.type,
+    this.walletName,
+    this.walletUrl,
+    this.lang,
+    this.onChangeCallback,
+    this.amount,
+    this.countryCode,
+    this.claimableBalanceSupported,
+    this.customerId,
+    this.locationId,
+    this.extraFields,
+    this.jwt,
+  });
 }
 
 /// Represents an transfer service deposit response.
@@ -956,13 +1003,23 @@ class DepositResponse extends Response {
   /// - [feePercent] Percentage fee in percentage points
   /// - [extraInfo] Additional information about the deposit process
   /// - [instructions] Map of SEP-9 financial account fields to deposit instructions
-  DepositResponse(this.how, this.id, this.eta, this.minAmount, this.maxAmount,
-      this.feeFixed, this.feePercent, this.extraInfo, this.instructions);
+  DepositResponse(
+    this.how,
+    this.id,
+    this.eta,
+    this.minAmount,
+    this.maxAmount,
+    this.feeFixed,
+    this.feePercent,
+    this.extraInfo,
+    this.instructions,
+  );
 
   /// Constructs a DepositResponse from JSON returned by deposit or deposit-exchange endpoint.
   factory DepositResponse.fromJson(Map<String, dynamic> json) {
-    Map<String, dynamic>? instructionsJson =
-        json['instructions'] == null ? null : json['instructions'];
+    Map<String, dynamic>? instructionsJson = json['instructions'] == null
+        ? null
+        : json['instructions'];
 
     Map<String, DepositInstruction>? instructions;
     if (instructionsJson != null) {
@@ -973,17 +1030,18 @@ class DepositResponse extends Response {
     }
 
     return DepositResponse(
-        json['how'],
-        json['id'],
-        convertInt(json['eta']),
-        convertDouble(json['min_amount']),
-        convertDouble(json['max_amount']),
-        convertDouble(json['fee_fixed']),
-        convertDouble(json['fee_percent']),
-        json['extra_info'] == null
-            ? null
-            : ExtraInfo.fromJson(json['extra_info']),
-        instructions);
+      json['how'],
+      json['id'],
+      convertInt(json['eta']),
+      convertDouble(json['min_amount']),
+      convertDouble(json['max_amount']),
+      convertDouble(json['fee_fixed']),
+      convertDouble(json['fee_percent']),
+      json['extra_info'] == null
+          ? null
+          : ExtraInfo.fromJson(json['extra_info']),
+      instructions,
+    );
   }
 }
 
@@ -1038,9 +1096,11 @@ class ExtraInfo extends Response {
 class _DepositRequestBuilder extends RequestBuilder {
   Map<String, String>? httpRequestHeaders;
 
-  _DepositRequestBuilder(http.Client httpClient, Uri serverURI,
-      {this.httpRequestHeaders})
-      : super(httpClient, serverURI, null);
+  _DepositRequestBuilder(
+    http.Client httpClient,
+    Uri serverURI, {
+    this.httpRequestHeaders,
+  }) : super(httpClient, serverURI, null);
 
   /// Sets query parameters for the deposit request.
   _DepositRequestBuilder forQueryParameters(Map<String, String> queryParams) {
@@ -1050,8 +1110,11 @@ class _DepositRequestBuilder extends RequestBuilder {
 
   /// Executes deposit request with optional JWT authentication.
   static Future<DepositResponse> requestExecute(
-      http.Client httpClient, Uri uri, String? jwt,
-      {Map<String, String>? httpRequestHeaders}) async {
+    http.Client httpClient,
+    Uri uri,
+    String? jwt, {
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     TypeToken<DepositResponse> type = TypeToken<DepositResponse>();
     ResponseHandler<DepositResponse> responseHandler =
         ResponseHandler<DepositResponse>(type);
@@ -1069,8 +1132,11 @@ class _DepositRequestBuilder extends RequestBuilder {
   /// Executes the deposit request using configured parameters and authentication.
   Future<DepositResponse> execute(String? jwt) {
     return _DepositRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt,
-        httpRequestHeaders: this.httpRequestHeaders);
+      this.httpClient,
+      this.buildUri(),
+      jwt,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
   }
 }
 
@@ -1092,9 +1158,10 @@ class CustomerInformationNeededResponse {
 
   /// Constructs a CustomerInformationNeededResponse from JSON error response.
   factory CustomerInformationNeededResponse.fromJson(
-          Map<String, dynamic> json) =>
-      CustomerInformationNeededResponse(
-          json['fields'] == null ? null : List<String>.from(json['fields']));
+    Map<String, dynamic> json,
+  ) => CustomerInformationNeededResponse(
+    json['fields'] == null ? null : List<String>.from(json['fields']),
+  );
 }
 
 /// Exception thrown when the anchor requires additional customer information.
@@ -1147,9 +1214,12 @@ class CustomerInformationStatusResponse {
 
   /// Constructs a CustomerInformationStatusResponse from JSON error response.
   factory CustomerInformationStatusResponse.fromJson(
-          Map<String, dynamic> json) =>
-      CustomerInformationStatusResponse(
-          json['status'], json['more_info_url'], convertInt(json['eta']));
+    Map<String, dynamic> json,
+  ) => CustomerInformationStatusResponse(
+    json['status'],
+    json['more_info_url'],
+    convertInt(json['eta']),
+  );
 }
 
 /// Exception thrown when customer information is pending or denied.
@@ -1354,26 +1424,27 @@ class DepositExchangeRequest {
   /// - [locationId] Optional location ID for cash drop-off
   /// - [extraFields] Optional additional fields required by the anchor
   /// - [jwt] JWT token from SEP-10 authentication flow
-  DepositExchangeRequest(
-      {required this.destinationAsset,
-      required this.sourceAsset,
-      required this.amount,
-      required this.account,
-      this.quoteId,
-      this.memoType,
-      this.memo,
-      this.emailAddress,
-      this.type,
-      this.walletName,
-      this.walletUrl,
-      this.lang,
-      this.onChangeCallback,
-      this.countryCode,
-      this.claimableBalanceSupported,
-      this.customerId,
-      this.locationId,
-      this.extraFields,
-      this.jwt});
+  DepositExchangeRequest({
+    required this.destinationAsset,
+    required this.sourceAsset,
+    required this.amount,
+    required this.account,
+    this.quoteId,
+    this.memoType,
+    this.memo,
+    this.emailAddress,
+    this.type,
+    this.walletName,
+    this.walletUrl,
+    this.lang,
+    this.onChangeCallback,
+    this.countryCode,
+    this.claimableBalanceSupported,
+    this.customerId,
+    this.locationId,
+    this.extraFields,
+    this.jwt,
+  });
 }
 
 /// Request parameters for initiating a withdrawal transaction.
@@ -1530,26 +1601,27 @@ class WithdrawRequest {
   /// - [locationId] Optional location ID for cash pickup
   /// - [extraFields] Optional additional fields required by the anchor
   /// - [jwt] JWT token from SEP-10 authentication flow
-  WithdrawRequest(
-      {required this.assetCode,
-      required this.type,
-      this.dest,
-      this.destExtra,
-      this.account,
-      this.memo,
-      this.memoType,
-      this.walletName,
-      this.walletUrl,
-      this.lang,
-      this.onChangeCallback,
-      this.amount,
-      this.countryCode,
-      this.refundMemo,
-      this.refundMemoType,
-      this.customerId,
-      this.locationId,
-      this.extraFields,
-      this.jwt});
+  WithdrawRequest({
+    required this.assetCode,
+    required this.type,
+    this.dest,
+    this.destExtra,
+    this.account,
+    this.memo,
+    this.memoType,
+    this.walletName,
+    this.walletUrl,
+    this.lang,
+    this.onChangeCallback,
+    this.amount,
+    this.countryCode,
+    this.refundMemo,
+    this.refundMemoType,
+    this.customerId,
+    this.locationId,
+    this.extraFields,
+    this.jwt,
+  });
 }
 
 /// Request parameters for initiating a withdrawal with asset conversion.
@@ -1737,29 +1809,30 @@ class WithdrawExchangeRequest {
   /// - [locationId] Optional location ID for cash pickup
   /// - [extraFields] Optional additional fields required by the anchor
   /// - [jwt] JWT token from SEP-10 authentication flow
-  WithdrawExchangeRequest(
-      {required this.sourceAsset,
-      required this.destinationAsset,
-      required this.amount,
-      required this.type,
-      this.dest,
-      this.destExtra,
-      this.quoteId,
-      this.account,
-      this.memo,
-      this.memoType,
-      this.walletName,
-      this.walletUrl,
-      this.lang,
-      this.onChangeCallback,
-      this.countryCode,
-      this.claimableBalanceSupported,
-      this.refundMemo,
-      this.refundMemoType,
-      this.customerId,
-      this.locationId,
-      this.extraFields,
-      this.jwt});
+  WithdrawExchangeRequest({
+    required this.sourceAsset,
+    required this.destinationAsset,
+    required this.amount,
+    required this.type,
+    this.dest,
+    this.destExtra,
+    this.quoteId,
+    this.account,
+    this.memo,
+    this.memoType,
+    this.walletName,
+    this.walletUrl,
+    this.lang,
+    this.onChangeCallback,
+    this.countryCode,
+    this.claimableBalanceSupported,
+    this.refundMemo,
+    this.refundMemoType,
+    this.customerId,
+    this.locationId,
+    this.extraFields,
+    this.jwt,
+  });
 }
 
 /// Represents an transfer service withdraw response.
@@ -1816,41 +1889,45 @@ class WithdrawResponse extends Response {
   /// - [feePercent] Percentage fee in percentage points
   /// - [extraInfo] Additional data needed for the withdrawal (e.g., bank name)
   WithdrawResponse(
-      this.accountId,
-      this.memoType,
-      this.memo,
-      this.id,
-      this.eta,
-      this.minAmount,
-      this.maxAmount,
-      this.feeFixed,
-      this.feePercent,
-      this.extraInfo);
+    this.accountId,
+    this.memoType,
+    this.memo,
+    this.id,
+    this.eta,
+    this.minAmount,
+    this.maxAmount,
+    this.feeFixed,
+    this.feePercent,
+    this.extraInfo,
+  );
 
   /// Constructs a WithdrawResponse from JSON returned by transfer server.
   factory WithdrawResponse.fromJson(Map<String, dynamic> json) =>
       WithdrawResponse(
-          json['account_id'],
-          json['memo_type'],
-          json['memo'],
-          json['id'],
-          convertInt(json['eta']),
-          convertDouble(json['min_amount']),
-          convertDouble(json['max_amount']),
-          convertDouble(json['fee_fixed']),
-          convertDouble(json['fee_percent']),
-          json['extra_info'] == null
-              ? null
-              : ExtraInfo.fromJson(json['extra_info']));
+        json['account_id'],
+        json['memo_type'],
+        json['memo'],
+        json['id'],
+        convertInt(json['eta']),
+        convertDouble(json['min_amount']),
+        convertDouble(json['max_amount']),
+        convertDouble(json['fee_fixed']),
+        convertDouble(json['fee_percent']),
+        json['extra_info'] == null
+            ? null
+            : ExtraInfo.fromJson(json['extra_info']),
+      );
 }
 
 // Requests the withdraw data.
 class _WithdrawRequestBuilder extends RequestBuilder {
   Map<String, String>? httpRequestHeaders;
 
-  _WithdrawRequestBuilder(http.Client httpClient, Uri serverURI,
-      {this.httpRequestHeaders})
-      : super(httpClient, serverURI, null);
+  _WithdrawRequestBuilder(
+    http.Client httpClient,
+    Uri serverURI, {
+    this.httpRequestHeaders,
+  }) : super(httpClient, serverURI, null);
 
   /// Sets query parameters for the withdrawal request.
   _WithdrawRequestBuilder forQueryParameters(Map<String, String> queryParams) {
@@ -1860,8 +1937,11 @@ class _WithdrawRequestBuilder extends RequestBuilder {
 
   /// Executes withdrawal request with optional JWT authentication.
   static Future<WithdrawResponse> requestExecute(
-      http.Client httpClient, Uri uri, String? jwt,
-      {Map<String, String>? httpRequestHeaders}) async {
+    http.Client httpClient,
+    Uri uri,
+    String? jwt, {
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     TypeToken<WithdrawResponse> type = TypeToken<WithdrawResponse>();
     ResponseHandler<WithdrawResponse> responseHandler =
         ResponseHandler<WithdrawResponse>(type);
@@ -1878,8 +1958,11 @@ class _WithdrawRequestBuilder extends RequestBuilder {
   /// Executes the withdrawal request using configured parameters and authentication.
   Future<WithdrawResponse> execute(String? jwt) {
     return _WithdrawRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt,
-        httpRequestHeaders: this.httpRequestHeaders);
+      this.httpClient,
+      this.buildUri(),
+      jwt,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
   }
 }
 
@@ -1911,9 +1994,10 @@ class AnchorField {
 
   /// Creates an AnchorField from JSON returned by the anchor.
   factory AnchorField.fromJson(Map<String, dynamic> json) => AnchorField(
-      json['description'],
-      json['optional'],
-      json['choices'] == null ? null : List<String>.from(json['choices']));
+    json['description'],
+    json['optional'],
+    json['choices'] == null ? null : List<String>.from(json['choices']),
+  );
 }
 
 /// Configuration for a deposit asset supported by the anchor.
@@ -1964,13 +2048,21 @@ class DepositAsset {
   /// - [fields] Custom fields required for the deposit transaction
   ///
   /// Specifies the capabilities and constraints for depositing this asset through the anchor.
-  DepositAsset(this.enabled, this.authenticationRequired, this.feeFixed,
-      this.feePercent, this.minAmount, this.maxAmount, this.fields);
+  DepositAsset(
+    this.enabled,
+    this.authenticationRequired,
+    this.feeFixed,
+    this.feePercent,
+    this.minAmount,
+    this.maxAmount,
+    this.fields,
+  );
 
   /// Creates a DepositAsset from JSON returned by the anchor's /info endpoint.
   factory DepositAsset.fromJson(Map<String, dynamic> json) {
-    Map<String, dynamic>? fieldsDynamic =
-        json['fields'] == null ? null : json['fields'];
+    Map<String, dynamic>? fieldsDynamic = json['fields'] == null
+        ? null
+        : json['fields'];
     Map<String, AnchorField>? assetFields;
     if (fieldsDynamic != null) {
       assetFields = {};
@@ -1985,13 +2077,14 @@ class DepositAsset {
     }
 
     return DepositAsset(
-        enabled,
-        json['authentication_required'],
-        convertDouble(json['fee_fixed']),
-        convertDouble(json['fee_percent']),
-        convertDouble(json['min_amount']),
-        convertDouble(json['max_amount']),
-        assetFields);
+      enabled,
+      json['authentication_required'],
+      convertDouble(json['fee_fixed']),
+      convertDouble(json['fee_percent']),
+      convertDouble(json['min_amount']),
+      convertDouble(json['max_amount']),
+      assetFields,
+    );
   }
 }
 
@@ -2034,8 +2127,9 @@ class DepositExchangeAsset {
 
   /// Creates a DepositExchangeAsset from JSON returned by the anchor's /info endpoint.
   factory DepositExchangeAsset.fromJson(Map<String, dynamic> json) {
-    Map<String, dynamic>? fieldsDynamic =
-        json['fields'] == null ? null : json['fields'];
+    Map<String, dynamic>? fieldsDynamic = json['fields'] == null
+        ? null
+        : json['fields'];
     Map<String, AnchorField>? assetFields = {};
     if (fieldsDynamic != null) {
       fieldsDynamic.forEach((key, value) {
@@ -2051,7 +2145,10 @@ class DepositExchangeAsset {
     }
 
     return DepositExchangeAsset(
-        enabled, json['authentication_required'], assetFields);
+      enabled,
+      json['authentication_required'],
+      assetFields,
+    );
   }
 }
 
@@ -2111,21 +2208,29 @@ class WithdrawAsset {
   /// - [types] Map of supported withdrawal types with their required fields
   ///
   /// Specifies the capabilities, constraints, and supported withdrawal types for this asset.
-  WithdrawAsset(this.enabled, this.authenticationRequired, this.feeFixed,
-      this.feePercent, this.minAmount, this.maxAmount, this.types);
+  WithdrawAsset(
+    this.enabled,
+    this.authenticationRequired,
+    this.feeFixed,
+    this.feePercent,
+    this.minAmount,
+    this.maxAmount,
+    this.types,
+  );
 
   /// Creates a WithdrawAsset from JSON returned by the anchor's /info endpoint.
   factory WithdrawAsset.fromJson(Map<String, dynamic> json) {
-    Map<String, dynamic>? typesDynamic =
-        json['types'] == null ? null : json['types'];
+    Map<String, dynamic>? typesDynamic = json['types'] == null
+        ? null
+        : json['types'];
 
     Map<String, Map<String, AnchorField>?>? assetTypes = {};
     if (typesDynamic != null) {
       typesDynamic.forEach((key, value) {
         Map<String, dynamic>? fieldsDynamic =
             typesDynamic[key]['fields'] == null
-                ? null
-                : typesDynamic[key]['fields'];
+            ? null
+            : typesDynamic[key]['fields'];
         Map<String, AnchorField>? assetFields = {};
         if (fieldsDynamic != null) {
           fieldsDynamic.forEach((fkey, fvalue) {
@@ -2147,13 +2252,14 @@ class WithdrawAsset {
     }
 
     return WithdrawAsset(
-        enabled,
-        json['authentication_required'],
-        convertDouble(json['fee_fixed']),
-        convertDouble(json['fee_percent']),
-        convertDouble(json['min_amount']),
-        convertDouble(json['max_amount']),
-        assetTypes);
+      enabled,
+      json['authentication_required'],
+      convertDouble(json['fee_fixed']),
+      convertDouble(json['fee_percent']),
+      convertDouble(json['min_amount']),
+      convertDouble(json['max_amount']),
+      assetTypes,
+    );
   }
 }
 
@@ -2204,16 +2310,17 @@ class WithdrawExchangeAsset {
 
   /// Creates a WithdrawExchangeAsset from JSON returned by the anchor's /info endpoint.
   factory WithdrawExchangeAsset.fromJson(Map<String, dynamic> json) {
-    Map<String, dynamic>? typesDynamic =
-        json['types'] == null ? null : json['types'];
+    Map<String, dynamic>? typesDynamic = json['types'] == null
+        ? null
+        : json['types'];
 
     Map<String, Map<String, AnchorField>?>? assetTypes = {};
     if (typesDynamic != null) {
       typesDynamic.forEach((key, value) {
         Map<String, dynamic>? fieldsDynamic =
             typesDynamic[key]['fields'] == null
-                ? null
-                : typesDynamic[key]['fields'];
+            ? null
+            : typesDynamic[key]['fields'];
         Map<String, AnchorField>? assetFields = {};
         if (fieldsDynamic != null) {
           fieldsDynamic.forEach((fkey, fvalue) {
@@ -2235,7 +2342,10 @@ class WithdrawExchangeAsset {
     }
 
     return WithdrawExchangeAsset(
-        enabled, json['authentication_required'], assetTypes);
+      enabled,
+      json['authentication_required'],
+      assetTypes,
+    );
   }
 }
 
@@ -2276,7 +2386,10 @@ class AnchorFeeInfo {
 
   /// Creates an AnchorFeeInfo from JSON returned by the anchor's /info endpoint.
   factory AnchorFeeInfo.fromJson(Map<String, dynamic> json) => AnchorFeeInfo(
-      json['enabled'], json['authentication_required'], json['description']);
+    json['enabled'],
+    json['authentication_required'],
+    json['description'],
+  );
 }
 
 /// Configuration for the anchor's single transaction query endpoint.
@@ -2367,8 +2480,10 @@ class AnchorFeatureFlags {
   factory AnchorFeatureFlags.fromJson(Map<String, dynamic> json) {
     bool? accCreation = json['account_creation'];
     bool? claimableB = json['claimable_balances'];
-    return AnchorFeatureFlags(accCreation != null ? accCreation : true,
-        claimableB != null ? claimableB : false);
+    return AnchorFeatureFlags(
+      accCreation != null ? accCreation : true,
+      claimableB != null ? claimableB : false,
+    );
   }
 }
 
@@ -2430,19 +2545,21 @@ class InfoResponse extends Response {
   /// - [transactionInfo] Configuration for the /transaction endpoint
   /// - [featureFlags] Flags indicating supported anchor features
   InfoResponse(
-      this.depositAssets,
-      this.depositExchangeAssets,
-      this.withdrawAssets,
-      this.withdrawExchangeAssets,
-      this.feeInfo,
-      this.transactionsInfo,
-      this.transactionInfo,
-      this.featureFlags);
+    this.depositAssets,
+    this.depositExchangeAssets,
+    this.withdrawAssets,
+    this.withdrawExchangeAssets,
+    this.feeInfo,
+    this.transactionsInfo,
+    this.transactionInfo,
+    this.featureFlags,
+  );
 
   /// Creates an InfoResponse from JSON returned by the anchor's /info endpoint.
   factory InfoResponse.fromJson(Map<String, dynamic> json) {
-    Map<String, dynamic>? depositDynamic =
-        json['deposit'] == null ? null : json['deposit'];
+    Map<String, dynamic>? depositDynamic = json['deposit'] == null
+        ? null
+        : json['deposit'];
 
     Map<String, DepositAsset> depositMap = {};
     if (depositDynamic != null) {
@@ -2461,8 +2578,9 @@ class InfoResponse extends Response {
       });
     }
 
-    Map<String, dynamic>? withdrawDynamic =
-        json['withdraw'] == null ? null : json['withdraw'];
+    Map<String, dynamic>? withdrawDynamic = json['withdraw'] == null
+        ? null
+        : json['withdraw'];
 
     Map<String, WithdrawAsset> withdrawMap = {};
     if (withdrawDynamic != null) {
@@ -2482,20 +2600,21 @@ class InfoResponse extends Response {
     }
 
     return InfoResponse(
-        depositMap,
-        depositExchangeMap,
-        withdrawMap,
-        withdrawExchangeMap,
-        json['fee'] == null ? null : AnchorFeeInfo.fromJson(json['fee']),
-        json['transactions'] == null
-            ? null
-            : AnchorTransactionsInfo.fromJson(json['transactions']),
-        json['transaction'] == null
-            ? null
-            : AnchorTransactionInfo.fromJson(json['transaction']),
-        json['features'] == null
-            ? null
-            : AnchorFeatureFlags.fromJson(json['features']));
+      depositMap,
+      depositExchangeMap,
+      withdrawMap,
+      withdrawExchangeMap,
+      json['fee'] == null ? null : AnchorFeeInfo.fromJson(json['fee']),
+      json['transactions'] == null
+          ? null
+          : AnchorTransactionsInfo.fromJson(json['transactions']),
+      json['transaction'] == null
+          ? null
+          : AnchorTransactionInfo.fromJson(json['transaction']),
+      json['features'] == null
+          ? null
+          : AnchorFeatureFlags.fromJson(json['features']),
+    );
   }
 }
 
@@ -2503,9 +2622,11 @@ class InfoResponse extends Response {
 class _InfoRequestBuilder extends RequestBuilder {
   Map<String, String>? httpRequestHeaders;
 
-  _InfoRequestBuilder(http.Client httpClient, Uri serverURI,
-      {this.httpRequestHeaders})
-      : super(httpClient, serverURI, null);
+  _InfoRequestBuilder(
+    http.Client httpClient,
+    Uri serverURI, {
+    this.httpRequestHeaders,
+  }) : super(httpClient, serverURI, null);
 
   /// Sets query parameters for the info request.
   _InfoRequestBuilder forQueryParameters(Map<String, String> queryParams) {
@@ -2515,8 +2636,11 @@ class _InfoRequestBuilder extends RequestBuilder {
 
   /// Executes info request with optional JWT authentication.
   static Future<InfoResponse> requestExecute(
-      http.Client httpClient, Uri uri, String? jwt,
-      {Map<String, String>? httpRequestHeaders}) async {
+    http.Client httpClient,
+    Uri uri,
+    String? jwt, {
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     TypeToken<InfoResponse> type = TypeToken<InfoResponse>();
     ResponseHandler<InfoResponse> responseHandler =
         ResponseHandler<InfoResponse>(type);
@@ -2533,8 +2657,11 @@ class _InfoRequestBuilder extends RequestBuilder {
   /// Executes the info request using configured parameters and authentication.
   Future<InfoResponse> execute(String? jwt) {
     return _InfoRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt,
-        httpRequestHeaders: this.httpRequestHeaders);
+      this.httpClient,
+      this.buildUri(),
+      jwt,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
   }
 }
 
@@ -2590,12 +2717,13 @@ class FeeRequest {
   /// - [amount] The amount that will be deposited or withdrawn
   /// - [type] Optional deposit or withdrawal type (SEPA, bank_account, cash, etc.)
   /// - [jwt] JWT token from SEP-10 authentication flow
-  FeeRequest(
-      {required this.operation,
-      required this.assetCode,
-      required this.amount,
-      this.type,
-      this.jwt});
+  FeeRequest({
+    required this.operation,
+    required this.assetCode,
+    required this.amount,
+    this.type,
+    this.jwt,
+  });
 }
 
 /// Represents an transfer service fee response.
@@ -2619,9 +2747,11 @@ class FeeResponse extends Response {
 class _FeeRequestBuilder extends RequestBuilder {
   Map<String, String>? httpRequestHeaders;
 
-  _FeeRequestBuilder(http.Client httpClient, Uri serverURI,
-      {this.httpRequestHeaders})
-      : super(httpClient, serverURI, null);
+  _FeeRequestBuilder(
+    http.Client httpClient,
+    Uri serverURI, {
+    this.httpRequestHeaders,
+  }) : super(httpClient, serverURI, null);
 
   /// Sets query parameters for the fee request.
   _FeeRequestBuilder forQueryParameters(Map<String, String> queryParams) {
@@ -2631,11 +2761,15 @@ class _FeeRequestBuilder extends RequestBuilder {
 
   /// Executes fee request with optional JWT authentication.
   static Future<FeeResponse> requestExecute(
-      http.Client httpClient, Uri uri, String? jwt,
-      {Map<String, String>? httpRequestHeaders}) async {
+    http.Client httpClient,
+    Uri uri,
+    String? jwt, {
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     TypeToken<FeeResponse> type = TypeToken<FeeResponse>();
-    ResponseHandler<FeeResponse> responseHandler =
-        ResponseHandler<FeeResponse>(type);
+    ResponseHandler<FeeResponse> responseHandler = ResponseHandler<FeeResponse>(
+      type,
+    );
 
     final Map<String, String> feeHeaders = {
       ...(httpRequestHeaders ?? {}),
@@ -2649,8 +2783,11 @@ class _FeeRequestBuilder extends RequestBuilder {
   /// Executes the fee request using configured parameters and authentication.
   Future<FeeResponse> execute(String? jwt) {
     return _FeeRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt,
-        httpRequestHeaders: this.httpRequestHeaders);
+      this.httpClient,
+      this.buildUri(),
+      jwt,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
   }
 }
 
@@ -2732,15 +2869,16 @@ class AnchorTransactionsRequest {
   /// - [jwt] JWT token from SEP-10 authentication
   ///
   /// Specify required asset code and account, with optional filtering and pagination parameters.
-  AnchorTransactionsRequest(
-      {required this.assetCode,
-      required this.account,
-      this.noOlderThan,
-      this.limit,
-      this.kind,
-      this.pagingId,
-      this.lang,
-      this.jwt});
+  AnchorTransactionsRequest({
+    required this.assetCode,
+    required this.account,
+    this.noOlderThan,
+    this.limit,
+    this.kind,
+    this.pagingId,
+    this.lang,
+    this.jwt,
+  });
 }
 
 /// Detailed breakdown of fees applied to a transaction.
@@ -2777,12 +2915,15 @@ class FeeDetails {
   FeeDetails(this.total, this.asset, {this.details});
 
   /// Creates a FeeDetails from JSON returned by the anchor in transaction responses.
-  factory FeeDetails.fromJson(Map<String, dynamic> json) =>
-      FeeDetails(json['total'], json['asset'],
-          details: json['details'] == null
-              ? null
-              : List<FeeDetailsDetails>.from(
-                  json['details'].map((e) => FeeDetailsDetails.fromJson(e))));
+  factory FeeDetails.fromJson(Map<String, dynamic> json) => FeeDetails(
+    json['total'],
+    json['asset'],
+    details: json['details'] == null
+        ? null
+        : List<FeeDetailsDetails>.from(
+            json['details'].map((e) => FeeDetailsDetails.fromJson(e)),
+          ),
+  );
 }
 
 /// Individual fee component within a transaction's fee breakdown.
@@ -2818,9 +2959,11 @@ class FeeDetailsDetails {
 
   /// Creates a FeeDetailsDetails from JSON returned by the anchor in transaction fee breakdown.
   factory FeeDetailsDetails.fromJson(Map<String, dynamic> json) =>
-      FeeDetailsDetails(json['name'], json['amount'],
-          description:
-              json['description'] == null ? null : json['description']);
+      FeeDetailsDetails(
+        json['name'],
+        json['amount'],
+        description: json['description'] == null ? null : json['description'],
+      );
 }
 
 /// Part of the transaction result.
@@ -2849,11 +2992,12 @@ class TransactionRefunds {
   /// Creates a TransactionRefunds from JSON returned by the anchor in transaction responses.
   factory TransactionRefunds.fromJson(Map<String, dynamic> json) =>
       TransactionRefunds(
-          json['amount_refunded'],
-          json['amount_fee'],
-          (json['payments'] as List)
-              .map((e) => TransactionRefundPayment.fromJson(e))
-              .toList());
+        json['amount_refunded'],
+        json['amount_fee'],
+        (json['payments'] as List)
+            .map((e) => TransactionRefundPayment.fromJson(e))
+            .toList(),
+      );
 }
 
 /// Part of the transaction result.
@@ -2887,7 +3031,11 @@ class TransactionRefundPayment {
   /// Creates a TransactionRefundPayment from JSON returned by the anchor in refund details.
   factory TransactionRefundPayment.fromJson(Map<String, dynamic> json) =>
       TransactionRefundPayment(
-          json['id'], json['id_type'], json['amount'], json['fee']);
+        json['id'],
+        json['id_type'],
+        json['amount'],
+        json['fee'],
+      );
 }
 
 /// Represents an anchor transaction
@@ -3054,47 +3202,49 @@ class AnchorTransaction {
   /// - [kind] Transaction type (deposit, deposit-exchange, withdrawal, withdrawal-exchange)
   /// - [status] Current processing status of the transaction
   /// - [statusEta] Estimated seconds until status change
-  AnchorTransaction(
-      {required this.id,
-      required this.kind,
-      required this.status,
-      this.statusEta,
-      this.moreInfoUrl,
-      this.amountIn,
-      this.amountInAsset,
-      this.amountOut,
-      this.amountOutAsset,
-      this.amountFee,
-      this.amountFeeAsset,
-      this.feeDetails,
-      this.quoteId,
-      this.from,
-      this.to,
-      this.externalExtra,
-      this.externalExtraText,
-      this.depositMemo,
-      this.depositMemoType,
-      this.withdrawAnchorAccount,
-      this.withdrawMemo,
-      this.withdrawMemoType,
-      this.startedAt,
-      this.updatedAt,
-      this.completedAt,
-      this.userActionRequiredBy,
-      this.stellarTransactionId,
-      this.externalTransactionId,
-      this.message,
-      this.refunded,
-      this.refunds,
-      this.requiredInfoMessage,
-      this.requiredInfoUpdates,
-      this.instructions,
-      this.claimableBalanceId});
+  AnchorTransaction({
+    required this.id,
+    required this.kind,
+    required this.status,
+    this.statusEta,
+    this.moreInfoUrl,
+    this.amountIn,
+    this.amountInAsset,
+    this.amountOut,
+    this.amountOutAsset,
+    this.amountFee,
+    this.amountFeeAsset,
+    this.feeDetails,
+    this.quoteId,
+    this.from,
+    this.to,
+    this.externalExtra,
+    this.externalExtraText,
+    this.depositMemo,
+    this.depositMemoType,
+    this.withdrawAnchorAccount,
+    this.withdrawMemo,
+    this.withdrawMemoType,
+    this.startedAt,
+    this.updatedAt,
+    this.completedAt,
+    this.userActionRequiredBy,
+    this.stellarTransactionId,
+    this.externalTransactionId,
+    this.message,
+    this.refunded,
+    this.refunds,
+    this.requiredInfoMessage,
+    this.requiredInfoUpdates,
+    this.instructions,
+    this.claimableBalanceId,
+  });
 
   /// Creates an AnchorTransaction from JSON returned by the anchor's /transaction or /transactions endpoint.
   factory AnchorTransaction.fromJson(Map<String, dynamic> json) {
-    Map<String, dynamic>? instructionsJson =
-        json['instructions'] == null ? null : json['instructions'];
+    Map<String, dynamic>? instructionsJson = json['instructions'] == null
+        ? null
+        : json['instructions'];
 
     Map<String, DepositInstruction>? instructions;
     if (instructionsJson != null) {
@@ -3124,45 +3274,46 @@ class AnchorTransaction {
     }
 
     return AnchorTransaction(
-        id: json['id'],
-        kind: json['kind'],
-        status: json['status'],
-        statusEta: convertInt(json['status_eta']),
-        moreInfoUrl: json['more_info_url'],
-        amountIn: json['amount_in'],
-        amountInAsset: json['amount_in_asset'],
-        amountOut: json['amount_out'],
-        amountOutAsset: json['amount_out_asset'],
-        amountFee: json['amount_fee'],
-        amountFeeAsset: json['amount_fee_asset'],
-        feeDetails: json['fee_details'] == null
-            ? null
-            : FeeDetails.fromJson(json['fee_details']),
-        quoteId: json['quote_id'],
-        from: json['from'],
-        to: json['to'],
-        externalExtra: json['external_extra'],
-        externalExtraText: json['external_extra_text'],
-        depositMemo: json['deposit_memo'],
-        depositMemoType: json['deposit_memo_type'],
-        withdrawAnchorAccount: json['withdraw_anchor_account'],
-        withdrawMemo: json['withdraw_memo'],
-        withdrawMemoType: json['withdraw_memo_type'],
-        startedAt: json['started_at'],
-        updatedAt: json['updated_at'],
-        completedAt: json['completed_at'],
-        userActionRequiredBy: json['user_action_required_by'],
-        stellarTransactionId: json['stellar_transaction_id'],
-        externalTransactionId: json['external_transaction_id'],
-        message: json['message'],
-        refunded: json['refunded'],
-        refunds: json['refunds'] == null
-            ? null
-            : TransactionRefunds.fromJson(json['refunds']),
-        requiredInfoMessage: json['required_info_message'],
-        requiredInfoUpdates: infoUpFields,
-        instructions: instructions,
-        claimableBalanceId: json['claimable_balance_id']);
+      id: json['id'],
+      kind: json['kind'],
+      status: json['status'],
+      statusEta: convertInt(json['status_eta']),
+      moreInfoUrl: json['more_info_url'],
+      amountIn: json['amount_in'],
+      amountInAsset: json['amount_in_asset'],
+      amountOut: json['amount_out'],
+      amountOutAsset: json['amount_out_asset'],
+      amountFee: json['amount_fee'],
+      amountFeeAsset: json['amount_fee_asset'],
+      feeDetails: json['fee_details'] == null
+          ? null
+          : FeeDetails.fromJson(json['fee_details']),
+      quoteId: json['quote_id'],
+      from: json['from'],
+      to: json['to'],
+      externalExtra: json['external_extra'],
+      externalExtraText: json['external_extra_text'],
+      depositMemo: json['deposit_memo'],
+      depositMemoType: json['deposit_memo_type'],
+      withdrawAnchorAccount: json['withdraw_anchor_account'],
+      withdrawMemo: json['withdraw_memo'],
+      withdrawMemoType: json['withdraw_memo_type'],
+      startedAt: json['started_at'],
+      updatedAt: json['updated_at'],
+      completedAt: json['completed_at'],
+      userActionRequiredBy: json['user_action_required_by'],
+      stellarTransactionId: json['stellar_transaction_id'],
+      externalTransactionId: json['external_transaction_id'],
+      message: json['message'],
+      refunded: json['refunded'],
+      refunds: json['refunds'] == null
+          ? null
+          : TransactionRefunds.fromJson(json['refunds']),
+      requiredInfoMessage: json['required_info_message'],
+      requiredInfoUpdates: infoUpFields,
+      instructions: instructions,
+      claimableBalanceId: json['claimable_balance_id'],
+    );
   }
 }
 
@@ -3186,30 +3337,38 @@ class AnchorTransactionsResponse extends Response {
 
   /// Constructs an AnchorTransactionsResponse from JSON returned by transactions endpoint.
   factory AnchorTransactionsResponse.fromJson(Map<String, dynamic> json) =>
-      AnchorTransactionsResponse((json['transactions'] as List)
-          .map((e) => AnchorTransaction.fromJson(e))
-          .toList());
+      AnchorTransactionsResponse(
+        (json['transactions'] as List)
+            .map((e) => AnchorTransaction.fromJson(e))
+            .toList(),
+      );
 }
 
 // Requests the transaction history data.
 class _AnchorTransactionsRequestBuilder extends RequestBuilder {
   Map<String, String>? httpRequestHeaders;
 
-  _AnchorTransactionsRequestBuilder(http.Client httpClient, Uri serverURI,
-      {this.httpRequestHeaders})
-      : super(httpClient, serverURI, null);
+  _AnchorTransactionsRequestBuilder(
+    http.Client httpClient,
+    Uri serverURI, {
+    this.httpRequestHeaders,
+  }) : super(httpClient, serverURI, null);
 
   /// Sets query parameters for the transactions request.
   _AnchorTransactionsRequestBuilder forQueryParameters(
-      Map<String, String> queryParams) {
+    Map<String, String> queryParams,
+  ) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
   /// Executes transactions request with optional JWT authentication.
   static Future<AnchorTransactionsResponse> requestExecute(
-      http.Client httpClient, Uri uri, String? jwt,
-      {Map<String, String>? httpRequestHeaders}) async {
+    http.Client httpClient,
+    Uri uri,
+    String? jwt, {
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     TypeToken<AnchorTransactionsResponse> type =
         TypeToken<AnchorTransactionsResponse>();
     ResponseHandler<AnchorTransactionsResponse> responseHandler =
@@ -3227,8 +3386,11 @@ class _AnchorTransactionsRequestBuilder extends RequestBuilder {
   /// Executes the transactions request using configured parameters and authentication.
   Future<AnchorTransactionsResponse> execute(String? jwt) {
     return _AnchorTransactionsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt,
-        httpRequestHeaders: this.httpRequestHeaders);
+      this.httpClient,
+      this.buildUri(),
+      jwt,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
   }
 }
 
@@ -3287,12 +3449,13 @@ class AnchorTransactionRequest {
   /// - [externalTransactionId] The external network transaction ID
   /// - [lang] Language code for error messages (defaults to 'en')
   /// - [jwt] JWT token from SEP-10 authentication
-  AnchorTransactionRequest(
-      {this.id,
-      this.stellarTransactionId,
-      this.externalTransactionId,
-      this.lang,
-      this.jwt});
+  AnchorTransactionRequest({
+    this.id,
+    this.stellarTransactionId,
+    this.externalTransactionId,
+    this.lang,
+    this.jwt,
+  });
 }
 
 /// Response from the GET /transaction endpoint for a specific transaction.
@@ -3317,28 +3480,35 @@ class AnchorTransactionResponse extends Response {
   /// Constructs an AnchorTransactionResponse from JSON returned by transaction endpoint.
   factory AnchorTransactionResponse.fromJson(Map<String, dynamic> json) =>
       AnchorTransactionResponse(
-          AnchorTransaction.fromJson(json['transaction']));
+        AnchorTransaction.fromJson(json['transaction']),
+      );
 }
 
 // Requests the transaction data for a specific transaction.
 class _AnchorTransactionRequestBuilder extends RequestBuilder {
   Map<String, String>? httpRequestHeaders;
 
-  _AnchorTransactionRequestBuilder(http.Client httpClient, Uri serverURI,
-      {this.httpRequestHeaders})
-      : super(httpClient, serverURI, null);
+  _AnchorTransactionRequestBuilder(
+    http.Client httpClient,
+    Uri serverURI, {
+    this.httpRequestHeaders,
+  }) : super(httpClient, serverURI, null);
 
   /// Sets query parameters for the transaction request.
   _AnchorTransactionRequestBuilder forQueryParameters(
-      Map<String, String> queryParams) {
+    Map<String, String> queryParams,
+  ) {
     queryParameters.addAll(queryParams);
     return this;
   }
 
   /// Executes transaction request with optional JWT authentication.
   static Future<AnchorTransactionResponse> requestExecute(
-      http.Client httpClient, Uri uri, String? jwt,
-      {Map<String, String>? httpRequestHeaders}) async{
+    http.Client httpClient,
+    Uri uri,
+    String? jwt, {
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     TypeToken<AnchorTransactionResponse> type =
         TypeToken<AnchorTransactionResponse>();
     ResponseHandler<AnchorTransactionResponse> responseHandler =
@@ -3356,8 +3526,11 @@ class _AnchorTransactionRequestBuilder extends RequestBuilder {
   /// Executes the transaction request using configured parameters and authentication.
   Future<AnchorTransactionResponse> execute(String? jwt) {
     return _AnchorTransactionRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), jwt,
-        httpRequestHeaders: this.httpRequestHeaders);
+      this.httpClient,
+      this.buildUri(),
+      jwt,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
   }
 }
 
@@ -3417,9 +3590,11 @@ class _PatchTransactionRequestBuilder extends RequestBuilder {
   Map<String, String>? httpRequestHeaders;
   late Map<String, dynamic> _fields;
 
-  _PatchTransactionRequestBuilder(http.Client httpClient, Uri serverURI,
-      {this.httpRequestHeaders})
-      : super(httpClient, serverURI, null);
+  _PatchTransactionRequestBuilder(
+    http.Client httpClient,
+    Uri serverURI, {
+    this.httpRequestHeaders,
+  }) : super(httpClient, serverURI, null);
 
   /// Sets fields to update for the transaction patch request.
   _PatchTransactionRequestBuilder forFields(Map<String, dynamic> fields) {
@@ -3429,20 +3604,31 @@ class _PatchTransactionRequestBuilder extends RequestBuilder {
 
   /// Executes patch transaction request with optional JWT authentication.
   static Future<http.Response> requestExecute(
-      http.Client httpClient, Uri uri, Map<String, dynamic> fields, String? jwt,
-      {Map<String, String>? httpRequestHeaders}) async {
+    http.Client httpClient,
+    Uri uri,
+    Map<String, dynamic> fields,
+    String? jwt, {
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     final Map<String, String> atHeaders = {
       ...(httpRequestHeaders ?? {}),
       if (jwt != null) "Authorization": "Bearer $jwt",
     };
-    return await httpClient.patch(uri,
-        body: {"transaction": json.encode(fields)}, headers: atHeaders);
+    return await httpClient.patch(
+      uri,
+      body: {"transaction": json.encode(fields)},
+      headers: atHeaders,
+    );
   }
 
   /// Executes the patch transaction request using configured fields and authentication.
   Future<http.Response> execute(String? jwt) {
     return _PatchTransactionRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(), _fields, jwt,
-        httpRequestHeaders: this.httpRequestHeaders);
+      this.httpClient,
+      this.buildUri(),
+      _fields,
+      jwt,
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
   }
 }

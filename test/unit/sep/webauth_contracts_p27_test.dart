@@ -70,10 +70,8 @@ XdrSCVal _buildArgsMap({
   required String webAuthDomainAccount,
   required String nonce,
 }) {
-  XdrSCMapEntry makeEntry(String key, String value) => XdrSCMapEntry(
-        XdrSCVal.forSymbol(key),
-        XdrSCVal.forString(value),
-      );
+  XdrSCMapEntry makeEntry(String key, String value) =>
+      XdrSCMapEntry(XdrSCVal.forSymbol(key), XdrSCVal.forString(value));
 
   return XdrSCVal.forMap([
     makeEntry('account', account),
@@ -174,14 +172,11 @@ void main() {
 
       final contractAddr = Address.forContractId(_goldenContract);
       final invocation = SorobanAuthorizedInvocation(
-        SorobanAuthorizedFunction.forContractFunction(
-          contractAddr,
-          'hello',
-          [XdrSCVal.forU64(BigInt.from(1234))],
-        ),
+        SorobanAuthorizedFunction.forContractFunction(contractAddr, 'hello', [
+          XdrSCVal.forU64(BigInt.from(1234)),
+        ]),
       );
-      final entry =
-          SorobanAuthorizationEntry(credentials, invocation);
+      final entry = SorobanAuthorizationEntry(credentials, invocation);
 
       final payloadHex = _computePayloadHex(entry, Network.TESTNET);
       expect(payloadHex, equals(_goldenLegacyPayloadHex));
@@ -207,11 +202,9 @@ void main() {
 
       final contractAddr = Address.forContractId(_goldenContract);
       final invocation = SorobanAuthorizedInvocation(
-        SorobanAuthorizedFunction.forContractFunction(
-          contractAddr,
-          'hello',
-          [XdrSCVal.forU64(BigInt.from(1234))],
-        ),
+        SorobanAuthorizedFunction.forContractFunction(contractAddr, 'hello', [
+          XdrSCVal.forU64(BigInt.from(1234)),
+        ]),
       );
       final entry = SorobanAuthorizationEntry(credentials, invocation);
 
@@ -219,44 +212,47 @@ void main() {
       expect(payloadHex, equals(_goldenV2PayloadHex));
     });
 
-    test('ADDRESS and ADDRESS_V2 preimages differ for otherwise identical fields', () {
-      final address = Address.forAccountId(_goldenSignerAccount);
-      final innerCreds1 = SorobanAddressCredentials(
-        address,
-        BigInt.from(_goldenNonce),
-        _goldenExpiration,
-        XdrSCVal.forVoid(),
-      );
-      final innerCreds2 = SorobanAddressCredentials(
-        address,
-        BigInt.from(_goldenNonce),
-        _goldenExpiration,
-        XdrSCVal.forVoid(),
-      );
+    test(
+      'ADDRESS and ADDRESS_V2 preimages differ for otherwise identical fields',
+      () {
+        final address = Address.forAccountId(_goldenSignerAccount);
+        final innerCreds1 = SorobanAddressCredentials(
+          address,
+          BigInt.from(_goldenNonce),
+          _goldenExpiration,
+          XdrSCVal.forVoid(),
+        );
+        final innerCreds2 = SorobanAddressCredentials(
+          address,
+          BigInt.from(_goldenNonce),
+          _goldenExpiration,
+          XdrSCVal.forVoid(),
+        );
 
-      final contractAddr = Address.forContractId(_goldenContract);
-      final function = SorobanAuthorizedFunction.forContractFunction(
-        contractAddr,
-        'hello',
-        [XdrSCVal.forU64(BigInt.from(1234))],
-      );
-      final invocation1 = SorobanAuthorizedInvocation(function);
-      final invocation2 = SorobanAuthorizedInvocation(function);
+        final contractAddr = Address.forContractId(_goldenContract);
+        final function = SorobanAuthorizedFunction.forContractFunction(
+          contractAddr,
+          'hello',
+          [XdrSCVal.forU64(BigInt.from(1234))],
+        );
+        final invocation1 = SorobanAuthorizedInvocation(function);
+        final invocation2 = SorobanAuthorizedInvocation(function);
 
-      final legacyEntry = SorobanAuthorizationEntry(
-        SorobanCredentials(addressCredentials: innerCreds1),
-        invocation1,
-      );
-      final v2Entry = SorobanAuthorizationEntry(
-        SorobanCredentials.forAddressV2(innerCreds2),
-        invocation2,
-      );
+        final legacyEntry = SorobanAuthorizationEntry(
+          SorobanCredentials(addressCredentials: innerCreds1),
+          invocation1,
+        );
+        final v2Entry = SorobanAuthorizationEntry(
+          SorobanCredentials.forAddressV2(innerCreds2),
+          invocation2,
+        );
 
-      expect(
-        _computePayloadHex(legacyEntry, Network.TESTNET),
-        isNot(equals(_computePayloadHex(v2Entry, Network.TESTNET))),
-      );
-    });
+        expect(
+          _computePayloadHex(legacyEntry, Network.TESTNET),
+          isNot(equals(_computePayloadHex(v2Entry, Network.TESTNET))),
+        );
+      },
+    );
   });
 
   // ---------------------------------------------------------------------------
@@ -296,8 +292,7 @@ void main() {
         9999,
         XdrSCVal.forVoid(),
       );
-      final credentials =
-          SorobanCredentials(addressCredentials: innerCreds);
+      final credentials = SorobanCredentials(addressCredentials: innerCreds);
 
       final serverEntry = _buildSignedServerEntry(
         serverKeyPair: serverKeyPair,
@@ -323,127 +318,133 @@ void main() {
       // validateChallenge must not throw — the server entry has a valid
       // legacy-preimage signature.
       expect(
-        () => webAuth.validateChallenge(
-          [serverEntry, clientEntry],
-          _clientAccountId,
-        ),
-        returnsNormally,
-      );
-    });
-
-    test('ADDRESS_V2 server entry verifies successfully with WITH_ADDRESS preimage', () {
-      final innerCreds = SorobanAddressCredentials(
-        Address.forAccountId(serverAccountId),
-        BigInt.from(1),
-        9999,
-        XdrSCVal.forVoid(),
-      );
-      final credentials = SorobanCredentials.forAddressV2(innerCreds);
-
-      final serverEntry = _buildSignedServerEntry(
-        serverKeyPair: serverKeyPair,
-        credentials: credentials,
-        webAuthContractId: _webAuthContractId,
-        argsMap: argsMap,
-        network: Network.TESTNET,
-        signatureExpirationLedger: 9999,
-      );
-
-      // Arm must be preserved after signing.
-      expect(
-        serverEntry.credentials.arm,
-        equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2),
-      );
-
-      final clientInnerCreds = SorobanAddressCredentials(
-        _contractAddress(_clientAccountId),
-        BigInt.from(2),
-        9999,
-        XdrSCVal.forVoid(),
-      );
-      final clientEntry = _buildWebAuthEntry(
-        credentials: SorobanCredentials(addressCredentials: clientInnerCreds),
-        webAuthContractId: _webAuthContractId,
-        argsMap: argsMap,
-      );
-
-      // validateChallenge must not throw.
-      expect(
-        () => webAuth.validateChallenge(
-          [serverEntry, clientEntry],
-          _clientAccountId,
-        ),
+        () => webAuth.validateChallenge([
+          serverEntry,
+          clientEntry,
+        ], _clientAccountId),
         returnsNormally,
       );
     });
 
     test(
-        'ADDRESS_V2 server entry signed over the wrong (legacy) preimage fails verification',
-        () {
-      // Build V2 credentials but sign manually over the LEGACY preimage.
-      final innerCreds = SorobanAddressCredentials(
-        Address.forAccountId(serverAccountId),
-        BigInt.from(1),
-        9999,
-        XdrSCVal.forVoid(),
-      );
-      innerCreds.signatureExpirationLedger = 9999;
+      'ADDRESS_V2 server entry verifies successfully with WITH_ADDRESS preimage',
+      () {
+        final innerCreds = SorobanAddressCredentials(
+          Address.forAccountId(serverAccountId),
+          BigInt.from(1),
+          9999,
+          XdrSCVal.forVoid(),
+        );
+        final credentials = SorobanCredentials.forAddressV2(innerCreds);
 
-      final v2Credentials = SorobanCredentials.forAddressV2(innerCreds);
-      final serverEntry = _buildWebAuthEntry(
-        credentials: v2Credentials,
-        webAuthContractId: _webAuthContractId,
-        argsMap: argsMap,
-      );
+        final serverEntry = _buildSignedServerEntry(
+          serverKeyPair: serverKeyPair,
+          credentials: credentials,
+          webAuthContractId: _webAuthContractId,
+          argsMap: argsMap,
+          network: Network.TESTNET,
+          signatureExpirationLedger: 9999,
+        );
 
-      // Construct the WRONG (legacy) preimage manually and sign over it.
-      final legacyCreds = SorobanAddressCredentials(
-        Address.forAccountId(serverAccountId),
-        BigInt.from(1),
-        9999,
-        XdrSCVal.forVoid(),
-      );
-      final legacyEntry = _buildWebAuthEntry(
-        credentials: SorobanCredentials(addressCredentials: legacyCreds),
-        webAuthContractId: _webAuthContractId,
-        argsMap: argsMap,
-      );
-      // Compute the legacy payload hash.
-      final legacyPreimage = legacyEntry.buildPreimage(Network.TESTNET);
-      final legacyOut = XdrDataOutputStream();
-      XdrHashIDPreimage.encode(legacyOut, legacyPreimage);
-      final legacyPayload =
-          Util.hash(Uint8List.fromList(legacyOut.bytes));
+        // Arm must be preserved after signing.
+        expect(
+          serverEntry.credentials.arm,
+          equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2),
+        );
 
-      // Sign the V2 entry's credential using the legacy payload hash.
-      final sigBytes = serverKeyPair.sign(legacyPayload);
-      final sig = AccountEd25519Signature(serverKeyPair.xdrPublicKey, sigBytes);
-      final sigVec = XdrSCVal.forVec([sig.toXdrSCVal()]);
-      serverEntry.credentials.innerAddressCredentials!.signature = sigVec;
+        final clientInnerCreds = SorobanAddressCredentials(
+          _contractAddress(_clientAccountId),
+          BigInt.from(2),
+          9999,
+          XdrSCVal.forVoid(),
+        );
+        final clientEntry = _buildWebAuthEntry(
+          credentials: SorobanCredentials(addressCredentials: clientInnerCreds),
+          webAuthContractId: _webAuthContractId,
+          argsMap: argsMap,
+        );
 
-      final clientInnerCreds = SorobanAddressCredentials(
-        _contractAddress(_clientAccountId),
-        BigInt.from(2),
-        9999,
-        XdrSCVal.forVoid(),
-      );
-      final clientEntry = _buildWebAuthEntry(
-        credentials: SorobanCredentials(addressCredentials: clientInnerCreds),
-        webAuthContractId: _webAuthContractId,
-        argsMap: argsMap,
-      );
+        // validateChallenge must not throw.
+        expect(
+          () => webAuth.validateChallenge([
+            serverEntry,
+            clientEntry,
+          ], _clientAccountId),
+          returnsNormally,
+        );
+      },
+    );
 
-      // validateChallenge must throw because the signature is over the wrong preimage.
-      expect(
-        () => webAuth.validateChallenge(
-          [serverEntry, clientEntry],
-          _clientAccountId,
-        ),
-        throwsA(
-          isA<ContractChallengeValidationErrorInvalidServerSignature>(),
-        ),
-      );
-    });
+    test(
+      'ADDRESS_V2 server entry signed over the wrong (legacy) preimage fails verification',
+      () {
+        // Build V2 credentials but sign manually over the LEGACY preimage.
+        final innerCreds = SorobanAddressCredentials(
+          Address.forAccountId(serverAccountId),
+          BigInt.from(1),
+          9999,
+          XdrSCVal.forVoid(),
+        );
+        innerCreds.signatureExpirationLedger = 9999;
+
+        final v2Credentials = SorobanCredentials.forAddressV2(innerCreds);
+        final serverEntry = _buildWebAuthEntry(
+          credentials: v2Credentials,
+          webAuthContractId: _webAuthContractId,
+          argsMap: argsMap,
+        );
+
+        // Construct the WRONG (legacy) preimage manually and sign over it.
+        final legacyCreds = SorobanAddressCredentials(
+          Address.forAccountId(serverAccountId),
+          BigInt.from(1),
+          9999,
+          XdrSCVal.forVoid(),
+        );
+        final legacyEntry = _buildWebAuthEntry(
+          credentials: SorobanCredentials(addressCredentials: legacyCreds),
+          webAuthContractId: _webAuthContractId,
+          argsMap: argsMap,
+        );
+        // Compute the legacy payload hash.
+        final legacyPreimage = legacyEntry.buildPreimage(Network.TESTNET);
+        final legacyOut = XdrDataOutputStream();
+        XdrHashIDPreimage.encode(legacyOut, legacyPreimage);
+        final legacyPayload = Util.hash(Uint8List.fromList(legacyOut.bytes));
+
+        // Sign the V2 entry's credential using the legacy payload hash.
+        final sigBytes = serverKeyPair.sign(legacyPayload);
+        final sig = AccountEd25519Signature(
+          serverKeyPair.xdrPublicKey,
+          sigBytes,
+        );
+        final sigVec = XdrSCVal.forVec([sig.toXdrSCVal()]);
+        serverEntry.credentials.innerAddressCredentials!.signature = sigVec;
+
+        final clientInnerCreds = SorobanAddressCredentials(
+          _contractAddress(_clientAccountId),
+          BigInt.from(2),
+          9999,
+          XdrSCVal.forVoid(),
+        );
+        final clientEntry = _buildWebAuthEntry(
+          credentials: SorobanCredentials(addressCredentials: clientInnerCreds),
+          webAuthContractId: _webAuthContractId,
+          argsMap: argsMap,
+        );
+
+        // validateChallenge must throw because the signature is over the wrong preimage.
+        expect(
+          () => webAuth.validateChallenge([
+            serverEntry,
+            clientEntry,
+          ], _clientAccountId),
+          throwsA(
+            isA<ContractChallengeValidationErrorInvalidServerSignature>(),
+          ),
+        );
+      },
+    );
 
     test('ADDRESS_WITH_DELEGATES server entry verifies successfully', () {
       // Build an ADDRESS entry and convert to WITH_DELEGATES.
@@ -475,8 +476,8 @@ void main() {
       expect(
         withDelegatesEntry.credentials.arm,
         equals(
-            XdrSorobanCredentialsType
-                .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES),
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
+        ),
       );
 
       final clientInnerCreds = SorobanAddressCredentials(
@@ -493,10 +494,10 @@ void main() {
 
       // validateChallenge must not throw.
       expect(
-        () => webAuth.validateChallenge(
-          [withDelegatesEntry, clientEntry],
-          _clientAccountId,
-        ),
+        () => webAuth.validateChallenge([
+          withDelegatesEntry,
+          clientEntry,
+        ], _clientAccountId),
         returnsNormally,
       );
     });
@@ -524,13 +525,11 @@ void main() {
       );
 
       expect(
-        () => webAuth.validateChallenge(
-          [sourceAccountEntry, clientEntry],
-          _clientAccountId,
-        ),
-        throwsA(
-          isA<ContractChallengeValidationErrorMissingServerEntry>(),
-        ),
+        () => webAuth.validateChallenge([
+          sourceAccountEntry,
+          clientEntry,
+        ], _clientAccountId),
+        throwsA(isA<ContractChallengeValidationErrorMissingServerEntry>()),
       );
     });
   });
@@ -597,107 +596,123 @@ void main() {
         equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS),
       );
       expect(
-        signed[0].credentials.innerAddressCredentials!.signatureExpirationLedger,
+        signed[0]
+            .credentials
+            .innerAddressCredentials!
+            .signatureExpirationLedger,
         equals(5000),
       );
     });
 
-    test('ADDRESS_V2 arm preserved after expiration stamping and signing', () async {
-      final innerCreds = SorobanAddressCredentials(
-        Address.forAccountId(clientAccountId),
-        BigInt.from(1),
-        0,
-        XdrSCVal.forVoid(),
-      );
-      final entry = _buildWebAuthEntry(
-        credentials: SorobanCredentials.forAddressV2(innerCreds),
-        webAuthContractId: _webAuthContractId,
-        argsMap: argsMap,
-      );
+    test(
+      'ADDRESS_V2 arm preserved after expiration stamping and signing',
+      () async {
+        final innerCreds = SorobanAddressCredentials(
+          Address.forAccountId(clientAccountId),
+          BigInt.from(1),
+          0,
+          XdrSCVal.forVoid(),
+        );
+        final entry = _buildWebAuthEntry(
+          credentials: SorobanCredentials.forAddressV2(innerCreds),
+          webAuthContractId: _webAuthContractId,
+          argsMap: argsMap,
+        );
 
-      final webAuth = WebAuthForContracts(
-        _authEndpoint,
-        _webAuthContractId,
-        serverAccountId,
-        _homeDomain,
-        Network.TESTNET,
-      );
+        final webAuth = WebAuthForContracts(
+          _authEndpoint,
+          _webAuthContractId,
+          serverAccountId,
+          _homeDomain,
+          Network.TESTNET,
+        );
 
-      final signed = await webAuth.signAuthorizationEntries(
-        [entry],
-        clientAccountId,
-        [clientKeyPair],
-        6000,
-        null,
-        null,
-        null,
-      );
+        final signed = await webAuth.signAuthorizationEntries(
+          [entry],
+          clientAccountId,
+          [clientKeyPair],
+          6000,
+          null,
+          null,
+          null,
+        );
 
-      expect(signed.length, equals(1));
-      expect(
-        signed[0].credentials.arm,
-        equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2),
-      );
-      expect(
-        signed[0].credentials.innerAddressCredentials!.signatureExpirationLedger,
-        equals(6000),
-      );
-      // The signature vector must be non-empty after signing.
-      final sigVec = signed[0].credentials.innerAddressCredentials!.signature;
-      expect(sigVec.discriminant, equals(XdrSCValType.SCV_VEC));
-      expect(sigVec.vec, isNotEmpty);
-    });
+        expect(signed.length, equals(1));
+        expect(
+          signed[0].credentials.arm,
+          equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2),
+        );
+        expect(
+          signed[0]
+              .credentials
+              .innerAddressCredentials!
+              .signatureExpirationLedger,
+          equals(6000),
+        );
+        // The signature vector must be non-empty after signing.
+        final sigVec = signed[0].credentials.innerAddressCredentials!.signature;
+        expect(sigVec.discriminant, equals(XdrSCValType.SCV_VEC));
+        expect(sigVec.vec, isNotEmpty);
+      },
+    );
 
-    test('ADDRESS_WITH_DELEGATES arm preserved after expiration stamping', () async {
-      final innerCreds = SorobanAddressCredentials(
-        Address.forAccountId(clientAccountId),
-        BigInt.from(1),
-        0,
-        XdrSCVal.forVoid(),
-      );
-      final baseEntry = _buildWebAuthEntry(
-        credentials: SorobanCredentials(addressCredentials: innerCreds),
-        webAuthContractId: _webAuthContractId,
-        argsMap: argsMap,
-      );
+    test(
+      'ADDRESS_WITH_DELEGATES arm preserved after expiration stamping',
+      () async {
+        final innerCreds = SorobanAddressCredentials(
+          Address.forAccountId(clientAccountId),
+          BigInt.from(1),
+          0,
+          XdrSCVal.forVoid(),
+        );
+        final baseEntry = _buildWebAuthEntry(
+          credentials: SorobanCredentials(addressCredentials: innerCreds),
+          webAuthContractId: _webAuthContractId,
+          argsMap: argsMap,
+        );
 
-      final delegateKey = KeyPair.random();
-      final withDelegates = SorobanAuthorizationEntry.withDelegates(
-        baseEntry,
-        [SorobanDelegateDescriptor(delegateKey.accountId)],
-        0,
-      );
+        final delegateKey = KeyPair.random();
+        final withDelegates = SorobanAuthorizationEntry.withDelegates(
+          baseEntry,
+          [SorobanDelegateDescriptor(delegateKey.accountId)],
+          0,
+        );
 
-      final webAuth = WebAuthForContracts(
-        _authEndpoint,
-        _webAuthContractId,
-        serverAccountId,
-        _homeDomain,
-        Network.TESTNET,
-      );
+        final webAuth = WebAuthForContracts(
+          _authEndpoint,
+          _webAuthContractId,
+          serverAccountId,
+          _homeDomain,
+          Network.TESTNET,
+        );
 
-      final signed = await webAuth.signAuthorizationEntries(
-        [withDelegates],
-        clientAccountId,
-        [clientKeyPair],
-        7000,
-        null,
-        null,
-        null,
-      );
+        final signed = await webAuth.signAuthorizationEntries(
+          [withDelegates],
+          clientAccountId,
+          [clientKeyPair],
+          7000,
+          null,
+          null,
+          null,
+        );
 
-      expect(signed.length, equals(1));
-      expect(
-        signed[0].credentials.arm,
-        equals(
+        expect(signed.length, equals(1));
+        expect(
+          signed[0].credentials.arm,
+          equals(
             XdrSorobanCredentialsType
-                .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES),
-      );
-      expect(
-        signed[0].credentials.innerAddressCredentials!.signatureExpirationLedger,
-        equals(7000),
-      );
-    });
+                .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
+          ),
+        );
+        expect(
+          signed[0]
+              .credentials
+              .innerAddressCredentials!
+              .signatureExpirationLedger,
+          equals(7000),
+        );
+      },
+    );
 
     test('source-account entry passes through unsigned', () async {
       final sourceEntry = _buildWebAuthEntry(
@@ -737,66 +752,69 @@ void main() {
   // validateChallenge — ADDRESS_V2 and WITH_DELEGATES client entries accepted
   // ---------------------------------------------------------------------------
   group('WebAuthForContracts - validateChallenge arm detection', () {
-    test('ADDRESS_V2 client entry is recognised and does not block validation', () {
-      final serverKeyPair = KeyPair.random();
-      final serverAccountId = serverKeyPair.accountId;
+    test(
+      'ADDRESS_V2 client entry is recognised and does not block validation',
+      () {
+        final serverKeyPair = KeyPair.random();
+        final serverAccountId = serverKeyPair.accountId;
 
-      final argsMap = _buildArgsMap(
-        account: _clientAccountId,
-        homeDomain: _homeDomain,
-        webAuthDomain: _webAuthDomain,
-        webAuthDomainAccount: serverAccountId,
-        nonce: _nonce,
-      );
+        final argsMap = _buildArgsMap(
+          account: _clientAccountId,
+          homeDomain: _homeDomain,
+          webAuthDomain: _webAuthDomain,
+          webAuthDomainAccount: serverAccountId,
+          nonce: _nonce,
+        );
 
-      final webAuth = WebAuthForContracts(
-        _authEndpoint,
-        _webAuthContractId,
-        serverAccountId,
-        _homeDomain,
-        Network.TESTNET,
-      );
+        final webAuth = WebAuthForContracts(
+          _authEndpoint,
+          _webAuthContractId,
+          serverAccountId,
+          _homeDomain,
+          Network.TESTNET,
+        );
 
-      // Build a signed server entry (legacy arm is fine for the server).
-      final serverEntry = _buildSignedServerEntry(
-        serverKeyPair: serverKeyPair,
-        credentials: SorobanCredentials(
-          addressCredentials: SorobanAddressCredentials(
-            Address.forAccountId(serverAccountId),
-            BigInt.from(1),
-            9999,
-            XdrSCVal.forVoid(),
+        // Build a signed server entry (legacy arm is fine for the server).
+        final serverEntry = _buildSignedServerEntry(
+          serverKeyPair: serverKeyPair,
+          credentials: SorobanCredentials(
+            addressCredentials: SorobanAddressCredentials(
+              Address.forAccountId(serverAccountId),
+              BigInt.from(1),
+              9999,
+              XdrSCVal.forVoid(),
+            ),
           ),
-        ),
-        webAuthContractId: _webAuthContractId,
-        argsMap: argsMap,
-        network: Network.TESTNET,
-        signatureExpirationLedger: 9999,
-      );
+          webAuthContractId: _webAuthContractId,
+          argsMap: argsMap,
+          network: Network.TESTNET,
+          signatureExpirationLedger: 9999,
+        );
 
-      // Client entry uses ADDRESS_V2 arm.
-      final clientInnerCreds = SorobanAddressCredentials(
-        _contractAddress(_clientAccountId),
-        BigInt.from(2),
-        9999,
-        XdrSCVal.forVoid(),
-      );
-      final clientEntry = _buildWebAuthEntry(
-        credentials: SorobanCredentials.forAddressV2(clientInnerCreds),
-        webAuthContractId: _webAuthContractId,
-        argsMap: argsMap,
-      );
+        // Client entry uses ADDRESS_V2 arm.
+        final clientInnerCreds = SorobanAddressCredentials(
+          _contractAddress(_clientAccountId),
+          BigInt.from(2),
+          9999,
+          XdrSCVal.forVoid(),
+        );
+        final clientEntry = _buildWebAuthEntry(
+          credentials: SorobanCredentials.forAddressV2(clientInnerCreds),
+          webAuthContractId: _webAuthContractId,
+          argsMap: argsMap,
+        );
 
-      // validateChallenge must locate the client entry via innerAddressCredentials
-      // and not throw ContractChallengeValidationErrorMissingClientEntry.
-      expect(
-        () => webAuth.validateChallenge(
-          [serverEntry, clientEntry],
-          _clientAccountId,
-        ),
-        returnsNormally,
-      );
-    });
+        // validateChallenge must locate the client entry via innerAddressCredentials
+        // and not throw ContractChallengeValidationErrorMissingClientEntry.
+        expect(
+          () => webAuth.validateChallenge([
+            serverEntry,
+            clientEntry,
+          ], _clientAccountId),
+          returnsNormally,
+        );
+      },
+    );
 
     test('ADDRESS_WITH_DELEGATES client entry is recognised', () {
       final serverKeyPair = KeyPair.random();
@@ -857,10 +875,10 @@ void main() {
 
       // validateChallenge must locate the client entry by its top-level address.
       expect(
-        () => webAuth.validateChallenge(
-          [serverEntry, clientWithDelegates],
-          clientContractId,
-        ),
+        () => webAuth.validateChallenge([
+          serverEntry,
+          clientWithDelegates,
+        ], clientContractId),
         returnsNormally,
       );
     });

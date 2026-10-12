@@ -3,7 +3,9 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 /// Encodes a transaction result reporting [results] under [code].
 String _transactionResultXdr(
-    XdrTransactionResultCode code, List<XdrOperationResult> results) {
+  XdrTransactionResultCode code,
+  List<XdrOperationResult> results,
+) {
   final XdrTransactionResultResult result = XdrTransactionResultResult(code)
     ..results = results;
   return XdrTransactionResult(
@@ -28,7 +30,8 @@ XdrOperationResult _manageOfferOperationResult(
   if (effect != XdrManageOfferEffect.MANAGE_OFFER_DELETED) {
     offer.offer = XdrOfferEntry(
       XdrAccountID.forAccountId(
-          'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'),
+        'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+      ),
       XdrUint64(BigInt.from(offerId!)),
       XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
       XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE),
@@ -39,9 +42,9 @@ XdrOperationResult _manageOfferOperationResult(
     );
   }
 
-  final XdrManageOfferResult manageResult =
-      XdrManageOfferResult(XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS)
-        ..success = XdrManageOfferSuccessResult([], offer);
+  final XdrManageOfferResult manageResult = XdrManageOfferResult(
+    XdrManageOfferResultCode.MANAGE_SELL_OFFER_SUCCESS,
+  )..success = XdrManageOfferSuccessResult([], offer);
   final XdrOperationResultTr tr = XdrOperationResultTr(type);
   if (type == XdrOperationType.MANAGE_BUY_OFFER) {
     tr.manageBuyOfferResult = manageResult;
@@ -90,8 +93,10 @@ void main() {
           'successful': true,
           'id': 'abc123def456',
           'paging_token': '12345-1',
-          'source_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'fee_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'source_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'fee_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'source_account_sequence': 100,
           'max_fee': 1000,
           'fee_charged': 100,
@@ -109,7 +114,10 @@ void main() {
         expect(response.hash, equals('abc123def456'));
         expect(response.ledger, equals(12345));
         expect(response.envelopeXdr, equals('AAAAAgAAAAA='));
-        expect(response.resultXdr, equals('AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA='));
+        expect(
+          response.resultXdr,
+          equals('AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA='),
+        );
         expect(response.resultMetaXdr, equals('AAAAAwAAAAA='));
         expect(response.feeMetaXdr, equals('AAAAAgAAAAA='));
         expect(response.extras, isNull);
@@ -125,8 +133,10 @@ void main() {
           'successful': true,
           'id': 'success123',
           'paging_token': '12345-1',
-          'source_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'fee_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'source_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'fee_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'source_account_sequence': 100,
           'max_fee': 1000,
           'fee_charged': 100,
@@ -170,12 +180,24 @@ void main() {
         expect(response.ledger, isNull);
         expect(response.extras, isNotNull);
         expect(response.extras!.envelopeXdr, equals('AAAAAgAAAABFAILED'));
-        expect(response.extras!.resultXdr, equals('AAAAAAAAAGT/////AAAAAQAAAAAAAAAB////+wAAAAA='));
+        expect(
+          response.extras!.resultXdr,
+          equals('AAAAAAAAAGT/////AAAAAQAAAAAAAAAB////+wAAAAA='),
+        );
         expect(response.extras!.resultCodes, isNotNull);
-        expect(response.extras!.resultCodes!.transactionResultCode, equals('tx_failed'));
+        expect(
+          response.extras!.resultCodes!.transactionResultCode,
+          equals('tx_failed'),
+        );
         expect(response.extras!.resultCodes!.operationsResultCodes, isNotNull);
-        expect(response.extras!.resultCodes!.operationsResultCodes!.length, equals(1));
-        expect(response.extras!.resultCodes!.operationsResultCodes![0], equals('op_underfunded'));
+        expect(
+          response.extras!.resultCodes!.operationsResultCodes!.length,
+          equals(1),
+        );
+        expect(
+          response.extras!.resultCodes!.operationsResultCodes![0],
+          equals('op_underfunded'),
+        );
         expect(response.successfulTransaction, isNull);
       });
 
@@ -205,16 +227,17 @@ void main() {
             'result_xdr': 'AAAAAAAAAGT/////AAAAAQAAAAAAAAAB////+wAAAAA=',
             'result_meta_xdr': 'ExtrasMetaXdr==',
             'fee_meta_xdr': 'ExtrasFeeMetaXdr==',
-            'result_codes': {
-              'transaction': 'tx_failed',
-            },
+            'result_codes': {'transaction': 'tx_failed'},
           },
         };
 
         final response = SubmitTransactionResponse.fromJson(json);
 
         expect(response.envelopeXdr, equals('ExtrasEnvelopeXdr=='));
-        expect(response.resultXdr, equals('AAAAAAAAAGT/////AAAAAQAAAAAAAAAB////+wAAAAA='));
+        expect(
+          response.resultXdr,
+          equals('AAAAAAAAAGT/////AAAAAQAAAAAAAAAB////+wAAAAA='),
+        );
         expect(response.resultMetaXdr, equals('ExtrasMetaXdr=='));
         expect(response.feeMetaXdr, equals('ExtrasFeeMetaXdr=='));
       });
@@ -234,10 +257,22 @@ void main() {
 
         final response = SubmitTransactionResponse.fromJson(json);
 
-        expect(response.extras!.resultCodes!.operationsResultCodes!.length, equals(3));
-        expect(response.extras!.resultCodes!.operationsResultCodes![0], equals('op_success'));
-        expect(response.extras!.resultCodes!.operationsResultCodes![1], equals('op_underfunded'));
-        expect(response.extras!.resultCodes!.operationsResultCodes![2], equals('op_line_full'));
+        expect(
+          response.extras!.resultCodes!.operationsResultCodes!.length,
+          equals(3),
+        );
+        expect(
+          response.extras!.resultCodes!.operationsResultCodes![0],
+          equals('op_success'),
+        );
+        expect(
+          response.extras!.resultCodes!.operationsResultCodes![1],
+          equals('op_underfunded'),
+        );
+        expect(
+          response.extras!.resultCodes!.operationsResultCodes![2],
+          equals('op_line_full'),
+        );
       });
     });
 
@@ -250,8 +285,10 @@ void main() {
           'successful': true,
           'id': 'abc123',
           'paging_token': '12345-1',
-          'source_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'fee_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'source_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'fee_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'source_account_sequence': 100,
           'max_fee': 1000,
           'fee_charged': 100,
@@ -287,36 +324,41 @@ void main() {
         expect(xdrResult, isNull);
       });
 
-      test('getTransactionMetaResultXdr returns null when result_meta_xdr is null', () {
-        final json = {
-          'hash': 'abc123',
-          'ledger': 12345,
-          'result_xdr': 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
-          'result_meta_xdr': null,
-          'successful': true,
-          'id': 'abc123',
-          'paging_token': '12345-1',
-          'source_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'fee_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'source_account_sequence': 100,
-          'max_fee': 1000,
-          'fee_charged': 100,
-          'operation_count': 1,
-          'created_at': '2024-01-15T10:30:00Z',
-          'envelope_xdr': 'AAAAAgAAAAA=',
-          'fee_meta_xdr': 'AAAAAgAAAAA=',
-          'memo_type': 'none',
-          'signatures': [],
-          '_links': {
-            'self': {'href': '/transactions/abc123'},
-          },
-        };
+      test(
+        'getTransactionMetaResultXdr returns null when result_meta_xdr is null',
+        () {
+          final json = {
+            'hash': 'abc123',
+            'ledger': 12345,
+            'result_xdr': 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
+            'result_meta_xdr': null,
+            'successful': true,
+            'id': 'abc123',
+            'paging_token': '12345-1',
+            'source_account':
+                'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+            'fee_account':
+                'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+            'source_account_sequence': 100,
+            'max_fee': 1000,
+            'fee_charged': 100,
+            'operation_count': 1,
+            'created_at': '2024-01-15T10:30:00Z',
+            'envelope_xdr': 'AAAAAgAAAAA=',
+            'fee_meta_xdr': 'AAAAAgAAAAA=',
+            'memo_type': 'none',
+            'signatures': [],
+            '_links': {
+              'self': {'href': '/transactions/abc123'},
+            },
+          };
 
-        final response = SubmitTransactionResponse.fromJson(json);
-        final metaXdr = response.getTransactionMetaResultXdr();
+          final response = SubmitTransactionResponse.fromJson(json);
+          final metaXdr = response.getTransactionMetaResultXdr();
 
-        expect(metaXdr, isNull);
-      });
+          expect(metaXdr, isNull);
+        },
+      );
 
       test('getFeeMetaXdr handles invalid XDR gracefully', () {
         final json = {
@@ -327,8 +369,10 @@ void main() {
           'successful': true,
           'id': 'abc123',
           'paging_token': '12345-1',
-          'source_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'fee_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'source_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'fee_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'source_account_sequence': 100,
           'max_fee': 1000,
           'fee_charged': 100,
@@ -362,7 +406,10 @@ void main() {
         expect(resultCodes.operationsResultCodes, isNotNull);
         expect(resultCodes.operationsResultCodes!.length, equals(2));
         expect(resultCodes.operationsResultCodes![0], equals('op_success'));
-        expect(resultCodes.operationsResultCodes![1], equals('op_no_destination'));
+        expect(
+          resultCodes.operationsResultCodes![1],
+          equals('op_no_destination'),
+        );
       });
 
       test('handles null operations array', () {
@@ -373,7 +420,10 @@ void main() {
 
         final resultCodes = ExtrasResultCodes.fromJson(json);
 
-        expect(resultCodes.transactionResultCode, equals('tx_insufficient_balance'));
+        expect(
+          resultCodes.transactionResultCode,
+          equals('tx_insufficient_balance'),
+        );
         expect(resultCodes.operationsResultCodes, isNull);
       });
 
@@ -393,9 +443,7 @@ void main() {
         ];
 
         for (final code in errorCodes) {
-          final json = {
-            'transaction': code,
-          };
+          final json = {'transaction': code};
 
           final resultCodes = ExtrasResultCodes.fromJson(json);
 
@@ -452,12 +500,12 @@ void main() {
           'title': 'Transaction Submission Timeout',
           'status': 504,
           'detail': 'Transaction submission timed out.',
-          'extras': {
-            'hash': 'timeouthash123',
-          },
+          'extras': {'hash': 'timeouthash123'},
         };
 
-        final exception = SubmitTransactionTimeoutResponseException.fromJson(json);
+        final exception = SubmitTransactionTimeoutResponseException.fromJson(
+          json,
+        );
 
         expect(exception.type, equals('transaction_submission_timeout'));
         expect(exception.title, equals('Transaction Submission Timeout'));
@@ -475,7 +523,9 @@ void main() {
           'extras': null,
         };
 
-        final exception = SubmitTransactionTimeoutResponseException.fromJson(json);
+        final exception = SubmitTransactionTimeoutResponseException.fromJson(
+          json,
+        );
 
         expect(exception.hash, isNull);
       });
@@ -486,12 +536,12 @@ void main() {
           'title': 'Transaction Submission Timeout',
           'status': 504,
           'detail': 'Transaction submission timed out.',
-          'extras': {
-            'other_field': 'value',
-          },
+          'extras': {'other_field': 'value'},
         };
 
-        final exception = SubmitTransactionTimeoutResponseException.fromJson(json);
+        final exception = SubmitTransactionTimeoutResponseException.fromJson(
+          json,
+        );
 
         expect(exception.hash, isNull);
       });
@@ -515,10 +565,7 @@ void main() {
 
     group('SubmitAsyncTransactionResponse', () {
       test('parses async response with PENDING status', () {
-        final json = {
-          'tx_status': 'PENDING',
-          'hash': 'asynchash123',
-        };
+        final json = {'tx_status': 'PENDING', 'hash': 'asynchash123'};
 
         final response = SubmitAsyncTransactionResponse.fromJson(json, 200);
 
@@ -528,10 +575,7 @@ void main() {
       });
 
       test('parses async response with ERROR status', () {
-        final json = {
-          'tx_status': 'ERROR',
-          'hash': 'errorhash456',
-        };
+        final json = {'tx_status': 'ERROR', 'hash': 'errorhash456'};
 
         final response = SubmitAsyncTransactionResponse.fromJson(json, 400);
 
@@ -541,10 +585,7 @@ void main() {
       });
 
       test('parses async response with DUPLICATE status', () {
-        final json = {
-          'tx_status': 'DUPLICATE',
-          'hash': 'duphash789',
-        };
+        final json = {'tx_status': 'DUPLICATE', 'hash': 'duphash789'};
 
         final response = SubmitAsyncTransactionResponse.fromJson(json, 409);
 
@@ -554,10 +595,7 @@ void main() {
       });
 
       test('parses async response with TRY_AGAIN_LATER status', () {
-        final json = {
-          'tx_status': 'TRY_AGAIN_LATER',
-          'hash': 'retryhash101',
-        };
+        final json = {'tx_status': 'TRY_AGAIN_LATER', 'hash': 'retryhash101'};
 
         final response = SubmitAsyncTransactionResponse.fromJson(json, 503);
 
@@ -568,9 +606,18 @@ void main() {
 
       test('verifies status constants are correct', () {
         expect(SubmitAsyncTransactionResponse.txStatusError, equals('ERROR'));
-        expect(SubmitAsyncTransactionResponse.txStatusPending, equals('PENDING'));
-        expect(SubmitAsyncTransactionResponse.txStatusDuplicate, equals('DUPLICATE'));
-        expect(SubmitAsyncTransactionResponse.txStatusTryAgainLater, equals('TRY_AGAIN_LATER'));
+        expect(
+          SubmitAsyncTransactionResponse.txStatusPending,
+          equals('PENDING'),
+        );
+        expect(
+          SubmitAsyncTransactionResponse.txStatusDuplicate,
+          equals('DUPLICATE'),
+        );
+        expect(
+          SubmitAsyncTransactionResponse.txStatusTryAgainLater,
+          equals('TRY_AGAIN_LATER'),
+        );
       });
     });
 
@@ -592,7 +639,10 @@ void main() {
         expect(problem.type, equals('transaction_submission_failed'));
         expect(problem.title, equals('Transaction Submission Failed'));
         expect(problem.status, equals(400));
-        expect(problem.detail, equals('The transaction submission failed for some reason.'));
+        expect(
+          problem.detail,
+          equals('The transaction submission failed for some reason.'),
+        );
         expect(problem.extras, isNotNull);
         expect(problem.extras!['envelope_xdr'], equals('SomeXdrData=='));
       });
@@ -845,33 +895,36 @@ void main() {
       expect(response.feeMetaXdr, isNull);
     });
 
-    test('XDR getters answer from extras when the result XDR cannot be read', () {
-      final extras = SubmitTransactionResponseExtras(
-        'ExtrasEnvelopeXdr==',
-        'ExtrasResultXdr==',
-        'ExtrasMetaXdr==',
-        'ExtrasFeeMetaXdr==',
-        null,
-      );
-      final response = SubmitTransactionResponse(
-        extras,
-        null,
-        'hash123',
-        'MainEnvelopeXdr==',
-        'not base64 at all!!',
-        'MainMetaXdr==',
-        'MainFeeMetaXdr==',
-        null,
-      );
+    test(
+      'XDR getters answer from extras when the result XDR cannot be read',
+      () {
+        final extras = SubmitTransactionResponseExtras(
+          'ExtrasEnvelopeXdr==',
+          'ExtrasResultXdr==',
+          'ExtrasMetaXdr==',
+          'ExtrasFeeMetaXdr==',
+          null,
+        );
+        final response = SubmitTransactionResponse(
+          extras,
+          null,
+          'hash123',
+          'MainEnvelopeXdr==',
+          'not base64 at all!!',
+          'MainMetaXdr==',
+          'MainFeeMetaXdr==',
+          null,
+        );
 
-      // A result that cannot be read cannot confirm success, so every getter
-      // takes the failure branch instead of letting the decode escape.
-      expect(response.success, isFalse);
-      expect(response.envelopeXdr, equals('ExtrasEnvelopeXdr=='));
-      expect(response.resultXdr, equals('ExtrasResultXdr=='));
-      expect(response.resultMetaXdr, equals('ExtrasMetaXdr=='));
-      expect(response.feeMetaXdr, equals('ExtrasFeeMetaXdr=='));
-    });
+        // A result that cannot be read cannot confirm success, so every getter
+        // takes the failure branch instead of letting the decode escape.
+        expect(response.success, isFalse);
+        expect(response.envelopeXdr, equals('ExtrasEnvelopeXdr=='));
+        expect(response.resultXdr, equals('ExtrasResultXdr=='));
+        expect(response.resultMetaXdr, equals('ExtrasMetaXdr=='));
+        expect(response.feeMetaXdr, equals('ExtrasFeeMetaXdr=='));
+      },
+    );
   });
 
   group('SubmitTransactionResponse XDR Decoding', () {
@@ -907,38 +960,44 @@ void main() {
       expect(result, isA<XdrTransactionResult>());
     });
 
-    test('getTransactionMetaResultXdr returns null when resultMetaXdr is null', () {
-      final response = SubmitTransactionResponse(
-        null,
-        12345,
-        'hash123',
-        'AAAA',
-        'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
-        null,
-        'AAAA',
-        null,
-      );
+    test(
+      'getTransactionMetaResultXdr returns null when resultMetaXdr is null',
+      () {
+        final response = SubmitTransactionResponse(
+          null,
+          12345,
+          'hash123',
+          'AAAA',
+          'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
+          null,
+          'AAAA',
+          null,
+        );
 
-      expect(response.getTransactionMetaResultXdr(), isNull);
-    });
+        expect(response.getTransactionMetaResultXdr(), isNull);
+      },
+    );
 
-    test('getTransactionMetaResultXdr answers null for a truncated meta XDR', () {
-      final response = SubmitTransactionResponse(
-        null,
-        12345,
-        'hash123',
-        'AAAA',
-        'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
-        'AAAA',
-        'AAAA',
-        null,
-      );
+    test(
+      'getTransactionMetaResultXdr answers null for a truncated meta XDR',
+      () {
+        final response = SubmitTransactionResponse(
+          null,
+          12345,
+          'hash123',
+          'AAAA',
+          'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
+          'AAAA',
+          'AAAA',
+          null,
+        );
 
-      // AAAA renders three bytes, one short of the four a single XDR int
-      // needs, so reading the union discriminant already runs off the end of
-      // the buffer.
-      expect(response.getTransactionMetaResultXdr(), isNull);
-    });
+        // AAAA renders three bytes, one short of the four a single XDR int
+        // needs, so reading the union discriminant already runs off the end of
+        // the buffer.
+        expect(response.getTransactionMetaResultXdr(), isNull);
+      },
+    );
 
     test('getFeeMetaXdr returns null when feeMetaXdr is null', () {
       final response = SubmitTransactionResponse(
@@ -1007,26 +1066,29 @@ void main() {
       expect(response.getOfferIdFromResult(0), isNull);
     });
 
-    test('getOfferIdFromResult returns the id of the operation at the given position', () {
-      // A payment at position 0 and a created sell offer at position 1.
-      final response = SubmitTransactionResponse(
-        null,
-        12345,
-        'hash123',
-        'AAAA',
-        'AAAAAAAAAMgAAAAAAAAAAgAAAAAAAAABAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAABERERERERERERERERERERERERERERERERERERERERERAAAAAkywFuoAAAAAAAAAAVVTRAAAAAAAIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIAAAAAAA9CQAAAAAEAAAACAAAAAAAAAAAAAAAA',
-        'AAAA',
-        'AAAA',
-        null,
-      );
+    test(
+      'getOfferIdFromResult returns the id of the operation at the given position',
+      () {
+        // A payment at position 0 and a created sell offer at position 1.
+        final response = SubmitTransactionResponse(
+          null,
+          12345,
+          'hash123',
+          'AAAA',
+          'AAAAAAAAAMgAAAAAAAAAAgAAAAAAAAABAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAABERERERERERERERERERERERERERERERERERERERERERAAAAAkywFuoAAAAAAAAAAVVTRAAAAAAAIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIAAAAAAA9CQAAAAAEAAAACAAAAAAAAAAAAAAAA',
+          'AAAA',
+          'AAAA',
+          null,
+        );
 
-      expect(response.getOfferIdFromResult(0), isNull);
-      expect(response.getOfferIdFromResult(1), equals(9876543210));
-      // A position outside the operation list answers null, like every other
-      // case in which nothing sits at the position.
-      expect(response.getOfferIdFromResult(2), isNull);
-      expect(response.getOfferIdFromResult(-1), isNull);
-    });
+        expect(response.getOfferIdFromResult(0), isNull);
+        expect(response.getOfferIdFromResult(1), equals(9876543210));
+        // A position outside the operation list answers null, like every other
+        // case in which nothing sits at the position.
+        expect(response.getOfferIdFromResult(2), isNull);
+        expect(response.getOfferIdFromResult(-1), isNull);
+      },
+    );
 
     test('getOfferIdFromResult reads a fee bump\'s inner operations', () {
       // A fee bump wrapping one created sell offer; the operation results sit
@@ -1045,113 +1107,139 @@ void main() {
       expect(response.getOfferIdFromResult(0), equals(424242));
     });
 
-    test('getClaimableBalanceIdIdFromResult returns null when result XDR is null', () {
-      final response = SubmitTransactionResponse(
-        null,
-        null,
-        'hash123',
-        'AAAA',
-        null,
-        null,
-        null,
-        null,
-      );
+    test(
+      'getClaimableBalanceIdIdFromResult returns null when result XDR is null',
+      () {
+        final response = SubmitTransactionResponse(
+          null,
+          null,
+          'hash123',
+          'AAAA',
+          null,
+          null,
+          null,
+          null,
+        );
 
-      expect(response.getClaimableBalanceIdIdFromResult(0), isNull);
-    });
+        expect(response.getClaimableBalanceIdIdFromResult(0), isNull);
+      },
+    );
 
-    test('getClaimableBalanceIdIdFromResult answers null without a create claimable balance', () {
-      final response = SubmitTransactionResponse(
-        null,
-        12345,
-        'hash123',
-        'AAAA',
-        'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
-        'AAAA',
-        'AAAA',
-        null,
-      );
+    test(
+      'getClaimableBalanceIdIdFromResult answers null without a create claimable balance',
+      () {
+        final response = SubmitTransactionResponse(
+          null,
+          12345,
+          'hash123',
+          'AAAA',
+          'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
+          'AAAA',
+          'AAAA',
+          null,
+        );
 
-      // The result carries a single payment, so no position holds a
-      // CreateClaimableBalance.
-      expect(response.getClaimableBalanceIdIdFromResult(0), isNull);
-    });
+        // The result carries a single payment, so no position holds a
+        // CreateClaimableBalance.
+        expect(response.getClaimableBalanceIdIdFromResult(0), isNull);
+      },
+    );
 
-    test('getClaimableBalanceIdIdFromResult reads a fee bump\'s inner operations', () {
-      // A fee bump wrapping one successful CreateClaimableBalance; the
-      // operation results sit on the inner transaction.
-      final response = SubmitTransactionResponse(
-        null,
-        12345,
-        'hash123',
-        'AAAA',
-        'AAAAAAAAAZAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyAAAAAAAAAABAAAAAAAAAA4AAAAAAAAAAPXqf7PeGNrp8Sr5bPB1B0kBb7y6a/CekCpp5UVodx2CAAAAAAAAAAA=',
-        'AAAA',
-        'AAAA',
-        null,
-      );
+    test(
+      'getClaimableBalanceIdIdFromResult reads a fee bump\'s inner operations',
+      () {
+        // A fee bump wrapping one successful CreateClaimableBalance; the
+        // operation results sit on the inner transaction.
+        final response = SubmitTransactionResponse(
+          null,
+          12345,
+          'hash123',
+          'AAAA',
+          'AAAAAAAAAZAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyAAAAAAAAAABAAAAAAAAAA4AAAAAAAAAAPXqf7PeGNrp8Sr5bPB1B0kBb7y6a/CekCpp5UVodx2CAAAAAAAAAAA=',
+          'AAAA',
+          'AAAA',
+          null,
+        );
 
-      expect(
+        expect(
           response.getClaimableBalanceIdIdFromResult(0),
           equals(
-              'f5ea7fb3de18dae9f12af96cf0750749016fbcba6bf09e902a69e54568771d82'));
-    });
+            'f5ea7fb3de18dae9f12af96cf0750749016fbcba6bf09e902a69e54568771d82',
+          ),
+        );
+      },
+    );
 
-    test('getClaimableBalanceIdIdFromResult returns the id of the operation at the given position', () {
-      // TransactionResult with two CreateClaimableBalance operations carrying
-      // different balance hashes, so each position must answer with its own id.
-      final response = SubmitTransactionResponse(
-        null,
-        12345,
-        'hash123',
-        'AAAA',
-        'AAAAAAAAAMgAAAAAAAAAAgAAAAAAAAAOAAAAAAAAAAA/DDS/k60NmXHQTMyQ9wVRHIOKrZc0pKL7DXoD/H/omgAAAAAAAAAOAAAAAAAAAAD16n+z3hja6fEq+WzwdQdJAW+8umvwnpAqaeVFaHcdggAAAAA=',
-        'AAAA',
-        'AAAA',
-        null,
-      );
+    test(
+      'getClaimableBalanceIdIdFromResult returns the id of the operation at the given position',
+      () {
+        // TransactionResult with two CreateClaimableBalance operations carrying
+        // different balance hashes, so each position must answer with its own id.
+        final response = SubmitTransactionResponse(
+          null,
+          12345,
+          'hash123',
+          'AAAA',
+          'AAAAAAAAAMgAAAAAAAAAAgAAAAAAAAAOAAAAAAAAAAA/DDS/k60NmXHQTMyQ9wVRHIOKrZc0pKL7DXoD/H/omgAAAAAAAAAOAAAAAAAAAAD16n+z3hja6fEq+WzwdQdJAW+8umvwnpAqaeVFaHcdggAAAAA=',
+          'AAAA',
+          'AAAA',
+          null,
+        );
 
-      expect(
+        expect(
           response.getClaimableBalanceIdIdFromResult(0),
-          equals('3f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a'));
-      expect(
+          equals(
+            '3f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a',
+          ),
+        );
+        expect(
           response.getClaimableBalanceIdIdFromResult(1),
-          equals('f5ea7fb3de18dae9f12af96cf0750749016fbcba6bf09e902a69e54568771d82'));
-      // A position outside the operation list answers null, like every other
-      // case in which nothing sits at the position.
-      expect(response.getClaimableBalanceIdIdFromResult(2), isNull);
-      expect(response.getClaimableBalanceIdIdFromResult(-1), isNull);
-    });
+          equals(
+            'f5ea7fb3de18dae9f12af96cf0750749016fbcba6bf09e902a69e54568771d82',
+          ),
+        );
+        // A position outside the operation list answers null, like every other
+        // case in which nothing sits at the position.
+        expect(response.getClaimableBalanceIdIdFromResult(2), isNull);
+        expect(response.getClaimableBalanceIdIdFromResult(-1), isNull);
+      },
+    );
 
-    test('getClaimableBalanceIdIdFromResult answers null for a position holding another operation type', () {
-      // TransactionResult with a payment at position 0 and a
-      // CreateClaimableBalance at position 1.
-      final response = SubmitTransactionResponse(
-        null,
-        12345,
-        'hash123',
-        'AAAA',
-        'AAAAAAAAAMgAAAAAAAAAAgAAAAAAAAABAAAAAAAAAAAAAAAOAAAAAAAAAAD16n+z3hja6fEq+WzwdQdJAW+8umvwnpAqaeVFaHcdggAAAAA=',
-        'AAAA',
-        'AAAA',
-        null,
-      );
+    test(
+      'getClaimableBalanceIdIdFromResult answers null for a position holding another operation type',
+      () {
+        // TransactionResult with a payment at position 0 and a
+        // CreateClaimableBalance at position 1.
+        final response = SubmitTransactionResponse(
+          null,
+          12345,
+          'hash123',
+          'AAAA',
+          'AAAAAAAAAMgAAAAAAAAAAgAAAAAAAAABAAAAAAAAAAAAAAAOAAAAAAAAAAD16n+z3hja6fEq+WzwdQdJAW+8umvwnpAqaeVFaHcdggAAAAA=',
+          'AAAA',
+          'AAAA',
+          null,
+        );
 
-      expect(response.getClaimableBalanceIdIdFromResult(0), isNull);
-      expect(
+        expect(response.getClaimableBalanceIdIdFromResult(0), isNull);
+        expect(
           response.getClaimableBalanceIdIdFromResult(1),
-          equals('f5ea7fb3de18dae9f12af96cf0750749016fbcba6bf09e902a69e54568771d82'));
-    });
+          equals(
+            'f5ea7fb3de18dae9f12af96cf0750749016fbcba6bf09e902a69e54568771d82',
+          ),
+        );
+      },
+    );
 
     test('getOfferIdFromResult reports the id of a created buy offer', () {
       final resultXdr =
           _transactionResultXdr(XdrTransactionResultCode.txSUCCESS, [
-        _manageOfferOperationResult(
-          XdrOperationType.MANAGE_BUY_OFFER,
-          XdrManageOfferEffect.MANAGE_OFFER_CREATED,
-          offerId: 5551234,
-        ),
-      ]);
+            _manageOfferOperationResult(
+              XdrOperationType.MANAGE_BUY_OFFER,
+              XdrManageOfferEffect.MANAGE_OFFER_CREATED,
+              offerId: 5551234,
+            ),
+          ]);
       final response = SubmitTransactionResponse(
         null,
         12345,
@@ -1171,11 +1259,11 @@ void main() {
       // operation succeeded yet no id exists to report.
       final resultXdr =
           _transactionResultXdr(XdrTransactionResultCode.txSUCCESS, [
-        _manageOfferOperationResult(
-          XdrOperationType.MANAGE_SELL_OFFER,
-          XdrManageOfferEffect.MANAGE_OFFER_DELETED,
-        ),
-      ]);
+            _manageOfferOperationResult(
+              XdrOperationType.MANAGE_SELL_OFFER,
+              XdrManageOfferEffect.MANAGE_OFFER_DELETED,
+            ),
+          ]);
       final response = SubmitTransactionResponse(
         null,
         12345,
@@ -1192,13 +1280,14 @@ void main() {
 
     test('getOfferIdFromResult answers null when the transaction failed', () {
       final response = _failedResponseWithResultXdr(
-          _transactionResultXdr(XdrTransactionResultCode.txFAILED, [
-        _manageOfferOperationResult(
-          XdrOperationType.MANAGE_SELL_OFFER,
-          XdrManageOfferEffect.MANAGE_OFFER_CREATED,
-          offerId: 7654321,
-        ),
-      ]));
+        _transactionResultXdr(XdrTransactionResultCode.txFAILED, [
+          _manageOfferOperationResult(
+            XdrOperationType.MANAGE_SELL_OFFER,
+            XdrManageOfferEffect.MANAGE_OFFER_CREATED,
+            offerId: 7654321,
+          ),
+        ]),
+      );
 
       // Position 0 holds a decodable offer success, but core reports success
       // codes for operations that ran before the failure; only the
@@ -1207,74 +1296,91 @@ void main() {
       expect(response.getOfferIdFromResult(0), isNull);
     });
 
-    test('getClaimableBalanceIdIdFromResult answers null when the transaction failed', () {
-      // txFAILED carrying two CreateClaimableBalance successes.
-      final response = _failedResponseWithResultXdr(
+    test(
+      'getClaimableBalanceIdIdFromResult answers null when the transaction failed',
+      () {
+        // txFAILED carrying two CreateClaimableBalance successes.
+        final response = _failedResponseWithResultXdr(
           'AAAAAAAAAMj/////AAAAAgAAAAAAAAAOAAAAAAAAAAA/DDS/k60NmXHQTMyQ9wVRHI'
           'OKrZc0pKL7DXoD/H/omgAAAAAAAAAOAAAAAAAAAAD16n+z3hja6fEq+WzwdQdJAW+8'
-          'umvwnpAqaeVFaHcdggAAAAA=');
+          'umvwnpAqaeVFaHcdggAAAAA=',
+        );
 
-      // Read the fixture first, so an unreadable one cannot pass this test by
-      // answering null for the wrong reason.
-      final decoded =
-          XdrTransactionResult.fromBase64EncodedXdrString(response.resultXdr!);
-      expect(decoded.result.discriminant,
-          equals(XdrTransactionResultCode.txFAILED));
-      expect(decoded.result.results, hasLength(2));
+        // Read the fixture first, so an unreadable one cannot pass this test by
+        // answering null for the wrong reason.
+        final decoded = XdrTransactionResult.fromBase64EncodedXdrString(
+          response.resultXdr!,
+        );
+        expect(
+          decoded.result.discriminant,
+          equals(XdrTransactionResultCode.txFAILED),
+        );
+        expect(decoded.result.results, hasLength(2));
 
-      // Both positions hold a decodable balance id, but core reports success
-      // codes for operations that ran before the failure; only the
-      // transaction result code says the ledger rolled everything back.
-      expect(response.success, isFalse);
-      expect(response.getClaimableBalanceIdIdFromResult(0), isNull);
-      expect(response.getClaimableBalanceIdIdFromResult(1), isNull);
-    });
+        // Both positions hold a decodable balance id, but core reports success
+        // codes for operations that ran before the failure; only the
+        // transaction result code says the ledger rolled everything back.
+        expect(response.success, isFalse);
+        expect(response.getClaimableBalanceIdIdFromResult(0), isNull);
+        expect(response.getClaimableBalanceIdIdFromResult(1), isNull);
+      },
+    );
 
     // Neither input yields a TransactionResult: the first is not base64 at
     // all, the second is base64 but far too short to hold one. Both must be
     // answered with null rather than escaping to the caller.
     const unreadableResultXdrs = ['not base64 at all!!', 'AAAAAA=='];
 
-    test('getOfferIdFromResult answers null when the result XDR cannot be read', () {
-      for (final resultXdr in unreadableResultXdrs) {
-        final response = SubmitTransactionResponse(
-          null,
-          12345,
-          'hash123',
-          'AAAA',
-          resultXdr,
-          'AAAA',
-          'AAAA',
-          null,
-        );
+    test(
+      'getOfferIdFromResult answers null when the result XDR cannot be read',
+      () {
+        for (final resultXdr in unreadableResultXdrs) {
+          final response = SubmitTransactionResponse(
+            null,
+            12345,
+            'hash123',
+            'AAAA',
+            resultXdr,
+            'AAAA',
+            'AAAA',
+            null,
+          );
 
-        expect(response.getOfferIdFromResult(0), isNull, reason: resultXdr);
-      }
-    });
+          expect(response.getOfferIdFromResult(0), isNull, reason: resultXdr);
+        }
+      },
+    );
 
-    test('getClaimableBalanceIdIdFromResult answers null when the result XDR cannot be read', () {
-      for (final resultXdr in unreadableResultXdrs) {
-        final response = SubmitTransactionResponse(
-          null,
-          12345,
-          'hash123',
-          'AAAA',
-          resultXdr,
-          'AAAA',
-          'AAAA',
-          null,
-        );
+    test(
+      'getClaimableBalanceIdIdFromResult answers null when the result XDR cannot be read',
+      () {
+        for (final resultXdr in unreadableResultXdrs) {
+          final response = SubmitTransactionResponse(
+            null,
+            12345,
+            'hash123',
+            'AAAA',
+            resultXdr,
+            'AAAA',
+            'AAAA',
+            null,
+          );
 
-        expect(response.getClaimableBalanceIdIdFromResult(0), isNull,
-            reason: resultXdr);
-      }
-    });
+          expect(
+            response.getClaimableBalanceIdIdFromResult(0),
+            isNull,
+            reason: resultXdr,
+          );
+        }
+      },
+    );
   });
 
   group('SubmitTransactionResponse fromJson - deep', () {
     test('fromJson creates response from failed transaction', () {
       final json = {
-        'hash': '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889',
+        'hash':
+            '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889',
         'extras': {
           'envelope_xdr': 'AAAA',
           'result_xdr': 'test_xdr',
@@ -1290,13 +1396,17 @@ void main() {
       expect(response.hash, equals(json['hash']));
       expect(response.ledger, isNull);
       expect(response.extras, isNotNull);
-      expect(response.extras?.resultCodes?.transactionResultCode, equals('tx_failed'));
+      expect(
+        response.extras?.resultCodes?.transactionResultCode,
+        equals('tx_failed'),
+      );
       expect(response.successfulTransaction, isNull);
     });
 
     test('fromJson with rate limit headers and basic fields', () {
       final json = {
-        'hash': '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889',
+        'hash':
+            '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889',
         'ledger': 12345,
         'envelope_xdr': 'AAAA',
         'result_xdr': 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=',
@@ -1354,13 +1464,14 @@ void main() {
       expect(resultCodes.transactionResultCode, equals('tx_failed'));
       expect(resultCodes.operationsResultCodes?.length, equals(2));
       expect(resultCodes.operationsResultCodes?[0], equals('op_underfunded'));
-      expect(resultCodes.operationsResultCodes?[1], equals('op_no_destination'));
+      expect(
+        resultCodes.operationsResultCodes?[1],
+        equals('op_no_destination'),
+      );
     });
 
     test('fromJson with null operations', () {
-      final json = {
-        'transaction': 'tx_bad_seq',
-      };
+      final json = {'transaction': 'tx_bad_seq'};
 
       final resultCodes = ExtrasResultCodes.fromJson(json);
 
@@ -1369,10 +1480,7 @@ void main() {
     });
 
     test('fromJson with empty operations array', () {
-      final json = {
-        'transaction': 'tx_failed',
-        'operations': [],
-      };
+      final json = {'transaction': 'tx_failed', 'operations': []};
 
       final resultCodes = ExtrasResultCodes.fromJson(json);
 
@@ -1437,11 +1545,14 @@ void main() {
         'status': 504,
         'detail': 'Transaction submission timed out',
         'extras': {
-          'hash': '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889',
+          'hash':
+              '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889',
         },
       };
 
-      final exception = SubmitTransactionTimeoutResponseException.fromJson(json);
+      final exception = SubmitTransactionTimeoutResponseException.fromJson(
+        json,
+      );
 
       expect(exception.type, equals('transaction_submission_timeout'));
       expect(exception.title, equals('Transaction Submission Timeout'));
@@ -1456,9 +1567,7 @@ void main() {
         title: 'Timeout',
         status: 504,
         detail: 'Timed out',
-        extras: {
-          'hash': 'hash123',
-        },
+        extras: {'hash': 'hash123'},
       );
 
       expect(exception.hash, equals('hash123'));
@@ -1481,9 +1590,7 @@ void main() {
         title: 'Timeout',
         status: 504,
         detail: 'Timed out',
-        extras: {
-          'other_field': 'value',
-        },
+        extras: {'other_field': 'value'},
       );
 
       expect(exception.hash, isNull);
@@ -1495,9 +1602,7 @@ void main() {
         title: 'Timeout',
         status: 504,
         detail: 'Timed out',
-        extras: {
-          'hash': 123,
-        },
+        extras: {'hash': 123},
       );
 
       expect(exception.hash, isNull);
@@ -1524,7 +1629,8 @@ void main() {
     test('fromJson creates response', () {
       final json = {
         'tx_status': 'PENDING',
-        'hash': '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889',
+        'hash':
+            '3389e9f0f1a65f19736cacf544c2e825313e8447f569233bb8db39aa607c8889',
       };
 
       final response = SubmitAsyncTransactionResponse.fromJson(json, 201);
@@ -1537,15 +1643,18 @@ void main() {
     test('constant values are correct', () {
       expect(SubmitAsyncTransactionResponse.txStatusError, equals('ERROR'));
       expect(SubmitAsyncTransactionResponse.txStatusPending, equals('PENDING'));
-      expect(SubmitAsyncTransactionResponse.txStatusDuplicate, equals('DUPLICATE'));
-      expect(SubmitAsyncTransactionResponse.txStatusTryAgainLater, equals('TRY_AGAIN_LATER'));
+      expect(
+        SubmitAsyncTransactionResponse.txStatusDuplicate,
+        equals('DUPLICATE'),
+      );
+      expect(
+        SubmitAsyncTransactionResponse.txStatusTryAgainLater,
+        equals('TRY_AGAIN_LATER'),
+      );
     });
 
     test('fromJson with ERROR status', () {
-      final json = {
-        'tx_status': 'ERROR',
-        'hash': 'hash123',
-      };
+      final json = {'tx_status': 'ERROR', 'hash': 'hash123'};
 
       final response = SubmitAsyncTransactionResponse.fromJson(json, 400);
 
@@ -1554,10 +1663,7 @@ void main() {
     });
 
     test('fromJson with DUPLICATE status', () {
-      final json = {
-        'tx_status': 'DUPLICATE',
-        'hash': 'hash456',
-      };
+      final json = {'tx_status': 'DUPLICATE', 'hash': 'hash456'};
 
       final response = SubmitAsyncTransactionResponse.fromJson(json, 409);
 
@@ -1566,10 +1672,7 @@ void main() {
     });
 
     test('fromJson with TRY_AGAIN_LATER status', () {
-      final json = {
-        'tx_status': 'TRY_AGAIN_LATER',
-        'hash': 'hash789',
-      };
+      final json = {'tx_status': 'TRY_AGAIN_LATER', 'hash': 'hash789'};
 
       final response = SubmitAsyncTransactionResponse.fromJson(json, 503);
 
@@ -1585,9 +1688,7 @@ void main() {
         'title': 'Transaction Malformed',
         'status': 400,
         'detail': 'The transaction envelope is malformed',
-        'extras': {
-          'envelope_xdr': 'AAAA',
-        },
+        'extras': {'envelope_xdr': 'AAAA'},
       };
 
       final problem = SubmitAsyncTransactionProblem.fromJson(json);
@@ -1647,7 +1748,10 @@ void main() {
 
   group('SubmitTransactionUnknownResponseException', () {
     test('deprecated exception extends UnknownResponse', () {
-      final exception = SubmitTransactionUnknownResponseException(503, 'Service Unavailable');
+      final exception = SubmitTransactionUnknownResponseException(
+        503,
+        'Service Unavailable',
+      );
 
       expect(exception, isA<UnknownResponse>());
       expect(exception.code, equals(503));
@@ -1655,7 +1759,10 @@ void main() {
     });
 
     test('toString includes code and body', () {
-      final exception = SubmitTransactionUnknownResponseException(502, 'Bad Gateway');
+      final exception = SubmitTransactionUnknownResponseException(
+        502,
+        'Bad Gateway',
+      );
       final str = exception.toString();
 
       expect(str, contains('502'));

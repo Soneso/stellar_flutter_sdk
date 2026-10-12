@@ -18,44 +18,45 @@ void main() {
     test('test_browser_webauthn_provider_stub_construction_does_not_throw', () {
       // Construction must not throw; input validation occurs at invocation time.
       expect(
-        () => BrowserWebAuthnProvider(
-          rpId: 'example.com',
-          rpName: 'Example RP',
-        ),
+        () =>
+            BrowserWebAuthnProvider(rpId: 'example.com', rpName: 'Example RP'),
         returnsNormally,
       );
     });
 
-    test('test_browser_webauthn_provider_stub_register_throws_unsupported_error',
-        () async {
-      final provider = BrowserWebAuthnProvider(
-        rpId: 'example.com',
-        rpName: 'Example RP',
-      );
-      await expectLater(
-        provider.register(
-          challenge: Uint8List.fromList(const <int>[1, 2, 3]),
-          userId: Uint8List.fromList(const <int>[4, 5, 6]),
-          userName: 'alice@example.com',
-        ),
-        throwsA(isA<UnsupportedError>()),
-      );
-    });
+    test(
+      'test_browser_webauthn_provider_stub_register_throws_unsupported_error',
+      () async {
+        final provider = BrowserWebAuthnProvider(
+          rpId: 'example.com',
+          rpName: 'Example RP',
+        );
+        await expectLater(
+          provider.register(
+            challenge: Uint8List.fromList(const <int>[1, 2, 3]),
+            userId: Uint8List.fromList(const <int>[4, 5, 6]),
+            userName: 'alice@example.com',
+          ),
+          throwsA(isA<UnsupportedError>()),
+        );
+      },
+    );
 
     test(
-        'test_browser_webauthn_provider_stub_authenticate_throws_unsupported_error',
-        () async {
-      final provider = BrowserWebAuthnProvider(
-        rpId: 'example.com',
-        rpName: 'Example RP',
-      );
-      await expectLater(
-        provider.authenticate(
-          challenge: Uint8List.fromList(const <int>[7, 8, 9]),
-        ),
-        throwsA(isA<UnsupportedError>()),
-      );
-    });
+      'test_browser_webauthn_provider_stub_authenticate_throws_unsupported_error',
+      () async {
+        final provider = BrowserWebAuthnProvider(
+          rpId: 'example.com',
+          rpName: 'Example RP',
+        );
+        await expectLater(
+          provider.authenticate(
+            challenge: Uint8List.fromList(const <int>[7, 8, 9]),
+          ),
+          throwsA(isA<UnsupportedError>()),
+        );
+      },
+    );
   });
 
   group('OZLocalStorageAdapter stub', () {
@@ -67,42 +68,48 @@ void main() {
       );
     });
 
-    test('test_local_storage_adapter_stub_save_throws_unsupported_error',
-        () async {
-      final adapter = OZLocalStorageAdapter();
-      final credential = OZStoredCredential(
-        credentialId: 'abc',
-        publicKey: Uint8List.fromList(const <int>[0x04, 0x01, 0x02]),
-      );
-      await expectLater(
-        adapter.save(credential),
-        throwsA(isA<UnsupportedError>()),
-      );
-    });
+    test(
+      'test_local_storage_adapter_stub_save_throws_unsupported_error',
+      () async {
+        final adapter = OZLocalStorageAdapter();
+        final credential = OZStoredCredential(
+          credentialId: 'abc',
+          publicKey: Uint8List.fromList(const <int>[0x04, 0x01, 0x02]),
+        );
+        await expectLater(
+          adapter.save(credential),
+          throwsA(isA<UnsupportedError>()),
+        );
+      },
+    );
   });
 
   group('OZIndexedDBStorageAdapter stub', () {
-    test('test_indexed_db_storage_adapter_stub_construction_does_not_throw',
-        () {
-      expect(() => OZIndexedDBStorageAdapter(), returnsNormally);
-      expect(
-        () => OZIndexedDBStorageAdapter(dbName: 'custom_db'),
-        returnsNormally,
-      );
-    });
+    test(
+      'test_indexed_db_storage_adapter_stub_construction_does_not_throw',
+      () {
+        expect(() => OZIndexedDBStorageAdapter(), returnsNormally);
+        expect(
+          () => OZIndexedDBStorageAdapter(dbName: 'custom_db'),
+          returnsNormally,
+        );
+      },
+    );
 
-    test('test_indexed_db_storage_adapter_stub_save_throws_unsupported_error',
-        () async {
-      final adapter = OZIndexedDBStorageAdapter();
-      final credential = OZStoredCredential(
-        credentialId: 'abc',
-        publicKey: Uint8List.fromList(const <int>[0x04, 0x01, 0x02]),
-      );
-      await expectLater(
-        adapter.save(credential),
-        throwsA(isA<UnsupportedError>()),
-      );
-    });
+    test(
+      'test_indexed_db_storage_adapter_stub_save_throws_unsupported_error',
+      () async {
+        final adapter = OZIndexedDBStorageAdapter();
+        final credential = OZStoredCredential(
+          credentialId: 'abc',
+          publicKey: Uint8List.fromList(const <int>[0x04, 0x01, 0x02]),
+        );
+        await expectLater(
+          adapter.save(credential),
+          throwsA(isA<UnsupportedError>()),
+        );
+      },
+    );
 
     test('test_indexed_db_storage_adapter_stub_close_no_op', () async {
       final adapter = OZIndexedDBStorageAdapter();

@@ -22,7 +22,7 @@ void main() {
           'p80': '400',
           'p90': '500',
           'p95': '750',
-          'p99': '1000'
+          'p99': '1000',
         },
         'max_fee': {
           'max': '10000',
@@ -38,8 +38,8 @@ void main() {
           'p80': '8000',
           'p90': '9000',
           'p95': '9500',
-          'p99': '10000'
-        }
+          'p99': '10000',
+        },
       };
 
       final response = FeeStatsResponse.fromJson(json);
@@ -68,7 +68,7 @@ void main() {
           'p80': '200',
           'p90': '300',
           'p95': '400',
-          'p99': '500'
+          'p99': '500',
         },
         'max_fee': {
           'max': '10000',
@@ -84,8 +84,8 @@ void main() {
           'p80': '8000',
           'p90': '9000',
           'p95': '9500',
-          'p99': '10000'
-        }
+          'p99': '10000',
+        },
       };
 
       final response = FeeStatsResponse.fromJson(json);
@@ -116,7 +116,7 @@ void main() {
           'p80': '200',
           'p90': '300',
           'p95': '400',
-          'p99': '500'
+          'p99': '500',
         },
         'max_fee': {
           'max': '20000',
@@ -132,8 +132,8 @@ void main() {
           'p80': '16000',
           'p90': '18000',
           'p95': '19000',
-          'p99': '20000'
-        }
+          'p99': '20000',
+        },
       };
 
       final response = FeeStatsResponse.fromJson(json);
@@ -162,7 +162,7 @@ void main() {
         'p80': '600',
         'p90': '750',
         'p95': '875',
-        'p99': '1000'
+        'p99': '1000',
       };
 
       final feeCharged = FeeChargedResponse.fromJson(json);
@@ -198,7 +198,7 @@ void main() {
         'p80': '100',
         'p90': '100',
         'p95': '100',
-        'p99': '100'
+        'p99': '100',
       };
 
       final feeCharged = FeeChargedResponse.fromJson(json);
@@ -224,7 +224,7 @@ void main() {
         'p80': '8000',
         'p90': '9000',
         'p95': '9500',
-        'p99': '10000'
+        'p99': '10000',
       };
 
       final feeCharged = FeeChargedResponse.fromJson(json);
@@ -251,7 +251,7 @@ void main() {
         'p80': '80000',
         'p90': '90000',
         'p95': '95000',
-        'p99': '100000'
+        'p99': '100000',
       };
 
       final maxFee = MaxFeeResponse.fromJson(json);
@@ -287,7 +287,7 @@ void main() {
         'p80': '4000',
         'p90': '5000',
         'p95': '5000',
-        'p99': '5000'
+        'p99': '5000',
       };
 
       final maxFee = MaxFeeResponse.fromJson(json);

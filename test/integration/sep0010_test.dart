@@ -42,66 +42,78 @@ void main() {
 
   TransactionPreconditions validTimeBounds() {
     TransactionPreconditions result = TransactionPreconditions();
-    result.timeBounds = TimeBounds(DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3);
+    result.timeBounds = TimeBounds(
+      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3,
+    );
     return result;
   }
 
   TransactionPreconditions invalidTimeBounds() {
     TransactionPreconditions result = TransactionPreconditions();
-    result.timeBounds = TimeBounds(DateTime.now().millisecondsSinceEpoch ~/ 1000 - 700,
-        DateTime.now().millisecondsSinceEpoch ~/ 1000 - 400);
+    result.timeBounds = TimeBounds(
+      DateTime.now().millisecondsSinceEpoch ~/ 1000 - 700,
+      DateTime.now().millisecondsSinceEpoch ~/ 1000 - 400,
+    );
     return result;
   }
 
   ManageDataOperation validFirstManageDataOp(String accountId) {
     MuxedAccount muxedAccount = MuxedAccount.fromAccountId(accountId)!;
-    final ManageDataOperationBuilder builder =
-        ManageDataOperationBuilder(domain + " auth", generateNonce())
-            .setMuxedSourceAccount(muxedAccount);
+    final ManageDataOperationBuilder builder = ManageDataOperationBuilder(
+      domain + " auth",
+      generateNonce(),
+    ).setMuxedSourceAccount(muxedAccount);
     return builder.build();
   }
 
   ManageDataOperation invalidClientDomainManageDataOp() {
     final ManageDataOperationBuilder builder = ManageDataOperationBuilder(
-            "client_domain", Uint8List.fromList("place.client.com".codeUnits))
-        .setSourceAccount(serverAccountId);
+      "client_domain",
+      Uint8List.fromList("place.client.com".codeUnits),
+    ).setSourceAccount(serverAccountId);
     return builder.build();
   }
 
   ManageDataOperation validClientDomainManageDataOp(
-      String clientDomainAccountId) {
+    String clientDomainAccountId,
+  ) {
     final ManageDataOperationBuilder builder = ManageDataOperationBuilder(
-            "client_domain", Uint8List.fromList("place.client.com".codeUnits))
-        .setSourceAccount(clientDomainAccountId);
+      "client_domain",
+      Uint8List.fromList("place.client.com".codeUnits),
+    ).setSourceAccount(clientDomainAccountId);
     return builder.build();
   }
 
   ManageDataOperation invalidHomeDomainOp(String accountId) {
-    final ManageDataOperationBuilder builder =
-        ManageDataOperationBuilder("fake.com" + " auth", generateNonce())
-            .setSourceAccount(accountId);
+    final ManageDataOperationBuilder builder = ManageDataOperationBuilder(
+      "fake.com" + " auth",
+      generateNonce(),
+    ).setSourceAccount(accountId);
     return builder.build();
   }
 
   ManageDataOperation validSecondManageDataOp() {
     final ManageDataOperationBuilder builder = ManageDataOperationBuilder(
-            "web_auth_domain", Uint8List.fromList("api.stellar.org".codeUnits))
-        .setSourceAccount(serverAccountId);
+      "web_auth_domain",
+      Uint8List.fromList("api.stellar.org".codeUnits),
+    ).setSourceAccount(serverAccountId);
     return builder.build();
   }
 
   ManageDataOperation secondManageDataOpInvalidSourceAccount() {
     final ManageDataOperationBuilder builder = ManageDataOperationBuilder(
-            "web_auth_domain", Uint8List.fromList("api.stellar.org".codeUnits))
-        .setSourceAccount(clientAccountId); // invalid, must be server
+      "web_auth_domain",
+      Uint8List.fromList("api.stellar.org".codeUnits),
+    ).setSourceAccount(clientAccountId); // invalid, must be server
     return builder.build();
   }
 
   ManageDataOperation invalidWebAuthOp() {
     final ManageDataOperationBuilder builder = ManageDataOperationBuilder(
-            "web_auth_domain", Uint8List.fromList("api.fake.org".codeUnits))
-        .setSourceAccount(serverAccountId);
+      "web_auth_domain",
+      Uint8List.fromList("api.fake.org".codeUnits),
+    ).setSourceAccount(serverAccountId);
     return builder.build();
   }
 
@@ -141,8 +153,9 @@ void main() {
   String requestChallengeInvalidFirstOpSourceAccount() {
     final transactionAccount = Account(serverAccountId, BigInt.from(-1));
     final Transaction transaction = new TransactionBuilder(transactionAccount)
-        .addOperation(validFirstManageDataOp(
-            serverAccountId)) // invalid because must be client account id
+        .addOperation(
+          validFirstManageDataOp(serverAccountId),
+        ) // invalid because must be client account id
         .addOperation(validSecondManageDataOp())
         .addMemo(Memo.none())
         .addPreconditions(validTimeBounds())
@@ -241,9 +254,12 @@ void main() {
         .addOperation(validFirstManageDataOp(accountId))
         .addOperation(validSecondManageDataOp())
         .addOperation(
-            PaymentOperationBuilder(serverAccountId, Asset.NATIVE, "100")
-                .setSourceAccount(serverAccountId)
-                .build()) // not allowed.
+          PaymentOperationBuilder(
+            serverAccountId,
+            Asset.NATIVE,
+            "100",
+          ).setSourceAccount(serverAccountId).build(),
+        ) // not allowed.
         .addMemo(Memo.none())
         .addPreconditions(validTimeBounds())
         .build();
@@ -324,12 +340,11 @@ void main() {
       throw ChallengeValidationError("Invalid transaction type");
     }
 
-    final txHash =
-        AbstractTransaction.fromEnvelopeXdr(envelopeXdr).hash(Network.TESTNET);
+    final txHash = AbstractTransaction.fromEnvelopeXdr(
+      envelopeXdr,
+    ).hash(Network.TESTNET);
 
-    final signatures = List<XdrDecoratedSignature>.empty(
-      growable: true,
-    );
+    final signatures = List<XdrDecoratedSignature>.empty(growable: true);
     signatures.addAll(envelopeXdr.v1!.signatures);
     for (KeyPair signer in signers) {
       signatures.add(signer.signDecorated(txHash));
@@ -345,8 +360,12 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
   }
 
   test('test default success', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "GET" &&
@@ -358,16 +377,19 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
         // validate if the challenge transaction has been signed by the client
         XdrTransactionEnvelope envelopeXdr =
             XdrTransactionEnvelope.fromEnvelopeXdrString(
-                json.decode(request.body)['transaction']);
+              json.decode(request.body)['transaction'],
+            );
         final signatures = envelopeXdr.v1!.signatures;
         if (signatures.length == 2) {
           final clientSignature = envelopeXdr.v1!.signatures[1];
           final clientKeyPair = KeyPair.fromAccountId(clientAccountId);
-          final transactionHash =
-              AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
-                  .hash(Network.TESTNET);
+          final transactionHash = AbstractTransaction.fromEnvelopeXdr(
+            envelopeXdr,
+          ).hash(Network.TESTNET);
           final valid = clientKeyPair.verify(
-              transactionHash, clientSignature.signature.signature);
+            transactionHash,
+            clientSignature.signature.signature,
+          );
           if (valid) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }
@@ -384,30 +406,39 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
   });
 
   test('test memo success', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "GET" &&
           request.url.toString().contains(clientAccountId)) {
         return http.Response(
-            requestChallengeSuccess(clientAccountId, testMemo), 200);
+          requestChallengeSuccess(clientAccountId, testMemo),
+          200,
+        );
       }
       if (request.url.toString().startsWith(authServer) &&
           request.method == "POST") {
         // validate if the challenge transaction has been signed by the client
         XdrTransactionEnvelope envelopeXdr =
             XdrTransactionEnvelope.fromEnvelopeXdrString(
-                json.decode(request.body)['transaction']);
+              json.decode(request.body)['transaction'],
+            );
         final signatures = envelopeXdr.v1!.signatures;
         if (signatures.length == 2) {
           final clientSignature = envelopeXdr.v1!.signatures[1];
           final clientKeyPair = KeyPair.fromAccountId(clientAccountId);
-          final transactionHash =
-              AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
-                  .hash(Network.TESTNET);
+          final transactionHash = AbstractTransaction.fromEnvelopeXdr(
+            envelopeXdr,
+          ).hash(Network.TESTNET);
           final valid = clientKeyPair.verify(
-              transactionHash, clientSignature.signature.signature);
+            transactionHash,
+            clientSignature.signature.signature,
+          );
           if (valid) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }
@@ -419,14 +450,19 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
 
     KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
     String userAccountId = userKeyPair.accountId;
-    String jwtToken =
-        await webAuth.jwtToken(userAccountId, [userKeyPair], memo: testMemo);
+    String jwtToken = await webAuth.jwtToken(userAccountId, [
+      userKeyPair,
+    ], memo: testMemo);
     assert(jwtToken == successJWTToken);
   });
 
   test('test muxed success', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "GET" &&
@@ -438,16 +474,19 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
         // validate if the challenge transaction has been signed by the client
         XdrTransactionEnvelope envelopeXdr =
             XdrTransactionEnvelope.fromEnvelopeXdrString(
-                json.decode(request.body)['transaction']);
+              json.decode(request.body)['transaction'],
+            );
         final signatures = envelopeXdr.v1!.signatures;
         if (signatures.length == 2) {
           final clientSignature = envelopeXdr.v1!.signatures[1];
           final clientKeyPair = KeyPair.fromAccountId(clientAccountIdM);
-          final transactionHash =
-              AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
-                  .hash(Network.TESTNET);
+          final transactionHash = AbstractTransaction.fromEnvelopeXdr(
+            envelopeXdr,
+          ).hash(Network.TESTNET);
           final valid = clientKeyPair.verify(
-              transactionHash, clientSignature.signature.signature);
+            transactionHash,
+            clientSignature.signature.signature,
+          );
           if (valid) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }
@@ -463,8 +502,12 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
   });
 
   test('test get challenge failure', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       final mapJson = {'error': "Bad request"};
       return http.Response(json.encode(mapJson), 400);
@@ -482,12 +525,17 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
   });
 
   test('test invalid added memo and muxed', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     try {
       KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
-      String jwtToken = await webAuth.jwtToken(clientAccountIdM, [userKeyPair],
-          memo: testMemo);
+      String jwtToken = await webAuth.jwtToken(clientAccountIdM, [
+        userKeyPair,
+      ], memo: testMemo);
       print(jwtToken);
     } catch (e) {
       print(e.toString());
@@ -498,14 +546,20 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
   });
 
   test('test get challenge invalid memo type', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "GET" &&
           request.url.toString().contains(clientAccountId)) {
         return http.Response(
-            requestChallengeInvalidMemoType(clientAccountId), 200);
+          requestChallengeInvalidMemoType(clientAccountId),
+          200,
+        );
       }
       final mapJson = {'error': "Bad request"};
       return http.Response(json.encode(mapJson), 400);
@@ -523,14 +577,20 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
   });
 
   test('test get challenge invalid memo value', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "GET" &&
           request.url.toString().contains(clientAccountId)) {
         return http.Response(
-            requestChallengeInvalidMemoValue(clientAccountId), 200);
+          requestChallengeInvalidMemoValue(clientAccountId),
+          200,
+        );
       }
       final mapJson = {'error': "Bad request"};
       return http.Response(json.encode(mapJson), 400);
@@ -548,14 +608,20 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
   });
 
   test('test get challenge invalid server mix memo and muxed', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "GET" &&
           request.url.toString().contains(clientAccountIdM)) {
         return http.Response(
-            requestChallengeSuccess(clientAccountIdM, testMemo), 200);
+          requestChallengeSuccess(clientAccountIdM, testMemo),
+          200,
+        );
       }
       final mapJson = {'error': "Bad request"};
       return http.Response(json.encode(mapJson), 400);
@@ -572,14 +638,20 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
   });
 
   test('test get challenge invalid sequence number', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "GET" &&
           request.url.toString().contains(clientAccountId)) {
         return http.Response(
-            requestChallengeInvalidSequenceNumber(clientAccountId), 200);
+          requestChallengeInvalidSequenceNumber(clientAccountId),
+          200,
+        );
       }
       final mapJson = {'error': "Bad request"};
       return http.Response(json.encode(mapJson), 400);
@@ -597,14 +669,20 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
   });
 
   test('test get challenge invalid first op source account', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "GET" &&
           request.url.toString().contains(clientAccountId)) {
         return http.Response(
-            requestChallengeInvalidFirstOpSourceAccount(), 200);
+          requestChallengeInvalidFirstOpSourceAccount(),
+          200,
+        );
       }
       final mapJson = {'error': "Bad request"};
       return http.Response(json.encode(mapJson), 400);
@@ -622,14 +700,20 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
   });
 
   test('test get challenge invalid second op source account', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "GET" &&
           request.url.toString().contains(clientAccountId)) {
         return http.Response(
-            requestChallengeInvalidSecondOpSourceAccount(clientAccountId), 200);
+          requestChallengeInvalidSecondOpSourceAccount(clientAccountId),
+          200,
+        );
       }
       final mapJson = {'error': "Bad request"};
       return http.Response(json.encode(mapJson), 400);
@@ -647,14 +731,20 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
   });
 
   test('test get challenge invalid home domain', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "GET" &&
           request.url.toString().contains(clientAccountId)) {
         return http.Response(
-            requestChallengeInvalidHomeDomain(clientAccountId), 200);
+          requestChallengeInvalidHomeDomain(clientAccountId),
+          200,
+        );
       }
       final mapJson = {'error': "Bad request"};
       return http.Response(json.encode(mapJson), 400);
@@ -672,14 +762,20 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
   });
 
   test('test get challenge invalid web auth domain', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "GET" &&
           request.url.toString().contains(clientAccountId)) {
         return http.Response(
-            requestChallengeInvalidWebAuth(clientAccountId), 200);
+          requestChallengeInvalidWebAuth(clientAccountId),
+          200,
+        );
       }
       final mapJson = {'error': "Bad request"};
       return http.Response(json.encode(mapJson), 400);
@@ -697,14 +793,20 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
   });
 
   test('test get challenge invalid time bounds', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "GET" &&
           request.url.toString().contains(clientAccountId)) {
         return http.Response(
-            requestChallengeInvalidTimeBounds(clientAccountId), 200);
+          requestChallengeInvalidTimeBounds(clientAccountId),
+          200,
+        );
       }
       final mapJson = {'error': "Bad request"};
       return http.Response(json.encode(mapJson), 400);
@@ -722,14 +824,20 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
   });
 
   test('test get challenge invalid operation type', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "GET" &&
           request.url.toString().contains(clientAccountId)) {
         return http.Response(
-            requestChallengeInvalidOperationType(clientAccountId), 200);
+          requestChallengeInvalidOperationType(clientAccountId),
+          200,
+        );
       }
       final mapJson = {'error': "Bad request"};
       return http.Response(json.encode(mapJson), 400);
@@ -747,14 +855,20 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
   });
 
   test('test get challenge invalid signature', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "GET" &&
           request.url.toString().contains(clientAccountId)) {
         return http.Response(
-            requestChallengeInvalidSignature(clientAccountId), 200);
+          requestChallengeInvalidSignature(clientAccountId),
+          200,
+        );
       }
       final mapJson = {'error': "Bad request"};
       return http.Response(json.encode(mapJson), 400);
@@ -772,14 +886,20 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
   });
 
   test('test get challenge too many signatures', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "GET" &&
           request.url.toString().contains(clientAccountId)) {
         return http.Response(
-            requestChallengeMultipleSignature(clientAccountId), 200);
+          requestChallengeMultipleSignature(clientAccountId),
+          200,
+        );
       }
       final mapJson = {'error': "Bad request"};
       return http.Response(json.encode(mapJson), 400);
@@ -797,15 +917,20 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
   });
 
   test('test get challenge invalid client domain source account', () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "GET" &&
           request.url.toString().contains(clientAccountId)) {
         return http.Response(
-            requestChallengeInvalidClientDomainOpSourceAccount(clientAccountId),
-            200);
+          requestChallengeInvalidClientDomainOpSourceAccount(clientAccountId),
+          200,
+        );
       }
       final mapJson = {'error': "Bad request"};
       return http.Response(json.encode(mapJson), 400);
@@ -824,35 +949,47 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
 
   test('test get challenge valid client domain source account', () async {
     final KeyPair clientDomainAccountKeyPair = KeyPair.random();
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == "GET" &&
           request.url.toString().contains(clientAccountId)) {
         return http.Response(
-            requestChallengeValidClientDomainOpSourceAccount(
-                clientAccountId, clientDomainAccountKeyPair.accountId),
-            200);
+          requestChallengeValidClientDomainOpSourceAccount(
+            clientAccountId,
+            clientDomainAccountKeyPair.accountId,
+          ),
+          200,
+        );
       }
       if (request.url.toString().startsWith(authServer) &&
           request.method == "POST") {
         // validate if the challenge transaction has been signed by the client
         XdrTransactionEnvelope envelopeXdr =
             XdrTransactionEnvelope.fromEnvelopeXdrString(
-                json.decode(request.body)['transaction']);
+              json.decode(request.body)['transaction'],
+            );
         final signatures = envelopeXdr.v1!.signatures;
         if (signatures.length == 3) {
-          final transactionHash =
-              AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
-                  .hash(Network.TESTNET);
+          final transactionHash = AbstractTransaction.fromEnvelopeXdr(
+            envelopeXdr,
+          ).hash(Network.TESTNET);
           final clientDomainSignature = envelopeXdr.v1!.signatures[1];
           final validCDS = clientDomainAccountKeyPair.verify(
-              transactionHash, clientDomainSignature.signature.signature);
+            transactionHash,
+            clientDomainSignature.signature.signature,
+          );
           final clientSignature = envelopeXdr.v1!.signatures[2];
           final clientKeyPair = KeyPair.fromAccountId(clientAccountId);
           final validCS = clientKeyPair.verify(
-              transactionHash, clientSignature.signature.signature);
+            transactionHash,
+            clientSignature.signature.signature,
+          );
           if (validCS && validCDS) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }
@@ -864,9 +1001,12 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
     try {
       KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
       String userAccountId = userKeyPair.accountId;
-      String jwtToken = await webAuth.jwtToken(userAccountId, [userKeyPair],
-          clientDomain: "place.domain.com",
-          clientDomainAccountKeyPair: clientDomainAccountKeyPair);
+      String jwtToken = await webAuth.jwtToken(
+        userAccountId,
+        [userKeyPair],
+        clientDomain: "place.domain.com",
+        clientDomainAccountKeyPair: clientDomainAccountKeyPair,
+      );
       print(jwtToken);
     } catch (e) {
       print(e.toString());
@@ -897,13 +1037,11 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
           200,
         );
       }
-      if (request.url
-          .toString()
-          .contains("$clientDomain/.well-known/stellar.toml")) {
+      if (request.url.toString().contains(
+        "$clientDomain/.well-known/stellar.toml",
+      )) {
         return http.Response(
-          requestClientDomainToml(
-            clientDomainAccountKeyPair,
-          ),
+          requestClientDomainToml(clientDomainAccountKeyPair),
           200,
         );
       }
@@ -915,16 +1053,20 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
         );
         final signatures = envelopeXdr.v1!.signatures;
         if (signatures.length == 3) {
-          final transactionHash =
-              AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
-                  .hash(Network.TESTNET);
+          final transactionHash = AbstractTransaction.fromEnvelopeXdr(
+            envelopeXdr,
+          ).hash(Network.TESTNET);
           final clientDomainSignature = envelopeXdr.v1!.signatures[1];
           final validCDS = clientDomainAccountKeyPair.verify(
-              transactionHash, clientDomainSignature.signature.signature);
+            transactionHash,
+            clientDomainSignature.signature.signature,
+          );
           final clientSignature = envelopeXdr.v1!.signatures[2];
           final clientKeyPair = KeyPair.fromAccountId(clientAccountId);
           final validCS = clientKeyPair.verify(
-              transactionHash, clientSignature.signature.signature);
+            transactionHash,
+            clientSignature.signature.signature,
+          );
           if (validCS && validCDS) {
             return http.Response(requestJWTSuccess(), 200); // OK
           }
@@ -994,8 +1136,11 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
       );
     } catch (e) {
       if (e is Exception) {
-        assert(e.toString().contains(
-            "The clientDomain is required if clientDomainSigningDelegate is provided"));
+        assert(
+          e.toString().contains(
+            "The clientDomain is required if clientDomainSigningDelegate is provided",
+          ),
+        );
       } else {
         assert(false);
       }
@@ -1025,9 +1170,9 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
           200,
         );
       }
-      if (request.url
-          .toString()
-          .contains("$clientDomain/.well-known/stellar.toml")) {
+      if (request.url.toString().contains(
+        "$clientDomain/.well-known/stellar.toml",
+      )) {
         return http.Response('', 200);
       }
       final mapJson = {'error': "Bad request"};
@@ -1049,9 +1194,11 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
       );
     } catch (e) {
       if (e is Exception) {
-        assert(e
-            .toString()
-            .contains("No client domain SIGNING_KEY found in stellar.toml"));
+        assert(
+          e.toString().contains(
+            "No client domain SIGNING_KEY found in stellar.toml",
+          ),
+        );
       } else {
         assert(false);
       }
@@ -1106,7 +1253,9 @@ SIGNING_KEY = "${clientDomainAccountKeyPair.accountId}"
     // Create callback that calls the remote signing server
     Future<String> signingCallback(String transactionXdr) async {
       callbackInvoked = true;
-      print('Callback invoked, sending transaction to remote signing server...');
+      print(
+        'Callback invoked, sending transaction to remote signing server...',
+      );
 
       final httpClient = http.Client();
       try {

@@ -45,7 +45,7 @@ class PaymentsRequestBuilder extends RequestBuilder {
   /// - [httpClient] HTTP client for making requests to Horizon
   /// - [serverURI] Base URI of the Horizon server
   PaymentsRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["payments"]);
+    : super(httpClient, serverURI, ["payments"]);
 
   /// Filters payments by account.
   ///
@@ -116,9 +116,13 @@ class PaymentsRequestBuilder extends RequestBuilder {
   /// Requests specific uri and returns Page of OperationResponse.
   /// This method is helpful for getting the next set of results.
   static Future<Page<OperationResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
+    http.Client httpClient,
+    Uri uri,
+  ) async {
     return RequestBuilder.requestExecute<Page<OperationResponse>>(
-        httpClient, uri);
+      httpClient,
+      uri,
+    );
   }
 
   /// Allows to stream SSE events from horizon.
@@ -128,13 +132,16 @@ class PaymentsRequestBuilder extends RequestBuilder {
   /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<OperationResponse> stream() {
     return streamEvents<OperationResponse>(
-        (json) => OperationResponse.fromJson(json));
+      (json) => OperationResponse.fromJson(json),
+    );
   }
 
   ///Build and execute request.
   Future<Page<OperationResponse>> execute() {
     return PaymentsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+      this.httpClient,
+      this.buildUri(),
+    );
   }
 
   /// Sets the cursor for pagination to start returning records from a specific point.

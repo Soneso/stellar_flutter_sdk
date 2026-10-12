@@ -108,7 +108,10 @@ SendTransactionResponse _sendPending({required String hash}) {
 }
 
 /// Builds a [SendTransactionResponse] with `ERROR` status and an error XDR.
-SendTransactionResponse _sendError({String hash = '', String errorXdr = 'AAAA'}) {
+SendTransactionResponse _sendError({
+  String hash = '',
+  String errorXdr = 'AAAA',
+}) {
   final r = SendTransactionResponse(<String, dynamic>{});
   r.hash = hash;
   r.status = SendTransactionResponse.STATUS_ERROR;
@@ -191,12 +194,14 @@ WebAuthnAuthenticationResult _fakeAuthResult({
   Uint8List? credentialIdBytes,
   Uint8List? sigDer,
 }) {
-  final credIdBytes = credentialIdBytes ??
+  final credIdBytes =
+      credentialIdBytes ??
       base64Url.decode(base64Url.normalize(_credentialIdB64));
   // why: supply a well-formed DER signature: 0x30 SEQUENCE, length, 0x02
   // INTEGER r, 0x02 INTEGER s — the smart-account utils run a DER ->
   // compact normaliser that requires a syntactically valid DER signature.
-  final defaultSig = sigDer ??
+  final defaultSig =
+      sigDer ??
       Uint8List.fromList(<int>[
         0x30, 0x44, // SEQUENCE, length 0x44
         0x02, 0x20, // INTEGER r
@@ -221,13 +226,15 @@ Account _deployerAccount(KeyPair deployer, {int seq = 1}) {
 
 /// Sets up a fully-wired kit + mocks ready for a `submit` happy path.
 Future<
-    ({
-      FakePipelineKit kit,
-      MockSorobanServer soroban,
-      RecordingWebAuthnProvider provider,
-      KeyPair deployer,
-      OZStoredCredential stored,
-    })> _harness({
+  ({
+    FakePipelineKit kit,
+    MockSorobanServer soroban,
+    RecordingWebAuthnProvider provider,
+    KeyPair deployer,
+    OZStoredCredential stored,
+  })
+>
+_harness({
   RecordingRelayerClient? relayer,
   RecordingIndexerClient? indexer,
   bool useUpgradedAuth = true,
@@ -280,17 +287,19 @@ MockSorobanServer _fundWalletMock({required String hash}) {
   final mock = MockSorobanServer();
   // Every account lookup answers with the account that was requested, so the
   // temporary keypair fundWallet generates internally resolves.
-  mock.getAccountDefault =
-      () => Account(mock.getAccountCalls.last, BigInt.from(7));
+  mock.getAccountDefault = () =>
+      Account(mock.getAccountCalls.last, BigInt.from(7));
 
   final balanceStroops = BigInt.from(1005) * BigInt.from(Util.stroopsPerXlm);
-  mock.simulateResponses.add(_simResponseWithValue(
-    Util.bigIntToI128ScVal(balanceStroops),
-  ));
-  mock.simulateResponses.add(_simResponseWithAuthEntry(
-    entry: _sourceAccountTransferEntry(),
-    minResourceFee: 100,
-  ));
+  mock.simulateResponses.add(
+    _simResponseWithValue(Util.bigIntToI128ScVal(balanceStroops)),
+  );
+  mock.simulateResponses.add(
+    _simResponseWithAuthEntry(
+      entry: _sourceAccountTransferEntry(),
+      minResourceFee: 100,
+    ),
+  );
   mock.latestLedgerResponses.add(_latestLedger(4000));
   mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 120));
   mock.sendResponses.add(_sendPending(hash: hash));
@@ -333,10 +342,12 @@ void main() {
       final h = await _harness();
       // Initial simulate returns one matching auth entry.
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
-      h.soroban.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeAddressCredsEntry(contractAddress: _contractA),
-        minResourceFee: 100,
-      ));
+      h.soroban.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: _makeAddressCredsEntry(contractAddress: _contractA),
+          minResourceFee: 100,
+        ),
+      );
       h.soroban.latestLedgerResponses.add(_latestLedger(1000));
       // Provider returns matching credentialId.
       h.provider.authenticateResponses.add(_fakeAuthResult());
@@ -376,20 +387,19 @@ void main() {
       final firstAuth = opXdr.first;
       final creds = firstAuth.credentials.address;
       expect(creds, isNotNull);
-      expect(
-        creds!.signature.discriminant,
-        equals(XdrSCValType.SCV_MAP),
-      );
+      expect(creds!.signature.discriminant, equals(XdrSCValType.SCV_MAP));
     });
 
     test('submit_passThroughForNonMatchingContract_doesNotMutate', () async {
       final h = await _harness();
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
       // Auth entry points to a DIFFERENT contract — should pass through.
-      final passThroughEntry =
-          _makeAddressCredsEntry(contractAddress: _contractB);
-      h.soroban.simulateResponses
-          .add(_simResponseWithAuthEntry(entry: passThroughEntry));
+      final passThroughEntry = _makeAddressCredsEntry(
+        contractAddress: _contractB,
+      );
+      h.soroban.simulateResponses.add(
+        _simResponseWithAuthEntry(entry: passThroughEntry),
+      );
       h.soroban.latestLedgerResponses.add(_latestLedger(1000));
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
       h.soroban.simulateResponses.add(_simResponseEmpty());
@@ -418,9 +428,11 @@ void main() {
       // verifies the helper hasn't regressed.
       final h = await _harness();
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
-      h.soroban.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeAddressCredsEntry(contractAddress: _contractA),
-      ));
+      h.soroban.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: _makeAddressCredsEntry(contractAddress: _contractA),
+        ),
+      );
       h.soroban.latestLedgerResponses.add(_latestLedger(2000));
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
@@ -451,13 +463,19 @@ void main() {
       // payload codec guarantees this; this test pins that behaviour.
       final symKeys = <String>[];
       for (final me in mapEntries!) {
-        expect(me.key.discriminant, equals(XdrSCValType.SCV_SYMBOL),
-            reason: 'AuthPayload outer-map keys must be Symbols');
+        expect(
+          me.key.discriminant,
+          equals(XdrSCValType.SCV_SYMBOL),
+          reason: 'AuthPayload outer-map keys must be Symbols',
+        );
         symKeys.add(me.key.sym!);
       }
       final sorted = List<String>.from(symKeys)..sort();
-      expect(symKeys, equals(sorted),
-          reason: 'outer-map keys not in alphabetical order');
+      expect(
+        symKeys,
+        equals(sorted),
+        reason: 'outer-map keys not in alphabetical order',
+      );
     });
 
     test('submit_writesNonceAndExpirationFromSimulation', () async {
@@ -466,9 +484,11 @@ void main() {
       // that survives a round trip through XDR.
       final h = await _harness();
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
-      h.soroban.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeAddressCredsEntry(contractAddress: _contractA),
-      ));
+      h.soroban.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: _makeAddressCredsEntry(contractAddress: _contractA),
+        ),
+      );
       h.soroban.latestLedgerResponses.add(_latestLedger(5000));
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
@@ -490,12 +510,21 @@ void main() {
 
       final sentTx = h.soroban.sendCalls.single;
       final envelope = sentTx.toEnvelopeXdr();
-      final authEntry = envelope.v1!.tx.operations.first.body
-          .invokeHostFunctionOp!.auth.first;
+      final authEntry = envelope
+          .v1!
+          .tx
+          .operations
+          .first
+          .body
+          .invokeHostFunctionOp!
+          .auth
+          .first;
       final creds = authEntry.credentials.address!;
-      final expectedExpiration =
-          5000 + h.kit.config.signatureExpirationLedgers;
-      expect(creds.signatureExpirationLedger.uint32, equals(expectedExpiration));
+      final expectedExpiration = 5000 + h.kit.config.signatureExpirationLedgers;
+      expect(
+        creds.signatureExpirationLedger.uint32,
+        equals(expectedExpiration),
+      );
     });
   });
 
@@ -503,15 +532,19 @@ void main() {
     test('submit_reSimulatesAfterSigning_consumesNewResourceFees', () async {
       final h = await _harness();
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
-      h.soroban.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeAddressCredsEntry(contractAddress: _contractA),
-        minResourceFee: 100000,
-      ));
+      h.soroban.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: _makeAddressCredsEntry(contractAddress: _contractA),
+          minResourceFee: 100000,
+        ),
+      );
       h.soroban.latestLedgerResponses.add(_latestLedger(1000));
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
       // Re-simulation returns a much larger resource fee.
-      h.soroban.simulateResponses.add(_simResponseEmpty(minResourceFee: 150000));
+      h.soroban.simulateResponses.add(
+        _simResponseEmpty(minResourceFee: 150000),
+      );
       h.soroban.sendResponses.add(_sendPending(hash: 'feebumped'));
       h.soroban.pollResponses.add(_txSuccess());
 
@@ -540,15 +573,18 @@ void main() {
     test('submit_reSimulationFails_throwsSimulationFailed', () async {
       final h = await _harness();
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
-      h.soroban.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeAddressCredsEntry(contractAddress: _contractA),
-      ));
+      h.soroban.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: _makeAddressCredsEntry(contractAddress: _contractA),
+        ),
+      );
       h.soroban.latestLedgerResponses.add(_latestLedger(1000));
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
       // Re-simulation reports error.
-      h.soroban.simulateResponses
-          .add(_simResponseWithError('resource exhaustion'));
+      h.soroban.simulateResponses.add(
+        _simResponseWithError('resource exhaustion'),
+      );
 
       final ops = OZTransactionOperations(h.kit);
       await expectLater(
@@ -575,8 +611,9 @@ void main() {
     test('submit_initialSimulationFails_throwsWithInitialMessage', () async {
       final h = await _harness();
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
-      h.soroban.simulateResponses
-          .add(_simResponseWithError('contract not found'));
+      h.soroban.simulateResponses.add(
+        _simResponseWithError('contract not found'),
+      );
 
       final ops = OZTransactionOperations(h.kit);
       await expectLater(
@@ -602,21 +639,21 @@ void main() {
   });
 
   group('connectWallet cascade', () {
-    test('connectWallet_storageHit_pendingCredential_setsContractId',
-        () async {
+    test('connectWallet_storageHit_pendingCredential_setsContractId', () async {
       // Stage A storage hit, deployment_status = pending. Cascade short-
       // circuits at Stage A and verifies the contract on-chain.
       final soroban = MockSorobanServer();
       // _verifyContractExists makes a single getContractData call which
       // must succeed.
-      soroban.getContractDataResponses
-          .add(LedgerEntry('', '', 0, null, null));
+      soroban.getContractDataResponses.add(LedgerEntry('', '', 0, null, null));
       final credentials = StubCredentialManager();
-      credentials.inject(OZStoredCredential(
-        credentialId: _credentialIdB64,
-        publicKey: _bytes(65),
-        contractId: _contractA,
-      ));
+      credentials.inject(
+        OZStoredCredential(
+          credentialId: _credentialIdB64,
+          publicKey: _bytes(65),
+          contractId: _contractA,
+        ),
+      );
       final config = OZSmartAccountConfig(
         rpcUrl: 'https://soroban-testnet.stellar.org',
         networkPassphrase: Network.TESTNET.networkPassphrase,
@@ -642,13 +679,15 @@ void main() {
 
     test('connectWallet_storageHit_failedCredential_throwsNotFound', () async {
       final credentials = StubCredentialManager();
-      credentials.inject(OZStoredCredential(
-        credentialId: _credentialIdB64,
-        publicKey: _bytes(65),
-        contractId: _contractA,
-        deploymentStatus: OZCredentialDeploymentStatus.failed,
-        deploymentError: 'previous deploy failed',
-      ));
+      credentials.inject(
+        OZStoredCredential(
+          credentialId: _credentialIdB64,
+          publicKey: _bytes(65),
+          contractId: _contractA,
+          deploymentStatus: OZCredentialDeploymentStatus.failed,
+          deploymentError: 'previous deploy failed',
+        ),
+      );
       final config = OZSmartAccountConfig(
         rpcUrl: 'https://soroban-testnet.stellar.org',
         networkPassphrase: Network.TESTNET.networkPassphrase,
@@ -691,10 +730,7 @@ void main() {
         accountWasmHash: '0' * 64,
         webauthnVerifierAddress: _contractA,
       );
-      final kit = FakePipelineKit(
-        config: config,
-        sorobanServer: soroban,
-      );
+      final kit = FakePipelineKit(config: config, sorobanServer: soroban);
       final ops = OZWalletOperations(kit);
       final result = await ops.connectWallet(
         options: const OZConnectWalletOptions(credentialId: _credentialIdB64),
@@ -855,18 +891,20 @@ void main() {
   });
 
   group('fundWallet conversion', () {
-    test('fundWallet_invalidNativeTokenContract_throwsInvalidAddress',
-        () async {
-      // Standalone validation exercise; covers the validation surface that
-      // the deeper Friendbot/relayer paths gate on.
-      final kit = FakePipelineKit()
-        ..setConnected(credentialId: 'c', contractId: _contractA);
-      final ops = OZTransactionOperations(kit);
-      await expectLater(
-        () => ops.fundWallet(nativeTokenContract: 'not-a-c-address'),
-        throwsA(isA<SmartAccountInvalidAddress>()),
-      );
-    });
+    test(
+      'fundWallet_invalidNativeTokenContract_throwsInvalidAddress',
+      () async {
+        // Standalone validation exercise; covers the validation surface that
+        // the deeper Friendbot/relayer paths gate on.
+        final kit = FakePipelineKit()
+          ..setConnected(credentialId: 'c', contractId: _contractA);
+        final ops = OZTransactionOperations(kit);
+        await expectLater(
+          () => ops.fundWallet(nativeTokenContract: 'not-a-c-address'),
+          throwsA(isA<SmartAccountInvalidAddress>()),
+        );
+      },
+    );
 
     test('fundWallet_validatesConnectedBeforeFriendbot', () async {
       // The not-connected case throws SmartAccountWalletNotConnected before any
@@ -890,18 +928,20 @@ void main() {
       final mock = MockSorobanServer();
       // Every account lookup answers with the account that was requested, so
       // the temporary keypair fundWallet generates internally resolves.
-      mock.getAccountDefault =
-          () => Account(mock.getAccountCalls.last, BigInt.from(7));
+      mock.getAccountDefault = () =>
+          Account(mock.getAccountCalls.last, BigInt.from(7));
 
       final balanceStroops =
           BigInt.from(1005) * BigInt.from(Util.stroopsPerXlm);
-      mock.simulateResponses.add(_simResponseWithValue(
-        Util.bigIntToI128ScVal(balanceStroops),
-      ));
-      mock.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _sourceAccountTransferEntry(),
-        minResourceFee: 100,
-      ));
+      mock.simulateResponses.add(
+        _simResponseWithValue(Util.bigIntToI128ScVal(balanceStroops)),
+      );
+      mock.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: _sourceAccountTransferEntry(),
+          minResourceFee: 100,
+        ),
+      );
       mock.latestLedgerResponses.add(_latestLedger(4000));
       mock.simulateResponses.add(_simResponseEmpty(minResourceFee: 120));
       mock.sendResponses.add(_sendPending(hash: 'fund-convert-hash'));
@@ -952,16 +992,15 @@ void main() {
       );
       preimage.sorobanAuthorizationWithAddress =
           XdrHashIDPreimageSorobanAuthorizationWithAddress(
-        XdrHash(Network.TESTNET.networkId),
-        creds.nonce,
-        creds.signatureExpirationLedger,
-        creds.address,
-        converted.rootInvocation,
-      );
+            XdrHash(Network.TESTNET.networkId),
+            creds.nonce,
+            creds.signatureExpirationLedger,
+            creds.address,
+            converted.rootInvocation,
+          );
       final preimageStream = XdrDataOutputStream();
       XdrHashIDPreimage.encode(preimageStream, preimage);
-      final payloadHash =
-          Util.hash(Uint8List.fromList(preimageStream.bytes));
+      final payloadHash = Util.hash(Uint8List.fromList(preimageStream.bytes));
 
       final signatureEntries = creds.signature.vec!.single.map!;
       final publicKeyBytes = signatureEntries
@@ -979,7 +1018,8 @@ void main() {
       expect(
         tempKeyPair.verify(payloadHash, Uint8List.fromList(signatureBytes)),
         isTrue,
-        reason: 'the signature must verify over the WITH_ADDRESS preimage '
+        reason:
+            'the signature must verify over the WITH_ADDRESS preimage '
             'carrying the temporary account address',
       );
     });
@@ -991,10 +1031,9 @@ void main() {
       // preimage a pre-protocol-27 relayer parser accepts.
       const expirationLedger = 4000 + Util.ledgersPerHour;
       final mock = _fundWalletMock(hash: 'fund-legacy-hash');
-      final ops = OZTransactionOperations(_fundWalletKit(
-        mock: mock,
-        useUpgradedAuth: false,
-      ));
+      final ops = OZTransactionOperations(
+        _fundWalletKit(mock: mock, useUpgradedAuth: false),
+      );
 
       final funded = await _runFundWallet(ops);
       expect(funded, equals('1000'));
@@ -1012,14 +1051,18 @@ void main() {
         equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS),
         reason: 'the converted entry must carry legacy ADDRESS credentials',
       );
-      expect(converted.credentials.addressV2, isNull,
-          reason: 'the ADDRESS_V2 arm must be empty on a legacy entry');
+      expect(
+        converted.credentials.addressV2,
+        isNull,
+        reason: 'the ADDRESS_V2 arm must be empty on a legacy entry',
+      );
       final creds = converted.credentials.address;
       expect(creds, isNotNull);
       expect(
         Address.fromXdr(creds!.address).accountId,
         equals(tempAccountId),
-        reason: 'the credentials must carry the real temporary account '
+        reason:
+            'the credentials must carry the real temporary account '
             'address in the legacy arm too',
       );
       expect(creds.signatureExpirationLedger.uint32, equals(expirationLedger));
@@ -1055,43 +1098,48 @@ void main() {
       expect(
         tempKeyPair.verify(payloadHash, Uint8List.fromList(signatureBytes)),
         isTrue,
-        reason: 'the signature must verify over the legacy '
+        reason:
+            'the signature must verify over the legacy '
             'SorobanAuthorization preimage carrying nonce, expiration and '
             'invocation',
       );
     });
 
-    test('fundWallet_optOutConfig_everySimulateRequestsLegacyEntries',
-        () async {
+    test('fundWallet_optOutConfig_everySimulateRequestsLegacyEntries', () async {
       final mock = _fundWalletMock(hash: 'fund-legacy-sim-hash');
-      final ops = OZTransactionOperations(_fundWalletKit(
-        mock: mock,
-        useUpgradedAuth: false,
-      ));
+      final ops = OZTransactionOperations(
+        _fundWalletKit(mock: mock, useUpgradedAuth: false),
+      );
 
       await _runFundWallet(ops);
 
       // Balance read, funding-transfer simulation, post-signing re-simulation.
       expect(mock.simulateCalls, hasLength(3));
       for (final call in mock.simulateCalls) {
-        expect(call.getRequestArgs()['useUpgradedAuth'], isFalse,
-            reason: 'every simulation fundWallet runs must ask the RPC for '
-                'legacy entries');
+        expect(
+          call.getRequestArgs()['useUpgradedAuth'],
+          isFalse,
+          reason:
+              'every simulation fundWallet runs must ask the RPC for '
+              'legacy entries',
+        );
       }
     });
 
-    test('fundWallet_defaultConfig_everySimulateRequestsUpgradedEntries',
-        () async {
-      final mock = _fundWalletMock(hash: 'fund-upgraded-sim-hash');
-      final ops = OZTransactionOperations(_fundWalletKit(mock: mock));
+    test(
+      'fundWallet_defaultConfig_everySimulateRequestsUpgradedEntries',
+      () async {
+        final mock = _fundWalletMock(hash: 'fund-upgraded-sim-hash');
+        final ops = OZTransactionOperations(_fundWalletKit(mock: mock));
 
-      await _runFundWallet(ops);
+        await _runFundWallet(ops);
 
-      expect(mock.simulateCalls, hasLength(3));
-      for (final call in mock.simulateCalls) {
-        expect(call.getRequestArgs()['useUpgradedAuth'], isTrue);
-      }
-    });
+        expect(mock.simulateCalls, hasLength(3));
+        for (final call in mock.simulateCalls) {
+          expect(call.getRequestArgs()['useUpgradedAuth'], isTrue);
+        }
+      },
+    );
   });
 
   group('simulation credential-arm request', () {
@@ -1102,9 +1150,11 @@ void main() {
     }) async {
       final h = await _harness(useUpgradedAuth: useUpgradedAuth);
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
-      h.soroban.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeAddressCredsEntry(contractAddress: _contractA),
-      ));
+      h.soroban.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: _makeAddressCredsEntry(contractAddress: _contractA),
+        ),
+      );
       h.soroban.latestLedgerResponses.add(_latestLedger(5000));
       h.provider.authenticateResponses.add(_fakeAuthResult());
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
@@ -1130,14 +1180,17 @@ void main() {
 
       expect(calls, hasLength(2));
       for (final call in calls) {
-        expect(call.getRequestArgs()['useUpgradedAuth'], isFalse,
-            reason: 'the initial simulation and the post-signing '
-                're-simulation must both request legacy entries');
+        expect(
+          call.getRequestArgs()['useUpgradedAuth'],
+          isFalse,
+          reason:
+              'the initial simulation and the post-signing '
+              're-simulation must both request legacy entries',
+        );
       }
     });
 
-    test('submit_defaultConfig_everySimulateRequestsUpgradedEntries',
-        () async {
+    test('submit_defaultConfig_everySimulateRequestsUpgradedEntries', () async {
       final calls = await runSubmit(useUpgradedAuth: true);
 
       expect(calls, hasLength(2));
@@ -1171,10 +1224,14 @@ void main() {
         ),
         auth: const <XdrSorobanAuthorizationEntry>[],
       );
-      expect(result.success, isTrue,
-          reason: 'submit error: ${result.error}; '
-              'urls: ${relayerHarness.adapter.capturedUrls}; '
-              'body: ${relayerHarness.adapter.capturedBodies}');
+      expect(
+        result.success,
+        isTrue,
+        reason:
+            'submit error: ${result.error}; '
+            'urls: ${relayerHarness.adapter.capturedUrls}; '
+            'body: ${relayerHarness.adapter.capturedBodies}',
+      );
       expect(relayerHarness.adapter.capturedUrls, isNotEmpty);
       final body = relayerHarness.adapter.capturedBodies.last;
       expect(body, isNotNull);
@@ -1190,8 +1247,9 @@ void main() {
       final relayerHarness = buildRelayerHarness();
       final h = await _harness(relayer: relayerHarness.client);
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
-      h.soroban.simulateResponses
-          .add(_simResponseWithAuthEntry(entry: _makeSourceAccountEntry()));
+      h.soroban.simulateResponses.add(
+        _simResponseWithAuthEntry(entry: _makeSourceAccountEntry()),
+      );
       h.soroban.latestLedgerResponses.add(_latestLedger(1000));
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer, seq: 2));
       h.soroban.simulateResponses.add(_simResponseEmpty());
@@ -1305,9 +1363,11 @@ void main() {
     test('submit_signingFailure_propagatesWebAuthnException', () async {
       final h = await _harness();
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
-      h.soroban.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeAddressCredsEntry(contractAddress: _contractA),
-      ));
+      h.soroban.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: _makeAddressCredsEntry(contractAddress: _contractA),
+        ),
+      );
       h.soroban.latestLedgerResponses.add(_latestLedger(1000));
       h.provider.authenticateResponses.add(
         WebAuthnException.authenticationFailed('user cancelled'),
@@ -1382,8 +1442,9 @@ void main() {
       // surfaces it as SimulationFailed with the initial-stage prefix.
       final h = await _harness();
       h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
-      h.soroban.simulateResponses
-          .add(_simResponseWithError('wasm hash mismatch'));
+      h.soroban.simulateResponses.add(
+        _simResponseWithError('wasm hash mismatch'),
+      );
 
       final ops = OZTransactionOperations(h.kit);
       await expectLater(
@@ -1407,40 +1468,46 @@ void main() {
       );
     });
 
-    test('connectWallet_indexerMalformedJson_propagatesIndexerException',
-        () async {
-      // Indexer adapter returns malformed JSON; OZIndexerClient surfaces
-      // an SmartAccountIndexerException which `connectWallet` propagates.
-      final soroban = MockSorobanServer();
-      soroban.getContractDataResponses.add(null); // derivation miss
-      final indexer = buildIndexerHarness(responseBody: '{not json');
-      final kit = FakePipelineKit(
-        config: OZSmartAccountConfig(
-          rpcUrl: 'https://soroban-testnet.stellar.org',
-          networkPassphrase: Network.TESTNET.networkPassphrase,
-          accountWasmHash: '0' * 64,
-          webauthnVerifierAddress: _contractA,
-        ),
-        sorobanServer: soroban,
-        indexerClient: indexer.client,
-      );
-      final ops = OZWalletOperations(kit);
-      await expectLater(
-        () => ops.connectWallet(
-          options: const OZConnectWalletOptions(credentialId: _credentialIdB64),
-        ),
-        throwsA(isA<SmartAccountIndexerException>()),
-      );
-    });
+    test(
+      'connectWallet_indexerMalformedJson_propagatesIndexerException',
+      () async {
+        // Indexer adapter returns malformed JSON; OZIndexerClient surfaces
+        // an SmartAccountIndexerException which `connectWallet` propagates.
+        final soroban = MockSorobanServer();
+        soroban.getContractDataResponses.add(null); // derivation miss
+        final indexer = buildIndexerHarness(responseBody: '{not json');
+        final kit = FakePipelineKit(
+          config: OZSmartAccountConfig(
+            rpcUrl: 'https://soroban-testnet.stellar.org',
+            networkPassphrase: Network.TESTNET.networkPassphrase,
+            accountWasmHash: '0' * 64,
+            webauthnVerifierAddress: _contractA,
+          ),
+          sorobanServer: soroban,
+          indexerClient: indexer.client,
+        );
+        final ops = OZWalletOperations(kit);
+        await expectLater(
+          () => ops.connectWallet(
+            options: const OZConnectWalletOptions(
+              credentialId: _credentialIdB64,
+            ),
+          ),
+          throwsA(isA<SmartAccountIndexerException>()),
+        );
+      },
+    );
 
     test('submit_credentialDecodeFailure_throwsCredentialException', () async {
       // Set up a kit connected with a bogus credentialId so the
       // base64Url decode at the signing step fails.
       final soroban = MockSorobanServer();
       soroban.getAccountResponses.add(_deployerAccount(KeyPair.random()));
-      soroban.simulateResponses.add(_simResponseWithAuthEntry(
-        entry: _makeAddressCredsEntry(contractAddress: _contractA),
-      ));
+      soroban.simulateResponses.add(
+        _simResponseWithAuthEntry(
+          entry: _makeAddressCredsEntry(contractAddress: _contractA),
+        ),
+      );
       soroban.latestLedgerResponses.add(_latestLedger(1000));
       final config = OZSmartAccountConfig(
         rpcUrl: 'https://soroban-testnet.stellar.org',
@@ -1449,10 +1516,8 @@ void main() {
         webauthnVerifierAddress: _contractA,
         webauthnProvider: RecordingWebAuthnProvider(),
       );
-      final kit = FakePipelineKit(
-        config: config,
-        sorobanServer: soroban,
-      )..setConnected(
+      final kit = FakePipelineKit(config: config, sorobanServer: soroban)
+        ..setConnected(
           credentialId: '!!!not-base64url!!!',
           contractId: _contractA,
         );
@@ -1477,11 +1542,13 @@ void main() {
   group('deploy', () {
     test('deployPendingCredential_autoSubmitFalse_returnsXdrOnly', () async {
       final credentials = StubCredentialManager();
-      credentials.inject(OZStoredCredential(
-        credentialId: _credentialIdB64,
-        publicKey: _bytes(65, 4),
-        contractId: _contractA,
-      ));
+      credentials.inject(
+        OZStoredCredential(
+          credentialId: _credentialIdB64,
+          publicKey: _bytes(65, 4),
+          contractId: _contractA,
+        ),
+      );
       final soroban = MockSorobanServer();
       // Single simulate + getAccount for build.
       soroban.getAccountResponses.add(_deployerAccount(KeyPair.random()));
@@ -1520,108 +1587,121 @@ void main() {
     });
 
     test(
-        'deployPendingCredential_credentialMissingPublicKey_throwsInvalid',
-        () async {
-      final credentials = StubCredentialManager();
-      credentials.inject(OZStoredCredential(
-        credentialId: 'cred',
-        publicKey: Uint8List(0),
-        contractId: _contractA,
-      ));
-      final kit = FakePipelineKit(credentialManager: credentials);
-      final ops = OZWalletOperations(kit);
-      await expectLater(
-        () => ops.deployPendingCredential(
-          credentialId: 'cred',
-          autoSubmit: false,
-        ),
-        throwsA(
-          isA<SmartAccountCredentialInvalid>().having(
-            (e) => e.message,
-            'message',
-            contains('missing publicKey'),
+      'deployPendingCredential_credentialMissingPublicKey_throwsInvalid',
+      () async {
+        final credentials = StubCredentialManager();
+        credentials.inject(
+          OZStoredCredential(
+            credentialId: 'cred',
+            publicKey: Uint8List(0),
+            contractId: _contractA,
           ),
-        ),
-      );
-    });
-
-    test('deployPendingCredential_simulateFailure_marksCredentialFailed',
-        () async {
-      final credentials = StubCredentialManager();
-      credentials.inject(OZStoredCredential(
-        credentialId: _credentialIdB64,
-        publicKey: _bytes(65, 4),
-        contractId: _contractA,
-      ));
-      final soroban = MockSorobanServer();
-      soroban.getAccountResponses.add(_deployerAccount(KeyPair.random()));
-      soroban.simulateResponses
-          .add(_simResponseWithError('contract code missing'));
-
-      final kit = FakePipelineKit(
-        config: OZSmartAccountConfig(
-          rpcUrl: 'https://soroban-testnet.stellar.org',
-          networkPassphrase: Network.TESTNET.networkPassphrase,
-          accountWasmHash: '0' * 64,
-          webauthnVerifierAddress: _contractA,
-        ),
-        sorobanServer: soroban,
-        credentialManager: credentials,
-      );
-      final ops = OZWalletOperations(kit);
-      await expectLater(
-        () => ops.deployPendingCredential(
-          credentialId: _credentialIdB64,
-          autoSubmit: false,
-        ),
-        throwsA(isA<SmartAccountTransactionSimulationFailed>()),
-      );
-      // Failure must be recorded against the credential.
-      expect(credentials.markedFailures, isNotEmpty);
-      expect(credentials.markedFailures.last.credentialId,
-          equals(_credentialIdB64));
-    });
+        );
+        final kit = FakePipelineKit(credentialManager: credentials);
+        final ops = OZWalletOperations(kit);
+        await expectLater(
+          () => ops.deployPendingCredential(
+            credentialId: 'cred',
+            autoSubmit: false,
+          ),
+          throwsA(
+            isA<SmartAccountCredentialInvalid>().having(
+              (e) => e.message,
+              'message',
+              contains('missing publicKey'),
+            ),
+          ),
+        );
+      },
+    );
 
     test(
-        'deployPendingCredential_autoSubmit_relayer_setsFeeToResourceFeeOnly',
-        () async {
-      final credentials = StubCredentialManager();
-      credentials.inject(OZStoredCredential(
-        credentialId: _credentialIdB64,
-        publicKey: _bytes(65, 4),
-        contractId: _contractA,
-      ));
-      final soroban = MockSorobanServer();
-      soroban.getAccountResponses.add(_deployerAccount(KeyPair.random()));
-      soroban.simulateResponses.add(_simResponseEmpty(minResourceFee: 50000));
-      // Poll for confirmation (deploy hand-rolls a 10x2s loop using
-      // getTransaction directly).
-      soroban.getTransactionResponses.add(_txSuccess());
+      'deployPendingCredential_simulateFailure_marksCredentialFailed',
+      () async {
+        final credentials = StubCredentialManager();
+        credentials.inject(
+          OZStoredCredential(
+            credentialId: _credentialIdB64,
+            publicKey: _bytes(65, 4),
+            contractId: _contractA,
+          ),
+        );
+        final soroban = MockSorobanServer();
+        soroban.getAccountResponses.add(_deployerAccount(KeyPair.random()));
+        soroban.simulateResponses.add(
+          _simResponseWithError('contract code missing'),
+        );
 
-      final relayerHarness = buildRelayerHarness(
-        responseBody:
-            '{"success":true,"hash":"deploy-hash","status":"SUCCESS"}',
-      );
+        final kit = FakePipelineKit(
+          config: OZSmartAccountConfig(
+            rpcUrl: 'https://soroban-testnet.stellar.org',
+            networkPassphrase: Network.TESTNET.networkPassphrase,
+            accountWasmHash: '0' * 64,
+            webauthnVerifierAddress: _contractA,
+          ),
+          sorobanServer: soroban,
+          credentialManager: credentials,
+        );
+        final ops = OZWalletOperations(kit);
+        await expectLater(
+          () => ops.deployPendingCredential(
+            credentialId: _credentialIdB64,
+            autoSubmit: false,
+          ),
+          throwsA(isA<SmartAccountTransactionSimulationFailed>()),
+        );
+        // Failure must be recorded against the credential.
+        expect(credentials.markedFailures, isNotEmpty);
+        expect(
+          credentials.markedFailures.last.credentialId,
+          equals(_credentialIdB64),
+        );
+      },
+    );
 
-      final kit = FakePipelineKit(
-        config: OZSmartAccountConfig(
-          rpcUrl: 'https://soroban-testnet.stellar.org',
-          networkPassphrase: Network.TESTNET.networkPassphrase,
-          accountWasmHash: '0' * 64,
-          webauthnVerifierAddress: _contractA,
-        ),
-        sorobanServer: soroban,
-        credentialManager: credentials,
-        relayerClient: relayerHarness.client,
-      );
-      final ops = OZWalletOperations(kit);
-      final result = await ops.deployPendingCredential(
-        credentialId: _credentialIdB64,
-        autoSubmit: true,
-      );
-      expect(result.transactionHash, equals('deploy-hash'));
-      expect(relayerHarness.adapter.capturedUrls, isNotEmpty);
-    });
+    test(
+      'deployPendingCredential_autoSubmit_relayer_setsFeeToResourceFeeOnly',
+      () async {
+        final credentials = StubCredentialManager();
+        credentials.inject(
+          OZStoredCredential(
+            credentialId: _credentialIdB64,
+            publicKey: _bytes(65, 4),
+            contractId: _contractA,
+          ),
+        );
+        final soroban = MockSorobanServer();
+        soroban.getAccountResponses.add(_deployerAccount(KeyPair.random()));
+        soroban.simulateResponses.add(_simResponseEmpty(minResourceFee: 50000));
+        // Poll for confirmation (deploy hand-rolls a 10x2s loop using
+        // getTransaction directly).
+        soroban.getTransactionResponses.add(_txSuccess());
+
+        final relayerHarness = buildRelayerHarness(
+          responseBody:
+              '{"success":true,"hash":"deploy-hash","status":"SUCCESS"}',
+        );
+
+        final kit = FakePipelineKit(
+          config: OZSmartAccountConfig(
+            rpcUrl: 'https://soroban-testnet.stellar.org',
+            networkPassphrase: Network.TESTNET.networkPassphrase,
+            accountWasmHash: '0' * 64,
+            webauthnVerifierAddress: _contractA,
+          ),
+          sorobanServer: soroban,
+          credentialManager: credentials,
+          relayerClient: relayerHarness.client,
+        );
+        final ops = OZWalletOperations(kit);
+        final result = await ops.deployPendingCredential(
+          credentialId: _credentialIdB64,
+          autoSubmit: true,
+        );
+        expect(result.transactionHash, equals('deploy-hash'));
+        expect(relayerHarness.adapter.capturedUrls, isNotEmpty);
+      },
+    );
   });
 
   // Wire-shape probe
@@ -1770,8 +1850,11 @@ void main() {
       }
       // Every byte position must have observed at least one non-zero.
       for (var i = 0; i < 8; i++) {
-        expect(seenBitsPerByte[i], equals(1),
-            reason: 'byte position $i never observed a non-zero value');
+        expect(
+          seenBitsPerByte[i],
+          equals(1),
+          reason: 'byte position $i never observed a non-zero value',
+        );
       }
     });
   });
@@ -1782,8 +1865,9 @@ void main() {
   group('cancellation', () {
     test('transfer_cancelledBeforeAwait_throwsSubmissionFailed', () async {
       final h = await _harness();
-      h.soroban.getAccountResponses
-          .add(_deployerAccount(h.deployer)); // first getAccount
+      h.soroban.getAccountResponses.add(
+        _deployerAccount(h.deployer),
+      ); // first getAccount
       final token = dio.CancelToken();
       token.cancel('test');
       final ops = OZTransactionOperations(h.kit);
@@ -1814,22 +1898,24 @@ void main() {
       );
     });
 
-    test('executeAndSubmit_cancelledBeforeAwait_throwsSubmissionFailed',
-        () async {
-      final h = await _harness();
-      h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
-      final token = dio.CancelToken();
-      token.cancel('test');
-      final ops = OZTransactionOperations(h.kit);
-      await expectLater(
-        () => ops.executeAndSubmit(
-          target: _contractB,
-          targetFn: 'noop',
-          cancelToken: token,
-        ),
-        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
-      );
-    });
+    test(
+      'executeAndSubmit_cancelledBeforeAwait_throwsSubmissionFailed',
+      () async {
+        final h = await _harness();
+        h.soroban.getAccountResponses.add(_deployerAccount(h.deployer));
+        final token = dio.CancelToken();
+        token.cancel('test');
+        final ops = OZTransactionOperations(h.kit);
+        await expectLater(
+          () => ops.executeAndSubmit(
+            target: _contractB,
+            targetFn: 'noop',
+            cancelToken: token,
+          ),
+          throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
+        );
+      },
+    );
 
     test('submit_cancelledBeforeAwait_throwsSubmissionFailed', () async {
       final h = await _harness();
@@ -1860,63 +1946,62 @@ void main() {
       token.cancel('test');
       final ops = OZTransactionOperations(kit);
       await expectLater(
-        () => ops.fundWallet(
-          nativeTokenContract: _contractA,
-          cancelToken: token,
-        ),
+        () =>
+            ops.fundWallet(nativeTokenContract: _contractA, cancelToken: token),
         throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
       );
     });
 
-    test('createWallet_cancelledBeforeAwait_throwsTransactionException',
-        () async {
-      // createWallet validates webauthnProvider first, so a not-supported
-      // exception is thrown before cancellation is observed. With a
-      // provider configured but the token already cancelled, the
-      // cancellation check fires inside the build flow.
-      final provider = RecordingWebAuthnProvider();
-      provider.registerResponses.add(WebAuthnRegistrationResult(
-        credentialId: _bytes(16, 5),
-        publicKey: _bytes(65, 6),
-        attestationObject: _bytes(48, 7),
-      ));
-      final config = OZSmartAccountConfig(
-        rpcUrl: 'https://soroban-testnet.stellar.org',
-        networkPassphrase: Network.TESTNET.networkPassphrase,
-        accountWasmHash: '0' * 64,
-        webauthnVerifierAddress: _contractA,
-        webauthnProvider: provider,
-      );
-      final soroban = MockSorobanServer();
-      soroban.getAccountResponses.add(_deployerAccount(KeyPair.random()));
-      final kit = FakePipelineKit(
-        config: config,
-        sorobanServer: soroban,
-      );
-      final ops = OZWalletOperations(kit);
-      final token = dio.CancelToken();
-      token.cancel('test');
-      await expectLater(
-        () => ops.createWallet(cancelToken: token),
-        throwsA(isA<SmartAccountTransactionException>()),
-      );
-    });
+    test(
+      'createWallet_cancelledBeforeAwait_throwsTransactionException',
+      () async {
+        // createWallet validates webauthnProvider first, so a not-supported
+        // exception is thrown before cancellation is observed. With a
+        // provider configured but the token already cancelled, the
+        // cancellation check fires inside the build flow.
+        final provider = RecordingWebAuthnProvider();
+        provider.registerResponses.add(
+          WebAuthnRegistrationResult(
+            credentialId: _bytes(16, 5),
+            publicKey: _bytes(65, 6),
+            attestationObject: _bytes(48, 7),
+          ),
+        );
+        final config = OZSmartAccountConfig(
+          rpcUrl: 'https://soroban-testnet.stellar.org',
+          networkPassphrase: Network.TESTNET.networkPassphrase,
+          accountWasmHash: '0' * 64,
+          webauthnVerifierAddress: _contractA,
+          webauthnProvider: provider,
+        );
+        final soroban = MockSorobanServer();
+        soroban.getAccountResponses.add(_deployerAccount(KeyPair.random()));
+        final kit = FakePipelineKit(config: config, sorobanServer: soroban);
+        final ops = OZWalletOperations(kit);
+        final token = dio.CancelToken();
+        token.cancel('test');
+        await expectLater(
+          () => ops.createWallet(cancelToken: token),
+          throwsA(isA<SmartAccountTransactionException>()),
+        );
+      },
+    );
 
-    test('connectWallet_cancelledBeforeAwait_throwsSubmissionFailed',
-        () async {
+    test('connectWallet_cancelledBeforeAwait_throwsSubmissionFailed', () async {
       // connectWallet's default-options path returns null without using
       // network; force the credential-cascade path by passing a
       // credentialId so the cancellation checks fire after the storage
       // lookup.
       final credentials = StubCredentialManager();
-      credentials.inject(OZStoredCredential(
-        credentialId: _credentialIdB64,
-        publicKey: _bytes(65),
-        contractId: _contractA,
-      ));
+      credentials.inject(
+        OZStoredCredential(
+          credentialId: _credentialIdB64,
+          publicKey: _bytes(65),
+          contractId: _contractA,
+        ),
+      );
       final soroban = MockSorobanServer();
-      soroban.getContractDataResponses
-          .add(LedgerEntry('', '', 0, null, null));
+      soroban.getContractDataResponses.add(LedgerEntry('', '', 0, null, null));
       final kit = FakePipelineKit(
         sorobanServer: soroban,
         credentialManager: credentials,
@@ -1933,62 +2018,68 @@ void main() {
       );
     });
 
-    test('authenticatePasskey_cancelledBeforeAwait_throwsSubmissionFailed',
-        () async {
-      final provider = RecordingWebAuthnProvider();
-      final config = OZSmartAccountConfig(
-        rpcUrl: 'https://soroban-testnet.stellar.org',
-        networkPassphrase: Network.TESTNET.networkPassphrase,
-        accountWasmHash: '0' * 64,
-        webauthnVerifierAddress: _contractA,
-        webauthnProvider: provider,
-      );
-      final kit = FakePipelineKit(config: config);
-      final ops = OZWalletOperations(kit);
-      final token = dio.CancelToken();
-      token.cancel('test');
-      await expectLater(
-        () => ops.authenticatePasskey(
-          credentialIds: <String>[_credentialIdB64],
-          cancelToken: token,
-        ),
-        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
-      );
-    });
-
-    test('deployPendingCredential_cancelledBeforeSubmit_throwsSubmissionFailed',
-        () async {
-      final credentials = StubCredentialManager();
-      credentials.inject(OZStoredCredential(
-        credentialId: _credentialIdB64,
-        publicKey: _bytes(65, 4),
-        contractId: _contractA,
-      ));
-      final soroban = MockSorobanServer();
-      soroban.getAccountResponses.add(_deployerAccount(KeyPair.random()));
-      soroban.simulateResponses.add(_simResponseEmpty(minResourceFee: 100));
-      final kit = FakePipelineKit(
-        config: OZSmartAccountConfig(
+    test(
+      'authenticatePasskey_cancelledBeforeAwait_throwsSubmissionFailed',
+      () async {
+        final provider = RecordingWebAuthnProvider();
+        final config = OZSmartAccountConfig(
           rpcUrl: 'https://soroban-testnet.stellar.org',
           networkPassphrase: Network.TESTNET.networkPassphrase,
           accountWasmHash: '0' * 64,
           webauthnVerifierAddress: _contractA,
-        ),
-        sorobanServer: soroban,
-        credentialManager: credentials,
-      );
-      final ops = OZWalletOperations(kit);
-      final token = dio.CancelToken();
-      token.cancel('test');
-      await expectLater(
-        () => ops.deployPendingCredential(
-          credentialId: _credentialIdB64,
-          autoSubmit: true,
-          cancelToken: token,
-        ),
-        throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
-      );
-    });
+          webauthnProvider: provider,
+        );
+        final kit = FakePipelineKit(config: config);
+        final ops = OZWalletOperations(kit);
+        final token = dio.CancelToken();
+        token.cancel('test');
+        await expectLater(
+          () => ops.authenticatePasskey(
+            credentialIds: <String>[_credentialIdB64],
+            cancelToken: token,
+          ),
+          throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
+        );
+      },
+    );
+
+    test(
+      'deployPendingCredential_cancelledBeforeSubmit_throwsSubmissionFailed',
+      () async {
+        final credentials = StubCredentialManager();
+        credentials.inject(
+          OZStoredCredential(
+            credentialId: _credentialIdB64,
+            publicKey: _bytes(65, 4),
+            contractId: _contractA,
+          ),
+        );
+        final soroban = MockSorobanServer();
+        soroban.getAccountResponses.add(_deployerAccount(KeyPair.random()));
+        soroban.simulateResponses.add(_simResponseEmpty(minResourceFee: 100));
+        final kit = FakePipelineKit(
+          config: OZSmartAccountConfig(
+            rpcUrl: 'https://soroban-testnet.stellar.org',
+            networkPassphrase: Network.TESTNET.networkPassphrase,
+            accountWasmHash: '0' * 64,
+            webauthnVerifierAddress: _contractA,
+          ),
+          sorobanServer: soroban,
+          credentialManager: credentials,
+        );
+        final ops = OZWalletOperations(kit);
+        final token = dio.CancelToken();
+        token.cancel('test');
+        await expectLater(
+          () => ops.deployPendingCredential(
+            credentialId: _credentialIdB64,
+            autoSubmit: true,
+            cancelToken: token,
+          ),
+          throwsA(isA<SmartAccountTransactionSubmissionFailed>()),
+        );
+      },
+    );
   });
 }
 

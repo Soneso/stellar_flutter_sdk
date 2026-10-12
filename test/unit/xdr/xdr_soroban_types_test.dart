@@ -8,7 +8,6 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 void main() {
   group('XDR Final Coverage - Uncovered Lines', () {
-
     // xdr_contract.dart line 100 - toString for enum unknown value
     test('XdrSCValType toString method', () {
       var type = XdrSCValType.SCV_BOOL;
@@ -23,44 +22,56 @@ void main() {
 
     test('XdrSorobanCredentials type setter', () {
       var creds = XdrSorobanCredentials(
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
+        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT,
+      );
       creds.type = XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS;
-      expect(creds.type,
-          equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS));
+      expect(
+        creds.type,
+        equals(XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS),
+      );
     });
 
     test('XdrSorobanCredentials address setter', () {
       var creds = XdrSorobanCredentials(
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS);
+        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS,
+      );
       var addressCreds = XdrSorobanAddressCredentials(
-          XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT),
-          XdrInt64(BigInt.from(12345)),
-          XdrUint32(100),
-          XdrSCVal(XdrSCValType.SCV_VOID));
+        XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_ACCOUNT),
+        XdrInt64(BigInt.from(12345)),
+        XdrUint32(100),
+        XdrSCVal(XdrSCValType.SCV_VOID),
+      );
       creds.address = addressCreds;
       expect(creds.address, equals(addressCreds));
     });
 
     // xdr_contract.dart line 475 - Exception path in forAccountId
     test('XdrSCAddress forAccountId with invalid account throws', () {
-      expect(() => XdrSCAddress.forAccountId('invalid'),
-          throwsA(isA<Exception>()));
+      expect(
+        () => XdrSCAddress.forAccountId('invalid'),
+        throwsA(isA<Exception>()),
+      );
     });
 
     test('XdrSCAddress forClaimableBalanceId', () {
-      var balanceId = '000000006d6f6e6579000000000000000000000000000000000000000000000000000000';
+      var balanceId =
+          '000000006d6f6e6579000000000000000000000000000000000000000000000000000000';
       var addr = XdrSCAddress.forClaimableBalanceId(balanceId);
-      expect(addr.discriminant, equals(XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE));
+      expect(
+        addr.discriminant,
+        equals(XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE),
+      );
       expect(addr.claimableBalanceId, isNotNull);
     });
 
     // xdr_contract.dart lines 631-644 - XdrInt256Parts setters
     test('XdrInt256Parts setters', () {
       var parts = XdrInt256Parts(
-          XdrInt64(BigInt.one),
-          XdrUint64(BigInt.two),
-          XdrUint64(BigInt.from(3)),
-          XdrUint64(BigInt.from(4)));
+        XdrInt64(BigInt.one),
+        XdrUint64(BigInt.two),
+        XdrUint64(BigInt.from(3)),
+        XdrUint64(BigInt.from(4)),
+      );
 
       parts.hiHi = XdrInt64(BigInt.from(10));
       parts.hiLo = XdrUint64(BigInt.from(20));
@@ -76,10 +87,11 @@ void main() {
     // xdr_contract.dart lines 674-686 - XdrUInt256Parts setters
     test('XdrUInt256Parts setters', () {
       var parts = XdrUInt256Parts(
-          XdrUint64(BigInt.one),
-          XdrUint64(BigInt.two),
-          XdrUint64(BigInt.from(3)),
-          XdrUint64(BigInt.from(4)));
+        XdrUint64(BigInt.one),
+        XdrUint64(BigInt.two),
+        XdrUint64(BigInt.from(3)),
+        XdrUint64(BigInt.from(4)),
+      );
 
       parts.hiHi = XdrUint64(BigInt.from(10));
       parts.hiLo = XdrUint64(BigInt.from(20));
@@ -94,14 +106,16 @@ void main() {
 
     // xdr_contract.dart lines 1242-1247 - forMuxedAccountAddress
     test('XdrSCVal forMuxedAccountAddress', () {
-      var muxedId = 'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6';
+      var muxedId =
+          'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6';
       var scVal = XdrSCVal.forMuxedAccountAddress(muxedId);
       expect(scVal.discriminant, equals(XdrSCValType.SCV_ADDRESS));
       expect(scVal.address, isNotNull);
     });
 
     test('XdrSCVal forClaimableBalanceAddress', () {
-      var balanceId = '000000006d6f6e6579000000000000000000000000000000000000000000000000000000';
+      var balanceId =
+          '000000006d6f6e6579000000000000000000000000000000000000000000000000000000';
       var scVal = XdrSCVal.forClaimableBalanceAddress(balanceId);
       expect(scVal.discriminant, equals(XdrSCValType.SCV_ADDRESS));
       expect(scVal.address, isNotNull);
@@ -109,7 +123,8 @@ void main() {
 
     // xdr_contract.dart lines 1256-1261 - forLiquidityPoolAddress
     test('XdrSCVal forLiquidityPoolAddress', () {
-      var poolId = '67260c4c1807b262ff851b0a3fe141194936bb0215b2f77447f1df11998eabb9';
+      var poolId =
+          '67260c4c1807b262ff851b0a3fe141194936bb0215b2f77447f1df11998eabb9';
       var scVal = XdrSCVal.forLiquidityPoolAddress(poolId);
       expect(scVal.discriminant, equals(XdrSCValType.SCV_ADDRESS));
       expect(scVal.address, isNotNull);
@@ -117,26 +132,31 @@ void main() {
 
     // xdr_contract.dart lines 1263-1275 - forAddressStrKey with different types
     test('XdrSCVal forAddressStrKey with stellar account', () {
-      var accountId = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
+      var accountId =
+          'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
       var scVal = XdrSCVal.forAddressStrKey(accountId);
       expect(scVal.discriminant, equals(XdrSCValType.SCV_ADDRESS));
     });
 
     test('XdrSCVal forAddressStrKey with contract id', () {
-      var contractId = 'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
+      var contractId =
+          'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE';
       var scVal = XdrSCVal.forAddressStrKey(contractId);
       expect(scVal.discriminant, equals(XdrSCValType.SCV_ADDRESS));
     });
 
     test('XdrSCVal forAddressStrKey with muxed account', () {
-      var muxedId = 'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6';
+      var muxedId =
+          'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITLVL6';
       var scVal = XdrSCVal.forAddressStrKey(muxedId);
       expect(scVal.discriminant, equals(XdrSCValType.SCV_ADDRESS));
     });
 
     test('XdrSCVal forAddressStrKey with invalid throws', () {
-      expect(() => XdrSCVal.forAddressStrKey('invalid_address'),
-          throwsA(isA<Exception>()));
+      expect(
+        () => XdrSCVal.forAddressStrKey('invalid_address'),
+        throwsA(isA<Exception>()),
+      );
     });
 
     // xdr_contract.dart lines 1278-1282 - forNonceKey
@@ -157,7 +177,8 @@ void main() {
     // xdr_contract.dart lines 1288-1292 - forContractInstance
     test('XdrSCVal forContractInstance', () {
       var executable = XdrContractExecutable(
-          XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM);
+        XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM,
+      );
       executable.wasmHash = XdrHash(Uint8List(32));
       var instance = XdrSCContractInstance(executable, null);
       var scVal = XdrSCVal.forContractInstance(instance);
@@ -168,18 +189,23 @@ void main() {
     // xdr_contract.dart lines 1294-1296 - forLedgerKeyContractInstance
     test('XdrSCVal forLedgerKeyContractInstance', () {
       var scVal = XdrSCVal.forLedgerKeyContractInstance();
-      expect(scVal.discriminant,
-          equals(XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE));
+      expect(
+        scVal.discriminant,
+        equals(XdrSCValType.SCV_LEDGER_KEY_CONTRACT_INSTANCE),
+      );
     });
 
     // xdr_ledger.dart line 181 - XdrClaimPredicate discriminant setter
     test('XdrClaimPredicate discriminant setter', () {
       var predicate = XdrClaimPredicate(
-          XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL);
+        XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL,
+      );
       predicate.discriminant =
           XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME;
-      expect(predicate.discriminant,
-          equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME));
+      expect(
+        predicate.discriminant,
+        equals(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME),
+      );
     });
 
     // xdr_ledger.dart line 333 - XdrClaimant discriminant setter
@@ -238,10 +264,12 @@ void main() {
     });
 
     // xdr_ledger.dart lines 1463-1472 - toBase64/fromBase64
-    test('XdrLedgerEntry toBase64EncodedXdrString and fromBase64EncodedXdrString', () {
-      var ledgerSeq = XdrUint32(12345);
-      var accountId = XdrAccountID(KeyPair.random().xdrPublicKey);
-      var account = XdrAccountEntry(
+    test(
+      'XdrLedgerEntry toBase64EncodedXdrString and fromBase64EncodedXdrString',
+      () {
+        var ledgerSeq = XdrUint32(12345);
+        var accountId = XdrAccountID(KeyPair.random().xdrPublicKey);
+        var account = XdrAccountEntry(
           accountId,
           XdrInt64(BigInt.from(1000000)),
           XdrSequenceNumber(BigInt.from(1)),
@@ -251,20 +279,22 @@ void main() {
           XdrString32('test'),
           XdrThresholds(Uint8List.fromList([1, 0, 0, 0])),
           [],
-          XdrAccountEntryExt(0));
+          XdrAccountEntryExt(0),
+        );
 
-      var data = XdrLedgerEntryData(XdrLedgerEntryType.ACCOUNT);
-      data.account = account;
-      var ext = XdrLedgerEntryExt(0);
+        var data = XdrLedgerEntryData(XdrLedgerEntryType.ACCOUNT);
+        data.account = account;
+        var ext = XdrLedgerEntryExt(0);
 
-      var entry = XdrLedgerEntry(ledgerSeq, data, ext);
+        var entry = XdrLedgerEntry(ledgerSeq, data, ext);
 
-      var base64 = entry.toBase64EncodedXdrString();
-      expect(base64, isNotEmpty);
+        var base64 = entry.toBase64EncodedXdrString();
+        expect(base64, isNotEmpty);
 
-      var decoded = XdrLedgerEntry.fromBase64EncodedXdrString(base64);
-      expect(decoded.lastModifiedLedgerSeq.uint32, equals(12345));
-    });
+        var decoded = XdrLedgerEntry.fromBase64EncodedXdrString(base64);
+        expect(decoded.lastModifiedLedgerSeq.uint32, equals(12345));
+      },
+    );
 
     // xdr_ledger.dart line 1480 - XdrLedgerEntryData discriminant setter
     test('XdrLedgerEntryData discriminant setter', () {
@@ -294,25 +324,31 @@ void main() {
     // xdr_ledger.dart lines 1809-1810 - XdrLedgerEntryChanges setter
     test('XdrLedgerEntryChanges setter', () {
       var change1 = XdrLedgerEntryChange(
-          XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED);
+        XdrLedgerEntryChangeType.LEDGER_ENTRY_CREATED,
+      );
       var changes = XdrLedgerEntryChanges([change1]);
 
       var change2 = XdrLedgerEntryChange(
-          XdrLedgerEntryChangeType.LEDGER_ENTRY_UPDATED);
+        XdrLedgerEntryChangeType.LEDGER_ENTRY_UPDATED,
+      );
       changes.ledgerEntryChanges = [change2];
 
       expect(changes.ledgerEntryChanges.length, equals(1));
-      expect(changes.ledgerEntryChanges[0].discriminant,
-          equals(XdrLedgerEntryChangeType.LEDGER_ENTRY_UPDATED));
+      expect(
+        changes.ledgerEntryChanges[0].discriminant,
+        equals(XdrLedgerEntryChangeType.LEDGER_ENTRY_UPDATED),
+      );
     });
 
     // xdr_ledger.dart lines 1835, 1838-1842 - Base64 methods
     test('XdrLedgerEntryChanges toBase64 and fromBase64', () {
       var change = XdrLedgerEntryChange(
-          XdrLedgerEntryChangeType.LEDGER_ENTRY_REMOVED);
+        XdrLedgerEntryChangeType.LEDGER_ENTRY_REMOVED,
+      );
       var ledgerKey = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT);
       ledgerKey.account = XdrLedgerKeyAccount(
-          XdrAccountID(KeyPair.random().xdrPublicKey));
+        XdrAccountID(KeyPair.random().xdrPublicKey),
+      );
       change.removed = ledgerKey;
 
       var changes = XdrLedgerEntryChanges([change]);
@@ -328,46 +364,58 @@ void main() {
     test('XdrLedgerHeaderHistoryEntry setters', () {
       var hash = XdrHash(Uint8List(32));
       var skipList = List<XdrHash>.filled(4, XdrHash(Uint8List(32)));
-      var stellarValue = XdrStellarValue(XdrHash(Uint8List(32)), XdrUint64(BigInt.zero), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC));
+      var stellarValue = XdrStellarValue(
+        XdrHash(Uint8List(32)),
+        XdrUint64(BigInt.zero),
+        [],
+        XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC),
+      );
       var header = XdrLedgerHeader(
-          XdrUint32(0),
-          XdrHash(Uint8List(32)),
-          stellarValue,
-          XdrHash(Uint8List(32)),
-          XdrHash(Uint8List(32)),
-          XdrUint32(0),
-          XdrInt64(BigInt.zero),
-          XdrInt64(BigInt.zero),
-          XdrUint32(0),
-          XdrUint64(BigInt.zero),
-          XdrUint32(0),
-          XdrUint32(0),
-          XdrUint32(0),
-          skipList,
-          XdrLedgerHeaderExt(0));
+        XdrUint32(0),
+        XdrHash(Uint8List(32)),
+        stellarValue,
+        XdrHash(Uint8List(32)),
+        XdrHash(Uint8List(32)),
+        XdrUint32(0),
+        XdrInt64(BigInt.zero),
+        XdrInt64(BigInt.zero),
+        XdrUint32(0),
+        XdrUint64(BigInt.zero),
+        XdrUint32(0),
+        XdrUint32(0),
+        XdrUint32(0),
+        skipList,
+        XdrLedgerHeaderExt(0),
+      );
       var ext = XdrLedgerHeaderHistoryEntryExt(0);
 
       var entry = XdrLedgerHeaderHistoryEntry(hash, header, ext);
 
       var newHash = XdrHash(Uint8List(32));
       var newSkipList = List<XdrHash>.filled(4, XdrHash(Uint8List(32)));
-      var newStellarValue = XdrStellarValue(XdrHash(Uint8List(32)), XdrUint64(BigInt.one), [], XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC));
+      var newStellarValue = XdrStellarValue(
+        XdrHash(Uint8List(32)),
+        XdrUint64(BigInt.one),
+        [],
+        XdrStellarValueExt(XdrStellarValueType.STELLAR_VALUE_BASIC),
+      );
       var newHeader = XdrLedgerHeader(
-          XdrUint32(1),
-          XdrHash(Uint8List(32)),
-          newStellarValue,
-          XdrHash(Uint8List(32)),
-          XdrHash(Uint8List(32)),
-          XdrUint32(1),
-          XdrInt64(BigInt.one),
-          XdrInt64(BigInt.one),
-          XdrUint32(1),
-          XdrUint64(BigInt.one),
-          XdrUint32(1),
-          XdrUint32(1),
-          XdrUint32(1),
-          newSkipList,
-          XdrLedgerHeaderExt(0));
+        XdrUint32(1),
+        XdrHash(Uint8List(32)),
+        newStellarValue,
+        XdrHash(Uint8List(32)),
+        XdrHash(Uint8List(32)),
+        XdrUint32(1),
+        XdrInt64(BigInt.one),
+        XdrInt64(BigInt.one),
+        XdrUint32(1),
+        XdrUint64(BigInt.one),
+        XdrUint32(1),
+        XdrUint32(1),
+        XdrUint32(1),
+        newSkipList,
+        XdrLedgerHeaderExt(0),
+      );
       var newExt = XdrLedgerHeaderHistoryEntryExt(0);
 
       entry.hash = newHash;
@@ -381,39 +429,50 @@ void main() {
 
     // Additional setter coverage tests
     test('XdrClaimPredicate andPredicates setter', () {
-      var predicate = XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_AND);
+      var predicate = XdrClaimPredicate(
+        XdrClaimPredicateType.CLAIM_PREDICATE_AND,
+      );
       var pred1 = XdrClaimPredicate(
-          XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL);
+        XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL,
+      );
       predicate.andPredicates = [pred1];
       expect(predicate.andPredicates?.length, equals(1));
     });
 
     test('XdrClaimPredicate orPredicates setter', () {
-      var predicate = XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_OR);
+      var predicate = XdrClaimPredicate(
+        XdrClaimPredicateType.CLAIM_PREDICATE_OR,
+      );
       var pred1 = XdrClaimPredicate(
-          XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL);
+        XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL,
+      );
       predicate.orPredicates = [pred1];
       expect(predicate.orPredicates?.length, equals(1));
     });
 
     test('XdrClaimPredicate notPredicate setter', () {
-      var predicate = XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_NOT);
+      var predicate = XdrClaimPredicate(
+        XdrClaimPredicateType.CLAIM_PREDICATE_NOT,
+      );
       var notPred = XdrClaimPredicate(
-          XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL);
+        XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL,
+      );
       predicate.notPredicate = notPred;
       expect(predicate.notPredicate, equals(notPred));
     });
 
     test('XdrClaimPredicate absBefore setter', () {
       var predicate = XdrClaimPredicate(
-          XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME);
+        XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME,
+      );
       predicate.absBefore = XdrInt64(BigInt.from(123456789));
       expect(predicate.absBefore?.int64, equals(BigInt.from(123456789)));
     });
 
     test('XdrClaimPredicate relBefore setter', () {
       var predicate = XdrClaimPredicate(
-          XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME);
+        XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME,
+      );
       predicate.relBefore = XdrInt64(BigInt.from(3600));
       expect(predicate.relBefore?.int64, equals(BigInt.from(3600)));
     });
@@ -422,7 +481,8 @@ void main() {
       var claimant = XdrClaimant(XdrClaimantType.CLAIMANT_TYPE_V0);
       var destination = XdrAccountID(KeyPair.random().xdrPublicKey);
       var predicate = XdrClaimPredicate(
-          XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL);
+        XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL,
+      );
       var v0 = XdrClaimantV0(destination, predicate);
       claimant.v0 = v0;
       expect(claimant.v0, equals(v0));
@@ -446,7 +506,8 @@ void main() {
       XdrLedgerEntryExt.encode(output, ext);
 
       XdrDataInputStream input = XdrDataInputStream(
-          Uint8List.fromList(output.bytes));
+        Uint8List.fromList(output.bytes),
+      );
       var decoded = XdrLedgerEntryExt.decode(input);
 
       expect(decoded.discriminant, equals(1));
@@ -524,8 +585,10 @@ void main() {
   group('XdrSorobanCredentials', () {
     test('forSourceAccount', () {
       final cred = XdrSorobanCredentials.forSourceAccount();
-      expect(cred.type,
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
+      expect(
+        cred.type,
+        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT,
+      );
       expect(cred.address, isNull);
     });
 
@@ -534,7 +597,11 @@ void main() {
       final signature = XdrSCVal.forVoid();
       final signatureExpirationLedger = XdrUint32(1000);
       final addressCred = XdrSorobanAddressCredentials(
-          address, XdrInt64(BigInt.from(100)), signatureExpirationLedger, signature);
+        address,
+        XdrInt64(BigInt.from(100)),
+        signatureExpirationLedger,
+        signature,
+      );
 
       final cred = XdrSorobanCredentials.forAddressCredentials(addressCred);
       expect(cred.type, XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS);
@@ -543,12 +610,15 @@ void main() {
       final output = XdrDataOutputStream();
       XdrSorobanCredentials.encode(output, cred);
 
-      final decoded =
-          XdrSorobanCredentials.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
-      expect(decoded.type, XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS);
+      final decoded = XdrSorobanCredentials.decode(
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
+      expect(
+        decoded.type,
+        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS,
+      );
       expect(decoded.address, isNotNull);
     });
-
   });
 
   group('XdrSCError', () {
@@ -559,7 +629,9 @@ void main() {
       final output = XdrDataOutputStream();
       XdrSCError.encode(output, error);
 
-      final decoded = XdrSCError.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
+      final decoded = XdrSCError.decode(
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
       expect(decoded.discriminant, XdrSCErrorType.SCE_CONTRACT);
       expect(decoded.contractCode!.uint32, 42);
     });
@@ -571,7 +643,9 @@ void main() {
       final output = XdrDataOutputStream();
       XdrSCError.encode(output, error);
 
-      final decoded = XdrSCError.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
+      final decoded = XdrSCError.decode(
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
       expect(decoded.discriminant, XdrSCErrorType.SCE_AUTH);
       expect(decoded.code, isNotNull);
     });
@@ -589,10 +663,14 @@ void main() {
     test('manual claimable balance construction', () {
       final balanceId =
           '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
-      final address = XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE);
+      final address = XdrSCAddress(
+        XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE,
+      );
       address.claimableBalanceId = XdrClaimableBalanceID.forId(balanceId);
-      expect(address.discriminant,
-          XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE);
+      expect(
+        address.discriminant,
+        XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE,
+      );
       expect(address.claimableBalanceId, isNotNull);
     });
 
@@ -600,8 +678,10 @@ void main() {
       final poolId =
           'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
       final address = XdrSCAddress.forLiquidityPoolId(poolId);
-      expect(address.discriminant,
-          XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL);
+      expect(
+        address.discriminant,
+        XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL,
+      );
       expect(address.liquidityPoolId, isNotNull);
     });
 
@@ -610,8 +690,10 @@ void main() {
           'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
       final lId = StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolId));
       final address = XdrSCAddress.forLiquidityPoolId(lId);
-      expect(address.discriminant,
-          XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL);
+      expect(
+        address.discriminant,
+        XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL,
+      );
       expect(address.liquidityPoolId, isNotNull);
     });
 
@@ -624,9 +706,11 @@ void main() {
 
     test('toStrKey for contract', () {
       final contractId = Util.hexToBytes(
-          'c5b72e9a00bf93dd6e54538e3ab40b9d5265b0634e228862de66cd7b4052a1d0');
-      final address =
-          XdrSCAddress.forContractId(StrKey.encodeContractId(contractId));
+        'c5b72e9a00bf93dd6e54538e3ab40b9d5265b0634e228862de66cd7b4052a1d0',
+      );
+      final address = XdrSCAddress.forContractId(
+        StrKey.encodeContractId(contractId),
+      );
       final strKey = address.toStrKey();
       expect(strKey, startsWith('C'));
     });
@@ -635,7 +719,9 @@ void main() {
       final muxedId = XdrUint64(BigInt.from(999));
       final ed25519 = KeyPair.random().xdrPublicKey.getEd25519()!.uint256;
       final med25519 = XdrMuxedAccountMed25519(muxedId, XdrUint256(ed25519));
-      final address = XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT);
+      final address = XdrSCAddress(
+        XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT,
+      );
       address.muxedAccount = med25519;
       final strKey = address.toStrKey();
       expect(strKey, startsWith('M'));
@@ -644,7 +730,9 @@ void main() {
     test('toStrKey for claimable balance manual', () {
       final balanceId =
           '00000000da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
-      final address = XdrSCAddress(XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE);
+      final address = XdrSCAddress(
+        XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE,
+      );
       address.claimableBalanceId = XdrClaimableBalanceID.forId(balanceId);
       final strKey = address.toStrKey();
       expect(strKey, isNotEmpty);
@@ -688,7 +776,9 @@ void main() {
       final output = XdrDataOutputStream();
       XdrInt128Parts.encode(output, parts);
 
-      final decoded = XdrInt128Parts.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
+      final decoded = XdrInt128Parts.decode(
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
       expect(decoded.hi.int64, BigInt.from(123));
       expect(decoded.lo.uint64, BigInt.from(456));
     });
@@ -705,12 +795,17 @@ void main() {
 
   group('XdrUInt128Parts', () {
     test('encode/decode', () {
-      final parts = XdrUInt128Parts.forHiLo(BigInt.from(789), BigInt.from(101112));
+      final parts = XdrUInt128Parts.forHiLo(
+        BigInt.from(789),
+        BigInt.from(101112),
+      );
 
       final output = XdrDataOutputStream();
       XdrUInt128Parts.encode(output, parts);
 
-      final decoded = XdrUInt128Parts.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
+      final decoded = XdrUInt128Parts.decode(
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
       expect(decoded.hi.uint64, BigInt.from(789));
       expect(decoded.lo.uint64, BigInt.from(101112));
     });
@@ -769,14 +864,17 @@ void main() {
       );
 
       final envelope = XdrTransactionV1Envelope(tx, []);
-      final innerTx = XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX);
+      final innerTx = XdrFeeBumpTransactionInnerTx(
+        XdrEnvelopeType.ENVELOPE_TYPE_TX,
+      );
       innerTx.v1 = envelope;
 
       final output = XdrDataOutputStream();
       XdrFeeBumpTransactionInnerTx.encode(output, innerTx);
 
-      final decoded =
-          XdrFeeBumpTransactionInnerTx.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
+      final decoded = XdrFeeBumpTransactionInnerTx.decode(
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
       expect(decoded.discriminant, XdrEnvelopeType.ENVELOPE_TYPE_TX);
       expect(decoded.v1, isNotNull);
     });
@@ -784,15 +882,19 @@ void main() {
 
   group('XdrPreconditions', () {
     test('encode/decode TIME with timeBounds', () {
-      final timeBounds =
-          XdrTimeBounds(XdrUint64(BigInt.from(1000)), XdrUint64(BigInt.from(2000)));
+      final timeBounds = XdrTimeBounds(
+        XdrUint64(BigInt.from(1000)),
+        XdrUint64(BigInt.from(2000)),
+      );
       final precond = XdrPreconditions(XdrPreconditionType.PRECOND_TIME);
       precond.timeBounds = timeBounds;
 
       final output = XdrDataOutputStream();
       XdrPreconditions.encode(output, precond);
 
-      final decoded = XdrPreconditions.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
+      final decoded = XdrPreconditions.decode(
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
       expect(decoded.discriminant, XdrPreconditionType.PRECOND_TIME);
       expect(decoded.timeBounds, isNotNull);
     });
@@ -812,7 +914,9 @@ void main() {
       final output = XdrDataOutputStream();
       XdrPreconditions.encode(output, precond);
 
-      final decoded = XdrPreconditions.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
+      final decoded = XdrPreconditions.decode(
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
       expect(decoded.discriminant, XdrPreconditionType.PRECOND_V2);
       expect(decoded.v2, isNotNull);
     });
@@ -843,8 +947,9 @@ void main() {
       final output = XdrDataOutputStream();
       XdrPreconditionsV2.encode(output, precondV2);
 
-      final decoded =
-          XdrPreconditionsV2.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
+      final decoded = XdrPreconditionsV2.decode(
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
       expect(decoded.minSeqAge.uint64, BigInt.from(100));
       expect(decoded.minSeqNum, isNotNull);
     });
@@ -865,8 +970,9 @@ void main() {
       final output = XdrDataOutputStream();
       XdrPreconditionsV2.encode(output, precondV2);
 
-      final decoded =
-          XdrPreconditionsV2.decode(XdrDataInputStream(Uint8List.fromList(output.bytes)));
+      final decoded = XdrPreconditionsV2.decode(
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
       expect(decoded.extraSigners.length, 1);
     });
   });

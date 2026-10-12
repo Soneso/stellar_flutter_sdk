@@ -78,10 +78,13 @@ void main() {
         server: sorobanServer,
       ),
     );
-    await owner.invokeMethod(name: 'set_executable', args: [
-      XdrSCVal.forString(executableTag),
-      XdrSCVal.forBytes(Util.hexToBytes(targetWasmHash)),
-    ]);
+    await owner.invokeMethod(
+      name: 'set_executable',
+      args: [
+        XdrSCVal.forString(executableTag),
+        XdrSCVal.forBytes(Util.hexToBytes(targetWasmHash)),
+      ],
+    );
 
     // The reference resolves to the stored wasm hash; an unknown tag answers
     // an accepted-but-empty read and a null from the resolver.
@@ -114,8 +117,9 @@ void main() {
     // Deploy from the reference with an explicit salt; the created contract id
     // must match the derivation, and the instance must run the target's code.
     final random = Random.secure();
-    final salt =
-        Uint8List.fromList(List<int>.generate(32, (_) => random.nextInt(256)));
+    final salt = Uint8List.fromList(
+      List<int>.generate(32, (_) => random.nextInt(256)),
+    );
     final predictedContractId = Address.deriveContractId(
       deployer: Address.forAccountId(keyPair.accountId),
       salt: salt,
@@ -144,18 +148,29 @@ void main() {
       XdrContractDataDurability.PERSISTENT,
     );
     expect(instanceEntry, isNotNull);
-    final executable =
-        instanceEntry!.ledgerEntryDataXdr.contractData?.val.instance?.executable;
+    final executable = instanceEntry!
+        .ledgerEntryDataXdr
+        .contractData
+        ?.val
+        .instance
+        ?.executable;
     expect(executable, isNotNull);
-    expect(executable!.type,
-        XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF);
-    expect(Util.bytesToHex(executable.externalRef!.executableOwner.contractId!.hash),
-        ownerIdHex);
-    expect(executable.externalRef!.tag,
-        Uint8List.fromList(utf8.encode(executableTag)));
+    expect(
+      executable!.type,
+      XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF,
+    );
+    expect(
+      Util.bytesToHex(executable.externalRef!.executableOwner.contractId!.hash),
+      ownerIdHex,
+    );
+    expect(
+      executable.externalRef!.tag,
+      Uint8List.fromList(utf8.encode(executableTag)),
+    );
 
-    final codeEntry =
-        await sorobanServer.loadContractCodeForContractId(newIdHex);
+    final codeEntry = await sorobanServer.loadContractCodeForContractId(
+      newIdHex,
+    );
     expect(codeEntry, isNotNull);
     expect(codeEntry!.code, equals(targetBytes));
     final info = await sorobanServer.loadContractInfoForContractId(newIdHex);

@@ -56,13 +56,13 @@ void main() {
     });
 
     test('XdrSCPQuorumSet with validators and nested inner set', () {
-      final validator1 = XdrPublicKey.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
-
-      final innerSet = XdrSCPQuorumSet(
-        XdrUint32(1),
-        [XdrNodeID(validator1)],
-        [],
+      final validator1 = XdrPublicKey.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
       );
+
+      final innerSet = XdrSCPQuorumSet(XdrUint32(1), [
+        XdrNodeID(validator1),
+      ], []);
 
       final quorumSet = XdrSCPQuorumSet(XdrUint32(1), [], [innerSet]);
 
@@ -186,10 +186,14 @@ void main() {
 
   group('XdrPublicKey.forAccountId factory', () {
     test('creates public key from account ID', () {
-      final accountId = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
+      final accountId =
+          'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
       final publicKey = XdrPublicKey.forAccountId(accountId);
 
-      expect(publicKey.discriminant, equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+      expect(
+        publicKey.discriminant,
+        equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519),
+      );
       expect(publicKey.getEd25519(), isNotNull);
       expect(publicKey.getEd25519()!.uint256.length, equals(32));
     });

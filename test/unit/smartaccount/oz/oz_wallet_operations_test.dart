@@ -22,9 +22,7 @@ Uint8List _bytes(int length, [int seed = 0]) {
   return out;
 }
 
-OZSmartAccountConfig _configWithoutProvider({
-  String? indexerUrl,
-}) {
+OZSmartAccountConfig _configWithoutProvider({String? indexerUrl}) {
   return OZSmartAccountConfig(
     rpcUrl: 'https://soroban-testnet.stellar.org',
     networkPassphrase: Network.TESTNET.networkPassphrase,
@@ -235,7 +233,6 @@ void main() {
       expect(a, equals(b));
       expect(a == c, isFalse);
     });
-
   });
 
   // -------------------------------------------------------------------------
@@ -312,7 +309,10 @@ void main() {
           contractId: _contractA,
           restoredFromSession: false,
         ),
-        const OZConnectWalletAmbiguous(credentialId: 'cred', candidates: <String>[]),
+        const OZConnectWalletAmbiguous(
+          credentialId: 'cred',
+          candidates: <String>[],
+        ),
       ];
       final messages = arms.map((arm) {
         return switch (arm) {
@@ -381,7 +381,6 @@ void main() {
       expect(a == b, isFalse);
       expect(a.hashCode, isNot(equals(b.hashCode)));
     });
-
   });
 
   // -------------------------------------------------------------------------
@@ -521,15 +520,17 @@ void main() {
   // authenticatePasskey validation
   // -------------------------------------------------------------------------
   group('authenticatePasskey validation', () {
-    test('testAuthenticatePasskey_noWebAuthnProvider_throwsNotSupported',
-        () async {
-      final kit = FakePipelineKit(config: _configWithoutProvider());
-      final ops = OZWalletOperations(kit);
-      await expectLater(
-        () => ops.authenticatePasskey(),
-        throwsA(isA<WebAuthnNotSupported>()),
-      );
-    });
+    test(
+      'testAuthenticatePasskey_noWebAuthnProvider_throwsNotSupported',
+      () async {
+        final kit = FakePipelineKit(config: _configWithoutProvider());
+        final ops = OZWalletOperations(kit);
+        await expectLater(
+          () => ops.authenticatePasskey(),
+          throwsA(isA<WebAuthnNotSupported>()),
+        );
+      },
+    );
 
     test('testAuthenticatePasskey_noWebAuthnProvider_withChallenge', () async {
       final kit = FakePipelineKit(config: _configWithoutProvider());
@@ -540,15 +541,17 @@ void main() {
       );
     });
 
-    test('testAuthenticatePasskey_noWebAuthnProvider_withCredentialIds',
-        () async {
-      final kit = FakePipelineKit(config: _configWithoutProvider());
-      final ops = OZWalletOperations(kit);
-      await expectLater(
-        () => ops.authenticatePasskey(credentialIds: <String>[_credentialId]),
-        throwsA(isA<WebAuthnNotSupported>()),
-      );
-    });
+    test(
+      'testAuthenticatePasskey_noWebAuthnProvider_withCredentialIds',
+      () async {
+        final kit = FakePipelineKit(config: _configWithoutProvider());
+        final ops = OZWalletOperations(kit);
+        await expectLater(
+          () => ops.authenticatePasskey(credentialIds: <String>[_credentialId]),
+          throwsA(isA<WebAuthnNotSupported>()),
+        );
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -565,47 +568,53 @@ void main() {
     test('testConnectWallet_promptFalse_noSession_returnsNull', () async {
       final kit = FakePipelineKit(config: _configWithoutProvider());
       final ops = OZWalletOperations(kit);
-      final result =
-          await ops.connectWallet(options: const OZConnectWalletOptions());
+      final result = await ops.connectWallet(
+        options: const OZConnectWalletOptions(),
+      );
       expect(result, isNull);
     });
 
-    test('testConnectWallet_freshTrue_noWebAuthnProvider_throwsNotSupported',
-        () async {
-      final kit = FakePipelineKit(config: _configWithoutProvider());
-      final ops = OZWalletOperations(kit);
-      await expectLater(
-        () => ops.connectWallet(
-          options: const OZConnectWalletOptions(fresh: true),
-        ),
-        throwsA(isA<WebAuthnNotSupported>()),
-      );
-    });
+    test(
+      'testConnectWallet_freshTrue_noWebAuthnProvider_throwsNotSupported',
+      () async {
+        final kit = FakePipelineKit(config: _configWithoutProvider());
+        final ops = OZWalletOperations(kit);
+        await expectLater(
+          () => ops.connectWallet(
+            options: const OZConnectWalletOptions(fresh: true),
+          ),
+          throwsA(isA<WebAuthnNotSupported>()),
+        );
+      },
+    );
 
     test(
-        'testConnectWallet_promptTrue_noSession_noWebAuthnProvider_throwsNotSupported',
-        () async {
-      final kit = FakePipelineKit(config: _configWithoutProvider());
-      final ops = OZWalletOperations(kit);
-      await expectLater(
-        () => ops.connectWallet(
-          options: const OZConnectWalletOptions(prompt: true),
-        ),
-        throwsA(isA<WebAuthnNotSupported>()),
-      );
-    });
+      'testConnectWallet_promptTrue_noSession_noWebAuthnProvider_throwsNotSupported',
+      () async {
+        final kit = FakePipelineKit(config: _configWithoutProvider());
+        final ops = OZWalletOperations(kit);
+        await expectLater(
+          () => ops.connectWallet(
+            options: const OZConnectWalletOptions(prompt: true),
+          ),
+          throwsA(isA<WebAuthnNotSupported>()),
+        );
+      },
+    );
 
-    test('testConnectWallet_contractIdWithoutCredentialId_throwsValidation',
-        () async {
-      final kit = FakePipelineKit(config: _configWithoutProvider());
-      final ops = OZWalletOperations(kit);
-      await expectLater(
-        () => ops.connectWallet(
-          options: const OZConnectWalletOptions(contractId: _contractA),
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
+    test(
+      'testConnectWallet_contractIdWithoutCredentialId_throwsValidation',
+      () async {
+        final kit = FakePipelineKit(config: _configWithoutProvider());
+        final ops = OZWalletOperations(kit);
+        await expectLater(
+          () => ops.connectWallet(
+            options: const OZConnectWalletOptions(contractId: _contractA),
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -630,8 +639,14 @@ void main() {
 
     test('testKit_setConnectedState_overwritesPrevious', () async {
       final kit = FakePipelineKit();
-      await kit.setConnectedState(credentialId: 'cred1', contractId: _contractA);
-      await kit.setConnectedState(credentialId: 'cred2', contractId: _contractA);
+      await kit.setConnectedState(
+        credentialId: 'cred1',
+        contractId: _contractA,
+      );
+      await kit.setConnectedState(
+        credentialId: 'cred2',
+        contractId: _contractA,
+      );
       expect((await kit.requireConnected()).credentialId, equals('cred2'));
     });
   });
@@ -742,8 +757,7 @@ void main() {
           credentialId: 'cred',
           contractId: _contractA,
           connectedAt: DateTime.now().millisecondsSinceEpoch,
-          expiresAt:
-              DateTime.now().millisecondsSinceEpoch + 60_000,
+          expiresAt: DateTime.now().millisecondsSinceEpoch + 60_000,
         ),
       );
       expect(await storage.getSession(), isNotNull);
@@ -762,12 +776,14 @@ void main() {
       final credentials = StubCredentialManager();
       final pk = _bytes(65);
       pk[0] = 0x04;
-      credentials.inject(OZStoredCredential(
-        credentialId: _credentialId,
-        publicKey: pk,
-        contractId: _contractA,
-        createdAt: 1700000000000,
-      ));
+      credentials.inject(
+        OZStoredCredential(
+          credentialId: _credentialId,
+          publicKey: pk,
+          contractId: _contractA,
+          createdAt: 1700000000000,
+        ),
+      );
 
       final mock = MockSorobanServer();
       // getAccount throws a plain Error (not SmartAccountException).
@@ -841,7 +857,9 @@ void main() {
       // With fresh=true, session check is skipped and we go straight to
       // the WebAuthn prompt path. Since no provider is configured, throws.
       await expectLater(
-        () => ops.connectWallet(options: const OZConnectWalletOptions(fresh: true)),
+        () => ops.connectWallet(
+          options: const OZConnectWalletOptions(fresh: true),
+        ),
         throwsA(isA<WebAuthnNotSupported>()),
       );
     });
@@ -857,30 +875,37 @@ void main() {
       final credentials = StubCredentialManager();
       final pk = _bytes(65);
       pk[0] = 0x04;
-      credentials.inject(OZStoredCredential(
-        credentialId: _credentialId,
-        publicKey: pk,
-        contractId: _contractA,
-        deploymentStatus: OZCredentialDeploymentStatus.failed,
-        createdAt: 1700000000000,
-      ));
+      credentials.inject(
+        OZStoredCredential(
+          credentialId: _credentialId,
+          publicKey: pk,
+          contractId: _contractA,
+          deploymentStatus: OZCredentialDeploymentStatus.failed,
+          createdAt: 1700000000000,
+        ),
+      );
 
       final provider = RecordingWebAuthnProvider();
-      final credIdBytes = base64Url.decode(
-        base64Url.normalize(_credentialId),
-      );
-      provider.authenticateResponses.add(WebAuthnAuthenticationResult(
-        credentialId: credIdBytes,
-        authenticatorData: _bytes(37, 3),
-        clientDataJSON: utf8.encode(
-          '{"type":"webauthn.get","challenge":"abc","origin":"https://test"}',
+      final credIdBytes = base64Url.decode(base64Url.normalize(_credentialId));
+      provider.authenticateResponses.add(
+        WebAuthnAuthenticationResult(
+          credentialId: credIdBytes,
+          authenticatorData: _bytes(37, 3),
+          clientDataJSON: utf8.encode(
+            '{"type":"webauthn.get","challenge":"abc","origin":"https://test"}',
+          ),
+          signature: Uint8List.fromList(<int>[
+            0x30,
+            0x44,
+            0x02,
+            0x20,
+            ..._bytes(32, 1),
+            0x02,
+            0x20,
+            ..._bytes(32, 2),
+          ]),
         ),
-        signature: Uint8List.fromList(<int>[
-          0x30, 0x44,
-          0x02, 0x20, ..._bytes(32, 1),
-          0x02, 0x20, ..._bytes(32, 2),
-        ]),
-      ));
+      );
 
       final config = OZSmartAccountConfig(
         rpcUrl: 'https://soroban-testnet.stellar.org',
@@ -911,30 +936,37 @@ void main() {
       final credentials = StubCredentialManager();
       final pk = _bytes(65);
       pk[0] = 0x04;
-      credentials.inject(OZStoredCredential(
-        credentialId: _credentialId,
-        publicKey: pk,
-        contractId: _contractA,
-        deploymentStatus: OZCredentialDeploymentStatus.pending,
-        createdAt: 1700000000000,
-      ));
+      credentials.inject(
+        OZStoredCredential(
+          credentialId: _credentialId,
+          publicKey: pk,
+          contractId: _contractA,
+          deploymentStatus: OZCredentialDeploymentStatus.pending,
+          createdAt: 1700000000000,
+        ),
+      );
 
       final provider = RecordingWebAuthnProvider();
-      final credIdBytes = base64Url.decode(
-        base64Url.normalize(_credentialId),
-      );
-      provider.authenticateResponses.add(WebAuthnAuthenticationResult(
-        credentialId: credIdBytes,
-        authenticatorData: _bytes(37, 3),
-        clientDataJSON: utf8.encode(
-          '{"type":"webauthn.get","challenge":"abc","origin":"https://test"}',
+      final credIdBytes = base64Url.decode(base64Url.normalize(_credentialId));
+      provider.authenticateResponses.add(
+        WebAuthnAuthenticationResult(
+          credentialId: credIdBytes,
+          authenticatorData: _bytes(37, 3),
+          clientDataJSON: utf8.encode(
+            '{"type":"webauthn.get","challenge":"abc","origin":"https://test"}',
+          ),
+          signature: Uint8List.fromList(<int>[
+            0x30,
+            0x44,
+            0x02,
+            0x20,
+            ..._bytes(32, 1),
+            0x02,
+            0x20,
+            ..._bytes(32, 2),
+          ]),
         ),
-        signature: Uint8List.fromList(<int>[
-          0x30, 0x44,
-          0x02, 0x20, ..._bytes(32, 1),
-          0x02, 0x20, ..._bytes(32, 2),
-        ]),
-      ));
+      );
 
       final mock = MockSorobanServer();
       // getContractData returns null (contract not on-chain) → SmartAccountWalletNotFound.
@@ -968,100 +1000,106 @@ void main() {
   // -------------------------------------------------------------------------
   group('deployPendingCredential validation', () {
     test(
-        'testDeployPendingCredential_autoFundWithoutToken_throwsValidation',
-        () async {
-      final kit = FakePipelineKit();
-      final ops = OZWalletOperations(kit);
-      await expectLater(
-        () => ops.deployPendingCredential(
-          credentialId: _credentialId,
-          autoSubmit: true,
-          autoFund: true,
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
-
-    test(
-        'testDeployPendingCredential_credentialNotFound_throwsCredentialException',
-        () async {
-      final kit = FakePipelineKit();
-      final ops = OZWalletOperations(kit);
-      await expectLater(
-        () => ops.deployPendingCredential(credentialId: _credentialId),
-        throwsA(isA<SmartAccountCredentialNotFound>()),
-      );
-    });
-
-    test(
-        'testDeployPendingCredential_credentialMissingPublicKey_throwsInvalid',
-        () async {
-      final kit = FakePipelineKit();
-      await kit.credentialManager.createPendingCredential(
-        credentialId: _credentialId,
-        publicKey: Uint8List(0),
-        contractId: _contractA,
-      );
-      final ops = OZWalletOperations(kit);
-      await expectLater(
-        () => ops.deployPendingCredential(credentialId: _credentialId),
-        throwsA(
-          isA<SmartAccountCredentialInvalid>().having(
-            (e) => e.message,
-            'message',
-            contains('missing publicKey'),
+      'testDeployPendingCredential_autoFundWithoutToken_throwsValidation',
+      () async {
+        final kit = FakePipelineKit();
+        final ops = OZWalletOperations(kit);
+        await expectLater(
+          () => ops.deployPendingCredential(
+            credentialId: _credentialId,
+            autoSubmit: true,
+            autoFund: true,
           ),
-        ),
-      );
-    });
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
 
     test(
-        'testDeployPendingCredential_credentialMissingContractId_throwsInvalid',
-        () async {
-      final kit = FakePipelineKit();
-      await kit.credentialManager.createPendingCredential(
-        credentialId: _credentialId,
-        publicKey: _bytes(65),
-        contractId: '', // empty → treated as missing
-      );
-      final ops = OZWalletOperations(kit);
-      await expectLater(
-        () => ops.deployPendingCredential(credentialId: _credentialId),
-        throwsA(isA<SmartAccountCredentialInvalid>()),
-      );
-    });
+      'testDeployPendingCredential_credentialNotFound_throwsCredentialException',
+      () async {
+        final kit = FakePipelineKit();
+        final ops = OZWalletOperations(kit);
+        await expectLater(
+          () => ops.deployPendingCredential(credentialId: _credentialId),
+          throwsA(isA<SmartAccountCredentialNotFound>()),
+        );
+      },
+    );
 
     test(
-        'testDeployPendingCredential_credentialEmptyContractId_throwsInvalid',
-        () async {
-      final kit = FakePipelineKit();
-      await kit.credentialManager.createPendingCredential(
-        credentialId: _credentialId,
-        publicKey: _bytes(65),
-        contractId: '',
-      );
-      final ops = OZWalletOperations(kit);
-      await expectLater(
-        () => ops.deployPendingCredential(credentialId: _credentialId),
-        throwsA(isA<SmartAccountCredentialInvalid>()),
-      );
-    });
+      'testDeployPendingCredential_credentialMissingPublicKey_throwsInvalid',
+      () async {
+        final kit = FakePipelineKit();
+        await kit.credentialManager.createPendingCredential(
+          credentialId: _credentialId,
+          publicKey: Uint8List(0),
+          contractId: _contractA,
+        );
+        final ops = OZWalletOperations(kit);
+        await expectLater(
+          () => ops.deployPendingCredential(credentialId: _credentialId),
+          throwsA(
+            isA<SmartAccountCredentialInvalid>().having(
+              (e) => e.message,
+              'message',
+              contains('missing publicKey'),
+            ),
+          ),
+        );
+      },
+    );
 
     test(
-        'testDeployPendingCredential_autoFundValidation_beforeCredentialLookup',
-        () async {
-      final kit = FakePipelineKit();
-      final ops = OZWalletOperations(kit);
-      // autoFund without token must throw before any storage lookup happens.
-      await expectLater(
-        () => ops.deployPendingCredential(
-          credentialId: 'never-stored',
-          autoSubmit: true,
-          autoFund: true,
-        ),
-        throwsA(isA<SmartAccountInvalidInput>()),
-      );
-    });
+      'testDeployPendingCredential_credentialMissingContractId_throwsInvalid',
+      () async {
+        final kit = FakePipelineKit();
+        await kit.credentialManager.createPendingCredential(
+          credentialId: _credentialId,
+          publicKey: _bytes(65),
+          contractId: '', // empty → treated as missing
+        );
+        final ops = OZWalletOperations(kit);
+        await expectLater(
+          () => ops.deployPendingCredential(credentialId: _credentialId),
+          throwsA(isA<SmartAccountCredentialInvalid>()),
+        );
+      },
+    );
+
+    test(
+      'testDeployPendingCredential_credentialEmptyContractId_throwsInvalid',
+      () async {
+        final kit = FakePipelineKit();
+        await kit.credentialManager.createPendingCredential(
+          credentialId: _credentialId,
+          publicKey: _bytes(65),
+          contractId: '',
+        );
+        final ops = OZWalletOperations(kit);
+        await expectLater(
+          () => ops.deployPendingCredential(credentialId: _credentialId),
+          throwsA(isA<SmartAccountCredentialInvalid>()),
+        );
+      },
+    );
+
+    test(
+      'testDeployPendingCredential_autoFundValidation_beforeCredentialLookup',
+      () async {
+        final kit = FakePipelineKit();
+        final ops = OZWalletOperations(kit);
+        // autoFund without token must throw before any storage lookup happens.
+        await expectLater(
+          () => ops.deployPendingCredential(
+            credentialId: 'never-stored',
+            autoSubmit: true,
+            autoFund: true,
+          ),
+          throwsA(isA<SmartAccountInvalidInput>()),
+        );
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -1089,9 +1127,8 @@ void main() {
       return null;
     }
 
-    Future<({FakePipelineKit kit, List<OZSmartAccountEvent> captured})> _runConnect(
-      String suppliedCredentialId,
-    ) async {
+    Future<({FakePipelineKit kit, List<OZSmartAccountEvent> captured})>
+    _runConnect(String suppliedCredentialId) async {
       final soroban = MockSorobanServer();
       // End-of-cascade verify in `_finalizeConnect` consults `getContractData`
       // exactly once for the explicit-contractId path; a non-null entry signals
@@ -1116,50 +1153,54 @@ void main() {
     }
 
     test(
-        'testConnectWallet_paddedCredentialId_connectedStateIsUnpadded',
-        () async {
-      final outcome = await _runConnect(_paddedCredentialId);
-      final state = await outcome.kit.requireConnected();
-      expect(state.credentialId, equals(_credentialId));
-      expect(state.contractId, equals(_contractA));
-    });
+      'testConnectWallet_paddedCredentialId_connectedStateIsUnpadded',
+      () async {
+        final outcome = await _runConnect(_paddedCredentialId);
+        final state = await outcome.kit.requireConnected();
+        expect(state.credentialId, equals(_credentialId));
+        expect(state.contractId, equals(_contractA));
+      },
+    );
 
     test(
-        'testConnectWallet_paddedCredentialId_walletConnectedEventIsUnpadded',
-        () async {
-      final outcome = await _runConnect(_paddedCredentialId);
-      final evt = _connectedEvent(outcome.captured);
-      expect(evt, isNotNull);
-      expect(evt!.credentialId, equals(_credentialId));
-      expect(evt.contractId, equals(_contractA));
-    });
+      'testConnectWallet_paddedCredentialId_walletConnectedEventIsUnpadded',
+      () async {
+        final outcome = await _runConnect(_paddedCredentialId);
+        final evt = _connectedEvent(outcome.captured);
+        expect(evt, isNotNull);
+        expect(evt!.credentialId, equals(_credentialId));
+        expect(evt.contractId, equals(_contractA));
+      },
+    );
 
     test(
-        'testConnectWallet_paddedCredentialId_savedSessionIsUnpadded',
-        () async {
-      final outcome = await _runConnect(_paddedCredentialId);
-      final session = await outcome.kit.getStorage().getSession();
-      expect(session, isNotNull);
-      expect(session!.credentialId, equals(_credentialId));
-      expect(session.contractId, equals(_contractA));
-    });
+      'testConnectWallet_paddedCredentialId_savedSessionIsUnpadded',
+      () async {
+        final outcome = await _runConnect(_paddedCredentialId);
+        final session = await outcome.kit.getStorage().getSession();
+        expect(session, isNotNull);
+        expect(session!.credentialId, equals(_credentialId));
+        expect(session.contractId, equals(_contractA));
+      },
+    );
 
     test(
-        'testConnectWallet_unpaddedCredentialId_propagatesUnpaddedUnchanged',
-        () async {
-      // Baseline: the canonical unpadded form already matches everywhere.
-      // This test guards against an accidental double-strip or substring
-      // off-by-one in the normalisation helper.
-      final outcome = await _runConnect(_credentialId);
-      final state = await outcome.kit.requireConnected();
-      expect(state.credentialId, equals(_credentialId));
-      final evt = _connectedEvent(outcome.captured);
-      expect(evt, isNotNull);
-      expect(evt!.credentialId, equals(_credentialId));
-      final session = await outcome.kit.getStorage().getSession();
-      expect(session, isNotNull);
-      expect(session!.credentialId, equals(_credentialId));
-    });
+      'testConnectWallet_unpaddedCredentialId_propagatesUnpaddedUnchanged',
+      () async {
+        // Baseline: the canonical unpadded form already matches everywhere.
+        // This test guards against an accidental double-strip or substring
+        // off-by-one in the normalisation helper.
+        final outcome = await _runConnect(_credentialId);
+        final state = await outcome.kit.requireConnected();
+        expect(state.credentialId, equals(_credentialId));
+        final evt = _connectedEvent(outcome.captured);
+        expect(evt, isNotNull);
+        expect(evt!.credentialId, equals(_credentialId));
+        final session = await outcome.kit.getStorage().getSession();
+        expect(session, isNotNull);
+        expect(session!.credentialId, equals(_credentialId));
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -1174,71 +1215,75 @@ void main() {
     const String _paddedCredentialId = '$_credentialId==';
 
     test(
-        'testAuthenticatePasskey_paddedAllowListId_loadsTransportsFromUnpaddedStorageKey',
-        () async {
-      final webauthn = RecordingWebAuthnProvider();
-      // Well-formed DER signature: 0x30 SEQUENCE, length 0x44, 0x02 INTEGER
-      // r (32 bytes), 0x02 INTEGER s (32 bytes). The signature normaliser
-      // in the smart-account utils requires syntactically valid DER.
-      final derSignature = Uint8List.fromList(<int>[
-        0x30, 0x44,
-        0x02, 0x20,
-        ..._bytes(32, 1),
-        0x02, 0x20,
-        ..._bytes(32, 2),
-      ]);
-      webauthn.authenticateResponses.add(
-        WebAuthnAuthenticationResult(
-          credentialId: base64Url.decode(base64Url.normalize(_credentialId)),
-          authenticatorData: _bytes(37),
-          clientDataJSON: Uint8List.fromList(
-            '{"type":"webauthn.get"}'.codeUnits,
+      'testAuthenticatePasskey_paddedAllowListId_loadsTransportsFromUnpaddedStorageKey',
+      () async {
+        final webauthn = RecordingWebAuthnProvider();
+        // Well-formed DER signature: 0x30 SEQUENCE, length 0x44, 0x02 INTEGER
+        // r (32 bytes), 0x02 INTEGER s (32 bytes). The signature normaliser
+        // in the smart-account utils requires syntactically valid DER.
+        final derSignature = Uint8List.fromList(<int>[
+          0x30,
+          0x44,
+          0x02,
+          0x20,
+          ..._bytes(32, 1),
+          0x02,
+          0x20,
+          ..._bytes(32, 2),
+        ]);
+        webauthn.authenticateResponses.add(
+          WebAuthnAuthenticationResult(
+            credentialId: base64Url.decode(base64Url.normalize(_credentialId)),
+            authenticatorData: _bytes(37),
+            clientDataJSON: Uint8List.fromList(
+              '{"type":"webauthn.get"}'.codeUnits,
+            ),
+            signature: derSignature,
           ),
-          signature: derSignature,
-        ),
-      );
+        );
 
-      final storage = OZInMemoryStorageAdapter();
-      await storage.save(
-        OZStoredCredential(
-          credentialId: _credentialId,
-          publicKey: _bytes(65),
-          contractId: _contractA,
-          transports: const <String>['internal', 'hybrid'],
-        ),
-      );
+        final storage = OZInMemoryStorageAdapter();
+        await storage.save(
+          OZStoredCredential(
+            credentialId: _credentialId,
+            publicKey: _bytes(65),
+            contractId: _contractA,
+            transports: const <String>['internal', 'hybrid'],
+          ),
+        );
 
-      final kit = FakePipelineKit(
-        config: OZSmartAccountConfig(
-          rpcUrl: 'https://soroban-testnet.stellar.org',
-          networkPassphrase: Network.TESTNET.networkPassphrase,
-          accountWasmHash: '0' * 64,
-          webauthnVerifierAddress: _contractA,
-          webauthnProvider: webauthn,
-        ),
-        storage: storage,
-      );
-      final ops = OZWalletOperations(kit);
+        final kit = FakePipelineKit(
+          config: OZSmartAccountConfig(
+            rpcUrl: 'https://soroban-testnet.stellar.org',
+            networkPassphrase: Network.TESTNET.networkPassphrase,
+            accountWasmHash: '0' * 64,
+            webauthnVerifierAddress: _contractA,
+            webauthnProvider: webauthn,
+          ),
+          storage: storage,
+        );
+        final ops = OZWalletOperations(kit);
 
-      final result = await ops.authenticatePasskey(
-        credentialIds: <String>[_paddedCredentialId],
-      );
+        final result = await ops.authenticatePasskey(
+          credentialIds: <String>[_paddedCredentialId],
+        );
 
-      // Result-side: the returned credentialId is always unpadded because
-      // it is encoded from raw bytes via the connect-side encoder.
-      expect(result.credentialId, equals(_credentialId));
+        // Result-side: the returned credentialId is always unpadded because
+        // it is encoded from raw bytes via the connect-side encoder.
+        expect(result.credentialId, equals(_credentialId));
 
-      // Allow-list side: the WebAuthn provider received the transport
-      // hints loaded from the unpadded storage key. A storage miss would
-      // surface here as `null` transports.
-      expect(webauthn.authenticateCalls, hasLength(1));
-      final call = webauthn.authenticateCalls.single;
-      expect(call.allowCredentials, isNotNull);
-      expect(call.allowCredentials!, hasLength(1));
-      expect(
-        call.allowCredentials!.single.transports,
-        equals(<String>['internal', 'hybrid']),
-      );
-    });
+        // Allow-list side: the WebAuthn provider received the transport
+        // hints loaded from the unpadded storage key. A storage miss would
+        // surface here as `null` transports.
+        expect(webauthn.authenticateCalls, hasLength(1));
+        final call = webauthn.authenticateCalls.single;
+        expect(call.allowCredentials, isNotNull);
+        expect(call.allowCredentials!, hasLength(1));
+        expect(
+          call.allowCredentials!.single.transports,
+          equals(<String>['internal', 'hybrid']),
+        );
+      },
+    );
   });
 }

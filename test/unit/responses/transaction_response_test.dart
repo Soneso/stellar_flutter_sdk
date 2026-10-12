@@ -10,8 +10,10 @@ void main() {
           'hash': 'abc123',
           'ledger': 12345,
           'created_at': '2024-01-15T10:30:00Z',
-          'source_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'fee_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'source_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'fee_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'successful': true,
           'paging_token': '12345-1',
           'source_account_sequence': 100,
@@ -26,7 +28,10 @@ void main() {
           'signatures': ['sig1==', 'sig2=='],
           '_links': {
             'self': {'href': '/transactions/abc123'},
-            'account': {'href': '/accounts/GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'},
+            'account': {
+              'href':
+                  '/accounts/GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+            },
             'ledger': {'href': '/ledgers/12345'},
             'operations': {'href': '/transactions/abc123/operations'},
             'effects': {'href': '/transactions/abc123/effects'},
@@ -41,8 +46,14 @@ void main() {
         expect(tx.hash, equals('abc123'));
         expect(tx.ledger, equals(12345));
         expect(tx.createdAt, equals('2024-01-15T10:30:00Z'));
-        expect(tx.sourceAccount, equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'));
-        expect(tx.feeAccount, equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'));
+        expect(
+          tx.sourceAccount,
+          equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'),
+        );
+        expect(
+          tx.feeAccount,
+          equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'),
+        );
         expect(tx.successful, isTrue);
         expect(tx.pagingToken, equals('12345-1'));
         expect(tx.sourceAccountSequence, equals(100));
@@ -50,7 +61,10 @@ void main() {
         expect(tx.feeCharged, equals(100));
         expect(tx.operationCount, equals(1));
         expect(tx.envelopeXdr, equals('AAAAAgAAAAA='));
-        expect(tx.resultXdr, equals('AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA='));
+        expect(
+          tx.resultXdr,
+          equals('AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA='),
+        );
         expect(tx.resultMetaXdr, equals('AAAAAwAAAAA='));
         expect(tx.feeMetaXdr, equals('AAAAAgAAAAA='));
         expect(tx.signatures.length, equals(2));
@@ -64,11 +78,15 @@ void main() {
           'hash': 'xyz789',
           'ledger': 12346,
           'created_at': '2024-01-15T10:31:00Z',
-          'source_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'source_account_muxed': 'MAAAAAAAAAAAAJURAAB2X52XFQP6FBXLGT6LWOOWMEXWHEWBDVRZ7V5WH34Y22MPFBHUHY',
+          'source_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'source_account_muxed':
+              'MAAAAAAAAAAAAJURAAB2X52XFQP6FBXLGT6LWOOWMEXWHEWBDVRZ7V5WH34Y22MPFBHUHY',
           'source_account_muxed_id': '420',
-          'fee_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'fee_account_muxed': 'MAAAAAAAAAAAAJURAAB2X52XFQP6FBXLGT6LWOOWMEXWHEWBDVRZ7V5WH34Y22MPFBHUHY',
+          'fee_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'fee_account_muxed':
+              'MAAAAAAAAAAAAJURAAB2X52XFQP6FBXLGT6LWOOWMEXWHEWBDVRZ7V5WH34Y22MPFBHUHY',
           'fee_account_muxed_id': '420',
           'successful': true,
           'paging_token': '12346-1',
@@ -88,9 +106,19 @@ void main() {
 
         final tx = TransactionResponse.fromJson(json);
 
-        expect(tx.sourceAccountMuxed, equals('MAAAAAAAAAAAAJURAAB2X52XFQP6FBXLGT6LWOOWMEXWHEWBDVRZ7V5WH34Y22MPFBHUHY'));
+        expect(
+          tx.sourceAccountMuxed,
+          equals(
+            'MAAAAAAAAAAAAJURAAB2X52XFQP6FBXLGT6LWOOWMEXWHEWBDVRZ7V5WH34Y22MPFBHUHY',
+          ),
+        );
         expect(tx.sourceAccountMuxedId, equals('420'));
-        expect(tx.feeAccountMuxed, equals('MAAAAAAAAAAAAJURAAB2X52XFQP6FBXLGT6LWOOWMEXWHEWBDVRZ7V5WH34Y22MPFBHUHY'));
+        expect(
+          tx.feeAccountMuxed,
+          equals(
+            'MAAAAAAAAAAAAJURAAB2X52XFQP6FBXLGT6LWOOWMEXWHEWBDVRZ7V5WH34Y22MPFBHUHY',
+          ),
+        );
         expect(tx.feeAccountMuxedId, equals('420'));
       });
 
@@ -100,8 +128,10 @@ void main() {
           'hash': 'memo123',
           'ledger': 12347,
           'created_at': '2024-01-15T10:32:00Z',
-          'source_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'fee_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'source_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'fee_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'successful': true,
           'paging_token': '12347-1',
           'source_account_sequence': 102,
@@ -131,8 +161,10 @@ void main() {
           'hash': 'memoid',
           'ledger': 12348,
           'created_at': '2024-01-15T10:33:00Z',
-          'source_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'fee_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'source_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'fee_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'successful': true,
           'paging_token': '12348-1',
           'source_account_sequence': 103,
@@ -162,8 +194,10 @@ void main() {
           'hash': 'memohash',
           'ledger': 12349,
           'created_at': '2024-01-15T10:34:00Z',
-          'source_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'fee_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'source_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'fee_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'successful': true,
           'paging_token': '12349-1',
           'source_account_sequence': 104,
@@ -185,7 +219,10 @@ void main() {
         final tx = TransactionResponse.fromJson(json);
 
         expect(tx.memo, isA<MemoHash>());
-        expect(tx.memoBytes, equals('YWJjZGVmMTIzNDU2Nzg5MGFiY2RlZjEyMzQ1Njc4OTA='));
+        expect(
+          tx.memoBytes,
+          equals('YWJjZGVmMTIzNDU2Nzg5MGFiY2RlZjEyMzQ1Njc4OTA='),
+        );
       });
 
       test('parses transaction with preconditions', () {
@@ -194,8 +231,10 @@ void main() {
           'hash': 'precond123',
           'ledger': 12350,
           'created_at': '2024-01-15T10:35:00Z',
-          'source_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'fee_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'source_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'fee_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'successful': true,
           'paging_token': '12350-1',
           'source_account_sequence': 105,
@@ -208,18 +247,14 @@ void main() {
           'memo_type': 'none',
           'signatures': [],
           'preconditions': {
-            'timebounds': {
-              'min_time': '1705315200',
-              'max_time': '1705318800',
-            },
-            'ledgerbounds': {
-              'min_ledger': 12000,
-              'max_ledger': 13000,
-            },
+            'timebounds': {'min_time': '1705315200', 'max_time': '1705318800'},
+            'ledgerbounds': {'min_ledger': 12000, 'max_ledger': 13000},
             'min_account_sequence': '100',
             'min_account_sequence_age': '3600',
             'min_account_sequence_ledger_gap': 10,
-            'extra_signers': ['GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA'],
+            'extra_signers': [
+              'GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
+            ],
           },
           '_links': {
             'self': {'href': '/transactions/precond123'},
@@ -248,7 +283,8 @@ void main() {
           'hash': 'feebump123',
           'ledger': 12351,
           'created_at': '2024-01-15T10:36:00Z',
-          'source_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'source_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'fee_account': 'GBCD1234EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXAMPLE7EXA',
           'successful': true,
           'paging_token': '12351-1',
@@ -294,8 +330,10 @@ void main() {
           'hash': 'minimal123',
           'ledger': 12352,
           'created_at': '2024-01-15T10:37:00Z',
-          'source_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
-          'fee_account': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'source_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+          'fee_account':
+              'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
           'successful': false,
           'paging_token': '12352-1',
           'source_account_sequence': 107,
@@ -344,10 +382,19 @@ void main() {
         expect(links.self!.href, equals('/transactions/abc123'));
         expect(links.account!.href, equals('/accounts/GABC'));
         expect(links.ledger!.href, equals('/ledgers/12345'));
-        expect(links.operations!.href, equals('/transactions/abc123/operations'));
+        expect(
+          links.operations!.href,
+          equals('/transactions/abc123/operations'),
+        );
         expect(links.effects!.href, equals('/transactions/abc123/effects'));
-        expect(links.precedes!.href, equals('/transactions?order=asc&cursor=12345-1'));
-        expect(links.succeeds!.href, equals('/transactions?order=desc&cursor=12345-1'));
+        expect(
+          links.precedes!.href,
+          equals('/transactions?order=asc&cursor=12345-1'),
+        );
+        expect(
+          links.succeeds!.href,
+          equals('/transactions?order=desc&cursor=12345-1'),
+        );
       });
 
       test('handles null links', () {
@@ -384,10 +431,7 @@ void main() {
       });
 
       test('handles empty signatures', () {
-        final json = {
-          'hash': 'nosighash',
-          'signatures': [],
-        };
+        final json = {'hash': 'nosighash', 'signatures': []};
 
         final feeBump = FeeBumpTransactionResponse.fromJson(json);
 
@@ -416,14 +460,8 @@ void main() {
     group('TransactionPreconditionsResponse', () {
       test('parses with all preconditions', () {
         final json = {
-          'timebounds': {
-            'min_time': '1000',
-            'max_time': '2000',
-          },
-          'ledgerbounds': {
-            'min_ledger': 100,
-            'max_ledger': 200,
-          },
+          'timebounds': {'min_time': '1000', 'max_time': '2000'},
+          'ledgerbounds': {'min_ledger': 100, 'max_ledger': 200},
           'min_account_sequence': '50',
           'min_account_sequence_age': '3600',
           'min_account_sequence_ledger_gap': 5,
@@ -453,9 +491,7 @@ void main() {
       });
 
       test('handles empty extra_signers', () {
-        final json = {
-          'extra_signers': null,
-        };
+        final json = {'extra_signers': null};
 
         final preconditions = TransactionPreconditionsResponse.fromJson(json);
 
@@ -465,10 +501,7 @@ void main() {
 
     group('PreconditionsTimeBoundsResponse', () {
       test('parses correctly', () {
-        final json = {
-          'min_time': '1705315200',
-          'max_time': '1705318800',
-        };
+        final json = {'min_time': '1705315200', 'max_time': '1705318800'};
 
         final timeBounds = PreconditionsTimeBoundsResponse.fromJson(json);
 
@@ -477,10 +510,7 @@ void main() {
       });
 
       test('handles null values', () {
-        final json = {
-          'min_time': null,
-          'max_time': null,
-        };
+        final json = {'min_time': null, 'max_time': null};
 
         final timeBounds = PreconditionsTimeBoundsResponse.fromJson(json);
 
@@ -491,10 +521,7 @@ void main() {
 
     group('PreconditionsLedgerBoundsResponse', () {
       test('parses correctly', () {
-        final json = {
-          'min_ledger': 12000,
-          'max_ledger': 13000,
-        };
+        final json = {'min_ledger': 12000, 'max_ledger': 13000};
 
         final ledgerBounds = PreconditionsLedgerBoundsResponse.fromJson(json);
 
@@ -503,10 +530,7 @@ void main() {
       });
 
       test('handles null max_ledger', () {
-        final json = {
-          'min_ledger': 12000,
-          'max_ledger': null,
-        };
+        final json = {'min_ledger': 12000, 'max_ledger': null};
 
         final ledgerBounds = PreconditionsLedgerBoundsResponse.fromJson(json);
 
@@ -515,9 +539,7 @@ void main() {
       });
 
       test('defaults to zero when min_ledger is null', () {
-        final json = {
-          'min_ledger': null,
-        };
+        final json = {'min_ledger': null};
 
         final ledgerBounds = PreconditionsLedgerBoundsResponse.fromJson(json);
 

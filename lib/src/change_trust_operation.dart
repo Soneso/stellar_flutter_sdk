@@ -119,8 +119,10 @@ class ChangeTrustOperation extends Operation {
   @override
   XdrOperationBody toOperationBody() {
     XdrInt64 limit = new XdrInt64(Util.decimalStringToStroops(this.limit));
-    XdrChangeTrustOp op =
-        new XdrChangeTrustOp(asset.toXdrChangeTrustAsset(), limit);
+    XdrChangeTrustOp op = new XdrChangeTrustOp(
+      asset.toXdrChangeTrustAsset(),
+      limit,
+    );
 
     XdrOperationBody body = new XdrOperationBody(XdrOperationType.CHANGE_TRUST);
     body.changeTrustOp = op;
@@ -137,7 +139,9 @@ class ChangeTrustOperation extends Operation {
   /// Returns: A builder instance for constructing the operation.
   static ChangeTrustOperationBuilder builder(XdrChangeTrustOp op) {
     return ChangeTrustOperationBuilder(
-        Asset.fromXdrChangeTrustAsset(op.line), Util.stroopsToDecimalString(op.limit.int64));
+      Asset.fromXdrChangeTrustAsset(op.line),
+      Util.stroopsToDecimalString(op.limit.int64),
+    );
   }
 }
 
@@ -154,7 +158,6 @@ class ChangeTrustOperation extends Operation {
 /// ```
 class ChangeTrustOperationBuilder
     extends OperationBuilder<ChangeTrustOperationBuilder> {
-
   /// Maximum possible trustline limit.
   ///
   /// This constant represents the maximum amount that can be held in a trustline.

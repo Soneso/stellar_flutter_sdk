@@ -57,8 +57,13 @@ void main() {
       final input = XdrDataInputStream(bytes([0x00, 0x00, 0x01]));
       expect(
         () => input.readArrayLength(),
-        throwsA(isA<RangeError>().having((e) => e.message, 'message',
-            'XDR read of 4 bytes exceeds the 3 remaining bytes')),
+        throwsA(
+          isA<RangeError>().having(
+            (e) => e.message,
+            'message',
+            'XDR read of 4 bytes exceeds the 3 remaining bytes',
+          ),
+        ),
       );
       expect(input.offset, equals(0));
     });
@@ -91,8 +96,13 @@ void main() {
       reads.forEach((name, read) {
         expect(
           read,
-          throwsA(isA<RangeError>().having((e) => e.message, 'message',
-              'XDR read of ${widths[name]} bytes exceeds the 1 remaining bytes')),
+          throwsA(
+            isA<RangeError>().having(
+              (e) => e.message,
+              'message',
+              'XDR read of ${widths[name]} bytes exceeds the 1 remaining bytes',
+            ),
+          ),
           reason: name,
         );
         expect(input.offset, equals(4), reason: name);

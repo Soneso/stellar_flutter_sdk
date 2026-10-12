@@ -173,16 +173,17 @@ class SetOptionsOperation extends Operation {
   /// - [signer] XdrSignerKey to add/update/remove.
   /// - [signerWeight] Weight for the signer (0-255, 0 removes signer).
   SetOptionsOperation(
-      String? inflationDestination,
-      int? clearFlags,
-      int? setFlags,
-      int? masterKeyWeight,
-      int? lowThreshold,
-      int? mediumThreshold,
-      int? highThreshold,
-      String? homeDomain,
-      XdrSignerKey? signer,
-      int? signerWeight) {
+    String? inflationDestination,
+    int? clearFlags,
+    int? setFlags,
+    int? masterKeyWeight,
+    int? lowThreshold,
+    int? mediumThreshold,
+    int? highThreshold,
+    String? homeDomain,
+    XdrSignerKey? signer,
+    int? signerWeight,
+  ) {
     this._inflationDestination = inflationDestination;
     this._clearFlags = clearFlags;
     this._setFlags = setFlags;
@@ -250,10 +251,21 @@ class SetOptionsOperation extends Operation {
   /// Returns: XDR OperationBody for this set options operation.
   @override
   XdrOperationBody toOperationBody() {
-    XdrSetOptionsOp op = new XdrSetOptionsOp(null, null, null, null, null, null, null, null, null);
+    XdrSetOptionsOp op = new XdrSetOptionsOp(
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    );
     if (inflationDestination != null) {
       op.inflationDest = new XdrAccountID(
-          KeyPair.fromAccountId(this.inflationDestination!).xdrPublicKey);
+        KeyPair.fromAccountId(this.inflationDestination!).xdrPublicKey,
+      );
     }
     if (clearFlags != null) {
       op.clearFlags = new XdrUint32(this.clearFlags!);
@@ -277,7 +289,6 @@ class SetOptionsOperation extends Operation {
       op.homeDomain = new XdrString32(this.homeDomain!);
     }
     if (signer != null) {
-
       XdrUint32 weight = new XdrUint32(signerWeight! & 0xFF);
       op.signer = new XdrSigner(this.signer!, weight);
     }
@@ -300,7 +311,8 @@ class SetOptionsOperation extends Operation {
 
     if (op.inflationDest != null) {
       builder = builder.setInflationDestination(
-          KeyPair.fromXdrPublicKey(op.inflationDest!.accountID).accountId);
+        KeyPair.fromXdrPublicKey(op.inflationDest!.accountID).accountId,
+      );
     }
     if (op.clearFlags != null) {
       builder = builder.setClearFlags(op.clearFlags!.uint32);
@@ -324,8 +336,10 @@ class SetOptionsOperation extends Operation {
       builder = builder.setHomeDomain(op.homeDomain!.string32);
     }
     if (op.signer != null) {
-      builder =
-          builder.setSigner(op.signer!.key, op.signer!.weight.uint32 & 0xFF);
+      builder = builder.setSigner(
+        op.signer!.key,
+        op.signer!.weight.uint32 & 0xFF,
+      );
     }
 
     return builder;
@@ -372,7 +386,8 @@ class SetOptionsOperationBuilder
   ///
   /// Returns: This builder instance for method chaining.
   SetOptionsOperationBuilder setInflationDestination(
-      String inflationDestination) {
+    String inflationDestination,
+  ) {
     this._inflationDestination = inflationDestination;
     return this;
   }
@@ -474,7 +489,9 @@ class SetOptionsOperationBuilder
   /// Throws: Exception if domain exceeds 32 characters.
   SetOptionsOperationBuilder setHomeDomain(String homeDomain) {
     if (homeDomain.length > StellarProtocolConstants.HOME_DOMAIN_MAX_LENGTH) {
-      throw new Exception("Home domain must be <= ${StellarProtocolConstants.HOME_DOMAIN_MAX_LENGTH} characters");
+      throw new Exception(
+        "Home domain must be <= ${StellarProtocolConstants.HOME_DOMAIN_MAX_LENGTH} characters",
+      );
     }
     this._homeDomain = homeDomain;
     return this;
@@ -509,16 +526,17 @@ class SetOptionsOperationBuilder
   /// Returns: A configured [SetOptionsOperation] instance.
   SetOptionsOperation build() {
     SetOptionsOperation operation = new SetOptionsOperation(
-        _inflationDestination,
-        _clearFlags,
-        _setFlags,
-        _masterKeyWeight,
-        _lowThreshold,
-        _mediumThreshold,
-        _highThreshold,
-        _homeDomain,
-        _signer,
-        _signerWeight);
+      _inflationDestination,
+      _clearFlags,
+      _setFlags,
+      _masterKeyWeight,
+      _lowThreshold,
+      _mediumThreshold,
+      _highThreshold,
+      _homeDomain,
+      _signer,
+      _signerWeight,
+    );
     return applySourceAccount(operation);
   }
 }

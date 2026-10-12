@@ -28,13 +28,12 @@ void main() {
         pledges,
       );
 
-      var signature = XdrSignature(Uint8List.fromList(List<int>.filled(64, 0xCC)));
+      var signature = XdrSignature(
+        Uint8List.fromList(List<int>.filled(64, 0xCC)),
+      );
       var envelope = XdrSCPEnvelope(statement, signature);
 
-      var ledgerMessages = XdrLedgerSCPMessages(
-        XdrUint32(200),
-        [envelope],
-      );
+      var ledgerMessages = XdrLedgerSCPMessages(XdrUint32(200), [envelope]);
 
       var original = XdrSCPHistoryEntryV0([], ledgerMessages);
 
@@ -51,16 +50,9 @@ void main() {
     });
 
     test('XdrSCPHistoryEntryV0 with empty messages', () {
-      var quorumSet = XdrSCPQuorumSet(
-        XdrUint32(3),
-        [],
-        [],
-      );
+      var quorumSet = XdrSCPQuorumSet(XdrUint32(3), [], []);
 
-      var ledgerMessages = XdrLedgerSCPMessages(
-        XdrUint32(400),
-        [],
-      );
+      var ledgerMessages = XdrLedgerSCPMessages(XdrUint32(400), []);
 
       var original = XdrSCPHistoryEntryV0([quorumSet], ledgerMessages);
 
@@ -84,11 +76,7 @@ void main() {
 
       var ext = XdrTransactionHistoryEntryExt(0);
 
-      var original = XdrTransactionHistoryEntry(
-        XdrUint32(1000),
-        txSet,
-        ext,
-      );
+      var original = XdrTransactionHistoryEntry(XdrUint32(1000), txSet, ext);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionHistoryEntry.encode(output, original);
@@ -126,11 +114,16 @@ void main() {
 
     test('XdrTransactionHistoryEntry with FeeBump envelope', () {
       var sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
-      sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x22)));
+      sourceAccount.ed25519 = XdrUint256(
+        Uint8List.fromList(List<int>.filled(32, 0x22)),
+      );
 
       var preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       var memo = XdrMemo(XdrMemoType.MEMO_NONE);
-      var operation = XdrOperation(null, XdrOperationBody(XdrOperationType.INFLATION));
+      var operation = XdrOperation(
+        null,
+        XdrOperationBody(XdrOperationType.INFLATION),
+      );
       var txExt = XdrTransactionExt(0);
 
       var innerTx = XdrTransaction(
@@ -148,16 +141,17 @@ void main() {
         XdrSignature(Uint8List.fromList(List<int>.filled(64, 0x88))),
       );
 
-      var txV1Envelope = XdrTransactionV1Envelope(
-        innerTx,
-        [signature],
-      );
+      var txV1Envelope = XdrTransactionV1Envelope(innerTx, [signature]);
 
-      var innerTxEnvelope = XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX);
+      var innerTxEnvelope = XdrFeeBumpTransactionInnerTx(
+        XdrEnvelopeType.ENVELOPE_TYPE_TX,
+      );
       innerTxEnvelope.v1 = txV1Envelope;
 
       var feeSource = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
-      feeSource.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x33)));
+      feeSource.ed25519 = XdrUint256(
+        Uint8List.fromList(List<int>.filled(32, 0x33)),
+      );
 
       var feeBumpTx = XdrFeeBumpTransaction(
         feeSource,
@@ -166,12 +160,13 @@ void main() {
         XdrFeeBumpTransactionExt(0),
       );
 
-      var feeBumpEnvelope = XdrFeeBumpTransactionEnvelope(
-        feeBumpTx,
-        [signature],
-      );
+      var feeBumpEnvelope = XdrFeeBumpTransactionEnvelope(feeBumpTx, [
+        signature,
+      ]);
 
-      var txEnvelope = XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP);
+      var txEnvelope = XdrTransactionEnvelope(
+        XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP,
+      );
       txEnvelope.feeBump = feeBumpEnvelope;
 
       var txSet = XdrTransactionSet(
@@ -181,11 +176,7 @@ void main() {
 
       var ext = XdrTransactionHistoryEntryExt(0);
 
-      var original = XdrTransactionHistoryEntry(
-        XdrUint32(8000),
-        txSet,
-        ext,
-      );
+      var original = XdrTransactionHistoryEntry(XdrUint32(8000), txSet, ext);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrTransactionHistoryEntry.encode(output, original);
@@ -196,23 +187,21 @@ void main() {
 
       expect(decoded.ledgerSeq.uint32, equals(8000));
       expect(decoded.txSet.txs.length, equals(1));
-      expect(decoded.txSet.txs[0].discriminant.value, equals(XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP.value));
-      expect(decoded.txSet.txs[0].feeBump!.tx.fee.int64, equals(BigInt.from(500)));
+      expect(
+        decoded.txSet.txs[0].discriminant.value,
+        equals(XdrEnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP.value),
+      );
+      expect(
+        decoded.txSet.txs[0].feeBump!.tx.fee.int64,
+        equals(BigInt.from(500)),
+      );
       expect(decoded.ext.discriminant, equals(0));
     });
 
     test('XdrSCPHistoryEntryV0 with nested quorum sets', () {
-      var innerQuorumSet = XdrSCPQuorumSet(
-        XdrUint32(1),
-        [],
-        [],
-      );
+      var innerQuorumSet = XdrSCPQuorumSet(XdrUint32(1), [], []);
 
-      var outerQuorumSet = XdrSCPQuorumSet(
-        XdrUint32(2),
-        [],
-        [innerQuorumSet],
-      );
+      var outerQuorumSet = XdrSCPQuorumSet(XdrUint32(2), [], [innerQuorumSet]);
 
       var pk = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
       pk.setEd25519(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))));
@@ -233,13 +222,12 @@ void main() {
         pledges,
       );
 
-      var signature = XdrSignature(Uint8List.fromList(List<int>.filled(64, 0xEF)));
+      var signature = XdrSignature(
+        Uint8List.fromList(List<int>.filled(64, 0xEF)),
+      );
       var envelope = XdrSCPEnvelope(statement, signature);
 
-      var ledgerMessages = XdrLedgerSCPMessages(
-        XdrUint32(600),
-        [envelope],
-      );
+      var ledgerMessages = XdrLedgerSCPMessages(XdrUint32(600), [envelope]);
 
       var original = XdrSCPHistoryEntryV0([outerQuorumSet], ledgerMessages);
 

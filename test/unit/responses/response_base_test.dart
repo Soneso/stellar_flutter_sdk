@@ -42,9 +42,7 @@ void main() {
 
     test('Response setHeaders handles partial rate limit headers', () {
       final response = TestResponse();
-      final headers = {
-        'X-Ratelimit-Limit': '1000',
-      };
+      final headers = {'X-Ratelimit-Limit': '1000'};
 
       response.setHeaders(headers);
 
@@ -160,10 +158,19 @@ void main() {
       final pageLinks = PageLinks.fromJson(json);
 
       expect(pageLinks.next, isNotNull);
-      expect(pageLinks.next!.href, equals('https://horizon.stellar.org/transactions?cursor=next'));
+      expect(
+        pageLinks.next!.href,
+        equals('https://horizon.stellar.org/transactions?cursor=next'),
+      );
       expect(pageLinks.prev, isNotNull);
-      expect(pageLinks.prev!.href, equals('https://horizon.stellar.org/transactions?cursor=prev'));
-      expect(pageLinks.self.href, equals('https://horizon.stellar.org/transactions'));
+      expect(
+        pageLinks.prev!.href,
+        equals('https://horizon.stellar.org/transactions?cursor=prev'),
+      );
+      expect(
+        pageLinks.self.href,
+        equals('https://horizon.stellar.org/transactions'),
+      );
     });
 
     test('PageLinks fromJson with null next link', () {
@@ -385,9 +392,7 @@ void main() {
   group('Page Class Deep Testing', () {
     test('Page fromJson with empty records', () {
       final json = {
-        '_embedded': {
-          'records': [],
-        },
+        '_embedded': {'records': []},
         '_links': {
           'self': {
             'href': 'https://horizon.stellar.org/transactions',
@@ -402,14 +407,15 @@ void main() {
 
       expect(page.records, isEmpty);
       expect(page.links, isNotNull);
-      expect(page.links!.self.href, equals('https://horizon.stellar.org/transactions'));
+      expect(
+        page.links!.self.href,
+        equals('https://horizon.stellar.org/transactions'),
+      );
     });
 
     test('Page fromJson with null links', () {
       final json = {
-        '_embedded': {
-          'records': [],
-        },
+        '_embedded': {'records': []},
         '_links': null,
       };
 
@@ -421,9 +427,7 @@ void main() {
 
     test('Page fromJson with rate limit fields', () {
       final json = {
-        '_embedded': {
-          'records': [],
-        },
+        '_embedded': {'records': []},
         '_links': {
           'self': {
             'href': 'https://horizon.stellar.org/ledgers',
@@ -444,9 +448,7 @@ void main() {
 
     test('Page fromJson with null rate limit fields', () {
       final json = {
-        '_embedded': {
-          'records': [],
-        },
+        '_embedded': {'records': []},
         '_links': {
           'self': {
             'href': 'https://horizon.stellar.org/offers',
@@ -469,7 +471,8 @@ void main() {
   group('ResponseConverter Deep Testing', () {
     test('ResponseConverter fromJson for AccountResponse', () {
       final json = {
-        'account_id': 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+        'account_id':
+            'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
         'sequence': '100',
         'paging_token': '100',
         'subentry_count': 0,
@@ -505,13 +508,14 @@ void main() {
       final response = ResponseConverter.fromJson<AccountResponse>(json);
 
       expect(response, isA<AccountResponse>());
-      expect(response.accountId, equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'));
+      expect(
+        response.accountId,
+        equals('GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7'),
+      );
     });
 
     test('ResponseConverter fromJson for AccountDataResponse', () {
-      final json = {
-        'value': 'dGVzdA==',
-      };
+      final json = {'value': 'dGVzdA=='};
 
       final response = ResponseConverter.fromJson<AccountDataResponse>(json);
 
@@ -529,7 +533,10 @@ void main() {
 
       expect(response, isA<ChallengeResponse>());
       expect(response.transaction, equals('AAAAAQAAAA=='));
-      expect(response.networkPassphrase, equals('Test SDF Network ; September 2015'));
+      expect(
+        response.networkPassphrase,
+        equals('Test SDF Network ; September 2015'),
+      );
     });
   });
 
@@ -537,7 +544,11 @@ void main() {
     test('Page getNextPage returns null when next link is null', () async {
       final page = Page<AccountResponse>(
         [],
-        PageLinks(null, null, Link('https://horizon.stellar.org/accounts', false)),
+        PageLinks(
+          null,
+          null,
+          Link('https://horizon.stellar.org/accounts', false),
+        ),
         TypeToken<Page<AccountResponse>>(),
       );
 
@@ -582,11 +593,7 @@ void main() {
 
     test('Page construction with many records', () {
       final records = List.generate(20, (i) => 'record$i');
-      final page = Page<String>(
-        records,
-        null,
-        TypeToken<Page<String>>(),
-      );
+      final page = Page<String>(records, null, TypeToken<Page<String>>());
 
       expect(page.records.length, equals(20));
       expect(page.links, isNull);
@@ -607,29 +614,37 @@ void main() {
 
     test('Page fromJson with embedded records', () {
       final json = {
-        '_embedded': {
-          'records': [],
-        },
+        '_embedded': {'records': []},
         '_links': {
-          'self': {'href': 'https://horizon.stellar.org/effects', 'templated': false},
-          'next': {'href': 'https://horizon.stellar.org/effects?cursor=next', 'templated': false},
-          'prev': {'href': 'https://horizon.stellar.org/effects?cursor=prev', 'templated': false},
+          'self': {
+            'href': 'https://horizon.stellar.org/effects',
+            'templated': false,
+          },
+          'next': {
+            'href': 'https://horizon.stellar.org/effects?cursor=next',
+            'templated': false,
+          },
+          'prev': {
+            'href': 'https://horizon.stellar.org/effects?cursor=prev',
+            'templated': false,
+          },
         },
       };
 
       final page = Page<EffectResponse>.fromJson(json);
 
       expect(page.records, isEmpty);
-      expect(page.links?.self.href, equals('https://horizon.stellar.org/effects'));
+      expect(
+        page.links?.self.href,
+        equals('https://horizon.stellar.org/effects'),
+      );
       expect(page.links?.next?.href, contains('cursor=next'));
       expect(page.links?.prev?.href, contains('cursor=prev'));
     });
 
     test('Page fromJson with null links', () {
       final json = {
-        '_embedded': {
-          'records': [],
-        },
+        '_embedded': {'records': []},
       };
 
       final page = Page<LedgerResponse>.fromJson(json);
@@ -640,11 +655,12 @@ void main() {
 
     test('Page fromJson with rate limit fields', () {
       final json = {
-        '_embedded': {
-          'records': [],
-        },
+        '_embedded': {'records': []},
         '_links': {
-          'self': {'href': 'https://horizon.stellar.org/ledgers', 'templated': false},
+          'self': {
+            'href': 'https://horizon.stellar.org/ledgers',
+            'templated': false,
+          },
         },
         'rateLimitLimit': '3600',
         'rateLimitRemaining': '3599',
@@ -684,34 +700,58 @@ void main() {
 
     test('PageLinks fromJson with all links present', () {
       final json = {
-        'self': {'href': 'https://horizon.stellar.org/accounts', 'templated': false},
-        'next': {'href': 'https://horizon.stellar.org/accounts?cursor=next', 'templated': false},
-        'prev': {'href': 'https://horizon.stellar.org/accounts?cursor=prev', 'templated': false},
+        'self': {
+          'href': 'https://horizon.stellar.org/accounts',
+          'templated': false,
+        },
+        'next': {
+          'href': 'https://horizon.stellar.org/accounts?cursor=next',
+          'templated': false,
+        },
+        'prev': {
+          'href': 'https://horizon.stellar.org/accounts?cursor=prev',
+          'templated': false,
+        },
       };
 
       final pageLinks = PageLinks.fromJson(json);
 
-      expect(pageLinks.self.href, equals('https://horizon.stellar.org/accounts'));
+      expect(
+        pageLinks.self.href,
+        equals('https://horizon.stellar.org/accounts'),
+      );
       expect(pageLinks.next?.href, contains('cursor=next'));
       expect(pageLinks.prev?.href, contains('cursor=prev'));
     });
 
     test('PageLinks fromJson with only self link', () {
       final json = {
-        'self': {'href': 'https://horizon.stellar.org/transactions', 'templated': false},
+        'self': {
+          'href': 'https://horizon.stellar.org/transactions',
+          'templated': false,
+        },
       };
 
       final pageLinks = PageLinks.fromJson(json);
 
-      expect(pageLinks.self.href, equals('https://horizon.stellar.org/transactions'));
+      expect(
+        pageLinks.self.href,
+        equals('https://horizon.stellar.org/transactions'),
+      );
       expect(pageLinks.next, isNull);
       expect(pageLinks.prev, isNull);
     });
 
     test('PageLinks fromJson with templated links', () {
       final json = {
-        'self': {'href': 'https://horizon.stellar.org/accounts{?cursor}', 'templated': true},
-        'next': {'href': 'https://horizon.stellar.org/accounts?cursor=next', 'templated': false},
+        'self': {
+          'href': 'https://horizon.stellar.org/accounts{?cursor}',
+          'templated': true,
+        },
+        'next': {
+          'href': 'https://horizon.stellar.org/accounts?cursor=next',
+          'templated': false,
+        },
       };
 
       final pageLinks = PageLinks.fromJson(json);
@@ -937,18 +977,21 @@ void main() {
       expect(response.rateLimitRemaining, isNull);
     });
 
-    test('Response setHeaders with extra whitespace is handled by tryParse', () {
-      final response = TestPageResponse();
-      final headers = {
-        'X-Ratelimit-Limit': ' 100 ',
-        'X-Ratelimit-Remaining': '99',
-      };
+    test(
+      'Response setHeaders with extra whitespace is handled by tryParse',
+      () {
+        final response = TestPageResponse();
+        final headers = {
+          'X-Ratelimit-Limit': ' 100 ',
+          'X-Ratelimit-Remaining': '99',
+        };
 
-      response.setHeaders(headers);
+        response.setHeaders(headers);
 
-      // int.tryParse handles leading/trailing whitespace
-      expect(response.rateLimitLimit, equals(100));
-      expect(response.rateLimitRemaining, equals(99));
-    });
+        // int.tryParse handles leading/trailing whitespace
+        expect(response.rateLimitLimit, equals(100));
+        expect(response.rateLimitRemaining, equals(99));
+      },
+    );
   });
 }

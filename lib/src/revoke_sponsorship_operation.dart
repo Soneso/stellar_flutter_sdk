@@ -78,7 +78,10 @@ class RevokeSponsorshipOperation extends Operation {
   /// - [_signerAccountId] The account ID containing the signer (null if revoking entry).
   /// - [_signerKey] The signer key (null if revoking entry).
   RevokeSponsorshipOperation(
-      this._ledgerKey, this._signerAccountId, this._signerKey);
+    this._ledgerKey,
+    this._signerAccountId,
+    this._signerKey,
+  );
 
   /// The ledger key of the entry to revoke sponsorship for (null if revoking signer).
   XdrLedgerKey? get ledgerKey => _ledgerKey;
@@ -94,20 +97,24 @@ class RevokeSponsorshipOperation extends Operation {
   /// Returns: XDR OperationBody for this revoke sponsorship operation.
   @override
   XdrOperationBody toOperationBody() {
-    XdrOperationBody body =
-        XdrOperationBody(XdrOperationType.REVOKE_SPONSORSHIP);
+    XdrOperationBody body = XdrOperationBody(
+      XdrOperationType.REVOKE_SPONSORSHIP,
+    );
 
     if (_ledgerKey != null) {
       XdrRevokeSponsorshipOp op = XdrRevokeSponsorshipOp(
-          XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_LEDGER_ENTRY);
+        XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_LEDGER_ENTRY,
+      );
       op.ledgerKey = this._ledgerKey;
       body.revokeSponsorshipOp = op;
     } else {
       XdrRevokeSponsorshipOp op = XdrRevokeSponsorshipOp(
-          XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_SIGNER);
+        XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_SIGNER,
+      );
 
       XdrAccountID xAccountId = XdrAccountID(
-          KeyPair.fromAccountId(this._signerAccountId!).xdrPublicKey);
+        KeyPair.fromAccountId(this._signerAccountId!).xdrPublicKey,
+      );
       op.signer = XdrRevokeSponsorshipSigner(xAccountId, _signerKey!);
       body.revokeSponsorshipOp = op;
     }
@@ -129,8 +136,9 @@ class RevokeSponsorshipOperation extends Operation {
         XdrLedgerKey ledgerKey = op.ledgerKey!;
         return RevokeSponsorshipOperation(ledgerKey, null, null);
       case XdrRevokeSponsorshipType.REVOKE_SPONSORSHIP_SIGNER:
-        String signerAccountId =
-            KeyPair.fromXdrPublicKey(op.signer!.accountId.accountID).accountId;
+        String signerAccountId = KeyPair.fromXdrPublicKey(
+          op.signer!.accountId.accountID,
+        ).accountId;
         XdrSignerKey signerKey = op.signer!.signerKey;
         return RevokeSponsorshipOperation(null, signerAccountId, signerKey);
     }
@@ -185,7 +193,8 @@ class RevokeSponsorshipOperationBuilder
     }
     _ledgerKey = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT);
     XdrLedgerKeyAccount lacc = XdrLedgerKeyAccount(
-        XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey));
+      XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey),
+    );
     _ledgerKey!.account = lacc;
     return this;
   }
@@ -200,15 +209,18 @@ class RevokeSponsorshipOperationBuilder
   ///
   /// Throws: Exception if another entry type has already been specified.
   RevokeSponsorshipOperationBuilder revokeDataSponsorship(
-      String accountId, String dataName) {
+    String accountId,
+    String dataName,
+  ) {
     if (_ledgerKey != null || _signerKey != null) {
       throw new Exception("can not revoke multiple entries per builder");
     }
 
     _ledgerKey = XdrLedgerKey(XdrLedgerEntryType.DATA);
 
-    XdrAccountID accountID =
-        XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
+    XdrAccountID accountID = XdrAccountID(
+      KeyPair.fromAccountId(accountId).xdrPublicKey,
+    );
     XdrString64 dName = XdrString64(dataName);
     _ledgerKey!.data = XdrLedgerKeyData(accountID, dName);
     return this;
@@ -224,7 +236,9 @@ class RevokeSponsorshipOperationBuilder
   ///
   /// Throws: Exception if another entry type has already been specified.
   RevokeSponsorshipOperationBuilder revokeTrustlineSponsorship(
-      String accountId, Asset asset) {
+    String accountId,
+    Asset asset,
+  ) {
     if (_ledgerKey != null || _signerKey != null) {
       throw new Exception("can not revoke multiple entries per builder");
     }
@@ -232,8 +246,9 @@ class RevokeSponsorshipOperationBuilder
     _ledgerKey = XdrLedgerKey(XdrLedgerEntryType.TRUSTLINE);
 
     _ledgerKey!.trustLine = XdrLedgerKeyTrustLine(
-        XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey),
-        asset.toXdrTrustLineAsset());
+      XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey),
+      asset.toXdrTrustLineAsset(),
+    );
 
     return this;
   }
@@ -247,7 +262,8 @@ class RevokeSponsorshipOperationBuilder
   ///
   /// Throws: Exception if another entry type has already been specified.
   RevokeSponsorshipOperationBuilder revokeClaimableBalanceSponsorship(
-      String balanceId) {
+    String balanceId,
+  ) {
     if (_ledgerKey != null || _signerKey != null) {
       throw new Exception("can not revoke multiple entries per builder");
     }
@@ -269,15 +285,18 @@ class RevokeSponsorshipOperationBuilder
   ///
   /// Throws: Exception if another entry type has already been specified.
   RevokeSponsorshipOperationBuilder revokeOfferSponsorship(
-      String accountId, int offerId) {
+    String accountId,
+    int offerId,
+  ) {
     if (_ledgerKey != null || _signerKey != null) {
       throw new Exception("can not revoke multiple entries per builder");
     }
 
     _ledgerKey = XdrLedgerKey(XdrLedgerEntryType.OFFER);
 
-    XdrAccountID sellerID =
-        XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
+    XdrAccountID sellerID = XdrAccountID(
+      KeyPair.fromAccountId(accountId).xdrPublicKey,
+    );
     XdrUint64 offId = XdrUint64(BigInt.from(offerId));
     _ledgerKey!.offer = XdrLedgerKeyOffer(sellerID, offId);
     return this;
@@ -293,13 +312,17 @@ class RevokeSponsorshipOperationBuilder
   ///
   /// Throws: Exception if another entry type has already been specified.
   RevokeSponsorshipOperationBuilder revokeEd25519Signer(
-      String signerAccountId, String ed25519AccountId) {
+    String signerAccountId,
+    String ed25519AccountId,
+  ) {
     if (_ledgerKey != null || _signerKey != null) {
       throw new Exception("can not revoke multiple entries per builder");
     }
 
     _signerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
-    _signerKey!.ed25519 = XdrUint256(StrKey.decodeStellarAccountId(ed25519AccountId));
+    _signerKey!.ed25519 = XdrUint256(
+      StrKey.decodeStellarAccountId(ed25519AccountId),
+    );
     _signerAccountId = signerAccountId;
 
     return this;
@@ -315,7 +338,9 @@ class RevokeSponsorshipOperationBuilder
   ///
   /// Throws: Exception if another entry type has already been specified.
   RevokeSponsorshipOperationBuilder revokePreAuthTxSigner(
-      String signerAccountId, String preAuthTx) {
+    String signerAccountId,
+    String preAuthTx,
+  ) {
     if (_ledgerKey != null || _signerKey != null) {
       throw new Exception("can not revoke multiple entries per builder");
     }
@@ -337,7 +362,9 @@ class RevokeSponsorshipOperationBuilder
   ///
   /// Throws: Exception if another entry type has already been specified.
   RevokeSponsorshipOperationBuilder revokeSha256HashSigner(
-      String signerAccountId, String sha256Hash) {
+    String signerAccountId,
+    String sha256Hash,
+  ) {
     if (_ledgerKey != null || _signerKey != null) {
       throw new Exception("can not revoke multiple entries per builder");
     }
@@ -353,8 +380,11 @@ class RevokeSponsorshipOperationBuilder
   ///
   /// Returns: A configured [RevokeSponsorshipOperation] instance.
   RevokeSponsorshipOperation build() {
-    RevokeSponsorshipOperation operation =
-        RevokeSponsorshipOperation(_ledgerKey, _signerAccountId, _signerKey);
+    RevokeSponsorshipOperation operation = RevokeSponsorshipOperation(
+      _ledgerKey,
+      _signerAccountId,
+      _signerKey,
+    );
     return applySourceAccount(operation);
   }
 }

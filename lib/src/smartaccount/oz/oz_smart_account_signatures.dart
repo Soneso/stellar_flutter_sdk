@@ -109,9 +109,9 @@ final class OZWebAuthnSignature extends OZSmartAccountSignature {
     required Uint8List authenticatorData,
     required Uint8List clientData,
     required Uint8List signature,
-  })  : authenticatorData = Uint8List.fromList(authenticatorData),
-        clientData = Uint8List.fromList(clientData),
-        signature = Uint8List.fromList(signature) {
+  }) : authenticatorData = Uint8List.fromList(authenticatorData),
+       clientData = Uint8List.fromList(clientData),
+       signature = Uint8List.fromList(signature) {
     if (signature.length != 64) {
       throw SmartAccountValidationException.invalidInput(
         'signature',
@@ -177,9 +177,10 @@ final class OZWebAuthnSignature extends OZSmartAccountSignature {
     if (identical(this, other)) return true;
     if (other is! OZWebAuthnSignature) return false;
     final a = Util.constantTimeEquals(
-        authenticatorData, other.authenticatorData);
-    final b =
-        Util.constantTimeEquals(clientData, other.clientData);
+      authenticatorData,
+      other.authenticatorData,
+    );
+    final b = Util.constantTimeEquals(clientData, other.clientData);
     final c = Util.constantTimeEquals(signature, other.signature);
     return ((a ? 1 : 0) & (b ? 1 : 0) & (c ? 1 : 0)) == 1;
   }
@@ -189,8 +190,10 @@ final class OZWebAuthnSignature extends OZSmartAccountSignature {
   @override
   int get hashCode {
     var result = SmartAccountUtils.hashBytes(1, authenticatorData);
-    result = 0x1fffffff & (31 * result + SmartAccountUtils.hashBytes(1, clientData));
-    result = 0x1fffffff & (31 * result + SmartAccountUtils.hashBytes(1, signature));
+    result =
+        0x1fffffff & (31 * result + SmartAccountUtils.hashBytes(1, clientData));
+    result =
+        0x1fffffff & (31 * result + SmartAccountUtils.hashBytes(1, signature));
     return result;
   }
 }
@@ -218,8 +221,8 @@ final class OZEd25519Signature extends OZSmartAccountSignature {
   OZEd25519Signature({
     required Uint8List publicKey,
     required Uint8List signature,
-  })  : publicKey = Uint8List.fromList(publicKey),
-        signature = Uint8List.fromList(signature) {
+  }) : publicKey = Uint8List.fromList(publicKey),
+       signature = Uint8List.fromList(signature) {
     if (publicKey.length != SmartAccountConstants.ed25519PublicKeySize) {
       throw SmartAccountValidationException.invalidInput(
         'publicKey',
@@ -285,7 +288,8 @@ final class OZEd25519Signature extends OZSmartAccountSignature {
   @override
   int get hashCode {
     var result = SmartAccountUtils.hashBytes(1, publicKey);
-    result = 0x1fffffff & (31 * result + SmartAccountUtils.hashBytes(1, signature));
+    result =
+        0x1fffffff & (31 * result + SmartAccountUtils.hashBytes(1, signature));
     return result;
   }
 }
@@ -322,4 +326,3 @@ final class OZPolicySignature extends OZSmartAccountSignature {
   Uint8List toAuthPayloadBytes() =>
       OZSmartAccountSignature._encodeScValToBytes(toScVal(), 'Policy');
 }
-

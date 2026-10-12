@@ -51,13 +51,15 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
   /// - [httpClient] HTTP client for making requests to Horizon
   /// - [serverURI] Base URI of the Horizon server
   LiquidityPoolsRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["liquidity_pools"]);
+    : super(httpClient, serverURI, ["liquidity_pools"]);
 
   /// Requests specific [uri] and returns LiquidityPoolResponse.
   /// This method is helpful for getting the links.
   Future<LiquidityPoolResponse> liquidityPool(Uri uri) async {
     return RequestBuilder.requestExecute<LiquidityPoolResponse>(
-        httpClient, uri);
+      httpClient,
+      uri,
+    );
   }
 
   /// Requests details about the liquidity pool to fetch by [poolId].
@@ -74,11 +76,14 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
   /// Filters liquidity pools to only those containing the specified reserve assets.
   /// Returns this builder for method chaining.
   LiquidityPoolsRequestBuilder forReserveAssets(
-      Asset reserveAssetA, Asset reserveAssetB) {
+    Asset reserveAssetA,
+    Asset reserveAssetB,
+  ) {
     queryParameters.addAll({
-      RESERVES_PARAMETER_NAME: Asset.canonicalForm(reserveAssetA) +
+      RESERVES_PARAMETER_NAME:
+          Asset.canonicalForm(reserveAssetA) +
           "," +
-          Asset.canonicalForm(reserveAssetB)
+          Asset.canonicalForm(reserveAssetB),
     });
     return this;
   }
@@ -93,15 +98,21 @@ class LiquidityPoolsRequestBuilder extends RequestBuilder {
   /// Requests specific uri and returns Page of LiquidityPoolResponse.
   /// This method is helpful for getting the next set of results.
   static Future<Page<LiquidityPoolResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
+    http.Client httpClient,
+    Uri uri,
+  ) async {
     return RequestBuilder.requestExecute<Page<LiquidityPoolResponse>>(
-        httpClient, uri);
+      httpClient,
+      uri,
+    );
   }
 
   /// Build and execute request.
   Future<Page<LiquidityPoolResponse>> execute() {
     return LiquidityPoolsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+      this.httpClient,
+      this.buildUri(),
+    );
   }
 
   /// Sets the cursor for pagination to start returning records from a specific point.
@@ -166,7 +177,7 @@ class LiquidityPoolTradesRequestBuilder extends RequestBuilder {
   /// - [httpClient] HTTP client for making requests to Horizon
   /// - [serverURI] Base URI of the Horizon server
   LiquidityPoolTradesRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["liquidity_pools"]);
+    : super(httpClient, serverURI, ["liquidity_pools"]);
 
   /// Requests specific [uri] and returns TradeResponse.
   /// This method is helpful for getting the links.
@@ -194,14 +205,18 @@ class LiquidityPoolTradesRequestBuilder extends RequestBuilder {
   /// Requests specific uri and returns Page of TradeResponse.
   /// This method is helpful for getting the next set of results.
   static Future<Page<TradeResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
+    http.Client httpClient,
+    Uri uri,
+  ) async {
     return RequestBuilder.requestExecute<Page<TradeResponse>>(httpClient, uri);
   }
 
   /// Build and execute request.
   Future<Page<TradeResponse>> execute() {
     return LiquidityPoolTradesRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+      this.httpClient,
+      this.buildUri(),
+    );
   }
 
   /// Sets the cursor for pagination to start returning records from a specific point.

@@ -180,11 +180,16 @@ class SorobanServer {
   /// Sends the JSON-RPC request for [method] with optional [args] to the
   /// server and converts the JSON response with [fromJson].
   Future<T> _postRequest<T>(
-      String method, T Function(Map<String, dynamic> json) fromJson,
-      {Object? args}) async {
+    String method,
+    T Function(Map<String, dynamic> json) fromJson, {
+    Object? args,
+  }) async {
     JsonRpcMethod request = JsonRpcMethod(method, args: args);
-    dio.Response response = await _dio.post(_serverUrl,
-        data: json.encode(request), options: dio.Options(headers: _headers));
+    dio.Response response = await _dio.post(
+      _serverUrl,
+      data: json.encode(request),
+      options: dio.Options(headers: _headers),
+    );
     if (enableLogging) {
       _log("$method response: $response");
     }
@@ -416,9 +421,13 @@ class SorobanServer {
   /// - [loadContractCodeForContractId] for loading contract code
   /// - [Soroban RPC getLedgerEntries](https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLedgerEntries)
   Future<GetLedgerEntriesResponse> getLedgerEntries(
-      List<String> base64EncodedKeys) async {
-    return _postRequest("getLedgerEntries", GetLedgerEntriesResponse.fromJson,
-        args: {'keys': base64EncodedKeys});
+    List<String> base64EncodedKeys,
+  ) async {
+    return _postRequest(
+      "getLedgerEntries",
+      GetLedgerEntriesResponse.fromJson,
+      args: {'keys': base64EncodedKeys},
+    );
   }
 
   /// Fetches current account information from the ledger state.
@@ -470,18 +479,20 @@ class SorobanServer {
   Future<Account?> getAccount(String accountId) async {
     XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.ACCOUNT);
     ledgerKey.account = XdrLedgerKeyAccount(
-        XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey));
-    GetLedgerEntriesResponse ledgerEntriesResponse =
-        await getLedgerEntries([ledgerKey.toBase64EncodedXdrString()]);
+      XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey),
+    );
+    GetLedgerEntriesResponse ledgerEntriesResponse = await getLedgerEntries([
+      ledgerKey.toBase64EncodedXdrString(),
+    ]);
 
     if (ledgerEntriesResponse.entries != null &&
         ledgerEntriesResponse.entries!.length > 0) {
       var accountEntry =
           ledgerEntriesResponse.entries![0].ledgerEntryDataXdr.account;
       if (accountEntry != null) {
-        String accountId =
-            KeyPair.fromXdrPublicKey(accountEntry.accountID.accountID)
-                .accountId;
+        String accountId = KeyPair.fromXdrPublicKey(
+          accountEntry.accountID.accountID,
+        ).accountId;
         BigInt seqNr = accountEntry.seqNum.sequenceNumber;
         return Account(accountId, seqNr);
       }
@@ -547,21 +558,34 @@ class SorobanServer {
   /// - [getLedgerEntries] for querying multiple entries at once
   /// - [XdrContractDataDurability] for storage tier options
   /// - [Soroban storage documentation](https://developers.stellar.org/docs/smart-contracts/storage)
-  Future<LedgerEntry?> getContractData(String contractId, XdrSCVal key,
-      XdrContractDataDurability durability) async {
+  Future<LedgerEntry?> getContractData(
+    String contractId,
+    XdrSCVal key,
+    XdrContractDataDurability durability,
+  ) async {
     return _getContractDataForAddress(
-        Address.forContractId(contractId).toXdr(), key, durability);
+      Address.forContractId(contractId).toXdr(),
+      key,
+      durability,
+    );
   }
 
   /// Address-typed body shared by [getContractData] and
   /// [getExternalRefWasmHash].
-  Future<LedgerEntry?> _getContractDataForAddress(XdrSCAddress contract,
-      XdrSCVal key, XdrContractDataDurability durability) async {
+  Future<LedgerEntry?> _getContractDataForAddress(
+    XdrSCAddress contract,
+    XdrSCVal key,
+    XdrContractDataDurability durability,
+  ) async {
     XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA);
-    ledgerKey.contractData =
-        XdrLedgerKeyContractData(contract, key, durability);
-    GetLedgerEntriesResponse ledgerEntriesResponse =
-        await getLedgerEntries([ledgerKey.toBase64EncodedXdrString()]);
+    ledgerKey.contractData = XdrLedgerKeyContractData(
+      contract,
+      key,
+      durability,
+    );
+    GetLedgerEntriesResponse ledgerEntriesResponse = await getLedgerEntries([
+      ledgerKey.toBase64EncodedXdrString(),
+    ]);
     if (ledgerEntriesResponse.entries != null &&
         ledgerEntriesResponse.entries!.length > 0) {
       return ledgerEntriesResponse.entries![0];
@@ -612,15 +636,17 @@ class SorobanServer {
   /// - [loadContractCodeForContractId], which applies this resolution
   ///   automatically when it meets an external reference executable
   Future<Uint8List?> getExternalRefWasmHash(
-      XdrContractExecutableExternalRef ref) async {
+    XdrContractExecutableExternalRef ref,
+  ) async {
     if (ref.executableOwner.discriminant !=
         XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT) {
       return null;
     }
     LedgerEntry? entry = await _getContractDataForAddress(
-        ref.executableOwner,
-        XdrSCVal.forExecutableTagBytes(ref.tag),
-        XdrContractDataDurability.PERSISTENT);
+      ref.executableOwner,
+      XdrSCVal.forExecutableTagBytes(ref.tag),
+      XdrContractDataDurability.PERSISTENT,
+    );
     if (entry == null) {
       return null;
     }
@@ -674,10 +700,12 @@ class SorobanServer {
   /// - [SorobanContractParser] for parsing contract bytecode
   Future<XdrContractCodeEntry?> loadContractCodeForWasmId(String wasmId) async {
     XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_CODE);
-    ledgerKey.contractCode =
-        XdrLedgerKeyContractCode(XdrHash(Util.hexToBytes(wasmId)));
-    GetLedgerEntriesResponse ledgerEntriesResponse =
-        await getLedgerEntries([ledgerKey.toBase64EncodedXdrString()]);
+    ledgerKey.contractCode = XdrLedgerKeyContractCode(
+      XdrHash(Util.hexToBytes(wasmId)),
+    );
+    GetLedgerEntriesResponse ledgerEntriesResponse = await getLedgerEntries([
+      ledgerKey.toBase64EncodedXdrString(),
+    ]);
 
     if (ledgerEntriesResponse.entries != null &&
         ledgerEntriesResponse.entries!.length > 0) {
@@ -737,15 +765,18 @@ class SorobanServer {
   /// - [loadContractInfoForContractId] for parsed contract information
   /// - [SorobanContractParser] for parsing contract bytecode
   Future<XdrContractCodeEntry?> loadContractCodeForContractId(
-      String contractId) async {
+    String contractId,
+  ) async {
     XdrLedgerKey ledgerKey = XdrLedgerKey(XdrLedgerEntryType.CONTRACT_DATA);
     ledgerKey.contractData = XdrLedgerKeyContractData(
-        Address.forContractId(contractId).toXdr(),
-        XdrSCVal.forLedgerKeyContractInstance(),
-        XdrContractDataDurability.PERSISTENT);
+      Address.forContractId(contractId).toXdr(),
+      XdrSCVal.forLedgerKeyContractInstance(),
+      XdrContractDataDurability.PERSISTENT,
+    );
 
-    GetLedgerEntriesResponse ledgerEntriesResponse =
-        await getLedgerEntries([ledgerKey.toBase64EncodedXdrString()]);
+    GetLedgerEntriesResponse ledgerEntriesResponse = await getLedgerEntries([
+      ledgerKey.toBase64EncodedXdrString(),
+    ]);
     if (ledgerEntriesResponse.entries != null &&
         ledgerEntriesResponse.entries!.length > 0) {
       XdrLedgerEntryData ledgerEntryData =
@@ -759,13 +790,15 @@ class SorobanServer {
               XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM &&
           executable.wasmHash != null) {
         return await loadContractCodeForWasmId(
-            Util.bytesToHex(executable.wasmHash!.hash));
+          Util.bytesToHex(executable.wasmHash!.hash),
+        );
       }
       if (executable.discriminant ==
               XdrContractExecutableType.CONTRACT_EXECUTABLE_EXTERNAL_REF &&
           executable.externalRef != null) {
-        Uint8List? wasmHash =
-            await getExternalRefWasmHash(executable.externalRef!);
+        Uint8List? wasmHash = await getExternalRefWasmHash(
+          executable.externalRef!,
+        );
         if (wasmHash != null) {
           return await loadContractCodeForWasmId(Util.bytesToHex(wasmHash));
         }
@@ -825,7 +858,8 @@ class SorobanServer {
   /// - [SorobanContractParser] for the parsing implementation
   /// - [SorobanContractInfo] for parsed metadata structure
   Future<SorobanContractInfo?> loadContractInfoForContractId(
-      String contractId) async {
+    String contractId,
+  ) async {
     var contractCodeEntry = await loadContractCodeForContractId(contractId);
     if (contractCodeEntry == null) {
       return null;
@@ -985,10 +1019,13 @@ class SorobanServer {
   /// - [SimulateTransactionResponse] for response details
   /// - [Soroban RPC simulateTransaction](https://developers.stellar.org/network/soroban-rpc/api-reference/methods/simulateTransaction)
   Future<SimulateTransactionResponse> simulateTransaction(
-      SimulateTransactionRequest request) async {
+    SimulateTransactionRequest request,
+  ) async {
     return _postRequest(
-        "simulateTransaction", SimulateTransactionResponse.fromJson,
-        args: request.getRequestArgs());
+      "simulateTransaction",
+      SimulateTransactionResponse.fromJson,
+      args: request.getRequestArgs(),
+    );
   }
 
   /// Submits a signed transaction to the Stellar network.
@@ -1039,11 +1076,15 @@ class SorobanServer {
   /// - [SendTransactionResponse] for status codes
   /// - [Soroban RPC sendTransaction](https://developers.stellar.org/network/soroban-rpc/api-reference/methods/sendTransaction)
   Future<SendTransactionResponse> sendTransaction(
-      Transaction transaction) async {
+    Transaction transaction,
+  ) async {
     String transactionEnvelopeXdr = transaction.toEnvelopeXdrBase64();
 
-    return _postRequest("sendTransaction", SendTransactionResponse.fromJson,
-        args: {'transaction': transactionEnvelopeXdr});
+    return _postRequest(
+      "sendTransaction",
+      SendTransactionResponse.fromJson,
+      args: {'transaction': transactionEnvelopeXdr},
+    );
   }
 
   /// Retrieves the status and results of a submitted transaction.
@@ -1095,8 +1136,11 @@ class SorobanServer {
   /// - [GetTransactionResponse] for response details
   /// - [Soroban RPC getTransaction](https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getTransaction)
   Future<GetTransactionResponse> getTransaction(String transactionHash) async {
-    return _postRequest("getTransaction", GetTransactionResponse.fromJson,
-        args: {'hash': transactionHash});
+    return _postRequest(
+      "getTransaction",
+      GetTransactionResponse.fromJson,
+      args: {'hash': transactionHash},
+    );
   }
 
   /// Polls for transaction completion.
@@ -1271,8 +1315,11 @@ class SorobanServer {
   /// - [EventFilter] for filtering events
   /// - [Soroban RPC getEvents](https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents)
   Future<GetEventsResponse> getEvents(GetEventsRequest request) async {
-    return _postRequest("getEvents", GetEventsResponse.fromJson,
-        args: request.getRequestArgs());
+    return _postRequest(
+      "getEvents",
+      GetEventsResponse.fromJson,
+      args: request.getRequestArgs(),
+    );
   }
 
   /// Retrieves a paginated list of transactions from the ledger history.
@@ -1342,9 +1389,13 @@ class SorobanServer {
   /// - [TransactionInfo] for transaction details
   /// - [Soroban RPC getTransactions](https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions)
   Future<GetTransactionsResponse> getTransactions(
-      GetTransactionsRequest request) async {
-    return _postRequest("getTransactions", GetTransactionsResponse.fromJson,
-        args: request.getRequestArgs());
+    GetTransactionsRequest request,
+  ) async {
+    return _postRequest(
+      "getTransactions",
+      GetTransactionsResponse.fromJson,
+      args: request.getRequestArgs(),
+    );
   }
 
   /// Retrieves a paginated list of ledgers with detailed information.
@@ -1421,8 +1472,11 @@ class SorobanServer {
   /// - [LedgerInfo] for ledger details
   /// - [Soroban RPC getLedgers](https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers)
   Future<GetLedgersResponse> getLedgers(GetLedgersRequest request) async {
-    return _postRequest("getLedgers", GetLedgersResponse.fromJson,
-        args: request.getRequestArgs());
+    return _postRequest(
+      "getLedgers",
+      GetLedgersResponse.fromJson,
+      args: request.getRequestArgs(),
+    );
   }
 }
 

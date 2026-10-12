@@ -20,31 +20,45 @@ void main() {
     test('test_allow_credential_construction_with_id_and_transports', () {
       final id = Uint8List.fromList(const [0x0A, 0x0B, 0x0C]);
       const transports = ['internal', 'hybrid'];
-      final credential = WebAuthnAllowCredential(id: id, transports: transports);
+      final credential = WebAuthnAllowCredential(
+        id: id,
+        transports: transports,
+      );
 
       expect(credential.id, equals(id));
       expect(credential.transports, equals(transports));
     });
 
-    test('test_allow_credential_construction_with_explicit_null_transports',
-        () {
-      final id = Uint8List.fromList(const [0x10, 0x20]);
-      final credential = WebAuthnAllowCredential(id: id, transports: null);
+    test(
+      'test_allow_credential_construction_with_explicit_null_transports',
+      () {
+        final id = Uint8List.fromList(const [0x10, 0x20]);
+        final credential = WebAuthnAllowCredential(id: id, transports: null);
 
-      expect(credential.id, equals(id));
-      expect(credential.transports, isNull);
-    });
+        expect(credential.id, equals(id));
+        expect(credential.transports, isNull);
+      },
+    );
 
     test('test_allow_credential_equals_same_byte_content', () {
       final id1 = Uint8List.fromList(const [0xDE, 0xAD, 0xBE, 0xEF]);
       final id2 = Uint8List.fromList(const [0xDE, 0xAD, 0xBE, 0xEF]);
       const transports = ['internal'];
 
-      final credential1 = WebAuthnAllowCredential(id: id1, transports: transports);
-      final credential2 = WebAuthnAllowCredential(id: id2, transports: transports);
+      final credential1 = WebAuthnAllowCredential(
+        id: id1,
+        transports: transports,
+      );
+      final credential2 = WebAuthnAllowCredential(
+        id: id2,
+        transports: transports,
+      );
 
-      expect(identical(id1, id2), isFalse,
-          reason: 'Precondition: id arrays must be distinct references');
+      expect(
+        identical(id1, id2),
+        isFalse,
+        reason: 'Precondition: id arrays must be distinct references',
+      );
       expect(credential1, equals(credential2));
     });
 
@@ -59,10 +73,12 @@ void main() {
     });
 
     test('test_allow_credential_not_equal_when_ids_differ', () {
-      final credential1 =
-          WebAuthnAllowCredential(id: Uint8List.fromList(const [0x01, 0x02]));
-      final credential2 =
-          WebAuthnAllowCredential(id: Uint8List.fromList(const [0x01, 0x03]));
+      final credential1 = WebAuthnAllowCredential(
+        id: Uint8List.fromList(const [0x01, 0x02]),
+      );
+      final credential2 = WebAuthnAllowCredential(
+        id: Uint8List.fromList(const [0x01, 0x03]),
+      );
 
       expect(credential1, isNot(equals(credential2)));
     });
@@ -93,18 +109,19 @@ void main() {
     });
 
     test(
-        'test_allow_credential_not_equal_one_null_other_non_null_transports',
-        () {
-      final id = Uint8List.fromList(const [0x01, 0x02]);
-      final withNull = WebAuthnAllowCredential(id: Uint8List.fromList(id));
-      final withValue = WebAuthnAllowCredential(
-        id: Uint8List.fromList(id),
-        transports: const ['hybrid'],
-      );
+      'test_allow_credential_not_equal_one_null_other_non_null_transports',
+      () {
+        final id = Uint8List.fromList(const [0x01, 0x02]);
+        final withNull = WebAuthnAllowCredential(id: Uint8List.fromList(id));
+        final withValue = WebAuthnAllowCredential(
+          id: Uint8List.fromList(id),
+          transports: const ['hybrid'],
+        );
 
-      expect(withNull, isNot(equals(withValue)));
-      expect(withValue, isNot(equals(withNull)));
-    });
+        expect(withNull, isNot(equals(withValue)));
+        expect(withValue, isNot(equals(withNull)));
+      },
+    );
 
     test('test_allow_credential_equals_with_self', () {
       final credential = WebAuthnAllowCredential(
@@ -121,8 +138,14 @@ void main() {
       final id2 = Uint8List.fromList(const [0x11, 0x22, 0x33]);
       const transports = ['internal', 'usb'];
 
-      final credential1 = WebAuthnAllowCredential(id: id1, transports: transports);
-      final credential2 = WebAuthnAllowCredential(id: id2, transports: transports);
+      final credential1 = WebAuthnAllowCredential(
+        id: id1,
+        transports: transports,
+      );
+      final credential2 = WebAuthnAllowCredential(
+        id: id2,
+        transports: transports,
+      );
 
       expect(credential1, equals(credential2));
       expect(credential1.hashCode, equals(credential2.hashCode));
@@ -141,29 +164,32 @@ void main() {
       expect(credential1.hashCode, isNot(equals(credential2.hashCode)));
     });
 
-    test('test_allow_credential_hashcode_null_vs_non_null_transports_differs',
-        () {
-      final id = Uint8List.fromList(const [0x01, 0x02]);
-      final withNull = WebAuthnAllowCredential(id: Uint8List.fromList(id));
-      final withValue = WebAuthnAllowCredential(
-        id: Uint8List.fromList(id),
-        transports: const ['internal'],
-      );
+    test(
+      'test_allow_credential_hashcode_null_vs_non_null_transports_differs',
+      () {
+        final id = Uint8List.fromList(const [0x01, 0x02]);
+        final withNull = WebAuthnAllowCredential(id: Uint8List.fromList(id));
+        final withValue = WebAuthnAllowCredential(
+          id: Uint8List.fromList(id),
+          transports: const ['internal'],
+        );
 
-      expect(withNull.hashCode, isNot(equals(withValue.hashCode)));
-    });
+        expect(withNull.hashCode, isNot(equals(withValue.hashCode)));
+      },
+    );
 
-    test('test_allow_credential_from_id_creates_credential_with_null_transports',
-        () {
-      final id = Uint8List.fromList(const [0xAB, 0xCD]);
-      final credential = WebAuthnAllowCredential.fromId(id);
+    test(
+      'test_allow_credential_from_id_creates_credential_with_null_transports',
+      () {
+        final id = Uint8List.fromList(const [0xAB, 0xCD]);
+        final credential = WebAuthnAllowCredential.fromId(id);
 
-      expect(credential.id, equals(id));
-      expect(credential.transports, isNull);
-    });
+        expect(credential.id, equals(id));
+        expect(credential.transports, isNull);
+      },
+    );
 
-    test('test_allow_credential_from_id_equivalent_to_direct_construction',
-        () {
+    test('test_allow_credential_from_id_equivalent_to_direct_construction', () {
       final id = Uint8List.fromList(const [0x01, 0x02, 0x03, 0x04]);
       final fromFactory = WebAuthnAllowCredential.fromId(id);
       final direct = WebAuthnAllowCredential(id: id);
@@ -171,22 +197,24 @@ void main() {
       expect(direct, equals(fromFactory));
     });
 
-    test('test_allow_credential_from_ids_creates_list_with_all_null_transports',
-        () {
-      final ids = <Uint8List>[
-        Uint8List.fromList(const [0x01]),
-        Uint8List.fromList(const [0x02, 0x03]),
-        Uint8List.fromList(const [0x04, 0x05, 0x06]),
-      ];
+    test(
+      'test_allow_credential_from_ids_creates_list_with_all_null_transports',
+      () {
+        final ids = <Uint8List>[
+          Uint8List.fromList(const [0x01]),
+          Uint8List.fromList(const [0x02, 0x03]),
+          Uint8List.fromList(const [0x04, 0x05, 0x06]),
+        ];
 
-      final credentials = WebAuthnAllowCredential.fromIds(ids);
+        final credentials = WebAuthnAllowCredential.fromIds(ids);
 
-      expect(credentials.length, equals(ids.length));
-      for (var i = 0; i < ids.length; i++) {
-        expect(credentials[i].id, equals(ids[i]));
-        expect(credentials[i].transports, isNull);
-      }
-    });
+        expect(credentials.length, equals(ids.length));
+        for (var i = 0; i < ids.length; i++) {
+          expect(credentials[i].id, equals(ids[i]));
+          expect(credentials[i].transports, isNull);
+        }
+      },
+    );
 
     test('test_allow_credential_from_ids_empty_list_returns_empty_list', () {
       final credentials = WebAuthnAllowCredential.fromIds(const <Uint8List>[]);
@@ -206,7 +234,10 @@ void main() {
     test('test_allow_credential_common_transport_values_preserved', () {
       final id = Uint8List.fromList(const [0x01]);
       const transports = ['internal', 'hybrid', 'usb', 'ble', 'nfc'];
-      final credential = WebAuthnAllowCredential(id: id, transports: transports);
+      final credential = WebAuthnAllowCredential(
+        id: id,
+        transports: transports,
+      );
 
       expect(credential.transports, equals(transports));
       expect(credential.transports!.length, equals(5));
@@ -220,7 +251,10 @@ void main() {
     test('test_allow_credential_transport_order_preserved', () {
       final id = Uint8List.fromList(const [0x01]);
       const transports = ['nfc', 'usb', 'internal'];
-      final credential = WebAuthnAllowCredential(id: id, transports: transports);
+      final credential = WebAuthnAllowCredential(
+        id: id,
+        transports: transports,
+      );
 
       expect(credential.transports![0], equals('nfc'));
       expect(credential.transports![1], equals('usb'));
@@ -247,7 +281,9 @@ void main() {
     test('test_allow_credential_copy_of_id_is_independent', () {
       // When callers want isolation they must copy the array themselves.
       final originalId = Uint8List.fromList(const [0x01, 0x02, 0x03]);
-      final credential = WebAuthnAllowCredential(id: Uint8List.fromList(originalId));
+      final credential = WebAuthnAllowCredential(
+        id: Uint8List.fromList(originalId),
+      );
 
       originalId[0] = 0xFF;
 

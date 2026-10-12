@@ -64,17 +64,25 @@ SorobanAuthorizedInvocation _buildHelloInvocation() {
 SorobanAuthorizationEntry _makeV2Entry(String accountId) {
   final address = Address.forAccountId(accountId);
   final inner = SorobanAddressCredentials(
-      address, _kNonce, _kExpiration, XdrSCVal.forVoid());
+    address,
+    _kNonce,
+    _kExpiration,
+    XdrSCVal.forVoid(),
+  );
   return SorobanAuthorizationEntry(
-      SorobanCredentials.forAddressV2(inner), _buildHelloInvocation());
+    SorobanCredentials.forAddressV2(inner),
+    _buildHelloInvocation(),
+  );
 }
 
-
 SorobanAuthorizationEntry _makeWithDelegatesEntry(
-    String topAccountId, String delegateAccountId) {
+  String topAccountId,
+  String delegateAccountId,
+) {
   final base = _makeV2Entry(topAccountId);
-  return SorobanAuthorizationEntry.withDelegates(
-      base, [SorobanDelegateDescriptor(delegateAccountId)], _kExpiration);
+  return SorobanAuthorizationEntry.withDelegates(base, [
+    SorobanDelegateDescriptor(delegateAccountId),
+  ], _kExpiration);
 }
 
 Uint8List _encodePreimage(XdrHashIDPreimage preimage) {
@@ -109,25 +117,33 @@ Future<(HttpServer, Map<String, dynamic>)> _startMockRpcServer({
         'id': parsed['id'],
         'result': {
           'entries': [
-            {'key': 'AAAAAAAAAA==', 'xdr': accountXdr, 'lastModifiedLedgerSeq': 100}
+            {
+              'key': 'AAAAAAAAAA==',
+              'xdr': accountXdr,
+              'lastModifiedLedgerSeq': 100,
+            },
           ],
           'latestLedger': 1000,
-        }
+        },
       });
     } else if (method == 'simulateTransaction') {
       capturedRequest.addAll(
-          (parsed['params'] as Map<String, dynamic>).cast<String, dynamic>());
-      final authBase64 =
-          (authEntries ?? []).map((e) => e.toBase64EncodedXdrString()).toList();
+        (parsed['params'] as Map<String, dynamic>).cast<String, dynamic>(),
+      );
+      final authBase64 = (authEntries ?? [])
+          .map((e) => e.toBase64EncodedXdrString())
+          .toList();
       responseJson = json.encode({
         'jsonrpc': '2.0',
         'id': parsed['id'],
         'result': {
-          'results': [{'xdr': 'AAAAAA==', 'auth': authBase64}],
+          'results': [
+            {'xdr': 'AAAAAA==', 'auth': authBase64},
+          ],
           'transactionData': sorobanDataXdr,
           'minResourceFee': '100',
           'latestLedger': 1000,
-        }
+        },
       });
     } else if (method == 'getLatestLedger') {
       responseJson = json.encode({
@@ -154,8 +170,9 @@ Future<(HttpServer, Map<String, dynamic>)> _startMockRpcServer({
 }
 
 String _buildAccountLedgerEntryXdr(String accountId, BigInt seqNum) {
-  final xdrAccountId =
-      XdrAccountID(KeyPair.fromAccountId(accountId).xdrPublicKey);
+  final xdrAccountId = XdrAccountID(
+    KeyPair.fromAccountId(accountId).xdrPublicKey,
+  );
   final accountEntry = XdrAccountEntry(
     xdrAccountId,
     XdrInt64(BigInt.from(100000000)),
@@ -188,8 +205,11 @@ String _buildSorobanTransactionDataXdr() {
 }
 
 Future<AssembledTransaction> _buildAssembledTx(
-    String rpcUrl, String accountId, KeyPair kp,
-    {bool simulate = false}) async {
+  String rpcUrl,
+  String accountId,
+  KeyPair kp, {
+  bool simulate = false,
+}) async {
   final clientOptions = ClientOptions(
     sourceAccountKeyPair: kp,
     contractId: _kContractId,
@@ -205,15 +225,20 @@ Future<AssembledTransaction> _buildAssembledTx(
   return await AssembledTransaction.build(options: options);
 }
 
-void _injectAuthEntry(AssembledTransaction assembled, String accountId,
-    SorobanAuthorizationEntry entry) {
+void _injectAuthEntry(
+  AssembledTransaction assembled,
+  String accountId,
+  SorobanAuthorizationEntry entry,
+) {
   final account = Account(accountId, BigInt.from(100));
   final invokeOp = InvokeContractHostFunction(
-      _kContractId, 'hello',
-      arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
-  assembled.tx = TransactionBuilder(account)
-      .addOperation(InvokeHostFuncOpBuilder(invokeOp).build())
-      .build();
+    _kContractId,
+    'hello',
+    arguments: [XdrSCVal.forU64(BigInt.from(1234))],
+  );
+  assembled.tx = TransactionBuilder(
+    account,
+  ).addOperation(InvokeHostFuncOpBuilder(invokeOp).build()).build();
   assembled.tx!.setSorobanAuth([entry]);
 }
 
@@ -233,22 +258,34 @@ void main() {
       final signer = KeyPair.fromSecretSeed(_kSeed);
       final accountAddr = Address.forAccountId(signer.accountId);
       final inner = SorobanAddressCredentials(
-          accountAddr, _kNonce, _kExpiration, XdrSCVal.forVoid());
+        accountAddr,
+        _kNonce,
+        _kExpiration,
+        XdrSCVal.forVoid(),
+      );
       final creds = SorobanCredentials.forAddressV2(inner);
       final entry = SorobanAuthorizationEntry(creds, _buildHelloInvocation());
 
       final preimage = entry.buildPreimage(Network.TESTNET);
       final encoded = base64Encode(_encodePreimage(preimage));
 
-      expect(encoded, equals(_kV2PreimageB64),
-          reason: 'ADDRESS_V2 preimage must byte-match the cross-SDK golden vector');
+      expect(
+        encoded,
+        equals(_kV2PreimageB64),
+        reason:
+            'ADDRESS_V2 preimage must byte-match the cross-SDK golden vector',
+      );
     });
 
     test('V2 payload SHA-256 matches golden hex', () {
       final signer = KeyPair.fromSecretSeed(_kSeed);
       final accountAddr = Address.forAccountId(signer.accountId);
       final inner = SorobanAddressCredentials(
-          accountAddr, _kNonce, _kExpiration, XdrSCVal.forVoid());
+        accountAddr,
+        _kNonce,
+        _kExpiration,
+        XdrSCVal.forVoid(),
+      );
       final creds = SorobanCredentials.forAddressV2(inner);
       final entry = SorobanAuthorizationEntry(creds, _buildHelloInvocation());
 
@@ -265,85 +302,108 @@ void main() {
   // generated tests which only use empty arrays.
   // -------------------------------------------------------------------------
   group('Deep nestedDelegates XDR round-trip (3+ levels)', () {
-    test('3-level nested delegate tree survives XDR encode/decode round-trip',
-        () {
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      // Level 3 (deepest leaf)
-      final level3 = XdrSorobanDelegateSignature(
-        XdrSCAddress.forAccountId(kp.accountId),
-        XdrSCVal.forVoid(),
-        [],
-      );
-      // Level 2: contains level3 as nested
-      final level2 = XdrSorobanDelegateSignature(
-        XdrSCAddress.forContractId(_kContractId),
-        XdrSCVal.forVoid(),
-        [level3],
-      );
-      // Level 1 (root): contains level2
-      final level1 = XdrSorobanDelegateSignature(
-        XdrSCAddress.forAccountId(kp.accountId),
-        XdrSCVal.forVoid(),
-        [level2],
-      );
+    test(
+      '3-level nested delegate tree survives XDR encode/decode round-trip',
+      () {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        // Level 3 (deepest leaf)
+        final level3 = XdrSorobanDelegateSignature(
+          XdrSCAddress.forAccountId(kp.accountId),
+          XdrSCVal.forVoid(),
+          [],
+        );
+        // Level 2: contains level3 as nested
+        final level2 = XdrSorobanDelegateSignature(
+          XdrSCAddress.forContractId(_kContractId),
+          XdrSCVal.forVoid(),
+          [level3],
+        );
+        // Level 1 (root): contains level2
+        final level1 = XdrSorobanDelegateSignature(
+          XdrSCAddress.forAccountId(kp.accountId),
+          XdrSCVal.forVoid(),
+          [level2],
+        );
 
-      // Encode to bytes
-      final out = XdrDataOutputStream();
-      XdrSorobanDelegateSignature.encode(out, level1);
-      final encoded = Uint8List.fromList(out.bytes);
+        // Encode to bytes
+        final out = XdrDataOutputStream();
+        XdrSorobanDelegateSignature.encode(out, level1);
+        final encoded = Uint8List.fromList(out.bytes);
 
-      // Decode back
-      final decoded =
-          XdrSorobanDelegateSignature.decode(XdrDataInputStream(encoded));
+        // Decode back
+        final decoded = XdrSorobanDelegateSignature.decode(
+          XdrDataInputStream(encoded),
+        );
 
-      expect(decoded.nestedDelegates.length, equals(1),
-          reason: 'level 1 must have 1 nested delegate');
-      expect(decoded.nestedDelegates[0].nestedDelegates.length, equals(1),
-          reason: 'level 2 must have 1 nested delegate');
-      expect(
+        expect(
+          decoded.nestedDelegates.length,
+          equals(1),
+          reason: 'level 1 must have 1 nested delegate',
+        );
+        expect(
+          decoded.nestedDelegates[0].nestedDelegates.length,
+          equals(1),
+          reason: 'level 2 must have 1 nested delegate',
+        );
+        expect(
           decoded.nestedDelegates[0].nestedDelegates[0].nestedDelegates.length,
           equals(0),
-          reason: 'level 3 (leaf) must have 0 nested delegates');
-    });
+          reason: 'level 3 (leaf) must have 0 nested delegates',
+        );
+      },
+    );
 
-    test('5-level deep nested delegate tree round-trips via XdrSorobanAddressCredentialsWithDelegates',
-        () {
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      XdrSorobanDelegateSignature current =
-          XdrSorobanDelegateSignature(
-              XdrSCAddress.forAccountId(kp.accountId), XdrSCVal.forVoid(), []);
-      // Build 5 levels
-      for (int i = 0; i < 4; i++) {
-        current = XdrSorobanDelegateSignature(
-            XdrSCAddress.forContractId(_kContractId), XdrSCVal.forVoid(), [current]);
-      }
+    test(
+      '5-level deep nested delegate tree round-trips via XdrSorobanAddressCredentialsWithDelegates',
+      () {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        XdrSorobanDelegateSignature current = XdrSorobanDelegateSignature(
+          XdrSCAddress.forAccountId(kp.accountId),
+          XdrSCVal.forVoid(),
+          [],
+        );
+        // Build 5 levels
+        for (int i = 0; i < 4; i++) {
+          current = XdrSorobanDelegateSignature(
+            XdrSCAddress.forContractId(_kContractId),
+            XdrSCVal.forVoid(),
+            [current],
+          );
+        }
 
-      final addressCreds = XdrSorobanAddressCredentials(
-        XdrSCAddress.forAccountId(kp.accountId),
-        XdrInt64(_kNonce),
-        XdrUint32(_kExpiration),
-        XdrSCVal.forVoid(),
-      );
-      final withDelegates =
-          XdrSorobanAddressCredentialsWithDelegates(addressCreds, [current]);
+        final addressCreds = XdrSorobanAddressCredentials(
+          XdrSCAddress.forAccountId(kp.accountId),
+          XdrInt64(_kNonce),
+          XdrUint32(_kExpiration),
+          XdrSCVal.forVoid(),
+        );
+        final withDelegates = XdrSorobanAddressCredentialsWithDelegates(
+          addressCreds,
+          [current],
+        );
 
-      // Encode and decode
-      final out = XdrDataOutputStream();
-      XdrSorobanAddressCredentialsWithDelegates.encode(out, withDelegates);
-      final decoded = XdrSorobanAddressCredentialsWithDelegates.decode(
-          XdrDataInputStream(Uint8List.fromList(out.bytes)));
+        // Encode and decode
+        final out = XdrDataOutputStream();
+        XdrSorobanAddressCredentialsWithDelegates.encode(out, withDelegates);
+        final decoded = XdrSorobanAddressCredentialsWithDelegates.decode(
+          XdrDataInputStream(Uint8List.fromList(out.bytes)),
+        );
 
-      expect(decoded.delegates.length, equals(1));
-      // Walk 4 levels of nesting to the leaf
-      var node = decoded.delegates[0];
-      int depth = 1;
-      while (node.nestedDelegates.isNotEmpty) {
-        node = node.nestedDelegates[0];
-        depth++;
-      }
-      expect(depth, equals(5),
-          reason: 'should reach 5 levels of nesting after round-trip');
-    });
+        expect(decoded.delegates.length, equals(1));
+        // Walk 4 levels of nesting to the leaf
+        var node = decoded.delegates[0];
+        int depth = 1;
+        while (node.nestedDelegates.isNotEmpty) {
+          node = node.nestedDelegates[0];
+          depth++;
+        }
+        expect(
+          depth,
+          equals(5),
+          reason: 'should reach 5 levels of nesting after round-trip',
+        );
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -361,34 +421,36 @@ void main() {
   // -------------------------------------------------------------------------
   group('Unknown credential arm fail-fast', () {
     test(
-        'SorobanCredentials.fromXdr throws descriptively for unknown discriminant',
-        () {
-      // XdrSorobanCredentialsType has a public value constructor that accepts
-      // any int. XdrSorobanCredentials has a public single-arg constructor that
-      // accepts a type. This combination produces an XDR credentials object
-      // with an unknown discriminant value.
-      final unknownType = XdrSorobanCredentialsType(99);
-      final xdrCreds = XdrSorobanCredentials(unknownType);
+      'SorobanCredentials.fromXdr throws descriptively for unknown discriminant',
+      () {
+        // XdrSorobanCredentialsType has a public value constructor that accepts
+        // any int. XdrSorobanCredentials has a public single-arg constructor that
+        // accepts a type. This combination produces an XDR credentials object
+        // with an unknown discriminant value.
+        final unknownType = XdrSorobanCredentialsType(99);
+        final xdrCreds = XdrSorobanCredentials(unknownType);
 
-      expect(
-        () => SorobanCredentials.fromXdr(xdrCreds),
-        throwsA(isA<Exception>()),
-        reason:
-            'fromXdr must throw for an unrecognised SorobanCredentials discriminant',
-      );
-    });
+        expect(
+          () => SorobanCredentials.fromXdr(xdrCreds),
+          throwsA(isA<Exception>()),
+          reason:
+              'fromXdr must throw for an unrecognised SorobanCredentials discriminant',
+        );
+      },
+    );
 
     test(
-        'SorobanCredentials.fromXdr throws for arm value 4 (gap between known arms)',
-        () {
-      final unknownType = XdrSorobanCredentialsType(4);
-      final xdrCreds = XdrSorobanCredentials(unknownType);
+      'SorobanCredentials.fromXdr throws for arm value 4 (gap between known arms)',
+      () {
+        final unknownType = XdrSorobanCredentialsType(4);
+        final xdrCreds = XdrSorobanCredentials(unknownType);
 
-      expect(
-        () => SorobanCredentials.fromXdr(xdrCreds),
-        throwsA(isA<Exception>()),
-      );
-    });
+        expect(
+          () => SorobanCredentials.fromXdr(xdrCreds),
+          throwsA(isA<Exception>()),
+        );
+      },
+    );
 
     // needsNonInvokerSigningBy and signAuthEntries unknown-arm guards:
     // These check entry.credentials.arm, which is a SorobanCredentials field.
@@ -407,18 +469,23 @@ void main() {
   // -------------------------------------------------------------------------
   group('signAuthEntries: missing private key for P27 arms', () {
     test('V2 entry: signing without private key throws', () async {
-
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
       final pubOnlyKp = KeyPair.fromAccountId(accountId);
 
       final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
+        accountId: accountId,
+        seqNum: BigInt.from(100),
+      );
 
       try {
         final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: false);
+        final assembled = await _buildAssembledTx(
+          rpcUrl,
+          accountId,
+          kp,
+          simulate: false,
+        );
 
         final v2Entry = _makeV2Entry(accountId);
         _injectAuthEntry(assembled, accountId, v2Entry);
@@ -429,8 +496,7 @@ void main() {
             validUntilLedgerSeq: _kExpiration + 100,
           ),
           throwsA(isA<Exception>()),
-          reason:
-              'V2 arm: signing without private key must throw',
+          reason: 'V2 arm: signing without private key must throw',
         );
       } finally {
         await server.close();
@@ -438,7 +504,6 @@ void main() {
     });
 
     test('WITH_DELEGATES entry: signing without private key throws', () async {
-
       final topKp = KeyPair.fromSecretSeed(_kSeed);
       final delegateKp = KeyPair.random();
       final topId = topKp.accountId;
@@ -446,12 +511,18 @@ void main() {
       final pubOnlyDelegateKp = KeyPair.fromAccountId(delegateId);
 
       final (server, _) = await _startMockRpcServer(
-          accountId: topId, seqNum: BigInt.from(100));
+        accountId: topId,
+        seqNum: BigInt.from(100),
+      );
 
       try {
         final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, topId, topKp, simulate: false);
+        final assembled = await _buildAssembledTx(
+          rpcUrl,
+          topId,
+          topKp,
+          simulate: false,
+        );
 
         final wdEntry = _makeWithDelegatesEntry(topId, delegateId);
         _injectAuthEntry(assembled, topId, wdEntry);
@@ -462,8 +533,7 @@ void main() {
             validUntilLedgerSeq: _kExpiration + 100,
           ),
           throwsA(isA<Exception>()),
-          reason:
-              'WITH_DELEGATES arm: signing without private key must throw',
+          reason: 'WITH_DELEGATES arm: signing without private key must throw',
         );
       } finally {
         await server.close();
@@ -477,17 +547,22 @@ void main() {
   // -------------------------------------------------------------------------
   group('signAuthEntries: authorizeEntryDelegate callback path', () {
     test('callback signs a V2 entry and returned entry is used', () async {
-
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
 
       final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
+        accountId: accountId,
+        seqNum: BigInt.from(100),
+      );
 
       try {
         final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: false);
+        final assembled = await _buildAssembledTx(
+          rpcUrl,
+          accountId,
+          kp,
+          simulate: false,
+        );
 
         final v2Entry = _makeV2Entry(accountId);
         _injectAuthEntry(assembled, accountId, v2Entry);
@@ -500,15 +575,21 @@ void main() {
           authorizeEntryDelegate: (entry, network) async {
             callbackInvocations++;
             // Sign the entry in the callback
-            entry.credentials.innerAddressCredentials!
-                .signatureExpirationLedger = _kExpiration + 100;
+            entry
+                    .credentials
+                    .innerAddressCredentials!
+                    .signatureExpirationLedger =
+                _kExpiration + 100;
             entry.sign(kp, network);
             return entry;
           },
         );
 
-        expect(callbackInvocations, equals(1),
-            reason: 'callback must be invoked exactly once for one V2 entry');
+        expect(
+          callbackInvocations,
+          equals(1),
+          reason: 'callback must be invoked exactly once for one V2 entry',
+        );
 
         final signedEntry =
             (assembled.tx!.operations.first as InvokeHostFunctionOperation)
@@ -526,131 +607,182 @@ void main() {
     });
 
     test(
-        'callback signs a WITH_DELEGATES entry; top-level contract, sole delegate matches signer',
-        () async {
-
-      final delegateKp = KeyPair.fromSecretSeed(_kSeed);
-      final delegateId = delegateKp.accountId;
-      // Use the signer as the delegate; the top-level is the contract address.
-      // This exercises the delegate-ONLY routing (contract at top, G at delegate).
-      final topAccountId = delegateId; // reuse for account setup; top creds will be contract
-      final (server, _) = await _startMockRpcServer(
-          accountId: topAccountId, seqNum: BigInt.from(100));
-
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled = await _buildAssembledTx(
-            rpcUrl, topAccountId, delegateKp, simulate: false);
-
-        // Build a WITH_DELEGATES entry whose top-level address is a contract
-        // and whose sole delegate is the G-address signer.
-        final contractAddress = Address.forContractId(_kContractId);
-        final inner = SorobanAddressCredentials(
-            contractAddress, _kNonce, _kExpiration, XdrSCVal.forVoid());
-        final baseEntry = SorobanAuthorizationEntry(
-            SorobanCredentials.forAddressV2(inner), _buildHelloInvocation());
-        final wdEntry = SorobanAuthorizationEntry.withDelegates(
-            baseEntry, [SorobanDelegateDescriptor(delegateId)], _kExpiration);
-
-        _injectAuthEntry(assembled, topAccountId, wdEntry);
-
-        int callbackCount = 0;
-        await assembled.signAuthEntries(
-          signerKeyPair: delegateKp,
-          validUntilLedgerSeq: _kExpiration + 100,
-          authorizeEntryDelegate: (entry, network) async {
-            callbackCount++;
-            return entry;
-          },
+      'callback signs a WITH_DELEGATES entry; top-level contract, sole delegate matches signer',
+      () async {
+        final delegateKp = KeyPair.fromSecretSeed(_kSeed);
+        final delegateId = delegateKp.accountId;
+        // Use the signer as the delegate; the top-level is the contract address.
+        // This exercises the delegate-ONLY routing (contract at top, G at delegate).
+        final topAccountId =
+            delegateId; // reuse for account setup; top creds will be contract
+        final (server, _) = await _startMockRpcServer(
+          accountId: topAccountId,
+          seqNum: BigInt.from(100),
         );
 
-        // The entry matches the signer as a delegate node, so it is handed to
-        // the callback exactly once (never broadcast to non-matching entries).
-        expect(callbackCount, equals(1));
-      } finally {
-        await server.close();
-      }
-    });
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            topAccountId,
+            delegateKp,
+            simulate: false,
+          );
+
+          // Build a WITH_DELEGATES entry whose top-level address is a contract
+          // and whose sole delegate is the G-address signer.
+          final contractAddress = Address.forContractId(_kContractId);
+          final inner = SorobanAddressCredentials(
+            contractAddress,
+            _kNonce,
+            _kExpiration,
+            XdrSCVal.forVoid(),
+          );
+          final baseEntry = SorobanAuthorizationEntry(
+            SorobanCredentials.forAddressV2(inner),
+            _buildHelloInvocation(),
+          );
+          final wdEntry = SorobanAuthorizationEntry.withDelegates(baseEntry, [
+            SorobanDelegateDescriptor(delegateId),
+          ], _kExpiration);
+
+          _injectAuthEntry(assembled, topAccountId, wdEntry);
+
+          int callbackCount = 0;
+          await assembled.signAuthEntries(
+            signerKeyPair: delegateKp,
+            validUntilLedgerSeq: _kExpiration + 100,
+            authorizeEntryDelegate: (entry, network) async {
+              callbackCount++;
+              return entry;
+            },
+          );
+
+          // The entry matches the signer as a delegate node, so it is handed to
+          // the callback exactly once (never broadcast to non-matching entries).
+          expect(callbackCount, equals(1));
+        } finally {
+          await server.close();
+        }
+      },
+    );
 
     test(
-        'delegate callback does not modify a sibling entry already signed by another party',
-        () async {
-      // Atomic-swap shape: two legacy ADDRESS entries (Alice and Bob). Alice
-      // signs directly; Bob then signs via a delegate callback. Bob's call must
-      // touch only Bob's entry and leave Alice's signed entry byte-for-byte
-      // intact — a delegate signer must never disturb an entry it does not own.
-      final aliceKp = KeyPair.fromSecretSeed(_kSeed);
-      final bobKp = KeyPair.random();
-      final aliceId = aliceKp.accountId;
-      final bobId = bobKp.accountId;
-      final (server, _) = await _startMockRpcServer(
-          accountId: aliceId, seqNum: BigInt.from(100));
-
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, aliceId, aliceKp, simulate: false);
-
-        SorobanAuthorizationEntry addressEntry(String accountId) =>
-            SorobanAuthorizationEntry(
-                SorobanCredentials(
-                    addressCredentials: SorobanAddressCredentials(
-                        Address.forAccountId(accountId),
-                        _kNonce,
-                        _kExpiration,
-                        XdrSCVal.forVoid())),
-                _buildHelloInvocation());
-
-        final account = Account(aliceId, BigInt.from(100));
-        final invokeOp = InvokeContractHostFunction(_kContractId, 'hello',
-            arguments: [XdrSCVal.forU64(BigInt.from(1234))]);
-        assembled.tx = TransactionBuilder(account)
-            .addOperation(InvokeHostFuncOpBuilder(invokeOp).build())
-            .build();
-        assembled.tx!
-            .setSorobanAuth([addressEntry(aliceId), addressEntry(bobId)]);
-
-        List<SorobanAuthorizationEntry> auth() =>
-            (assembled.tx!.operations.first as InvokeHostFunctionOperation).auth;
-
-        // Alice signs her own entry directly.
-        await assembled.signAuthEntries(
-            signerKeyPair: aliceKp, validUntilLedgerSeq: _kExpiration + 100);
-        expect(
-            auth()[0].credentials.innerAddressCredentials!.signature.discriminant,
-            XdrSCValType.SCV_VEC,
-            reason: "Alice's entry must be signed");
-        expect(
-            auth()[1].credentials.innerAddressCredentials!.signature.discriminant,
-            XdrSCValType.SCV_VOID,
-            reason: "Bob's entry must still be unsigned");
-        final aliceXdr = auth()[0].toBase64EncodedXdrString();
-
-        // Bob signs via a delegate callback that signs with Bob's key.
-        await assembled.signAuthEntries(
-          signerKeyPair: KeyPair.fromAccountId(bobId),
-          validUntilLedgerSeq: _kExpiration + 100,
-          authorizeEntryDelegate: (entry, network) async {
-            final copy = SorobanAuthorizationEntry.fromBase64EncodedXdr(
-                entry.toBase64EncodedXdrString());
-            copy.sign(bobKp, network);
-            return copy;
-          },
+      'delegate callback does not modify a sibling entry already signed by another party',
+      () async {
+        // Atomic-swap shape: two legacy ADDRESS entries (Alice and Bob). Alice
+        // signs directly; Bob then signs via a delegate callback. Bob's call must
+        // touch only Bob's entry and leave Alice's signed entry byte-for-byte
+        // intact — a delegate signer must never disturb an entry it does not own.
+        final aliceKp = KeyPair.fromSecretSeed(_kSeed);
+        final bobKp = KeyPair.random();
+        final aliceId = aliceKp.accountId;
+        final bobId = bobKp.accountId;
+        final (server, _) = await _startMockRpcServer(
+          accountId: aliceId,
+          seqNum: BigInt.from(100),
         );
 
-        // Alice's entry must be untouched by Bob's delegate call.
-        expect(auth()[0].toBase64EncodedXdrString(), aliceXdr,
-            reason:
-                'a delegate signer must not modify an entry it does not own');
-        // Bob's entry is now signed.
-        expect(
-            auth()[1].credentials.innerAddressCredentials!.signature.discriminant,
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            aliceId,
+            aliceKp,
+            simulate: false,
+          );
+
+          SorobanAuthorizationEntry addressEntry(String accountId) =>
+              SorobanAuthorizationEntry(
+                SorobanCredentials(
+                  addressCredentials: SorobanAddressCredentials(
+                    Address.forAccountId(accountId),
+                    _kNonce,
+                    _kExpiration,
+                    XdrSCVal.forVoid(),
+                  ),
+                ),
+                _buildHelloInvocation(),
+              );
+
+          final account = Account(aliceId, BigInt.from(100));
+          final invokeOp = InvokeContractHostFunction(
+            _kContractId,
+            'hello',
+            arguments: [XdrSCVal.forU64(BigInt.from(1234))],
+          );
+          assembled.tx = TransactionBuilder(
+            account,
+          ).addOperation(InvokeHostFuncOpBuilder(invokeOp).build()).build();
+          assembled.tx!.setSorobanAuth([
+            addressEntry(aliceId),
+            addressEntry(bobId),
+          ]);
+
+          List<SorobanAuthorizationEntry> auth() =>
+              (assembled.tx!.operations.first as InvokeHostFunctionOperation)
+                  .auth;
+
+          // Alice signs her own entry directly.
+          await assembled.signAuthEntries(
+            signerKeyPair: aliceKp,
+            validUntilLedgerSeq: _kExpiration + 100,
+          );
+          expect(
+            auth()[0]
+                .credentials
+                .innerAddressCredentials!
+                .signature
+                .discriminant,
             XdrSCValType.SCV_VEC,
-            reason: "Bob's entry must be signed by the delegate callback");
-      } finally {
-        await server.close();
-      }
-    });
+            reason: "Alice's entry must be signed",
+          );
+          expect(
+            auth()[1]
+                .credentials
+                .innerAddressCredentials!
+                .signature
+                .discriminant,
+            XdrSCValType.SCV_VOID,
+            reason: "Bob's entry must still be unsigned",
+          );
+          final aliceXdr = auth()[0].toBase64EncodedXdrString();
+
+          // Bob signs via a delegate callback that signs with Bob's key.
+          await assembled.signAuthEntries(
+            signerKeyPair: KeyPair.fromAccountId(bobId),
+            validUntilLedgerSeq: _kExpiration + 100,
+            authorizeEntryDelegate: (entry, network) async {
+              final copy = SorobanAuthorizationEntry.fromBase64EncodedXdr(
+                entry.toBase64EncodedXdrString(),
+              );
+              copy.sign(bobKp, network);
+              return copy;
+            },
+          );
+
+          // Alice's entry must be untouched by Bob's delegate call.
+          expect(
+            auth()[0].toBase64EncodedXdrString(),
+            aliceXdr,
+            reason:
+                'a delegate signer must not modify an entry it does not own',
+          );
+          // Bob's entry is now signed.
+          expect(
+            auth()[1]
+                .credentials
+                .innerAddressCredentials!
+                .signature
+                .discriminant,
+            XdrSCValType.SCV_VEC,
+            reason: "Bob's entry must be signed by the delegate callback",
+          );
+        } finally {
+          await server.close();
+        }
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -661,7 +793,8 @@ void main() {
     test('XdrHashIDPreimageSorobanAuthorizationWithAddress setters work', () {
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final networkId = Util.hash(
-          Uint8List.fromList(utf8.encode('Test SDF Network ; September 2015')));
+        Uint8List.fromList(utf8.encode('Test SDF Network ; September 2015')),
+      );
 
       final original = XdrHashIDPreimageSorobanAuthorizationWithAddress(
         XdrHash(networkId),
@@ -684,8 +817,10 @@ void main() {
 
       final newAddr = XdrSCAddress.forContractId(_kContractId);
       original.address = newAddr;
-      expect(original.address.discriminant,
-          equals(XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT));
+      expect(
+        original.address.discriminant,
+        equals(XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT),
+      );
 
       final newInvoc = _buildHelloInvocation().toXdr();
       original.invocation = newInvoc;
@@ -700,8 +835,10 @@ void main() {
         XdrUint32(_kExpiration),
         XdrSCVal.forVoid(),
       );
-      final original =
-          XdrSorobanAddressCredentialsWithDelegates(addressCreds, []);
+      final original = XdrSorobanAddressCredentialsWithDelegates(
+        addressCreds,
+        [],
+      );
 
       // Exercise addressCredentials setter
       final newCreds = XdrSorobanAddressCredentials(
@@ -711,12 +848,17 @@ void main() {
         XdrSCVal.forVoid(),
       );
       original.addressCredentials = newCreds;
-      expect(original.addressCredentials.signatureExpirationLedger.uint32,
-          equals(100));
+      expect(
+        original.addressCredentials.signatureExpirationLedger.uint32,
+        equals(100),
+      );
 
       // Exercise delegates setter
       final newDelegate = XdrSorobanDelegateSignature(
-          XdrSCAddress.forAccountId(kp.accountId), XdrSCVal.forVoid(), []);
+        XdrSCAddress.forAccountId(kp.accountId),
+        XdrSCVal.forVoid(),
+        [],
+      );
       original.delegates = [newDelegate];
       expect(original.delegates.length, equals(1));
     });
@@ -724,13 +866,18 @@ void main() {
     test('XdrSorobanDelegateSignature setters work', () {
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final original = XdrSorobanDelegateSignature(
-          XdrSCAddress.forAccountId(kp.accountId), XdrSCVal.forVoid(), []);
+        XdrSCAddress.forAccountId(kp.accountId),
+        XdrSCVal.forVoid(),
+        [],
+      );
 
       // Exercise address setter
       final newAddr = XdrSCAddress.forContractId(_kContractId);
       original.address = newAddr;
-      expect(original.address.discriminant,
-          equals(XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT));
+      expect(
+        original.address.discriminant,
+        equals(XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT),
+      );
 
       // Exercise signature setter
       original.signature = XdrSCVal.forBool(true);
@@ -738,7 +885,10 @@ void main() {
 
       // Exercise nestedDelegates setter
       final nested = XdrSorobanDelegateSignature(
-          XdrSCAddress.forAccountId(kp.accountId), XdrSCVal.forVoid(), []);
+        XdrSCAddress.forAccountId(kp.accountId),
+        XdrSCVal.forVoid(),
+        [],
+      );
       original.nestedDelegates = [nested];
       expect(original.nestedDelegates.length, equals(1));
     });
@@ -750,40 +900,56 @@ void main() {
   // includeAlreadySigned=true.
   // -------------------------------------------------------------------------
   group('needsNonInvokerSigningBy includeAlreadySigned path', () {
-    test('ADDRESS_V2 signed entry still reported when includeAlreadySigned=true',
-        () async {
+    test(
+      'ADDRESS_V2 signed entry still reported when includeAlreadySigned=true',
+      () async {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        final accountId = kp.accountId;
+        final (server, _) = await _startMockRpcServer(
+          accountId: accountId,
+          seqNum: BigInt.from(100),
+        );
 
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final accountId = kp.accountId;
-      final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            accountId,
+            kp,
+            simulate: false,
+          );
 
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: false);
+          final v2Entry = _makeV2Entry(accountId);
+          // Sign it so the signature is non-void
+          v2Entry.sign(kp, Network.TESTNET);
+          _injectAuthEntry(assembled, accountId, v2Entry);
 
-        final v2Entry = _makeV2Entry(accountId);
-        // Sign it so the signature is non-void
-        v2Entry.sign(kp, Network.TESTNET);
-        _injectAuthEntry(assembled, accountId, v2Entry);
-
-        // With includeAlreadySigned=false: signed entry is NOT reported
-        final needed = assembled.needsNonInvokerSigningBy(
-            includeAlreadySigned: false);
-        expect(needed, isNot(contains(accountId)),
-            reason: 'signed V2 entry should not appear with includeAlreadySigned=false');
-
-        // With includeAlreadySigned=true: even signed entry is reported
-        final needAll =
-            assembled.needsNonInvokerSigningBy(includeAlreadySigned: true);
-        expect(needAll, contains(accountId),
+          // With includeAlreadySigned=false: signed entry is NOT reported
+          final needed = assembled.needsNonInvokerSigningBy(
+            includeAlreadySigned: false,
+          );
+          expect(
+            needed,
+            isNot(contains(accountId)),
             reason:
-                'signed V2 entry must appear when includeAlreadySigned=true');
-      } finally {
-        await server.close();
-      }
-    });
+                'signed V2 entry should not appear with includeAlreadySigned=false',
+          );
+
+          // With includeAlreadySigned=true: even signed entry is reported
+          final needAll = assembled.needsNonInvokerSigningBy(
+            includeAlreadySigned: true,
+          );
+          expect(
+            needAll,
+            contains(accountId),
+            reason:
+                'signed V2 entry must appear when includeAlreadySigned=true',
+          );
+        } finally {
+          await server.close();
+        }
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -796,40 +962,62 @@ void main() {
       // Create ADDRESS creds normally then clear the inner field
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final creds = SorobanCredentials.forAddressLegacy(
-          Address.forAccountId(kp.accountId),
-          _kNonce,
-          _kExpiration,
-          XdrSCVal.forVoid());
+        Address.forAccountId(kp.accountId),
+        _kNonce,
+        _kExpiration,
+        XdrSCVal.forVoid(),
+      );
       creds.addressCredentials = null;
 
-      expect(() => creds.toXdr(), throwsA(isA<Exception>()),
-          reason: 'toXdr must throw when addressCredentials is null for ADDRESS arm');
+      expect(
+        () => creds.toXdr(),
+        throwsA(isA<Exception>()),
+        reason:
+            'toXdr must throw when addressCredentials is null for ADDRESS arm',
+      );
     });
 
     test('ADDRESS_V2 arm: toXdr throws if addressV2Credentials is null', () {
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final inner = SorobanAddressCredentials(
-          Address.forAccountId(kp.accountId), _kNonce, _kExpiration, XdrSCVal.forVoid());
+        Address.forAccountId(kp.accountId),
+        _kNonce,
+        _kExpiration,
+        XdrSCVal.forVoid(),
+      );
       final creds = SorobanCredentials.forAddressV2(inner);
       creds.addressV2Credentials = null;
 
-      expect(() => creds.toXdr(), throwsA(isA<Exception>()),
-          reason: 'toXdr must throw when addressV2Credentials is null for ADDRESS_V2 arm');
+      expect(
+        () => creds.toXdr(),
+        throwsA(isA<Exception>()),
+        reason:
+            'toXdr must throw when addressV2Credentials is null for ADDRESS_V2 arm',
+      );
     });
 
-    test('ADDRESS_WITH_DELEGATES arm: toXdr throws if addressWithDelegatesCredentials is null',
-        () {
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final inner = SorobanAddressCredentials(
-          Address.forAccountId(kp.accountId), _kNonce, _kExpiration, XdrSCVal.forVoid());
-      final withDels = SorobanAddressCredentialsWithDelegates(inner, []);
-      final creds = SorobanCredentials.forAddressWithDelegates(withDels);
-      creds.addressWithDelegatesCredentials = null;
+    test(
+      'ADDRESS_WITH_DELEGATES arm: toXdr throws if addressWithDelegatesCredentials is null',
+      () {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        final inner = SorobanAddressCredentials(
+          Address.forAccountId(kp.accountId),
+          _kNonce,
+          _kExpiration,
+          XdrSCVal.forVoid(),
+        );
+        final withDels = SorobanAddressCredentialsWithDelegates(inner, []);
+        final creds = SorobanCredentials.forAddressWithDelegates(withDels);
+        creds.addressWithDelegatesCredentials = null;
 
-      expect(() => creds.toXdr(), throwsA(isA<Exception>()),
+        expect(
+          () => creds.toXdr(),
+          throwsA(isA<Exception>()),
           reason:
-              'toXdr must throw when addressWithDelegatesCredentials is null for WITH_DELEGATES arm');
-    });
+              'toXdr must throw when addressWithDelegatesCredentials is null for WITH_DELEGATES arm',
+        );
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -842,7 +1030,8 @@ void main() {
       // Construct ADDRESS-discriminanted XdrSorobanCredentials without setting
       // the address payload field. The null-check guard must throw.
       final xdrAddress = XdrSorobanCredentials(
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS);
+        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS,
+      );
       expect(
         () => SorobanCredentials.fromXdr(xdrAddress),
         throwsA(isA<Exception>()),
@@ -852,27 +1041,31 @@ void main() {
 
     test('ADDRESS_V2 arm: fromXdr throws when addressV2 field is null', () {
       final xdrV2 = XdrSorobanCredentials(
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2);
+        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
+      );
       // xdrV2.addressV2 is null — triggers the guard
       expect(
         () => SorobanCredentials.fromXdr(xdrV2),
         throwsA(isA<Exception>()),
-        reason: 'fromXdr must throw when ADDRESS_V2 arm has no addressV2 payload',
+        reason:
+            'fromXdr must throw when ADDRESS_V2 arm has no addressV2 payload',
       );
     });
 
-    test('ADDRESS_WITH_DELEGATES arm: fromXdr throws when addressWithDelegates is null',
-        () {
-      final xdrWithDel = XdrSorobanCredentials(
-          XdrSorobanCredentialsType
-              .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES);
-      expect(
-        () => SorobanCredentials.fromXdr(xdrWithDel),
-        throwsA(isA<Exception>()),
-        reason:
-            'fromXdr must throw when ADDRESS_WITH_DELEGATES arm has no addressWithDelegates payload',
-      );
-    });
+    test(
+      'ADDRESS_WITH_DELEGATES arm: fromXdr throws when addressWithDelegates is null',
+      () {
+        final xdrWithDel = XdrSorobanCredentials(
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
+        );
+        expect(
+          () => SorobanCredentials.fromXdr(xdrWithDel),
+          throwsA(isA<Exception>()),
+          reason:
+              'fromXdr must throw when ADDRESS_WITH_DELEGATES arm has no addressWithDelegates payload',
+        );
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -886,9 +1079,15 @@ void main() {
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountAddr = Address.forAccountId(kp.accountId);
       final inner = SorobanAddressCredentials(
-          accountAddr, _kNonce, _kExpiration, XdrSCVal.forVoid());
+        accountAddr,
+        _kNonce,
+        _kExpiration,
+        XdrSCVal.forVoid(),
+      );
       final entry = SorobanAuthorizationEntry(
-          SorobanCredentials.forAddressV2(inner), _buildHelloInvocation());
+        SorobanCredentials.forAddressV2(inner),
+        _buildHelloInvocation(),
+      );
 
       final b64 = entry.toBase64EncodedXdrString();
       final restored = SorobanAuthorizationEntry.fromBase64EncodedXdr(b64);
@@ -900,45 +1099,58 @@ void main() {
       );
       expect(restored.credentials.addressV2Credentials, isNotNull);
       expect(
-          restored.credentials.addressV2Credentials!.signatureExpirationLedger,
-          equals(_kExpiration));
+        restored.credentials.addressV2Credentials!.signatureExpirationLedger,
+        equals(_kExpiration),
+      );
     });
 
     test(
-        'WITH_DELEGATES entry with 2-level nested delegates survives XDR round-trip',
-        () {
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final accountAddr = Address.forAccountId(kp.accountId);
-      final inner = SorobanAddressCredentials(
-          accountAddr, _kNonce, _kExpiration, XdrSCVal.forVoid());
+      'WITH_DELEGATES entry with 2-level nested delegates survives XDR round-trip',
+      () {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        final accountAddr = Address.forAccountId(kp.accountId);
+        final inner = SorobanAddressCredentials(
+          accountAddr,
+          _kNonce,
+          _kExpiration,
+          XdrSCVal.forVoid(),
+        );
 
-      // Build: contract (level 1) -> account (level 2, nested)
-      final entry = SorobanAuthorizationEntry.withDelegates(
-        SorobanAuthorizationEntry(
-          SorobanCredentials.forAddressV2(inner),
-          _buildHelloInvocation(),
-        ),
-        [
-          SorobanDelegateDescriptor(_kContractId, nestedDelegates: [
-            SorobanDelegateDescriptor(kp.accountId),
-          ]),
-        ],
-        _kExpiration,
-      );
+        // Build: contract (level 1) -> account (level 2, nested)
+        final entry = SorobanAuthorizationEntry.withDelegates(
+          SorobanAuthorizationEntry(
+            SorobanCredentials.forAddressV2(inner),
+            _buildHelloInvocation(),
+          ),
+          [
+            SorobanDelegateDescriptor(
+              _kContractId,
+              nestedDelegates: [SorobanDelegateDescriptor(kp.accountId)],
+            ),
+          ],
+          _kExpiration,
+        );
 
-      final b64 = entry.toBase64EncodedXdrString();
-      final restored = SorobanAuthorizationEntry.fromBase64EncodedXdr(b64);
+        final b64 = entry.toBase64EncodedXdrString();
+        final restored = SorobanAuthorizationEntry.fromBase64EncodedXdr(b64);
 
-      expect(
-        restored.credentials.arm,
-        equals(
-            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES),
-      );
-      final delegates = restored.credentials.addressWithDelegatesCredentials!.delegates;
-      expect(delegates.length, equals(1));
-      expect(delegates[0].nestedDelegates.length, equals(1),
-          reason: 'nested delegate must survive entry XDR round-trip');
-    });
+        expect(
+          restored.credentials.arm,
+          equals(
+            XdrSorobanCredentialsType
+                .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
+          ),
+        );
+        final delegates =
+            restored.credentials.addressWithDelegatesCredentials!.delegates;
+        expect(delegates.length, equals(1));
+        expect(
+          delegates[0].nestedDelegates.length,
+          equals(1),
+          reason: 'nested delegate must survive entry XDR round-trip',
+        );
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -957,21 +1169,22 @@ void main() {
   // -------------------------------------------------------------------------
   group('OZ smart account auth — _requireAddressOrV2Credentials guards', () {
     test(
-        'buildAuthPayloadHash throws for SOURCE_ACCOUNT entry (source-account path)',
-        () async {
-      // Confirms the source-account guard is already tested in oz_d1_p27 but
-      // this confirms the _requireAddressOrV2Credentials default arm fires for
-      // SOURCE_ACCOUNT.
-      final entry = _buildOzSourceEntry();
-      await expectLater(
-        OZSmartAccountAuth.buildAuthPayloadHash(
-          entry,
-          _kExpiration,
-          'Test SDF Network ; September 2015',
-        ),
-        throwsA(isA<SmartAccountTransactionSigningFailed>()),
-      );
-    });
+      'buildAuthPayloadHash throws for SOURCE_ACCOUNT entry (source-account path)',
+      () async {
+        // Confirms the source-account guard is already tested in oz_d1_p27 but
+        // this confirms the _requireAddressOrV2Credentials default arm fires for
+        // SOURCE_ACCOUNT.
+        final entry = _buildOzSourceEntry();
+        await expectLater(
+          OZSmartAccountAuth.buildAuthPayloadHash(
+            entry,
+            _kExpiration,
+            'Test SDF Network ; September 2015',
+          ),
+          throwsA(isA<SmartAccountTransactionSigningFailed>()),
+        );
+      },
+    );
 
     // Justification for exclusions:
     // - oz_smart_account_auth.dart lines 364-365 (_innerAddressCredentials
@@ -994,9 +1207,15 @@ void main() {
       final kp = KeyPair.fromSecretSeed(_kSeed);
 
       final nested = XdrSorobanDelegateSignature(
-          XdrSCAddress.forContractId(_kContractId), XdrSCVal.forVoid(), []);
+        XdrSCAddress.forContractId(_kContractId),
+        XdrSCVal.forVoid(),
+        [],
+      );
       final root = XdrSorobanDelegateSignature(
-          XdrSCAddress.forAccountId(kp.accountId), XdrSCVal.forVoid(), [nested]);
+        XdrSCAddress.forAccountId(kp.accountId),
+        XdrSCVal.forVoid(),
+        [nested],
+      );
 
       final lines = <String>[];
       root.toTxRep('del', lines);
@@ -1008,8 +1227,11 @@ void main() {
 
       final restored = XdrSorobanDelegateSignature.fromTxRep(map, 'del');
 
-      expect(restored.nestedDelegates.length, equals(1),
-          reason: 'nested delegate must survive toTxRep/fromTxRep round-trip');
+      expect(
+        restored.nestedDelegates.length,
+        equals(1),
+        reason: 'nested delegate must survive toTxRep/fromTxRep round-trip',
+      );
       expect(restored.nestedDelegates[0].nestedDelegates.length, equals(0));
     });
   });
@@ -1027,9 +1249,13 @@ void main() {
         XdrSCVal.forVoid(),
       );
       final delegate = XdrSorobanDelegateSignature(
-          XdrSCAddress.forContractId(_kContractId), XdrSCVal.forVoid(), []);
-      final withDels =
-          XdrSorobanAddressCredentialsWithDelegates(addressCreds, [delegate]);
+        XdrSCAddress.forContractId(_kContractId),
+        XdrSCVal.forVoid(),
+        [],
+      );
+      final withDels = XdrSorobanAddressCredentialsWithDelegates(addressCreds, [
+        delegate,
+      ]);
 
       final lines = <String>[];
       withDels.toTxRep('wd', lines);
@@ -1039,13 +1265,16 @@ void main() {
         if (idx >= 0) map[line.substring(0, idx)] = line.substring(idx + 2);
       }
 
-      final restored =
-          XdrSorobanAddressCredentialsWithDelegates.fromTxRep(map, 'wd');
+      final restored = XdrSorobanAddressCredentialsWithDelegates.fromTxRep(
+        map,
+        'wd',
+      );
 
       expect(restored.delegates.length, equals(1));
       expect(
-          restored.addressCredentials.signatureExpirationLedger.uint32,
-          equals(_kExpiration));
+        restored.addressCredentials.signatureExpirationLedger.uint32,
+        equals(_kExpiration),
+      );
     });
   });
 
@@ -1056,75 +1285,105 @@ void main() {
   // signatureExpirationLedger != null branch in the clientDomainKeyPair and
   // clientDomainSigningCallback paths).
   // -------------------------------------------------------------------------
-  group('WebAuthForContracts signatureExpirationLedger with clientDomainKeyPair',
-      () {
+  group('WebAuthForContracts signatureExpirationLedger with clientDomainKeyPair', () {
     test(
-        'signAuthorizationEntries stamps signatureExpirationLedger via clientDomainKeyPair',
-        () async {
-      final serverKeyPair = KeyPair.random();
-      final serverAccountId = serverKeyPair.accountId;
-      final clientDomainKeyPair = KeyPair.random();
-      final clientDomainAccountId = clientDomainKeyPair.accountId;
-      final clientKeyPair = KeyPair.random();
-      final clientAccountId = clientKeyPair.accountId;
+      'signAuthorizationEntries stamps signatureExpirationLedger via clientDomainKeyPair',
+      () async {
+        final serverKeyPair = KeyPair.random();
+        final serverAccountId = serverKeyPair.accountId;
+        final clientDomainKeyPair = KeyPair.random();
+        final clientDomainAccountId = clientDomainKeyPair.accountId;
+        final clientKeyPair = KeyPair.random();
+        final clientAccountId = clientKeyPair.accountId;
 
-      final argsMap = XdrSCVal.forMap([
-        XdrSCMapEntry(XdrSCVal.forSymbol('account'), XdrSCVal.forString(clientAccountId)),
-        XdrSCMapEntry(XdrSCVal.forSymbol('home_domain'), XdrSCVal.forString('test.stellar.org')),
-        XdrSCMapEntry(XdrSCVal.forSymbol('nonce'), XdrSCVal.forString('42')),
-        XdrSCMapEntry(XdrSCVal.forSymbol('web_auth_domain'), XdrSCVal.forString('test.stellar.org')),
-        XdrSCMapEntry(XdrSCVal.forSymbol('web_auth_domain_account'), XdrSCVal.forString(serverAccountId)),
-      ]);
+        final argsMap = XdrSCVal.forMap([
+          XdrSCMapEntry(
+            XdrSCVal.forSymbol('account'),
+            XdrSCVal.forString(clientAccountId),
+          ),
+          XdrSCMapEntry(
+            XdrSCVal.forSymbol('home_domain'),
+            XdrSCVal.forString('test.stellar.org'),
+          ),
+          XdrSCMapEntry(XdrSCVal.forSymbol('nonce'), XdrSCVal.forString('42')),
+          XdrSCMapEntry(
+            XdrSCVal.forSymbol('web_auth_domain'),
+            XdrSCVal.forString('test.stellar.org'),
+          ),
+          XdrSCMapEntry(
+            XdrSCVal.forSymbol('web_auth_domain_account'),
+            XdrSCVal.forString(serverAccountId),
+          ),
+        ]);
 
-      // Build a client entry using the clientDomainAccount address
-      final contractAddr = Address.forContractId(_kContractId);
-      final fn = SorobanAuthorizedFunction.forContractFunction(
-        contractAddr, 'web_auth_verify', [argsMap]);
-      final invocation = SorobanAuthorizedInvocation(fn);
+        // Build a client entry using the clientDomainAccount address
+        final contractAddr = Address.forContractId(_kContractId);
+        final fn = SorobanAuthorizedFunction.forContractFunction(
+          contractAddr,
+          'web_auth_verify',
+          [argsMap],
+        );
+        final invocation = SorobanAuthorizedInvocation(fn);
 
-      final innerCreds = SorobanAddressCredentials(
+        final innerCreds = SorobanAddressCredentials(
           Address.forAccountId(clientDomainAccountId),
-          BigInt.from(1), 0, XdrSCVal.forVoid());
-      final clientDomainEntry = SorobanAuthorizationEntry(
-          SorobanCredentials(addressCredentials: innerCreds), invocation);
+          BigInt.from(1),
+          0,
+          XdrSCVal.forVoid(),
+        );
+        final clientDomainEntry = SorobanAuthorizationEntry(
+          SorobanCredentials(addressCredentials: innerCreds),
+          invocation,
+        );
 
-      // Also add a regular client entry so signAuthorizationEntries has something to process
-      final clientInnerCreds = SorobanAddressCredentials(
+        // Also add a regular client entry so signAuthorizationEntries has something to process
+        final clientInnerCreds = SorobanAddressCredentials(
           Address.forAccountId(clientAccountId),
-          BigInt.from(2), 0, XdrSCVal.forVoid());
-      final clientEntry = SorobanAuthorizationEntry(
-          SorobanCredentials(addressCredentials: clientInnerCreds), invocation);
+          BigInt.from(2),
+          0,
+          XdrSCVal.forVoid(),
+        );
+        final clientEntry = SorobanAuthorizationEntry(
+          SorobanCredentials(addressCredentials: clientInnerCreds),
+          invocation,
+        );
 
-      final webAuth = WebAuthForContracts(
-        'https://test.stellar.org/auth',
-        _kContractId,
-        serverAccountId,
-        'test.stellar.org',
-        Network.TESTNET,
-      );
+        final webAuth = WebAuthForContracts(
+          'https://test.stellar.org/auth',
+          _kContractId,
+          serverAccountId,
+          'test.stellar.org',
+          Network.TESTNET,
+        );
 
-      const stampedExpiration = 5555;
-      final signed = await webAuth.signAuthorizationEntries(
-        [clientDomainEntry, clientEntry],
-        clientAccountId,
-        [clientKeyPair],
-        stampedExpiration,
-        clientDomainKeyPair,    // non-null clientDomainKeyPair triggers line 769
-        clientDomainAccountId,
-        null,
-      );
+        const stampedExpiration = 5555;
+        final signed = await webAuth.signAuthorizationEntries(
+          [clientDomainEntry, clientEntry],
+          clientAccountId,
+          [clientKeyPair],
+          stampedExpiration,
+          clientDomainKeyPair, // non-null clientDomainKeyPair triggers line 769
+          clientDomainAccountId,
+          null,
+        );
 
-      // The client-domain entry must be stamped with stampedExpiration. Locate
-      // it deterministically by its address and assert unconditionally: if the
-      // stamping path regressed, this fails rather than passing vacuously.
-      final clientDomainSigned = signed.firstWhere((e) =>
-          e.credentials.innerAddressCredentials?.address.accountId ==
-          clientDomainAccountId);
-      expect(
+        // The client-domain entry must be stamped with stampedExpiration. Locate
+        // it deterministically by its address and assert unconditionally: if the
+        // stamping path regressed, this fails rather than passing vacuously.
+        final clientDomainSigned = signed.firstWhere(
+          (e) =>
+              e.credentials.innerAddressCredentials?.address.accountId ==
+              clientDomainAccountId,
+        );
+        expect(
           clientDomainSigned
-              .credentials.innerAddressCredentials!.signatureExpirationLedger,
-          equals(stampedExpiration));
-    });
+              .credentials
+              .innerAddressCredentials!
+              .signatureExpirationLedger,
+          equals(stampedExpiration),
+        );
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -1139,41 +1398,57 @@ void main() {
       // Build a SorobanDelegateDescriptor chain 130 levels deep
       SorobanDelegateDescriptor buildDeep(int depth) {
         if (depth <= 0) return SorobanDelegateDescriptor(_kContractId);
-        return SorobanDelegateDescriptor(_kContractId,
-            nestedDelegates: [buildDeep(depth - 1)]);
+        return SorobanDelegateDescriptor(
+          _kContractId,
+          nestedDelegates: [buildDeep(depth - 1)],
+        );
       }
 
       final deepDescriptor = buildDeep(130);
       final inner = SorobanAddressCredentials(
-          accountAddr, _kNonce, _kExpiration, XdrSCVal.forVoid());
+        accountAddr,
+        _kNonce,
+        _kExpiration,
+        XdrSCVal.forVoid(),
+      );
       final base = SorobanAuthorizationEntry(
-          SorobanCredentials.forAddressV2(inner), _buildHelloInvocation());
+        SorobanCredentials.forAddressV2(inner),
+        _buildHelloInvocation(),
+      );
 
       expect(
-        () => SorobanAuthorizationEntry.withDelegates(
-            base, [deepDescriptor], _kExpiration),
+        () => SorobanAuthorizationEntry.withDelegates(base, [
+          deepDescriptor,
+        ], _kExpiration),
         throwsArgumentError,
         reason:
             'withDelegates must throw when descriptor tree depth exceeds the limit',
       );
     });
 
-    test('non-G/non-C/non-M strkey as delegate address throws ArgumentError',
-        () {
+    test('non-G/non-C/non-M strkey as delegate address throws ArgumentError', () {
       // Tests _strKeyToXdrAddress else branch (soroban_auth.dart lines 1306-1307)
       // for strkeys that are not G (account), C (contract), or M (muxed).
       // For example a Stellar seed key starts with 'S'.
-      const invalidStrKey = 'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE';
+      const invalidStrKey =
+          'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE';
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountAddr = Address.forAccountId(kp.accountId);
       final inner = SorobanAddressCredentials(
-          accountAddr, _kNonce, _kExpiration, XdrSCVal.forVoid());
+        accountAddr,
+        _kNonce,
+        _kExpiration,
+        XdrSCVal.forVoid(),
+      );
       final base = SorobanAuthorizationEntry(
-          SorobanCredentials.forAddressV2(inner), _buildHelloInvocation());
+        SorobanCredentials.forAddressV2(inner),
+        _buildHelloInvocation(),
+      );
 
       expect(
-        () => SorobanAuthorizationEntry.withDelegates(
-            base, [SorobanDelegateDescriptor(invalidStrKey)], _kExpiration),
+        () => SorobanAuthorizationEntry.withDelegates(base, [
+          SorobanDelegateDescriptor(invalidStrKey),
+        ], _kExpiration),
         throwsArgumentError,
         reason: 'delegate strkeys that are not G/C/M must throw ArgumentError',
       );
@@ -1185,24 +1460,30 @@ void main() {
   // Covers soroban_auth.dart line 1038 (inner == null guard in sign()).
   // -------------------------------------------------------------------------
   group('sign() null-inner guard', () {
-    test('sign() throws when arm is ADDRESS_V2 but inner credentials were cleared',
-        () {
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final inner = SorobanAddressCredentials(
-          Address.forAccountId(kp.accountId), _kNonce, _kExpiration, XdrSCVal.forVoid());
-      final creds = SorobanCredentials.forAddressV2(inner);
-      // Clear the inner field so credentials.innerAddressCredentials returns null
-      // while the arm remains ADDRESS_V2 (not SOURCE_ACCOUNT).
-      creds.addressV2Credentials = null;
-      final entry = SorobanAuthorizationEntry(creds, _buildHelloInvocation());
+    test(
+      'sign() throws when arm is ADDRESS_V2 but inner credentials were cleared',
+      () {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        final inner = SorobanAddressCredentials(
+          Address.forAccountId(kp.accountId),
+          _kNonce,
+          _kExpiration,
+          XdrSCVal.forVoid(),
+        );
+        final creds = SorobanCredentials.forAddressV2(inner);
+        // Clear the inner field so credentials.innerAddressCredentials returns null
+        // while the arm remains ADDRESS_V2 (not SOURCE_ACCOUNT).
+        creds.addressV2Credentials = null;
+        final entry = SorobanAuthorizationEntry(creds, _buildHelloInvocation());
 
-      expect(
-        () => entry.sign(kp, Network.TESTNET),
-        throwsA(isA<Exception>()),
-        reason:
-            'sign() must throw when innerAddressCredentials is null (corrupted credentials)',
-      );
-    });
+        expect(
+          () => entry.sign(kp, Network.TESTNET),
+          throwsA(isA<Exception>()),
+          reason:
+              'sign() must throw when innerAddressCredentials is null (corrupted credentials)',
+        );
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -1219,7 +1500,11 @@ void main() {
       final level2Id = level2Kp.accountId;
 
       final inner = SorobanAddressCredentials(
-          topAddr, _kNonce, _kExpiration, XdrSCVal.forVoid());
+        topAddr,
+        _kNonce,
+        _kExpiration,
+        XdrSCVal.forVoid(),
+      );
 
       // Create entry with 2-level delegate tree
       final entry = SorobanAuthorizationEntry.withDelegates(
@@ -1228,8 +1513,10 @@ void main() {
           _buildHelloInvocation(),
         ),
         [
-          SorobanDelegateDescriptor(level1Id,
-              nestedDelegates: [SorobanDelegateDescriptor(level2Id)]),
+          SorobanDelegateDescriptor(
+            level1Id,
+            nestedDelegates: [SorobanDelegateDescriptor(level2Id)],
+          ),
         ],
         _kExpiration,
       );
@@ -1254,12 +1541,14 @@ void main() {
       expect(
         level1Node.signature.discriminant,
         equals(XdrSCValType.SCV_VOID),
-        reason: 'level-1 delegate must not be signed when only level-2 was targeted',
+        reason:
+            'level-1 delegate must not be signed when only level-2 was targeted',
       );
       expect(
         withDelegates.addressCredentials.signature.discriminant,
         equals(XdrSCValType.SCV_VOID),
-        reason: 'top-level must not be signed when only a nested delegate was targeted',
+        reason:
+            'top-level must not be signed when only a nested delegate was targeted',
       );
     });
   });
@@ -1268,63 +1557,76 @@ void main() {
   // GROUP: signAuthEntries — nested delegate match routing (line 1262-1267)
   // -------------------------------------------------------------------------
   group('signAuthEntries — nested delegate matching', () {
-    test('signer matching a nested (level 2) delegate signs only that node',
-        () async {
+    test(
+      'signer matching a nested (level 2) delegate signs only that node',
+      () async {
+        final topKp = KeyPair.fromSecretSeed(_kSeed);
+        final level1Kp = KeyPair.random();
+        final level2Kp = KeyPair.random();
+        final topId = topKp.accountId;
+        final level1Id = level1Kp.accountId;
+        final level2Id = level2Kp.accountId;
 
-      final topKp = KeyPair.fromSecretSeed(_kSeed);
-      final level1Kp = KeyPair.random();
-      final level2Kp = KeyPair.random();
-      final topId = topKp.accountId;
-      final level1Id = level1Kp.accountId;
-      final level2Id = level2Kp.accountId;
-
-      final (server, _) = await _startMockRpcServer(
-          accountId: topId, seqNum: BigInt.from(100));
-
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, topId, topKp, simulate: false);
-
-        final inner = SorobanAddressCredentials(
-            Address.forAccountId(topId), _kNonce, _kExpiration, XdrSCVal.forVoid());
-        final entry = SorobanAuthorizationEntry.withDelegates(
-          SorobanAuthorizationEntry(
-            SorobanCredentials.forAddressV2(inner),
-            _buildHelloInvocation(),
-          ),
-          [
-            SorobanDelegateDescriptor(level1Id,
-                nestedDelegates: [SorobanDelegateDescriptor(level2Id)]),
-          ],
-          _kExpiration,
-        );
-        _injectAuthEntry(assembled, topId, entry);
-
-        // Sign as level2Kp — must match the nested delegate node
-        await assembled.signAuthEntries(
-          signerKeyPair: level2Kp,
-          validUntilLedgerSeq: _kExpiration + 100,
+        final (server, _) = await _startMockRpcServer(
+          accountId: topId,
+          seqNum: BigInt.from(100),
         );
 
-        final signedEntry =
-            (assembled.tx!.operations.first as InvokeHostFunctionOperation)
-                .auth
-                .first;
-        final withDelegates =
-            signedEntry.credentials.addressWithDelegatesCredentials!;
-        final level1Node = withDelegates.delegates[0];
-        final level2Node = level1Node.nestedDelegates[0];
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            topId,
+            topKp,
+            simulate: false,
+          );
 
-        expect(
-          level2Node.signature.discriminant,
-          isNot(equals(XdrSCValType.SCV_VOID)),
-          reason: 'level-2 nested delegate must be signed',
-        );
-      } finally {
-        await server.close();
-      }
-    });
+          final inner = SorobanAddressCredentials(
+            Address.forAccountId(topId),
+            _kNonce,
+            _kExpiration,
+            XdrSCVal.forVoid(),
+          );
+          final entry = SorobanAuthorizationEntry.withDelegates(
+            SorobanAuthorizationEntry(
+              SorobanCredentials.forAddressV2(inner),
+              _buildHelloInvocation(),
+            ),
+            [
+              SorobanDelegateDescriptor(
+                level1Id,
+                nestedDelegates: [SorobanDelegateDescriptor(level2Id)],
+              ),
+            ],
+            _kExpiration,
+          );
+          _injectAuthEntry(assembled, topId, entry);
+
+          // Sign as level2Kp — must match the nested delegate node
+          await assembled.signAuthEntries(
+            signerKeyPair: level2Kp,
+            validUntilLedgerSeq: _kExpiration + 100,
+          );
+
+          final signedEntry =
+              (assembled.tx!.operations.first as InvokeHostFunctionOperation)
+                  .auth
+                  .first;
+          final withDelegates =
+              signedEntry.credentials.addressWithDelegatesCredentials!;
+          final level1Node = withDelegates.delegates[0];
+          final level2Node = level1Node.nestedDelegates[0];
+
+          expect(
+            level2Node.signature.discriminant,
+            isNot(equals(XdrSCValType.SCV_VOID)),
+            reason: 'level-2 nested delegate must be signed',
+          );
+        } finally {
+          await server.close();
+        }
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -1333,22 +1635,27 @@ void main() {
   // -------------------------------------------------------------------------
   group('signAuthEntries — error paths for malformed tx state', () {
     test('signAuthEntries throws when tx has no operations', () async {
-
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
       final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
+        accountId: accountId,
+        seqNum: BigInt.from(100),
+      );
 
       try {
         final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: false);
+        final assembled = await _buildAssembledTx(
+          rpcUrl,
+          accountId,
+          kp,
+          simulate: false,
+        );
 
         // Build a tx with no operations
         final account = Account(accountId, BigInt.from(100));
-        assembled.tx = TransactionBuilder(account)
-            .addOperation(BumpSequenceOperation(BigInt.from(110)))
-            .build();
+        assembled.tx = TransactionBuilder(
+          account,
+        ).addOperation(BumpSequenceOperation(BigInt.from(110))).build();
 
         // Replace operations with an empty-ish scenario — inject V2 entry to
         // get the "needs signing" check to pass, then clear the ops.
@@ -1357,9 +1664,9 @@ void main() {
 
         // Now replace the tx with one having no InvokeHostFunction operation
         final account2 = Account(accountId, BigInt.from(101));
-        assembled.tx = TransactionBuilder(account2)
-            .addOperation(BumpSequenceOperation(BigInt.from(111)))
-            .build();
+        assembled.tx = TransactionBuilder(
+          account2,
+        ).addOperation(BumpSequenceOperation(BigInt.from(111))).build();
         // The assembled tx needs signing (V2 entry was injected earlier but
         // tx now has a BumpSequence op, not an InvokeHostFunction) — this
         // triggers the "no invoke host function" error path.
@@ -1386,67 +1693,80 @@ void main() {
   // -------------------------------------------------------------------------
   group('sign() — _neededSignersForSend ADDRESS_V2 path', () {
     test(
-        'sign() throws due to unsigned V2 auth entry (_neededSignersForSend ADDRESS_V2 branch)',
-        () async {
-
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final accountId = kp.accountId;
-      final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
-
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: false);
-
-        // Inject an unsigned V2 entry
-        final v2Entry = _makeV2Entry(accountId);
-        _injectAuthEntry(assembled, accountId, v2Entry);
-
-        // sign(force: true) skips isReadCall(); _neededSignersForSend sees the
-        // unsigned V2 entry (void top-level signature), adds accountId to needed,
-        // and sign() throws "requires signatures from multiple signers".
-        expect(
-          () => assembled.sign(force: true),
-          throwsA(isA<Exception>()),
-          reason:
-              '_neededSignersForSend must report unsigned V2 entry and cause sign() to throw',
+      'sign() throws due to unsigned V2 auth entry (_neededSignersForSend ADDRESS_V2 branch)',
+      () async {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        final accountId = kp.accountId;
+        final (server, _) = await _startMockRpcServer(
+          accountId: accountId,
+          seqNum: BigInt.from(100),
         );
-      } finally {
-        await server.close();
-      }
-    });
+
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            accountId,
+            kp,
+            simulate: false,
+          );
+
+          // Inject an unsigned V2 entry
+          final v2Entry = _makeV2Entry(accountId);
+          _injectAuthEntry(assembled, accountId, v2Entry);
+
+          // sign(force: true) skips isReadCall(); _neededSignersForSend sees the
+          // unsigned V2 entry (void top-level signature), adds accountId to needed,
+          // and sign() throws "requires signatures from multiple signers".
+          expect(
+            () => assembled.sign(force: true),
+            throwsA(isA<Exception>()),
+            reason:
+                '_neededSignersForSend must report unsigned V2 entry and cause sign() to throw',
+          );
+        } finally {
+          await server.close();
+        }
+      },
+    );
 
     test(
-        'sign() succeeds when V2 entry is signed (all signers satisfied)',
-        () async {
-
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final accountId = kp.accountId;
-      final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
-
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: false);
-
-        // Inject a signed V2 entry — top-level signature is non-void
-        final v2Entry = _makeV2Entry(accountId);
-        v2Entry.sign(kp, Network.TESTNET);
-        _injectAuthEntry(assembled, accountId, v2Entry);
-
-        // sign(force: true) skips isReadCall(); _neededSignersForSend returns
-        // empty (V2 entry already signed) so sign() proceeds to sign the tx.
-        expect(
-          () => assembled.sign(force: true),
-          returnsNormally,
-          reason: 'sign() must succeed when all V2 entries are already signed',
+      'sign() succeeds when V2 entry is signed (all signers satisfied)',
+      () async {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        final accountId = kp.accountId;
+        final (server, _) = await _startMockRpcServer(
+          accountId: accountId,
+          seqNum: BigInt.from(100),
         );
-      } finally {
-        await server.close();
-      }
-    });
+
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            accountId,
+            kp,
+            simulate: false,
+          );
+
+          // Inject a signed V2 entry — top-level signature is non-void
+          final v2Entry = _makeV2Entry(accountId);
+          v2Entry.sign(kp, Network.TESTNET);
+          _injectAuthEntry(assembled, accountId, v2Entry);
+
+          // sign(force: true) skips isReadCall(); _neededSignersForSend returns
+          // empty (V2 entry already signed) so sign() proceeds to sign the tx.
+          expect(
+            () => assembled.sign(force: true),
+            returnsNormally,
+            reason:
+                'sign() must succeed when all V2 entries are already signed',
+          );
+        } finally {
+          await server.close();
+        }
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -1456,44 +1776,53 @@ void main() {
   // -------------------------------------------------------------------------
   group('signAuthEntries — auto-expiration from getLatestLedger', () {
     test(
-        'signAuthEntries without validUntilLedgerSeq uses getLatestLedger (line 1161)',
-        () async {
-
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final accountId = kp.accountId;
-      final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
-
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: false);
-
-        final v2Entry = _makeV2Entry(accountId);
-        _injectAuthEntry(assembled, accountId, v2Entry);
-
-        // No validUntilLedgerSeq — must fetch getLatestLedger and compute
-        // expiration from it (line 1161).
-        await assembled.signAuthEntries(
-          signerKeyPair: kp,
-          // validUntilLedgerSeq intentionally omitted
+      'signAuthEntries without validUntilLedgerSeq uses getLatestLedger (line 1161)',
+      () async {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        final accountId = kp.accountId;
+        final (server, _) = await _startMockRpcServer(
+          accountId: accountId,
+          seqNum: BigInt.from(100),
         );
 
-        // Verify the entry was signed (expiration was set from server response)
-        final signedEntry =
-            (assembled.tx!.operations.first as InvokeHostFunctionOperation)
-                .auth
-                .first;
-        expect(
-          signedEntry.credentials.addressV2Credentials!
-              .signatureExpirationLedger,
-          greaterThan(0),
-          reason: 'expiration must have been set from getLatestLedger response',
-        );
-      } finally {
-        await server.close();
-      }
-    });
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            accountId,
+            kp,
+            simulate: false,
+          );
+
+          final v2Entry = _makeV2Entry(accountId);
+          _injectAuthEntry(assembled, accountId, v2Entry);
+
+          // No validUntilLedgerSeq — must fetch getLatestLedger and compute
+          // expiration from it (line 1161).
+          await assembled.signAuthEntries(
+            signerKeyPair: kp,
+            // validUntilLedgerSeq intentionally omitted
+          );
+
+          // Verify the entry was signed (expiration was set from server response)
+          final signedEntry =
+              (assembled.tx!.operations.first as InvokeHostFunctionOperation)
+                  .auth
+                  .first;
+          expect(
+            signedEntry
+                .credentials
+                .addressV2Credentials!
+                .signatureExpirationLedger,
+            greaterThan(0),
+            reason:
+                'expiration must have been set from getLatestLedger response',
+          );
+        } finally {
+          await server.close();
+        }
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -1504,41 +1833,47 @@ void main() {
   // -------------------------------------------------------------------------
   group('signAuthEntries — non-InvokeHostFunction tx throws (line 1171)', () {
     test(
-        'signAuthEntries throws for non-InvokeHostFunction tx via authorizeEntryDelegate',
-        () async {
-
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final accountId = kp.accountId;
-      final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
-
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: false);
-
-        // Replace tx with a BumpSequence (not InvokeHostFunction).
-        // authorizeEntryDelegate bypasses the needsNonInvokerSigningBy()
-        // pre-check, so the code reaches the op-type check at line 1169-1171.
-        final account = Account(accountId, BigInt.from(100));
-        assembled.tx = TransactionBuilder(account)
-            .addOperation(BumpSequenceOperation(BigInt.from(110)))
-            .build();
-
-        expect(
-          () async => await assembled.signAuthEntries(
-            signerKeyPair: kp,
-            validUntilLedgerSeq: _kExpiration + 100,
-            authorizeEntryDelegate: (entry, network) async => entry,
-          ),
-          throwsA(isA<Exception>()),
-          reason:
-              'signAuthEntries must throw when tx has no InvokeHostFunction operation',
+      'signAuthEntries throws for non-InvokeHostFunction tx via authorizeEntryDelegate',
+      () async {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        final accountId = kp.accountId;
+        final (server, _) = await _startMockRpcServer(
+          accountId: accountId,
+          seqNum: BigInt.from(100),
         );
-      } finally {
-        await server.close();
-      }
-    });
+
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            accountId,
+            kp,
+            simulate: false,
+          );
+
+          // Replace tx with a BumpSequence (not InvokeHostFunction).
+          // authorizeEntryDelegate bypasses the needsNonInvokerSigningBy()
+          // pre-check, so the code reaches the op-type check at line 1169-1171.
+          final account = Account(accountId, BigInt.from(100));
+          assembled.tx = TransactionBuilder(
+            account,
+          ).addOperation(BumpSequenceOperation(BigInt.from(110))).build();
+
+          expect(
+            () async => await assembled.signAuthEntries(
+              signerKeyPair: kp,
+              validUntilLedgerSeq: _kExpiration + 100,
+              authorizeEntryDelegate: (entry, network) async => entry,
+            ),
+            throwsA(isA<Exception>()),
+            reason:
+                'signAuthEntries must throw when tx has no InvokeHostFunction operation',
+          );
+        } finally {
+          await server.close();
+        }
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -1554,10 +1889,11 @@ void main() {
       final delegateId = delegateKp1.accountId;
 
       final inner = SorobanAddressCredentials(
-          Address.forAccountId(topKp.accountId),
-          _kNonce,
-          _kExpiration,
-          XdrSCVal.forVoid());
+        Address.forAccountId(topKp.accountId),
+        _kNonce,
+        _kExpiration,
+        XdrSCVal.forVoid(),
+      );
 
       final entry = SorobanAuthorizationEntry.withDelegates(
         SorobanAuthorizationEntry(
@@ -1599,16 +1935,20 @@ void main() {
     /// Builds a 130-deep XdrSorobanDelegateSignature chain.
     /// Returns the root node and the strkey of the leaf address.
     ({XdrSorobanDelegateSignature root, String leafStrKey})
-        _buildDeepXdrDelegateTree(KeyPair kp) {
+    _buildDeepXdrDelegateTree(KeyPair kp) {
       // Build from the leaf upward: leaf is level 130 (depth 130).
       XdrSorobanDelegateSignature current = XdrSorobanDelegateSignature(
-          XdrSCAddress.forAccountId(kp.accountId), XdrSCVal.forVoid(), []);
+        XdrSCAddress.forAccountId(kp.accountId),
+        XdrSCVal.forVoid(),
+        [],
+      );
       final leafStrKey = kp.accountId;
       for (int i = 0; i < 130; i++) {
         current = XdrSorobanDelegateSignature(
-            XdrSCAddress.forContractId(_kContractId),
-            XdrSCVal.forVoid(),
-            [current]);
+          XdrSCAddress.forContractId(_kContractId),
+          XdrSCVal.forVoid(),
+          [current],
+        );
       }
       return (root: current, leafStrKey: leafStrKey);
     }
@@ -1624,11 +1964,13 @@ void main() {
         XdrUint32(_kExpiration),
         XdrSCVal.forVoid(),
       );
-      final withDelegates =
-          XdrSorobanAddressCredentialsWithDelegates(addressCreds, [root]);
+      final withDelegates = XdrSorobanAddressCredentialsWithDelegates(
+        addressCreds,
+        [root],
+      );
       final xdrCreds = XdrSorobanCredentials(
-          XdrSorobanCredentialsType
-              .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES);
+        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
+      );
       xdrCreds.addressWithDelegates = withDelegates;
 
       final contractAddr = XdrSCAddress.forContractId(_kContractId);
@@ -1636,161 +1978,193 @@ void main() {
         XdrSorobanAuthorizedFunctionType
             .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
       );
-      fn.contractFn = XdrInvokeContractArgs(
-          contractAddr, 'hello', [XdrSCVal.forU64(BigInt.from(1234))]);
+      fn.contractFn = XdrInvokeContractArgs(contractAddr, 'hello', [
+        XdrSCVal.forU64(BigInt.from(1234)),
+      ]);
       final invocation = XdrSorobanAuthorizedInvocation(fn, []);
       final xdrEntry = XdrSorobanAuthorizationEntry(xdrCreds, invocation);
 
       return SorobanAuthorizationEntry.fromXdr(xdrEntry);
     }
 
-    test('sign(forAddress:) on 130-deep tree throws depth limit (_walkDelegate line 1159)',
-        () {
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final (:root, :leafStrKey) = _buildDeepXdrDelegateTree(kp);
-      final entry = _buildDeepEntry(kp);
-
-      // sign(forAddress:) triggers _routeSignatureToAddress(depth=0) which
-      // calls _walkDelegate(depth=1); the tree is 130 levels deep so the
-      // recursion reaches depth 129 before throwing at line 1159.
-      expect(
-        () => entry.sign(kp, Network.TESTNET, forAddress: leafStrKey),
-        throwsA(isA<Exception>()),
-        reason: '_walkDelegate must throw when delegate tree depth exceeds 128',
-      );
-    });
-
     test(
-        'needsNonInvokerSigningBy on 130-deep tree throws depth limit (_collectUnsignedDelegates line 923)',
-        () async {
+      'sign(forAddress:) on 130-deep tree throws depth limit (_walkDelegate line 1159)',
+      () {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        final (:root, :leafStrKey) = _buildDeepXdrDelegateTree(kp);
+        final entry = _buildDeepEntry(kp);
 
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final accountId = kp.accountId;
-      final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
-
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: false);
-
-        final deepEntry = _buildDeepEntry(kp);
-        _injectAuthEntry(assembled, accountId, deepEntry);
-
-        // needsNonInvokerSigningBy calls _collectUnsignedDelegates recursively;
-        // the 130-deep tree causes it to exceed the limit at line 923.
+        // sign(forAddress:) triggers _routeSignatureToAddress(depth=0) which
+        // calls _walkDelegate(depth=1); the tree is 130 levels deep so the
+        // recursion reaches depth 129 before throwing at line 1159.
         expect(
-          () => assembled.needsNonInvokerSigningBy(),
+          () => entry.sign(kp, Network.TESTNET, forAddress: leafStrKey),
           throwsA(isA<Exception>()),
           reason:
-              '_collectUnsignedDelegates must throw when delegate depth exceeds 128',
+              '_walkDelegate must throw when delegate tree depth exceeds 128',
         );
-      } finally {
-        await server.close();
-      }
-    });
+      },
+    );
 
     test(
-        'signAuthEntries with authorizeEntryDelegate enforces the delegate-tree depth guard',
-        () async {
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final accountId = kp.accountId;
-      final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
-
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: false);
-
-        final deepEntry = _buildDeepEntry(kp);
-        _injectAuthEntry(assembled, accountId, deepEntry);
-
-        // Even on the callback path, signAuthEntries first determines whether the
-        // signer is responsible for the entry by walking its delegate tree, so the
-        // depth guard (128) fires on a 130-deep tree before the callback runs. The
-        // guard is fail-closed on every signing path, the delegate callback included.
-        await expectLater(
-          assembled.signAuthEntries(
-            signerKeyPair: kp,
-            validUntilLedgerSeq: _kExpiration + 100,
-            authorizeEntryDelegate: (entry, network) async => entry,
-          ),
-          throwsA(isA<Exception>()),
+      'needsNonInvokerSigningBy on 130-deep tree throws depth limit (_collectUnsignedDelegates line 923)',
+      () async {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        final accountId = kp.accountId;
+        final (server, _) = await _startMockRpcServer(
+          accountId: accountId,
+          seqNum: BigInt.from(100),
         );
-      } finally {
-        await server.close();
-      }
-    });
 
-    test(
-        'sign(force:true) on 130-deep fully-signed tree throws depth limit (_allDelegatesSigned line 1032)',
-        () async {
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            accountId,
+            kp,
+            simulate: false,
+          );
 
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final accountId = kp.accountId;
-      final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
+          final deepEntry = _buildDeepEntry(kp);
+          _injectAuthEntry(assembled, accountId, deepEntry);
 
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: false);
-
-        // Build a 130-deep tree where all nodes have a non-void signature so
-        // that _allDelegatesSigned recurses all the way to depth 130 before
-        // encountering an unsigned node. The depth check at line 1032 fires
-        // when depth > 128.
-        //
-        // We set a dummy non-void signature directly on the XDR node to avoid
-        // calling sign() on the tree (which would throw in _walkDelegate first).
-        final dummySig = XdrSCVal.forBool(true); // non-void, non-vec
-        XdrSorobanDelegateSignature current =
-            XdrSorobanDelegateSignature(
-                XdrSCAddress.forAccountId(kp.accountId), dummySig, []);
-        for (int i = 0; i < 130; i++) {
-          current = XdrSorobanDelegateSignature(
-              XdrSCAddress.forContractId(_kContractId), dummySig, [current]);
+          // needsNonInvokerSigningBy calls _collectUnsignedDelegates recursively;
+          // the 130-deep tree causes it to exceed the limit at line 923.
+          expect(
+            () => assembled.needsNonInvokerSigningBy(),
+            throwsA(isA<Exception>()),
+            reason:
+                '_collectUnsignedDelegates must throw when delegate depth exceeds 128',
+          );
+        } finally {
+          await server.close();
         }
+      },
+    );
 
-        final addressCreds = XdrSorobanAddressCredentials(
-          XdrSCAddress.forAccountId(accountId),
-          XdrInt64(_kNonce),
-          XdrUint32(_kExpiration),
-          XdrSCVal.forVoid(),
+    test(
+      'signAuthEntries with authorizeEntryDelegate enforces the delegate-tree depth guard',
+      () async {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        final accountId = kp.accountId;
+        final (server, _) = await _startMockRpcServer(
+          accountId: accountId,
+          seqNum: BigInt.from(100),
         );
-        final withDelegates =
-            XdrSorobanAddressCredentialsWithDelegates(addressCreds, [current]);
-        final xdrCreds = XdrSorobanCredentials(
+
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            accountId,
+            kp,
+            simulate: false,
+          );
+
+          final deepEntry = _buildDeepEntry(kp);
+          _injectAuthEntry(assembled, accountId, deepEntry);
+
+          // Even on the callback path, signAuthEntries first determines whether the
+          // signer is responsible for the entry by walking its delegate tree, so the
+          // depth guard (128) fires on a 130-deep tree before the callback runs. The
+          // guard is fail-closed on every signing path, the delegate callback included.
+          await expectLater(
+            assembled.signAuthEntries(
+              signerKeyPair: kp,
+              validUntilLedgerSeq: _kExpiration + 100,
+              authorizeEntryDelegate: (entry, network) async => entry,
+            ),
+            throwsA(isA<Exception>()),
+          );
+        } finally {
+          await server.close();
+        }
+      },
+    );
+
+    test(
+      'sign(force:true) on 130-deep fully-signed tree throws depth limit (_allDelegatesSigned line 1032)',
+      () async {
+        final kp = KeyPair.fromSecretSeed(_kSeed);
+        final accountId = kp.accountId;
+        final (server, _) = await _startMockRpcServer(
+          accountId: accountId,
+          seqNum: BigInt.from(100),
+        );
+
+        try {
+          final rpcUrl = 'http://127.0.0.1:${server.port}';
+          final assembled = await _buildAssembledTx(
+            rpcUrl,
+            accountId,
+            kp,
+            simulate: false,
+          );
+
+          // Build a 130-deep tree where all nodes have a non-void signature so
+          // that _allDelegatesSigned recurses all the way to depth 130 before
+          // encountering an unsigned node. The depth check at line 1032 fires
+          // when depth > 128.
+          //
+          // We set a dummy non-void signature directly on the XDR node to avoid
+          // calling sign() on the tree (which would throw in _walkDelegate first).
+          final dummySig = XdrSCVal.forBool(true); // non-void, non-vec
+          XdrSorobanDelegateSignature current = XdrSorobanDelegateSignature(
+            XdrSCAddress.forAccountId(kp.accountId),
+            dummySig,
+            [],
+          );
+          for (int i = 0; i < 130; i++) {
+            current = XdrSorobanDelegateSignature(
+              XdrSCAddress.forContractId(_kContractId),
+              dummySig,
+              [current],
+            );
+          }
+
+          final addressCreds = XdrSorobanAddressCredentials(
+            XdrSCAddress.forAccountId(accountId),
+            XdrInt64(_kNonce),
+            XdrUint32(_kExpiration),
+            XdrSCVal.forVoid(),
+          );
+          final withDelegates = XdrSorobanAddressCredentialsWithDelegates(
+            addressCreds,
+            [current],
+          );
+          final xdrCreds = XdrSorobanCredentials(
             XdrSorobanCredentialsType
-                .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES);
-        xdrCreds.addressWithDelegates = withDelegates;
+                .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
+          );
+          xdrCreds.addressWithDelegates = withDelegates;
 
-        final contractAddr = XdrSCAddress.forContractId(_kContractId);
-        final fn = XdrSorobanAuthorizedFunction(
-          XdrSorobanAuthorizedFunctionType
-              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
-        );
-        fn.contractFn = XdrInvokeContractArgs(
-            contractAddr, 'hello', [XdrSCVal.forU64(BigInt.from(1234))]);
-        final invocation = XdrSorobanAuthorizedInvocation(fn, []);
-        final xdrEntry = XdrSorobanAuthorizationEntry(xdrCreds, invocation);
-        final deepSignedEntry = SorobanAuthorizationEntry.fromXdr(xdrEntry);
+          final contractAddr = XdrSCAddress.forContractId(_kContractId);
+          final fn = XdrSorobanAuthorizedFunction(
+            XdrSorobanAuthorizedFunctionType
+                .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
+          );
+          fn.contractFn = XdrInvokeContractArgs(contractAddr, 'hello', [
+            XdrSCVal.forU64(BigInt.from(1234)),
+          ]);
+          final invocation = XdrSorobanAuthorizedInvocation(fn, []);
+          final xdrEntry = XdrSorobanAuthorizationEntry(xdrCreds, invocation);
+          final deepSignedEntry = SorobanAuthorizationEntry.fromXdr(xdrEntry);
 
-        _injectAuthEntry(assembled, accountId, deepSignedEntry);
+          _injectAuthEntry(assembled, accountId, deepSignedEntry);
 
-        // sign(force:true) calls _neededSignersForSend() → _allDelegatesSigned()
-        // which recurses 130 levels deep and throws at depth > 128 (line 1032).
-        expect(
-          () => assembled.sign(force: true),
-          throwsA(isA<Exception>()),
-          reason:
-              '_allDelegatesSigned must throw when fully-signed delegate tree depth exceeds 128',
-        );
-      } finally {
-        await server.close();
-      }
-    });
+          // sign(force:true) calls _neededSignersForSend() → _allDelegatesSigned()
+          // which recurses 130 levels deep and throws at depth > 128 (line 1032).
+          expect(
+            () => assembled.sign(force: true),
+            throwsA(isA<Exception>()),
+            reason:
+                '_allDelegatesSigned must throw when fully-signed delegate tree depth exceeds 128',
+          );
+        } finally {
+          await server.close();
+        }
+      },
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -1802,70 +2176,87 @@ void main() {
   // withDelegates which only accepts G/C strkeys), using a CONTRACT address
   // for the delegate node but then patching it to an unknown discriminant.
   // -------------------------------------------------------------------------
-  group('_xdrAddressToStrKey — contract address (non-account) returns contractId strkey',
-      () {
-    test(
+  group(
+    '_xdrAddressToStrKey — contract address (non-account) returns contractId strkey',
+    () {
+      test(
         'needsNonInvokerSigningBy collects contract-address delegate strkey correctly',
         () async {
+          final kp = KeyPair.fromSecretSeed(_kSeed);
+          final accountId = kp.accountId;
+          final (server, _) = await _startMockRpcServer(
+            accountId: accountId,
+            seqNum: BigInt.from(100),
+          );
 
-      final kp = KeyPair.fromSecretSeed(_kSeed);
-      final accountId = kp.accountId;
-      final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
+          try {
+            final rpcUrl = 'http://127.0.0.1:${server.port}';
+            final assembled = await _buildAssembledTx(
+              rpcUrl,
+              accountId,
+              kp,
+              simulate: false,
+            );
 
-      try {
-        final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: false);
+            // Build a WITH_DELEGATES entry with a contract-address delegate node
+            // via XDR directly. The contract address triggers the second branch in
+            // _xdrAddressToStrKey (line 948-950) and returns a non-empty strkey.
+            final delegateNode = XdrSorobanDelegateSignature(
+              XdrSCAddress.forContractId(_kContractId),
+              XdrSCVal.forVoid(),
+              [],
+            );
 
-        // Build a WITH_DELEGATES entry with a contract-address delegate node
-        // via XDR directly. The contract address triggers the second branch in
-        // _xdrAddressToStrKey (line 948-950) and returns a non-empty strkey.
-        final delegateNode = XdrSorobanDelegateSignature(
-            XdrSCAddress.forContractId(_kContractId),
-            XdrSCVal.forVoid(),
-            []);
+            final addressCreds = XdrSorobanAddressCredentials(
+              XdrSCAddress.forAccountId(accountId),
+              XdrInt64(_kNonce),
+              XdrUint32(_kExpiration),
+              XdrSCVal.forVoid(),
+            );
+            final withDelegates = XdrSorobanAddressCredentialsWithDelegates(
+              addressCreds,
+              [delegateNode],
+            );
+            final xdrCreds = XdrSorobanCredentials(
+              XdrSorobanCredentialsType
+                  .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
+            );
+            xdrCreds.addressWithDelegates = withDelegates;
 
-        final addressCreds = XdrSorobanAddressCredentials(
-          XdrSCAddress.forAccountId(accountId),
-          XdrInt64(_kNonce),
-          XdrUint32(_kExpiration),
-          XdrSCVal.forVoid(),
-        );
-        final withDelegates =
-            XdrSorobanAddressCredentialsWithDelegates(addressCreds, [delegateNode]);
-        final xdrCreds = XdrSorobanCredentials(
-            XdrSorobanCredentialsType
-                .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES);
-        xdrCreds.addressWithDelegates = withDelegates;
+            final contractAddr = XdrSCAddress.forContractId(_kContractId);
+            final fn = XdrSorobanAuthorizedFunction(
+              XdrSorobanAuthorizedFunctionType
+                  .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
+            );
+            fn.contractFn = XdrInvokeContractArgs(contractAddr, 'hello', [
+              XdrSCVal.forU64(BigInt.from(1234)),
+            ]);
+            final invocation = XdrSorobanAuthorizedInvocation(fn, []);
+            final xdrEntry = XdrSorobanAuthorizationEntry(xdrCreds, invocation);
+            final entry = SorobanAuthorizationEntry.fromXdr(xdrEntry);
 
-        final contractAddr = XdrSCAddress.forContractId(_kContractId);
-        final fn = XdrSorobanAuthorizedFunction(
-          XdrSorobanAuthorizedFunctionType
-              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
-        );
-        fn.contractFn = XdrInvokeContractArgs(
-            contractAddr, 'hello', [XdrSCVal.forU64(BigInt.from(1234))]);
-        final invocation = XdrSorobanAuthorizedInvocation(fn, []);
-        final xdrEntry = XdrSorobanAuthorizationEntry(xdrCreds, invocation);
-        final entry = SorobanAuthorizationEntry.fromXdr(xdrEntry);
+            _injectAuthEntry(assembled, accountId, entry);
 
-        _injectAuthEntry(assembled, accountId, entry);
-
-        // needsNonInvokerSigningBy collects unsigned delegate strkeys. The
-        // contract-address delegate must be collected as its contract strkey,
-        // proving the contract-address branch returns the right value (not just
-        // that the list is non-empty from the top-level account).
-        final needed =
-            assembled.needsNonInvokerSigningBy(includeAlreadySigned: true);
-        expect(needed, contains(_kContractId),
-            reason:
-                'contract-address delegate must be collected by its contract strkey');
-      } finally {
-        await server.close();
-      }
-    });
-  });
+            // needsNonInvokerSigningBy collects unsigned delegate strkeys. The
+            // contract-address delegate must be collected as its contract strkey,
+            // proving the contract-address branch returns the right value (not just
+            // that the list is non-empty from the top-level account).
+            final needed = assembled.needsNonInvokerSigningBy(
+              includeAlreadySigned: true,
+            );
+            expect(
+              needed,
+              contains(_kContractId),
+              reason:
+                  'contract-address delegate must be collected by its contract strkey',
+            );
+          } finally {
+            await server.close();
+          }
+        },
+      );
+    },
+  );
 
   // -------------------------------------------------------------------------
   // GROUP: sign() with tx == null — covers _neededSignersForSend line 969
@@ -1888,16 +2279,21 @@ void main() {
   // -------------------------------------------------------------------------
   group('sign() — tx==null and empty-ops guards (lines 969 + 973)', () {
     test('sign_throwsWhenTxIsNull', () async {
-
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
       final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
+        accountId: accountId,
+        seqNum: BigInt.from(100),
+      );
 
       try {
         final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: false);
+        final assembled = await _buildAssembledTx(
+          rpcUrl,
+          accountId,
+          kp,
+          simulate: false,
+        );
 
         // Set tx to null — sign() throws at line 788 (before calling
         // _neededSignersForSend). This documents the contract that a null tx
@@ -1929,21 +2325,27 @@ void main() {
       final kp = KeyPair.fromSecretSeed(_kSeed);
       final accountId = kp.accountId;
       final (server, _) = await _startMockRpcServer(
-          accountId: accountId, seqNum: BigInt.from(100));
+        accountId: accountId,
+        seqNum: BigInt.from(100),
+      );
 
       try {
         final rpcUrl = 'http://127.0.0.1:${server.port}';
-        final assembled =
-            await _buildAssembledTx(rpcUrl, accountId, kp, simulate: false);
+        final assembled = await _buildAssembledTx(
+          rpcUrl,
+          accountId,
+          kp,
+          simulate: false,
+        );
 
         // Build a valid 1-op tx, inject it, then clear the operations list.
         // After clear(): tx != null (line 788 guard passes), ops.isEmpty == true
         // (line 973 returns []), sign() proceeds past the signers check and
         // fails at the XDR clone step with "At least one operation required".
         final account = Account(accountId, BigInt.from(100));
-        final tx = TransactionBuilder(account)
-            .addOperation(BumpSequenceOperation(BigInt.from(110)))
-            .build();
+        final tx = TransactionBuilder(
+          account,
+        ).addOperation(BumpSequenceOperation(BigInt.from(110))).build();
         assembled.tx = tx;
         assembled.tx!.operations.clear();
 
@@ -1955,8 +2357,11 @@ void main() {
         } on Exception catch (e) {
           threw.add(e);
         }
-        expect(threw.length, equals(1),
-            reason: 'sign() must throw when operations list is empty');
+        expect(
+          threw.length,
+          equals(1),
+          reason: 'sign() must throw when operations list is empty',
+        );
         expect(
           threw.first.toString(),
           isNot(contains('requires signatures from multiple signers')),
@@ -1980,77 +2385,114 @@ void main() {
   // Covers webauth_for_contracts.dart line 782 (signatureExpirationLedger
   // stamping in the clientDomainSigningCallback branch).
   // -------------------------------------------------------------------------
-  group('WebAuthForContracts — clientDomainSigningCallback with expiration',
-      () {
+  group('WebAuthForContracts — clientDomainSigningCallback with expiration', () {
     test(
-        'signAuthorizationEntries stamps expiration before calling clientDomainSigningCallback',
-        () async {
-      final serverKeyPair = KeyPair.random();
-      final serverAccountId = serverKeyPair.accountId;
-      final clientKeyPair = KeyPair.random();
-      final clientAccountId = clientKeyPair.accountId;
-      final clientDomainAccountId = KeyPair.random().accountId;
+      'signAuthorizationEntries stamps expiration before calling clientDomainSigningCallback',
+      () async {
+        final serverKeyPair = KeyPair.random();
+        final serverAccountId = serverKeyPair.accountId;
+        final clientKeyPair = KeyPair.random();
+        final clientAccountId = clientKeyPair.accountId;
+        final clientDomainAccountId = KeyPair.random().accountId;
 
-      final contractAddr = Address.forContractId(_kContractId);
-      final fn = SorobanAuthorizedFunction.forContractFunction(
-          contractAddr, 'web_auth_verify', [
-        XdrSCVal.forMap([
-          XdrSCMapEntry(XdrSCVal.forSymbol('account'), XdrSCVal.forString(clientAccountId)),
-          XdrSCMapEntry(XdrSCVal.forSymbol('home_domain'), XdrSCVal.forString('test.stellar.org')),
-          XdrSCMapEntry(XdrSCVal.forSymbol('nonce'), XdrSCVal.forString('42')),
-          XdrSCMapEntry(XdrSCVal.forSymbol('web_auth_domain'), XdrSCVal.forString('test.stellar.org')),
-          XdrSCMapEntry(XdrSCVal.forSymbol('web_auth_domain_account'), XdrSCVal.forString(serverAccountId)),
-        ]),
-      ]);
-      final invocation = SorobanAuthorizedInvocation(fn);
+        final contractAddr = Address.forContractId(_kContractId);
+        final fn = SorobanAuthorizedFunction.forContractFunction(
+          contractAddr,
+          'web_auth_verify',
+          [
+            XdrSCVal.forMap([
+              XdrSCMapEntry(
+                XdrSCVal.forSymbol('account'),
+                XdrSCVal.forString(clientAccountId),
+              ),
+              XdrSCMapEntry(
+                XdrSCVal.forSymbol('home_domain'),
+                XdrSCVal.forString('test.stellar.org'),
+              ),
+              XdrSCMapEntry(
+                XdrSCVal.forSymbol('nonce'),
+                XdrSCVal.forString('42'),
+              ),
+              XdrSCMapEntry(
+                XdrSCVal.forSymbol('web_auth_domain'),
+                XdrSCVal.forString('test.stellar.org'),
+              ),
+              XdrSCMapEntry(
+                XdrSCVal.forSymbol('web_auth_domain_account'),
+                XdrSCVal.forString(serverAccountId),
+              ),
+            ]),
+          ],
+        );
+        final invocation = SorobanAuthorizedInvocation(fn);
 
-      // Build the client domain entry
-      final clientDomainCreds = SorobanAddressCredentials(
+        // Build the client domain entry
+        final clientDomainCreds = SorobanAddressCredentials(
           Address.forAccountId(clientDomainAccountId),
-          BigInt.from(1), 0, XdrSCVal.forVoid());
-      final clientDomainEntry = SorobanAuthorizationEntry(
-          SorobanCredentials(addressCredentials: clientDomainCreds), invocation);
+          BigInt.from(1),
+          0,
+          XdrSCVal.forVoid(),
+        );
+        final clientDomainEntry = SorobanAuthorizationEntry(
+          SorobanCredentials(addressCredentials: clientDomainCreds),
+          invocation,
+        );
 
-      // Build a regular client entry
-      final clientCreds = SorobanAddressCredentials(
+        // Build a regular client entry
+        final clientCreds = SorobanAddressCredentials(
           Address.forAccountId(clientAccountId),
-          BigInt.from(2), 0, XdrSCVal.forVoid());
-      final clientEntry = SorobanAuthorizationEntry(
-          SorobanCredentials(addressCredentials: clientCreds), invocation);
+          BigInt.from(2),
+          0,
+          XdrSCVal.forVoid(),
+        );
+        final clientEntry = SorobanAuthorizationEntry(
+          SorobanCredentials(addressCredentials: clientCreds),
+          invocation,
+        );
 
-      final webAuth = WebAuthForContracts(
-        'https://test.stellar.org/auth',
-        _kContractId,
-        serverAccountId,
-        'test.stellar.org',
-        Network.TESTNET,
-      );
+        final webAuth = WebAuthForContracts(
+          'https://test.stellar.org/auth',
+          _kContractId,
+          serverAccountId,
+          'test.stellar.org',
+          Network.TESTNET,
+        );
 
-      const stampedExpiration = 9876;
-      int callbackInvocations = 0;
-      int? capturedExpiration;
+        const stampedExpiration = 9876;
+        int callbackInvocations = 0;
+        int? capturedExpiration;
 
-      await webAuth.signAuthorizationEntries(
-        [clientDomainEntry, clientEntry],
-        clientAccountId,
-        [clientKeyPair],
-        stampedExpiration,
-        null,                 // no clientDomainKeyPair
-        clientDomainAccountId,
-        (entry) async {       // clientDomainSigningCallback triggers line 782
-          callbackInvocations++;
-          capturedExpiration =
-              entry.credentials.innerAddressCredentials?.signatureExpirationLedger;
-          return entry;
-        },
-      );
+        await webAuth.signAuthorizationEntries(
+          [clientDomainEntry, clientEntry],
+          clientAccountId,
+          [clientKeyPair],
+          stampedExpiration,
+          null, // no clientDomainKeyPair
+          clientDomainAccountId,
+          (entry) async {
+            // clientDomainSigningCallback triggers line 782
+            callbackInvocations++;
+            capturedExpiration = entry
+                .credentials
+                .innerAddressCredentials
+                ?.signatureExpirationLedger;
+            return entry;
+          },
+        );
 
-      expect(callbackInvocations, equals(1),
-          reason: 'callback must be invoked once for the client domain entry');
-      expect(capturedExpiration, equals(stampedExpiration),
+        expect(
+          callbackInvocations,
+          equals(1),
+          reason: 'callback must be invoked once for the client domain entry',
+        );
+        expect(
+          capturedExpiration,
+          equals(stampedExpiration),
           reason:
-              'expiration must be stamped before the callback receives the entry (line 782)');
-    });
+              'expiration must be stamped before the callback receives the entry (line 782)',
+        );
+      },
+    );
   });
 }
 
@@ -2065,10 +2507,12 @@ XdrSorobanAuthorizationEntry _buildOzSourceEntry() {
     XdrSorobanAuthorizedFunctionType
         .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
   );
-  fn.contractFn =
-      XdrInvokeContractArgs(contractAddr, 'hello', [XdrSCVal.forU64(BigInt.from(1234))]);
-  final invocation =
-      XdrSorobanAuthorizedInvocation(fn, []);
+  fn.contractFn = XdrInvokeContractArgs(contractAddr, 'hello', [
+    XdrSCVal.forU64(BigInt.from(1234)),
+  ]);
+  final invocation = XdrSorobanAuthorizedInvocation(fn, []);
   return XdrSorobanAuthorizationEntry(
-      XdrSorobanCredentials.forSourceAccount(), invocation);
+    XdrSorobanCredentials.forSourceAccount(),
+    invocation,
+  );
 }

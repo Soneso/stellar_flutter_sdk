@@ -20,55 +20,94 @@ void main() {
     test('execute returns Page<OperationResponse> with payment operations', () async {
       final mockResponse = {
         '_links': {
-          'self': {'href': 'https://horizon-testnet.stellar.org/payments?limit=10'},
-          'next': {'href': 'https://horizon-testnet.stellar.org/payments?cursor=next'},
-          'prev': {'href': 'https://horizon-testnet.stellar.org/payments?cursor=prev'}
+          'self': {
+            'href': 'https://horizon-testnet.stellar.org/payments?limit=10',
+          },
+          'next': {
+            'href': 'https://horizon-testnet.stellar.org/payments?cursor=next',
+          },
+          'prev': {
+            'href': 'https://horizon-testnet.stellar.org/payments?cursor=prev',
+          },
         },
         '_embedded': {
           'records': [
             {
               '_links': {
-                'self': {'href': 'https://horizon-testnet.stellar.org/operations/123'},
-                'transaction': {'href': 'https://horizon-testnet.stellar.org/transactions/abc'},
-                'effects': {'href': 'https://horizon-testnet.stellar.org/operations/123/effects'},
-                'succeeds': {'href': 'https://horizon-testnet.stellar.org/effects?order=desc&cursor=123'},
-                'precedes': {'href': 'https://horizon-testnet.stellar.org/effects?order=asc&cursor=123'}
+                'self': {
+                  'href': 'https://horizon-testnet.stellar.org/operations/123',
+                },
+                'transaction': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/transactions/abc',
+                },
+                'effects': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/operations/123/effects',
+                },
+                'succeeds': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/effects?order=desc&cursor=123',
+                },
+                'precedes': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/effects?order=asc&cursor=123',
+                },
               },
               'id': '123456789',
               'paging_token': '123456789',
               'transaction_successful': true,
-              'source_account': 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
+              'source_account':
+                  'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
               'type': 'payment',
               'type_i': 1,
               'created_at': '2024-01-01T00:00:00Z',
               'transaction_hash': 'abc123def456',
               'asset_type': 'native',
-              'from': 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
+              'from':
+                  'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
               'to': 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B',
-              'amount': '100.0000000'
+              'amount': '100.0000000',
             },
             {
               '_links': {
-                'self': {'href': 'https://horizon-testnet.stellar.org/operations/124'},
-                'transaction': {'href': 'https://horizon-testnet.stellar.org/transactions/def'},
-                'effects': {'href': 'https://horizon-testnet.stellar.org/operations/124/effects'},
-                'succeeds': {'href': 'https://horizon-testnet.stellar.org/effects?order=desc&cursor=124'},
-                'precedes': {'href': 'https://horizon-testnet.stellar.org/effects?order=asc&cursor=124'}
+                'self': {
+                  'href': 'https://horizon-testnet.stellar.org/operations/124',
+                },
+                'transaction': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/transactions/def',
+                },
+                'effects': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/operations/124/effects',
+                },
+                'succeeds': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/effects?order=desc&cursor=124',
+                },
+                'precedes': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/effects?order=asc&cursor=124',
+                },
               },
               'id': '123456790',
               'paging_token': '123456790',
               'transaction_successful': true,
-              'source_account': 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
+              'source_account':
+                  'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
               'type': 'create_account',
               'type_i': 0,
               'created_at': '2024-01-01T00:01:00Z',
               'transaction_hash': 'def456ghi789',
               'starting_balance': '10.0000000',
-              'funder': 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
-              'account': 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B'
-            }
-          ]
-        }
+              'funder':
+                  'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
+              'account':
+                  'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B',
+            },
+          ],
+        },
       };
 
       final mockClient = MockClient((request) async {
@@ -89,7 +128,8 @@ void main() {
         return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      final accountId = 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+      final accountId =
+          'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
       final builder = PaymentsRequestBuilder(mockClient, serverUri);
       builder.forAccount(accountId);
       final uri = builder.buildUri();
@@ -127,7 +167,8 @@ void main() {
         return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      final accountId = 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+      final accountId =
+          'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
       final builder = PaymentsRequestBuilder(mockClient, serverUri);
       builder
           .forAccount(accountId)
@@ -144,9 +185,12 @@ void main() {
 
     test('stream returns Stream<OperationResponse>', () {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          '_embedded': {'records': []}
-        }), 200);
+        return http.Response(
+          json.encode({
+            '_embedded': {'records': []},
+          }),
+          200,
+        );
       });
 
       final builder = PaymentsRequestBuilder(mockClient, serverUri);
@@ -166,7 +210,7 @@ void main() {
         'transaction': {'href': 'x'},
         'effects': {'href': 'x'},
         'succeeds': {'href': 'x'},
-        'precedes': {'href': 'x'}
+        'precedes': {'href': 'x'},
       },
       'id': '123456789',
       'paging_token': '123456789',
@@ -179,7 +223,7 @@ void main() {
       'asset_type': 'native',
       'from': from,
       'to': to,
-      'amount': '100.0000000'
+      'amount': '100.0000000',
     };
 
     test('stream parses an SSE data frame into a payment', () async {
@@ -187,8 +231,11 @@ void main() {
         final controller = StreamController<List<int>>();
         controller.add(utf8.encode('event: open\ndata: "hello"\n\n'));
         controller.add(utf8.encode('data: ${json.encode(paymentRecord)}\n\n'));
-        return http.StreamedResponse(controller.stream, 200,
-            headers: {'content-type': 'text/event-stream'});
+        return http.StreamedResponse(
+          controller.stream,
+          200,
+          headers: {'content-type': 'text/event-stream'},
+        );
       });
 
       final builder = PaymentsRequestBuilder(mockClient, serverUri);

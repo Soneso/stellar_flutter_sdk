@@ -22,7 +22,10 @@ const String _verifierContract =
   final kit = FakePipelineKit();
   final txOps = MockOZTransactionOperations(kit);
   kit.setTransactionOperations(txOps);
-  kit.setConnected(credentialId: _credentialIdB64, contractId: _validContractId);
+  kit.setConnected(
+    credentialId: _credentialIdB64,
+    contractId: _validContractId,
+  );
   return (kit: kit, txOps: txOps);
 }
 
@@ -32,7 +35,11 @@ XdrInvokeContractArgs _capturedInvocation(
 }) {
   expect(txOps.submitCalls.length, greaterThan(callIndex));
   final invokeArgs = txOps.submitCalls[callIndex].hostFunction.invokeContract;
-  expect(invokeArgs, isNotNull, reason: 'Expected an InvokeContract host function');
+  expect(
+    invokeArgs,
+    isNotNull,
+    reason: 'Expected an InvokeContract host function',
+  );
   return invokeArgs!;
 }
 
@@ -48,7 +55,9 @@ void main() {
       await mgr.addContextRule(
         contextType: const OZContextRuleTypeDefault(),
         name: 'my-rule',
-        signers: <OZSmartAccountSigner>[OZDelegatedSigner(_validAccountAddress)],
+        signers: <OZSmartAccountSigner>[
+          OZDelegatedSigner(_validAccountAddress),
+        ],
       );
       expect(_capturedInvocation(h.txOps).functionName, 'add_context_rule');
     });
@@ -96,10 +105,7 @@ void main() {
     test('addDelegated emits "add_signer"', () async {
       final h = _harness();
       final mgr = OZSignerManager(h.kit);
-      await mgr.addDelegated(
-        contextRuleId: 0,
-        address: _validAccountAddress,
-      );
+      await mgr.addDelegated(contextRuleId: 0, address: _validAccountAddress);
       expect(_capturedInvocation(h.txOps).functionName, 'add_signer');
     });
 
@@ -195,17 +201,19 @@ void main() {
       expect(vec[2].discriminant, XdrSCValType.SCV_BYTES);
     });
 
-    test('"Ed25519" / "Secp256r1" / "Policy" / "Native" are reserved strings',
-        () {
-      // The ABI types referenced by the verifier-contract signer payloads
-      // include literal symbol values used inside contract storage and
-      // returned by the indexer. None of these symbols change; the test
-      // documents the canonical strings.
-      const reserved = <String>['Ed25519', 'Secp256r1', 'Policy', 'Native'];
-      for (final s in reserved) {
-        expect(s, isNotEmpty);
-      }
-    });
+    test(
+      '"Ed25519" / "Secp256r1" / "Policy" / "Native" are reserved strings',
+      () {
+        // The ABI types referenced by the verifier-contract signer payloads
+        // include literal symbol values used inside contract storage and
+        // returned by the indexer. None of these symbols change; the test
+        // documents the canonical strings.
+        const reserved = <String>['Ed25519', 'Secp256r1', 'Policy', 'Native'];
+        for (final s in reserved) {
+          expect(s, isNotEmpty);
+        }
+      },
+    );
   });
 
   // =======================================================================
@@ -222,29 +230,35 @@ void main() {
       expect(vec[0].sym, 'Default');
     });
 
-    test('OZContextRuleTypeCallContract toScVal uses "CallContract" symbol', () {
-      final scVal =
-          const OZContextRuleTypeCallContract(_verifierContract).toScVal();
-      expect(scVal.discriminant, XdrSCValType.SCV_VEC);
-      final vec = scVal.vec!;
-      expect(vec.length, 2);
-      expect(vec[0].sym, 'CallContract');
-      expect(vec[1].discriminant, XdrSCValType.SCV_ADDRESS);
-    });
+    test(
+      'OZContextRuleTypeCallContract toScVal uses "CallContract" symbol',
+      () {
+        final scVal = const OZContextRuleTypeCallContract(
+          _verifierContract,
+        ).toScVal();
+        expect(scVal.discriminant, XdrSCValType.SCV_VEC);
+        final vec = scVal.vec!;
+        expect(vec.length, 2);
+        expect(vec[0].sym, 'CallContract');
+        expect(vec[1].discriminant, XdrSCValType.SCV_ADDRESS);
+      },
+    );
 
-    test('OZContextRuleTypeCreateContract toScVal uses "CreateContract" symbol',
-        () {
-      final wasmHash = Uint8List(32);
-      for (var i = 0; i < 32; i++) {
-        wasmHash[i] = i & 0xFF;
-      }
-      final scVal = OZContextRuleTypeCreateContract(wasmHash).toScVal();
-      expect(scVal.discriminant, XdrSCValType.SCV_VEC);
-      final vec = scVal.vec!;
-      expect(vec.length, 2);
-      expect(vec[0].sym, 'CreateContract');
-      expect(vec[1].discriminant, XdrSCValType.SCV_BYTES);
-    });
+    test(
+      'OZContextRuleTypeCreateContract toScVal uses "CreateContract" symbol',
+      () {
+        final wasmHash = Uint8List(32);
+        for (var i = 0; i < 32; i++) {
+          wasmHash[i] = i & 0xFF;
+        }
+        final scVal = OZContextRuleTypeCreateContract(wasmHash).toScVal();
+        expect(scVal.discriminant, XdrSCValType.SCV_VEC);
+        final vec = scVal.vec!;
+        expect(vec.length, 2);
+        expect(vec[0].sym, 'CreateContract');
+        expect(vec[1].discriminant, XdrSCValType.SCV_BYTES);
+      },
+    );
   });
 
   // =======================================================================
@@ -272,7 +286,9 @@ void main() {
       await mgr.addContextRule(
         contextType: const OZContextRuleTypeDefault(),
         name: 'human-readable',
-        signers: <OZSmartAccountSigner>[OZDelegatedSigner(_validAccountAddress)],
+        signers: <OZSmartAccountSigner>[
+          OZDelegatedSigner(_validAccountAddress),
+        ],
       );
       final args = _capturedInvocation(h.txOps).args;
       // arg 1 is the rule name.
@@ -301,7 +317,9 @@ void main() {
       await mgr.addContextRule(
         contextType: const OZContextRuleTypeDefault(),
         name: 'rule',
-        signers: <OZSmartAccountSigner>[OZDelegatedSigner(_validAccountAddress)],
+        signers: <OZSmartAccountSigner>[
+          OZDelegatedSigner(_validAccountAddress),
+        ],
       );
       final args = _capturedInvocation(h.txOps).args;
       expect(args.length, 5);
@@ -319,7 +337,9 @@ void main() {
         contextType: const OZContextRuleTypeDefault(),
         name: 'rule',
         validUntil: 1_000_000,
-        signers: <OZSmartAccountSigner>[OZDelegatedSigner(_validAccountAddress)],
+        signers: <OZSmartAccountSigner>[
+          OZDelegatedSigner(_validAccountAddress),
+        ],
       );
       final args = _capturedInvocation(h.txOps).args;
       expect(args[2].discriminant, XdrSCValType.SCV_U32);
@@ -399,14 +419,10 @@ void main() {
   // =======================================================================
 
   group('add_signer argument shape', () {
-    test('takes (U32 contextRuleId, Vec signer) — Delegated signer',
-        () async {
+    test('takes (U32 contextRuleId, Vec signer) — Delegated signer', () async {
       final h = _harness();
       final mgr = OZSignerManager(h.kit);
-      await mgr.addDelegated(
-        contextRuleId: 4,
-        address: _validAccountAddress,
-      );
+      await mgr.addDelegated(contextRuleId: 4, address: _validAccountAddress);
       final args = _capturedInvocation(h.txOps).args;
       expect(args.length, 2);
       expect(args[0].discriminant, XdrSCValType.SCV_U32);
@@ -415,40 +431,44 @@ void main() {
       expect(args[1].vec![0].sym, 'Delegated');
     });
 
-    test('takes (U32 contextRuleId, Vec signer) — Ed25519 external signer',
-        () async {
-      final h = _harness();
-      final mgr = OZSignerManager(h.kit);
-      await mgr.addEd25519(
-        contextRuleId: 0,
-        verifierAddress: _verifierContract,
-        publicKey: Uint8List(32),
-      );
-      final args = _capturedInvocation(h.txOps).args;
-      expect(args.length, 2);
-      expect(args[0].discriminant, XdrSCValType.SCV_U32);
-      expect(args[1].discriminant, XdrSCValType.SCV_VEC);
-      expect(args[1].vec![0].sym, 'External');
-    });
+    test(
+      'takes (U32 contextRuleId, Vec signer) — Ed25519 external signer',
+      () async {
+        final h = _harness();
+        final mgr = OZSignerManager(h.kit);
+        await mgr.addEd25519(
+          contextRuleId: 0,
+          verifierAddress: _verifierContract,
+          publicKey: Uint8List(32),
+        );
+        final args = _capturedInvocation(h.txOps).args;
+        expect(args.length, 2);
+        expect(args[0].discriminant, XdrSCValType.SCV_U32);
+        expect(args[1].discriminant, XdrSCValType.SCV_VEC);
+        expect(args[1].vec![0].sym, 'External');
+      },
+    );
 
-    test('takes (U32 contextRuleId, Vec signer) — WebAuthn external signer',
-        () async {
-      final h = _harness();
-      final mgr = OZSignerManager(h.kit);
-      final pk = Uint8List(65);
-      pk[0] = 0x04;
-      await mgr.addPasskey(
-        contextRuleId: 2,
-        publicKey: pk,
-        credentialId: Uint8List.fromList(<int>[9, 9]),
-      );
-      final args = _capturedInvocation(h.txOps).args;
-      expect(args.length, 2);
-      expect(args[0].discriminant, XdrSCValType.SCV_U32);
-      expect(args[0].u32?.uint32, 2);
-      expect(args[1].discriminant, XdrSCValType.SCV_VEC);
-      expect(args[1].vec![0].sym, 'External');
-    });
+    test(
+      'takes (U32 contextRuleId, Vec signer) — WebAuthn external signer',
+      () async {
+        final h = _harness();
+        final mgr = OZSignerManager(h.kit);
+        final pk = Uint8List(65);
+        pk[0] = 0x04;
+        await mgr.addPasskey(
+          contextRuleId: 2,
+          publicKey: pk,
+          credentialId: Uint8List.fromList(<int>[9, 9]),
+        );
+        final args = _capturedInvocation(h.txOps).args;
+        expect(args.length, 2);
+        expect(args[0].discriminant, XdrSCValType.SCV_U32);
+        expect(args[0].u32?.uint32, 2);
+        expect(args[1].discriminant, XdrSCValType.SCV_VEC);
+        expect(args[1].vec![0].sym, 'External');
+      },
+    );
   });
 
   // =======================================================================
@@ -474,74 +494,83 @@ void main() {
   // =======================================================================
 
   group('add_policy argument shape', () {
-    test('takes (U32 contextRuleId, Address policy, Val installParams)',
-        () async {
-      final h = _harness();
-      final mgr = OZPolicyManager(h.kit);
-      await mgr.addPolicy(
-        contextRuleId: 6,
-        policyAddress: _verifierContract,
-        installParams: OZRawPolicyParams(XdrSCVal.forVoid()),
-      );
-      final args = _capturedInvocation(h.txOps).args;
-      expect(args.length, 3);
-      expect(args[0].discriminant, XdrSCValType.SCV_U32);
-      expect(args[0].u32?.uint32, 6);
-      expect(args[1].discriminant, XdrSCValType.SCV_ADDRESS);
-      expect(args[2].discriminant, XdrSCValType.SCV_VOID);
-    });
+    test(
+      'takes (U32 contextRuleId, Address policy, Val installParams)',
+      () async {
+        final h = _harness();
+        final mgr = OZPolicyManager(h.kit);
+        await mgr.addPolicy(
+          contextRuleId: 6,
+          policyAddress: _verifierContract,
+          installParams: OZRawPolicyParams(XdrSCVal.forVoid()),
+        );
+        final args = _capturedInvocation(h.txOps).args;
+        expect(args.length, 3);
+        expect(args[0].discriminant, XdrSCValType.SCV_U32);
+        expect(args[0].u32?.uint32, 6);
+        expect(args[1].discriminant, XdrSCValType.SCV_ADDRESS);
+        expect(args[2].discriminant, XdrSCValType.SCV_VOID);
+      },
+    );
 
-    test('OZSimpleThresholdPolicyParams encodes as map with "threshold"', () async {
-      final h = _harness();
-      final mgr = OZPolicyManager(h.kit);
-      await mgr.addSimpleThreshold(
-        contextRuleId: 0,
-        policyAddress: _verifierContract,
-        threshold: 2,
-      );
-      final args = _capturedInvocation(h.txOps).args;
-      expect(args.length, 3);
-      expect(args[2].discriminant, XdrSCValType.SCV_MAP);
-      final entries = args[2].map!;
-      expect(entries.length, 1);
-      expect(entries[0].key.sym, 'threshold');
-      expect(entries[0].val.u32?.uint32, 2);
-    });
+    test(
+      'OZSimpleThresholdPolicyParams encodes as map with "threshold"',
+      () async {
+        final h = _harness();
+        final mgr = OZPolicyManager(h.kit);
+        await mgr.addSimpleThreshold(
+          contextRuleId: 0,
+          policyAddress: _verifierContract,
+          threshold: 2,
+        );
+        final args = _capturedInvocation(h.txOps).args;
+        expect(args.length, 3);
+        expect(args[2].discriminant, XdrSCValType.SCV_MAP);
+        final entries = args[2].map!;
+        expect(entries.length, 1);
+        expect(entries[0].key.sym, 'threshold');
+        expect(entries[0].val.u32?.uint32, 2);
+      },
+    );
 
-    test('OZWeightedThresholdPolicyParams encodes top-level keys signer_weights+threshold',
-        () async {
-      final h = _harness();
-      final mgr = OZPolicyManager(h.kit);
-      await mgr.addWeightedThreshold(
-        contextRuleId: 0,
-        policyAddress: _verifierContract,
-        signerWeights: <OZSmartAccountSigner, int>{
-          OZDelegatedSigner(_validAccountAddress): 1,
-        },
-        threshold: 1,
-      );
-      final args = _capturedInvocation(h.txOps).args;
-      expect(args[2].discriminant, XdrSCValType.SCV_MAP);
-      final keys = args[2].map!.map((e) => e.key.sym).toList();
-      expect(keys, <String>['signer_weights', 'threshold']);
-    });
+    test(
+      'OZWeightedThresholdPolicyParams encodes top-level keys signer_weights+threshold',
+      () async {
+        final h = _harness();
+        final mgr = OZPolicyManager(h.kit);
+        await mgr.addWeightedThreshold(
+          contextRuleId: 0,
+          policyAddress: _verifierContract,
+          signerWeights: <OZSmartAccountSigner, int>{
+            OZDelegatedSigner(_validAccountAddress): 1,
+          },
+          threshold: 1,
+        );
+        final args = _capturedInvocation(h.txOps).args;
+        expect(args[2].discriminant, XdrSCValType.SCV_MAP);
+        final keys = args[2].map!.map((e) => e.key.sym).toList();
+        expect(keys, <String>['signer_weights', 'threshold']);
+      },
+    );
 
-    test('OZSpendingLimitPolicyParams encodes period_ledgers + spending_limit keys',
-        () async {
-      final h = _harness();
-      final mgr = OZPolicyManager(h.kit);
-      await mgr.addSpendingLimit(
-        contextRuleId: 0,
-        policyAddress: _verifierContract,
-        spendingLimit: '10',
-        periodLedgers: 17280,
-      );
-      final args = _capturedInvocation(h.txOps).args;
-      expect(args[2].discriminant, XdrSCValType.SCV_MAP);
-      final keys = args[2].map!.map((e) => e.key.sym).toList();
-      expect(keys, contains('period_ledgers'));
-      expect(keys, contains('spending_limit'));
-    });
+    test(
+      'OZSpendingLimitPolicyParams encodes period_ledgers + spending_limit keys',
+      () async {
+        final h = _harness();
+        final mgr = OZPolicyManager(h.kit);
+        await mgr.addSpendingLimit(
+          contextRuleId: 0,
+          policyAddress: _verifierContract,
+          spendingLimit: '10',
+          periodLedgers: 17280,
+        );
+        final args = _capturedInvocation(h.txOps).args;
+        expect(args[2].discriminant, XdrSCValType.SCV_MAP);
+        final keys = args[2].map!.map((e) => e.key.sym).toList();
+        expect(keys, contains('period_ledgers'));
+        expect(keys, contains('spending_limit'));
+      },
+    );
   });
 
   // =======================================================================
@@ -610,21 +639,27 @@ void main() {
   // =======================================================================
 
   group('WebAuthn signature struct field names', () {
-    test('OZWebAuthnSignature emits authenticator_data / client_data / signature',
-        () {
-      // WebAuthn signature struct encodes three field names — the OZ
-      // smart account ABI uses snake_case `authenticator_data`,
-      // `client_data`, `signature`.
-      final webAuthn = OZWebAuthnSignature(
-        authenticatorData: Uint8List.fromList(<int>[1, 2, 3]),
-        clientData: Uint8List.fromList(<int>[4, 5, 6]),
-        signature: Uint8List(64),
-      );
-      final scVal = webAuthn.toScVal();
-      expect(scVal.discriminant, XdrSCValType.SCV_MAP);
-      final keys = scVal.map!.map((e) => e.key.sym).toList();
-      expect(keys, <String>['authenticator_data', 'client_data', 'signature']);
-    });
+    test(
+      'OZWebAuthnSignature emits authenticator_data / client_data / signature',
+      () {
+        // WebAuthn signature struct encodes three field names — the OZ
+        // smart account ABI uses snake_case `authenticator_data`,
+        // `client_data`, `signature`.
+        final webAuthn = OZWebAuthnSignature(
+          authenticatorData: Uint8List.fromList(<int>[1, 2, 3]),
+          clientData: Uint8List.fromList(<int>[4, 5, 6]),
+          signature: Uint8List(64),
+        );
+        final scVal = webAuthn.toScVal();
+        expect(scVal.discriminant, XdrSCValType.SCV_MAP);
+        final keys = scVal.map!.map((e) => e.key.sym).toList();
+        expect(keys, <String>[
+          'authenticator_data',
+          'client_data',
+          'signature',
+        ]);
+      },
+    );
   });
 
   // =======================================================================
@@ -637,30 +672,34 @@ void main() {
       expect(scVal.map!.map((e) => e.key.sym).toList(), <String>['threshold']);
     });
 
-    test('OZWeightedThresholdPolicyParams fields are "signer_weights" / "threshold"',
-        () {
-      final scVal = OZWeightedThresholdPolicyParams(
-        signerWeights: <OZSmartAccountSigner, int>{
-          OZDelegatedSigner(_validAccountAddress): 1,
-        },
-        threshold: 1,
-      ).toScVal();
-      expect(
-        scVal.map!.map((e) => e.key.sym).toList(),
-        <String>['signer_weights', 'threshold'],
-      );
-    });
+    test(
+      'OZWeightedThresholdPolicyParams fields are "signer_weights" / "threshold"',
+      () {
+        final scVal = OZWeightedThresholdPolicyParams(
+          signerWeights: <OZSmartAccountSigner, int>{
+            OZDelegatedSigner(_validAccountAddress): 1,
+          },
+          threshold: 1,
+        ).toScVal();
+        expect(scVal.map!.map((e) => e.key.sym).toList(), <String>[
+          'signer_weights',
+          'threshold',
+        ]);
+      },
+    );
 
-    test('OZSpendingLimitPolicyParams fields are "period_ledgers" / "spending_limit"',
-        () {
-      final scVal = OZSpendingLimitPolicyParams(
-        spendingLimit: BigInt.from(100),
-        periodLedgers: 17280,
-      ).toScVal();
-      final keys = scVal.map!.map((e) => e.key.sym).toList();
-      expect(keys, contains('period_ledgers'));
-      expect(keys, contains('spending_limit'));
-    });
+    test(
+      'OZSpendingLimitPolicyParams fields are "period_ledgers" / "spending_limit"',
+      () {
+        final scVal = OZSpendingLimitPolicyParams(
+          spendingLimit: BigInt.from(100),
+          periodLedgers: 17280,
+        ).toScVal();
+        final keys = scVal.map!.map((e) => e.key.sym).toList();
+        expect(keys, contains('period_ledgers'));
+        expect(keys, contains('spending_limit'));
+      },
+    );
   });
 
   // =======================================================================
@@ -782,23 +821,25 @@ void main() {
   // =======================================================================
 
   group('Smart-account execute and upgrade methods', () {
-    test('executeAndSubmit produces an execute(target, target_fn, args) call',
-        () async {
-      final kit = FakePipelineKit();
-      final txOps = MockOZTransactionOperations(kit);
-      kit.setTransactionOperations(txOps);
-      kit.setConnected(
-        credentialId: _credentialIdB64,
-        contractId: _validContractId,
-      );
-      await txOps.executeAndSubmit(
-        target: _verifierContract,
-        targetFn: 'noop',
-        targetArgs: const <XdrSCVal>[],
-      );
-      expect(txOps.executeAndSubmitCalls.length, 1);
-      expect(txOps.executeAndSubmitCalls.first.target, _verifierContract);
-      expect(txOps.executeAndSubmitCalls.first.targetFn, 'noop');
-    });
+    test(
+      'executeAndSubmit produces an execute(target, target_fn, args) call',
+      () async {
+        final kit = FakePipelineKit();
+        final txOps = MockOZTransactionOperations(kit);
+        kit.setTransactionOperations(txOps);
+        kit.setConnected(
+          credentialId: _credentialIdB64,
+          contractId: _validContractId,
+        );
+        await txOps.executeAndSubmit(
+          target: _verifierContract,
+          targetFn: 'noop',
+          targetArgs: const <XdrSCVal>[],
+        );
+        expect(txOps.executeAndSubmitCalls.length, 1);
+        expect(txOps.executeAndSubmitCalls.first.target, _verifierContract);
+        expect(txOps.executeAndSubmitCalls.first.targetFn, 'noop');
+      },
+    );
   });
 }

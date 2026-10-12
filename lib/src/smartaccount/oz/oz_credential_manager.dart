@@ -44,8 +44,7 @@ import 'oz_storage_adapter.dart';
 /// final isDeployed = await manager.sync('base64url-id');
 /// await manager.deleteCredential('base64url-id');
 /// ```
-class OZCredentialManager
-    implements OZWalletCredentialManagerInterface {
+class OZCredentialManager implements OZWalletCredentialManagerInterface {
   /// Constructs a credential manager bound to the supplied kit. Marked
   /// [internal] because consumers should reach the manager via
   /// `kit.credentialManager` rather than instantiating one directly.

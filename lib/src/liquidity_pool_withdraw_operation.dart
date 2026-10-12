@@ -88,11 +88,12 @@ class LiquidityPoolWithdrawOperation extends Operation {
   /// - [amount] Amount of pool shares to burn.
   /// - [minAmountA] Minimum amount of asset A to receive.
   /// - [minAmountB] Minimum amount of asset B to receive.
-  LiquidityPoolWithdrawOperation(
-      {required this.liquidityPoolId,
-      required this.amount,
-      required this.minAmountA,
-      required this.minAmountB});
+  LiquidityPoolWithdrawOperation({
+    required this.liquidityPoolId,
+    required this.amount,
+    required this.minAmountA,
+    required this.minAmountB,
+  });
 
   /// Converts this operation to its XDR representation.
   ///
@@ -108,16 +109,22 @@ class LiquidityPoolWithdrawOperation extends Operation {
       xLiquidityPoolID = Util.liquidityPoolIdToXdrHash(liquidityPoolId);
     } on FormatException catch (e) {
       throw ArgumentError(
-          "invalid liquidity pool id: $liquidityPoolId (${e.message})");
+        "invalid liquidity pool id: $liquidityPoolId (${e.message})",
+      );
     }
     XdrInt64 amountA = XdrInt64(Util.decimalStringToStroops(this.minAmountA));
     XdrInt64 amountB = XdrInt64(Util.decimalStringToStroops(this.minAmountB));
     XdrInt64 a = XdrInt64(Util.decimalStringToStroops(this.amount));
 
-    XdrOperationBody body =
-        XdrOperationBody(XdrOperationType.LIQUIDITY_POOL_WITHDRAW);
-    body.liquidityPoolWithdrawOp =
-        XdrLiquidityPoolWithdrawOp(xLiquidityPoolID, a, amountA, amountB);
+    XdrOperationBody body = XdrOperationBody(
+      XdrOperationType.LIQUIDITY_POOL_WITHDRAW,
+    );
+    body.liquidityPoolWithdrawOp = XdrLiquidityPoolWithdrawOp(
+      xLiquidityPoolID,
+      a,
+      amountA,
+      amountB,
+    );
     return body;
   }
 
@@ -128,14 +135,19 @@ class LiquidityPoolWithdrawOperation extends Operation {
   ///
   /// Returns: Builder initialized with operation parameters.
   static LiquidityPoolWithdrawOperationBuilder builder(
-      XdrLiquidityPoolWithdrawOp op) {
+    XdrLiquidityPoolWithdrawOp op,
+  ) {
     String lpId = Util.bytesToHex(op.liquidityPoolID.hash);
     String minA = Util.stroopsToDecimalString(op.minAmountA.int64);
     String minB = Util.stroopsToDecimalString(op.minAmountB.int64);
     String amount = Util.stroopsToDecimalString(op.amount.int64);
 
     return LiquidityPoolWithdrawOperationBuilder(
-        liquidityPoolId: lpId, amount: amount, minAmountA: minA, minAmountB: minB);
+      liquidityPoolId: lpId,
+      amount: amount,
+      minAmountA: minA,
+      minAmountB: minB,
+    );
   }
 }
 
@@ -173,21 +185,23 @@ class LiquidityPoolWithdrawOperationBuilder
   /// - [amount] Amount of pool shares to burn.
   /// - [minAmountA] Minimum amount of asset A to receive.
   /// - [minAmountB] Minimum amount of asset B to receive.
-  LiquidityPoolWithdrawOperationBuilder(
-      {required this.liquidityPoolId,
-      required this.amount,
-      required this.minAmountA,
-      required this.minAmountB});
+  LiquidityPoolWithdrawOperationBuilder({
+    required this.liquidityPoolId,
+    required this.amount,
+    required this.minAmountA,
+    required this.minAmountB,
+  });
 
   /// Builds the liquidity pool withdraw operation.
   ///
   /// Returns: A configured [LiquidityPoolWithdrawOperation] instance.
   LiquidityPoolWithdrawOperation build() {
     LiquidityPoolWithdrawOperation operation = LiquidityPoolWithdrawOperation(
-        liquidityPoolId: liquidityPoolId,
-        amount: amount,
-        minAmountA: minAmountA,
-        minAmountB: minAmountB);
+      liquidityPoolId: liquidityPoolId,
+      amount: amount,
+      minAmountA: minAmountA,
+      minAmountB: minAmountB,
+    );
     return applySourceAccount(operation);
   }
 }

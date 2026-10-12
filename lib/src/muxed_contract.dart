@@ -53,7 +53,7 @@ class MuxedContract {
   }
 
   MuxedContract._(Uint8List contractHash, this.id)
-      : contractId = StrKey.encodeContractId(contractHash) {
+    : contractId = StrKey.encodeContractId(contractHash) {
     if (id.isNegative || id.bitLength > 64) {
       throw ArgumentError.value(id, 'id', 'must be an unsigned 64-bit value');
     }
@@ -77,7 +77,9 @@ class MuxedContract {
 
   /// Converts the pair to its XDR form.
   XdrMuxedContract toXdr() => XdrMuxedContract(
-      XdrUint64(id), XdrHash(StrKey.decodeContractId(contractId)));
+    XdrUint64(id),
+    XdrHash(StrKey.decodeContractId(contractId)),
+  );
 
   /// Returns the [Address] of type [Address.TYPE_MUXED_CONTRACT] for this
   /// pair.

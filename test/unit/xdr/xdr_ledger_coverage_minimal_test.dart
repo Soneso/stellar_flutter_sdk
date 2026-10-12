@@ -5,9 +5,15 @@ import 'dart:typed_data';
 void main() {
   group('XdrClaimableBalanceID setters', () {
     test('should set discriminant and v0', () {
-      final balanceId = XdrClaimableBalanceID(XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0);
-      balanceId.discriminant = XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0;
-      expect(balanceId.discriminant, equals(XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0));
+      final balanceId = XdrClaimableBalanceID(
+        XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0,
+      );
+      balanceId.discriminant =
+          XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0;
+      expect(
+        balanceId.discriminant,
+        equals(XdrClaimableBalanceIDType.CLAIMABLE_BALANCE_ID_TYPE_V0),
+      );
 
       final hash = XdrHash(Uint8List(32));
       balanceId.v0 = hash;

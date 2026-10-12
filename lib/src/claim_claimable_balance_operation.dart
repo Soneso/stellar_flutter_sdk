@@ -87,8 +87,9 @@ class ClaimClaimableBalanceOperation extends Operation {
   @override
   XdrOperationBody toOperationBody() {
     XdrClaimableBalanceID bId = XdrClaimableBalanceID.forId(balanceId);
-    XdrOperationBody body =
-        XdrOperationBody(XdrOperationType.CLAIM_CLAIMABLE_BALANCE);
+    XdrOperationBody body = XdrOperationBody(
+      XdrOperationType.CLAIM_CLAIMABLE_BALANCE,
+    );
     body.claimClaimableBalanceOp = XdrClaimClaimableBalanceOp(bId);
     return body;
   }
@@ -102,9 +103,11 @@ class ClaimClaimableBalanceOperation extends Operation {
   ///
   /// Returns: A builder configured with the balance ID from the XDR.
   static ClaimClaimableBalanceOperationBuilder builder(
-      XdrClaimClaimableBalanceOp op) {
+    XdrClaimClaimableBalanceOp op,
+  ) {
     return ClaimClaimableBalanceOperationBuilder(
-        op.balanceID.paddedBalanceIdHex);
+      op.balanceID.paddedBalanceIdHex,
+    );
   }
 }
 
@@ -132,8 +135,9 @@ class ClaimClaimableBalanceOperationBuilder
   ///
   /// Returns: A configured [ClaimClaimableBalanceOperation] instance.
   ClaimClaimableBalanceOperation build() {
-    ClaimClaimableBalanceOperation operation =
-        ClaimClaimableBalanceOperation(_balanceId);
+    ClaimClaimableBalanceOperation operation = ClaimClaimableBalanceOperation(
+      _balanceId,
+    );
     return applySourceAccount(operation);
   }
 }

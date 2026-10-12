@@ -52,7 +52,7 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// - [httpClient] HTTP client for making requests to Horizon
   /// - [serverURI] Base URI of the Horizon server
   TransactionsRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["transactions"]);
+    : super(httpClient, serverURI, ["transactions"]);
 
   /// Retrieves a specific transaction by its hash.
   ///
@@ -230,9 +230,13 @@ class TransactionsRequestBuilder extends RequestBuilder {
   ///
   /// Returns: Page of TransactionResponse objects
   static Future<Page<TransactionResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
+    http.Client httpClient,
+    Uri uri,
+  ) async {
     return RequestBuilder.requestExecute<Page<TransactionResponse>>(
-        httpClient, uri);
+      httpClient,
+      uri,
+    );
   }
 
   /// Opens a stream to listen for transactions in real-time.
@@ -260,7 +264,8 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// - [Stellar developer docs](https://developers.stellar.org)
   Stream<TransactionResponse> stream() {
     return streamEvents<TransactionResponse>(
-        (json) => TransactionResponse.fromJson(json));
+      (json) => TransactionResponse.fromJson(json),
+    );
   }
 
   /// Builds and executes the request.
@@ -282,7 +287,9 @@ class TransactionsRequestBuilder extends RequestBuilder {
   /// ```
   Future<Page<TransactionResponse>> execute() {
     return TransactionsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+      this.httpClient,
+      this.buildUri(),
+    );
   }
 
   /// Sets the cursor for pagination to start returning records from a specific point.

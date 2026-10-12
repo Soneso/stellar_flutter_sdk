@@ -204,7 +204,8 @@ final class OZSmartAccountEventSessionExpired extends OZSmartAccountEvent {
 /// `ArgumentError`, `RangeError`) are NOT routed through this event; they
 /// continue to propagate so caller bugs surface as test failures rather
 /// than silent debug events.
-final class OZSmartAccountEventCredentialSyncFailed extends OZSmartAccountEvent {
+final class OZSmartAccountEventCredentialSyncFailed
+    extends OZSmartAccountEvent {
   const OZSmartAccountEventCredentialSyncFailed({
     required this.credentialId,
     required this.error,
@@ -274,7 +275,8 @@ final class OZSmartAccountEventTransactionSigned extends OZSmartAccountEvent {
 /// the relayer service. The success flag indicates whether the transaction
 /// was successfully sent to the network node, not whether it was included in
 /// a ledger.
-final class OZSmartAccountEventTransactionSubmitted extends OZSmartAccountEvent {
+final class OZSmartAccountEventTransactionSubmitted
+    extends OZSmartAccountEvent {
   const OZSmartAccountEventTransactionSubmitted({
     required this.hash,
     required this.success,
@@ -313,11 +315,12 @@ typedef OZSmartAccountEventListener = void Function(OZSmartAccountEvent event);
 /// Receives the [event] that was being dispatched, the [error] thrown by the
 /// listener, and the [stackTrace] captured at the throw site. Set via
 /// [OZSmartAccountEventEmitter.setErrorHandler]; pass `null` to disable.
-typedef OZSmartAccountEventErrorHandler = void Function(
-  OZSmartAccountEvent event,
-  Object error,
-  StackTrace stackTrace,
-);
+typedef OZSmartAccountEventErrorHandler =
+    void Function(
+      OZSmartAccountEvent event,
+      Object error,
+      StackTrace stackTrace,
+    );
 
 /// Event emitter for Smart Account lifecycle events.
 ///

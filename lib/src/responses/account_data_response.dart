@@ -122,7 +122,5 @@ class AccountDataResponse extends Response {
   }
 
   /// Converts this account data response to a JSON map.
-  Map<String, dynamic> toJson() => {
-    'value': value,
-  };
+  Map<String, dynamic> toJson() => {'value': value};
 }

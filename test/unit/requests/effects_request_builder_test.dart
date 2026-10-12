@@ -20,43 +20,67 @@ void main() {
     test('execute returns Page<EffectResponse>', () async {
       final mockResponse = {
         '_links': {
-          'self': {'href': 'https://horizon-testnet.stellar.org/effects?limit=10'},
-          'next': {'href': 'https://horizon-testnet.stellar.org/effects?cursor=next'},
-          'prev': {'href': 'https://horizon-testnet.stellar.org/effects?cursor=prev'}
+          'self': {
+            'href': 'https://horizon-testnet.stellar.org/effects?limit=10',
+          },
+          'next': {
+            'href': 'https://horizon-testnet.stellar.org/effects?cursor=next',
+          },
+          'prev': {
+            'href': 'https://horizon-testnet.stellar.org/effects?cursor=prev',
+          },
         },
         '_embedded': {
           'records': [
             {
               '_links': {
-                'operation': {'href': 'https://horizon-testnet.stellar.org/operations/123'},
-                'succeeds': {'href': 'https://horizon-testnet.stellar.org/effects?order=desc&cursor=123'},
-                'precedes': {'href': 'https://horizon-testnet.stellar.org/effects?order=asc&cursor=123'}
+                'operation': {
+                  'href': 'https://horizon-testnet.stellar.org/operations/123',
+                },
+                'succeeds': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/effects?order=desc&cursor=123',
+                },
+                'precedes': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/effects?order=asc&cursor=123',
+                },
               },
               'id': '0000123456789-0000000001',
               'paging_token': '0000123456789-0000000001',
-              'account': 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B',
+              'account':
+                  'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B',
               'type': 'account_created',
               'type_i': 0,
               'created_at': '2024-01-01T00:00:00Z',
-              'starting_balance': '10.0000000'
+              'starting_balance': '10.0000000',
             },
             {
               '_links': {
-                'operation': {'href': 'https://horizon-testnet.stellar.org/operations/124'},
-                'succeeds': {'href': 'https://horizon-testnet.stellar.org/effects?order=desc&cursor=124'},
-                'precedes': {'href': 'https://horizon-testnet.stellar.org/effects?order=asc&cursor=124'}
+                'operation': {
+                  'href': 'https://horizon-testnet.stellar.org/operations/124',
+                },
+                'succeeds': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/effects?order=desc&cursor=124',
+                },
+                'precedes': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/effects?order=asc&cursor=124',
+                },
               },
               'id': '0000123456790-0000000001',
               'paging_token': '0000123456790-0000000001',
-              'account': 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B',
+              'account':
+                  'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B',
               'type': 'account_debited',
               'type_i': 3,
               'created_at': '2024-01-01T00:01:00Z',
               'asset_type': 'native',
-              'amount': '100.0000000'
-            }
-          ]
-        }
+              'amount': '100.0000000',
+            },
+          ],
+        },
       };
 
       final mockClient = MockClient((request) async {
@@ -76,7 +100,8 @@ void main() {
         return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      final accountId = 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+      final accountId =
+          'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
       final builder = EffectsRequestBuilder(mockClient, serverUri);
       builder.forAccount(accountId);
       final uri = builder.buildUri();
@@ -127,7 +152,8 @@ void main() {
         return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      final accountId = 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+      final accountId =
+          'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
       final builder = EffectsRequestBuilder(mockClient, serverUri);
       builder
           .forAccount(accountId)
@@ -144,9 +170,12 @@ void main() {
 
     test('stream returns Stream<EffectResponse>', () {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          '_embedded': {'records': []}
-        }), 200);
+        return http.Response(
+          json.encode({
+            '_embedded': {'records': []},
+          }),
+          200,
+        );
       });
 
       final builder = EffectsRequestBuilder(mockClient, serverUri);
@@ -160,9 +189,17 @@ void main() {
     final serverUri = Uri.parse('https://horizon-testnet.stellar.org');
     final effectRecord = {
       '_links': {
-        'operation': {'href': 'https://horizon-testnet.stellar.org/operations/123'},
-        'succeeds': {'href': 'https://horizon-testnet.stellar.org/effects?order=desc&cursor=123'},
-        'precedes': {'href': 'https://horizon-testnet.stellar.org/effects?order=asc&cursor=123'}
+        'operation': {
+          'href': 'https://horizon-testnet.stellar.org/operations/123',
+        },
+        'succeeds': {
+          'href':
+              'https://horizon-testnet.stellar.org/effects?order=desc&cursor=123',
+        },
+        'precedes': {
+          'href':
+              'https://horizon-testnet.stellar.org/effects?order=asc&cursor=123',
+        },
       },
       'id': '0000123456789-0000000001',
       'paging_token': '0000123456789-0000000001',
@@ -170,7 +207,7 @@ void main() {
       'type': 'account_created',
       'type_i': 0,
       'created_at': '2024-01-01T00:00:00Z',
-      'starting_balance': '10.0000000'
+      'starting_balance': '10.0000000',
     };
 
     test('stream parses SSE data frames into typed events', () async {
@@ -189,8 +226,11 @@ void main() {
         } else {
           controller.add(utf8.encode('data: ${json.encode(effectRecord)}\n\n'));
         }
-        return http.StreamedResponse(controller.stream, 200,
-            headers: {'content-type': 'text/event-stream'});
+        return http.StreamedResponse(
+          controller.stream,
+          200,
+          headers: {'content-type': 'text/event-stream'},
+        );
       });
 
       final builder = EffectsRequestBuilder(mockClient, serverUri);
@@ -198,15 +238,12 @@ void main() {
       final events = <EffectResponse>[];
       final completer = Completer<void>();
 
-      final subscription = builder.stream().listen(
-        (event) {
-          events.add(event);
-          if (!completer.isCompleted) {
-            completer.complete();
-          }
-        },
-        onError: errors.add,
-      );
+      final subscription = builder.stream().listen((event) {
+        events.add(event);
+        if (!completer.isCompleted) {
+          completer.complete();
+        }
+      }, onError: errors.add);
 
       await completer.future.timeout(const Duration(seconds: 10));
       await subscription.cancel();
@@ -215,8 +252,10 @@ void main() {
       expect(errors, hasLength(1));
       expect(events, hasLength(1));
       expect(events.first, isA<AccountCreatedEffectResponse>());
-      expect(events.first.account,
-          equals('GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B'));
+      expect(
+        events.first.account,
+        equals('GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B'),
+      );
     });
   });
 
@@ -226,22 +265,24 @@ void main() {
     test('forLiquidityPool converts L strkey id to hex', () {
       final poolHexId =
           '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
-      final strKeyId =
-          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+      final strKeyId = StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
 
-      final builder =
-          EffectsRequestBuilder(http.Client(), serverUri).forLiquidityPool(strKeyId);
+      final builder = EffectsRequestBuilder(
+        http.Client(),
+        serverUri,
+      ).forLiquidityPool(strKeyId);
 
       expect(builder.buildUri().path, contains('/liquidity_pools/$poolHexId'));
     });
 
     test('forLiquidityPool throws on invalid L-prefixed id', () {
       expect(
-        () => EffectsRequestBuilder(http.Client(), serverUri)
-            .forLiquidityPool('LINVALIDPOOLID'),
+        () => EffectsRequestBuilder(
+          http.Client(),
+          serverUri,
+        ).forLiquidityPool('LINVALIDPOOLID'),
         throwsArgumentError,
       );
     });
   });
-
 }

@@ -124,8 +124,9 @@ class AccountMergeOperation extends Operation {
   /// Returns: XDR OperationBody for this account merge operation.
   @override
   XdrOperationBody toOperationBody() {
-    XdrOperationBody body =
-        new XdrOperationBody(XdrOperationType.ACCOUNT_MERGE);
+    XdrOperationBody body = new XdrOperationBody(
+      XdrOperationType.ACCOUNT_MERGE,
+    );
     body.destination = this.destination.toXdr();
     return body;
   }

@@ -97,7 +97,11 @@ class SetTrustLineFlagsOperation extends Operation {
   /// - [_clearFlags] Flags to clear (bitwise values: 1=AUTHORIZED, 2=MAINTAIN_LIABILITIES, 4=CLAWBACK)
   /// - [_setFlags] Flags to set (bitwise values: 1=AUTHORIZED, 2=MAINTAIN_LIABILITIES, 4=CLAWBACK)
   SetTrustLineFlagsOperation(
-      this._trustorId, this._asset, this._clearFlags, this._setFlags);
+    this._trustorId,
+    this._asset,
+    this._clearFlags,
+    this._setFlags,
+  );
 
   /// The account ID of the trustline holder (trustor).
   String get trustorId => _trustorId;
@@ -116,26 +120,37 @@ class SetTrustLineFlagsOperation extends Operation {
   /// Returns: XDR OperationBody for this set trustline flags operation.
   @override
   XdrOperationBody toOperationBody() {
-    XdrAccountID accountID =
-        XdrAccountID(KeyPair.fromAccountId(this.trustorId).xdrPublicKey);
+    XdrAccountID accountID = XdrAccountID(
+      KeyPair.fromAccountId(this.trustorId).xdrPublicKey,
+    );
     XdrAsset xdrAsset = asset.toXdr();
 
-    XdrSetTrustLineFlagsOp op = XdrSetTrustLineFlagsOp(accountID, xdrAsset,
-        new XdrUint32(this.clearFlags), new XdrUint32(this.setFlags));
+    XdrSetTrustLineFlagsOp op = XdrSetTrustLineFlagsOp(
+      accountID,
+      xdrAsset,
+      new XdrUint32(this.clearFlags),
+      new XdrUint32(this.setFlags),
+    );
 
-    XdrOperationBody body =
-        XdrOperationBody(XdrOperationType.SET_TRUST_LINE_FLAGS);
+    XdrOperationBody body = XdrOperationBody(
+      XdrOperationType.SET_TRUST_LINE_FLAGS,
+    );
     body.setTrustLineFlagsOp = op;
     return body;
   }
 
   static SetTrustLineFlagsOperationBuilder builder(XdrSetTrustLineFlagsOp op) {
-    String trustorId =
-        KeyPair.fromXdrPublicKey(op.accountID.accountID).accountId;
+    String trustorId = KeyPair.fromXdrPublicKey(
+      op.accountID.accountID,
+    ).accountId;
     int clearFlags = op.clearFlags.uint32;
     int setFlags = op.setFlags.uint32;
     return SetTrustLineFlagsOperationBuilder(
-        trustorId, Asset.fromXdr(op.asset), clearFlags, setFlags);
+      trustorId,
+      Asset.fromXdr(op.asset),
+      clearFlags,
+      setFlags,
+    );
   }
 }
 
@@ -167,14 +182,22 @@ class SetTrustLineFlagsOperationBuilder
   /// - [_clearFlags] Flags to clear (bitwise values: 1, 2, 4).
   /// - [_setFlags] Flags to set (bitwise values: 1, 2, 4).
   SetTrustLineFlagsOperationBuilder(
-      this._trustorId, this._asset, this._clearFlags, this._setFlags);
+    this._trustorId,
+    this._asset,
+    this._clearFlags,
+    this._setFlags,
+  );
 
   /// Builds the set trustline flags operation.
   ///
   /// Returns: A configured [SetTrustLineFlagsOperation] instance.
   SetTrustLineFlagsOperation build() {
-    SetTrustLineFlagsOperation operation =
-        SetTrustLineFlagsOperation(_trustorId, _asset, _clearFlags, _setFlags);
+    SetTrustLineFlagsOperation operation = SetTrustLineFlagsOperation(
+      _trustorId,
+      _asset,
+      _clearFlags,
+      _setFlags,
+    );
     return applySourceAccount(operation);
   }
 }

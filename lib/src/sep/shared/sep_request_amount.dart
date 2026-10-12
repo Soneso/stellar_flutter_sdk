@@ -80,8 +80,8 @@ class SepRequestAmount {
       final bool roundsUp = fractionDigits.codeUnitAt(7) >= 0x35; // '5'
       fractionDigits = fractionDigits.substring(0, 7);
       if (roundsUp) {
-        final List<int> combined =
-            (integerDigits + fractionDigits).codeUnits.toList();
+        final List<int> combined = (integerDigits + fractionDigits).codeUnits
+            .toList();
         int index = combined.length - 1;
         bool carry = true;
         while (carry && index >= 0) {

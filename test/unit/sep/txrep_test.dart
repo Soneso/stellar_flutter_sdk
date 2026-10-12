@@ -9,9 +9,16 @@ void main() {
   late Network testNetwork;
 
   setUp(() {
-    sourceKeyPair = KeyPair.fromSecretSeed('SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
-    sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(2908908335136768));
-    destinationKeyPair = KeyPair.fromSecretSeed('SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY');
+    sourceKeyPair = KeyPair.fromSecretSeed(
+      'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
+    );
+    sourceAccount = Account(
+      sourceKeyPair.accountId,
+      BigInt.from(2908908335136768),
+    );
+    destinationKeyPair = KeyPair.fromSecretSeed(
+      'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY',
+    );
     testNetwork = Network.TESTNET;
   });
 
@@ -20,12 +27,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -42,19 +49,18 @@ void main() {
       final paymentOp1 = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
       final paymentOp2 = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "50.0"
+        "50.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp1)
-        .addOperation(paymentOp2)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp1).addOperation(paymentOp2).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -70,13 +76,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.text("Test payment"))
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).addMemo(Memo.text("Test payment")).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -91,13 +96,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.id(BigInt.from(12345)))
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).addMemo(Memo.id(BigInt.from(12345))).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -112,14 +116,13 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
       final hash = Uint8List.fromList(List<int>.filled(32, 1));
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.hash(hash))
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).addMemo(Memo.hash(hash)).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -134,14 +137,13 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
       final hash = Uint8List.fromList(List<int>.filled(32, 2));
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.returnHash(hash))
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).addMemo(Memo.returnHash(hash)).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -156,14 +158,13 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
       final timeBounds = TimeBounds(1000, 2000);
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addTimeBounds(timeBounds)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).addTimeBounds(timeBounds).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -178,12 +179,12 @@ void main() {
     test('converts CreateAccount operation to TxRep', () {
       final createAccountOp = CreateAccountOperationBuilder(
         destinationKeyPair.accountId,
-        "1000"
+        "1000",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(createAccountOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(createAccountOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -191,8 +192,18 @@ void main() {
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
       expect(txRep, contains('tx.operations[0].body.type: CREATE_ACCOUNT'));
-      expect(txRep, contains('tx.operations[0].body.createAccountOp.destination: ${destinationKeyPair.accountId}'));
-      expect(txRep, contains('tx.operations[0].body.createAccountOp.startingBalance: 10000000000'));
+      expect(
+        txRep,
+        contains(
+          'tx.operations[0].body.createAccountOp.destination: ${destinationKeyPair.accountId}',
+        ),
+      );
+      expect(
+        txRep,
+        contains(
+          'tx.operations[0].body.createAccountOp.startingBalance: 10000000000',
+        ),
+      );
     });
 
     test('converts PathPaymentStrictReceive operation to TxRep', () {
@@ -205,19 +216,22 @@ void main() {
         "100",
         destinationKeyPair.accountId,
         eur,
-        "90"
+        "90",
       ).setPath([Asset.NATIVE]).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(pathPaymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(pathPaymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
       final xdr = transaction.toEnvelopeXdrBase64();
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-      expect(txRep, contains('tx.operations[0].body.type: PATH_PAYMENT_STRICT_RECEIVE'));
+      expect(
+        txRep,
+        contains('tx.operations[0].body.type: PATH_PAYMENT_STRICT_RECEIVE'),
+      );
       expect(txRep, contains('pathPaymentStrictReceiveOp'));
     });
 
@@ -231,19 +245,22 @@ void main() {
         "100",
         destinationKeyPair.accountId,
         eur,
-        "90"
+        "90",
       ).setPath([Asset.NATIVE]).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(pathPaymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(pathPaymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
       final xdr = transaction.toEnvelopeXdrBase64();
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-      expect(txRep, contains('tx.operations[0].body.type: PATH_PAYMENT_STRICT_SEND'));
+      expect(
+        txRep,
+        contains('tx.operations[0].body.type: PATH_PAYMENT_STRICT_SEND'),
+      );
       expect(txRep, contains('pathPaymentStrictSendOp'));
     });
 
@@ -255,12 +272,12 @@ void main() {
         usd,
         Asset.NATIVE,
         "100",
-        "0.5"
+        "0.5",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(manageSellOfferOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(manageSellOfferOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -279,12 +296,12 @@ void main() {
         usd,
         Asset.NATIVE,
         "100",
-        "0.5"
+        "0.5",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(manageBuyOfferOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(manageBuyOfferOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -303,31 +320,34 @@ void main() {
         usd,
         Asset.NATIVE,
         "100",
-        "0.5"
+        "0.5",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(createPassiveSellOfferOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(createPassiveSellOfferOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
       final xdr = transaction.toEnvelopeXdrBase64();
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-      expect(txRep, contains('tx.operations[0].body.type: CREATE_PASSIVE_SELL_OFFER'));
+      expect(
+        txRep,
+        contains('tx.operations[0].body.type: CREATE_PASSIVE_SELL_OFFER'),
+      );
       expect(txRep, contains('createPassiveSellOfferOp'));
     });
 
     test('converts SetOptions operation to TxRep', () {
       final setOptionsOp = SetOptionsOperationBuilder()
-        .setInflationDestination(destinationKeyPair.accountId)
-        .setHomeDomain("example.com")
-        .build();
+          .setInflationDestination(destinationKeyPair.accountId)
+          .setHomeDomain("example.com")
+          .build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(setOptionsOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(setOptionsOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -342,14 +362,11 @@ void main() {
       final issuerKeyPair = KeyPair.random();
       final usd = AssetTypeCreditAlphaNum4("USD", issuerKeyPair.accountId);
 
-      final changeTrustOp = ChangeTrustOperationBuilder(
-        usd,
-        "10000"
-      ).build();
+      final changeTrustOp = ChangeTrustOperationBuilder(usd, "10000").build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(changeTrustOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(changeTrustOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -364,12 +381,12 @@ void main() {
       final allowTrustOp = AllowTrustOperationBuilder(
         destinationKeyPair.accountId,
         "USD",
-        1
+        1,
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(allowTrustOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(allowTrustOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -382,12 +399,12 @@ void main() {
 
     test('converts AccountMerge operation to TxRep', () {
       final accountMergeOp = AccountMergeOperationBuilder(
-        destinationKeyPair.accountId
+        destinationKeyPair.accountId,
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(accountMergeOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(accountMergeOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -400,12 +417,12 @@ void main() {
     test('converts ManageData operation to TxRep', () {
       final manageDataOp = ManageDataOperationBuilder(
         "test_key",
-        Uint8List.fromList("test_value".codeUnits)
+        Uint8List.fromList("test_value".codeUnits),
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(manageDataOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(manageDataOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -418,12 +435,12 @@ void main() {
 
     test('converts BumpSequence operation to TxRep', () {
       final bumpSequenceOp = BumpSequenceOperationBuilder(
-        BigInt.parse('9999999999999999')
+        BigInt.parse('9999999999999999'),
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(bumpSequenceOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(bumpSequenceOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -438,13 +455,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .setMaxOperationFee(500)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).setMaxOperationFee(500).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -458,12 +474,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).setSourceAccount(destinationKeyPair.accountId).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -471,26 +487,30 @@ void main() {
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
       expect(txRep, contains('tx.operations[0].sourceAccount._present: true'));
-      expect(txRep, contains('tx.operations[0].sourceAccount: ${destinationKeyPair.accountId}'));
+      expect(
+        txRep,
+        contains(
+          'tx.operations[0].sourceAccount: ${destinationKeyPair.accountId}',
+        ),
+      );
     });
 
     test('converts FeeBumpTransaction to TxRep', () {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final innerTx = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final innerTx = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       innerTx.sign(sourceKeyPair, testNetwork);
 
-      final feeBumpTx = FeeBumpTransactionBuilder(innerTx)
-        .setBaseFee(200)
-        .setFeeAccount(destinationKeyPair.accountId)
-        .build();
+      final feeBumpTx = FeeBumpTransactionBuilder(
+        innerTx,
+      ).setBaseFee(200).setFeeAccount(destinationKeyPair.accountId).build();
 
       feeBumpTx.sign(destinationKeyPair, testNetwork);
 
@@ -498,7 +518,10 @@ void main() {
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
       expect(txRep, contains('type: ENVELOPE_TYPE_TX_FEE_BUMP'));
-      expect(txRep, contains('feeBump.tx.feeSource: ${destinationKeyPair.accountId}'));
+      expect(
+        txRep,
+        contains('feeBump.tx.feeSource: ${destinationKeyPair.accountId}'),
+      );
       expect(txRep, contains('feeBump.tx.innerTx.type: ENVELOPE_TYPE_TX'));
     });
 
@@ -506,12 +529,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -528,12 +551,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
       transaction.sign(signer2, testNetwork);
@@ -552,18 +575,20 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
       final xdr = transaction.toEnvelopeXdrBase64();
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
-      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
 
       expect(reconstructedXdr, equals(xdr));
     });
@@ -572,50 +597,54 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.text("Test memo"))
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).addMemo(Memo.text("Test memo")).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
       final xdr = transaction.toEnvelopeXdrBase64();
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
-      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
 
       expect(reconstructedXdr, equals(xdr));
     });
 
-    test('MEMO_TEXT with non-ASCII uses SEP-0011 \\xNN UTF-8 byte escaping', () {
-      final paymentOp = PaymentOperationBuilder(
-        destinationKeyPair.accountId,
-        Asset.NATIVE,
-        "100.0"
-      ).build();
+    test(
+      'MEMO_TEXT with non-ASCII uses SEP-0011 \\xNN UTF-8 byte escaping',
+      () {
+        final paymentOp = PaymentOperationBuilder(
+          destinationKeyPair.accountId,
+          Asset.NATIVE,
+          "100.0",
+        ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.text("café"))
-        .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(paymentOp).addMemo(Memo.text("café")).build();
 
-      transaction.sign(sourceKeyPair, testNetwork);
+        transaction.sign(sourceKeyPair, testNetwork);
 
-      final xdr = transaction.toEnvelopeXdrBase64();
-      final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
+        final xdr = transaction.toEnvelopeXdrBase64();
+        final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-      // Per SEP-0011, U+00E9 (é) is encoded as its UTF-8 bytes 0xC3 0xA9
-      // using \xNN escapes, not as the JSON \u00e9 form.
-      expect(txRep, contains(r'tx.memo.text: "caf\xc3\xa9"'));
-      expect(txRep, isNot(contains(r'\u00e9')));
+        // Per SEP-0011, U+00E9 (é) is encoded as its UTF-8 bytes 0xC3 0xA9
+        // using \xNN escapes, not as the JSON \u00e9 form.
+        expect(txRep, contains(r'tx.memo.text: "caf\xc3\xa9"'));
+        expect(txRep, isNot(contains(r'\u00e9')));
 
-      // And it must round-trip back to the original XDR.
-      final reconstructedXdr =
-          TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
-      expect(reconstructedXdr, equals(xdr));
-    });
+        // And it must round-trip back to the original XDR.
+        final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+          txRep,
+        );
+        expect(reconstructedXdr, equals(xdr));
+      },
+    );
 
     test('MEMO_TEXT decode accepts legacy \\uNNNN JSON escapes', () {
       // Build a reference envelope using the new \xNN encoding, then
@@ -625,13 +654,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.text("café"))
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).addMemo(Memo.text("café")).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -643,8 +671,9 @@ void main() {
       );
       expect(legacyTxRep, isNot(equals(txRep)));
 
-      final reconstructedXdr =
-          TxRep.transactionEnvelopeXdrBase64FromTxRep(legacyTxRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        legacyTxRep,
+      );
       expect(reconstructedXdr, equals(xdr));
     });
 
@@ -657,17 +686,17 @@ void main() {
         "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.text(memoText))
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).addMemo(Memo.text(memoText)).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
       final xdr = transaction.toEnvelopeXdrBase64();
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
-      final reconstructedXdr =
-          TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
       expect(reconstructedXdr, equals(xdr));
       return txRep;
     }
@@ -710,10 +739,9 @@ void main() {
         "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.text('café "x"'))
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).addMemo(Memo.text('café "x"')).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -725,8 +753,9 @@ void main() {
             r'tx.memo.text: "caf\u00e9 \"x\""',
           );
 
-      final reconstructedXdr =
-          TxRep.transactionEnvelopeXdrBase64FromTxRep(legacyTxRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        legacyTxRep,
+      );
       expect(reconstructedXdr, equals(xdr));
     });
 
@@ -737,10 +766,9 @@ void main() {
         "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.text('hello'))
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).addMemo(Memo.text('hello')).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -772,10 +800,9 @@ void main() {
         "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.text('hello'))
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).addMemo(Memo.text('hello')).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -809,10 +836,9 @@ void main() {
         "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.text('hello'))
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).addMemo(Memo.text('hello')).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -841,7 +867,9 @@ void main() {
 
     test('encodes V0 envelope without time bounds', () {
       // Build a V0 transaction envelope directly (legacy format).
-      final sourceBytes = StrKey.decodeStellarAccountId(sourceKeyPair.accountId);
+      final sourceBytes = StrKey.decodeStellarAccountId(
+        sourceKeyPair.accountId,
+      );
       final v0tx = XdrTransactionV0(
         XdrUint256(sourceBytes),
         XdrUint32(100),
@@ -851,12 +879,13 @@ void main() {
         [],
         XdrTransactionV0Ext(0),
       );
-      final envelope =
-          XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0)
-            ..v0 = XdrTransactionV0Envelope(v0tx, []);
+      final envelope = XdrTransactionEnvelope(
+        XdrEnvelopeType.ENVELOPE_TYPE_TX_V0,
+      )..v0 = XdrTransactionV0Envelope(v0tx, []);
 
-      final txRep =
-          TxRep.fromTransactionEnvelopeXdrBase64(envelope.toBase64EncodedXdrString());
+      final txRep = TxRep.fromTransactionEnvelopeXdrBase64(
+        envelope.toBase64EncodedXdrString(),
+      );
 
       expect(txRep, contains('type: ENVELOPE_TYPE_TX'));
       expect(txRep, contains('tx.sourceAccount: ${sourceKeyPair.accountId}'));
@@ -864,7 +893,9 @@ void main() {
     });
 
     test('encodes V0 envelope with time bounds', () {
-      final sourceBytes = StrKey.decodeStellarAccountId(sourceKeyPair.accountId);
+      final sourceBytes = StrKey.decodeStellarAccountId(
+        sourceKeyPair.accountId,
+      );
       final tb = XdrTimeBounds(
         XdrUint64(BigInt.from(1000)),
         XdrUint64(BigInt.from(2000)),
@@ -878,12 +909,13 @@ void main() {
         [],
         XdrTransactionV0Ext(0),
       );
-      final envelope =
-          XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0)
-            ..v0 = XdrTransactionV0Envelope(v0tx, []);
+      final envelope = XdrTransactionEnvelope(
+        XdrEnvelopeType.ENVELOPE_TYPE_TX_V0,
+      )..v0 = XdrTransactionV0Envelope(v0tx, []);
 
-      final txRep =
-          TxRep.fromTransactionEnvelopeXdrBase64(envelope.toBase64EncodedXdrString());
+      final txRep = TxRep.fromTransactionEnvelopeXdrBase64(
+        envelope.toBase64EncodedXdrString(),
+      );
 
       expect(txRep, contains('tx.cond.type: PRECOND_TIME'));
       expect(txRep, contains('tx.cond.timeBounds.minTime: 1000'));
@@ -951,15 +983,14 @@ void main() {
         Asset.NATIVE,
         "100.0",
       ).build();
-      final inner = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final inner = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
       inner.sign(sourceKeyPair, testNetwork);
 
-      final feeBump = FeeBumpTransactionBuilder(inner)
-        .setBaseFee(200)
-        .setFeeAccount(sourceKeyPair.accountId)
-        .build();
+      final feeBump = FeeBumpTransactionBuilder(
+        inner,
+      ).setBaseFee(200).setFeeAccount(sourceKeyPair.accountId).build();
       feeBump.sign(sourceKeyPair, testNetwork);
 
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(
@@ -988,9 +1019,9 @@ void main() {
         Asset.NATIVE,
         "100.0",
       ).build();
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
       transaction.sign(sourceKeyPair, testNetwork);
 
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(
@@ -1017,19 +1048,21 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
       final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.id(BigInt.from(999888777)))
-        .build();
+          .addOperation(paymentOp)
+          .addMemo(Memo.id(BigInt.from(999888777)))
+          .build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
       final xdr = transaction.toEnvelopeXdrBase64();
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
-      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
 
       expect(reconstructedXdr, equals(xdr));
     });
@@ -1038,20 +1071,21 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
       final hash = Uint8List.fromList(List<int>.filled(32, 5));
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.hash(hash))
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).addMemo(Memo.hash(hash)).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
       final xdr = transaction.toEnvelopeXdrBase64();
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
-      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
 
       expect(reconstructedXdr, equals(xdr));
     });
@@ -1060,20 +1094,21 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
       final timeBounds = TimeBounds(5000, 10000);
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addTimeBounds(timeBounds)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).addTimeBounds(timeBounds).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
       final xdr = transaction.toEnvelopeXdrBase64();
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
-      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
 
       expect(reconstructedXdr, equals(xdr));
     });
@@ -1082,32 +1117,34 @@ void main() {
       final paymentOp1 = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
       final paymentOp2 = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "50.0"
+        "50.0",
       ).build();
 
       final paymentOp3 = PaymentOperationBuilder(
         sourceKeyPair.accountId,
         Asset.NATIVE,
-        "25.0"
+        "25.0",
       ).build();
 
       final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp1)
-        .addOperation(paymentOp2)
-        .addOperation(paymentOp3)
-        .build();
+          .addOperation(paymentOp1)
+          .addOperation(paymentOp2)
+          .addOperation(paymentOp3)
+          .build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
       final xdr = transaction.toEnvelopeXdrBase64();
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
-      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
 
       expect(reconstructedXdr, equals(xdr));
     });
@@ -1115,18 +1152,20 @@ void main() {
     test('round-trip: CreateAccount operation', () {
       final createAccountOp = CreateAccountOperationBuilder(
         destinationKeyPair.accountId,
-        "500"
+        "500",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(createAccountOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(createAccountOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
       final xdr = transaction.toEnvelopeXdrBase64();
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
-      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
 
       expect(reconstructedXdr, equals(xdr));
     });
@@ -1134,18 +1173,20 @@ void main() {
     test('round-trip: ManageData operation', () {
       final manageDataOp = ManageDataOperationBuilder(
         "config_key",
-        Uint8List.fromList("config_value".codeUnits)
+        Uint8List.fromList("config_value".codeUnits),
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(manageDataOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(manageDataOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
       final xdr = transaction.toEnvelopeXdrBase64();
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
-      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
 
       expect(reconstructedXdr, equals(xdr));
     });
@@ -1154,20 +1195,19 @@ void main() {
       final issuerKeyPair = KeyPair.random();
       final usd = AssetTypeCreditAlphaNum4("USD", issuerKeyPair.accountId);
 
-      final changeTrustOp = ChangeTrustOperationBuilder(
-        usd,
-        "5000"
-      ).build();
+      final changeTrustOp = ChangeTrustOperationBuilder(usd, "5000").build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(changeTrustOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(changeTrustOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
       final xdr = transaction.toEnvelopeXdrBase64();
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
-      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
 
       expect(reconstructedXdr, equals(xdr));
     });
@@ -1176,26 +1216,27 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final innerTx = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final innerTx = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       innerTx.sign(sourceKeyPair, testNetwork);
 
       final feeBumpAccount = KeyPair.random();
-      final feeBumpTx = FeeBumpTransactionBuilder(innerTx)
-        .setBaseFee(300)
-        .setFeeAccount(feeBumpAccount.accountId)
-        .build();
+      final feeBumpTx = FeeBumpTransactionBuilder(
+        innerTx,
+      ).setBaseFee(300).setFeeAccount(feeBumpAccount.accountId).build();
 
       feeBumpTx.sign(feeBumpAccount, testNetwork);
 
       final xdr = feeBumpTx.toEnvelopeXdrBase64();
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
-      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
 
       expect(reconstructedXdr, equals(xdr));
     });
@@ -1206,19 +1247,21 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
       final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.text("Test: special chars @#\$%"))
-        .build();
+          .addOperation(paymentOp)
+          .addMemo(Memo.text("Test: special chars @#\$%"))
+          .build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
       final xdr = transaction.toEnvelopeXdrBase64();
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
-      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
 
       expect(reconstructedXdr, equals(xdr));
     });
@@ -1227,13 +1270,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.text('Say "hi" \\ ok'))
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).addMemo(Memo.text('Say "hi" \\ ok')).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -1242,7 +1284,9 @@ void main() {
 
       expect(txRep, contains(r'Say \"hi\" \\ ok'));
 
-      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
       expect(reconstructedXdr, equals(xdr));
     });
 
@@ -1250,12 +1294,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "922337203685.4775807"
+        "922337203685.4775807",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -1264,7 +1308,9 @@ void main() {
 
       expect(txRep, contains('tx.operations[0].body.paymentOp.amount:'));
 
-      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
       expect(reconstructedXdr, equals(xdr));
     });
 
@@ -1272,18 +1318,20 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "0"
+        "0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
       final xdr = transaction.toEnvelopeXdrBase64();
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
-      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
 
       expect(reconstructedXdr, equals(xdr));
     });
@@ -1296,8 +1344,8 @@ void main() {
           PaymentOperationBuilder(
             destinationKeyPair.accountId,
             Asset.NATIVE,
-            "1"
-          ).build()
+            "1",
+          ).build(),
         );
       }
 
@@ -1312,23 +1360,28 @@ void main() {
 
     test('handles transaction with AlphaNum12 asset', () {
       final issuerKeyPair = KeyPair.random();
-      final longAsset = AssetTypeCreditAlphaNum12("LONGASSET123", issuerKeyPair.accountId);
+      final longAsset = AssetTypeCreditAlphaNum12(
+        "LONGASSET123",
+        issuerKeyPair.accountId,
+      );
 
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         longAsset,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
       final xdr = transaction.toEnvelopeXdrBase64();
       final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
-      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
 
       expect(reconstructedXdr, equals(xdr));
     });
@@ -1336,18 +1389,18 @@ void main() {
     test('handles transaction with very large sequence number', () {
       final largeSeqAccount = Account(
         sourceKeyPair.accountId,
-        BigInt.parse("9223372036854775800")
+        BigInt.parse("9223372036854775800"),
       );
 
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "10.0"
+        "10.0",
       ).build();
 
-      final transaction = TransactionBuilder(largeSeqAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        largeSeqAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -1361,13 +1414,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .addMemo(Memo.none())
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).addMemo(Memo.none()).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -1376,7 +1428,9 @@ void main() {
 
       expect(txRep, contains('tx.memo.type: MEMO_NONE'));
 
-      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
       expect(reconstructedXdr, equals(xdr));
     });
 
@@ -1384,12 +1438,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -1405,10 +1459,15 @@ void main() {
       }).toList();
 
       txRep = modifiedLines.join('\n');
-      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep);
+      final reconstructedXdr = TxRep.transactionEnvelopeXdrBase64FromTxRep(
+        txRep,
+      );
 
-      final originalTx = AbstractTransaction.fromEnvelopeXdrString(xdr) as Transaction;
-      final reconstructedTx = AbstractTransaction.fromEnvelopeXdrString(reconstructedXdr) as Transaction;
+      final originalTx =
+          AbstractTransaction.fromEnvelopeXdrString(xdr) as Transaction;
+      final reconstructedTx =
+          AbstractTransaction.fromEnvelopeXdrString(reconstructedXdr)
+              as Transaction;
 
       expect(reconstructedTx.fee, equals(originalTx.fee));
     });
@@ -1419,12 +1478,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -1443,12 +1502,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 
@@ -1467,12 +1526,12 @@ void main() {
       final paymentOp = PaymentOperationBuilder(
         destinationKeyPair.accountId,
         Asset.NATIVE,
-        "100.0"
+        "100.0",
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(paymentOp)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(paymentOp).build();
 
       transaction.sign(sourceKeyPair, testNetwork);
 

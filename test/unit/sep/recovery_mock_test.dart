@@ -18,19 +18,18 @@ void main() {
         expect(body['identities'].length, 1);
         expect(body['identities'][0]['role'], 'owner');
 
-        return http.Response(json.encode({
-          'address': 'GXXXXXXX',
-          'identities': [
-            {
-              'role': 'owner'
-            }
-          ],
-          'signers': [
-            {
-              'key': 'GSIGNER1XXXXXXX'
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'address': 'GXXXXXXX',
+            'identities': [
+              {'role': 'owner'},
+            ],
+            'signers': [
+              {'key': 'GSIGNER1XXXXXXX'},
+            ],
+          }),
+          200,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -63,19 +62,18 @@ void main() {
         final body = json.decode(request.body);
         expect(body['identities'][0]['auth_methods'].length, 3);
 
-        return http.Response(json.encode({
-          'address': 'GYYYYYY',
-          'identities': [
-            {
-              'role': 'owner'
-            }
-          ],
-          'signers': [
-            {
-              'key': 'GSIGNER2XXXXXXX'
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'address': 'GYYYYYY',
+            'identities': [
+              {'role': 'owner'},
+            ],
+            'signers': [
+              {'key': 'GSIGNER2XXXXXXX'},
+            ],
+          }),
+          200,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -85,8 +83,15 @@ void main() {
 
       final emailAuth = SEP30AuthMethod('email', 'user@example.com');
       final phoneAuth = SEP30AuthMethod('phone_number', '+1234567890');
-      final stellarAuth = SEP30AuthMethod('stellar_address', 'user*example.com');
-      final ownerIdentity = SEP30RequestIdentity('owner', [emailAuth, phoneAuth, stellarAuth]);
+      final stellarAuth = SEP30AuthMethod(
+        'stellar_address',
+        'user*example.com',
+      );
+      final ownerIdentity = SEP30RequestIdentity('owner', [
+        emailAuth,
+        phoneAuth,
+        stellarAuth,
+      ]);
       final request = SEP30Request([ownerIdentity]);
 
       final response = await service.registerAccount(
@@ -107,31 +112,22 @@ void main() {
         final body = json.decode(request.body);
         expect(body['identities'].length, 3);
 
-        return http.Response(json.encode({
-          'address': 'GZZZZZZ',
-          'identities': [
-            {
-              'role': 'owner'
-            },
-            {
-              'role': 'other'
-            },
-            {
-              'role': 'other'
-            }
-          ],
-          'signers': [
-            {
-              'key': 'GSIGNER3XXXXXXX'
-            },
-            {
-              'key': 'GSIGNER4XXXXXXX'
-            },
-            {
-              'key': 'GSIGNER5XXXXXXX'
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'address': 'GZZZZZZ',
+            'identities': [
+              {'role': 'owner'},
+              {'role': 'other'},
+              {'role': 'other'},
+            ],
+            'signers': [
+              {'key': 'GSIGNER3XXXXXXX'},
+              {'key': 'GSIGNER4XXXXXXX'},
+              {'key': 'GSIGNER5XXXXXXX'},
+            ],
+          }),
+          200,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -140,13 +136,13 @@ void main() {
       );
 
       final owner = SEP30RequestIdentity('owner', [
-        SEP30AuthMethod('email', 'owner@example.com')
+        SEP30AuthMethod('email', 'owner@example.com'),
       ]);
       final other1 = SEP30RequestIdentity('other', [
-        SEP30AuthMethod('phone_number', '+1111111111')
+        SEP30AuthMethod('phone_number', '+1111111111'),
       ]);
       final other2 = SEP30RequestIdentity('other', [
-        SEP30AuthMethod('email', 'backup@example.com')
+        SEP30AuthMethod('email', 'backup@example.com'),
       ]);
       final request = SEP30Request([owner, other1, other2]);
 
@@ -169,19 +165,18 @@ void main() {
         expect(request.method, 'PUT');
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'address': 'GXXXXXXX',
-          'identities': [
-            {
-              'role': 'owner'
-            }
-          ],
-          'signers': [
-            {
-              'key': 'GSIGNERNEWXXXXXXX'
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'address': 'GXXXXXXX',
+            'identities': [
+              {'role': 'owner'},
+            ],
+            'signers': [
+              {'key': 'GSIGNERNEWXXXXXXX'},
+            ],
+          }),
+          200,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -213,25 +208,20 @@ void main() {
         final body = json.decode(request.body);
         expect(body['identities'].length, 2);
 
-        return http.Response(json.encode({
-          'address': 'GYYYYYY',
-          'identities': [
-            {
-              'role': 'owner'
-            },
-            {
-              'role': 'other'
-            }
-          ],
-          'signers': [
-            {
-              'key': 'GSIGNER1XXXXXXX'
-            },
-            {
-              'key': 'GSIGNER2XXXXXXX'
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'address': 'GYYYYYY',
+            'identities': [
+              {'role': 'owner'},
+              {'role': 'other'},
+            ],
+            'signers': [
+              {'key': 'GSIGNER1XXXXXXX'},
+              {'key': 'GSIGNER2XXXXXXX'},
+            ],
+          }),
+          200,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -240,10 +230,10 @@ void main() {
       );
 
       final owner = SEP30RequestIdentity('owner', [
-        SEP30AuthMethod('email', 'owner@example.com')
+        SEP30AuthMethod('email', 'owner@example.com'),
       ]);
       final other = SEP30RequestIdentity('other', [
-        SEP30AuthMethod('phone_number', '+1234567890')
+        SEP30AuthMethod('phone_number', '+1234567890'),
       ]);
       final request = SEP30Request([owner, other]);
 
@@ -261,7 +251,10 @@ void main() {
   group('SEP30RecoveryService Sign Transaction', () {
     test('sign transaction with recovery signer', () async {
       final mockClient = MockClient((request) async {
-        expect(request.url.path, endsWith('/accounts/GXXXXXXX/sign/GSIGNER1XXXXXXX'));
+        expect(
+          request.url.path,
+          endsWith('/accounts/GXXXXXXX/sign/GSIGNER1XXXXXXX'),
+        );
         expect(request.method, 'POST');
         expect(request.headers['Authorization'], 'Bearer test-jwt');
         expect(request.headers['Content-Type'], 'application/json');
@@ -269,10 +262,13 @@ void main() {
         final body = json.decode(request.body);
         expect(body['transaction'], 'AAAAAgAAAAA...');
 
-        return http.Response(json.encode({
-          'signature': 'SIGNATURE_BASE64_ENCODED',
-          'network_passphrase': 'Test SDF Network ; September 2015'
-        }), 200);
+        return http.Response(
+          json.encode({
+            'signature': 'SIGNATURE_BASE64_ENCODED',
+            'network_passphrase': 'Test SDF Network ; September 2015',
+          }),
+          200,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -293,13 +289,20 @@ void main() {
 
     test('sign transaction for different signer', () async {
       final mockClient = MockClient((request) async {
-        expect(request.url.path, endsWith('/accounts/GYYYYYY/sign/GSIGNER2XXXXXXX'));
+        expect(
+          request.url.path,
+          endsWith('/accounts/GYYYYYY/sign/GSIGNER2XXXXXXX'),
+        );
         expect(request.method, 'POST');
 
-        return http.Response(json.encode({
-          'signature': 'DIFFERENT_SIGNATURE_BASE64',
-          'network_passphrase': 'Public Global Stellar Network ; September 2015'
-        }), 200);
+        return http.Response(
+          json.encode({
+            'signature': 'DIFFERENT_SIGNATURE_BASE64',
+            'network_passphrase':
+                'Public Global Stellar Network ; September 2015',
+          }),
+          200,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -315,7 +318,10 @@ void main() {
       );
 
       expect(response.signature, 'DIFFERENT_SIGNATURE_BASE64');
-      expect(response.networkPassphrase, 'Public Global Stellar Network ; September 2015');
+      expect(
+        response.networkPassphrase,
+        'Public Global Stellar Network ; September 2015',
+      );
     });
   });
 
@@ -326,27 +332,20 @@ void main() {
         expect(request.method, 'GET');
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'address': 'GXXXXXXX',
-          'identities': [
-            {
-              'role': 'owner',
-              'authenticated': true
-            },
-            {
-              'role': 'other',
-              'authenticated': false
-            }
-          ],
-          'signers': [
-            {
-              'key': 'GSIGNER1XXXXXXX'
-            },
-            {
-              'key': 'GSIGNER2XXXXXXX'
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'address': 'GXXXXXXX',
+            'identities': [
+              {'role': 'owner', 'authenticated': true},
+              {'role': 'other', 'authenticated': false},
+            ],
+            'signers': [
+              {'key': 'GSIGNER1XXXXXXX'},
+              {'key': 'GSIGNER2XXXXXXX'},
+            ],
+          }),
+          200,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -354,10 +353,7 @@ void main() {
         httpClient: mockClient,
       );
 
-      final response = await service.accountDetails(
-        'GXXXXXXX',
-        'test-jwt',
-      );
+      final response = await service.accountDetails('GXXXXXXX', 'test-jwt');
 
       expect(response.address, 'GXXXXXXX');
       expect(response.identities.length, 2);
@@ -373,19 +369,18 @@ void main() {
         expect(request.url.path, endsWith('/accounts/GYYYYYY'));
         expect(request.method, 'GET');
 
-        return http.Response(json.encode({
-          'address': 'GYYYYYY',
-          'identities': [
-            {
-              'role': 'owner'
-            }
-          ],
-          'signers': [
-            {
-              'key': 'GSIGNER3XXXXXXX'
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'address': 'GYYYYYY',
+            'identities': [
+              {'role': 'owner'},
+            ],
+            'signers': [
+              {'key': 'GSIGNER3XXXXXXX'},
+            ],
+          }),
+          200,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -393,10 +388,7 @@ void main() {
         httpClient: mockClient,
       );
 
-      final response = await service.accountDetails(
-        'GYYYYYY',
-        'test-jwt',
-      );
+      final response = await service.accountDetails('GYYYYYY', 'test-jwt');
 
       expect(response.address, 'GYYYYYY');
       expect(response.identities.length, 1);
@@ -412,19 +404,18 @@ void main() {
         expect(request.method, 'DELETE');
         expect(request.headers['Authorization'], 'Bearer test-jwt');
 
-        return http.Response(json.encode({
-          'address': 'GXXXXXXX',
-          'identities': [
-            {
-              'role': 'owner'
-            }
-          ],
-          'signers': [
-            {
-              'key': 'GSIGNER1XXXXXXX'
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'address': 'GXXXXXXX',
+            'identities': [
+              {'role': 'owner'},
+            ],
+            'signers': [
+              {'key': 'GSIGNER1XXXXXXX'},
+            ],
+          }),
+          200,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -432,10 +423,7 @@ void main() {
         httpClient: mockClient,
       );
 
-      final response = await service.deleteAccount(
-        'GXXXXXXX',
-        'test-jwt',
-      );
+      final response = await service.deleteAccount('GXXXXXXX', 'test-jwt');
 
       expect(response.address, 'GXXXXXXX');
       expect(response.identities.length, 1);
@@ -451,36 +439,31 @@ void main() {
         expect(request.headers['Authorization'], 'Bearer test-jwt');
         expect(request.url.queryParameters.containsKey('after'), false);
 
-        return http.Response(json.encode({
-          'accounts': [
-            {
-              'address': 'GACCOUNT1XXXXXX',
-              'identities': [
-                {
-                  'role': 'owner'
-                }
-              ],
-              'signers': [
-                {
-                  'key': 'GSIGNER1XXXXXXX'
-                }
-              ]
-            },
-            {
-              'address': 'GACCOUNT2XXXXXX',
-              'identities': [
-                {
-                  'role': 'owner'
-                }
-              ],
-              'signers': [
-                {
-                  'key': 'GSIGNER2XXXXXXX'
-                }
-              ]
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'accounts': [
+              {
+                'address': 'GACCOUNT1XXXXXX',
+                'identities': [
+                  {'role': 'owner'},
+                ],
+                'signers': [
+                  {'key': 'GSIGNER1XXXXXXX'},
+                ],
+              },
+              {
+                'address': 'GACCOUNT2XXXXXX',
+                'identities': [
+                  {'role': 'owner'},
+                ],
+                'signers': [
+                  {'key': 'GSIGNER2XXXXXXX'},
+                ],
+              },
+            ],
+          }),
+          200,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -500,36 +483,31 @@ void main() {
         expect(request.url.path, endsWith('/accounts'));
         expect(request.url.queryParameters['after'], 'GACCOUNT1XXXXXX');
 
-        return http.Response(json.encode({
-          'accounts': [
-            {
-              'address': 'GACCOUNT2XXXXXX',
-              'identities': [
-                {
-                  'role': 'owner'
-                }
-              ],
-              'signers': [
-                {
-                  'key': 'GSIGNER2XXXXXXX'
-                }
-              ]
-            },
-            {
-              'address': 'GACCOUNT3XXXXXX',
-              'identities': [
-                {
-                  'role': 'owner'
-                }
-              ],
-              'signers': [
-                {
-                  'key': 'GSIGNER3XXXXXXX'
-                }
-              ]
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'accounts': [
+              {
+                'address': 'GACCOUNT2XXXXXX',
+                'identities': [
+                  {'role': 'owner'},
+                ],
+                'signers': [
+                  {'key': 'GSIGNER2XXXXXXX'},
+                ],
+              },
+              {
+                'address': 'GACCOUNT3XXXXXX',
+                'identities': [
+                  {'role': 'owner'},
+                ],
+                'signers': [
+                  {'key': 'GSIGNER3XXXXXXX'},
+                ],
+              },
+            ],
+          }),
+          200,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -537,7 +515,10 @@ void main() {
         httpClient: mockClient,
       );
 
-      final response = await service.accounts('test-jwt', after: 'GACCOUNT1XXXXXX');
+      final response = await service.accounts(
+        'test-jwt',
+        after: 'GACCOUNT1XXXXXX',
+      );
 
       expect(response.accounts.length, 2);
       expect(response.accounts[0].address, 'GACCOUNT2XXXXXX');
@@ -548,9 +529,7 @@ void main() {
       final mockClient = MockClient((request) async {
         expect(request.url.path, endsWith('/accounts'));
 
-        return http.Response(json.encode({
-          'accounts': []
-        }), 200);
+        return http.Response(json.encode({'accounts': []}), 200);
       });
 
       final service = SEP30RecoveryService(
@@ -567,23 +546,22 @@ void main() {
       final mockClient = MockClient((request) async {
         expect(request.url.path, endsWith('/accounts'));
 
-        return http.Response(json.encode({
-          'accounts': [
-            {
-              'address': 'GACCOUNT4XXXXXX',
-              'identities': [
-                {
-                  'authenticated': true
-                }
-              ],
-              'signers': [
-                {
-                  'key': 'GSIGNER4XXXXXXX'
-                }
-              ]
-            }
-          ]
-        }), 200);
+        return http.Response(
+          json.encode({
+            'accounts': [
+              {
+                'address': 'GACCOUNT4XXXXXX',
+                'identities': [
+                  {'authenticated': true},
+                ],
+                'signers': [
+                  {'key': 'GSIGNER4XXXXXXX'},
+                ],
+              },
+            ],
+          }),
+          200,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -603,9 +581,10 @@ void main() {
   group('SEP30RecoveryService Error Handling', () {
     test('handle 400 bad request from registerAccount', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Invalid identities format'
-        }), 400);
+        return http.Response(
+          json.encode({'error': 'Invalid identities format'}),
+          400,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -623,9 +602,10 @@ void main() {
 
     test('handle 401 unauthorized from accountDetails', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Invalid or expired JWT token'
-        }), 401);
+        return http.Response(
+          json.encode({'error': 'Invalid or expired JWT token'}),
+          401,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -641,9 +621,7 @@ void main() {
 
     test('handle 404 not found from accountDetails', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Account not found'
-        }), 404);
+        return http.Response(json.encode({'error': 'Account not found'}), 404);
       });
 
       final service = SEP30RecoveryService(
@@ -659,9 +637,10 @@ void main() {
 
     test('handle 404 not found from signTransaction', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Signing address not found'
-        }), 404);
+        return http.Response(
+          json.encode({'error': 'Signing address not found'}),
+          404,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -682,9 +661,10 @@ void main() {
 
     test('handle 409 conflict from registerAccount', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Account already registered'
-        }), 409);
+        return http.Response(
+          json.encode({'error': 'Account already registered'}),
+          409,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -704,9 +684,10 @@ void main() {
 
     test('handle 409 conflict from updateIdentitiesForAccount', () async {
       final mockClient = MockClient((request) async {
-        return http.Response(json.encode({
-          'error': 'Concurrent modification detected'
-        }), 409);
+        return http.Response(
+          json.encode({'error': 'Concurrent modification detected'}),
+          409,
+        );
       });
 
       final service = SEP30RecoveryService(
@@ -719,7 +700,8 @@ void main() {
       final request = SEP30Request([ownerIdentity]);
 
       expect(
-        () => service.updateIdentitiesForAccount('GXXXXXXX', request, 'test-jwt'),
+        () =>
+            service.updateIdentitiesForAccount('GXXXXXXX', request, 'test-jwt'),
         throwsA(isA<SEP30ConflictResponseException>()),
       );
     });
@@ -728,17 +710,13 @@ void main() {
       final mockClient = MockClient((request) async {
         expect(request.headers['X-Custom-Header'], 'custom-value');
 
-        return http.Response(json.encode({
-          'accounts': []
-        }), 200);
+        return http.Response(json.encode({'accounts': []}), 200);
       });
 
       final service = SEP30RecoveryService(
         'https://api.example.com',
         httpClient: mockClient,
-        httpRequestHeaders: {
-          'X-Custom-Header': 'custom-value',
-        },
+        httpRequestHeaders: {'X-Custom-Header': 'custom-value'},
       );
 
       await service.accounts('test-jwt');

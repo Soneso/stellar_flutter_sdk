@@ -35,13 +35,17 @@ void main() {
         final seed = 'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE';
         final keyPair = KeyPair.fromSecretSeed(seed);
 
-        expect(keyPair.accountId, equals('GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D'));
+        expect(
+          keyPair.accountId,
+          equals('GCZHXL5HXQX5ABDM26LHYRCQZ5OJFHLOPLZX47WEBP3V2PF5AVFK2A5D'),
+        );
         expect(keyPair.secretSeed, equals(seed));
         expect(keyPair.canSign(), isTrue);
       });
 
       test('round-trip seed encoding', () {
-        final originalSeed = 'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY';
+        final originalSeed =
+            'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY';
         final keyPair = KeyPair.fromSecretSeed(originalSeed);
 
         expect(keyPair.secretSeed, equals(originalSeed));
@@ -56,7 +60,9 @@ void main() {
 
       test('throws on account ID instead of seed', () {
         expect(
-          () => KeyPair.fromSecretSeed('GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB'),
+          () => KeyPair.fromSecretSeed(
+            'GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB',
+          ),
           throwsA(isA<FormatException>()),
         );
       });
@@ -77,7 +83,8 @@ void main() {
 
     group('fromAccountId', () {
       test('creates verify-only keypair from account ID', () {
-        final accountId = 'GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB';
+        final accountId =
+            'GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB';
         final keyPair = KeyPair.fromAccountId(accountId);
 
         expect(keyPair.accountId, equals(accountId));
@@ -86,10 +93,14 @@ void main() {
       });
 
       test('creates verify-only keypair from muxed account', () {
-        final muxedAccountId = 'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK';
+        final muxedAccountId =
+            'MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK';
         final keyPair = KeyPair.fromAccountId(muxedAccountId);
 
-        expect(keyPair.accountId, equals('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ'));
+        expect(
+          keyPair.accountId,
+          equals('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ'),
+        );
         expect(keyPair.canSign(), isFalse);
       });
 
@@ -110,7 +121,10 @@ void main() {
 
         expect(verifyOnlyKeyPair.accountId, equals(fullKeyPair.accountId));
         expect(verifyOnlyKeyPair.canSign(), isFalse);
-        expect(ListEquality().equals(verifyOnlyKeyPair.publicKey, publicKeyBytes), isTrue);
+        expect(
+          ListEquality().equals(verifyOnlyKeyPair.publicKey, publicKeyBytes),
+          isTrue,
+        );
       });
 
       test('creates keypair with 32-byte public key', () {
@@ -215,13 +229,12 @@ void main() {
       });
 
       test('sign without private key throws exception', () {
-        final keyPair = KeyPair.fromAccountId('GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB');
+        final keyPair = KeyPair.fromAccountId(
+          'GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB',
+        );
         final data = Uint8List.fromList([1, 2, 3, 4, 5]);
 
-        expect(
-          () => keyPair.sign(data),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => keyPair.sign(data), throwsA(isA<Exception>()));
       });
     });
 
@@ -246,7 +259,9 @@ void main() {
         XdrPublicKey.encode(xdrOutputStream, keyPair.xdrPublicKey);
         final publicKeyBytes = Uint8List.fromList(xdrOutputStream.bytes);
         final expectedHint = Uint8List.fromList(
-          publicKeyBytes.getRange(publicKeyBytes.length - 4, publicKeyBytes.length).toList(),
+          publicKeyBytes
+              .getRange(publicKeyBytes.length - 4, publicKeyBytes.length)
+              .toList(),
         );
 
         expect(
@@ -256,8 +271,11 @@ void main() {
       });
 
       test('signPayloadDecorated creates correct signature', () {
-        final seed = "1123740522f11bfef6b3671f51e159ccf589ccf8965262dd5f97d1721d383dd4";
-        final keyPair = KeyPair.fromSecretSeedList(Uint8List.fromList(Util.hexToBytes(seed)));
+        final seed =
+            "1123740522f11bfef6b3671f51e159ccf589ccf8965262dd5f97d1721d383dd4";
+        final keyPair = KeyPair.fromSecretSeedList(
+          Uint8List.fromList(Util.hexToBytes(seed)),
+        );
         final payload = Uint8List.fromList([1, 2, 3, 4, 5]);
 
         final decoratedSig = keyPair.signPayloadDecorated(payload);
@@ -280,13 +298,17 @@ void main() {
       });
 
       test('returns true for keypair from secret seed', () {
-        final keyPair = KeyPair.fromSecretSeed('SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY');
+        final keyPair = KeyPair.fromSecretSeed(
+          'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY',
+        );
 
         expect(keyPair.canSign(), isTrue);
       });
 
       test('returns false for verify-only keypair from account ID', () {
-        final keyPair = KeyPair.fromAccountId('GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB');
+        final keyPair = KeyPair.fromAccountId(
+          'GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB',
+        );
 
         expect(keyPair.canSign(), isFalse);
       });
@@ -339,7 +361,9 @@ void main() {
       });
 
       test('secret seed throws for verify-only keypair', () {
-        final keyPair = KeyPair.fromAccountId('GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB');
+        final keyPair = KeyPair.fromAccountId(
+          'GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB',
+        );
 
         expect(() => keyPair.secretSeed, throwsA(anything));
       });
@@ -364,9 +388,15 @@ void main() {
 
         final xdrPublicKey = keyPair.xdrPublicKey;
 
-        expect(xdrPublicKey.discriminant, equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
         expect(
-          ListEquality().equals(xdrPublicKey.getEd25519()!.uint256, keyPair.publicKey),
+          xdrPublicKey.discriminant,
+          equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519),
+        );
+        expect(
+          ListEquality().equals(
+            xdrPublicKey.getEd25519()!.uint256,
+            keyPair.publicKey,
+          ),
           isTrue,
         );
       });
@@ -376,9 +406,15 @@ void main() {
 
         final xdrMuxedAccount = keyPair.xdrMuxedAccount;
 
-        expect(xdrMuxedAccount.discriminant, equals(XdrCryptoKeyType.KEY_TYPE_ED25519));
         expect(
-          ListEquality().equals(xdrMuxedAccount.ed25519!.uint256, keyPair.publicKey),
+          xdrMuxedAccount.discriminant,
+          equals(XdrCryptoKeyType.KEY_TYPE_ED25519),
+        );
+        expect(
+          ListEquality().equals(
+            xdrMuxedAccount.ed25519!.uint256,
+            keyPair.publicKey,
+          ),
           isTrue,
         );
       });
@@ -408,9 +444,15 @@ void main() {
 
         final xdrSignerKey = keyPair.xdrSignerKey;
 
-        expect(xdrSignerKey.discriminant, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519));
         expect(
-          ListEquality().equals(xdrSignerKey.ed25519!.uint256, keyPair.publicKey),
+          xdrSignerKey.discriminant,
+          equals(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519),
+        );
+        expect(
+          ListEquality().equals(
+            xdrSignerKey.ed25519!.uint256,
+            keyPair.publicKey,
+          ),
           isTrue,
         );
       });
@@ -433,13 +475,12 @@ void main() {
         XdrPublicKey.encode(xdrOutputStream, keyPair.xdrPublicKey);
         final publicKeyBytes = Uint8List.fromList(xdrOutputStream.bytes);
         final expectedHint = Uint8List.fromList(
-          publicKeyBytes.getRange(publicKeyBytes.length - 4, publicKeyBytes.length).toList(),
+          publicKeyBytes
+              .getRange(publicKeyBytes.length - 4, publicKeyBytes.length)
+              .toList(),
         );
 
-        expect(
-          ListEquality().equals(hint.signatureHint, expectedHint),
-          isTrue,
-        );
+        expect(ListEquality().equals(hint.signatureHint, expectedHint), isTrue);
       });
     });
 
@@ -458,7 +499,9 @@ void main() {
       });
 
       test('privateKey getter returns null for verify-only keypair', () {
-        final keyPair = KeyPair.fromAccountId('GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB');
+        final keyPair = KeyPair.fromAccountId(
+          'GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB',
+        );
 
         expect(keyPair.privateKey, isNull);
       });
@@ -495,8 +538,10 @@ void main() {
     });
 
     group('SEP-53 message signing', () {
-      final specSeed = 'SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW';
-      final specAddress = 'GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L';
+      final specSeed =
+          'SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW';
+      final specAddress =
+          'GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L';
       final asciiSigHex =
           '7cee5d6d885752104c85eea421dfdcb95abf01f1271d11c4bec3fcbd7874dccd'
           '6e2e98b97b8eb23b643cac4073bb77de5d07b0710139180ae9f3cbba78f2ba04';
@@ -506,7 +551,8 @@ void main() {
       final binarySigHex =
           '540d7eee179f370bf634a49c1fa9fe4a58e3d7990b0207be336c04edfcc539ff'
           '8bd0c31bb2c0359b07c9651cb2ae104e4504657b5d17d43c69c7e50e23811b0d';
-      final binaryMessageBase64 = '2zZDP1sa1BVBfLP7TeeMk3sUbaxAkUhBhDiNdrksaFo=';
+      final binaryMessageBase64 =
+          '2zZDP1sa1BVBfLP7TeeMk3sUbaxAkUhBhDiNdrksaFo=';
 
       // Spec vector tests
 
@@ -523,7 +569,10 @@ void main() {
         final keyPair = KeyPair.fromSecretSeed(specSeed);
         final message = Uint8List.fromList(utf8.encode('Hello, World!'));
 
-        final result = keyPair.verifyMessage(message, Util.hexToBytes(asciiSigHex));
+        final result = keyPair.verifyMessage(
+          message,
+          Util.hexToBytes(asciiSigHex),
+        );
 
         expect(result, isTrue);
       });
@@ -541,7 +590,10 @@ void main() {
         final keyPair = KeyPair.fromSecretSeed(specSeed);
         final message = Uint8List.fromList(utf8.encode('こんにちは、世界！'));
 
-        final result = keyPair.verifyMessage(message, Util.hexToBytes(japaneseSigHex));
+        final result = keyPair.verifyMessage(
+          message,
+          Util.hexToBytes(japaneseSigHex),
+        );
 
         expect(result, isTrue);
       });
@@ -559,7 +611,10 @@ void main() {
         final keyPair = KeyPair.fromSecretSeed(specSeed);
         final message = base64.decode(binaryMessageBase64);
 
-        final result = keyPair.verifyMessage(message, Util.hexToBytes(binarySigHex));
+        final result = keyPair.verifyMessage(
+          message,
+          Util.hexToBytes(binarySigHex),
+        );
 
         expect(result, isTrue);
       });
@@ -569,7 +624,9 @@ void main() {
       test('signMessageString matches signMessage for ASCII', () {
         final keyPair = KeyPair.fromSecretSeed(specSeed);
         final stringSig = keyPair.signMessageString('Hello, World!');
-        final binarySig = keyPair.signMessage(Uint8List.fromList(utf8.encode('Hello, World!')));
+        final binarySig = keyPair.signMessage(
+          Uint8List.fromList(utf8.encode('Hello, World!')),
+        );
 
         expect(ListEquality().equals(stringSig, binarySig), isTrue);
       });
@@ -577,7 +634,10 @@ void main() {
       test('verifyMessageString returns true for valid ASCII signature', () {
         final keyPair = KeyPair.fromSecretSeed(specSeed);
 
-        final result = keyPair.verifyMessageString('Hello, World!', Util.hexToBytes(asciiSigHex));
+        final result = keyPair.verifyMessageString(
+          'Hello, World!',
+          Util.hexToBytes(asciiSigHex),
+        );
 
         expect(result, isTrue);
       });
@@ -586,7 +646,9 @@ void main() {
         final keyPair = KeyPair.fromSecretSeed(specSeed);
 
         final result = keyPair.verifyMessageString(
-            'こんにちは、世界！', Util.hexToBytes(japaneseSigHex));
+          'こんにちは、世界！',
+          Util.hexToBytes(japaneseSigHex),
+        );
 
         expect(result, isTrue);
       });
@@ -595,7 +657,9 @@ void main() {
 
       test('round-trip with random keypair', () {
         final keyPair = KeyPair.random();
-        final message = Uint8List.fromList(utf8.encode('test message for round-trip'));
+        final message = Uint8List.fromList(
+          utf8.encode('test message for round-trip'),
+        );
 
         final signature = keyPair.signMessage(message);
         final result = keyPair.verifyMessage(message, signature);
@@ -603,16 +667,19 @@ void main() {
         expect(result, isTrue);
       });
 
-      test('cross-construction-path: sign with seed, verify with account ID', () {
-        final signingKeyPair = KeyPair.fromSecretSeed(specSeed);
-        final verifyKeyPair = KeyPair.fromAccountId(specAddress);
-        final message = Uint8List.fromList(utf8.encode('Hello, World!'));
+      test(
+        'cross-construction-path: sign with seed, verify with account ID',
+        () {
+          final signingKeyPair = KeyPair.fromSecretSeed(specSeed);
+          final verifyKeyPair = KeyPair.fromAccountId(specAddress);
+          final message = Uint8List.fromList(utf8.encode('Hello, World!'));
 
-        final signature = signingKeyPair.signMessage(message);
-        final result = verifyKeyPair.verifyMessage(message, signature);
+          final signature = signingKeyPair.signMessage(message);
+          final result = verifyKeyPair.verifyMessage(message, signature);
 
-        expect(result, isTrue);
-      });
+          expect(result, isTrue);
+        },
+      );
 
       // Failure tests
 
@@ -631,7 +698,10 @@ void main() {
         final message = Uint8List.fromList(utf8.encode('Hello, World!'));
 
         // Use the binary test vector's signature instead of the ASCII one
-        expect(keyPair.verifyMessage(message, Util.hexToBytes(binarySigHex)), isFalse);
+        expect(
+          keyPair.verifyMessage(message, Util.hexToBytes(binarySigHex)),
+          isFalse,
+        );
       });
 
       test('wrong keypair fails verification', () {
@@ -700,8 +770,12 @@ void main() {
 
         // Encode signature to base64 (as a sender would transmit it)
         final base64Signature = base64.encode(signature);
-        expect(base64Signature,
-            equals('fO5dbYhXUhBMhe6kId/cuVq/AfEnHRHEvsP8vXh03M1uLpi5e46yO2Q8rEBzu3feXQewcQE5GArp88u6ePK6BA=='));
+        expect(
+          base64Signature,
+          equals(
+            'fO5dbYhXUhBMhe6kId/cuVq/AfEnHRHEvsP8vXh03M1uLpi5e46yO2Q8rEBzu3feXQewcQE5GArp88u6ePK6BA==',
+          ),
+        );
 
         // Decode from base64 and verify (as a receiver would consume it)
         final decoded = base64.decode(base64Signature);
@@ -794,7 +868,9 @@ void main() {
     });
 
     test('KeyPair sign throws when no private key', () {
-      KeyPair publicOnly = KeyPair.fromAccountId("GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H");
+      KeyPair publicOnly = KeyPair.fromAccountId(
+        "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H",
+      );
       Uint8List data = Uint8List.fromList([1, 2, 3, 4]);
 
       expect(() => publicOnly.sign(data), throwsException);
@@ -833,7 +909,10 @@ void main() {
 
       XdrPublicKey xdrPubKey = keyPair.xdrPublicKey;
 
-      expect(xdrPubKey.discriminant, equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519));
+      expect(
+        xdrPubKey.discriminant,
+        equals(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519),
+      );
       expect(xdrPubKey.getEd25519(), isNotNull);
     });
 
@@ -842,7 +921,10 @@ void main() {
 
       XdrSignerKey xdrSignerKey = keyPair.xdrSignerKey;
 
-      expect(xdrSignerKey.discriminant, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519));
+      expect(
+        xdrSignerKey.discriminant,
+        equals(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519),
+      );
       expect(xdrSignerKey.ed25519, isNotNull);
     });
 
@@ -899,7 +981,7 @@ void main() {
 
       SignedPayloadSigner signer = SignedPayloadSigner.fromAccountId(
         keyPair.accountId,
-        payload
+        payload,
       );
 
       expect(signer.payload, equals(payload));
@@ -916,12 +998,14 @@ void main() {
 
       expect(
         () => SignedPayloadSigner.fromAccountId(muxedAccountId, payload),
-        throwsA(isA<ArgumentError>().having(
-          (ArgumentError e) => e.message,
-          'message',
-          'A signed payload signer takes an ed25519 account id (G...), '
-              'not a muxed account id (M...)',
-        ))
+        throwsA(
+          isA<ArgumentError>().having(
+            (ArgumentError e) => e.message,
+            'message',
+            'A signed payload signer takes an ed25519 account id (G...), '
+                'not a muxed account id (M...)',
+          ),
+        ),
       );
 
       // The ed25519 account the muxed id multiplexes is accepted, so the
@@ -932,7 +1016,7 @@ void main() {
       );
       expect(
         KeyPair.fromXdrAccountId(signer.signerAccountID).accountId,
-        equals('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ')
+        equals('GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ'),
       );
     });
 
@@ -942,7 +1026,7 @@ void main() {
 
       SignedPayloadSigner signer = SignedPayloadSigner.fromPublicKey(
         keyPair.publicKey,
-        payload
+        payload,
       );
 
       expect(signer.payload, equals(payload));
@@ -955,11 +1039,13 @@ void main() {
 
       expect(
         () => SignedPayloadSigner.fromAccountId(keyPair.accountId, longPayload),
-        throwsA(isA<Exception>().having(
-          (Exception e) => e.toString(),
-          'toString',
-          contains('invalid payload length, must be at most 64'),
-        ))
+        throwsA(
+          isA<Exception>().having(
+            (Exception e) => e.toString(),
+            'toString',
+            contains('invalid payload length, must be at most 64'),
+          ),
+        ),
       );
     });
 
@@ -969,20 +1055,26 @@ void main() {
       KeyPair keyPair = KeyPair.random();
 
       expect(
-        () => SignedPayloadSigner.fromAccountId(keyPair.accountId, Uint8List(0)),
-        throwsA(isA<Exception>().having(
-          (Exception e) => e.toString(),
-          'toString',
-          contains('invalid payload length, must be at least 1'),
-        ))
+        () =>
+            SignedPayloadSigner.fromAccountId(keyPair.accountId, Uint8List(0)),
+        throwsA(
+          isA<Exception>().having(
+            (Exception e) => e.toString(),
+            'toString',
+            contains('invalid payload length, must be at least 1'),
+          ),
+        ),
       );
       expect(
-        () => SignedPayloadSigner.fromPublicKey(keyPair.publicKey, Uint8List(0)),
-        throwsA(isA<Exception>().having(
-          (Exception e) => e.toString(),
-          'toString',
-          contains('invalid payload length, must be at least 1'),
-        ))
+        () =>
+            SignedPayloadSigner.fromPublicKey(keyPair.publicKey, Uint8List(0)),
+        throwsA(
+          isA<Exception>().having(
+            (Exception e) => e.toString(),
+            'toString',
+            contains('invalid payload length, must be at least 1'),
+          ),
+        ),
       );
     });
 
@@ -994,14 +1086,14 @@ void main() {
           keyPair.accountId,
           Uint8List.fromList([1]),
         ).payload.length,
-        equals(1)
+        equals(1),
       );
       expect(
         SignedPayloadSigner.fromAccountId(
           keyPair.accountId,
           Uint8List(64),
         ).payload.length,
-        equals(64)
+        equals(64),
       );
     });
 
@@ -1010,47 +1102,61 @@ void main() {
       // would encode to an account id that cannot be read back.
       expect(
         () => KeyPair.fromPublicKey(Uint8List(31)),
-        throwsA(isA<ArgumentError>().having(
-          (ArgumentError e) => e.message,
-          'message',
-          contains('Public key must be 32 bytes, got 31'),
-        ))
+        throwsA(
+          isA<ArgumentError>().having(
+            (ArgumentError e) => e.message,
+            'message',
+            contains('Public key must be 32 bytes, got 31'),
+          ),
+        ),
       );
       expect(
         () => KeyPair.fromPublicKey(Uint8List(33)),
-        throwsA(isA<ArgumentError>().having(
-          (ArgumentError e) => e.message,
-          'message',
-          contains('Public key must be 32 bytes, got 33'),
-        ))
+        throwsA(
+          isA<ArgumentError>().having(
+            (ArgumentError e) => e.message,
+            'message',
+            contains('Public key must be 32 bytes, got 33'),
+          ),
+        ),
       );
     });
 
-    test('KeyPair.fromSecretSeedList throws on a seed that is not 32 bytes', () {
-      expect(
-        () => KeyPair.fromSecretSeedList(Uint8List(31)),
-        throwsA(isA<ArgumentError>().having(
-          (ArgumentError e) => e.message,
-          'message',
-          contains('Secret seed must be 32 bytes, got 31'),
-        ))
-      );
-      expect(
-        () => KeyPair.fromSecretSeedList(Uint8List(33)),
-        throwsA(isA<ArgumentError>().having(
-          (ArgumentError e) => e.message,
-          'message',
-          contains('Secret seed must be 32 bytes, got 33'),
-        ))
-      );
-    });
+    test(
+      'KeyPair.fromSecretSeedList throws on a seed that is not 32 bytes',
+      () {
+        expect(
+          () => KeyPair.fromSecretSeedList(Uint8List(31)),
+          throwsA(
+            isA<ArgumentError>().having(
+              (ArgumentError e) => e.message,
+              'message',
+              contains('Secret seed must be 32 bytes, got 31'),
+            ),
+          ),
+        );
+        expect(
+          () => KeyPair.fromSecretSeedList(Uint8List(33)),
+          throwsA(
+            isA<ArgumentError>().having(
+              (ArgumentError e) => e.message,
+              'message',
+              contains('Secret seed must be 32 bytes, got 33'),
+            ),
+          ),
+        );
+      },
+    );
 
     test('SignerKey.ed25519PublicKey', () {
       KeyPair keyPair = KeyPair.random();
 
       XdrSignerKey signerKey = SignerKey.ed25519PublicKey(keyPair);
 
-      expect(signerKey.discriminant, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519));
+      expect(
+        signerKey.discriminant,
+        equals(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519),
+      );
       expect(signerKey.ed25519, isNotNull);
     });
 
@@ -1062,22 +1168,35 @@ void main() {
 
       XdrSignerKey signerKey = SignerKey.sha256Hash(hash);
 
-      expect(signerKey.discriminant, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X));
+      expect(
+        signerKey.discriminant,
+        equals(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X),
+      );
       expect(signerKey.hashX, isNotNull);
     });
 
     test('SignerKey.preAuthTx', () {
       KeyPair sourceKeyPair = KeyPair.random();
-      Account sourceAccount = Account(sourceKeyPair.accountId, BigInt.from(100));
+      Account sourceAccount = Account(
+        sourceKeyPair.accountId,
+        BigInt.from(100),
+      );
 
       Transaction tx = TransactionBuilder(sourceAccount)
-          .addOperation(CreateAccountOperationBuilder(
-              KeyPair.random().accountId, "100").build())
+          .addOperation(
+            CreateAccountOperationBuilder(
+              KeyPair.random().accountId,
+              "100",
+            ).build(),
+          )
           .build();
 
       XdrSignerKey signerKey = SignerKey.preAuthTx(tx, Network.TESTNET);
 
-      expect(signerKey.discriminant, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX));
+      expect(
+        signerKey.discriminant,
+        equals(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX),
+      );
       expect(signerKey.preAuthTx, isNotNull);
     });
 
@@ -1089,7 +1208,10 @@ void main() {
 
       XdrSignerKey signerKey = SignerKey.preAuthTxHash(hash);
 
-      expect(signerKey.discriminant, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX));
+      expect(
+        signerKey.discriminant,
+        equals(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX),
+      );
       expect(signerKey.preAuthTx, isNotNull);
     });
 
@@ -1099,12 +1221,15 @@ void main() {
 
       SignedPayloadSigner payloadSigner = SignedPayloadSigner.fromAccountId(
         keyPair.accountId,
-        payload
+        payload,
       );
 
       XdrSignerKey signerKey = SignerKey.signedPayload(payloadSigner);
 
-      expect(signerKey.discriminant, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD));
+      expect(
+        signerKey.discriminant,
+        equals(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD),
+      );
       expect(signerKey.signedPayload, isNotNull);
     });
 
@@ -1114,7 +1239,7 @@ void main() {
 
       SignedPayloadSigner original = SignedPayloadSigner.fromAccountId(
         keyPair.accountId,
-        payload
+        payload,
       );
 
       String encoded = StrKey.encodeSignedPayload(original);
@@ -1130,7 +1255,7 @@ void main() {
 
       SignedPayloadSigner signer = SignedPayloadSigner.fromAccountId(
         keyPair.accountId,
-        payload
+        payload,
       );
 
       String encoded = StrKey.encodeSignedPayload(signer);

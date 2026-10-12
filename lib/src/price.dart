@@ -148,9 +148,13 @@ class Price {
       return new Price(json['n'], json['d']);
     } else if (json['n'] is String && json['d'] is String) {
       int pN = checkNotNull(
-          int.tryParse(json['n']), "invalid price in horizon response");
+        int.tryParse(json['n']),
+        "invalid price in horizon response",
+      );
       int pD = checkNotNull(
-          int.tryParse(json['d']), "invalid price in horizon response");
+        int.tryParse(json['d']),
+        "invalid price in horizon response",
+      );
       return new Price(pN, pD);
     }
     throw Exception("invalid price in horizon response");
@@ -329,17 +333,21 @@ class Price {
     String integerPart = (numerator ~/ denominator).toString();
     BigInt remainder = numerator.remainder(denominator);
     StringBuffer fraction = StringBuffer();
-    for (int i = 0;
-        i < _maxDecimalFractionDigits && remainder != BigInt.zero;
-        i++) {
+    for (
+      int i = 0;
+      i < _maxDecimalFractionDigits && remainder != BigInt.zero;
+      i++
+    ) {
       remainder *= BigInt.from(10);
       fraction.write(remainder ~/ denominator);
       remainder = remainder.remainder(denominator);
     }
     // A terminating expansion ends on a non-zero digit; only the cut after
     // the last digit taken can leave zeros behind.
-    String fractionDigits =
-        fraction.toString().replaceFirst(RegExp(r'0+$'), '');
+    String fractionDigits = fraction.toString().replaceFirst(
+      RegExp(r'0+$'),
+      '',
+    );
 
     String value = fractionDigits.isEmpty
         ? integerPart
@@ -364,7 +372,6 @@ class Price {
   /// See also:
   /// - [fromJson] for creating Price from JSON response
   XdrPrice toXdr() {
-
     XdrInt32 n = new XdrInt32(this.n);
     XdrInt32 d = new XdrInt32(this.d);
     return new XdrPrice(n, d);

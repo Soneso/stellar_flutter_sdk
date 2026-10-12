@@ -19,8 +19,10 @@ void main() {
   group('XdrMuxedContract', () {
     test('round trips through XDR with the id ahead of the hash', () {
       // Built with placeholders; the setters store the asserted values.
-      final muxed =
-          XdrMuxedContract(XdrUint64(BigInt.zero), XdrHash(Uint8List(32)));
+      final muxed = XdrMuxedContract(
+        XdrUint64(BigInt.zero),
+        XdrHash(Uint8List(32)),
+      );
       muxed.id = XdrUint64(BigInt.from(123456));
       muxed.contractId = XdrHash(Util.hexToBytes(contractHex));
       expect(muxed.id.uint64, BigInt.from(123456));
@@ -37,7 +39,9 @@ void main() {
 
     test('renders as the W strkey in XDR-JSON', () {
       final muxed = XdrMuxedContract(
-          XdrUint64(BigInt.from(123456)), XdrHash(Util.hexToBytes(contractHex)));
+        XdrUint64(BigInt.from(123456)),
+        XdrHash(Util.hexToBytes(contractHex)),
+      );
       expect(muxed.toXdrJson(), '"$muxedContractId"');
 
       final parsed = XdrMuxedContract.fromXdrJson('"$muxedContractId"');
@@ -53,44 +57,57 @@ void main() {
 
     test('refuses a strkey of another kind', () {
       expect(
-          () => XdrMuxedContract.forMuxedContractId(
-              'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE'),
-          throwsFormatException);
+        () => XdrMuxedContract.forMuxedContractId(
+          'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
+        ),
+        throwsFormatException,
+      );
     });
   });
 
   group('XdrSCAddress muxed contract arm', () {
     test('round trips through XDR, TxRep and XDR-JSON', () {
       final address = XdrSCAddress.forMuxedContractId(muxedContractId);
-      expect(address.discriminant,
-          XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT);
+      expect(
+        address.discriminant,
+        XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT,
+      );
       expect(address.toStrKey(), muxedContractId);
 
       final base64 = address.toBase64EncodedXdrString();
-      expect(Util.bytesToHex(base64Decode(base64)),
-          '00000005$idHex$contractHex');
-      final decoded =
-          XdrSCAddress.decode(XdrDataInputStream(base64Decode(base64)));
+      expect(
+        Util.bytesToHex(base64Decode(base64)),
+        '00000005$idHex$contractHex',
+      );
+      final decoded = XdrSCAddress.decode(
+        XdrDataInputStream(base64Decode(base64)),
+      );
       expect(decoded.toStrKey(), muxedContractId);
 
       final lines = <String>[];
       address.toTxRep('address', lines);
-      final fromTxRep =
-          XdrSCAddress.fromTxRep(parseTxRepLines(lines), 'address');
+      final fromTxRep = XdrSCAddress.fromTxRep(
+        parseTxRepLines(lines),
+        'address',
+      );
       expect(fromTxRep.toStrKey(), muxedContractId);
 
       expect(address.toXdrJson(), '"$muxedContractId"');
       final fromJson = XdrSCAddress.fromXdrJson('"$muxedContractId"');
-      expect(fromJson.discriminant,
-          XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT);
+      expect(
+        fromJson.discriminant,
+        XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT,
+      );
       expect(fromJson.toBase64EncodedXdrString(), base64);
     });
   });
 
   test('XdrContractCostType names the ML-DSA cost types', () {
     expect(XdrContractCostType.VerifyMlDsa87Sig.value, 94);
-    expect(XdrContractCostType.VerifyMlDsa87Sig.toXdrJson(),
-        '"verify_ml_dsa87_sig"');
+    expect(
+      XdrContractCostType.VerifyMlDsa87Sig.toXdrJson(),
+      '"verify_ml_dsa87_sig"',
+    );
     expect(XdrContractCostType.fromXdrJson('"verify_ml_dsa87_sig"').value, 94);
   });
 }

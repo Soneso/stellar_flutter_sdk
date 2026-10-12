@@ -24,12 +24,12 @@ class OZLocalStorageAdapter implements OZStorageAdapter {
   OZLocalStorageAdapter({this.keyPrefix = defaultKeyPrefix});
 
   Never _unsupported() => throw UnsupportedError(
-        'OZLocalStorageAdapter is only available on Flutter web. '
-        'On non-web targets supply a platform-appropriate OZStorageAdapter '
-        '(e.g. a Keychain-backed implementation on iOS, an '
-        'EncryptedSharedPreferences-backed implementation on Android, or '
-        'OZInMemoryStorageAdapter for testing).',
-      );
+    'OZLocalStorageAdapter is only available on Flutter web. '
+    'On non-web targets supply a platform-appropriate OZStorageAdapter '
+    '(e.g. a Keychain-backed implementation on iOS, an '
+    'EncryptedSharedPreferences-backed implementation on Android, or '
+    'OZInMemoryStorageAdapter for testing).',
+  );
 
   // coverage:ignore-start
   @override
@@ -49,8 +49,10 @@ class OZLocalStorageAdapter implements OZStorageAdapter {
   Future<void> delete(String credentialId) async => _unsupported();
 
   @override
-  Future<void> update(String credentialId, OZStoredCredentialUpdate updates) async =>
-      _unsupported();
+  Future<void> update(
+    String credentialId,
+    OZStoredCredentialUpdate updates,
+  ) async => _unsupported();
 
   @override
   Future<void> clear() async => _unsupported();

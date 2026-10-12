@@ -40,9 +40,9 @@ XdrSorobanAuthorizationEntry _testAuthEntry() {
 
 XdrTransactionEnvelope _testTransactionEnvelope() {
   final source = Account(_testSourceAccountId, BigInt.from(0));
-  final tx = TransactionBuilder(source)
-      .addOperation(BumpSequenceOperation(BigInt.from(1)))
-      .build();
+  final tx = TransactionBuilder(
+    source,
+  ).addOperation(BumpSequenceOperation(BigInt.from(1))).build();
   return tx.toEnvelopeXdr();
 }
 
@@ -58,11 +58,17 @@ OZRelayerClient _client(
 void main() {
   group('OZRelayerClient - constructor validation', () {
     test('testConstructor_blankUrl_throwsConfigurationException', () {
-      expect(() => OZRelayerClient(''), throwsA(isA<SmartAccountInvalidConfig>()));
+      expect(
+        () => OZRelayerClient(''),
+        throwsA(isA<SmartAccountInvalidConfig>()),
+      );
     });
 
     test('testConstructor_whitespaceUrl_throwsConfigurationException', () {
-      expect(() => OZRelayerClient('   '), throwsA(isA<SmartAccountInvalidConfig>()));
+      expect(
+        () => OZRelayerClient('   '),
+        throwsA(isA<SmartAccountInvalidConfig>()),
+      );
     });
 
     test('testConstructor_httpUrl_throwsConfigurationException', () {
@@ -140,10 +146,10 @@ void main() {
       );
       final relayer = _client(adapter);
       try {
-        final response =
-            await relayer.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
-          _testAuthEntry(),
-        ]);
+        final response = await relayer.send(
+          _testHostFunction(),
+          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+        );
         expect(response.success, isTrue);
         expect(response.hash, 'abc123');
         expect(response.transactionId, 'tx-001');
@@ -181,15 +187,19 @@ void main() {
         final authEntryBase64 = authArray[0] as String;
         expect(authEntryBase64.isNotEmpty, isTrue);
 
-        final decodedFn =
-            XdrHostFunctionBase.fromBase64EncodedXdrString(funcValue);
-        expect(decodedFn.discriminant.value, hostFunction.discriminant.value,
-            reason:
-                'Round-tripped host function must preserve discriminant');
+        final decodedFn = XdrHostFunctionBase.fromBase64EncodedXdrString(
+          funcValue,
+        );
+        expect(
+          decodedFn.discriminant.value,
+          hostFunction.discriminant.value,
+          reason: 'Round-tripped host function must preserve discriminant',
+        );
 
         final decodedAuth =
             XdrSorobanAuthorizationEntry.fromBase64EncodedXdrString(
-                authEntryBase64);
+              authEntryBase64,
+            );
         expect(
           decodedAuth.credentials.discriminant.value,
           authEntry.credentials.discriminant.value,
@@ -199,7 +209,8 @@ void main() {
         expect(
           decodedAuth.rootInvocation.function.discriminant.value,
           authEntry.rootInvocation.function.discriminant.value,
-          reason: 'Round-tripped auth entry must preserve invocation '
+          reason:
+              'Round-tripped auth entry must preserve invocation '
               'function discriminant',
         );
       } finally {
@@ -215,10 +226,10 @@ void main() {
       );
       final relayer = _client(adapter);
       try {
-        final response =
-            await relayer.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
-          _testAuthEntry(),
-        ]);
+        final response = await relayer.send(
+          _testHostFunction(),
+          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+        );
         expect(response.success, isFalse);
         expect(response.error, 'simulation failed');
         expect(response.errorCode, 'SIMULATION_FAILED');
@@ -235,10 +246,10 @@ void main() {
       );
       final relayer = _client(adapter);
       try {
-        final response =
-            await relayer.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
-          _testAuthEntry(),
-        ]);
+        final response = await relayer.send(
+          _testHostFunction(),
+          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+        );
         expect(response.success, isFalse);
         expect(response.error, 'tx failed');
         expect(response.errorCode, 'ONCHAIN_FAILED');
@@ -254,16 +265,19 @@ void main() {
       );
       final relayer = _client(adapter);
       try {
-        final response =
-            await relayer.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
-          _testAuthEntry(),
-        ]);
+        final response = await relayer.send(
+          _testHostFunction(),
+          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+        );
         expect(response.success, isFalse);
         expect(response.error, isNotNull);
-        expect(response.error!.contains('Unexpected Content-Type'), isTrue,
-            reason:
-                'A non-application/json response must surface as an explicit '
-                'Content-Type error');
+        expect(
+          response.error!.contains('Unexpected Content-Type'),
+          isTrue,
+          reason:
+              'A non-application/json response must surface as an explicit '
+              'Content-Type error',
+        );
       } finally {
         await relayer.close();
       }
@@ -273,10 +287,10 @@ void main() {
       final adapter = MockDioAdapter.throwing(Exception('Connection refused'));
       final relayer = _client(adapter);
       try {
-        final response =
-            await relayer.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
-          _testAuthEntry(),
-        ]);
+        final response = await relayer.send(
+          _testHostFunction(),
+          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+        );
         expect(response.success, isFalse);
         expect(response.error, isNotNull);
       } finally {
@@ -293,10 +307,10 @@ void main() {
       final adapter = MockDioAdapter.throwing(timeoutException);
       final relayer = _client(adapter);
       try {
-        final response =
-            await relayer.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
-          _testAuthEntry(),
-        ]);
+        final response = await relayer.send(
+          _testHostFunction(),
+          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+        );
         expect(response.success, isFalse);
         expect(response.errorCode, OZRelayerErrorCodes.timeout);
         expect(response.error!.contains('timed out'), isTrue);
@@ -327,14 +341,18 @@ void main() {
         );
         expect(response.success, isTrue);
         expect(response.hash, 'timeout-test-hash');
-        expect(adapter.capturedReceiveTimeout,
-            const Duration(milliseconds: 5000));
         expect(
-            adapter.capturedSendTimeout, const Duration(milliseconds: 5000));
-        expect(adapter.capturedReceiveTimeout,
-            isNot(equals(mockDio.options.receiveTimeout)),
-            reason: 'Per-request override must replace the client default '
-                'on the emitted request');
+          adapter.capturedReceiveTimeout,
+          const Duration(milliseconds: 5000),
+        );
+        expect(adapter.capturedSendTimeout, const Duration(milliseconds: 5000));
+        expect(
+          adapter.capturedReceiveTimeout,
+          isNot(equals(mockDio.options.receiveTimeout)),
+          reason:
+              'Per-request override must replace the client default '
+              'on the emitted request',
+        );
       } finally {
         await relayer.close();
       }
@@ -375,8 +393,7 @@ void main() {
         final xdrValue = body['xdr'] as String;
         expect(xdrValue.isNotEmpty, isTrue);
 
-        final decoded =
-            XdrTransactionEnvelope.fromEnvelopeXdrString(xdrValue);
+        final decoded = XdrTransactionEnvelope.fromEnvelopeXdrString(xdrValue);
         expect(decoded.discriminant, XdrEnvelopeType.ENVELOPE_TYPE_TX);
       } finally {
         await relayer.close();
@@ -427,10 +444,10 @@ void main() {
       );
       final relayer = _client(adapter);
       try {
-        final response =
-            await relayer.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
-          _testAuthEntry(),
-        ]);
+        final response = await relayer.send(
+          _testHostFunction(),
+          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+        );
         expect(response.success, isTrue);
         expect(response.transactionId, 'tx-100');
         expect(response.hash, 'hash-100');
@@ -440,18 +457,17 @@ void main() {
       }
     });
 
-    test('testResponseParsing_withoutDataWrapper_usesTopLevelFields',
-        () async {
+    test('testResponseParsing_withoutDataWrapper_usesTopLevelFields', () async {
       final adapter = MockDioAdapter.json(
         '{"success": true, "transactionId": "tx-200", '
         '"hash": "hash-200", "status": "SUCCESS"}',
       );
       final relayer = _client(adapter);
       try {
-        final response =
-            await relayer.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
-          _testAuthEntry(),
-        ]);
+        final response = await relayer.send(
+          _testHostFunction(),
+          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+        );
         expect(response.success, isTrue);
         expect(response.transactionId, 'tx-200');
         expect(response.hash, 'hash-200');
@@ -468,10 +484,10 @@ void main() {
       );
       final relayer = _client(adapter);
       try {
-        final response =
-            await relayer.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
-          _testAuthEntry(),
-        ]);
+        final response = await relayer.send(
+          _testHostFunction(),
+          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+        );
         expect(response.success, isFalse);
         expect(response.error, 'specific error message');
       } finally {
@@ -481,16 +497,15 @@ void main() {
 
     test('testResponseParsing_errorFallbackToMessageField', () async {
       final adapter = MockDioAdapter.response(
-        responseBody:
-            '{"success": false, "message": "fallback error message"}',
+        responseBody: '{"success": false, "message": "fallback error message"}',
         statusCode: 400,
       );
       final relayer = _client(adapter);
       try {
-        final response =
-            await relayer.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
-          _testAuthEntry(),
-        ]);
+        final response = await relayer.send(
+          _testHostFunction(),
+          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+        );
         expect(response.success, isFalse);
         expect(response.error, 'fallback error message');
       } finally {
@@ -508,10 +523,10 @@ void main() {
       );
       final relayer = _client(adapter);
       try {
-        final response =
-            await relayer.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
-          _testAuthEntry(),
-        ]);
+        final response = await relayer.send(
+          _testHostFunction(),
+          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+        );
         expect(response.success, isFalse);
         expect(response.errorCode, 'SIMULATION_FAILED');
       } finally {
@@ -527,10 +542,10 @@ void main() {
       );
       final relayer = _client(adapter);
       try {
-        final response =
-            await relayer.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
-          _testAuthEntry(),
-        ]);
+        final response = await relayer.send(
+          _testHostFunction(),
+          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+        );
         expect(response.success, isFalse);
         expect(response.errorCode, 'UNAUTHORIZED');
       } finally {
@@ -546,10 +561,10 @@ void main() {
       );
       final relayer = _client(adapter);
       try {
-        final response =
-            await relayer.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
-          _testAuthEntry(),
-        ]);
+        final response = await relayer.send(
+          _testHostFunction(),
+          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+        );
         expect(response.success, isFalse);
         expect(response.errorCode, 'ONCHAIN_FAILED');
       } finally {
@@ -564,10 +579,10 @@ void main() {
       );
       final relayer = _client(adapter);
       try {
-        final response =
-            await relayer.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
-          _testAuthEntry(),
-        ]);
+        final response = await relayer.send(
+          _testHostFunction(),
+          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+        );
         expect(response.success, isFalse);
         expect(response.error, 'something went wrong');
         expect(response.errorCode, isNull);
@@ -576,53 +591,64 @@ void main() {
       }
     });
 
-    test('testExtractErrorCode_topLevelCodeWinsOverErrorCodeAndNestedData',
-        () async {
-      final adapter = MockDioAdapter.response(
-        responseBody:
-            '{"success": false, "error": "failed", "code": "A", '
-            '"errorCode": "B", "data": {"code": "C"}}',
-        statusCode: 400,
-      );
-      final relayer = _client(adapter);
-      try {
-        final response = await relayer.send(
-          _testHostFunction(),
-          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+    test(
+      'testExtractErrorCode_topLevelCodeWinsOverErrorCodeAndNestedData',
+      () async {
+        final adapter = MockDioAdapter.response(
+          responseBody:
+              '{"success": false, "error": "failed", "code": "A", '
+              '"errorCode": "B", "data": {"code": "C"}}',
+          statusCode: 400,
         );
-        expect(response.success, isFalse);
-        expect(response.errorCode, 'A',
+        final relayer = _client(adapter);
+        try {
+          final response = await relayer.send(
+            _testHostFunction(),
+            <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+          );
+          expect(response.success, isFalse);
+          expect(
+            response.errorCode,
+            'A',
             reason:
                 'Top-level `code` must take precedence over `errorCode` and '
-                'nested `data.code`');
-      } finally {
-        await relayer.close();
-      }
-    });
+                'nested `data.code`',
+          );
+        } finally {
+          await relayer.close();
+        }
+      },
+    );
   });
 
   group('OZRelayerClient - status code fallback', () {
-    test('testErrorResponse_statusCodeFallback_whenNoErrorOrMessageField',
-        () async {
-      final adapter = MockDioAdapter.response(
-        responseBody: '{"success": false}',
-        statusCode: 502,
-      );
-      final relayer = _client(adapter);
-      try {
-        final response =
-            await relayer.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
-          _testAuthEntry(),
-        ]);
-        expect(response.success, isFalse);
-        expect(response.error, isNotNull);
-        expect(response.error!.contains('502'), isTrue,
-            reason: 'Error message must contain the HTTP status code when '
-                'no error/message field is present');
-      } finally {
-        await relayer.close();
-      }
-    });
+    test(
+      'testErrorResponse_statusCodeFallback_whenNoErrorOrMessageField',
+      () async {
+        final adapter = MockDioAdapter.response(
+          responseBody: '{"success": false}',
+          statusCode: 502,
+        );
+        final relayer = _client(adapter);
+        try {
+          final response = await relayer.send(
+            _testHostFunction(),
+            <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+          );
+          expect(response.success, isFalse);
+          expect(response.error, isNotNull);
+          expect(
+            response.error!.contains('502'),
+            isTrue,
+            reason:
+                'Error message must contain the HTTP status code when '
+                'no error/message field is present',
+          );
+        } finally {
+          await relayer.close();
+        }
+      },
+    );
   });
 
   group('OZRelayerClient - close', () {
@@ -652,8 +678,11 @@ void main() {
         OZRelayerErrorCodes.timeout,
       ];
       for (final code in codes) {
-        expect(code.trim().isNotEmpty, isTrue,
-            reason: 'Error code must not be blank: "$code"');
+        expect(
+          code.trim().isNotEmpty,
+          isTrue,
+          reason: 'Error code must not be blank: "$code"',
+        );
       }
     });
 
@@ -727,9 +756,13 @@ void main() {
           },
         },
       );
-      expect(a == b, isFalse,
-          reason: 'A nested-value difference in details must make '
-              'OZRelayerResponse instances unequal');
+      expect(
+        a == b,
+        isFalse,
+        reason:
+            'A nested-value difference in details must make '
+            'OZRelayerResponse instances unequal',
+      );
     });
   });
 
@@ -738,20 +771,27 @@ void main() {
       final mockDio = dio.Dio();
       final adapter = MockDioAdapter.json('{"success": true}');
       mockDio.httpClientAdapter = adapter;
-      final injected =
-          OZRelayerClient.withDio('https://relayer.example.com', mockDio);
+      final injected = OZRelayerClient.withDio(
+        'https://relayer.example.com',
+        mockDio,
+      );
       try {
-        await injected.send(
-          _testHostFunction(),
-          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
-        );
+        await injected.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
+          _testAuthEntry(),
+        ]);
       } finally {
         await injected.close();
       }
-      expect(adapter.capturedFollowRedirects, isFalse,
-          reason: 'Every emitted request must carry followRedirects=false');
-      expect(adapter.capturedMaxRedirects, 0,
-          reason: 'Every emitted request must carry maxRedirects=0');
+      expect(
+        adapter.capturedFollowRedirects,
+        isFalse,
+        reason: 'Every emitted request must carry followRedirects=false',
+      );
+      expect(
+        adapter.capturedMaxRedirects,
+        0,
+        reason: 'Every emitted request must carry maxRedirects=0',
+      );
     });
 
     test('testWithDio_doesNotMutateInjectedClientOptions', () async {
@@ -764,26 +804,32 @@ void main() {
       // constructor must not overwrite this caller-owned configuration.
       mockDio.options.followRedirects = true;
       mockDio.options.maxRedirects = 7;
-      final injected =
-          OZRelayerClient.withDio('https://relayer.example.com', mockDio);
+      final injected = OZRelayerClient.withDio(
+        'https://relayer.example.com',
+        mockDio,
+      );
       try {
-        await injected.send(
-          _testHostFunction(),
-          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
-        );
+        await injected.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
+          _testAuthEntry(),
+        ]);
       } finally {
         await injected.close();
       }
-      expect(mockDio.options.followRedirects, isTrue,
-          reason:
-              'withDio must not mutate the injected client default options');
-      expect(mockDio.options.maxRedirects, 7,
-          reason:
-              'withDio must not mutate the injected client default options');
+      expect(
+        mockDio.options.followRedirects,
+        isTrue,
+        reason: 'withDio must not mutate the injected client default options',
+      );
+      expect(
+        mockDio.options.maxRedirects,
+        7,
+        reason: 'withDio must not mutate the injected client default options',
+      );
     });
 
     test('testSend_oversizedResponseBody_returnsErrorResponse', () async {
-      final body = '{"success": true, "data": '
+      final body =
+          '{"success": true, "data": '
           '"${'x' * (OZConstants.maxRelayerResponseBytes + 16)}"}';
       final adapter = MockDioAdapter.response(responseBody: body);
       final relayer = _client(adapter);
@@ -794,8 +840,11 @@ void main() {
         );
         expect(response.success, isFalse);
         expect(response.error, isNotNull);
-        expect(response.error!.contains('exceeds maximum size'), isTrue,
-            reason: 'Oversized response must surface as an error response');
+        expect(
+          response.error!.contains('exceeds maximum size'),
+          isTrue,
+          reason: 'Oversized response must surface as an error response',
+        );
       } finally {
         await relayer.close();
       }
@@ -842,10 +891,13 @@ void main() {
         );
         expect(response.success, isFalse);
         expect(response.error, isNotNull);
-        expect(response.error!.contains('Unexpected Content-Type'), isTrue,
-            reason:
-                'A non-application/json response must surface as an explicit '
-                'Content-Type error');
+        expect(
+          response.error!.contains('Unexpected Content-Type'),
+          isTrue,
+          reason:
+              'A non-application/json response must surface as an explicit '
+              'Content-Type error',
+        );
         expect(response.error!.contains('text/html'), isTrue);
       } finally {
         await relayer.close();
@@ -855,52 +907,60 @@ void main() {
 
   group('OZRelayerClient - JSON body parsing', () {
     test(
-        'testSend_validJsonContentTypeWithMalformedBody_returnsFailedToParse',
-        () async {
-      final adapter = MockDioAdapter.response(
-        responseBody: 'not-json-at-all',
-        contentType: 'application/json',
-      );
-      final relayer = _client(adapter);
-      try {
-        final response = await relayer.send(
-          _testHostFunction(),
-          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+      'testSend_validJsonContentTypeWithMalformedBody_returnsFailedToParse',
+      () async {
+        final adapter = MockDioAdapter.response(
+          responseBody: 'not-json-at-all',
+          contentType: 'application/json',
         );
-        expect(response.success, isFalse);
-        expect(response.error, isNotNull);
-        expect(response.error!.contains('Failed to parse'), isTrue,
+        final relayer = _client(adapter);
+        try {
+          final response = await relayer.send(
+            _testHostFunction(),
+            <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+          );
+          expect(response.success, isFalse);
+          expect(response.error, isNotNull);
+          expect(
+            response.error!.contains('Failed to parse'),
+            isTrue,
             reason:
                 'A malformed JSON body under application/json must surface '
-                'as a Failed-to-parse error');
-      } finally {
-        await relayer.close();
-      }
-    });
+                'as a Failed-to-parse error',
+          );
+        } finally {
+          await relayer.close();
+        }
+      },
+    );
 
     test(
-        'testSend_validJsonContentTypeWithNonObjectBody_returnsFailedToParse',
-        () async {
-      final adapter = MockDioAdapter.response(
-        responseBody: '[1,2,3]',
-        contentType: 'application/json',
-      );
-      final relayer = _client(adapter);
-      try {
-        final response = await relayer.send(
-          _testHostFunction(),
-          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+      'testSend_validJsonContentTypeWithNonObjectBody_returnsFailedToParse',
+      () async {
+        final adapter = MockDioAdapter.response(
+          responseBody: '[1,2,3]',
+          contentType: 'application/json',
         );
-        expect(response.success, isFalse);
-        expect(response.error, isNotNull);
-        expect(response.error!.contains('Failed to parse'), isTrue,
+        final relayer = _client(adapter);
+        try {
+          final response = await relayer.send(
+            _testHostFunction(),
+            <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
+          );
+          expect(response.success, isFalse);
+          expect(response.error, isNotNull);
+          expect(
+            response.error!.contains('Failed to parse'),
+            isTrue,
             reason:
                 'A non-object JSON body must surface as a Failed-to-parse '
-                'error rather than as a typed-cast crash');
-      } finally {
-        await relayer.close();
-      }
-    });
+                'error rather than as a typed-cast crash',
+          );
+        } finally {
+          await relayer.close();
+        }
+      },
+    );
   });
 
   group('OZRelayerClient - timeout-variant mapping', () {
@@ -923,9 +983,13 @@ void main() {
             <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
           );
           expect(response.success, isFalse);
-          expect(response.errorCode, OZRelayerErrorCodes.timeout,
-              reason: 'All three DioExceptionType timeout variants must map to '
-                  'the TIMEOUT error code');
+          expect(
+            response.errorCode,
+            OZRelayerErrorCodes.timeout,
+            reason:
+                'All three DioExceptionType timeout variants must map to '
+                'the TIMEOUT error code',
+          );
           expect(response.error!.contains('timed out'), isTrue);
         } finally {
           await relayer.close();
@@ -941,23 +1005,36 @@ void main() {
       );
       final relayer = _client(adapter);
       try {
-        await relayer.send(
-          _testHostFunction(),
-          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
-        );
+        await relayer.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
+          _testAuthEntry(),
+        ]);
         final headers = adapter.capturedHeaders;
-        final nameHeader = headers[OZConstants.clientNameHeader] ??
+        final nameHeader =
+            headers[OZConstants.clientNameHeader] ??
             headers[OZConstants.clientNameHeader.toLowerCase()];
-        final versionHeader = headers[OZConstants.clientVersionHeader] ??
+        final versionHeader =
+            headers[OZConstants.clientVersionHeader] ??
             headers[OZConstants.clientVersionHeader.toLowerCase()];
-        expect(nameHeader, isNotNull,
-            reason: 'X-Client-Name header must be present on every request');
-        expect(nameHeader!.first.isNotEmpty, isTrue,
-            reason: 'X-Client-Name header value must be non-empty');
-        expect(versionHeader, isNotNull,
-            reason: 'X-Client-Version header must be present on every request');
-        expect(versionHeader!.first.isNotEmpty, isTrue,
-            reason: 'X-Client-Version header value must be non-empty');
+        expect(
+          nameHeader,
+          isNotNull,
+          reason: 'X-Client-Name header must be present on every request',
+        );
+        expect(
+          nameHeader!.first.isNotEmpty,
+          isTrue,
+          reason: 'X-Client-Name header value must be non-empty',
+        );
+        expect(
+          versionHeader,
+          isNotNull,
+          reason: 'X-Client-Version header must be present on every request',
+        );
+        expect(
+          versionHeader!.first.isNotEmpty,
+          isTrue,
+          reason: 'X-Client-Version header value must be non-empty',
+        );
       } finally {
         await relayer.close();
       }
@@ -974,15 +1051,17 @@ void main() {
         mockDio,
       );
       try {
-        await relayer.send(
-          _testHostFunction(),
-          <XdrSorobanAuthorizationEntry>[_testAuthEntry()],
-        );
+        await relayer.send(_testHostFunction(), <XdrSorobanAuthorizationEntry>[
+          _testAuthEntry(),
+        ]);
         expect(adapter.capturedUrl, isNotNull);
-        expect(adapter.capturedUrl, 'https://relayer.example.com',
-            reason:
-                'Captured URL must be the trailing-slash-stripped canonical '
-                'form (no path, no trailing slashes)');
+        expect(
+          adapter.capturedUrl,
+          'https://relayer.example.com',
+          reason:
+              'Captured URL must be the trailing-slash-stripped canonical '
+              'form (no path, no trailing slashes)',
+        );
       } finally {
         await relayer.close();
       }
@@ -1007,8 +1086,11 @@ void main() {
         final response = await future;
         expect(response.success, isFalse);
         expect(response.error, 'Request cancelled');
-        expect(response.errorCode, isNull,
-            reason: 'Cancellation does not emit a distinct error code');
+        expect(
+          response.errorCode,
+          isNull,
+          reason: 'Cancellation does not emit a distinct error code',
+        );
       } finally {
         await relayer.close();
       }
@@ -1030,8 +1112,11 @@ void main() {
         final response = await future;
         expect(response.success, isFalse);
         expect(response.error, 'Request cancelled');
-        expect(response.errorCode, isNull,
-            reason: 'Cancellation does not emit a distinct error code');
+        expect(
+          response.errorCode,
+          isNull,
+          reason: 'Cancellation does not emit a distinct error code',
+        );
       } finally {
         await relayer.close();
       }

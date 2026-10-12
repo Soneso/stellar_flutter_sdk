@@ -79,35 +79,41 @@ class LiquidityPoolResponse extends Response {
   /// - [reserves] Current balances of each asset in the pool
   /// - [pagingToken] Cursor for pagination
   /// - [links] Hypermedia links to related resources
-  LiquidityPoolResponse(
-      {required this.poolId,
-      required this.fee,
-      required this.type,
-      required this.totalTrustlines,
-      required this.totalShares,
-      required this.reserves,
-      required this.pagingToken,
-      required this.links});
+  LiquidityPoolResponse({
+    required this.poolId,
+    required this.fee,
+    required this.type,
+    required this.totalTrustlines,
+    required this.totalShares,
+    required this.reserves,
+    required this.pagingToken,
+    required this.links,
+  });
 
   /// Creates a liquidity pool response from Horizon API JSON.
   factory LiquidityPoolResponse.fromJson(Map<String, dynamic> json) =>
       LiquidityPoolResponse(
-          poolId: json['id'],
-          fee: json['fee_bp'] == null
-              ? throw Exception("fee is null in horizon response")
-              : convertInt(json['fee_bp'])!,
-          type: json['type'],
-          totalTrustlines: json['total_trustlines'],
-          totalShares: json['total_shares'],
-          reserves: json['reserves'] != null
-              ? List<ReserveResponse>.from(json['reserves'].map((e) => e == null
-                  ? throw Exception("reserve null in horizon response")
-                  : ReserveResponse.fromJson(e)))
-              : throw Exception("reserves are null in horizon response"),
-          pagingToken: json['paging_token'],
-          links: json['_links'] == null
-              ? throw Exception("links are null in horizon response")
-              : LiquidityPoolResponseLinks.fromJson(json['_links']));
+        poolId: json['id'],
+        fee: json['fee_bp'] == null
+            ? throw Exception("fee is null in horizon response")
+            : convertInt(json['fee_bp'])!,
+        type: json['type'],
+        totalTrustlines: json['total_trustlines'],
+        totalShares: json['total_shares'],
+        reserves: json['reserves'] != null
+            ? List<ReserveResponse>.from(
+                json['reserves'].map(
+                  (e) => e == null
+                      ? throw Exception("reserve null in horizon response")
+                      : ReserveResponse.fromJson(e),
+                ),
+              )
+            : throw Exception("reserves are null in horizon response"),
+        pagingToken: json['paging_token'],
+        links: json['_links'] == null
+            ? throw Exception("links are null in horizon response")
+            : LiquidityPoolResponseLinks.fromJson(json['_links']),
+      );
 }
 
 /// Represents one asset reserve in a liquidity pool.
@@ -143,7 +149,8 @@ class ReserveResponse {
     Asset? asset = Asset.createFromCanonicalForm(json['asset']);
     if (asset == null) {
       throw Exception(
-          "not a valid asset in horizon response: " + json['asset']);
+        "not a valid asset in horizon response: " + json['asset'],
+      );
     }
     return ReserveResponse(amount, asset);
   }
@@ -180,10 +187,11 @@ class LiquidityPoolResponseLinks {
   /// - [self] Link to this liquidity pool's details
   /// - [transactions] Link to transactions affecting this pool
   /// - [operations] Link to operations involving this pool
-  LiquidityPoolResponseLinks(
-      {required this.self,
-      required this.transactions,
-      required this.operations});
+  LiquidityPoolResponseLinks({
+    required this.self,
+    required this.transactions,
+    required this.operations,
+  });
 
   /// Creates liquidity pool response links from Horizon API JSON.
   factory LiquidityPoolResponseLinks.fromJson(Map<String, dynamic> json) =>
@@ -226,14 +234,19 @@ class LiquidityPoolTradesResponse extends Response {
   /// Creates a liquidity pool trades response from Horizon API JSON.
   factory LiquidityPoolTradesResponse.fromJson(Map<String, dynamic> json) =>
       LiquidityPoolTradesResponse(
-          records: json["_embedded"]['records'] != null
-              ? List<TradeResponse>.from(json["_embedded"]['records'].map((e) =>
-                  ResponseConverter.fromJson<TradeResponse>(e)
-                      as TradeResponse))
-              : throw Exception("trade records are null in horizon response"),
-          links: json['_links'] == null
-              ? throw Exception("links are null in horizon response")
-              : LiquidityPoolTradesResponseLinks.fromJson(json['_links']));
+        records: json["_embedded"]['records'] != null
+            ? List<TradeResponse>.from(
+                json["_embedded"]['records'].map(
+                  (e) =>
+                      ResponseConverter.fromJson<TradeResponse>(e)
+                          as TradeResponse,
+                ),
+              )
+            : throw Exception("trade records are null in horizon response"),
+        links: json['_links'] == null
+            ? throw Exception("links are null in horizon response")
+            : LiquidityPoolTradesResponseLinks.fromJson(json['_links']),
+      );
 }
 
 /// HAL links for navigating liquidity pool trades response.
@@ -259,9 +272,10 @@ class LiquidityPoolTradesResponseLinks {
 
   /// Creates liquidity pool trades response links from Horizon API JSON.
   factory LiquidityPoolTradesResponseLinks.fromJson(
-          Map<String, dynamic> json) =>
-      LiquidityPoolTradesResponseLinks(
-          self: json['self'] == null
-              ? throw Exception("self link is null in horizon response")
-              : Link.fromJson(json['self']));
+    Map<String, dynamic> json,
+  ) => LiquidityPoolTradesResponseLinks(
+    self: json['self'] == null
+        ? throw Exception("self link is null in horizon response")
+        : Link.fromJson(json['self']),
+  );
 }

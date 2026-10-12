@@ -69,11 +69,11 @@ final class OZSelectedSignerPasskey extends OZSelectedSigner {
 
   @override
   int get hashCode => Object.hash(
-        credentialId,
-        credentialIdBytes == null ? 0 : Object.hashAll(credentialIdBytes!),
-        keyData == null ? 0 : Object.hashAll(keyData!),
-        transports == null ? 0 : Object.hashAll(transports!),
-      );
+    credentialId,
+    credentialIdBytes == null ? 0 : Object.hashAll(credentialIdBytes!),
+    keyData == null ? 0 : Object.hashAll(keyData!),
+    transports == null ? 0 : Object.hashAll(transports!),
+  );
 }
 
 /// An Ed25519 external signer identified by the verifier contract address and
@@ -116,10 +116,7 @@ final class OZSelectedSignerEd25519 extends OZSelectedSigner {
   }
 
   @override
-  int get hashCode => Object.hash(
-        verifierAddress,
-        Object.hashAll(publicKey),
-      );
+  int get hashCode => Object.hash(verifierAddress, Object.hashAll(publicKey));
 }
 
 /// A delegated wallet signer identified by its Stellar G-address.

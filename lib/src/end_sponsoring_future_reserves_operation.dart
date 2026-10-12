@@ -70,8 +70,9 @@ class EndSponsoringFutureReservesOperation extends Operation {
   /// Returns: XDR OperationBody for this end sponsoring future reserves operation.
   @override
   XdrOperationBody toOperationBody() {
-    XdrOperationBody body =
-        XdrOperationBody(XdrOperationType.END_SPONSORING_FUTURE_RESERVES);
+    XdrOperationBody body = XdrOperationBody(
+      XdrOperationType.END_SPONSORING_FUTURE_RESERVES,
+    );
     return body;
   }
 

@@ -19,39 +19,57 @@ void main() {
     test('execute returns Page<LiquidityPoolResponse>', () async {
       final mockResponse = {
         '_links': {
-          'self': {'href': 'https://horizon-testnet.stellar.org/liquidity_pools?limit=10'},
-          'next': {'href': 'https://horizon-testnet.stellar.org/liquidity_pools?cursor=next'},
-          'prev': {'href': 'https://horizon-testnet.stellar.org/liquidity_pools?cursor=prev'}
+          'self': {
+            'href':
+                'https://horizon-testnet.stellar.org/liquidity_pools?limit=10',
+          },
+          'next': {
+            'href':
+                'https://horizon-testnet.stellar.org/liquidity_pools?cursor=next',
+          },
+          'prev': {
+            'href':
+                'https://horizon-testnet.stellar.org/liquidity_pools?cursor=prev',
+          },
         },
         '_embedded': {
           'records': [
             {
               '_links': {
-                'self': {'href': 'https://horizon-testnet.stellar.org/liquidity_pools/abc123'},
-                'operations': {'href': 'https://horizon-testnet.stellar.org/liquidity_pools/abc123/operations'},
-                'transactions': {'href': 'https://horizon-testnet.stellar.org/liquidity_pools/abc123/transactions'}
+                'self': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/liquidity_pools/abc123',
+                },
+                'operations': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/liquidity_pools/abc123/operations',
+                },
+                'transactions': {
+                  'href':
+                      'https://horizon-testnet.stellar.org/liquidity_pools/abc123/transactions',
+                },
               },
-              'id': 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
-              'paging_token': 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
+              'id':
+                  'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
+              'paging_token':
+                  'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
               'fee_bp': 30,
               'type': 'constant_product',
               'total_trustlines': '100',
               'total_shares': '1000.0000000',
               'reserves': [
+                {'asset': 'native', 'amount': '500.0000000'},
                 {
-                  'asset': 'native',
-                  'amount': '500.0000000'
+                  'asset':
+                      'USD:GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
+                  'amount': '500.0000000',
                 },
-                {
-                  'asset': 'USD:GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
-                  'amount': '500.0000000'
-                }
               ],
               'last_modified_ledger': 12345,
-              'last_modified_time': '2024-01-01T00:00:00Z'
-            }
-          ]
-        }
+              'last_modified_time': '2024-01-01T00:00:00Z',
+            },
+          ],
+        },
       };
 
       final mockClient = MockClient((request) async {
@@ -63,7 +81,12 @@ void main() {
 
       expect(page.records.length, equals(1));
       expect(page.records[0], isA<LiquidityPoolResponse>());
-      expect(page.records[0].poolId, equals('dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7'));
+      expect(
+        page.records[0].poolId,
+        equals(
+          'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7',
+        ),
+      );
       expect(page.links, isNotNull);
     });
 
@@ -72,7 +95,8 @@ void main() {
         return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      final accountId = 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+      final accountId =
+          'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
       final builder = LiquidityPoolsRequestBuilder(mockClient, serverUri);
       builder.forAccount(accountId);
       final uri = builder.buildUri();
@@ -85,7 +109,8 @@ void main() {
         return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      final issuerId = 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5';
+      final issuerId =
+          'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5';
       final assetA = Asset.NATIVE;
       final assetB = AssetTypeCreditAlphaNum4('USD', issuerId);
       final builder = LiquidityPoolsRequestBuilder(mockClient, serverUri);
@@ -103,7 +128,8 @@ void main() {
         return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      final issuerId = 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5';
+      final issuerId =
+          'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5';
       final assetA = AssetTypeCreditAlphaNum4('USD', issuerId);
       final assetB = AssetTypeCreditAlphaNum4('EUR', issuerId);
       final builder = LiquidityPoolsRequestBuilder(mockClient, serverUri);
@@ -120,7 +146,8 @@ void main() {
         return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      final accountId = 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+      final accountId =
+          'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
       final builder = LiquidityPoolsRequestBuilder(mockClient, serverUri);
       builder
           .forAccount(accountId)
@@ -153,7 +180,8 @@ void main() {
         return http.Response('{"_embedded": {"records": []}}', 200);
       });
 
-      final accountId = 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+      final accountId =
+          'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
       final builder = LiquidityPoolsRequestBuilder(mockClient, serverUri);
       final result1 = builder.forAccount(accountId);
       final result2 = result1.cursor('test');
@@ -173,28 +201,35 @@ void main() {
     test('forPoolId converts L strkey id to hex', () {
       final poolHexId =
           '0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9';
-      final strKeyId =
-          StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
+      final strKeyId = StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolHexId));
 
-      final builder =
-          LiquidityPoolTradesRequestBuilder(http.Client(), serverUri).forPoolId(strKeyId);
+      final builder = LiquidityPoolTradesRequestBuilder(
+        http.Client(),
+        serverUri,
+      ).forPoolId(strKeyId);
 
-      expect(builder.buildUri().path,
-          contains('/liquidity_pools/$poolHexId/trades'));
+      expect(
+        builder.buildUri().path,
+        contains('/liquidity_pools/$poolHexId/trades'),
+      );
     });
 
     test('forPoolId throws on invalid L-prefixed id', () {
       expect(
-        () => LiquidityPoolTradesRequestBuilder(http.Client(), serverUri)
-            .forPoolId('LINVALIDPOOLID'),
+        () => LiquidityPoolTradesRequestBuilder(
+          http.Client(),
+          serverUri,
+        ).forPoolId('LINVALIDPOOLID'),
         throwsArgumentError,
       );
     });
 
     test('LiquidityPoolsRequestBuilder.forPoolId throws on invalid L id', () {
       expect(
-        () => LiquidityPoolsRequestBuilder(http.Client(), serverUri)
-            .forPoolId('LINVALIDPOOLID'),
+        () => LiquidityPoolsRequestBuilder(
+          http.Client(),
+          serverUri,
+        ).forPoolId('LINVALIDPOOLID'),
         throwsArgumentError,
       );
     });
@@ -209,7 +244,7 @@ void main() {
       '_links': {
         'self': {'href': 'x'},
         'operations': {'href': 'x'},
-        'transactions': {'href': 'x'}
+        'transactions': {'href': 'x'},
       },
       'id': poolHexId,
       'paging_token': poolHexId,
@@ -219,10 +254,10 @@ void main() {
       'total_shares': '1000.0000000',
       'reserves': [
         {'asset': 'native', 'amount': '500.0000000'},
-        {'asset': 'USD:$issuer', 'amount': '400.0000000'}
+        {'asset': 'USD:$issuer', 'amount': '400.0000000'},
       ],
       'last_modified_ledger': 12345,
-      'last_modified_time': '2024-01-01T00:00:00Z'
+      'last_modified_time': '2024-01-01T00:00:00Z',
     };
 
     test('forPoolId fetches a single liquidity pool', () async {
@@ -247,13 +282,12 @@ void main() {
     final poolHexId =
         'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
     final issuer = 'GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5';
-    final counter =
-        'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
+    final counter = 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B';
     final tradeRecord = {
       '_links': {
         'base': {'href': 'x'},
         'counter': {'href': 'x'},
-        'operation': {'href': 'x'}
+        'operation': {'href': 'x'},
       },
       'id': '123456789-0',
       'paging_token': '123456789-0',
@@ -271,7 +305,7 @@ void main() {
       'counter_asset_code': 'USD',
       'counter_asset_issuer': issuer,
       'liquidity_pool_fee_bp': 30,
-      'price': {'n': 1, 'd': 2}
+      'price': {'n': 1, 'd': 2},
     };
 
     test('liquidityPoolTrades fetches a single trade for a uri', () async {
@@ -279,10 +313,10 @@ void main() {
         return http.Response(json.encode(tradeRecord), 200);
       });
 
-      final builder =
-          LiquidityPoolTradesRequestBuilder(mockClient, serverUri);
+      final builder = LiquidityPoolTradesRequestBuilder(mockClient, serverUri);
       final trade = await builder.liquidityPoolTrades(
-          Uri.parse('https://horizon-testnet.stellar.org/trades/1'));
+        Uri.parse('https://horizon-testnet.stellar.org/trades/1'),
+      );
 
       expect(trade, isA<TradeResponse>());
       expect(trade.tradeType, equals('liquidity_pool'));
@@ -295,21 +329,22 @@ void main() {
         '_links': {
           'self': {'href': 'x'},
           'next': {'href': 'x'},
-          'prev': {'href': 'x'}
+          'prev': {'href': 'x'},
         },
         '_embedded': {
-          'records': [tradeRecord]
-        }
+          'records': [tradeRecord],
+        },
       };
 
       final mockClient = MockClient((request) async {
-        expect(request.url.path,
-            contains('/liquidity_pools/$poolHexId/trades'));
+        expect(
+          request.url.path,
+          contains('/liquidity_pools/$poolHexId/trades'),
+        );
         return http.Response(json.encode(page), 200);
       });
 
-      final builder =
-          LiquidityPoolTradesRequestBuilder(mockClient, serverUri);
+      final builder = LiquidityPoolTradesRequestBuilder(mockClient, serverUri);
       final result = await builder.forPoolId(poolHexId).limit(10).execute();
 
       expect(result.records.length, equals(1));
@@ -317,5 +352,4 @@ void main() {
       expect(result.records.first.baseAmount, equals('100.0000000'));
     });
   });
-
 }

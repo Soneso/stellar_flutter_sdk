@@ -23,7 +23,7 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
   /// - [httpClient] HTTP client for making requests to Horizon
   /// - [serverURI] Base URI of the Horizon server
   StrictReceivePathsRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["paths", "strict-receive"]);
+    : super(httpClient, serverURI, ["paths", "strict-receive"]);
 
   /// Sets the source account. For this search, Horizon loads a list of assets available to the sender (based on source_account or source_assets) and displays the possible paths from the different source assets to the destination asset.
   /// See: [Stellar developer docs](https://developers.stellar.org)
@@ -58,10 +58,12 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
     queryParameters.addAll({"destination_asset_type": asset.type});
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
-      queryParameters
-          .addAll({"destination_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"destination_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters.addAll({
+        "destination_asset_code": creditAlphaNumAsset.code,
+      });
+      queryParameters.addAll({
+        "destination_asset_issuer": creditAlphaNumAsset.issuerId,
+      });
     }
     return this;
   }
@@ -69,14 +71,18 @@ class StrictReceivePathsRequestBuilder extends RequestBuilder {
   /// Executes the HTTP request to fetch strict receive payment paths from Horizon.
   /// Returns a page of path responses for navigation.
   static Future<Page<PathResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
+    http.Client httpClient,
+    Uri uri,
+  ) async {
     return RequestBuilder.requestExecute<Page<PathResponse>>(httpClient, uri);
   }
 
   /// Builds and executes the request, returning strict receive payment paths.
   Future<Page<PathResponse>> execute() {
     return StrictReceivePathsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+      this.httpClient,
+      this.buildUri(),
+    );
   }
 }
 
@@ -93,14 +99,15 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
   /// - [httpClient] HTTP client for making requests to Horizon
   /// - [serverURI] Base URI of the Horizon server
   StrictSendPathsRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["paths", "strict-send"]);
+    : super(httpClient, serverURI, ["paths", "strict-send"]);
 
   /// Sets the destination account.For this search, Horizon loads a list of assets that the recipient can recieve (based on destination_account or destination_assets) and displays the possible paths from the different source assets to the destination asset. Only paths that satisfy the source_amount are returned.
   /// See: [Stellar developer docs](https://developers.stellar.org)
   StrictSendPathsRequestBuilder destinationAccount(String accountId) {
     if (queryParameters.containsKey("destination_assets")) {
       throw Exception(
-          "cannot set both destination_assets and destination_account");
+        "cannot set both destination_assets and destination_account",
+      );
     }
     queryParameters.addAll({"destination_account": accountId});
     return this;
@@ -109,13 +116,16 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
   /// Sets the destination assets. For this search, Horizon loads a list of assets that the recipient can recieve (based on destination_account or destination_assets) and displays the possible paths from the different source assets to the destination asset. Only paths that satisfy the source_amount are returned.
   /// See: [Stellar developer docs](https://developers.stellar.org)
   StrictSendPathsRequestBuilder destinationAssets(
-      List<Asset> destinationAssets) {
+    List<Asset> destinationAssets,
+  ) {
     if (queryParameters.containsKey("destination_account")) {
       throw Exception(
-          "cannot set both destination_assets and destination_account");
+        "cannot set both destination_assets and destination_account",
+      );
     }
-    queryParameters
-        .addAll({"destination_assets": encodeAssets(destinationAssets)});
+    queryParameters.addAll({
+      "destination_assets": encodeAssets(destinationAssets),
+    });
     return this;
   }
 
@@ -133,8 +143,9 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"source_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"source_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters.addAll({
+        "source_asset_issuer": creditAlphaNumAsset.issuerId,
+      });
     }
     return this;
   }
@@ -142,13 +153,17 @@ class StrictSendPathsRequestBuilder extends RequestBuilder {
   /// Executes the HTTP request to fetch strict send payment paths from Horizon.
   /// Returns a page of path responses for navigation.
   static Future<Page<PathResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
+    http.Client httpClient,
+    Uri uri,
+  ) async {
     return RequestBuilder.requestExecute<Page<PathResponse>>(httpClient, uri);
   }
 
   /// Builds and executes the request, returning strict send payment paths.
   Future<Page<PathResponse>> execute() {
     return StrictSendPathsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+      this.httpClient,
+      this.buildUri(),
+    );
   }
 }

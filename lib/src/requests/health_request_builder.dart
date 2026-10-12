@@ -15,7 +15,7 @@ class HealthRequestBuilder extends RequestBuilder {
   /// [httpClient] - The HTTP client to use for requests.
   /// [serverURI] - The base URI of the Horizon server.
   HealthRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["health"]);
+    : super(httpClient, serverURI, ["health"]);
 
   /// Requests health status from the Horizon server.
   /// Returns a [Future] that resolves to a [HealthResponse] containing the server's health status.
@@ -43,6 +43,8 @@ class HealthRequestBuilder extends RequestBuilder {
   /// ```
   Future<HealthResponse> execute() async {
     return RequestBuilder.requestExecute<HealthResponse>(
-        httpClient, this.buildUri());
+      httpClient,
+      this.buildUri(),
+    );
   }
 }

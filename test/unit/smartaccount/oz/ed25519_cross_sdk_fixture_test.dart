@@ -101,7 +101,8 @@ Future<void> _assertRow(
 
   final expectedPreimageB64 = outputs['authPreimageXdrBase64'] as String;
   final expectedDigestHex = outputs['authDigestSha256Hex'] as String;
-  final expectedPayloadB64 = outputs['authPayloadSignatureScvalXdrBase64'] as String;
+  final expectedPayloadB64 =
+      outputs['authPayloadSignatureScvalXdrBase64'] as String;
 
   final publicKeyHex = signerInfo['publicKeyHex'] as String;
 
@@ -138,9 +139,9 @@ Future<void> _assertRow(
     XdrUint32(signatureExpirationLedger),
     invocation,
   );
-  final preimageWrapper =
-      XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION)
-        ..sorobanAuthorization = authPreimage;
+  final preimageWrapper = XdrHashIDPreimage(
+    XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION,
+  )..sorobanAuthorization = authPreimage;
 
   final preimageStream = XdrDataOutputStream();
   XdrHashIDPreimage.encode(preimageStream, preimageWrapper);
@@ -150,8 +151,9 @@ Future<void> _assertRow(
   // Compute the auth digest:
   //   signaturePayload = SHA-256(preimageBytes)
   //   authDigest       = SHA-256(signaturePayload || contextRuleIds.toXDR())
-  final signaturePayload =
-      Uint8List.fromList(crypto.sha256.convert(preimageBytes).bytes);
+  final signaturePayload = Uint8List.fromList(
+    crypto.sha256.convert(preimageBytes).bytes,
+  );
   final authDigest = await OZSmartAccountAuth.buildAuthDigest(
     signaturePayload,
     contextRuleIds,
@@ -202,7 +204,8 @@ Future<void> _assertRow(
   expect(
     preimageB64,
     equals(expectedPreimageB64),
-    reason: 'Row $rowIndex: authPreimageXdrBase64 mismatch.\n'
+    reason:
+        'Row $rowIndex: authPreimageXdrBase64 mismatch.\n'
         '  Actual   : $preimageB64\n'
         '  Expected : $expectedPreimageB64',
   );
@@ -210,7 +213,8 @@ Future<void> _assertRow(
   expect(
     authDigestHex,
     equals(expectedDigestHex),
-    reason: 'Row $rowIndex: authDigestSha256Hex mismatch.\n'
+    reason:
+        'Row $rowIndex: authDigestSha256Hex mismatch.\n'
         '  Actual   : $authDigestHex\n'
         '  Expected : $expectedDigestHex',
   );
@@ -218,7 +222,8 @@ Future<void> _assertRow(
   expect(
     payloadB64,
     equals(expectedPayloadB64),
-    reason: 'Row $rowIndex: authPayloadSignatureScvalXdrBase64 mismatch.\n'
+    reason:
+        'Row $rowIndex: authPayloadSignatureScvalXdrBase64 mismatch.\n'
         '  Actual   : $payloadB64\n'
         '  Expected : $expectedPayloadB64',
   );

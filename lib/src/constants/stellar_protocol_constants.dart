@@ -264,13 +264,15 @@ final class StellarProtocolConstants {
   ///
   /// Consists of Ed25519 public key (32 bytes) + muxed ID (8 bytes) = 40 bytes total.
   /// Defined in CAP-0027.
-  static const int MUXED_ACCOUNT_DECODED_LENGTH = ED25519_PUBLIC_KEY_LENGTH_BYTES + MUXED_ACCOUNT_ID_LENGTH_BYTES;
+  static const int MUXED_ACCOUNT_DECODED_LENGTH =
+      ED25519_PUBLIC_KEY_LENGTH_BYTES + MUXED_ACCOUNT_ID_LENGTH_BYTES;
 
   /// Length of decoded muxed contract data in bytes.
   ///
   /// Consists of the contract ID (32 bytes) + muxed ID (8 bytes) = 40 bytes total.
   /// Defined in CAP-0084.
-  static const int MUXED_CONTRACT_DECODED_LENGTH = SHA256_HASH_LENGTH_BYTES + MUXED_ACCOUNT_ID_LENGTH_BYTES;
+  static const int MUXED_CONTRACT_DECODED_LENGTH =
+      SHA256_HASH_LENGTH_BYTES + MUXED_ACCOUNT_ID_LENGTH_BYTES;
 
   // ============================================================================
   // ASSET CODE LENGTHS

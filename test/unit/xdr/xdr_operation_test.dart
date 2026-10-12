@@ -23,12 +23,17 @@ void main() {
       var decoded = XdrOperation.decode(input);
 
       expect(decoded.sourceAccount, isNull);
-      expect(decoded.body.discriminant.value, equals(XdrOperationType.INFLATION.value));
+      expect(
+        decoded.body.discriminant.value,
+        equals(XdrOperationType.INFLATION.value),
+      );
     });
 
     test('XdrOperation with sourceAccount encode/decode', () {
       var sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
-      sourceAccount.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAA)));
+      sourceAccount.ed25519 = XdrUint256(
+        Uint8List.fromList(List<int>.filled(32, 0xAA)),
+      );
 
       var body = XdrOperationBody(XdrOperationType.INFLATION);
       var original = XdrOperation(sourceAccount, body);
@@ -41,7 +46,10 @@ void main() {
       var decoded = XdrOperation.decode(input);
 
       expect(decoded.sourceAccount, isNotNull);
-      expect(decoded.sourceAccount!.discriminant.value, equals(XdrCryptoKeyType.KEY_TYPE_ED25519.value));
+      expect(
+        decoded.sourceAccount!.discriminant.value,
+        equals(XdrCryptoKeyType.KEY_TYPE_ED25519.value),
+      );
     });
   });
 
@@ -65,7 +73,17 @@ void main() {
 
   group('XdrSetOptionsOp optional fields', () {
     test('XdrSetOptionsOp with all fields null encode/decode', () {
-      var original = XdrSetOptionsOp(null, null, null, null, null, null, null, null, null);
+      var original = XdrSetOptionsOp(
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      );
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSetOptionsOp.encode(output, original);
@@ -87,11 +105,23 @@ void main() {
 
     test('XdrSetOptionsOp with signer encode/decode', () {
       var signerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
-      signerKey.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x55)));
+      signerKey.ed25519 = XdrUint256(
+        Uint8List.fromList(List<int>.filled(32, 0x55)),
+      );
 
       var signer = XdrSigner(signerKey, XdrUint32(10));
 
-      var original = XdrSetOptionsOp(null, null, null, null, null, null, null, null, null);
+      var original = XdrSetOptionsOp(
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      );
       original.signer = signer;
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -106,7 +136,17 @@ void main() {
     });
 
     test('XdrSetOptionsOp with threshold weights set via setters', () {
-      var setOptionsOp = XdrSetOptionsOp(null, null, null, null, null, null, null, null, null);
+      var setOptionsOp = XdrSetOptionsOp(
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      );
       setOptionsOp.masterWeight = XdrUint32(100);
       setOptionsOp.lowThreshold = XdrUint32(10);
       setOptionsOp.medThreshold = XdrUint32(50);
@@ -148,7 +188,9 @@ void main() {
     test('XdrOperationResult opINNER with nested result', () {
       var original = XdrOperationResult(XdrOperationResultCode.opINNER);
       var tr = XdrOperationResultTr(XdrOperationType.INFLATION);
-      var inflationResult = XdrInflationResult(XdrInflationResultCode.INFLATION_SUCCESS);
+      var inflationResult = XdrInflationResult(
+        XdrInflationResultCode.INFLATION_SUCCESS,
+      );
       inflationResult.payouts = [];
       tr.inflationResult = inflationResult;
       original.tr = tr;
@@ -160,7 +202,10 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrOperationResult.decode(input);
 
-      expect(decoded.discriminant.value, equals(XdrOperationResultCode.opINNER.value));
+      expect(
+        decoded.discriminant.value,
+        equals(XdrOperationResultCode.opINNER.value),
+      );
       expect(decoded.tr, isNotNull);
     });
 
@@ -174,7 +219,10 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
       var decoded = XdrOperationResult.decode(input);
 
-      expect(decoded.discriminant.value, equals(XdrOperationResultCode.opBAD_AUTH.value));
+      expect(
+        decoded.discriminant.value,
+        equals(XdrOperationResultCode.opBAD_AUTH.value),
+      );
       expect(decoded.tr, isNull);
     });
   });

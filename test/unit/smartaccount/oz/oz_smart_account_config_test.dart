@@ -5,7 +5,8 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 
 const String _validRpcUrl = 'https://soroban-testnet.stellar.org';
 const String _validPassphrase = 'Test SDF Network ; September 2015';
-const String _publicPassphrase = 'Public Global Stellar Network ; September 2015';
+const String _publicPassphrase =
+    'Public Global Stellar Network ; September 2015';
 const String _validWasmHash =
     'a000000000000000000000000000000000000000000000000000000000000000';
 const String _validVerifier =
@@ -157,18 +158,19 @@ void main() {
     });
 
     test('testBuilder_allOptionalFields', () {
-      final config = OZSmartAccountConfig.builder(
-        rpcUrl: _validRpcUrl,
-        networkPassphrase: _validPassphrase,
-        accountWasmHash: _validWasmHash,
-        webauthnVerifierAddress: _validVerifier,
-      )
-          .sessionExpiryMs(86400000)
-          .signatureExpirationLedgers(1440)
-          .timeoutInSeconds(60)
-          .relayerUrl('https://relayer.example.com')
-          .indexerUrl('https://indexer.example.com')
-          .build();
+      final config =
+          OZSmartAccountConfig.builder(
+                rpcUrl: _validRpcUrl,
+                networkPassphrase: _validPassphrase,
+                accountWasmHash: _validWasmHash,
+                webauthnVerifierAddress: _validVerifier,
+              )
+              .sessionExpiryMs(86400000)
+              .signatureExpirationLedgers(1440)
+              .timeoutInSeconds(60)
+              .relayerUrl('https://relayer.example.com')
+              .indexerUrl('https://indexer.example.com')
+              .build();
 
       expect(config.sessionExpiryMs, 86400000);
       expect(config.signatureExpirationLedgers, 1440);
@@ -208,10 +210,7 @@ void main() {
         networkPassphrase: _validPassphrase,
         accountWasmHash: _validWasmHash,
         webauthnVerifierAddress: _validVerifier,
-      )
-          .sessionExpiryMs(100000)
-          .relayerUrl('https://relayer.test')
-          .build();
+      ).sessionExpiryMs(100000).relayerUrl('https://relayer.test').build();
 
       expect(builderConfig, equals(constructorConfig));
     });
@@ -222,11 +221,7 @@ void main() {
         networkPassphrase: _validPassphrase,
         accountWasmHash: _validWasmHash,
         webauthnVerifierAddress: _validVerifier,
-      )
-          .relayerUrl(null)
-          .indexerUrl(null)
-          .deployerKeypair(null)
-          .build();
+      ).relayerUrl(null).indexerUrl(null).deployerKeypair(null).build();
 
       expect(config.relayerUrl, isNull);
       expect(config.indexerUrl, isNull);
@@ -327,10 +322,13 @@ void main() {
         accountWasmHash: _validWasmHash,
         webauthnVerifierAddress: _validVerifier,
       );
-      expect(config.effectiveIndexerUrl(), isNull,
-          reason:
-              'No explicit indexerUrl + no default for the passphrase must '
-              'resolve to null');
+      expect(
+        config.effectiveIndexerUrl(),
+        isNull,
+        reason:
+            'No explicit indexerUrl + no default for the passphrase must '
+            'resolve to null',
+      );
     });
 
     test('testGetDeployer_defaultDeployerIsDeterministic', () async {
@@ -390,10 +388,7 @@ void main() {
     });
 
     test('testOZConstants_defaultSessionExpiryMs', () {
-      expect(
-        OZConstants.defaultSessionExpiryMs,
-        7 * 24 * 60 * 60 * 1000,
-      );
+      expect(OZConstants.defaultSessionExpiryMs, 7 * 24 * 60 * 60 * 1000);
     });
 
     test('testUtil_ledgersPerHour', () {
@@ -413,11 +408,13 @@ void main() {
           webauthnVerifierAddress: _validVerifier,
           signatureExpirationLedgers: 0,
         ),
-        throwsA(isA<SmartAccountInvalidConfig>().having(
-          (e) => e.toString(),
-          'message',
-          contains('signatureExpirationLedgers must be >= 1'),
-        )),
+        throwsA(
+          isA<SmartAccountInvalidConfig>().having(
+            (e) => e.toString(),
+            'message',
+            contains('signatureExpirationLedgers must be >= 1'),
+          ),
+        ),
       );
     });
 
@@ -430,11 +427,13 @@ void main() {
           webauthnVerifierAddress: _validVerifier,
           signatureExpirationLedgers: -1,
         ),
-        throwsA(isA<SmartAccountInvalidConfig>().having(
-          (e) => e.toString(),
-          'message',
-          contains('signatureExpirationLedgers must be >= 1'),
-        )),
+        throwsA(
+          isA<SmartAccountInvalidConfig>().having(
+            (e) => e.toString(),
+            'message',
+            contains('signatureExpirationLedgers must be >= 1'),
+          ),
+        ),
       );
     });
 
@@ -483,11 +482,13 @@ void main() {
           webauthnVerifierAddress: _validVerifier,
           timeoutInSeconds: -5,
         ),
-        throwsA(isA<SmartAccountInvalidConfig>().having(
-          (e) => e.toString(),
-          'message',
-          contains('timeoutInSeconds must be >= 0'),
-        )),
+        throwsA(
+          isA<SmartAccountInvalidConfig>().having(
+            (e) => e.toString(),
+            'message',
+            contains('timeoutInSeconds must be >= 0'),
+          ),
+        ),
       );
     });
 
@@ -522,11 +523,13 @@ void main() {
           webauthnVerifierAddress: _validVerifier,
           maxContextRuleScanId: -1,
         ),
-        throwsA(isA<SmartAccountInvalidConfig>().having(
-          (e) => e.toString(),
-          'message',
-          contains('maxContextRuleScanId must be non-negative'),
-        )),
+        throwsA(
+          isA<SmartAccountInvalidConfig>().having(
+            (e) => e.toString(),
+            'message',
+            contains('maxContextRuleScanId must be non-negative'),
+          ),
+        ),
       );
     });
 
@@ -547,9 +550,7 @@ void main() {
         networkPassphrase: _validPassphrase,
         accountWasmHash: _validWasmHash,
         webauthnVerifierAddress: _validVerifier,
-      )
-          .webauthnProvider(null)
-          .build();
+      ).webauthnProvider(null).build();
 
       expect(config.webauthnProvider, isNull);
     });
@@ -561,9 +562,7 @@ void main() {
         networkPassphrase: _validPassphrase,
         accountWasmHash: _validWasmHash,
         webauthnVerifierAddress: _validVerifier,
-      )
-          .storage(storage)
-          .build();
+      ).storage(storage).build();
 
       expect(config.storage, same(storage));
     });
@@ -574,9 +573,7 @@ void main() {
         networkPassphrase: _validPassphrase,
         accountWasmHash: _validWasmHash,
         webauthnVerifierAddress: _validVerifier,
-      )
-          .externalWallet(null)
-          .build();
+      ).externalWallet(null).build();
 
       expect(config.externalWallet, isNull);
     });
@@ -587,9 +584,7 @@ void main() {
         networkPassphrase: _validPassphrase,
         accountWasmHash: _validWasmHash,
         webauthnVerifierAddress: _validVerifier,
-      )
-          .externalEd25519Adapter(null)
-          .build();
+      ).externalEd25519Adapter(null).build();
 
       expect(config.externalEd25519Adapter, isNull);
     });
@@ -600,9 +595,7 @@ void main() {
         networkPassphrase: _validPassphrase,
         accountWasmHash: _validWasmHash,
         webauthnVerifierAddress: _validVerifier,
-      )
-          .maxContextRuleScanId(25)
-          .build();
+      ).maxContextRuleScanId(25).build();
 
       expect(config.maxContextRuleScanId, 25);
     });
@@ -617,13 +610,14 @@ void main() {
         networkPassphrase: _validPassphrase,
         accountWasmHash: _validWasmHash,
         webauthnVerifierAddress: _validVerifier,
-      )
-          .useUpgradedAuth(false)
-          .build();
+      ).useUpgradedAuth(false).build();
 
       expect(config.useUpgradedAuth, isFalse);
-      expect(config.useUpgradedAuthForWalletSigners, isTrue,
-          reason: 'the wallet-signer flag is set separately');
+      expect(
+        config.useUpgradedAuthForWalletSigners,
+        isTrue,
+        reason: 'the wallet-signer flag is set separately',
+      );
     });
 
     test('testUseUpgradedAuth_copyWithAndEquality', () {
@@ -631,11 +625,18 @@ void main() {
       final optedOut = original.copyWith(useUpgradedAuth: false);
 
       expect(optedOut.useUpgradedAuth, isFalse);
-      expect(optedOut.useUpgradedAuthForWalletSigners, isTrue,
-          reason: 'copyWith must not carry the flag over to the '
-              'wallet-signer flag');
-      expect(original.useUpgradedAuth, isTrue,
-          reason: 'copyWith must not mutate the original');
+      expect(
+        optedOut.useUpgradedAuthForWalletSigners,
+        isTrue,
+        reason:
+            'copyWith must not carry the flag over to the '
+            'wallet-signer flag',
+      );
+      expect(
+        original.useUpgradedAuth,
+        isTrue,
+        reason: 'copyWith must not mutate the original',
+      );
       expect(original == optedOut, isFalse);
       expect(optedOut.hashCode == original.hashCode, isFalse);
       expect(optedOut.copyWith(useUpgradedAuth: true), equals(original));
@@ -644,8 +645,9 @@ void main() {
     test('testUseUpgradedAuth_isIndependentOfWalletSignerFlag', () {
       final base = _validConfig();
       final simulationOptOut = base.copyWith(useUpgradedAuth: false);
-      final walletOptOut =
-          base.copyWith(useUpgradedAuthForWalletSigners: false);
+      final walletOptOut = base.copyWith(
+        useUpgradedAuthForWalletSigners: false,
+      );
 
       expect(simulationOptOut == walletOptOut, isFalse);
       expect(simulationOptOut.useUpgradedAuthForWalletSigners, isTrue);
@@ -662,21 +664,23 @@ void main() {
         networkPassphrase: _validPassphrase,
         accountWasmHash: _validWasmHash,
         webauthnVerifierAddress: _validVerifier,
-      )
-          .useUpgradedAuthForWalletSigners(false)
-          .build();
+      ).useUpgradedAuthForWalletSigners(false).build();
 
       expect(config.useUpgradedAuthForWalletSigners, isFalse);
     });
 
     test('testUseUpgradedAuthForWalletSigners_copyWithAndEquality', () {
       final original = _validConfig();
-      final optedOut =
-          original.copyWith(useUpgradedAuthForWalletSigners: false);
+      final optedOut = original.copyWith(
+        useUpgradedAuthForWalletSigners: false,
+      );
 
       expect(optedOut.useUpgradedAuthForWalletSigners, isFalse);
-      expect(original.useUpgradedAuthForWalletSigners, isTrue,
-          reason: 'copyWith must not mutate the original');
+      expect(
+        original.useUpgradedAuthForWalletSigners,
+        isTrue,
+        reason: 'copyWith must not mutate the original',
+      );
       expect(original == optedOut, isFalse);
       expect(optedOut.hashCode == original.hashCode, isFalse);
       expect(
@@ -701,32 +705,31 @@ void main() {
     // -------------------------------------------------------------------------
 
     test(
-        'testCopyWith_externalEd25519Adapter_withoutFlag_preservesOriginalAdapter',
-        () {
-      final adapter = _StubEd25519Adapter();
-      final original = OZSmartAccountConfig(
-        rpcUrl: _validRpcUrl,
-        networkPassphrase: _validPassphrase,
-        accountWasmHash: _validWasmHash,
-        webauthnVerifierAddress: _validVerifier,
-        externalEd25519Adapter: adapter,
-      );
+      'testCopyWith_externalEd25519Adapter_withoutFlag_preservesOriginalAdapter',
+      () {
+        final adapter = _StubEd25519Adapter();
+        final original = OZSmartAccountConfig(
+          rpcUrl: _validRpcUrl,
+          networkPassphrase: _validPassphrase,
+          accountWasmHash: _validWasmHash,
+          webauthnVerifierAddress: _validVerifier,
+          externalEd25519Adapter: adapter,
+        );
 
-      // copyWith without setExternalEd25519Adapter: true must preserve the
-      // adapter from the original config even when the param is omitted.
-      final copied = original.copyWith(sessionExpiryMs: 999000);
+        // copyWith without setExternalEd25519Adapter: true must preserve the
+        // adapter from the original config even when the param is omitted.
+        final copied = original.copyWith(sessionExpiryMs: 999000);
 
-      expect(
-        identical(copied.externalEd25519Adapter, adapter),
-        isTrue,
-        reason:
-            'externalEd25519Adapter must be preserved when setExternalEd25519Adapter is false',
-      );
-    });
+        expect(
+          identical(copied.externalEd25519Adapter, adapter),
+          isTrue,
+          reason:
+              'externalEd25519Adapter must be preserved when setExternalEd25519Adapter is false',
+        );
+      },
+    );
 
-    test(
-        'testCopyWith_externalEd25519Adapter_withFlagAndNull_clearsAdapter',
-        () {
+    test('testCopyWith_externalEd25519Adapter_withFlagAndNull_clearsAdapter', () {
       final adapter = _StubEd25519Adapter();
       final original = OZSmartAccountConfig(
         rpcUrl: _validRpcUrl,
@@ -752,31 +755,30 @@ void main() {
     });
 
     test(
-        'testCopyWith_externalEd25519Adapter_withFlagAndNonNull_replacesAdapter',
-        () {
-      final original = OZSmartAccountConfig(
-        rpcUrl: _validRpcUrl,
-        networkPassphrase: _validPassphrase,
-        accountWasmHash: _validWasmHash,
-        webauthnVerifierAddress: _validVerifier,
-      );
-      final adapter = _StubEd25519Adapter();
+      'testCopyWith_externalEd25519Adapter_withFlagAndNonNull_replacesAdapter',
+      () {
+        final original = OZSmartAccountConfig(
+          rpcUrl: _validRpcUrl,
+          networkPassphrase: _validPassphrase,
+          accountWasmHash: _validWasmHash,
+          webauthnVerifierAddress: _validVerifier,
+        );
+        final adapter = _StubEd25519Adapter();
 
-      final updated = original.copyWith(
-        setExternalEd25519Adapter: true,
-        externalEd25519Adapter: adapter,
-      );
+        final updated = original.copyWith(
+          setExternalEd25519Adapter: true,
+          externalEd25519Adapter: adapter,
+        );
 
-      expect(
-        identical(updated.externalEd25519Adapter, adapter),
-        isTrue,
-        reason: 'copyWith with flag true must install the supplied adapter',
-      );
-    });
+        expect(
+          identical(updated.externalEd25519Adapter, adapter),
+          isTrue,
+          reason: 'copyWith with flag true must install the supplied adapter',
+        );
+      },
+    );
 
-    test(
-        'testEquality_differentExternalEd25519Adapter_notEqual',
-        () {
+    test('testEquality_differentExternalEd25519Adapter_notEqual', () {
       final a = OZSmartAccountConfig(
         rpcUrl: _validRpcUrl,
         networkPassphrase: _validPassphrase,
@@ -796,9 +798,7 @@ void main() {
       expect(a == b, isFalse);
     });
 
-    test(
-        'testEquality_sameExternalEd25519AdapterInstance_equal',
-        () {
+    test('testEquality_sameExternalEd25519AdapterInstance_equal', () {
       final adapter = _StubEd25519Adapter();
       final a = OZSmartAccountConfig(
         rpcUrl: _validRpcUrl,
@@ -840,7 +840,8 @@ void main() {
       expect(
         identical(copied.sorobanServer, server),
         isTrue,
-        reason: 'sorobanServer must be preserved when setSorobanServer is false',
+        reason:
+            'sorobanServer must be preserved when setSorobanServer is false',
       );
     });
 
@@ -954,6 +955,7 @@ class _StubEd25519Adapter extends OZExternalEd25519SignerAdapter {
   Future<Uint8List> signAuthDigest(
     Uint8List authDigest,
     Uint8List publicKey,
-  ) async =>
-      throw UnsupportedError('_StubEd25519Adapter.signAuthDigest not used in config tests');
+  ) async => throw UnsupportedError(
+    '_StubEd25519Adapter.signAuthDigest not used in config tests',
+  );
 }

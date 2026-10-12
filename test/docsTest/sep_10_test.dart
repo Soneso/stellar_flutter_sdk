@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 300))
-
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
@@ -40,24 +39,26 @@ void main() {
   TransactionPreconditions validTimeBounds() {
     TransactionPreconditions result = TransactionPreconditions();
     result.timeBounds = TimeBounds(
-        DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3);
+      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3,
+    );
     return result;
   }
 
   ManageDataOperation validFirstManageDataOp(String accountId) {
     MuxedAccount muxedAccount = MuxedAccount.fromAccountId(accountId)!;
-    final ManageDataOperationBuilder builder =
-        ManageDataOperationBuilder(domain + ' auth', generateNonce())
-            .setMuxedSourceAccount(muxedAccount);
+    final ManageDataOperationBuilder builder = ManageDataOperationBuilder(
+      domain + ' auth',
+      generateNonce(),
+    ).setMuxedSourceAccount(muxedAccount);
     return builder.build();
   }
 
   ManageDataOperation validSecondManageDataOp() {
     final ManageDataOperationBuilder builder = ManageDataOperationBuilder(
-            'web_auth_domain',
-            Uint8List.fromList('api.stellar.org'.codeUnits))
-        .setSourceAccount(serverAccountId);
+      'web_auth_domain',
+      Uint8List.fromList('api.stellar.org'.codeUnits),
+    ).setSourceAccount(serverAccountId);
     return builder.build();
   }
 
@@ -116,8 +117,12 @@ void main() {
   // -- sep-10.md: "Standard authentication" via mock --
   test('sep-10: standard authentication with mock', () async {
     // Snippet from sep-10.md "Testing" section
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
 
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
@@ -130,16 +135,19 @@ void main() {
         // Validate the challenge transaction has been signed by the client
         XdrTransactionEnvelope envelopeXdr =
             XdrTransactionEnvelope.fromEnvelopeXdrString(
-                json.decode(request.body)['transaction']);
+              json.decode(request.body)['transaction'],
+            );
         final signatures = envelopeXdr.v1!.signatures;
         if (signatures.length == 2) {
           final clientSignature = envelopeXdr.v1!.signatures[1];
           final clientKp = KeyPair.fromAccountId(clientAccountId);
-          final transactionHash =
-              AbstractTransaction.fromEnvelopeXdr(envelopeXdr)
-                  .hash(Network.TESTNET);
+          final transactionHash = AbstractTransaction.fromEnvelopeXdr(
+            envelopeXdr,
+          ).hash(Network.TESTNET);
           final valid = clientKp.verify(
-              transactionHash, clientSignature.signature.signature);
+            transactionHash,
+            clientSignature.signature.signature,
+          );
           if (valid) {
             return http.Response(requestJWTSuccess(), 200);
           }
@@ -150,8 +158,9 @@ void main() {
     });
 
     KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
-    String jwtToken =
-        await webAuth.jwtToken(userKeyPair.accountId, [userKeyPair]);
+    String jwtToken = await webAuth.jwtToken(userKeyPair.accountId, [
+      userKeyPair,
+    ]);
     expect(jwtToken, equals(successJWTToken));
   });
 
@@ -160,20 +169,27 @@ void main() {
     final clientAccountIdM =
         'MB4L7JUU5DENUXYH3ANTLVYQL66KQLDDJTN5SF7MWEDGWSGUA375UAAAAAAACMICQP7P4';
 
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
 
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == 'GET' &&
-          request.url.toString().contains(Uri.encodeComponent(clientAccountIdM))) {
+          request.url.toString().contains(
+            Uri.encodeComponent(clientAccountIdM),
+          )) {
         return http.Response(requestChallengeSuccess(clientAccountIdM), 200);
       }
       if (request.url.toString().startsWith(authServer) &&
           request.method == 'POST') {
         XdrTransactionEnvelope envelopeXdr =
             XdrTransactionEnvelope.fromEnvelopeXdrString(
-                json.decode(request.body)['transaction']);
+              json.decode(request.body)['transaction'],
+            );
         if (envelopeXdr.v1!.signatures.length == 2) {
           return http.Response(requestJWTSuccess(), 200);
         }
@@ -182,8 +198,7 @@ void main() {
     });
 
     KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
-    String jwtToken =
-        await webAuth.jwtToken(clientAccountIdM, [userKeyPair]);
+    String jwtToken = await webAuth.jwtToken(clientAccountIdM, [userKeyPair]);
     expect(jwtToken, equals(successJWTToken));
   });
 
@@ -191,21 +206,28 @@ void main() {
   test('sep-10: memo-based authentication', () async {
     const int testMemo = 19989123;
 
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+    final webAuth = WebAuth(
+      authServer,
+      Network.TESTNET,
+      serverAccountId,
+      domain,
+    );
 
     webAuth.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(authServer) &&
           request.method == 'GET' &&
           request.url.toString().contains(clientAccountId)) {
         return http.Response(
-            requestChallengeSuccess(clientAccountId, testMemo), 200);
+          requestChallengeSuccess(clientAccountId, testMemo),
+          200,
+        );
       }
       if (request.url.toString().startsWith(authServer) &&
           request.method == 'POST') {
         XdrTransactionEnvelope envelopeXdr =
             XdrTransactionEnvelope.fromEnvelopeXdrString(
-                json.decode(request.body)['transaction']);
+              json.decode(request.body)['transaction'],
+            );
         if (envelopeXdr.v1!.signatures.length == 2) {
           return http.Response(requestJWTSuccess(), 200);
         }
@@ -214,50 +236,62 @@ void main() {
     });
 
     KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
-    String jwtToken = await webAuth.jwtToken(
-      userKeyPair.accountId,
-      [userKeyPair],
-      memo: testMemo,
-    );
+    String jwtToken = await webAuth.jwtToken(userKeyPair.accountId, [
+      userKeyPair,
+    ], memo: testMemo);
     expect(jwtToken, equals(successJWTToken));
   });
 
   // -- sep-10.md: "Error handling" — validation error case --
-  test('sep-10: invalid sequence number throws ChallengeValidationErrorInvalidSeqNr',
-      () async {
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+  test(
+    'sep-10: invalid sequence number throws ChallengeValidationErrorInvalidSeqNr',
+    () async {
+      final webAuth = WebAuth(
+        authServer,
+        Network.TESTNET,
+        serverAccountId,
+        domain,
+      );
 
-    webAuth.httpClient = MockClient((request) async {
-      if (request.url.toString().startsWith(authServer) &&
-          request.method == 'GET') {
-        return http.Response(
-            requestChallengeInvalidSeqNr(clientAccountId), 200);
-      }
-      return http.Response(json.encode({'error': 'Bad request'}), 400);
-    });
+      webAuth.httpClient = MockClient((request) async {
+        if (request.url.toString().startsWith(authServer) &&
+            request.method == 'GET') {
+          return http.Response(
+            requestChallengeInvalidSeqNr(clientAccountId),
+            200,
+          );
+        }
+        return http.Response(json.encode({'error': 'Bad request'}), 400);
+      });
 
-    KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
-    expect(
-      () => webAuth.jwtToken(userKeyPair.accountId, [userKeyPair]),
-      throwsA(isA<ChallengeValidationErrorInvalidSeqNr>()),
-    );
-  });
+      KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+      expect(
+        () => webAuth.jwtToken(userKeyPair.accountId, [userKeyPair]),
+        throwsA(isA<ChallengeValidationErrorInvalidSeqNr>()),
+      );
+    },
+  );
 
   // -- sep-10.md: memo with muxed account throws exception --
-  test('sep-10: memo with muxed account throws NoMemoForMuxedAccountsException',
-      () async {
-    final clientAccountIdM =
-        'MB4L7JUU5DENUXYH3ANTLVYQL66KQLDDJTN5SF7MWEDGWSGUA375UAAAAAAACMICQP7P4';
+  test(
+    'sep-10: memo with muxed account throws NoMemoForMuxedAccountsException',
+    () async {
+      final clientAccountIdM =
+          'MB4L7JUU5DENUXYH3ANTLVYQL66KQLDDJTN5SF7MWEDGWSGUA375UAAAAAAACMICQP7P4';
 
-    final webAuth =
-        WebAuth(authServer, Network.TESTNET, serverAccountId, domain);
+      final webAuth = WebAuth(
+        authServer,
+        Network.TESTNET,
+        serverAccountId,
+        domain,
+      );
 
-    // Should throw before any HTTP request is made
-    KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
-    expect(
-      () => webAuth.jwtToken(clientAccountIdM, [userKeyPair], memo: 12345),
-      throwsA(isA<NoMemoForMuxedAccountsException>()),
-    );
-  });
+      // Should throw before any HTTP request is made
+      KeyPair userKeyPair = KeyPair.fromSecretSeed(clientSecretSeed);
+      expect(
+        () => webAuth.jwtToken(clientAccountIdM, [userKeyPair], memo: 12345),
+        throwsA(isA<NoMemoForMuxedAccountsException>()),
+      );
+    },
+  );
 }

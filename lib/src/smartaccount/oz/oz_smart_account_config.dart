@@ -87,7 +87,9 @@ class OZSmartAccountConfig {
       throw SmartAccountConfigurationException.missingConfig('rpcUrl');
     }
     if (networkPassphrase.trim().isEmpty) {
-      throw SmartAccountConfigurationException.missingConfig('networkPassphrase');
+      throw SmartAccountConfigurationException.missingConfig(
+        'networkPassphrase',
+      );
     }
     if (accountWasmHash.trim().isEmpty) {
       throw SmartAccountConfigurationException.missingConfig('accountWasmHash');
@@ -323,13 +325,12 @@ class OZSmartAccountConfig {
     required String networkPassphrase,
     required String accountWasmHash,
     required String webauthnVerifierAddress,
-  }) =>
-      OZSmartAccountConfigBuilder(
-        rpcUrl: rpcUrl,
-        networkPassphrase: networkPassphrase,
-        accountWasmHash: accountWasmHash,
-        webauthnVerifierAddress: webauthnVerifierAddress,
-      );
+  }) => OZSmartAccountConfigBuilder(
+    rpcUrl: rpcUrl,
+    networkPassphrase: networkPassphrase,
+    accountWasmHash: accountWasmHash,
+    webauthnVerifierAddress: webauthnVerifierAddress,
+  );
 
   /// Returns the deployer keypair, creating the deterministic default if
   /// none is configured.
@@ -394,7 +395,9 @@ class OZSmartAccountConfig {
       accountWasmHash: accountWasmHash ?? this.accountWasmHash,
       webauthnVerifierAddress:
           webauthnVerifierAddress ?? this.webauthnVerifierAddress,
-      deployerKeypair: setDeployerKeypair ? deployerKeypair : (deployerKeypair ?? this.deployerKeypair),
+      deployerKeypair: setDeployerKeypair
+          ? deployerKeypair
+          : (deployerKeypair ?? this.deployerKeypair),
       sessionExpiryMs: sessionExpiryMs ?? this.sessionExpiryMs,
       signatureExpirationLedgers:
           signatureExpirationLedgers ?? this.signatureExpirationLedgers,
@@ -417,7 +420,8 @@ class OZSmartAccountConfig {
           ? sorobanServer
           : (sorobanServer ?? this.sorobanServer),
       useUpgradedAuth: useUpgradedAuth ?? this.useUpgradedAuth,
-      useUpgradedAuthForWalletSigners: useUpgradedAuthForWalletSigners ??
+      useUpgradedAuthForWalletSigners:
+          useUpgradedAuthForWalletSigners ??
           this.useUpgradedAuthForWalletSigners,
     );
   }
@@ -452,33 +456,34 @@ class OZSmartAccountConfig {
         useUpgradedAuth == other.useUpgradedAuth &&
         useUpgradedAuthForWalletSigners ==
             other.useUpgradedAuthForWalletSigners &&
-        const MapEquality<String, OZPolicyInstallParams>()
-            .equals(defaultPolicies, other.defaultPolicies);
+        const MapEquality<String, OZPolicyInstallParams>().equals(
+          defaultPolicies,
+          other.defaultPolicies,
+        );
   }
 
   @override
   int get hashCode => Object.hashAll([
-        rpcUrl,
-        networkPassphrase,
-        accountWasmHash,
-        webauthnVerifierAddress,
-        deployerKeypair,
-        sessionExpiryMs,
-        signatureExpirationLedgers,
-        timeoutInSeconds,
-        relayerUrl,
-        indexerUrl,
-        webauthnProvider,
-        storage,
-        externalWallet,
-        identityHashCode(externalEd25519Adapter),
-        identityHashCode(sorobanServer),
-        maxContextRuleScanId,
-        useUpgradedAuth,
-        useUpgradedAuthForWalletSigners,
-        const MapEquality<String, OZPolicyInstallParams>()
-            .hash(defaultPolicies),
-      ]);
+    rpcUrl,
+    networkPassphrase,
+    accountWasmHash,
+    webauthnVerifierAddress,
+    deployerKeypair,
+    sessionExpiryMs,
+    signatureExpirationLedgers,
+    timeoutInSeconds,
+    relayerUrl,
+    indexerUrl,
+    webauthnProvider,
+    storage,
+    externalWallet,
+    identityHashCode(externalEd25519Adapter),
+    identityHashCode(sorobanServer),
+    maxContextRuleScanId,
+    useUpgradedAuth,
+    useUpgradedAuthForWalletSigners,
+    const MapEquality<String, OZPolicyInstallParams>().hash(defaultPolicies),
+  ]);
 }
 
 /// Builder for constructing [OZSmartAccountConfig] with a fluent API.
@@ -502,10 +507,10 @@ class OZSmartAccountConfigBuilder {
     required String networkPassphrase,
     required String accountWasmHash,
     required String webauthnVerifierAddress,
-  })  : _rpcUrl = rpcUrl,
-        _networkPassphrase = networkPassphrase,
-        _accountWasmHash = accountWasmHash,
-        _webauthnVerifierAddress = webauthnVerifierAddress;
+  }) : _rpcUrl = rpcUrl,
+       _networkPassphrase = networkPassphrase,
+       _accountWasmHash = accountWasmHash,
+       _webauthnVerifierAddress = webauthnVerifierAddress;
 
   final String _rpcUrl;
   final String _networkPassphrase;
@@ -587,7 +592,8 @@ class OZSmartAccountConfigBuilder {
   /// Sets the Ed25519 adapter for out-of-process Ed25519 signing. Pass
   /// `null` to disable adapter-backed Ed25519 signing.
   OZSmartAccountConfigBuilder externalEd25519Adapter(
-      OZExternalEd25519SignerAdapter? value) {
+    OZExternalEd25519SignerAdapter? value,
+  ) {
     _externalEd25519Adapter = value;
     return this;
   }
@@ -603,7 +609,8 @@ class OZSmartAccountConfigBuilder {
   /// `policies` argument to `createWallet` / `deployPendingCredential`
   /// overrides this default.
   OZSmartAccountConfigBuilder defaultPolicies(
-      Map<String, OZPolicyInstallParams> value) {
+    Map<String, OZPolicyInstallParams> value,
+  ) {
     _defaultPolicies = value;
     return this;
   }
@@ -660,4 +667,3 @@ class OZSmartAccountConfigBuilder {
     );
   }
 }
-

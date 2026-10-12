@@ -47,18 +47,19 @@ class OZCredentialLookupResponse {
     return OZCredentialLookupResponse(
       credentialId: json['credentialId'] as String,
       contracts: rawContracts
-          .map((e) =>
-              OZIndexedContractSummary.fromJson(e as Map<String, dynamic>))
+          .map(
+            (e) => OZIndexedContractSummary.fromJson(e as Map<String, dynamic>),
+          )
           .toList(growable: false),
       count: _asInt(json['count'], 'count'),
     );
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'credentialId': credentialId,
-        'contracts': contracts.map((c) => c.toJson()).toList(growable: false),
-        'count': count,
-      };
+    'credentialId': credentialId,
+    'contracts': contracts.map((c) => c.toJson()).toList(growable: false),
+    'count': count,
+  };
 
   @override
   bool operator ==(Object other) {
@@ -104,18 +105,19 @@ class OZAddressLookupResponse {
     return OZAddressLookupResponse(
       signerAddress: json['signerAddress'] as String,
       contracts: rawContracts
-          .map((e) =>
-              OZIndexedContractSummary.fromJson(e as Map<String, dynamic>))
+          .map(
+            (e) => OZIndexedContractSummary.fromJson(e as Map<String, dynamic>),
+          )
           .toList(growable: false),
       count: _asInt(json['count'], 'count'),
     );
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'signerAddress': signerAddress,
-        'contracts': contracts.map((c) => c.toJson()).toList(growable: false),
-        'count': count,
-      };
+    'signerAddress': signerAddress,
+    'contracts': contracts.map((c) => c.toJson()).toList(growable: false),
+    'count': count,
+  };
 
   @override
   bool operator ==(Object other) {
@@ -161,7 +163,8 @@ class OZContractDetailsResponse {
     return OZContractDetailsResponse(
       contractId: json['contractId'] as String,
       summary: OZIndexedContractSummary.fromJson(
-          json['summary'] as Map<String, dynamic>),
+        json['summary'] as Map<String, dynamic>,
+      ),
       contextRules: rawRules
           .map((e) => OZIndexedContextRule.fromJson(e as Map<String, dynamic>))
           .toList(growable: false),
@@ -169,11 +172,10 @@ class OZContractDetailsResponse {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'contractId': contractId,
-        'summary': summary.toJson(),
-        'contextRules':
-            contextRules.map((r) => r.toJson()).toList(growable: false),
-      };
+    'contractId': contractId,
+    'summary': summary.toJson(),
+    'contextRules': contextRules.map((r) => r.toJson()).toList(growable: false),
+  };
 
   @override
   bool operator ==(Object other) {
@@ -234,13 +236,22 @@ class OZIndexedContractSummary {
     final rawIds = json['context_rule_ids'] as List<dynamic>? ?? const [];
     return OZIndexedContractSummary(
       contractId: json['contract_id'] as String,
-      contextRuleCount: _asInt(json['context_rule_count'], 'context_rule_count'),
-      externalSignerCount:
-          _asInt(json['external_signer_count'], 'external_signer_count'),
-      delegatedSignerCount:
-          _asInt(json['delegated_signer_count'], 'delegated_signer_count'),
-      nativeSignerCount:
-          _asInt(json['native_signer_count'], 'native_signer_count'),
+      contextRuleCount: _asInt(
+        json['context_rule_count'],
+        'context_rule_count',
+      ),
+      externalSignerCount: _asInt(
+        json['external_signer_count'],
+        'external_signer_count',
+      ),
+      delegatedSignerCount: _asInt(
+        json['delegated_signer_count'],
+        'delegated_signer_count',
+      ),
+      nativeSignerCount: _asInt(
+        json['native_signer_count'],
+        'native_signer_count',
+      ),
       firstSeenLedger: _asInt(json['first_seen_ledger'], 'first_seen_ledger'),
       lastSeenLedger: _asInt(json['last_seen_ledger'], 'last_seen_ledger'),
       contextRuleIds: rawIds
@@ -250,15 +261,15 @@ class OZIndexedContractSummary {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'contract_id': contractId,
-        'context_rule_count': contextRuleCount,
-        'external_signer_count': externalSignerCount,
-        'delegated_signer_count': delegatedSignerCount,
-        'native_signer_count': nativeSignerCount,
-        'first_seen_ledger': firstSeenLedger,
-        'last_seen_ledger': lastSeenLedger,
-        'context_rule_ids': contextRuleIds,
-      };
+    'contract_id': contractId,
+    'context_rule_count': contextRuleCount,
+    'external_signer_count': externalSignerCount,
+    'delegated_signer_count': delegatedSignerCount,
+    'native_signer_count': nativeSignerCount,
+    'first_seen_ledger': firstSeenLedger,
+    'last_seen_ledger': lastSeenLedger,
+    'context_rule_ids': contextRuleIds,
+  };
 
   @override
   bool operator ==(Object other) {
@@ -276,15 +287,15 @@ class OZIndexedContractSummary {
 
   @override
   int get hashCode => Object.hash(
-        contractId,
-        contextRuleCount,
-        externalSignerCount,
-        delegatedSignerCount,
-        nativeSignerCount,
-        firstSeenLedger,
-        lastSeenLedger,
-        _deepEquality.hash(contextRuleIds),
-      );
+    contractId,
+    contextRuleCount,
+    externalSignerCount,
+    delegatedSignerCount,
+    nativeSignerCount,
+    firstSeenLedger,
+    lastSeenLedger,
+    _deepEquality.hash(contextRuleIds),
+  );
 }
 
 /// A context rule within a smart account contract.
@@ -323,10 +334,10 @@ class OZIndexedContextRule {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'context_rule_id': contextRuleId,
-        'signers': signers.map((s) => s.toJson()).toList(growable: false),
-        'policies': policies.map((p) => p.toJson()).toList(growable: false),
-      };
+    'context_rule_id': contextRuleId,
+    'signers': signers.map((s) => s.toJson()).toList(growable: false),
+    'policies': policies.map((p) => p.toJson()).toList(growable: false),
+  };
 
   @override
   bool operator ==(Object other) {
@@ -339,10 +350,10 @@ class OZIndexedContextRule {
 
   @override
   int get hashCode => Object.hash(
-        contextRuleId,
-        _deepEquality.hash(signers),
-        _deepEquality.hash(policies),
-      );
+    contextRuleId,
+    _deepEquality.hash(signers),
+    _deepEquality.hash(policies),
+  );
 }
 
 /// A signer within a context rule.
@@ -381,9 +392,7 @@ class OZIndexedSigner {
   /// fields whose value is `null` so the output mirrors the indexer's
   /// optional-field encoding.
   Map<String, dynamic> toJson() {
-    final map = <String, dynamic>{
-      'signer_type': signerType,
-    };
+    final map = <String, dynamic>{'signer_type': signerType};
     if (signerAddress != null) {
       map['signer_address'] = signerAddress;
     }
@@ -412,10 +421,7 @@ class OZIndexedSigner {
 /// verification (e.g., spending limits, time locks, threshold requirements).
 class OZIndexedPolicy {
   /// Constructs an indexed policy.
-  const OZIndexedPolicy({
-    required this.policyAddress,
-    this.installParams,
-  });
+  const OZIndexedPolicy({required this.policyAddress, this.installParams});
 
   /// Contract address of the policy (`C...` address).
   final String policyAddress;
@@ -437,9 +443,7 @@ class OZIndexedPolicy {
   /// `install_params` when it is `null` so the output mirrors the
   /// indexer's optional-field encoding.
   Map<String, dynamic> toJson() {
-    final map = <String, dynamic>{
-      'policy_address': policyAddress,
-    };
+    final map = <String, dynamic>{'policy_address': policyAddress};
     if (installParams != null) {
       map['install_params'] = installParams;
     }
@@ -475,9 +479,7 @@ class OZIndexerStatsResponse {
     );
   }
 
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'stats': stats.toJson(),
-      };
+  Map<String, dynamic> toJson() => <String, dynamic>{'stats': stats.toJson()};
 
   @override
   bool operator ==(Object other) {
@@ -528,8 +530,10 @@ class OZIndexerStats {
     return OZIndexerStats(
       totalEvents: _asInt(json['total_events'], 'total_events'),
       uniqueContracts: _asInt(json['unique_contracts'], 'unique_contracts'),
-      uniqueCredentials:
-          _asInt(json['unique_credentials'], 'unique_credentials'),
+      uniqueCredentials: _asInt(
+        json['unique_credentials'],
+        'unique_credentials',
+      ),
       firstLedger: _asInt(json['first_ledger'], 'first_ledger'),
       lastLedger: _asInt(json['last_ledger'], 'last_ledger'),
       eventTypes: rawTypes
@@ -539,14 +543,13 @@ class OZIndexerStats {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'total_events': totalEvents,
-        'unique_contracts': uniqueContracts,
-        'unique_credentials': uniqueCredentials,
-        'first_ledger': firstLedger,
-        'last_ledger': lastLedger,
-        'eventTypes':
-            eventTypes.map((e) => e.toJson()).toList(growable: false),
-      };
+    'total_events': totalEvents,
+    'unique_contracts': uniqueContracts,
+    'unique_credentials': uniqueCredentials,
+    'first_ledger': firstLedger,
+    'last_ledger': lastLedger,
+    'eventTypes': eventTypes.map((e) => e.toJson()).toList(growable: false),
+  };
 
   @override
   bool operator ==(Object other) {
@@ -562,13 +565,13 @@ class OZIndexerStats {
 
   @override
   int get hashCode => Object.hash(
-        totalEvents,
-        uniqueContracts,
-        uniqueCredentials,
-        firstLedger,
-        lastLedger,
-        _deepEquality.hash(eventTypes),
-      );
+    totalEvents,
+    uniqueContracts,
+    uniqueCredentials,
+    firstLedger,
+    lastLedger,
+    _deepEquality.hash(eventTypes),
+  );
 }
 
 /// Count of events by type.
@@ -590,9 +593,9 @@ class OZEventTypeCount {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'event_type': eventType,
-        'count': count,
-      };
+    'event_type': eventType,
+    'count': count,
+  };
 
   @override
   bool operator ==(Object other) {
@@ -617,9 +620,7 @@ class OZIndexerHealthCheckResponse {
     return OZIndexerHealthCheckResponse(status: json['status'] as String);
   }
 
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'status': status,
-      };
+  Map<String, dynamic> toJson() => <String, dynamic>{'status': status};
 
   @override
   bool operator ==(Object other) {
@@ -686,12 +687,14 @@ class OZIndexerClient {
   /// The optional [timeout] sets the HTTP request timeout used for every
   /// indexer call. Default: [OZConstants.defaultIndexerTimeoutMs].
   OZIndexerClient(this._indexerUrl, {Duration? timeout}) : _dio = dio.Dio() {
-    final effectiveTimeout = timeout ??
-        Duration(milliseconds: OZConstants.defaultIndexerTimeoutMs);
+    final effectiveTimeout =
+        timeout ?? Duration(milliseconds: OZConstants.defaultIndexerTimeoutMs);
     _baseUrl = normalizeOZUrl(_indexerUrl, serviceName: 'Indexer');
     _requestOptions = _buildRequestOptions();
     _dio.options.connectTimeout = capConnectTimeout(
-        effectiveTimeout, OZConstants.maxIndexerConnectTimeoutMs);
+      effectiveTimeout,
+      OZConstants.maxIndexerConnectTimeoutMs,
+    );
     _dio.options.receiveTimeout = effectiveTimeout;
     _ownsDio = true;
   }
@@ -855,8 +858,9 @@ class OZIndexerClient {
       if (body.length > OZConstants.maxIndexerResponseBytes) {
         return false;
       }
-      final parsed =
-          OZIndexerHealthCheckResponse.fromJson(_decodeJsonObject(body));
+      final parsed = OZIndexerHealthCheckResponse.fromJson(
+        _decodeJsonObject(body),
+      );
       return parsed.status == _healthStatusOk;
     } catch (_) {
       return false;
@@ -888,9 +892,7 @@ class OZIndexerClient {
   /// every request from the web target.
   dio.Options _buildRequestOptions() {
     return dio.Options(
-      headers: <String, dynamic>{
-        'Accept': 'application/json',
-      },
+      headers: <String, dynamic>{'Accept': 'application/json'},
       responseType: dio.ResponseType.plain,
       validateStatus: alwaysValidate,
       followRedirects: false,

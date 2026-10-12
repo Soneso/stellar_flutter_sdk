@@ -55,8 +55,11 @@ abstract class HostFunction {
           String contractID = invokeArgs.contractAddress.toStrKey();
           String functionName = invokeArgs.functionName;
           List<XdrSCVal> funcArgs = invokeArgs.args;
-          return InvokeContractHostFunction(contractID, functionName,
-              arguments: funcArgs);
+          return InvokeContractHostFunction(
+            contractID,
+            functionName,
+            arguments: funcArgs,
+          );
         }
         break;
       case XdrHostFunctionType.HOST_FUNCTION_TYPE_CREATE_CONTRACT:
@@ -67,12 +70,15 @@ abstract class HostFunction {
                     XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM &&
                 xdr.createContract!.executable.wasmHash != null) {
               String wasmId = Util.bytesToHex(
-                  xdr.createContract!.executable.wasmHash!.hash);
+                xdr.createContract!.executable.wasmHash!.hash,
+              );
               return CreateContractHostFunction(
-                  Address.fromXdr(
-                      xdr.createContract!.contractIDPreimage.address!),
-                  wasmId,
-                  salt: xdr.createContract!.contractIDPreimage.salt!);
+                Address.fromXdr(
+                  xdr.createContract!.contractIDPreimage.address!,
+                ),
+                wasmId,
+                salt: xdr.createContract!.contractIDPreimage.salt!,
+              );
             } else if (xdr.createContract!.executable.type ==
                     XdrContractExecutableType
                         .CONTRACT_EXECUTABLE_EXTERNAL_REF &&
@@ -80,18 +86,21 @@ abstract class HostFunction {
               XdrContractExecutableExternalRef ref =
                   xdr.createContract!.executable.externalRef!;
               return CreateContractFromExternalRefHostFunction(
-                  Address.fromXdr(
-                      xdr.createContract!.contractIDPreimage.address!),
-                  Address.fromXdr(ref.executableOwner),
-                  ref.tag,
-                  salt: xdr.createContract!.contractIDPreimage.salt!);
+                Address.fromXdr(
+                  xdr.createContract!.contractIDPreimage.address!,
+                ),
+                Address.fromXdr(ref.executableOwner),
+                ref.tag,
+                salt: xdr.createContract!.contractIDPreimage.salt!,
+              );
             }
           } else if (xdr.createContract!.contractIDPreimage.type ==
                   XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET &&
               xdr.createContract!.executable.type ==
                   XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET) {
-            return DeploySACWithAssetHostFunction(Asset.fromXdr(
-                xdr.createContract!.contractIDPreimage.fromAsset!));
+            return DeploySACWithAssetHostFunction(
+              Asset.fromXdr(xdr.createContract!.contractIDPreimage.fromAsset!),
+            );
           }
         }
         break;
@@ -100,15 +109,19 @@ abstract class HostFunction {
           if (xdr.createContractV2!.contractIDPreimage.type ==
               XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS) {
             if (xdr.createContractV2!.executable.type ==
-                XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM &&
+                    XdrContractExecutableType.CONTRACT_EXECUTABLE_WASM &&
                 xdr.createContractV2!.executable.wasmHash != null) {
               String wasmId = Util.bytesToHex(
-                  xdr.createContractV2!.executable.wasmHash!.hash);
+                xdr.createContractV2!.executable.wasmHash!.hash,
+              );
               return CreateContractWithConstructorHostFunction(
-                  Address.fromXdr(
-                      xdr.createContractV2!.contractIDPreimage.address!),
-                  wasmId, xdr.createContractV2!.constructorArgs,
-                  salt: xdr.createContractV2!.contractIDPreimage.salt!);
+                Address.fromXdr(
+                  xdr.createContractV2!.contractIDPreimage.address!,
+                ),
+                wasmId,
+                xdr.createContractV2!.constructorArgs,
+                salt: xdr.createContractV2!.contractIDPreimage.salt!,
+              );
             } else if (xdr.createContractV2!.executable.type ==
                     XdrContractExecutableType
                         .CONTRACT_EXECUTABLE_EXTERNAL_REF &&
@@ -116,19 +129,24 @@ abstract class HostFunction {
               XdrContractExecutableExternalRef ref =
                   xdr.createContractV2!.executable.externalRef!;
               return CreateContractFromExternalRefWithConstructorHostFunction(
-                  Address.fromXdr(
-                      xdr.createContractV2!.contractIDPreimage.address!),
-                  Address.fromXdr(ref.executableOwner),
-                  ref.tag,
-                  xdr.createContractV2!.constructorArgs,
-                  salt: xdr.createContractV2!.contractIDPreimage.salt!);
+                Address.fromXdr(
+                  xdr.createContractV2!.contractIDPreimage.address!,
+                ),
+                Address.fromXdr(ref.executableOwner),
+                ref.tag,
+                xdr.createContractV2!.constructorArgs,
+                salt: xdr.createContractV2!.contractIDPreimage.salt!,
+              );
             }
           } else if (xdr.createContractV2!.contractIDPreimage.type ==
-              XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET &&
+                  XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ASSET &&
               xdr.createContractV2!.executable.type ==
                   XdrContractExecutableType.CONTRACT_EXECUTABLE_STELLAR_ASSET) {
-            return DeploySACWithAssetHostFunction(Asset.fromXdr(
-                xdr.createContractV2!.contractIDPreimage.fromAsset!));
+            return DeploySACWithAssetHostFunction(
+              Asset.fromXdr(
+                xdr.createContractV2!.contractIDPreimage.fromAsset!,
+              ),
+            );
           }
         }
         break;
@@ -399,7 +417,12 @@ class CreateContractWithConstructorHostFunction extends HostFunction {
   /// - [_wasmId]: Hash of previously uploaded WASM code.
   /// - [_constructorArgs]: Arguments passed to contract constructor.
   /// - [salt]: Optional salt for contract ID (generated if not provided).
-  CreateContractWithConstructorHostFunction(this._address, this._wasmId, this._constructorArgs, {XdrUint256? salt}) {
+  CreateContractWithConstructorHostFunction(
+    this._address,
+    this._wasmId,
+    this._constructorArgs, {
+    XdrUint256? salt,
+  }) {
     if (salt != null) {
       this._salt = salt;
     } else {
@@ -412,7 +435,12 @@ class CreateContractWithConstructorHostFunction extends HostFunction {
   /// Returns: XDR host function for contract creation with constructor.
   @override
   XdrHostFunction toXdr() {
-    return XdrHostFunction.forCreatingContractV2(address.toXdr(), salt, wasmId, constructorArgs);
+    return XdrHostFunction.forCreatingContractV2(
+      address.toXdr(),
+      salt,
+      wasmId,
+      constructorArgs,
+    );
   }
 }
 
@@ -499,8 +527,11 @@ class CreateContractFromExternalRefHostFunction extends HostFunction {
   /// - [_tag]: Tag of the executable entry on the owner, as raw bytes.
   /// - [salt]: Optional salt for contract ID (generated if not provided).
   CreateContractFromExternalRefHostFunction(
-      this._address, this._executableOwner, this._tag,
-      {XdrUint256? salt}) {
+    this._address,
+    this._executableOwner,
+    this._tag, {
+    XdrUint256? salt,
+  }) {
     _checkExternalRefOwnerIsContract(_executableOwner);
     if (salt != null) {
       this._salt = salt;
@@ -512,10 +543,16 @@ class CreateContractFromExternalRefHostFunction extends HostFunction {
   /// Creates a CreateContractFromExternalRefHostFunction over the UTF-8
   /// encoding of [tag].
   CreateContractFromExternalRefHostFunction.forTagString(
-      Address address, Address executableOwner, String tag,
-      {XdrUint256? salt})
-      : this(address, executableOwner, Uint8List.fromList(utf8.encode(tag)),
-            salt: salt);
+    Address address,
+    Address executableOwner,
+    String tag, {
+    XdrUint256? salt,
+  }) : this(
+         address,
+         executableOwner,
+         Uint8List.fromList(utf8.encode(tag)),
+         salt: salt,
+       );
 
   /// Converts this host function to its XDR representation.
   ///
@@ -524,7 +561,11 @@ class CreateContractFromExternalRefHostFunction extends HostFunction {
   @override
   XdrHostFunction toXdr() {
     return XdrHostFunction.forCreatingContractWithExternalRef(
-        address.toXdr(), salt, executableOwner.toXdr(), tag);
+      address.toXdr(),
+      salt,
+      executableOwner.toXdr(),
+      tag,
+    );
   }
 }
 
@@ -532,8 +573,9 @@ class CreateContractFromExternalRefHostFunction extends HostFunction {
 void _checkExternalRefOwnerIsContract(Address executableOwner) {
   if (executableOwner.type != Address.TYPE_CONTRACT) {
     throw ArgumentError(
-        'External reference owner is not a contract address; only a contract '
-        'can hold the executable tag entry');
+      'External reference owner is not a contract address; only a contract '
+      'can hold the executable tag entry',
+    );
   }
 }
 
@@ -624,8 +666,12 @@ class CreateContractFromExternalRefWithConstructorHostFunction
   /// - [_constructorArgs]: Arguments passed to the contract constructor.
   /// - [salt]: Optional salt for contract ID (generated if not provided).
   CreateContractFromExternalRefWithConstructorHostFunction(
-      this._address, this._executableOwner, this._tag, this._constructorArgs,
-      {XdrUint256? salt}) {
+    this._address,
+    this._executableOwner,
+    this._tag,
+    this._constructorArgs, {
+    XdrUint256? salt,
+  }) {
     _checkExternalRefOwnerIsContract(_executableOwner);
     if (salt != null) {
       this._salt = salt;
@@ -637,14 +683,18 @@ class CreateContractFromExternalRefWithConstructorHostFunction
   /// Creates a CreateContractFromExternalRefWithConstructorHostFunction over
   /// the UTF-8 encoding of [tag].
   CreateContractFromExternalRefWithConstructorHostFunction.forTagString(
-      Address address,
-      Address executableOwner,
-      String tag,
-      List<XdrSCVal> constructorArgs,
-      {XdrUint256? salt})
-      : this(address, executableOwner, Uint8List.fromList(utf8.encode(tag)),
-            constructorArgs,
-            salt: salt);
+    Address address,
+    Address executableOwner,
+    String tag,
+    List<XdrSCVal> constructorArgs, {
+    XdrUint256? salt,
+  }) : this(
+         address,
+         executableOwner,
+         Uint8List.fromList(utf8.encode(tag)),
+         constructorArgs,
+         salt: salt,
+       );
 
   /// Converts this host function to its XDR representation.
   ///
@@ -653,7 +703,12 @@ class CreateContractFromExternalRefWithConstructorHostFunction
   @override
   XdrHostFunction toXdr() {
     return XdrHostFunction.forCreatingContractV2WithExternalRef(
-        address.toXdr(), salt, executableOwner.toXdr(), tag, constructorArgs);
+      address.toXdr(),
+      salt,
+      executableOwner.toXdr(),
+      tag,
+      constructorArgs,
+    );
   }
 }
 
@@ -844,8 +899,11 @@ class InvokeContractHostFunction extends HostFunction {
   /// - [_contractID]: Contract address (C-format or hex).
   /// - [_functionName]: Name of the function to invoke.
   /// - [arguments]: Optional list of arguments for the function.
-  InvokeContractHostFunction(this._contractID, this._functionName,
-      {this.arguments});
+  InvokeContractHostFunction(
+    this._contractID,
+    this._functionName, {
+    this.arguments,
+  });
 
   /// Converts this host function to its XDR representation.
   ///
@@ -862,12 +920,15 @@ class InvokeContractHostFunction extends HostFunction {
     // can be any type of address.
     final address = addressFromId(contractID);
     if (address == null) {
-      throw new Exception("Could not convert contract id: $contractID to address");
+      throw new Exception(
+        "Could not convert contract id: $contractID to address",
+      );
     }
     XdrInvokeContractArgs args = XdrInvokeContractArgs(
-        address.toXdr(),
-        this._functionName,
-        fcArgs);
+      address.toXdr(),
+      this._functionName,
+      fcArgs,
+    );
     return XdrHostFunction.forInvokingContractWithArgs(args);
   }
 }
@@ -926,16 +987,19 @@ class InvokeHostFuncOpBuilder
   set function(HostFunction value) => this._function = value;
 
   /// Authorization entries proving approval for restricted operations.
-  List<SorobanAuthorizationEntry> auth =
-      List<SorobanAuthorizationEntry>.empty(growable: true);
+  List<SorobanAuthorizationEntry> auth = List<SorobanAuthorizationEntry>.empty(
+    growable: true,
+  );
 
   /// Creates an InvokeHostFuncOpBuilder.
   ///
   /// Parameters:
   /// - [_function]: The host function to execute.
   /// - [auth]: Optional authorization entries for the operation.
-  InvokeHostFuncOpBuilder(this._function,
-      {List<SorobanAuthorizationEntry>? auth}) {
+  InvokeHostFuncOpBuilder(
+    this._function, {
+    List<SorobanAuthorizationEntry>? auth,
+  }) {
     if (auth != null) {
       this.auth = auth;
     }
@@ -970,8 +1034,10 @@ class InvokeHostFuncOpBuilder
   ///
   /// Returns: A configured [InvokeHostFunctionOperation] instance.
   InvokeHostFunctionOperation build() {
-    InvokeHostFunctionOperation op =
-        InvokeHostFunctionOperation(function, auth: auth);
+    InvokeHostFunctionOperation op = InvokeHostFunctionOperation(
+      function,
+      auth: auth,
+    );
     return applySourceAccount(op);
   }
 }
@@ -1020,16 +1086,19 @@ class InvokeHostFunctionOperation extends Operation {
   set function(HostFunction value) => this._function = value;
 
   /// Authorization entries for multi-party or restricted operations.
-  List<SorobanAuthorizationEntry> auth =
-      List<SorobanAuthorizationEntry>.empty(growable: true);
+  List<SorobanAuthorizationEntry> auth = List<SorobanAuthorizationEntry>.empty(
+    growable: true,
+  );
 
   /// Creates an InvokeHostFunctionOperation.
   ///
   /// Parameters:
   /// - [_function]: The host function to execute.
   /// - [auth]: Optional authorization entries for the operation.
-  InvokeHostFunctionOperation(this._function,
-      {List<SorobanAuthorizationEntry>? auth}) {
+  InvokeHostFunctionOperation(
+    this._function, {
+    List<SorobanAuthorizationEntry>? auth,
+  }) {
     if (auth != null) {
       this.auth = auth;
     }
@@ -1047,8 +1116,10 @@ class InvokeHostFunctionOperation extends Operation {
     for (XdrSorobanAuthorizationEntry aXdr in op.auth) {
       auth.add(SorobanAuthorizationEntry.fromXdr(aXdr));
     }
-    return InvokeHostFuncOpBuilder(HostFunction.fromXdr(op.function),
-        auth: auth);
+    return InvokeHostFuncOpBuilder(
+      HostFunction.fromXdr(op.function),
+      auth: auth,
+    );
   }
 
   /// Converts this operation to its XDR representation.
@@ -1061,10 +1132,13 @@ class InvokeHostFunctionOperation extends Operation {
     for (SorobanAuthorizationEntry a in auth) {
       xdrAuth.add(a.toXdr());
     }
-    XdrInvokeHostFunctionOp xdrOp =
-        XdrInvokeHostFunctionOp(function.toXdr(), xdrAuth);
-    XdrOperationBody body =
-        XdrOperationBody(XdrOperationType.INVOKE_HOST_FUNCTION);
+    XdrInvokeHostFunctionOp xdrOp = XdrInvokeHostFunctionOp(
+      function.toXdr(),
+      xdrAuth,
+    );
+    XdrOperationBody body = XdrOperationBody(
+      XdrOperationType.INVOKE_HOST_FUNCTION,
+    );
     body.invokeHostFunctionOp = xdrOp;
     return body;
   }

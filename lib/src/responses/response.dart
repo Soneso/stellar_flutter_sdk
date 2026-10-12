@@ -153,8 +153,10 @@ class Link {
   }
 
   /// Converts this link to a JSON map.
-  Map<String, dynamic> toJson() =>
-      <String, dynamic>{'href': href, 'templated': templated};
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'href': href,
+    'templated': templated,
+  };
 }
 
 /// Navigation links for paginated responses.
@@ -202,9 +204,10 @@ class PageLinks {
 
   /// Constructs PageLinks from JSON returned by Horizon API.
   factory PageLinks.fromJson(Map<String, dynamic> json) => PageLinks(
-      json['next'] == null ? null : Link.fromJson(json['next']),
-      json['prev'] == null ? null : Link.fromJson(json['prev']),
-      Link.fromJson(json['self']));
+    json['next'] == null ? null : Link.fromJson(json['next']),
+    json['prev'] == null ? null : Link.fromJson(json['prev']),
+    Link.fromJson(json['self']),
+  );
 }
 
 /// Generic type token for preserving runtime type information.
@@ -336,16 +339,17 @@ class Page<T> extends Response implements TypedResponse<Page<T>> {
       return null;
     }
 
-    ResponseHandler<Page<T>> responseHandler =
-        ResponseHandler<Page<T>>(this.type);
+    ResponseHandler<Page<T>> responseHandler = ResponseHandler<Page<T>>(
+      this.type,
+    );
 
     String url = this.links!.next!.href;
 
     return await httpClient
         .get(Uri.parse(url), headers: RequestBuilder.headers)
         .then((response) {
-      return responseHandler.handleResponse(response);
-    });
+          return responseHandler.handleResponse(response);
+        });
   }
 
   @override
@@ -354,16 +358,21 @@ class Page<T> extends Response implements TypedResponse<Page<T>> {
   }
 
   /// Constructs a Page from JSON returned by Horizon API with embedded records.
-  factory Page.fromJson(Map<String, dynamic> json) => Page<T>(
-      json["_embedded"]['records'] != null
-          ? List<T>.from(json["_embedded"]['records']
-              .map((e) => ResponseConverter.fromJson<T>(e) as T))
-          : [],
-      json['_links'] == null ? null : PageLinks.fromJson(json['_links']),
-      TypeToken<Page<T>>())
-    ..rateLimitLimit = convertInt(json['rateLimitLimit'])
-    ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
-    ..rateLimitReset = convertInt(json['rateLimitReset']);
+  factory Page.fromJson(Map<String, dynamic> json) =>
+      Page<T>(
+          json["_embedded"]['records'] != null
+              ? List<T>.from(
+                  json["_embedded"]['records'].map(
+                    (e) => ResponseConverter.fromJson<T>(e) as T,
+                  ),
+                )
+              : [],
+          json['_links'] == null ? null : PageLinks.fromJson(json['_links']),
+          TypeToken<Page<T>>(),
+        )
+        ..rateLimitLimit = convertInt(json['rateLimitLimit'])
+        ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
+        ..rateLimitReset = convertInt(json['rateLimitReset']);
 }
 
 /// Converts JSON maps to strongly-typed response objects.

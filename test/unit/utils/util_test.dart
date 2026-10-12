@@ -23,7 +23,9 @@ void main() {
         expect(
           () => checkNotNull(null, errorMessage),
           throwsA(
-            predicate((e) => e is Exception && e.toString().contains(errorMessage)),
+            predicate(
+              (e) => e is Exception && e.toString().contains(errorMessage),
+            ),
           ),
         );
       });
@@ -46,7 +48,9 @@ void main() {
         expect(
           () => checkArgument(false, errorMessage),
           throwsA(
-            predicate((e) => e is Exception && e.toString().contains(errorMessage)),
+            predicate(
+              (e) => e is Exception && e.toString().contains(errorMessage),
+            ),
           ),
         );
       });
@@ -235,7 +239,8 @@ void main() {
 
     group('hexIdToXdrHash', () {
       test('should convert hex string to 32-byte hash', () {
-        var hex = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2";
+        var hex =
+            "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2";
         var hash = Util.hexIdToXdrHash(hex, 'Contract id');
         expect(Util.bytesToHex(hash.hash), equals(hex));
       });
@@ -243,21 +248,35 @@ void main() {
       test('should reject short strings rather than pad them', () {
         var hex = "a1b2c3";
         expect(
-            () => Util.hexIdToXdrHash(hex, 'Contract id'),
-            throwsA(isA<FormatException>().having((e) => e.message, 'message',
-                'Contract id must be hex of a 32 byte hash; 3 bytes given')));
+          () => Util.hexIdToXdrHash(hex, 'Contract id'),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              'Contract id must be hex of a 32 byte hash; 3 bytes given',
+            ),
+          ),
+        );
       });
 
       test('should reject long strings rather than truncate them', () {
-        var hex = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6";
+        var hex =
+            "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6";
         expect(
-            () => Util.hexIdToXdrHash(hex, 'Contract id'),
-            throwsA(isA<FormatException>().having((e) => e.message, 'message',
-                'Contract id must be hex of a 32 byte hash; 36 bytes given')));
+          () => Util.hexIdToXdrHash(hex, 'Contract id'),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              'Contract id must be hex of a 32 byte hash; 36 bytes given',
+            ),
+          ),
+        );
       });
 
       test('should read a 32-byte id in either case', () {
-        var hex = "A1B2C3D4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C7D8E9F0A1B2";
+        var hex =
+            "A1B2C3D4E5F6A7B8C9D0E1F2A3B4C5D6E7F8A9B0C1D2E3F4A5B6C7D8E9F0A1B2";
         var hash = Util.hexIdToXdrHash(hex, 'Contract id');
         expect(Util.bytesToHex(hash.hash), equals(hex.toLowerCase()));
       });
@@ -380,33 +399,55 @@ void main() {
       });
 
       test('should ignore surrounding whitespace', () {
-        expect(Util.decimalStringToStroops(" 100.5 "),
-            equals(BigInt.from(1005000000)));
-        expect(Util.decimalStringToStroops("100.5\n"),
-            equals(BigInt.from(1005000000)));
-        expect(Util.decimalStringToStroops("\n100.5"),
-            equals(BigInt.from(1005000000)));
+        expect(
+          Util.decimalStringToStroops(" 100.5 "),
+          equals(BigInt.from(1005000000)),
+        );
+        expect(
+          Util.decimalStringToStroops("100.5\n"),
+          equals(BigInt.from(1005000000)),
+        );
+        expect(
+          Util.decimalStringToStroops("\n100.5"),
+          equals(BigInt.from(1005000000)),
+        );
 
         // Whitespace is removed before the sign and the fraction are read.
-        expect(Util.decimalStringToStroops(" -1.5 "),
-            equals(BigInt.from(-15000000)));
-        expect(Util.decimalStringToStroops(" -0.1"),
-            equals(BigInt.from(-1000000)));
-        expect(Util.decimalStringToStroops("880.169896 "),
-            equals(BigInt.from(8801698960)));
-        expect(Util.decimalStringToStroops("0.1234   "),
-            equals(BigInt.from(1234000)));
+        expect(
+          Util.decimalStringToStroops(" -1.5 "),
+          equals(BigInt.from(-15000000)),
+        );
+        expect(
+          Util.decimalStringToStroops(" -0.1"),
+          equals(BigInt.from(-1000000)),
+        );
+        expect(
+          Util.decimalStringToStroops("880.169896 "),
+          equals(BigInt.from(8801698960)),
+        );
+        expect(
+          Util.decimalStringToStroops("0.1234   "),
+          equals(BigInt.from(1234000)),
+        );
       });
 
       test('should accept a value with nothing after the decimal point', () {
-        expect(Util.decimalStringToStroops("5."), equals(BigInt.from(50000000)));
+        expect(
+          Util.decimalStringToStroops("5."),
+          equals(BigInt.from(50000000)),
+        );
         expect(Util.decimalStringToStroops("0."), equals(BigInt.zero));
       });
 
       test('should accept a leading plus', () {
-        expect(Util.decimalStringToStroops("+5"), equals(BigInt.from(50000000)));
-        expect(Util.decimalStringToStroops(" +1.5 "),
-            equals(BigInt.from(15000000)));
+        expect(
+          Util.decimalStringToStroops("+5"),
+          equals(BigInt.from(50000000)),
+        );
+        expect(
+          Util.decimalStringToStroops(" +1.5 "),
+          equals(BigInt.from(15000000)),
+        );
       });
 
       test('should handle small amounts', () {
@@ -423,14 +464,22 @@ void main() {
       });
 
       test('should handle negative amounts', () {
-        expect(Util.decimalStringToStroops("-1.5"),
-            equals(BigInt.from(-15000000)));
-        expect(Util.stroopsToDecimalString(BigInt.from(-15000000)),
-            equals("-1.5"));
-        expect(Util.stroopsToDecimalString(BigInt.from(-5000000)),
-            equals("-0.5"));
         expect(
-            Util.stroopsToDecimalString(BigInt.from(-1)), equals("-0.0000001"));
+          Util.decimalStringToStroops("-1.5"),
+          equals(BigInt.from(-15000000)),
+        );
+        expect(
+          Util.stroopsToDecimalString(BigInt.from(-15000000)),
+          equals("-1.5"),
+        );
+        expect(
+          Util.stroopsToDecimalString(BigInt.from(-5000000)),
+          equals("-0.5"),
+        );
+        expect(
+          Util.stroopsToDecimalString(BigInt.from(-1)),
+          equals("-0.0000001"),
+        );
       });
 
       test('should be reversible', () {
@@ -456,89 +505,89 @@ void main() {
     });
   });
 
-    group('stroopsPerXlm, ledgersPerHour, ledgersPerDay constants', () {
-      test('stroopsPerXlm equals 10000000', () {
-        expect(Util.stroopsPerXlm, 10000000);
-      });
-
-      test('ledgersPerHour equals 720', () {
-        expect(Util.ledgersPerHour, 720);
-      });
-
-      test('ledgersPerDay equals 17280', () {
-        expect(Util.ledgersPerDay, 17280);
-      });
-
-      test('ledgersPerDay equals 24 times ledgersPerHour', () {
-        expect(Util.ledgersPerDay, Util.ledgersPerHour * 24);
-      });
+  group('stroopsPerXlm, ledgersPerHour, ledgersPerDay constants', () {
+    test('stroopsPerXlm equals 10000000', () {
+      expect(Util.stroopsPerXlm, 10000000);
     });
 
-    group('constantTimeEquals', () {
-      test('equal arrays returns true', () {
-        final a = Uint8List.fromList([1, 2, 3, 4, 5]);
-        final b = Uint8List.fromList([1, 2, 3, 4, 5]);
-        expect(Util.constantTimeEquals(a, b), isTrue);
-      });
-
-      test('unequal arrays returns false', () {
-        final a = Uint8List.fromList([1, 2, 3, 4, 5]);
-        final b = Uint8List.fromList([1, 2, 3, 4, 6]);
-        expect(Util.constantTimeEquals(a, b), isFalse);
-      });
-
-      test('different lengths returns false', () {
-        final a = Uint8List.fromList([1, 2, 3]);
-        final b = Uint8List.fromList([1, 2, 3, 4]);
-        expect(Util.constantTimeEquals(a, b), isFalse);
-      });
-
-      test('empty arrays returns true', () {
-        expect(Util.constantTimeEquals(Uint8List(0), Uint8List(0)), isTrue);
-      });
-
-      test('single-byte mismatch returns false', () {
-        final a = Uint8List.fromList([0xFF]);
-        final b = Uint8List.fromList([0xFE]);
-        expect(Util.constantTimeEquals(a, b), isFalse);
-      });
+    test('ledgersPerHour equals 720', () {
+      expect(Util.ledgersPerHour, 720);
     });
 
-    group('bigIntToI128ScVal', () {
-      test('small positive value produces SCV_I128', () {
-        final scVal = Util.bigIntToI128ScVal(BigInt.from(10000000));
-        expect(scVal.discriminant, XdrSCValType.SCV_I128);
-        expect(scVal.i128, isNotNull);
-      });
-
-      test('zero produces SCV_I128', () {
-        final scVal = Util.bigIntToI128ScVal(BigInt.zero);
-        expect(scVal.discriminant, XdrSCValType.SCV_I128);
-      });
-
-      test('max I128 value is accepted', () {
-        final maxI128 = (BigInt.one << 127) - BigInt.one;
-        final scVal = Util.bigIntToI128ScVal(maxI128);
-        expect(scVal.discriminant, XdrSCValType.SCV_I128);
-      });
-
-      test('min I128 value is accepted', () {
-        final minI128 = -(BigInt.one << 127);
-        final scVal = Util.bigIntToI128ScVal(minI128);
-        expect(scVal.discriminant, XdrSCValType.SCV_I128);
-        expect(scVal.i128, isNotNull);
-      });
-
-      test('value exceeding I128 max throws ArgumentError', () {
-        final tooBig = BigInt.one << 127;
-        expect(() => Util.bigIntToI128ScVal(tooBig), throwsArgumentError);
-      });
-
-      test('value below I128 min throws ArgumentError', () {
-        final tooSmall = -(BigInt.one << 127) - BigInt.one;
-        expect(() => Util.bigIntToI128ScVal(tooSmall), throwsArgumentError);
-      });
+    test('ledgersPerDay equals 17280', () {
+      expect(Util.ledgersPerDay, 17280);
     });
+
+    test('ledgersPerDay equals 24 times ledgersPerHour', () {
+      expect(Util.ledgersPerDay, Util.ledgersPerHour * 24);
+    });
+  });
+
+  group('constantTimeEquals', () {
+    test('equal arrays returns true', () {
+      final a = Uint8List.fromList([1, 2, 3, 4, 5]);
+      final b = Uint8List.fromList([1, 2, 3, 4, 5]);
+      expect(Util.constantTimeEquals(a, b), isTrue);
+    });
+
+    test('unequal arrays returns false', () {
+      final a = Uint8List.fromList([1, 2, 3, 4, 5]);
+      final b = Uint8List.fromList([1, 2, 3, 4, 6]);
+      expect(Util.constantTimeEquals(a, b), isFalse);
+    });
+
+    test('different lengths returns false', () {
+      final a = Uint8List.fromList([1, 2, 3]);
+      final b = Uint8List.fromList([1, 2, 3, 4]);
+      expect(Util.constantTimeEquals(a, b), isFalse);
+    });
+
+    test('empty arrays returns true', () {
+      expect(Util.constantTimeEquals(Uint8List(0), Uint8List(0)), isTrue);
+    });
+
+    test('single-byte mismatch returns false', () {
+      final a = Uint8List.fromList([0xFF]);
+      final b = Uint8List.fromList([0xFE]);
+      expect(Util.constantTimeEquals(a, b), isFalse);
+    });
+  });
+
+  group('bigIntToI128ScVal', () {
+    test('small positive value produces SCV_I128', () {
+      final scVal = Util.bigIntToI128ScVal(BigInt.from(10000000));
+      expect(scVal.discriminant, XdrSCValType.SCV_I128);
+      expect(scVal.i128, isNotNull);
+    });
+
+    test('zero produces SCV_I128', () {
+      final scVal = Util.bigIntToI128ScVal(BigInt.zero);
+      expect(scVal.discriminant, XdrSCValType.SCV_I128);
+    });
+
+    test('max I128 value is accepted', () {
+      final maxI128 = (BigInt.one << 127) - BigInt.one;
+      final scVal = Util.bigIntToI128ScVal(maxI128);
+      expect(scVal.discriminant, XdrSCValType.SCV_I128);
+    });
+
+    test('min I128 value is accepted', () {
+      final minI128 = -(BigInt.one << 127);
+      final scVal = Util.bigIntToI128ScVal(minI128);
+      expect(scVal.discriminant, XdrSCValType.SCV_I128);
+      expect(scVal.i128, isNotNull);
+    });
+
+    test('value exceeding I128 max throws ArgumentError', () {
+      final tooBig = BigInt.one << 127;
+      expect(() => Util.bigIntToI128ScVal(tooBig), throwsArgumentError);
+    });
+
+    test('value below I128 min throws ArgumentError', () {
+      final tooSmall = -(BigInt.one << 127) - BigInt.one;
+      expect(() => Util.bigIntToI128ScVal(tooSmall), throwsArgumentError);
+    });
+  });
 
   group('Base32', () {
     group('encode', () {

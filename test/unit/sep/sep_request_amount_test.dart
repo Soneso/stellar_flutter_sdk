@@ -35,10 +35,8 @@ void main() {
       // double.toString spells 1e16 as "10000000000000000.0" and 1e21 as
       // "1e+21".
       expect(SepRequestAmount.format(1e16), equals("10000000000000000"));
-      expect(SepRequestAmount.format(1e21),
-          equals("1000000000000000000000"));
-      expect(SepRequestAmount.format(-1e21),
-          equals("-1000000000000000000000"));
+      expect(SepRequestAmount.format(1e21), equals("1000000000000000000000"));
+      expect(SepRequestAmount.format(-1e21), equals("-1000000000000000000000"));
     });
 
     test('rounds more than seven decimals to seven', () {
@@ -48,8 +46,10 @@ void main() {
     test('renders exactly seven fractional digits unchanged', () {
       // The shortest representation carries exactly seven fractional digits
       // here and is rendered unchanged.
-      expect(SepRequestAmount.format(780615714.9429096),
-          equals("780615714.9429096"));
+      expect(
+        SepRequestAmount.format(780615714.9429096),
+        equals("780615714.9429096"),
+      );
     });
 
     test('a halfway fraction rounds away from zero', () {
@@ -67,10 +67,11 @@ void main() {
       // The stored double is 100000000000.100006103515625; the shortest
       // representation is the written value, and no digit beyond it may be
       // rendered.
-      expect(SepRequestAmount.format(100000000000.1),
-          equals("100000000000.1"));
-      expect(SepRequestAmount.format(-100000000000.1),
-          equals("-100000000000.1"));
+      expect(SepRequestAmount.format(100000000000.1), equals("100000000000.1"));
+      expect(
+        SepRequestAmount.format(-100000000000.1),
+        equals("-100000000000.1"),
+      );
     });
 
     test('rounding carries through the integer part', () {
@@ -120,10 +121,16 @@ void main() {
         -0.0000123,
       ]) {
         final rendered = SepRequestAmount.format(amount);
-        expect(rendered.contains("e"), isFalse,
-            reason: 'exponent in "$rendered"');
-        expect(rendered.contains("E"), isFalse,
-            reason: 'exponent in "$rendered"');
+        expect(
+          rendered.contains("e"),
+          isFalse,
+          reason: 'exponent in "$rendered"',
+        );
+        expect(
+          rendered.contains("E"),
+          isFalse,
+          reason: 'exponent in "$rendered"',
+        );
       }
     });
   });
@@ -136,8 +143,10 @@ void main() {
         return http.Response(json.encode({'fee': 0.013}), 200);
       });
 
-      final service = TransferServerSEP24Service('https://anchor.example.com',
-          httpClient: mockClient);
+      final service = TransferServerSEP24Service(
+        'https://anchor.example.com',
+        httpClient: mockClient,
+      );
 
       // One stroop: double.toString spells it "1e-7".
       final request = SEP24FeeRequest();
@@ -166,23 +175,32 @@ void main() {
         return http.Response(json.encode({'fee': 0.013}), 200);
       });
 
-      final service = TransferServerService('https://anchor.example.com',
-          httpClient: mockClient);
+      final service = TransferServerService(
+        'https://anchor.example.com',
+        httpClient: mockClient,
+      );
 
       // One stroop: double.toString spells it "1e-7".
-      await service.fee(FeeRequest(
-          operation: "deposit", assetCode: "ETH", amount: 1e-7));
+      await service.fee(
+        FeeRequest(operation: "deposit", assetCode: "ETH", amount: 1e-7),
+      );
       expect(capturedAmount, equals("0.0000001"));
 
-      await service.fee(FeeRequest(
-          operation: "deposit", assetCode: "ETH", amount: 3e-7));
+      await service.fee(
+        FeeRequest(operation: "deposit", assetCode: "ETH", amount: 3e-7),
+      );
       expect(capturedAmount, equals("0.0000003"));
 
       // The stored double is 100000000000.100006103515625; the query must
       // carry the shortest representation, not the binary expansion behind
       // it.
-      await service.fee(FeeRequest(
-          operation: "deposit", assetCode: "ETH", amount: 100000000000.1));
+      await service.fee(
+        FeeRequest(
+          operation: "deposit",
+          assetCode: "ETH",
+          amount: 100000000000.1,
+        ),
+      );
       expect(capturedAmount, equals("100000000000.1"));
     });
   });

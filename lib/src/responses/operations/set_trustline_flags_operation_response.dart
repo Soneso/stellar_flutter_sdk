@@ -94,63 +94,65 @@ class SetTrustlineFlagsOperationResponse extends OperationResponse {
   /// - [transaction] Full parent transaction
   /// - [sponsor] Account sponsoring the operation (if applicable)
   SetTrustlineFlagsOperationResponse(
-      this.trustor,
-      this.assetType,
-      this.assetCode,
-      this.assetIssuer,
-      this.clearFlags,
-      this.setFlags,
-      this.clearFlagsInt,
-      this.setFlagsInt,
-      super.links,
-      super.id,
-      super.pagingToken,
-      super.transactionSuccessful,
-      super.sourceAccount,
-      super.sourceAccountMuxed,
-      super.sourceAccountMuxedId,
-      super.type,
-      super.type_i,
-      super.createdAt,
-      super.transactionHash,
-      super.transaction,
-      super.sponsor);
+    this.trustor,
+    this.assetType,
+    this.assetCode,
+    this.assetIssuer,
+    this.clearFlags,
+    this.setFlags,
+    this.clearFlagsInt,
+    this.setFlagsInt,
+    super.links,
+    super.id,
+    super.pagingToken,
+    super.transactionSuccessful,
+    super.sourceAccount,
+    super.sourceAccountMuxed,
+    super.sourceAccountMuxedId,
+    super.type,
+    super.type_i,
+    super.createdAt,
+    super.transactionHash,
+    super.transaction,
+    super.sponsor,
+  );
 
   /// Deserializes a set trustline flags operation response from JSON.
   ///
   /// Converts a JSON map from the Horizon API into a SetTrustlineFlagsOperationResponse object.
   factory SetTrustlineFlagsOperationResponse.fromJson(
-          Map<String, dynamic> json) =>
-      SetTrustlineFlagsOperationResponse(
-          json['trustor'],
-          json['asset_type'],
-          json['asset_code'],
-          json['asset_issuer'],
-          json['clear_flags_s'] != null
-              ? List<String>.from(json['clear_flags_s'].map((e) => e))
-              : null,
-          json['set_flags_s'] != null
-              ? List<String>.from(json['set_flags_s'].map((e) => e))
-              : null,
-          json['clear_flags'] != null
-              ? List<int>.from(json['clear_flags'].map((e) => e))
-              : null,
-          json['set_flags'] != null
-              ? List<int>.from(json['set_flags'].map((e) => e))
-              : null,
-          OperationResponseLinks.fromJson(json['_links']),
-          json['id'],
-          json['paging_token'],
-          json['transaction_successful'],
-          json['source_account'],
-          json['source_account_muxed'],
-          json['source_account_muxed_id'],
-          json['type'],
-          json['type_i'],
-          json['created_at'],
-          json['transaction_hash'],
-          json['transaction'] == null
-              ? null
-              : TransactionResponse.fromJson(json['transaction']),
-          json['sponsor']);
+    Map<String, dynamic> json,
+  ) => SetTrustlineFlagsOperationResponse(
+    json['trustor'],
+    json['asset_type'],
+    json['asset_code'],
+    json['asset_issuer'],
+    json['clear_flags_s'] != null
+        ? List<String>.from(json['clear_flags_s'].map((e) => e))
+        : null,
+    json['set_flags_s'] != null
+        ? List<String>.from(json['set_flags_s'].map((e) => e))
+        : null,
+    json['clear_flags'] != null
+        ? List<int>.from(json['clear_flags'].map((e) => e))
+        : null,
+    json['set_flags'] != null
+        ? List<int>.from(json['set_flags'].map((e) => e))
+        : null,
+    OperationResponseLinks.fromJson(json['_links']),
+    json['id'],
+    json['paging_token'],
+    json['transaction_successful'],
+    json['source_account'],
+    json['source_account_muxed'],
+    json['source_account_muxed_id'],
+    json['type'],
+    json['type_i'],
+    json['created_at'],
+    json['transaction_hash'],
+    json['transaction'] == null
+        ? null
+        : TransactionResponse.fromJson(json['transaction']),
+    json['sponsor'],
+  );
 }

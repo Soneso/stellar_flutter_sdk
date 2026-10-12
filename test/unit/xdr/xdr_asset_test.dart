@@ -15,7 +15,9 @@ void main() {
 
   group('XdrAsset encode/decode', () {
     test('encodes and decodes ALPHANUM4 asset', () {
-      final issuer = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      final issuer = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       final assetCode = Uint8List(4);
       assetCode[0] = 85; // U
       assetCode[1] = 83; // S
@@ -33,7 +35,10 @@ void main() {
       final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
       final decoded = XdrAsset.decode(input);
 
-      expect(decoded.discriminant, equals(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4));
+      expect(
+        decoded.discriminant,
+        equals(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4),
+      );
       expect(decoded.alphaNum4, isNotNull);
       expect(decoded.alphaNum4!.assetCode[0], equals(85));
       expect(decoded.alphaNum4!.assetCode[1], equals(83));
@@ -41,17 +46,19 @@ void main() {
     });
 
     test('encodes and decodes ALPHANUM12 asset', () {
-      final issuer = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      final issuer = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       final assetCode = Uint8List(12);
-      assetCode[0] = 76;  // L
-      assetCode[1] = 79;  // O
-      assetCode[2] = 78;  // N
-      assetCode[3] = 71;  // G
-      assetCode[4] = 65;  // A
-      assetCode[5] = 83;  // S
-      assetCode[6] = 83;  // S
-      assetCode[7] = 69;  // E
-      assetCode[8] = 84;  // T
+      assetCode[0] = 76; // L
+      assetCode[1] = 79; // O
+      assetCode[2] = 78; // N
+      assetCode[3] = 71; // G
+      assetCode[4] = 65; // A
+      assetCode[5] = 83; // S
+      assetCode[6] = 83; // S
+      assetCode[7] = 69; // E
+      assetCode[8] = 84; // T
       for (int i = 9; i < 12; i++) {
         assetCode[i] = 0;
       }
@@ -67,7 +74,10 @@ void main() {
       final input = XdrDataInputStream(Uint8List.fromList(output.bytes));
       final decoded = XdrAsset.decode(input);
 
-      expect(decoded.discriminant, equals(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12));
+      expect(
+        decoded.discriminant,
+        equals(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12),
+      );
       expect(decoded.alphaNum12, isNotNull);
       expect(decoded.alphaNum12!.assetCode[0], equals(76));
       expect(decoded.alphaNum12!.assetCode[8], equals(84));
@@ -76,7 +86,9 @@ void main() {
 
   group('XdrAssetAlphaNum4 encode/decode', () {
     test('handles single character code', () {
-      final issuer = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      final issuer = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       final assetCode = Uint8List.fromList([88, 0, 0, 0]); // X
 
       final alphaNum4 = XdrAssetAlphaNum4(assetCode, issuer);
@@ -94,9 +106,22 @@ void main() {
 
   group('XdrAssetAlphaNum12 encode/decode', () {
     test('handles full 12 character code', () {
-      final issuer = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      final issuer = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       final assetCode = Uint8List.fromList([
-        65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
       ]); // ABCDEFGHIJKL
 
       final alphaNum12 = XdrAssetAlphaNum12(assetCode, issuer);
@@ -138,11 +163,16 @@ void main() {
       final xdrAsset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
       final trustlineAsset = XdrTrustlineAsset.fromXdrAsset(xdrAsset);
 
-      expect(trustlineAsset.discriminant, equals(XdrAssetType.ASSET_TYPE_NATIVE));
+      expect(
+        trustlineAsset.discriminant,
+        equals(XdrAssetType.ASSET_TYPE_NATIVE),
+      );
     });
 
     test('creates from XdrAsset ALPHANUM4', () {
-      final issuer = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      final issuer = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       final assetCode = Uint8List.fromList([88, 89, 90, 0]);
 
       final alphaNum4 = XdrAssetAlphaNum4(assetCode, issuer);
@@ -152,7 +182,10 @@ void main() {
 
       final trustlineAsset = XdrTrustlineAsset.fromXdrAsset(xdrAsset);
 
-      expect(trustlineAsset.discriminant, equals(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4));
+      expect(
+        trustlineAsset.discriminant,
+        equals(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4),
+      );
       expect(trustlineAsset.alphaNum4, isNotNull);
     });
 
@@ -171,11 +204,16 @@ void main() {
       final xdrAsset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
       final changeTrustAsset = XdrChangeTrustAsset.fromXdrAsset(xdrAsset);
 
-      expect(changeTrustAsset.discriminant, equals(XdrAssetType.ASSET_TYPE_NATIVE));
+      expect(
+        changeTrustAsset.discriminant,
+        equals(XdrAssetType.ASSET_TYPE_NATIVE),
+      );
     });
 
     test('creates from XdrAsset ALPHANUM4', () {
-      final issuer = XdrAccountID.forAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
+      final issuer = XdrAccountID.forAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
       final assetCode = Uint8List.fromList([65, 66, 67, 0]);
 
       final alphaNum4 = XdrAssetAlphaNum4(assetCode, issuer);
@@ -185,7 +223,10 @@ void main() {
 
       final changeTrustAsset = XdrChangeTrustAsset.fromXdrAsset(xdrAsset);
 
-      expect(changeTrustAsset.discriminant, equals(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4));
+      expect(
+        changeTrustAsset.discriminant,
+        equals(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4),
+      );
       expect(changeTrustAsset.alphaNum4, isNotNull);
     });
   });

@@ -124,11 +124,20 @@ class Address {
   /// If [Address.TYPE_CLAIMABLE_BALANCE] one must provide [claimableBalanceId].
   /// If [Address.TYPE_LIQUIDITY_POOL] one must provide [liquidityPoolId].
   /// If [Address.TYPE_MUXED_CONTRACT] one must provide [muxedContractId].
-  Address(this._type, {this.accountId, this.contractId, this.muxedAccountId,
-    this.claimableBalanceId, this.liquidityPoolId, this.muxedContractId}) {
-    if (this._type != TYPE_ACCOUNT && this._type != TYPE_CONTRACT &&
-        this._type != TYPE_MUXED_ACCOUNT  && this._type != TYPE_CLAIMABLE_BALANCE
-        && this._type != TYPE_LIQUIDITY_POOL &&
+  Address(
+    this._type, {
+    this.accountId,
+    this.contractId,
+    this.muxedAccountId,
+    this.claimableBalanceId,
+    this.liquidityPoolId,
+    this.muxedContractId,
+  }) {
+    if (this._type != TYPE_ACCOUNT &&
+        this._type != TYPE_CONTRACT &&
+        this._type != TYPE_MUXED_ACCOUNT &&
+        this._type != TYPE_CLAIMABLE_BALANCE &&
+        this._type != TYPE_LIQUIDITY_POOL &&
         this._type != TYPE_MUXED_CONTRACT) {
       throw new Exception("unknown type");
     }
@@ -145,7 +154,8 @@ class Address {
       throw new Exception("invalid arguments");
     }
 
-    if (this._type == TYPE_CLAIMABLE_BALANCE && this.claimableBalanceId == null) {
+    if (this._type == TYPE_CLAIMABLE_BALANCE &&
+        this.claimableBalanceId == null) {
       throw new Exception("invalid arguments");
     }
 
@@ -175,7 +185,10 @@ class Address {
 
   /// Constructs an [Address] of type [Address.TYPE_CLAIMABLE_BALANCE] for the given [claimableBalanceId].
   static Address forClaimableBalanceId(String claimableBalanceId) {
-    return Address(TYPE_CLAIMABLE_BALANCE, claimableBalanceId: claimableBalanceId);
+    return Address(
+      TYPE_CLAIMABLE_BALANCE,
+      claimableBalanceId: claimableBalanceId,
+    );
   }
 
   /// Constructs an [Address] of type [Address.TYPE_LIQUIDITY_POOL] for the given [liquidityPoolId].
@@ -193,8 +206,10 @@ class Address {
   ///
   /// The arguments and the [ArgumentError] they can raise are those of
   /// [MuxedContract.new].
-  static Address forMuxedContract(
-      {required String contractId, required BigInt id}) {
+  static Address forMuxedContract({
+    required String contractId,
+    required BigInt id,
+  }) {
     return MuxedContract(contractId, id).toAddress();
   }
 
@@ -204,19 +219,34 @@ class Address {
       KeyPair kp = KeyPair.fromXdrPublicKey(xdr.accountId!.accountID);
       return Address(TYPE_ACCOUNT, accountId: kp.accountId);
     } else if (xdr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_CONTRACT) {
-      return Address(TYPE_CONTRACT,
-          contractId: Util.bytesToHex(xdr.contractId!.hash));
-    } else if (xdr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT) {
-      return Address(TYPE_MUXED_ACCOUNT, muxedAccountId: xdr.muxedAccount!.accountId);
-    } else if (xdr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE) {
-      return Address(TYPE_CLAIMABLE_BALANCE,
-          claimableBalanceId: xdr.claimableBalanceId!.paddedBalanceIdHex);
-    } else if (xdr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL) {
-      return Address(TYPE_LIQUIDITY_POOL,
-          liquidityPoolId: Util.bytesToHex(xdr.liquidityPoolId!.hash));
-    } else if (xdr.discriminant == XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT) {
-      return Address(TYPE_MUXED_CONTRACT,
-          muxedContractId: xdr.muxedContract!.muxedContractId);
+      return Address(
+        TYPE_CONTRACT,
+        contractId: Util.bytesToHex(xdr.contractId!.hash),
+      );
+    } else if (xdr.discriminant ==
+        XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT) {
+      return Address(
+        TYPE_MUXED_ACCOUNT,
+        muxedAccountId: xdr.muxedAccount!.accountId,
+      );
+    } else if (xdr.discriminant ==
+        XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE) {
+      return Address(
+        TYPE_CLAIMABLE_BALANCE,
+        claimableBalanceId: xdr.claimableBalanceId!.paddedBalanceIdHex,
+      );
+    } else if (xdr.discriminant ==
+        XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL) {
+      return Address(
+        TYPE_LIQUIDITY_POOL,
+        liquidityPoolId: Util.bytesToHex(xdr.liquidityPoolId!.hash),
+      );
+    } else if (xdr.discriminant ==
+        XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT) {
+      return Address(
+        TYPE_MUXED_CONTRACT,
+        muxedContractId: xdr.muxedContract!.muxedContractId,
+      );
     } else {
       throw Exception("unknown address type " + xdr.discriminant.toString());
     }
@@ -284,24 +314,31 @@ class Address {
   /// Returns the derived contract id ("C...").
   ///
   /// Throws [ArgumentError] if [salt] is not exactly 32 bytes.
-  static String deriveContractId(
-      {required Address deployer,
-      required Uint8List salt,
-      required Network network}) {
+  static String deriveContractId({
+    required Address deployer,
+    required Uint8List salt,
+    required Network network,
+  }) {
     if (salt.length != 32) {
-      throw ArgumentError(
-          "salt must be exactly 32 bytes, got ${salt.length}");
+      throw ArgumentError("salt must be exactly 32 bytes, got ${salt.length}");
     }
     final networkId = network.networkId;
 
     final contractIdPreimage = XdrContractIDPreimage(
-        XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS);
-    contractIdPreimage.fromAddress =
-        XdrContractIDPreimageFromAddress(deployer.toXdr(), XdrUint256(salt));
+      XdrContractIDPreimageType.CONTRACT_ID_PREIMAGE_FROM_ADDRESS,
+    );
+    contractIdPreimage.fromAddress = XdrContractIDPreimageFromAddress(
+      deployer.toXdr(),
+      XdrUint256(salt),
+    );
 
-    final preimage = XdrHashIDPreimage(XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_ID);
-    preimage.contractID =
-        XdrHashIDPreimageContractID(XdrHash(networkId), contractIdPreimage);
+    final preimage = XdrHashIDPreimage(
+      XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_ID,
+    );
+    preimage.contractID = XdrHashIDPreimageContractID(
+      XdrHash(networkId),
+      contractIdPreimage,
+    );
 
     final stream = XdrDataOutputStream();
     XdrHashIDPreimage.encode(stream, preimage);
@@ -345,18 +382,30 @@ class SorobanAddressCredentials {
   /// - [signatureExpirationLedger] Ledger number when signature expires (e.g., current + 100)
   /// - [signature] Cryptographic signature as XdrSCVal (initially void, filled during signing)
   SorobanAddressCredentials(
-      this.address, this.nonce, this.signatureExpirationLedger, this.signature);
+    this.address,
+    this.nonce,
+    this.signatureExpirationLedger,
+    this.signature,
+  );
 
   /// Creates address credentials from their XDR representation.
   static SorobanAddressCredentials fromXdr(XdrSorobanAddressCredentials xdr) {
-    return SorobanAddressCredentials(Address.fromXdr(xdr.address),
-        xdr.nonce.int64, xdr.signatureExpirationLedger.uint32, xdr.signature);
+    return SorobanAddressCredentials(
+      Address.fromXdr(xdr.address),
+      xdr.nonce.int64,
+      xdr.signatureExpirationLedger.uint32,
+      xdr.signature,
+    );
   }
 
   /// Converts these address credentials to their XDR representation.
   XdrSorobanAddressCredentials toXdr() {
-    return new XdrSorobanAddressCredentials(address.toXdr(), XdrInt64(nonce),
-        XdrUint32(signatureExpirationLedger), signature);
+    return new XdrSorobanAddressCredentials(
+      address.toXdr(),
+      XdrInt64(nonce),
+      XdrUint32(signatureExpirationLedger),
+      signature,
+    );
   }
 }
 
@@ -422,11 +471,15 @@ class SorobanAddressCredentialsWithDelegates {
   /// Sorted ascending by XDR-encoded address bytes; no duplicates within this list.
   List<SorobanDelegateSignature> delegates;
 
-  SorobanAddressCredentialsWithDelegates(this.addressCredentials, this.delegates);
+  SorobanAddressCredentialsWithDelegates(
+    this.addressCredentials,
+    this.delegates,
+  );
 
   /// Creates from its XDR representation.
   static SorobanAddressCredentialsWithDelegates fromXdr(
-      XdrSorobanAddressCredentialsWithDelegates xdr) {
+    XdrSorobanAddressCredentialsWithDelegates xdr,
+  ) {
     return SorobanAddressCredentialsWithDelegates(
       SorobanAddressCredentials.fromXdr(xdr.addressCredentials),
       xdr.delegates.map((d) => SorobanDelegateSignature.fromXdr(d)).toList(),
@@ -483,7 +536,8 @@ class SorobanCredentials {
   // null means SOURCE_ACCOUNT; set by the private _arm tracker
   XdrSorobanCredentialsType _arm;
 
-  SorobanCredentials._(this._arm, {
+  SorobanCredentials._(
+    this._arm, {
     this.addressCredentials,
     this.addressV2Credentials,
     this.addressWithDelegatesCredentials,
@@ -496,8 +550,8 @@ class SorobanCredentials {
   ///
   /// For the P27 arms use [forAddress] / [forAddressCredentials] /
   /// [forAddressV2] (ADDRESS_V2) or [forAddressWithDelegates].
-  SorobanCredentials({SorobanAddressCredentials? addressCredentials}) :
-      _arm = addressCredentials != null
+  SorobanCredentials({SorobanAddressCredentials? addressCredentials})
+    : _arm = addressCredentials != null
           ? XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS
           : XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT {
     if (addressCredentials != null) {
@@ -517,10 +571,18 @@ class SorobanCredentials {
   /// Preimage type: ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS
   /// (address-bound). Emitting this arm on a network below protocol 27
   /// invalidates the transaction; use [forAddressLegacy] there.
-  static SorobanCredentials forAddress(Address address, BigInt nonce,
-      int signatureExpirationLedger, XdrSCVal signature) {
+  static SorobanCredentials forAddress(
+    Address address,
+    BigInt nonce,
+    int signatureExpirationLedger,
+    XdrSCVal signature,
+  ) {
     SorobanAddressCredentials addressCredentials = SorobanAddressCredentials(
-        address, nonce, signatureExpirationLedger, signature);
+      address,
+      nonce,
+      signatureExpirationLedger,
+      signature,
+    );
     return SorobanCredentials._(
       XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
       addressV2Credentials: addressCredentials,
@@ -531,10 +593,18 @@ class SorobanCredentials {
   ///
   /// Preimage type: ENVELOPE_TYPE_SOROBAN_AUTHORIZATION.
   /// Valid on all protocol versions.
-  static SorobanCredentials forAddressLegacy(Address address, BigInt nonce,
-      int signatureExpirationLedger, XdrSCVal signature) {
+  static SorobanCredentials forAddressLegacy(
+    Address address,
+    BigInt nonce,
+    int signatureExpirationLedger,
+    XdrSCVal signature,
+  ) {
     SorobanAddressCredentials addressCredentials = SorobanAddressCredentials(
-        address, nonce, signatureExpirationLedger, signature);
+      address,
+      nonce,
+      signatureExpirationLedger,
+      signature,
+    );
     return SorobanCredentials(addressCredentials: addressCredentials);
   }
 
@@ -545,7 +615,8 @@ class SorobanCredentials {
   /// protocol 27 invalidates the transaction; use
   /// [forAddressCredentialsLegacy] there.
   static SorobanCredentials forAddressCredentials(
-      SorobanAddressCredentials addressCredentials) {
+    SorobanAddressCredentials addressCredentials,
+  ) {
     return SorobanCredentials._(
       XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
       addressV2Credentials: addressCredentials,
@@ -558,7 +629,8 @@ class SorobanCredentials {
   /// Preimage type: ENVELOPE_TYPE_SOROBAN_AUTHORIZATION.
   /// Valid on all protocol versions.
   static SorobanCredentials forAddressCredentialsLegacy(
-      SorobanAddressCredentials addressCredentials) {
+    SorobanAddressCredentials addressCredentials,
+  ) {
     return SorobanCredentials(addressCredentials: addressCredentials);
   }
 
@@ -567,7 +639,9 @@ class SorobanCredentials {
   /// Preimage type: ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS.
   /// The preimage binds the top-level credential address.
   /// Emitting this arm on a network below protocol 27 invalidates the transaction.
-  static SorobanCredentials forAddressV2(SorobanAddressCredentials credentials) {
+  static SorobanCredentials forAddressV2(
+    SorobanAddressCredentials credentials,
+  ) {
     return SorobanCredentials._(
       XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
       addressV2Credentials: credentials,
@@ -580,7 +654,8 @@ class SorobanCredentials {
   /// Emitting this arm on a network below protocol 27 invalidates the transaction.
   /// Prefer [SorobanAuthorizationEntry.withDelegates] which enforces delegate sort order.
   static SorobanCredentials forAddressWithDelegates(
-      SorobanAddressCredentialsWithDelegates credentials) {
+    SorobanAddressCredentialsWithDelegates credentials,
+  ) {
     return SorobanCredentials._(
       XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
       addressWithDelegatesCredentials: credentials,
@@ -624,25 +699,29 @@ class SorobanCredentials {
         }
         return SorobanCredentials._(
           XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
-          addressV2Credentials: SorobanAddressCredentials.fromXdr(xdr.addressV2!),
+          addressV2Credentials: SorobanAddressCredentials.fromXdr(
+            xdr.addressV2!,
+          ),
         );
       case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
         if (xdr.addressWithDelegates == null) {
-          throw Exception('ADDRESS_WITH_DELEGATES credentials missing addressWithDelegates field');
+          throw Exception(
+            'ADDRESS_WITH_DELEGATES credentials missing addressWithDelegates field',
+          );
         }
         return SorobanCredentials._(
           XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES,
           addressWithDelegatesCredentials:
-              SorobanAddressCredentialsWithDelegates.fromXdr(xdr.addressWithDelegates!),
+              SorobanAddressCredentialsWithDelegates.fromXdr(
+                xdr.addressWithDelegates!,
+              ),
         );
       case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT:
         return SorobanCredentials._(
           XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT,
         );
       default:
-        throw Exception(
-          'Unknown SorobanCredentials discriminant: ${xdr.type}',
-        );
+        throw Exception('Unknown SorobanCredentials discriminant: ${xdr.type}');
     }
   }
 
@@ -654,23 +733,30 @@ class SorobanCredentials {
           throw Exception('ADDRESS credentials missing addressCredentials');
         }
         return XdrSorobanCredentials.forAddressCredentials(
-            addressCredentials!.toXdr());
+          addressCredentials!.toXdr(),
+        );
       case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2:
         if (addressV2Credentials == null) {
-          throw Exception('ADDRESS_V2 credentials missing addressV2Credentials');
+          throw Exception(
+            'ADDRESS_V2 credentials missing addressV2Credentials',
+          );
         }
         return XdrSorobanCredentials.forAddressV2Credentials(
-            addressV2Credentials!.toXdr());
+          addressV2Credentials!.toXdr(),
+        );
       case XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES:
         if (addressWithDelegatesCredentials == null) {
           throw Exception(
-              'ADDRESS_WITH_DELEGATES credentials missing addressWithDelegatesCredentials');
+            'ADDRESS_WITH_DELEGATES credentials missing addressWithDelegatesCredentials',
+          );
         }
         return XdrSorobanCredentials.forAddressWithDelegatesCredentials(
-            addressWithDelegatesCredentials!.toXdr());
+          addressWithDelegatesCredentials!.toXdr(),
+        );
       default:
         return XdrSorobanCredentials(
-            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT);
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT,
+        );
     }
   }
 }
@@ -720,11 +806,14 @@ class SorobanAuthorizedFunction {
   ///
   /// Throws:
   /// - ArgumentError If all parameters are null or if multiple are non-null
-  SorobanAuthorizedFunction(
-      {XdrInvokeContractArgs? contractFn,
-      XdrCreateContractArgs? createContractHostFn,
-        XdrCreateContractArgsV2? createContractV2HostFn}) {
-    if (contractFn == null && createContractHostFn == null && createContractV2HostFn == null) {
+  SorobanAuthorizedFunction({
+    XdrInvokeContractArgs? contractFn,
+    XdrCreateContractArgs? createContractHostFn,
+    XdrCreateContractArgsV2? createContractV2HostFn,
+  }) {
+    if (contractFn == null &&
+        createContractHostFn == null &&
+        createContractV2HostFn == null) {
       throw ArgumentError("invalid arguments");
     }
 
@@ -753,9 +842,15 @@ class SorobanAuthorizedFunction {
   /// );
   /// ```
   static SorobanAuthorizedFunction forContractFunction(
-      Address contractAddress, String functionName, List<XdrSCVal> args) {
-    XdrInvokeContractArgs cfn =
-        XdrInvokeContractArgs(contractAddress.toXdr(), functionName, args);
+    Address contractAddress,
+    String functionName,
+    List<XdrSCVal> args,
+  ) {
+    XdrInvokeContractArgs cfn = XdrInvokeContractArgs(
+      contractAddress.toXdr(),
+      functionName,
+      args,
+    );
     return SorobanAuthorizedFunction(contractFn: cfn);
   }
 
@@ -768,9 +863,11 @@ class SorobanAuthorizedFunction {
   ///
   /// Returns: SorobanAuthorizedFunction configured for contract creation
   static SorobanAuthorizedFunction forCreateContractHostFunction(
-      XdrCreateContractArgs createContractHostFn) {
+    XdrCreateContractArgs createContractHostFn,
+  ) {
     return SorobanAuthorizedFunction(
-        createContractHostFn: createContractHostFn);
+      createContractHostFn: createContractHostFn,
+    );
   }
 
   /// Creates an authorized function for contract creation (v2 format).
@@ -782,9 +879,11 @@ class SorobanAuthorizedFunction {
   ///
   /// Returns: SorobanAuthorizedFunction configured for contract creation
   static SorobanAuthorizedFunction forCreateContractV2HostFunction(
-      XdrCreateContractArgsV2 createContractV2HostFn) {
+    XdrCreateContractArgsV2 createContractV2HostFn,
+  ) {
     return SorobanAuthorizedFunction(
-        createContractV2HostFn: createContractV2HostFn);
+      createContractV2HostFn: createContractV2HostFn,
+    );
   }
 
   /// Deserializes a SorobanAuthorizedFunction from XDR format.
@@ -798,17 +897,18 @@ class SorobanAuthorizedFunction {
             XdrSorobanAuthorizedFunctionType
                 .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN &&
         xdr.contractFn != null) {
-      return SorobanAuthorizedFunction(
-          contractFn:xdr.contractFn!);
+      return SorobanAuthorizedFunction(contractFn: xdr.contractFn!);
     } else if (xdr.type ==
-        XdrSorobanAuthorizedFunctionType
-            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN &&
+            XdrSorobanAuthorizedFunctionType
+                .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN &&
         xdr.createContractHostFn != null) {
       return SorobanAuthorizedFunction(
-          createContractHostFn: xdr.createContractHostFn);
+        createContractHostFn: xdr.createContractHostFn,
+      );
     } else {
       return SorobanAuthorizedFunction(
-          createContractV2HostFn: xdr.createContractV2HostFn);
+        createContractV2HostFn: xdr.createContractV2HostFn,
+      );
     }
   }
 
@@ -818,20 +918,23 @@ class SorobanAuthorizedFunction {
   XdrSorobanAuthorizedFunction toXdr() {
     if (contractFn != null) {
       XdrSorobanAuthorizedFunction cfn = XdrSorobanAuthorizedFunction(
-          XdrSorobanAuthorizedFunctionType
-              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN);
+        XdrSorobanAuthorizedFunctionType
+            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN,
+      );
       cfn.contractFn = contractFn!;
       return cfn;
     } else if (createContractHostFn != null) {
       XdrSorobanAuthorizedFunction cfn = XdrSorobanAuthorizedFunction(
-          XdrSorobanAuthorizedFunctionType
-              .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN);
+        XdrSorobanAuthorizedFunctionType
+            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN,
+      );
       cfn.createContractHostFn = createContractHostFn!;
       return cfn;
     }
     XdrSorobanAuthorizedFunction cfn = XdrSorobanAuthorizedFunction(
-        XdrSorobanAuthorizedFunctionType
-            .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN);
+      XdrSorobanAuthorizedFunctionType
+          .SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN,
+    );
     cfn.createContractV2HostFn = createContractV2HostFn!;
     return cfn;
   }
@@ -896,8 +999,10 @@ class SorobanAuthorizedInvocation {
   /// Parameters:
   /// - [function] The function to be invoked
   /// - [subInvocations] Optional list of nested invocations (default: empty)
-  SorobanAuthorizedInvocation(this.function,
-      {List<SorobanAuthorizedInvocation>? subInvocations}) {
+  SorobanAuthorizedInvocation(
+    this.function, {
+    List<SorobanAuthorizedInvocation>? subInvocations,
+  }) {
     if (subInvocations != null) {
       this.subInvocations = subInvocations;
     }
@@ -912,15 +1017,17 @@ class SorobanAuthorizedInvocation {
   ///
   /// Returns: Deserialized SorobanAuthorizedInvocation with all sub-invocations
   static SorobanAuthorizedInvocation fromXdr(
-      XdrSorobanAuthorizedInvocation xdr) {
+    XdrSorobanAuthorizedInvocation xdr,
+  ) {
     List<SorobanAuthorizedInvocation> subInvocations =
         List<SorobanAuthorizedInvocation>.empty(growable: true);
     for (XdrSorobanAuthorizedInvocation subXdr in xdr.subInvocations) {
       subInvocations.add(SorobanAuthorizedInvocation.fromXdr(subXdr));
     }
     return SorobanAuthorizedInvocation(
-        SorobanAuthorizedFunction.fromXdr(xdr.function),
-        subInvocations: subInvocations);
+      SorobanAuthorizedFunction.fromXdr(xdr.function),
+      subInvocations: subInvocations,
+    );
   }
 
   /// Serializes this SorobanAuthorizedInvocation to XDR format.
@@ -935,7 +1042,9 @@ class SorobanAuthorizedInvocation {
       xdrSubInvocations.add(sub.toXdr());
     }
     return XdrSorobanAuthorizedInvocation(
-        this.function.toXdr(), xdrSubInvocations);
+      this.function.toXdr(),
+      xdrSubInvocations,
+    );
   }
 }
 
@@ -1019,21 +1128,25 @@ class SorobanAuthorizationEntry {
   /// Creates an authorization entry from its XDR representation.
   static SorobanAuthorizationEntry fromXdr(XdrSorobanAuthorizationEntry xdr) {
     return SorobanAuthorizationEntry(
-        SorobanCredentials.fromXdr(xdr.credentials),
-        SorobanAuthorizedInvocation.fromXdr(xdr.rootInvocation));
+      SorobanCredentials.fromXdr(xdr.credentials),
+      SorobanAuthorizedInvocation.fromXdr(xdr.rootInvocation),
+    );
   }
 
   /// Converts this authorization entry to its XDR representation.
   XdrSorobanAuthorizationEntry toXdr() {
     return XdrSorobanAuthorizationEntry(
-        this.credentials.toXdr(), this.rootInvocation.toXdr());
+      this.credentials.toXdr(),
+      this.rootInvocation.toXdr(),
+    );
   }
 
   /// Creates an authorization entry from base64-encoded XDR.
   static SorobanAuthorizationEntry fromBase64EncodedXdr(String xdr) {
     Uint8List bytes = base64Decode(xdr);
     return SorobanAuthorizationEntry.fromXdr(
-        XdrSorobanAuthorizationEntry.decode(XdrDataInputStream(bytes)));
+      XdrSorobanAuthorizationEntry.decode(XdrDataInputStream(bytes)),
+    );
   }
 
   /// Converts this authorization entry to base64-encoded XDR format.
@@ -1067,8 +1180,7 @@ class SorobanAuthorizationEntry {
     final inner = credentials.innerAddressCredentials;
 
     if (inner == null) {
-      throw Exception(
-          'Cannot build preimage for source-account credentials');
+      throw Exception('Cannot build preimage for source-account credentials');
     }
 
     if (arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS) {
@@ -1080,11 +1192,15 @@ class SorobanAuthorizationEntry {
         rootInvocation.toXdr(),
       );
       final preimage = XdrHashIDPreimage(
-          XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION);
+        XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION,
+      );
       preimage.sorobanAuthorization = authPreimage;
       return preimage;
-    } else if (arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2 ||
-               arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+    } else if (arm ==
+            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2 ||
+        arm ==
+            XdrSorobanCredentialsType
+                .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
       // Address-bound preimage; address is always the top-level credential address
       final authPreimage = XdrHashIDPreimageSorobanAuthorizationWithAddress(
         XdrHash(network.networkId),
@@ -1094,12 +1210,12 @@ class SorobanAuthorizationEntry {
         rootInvocation.toXdr(),
       );
       final preimage = XdrHashIDPreimage(
-          XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS);
+        XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION_WITH_ADDRESS,
+      );
       preimage.sorobanAuthorizationWithAddress = authPreimage;
       return preimage;
     } else {
-      throw Exception(
-          'Cannot build preimage for unknown credential arm: $arm');
+      throw Exception('Cannot build preimage for unknown credential arm: $arm');
     }
   }
 
@@ -1121,7 +1237,9 @@ class SorobanAuthorizationEntry {
   /// not sort. Signing the same node twice with the same key appends a duplicate
   /// that the host rejects.
   static void _appendSignature(
-      SorobanAddressCredentials inner, AccountEd25519Signature newSig) {
+    SorobanAddressCredentials inner,
+    AccountEd25519Signature newSig,
+  ) {
     final existing = inner.signature;
     final List<XdrSCVal> sigs = List<XdrSCVal>.empty(growable: true);
     if (existing.vec != null) {
@@ -1171,8 +1289,12 @@ class SorobanAuthorizationEntry {
     final XdrSCAddressType credentialType = credentialAddress.discriminant;
     if (credentialType == XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_ACCOUNT ||
         credentialType == XdrSCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT) {
-      throw Exception(_muxedAddressMessage(
-          'credential addresses', credentialAddress.toStrKey()));
+      throw Exception(
+        _muxedAddressMessage(
+          'credential addresses',
+          credentialAddress.toStrKey(),
+        ),
+      );
     }
 
     if (forAddress != null &&
@@ -1192,11 +1314,11 @@ class SorobanAuthorizationEntry {
       _writeBackInnerCredentials(inner);
     } else {
       // Route to matching nodes in the delegate tree
-      final matched = _routeSignatureToAddress(
-          forAddress, inner, sig, 0);
+      final matched = _routeSignatureToAddress(forAddress, inner, sig, 0);
       if (!matched) {
         throw Exception(
-            'No node with address $forAddress found in this authorization entry');
+          'No node with address $forAddress found in this authorization entry',
+        );
       }
     }
   }
@@ -1250,13 +1372,15 @@ class SorobanAuthorizationEntry {
   /// Throws if [depth] exceeds [_maxDelegateTraversalDepth] to prevent
   /// unbounded recursion on pathological inputs.
   bool _routeSignatureToAddress(
-      String targetStrKey,
-      SorobanAddressCredentials topLevel,
-      AccountEd25519Signature sig,
-      int depth) {
+    String targetStrKey,
+    SorobanAddressCredentials topLevel,
+    AccountEd25519Signature sig,
+    int depth,
+  ) {
     if (depth > _maxDelegateTraversalDepth) {
       throw Exception(
-          'Delegate tree traversal depth limit ($_maxDelegateTraversalDepth) exceeded');
+        'Delegate tree traversal depth limit ($_maxDelegateTraversalDepth) exceeded',
+      );
     }
 
     bool matched = false;
@@ -1272,7 +1396,8 @@ class SorobanAuthorizationEntry {
 
       // Walk delegates if present
       if (credentials.arm ==
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+          XdrSorobanCredentialsType
+              .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
         final withDelegates = credentials.addressWithDelegatesCredentials!;
         for (final delegate in withDelegates.delegates) {
           if (_walkDelegate(targetStrKey, delegate, sig, depth + 1)) {
@@ -1287,13 +1412,15 @@ class SorobanAuthorizationEntry {
 
   /// Recursive walk of a delegate node and its nested delegates.
   bool _walkDelegate(
-      String targetStrKey,
-      SorobanDelegateSignature node,
-      AccountEd25519Signature sig,
-      int depth) {
+    String targetStrKey,
+    SorobanDelegateSignature node,
+    AccountEd25519Signature sig,
+    int depth,
+  ) {
     if (depth > _maxDelegateTraversalDepth) {
       throw Exception(
-          'Delegate tree traversal depth limit ($_maxDelegateTraversalDepth) exceeded');
+        'Delegate tree traversal depth limit ($_maxDelegateTraversalDepth) exceeded',
+      );
     }
 
     bool matched = false;
@@ -1314,7 +1441,9 @@ class SorobanAuthorizationEntry {
 
   /// Appends [sig] to the signature of delegate [node].
   static void _appendSignatureToDelegate(
-      SorobanDelegateSignature node, AccountEd25519Signature sig) {
+    SorobanDelegateSignature node,
+    AccountEd25519Signature sig,
+  ) {
     final existing = node.signature;
     final List<XdrSCVal> sigs = List<XdrSCVal>.empty(growable: true);
     if (existing.vec != null) {
@@ -1348,15 +1477,18 @@ class SorobanAuthorizationEntry {
     int signatureExpirationLedger,
   ) {
     final arm = source.credentials.arm;
-    if (arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+    if (arm ==
+        XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
       throw ArgumentError(
-          'source entry is already ADDRESS_WITH_DELEGATES; '
-          'cannot nest delegate trees');
+        'source entry is already ADDRESS_WITH_DELEGATES; '
+        'cannot nest delegate trees',
+      );
     }
     if (arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_SOURCE_ACCOUNT) {
       throw ArgumentError(
-          'source entry has source-account credentials; '
-          'delegate trees require address credentials');
+        'source entry has source-account credentials; '
+        'delegate trees require address credentials',
+      );
     }
 
     final sourceInner = source.credentials.innerAddressCredentials!;
@@ -1369,7 +1501,9 @@ class SorobanAuthorizationEntry {
 
     final sortedDelegates = _buildAndSortDelegates(delegates, depth: 0);
     final withDelegates = SorobanAddressCredentialsWithDelegates(
-        innerCreds, sortedDelegates);
+      innerCreds,
+      sortedDelegates,
+    );
 
     return SorobanAuthorizationEntry(
       SorobanCredentials.forAddressWithDelegates(withDelegates),
@@ -1385,8 +1519,9 @@ class SorobanAuthorizationEntry {
   }) {
     if (depth > _maxDelegateTraversalDepth) {
       throw ArgumentError(
-          'Delegate tree depth limit ($_maxDelegateTraversalDepth) exceeded '
-          'during construction');
+        'Delegate tree depth limit ($_maxDelegateTraversalDepth) exceeded '
+        'during construction',
+      );
     }
 
     final List<_DelegateSortable> items = [];
@@ -1394,28 +1529,37 @@ class SorobanAuthorizationEntry {
       if (desc.addressStrKey.startsWith('M') ||
           desc.addressStrKey.startsWith('W')) {
         throw ArgumentError(
-            'Muxed account (M...) and muxed contract (W...) addresses are not '
-            'valid Soroban delegate addresses: ${desc.addressStrKey}');
+          'Muxed account (M...) and muxed contract (W...) addresses are not '
+          'valid Soroban delegate addresses: ${desc.addressStrKey}',
+        );
       }
 
       final xdrAddr = _strKeyToXdrAddress(desc.addressStrKey);
       final encodedAddr = _encodeAddress(xdrAddr);
-      final nested = _buildAndSortDelegates(desc.nestedDelegates,
-          depth: depth + 1);
+      final nested = _buildAndSortDelegates(
+        desc.nestedDelegates,
+        depth: depth + 1,
+      );
 
-      items.add(_DelegateSortable(
-        encodedAddr: encodedAddr,
-        delegate: SorobanDelegateSignature(
-          xdrAddr,
-          desc.signature ?? XdrSCVal.forVoid(),
-          nested,
+      items.add(
+        _DelegateSortable(
+          encodedAddr: encodedAddr,
+          delegate: SorobanDelegateSignature(
+            xdrAddr,
+            desc.signature ?? XdrSCVal.forVoid(),
+            nested,
+          ),
         ),
-      ));
+      );
     }
 
     // Sort ascending by XDR-encoded address bytes (lexicographic)
     items.sort((a, b) {
-      for (int i = 0; i < a.encodedAddr.length && i < b.encodedAddr.length; i++) {
+      for (
+        int i = 0;
+        i < a.encodedAddr.length && i < b.encodedAddr.length;
+        i++
+      ) {
         final cmp = a.encodedAddr[i].compareTo(b.encodedAddr[i]);
         if (cmp != 0) return cmp;
       }
@@ -1426,8 +1570,9 @@ class SorobanAuthorizationEntry {
     for (int i = 1; i < items.length; i++) {
       if (_bytesEqual(items[i - 1].encodedAddr, items[i].encodedAddr)) {
         throw ArgumentError(
-            'Duplicate delegate address within one array: '
-            '${descriptors[i].addressStrKey}');
+          'Duplicate delegate address within one array: '
+          '${descriptors[i].addressStrKey}',
+        );
       }
     }
 
@@ -1442,7 +1587,8 @@ class SorobanAuthorizationEntry {
       return XdrSCAddress.forContractId(strKey);
     } else {
       throw ArgumentError(
-          'Invalid delegate address strkey (must start with G or C): $strKey');
+        'Invalid delegate address strkey (must start with G or C): $strKey',
+      );
     }
   }
 
@@ -1533,10 +1679,14 @@ class AccountEd25519Signature {
   XdrSCVal toXdrSCVal() {
     XdrSCVal pkVal = XdrSCVal.forBytes(publicKey.getEd25519()!.uint256);
     XdrSCVal sigVal = XdrSCVal.forBytes(signatureBytes);
-    XdrSCMapEntry pkEntry =
-        XdrSCMapEntry(XdrSCVal.forSymbol("public_key"), pkVal);
-    XdrSCMapEntry sigEntry =
-        XdrSCMapEntry(XdrSCVal.forSymbol("signature"), sigVal);
+    XdrSCMapEntry pkEntry = XdrSCMapEntry(
+      XdrSCVal.forSymbol("public_key"),
+      pkVal,
+    );
+    XdrSCMapEntry sigEntry = XdrSCMapEntry(
+      XdrSCVal.forSymbol("signature"),
+      sigVal,
+    );
     return XdrSCVal.forMap([pkEntry, sigEntry]);
   }
 }

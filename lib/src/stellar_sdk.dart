@@ -151,8 +151,9 @@ class StellarSDK {
   /// ```dart
   /// StellarSDK sdk = StellarSDK.TESTNET;
   /// ```
-  static final StellarSDK TESTNET =
-      StellarSDK("https://horizon-testnet.stellar.org");
+  static final StellarSDK TESTNET = StellarSDK(
+    "https://horizon-testnet.stellar.org",
+  );
 
   /// Pre-configured instance for the Stellar future network.
   ///
@@ -163,8 +164,9 @@ class StellarSDK {
   /// ```dart
   /// StellarSDK sdk = StellarSDK.FUTURENET;
   /// ```
-  static final StellarSDK FUTURENET =
-      StellarSDK("https://horizon-futurenet.stellar.org");
+  static final StellarSDK FUTURENET = StellarSDK(
+    "https://horizon-futurenet.stellar.org",
+  );
 
   late Uri _serverURI;
   late http.Client _httpClient;
@@ -202,10 +204,7 @@ class StellarSDK {
   /// **Platform notes:**
   /// - iOS/Android: Pass `HttpClient` from `dart:io` for proxy support
   /// - Web: Not supported; throws [UnsupportedError] if non-null
-  StellarSDK(
-    String url, {
-    Object? httpClient,
-  }) {
+  StellarSDK(String url, {Object? httpClient}) {
     _serverURI = Uri.parse(url);
     _httpClient = createHttpClient(httpClient);
   }
@@ -331,14 +330,23 @@ class StellarSDK {
 
   /// Returns a new [TradeAggregationsRequestBuilder] instance.
   TradeAggregationsRequestBuilder tradeAggregations(
-      Asset baseAsset,
-      Asset counterAsset,
-      int startTime,
-      int endTime,
-      int resolution,
-      int offset) {
-    return TradeAggregationsRequestBuilder(httpClient, _serverURI, baseAsset,
-        counterAsset, startTime, endTime, resolution, offset);
+    Asset baseAsset,
+    Asset counterAsset,
+    int startTime,
+    int endTime,
+    int resolution,
+    int offset,
+  ) {
+    return TradeAggregationsRequestBuilder(
+      httpClient,
+      _serverURI,
+      baseAsset,
+      counterAsset,
+      startTime,
+      endTime,
+      resolution,
+      offset,
+    );
   }
 
   /// Returns a new [StrictSendPathsRequestBuilder] instance.
@@ -425,10 +433,8 @@ class StellarSDK {
   }
 
   /// Runs the SEP-29 check of [checkMemoRequired] on a [Transaction].
-  Future<void> _checkMemoRequiredForTransaction(
-      Transaction transaction) async {
-    bool memoMissing =
-        transaction.memo == null || transaction.memo is MemoNone;
+  Future<void> _checkMemoRequiredForTransaction(Transaction transaction) async {
+    bool memoMissing = transaction.memo == null || transaction.memo is MemoNone;
     if (!memoMissing) {
       return;
     }
@@ -472,11 +478,15 @@ class StellarSDK {
       }
       AccountResponseData data = account.data;
       if (data.keys.contains(_memoRequiredDataKey) &&
-          utf8.decode(data.getDecoded(_memoRequiredDataKey),
-                  allowMalformed: true) ==
+          utf8.decode(
+                data.getDecoded(_memoRequiredDataKey),
+                allowMalformed: true,
+              ) ==
               _memoRequiredDataValue) {
         throw AccountRequiresMemoException(
-            accountId, destinationIndexes[accountId]!);
+          accountId,
+          destinationIndexes[accountId]!,
+        );
       }
     }
   }
@@ -515,16 +525,20 @@ class StellarSDK {
   /// Throws [http.ClientException] if there is a transport-level failure when communication with the server.
   /// For example, if the server could not be reached.
   /// See also: [Stellar developer docs](https://developers.stellar.org)
-  Future<SubmitTransactionResponse> submitTransaction(Transaction transaction,
-      {bool skipMemoRequiredCheck = false}) async {
+  Future<SubmitTransactionResponse> submitTransaction(
+    Transaction transaction, {
+    bool skipMemoRequiredCheck = false,
+  }) async {
     // Encoded before the check: the check reads the operations before its first
     // await, so both see the same payload.
     String envelope = transaction.toEnvelopeXdrBase64();
     if (!skipMemoRequiredCheck) {
       await checkMemoRequired(transaction);
     }
-    return submitTransactionEnvelopeXdrBase64(envelope,
-        skipMemoRequiredCheck: true);
+    return submitTransactionEnvelopeXdrBase64(
+      envelope,
+      skipMemoRequiredCheck: true,
+    );
   }
 
   /// Submits a synchronous [feeBumpTransaction] to the network. Unlike the asynchronous version [submitAsyncFeeBumpTransaction],
@@ -546,16 +560,19 @@ class StellarSDK {
   /// For example, if the server could not be reached.
   /// See also: [Stellar developer docs](https://developers.stellar.org)
   Future<SubmitTransactionResponse> submitFeeBumpTransaction(
-      FeeBumpTransaction feeBumpTransaction,
-      {bool skipMemoRequiredCheck = false}) async {
+    FeeBumpTransaction feeBumpTransaction, {
+    bool skipMemoRequiredCheck = false,
+  }) async {
     // Encoded before the check: the check reads the operations before its first
     // await, so both see the same payload.
     String envelope = feeBumpTransaction.toEnvelopeXdrBase64();
     if (!skipMemoRequiredCheck) {
       await checkMemoRequired(feeBumpTransaction);
     }
-    return submitTransactionEnvelopeXdrBase64(envelope,
-        skipMemoRequiredCheck: true);
+    return submitTransactionEnvelopeXdrBase64(
+      envelope,
+      skipMemoRequiredCheck: true,
+    );
   }
 
   /// Submits an asynchronous [transaction] to the network. Unlike the synchronous version [submitTransaction],
@@ -573,16 +590,19 @@ class StellarSDK {
   /// For example, if the server could not be reached.
   /// See also: [Stellar developer docs](https://developers.stellar.org)
   Future<SubmitAsyncTransactionResponse> submitAsyncTransaction(
-      Transaction transaction,
-      {bool skipMemoRequiredCheck = false}) async {
+    Transaction transaction, {
+    bool skipMemoRequiredCheck = false,
+  }) async {
     // Encoded before the check: the check reads the operations before its first
     // await, so both see the same payload.
     String envelope = transaction.toEnvelopeXdrBase64();
     if (!skipMemoRequiredCheck) {
       await checkMemoRequired(transaction);
     }
-    return submitAsyncTransactionEnvelopeXdrBase64(envelope,
-        skipMemoRequiredCheck: true);
+    return submitAsyncTransactionEnvelopeXdrBase64(
+      envelope,
+      skipMemoRequiredCheck: true,
+    );
   }
 
   /// Submits an asynchronous [feeBumpTransaction] to the network. Unlike the synchronous version [submitFeeBumpTransaction],
@@ -600,16 +620,19 @@ class StellarSDK {
   /// For example, if the server could not be reached.
   /// See also: [Stellar developer docs](https://developers.stellar.org)
   Future<SubmitAsyncTransactionResponse> submitAsyncFeeBumpTransaction(
-      FeeBumpTransaction feeBumpTransaction,
-      {bool skipMemoRequiredCheck = false}) async {
+    FeeBumpTransaction feeBumpTransaction, {
+    bool skipMemoRequiredCheck = false,
+  }) async {
     // Encoded before the check: the check reads the operations before its first
     // await, so both see the same payload.
     String envelope = feeBumpTransaction.toEnvelopeXdrBase64();
     if (!skipMemoRequiredCheck) {
       await checkMemoRequired(feeBumpTransaction);
     }
-    return submitAsyncTransactionEnvelopeXdrBase64(envelope,
-        skipMemoRequiredCheck: true);
+    return submitAsyncTransactionEnvelopeXdrBase64(
+      envelope,
+      skipMemoRequiredCheck: true,
+    );
   }
 
   /// Submits a synchronous [transactionEnvelopeXdrBase64] String to the network. Unlike the asynchronous version [submitAsyncTransactionEnvelopeXdrBase64],
@@ -632,8 +655,9 @@ class StellarSDK {
   /// For example, if the server could not be reached.
   /// See also: [Stellar developer docs](https://developers.stellar.org)
   Future<SubmitTransactionResponse> submitTransactionEnvelopeXdrBase64(
-      String transactionEnvelopeXdrBase64,
-      {bool skipMemoRequiredCheck = false}) async {
+    String transactionEnvelopeXdrBase64, {
+    bool skipMemoRequiredCheck = false,
+  }) async {
     if (!skipMemoRequiredCheck) {
       await _checkMemoRequiredForEnvelope(transactionEnvelopeXdrBase64);
     }
@@ -641,28 +665,33 @@ class StellarSDK {
 
     //print("Envelope XDR: " + transaction.toEnvelopeXdrBase64());
     SubmitTransactionResponse result = await _httpClient
-        .post(callURI,
-            body: {"tx": transactionEnvelopeXdrBase64},
-            headers: RequestBuilder.headers)
+        .post(
+          callURI,
+          body: {"tx": transactionEnvelopeXdrBase64},
+          headers: RequestBuilder.headers,
+        )
         .then((response) {
-      SubmitTransactionResponse submitTransactionResponse;
-      //print(response.body);
-      switch (response.statusCode) {
-        case 200:
-        case 400:
-          submitTransactionResponse =
-              SubmitTransactionResponse.fromJson(json.decode(response.body));
-          break;
-        case 504:
-          throw SubmitTransactionTimeoutResponseException.fromJson(
-              json.decode(response.body));
-        default:
-          throw UnknownResponse(response.statusCode, response.body);
-      }
-      return submitTransactionResponse;
-    }).catchError((onError) {
-      throw onError;
-    });
+          SubmitTransactionResponse submitTransactionResponse;
+          //print(response.body);
+          switch (response.statusCode) {
+            case 200:
+            case 400:
+              submitTransactionResponse = SubmitTransactionResponse.fromJson(
+                json.decode(response.body),
+              );
+              break;
+            case 504:
+              throw SubmitTransactionTimeoutResponseException.fromJson(
+                json.decode(response.body),
+              );
+            default:
+              throw UnknownResponse(response.statusCode, response.body);
+          }
+          return submitTransactionResponse;
+        })
+        .catchError((onError) {
+          throw onError;
+        });
 
     return result;
   }
@@ -683,48 +712,58 @@ class StellarSDK {
   /// For example, if the server could not be reached.
   /// See also: [Stellar developer docs](https://developers.stellar.org)
   Future<SubmitAsyncTransactionResponse>
-      submitAsyncTransactionEnvelopeXdrBase64(
-          String transactionEnvelopeXdrBase64,
-          {bool skipMemoRequiredCheck = false}) async {
+  submitAsyncTransactionEnvelopeXdrBase64(
+    String transactionEnvelopeXdrBase64, {
+    bool skipMemoRequiredCheck = false,
+  }) async {
     if (!skipMemoRequiredCheck) {
       await _checkMemoRequiredForEnvelope(transactionEnvelopeXdrBase64);
     }
     Uri callURI = _serverURI.replace(pathSegments: ["transactions_async"]);
 
     SubmitAsyncTransactionResponse result = await _httpClient
-        .post(callURI,
-            body: {"tx": transactionEnvelopeXdrBase64},
-            headers: RequestBuilder.headers)
+        .post(
+          callURI,
+          body: {"tx": transactionEnvelopeXdrBase64},
+          headers: RequestBuilder.headers,
+        )
         .then((response) {
-      SubmitAsyncTransactionResponse submitTransactionResponse;
-      //print(response.body);
-      switch (response.statusCode) {
-        case 201:
-          submitTransactionResponse = SubmitAsyncTransactionResponse.fromJson(
-              json.decode(response.body), response.statusCode);
-          break;
-        case 400:
-        case 403:
-        case 409:
-        case 500:
-        case 503:
-          Map<String, dynamic> data = json.decode(response.body);
-          if (data.containsKey('tx_status')) {
-            submitTransactionResponse = SubmitAsyncTransactionResponse.fromJson(
-                data, response.statusCode);
-          } else if (data.containsKey('type')) {
-            throw SubmitAsyncTransactionProblem.fromJson(data);
-          } else {
-            throw UnknownResponse(response.statusCode, response.body);
+          SubmitAsyncTransactionResponse submitTransactionResponse;
+          //print(response.body);
+          switch (response.statusCode) {
+            case 201:
+              submitTransactionResponse =
+                  SubmitAsyncTransactionResponse.fromJson(
+                    json.decode(response.body),
+                    response.statusCode,
+                  );
+              break;
+            case 400:
+            case 403:
+            case 409:
+            case 500:
+            case 503:
+              Map<String, dynamic> data = json.decode(response.body);
+              if (data.containsKey('tx_status')) {
+                submitTransactionResponse =
+                    SubmitAsyncTransactionResponse.fromJson(
+                      data,
+                      response.statusCode,
+                    );
+              } else if (data.containsKey('type')) {
+                throw SubmitAsyncTransactionProblem.fromJson(data);
+              } else {
+                throw UnknownResponse(response.statusCode, response.body);
+              }
+              break;
+            default:
+              throw UnknownResponse(response.statusCode, response.body);
           }
-          break;
-        default:
-          throw UnknownResponse(response.statusCode, response.body);
-      }
-      return submitTransactionResponse;
-    }).catchError((onError) {
-      throw onError;
-    });
+          return submitTransactionResponse;
+        })
+        .catchError((onError) {
+          throw onError;
+        });
 
     return result;
   }

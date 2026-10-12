@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 300))
-
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -17,9 +16,9 @@ void main() {
     SetOptionsOperationBuilder setOp = SetOptionsOperationBuilder();
     setOp.setSourceAccount(accountId);
     setOp.setHomeDomain('www.example.com');
-    return TransactionBuilder(Account(accountId, BigInt.zero))
-        .addOperation(setOp.build())
-        .build();
+    return TransactionBuilder(
+      Account(accountId, BigInt.zero),
+    ).addOperation(setOp.build()).build();
   }
 
   test('sep-07: Quick example - generate pay URI', () {
@@ -36,7 +35,12 @@ void main() {
     expect(uri, startsWith('web+stellar:pay?destination='));
     expect(uri, contains('amount=100'));
     expect(uri, contains('asset_code=USDC'));
-    expect(uri, contains('asset_issuer=GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN'));
+    expect(
+      uri,
+      contains(
+        'asset_issuer=GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN',
+      ),
+    );
   });
 
   test('sep-07: Transaction signing (tx operation)', () {
@@ -89,11 +93,15 @@ void main() {
     final replacements = [
       UriSchemeReplacement('X', 'sourceAccount', 'Account to pay fees from'),
       UriSchemeReplacement(
-          'Y', 'operations[0].destination', 'Account to receive tokens'),
+        'Y',
+        'operations[0].destination',
+        'Account to receive tokens',
+      ),
     ];
 
-    String replaceString =
-        uriScheme.uriSchemeReplacementsToString(replacements);
+    String replaceString = uriScheme.uriSchemeReplacementsToString(
+      replacements,
+    );
     expect(replaceString, contains('sourceAccount:X'));
     expect(replaceString, contains('operations[0].destination:Y'));
 
@@ -105,8 +113,8 @@ void main() {
     expect(uri, contains('replace='));
 
     // Parse the replacements back
-    List<UriSchemeReplacement> parsed =
-        uriScheme.uriSchemeReplacementsFromString(replaceString);
+    List<UriSchemeReplacement> parsed = uriScheme
+        .uriSchemeReplacementsFromString(replaceString);
     expect(parsed.length, 2);
     expect(parsed[0].id, 'X');
     expect(parsed[0].path, 'sourceAccount');
@@ -191,8 +199,7 @@ void main() {
     final uriScheme = URIScheme();
 
     // Valid pay URI
-    String validUri =
-        'web+stellar:pay?destination=$accountId&amount=100';
+    String validUri = 'web+stellar:pay?destination=$accountId&amount=100';
     IsValidSep7UrlResult result = uriScheme.isValidSep7Url(validUri);
     expect(result.result, true);
 
@@ -203,37 +210,40 @@ void main() {
     expect(result.reason, isNotNull);
   });
 
-  test('sep-07: Full validation with mock HTTP (isValidSep7SignedUrl)',
-      () async {
-    // Snippet from sep-07.md "Full validation including signature"
-    final uriScheme = URIScheme();
-    KeyPair signerKeyPair = KeyPair.fromSecretSeed(secretSeed);
+  test(
+    'sep-07: Full validation with mock HTTP (isValidSep7SignedUrl)',
+    () async {
+      // Snippet from sep-07.md "Full validation including signature"
+      final uriScheme = URIScheme();
+      KeyPair signerKeyPair = KeyPair.fromSecretSeed(secretSeed);
 
-    String uri = uriScheme.generateSignTransactionURI(
-      getTestTransaction().toEnvelopeXdrBase64(),
-      originDomain: 'place.domain.com',
-    );
-    String signedUri = uriScheme.addSignature(uri, signerKeyPair);
+      String uri = uriScheme.generateSignTransactionURI(
+        getTestTransaction().toEnvelopeXdrBase64(),
+        originDomain: 'place.domain.com',
+      );
+      String signedUri = uriScheme.addSignature(uri, signerKeyPair);
 
-    // Mock stellar.toml returning our signing key
-    String tomlContent =
-        'URI_REQUEST_SIGNING_KEY="$accountId"';
+      // Mock stellar.toml returning our signing key
+      String tomlContent = 'URI_REQUEST_SIGNING_KEY="$accountId"';
 
-    uriScheme.httpClient = MockClient((request) async {
-      if (request.url.toString().startsWith(
-              'https://place.domain.com/.well-known/stellar.toml') &&
-          request.method == 'GET') {
-        return http.Response(tomlContent, 200);
-      }
-      return http.Response(json.encode({'error': 'Bad request'}), 400);
-    });
+      uriScheme.httpClient = MockClient((request) async {
+        if (request.url.toString().startsWith(
+              'https://place.domain.com/.well-known/stellar.toml',
+            ) &&
+            request.method == 'GET') {
+          return http.Response(tomlContent, 200);
+        }
+        return http.Response(json.encode({'error': 'Bad request'}), 400);
+      });
 
-    IsValidSep7UrlResult result =
-        await uriScheme.isValidSep7SignedUrl(signedUri);
-    expect(result.result, true);
+      IsValidSep7UrlResult result = await uriScheme.isValidSep7SignedUrl(
+        signedUri,
+      );
+      expect(result.result, true);
 
-    uriScheme.httpClient = http.Client();
-  });
+      uriScheme.httpClient = http.Client();
+    },
+  );
 
   test('sep-07: Missing origin_domain validation', () async {
     // Snippet from sep-07.md validation failure reasons
@@ -273,19 +283,25 @@ void main() {
 
     uriScheme.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(
-              'https://place.domain.com/.well-known/stellar.toml') &&
+            'https://place.domain.com/.well-known/stellar.toml',
+          ) &&
           request.method == 'GET') {
         return http.Response(
-            'FEDERATION_SERVER="https://api.domain.com/federation"', 200);
+          'FEDERATION_SERVER="https://api.domain.com/federation"',
+          200,
+        );
       }
       return http.Response(json.encode({'error': 'Bad request'}), 400);
     });
 
-    IsValidSep7UrlResult result =
-        await uriScheme.isValidSep7SignedUrl(signedUri);
+    IsValidSep7UrlResult result = await uriScheme.isValidSep7SignedUrl(
+      signedUri,
+    );
     expect(result.result, false);
-    expect(result.reason,
-        "No signing key found in toml from 'place.domain.com'");
+    expect(
+      result.reason,
+      "No signing key found in toml from 'place.domain.com'",
+    );
 
     uriScheme.httpClient = http.Client();
   });
@@ -305,15 +321,17 @@ void main() {
         'URI_REQUEST_SIGNING_KEY="GCCHBLJOZUFBVAUZP55N7ZU6ZB5VGEDHSXT23QC6UIVDQNGI6QDQTOOR"';
     uriScheme.httpClient = MockClient((request) async {
       if (request.url.toString().startsWith(
-              'https://place.domain.com/.well-known/stellar.toml') &&
+            'https://place.domain.com/.well-known/stellar.toml',
+          ) &&
           request.method == 'GET') {
         return http.Response(wrongKey, 200);
       }
       return http.Response(json.encode({'error': 'Bad request'}), 400);
     });
 
-    IsValidSep7UrlResult result =
-        await uriScheme.isValidSep7SignedUrl(signedUri);
+    IsValidSep7UrlResult result = await uriScheme.isValidSep7SignedUrl(
+      signedUri,
+    );
     expect(result.result, false);
     expect(result.reason, isNotNull);
     expect(result.reason!, startsWith('Signature is not from the signing key'));
@@ -340,12 +358,8 @@ void main() {
       return http.Response(json.encode({'error': 'Bad request'}), 400);
     });
 
-    SubmitUriSchemeTransactionResponse response =
-        await uriScheme.signAndSubmitTransaction(
-      uri,
-      signerKeyPair,
-      network: Network.TESTNET,
-    );
+    SubmitUriSchemeTransactionResponse response = await uriScheme
+        .signAndSubmitTransaction(uri, signerKeyPair, network: Network.TESTNET);
 
     expect(response.submitTransactionResponse, isNull);
     expect(response.response, isNotNull);
@@ -392,9 +406,12 @@ void main() {
 
     // Wrong key should fail
     expect(
-        uriScheme.verifySignature(signedUri,
-            'GCCHBLJOZUFBVAUZP55N7ZU6ZB5VGEDHSXT23QC6UIVDQNGI6QDQTOOR'),
-        false);
+      uriScheme.verifySignature(
+        signedUri,
+        'GCCHBLJOZUFBVAUZP55N7ZU6ZB5VGEDHSXT23QC6UIVDQNGI6QDQTOOR',
+      ),
+      false,
+    );
   });
 
   test('sep-07: QR code URI generation', () {

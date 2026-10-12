@@ -20,7 +20,8 @@ void main() {
           return http.Response(
             json.encode({
               'stellar_address': 'bob*example.com',
-              'account_id': 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+              'account_id':
+                  'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
             }),
             200,
           );
@@ -34,7 +35,10 @@ void main() {
       );
 
       expect(response.stellarAddress, equals('bob*example.com'));
-      expect(response.accountId, equals('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP'));
+      expect(
+        response.accountId,
+        equals('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP'),
+      );
     });
 
     test('resolves address with memo', () async {
@@ -49,7 +53,8 @@ void main() {
           return http.Response(
             json.encode({
               'stellar_address': 'alice*example.com',
-              'account_id': 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+              'account_id':
+                  'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
               'memo_type': 'id',
               'memo': '12345',
             }),
@@ -81,7 +86,8 @@ void main() {
           return http.Response(
             json.encode({
               'stellar_address': 'user*example.com',
-              'account_id': 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+              'account_id':
+                  'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
               'memo_type': 'text',
               'memo': 'payment reference',
             }),
@@ -112,9 +118,11 @@ void main() {
           return http.Response(
             json.encode({
               'stellar_address': 'user*example.com',
-              'account_id': 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+              'account_id':
+                  'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
               'memo_type': 'hash',
-              'memo': 'b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9',
+              'memo':
+                  'b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9',
             }),
             200,
           );
@@ -175,7 +183,8 @@ void main() {
           return http.Response(
             json.encode({
               'stellar_address': 'maria@gmail.com*example.com',
-              'account_id': 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+              'account_id':
+                  'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
             }),
             200,
           );
@@ -204,7 +213,8 @@ void main() {
           return http.Response(
             json.encode({
               'stellar_address': '+14155550100*example.com',
-              'account_id': 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+              'account_id':
+                  'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
             }),
             200,
           );
@@ -232,7 +242,8 @@ void main() {
           return http.Response(
             json.encode({
               'stellar_address': 'user*subdomain.example.com',
-              'account_id': 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+              'account_id':
+                  'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
             }),
             200,
           );
@@ -252,12 +263,16 @@ void main() {
   group('Federation - resolveStellarAccountId', () {
     test('resolves account id to stellar address', () async {
       final mockClient = MockClient((request) async {
-        expect(request.url.queryParameters['q'], equals('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP'));
+        expect(
+          request.url.queryParameters['q'],
+          equals('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP'),
+        );
         expect(request.url.queryParameters['type'], equals('id'));
         return http.Response(
           json.encode({
             'stellar_address': 'bob*example.com',
-            'account_id': 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+            'account_id':
+                'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
           }),
           200,
         );
@@ -270,7 +285,10 @@ void main() {
       );
 
       expect(response.stellarAddress, equals('bob*example.com'));
-      expect(response.accountId, equals('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP'));
+      expect(
+        response.accountId,
+        equals('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP'),
+      );
     });
 
     test('handles account id with special characters in response', () async {
@@ -278,7 +296,8 @@ void main() {
         return http.Response(
           json.encode({
             'stellar_address': 'alice*example.com',
-            'account_id': 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+            'account_id':
+                'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
           }),
           200,
         );
@@ -297,13 +316,15 @@ void main() {
   group('Federation - resolveStellarTransactionId', () {
     test('resolves transaction id to stellar address', () async {
       final mockClient = MockClient((request) async {
-        final txId = 'c1b368c00e9852351361e07cc58c54277e7a6366580044ab152b8db9cd8ec52a';
+        final txId =
+            'c1b368c00e9852351361e07cc58c54277e7a6366580044ab152b8db9cd8ec52a';
         expect(request.url.queryParameters['q'], equals(txId));
         expect(request.url.queryParameters['type'], equals('txid'));
         return http.Response(
           json.encode({
             'stellar_address': 'sender*example.com',
-            'account_id': 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+            'account_id':
+                'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
           }),
           200,
         );
@@ -323,7 +344,8 @@ void main() {
         return http.Response(
           json.encode({
             'stellar_address': 'sender*example.com',
-            'account_id': 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+            'account_id':
+                'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
           }),
           200,
         );
@@ -343,12 +365,16 @@ void main() {
     test('performs forward federation lookup', () async {
       final mockClient = MockClient((request) async {
         expect(request.url.queryParameters['type'], equals('forward'));
-        expect(request.url.queryParameters['forward_type'], equals('bank_account'));
+        expect(
+          request.url.queryParameters['forward_type'],
+          equals('bank_account'),
+        );
         expect(request.url.queryParameters['swift'], equals('BOPBPHMM'));
         expect(request.url.queryParameters['acct'], equals('2382376'));
         return http.Response(
           json.encode({
-            'account_id': 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+            'account_id':
+                'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
             'memo_type': 'id',
             'memo': '54321',
           }),
@@ -366,7 +392,10 @@ void main() {
         httpClient: mockClient,
       );
 
-      expect(response.accountId, equals('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP'));
+      expect(
+        response.accountId,
+        equals('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP'),
+      );
       expect(response.memoType, equals('id'));
       expect(response.memo, equals('54321'));
     });
@@ -375,7 +404,8 @@ void main() {
       final mockClient = MockClient((request) async {
         return http.Response(
           json.encode({
-            'account_id': 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+            'account_id':
+                'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
           }),
           200,
         );
@@ -395,7 +425,8 @@ void main() {
     test('fromJson creates response with all fields', () {
       final json = {
         'stellar_address': 'bob*example.com',
-        'account_id': 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+        'account_id':
+            'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
         'memo_type': 'id',
         'memo': '12345',
       };
@@ -403,7 +434,10 @@ void main() {
       final response = FederationResponse.fromJson(json);
 
       expect(response.stellarAddress, equals('bob*example.com'));
-      expect(response.accountId, equals('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP'));
+      expect(
+        response.accountId,
+        equals('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP'),
+      );
       expect(response.memoType, equals('id'));
       expect(response.memo, equals('12345'));
     });
@@ -411,7 +445,8 @@ void main() {
     test('fromJson handles null memo fields', () {
       final json = {
         'stellar_address': 'alice*example.com',
-        'account_id': 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+        'account_id':
+            'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
       };
 
       final response = FederationResponse.fromJson(json);
@@ -424,7 +459,8 @@ void main() {
 
     test('fromJson handles null stellar address', () {
       final json = {
-        'account_id': 'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+        'account_id':
+            'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
         'memo_type': 'id',
         'memo': '99999',
       };
@@ -446,7 +482,10 @@ void main() {
       );
 
       expect(response.stellarAddress, equals('test*example.com'));
-      expect(response.accountId, equals('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP'));
+      expect(
+        response.accountId,
+        equals('GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP'),
+      );
       expect(response.memoType, equals('text'));
       expect(response.memo, equals('test memo'));
     });

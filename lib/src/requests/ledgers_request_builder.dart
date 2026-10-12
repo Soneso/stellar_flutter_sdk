@@ -54,7 +54,7 @@ class LedgersRequestBuilder extends RequestBuilder {
   /// - [httpClient] HTTP client for making requests to Horizon
   /// - [serverURI] Base URI of the Horizon server
   LedgersRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["ledgers"]);
+    : super(httpClient, serverURI, ["ledgers"]);
 
   /// Requests specific uri and returns LedgerResponse.
   /// This method is helpful for getting the links.
@@ -72,7 +72,9 @@ class LedgersRequestBuilder extends RequestBuilder {
   /// Requests specific uri and returns Page of LedgerResponse.
   /// This method is helpful for getting the next set of results.
   static Future<Page<LedgerResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
+    http.Client httpClient,
+    Uri uri,
+  ) async {
     return RequestBuilder.requestExecute<Page<LedgerResponse>>(httpClient, uri);
   }
 
@@ -83,7 +85,8 @@ class LedgersRequestBuilder extends RequestBuilder {
   /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<LedgerResponse> stream() {
     return streamEvents<LedgerResponse>(
-        (json) => LedgerResponse.fromJson(json));
+      (json) => LedgerResponse.fromJson(json),
+    );
   }
 
   /// Build and execute the request.
@@ -100,7 +103,9 @@ class LedgersRequestBuilder extends RequestBuilder {
   /// ```
   Future<Page<LedgerResponse>> execute() {
     return LedgersRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+      this.httpClient,
+      this.buildUri(),
+    );
   }
 
   /// Sets the cursor for pagination to start returning records from a specific point.

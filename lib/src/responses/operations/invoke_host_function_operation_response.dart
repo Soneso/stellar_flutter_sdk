@@ -87,56 +87,61 @@ class InvokeHostFunctionOperationResponse extends OperationResponse {
   /// - [parameters] Function parameters (if applicable)
   /// - [assetBalanceChanges] Asset balance changes from the invocation
   InvokeHostFunctionOperationResponse(
-      super.links,
-      super.id,
-      super.pagingToken,
-      super.transactionSuccessful,
-      super.sourceAccount,
-      super.sourceAccountMuxed,
-      super.sourceAccountMuxedId,
-      super.type,
-      super.type_i,
-      super.createdAt,
-      super.transactionHash,
-      super.transaction,
-      super.sponsor,
-      this.function,
-      this.address,
-      this.salt,
-      this.parameters,
-      this.assetBalanceChanges);
+    super.links,
+    super.id,
+    super.pagingToken,
+    super.transactionSuccessful,
+    super.sourceAccount,
+    super.sourceAccountMuxed,
+    super.sourceAccountMuxedId,
+    super.type,
+    super.type_i,
+    super.createdAt,
+    super.transactionHash,
+    super.transaction,
+    super.sponsor,
+    this.function,
+    this.address,
+    this.salt,
+    this.parameters,
+    this.assetBalanceChanges,
+  );
 
   /// Deserializes an invoke host function operation response from JSON.
   factory InvokeHostFunctionOperationResponse.fromJson(
-          Map<String, dynamic> json) =>
-      InvokeHostFunctionOperationResponse(
-        OperationResponseLinks.fromJson(json['_links']),
-        json['id'],
-        json['paging_token'],
-        json['transaction_successful'],
-        json['source_account'],
-        json['source_account_muxed'],
-        json['source_account_muxed_id'],
-        json['type'],
-        json['type_i'],
-        json['created_at'],
-        json['transaction_hash'],
-        json['transaction'] == null
-            ? null
-            : TransactionResponse.fromJson(json['transaction']),
-        json['sponsor'],
-        json['function'],
-        json['address'],
-        json['salt'],
-        json['parameters'] == null
-            ? null
-            : List<ParameterResponse>.from(
-                json['parameters'].map((e) => ParameterResponse.fromJson(e))),
-        json['asset_balance_changes'] == null
-            ? null
-            : List<AssetBalanceChange>.from(json['asset_balance_changes']
-                .map((e) => AssetBalanceChange.fromJson(e))),
-      );
+    Map<String, dynamic> json,
+  ) => InvokeHostFunctionOperationResponse(
+    OperationResponseLinks.fromJson(json['_links']),
+    json['id'],
+    json['paging_token'],
+    json['transaction_successful'],
+    json['source_account'],
+    json['source_account_muxed'],
+    json['source_account_muxed_id'],
+    json['type'],
+    json['type_i'],
+    json['created_at'],
+    json['transaction_hash'],
+    json['transaction'] == null
+        ? null
+        : TransactionResponse.fromJson(json['transaction']),
+    json['sponsor'],
+    json['function'],
+    json['address'],
+    json['salt'],
+    json['parameters'] == null
+        ? null
+        : List<ParameterResponse>.from(
+            json['parameters'].map((e) => ParameterResponse.fromJson(e)),
+          ),
+    json['asset_balance_changes'] == null
+        ? null
+        : List<AssetBalanceChange>.from(
+            json['asset_balance_changes'].map(
+              (e) => AssetBalanceChange.fromJson(e),
+            ),
+          ),
+  );
 }
 
 /// Represents a parameter passed to a Soroban smart contract function.
@@ -226,17 +231,28 @@ class AssetBalanceChange {
   /// - [assetCode] Asset code (null for native XLM)
   /// - [assetIssuer] Asset issuer account ID (null for native XLM)
   /// - [destinationMuxedId] Muxed account ID if applicable (protocol 23+)
-  AssetBalanceChange(this.type, this.from, this.to, this.amount, this.assetType,
-      {this.assetCode,
-      this.assetIssuer,
-      this.destinationMuxedId});
+  AssetBalanceChange(
+    this.type,
+    this.from,
+    this.to,
+    this.amount,
+    this.assetType, {
+    this.assetCode,
+    this.assetIssuer,
+    this.destinationMuxedId,
+  });
 
   /// Deserializes an asset balance change from JSON.
   factory AssetBalanceChange.fromJson(Map<String, dynamic> json) {
-    return AssetBalanceChange(json['type'], json['from'], json['to'],
-        json['amount'], json['asset_type'],
-        assetCode: json['asset_code'],
-        assetIssuer: json['asset_issuer'],
-        destinationMuxedId: json['destination_muxed_id']);
+    return AssetBalanceChange(
+      json['type'],
+      json['from'],
+      json['to'],
+      json['amount'],
+      json['asset_type'],
+      assetCode: json['asset_code'],
+      assetIssuer: json['asset_issuer'],
+      destinationMuxedId: json['destination_muxed_id'],
+    );
   }
 }

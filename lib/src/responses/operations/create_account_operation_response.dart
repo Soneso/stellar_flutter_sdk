@@ -87,46 +87,48 @@ class CreateAccountOperationResponse extends OperationResponse {
   /// - [transaction]: Full parent transaction
   /// - [sponsor]: Account sponsoring the operation (if applicable)
   CreateAccountOperationResponse(
-      this.funder,
-      this.funderMuxed,
-      this.funderMuxedId,
-      this.startingBalance,
-      this.account,
-      super.links,
-      super.id,
-      super.pagingToken,
-      super.transactionSuccessful,
-      super.sourceAccount,
-      super.sourceAccountMuxed,
-      super.sourceAccountMuxedId,
-      super.type,
-      super.type_i,
-      super.createdAt,
-      super.transactionHash,
-      super.transaction,
-      super.sponsor);
+    this.funder,
+    this.funderMuxed,
+    this.funderMuxedId,
+    this.startingBalance,
+    this.account,
+    super.links,
+    super.id,
+    super.pagingToken,
+    super.transactionSuccessful,
+    super.sourceAccount,
+    super.sourceAccountMuxed,
+    super.sourceAccountMuxedId,
+    super.type,
+    super.type_i,
+    super.createdAt,
+    super.transactionHash,
+    super.transaction,
+    super.sponsor,
+  );
 
   /// Deserializes a create account operation response from JSON.
   factory CreateAccountOperationResponse.fromJson(Map<String, dynamic> json) =>
       CreateAccountOperationResponse(
-          json['funder'],
-          json['funder_muxed'],
-          json['funder_muxed_id'],
-          json['starting_balance'],
-          json['account'],
-          OperationResponseLinks.fromJson(json['_links']),
-          json['id'],
-          json['paging_token'],
-          json['transaction_successful'],
-          json['source_account'],
-          json['source_account_muxed'],
-          json['source_account_muxed_id'],
-          json['type'],
-          json['type_i'],
-          json['created_at'],
-          json['transaction_hash'],
-          json['transaction'] == null
-              ? null
-              : TransactionResponse.fromJson(json['transaction']),
-          json['sponsor']);
+        json['funder'],
+        json['funder_muxed'],
+        json['funder_muxed_id'],
+        json['starting_balance'],
+        json['account'],
+        OperationResponseLinks.fromJson(json['_links']),
+        json['id'],
+        json['paging_token'],
+        json['transaction_successful'],
+        json['source_account'],
+        json['source_account_muxed'],
+        json['source_account_muxed_id'],
+        json['type'],
+        json['type_i'],
+        json['created_at'],
+        json['transaction_hash'],
+        json['transaction'] == null
+            ? null
+            : TransactionResponse.fromJson(json['transaction']),
+        json['sponsor'],
+      );
 }

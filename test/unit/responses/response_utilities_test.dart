@@ -108,9 +108,7 @@ void main() {
 
     test('setHeaders handles partial rate limit headers', () {
       final response = TestResponse();
-      response.setHeaders({
-        'X-Ratelimit-Limit': '100',
-      });
+      response.setHeaders({'X-Ratelimit-Limit': '100'});
 
       expect(response.rateLimitLimit, equals(100));
       expect(response.rateLimitRemaining, isNull);
@@ -164,10 +162,7 @@ void main() {
     });
 
     test('fromJson creates link correctly', () {
-      final json = {
-        'href': 'https://example.com/test',
-        'templated': true,
-      };
+      final json = {'href': 'https://example.com/test', 'templated': true};
       final link = Link.fromJson(json);
       expect(link.href, equals('https://example.com/test'));
       expect(link.templated, equals(true));

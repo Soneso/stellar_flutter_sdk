@@ -31,19 +31,27 @@ class RecordingTransactionOperations extends OZTransactionOperations {
   RecordingTransactionOperations(super.kit);
 
   /// Captured calls in invocation order.
-  final List<({
-    XdrHostFunction hostFunction,
-    List<XdrSorobanAuthorizationEntry> auth,
-    OZSubmissionMethod? forceMethod,
-  })> submitCalls = <({
-    XdrHostFunction hostFunction,
-    List<XdrSorobanAuthorizationEntry> auth,
-    OZSubmissionMethod? forceMethod,
-  })>[];
+  final List<
+    ({
+      XdrHostFunction hostFunction,
+      List<XdrSorobanAuthorizationEntry> auth,
+      OZSubmissionMethod? forceMethod,
+    })
+  >
+  submitCalls =
+      <
+        ({
+          XdrHostFunction hostFunction,
+          List<XdrSorobanAuthorizationEntry> auth,
+          OZSubmissionMethod? forceMethod,
+        })
+      >[];
 
   /// Result returned from every `submit()` invocation.
-  OZTransactionResult result =
-      const OZTransactionResult(success: true, hash: 'recorded-tx');
+  OZTransactionResult result = const OZTransactionResult(
+    success: true,
+    hash: 'recorded-tx',
+  );
 
   /// When non-null, `submit()` raises this error instead of returning
   /// [result]. Used by failure-propagation tests.
@@ -77,18 +85,26 @@ class RecordingTransactionOperations extends OZTransactionOperations {
 class RecordingMultiSignerManager extends OZMultiSignerManager {
   RecordingMultiSignerManager(super.kit);
 
-  final List<({
-    XdrHostFunction hostFunction,
-    List<OZSelectedSigner> selectedSigners,
-    OZSubmissionMethod? forceMethod,
-  })> calls = <({
-    XdrHostFunction hostFunction,
-    List<OZSelectedSigner> selectedSigners,
-    OZSubmissionMethod? forceMethod,
-  })>[];
+  final List<
+    ({
+      XdrHostFunction hostFunction,
+      List<OZSelectedSigner> selectedSigners,
+      OZSubmissionMethod? forceMethod,
+    })
+  >
+  calls =
+      <
+        ({
+          XdrHostFunction hostFunction,
+          List<OZSelectedSigner> selectedSigners,
+          OZSubmissionMethod? forceMethod,
+        })
+      >[];
 
-  OZTransactionResult result =
-      const OZTransactionResult(success: true, hash: 'multi-tx');
+  OZTransactionResult result = const OZTransactionResult(
+    success: true,
+    hash: 'multi-tx',
+  );
 
   @override
   Future<OZTransactionResult> submitWithMultipleSigners({
@@ -111,10 +127,7 @@ class RecordingMultiSignerManager extends OZMultiSignerManager {
 /// `FakePipelineKit.multiSignerManager` getter throws; overriding it
 /// here allows tests to inject the recording manager.
 class _RoutingKit extends FakePipelineKit {
-  _RoutingKit({
-    super.contextRuleManager,
-    super.transactionOperations,
-  });
+  _RoutingKit({super.contextRuleManager, super.transactionOperations});
 
   RecordingMultiSignerManager? recordingMulti;
 
@@ -139,11 +152,10 @@ class _RoutingKit extends FakePipelineKit {
   RecordingTransactionOperations recordingOps,
   RecordingMultiSignerManager recordingMulti,
   StubContextRuleManager ruleManager,
-}) _buildKit() {
+})
+_buildKit() {
   final ruleManager = StubContextRuleManager();
-  final kit = _RoutingKit(
-    contextRuleManager: ruleManager,
-  );
+  final kit = _RoutingKit(contextRuleManager: ruleManager);
   // Replace transactionOperations with the recording double after the
   // kit is constructed so it owns the new ops object.
   final recordingOps = RecordingTransactionOperations(kit);
@@ -171,8 +183,9 @@ class _RoutingKit extends FakePipelineKit {
   return (
     fn: invoke.functionName,
     args: invoke.args,
-    contractIdHex: Util.bytesToHex(invoke.contractAddress.contractId!.hash)
-        .toLowerCase(),
+    contractIdHex: Util.bytesToHex(
+      invoke.contractAddress.contractId!.hash,
+    ).toLowerCase(),
   );
 }
 
@@ -229,9 +242,7 @@ void main() {
 
     test('not connected throws SmartAccountWalletNotConnected', () async {
       final ruleManager = StubContextRuleManager();
-      final disconnectedKit = _RoutingKit(
-        contextRuleManager: ruleManager,
-      );
+      final disconnectedKit = _RoutingKit(contextRuleManager: ruleManager);
       // No setConnected call.
       await expectLater(
         () => OZPolicyManager(disconnectedKit).addSimpleThreshold(
@@ -243,50 +254,53 @@ void main() {
       );
     });
 
-    test('routes to single-signer submit when selectedSigners is empty',
-        () async {
-      final h = _buildKit();
-      await OZPolicyManager(h.kit).addSimpleThreshold(
-        contextRuleId: 1,
-        policyAddress: _policyContractA,
-        threshold: 1,
-      );
-      expect(h.recordingOps.submitCalls.length, equals(1));
-      expect(h.recordingMulti.calls, isEmpty);
-    });
+    test(
+      'routes to single-signer submit when selectedSigners is empty',
+      () async {
+        final h = _buildKit();
+        await OZPolicyManager(h.kit).addSimpleThreshold(
+          contextRuleId: 1,
+          policyAddress: _policyContractA,
+          threshold: 1,
+        );
+        expect(h.recordingOps.submitCalls.length, equals(1));
+        expect(h.recordingMulti.calls, isEmpty);
+      },
+    );
 
     test(
-        'routes to multi-signer manager when selectedSigners is non-empty',
-        () async {
-      final h = _buildKit();
-      await OZPolicyManager(h.kit).addSimpleThreshold(
-        contextRuleId: 1,
-        policyAddress: _policyContractA,
-        threshold: 1,
-        selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
-      );
-      expect(h.recordingMulti.calls.length, equals(1));
-      expect(h.recordingOps.submitCalls, isEmpty);
-      expect(
-        h.recordingMulti.calls.single.selectedSigners.length,
-        equals(1),
-      );
-    });
+      'routes to multi-signer manager when selectedSigners is non-empty',
+      () async {
+        final h = _buildKit();
+        await OZPolicyManager(h.kit).addSimpleThreshold(
+          contextRuleId: 1,
+          policyAddress: _policyContractA,
+          threshold: 1,
+          selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
+        );
+        expect(h.recordingMulti.calls.length, equals(1));
+        expect(h.recordingOps.submitCalls, isEmpty);
+        expect(h.recordingMulti.calls.single.selectedSigners.length, equals(1));
+      },
+    );
   });
 
   group('addWeightedThreshold', () {
-    test('empty signerWeights throws SmartAccountValidationException', () async {
-      final h = _buildKit();
-      await expectLater(
-        () => OZPolicyManager(h.kit).addWeightedThreshold(
-          contextRuleId: 1,
-          policyAddress: _policyContractA,
-          signerWeights: const <OZSmartAccountSigner, int>{},
-          threshold: 1,
-        ),
-        throwsA(isA<SmartAccountValidationException>()),
-      );
-    });
+    test(
+      'empty signerWeights throws SmartAccountValidationException',
+      () async {
+        final h = _buildKit();
+        await expectLater(
+          () => OZPolicyManager(h.kit).addWeightedThreshold(
+            contextRuleId: 1,
+            policyAddress: _policyContractA,
+            signerWeights: const <OZSmartAccountSigner, int>{},
+            threshold: 1,
+          ),
+          throwsA(isA<SmartAccountValidationException>()),
+        );
+      },
+    );
 
     test('zero threshold throws SmartAccountValidationException', () async {
       final h = _buildKit();
@@ -320,8 +334,7 @@ void main() {
       expect(decoded.args[0].u32!.uint32, equals(9));
       expect(decoded.args[2].discriminant, equals(XdrSCValType.SCV_MAP));
       // top-level keys alphabetical: signer_weights, threshold.
-      final topKeys =
-          decoded.args[2].map!.map((e) => e.key.sym).toList();
+      final topKeys = decoded.args[2].map!.map((e) => e.key.sym).toList();
       expect(topKeys, equals(<String>['signer_weights', 'threshold']));
     });
 
@@ -392,21 +405,22 @@ void main() {
     });
 
     test(
-        'routes to multi-signer manager when selectedSigners is non-empty',
-        () async {
-      final h = _buildKit();
-      await OZPolicyManager(h.kit).addWeightedThreshold(
-        contextRuleId: 1,
-        policyAddress: _policyContractA,
-        signerWeights: <OZSmartAccountSigner, int>{
-          OZDelegatedSigner(_validG1): 1,
-        },
-        threshold: 1,
-        selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
-      );
-      expect(h.recordingMulti.calls.length, equals(1));
-      expect(h.recordingOps.submitCalls, isEmpty);
-    });
+      'routes to multi-signer manager when selectedSigners is non-empty',
+      () async {
+        final h = _buildKit();
+        await OZPolicyManager(h.kit).addWeightedThreshold(
+          contextRuleId: 1,
+          policyAddress: _policyContractA,
+          signerWeights: <OZSmartAccountSigner, int>{
+            OZDelegatedSigner(_validG1): 1,
+          },
+          threshold: 1,
+          selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
+        );
+        expect(h.recordingMulti.calls.length, equals(1));
+        expect(h.recordingOps.submitCalls, isEmpty);
+      },
+    );
   });
 
   group('addSpendingLimit', () {
@@ -430,26 +444,28 @@ void main() {
       expect(h.recordingOps.submitCalls, isEmpty);
     });
 
-    test('negative amount string throws field-tagged validation error',
-        () async {
-      final h = _buildKit();
-      await expectLater(
-        () => OZPolicyManager(h.kit).addSpendingLimit(
-          contextRuleId: 1,
-          policyAddress: _policyContractA,
-          spendingLimit: '-1',
-          periodLedgers: 1,
-        ),
-        throwsA(
-          isA<SmartAccountInvalidInput>().having(
-            (e) => e.message,
-            'message',
-            contains('spendingLimit'),
+    test(
+      'negative amount string throws field-tagged validation error',
+      () async {
+        final h = _buildKit();
+        await expectLater(
+          () => OZPolicyManager(h.kit).addSpendingLimit(
+            contextRuleId: 1,
+            policyAddress: _policyContractA,
+            spendingLimit: '-1',
+            periodLedgers: 1,
           ),
-        ),
-      );
-      expect(h.recordingOps.submitCalls, isEmpty);
-    });
+          throwsA(
+            isA<SmartAccountInvalidInput>().having(
+              (e) => e.message,
+              'message',
+              contains('spendingLimit'),
+            ),
+          ),
+        );
+        expect(h.recordingOps.submitCalls, isEmpty);
+      },
+    );
 
     test('zero periodLedgers throws SmartAccountValidationException', () async {
       final h = _buildKit();
@@ -464,31 +480,32 @@ void main() {
       );
     });
 
-    test('valid input converts decimal amount to base units (default decimals)',
-        () async {
-      final h = _buildKit();
-      await OZPolicyManager(h.kit).addSpendingLimit(
-        contextRuleId: 4,
-        policyAddress: _policyContractA,
-        spendingLimit: '100', // 100 at 7 decimals = 1_000_000_000 base units.
-        periodLedgers: 17280,
-      );
-      final call = h.recordingOps.submitCalls.single;
-      final decoded = _decodeInvoke(call.hostFunction);
-      // Install-params map carries period_ledgers + spending_limit.
-      final installParams = decoded.args[2].map!;
-      final periodEntry =
-          installParams.firstWhere((e) => e.key.sym == 'period_ledgers');
-      final limitEntry =
-          installParams.firstWhere((e) => e.key.sym == 'spending_limit');
-      expect(periodEntry.val.u32!.uint32, equals(17280));
-      expect(
-        limitEntry.val.discriminant,
-        equals(XdrSCValType.SCV_I128),
-      );
-      // 100 scaled by 7 decimals fits entirely in the low part.
-      expect(limitEntry.val.i128!.lo.uint64, equals(BigInt.from(1000000000)));
-    });
+    test(
+      'valid input converts decimal amount to base units (default decimals)',
+      () async {
+        final h = _buildKit();
+        await OZPolicyManager(h.kit).addSpendingLimit(
+          contextRuleId: 4,
+          policyAddress: _policyContractA,
+          spendingLimit: '100', // 100 at 7 decimals = 1_000_000_000 base units.
+          periodLedgers: 17280,
+        );
+        final call = h.recordingOps.submitCalls.single;
+        final decoded = _decodeInvoke(call.hostFunction);
+        // Install-params map carries period_ledgers + spending_limit.
+        final installParams = decoded.args[2].map!;
+        final periodEntry = installParams.firstWhere(
+          (e) => e.key.sym == 'period_ledgers',
+        );
+        final limitEntry = installParams.firstWhere(
+          (e) => e.key.sym == 'spending_limit',
+        );
+        expect(periodEntry.val.u32!.uint32, equals(17280));
+        expect(limitEntry.val.discriminant, equals(XdrSCValType.SCV_I128));
+        // 100 scaled by 7 decimals fits entirely in the low part.
+        expect(limitEntry.val.i128!.lo.uint64, equals(BigInt.from(1000000000)));
+      },
+    );
 
     test('explicit non-7 decimals scales the base-units encoding', () async {
       final h = _buildKit();
@@ -502,33 +519,36 @@ void main() {
       final call = h.recordingOps.submitCalls.single;
       final decoded = _decodeInvoke(call.hostFunction);
       final installParams = decoded.args[2].map!;
-      final limitEntry =
-          installParams.firstWhere((e) => e.key.sym == 'spending_limit');
+      final limitEntry = installParams.firstWhere(
+        (e) => e.key.sym == 'spending_limit',
+      );
       expect(limitEntry.val.discriminant, equals(XdrSCValType.SCV_I128));
       expect(limitEntry.val.i128!.lo.uint64, equals(BigInt.from(1500000)));
     });
 
-    test('excess fractional digits for the scale throw field-tagged error',
-        () async {
-      final h = _buildKit();
-      await expectLater(
-        () => OZPolicyManager(h.kit).addSpendingLimit(
-          contextRuleId: 1,
-          policyAddress: _policyContractA,
-          spendingLimit: '1.123', // 3 fractional digits > 2 decimals.
-          periodLedgers: 1,
-          decimals: 2,
-        ),
-        throwsA(
-          isA<SmartAccountInvalidInput>().having(
-            (e) => e.message,
-            'message',
-            contains('spendingLimit'),
+    test(
+      'excess fractional digits for the scale throw field-tagged error',
+      () async {
+        final h = _buildKit();
+        await expectLater(
+          () => OZPolicyManager(h.kit).addSpendingLimit(
+            contextRuleId: 1,
+            policyAddress: _policyContractA,
+            spendingLimit: '1.123', // 3 fractional digits > 2 decimals.
+            periodLedgers: 1,
+            decimals: 2,
           ),
-        ),
-      );
-      expect(h.recordingOps.submitCalls, isEmpty);
-    });
+          throwsA(
+            isA<SmartAccountInvalidInput>().having(
+              (e) => e.message,
+              'message',
+              contains('spendingLimit'),
+            ),
+          ),
+        );
+        expect(h.recordingOps.submitCalls, isEmpty);
+      },
+    );
 
     test('invalid policy address throws SmartAccountInvalidAddress', () async {
       final h = _buildKit();
@@ -543,19 +563,21 @@ void main() {
       );
     });
 
-    test('routes to multi-signer manager when selectedSigners non-empty',
-        () async {
-      final h = _buildKit();
-      await OZPolicyManager(h.kit).addSpendingLimit(
-        contextRuleId: 1,
-        policyAddress: _policyContractA,
-        spendingLimit: '5',
-        periodLedgers: 100,
-        selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
-      );
-      expect(h.recordingMulti.calls.length, equals(1));
-      expect(h.recordingOps.submitCalls, isEmpty);
-    });
+    test(
+      'routes to multi-signer manager when selectedSigners non-empty',
+      () async {
+        final h = _buildKit();
+        await OZPolicyManager(h.kit).addSpendingLimit(
+          contextRuleId: 1,
+          policyAddress: _policyContractA,
+          spendingLimit: '5',
+          periodLedgers: 100,
+          selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
+        );
+        expect(h.recordingMulti.calls.length, equals(1));
+        expect(h.recordingOps.submitCalls, isEmpty);
+      },
+    );
   });
 
   group('addPolicy', () {
@@ -565,7 +587,9 @@ void main() {
         () => OZPolicyManager(h.kit).addPolicy(
           contextRuleId: 1,
           policyAddress: 'not-c',
-          installParams: OZRawPolicyParams(XdrSCVal.forMap(const <XdrSCMapEntry>[])),
+          installParams: OZRawPolicyParams(
+            XdrSCVal.forMap(const <XdrSCMapEntry>[]),
+          ),
         ),
         throwsA(isA<SmartAccountInvalidAddress>()),
       );
@@ -578,7 +602,9 @@ void main() {
         () => OZPolicyManager(kit).addPolicy(
           contextRuleId: 1,
           policyAddress: _policyContractA,
-          installParams: OZRawPolicyParams(XdrSCVal.forMap(const <XdrSCMapEntry>[])),
+          installParams: OZRawPolicyParams(
+            XdrSCVal.forMap(const <XdrSCMapEntry>[]),
+          ),
         ),
         throwsA(isA<SmartAccountWalletNotConnected>()),
       );
@@ -601,31 +627,38 @@ void main() {
       expect(decoded.args[2].sym, equals('custom-payload'));
     });
 
-    test('routes to single-signer submit when selectedSigners is empty',
-        () async {
-      final h = _buildKit();
-      await OZPolicyManager(h.kit).addPolicy(
-        contextRuleId: 1,
-        policyAddress: _policyContractA,
-        installParams: OZRawPolicyParams(XdrSCVal.forMap(const <XdrSCMapEntry>[])),
-      );
-      expect(h.recordingOps.submitCalls.length, equals(1));
-      expect(h.recordingMulti.calls, isEmpty);
-    });
+    test(
+      'routes to single-signer submit when selectedSigners is empty',
+      () async {
+        final h = _buildKit();
+        await OZPolicyManager(h.kit).addPolicy(
+          contextRuleId: 1,
+          policyAddress: _policyContractA,
+          installParams: OZRawPolicyParams(
+            XdrSCVal.forMap(const <XdrSCMapEntry>[]),
+          ),
+        );
+        expect(h.recordingOps.submitCalls.length, equals(1));
+        expect(h.recordingMulti.calls, isEmpty);
+      },
+    );
 
     test(
-        'routes to multi-signer manager when selectedSigners is non-empty',
-        () async {
-      final h = _buildKit();
-      await OZPolicyManager(h.kit).addPolicy(
-        contextRuleId: 1,
-        policyAddress: _policyContractA,
-        installParams: OZRawPolicyParams(XdrSCVal.forMap(const <XdrSCMapEntry>[])),
-        selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
-      );
-      expect(h.recordingMulti.calls.length, equals(1));
-      expect(h.recordingOps.submitCalls, isEmpty);
-    });
+      'routes to multi-signer manager when selectedSigners is non-empty',
+      () async {
+        final h = _buildKit();
+        await OZPolicyManager(h.kit).addPolicy(
+          contextRuleId: 1,
+          policyAddress: _policyContractA,
+          installParams: OZRawPolicyParams(
+            XdrSCVal.forMap(const <XdrSCMapEntry>[]),
+          ),
+          selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
+        );
+        expect(h.recordingMulti.calls.length, equals(1));
+        expect(h.recordingOps.submitCalls, isEmpty);
+      },
+    );
   });
 
   group('OZPolicyInstallParams encoding', () {
@@ -634,38 +667,41 @@ void main() {
       expect(identical(OZRawPolicyParams(wrapped).toScVal(), wrapped), isTrue);
     });
 
-    test('addPolicy encodes typed params identically to their toScVal', () async {
-      final params = const OZSimpleThresholdPolicyParams(threshold: 2);
+    test(
+      'addPolicy encodes typed params identically to their toScVal',
+      () async {
+        final params = const OZSimpleThresholdPolicyParams(threshold: 2);
 
-      final typedKit = _buildKit();
-      await OZPolicyManager(typedKit.kit).addPolicy(
-        contextRuleId: 7,
-        policyAddress: _policyContractA,
-        installParams: params,
-      );
-      final typedArg =
-          _decodeInvoke(typedKit.recordingOps.submitCalls.single.hostFunction)
-              .args[2];
+        final typedKit = _buildKit();
+        await OZPolicyManager(typedKit.kit).addPolicy(
+          contextRuleId: 7,
+          policyAddress: _policyContractA,
+          installParams: params,
+        );
+        final typedArg = _decodeInvoke(
+          typedKit.recordingOps.submitCalls.single.hostFunction,
+        ).args[2];
 
-      final rawKit = _buildKit();
-      await OZPolicyManager(rawKit.kit).addPolicy(
-        contextRuleId: 7,
-        policyAddress: _policyContractA,
-        installParams: OZRawPolicyParams(params.toScVal()),
-      );
-      final rawArg =
-          _decodeInvoke(rawKit.recordingOps.submitCalls.single.hostFunction)
-              .args[2];
+        final rawKit = _buildKit();
+        await OZPolicyManager(rawKit.kit).addPolicy(
+          contextRuleId: 7,
+          policyAddress: _policyContractA,
+          installParams: OZRawPolicyParams(params.toScVal()),
+        );
+        final rawArg = _decodeInvoke(
+          rawKit.recordingOps.submitCalls.single.hostFunction,
+        ).args[2];
 
-      expect(
-        OZPolicyManager.scValToXdrBytes(typedArg),
-        equals(OZPolicyManager.scValToXdrBytes(params.toScVal())),
-      );
-      expect(
-        OZPolicyManager.scValToXdrBytes(typedArg),
-        equals(OZPolicyManager.scValToXdrBytes(rawArg)),
-      );
-    });
+        expect(
+          OZPolicyManager.scValToXdrBytes(typedArg),
+          equals(OZPolicyManager.scValToXdrBytes(params.toScVal())),
+        );
+        expect(
+          OZPolicyManager.scValToXdrBytes(typedArg),
+          equals(OZPolicyManager.scValToXdrBytes(rawArg)),
+        );
+      },
+    );
   });
 
   group('removePolicy by ID', () {
@@ -673,63 +709,61 @@ void main() {
       final ruleManager = StubContextRuleManager();
       final kit = _RoutingKit(contextRuleManager: ruleManager);
       await expectLater(
-        () => OZPolicyManager(kit).removePolicy(
-          contextRuleId: 1,
-          policyId: 1,
-        ),
+        () => OZPolicyManager(kit).removePolicy(contextRuleId: 1, policyId: 1),
         throwsA(isA<SmartAccountWalletNotConnected>()),
       );
     });
 
-    test('builds remove_policy host function with rule and policy IDs',
-        () async {
-      final h = _buildKit();
-      await OZPolicyManager(h.kit).removePolicy(
-        contextRuleId: 11,
-        policyId: 22,
-      );
-      final call = h.recordingOps.submitCalls.single;
-      final decoded = _decodeInvoke(call.hostFunction);
-      expect(decoded.fn, equals('remove_policy'));
-      expect(decoded.contractIdHex, equals(_contractIdHex(_accountContract)));
-      expect(decoded.args.length, equals(2));
-      expect(decoded.args[0].u32!.uint32, equals(11));
-      expect(decoded.args[1].u32!.uint32, equals(22));
-    });
-
-    test('routes to single-signer submit when selectedSigners is empty',
-        () async {
-      final h = _buildKit();
-      await OZPolicyManager(h.kit).removePolicy(
-        contextRuleId: 1,
-        policyId: 1,
-      );
-      expect(h.recordingOps.submitCalls.length, equals(1));
-      expect(h.recordingMulti.calls, isEmpty);
-    });
+    test(
+      'builds remove_policy host function with rule and policy IDs',
+      () async {
+        final h = _buildKit();
+        await OZPolicyManager(
+          h.kit,
+        ).removePolicy(contextRuleId: 11, policyId: 22);
+        final call = h.recordingOps.submitCalls.single;
+        final decoded = _decodeInvoke(call.hostFunction);
+        expect(decoded.fn, equals('remove_policy'));
+        expect(decoded.contractIdHex, equals(_contractIdHex(_accountContract)));
+        expect(decoded.args.length, equals(2));
+        expect(decoded.args[0].u32!.uint32, equals(11));
+        expect(decoded.args[1].u32!.uint32, equals(22));
+      },
+    );
 
     test(
-        'routes to multi-signer manager when selectedSigners is non-empty',
-        () async {
-      final h = _buildKit();
-      await OZPolicyManager(h.kit).removePolicy(
-        contextRuleId: 1,
-        policyId: 1,
-        selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
-      );
-      expect(h.recordingMulti.calls.length, equals(1));
-      expect(h.recordingOps.submitCalls, isEmpty);
-    });
+      'routes to single-signer submit when selectedSigners is empty',
+      () async {
+        final h = _buildKit();
+        await OZPolicyManager(
+          h.kit,
+        ).removePolicy(contextRuleId: 1, policyId: 1);
+        expect(h.recordingOps.submitCalls.length, equals(1));
+        expect(h.recordingMulti.calls, isEmpty);
+      },
+    );
+
+    test(
+      'routes to multi-signer manager when selectedSigners is non-empty',
+      () async {
+        final h = _buildKit();
+        await OZPolicyManager(h.kit).removePolicy(
+          contextRuleId: 1,
+          policyId: 1,
+          selectedSigners: const <OZSelectedSigner>[OZSelectedSignerPasskey()],
+        );
+        expect(h.recordingMulti.calls.length, equals(1));
+        expect(h.recordingOps.submitCalls, isEmpty);
+      },
+    );
 
     test('propagates submit failure to caller', () async {
       final h = _buildKit();
       h.recordingOps.errorToThrow =
           SmartAccountTransactionException.simulationFailed('boom');
       await expectLater(
-        () => OZPolicyManager(h.kit).removePolicy(
-          contextRuleId: 1,
-          policyId: 1,
-        ),
+        () =>
+            OZPolicyManager(h.kit).removePolicy(contextRuleId: 1, policyId: 1),
         throwsA(isA<SmartAccountTransactionSimulationFailed>()),
       );
     });
@@ -761,23 +795,25 @@ void main() {
       };
     }
 
-    test('policy not in rule list throws SmartAccountValidationException',
-        () async {
-      final h = _buildKit();
-      _seedContextRule(
-        h.ruleManager,
-        1,
-        policies: <String>[_policyContractB],
-        policyIds: <int>[42],
-      );
-      await expectLater(
-        () => OZPolicyManager(h.kit).removePolicyByAddress(
-          contextRuleId: 1,
-          policyAddress: _policyContractA,
-        ),
-        throwsA(isA<SmartAccountValidationException>()),
-      );
-    });
+    test(
+      'policy not in rule list throws SmartAccountValidationException',
+      () async {
+        final h = _buildKit();
+        _seedContextRule(
+          h.ruleManager,
+          1,
+          policies: <String>[_policyContractB],
+          policyIds: <int>[42],
+        );
+        await expectLater(
+          () => OZPolicyManager(h.kit).removePolicyByAddress(
+            contextRuleId: 1,
+            policyAddress: _policyContractA,
+          ),
+          throwsA(isA<SmartAccountValidationException>()),
+        );
+      },
+    );
 
     test('invalid address throws SmartAccountInvalidAddress', () async {
       final h = _buildKit();
@@ -790,8 +826,7 @@ void main() {
       );
     });
 
-    test(
-        'resolves matching policy address to its on-chain ID and '
+    test('resolves matching policy address to its on-chain ID and '
         'delegates to ID-based removePolicy', () async {
       final h = _buildKit();
       _seedContextRule(
@@ -815,64 +850,69 @@ void main() {
     });
 
     test(
-        'bounds-check throws when policies / policyIds lengths disagree',
-        () async {
-      final h = _buildKit();
-      _seedContextRule(
-        h.ruleManager,
-        2,
-        policies: <String>[_policyContractA, _policyContractB],
-        policyIds: <int>[1], // intentionally too short
-      );
-      await expectLater(
-        () => OZPolicyManager(h.kit).removePolicyByAddress(
-          contextRuleId: 2,
-          policyAddress: _policyContractB,
-        ),
-        throwsA(isA<SmartAccountValidationException>()),
-      );
-    });
+      'bounds-check throws when policies / policyIds lengths disagree',
+      () async {
+        final h = _buildKit();
+        _seedContextRule(
+          h.ruleManager,
+          2,
+          policies: <String>[_policyContractA, _policyContractB],
+          policyIds: <int>[1], // intentionally too short
+        );
+        await expectLater(
+          () => OZPolicyManager(h.kit).removePolicyByAddress(
+            contextRuleId: 2,
+            policyAddress: _policyContractB,
+          ),
+          throwsA(isA<SmartAccountValidationException>()),
+        );
+      },
+    );
 
-    test('delegates to ID-based remove (verified via routed call shape)',
-        () async {
-      final h = _buildKit();
-      _seedContextRule(
-        h.ruleManager,
-        3,
-        policies: <String>[_policyContractA],
-        policyIds: <int>[55],
-      );
+    test(
+      'delegates to ID-based remove (verified via routed call shape)',
+      () async {
+        final h = _buildKit();
+        _seedContextRule(
+          h.ruleManager,
+          3,
+          policies: <String>[_policyContractA],
+          policyIds: <int>[55],
+        );
 
-      await OZPolicyManager(h.kit).removePolicyByAddress(
-        contextRuleId: 3,
-        policyAddress: _policyContractA,
-      );
-
-      // Single submit with remove_policy invocation, args[0]==3 args[1]==55.
-      final call = h.recordingOps.submitCalls.single;
-      final decoded = _decodeInvoke(call.hostFunction);
-      expect(decoded.fn, equals('remove_policy'));
-      expect(decoded.args[0].u32!.uint32, equals(3));
-      expect(decoded.args[1].u32!.uint32, equals(55));
-    });
-
-    test('empty policies list throws not-found SmartAccountValidationException',
-        () async {
-      final h = _buildKit();
-      _seedContextRule(
-        h.ruleManager,
-        9,
-        policies: const <String>[],
-        policyIds: const <int>[],
-      );
-      await expectLater(
-        () => OZPolicyManager(h.kit).removePolicyByAddress(
-          contextRuleId: 9,
+        await OZPolicyManager(h.kit).removePolicyByAddress(
+          contextRuleId: 3,
           policyAddress: _policyContractA,
-        ),
-        throwsA(isA<SmartAccountValidationException>()),
-      );
-    });
+        );
+
+        // Single submit with remove_policy invocation, args[0]==3 args[1]==55.
+        final call = h.recordingOps.submitCalls.single;
+        final decoded = _decodeInvoke(call.hostFunction);
+        expect(decoded.fn, equals('remove_policy'));
+        expect(decoded.args[0].u32!.uint32, equals(3));
+        expect(decoded.args[1].u32!.uint32, equals(55));
+      },
+    );
+
+    test(
+      'empty policies list throws not-found SmartAccountValidationException',
+      () async {
+        final h = _buildKit();
+        _seedContextRule(
+          h.ruleManager,
+          9,
+          policies: const <String>[],
+          policyIds: const <int>[],
+        );
+        await expectLater(
+          () => OZPolicyManager(h.kit).removePolicyByAddress(
+            contextRuleId: 9,
+            policyAddress: _policyContractA,
+          ),
+          throwsA(isA<SmartAccountValidationException>()),
+        );
+      },
+    );
   });
 
   // The byte-equivalence assertions for the policy-install ScVal map shape
@@ -881,8 +921,7 @@ void main() {
   // self-contained and readable.
   group('sortMapByKeyXdr / scValToXdrBytes', () {
     test('sortMapByKeyXdr: empty input returns empty list', () {
-      final sorted =
-          OZPolicyManager.sortMapByKeyXdr(const <XdrSCMapEntry>[]);
+      final sorted = OZPolicyManager.sortMapByKeyXdr(const <XdrSCMapEntry>[]);
       expect(sorted, isEmpty);
     });
 
@@ -908,17 +947,17 @@ void main() {
         XdrSCMapEntry(XdrSCVal.forSymbol('mu'), XdrSCVal.forU32(2)),
       ];
       final sorted = OZPolicyManager.sortMapByKeyXdr(entries);
-      expect(
-        sorted.map((e) => e.key.sym).toList(),
-        <String>['alpha', 'mu', 'zeta'],
-      );
+      expect(sorted.map((e) => e.key.sym).toList(), <String>[
+        'alpha',
+        'mu',
+        'zeta',
+      ]);
     });
 
     test('sortMapByKeyXdr: values are preserved alongside keys', () {
       final e1 = XdrSCMapEntry(XdrSCVal.forSymbol('b'), XdrSCVal.forU32(2));
       final e2 = XdrSCMapEntry(XdrSCVal.forSymbol('a'), XdrSCVal.forU32(1));
-      final sorted =
-          OZPolicyManager.sortMapByKeyXdr(<XdrSCMapEntry>[e1, e2]);
+      final sorted = OZPolicyManager.sortMapByKeyXdr(<XdrSCMapEntry>[e1, e2]);
       // Keys must match values from the same entry.
       for (final entry in sorted) {
         if (entry.key.sym == 'a') {
@@ -938,7 +977,8 @@ void main() {
 
     test('WeightedThresholdParams_equalityAndHashCode', () {
       final signer = OZDelegatedSigner(
-          'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7');
+        'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+      );
       final a = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{signer: 1},
         threshold: 1,

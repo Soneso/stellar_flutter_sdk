@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 300))
-
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -26,10 +25,7 @@ void main() {
 
       // stellar.toml discovery
       if (url.contains('.well-known/stellar.toml')) {
-        return http.Response(
-          'FEDERATION_SERVER="$federationServer"',
-          200,
-        );
+        return http.Response('FEDERATION_SERVER="$federationServer"', 200);
       }
 
       // Federation query
@@ -191,22 +187,34 @@ void main() {
     // Tests the memo-building logic from the example
 
     // Test text memo
-    FederationResponse textResponse =
-        FederationResponse('alice*example.com', testAccountId, 'text', 'hello');
+    FederationResponse textResponse = FederationResponse(
+      'alice*example.com',
+      testAccountId,
+      'text',
+      'hello',
+    );
     Memo textMemo = Memo.text(textResponse.memo!);
     expect(textMemo, isA<MemoText>());
 
     // Test id memo
-    FederationResponse idResponse =
-        FederationResponse('alice*example.com', testAccountId, 'id', '12345');
+    FederationResponse idResponse = FederationResponse(
+      'alice*example.com',
+      testAccountId,
+      'id',
+      '12345',
+    );
     Memo idMemo = Memo.id(BigInt.parse(idResponse.memo!));
     expect(idMemo, isA<MemoId>());
 
     // Test hash memo
     final hashBytes = List.filled(32, 0);
     final hashBase64 = base64Encode(hashBytes);
-    FederationResponse hashResponse =
-        FederationResponse('alice*example.com', testAccountId, 'hash', hashBase64);
+    FederationResponse hashResponse = FederationResponse(
+      'alice*example.com',
+      testAccountId,
+      'hash',
+      hashBase64,
+    );
     Memo hashMemo = MemoHash(base64Decode(hashResponse.memo!));
     expect(hashMemo, isA<MemoHash>());
   });
@@ -228,10 +236,7 @@ void main() {
       final url = request.url.toString();
 
       if (url.contains('.well-known/stellar.toml')) {
-        return http.Response(
-          'FEDERATION_SERVER="$testFederationServer"',
-          200,
-        );
+        return http.Response('FEDERATION_SERVER="$testFederationServer"', 200);
       }
 
       if (url.contains('/federation')) {
@@ -272,8 +277,7 @@ void main() {
       'example.com',
       httpClient: mockClient,
     );
-    String? federationServer =
-        stellarToml.generalInformation.federationServer;
+    String? federationServer = stellarToml.generalInformation.federationServer;
 
     expect(federationServer, 'https://stellarid.io/federation/');
   });
@@ -346,8 +350,9 @@ void main() {
 
     expect(response.stellarAddress, 'alice*example.com');
     expect(
-        response.accountId,
-        'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP');
+      response.accountId,
+      'GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP',
+    );
     expect(response.memoType, 'id');
     expect(response.memo, '12345');
   });

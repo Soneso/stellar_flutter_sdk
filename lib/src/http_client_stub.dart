@@ -18,9 +18,10 @@ import 'package:http/http.dart' as http;
 http.Client createHttpClient(Object? httpClient) {
   if (httpClient != null) {
     throw UnsupportedError(
-        'Custom HttpClient not supported on web. '
-        'Web browsers handle HTTP internally via fetch/XMLHttpRequest. '
-        'Pass null to use the default browser HTTP implementation.');
+      'Custom HttpClient not supported on web. '
+      'Web browsers handle HTTP internally via fetch/XMLHttpRequest. '
+      'Pass null to use the default browser HTTP implementation.',
+    );
   }
   return http.Client();
 }
@@ -35,6 +36,7 @@ http.Client createHttpClient(Object? httpClient) {
 /// Throws [UnsupportedError] always on web platform.
 void setGlobalHttpOverrides(Object overrides) {
   throw UnsupportedError(
-      'HttpOverrides not supported on web. '
-      'Browsers manage HTTP connections internally.');
+    'HttpOverrides not supported on web. '
+    'Browsers manage HTTP connections internally.',
+  );
 }

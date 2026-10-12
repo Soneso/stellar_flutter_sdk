@@ -58,7 +58,7 @@ class OZLocalStorageAdapter implements OZStorageAdapter {
 
   /// Constructs a [OZLocalStorageAdapter] backed by `window.localStorage`.
   OZLocalStorageAdapter({this.keyPrefix = defaultKeyPrefix})
-      : _injectedStorage = null;
+    : _injectedStorage = null;
 
   /// Constructs a [OZLocalStorageAdapter] backed by an injected
   /// [web.Storage]. Test seam — production code uses the unnamed
@@ -386,9 +386,7 @@ String _serializeCredential(OZStoredCredential credential) {
 OZStoredCredential _deserializeCredential(String json) {
   final decoded = jsonDecode(json);
   if (decoded is! Map<String, dynamic>) {
-    throw const FormatException(
-      'Stored credential JSON is not an object',
-    );
+    throw const FormatException('Stored credential JSON is not an object');
   }
   return SerializableCredential.fromJson(decoded).toStoredCredential();
 }
@@ -400,9 +398,7 @@ String _serializeSession(OZStoredSession session) {
 OZStoredSession _deserializeSession(String json) {
   final decoded = jsonDecode(json);
   if (decoded is! Map<String, dynamic>) {
-    throw const FormatException(
-      'Stored session JSON is not an object',
-    );
+    throw const FormatException('Stored session JSON is not an object');
   }
   return SerializableSession.fromJson(decoded).toStoredSession();
 }

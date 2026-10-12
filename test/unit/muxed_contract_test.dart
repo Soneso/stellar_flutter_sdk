@@ -8,17 +8,17 @@ void main() {
     (
       'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA',
       BigInt.zero,
-      'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC'
+      'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAAAWWC',
     ),
     (
       'CA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUWDA',
       BigInt.parse('9223372036854775808'),
-      'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY'
+      'WA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAACWJY',
     ),
     (
       'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
       BigInt.from(123456),
-      'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG'
+      'WA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAAAAAAAAAPCIA6IG',
     ),
   ];
 
@@ -41,20 +41,26 @@ void main() {
 
   test('stores a hex contract id as its contract strkey', () {
     final muxed = MuxedContract(
-        '363eaa3867841fbad0f4ed88c779e4fe66e56a2470dc98c0ec9c073d05c7b103',
-        BigInt.from(123456));
-    expect(muxed.contractId,
-        'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE');
+      '363eaa3867841fbad0f4ed88c779e4fe66e56a2470dc98c0ec9c073d05c7b103',
+      BigInt.from(123456),
+    );
+    expect(
+      muxed.contractId,
+      'CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE',
+    );
     expect(muxed.muxedContractId, vectors.last.$3);
   });
 
   test('refuses an id outside the unsigned 64-bit range', () {
     for (final id in [BigInt.from(-1), BigInt.one << 64]) {
       expect(
-          () => MuxedContract(vectors.first.$1, id),
-          throwsA(isA<ArgumentError>()
+        () => MuxedContract(vectors.first.$1, id),
+        throwsA(
+          isA<ArgumentError>()
               .having((ArgumentError e) => e.name, 'name', 'id')
-              .having((ArgumentError e) => e.invalidValue, 'value', id)));
+              .having((ArgumentError e) => e.invalidValue, 'value', id),
+        ),
+      );
     }
   });
 
@@ -62,11 +68,15 @@ void main() {
     final contractHash = XdrHash(StrKey.decodeContractId(vectors.first.$1));
     for (final id in [BigInt.from(-1), BigInt.one << 64]) {
       expect(
-          () => MuxedContract.fromXdr(
-              XdrMuxedContract(XdrUint64(id), contractHash)),
-          throwsA(isA<ArgumentError>()
+        () => MuxedContract.fromXdr(
+          XdrMuxedContract(XdrUint64(id), contractHash),
+        ),
+        throwsA(
+          isA<ArgumentError>()
               .having((ArgumentError e) => e.name, 'name', 'id')
-              .having((ArgumentError e) => e.invalidValue, 'value', id)));
+              .having((ArgumentError e) => e.invalidValue, 'value', id),
+        ),
+      );
     }
   });
 
@@ -77,16 +87,20 @@ void main() {
       vectors.last.$3,
     ]) {
       expect(
-          () => MuxedContract(contractId, BigInt.one),
-          throwsA(isA<ArgumentError>()
+        () => MuxedContract(contractId, BigInt.one),
+        throwsA(
+          isA<ArgumentError>()
               .having((ArgumentError e) => e.name, 'name', 'contractId')
-              .having(
-                  (ArgumentError e) => e.invalidValue, 'value', contractId)));
+              .having((ArgumentError e) => e.invalidValue, 'value', contractId),
+        ),
+      );
     }
   });
 
   test('refuses a strkey that is not a muxed contract address', () {
-    expect(() => MuxedContract.fromMuxedContractId(vectors.first.$1),
-        throwsFormatException);
+    expect(
+      () => MuxedContract.fromMuxedContractId(vectors.first.$1),
+      throwsFormatException,
+    );
   });
 }

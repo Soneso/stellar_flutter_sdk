@@ -5,7 +5,9 @@ import 'dart:typed_data';
 void main() {
   group('XdrFeeBumpTransactionInnerTx setters', () {
     test('should set discriminant', () {
-      final innerTx = XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX);
+      final innerTx = XdrFeeBumpTransactionInnerTx(
+        XdrEnvelopeType.ENVELOPE_TYPE_TX,
+      );
       innerTx.discriminant = XdrEnvelopeType.ENVELOPE_TYPE_TX;
       expect(innerTx.discriminant, equals(XdrEnvelopeType.ENVELOPE_TYPE_TX));
     });
@@ -31,7 +33,10 @@ void main() {
     test('should set discriminant', () {
       final envelope = XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX);
       envelope.discriminant = XdrEnvelopeType.ENVELOPE_TYPE_TX_V0;
-      expect(envelope.discriminant, equals(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0));
+      expect(
+        envelope.discriminant,
+        equals(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0),
+      );
     });
   });
 
@@ -63,7 +68,10 @@ void main() {
       envelope.tx = newTx;
       expect(envelope.tx, equals(newTx));
 
-      final sig = XdrDecoratedSignature(XdrSignatureHint(Uint8List(4)), XdrSignature(Uint8List(64)));
+      final sig = XdrDecoratedSignature(
+        XdrSignatureHint(Uint8List(4)),
+        XdrSignature(Uint8List(64)),
+      );
       envelope.signatures = [sig];
       expect(envelope.signatures.length, equals(1));
     });
@@ -74,7 +82,9 @@ void main() {
       final feeSource = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       feeSource.ed25519 = XdrUint256(Uint8List(32));
 
-      final innerTx = XdrFeeBumpTransactionInnerTx(XdrEnvelopeType.ENVELOPE_TYPE_TX);
+      final innerTx = XdrFeeBumpTransactionInnerTx(
+        XdrEnvelopeType.ENVELOPE_TYPE_TX,
+      );
       final sourceAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
       sourceAccount.ed25519 = XdrUint256(Uint8List(32));
       final preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
@@ -106,7 +116,10 @@ void main() {
       envelope.tx = newFeeBumpTx;
       expect(envelope.tx, equals(newFeeBumpTx));
 
-      final sig = XdrDecoratedSignature(XdrSignatureHint(Uint8List(4)), XdrSignature(Uint8List(64)));
+      final sig = XdrDecoratedSignature(
+        XdrSignatureHint(Uint8List(4)),
+        XdrSignature(Uint8List(64)),
+      );
       envelope.signatures = [sig];
       expect(envelope.signatures.length, equals(1));
     });
@@ -114,7 +127,10 @@ void main() {
 
   group('XdrTransactionV0Envelope setters', () {
     test('should set tx and signatures', () {
-      final timeBounds = XdrTimeBounds(XdrUint64(BigInt.zero), XdrUint64(BigInt.from(999999999999)));
+      final timeBounds = XdrTimeBounds(
+        XdrUint64(BigInt.zero),
+        XdrUint64(BigInt.from(999999999999)),
+      );
       final tx = XdrTransactionV0(
         XdrUint256(Uint8List(32)),
         XdrUint32(100),
@@ -138,7 +154,10 @@ void main() {
       envelope.tx = newTx;
       expect(envelope.tx, equals(newTx));
 
-      final sig = XdrDecoratedSignature(XdrSignatureHint(Uint8List(4)), XdrSignature(Uint8List(64)));
+      final sig = XdrDecoratedSignature(
+        XdrSignatureHint(Uint8List(4)),
+        XdrSignature(Uint8List(64)),
+      );
       envelope.signatures = [sig];
       expect(envelope.signatures.length, equals(1));
     });
@@ -209,7 +228,10 @@ void main() {
     test('should set discriminant', () {
       final preconditions = XdrPreconditions(XdrPreconditionType.PRECOND_NONE);
       preconditions.discriminant = XdrPreconditionType.PRECOND_TIME;
-      expect(preconditions.discriminant, equals(XdrPreconditionType.PRECOND_TIME));
+      expect(
+        preconditions.discriminant,
+        equals(XdrPreconditionType.PRECOND_TIME),
+      );
     });
 
     test('should set timeBounds', () {

@@ -113,19 +113,20 @@ abstract class OperationResponse extends Response {
   /// - [transaction] Full parent transaction
   /// - [sponsor] Account sponsoring the operation (if applicable)
   OperationResponse(
-      this.links,
-      this.id,
-      this.pagingToken,
-      this.transactionSuccessful,
-      this.sourceAccount,
-      this.sourceAccountMuxed,
-      this.sourceAccountMuxedId,
-      this.type,
-      this.type_i,
-      this.createdAt,
-      this.transactionHash,
-      this.transaction,
-      this.sponsor);
+    this.links,
+    this.id,
+    this.pagingToken,
+    this.transactionSuccessful,
+    this.sourceAccount,
+    this.sourceAccountMuxed,
+    this.sourceAccountMuxedId,
+    this.type,
+    this.type_i,
+    this.createdAt,
+    this.transactionHash,
+    this.transaction,
+    this.sponsor,
+  );
 
   /// Deserializes an operation response from JSON, returning the appropriate subclass based on type.
   factory OperationResponse.fromJson(Map<String, dynamic> json) {
@@ -230,14 +231,20 @@ class OperationResponseLinks {
   /// - [succeeds] Link to previous operation in ledger order
   /// - [transaction] Link to parent transaction
   OperationResponseLinks(
-      this.effects, this.precedes, this.self, this.succeeds, this.transaction);
+    this.effects,
+    this.precedes,
+    this.self,
+    this.succeeds,
+    this.transaction,
+  );
 
   /// Deserializes operation response links from JSON.
   factory OperationResponseLinks.fromJson(Map<String, dynamic> json) =>
       OperationResponseLinks(
-          Link.fromJson(json['effects']),
-          Link.fromJson(json['precedes']),
-          Link.fromJson(json['self']),
-          Link.fromJson(json['succeeds']),
-          Link.fromJson(json['transaction']));
+        Link.fromJson(json['effects']),
+        Link.fromJson(json['precedes']),
+        Link.fromJson(json['self']),
+        Link.fromJson(json['succeeds']),
+        Link.fromJson(json['transaction']),
+      );
 }

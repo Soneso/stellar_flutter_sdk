@@ -83,9 +83,10 @@ abstract class OZSmartAccountAuth {
     final concatenated = Uint8List(signaturePayload.length + ruleIdsXdr.length)
       ..setRange(0, signaturePayload.length, signaturePayload)
       ..setRange(
-          signaturePayload.length,
-          signaturePayload.length + ruleIdsXdr.length,
-          ruleIdsXdr);
+        signaturePayload.length,
+        signaturePayload.length + ruleIdsXdr.length,
+        ruleIdsXdr,
+      );
     return Uint8List.fromList(crypto.sha256.convert(concatenated).bytes);
   }
 
@@ -257,8 +258,9 @@ abstract class OZSmartAccountAuth {
     // Step 4: read the existing payload from the cloned credentials,
     // override or preserve context rule IDs, upsert the signer entry, and
     // write the payload back.
-    final existingPayload =
-        OZSmartAccountAuthPayloadCodec.read(credentialsCopy.signature);
+    final existingPayload = OZSmartAccountAuthPayloadCodec.read(
+      credentialsCopy.signature,
+    );
 
     final updatedPayload = OZSmartAccountAuthPayload(
       signers: existingPayload.signers,
@@ -321,8 +323,9 @@ abstract class OZSmartAccountAuth {
     _requireAddressOrV2Credentials(entry.credentials);
     final credentials = _innerAddressCredentials(entry.credentials)!;
 
-    final existingPayload =
-        OZSmartAccountAuthPayloadCodec.read(credentials.signature);
+    final existingPayload = OZSmartAccountAuthPayloadCodec.read(
+      credentials.signature,
+    );
 
     final updatedPayload = OZSmartAccountAuthPayload(
       signers: existingPayload.signers,

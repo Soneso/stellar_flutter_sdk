@@ -69,15 +69,15 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
   ///              15 minutes (900000), 1 hour (3600000), 1 day (86400000), 1 week (604800000)
   /// - offset: Offset from start time in milliseconds (shifts time buckets, usually 0)
   TradeAggregationsRequestBuilder(
-      http.Client httpClient,
-      Uri serverURI,
-      Asset baseAsset,
-      Asset counterAsset,
-      int startTime,
-      int endTime,
-      int resolution,
-      int offset)
-      : super(httpClient, serverURI, ["trade_aggregations"]) {
+    http.Client httpClient,
+    Uri serverURI,
+    Asset baseAsset,
+    Asset counterAsset,
+    int startTime,
+    int endTime,
+    int resolution,
+    int offset,
+  ) : super(httpClient, serverURI, ["trade_aggregations"]) {
     this._baseAsset(baseAsset);
     this._counterAsset(counterAsset);
     queryParameters.addAll({"start_time": startTime.toString()});
@@ -91,8 +91,9 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"base_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"base_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters.addAll({
+        "base_asset_issuer": creditAlphaNumAsset.issuerId,
+      });
     }
   }
 
@@ -101,17 +102,22 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"counter_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"counter_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters.addAll({
+        "counter_asset_issuer": creditAlphaNumAsset.issuerId,
+      });
     }
   }
 
   /// Executes the HTTP request to fetch trade aggregations from Horizon.
   /// Returns a page of trade aggregation responses for navigation.
   static Future<Page<TradeAggregationResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
+    http.Client httpClient,
+    Uri uri,
+  ) async {
     return RequestBuilder.requestExecute<Page<TradeAggregationResponse>>(
-        httpClient, uri);
+      httpClient,
+      uri,
+    );
   }
 
   /// Builds and executes the request.
@@ -133,6 +139,8 @@ class TradeAggregationsRequestBuilder extends RequestBuilder {
   /// ```
   Future<Page<TradeAggregationResponse>> execute() {
     return TradeAggregationsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+      this.httpClient,
+      this.buildUri(),
+    );
   }
 }

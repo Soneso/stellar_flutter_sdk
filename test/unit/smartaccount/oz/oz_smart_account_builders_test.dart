@@ -46,35 +46,41 @@ Uint8List _credentialId({int seed = 0xA0, int length = 16}) {
 }
 
 void main() {
-
   group('signer key and dedup', () {
-    test('testGetSignerKey_delegatedSigner_returnsUniqueKeyWithDelegatedPrefix',
-        () {
-      final signer =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
-      final key = OZSmartAccountBuilders.getSignerKey(signer);
-      expect(key, startsWith('delegated:'));
-      expect(key, contains(kValidGAddress));
-    });
+    test(
+      'testGetSignerKey_delegatedSigner_returnsUniqueKeyWithDelegatedPrefix',
+      () {
+        final signer = OZSmartAccountBuilders.createDelegatedSigner(
+          kValidGAddress,
+        );
+        final key = OZSmartAccountBuilders.getSignerKey(signer);
+        expect(key, startsWith('delegated:'));
+        expect(key, contains(kValidGAddress));
+      },
+    );
 
     test(
-        'testGetSignerKey_externalSigner_returnsUniqueKeyWithExternalPrefixAndHexKeyData',
-        () {
-      final signer = OZSmartAccountBuilders.createWebAuthnSigner(
-        webauthnVerifierAddress: kValidContractId,
-        publicKey: _secp256r1Pub(),
-        credentialId: _credentialId(),
-      );
-      final key = OZSmartAccountBuilders.getSignerKey(signer);
-      expect(key, startsWith('external:'));
-      expect(key, contains(kValidContractId));
-    });
+      'testGetSignerKey_externalSigner_returnsUniqueKeyWithExternalPrefixAndHexKeyData',
+      () {
+        final signer = OZSmartAccountBuilders.createWebAuthnSigner(
+          webauthnVerifierAddress: kValidContractId,
+          publicKey: _secp256r1Pub(),
+          credentialId: _credentialId(),
+        );
+        final key = OZSmartAccountBuilders.getSignerKey(signer);
+        expect(key, startsWith('external:'));
+        expect(key, contains(kValidContractId));
+      },
+    );
 
     test('testGetSignerKey_matchesDelegatedSignerUniqueKey', () {
-      final signer =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
-      expect(OZSmartAccountBuilders.getSignerKey(signer),
-          equals(signer.uniqueKey));
+      final signer = OZSmartAccountBuilders.createDelegatedSigner(
+        kValidGAddress,
+      );
+      expect(
+        OZSmartAccountBuilders.getSignerKey(signer),
+        equals(signer.uniqueKey),
+      );
     });
 
     test('testGetSignerKey_matchesExternalSignerUniqueKey', () {
@@ -83,141 +89,150 @@ void main() {
         publicKey: _secp256r1Pub(),
         credentialId: _credentialId(),
       );
-      expect(OZSmartAccountBuilders.getSignerKey(signer),
-          equals(signer.uniqueKey));
+      expect(
+        OZSmartAccountBuilders.getSignerKey(signer),
+        equals(signer.uniqueKey),
+      );
     });
 
     test('testCollectUniqueSigners_emptyList_returnsEmpty', () {
       expect(
-          OZSmartAccountBuilders.collectUniqueSigners(<OZSmartAccountSigner>[]),
-          isEmpty);
+        OZSmartAccountBuilders.collectUniqueSigners(<OZSmartAccountSigner>[]),
+        isEmpty,
+      );
     });
 
     test('testCollectUniqueSigners_singleSigner_returnsSameSigner', () {
-      final s =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+      final s = OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
       final out = OZSmartAccountBuilders.collectUniqueSigners([s]);
       expect(out, hasLength(1));
       expect(out.first, same(s));
     });
 
     test(
-        'testCollectUniqueSigners_duplicateDelegatedSigners_deduplicatesToOne',
-        () {
-      final a =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
-      final b =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
-      final out = OZSmartAccountBuilders.collectUniqueSigners([a, b, a]);
-      expect(out, hasLength(1));
-    });
+      'testCollectUniqueSigners_duplicateDelegatedSigners_deduplicatesToOne',
+      () {
+        final a = OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+        final b = OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+        final out = OZSmartAccountBuilders.collectUniqueSigners([a, b, a]);
+        expect(out, hasLength(1));
+      },
+    );
 
     test(
-        'testCollectUniqueSigners_duplicateExternalSigners_deduplicatesToOne',
-        () {
-      final a = OZSmartAccountBuilders.createExternalSigner(
-        kValidContractId,
-        _ed25519Pub(),
-      );
-      final b = OZSmartAccountBuilders.createExternalSigner(
-        kValidContractId,
-        _ed25519Pub(),
-      );
-      final out = OZSmartAccountBuilders.collectUniqueSigners([a, b]);
-      expect(out, hasLength(1));
-    });
+      'testCollectUniqueSigners_duplicateExternalSigners_deduplicatesToOne',
+      () {
+        final a = OZSmartAccountBuilders.createExternalSigner(
+          kValidContractId,
+          _ed25519Pub(),
+        );
+        final b = OZSmartAccountBuilders.createExternalSigner(
+          kValidContractId,
+          _ed25519Pub(),
+        );
+        final out = OZSmartAccountBuilders.collectUniqueSigners([a, b]);
+        expect(out, hasLength(1));
+      },
+    );
 
     test('testCollectUniqueSigners_differentSigners_allKept', () {
-      final a =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
-      final b =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidContractId);
+      final a = OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+      final b = OZSmartAccountBuilders.createDelegatedSigner(kValidContractId);
       final out = OZSmartAccountBuilders.collectUniqueSigners([a, b]);
       expect(out, hasLength(2));
     });
 
     test('testCollectUniqueSigners_preservesOrderFirstOccurrence', () {
-      final a =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
-      final b =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidContractId);
+      final a = OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+      final b = OZSmartAccountBuilders.createDelegatedSigner(kValidContractId);
       final out = OZSmartAccountBuilders.collectUniqueSigners([a, b, a]);
       expect(out.first, same(a));
       expect(out.last, same(b));
     });
 
     test(
-        'testCollectUniqueSigners_mixedDuplicates_preservesInsertionOrder',
-        () {
-      final d =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
-      final e = OZSmartAccountBuilders.createExternalSigner(
-        kValidContractId,
-        _ed25519Pub(),
-      );
-      final dDup =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
-      final out = OZSmartAccountBuilders.collectUniqueSigners([d, e, dDup]);
-      expect(out, hasLength(2));
-      expect(out.first, same(d));
-      expect(out.last, same(e));
-    });
+      'testCollectUniqueSigners_mixedDuplicates_preservesInsertionOrder',
+      () {
+        final d = OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+        final e = OZSmartAccountBuilders.createExternalSigner(
+          kValidContractId,
+          _ed25519Pub(),
+        );
+        final dDup = OZSmartAccountBuilders.createDelegatedSigner(
+          kValidGAddress,
+        );
+        final out = OZSmartAccountBuilders.collectUniqueSigners([d, e, dDup]);
+        expect(out, hasLength(2));
+        expect(out.first, same(d));
+        expect(out.last, same(e));
+      },
+    );
   });
 
   group('signersEqual', () {
     test('testSignersEqual_sameDelegatedSigner_returnsTrue', () {
-      final a =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
-      final b =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+      final a = OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+      final b = OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
       expect(OZSmartAccountBuilders.signersEqual(a, b), isTrue);
     });
 
     test('testSignersEqual_differentDelegatedSigners_returnsFalse', () {
-      final a =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
-      final b =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidContractId);
+      final a = OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+      final b = OZSmartAccountBuilders.createDelegatedSigner(kValidContractId);
       expect(OZSmartAccountBuilders.signersEqual(a, b), isFalse);
     });
 
     test('testSignersEqual_sameExternalSigner_returnsTrue', () {
       final a = OZSmartAccountBuilders.createExternalSigner(
-          kValidContractId, _ed25519Pub());
+        kValidContractId,
+        _ed25519Pub(),
+      );
       final b = OZSmartAccountBuilders.createExternalSigner(
-          kValidContractId, _ed25519Pub());
+        kValidContractId,
+        _ed25519Pub(),
+      );
       expect(OZSmartAccountBuilders.signersEqual(a, b), isTrue);
     });
 
     test('testSignersEqual_externalSignersDifferentVerifier_returnsFalse', () {
       final a = OZSmartAccountBuilders.createExternalSigner(
-          kValidContractId, _ed25519Pub());
+        kValidContractId,
+        _ed25519Pub(),
+      );
       final b = OZSmartAccountBuilders.createExternalSigner(
-          kValidContractIdAlt, _ed25519Pub());
+        kValidContractIdAlt,
+        _ed25519Pub(),
+      );
       expect(OZSmartAccountBuilders.signersEqual(a, b), isFalse);
     });
 
     test('testSignersEqual_externalSignersDifferentKeyData_returnsFalse', () {
       final a = OZSmartAccountBuilders.createExternalSigner(
-          kValidContractId, _ed25519Pub(seed: 1));
+        kValidContractId,
+        _ed25519Pub(seed: 1),
+      );
       final b = OZSmartAccountBuilders.createExternalSigner(
-          kValidContractId, _ed25519Pub(seed: 2));
+        kValidContractId,
+        _ed25519Pub(seed: 2),
+      );
       expect(OZSmartAccountBuilders.signersEqual(a, b), isFalse);
     });
 
     test('testSignersEqual_delegatedVsExternal_returnsFalse', () {
-      final a =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+      final a = OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
       final b = OZSmartAccountBuilders.createExternalSigner(
-          kValidContractId, _ed25519Pub());
+        kValidContractId,
+        _ed25519Pub(),
+      );
       expect(OZSmartAccountBuilders.signersEqual(a, b), isFalse);
     });
 
     test('testSignersEqual_externalVsDelegated_returnsFalse', () {
       final a = OZSmartAccountBuilders.createExternalSigner(
-          kValidContractId, _ed25519Pub());
-      final b =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+        kValidContractId,
+        _ed25519Pub(),
+      );
+      final b = OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
       expect(OZSmartAccountBuilders.signersEqual(a, b), isFalse);
     });
   });
@@ -232,98 +247,115 @@ void main() {
       );
       final encoded = base64Url.encode(cred);
       expect(
-          OZSmartAccountBuilders.signerMatchesCredentialId(signer, encoded),
-          isTrue);
+        OZSmartAccountBuilders.signerMatchesCredentialId(signer, encoded),
+        isTrue,
+      );
     });
 
     test(
-        'testSignerMatchesCredentialId_nonMatchingCredentialId_returnsFalse',
-        () {
-      final signer = OZSmartAccountBuilders.createWebAuthnSigner(
-        webauthnVerifierAddress: kValidContractId,
-        publicKey: _secp256r1Pub(),
-        credentialId: _credentialId(seed: 0xA0),
-      );
-      final differentEncoded = base64Url.encode(
-        _credentialId(seed: 0xB0),
-      );
-      expect(
+      'testSignerMatchesCredentialId_nonMatchingCredentialId_returnsFalse',
+      () {
+        final signer = OZSmartAccountBuilders.createWebAuthnSigner(
+          webauthnVerifierAddress: kValidContractId,
+          publicKey: _secp256r1Pub(),
+          credentialId: _credentialId(seed: 0xA0),
+        );
+        final differentEncoded = base64Url.encode(_credentialId(seed: 0xB0));
+        expect(
           OZSmartAccountBuilders.signerMatchesCredentialId(
-              signer, differentEncoded),
-          isFalse);
-    });
+            signer,
+            differentEncoded,
+          ),
+          isFalse,
+        );
+      },
+    );
 
     test('testSignerMatchesCredentialId_delegatedSigner_returnsFalse', () {
-      final signer =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+      final signer = OZSmartAccountBuilders.createDelegatedSigner(
+        kValidGAddress,
+      );
       expect(
-          OZSmartAccountBuilders.signerMatchesCredentialId(signer, 'abc'),
-          isFalse);
+        OZSmartAccountBuilders.signerMatchesCredentialId(signer, 'abc'),
+        isFalse,
+      );
     });
 
     test(
-        'testSignerMatchesCredentialId_emptyCredentialIdString_returnsFalse',
-        () {
-      final signer = OZSmartAccountBuilders.createWebAuthnSigner(
-        webauthnVerifierAddress: kValidContractId,
-        publicKey: _secp256r1Pub(),
-        credentialId: _credentialId(),
-      );
-      expect(
+      'testSignerMatchesCredentialId_emptyCredentialIdString_returnsFalse',
+      () {
+        final signer = OZSmartAccountBuilders.createWebAuthnSigner(
+          webauthnVerifierAddress: kValidContractId,
+          publicKey: _secp256r1Pub(),
+          credentialId: _credentialId(),
+        );
+        expect(
           OZSmartAccountBuilders.signerMatchesCredentialId(signer, ''),
-          isFalse);
-    });
+          isFalse,
+        );
+      },
+    );
 
     test(
-        'testSignerMatchesCredentialId_acceptsPaddedAndUnpaddedBase64UrlInputs',
-        () {
-      // A 1-byte credential ID is the shortest input that produces a
-      // padded Base64URL string ("AQ==" padded vs "AQ" unpadded). The
-      // matcher must treat both forms as equivalent so callers using
-      // either convention interoperate.
-      final signer = OZSmartAccountBuilders.createWebAuthnSigner(
-        webauthnVerifierAddress: kValidContractId,
-        publicKey: _secp256r1Pub(),
-        credentialId: Uint8List.fromList([0x01]),
-      );
-      expect(
+      'testSignerMatchesCredentialId_acceptsPaddedAndUnpaddedBase64UrlInputs',
+      () {
+        // A 1-byte credential ID is the shortest input that produces a
+        // padded Base64URL string ("AQ==" padded vs "AQ" unpadded). The
+        // matcher must treat both forms as equivalent so callers using
+        // either convention interoperate.
+        final signer = OZSmartAccountBuilders.createWebAuthnSigner(
+          webauthnVerifierAddress: kValidContractId,
+          publicKey: _secp256r1Pub(),
+          credentialId: Uint8List.fromList([0x01]),
+        );
+        expect(
           OZSmartAccountBuilders.signerMatchesCredentialId(signer, 'AQ=='),
-          isTrue);
-      expect(
+          isTrue,
+        );
+        expect(
           OZSmartAccountBuilders.signerMatchesCredentialId(signer, 'AQ'),
-          isTrue);
-    });
+          isTrue,
+        );
+      },
+    );
   });
 
   group('signerMatchesAddress', () {
     test(
-        'testSignerMatchesAddress_delegatedSignerMatchingAddress_returnsTrue',
-        () {
-      final signer =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
-      expect(
+      'testSignerMatchesAddress_delegatedSignerMatchingAddress_returnsTrue',
+      () {
+        final signer = OZSmartAccountBuilders.createDelegatedSigner(
+          kValidGAddress,
+        );
+        expect(
           OZSmartAccountBuilders.signerMatchesAddress(signer, kValidGAddress),
-          isTrue);
-    });
+          isTrue,
+        );
+      },
+    );
 
     test(
-        'testSignerMatchesAddress_delegatedSignerDifferentAddress_returnsFalse',
-        () {
-      final signer =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
-      expect(
-          OZSmartAccountBuilders.signerMatchesAddress(
-              signer, kValidContractId),
-          isFalse);
-    });
+      'testSignerMatchesAddress_delegatedSignerDifferentAddress_returnsFalse',
+      () {
+        final signer = OZSmartAccountBuilders.createDelegatedSigner(
+          kValidGAddress,
+        );
+        expect(
+          OZSmartAccountBuilders.signerMatchesAddress(signer, kValidContractId),
+          isFalse,
+        );
+      },
+    );
 
     test('testSignerMatchesAddress_externalSigner_returnsFalse', () {
       final signer = OZSmartAccountBuilders.createExternalSigner(
-          kValidContractId, _ed25519Pub());
+        kValidContractId,
+        _ed25519Pub(),
+      );
       expect(
-          OZSmartAccountBuilders.signerMatchesAddress(
-              signer, kValidContractId),
-          isFalse);
+        OZSmartAccountBuilders.signerMatchesAddress(signer, kValidContractId),
+        isFalse,
+      );
     });
 
     test('testSignerMatchesAddress_webAuthnSigner_returnsFalse', () {
@@ -333,34 +365,36 @@ void main() {
         credentialId: _credentialId(),
       );
       expect(
-          OZSmartAccountBuilders.signerMatchesAddress(
-              signer, kValidContractId),
-          isFalse);
+        OZSmartAccountBuilders.signerMatchesAddress(signer, kValidContractId),
+        isFalse,
+      );
     });
   });
 
   group('isDelegatedSigner / isExternalSigner', () {
     test('testIsDelegatedSigner_withDelegatedSigner_returnsTrue', () {
-      final s =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+      final s = OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
       expect(OZSmartAccountBuilders.isDelegatedSigner(s), isTrue);
     });
 
     test('testIsDelegatedSigner_withExternalSigner_returnsFalse', () {
       final s = OZSmartAccountBuilders.createExternalSigner(
-          kValidContractId, _ed25519Pub());
+        kValidContractId,
+        _ed25519Pub(),
+      );
       expect(OZSmartAccountBuilders.isDelegatedSigner(s), isFalse);
     });
 
     test('testIsExternalSigner_withExternalSigner_returnsTrue', () {
       final s = OZSmartAccountBuilders.createExternalSigner(
-          kValidContractId, _ed25519Pub());
+        kValidContractId,
+        _ed25519Pub(),
+      );
       expect(OZSmartAccountBuilders.isExternalSigner(s), isTrue);
     });
 
     test('testIsExternalSigner_withDelegatedSigner_returnsFalse', () {
-      final s =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+      final s = OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
       expect(OZSmartAccountBuilders.isExternalSigner(s), isFalse);
     });
 
@@ -395,110 +429,118 @@ void main() {
     });
 
     test(
-        'testSignerMatchesCredential_nonMatchingCredentialBytes_returnsFalse',
-        () {
-      final s = OZSmartAccountBuilders.createWebAuthnSigner(
-        webauthnVerifierAddress: kValidContractId,
-        publicKey: _secp256r1Pub(),
-        credentialId: _credentialId(seed: 1),
-      );
-      expect(
+      'testSignerMatchesCredential_nonMatchingCredentialBytes_returnsFalse',
+      () {
+        final s = OZSmartAccountBuilders.createWebAuthnSigner(
+          webauthnVerifierAddress: kValidContractId,
+          publicKey: _secp256r1Pub(),
+          credentialId: _credentialId(seed: 1),
+        );
+        expect(
           OZSmartAccountBuilders.signerMatchesCredential(
-              s, _credentialId(seed: 2)),
-          isFalse);
-    });
+            s,
+            _credentialId(seed: 2),
+          ),
+          isFalse,
+        );
+      },
+    );
 
     test('testSignerMatchesCredential_delegatedSigner_returnsFalse', () {
-      final s =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+      final s = OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
       expect(
-          OZSmartAccountBuilders.signerMatchesCredential(s, _credentialId()),
-          isFalse);
+        OZSmartAccountBuilders.signerMatchesCredential(s, _credentialId()),
+        isFalse,
+      );
     });
   });
 
   group('credential id extraction', () {
     test('testGetCredentialIdFromSigner_delegatedSigner_returnsNull', () {
-      final s =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+      final s = OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
       expect(OZSmartAccountBuilders.getCredentialIdFromSigner(s), isNull);
     });
 
     test(
-        'testGetCredentialIdFromSigner_webAuthnSigner_returnsCredentialIdBytes',
-        () {
-      final cred = _credentialId();
-      final s = OZSmartAccountBuilders.createWebAuthnSigner(
-        webauthnVerifierAddress: kValidContractId,
-        publicKey: _secp256r1Pub(),
-        credentialId: cred,
-      );
-      expect(
-          OZSmartAccountBuilders.getCredentialIdFromSigner(s), equals(cred));
-    });
+      'testGetCredentialIdFromSigner_webAuthnSigner_returnsCredentialIdBytes',
+      () {
+        final cred = _credentialId();
+        final s = OZSmartAccountBuilders.createWebAuthnSigner(
+          webauthnVerifierAddress: kValidContractId,
+          publicKey: _secp256r1Pub(),
+          credentialId: cred,
+        );
+        expect(
+          OZSmartAccountBuilders.getCredentialIdFromSigner(s),
+          equals(cred),
+        );
+      },
+    );
 
     test(
-        'testGetCredentialIdFromSigner_webAuthnSigner_returnsOnlyCredentialIdPortion',
-        () {
-      final cred = _credentialId(length: 8);
-      final s = OZSmartAccountBuilders.createWebAuthnSigner(
-        webauthnVerifierAddress: kValidContractId,
-        publicKey: _secp256r1Pub(),
-        credentialId: cred,
-      );
-      final extracted =
-          OZSmartAccountBuilders.getCredentialIdFromSigner(s);
-      expect(extracted, isNotNull);
-      expect(extracted!.length, cred.length);
-      expect(extracted, cred);
-    });
+      'testGetCredentialIdFromSigner_webAuthnSigner_returnsOnlyCredentialIdPortion',
+      () {
+        final cred = _credentialId(length: 8);
+        final s = OZSmartAccountBuilders.createWebAuthnSigner(
+          webauthnVerifierAddress: kValidContractId,
+          publicKey: _secp256r1Pub(),
+          credentialId: cred,
+        );
+        final extracted = OZSmartAccountBuilders.getCredentialIdFromSigner(s);
+        expect(extracted, isNotNull);
+        expect(extracted!.length, cred.length);
+        expect(extracted, cred);
+      },
+    );
 
     test('testGetCredentialIdStringFromSigner_delegatedSigner_returnsNull', () {
-      final s =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
-      expect(
-          OZSmartAccountBuilders.getCredentialIdStringFromSigner(s), isNull);
+      final s = OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+      expect(OZSmartAccountBuilders.getCredentialIdStringFromSigner(s), isNull);
     });
 
     test(
-        'testGetCredentialIdStringFromSigner_webAuthnSigner_roundTripsWithMatchFunction',
-        () {
-      final cred = _credentialId();
-      final s = OZSmartAccountBuilders.createWebAuthnSigner(
-        webauthnVerifierAddress: kValidContractId,
-        publicKey: _secp256r1Pub(),
-        credentialId: cred,
-      );
-      final encoded =
-          OZSmartAccountBuilders.getCredentialIdStringFromSigner(s);
-      expect(encoded, isNotNull);
-      expect(
+      'testGetCredentialIdStringFromSigner_webAuthnSigner_roundTripsWithMatchFunction',
+      () {
+        final cred = _credentialId();
+        final s = OZSmartAccountBuilders.createWebAuthnSigner(
+          webauthnVerifierAddress: kValidContractId,
+          publicKey: _secp256r1Pub(),
+          credentialId: cred,
+        );
+        final encoded = OZSmartAccountBuilders.getCredentialIdStringFromSigner(
+          s,
+        );
+        expect(encoded, isNotNull);
+        expect(
           OZSmartAccountBuilders.signerMatchesCredentialId(s, encoded!),
-          isTrue);
-    });
+          isTrue,
+        );
+      },
+    );
 
     test(
-        'testGetCredentialIdStringFromSigner_webAuthnSigner_outputHasNoBase64Padding',
-        () {
-      // A 1-byte credential ID encodes to a Base64URL string with two
-      // padding characters; the helper must strip them so the output
-      // matches the canonical unpadded form.
-      final s = OZSmartAccountBuilders.createWebAuthnSigner(
-        webauthnVerifierAddress: kValidContractId,
-        publicKey: _secp256r1Pub(),
-        credentialId: Uint8List.fromList([0x01]),
-      );
-      final encoded =
-          OZSmartAccountBuilders.getCredentialIdStringFromSigner(s);
-      expect(encoded, isNotNull);
-      expect(encoded!.endsWith('='), isFalse);
-    });
+      'testGetCredentialIdStringFromSigner_webAuthnSigner_outputHasNoBase64Padding',
+      () {
+        // A 1-byte credential ID encodes to a Base64URL string with two
+        // padding characters; the helper must strip them so the output
+        // matches the canonical unpadded form.
+        final s = OZSmartAccountBuilders.createWebAuthnSigner(
+          webauthnVerifierAddress: kValidContractId,
+          publicKey: _secp256r1Pub(),
+          credentialId: Uint8List.fromList([0x01]),
+        );
+        final encoded = OZSmartAccountBuilders.getCredentialIdStringFromSigner(
+          s,
+        );
+        expect(encoded, isNotNull);
+        expect(encoded!.endsWith('='), isFalse);
+      },
+    );
   });
 
   group('public key extraction', () {
     test('testGetPublicKeyFromSigner_delegatedSigner_returnsNull', () {
-      final s =
-          OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
+      final s = OZSmartAccountBuilders.createDelegatedSigner(kValidGAddress);
       expect(OZSmartAccountBuilders.getPublicKeyFromSigner(s), isNull);
     });
 
@@ -510,8 +552,7 @@ void main() {
       expect(OZSmartAccountBuilders.getPublicKeyFromSigner(s), isNull);
     });
 
-    test('testGetPublicKeyFromSigner_webAuthnSigner_returnsPublicKeyBytes',
-        () {
+    test('testGetPublicKeyFromSigner_webAuthnSigner_returnsPublicKeyBytes', () {
       final pub = _secp256r1Pub();
       final s = OZSmartAccountBuilders.createWebAuthnSigner(
         webauthnVerifierAddress: kValidContractId,
@@ -522,19 +563,20 @@ void main() {
     });
 
     test(
-        'testGetPublicKeyFromSigner_webAuthnSigner_returnsOnlyPublicKeyPortion',
-        () {
-      final pub = _secp256r1Pub();
-      final s = OZSmartAccountBuilders.createWebAuthnSigner(
-        webauthnVerifierAddress: kValidContractId,
-        publicKey: pub,
-        credentialId: _credentialId(length: 8),
-      );
-      final extracted = OZSmartAccountBuilders.getPublicKeyFromSigner(s);
-      expect(extracted, isNotNull);
-      expect(extracted!.length, pub.length);
-      expect(extracted, pub);
-    });
+      'testGetPublicKeyFromSigner_webAuthnSigner_returnsOnlyPublicKeyPortion',
+      () {
+        final pub = _secp256r1Pub();
+        final s = OZSmartAccountBuilders.createWebAuthnSigner(
+          webauthnVerifierAddress: kValidContractId,
+          publicKey: pub,
+          credentialId: _credentialId(length: 8),
+        );
+        final extracted = OZSmartAccountBuilders.getPublicKeyFromSigner(s);
+        expect(extracted, isNotNull);
+        expect(extracted!.length, pub.length);
+        expect(extracted, pub);
+      },
+    );
   });
 
   group('builder validation', () {

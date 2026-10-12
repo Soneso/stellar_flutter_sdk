@@ -129,9 +129,11 @@ class AssetTypePoolShare extends Asset {
           sortError = true;
         } else if (codeCompare == 0) {
           final issuerA = StrKey.decodeStellarAccountId(
-              (assetA as AssetTypeCreditAlphaNum).issuerId);
+            (assetA as AssetTypeCreditAlphaNum).issuerId,
+          );
           final issuerB = StrKey.decodeStellarAccountId(
-              (assetB as AssetTypeCreditAlphaNum).issuerId);
+            (assetB as AssetTypeCreditAlphaNum).issuerId,
+          );
           for (int i = 0; i < issuerA.length; i++) {
             if (issuerA[i] != issuerB[i]) {
               sortError = issuerA[i] > issuerB[i];
@@ -143,7 +145,8 @@ class AssetTypePoolShare extends Asset {
     }
     if (sortError) {
       throw Exception(
-          "Assets are in wrong order: assetA ${Asset.canonicalForm(assetA)} sorts after assetB ${Asset.canonicalForm(assetB)}. Sort by: Native < AlphaNum4 < AlphaNum12, then by Code, then by the Issuer's raw public key bytes.");
+        "Assets are in wrong order: assetA ${Asset.canonicalForm(assetA)} sorts after assetB ${Asset.canonicalForm(assetB)}. Sort by: Native < AlphaNum4 < AlphaNum12, then by Code, then by the Issuer's raw public key bytes.",
+      );
     }
   }
 
@@ -156,8 +159,9 @@ class AssetTypePoolShare extends Asset {
   @override
   XdrAsset toXdr() {
     throw UnsupportedError(
-        'Pool share assets cannot be represented as XdrAsset. '
-        'Use toXdrChangeTrustAsset() instead.');
+      'Pool share assets cannot be represented as XdrAsset. '
+      'Use toXdrChangeTrustAsset() instead.',
+    );
   }
 
   /// Converts this asset to its XDR ChangeTrustAsset representation.
@@ -165,14 +169,19 @@ class AssetTypePoolShare extends Asset {
   /// Returns: XDR ChangeTrustAsset for this liquidity pool share.
   @override
   XdrChangeTrustAsset toXdrChangeTrustAsset() {
-    XdrChangeTrustAsset xdrAsset =
-        XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_POOL_SHARE);
+    XdrChangeTrustAsset xdrAsset = XdrChangeTrustAsset(
+      XdrAssetType.ASSET_TYPE_POOL_SHARE,
+    );
 
     XdrLiquidityPoolConstantProductParameters constantProduct =
         XdrLiquidityPoolConstantProductParameters(
-            assetA.toXdr(), assetB.toXdr(), XdrInt32(StellarProtocolConstants.LIQUIDITY_POOL_FEE_V18));
+          assetA.toXdr(),
+          assetB.toXdr(),
+          XdrInt32(StellarProtocolConstants.LIQUIDITY_POOL_FEE_V18),
+        );
     XdrLiquidityPoolParameters poolParameters = XdrLiquidityPoolParameters(
-        XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT);
+      XdrLiquidityPoolType.LIQUIDITY_POOL_CONSTANT_PRODUCT,
+    );
     poolParameters.constantProduct = constantProduct;
     xdrAsset.liquidityPool = poolParameters;
     return xdrAsset;

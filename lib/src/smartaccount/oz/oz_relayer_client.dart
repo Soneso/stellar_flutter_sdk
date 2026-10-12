@@ -119,14 +119,14 @@ class OZRelayerResponse {
 
   @override
   int get hashCode => Object.hash(
-        success,
-        transactionId,
-        hash,
-        status,
-        error,
-        errorCode,
-        _detailsEquality.hash(details),
-      );
+    success,
+    transactionId,
+    hash,
+    status,
+    error,
+    errorCode,
+    _detailsEquality.hash(details),
+  );
 }
 
 /// Client for submitting transactions to an OpenZeppelin smart-account
@@ -174,7 +174,9 @@ class OZRelayerClient {
     _normalizedUrl = normalizeOZUrl(_relayerUrl, serviceName: 'Relayer');
     _requestOptions = _buildRequestOptions();
     _dio.options.connectTimeout = capConnectTimeout(
-        _defaultTimeout, OZConstants.maxRelayerConnectTimeoutMs);
+      _defaultTimeout,
+      OZConstants.maxRelayerConnectTimeoutMs,
+    );
     _dio.options.receiveTimeout = _defaultTimeout;
     _dio.options.sendTimeout = _defaultTimeout;
     _ownsDio = true;
@@ -189,8 +191,9 @@ class OZRelayerClient {
   /// caller retains ownership.
   @visibleForTesting
   OZRelayerClient.withDio(this._relayerUrl, this._dio) {
-    _defaultTimeout =
-        Duration(milliseconds: OZConstants.defaultRelayerTimeoutMs);
+    _defaultTimeout = Duration(
+      milliseconds: OZConstants.defaultRelayerTimeoutMs,
+    );
     _normalizedUrl = normalizeOZUrl(_relayerUrl, serviceName: 'Relayer');
     _requestOptions = _buildRequestOptions();
     _ownsDio = false;
@@ -244,10 +247,7 @@ class OZRelayerClient {
         error: 'Failed to encode auth entry to XDR: $e',
       );
     }
-    final payload = <String, dynamic>{
-      'func': funcBase64,
-      'auth': authBase64,
-    };
+    final payload = <String, dynamic>{'func': funcBase64, 'auth': authBase64};
     return _performRequest(payload, perRequestTimeoutMs, cancelToken);
   }
 
@@ -279,9 +279,7 @@ class OZRelayerClient {
         error: 'Failed to encode transaction envelope to XDR: $e',
       );
     }
-    final payload = <String, dynamic>{
-      'xdr': xdrBase64,
-    };
+    final payload = <String, dynamic>{'xdr': xdrBase64};
     return _performRequest(payload, perRequestTimeoutMs, cancelToken);
   }
 
@@ -327,8 +325,7 @@ class OZRelayerClient {
     try {
       dio.Options effectiveOptions = _requestOptions;
       if (perRequestTimeoutMs != null) {
-        final perRequestDuration =
-            Duration(milliseconds: perRequestTimeoutMs);
+        final perRequestDuration = Duration(milliseconds: perRequestTimeoutMs);
         effectiveOptions = effectiveOptions.copyWith(
           receiveTimeout: perRequestDuration,
           sendTimeout: perRequestDuration,
@@ -361,8 +358,7 @@ class OZRelayerClient {
     } catch (e) {
       return OZRelayerResponse(
         success: false,
-        error:
-            genericErrorMessage(e, defaultText: 'Relayer request failed'),
+        error: genericErrorMessage(e, defaultText: 'Relayer request failed'),
       );
     }
 
@@ -370,7 +366,8 @@ class OZRelayerClient {
     if (body.length > OZConstants.maxRelayerResponseBytes) {
       return OZRelayerResponse(
         success: false,
-        error: 'Relayer response body exceeds maximum size of '
+        error:
+            'Relayer response body exceeds maximum size of '
             '${OZConstants.maxRelayerResponseBytes} bytes',
       );
     }
@@ -419,7 +416,8 @@ class OZRelayerClient {
       );
     }
 
-    final errorMessage = _readString(responseJson['error']) ??
+    final errorMessage =
+        _readString(responseJson['error']) ??
         _readString(responseJson['message']) ??
         'Relayer request failed with status $status';
     // why: the relayer's `error` field is a server-curated string intended
@@ -429,8 +427,9 @@ class OZRelayerClient {
     // error a second time would drop the event log without preserving the
     // most actionable trailing context.
     final errorCode = _extractErrorCode(responseJson);
-    final Object? details =
-        responseJson.containsKey('data') ? responseJson['data'] : responseJson;
+    final Object? details = responseJson.containsKey('data')
+        ? responseJson['data']
+        : responseJson;
 
     return OZRelayerResponse(
       success: false,

@@ -57,10 +57,7 @@ void main() {
       test('MemoText throws if text too long', () {
         final text = "12345678901234567890123456789";
 
-        expect(
-          () => Memo.text(text),
-          throwsA(isA<MemoTooLongException>()),
-        );
+        expect(() => Memo.text(text), throwsA(isA<MemoTooLongException>()));
       });
 
       test('MemoText with unicode characters within byte limit', () {
@@ -75,10 +72,7 @@ void main() {
       test('MemoText throws if unicode text exceeds byte limit', () {
         final text = "😀😀😀😀😀😀😀😀";
 
-        expect(
-          () => Memo.text(text),
-          throwsA(isA<MemoTooLongException>()),
-        );
+        expect(() => Memo.text(text), throwsA(isA<MemoTooLongException>()));
       });
 
       test('MemoText XDR round-trip', () {
@@ -127,10 +121,7 @@ void main() {
       });
 
       test('MemoId throws if id is zero', () {
-        expect(
-          () => Memo.id(BigInt.zero),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => Memo.id(BigInt.zero), throwsA(isA<Exception>()));
       });
 
       test('creates MemoId with max uint64 value', () {
@@ -179,10 +170,7 @@ void main() {
         final memo = Memo.hash(hash);
 
         expect(memo, isA<MemoHash>());
-        expect(
-          ListEquality().equals(memo.bytes, hash),
-          isTrue,
-        );
+        expect(ListEquality().equals(memo.bytes, hash), isTrue);
       });
 
       test('MemoHash pads hash shorter than 32 bytes', () {
@@ -199,14 +187,12 @@ void main() {
       test('MemoHash throws if hash exceeds 32 bytes', () {
         final hash = Uint8List(33);
 
-        expect(
-          () => Memo.hash(hash),
-          throwsA(isA<MemoTooLongException>()),
-        );
+        expect(() => Memo.hash(hash), throwsA(isA<MemoTooLongException>()));
       });
 
       test('creates MemoHash from hex string', () {
-        final hexString = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20";
+        final hexString =
+            "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20";
         final memo = Memo.hashString(hexString);
 
         expect(memo, isA<MemoHash>());
@@ -251,7 +237,6 @@ void main() {
         expect(memo.hexValue, isNotNull);
         expect((memo).hexValue!.toUpperCase().startsWith("ABCDEF12"), isTrue);
       });
-
     });
 
     group('MemoReturnHash', () {
@@ -263,10 +248,7 @@ void main() {
         final memo = Memo.returnHash(hash);
 
         expect(memo, isA<MemoReturnHash>());
-        expect(
-          ListEquality().equals(memo.bytes, hash),
-          isTrue,
-        );
+        expect(ListEquality().equals(memo.bytes, hash), isTrue);
       });
 
       test('MemoReturnHash pads hash shorter than 32 bytes', () {
@@ -290,7 +272,8 @@ void main() {
       });
 
       test('creates MemoReturnHash from hex string', () {
-        final hexString = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20";
+        final hexString =
+            "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20";
         final memo = Memo.returnHashString(hexString);
 
         expect(memo, isA<MemoReturnHash>());
@@ -437,10 +420,7 @@ void main() {
       test('fromJson throws on unknown memo type', () {
         final json = {'memo_type': 'unknown', 'memo': 'value'};
 
-        expect(
-          () => Memo.fromJson(json),
-          throwsA(isA<Exception>()),
-        );
+        expect(() => Memo.fromJson(json), throwsA(isA<Exception>()));
       });
     });
 
@@ -539,13 +519,7 @@ void main() {
         final memo1 = Memo.returnHashString(hexStringUpper);
         final memo2 = Memo.returnHashString(hexStringLower);
 
-        expect(
-          ListEquality().equals(
-            memo1.bytes,
-            memo2.bytes,
-          ),
-          isTrue,
-        );
+        expect(ListEquality().equals(memo1.bytes, memo2.bytes), isTrue);
       });
 
       test('MemoText with null character in string', () {
@@ -591,7 +565,10 @@ void main() {
             );
           } else if (memo is MemoReturnHash) {
             expect(
-              ListEquality().equals((restored as MemoReturnHash).bytes, memo.bytes),
+              ListEquality().equals(
+                (restored as MemoReturnHash).bytes,
+                memo.bytes,
+              ),
               isTrue,
             );
           }
@@ -599,10 +576,7 @@ void main() {
       });
 
       test('XDR discriminant values are correct', () {
-        expect(
-          Memo.none().toXdr().discriminant,
-          equals(XdrMemoType.MEMO_NONE),
-        );
+        expect(Memo.none().toXdr().discriminant, equals(XdrMemoType.MEMO_NONE));
         expect(
           Memo.text("Test").toXdr().discriminant,
           equals(XdrMemoType.MEMO_TEXT),

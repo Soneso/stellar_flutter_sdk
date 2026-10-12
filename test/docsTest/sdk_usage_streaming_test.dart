@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 600))
-
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -27,30 +26,32 @@ void main() {
         .cursor("now")
         .stream()
         .listen((OperationResponse payment) {
-      if (!completer.isCompleted) {
-        completer.complete(payment);
-      }
-    });
+          if (!completer.isCompleted) {
+            completer.complete(payment);
+          }
+        });
 
     // Small delay to ensure stream is established
     await Future.delayed(Duration(seconds: 2));
 
     // Send a payment to trigger the stream
-    AccountResponse sender =
-        await sdk.accounts.account(account1.accountId);
+    AccountResponse sender = await sdk.accounts.account(account1.accountId);
     Transaction tx = TransactionBuilder(sender)
-        .addOperation(PaymentOperationBuilder(
-          account2.accountId,
-          Asset.NATIVE,
-          "1",
-        ).build())
+        .addOperation(
+          PaymentOperationBuilder(
+            account2.accountId,
+            Asset.NATIVE,
+            "1",
+          ).build(),
+        )
         .build();
     tx.sign(account1, Network.TESTNET);
     await sdk.submitTransaction(tx);
 
     // Wait for stream event (with timeout)
-    OperationResponse event =
-        await completer.future.timeout(Duration(seconds: 30));
+    OperationResponse event = await completer.future.timeout(
+      Duration(seconds: 30),
+    );
 
     expect(event, isNotNull);
     if (event is PaymentOperationResponse) {
@@ -68,28 +69,30 @@ void main() {
         .cursor("now")
         .stream()
         .listen((TransactionResponse tx) {
-      if (!completer.isCompleted) {
-        completer.complete(tx);
-      }
-    });
+          if (!completer.isCompleted) {
+            completer.complete(tx);
+          }
+        });
 
     await Future.delayed(Duration(seconds: 2));
 
     // Send a transaction to trigger the stream
-    AccountResponse account =
-        await sdk.accounts.account(account1.accountId);
+    AccountResponse account = await sdk.accounts.account(account1.accountId);
     Transaction tx = TransactionBuilder(account)
-        .addOperation(PaymentOperationBuilder(
-          account2.accountId,
-          Asset.NATIVE,
-          "1",
-        ).build())
+        .addOperation(
+          PaymentOperationBuilder(
+            account2.accountId,
+            Asset.NATIVE,
+            "1",
+          ).build(),
+        )
         .build();
     tx.sign(account1, Network.TESTNET);
     await sdk.submitTransaction(tx);
 
-    TransactionResponse event =
-        await completer.future.timeout(Duration(seconds: 30));
+    TransactionResponse event = await completer.future.timeout(
+      Duration(seconds: 30),
+    );
 
     expect(event.hash, isNotNull);
     expect(event.operationCount, 1);
@@ -104,14 +107,15 @@ void main() {
         .cursor("now")
         .stream()
         .listen((LedgerResponse ledger) {
-      if (!completer.isCompleted) {
-        completer.complete(ledger);
-      }
-    });
+          if (!completer.isCompleted) {
+            completer.complete(ledger);
+          }
+        });
 
     // Wait for next ledger close (typically ~5-6 seconds on testnet)
-    LedgerResponse event =
-        await completer.future.timeout(Duration(seconds: 30));
+    LedgerResponse event = await completer.future.timeout(
+      Duration(seconds: 30),
+    );
 
     expect(event.sequence, greaterThan(0));
 
@@ -126,28 +130,30 @@ void main() {
         .cursor("now")
         .stream()
         .listen((EffectResponse effect) {
-      if (!completer.isCompleted) {
-        completer.complete(effect);
-      }
-    });
+          if (!completer.isCompleted) {
+            completer.complete(effect);
+          }
+        });
 
     await Future.delayed(Duration(seconds: 2));
 
     // Send a payment to generate effects
-    AccountResponse account =
-        await sdk.accounts.account(account1.accountId);
+    AccountResponse account = await sdk.accounts.account(account1.accountId);
     Transaction tx = TransactionBuilder(account)
-        .addOperation(PaymentOperationBuilder(
-          account2.accountId,
-          Asset.NATIVE,
-          "1",
-        ).build())
+        .addOperation(
+          PaymentOperationBuilder(
+            account2.accountId,
+            Asset.NATIVE,
+            "1",
+          ).build(),
+        )
         .build();
     tx.sign(account1, Network.TESTNET);
     await sdk.submitTransaction(tx);
 
-    EffectResponse event =
-        await completer.future.timeout(Duration(seconds: 30));
+    EffectResponse event = await completer.future.timeout(
+      Duration(seconds: 30),
+    );
     expect(event.type, isNotNull);
 
     await subscription.cancel();
@@ -161,28 +167,30 @@ void main() {
         .cursor("now")
         .stream()
         .listen((OperationResponse op) {
-      if (!completer.isCompleted) {
-        completer.complete(op);
-      }
-    });
+          if (!completer.isCompleted) {
+            completer.complete(op);
+          }
+        });
 
     await Future.delayed(Duration(seconds: 2));
 
     // Send a payment to generate operations
-    AccountResponse account =
-        await sdk.accounts.account(account1.accountId);
+    AccountResponse account = await sdk.accounts.account(account1.accountId);
     Transaction tx = TransactionBuilder(account)
-        .addOperation(PaymentOperationBuilder(
-          account2.accountId,
-          Asset.NATIVE,
-          "1",
-        ).build())
+        .addOperation(
+          PaymentOperationBuilder(
+            account2.accountId,
+            Asset.NATIVE,
+            "1",
+          ).build(),
+        )
         .build();
     tx.sign(account1, Network.TESTNET);
     await sdk.submitTransaction(tx);
 
-    OperationResponse event =
-        await completer.future.timeout(Duration(seconds: 30));
+    OperationResponse event = await completer.future.timeout(
+      Duration(seconds: 30),
+    );
     expect(event.type, isNotNull);
 
     await subscription.cancel();

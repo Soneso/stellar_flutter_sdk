@@ -92,7 +92,7 @@ class AssetTypeCreditAlphaNum12 extends AssetTypeCreditAlphaNum {
   /// );
   /// ```
   AssetTypeCreditAlphaNum12(String code, String issuerId)
-      : super(code, issuerId) {
+    : super(code, issuerId) {
     if (code.length < 5 || code.length > 12) {
       throw new AssetCodeLengthInvalidException();
     }
@@ -109,8 +109,9 @@ class AssetTypeCreditAlphaNum12 extends AssetTypeCreditAlphaNum {
     XdrAsset xdrAsset = XdrAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12);
 
     XdrAssetAlphaNum12 credit = XdrAssetAlphaNum12(
-        Util.paddedByteArrayString(mCode, 12),
-        XdrAccountID(KeyPair.fromAccountId(issuerId).xdrPublicKey));
+      Util.paddedByteArrayString(mCode, 12),
+      XdrAccountID(KeyPair.fromAccountId(issuerId).xdrPublicKey),
+    );
     xdrAsset.alphaNum12 = credit;
     return xdrAsset;
   }

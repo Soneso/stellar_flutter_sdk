@@ -34,20 +34,25 @@ void main() {
       'CAZJ3UVRY3R3S5C5BH32GMYBRSN23N75ZEEXEOLXOUUAHDFIMVP4AXUC';
 
   /// Uncompressed secp256r1 generator point: a valid on-curve public key.
-  final p256GeneratorPubKey = Util.hexToBytes('04'
-      '6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296'
-      '4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5');
+  final p256GeneratorPubKey = Util.hexToBytes(
+    '04'
+    '6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296'
+    '4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5',
+  );
 
   final random = Random.secure();
 
   Uint8List randomBytes(int length) => Uint8List.fromList(
-      List<int>.generate(length, (_) => random.nextInt(256)));
+    List<int>.generate(length, (_) => random.nextInt(256)),
+  );
 
   Future<OZSmartAccountKit> createKit() async {
     final deployer = KeyPair.random();
     final sorobanServer = SorobanServer(rpcUrl);
-    await fundTestAccountAndAwaitVisibility(deployer.accountId,
-        rpc: sorobanServer);
+    await fundTestAccountAndAwaitVisibility(
+      deployer.accountId,
+      rpc: sorobanServer,
+    );
 
     final provider = MockWebAuthnProvider();
     provider.registrationResult = WebAuthnRegistrationResult(
@@ -72,65 +77,89 @@ void main() {
     );
   }
 
-  test('deploy with threshold-one policy installs it on the default rule',
-      timeout: const Timeout(Duration(minutes: 5)), () async {
-    final kit = await createKit();
-    try {
-      final result = await kit.walletOperations.createWallet(
-        userName: 'Constructor Policy Test',
-        autoSubmit: true,
-        policies: <String, OZPolicyInstallParams>{
-          thresholdPolicy: const OZSimpleThresholdPolicyParams(threshold: 1),
-        },
-      );
-      expect(result.contractId, isNotEmpty,
-          reason: 'deploy must yield a contract address');
-
-      // Read back the Default rule and verify the policy was installed at
-      // construction.
-      final rules = await kit.contextRuleManager.listContextRules();
-      final defaultRule = rules.firstWhere((rule) => rule.id == 0);
-      expect(defaultRule.policies, contains(thresholdPolicy),
-          reason: 'Default rule must carry the constructor-installed '
-              'threshold policy, got: ${defaultRule.policies}');
-    } finally {
-      await kit.close();
-    }
-  });
-
   test(
-      'deploy with two-of-one threshold fails at simulation with '
-      'InvalidThreshold', timeout: const Timeout(Duration(minutes: 5)),
-      () async {
-    final kit = await createKit();
-    try {
-      // A threshold of 2 exceeds the Default rule's single initial signer;
-      // the policy contract rejects the install during deploy simulation.
-      Object? thrown;
+    'deploy with threshold-one policy installs it on the default rule',
+    timeout: const Timeout(Duration(minutes: 5)),
+    () async {
+      final kit = await createKit();
       try {
-        await kit.walletOperations.createWallet(
-          userName: 'Constructor Policy Negative Test',
-          autoSubmit: false,
+        final result = await kit.walletOperations.createWallet(
+          userName: 'Constructor Policy Test',
+          autoSubmit: true,
           policies: <String, OZPolicyInstallParams>{
-            thresholdPolicy: const OZSimpleThresholdPolicyParams(threshold: 2),
+            thresholdPolicy: const OZSimpleThresholdPolicyParams(threshold: 1),
           },
         );
-      } catch (e) {
-        thrown = e;
+        expect(
+          result.contractId,
+          isNotEmpty,
+          reason: 'deploy must yield a contract address',
+        );
+
+        // Read back the Default rule and verify the policy was installed at
+        // construction.
+        final rules = await kit.contextRuleManager.listContextRules();
+        final defaultRule = rules.firstWhere((rule) => rule.id == 0);
+        expect(
+          defaultRule.policies,
+          contains(thresholdPolicy),
+          reason:
+              'Default rule must carry the constructor-installed '
+              'threshold policy, got: ${defaultRule.policies}',
+        );
+      } finally {
+        await kit.close();
       }
-      expect(thrown, isA<SmartAccountTransactionException>(),
-          reason: 'createWallet must fail when the threshold exceeds the '
-              'signer count, got: $thrown');
-      final exception = thrown as SmartAccountTransactionException;
-      final decoded = OZContractErrorCodes.decodeFromMessage(exception.message);
-      expect(decoded, isNotNull,
-          reason: 'simulation error must carry a decodable contract error, '
-              'got: ${exception.message}');
-      expect(decoded!.code, 3201);
-      expect(decoded.name, 'InvalidThreshold');
-      expect(decoded.contract, 'SimpleThresholdError');
-    } finally {
-      await kit.close();
-    }
-  });
+    },
+  );
+
+  test(
+    'deploy with two-of-one threshold fails at simulation with '
+    'InvalidThreshold',
+    timeout: const Timeout(Duration(minutes: 5)),
+    () async {
+      final kit = await createKit();
+      try {
+        // A threshold of 2 exceeds the Default rule's single initial signer;
+        // the policy contract rejects the install during deploy simulation.
+        Object? thrown;
+        try {
+          await kit.walletOperations.createWallet(
+            userName: 'Constructor Policy Negative Test',
+            autoSubmit: false,
+            policies: <String, OZPolicyInstallParams>{
+              thresholdPolicy: const OZSimpleThresholdPolicyParams(
+                threshold: 2,
+              ),
+            },
+          );
+        } catch (e) {
+          thrown = e;
+        }
+        expect(
+          thrown,
+          isA<SmartAccountTransactionException>(),
+          reason:
+              'createWallet must fail when the threshold exceeds the '
+              'signer count, got: $thrown',
+        );
+        final exception = thrown as SmartAccountTransactionException;
+        final decoded = OZContractErrorCodes.decodeFromMessage(
+          exception.message,
+        );
+        expect(
+          decoded,
+          isNotNull,
+          reason:
+              'simulation error must carry a decodable contract error, '
+              'got: ${exception.message}',
+        );
+        expect(decoded!.code, 3201);
+        expect(decoded.name, 'InvalidThreshold');
+        expect(decoded.contract, 'SimpleThresholdError');
+      } finally {
+        await kit.close();
+      }
+    },
+  );
 }

@@ -138,13 +138,12 @@ OZStoredSession _session({
   String contractId = 'CABCDEF',
   int connectedAt = 5_000,
   int expiresAt = 9_000_000_000_000,
-}) =>
-    OZStoredSession(
-      credentialId: credentialId,
-      contractId: contractId,
-      connectedAt: connectedAt,
-      expiresAt: expiresAt,
-    );
+}) => OZStoredSession(
+  credentialId: credentialId,
+  contractId: contractId,
+  connectedAt: connectedAt,
+  expiresAt: expiresAt,
+);
 
 void main() {
   group('OZLocalStorageAdapter (web)', () {
@@ -200,8 +199,11 @@ void main() {
       await expectLater(
         adapter.save(_credential()),
         throwsA(
-          isA<SmartAccountStorageWriteFailed>()
-              .having((e) => e.cause.toString(), 'cause', contains('quota')),
+          isA<SmartAccountStorageWriteFailed>().having(
+            (e) => e.cause.toString(),
+            'cause',
+            contains('quota'),
+          ),
         ),
       );
     });
@@ -422,12 +424,9 @@ void main() {
 
     test('test_expired_session_auto_cleared_on_get_session', () async {
       final storage = _makeFakeStorage();
-      final adapter =
-          OZLocalStorageAdapter.withStorage(storage: storage);
+      final adapter = OZLocalStorageAdapter.withStorage(storage: storage);
       // Manually inject an already-expired session.
-      await adapter.saveSession(
-        _session(connectedAt: 0, expiresAt: 1),
-      );
+      await adapter.saveSession(_session(connectedAt: 0, expiresAt: 1));
       expect(await adapter.getSession(), isNull);
       // Verify the underlying storage no longer holds the session entry.
       expect(storage.getItem('stellar_sa_session_current'), isNull);
@@ -513,9 +512,7 @@ void main() {
       expect(loaded?.lastUsedAt, 999);
     });
 
-    test(
-        'test_local_storage_adapter_implements_storage_adapter_interface',
-        () {
+    test('test_local_storage_adapter_implements_storage_adapter_interface', () {
       final adapter = OZLocalStorageAdapter.withStorage(
         storage: _makeFakeStorage(),
       );
@@ -528,8 +525,10 @@ void main() {
       await adapter.save(_credential(credentialId: 'good'));
       // Inject corruption directly into the underlying storage by
       // adding a garbage entry that the index references.
-      storage.setItem('stellar_sa_credential_index',
-          jsonEncode(<String>['good', 'bad']));
+      storage.setItem(
+        'stellar_sa_credential_index',
+        jsonEncode(<String>['good', 'bad']),
+      );
       // Insert a fake credential entry whose JSON is not a valid object.
       const corruptKey = 'stellar_sa_cred_bad';
       storage.setItem(corruptKey, '"not-an-object"');

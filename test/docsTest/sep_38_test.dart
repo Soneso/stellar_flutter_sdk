@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 300))
-
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -24,7 +23,7 @@ void main() {
         {'asset': usdcAsset},
         {
           'asset':
-              'stellar:BRL:GDVKY2GU2DRXWTBEYJJWSFXIGBZV6AZNBVVSUHEPZI54LIS6BA7DVVSP'
+              'stellar:BRL:GDVKY2GU2DRXWTBEYJJWSFXIGBZV6AZNBVVSUHEPZI54LIS6BA7DVVSP',
         },
         {
           'asset': 'iso4217:BRL',
@@ -32,47 +31,42 @@ void main() {
           'sell_delivery_methods': [
             {
               'name': 'cash',
-              'description':
-                  'Deposit cash BRL at one of our agent locations.'
+              'description': 'Deposit cash BRL at one of our agent locations.',
             },
             {
               'name': 'ACH',
-              'description':
-                  "Send BRL directly to the Anchor's bank account."
+              'description': "Send BRL directly to the Anchor's bank account.",
             },
             {
               'name': 'PIX',
-              'description':
-                  "Send BRL directly to the Anchor's bank account."
-            }
+              'description': "Send BRL directly to the Anchor's bank account.",
+            },
           ],
           'buy_delivery_methods': [
             {
               'name': 'cash',
-              'description':
-                  'Pick up cash BRL at one of our payout locations.'
+              'description': 'Pick up cash BRL at one of our payout locations.',
             },
             {
               'name': 'ACH',
-              'description':
-                  'Have BRL sent directly to your bank account.'
+              'description': 'Have BRL sent directly to your bank account.',
             },
             {
               'name': 'PIX',
               'description':
-                  'Have BRL sent directly to the account of your choice.'
-            }
-          ]
-        }
-      ]
+                  'Have BRL sent directly to the account of your choice.',
+            },
+          ],
+        },
+      ],
     });
   }
 
   String pricesResponseJson() {
     return json.encode({
       'buy_assets': [
-        {'asset': 'iso4217:BRL', 'price': '0.18', 'decimals': 2}
-      ]
+        {'asset': 'iso4217:BRL', 'price': '0.18', 'decimals': 2},
+      ],
     });
   }
 
@@ -82,7 +76,7 @@ void main() {
       'price': '5.00',
       'sell_amount': '542',
       'buy_amount': '100',
-      'fee': {'total': '42.00', 'asset': 'iso4217:BRL'}
+      'fee': {'total': '42.00', 'asset': 'iso4217:BRL'},
     });
   }
 
@@ -96,9 +90,9 @@ void main() {
         'total': '8.40',
         'asset': usdcAsset,
         'details': [
-          {'name': 'Service fee', 'amount': '8.40'}
-        ]
-      }
+          {'name': 'Service fee', 'amount': '8.40'},
+        ],
+      },
     });
   }
 
@@ -116,10 +110,10 @@ void main() {
             'name': 'PIX fee',
             'description':
                 'Fee charged in order to process the outgoing PIX transaction.',
-            'amount': '55.5556'
-          }
-        ]
-      }
+            'amount': '55.5556',
+          },
+        ],
+      },
     });
   }
 
@@ -138,10 +132,10 @@ void main() {
             'name': 'PIX fee',
             'description':
                 'Fee charged in order to process the outgoing BRL PIX transaction.',
-            'amount': '5.00'
-          }
-        ]
-      }
+            'amount': '5.00',
+          },
+        ],
+      },
     });
   }
 
@@ -159,9 +153,9 @@ void main() {
         'total': '8.40',
         'asset': usdcAsset,
         'details': [
-          {'name': 'Service fee', 'amount': '8.40'}
-        ]
-      }
+          {'name': 'Service fee', 'amount': '8.40'},
+        ],
+      },
     });
   }
 
@@ -203,8 +197,9 @@ void main() {
 
   test('sep-38: Creating the service with direct URL', () {
     // Snippet from sep-38.md "With a direct URL"
-    SEP38QuoteService quoteService =
-        SEP38QuoteService('https://anchor.example.com/sep38');
+    SEP38QuoteService quoteService = SEP38QuoteService(
+      'https://anchor.example.com/sep38',
+    );
     expect(quoteService, isNotNull);
   });
 
@@ -240,8 +235,10 @@ void main() {
     expect(assets[2].sellDeliveryMethods, isNotNull);
     expect(assets[2].sellDeliveryMethods!.length, 3);
     expect(assets[2].sellDeliveryMethods![0].name, 'cash');
-    expect(assets[2].sellDeliveryMethods![0].description,
-        'Deposit cash BRL at one of our agent locations.');
+    expect(
+      assets[2].sellDeliveryMethods![0].description,
+      'Deposit cash BRL at one of our agent locations.',
+    );
     expect(assets[2].sellDeliveryMethods![1].name, 'ACH');
     expect(assets[2].sellDeliveryMethods![2].name, 'PIX');
 
@@ -249,8 +246,10 @@ void main() {
     expect(assets[2].buyDeliveryMethods, isNotNull);
     expect(assets[2].buyDeliveryMethods!.length, 3);
     expect(assets[2].buyDeliveryMethods![0].name, 'cash');
-    expect(assets[2].buyDeliveryMethods![0].description,
-        'Pick up cash BRL at one of our payout locations.');
+    expect(
+      assets[2].buyDeliveryMethods![0].description,
+      'Pick up cash BRL at one of our payout locations.',
+    );
     expect(assets[2].buyDeliveryMethods![1].name, 'ACH');
     expect(assets[2].buyDeliveryMethods![2].name, 'PIX');
   });
@@ -430,8 +429,10 @@ void main() {
     expect(price.fee.details![0].description, isNull);
     expect(price.fee.details![1].name, 'PIX fee');
     expect(price.fee.details![1].amount, '5.00');
-    expect(price.fee.details![1].description,
-        'Fee charged in order to process the outgoing BRL PIX transaction.');
+    expect(
+      price.fee.details![1].description,
+      'Fee charged in order to process the outgoing BRL PIX transaction.',
+    );
   });
 
   test('sep-38: Requesting a firm quote (POST /quote)', () async {
@@ -539,9 +540,9 @@ void main() {
 
     service.httpClient = MockClient((request) async {
       if (request.method == 'GET' &&
-          request.url
-              .toString()
-              .endsWith('quote/de762cda-a193-4961-861e-57b31fed6eb3')) {
+          request.url.toString().endsWith(
+            'quote/de762cda-a193-4961-861e-57b31fed6eb3',
+          )) {
         String? authHeader = request.headers['Authorization'];
         if (authHeader != null && authHeader.contains(jwtToken)) {
           return http.Response(firmQuoteResponseJson(), 200);
@@ -608,19 +609,16 @@ void main() {
       return http.Response(firmQuoteResponseJson(), 200);
     });
 
-    expect(
-      () async {
-        SEP38PostQuoteRequest request = SEP38PostQuoteRequest(
-          context: 'sep6',
-          sellAsset: 'iso4217:USD',
-          buyAsset: usdcAsset,
-          sellAmount: '100',
-          buyAmount: '95',
-        );
-        await service.postQuote(request, jwtToken);
-      },
-      throwsArgumentError,
-    );
+    expect(() async {
+      SEP38PostQuoteRequest request = SEP38PostQuoteRequest(
+        context: 'sep6',
+        sellAsset: 'iso4217:USD',
+        buyAsset: usdcAsset,
+        sellAmount: '100',
+        buyAmount: '95',
+      );
+      await service.postQuote(request, jwtToken);
+    }, throwsArgumentError);
   });
 
   test('sep-38: Error handling - SEP38PermissionDenied', () async {
@@ -629,24 +627,20 @@ void main() {
 
     service.httpClient = MockClient((request) async {
       if (request.method == 'POST') {
-        return http.Response(
-            json.encode({'error': 'Token expired'}), 403);
+        return http.Response(json.encode({'error': 'Token expired'}), 403);
       }
       return http.Response(json.encode({'error': 'Bad request'}), 400);
     });
 
-    expect(
-      () async {
-        SEP38PostQuoteRequest request = SEP38PostQuoteRequest(
-          context: 'sep6',
-          sellAsset: 'iso4217:USD',
-          buyAsset: usdcAsset,
-          sellAmount: '100',
-        );
-        await service.postQuote(request, jwtToken);
-      },
-      throwsA(isA<SEP38PermissionDenied>()),
-    );
+    expect(() async {
+      SEP38PostQuoteRequest request = SEP38PostQuoteRequest(
+        context: 'sep6',
+        sellAsset: 'iso4217:USD',
+        buyAsset: usdcAsset,
+        sellAmount: '100',
+      );
+      await service.postQuote(request, jwtToken);
+    }, throwsA(isA<SEP38PermissionDenied>()));
   });
 
   test('sep-38: Error handling - SEP38NotFound', () async {
@@ -656,8 +650,7 @@ void main() {
     service.httpClient = MockClient((request) async {
       if (request.method == 'GET' &&
           request.url.toString().contains('quote/')) {
-        return http.Response(
-            json.encode({'error': 'Quote not found'}), 404);
+        return http.Response(json.encode({'error': 'Quote not found'}), 404);
       }
       return http.Response(json.encode({'error': 'Bad request'}), 400);
     });
@@ -673,14 +666,10 @@ void main() {
     final service = SEP38QuoteService(quoteServer);
 
     service.httpClient = MockClient((request) async {
-      return http.Response(
-          json.encode({'error': 'Invalid asset format'}), 400);
+      return http.Response(json.encode({'error': 'Invalid asset format'}), 400);
     });
 
-    expect(
-      () async => await service.info(),
-      throwsA(isA<SEP38BadRequest>()),
-    );
+    expect(() async => await service.info(), throwsA(isA<SEP38BadRequest>()));
   });
 
   test('sep-38: Error handling - SEP38UnknownResponse', () async {

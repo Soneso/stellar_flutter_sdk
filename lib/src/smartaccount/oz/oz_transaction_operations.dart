@@ -117,10 +117,8 @@ class OZTransactionResult {
 ///   return <int>[ruleId];
 /// }
 /// ```
-typedef OZResolveContextRuleIds = Future<List<int>> Function(
-  XdrSorobanAuthorizationEntry entry,
-  int index,
-);
+typedef OZResolveContextRuleIds =
+    Future<List<int>> Function(XdrSorobanAuthorizationEntry entry, int index);
 
 /// Transaction operations for OpenZeppelin smart accounts.
 ///
@@ -219,7 +217,10 @@ class OZTransactionOperations {
     requireStellarAddress(recipient, fieldName: 'recipient');
 
     if (recipient == connected.contractId) {
-      throw SmartAccountValidationException.invalidInput('recipient', 'Cannot transfer to self');
+      throw SmartAccountValidationException.invalidInput(
+        'recipient',
+        'Cannot transfer to self',
+      );
     }
 
     final resolvedDecimals =
@@ -259,8 +260,9 @@ class OZTransactionOperations {
       'decimals',
       const <XdrSCVal>[],
     );
-    final hostFunction =
-        XdrHostFunction.forInvokingContractWithArgs(invokeArgs);
+    final hostFunction = XdrHostFunction.forInvokingContractWithArgs(
+      invokeArgs,
+    );
     final result = await simulateAndExtractResult(hostFunction);
 
     final decimals = _scValToUInt32(result);
@@ -315,7 +317,9 @@ class OZTransactionOperations {
       targetFn,
       List<XdrSCVal>.from(targetArgs),
     );
-    final hostFunction = XdrHostFunction.forInvokingContractWithArgs(invokeArgs);
+    final hostFunction = XdrHostFunction.forInvokingContractWithArgs(
+      invokeArgs,
+    );
 
     return submit(
       hostFunction: hostFunction,
@@ -364,7 +368,9 @@ class OZTransactionOperations {
       'execute',
       functionArgs,
     );
-    final hostFunction = XdrHostFunction.forInvokingContractWithArgs(invokeArgs);
+    final hostFunction = XdrHostFunction.forInvokingContractWithArgs(
+      invokeArgs,
+    );
 
     return submit(
       hostFunction: hostFunction,
@@ -433,7 +439,9 @@ class OZTransactionOperations {
         .setMaxOperationFee(AbstractTransaction.MIN_BASE_FEE)
         .addOperation(operation)
         .addMemo(Memo.none())
-        .addPreconditions(buildTimeoutPreconditions(_kit.config.timeoutInSeconds))
+        .addPreconditions(
+          buildTimeoutPreconditions(_kit.config.timeoutInSeconds),
+        )
         .build();
 
     final simulation = await _simulateInitial(initialTransaction);
@@ -457,10 +465,12 @@ class OZTransactionOperations {
       }
     }
 
-    _kit.events.emit(OZSmartAccountEventTransactionSigned(
-      contractId: contractId,
-      credentialId: signedAuthEntries.isNotEmpty ? credentialId : null,
-    ));
+    _kit.events.emit(
+      OZSmartAccountEventTransactionSigned(
+        contractId: contractId,
+        credentialId: signedAuthEntries.isNotEmpty ? credentialId : null,
+      ),
+    );
 
     _checkCancellation(cancelToken);
 
@@ -475,7 +485,9 @@ class OZTransactionOperations {
         .setMaxOperationFee(AbstractTransaction.MIN_BASE_FEE)
         .addOperation(signedOperation)
         .addMemo(Memo.none())
-        .addPreconditions(buildTimeoutPreconditions(_kit.config.timeoutInSeconds))
+        .addPreconditions(
+          buildTimeoutPreconditions(_kit.config.timeoutInSeconds),
+        )
         .build();
 
     final reSimulation = await _reSimulateSigned(signedTransaction);
@@ -591,9 +603,11 @@ class OZTransactionOperations {
     final contextRules = await _kit.contextRuleManager.listContextRules();
 
     final signed = <XdrSorobanAuthorizationEntry>[];
-    for (var entryIndex = 0;
-        entryIndex < simulatedAuthEntries.length;
-        entryIndex++) {
+    for (
+      var entryIndex = 0;
+      entryIndex < simulatedAuthEntries.length;
+      entryIndex++
+    ) {
       _checkCancellation(cancelToken);
       final entry = simulatedAuthEntries[entryIndex];
 
@@ -608,7 +622,8 @@ class OZTransactionOperations {
       // Use SorobanAuthorizationEntry.sign with the forAddress parameter to
       // route signatures to the appropriate delegate nodes.
       if (entry.credentials.discriminant ==
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+          XdrSorobanCredentialsType
+              .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
         throw SmartAccountTransactionException.signingFailed(
           'ADDRESS_WITH_DELEGATES auth entries cannot be auto-signed by the '
           'single-signer pipeline. Use SorobanAuthorizationEntry.sign with the '
@@ -683,8 +698,9 @@ class OZTransactionOperations {
         resolvedContextRuleIds = await resolveContextRuleIds(entry, entryIndex);
       } else {
         resolvedContextRuleIds = await _kit.contextRuleManager
-            .resolveContextRuleIdsForEntry(
-                entry, <OZSmartAccountSigner>[signer], contextRules);
+            .resolveContextRuleIdsForEntry(entry, <OZSmartAccountSigner>[
+              signer,
+            ], contextRules);
       }
 
       final authDigest = await OZSmartAccountAuth.buildAuthDigest(
@@ -695,7 +711,10 @@ class OZTransactionOperations {
       final authResult = await webauthnProvider.authenticate(
         challenge: authDigest,
         allowCredentials: <WebAuthnAllowCredential>[
-          WebAuthnAllowCredential(id: credIdBytes, transports: stored?.transports),
+          WebAuthnAllowCredential(
+            id: credIdBytes,
+            transports: stored?.transports,
+          ),
         ],
       );
 
@@ -710,8 +729,9 @@ class OZTransactionOperations {
         );
       }
 
-      final compactSig =
-          SmartAccountUtils.normalizeSignature(authResult.signature);
+      final compactSig = SmartAccountUtils.normalizeSignature(
+        authResult.signature,
+      );
 
       final webAuthnSig = OZWebAuthnSignature(
         authenticatorData: authResult.authenticatorData,
@@ -751,7 +771,9 @@ class OZTransactionOperations {
     final deployer = await _kit.getDeployer();
     _applySimulationToTransaction(signedTransaction, simulation);
 
-    final useRelayer = ozResolveSubmissionMethod(_kit, forceMethod) == OZSubmissionMethod.relayer;
+    final useRelayer =
+        ozResolveSubmissionMethod(_kit, forceMethod) ==
+        OZSubmissionMethod.relayer;
 
     return _submitOrRelay(
       transaction: signedTransaction,
@@ -770,7 +792,9 @@ class OZTransactionOperations {
   /// submission is performed. Throws [SmartAccountTransactionException] on simulation
   /// failure or when the simulation produced no result entry.
   @internal
-  Future<XdrSCVal> simulateAndExtractResult(XdrHostFunction hostFunction) async {
+  Future<XdrSCVal> simulateAndExtractResult(
+    XdrHostFunction hostFunction,
+  ) async {
     final deployer = await _kit.getDeployer();
     final deployerAccount = await _fetchAccount(deployer.accountId);
 
@@ -782,7 +806,9 @@ class OZTransactionOperations {
         .setMaxOperationFee(AbstractTransaction.MIN_BASE_FEE)
         .addOperation(operation)
         .addMemo(Memo.none())
-        .addPreconditions(buildTimeoutPreconditions(_kit.config.timeoutInSeconds))
+        .addPreconditions(
+          buildTimeoutPreconditions(_kit.config.timeoutInSeconds),
+        )
         .build();
 
     final SimulateTransactionResponse simulation;
@@ -802,16 +828,22 @@ class OZTransactionOperations {
 
     final err = _errorMessage(simulation);
     if (err != null) {
-      throw SmartAccountTransactionException.simulationFailed('Simulation error: $err');
+      throw SmartAccountTransactionException.simulationFailed(
+        'Simulation error: $err',
+      );
     }
 
     final results = simulation.results;
     if (results == null || results.isEmpty) {
-      throw SmartAccountTransactionException.simulationFailed('No results returned from simulation');
+      throw SmartAccountTransactionException.simulationFailed(
+        'No results returned from simulation',
+      );
     }
     final result = results[0].resultValue;
     if (result == null) {
-      throw SmartAccountTransactionException.simulationFailed('No return value in simulation result');
+      throw SmartAccountTransactionException.simulationFailed(
+        'No return value in simulation result',
+      );
     }
     return result;
   }
@@ -846,7 +878,10 @@ class OZTransactionOperations {
 
     final connected = await _kit.requireConnected();
 
-    requireContractAddress(nativeTokenContract, fieldName: 'nativeTokenContract');
+    requireContractAddress(
+      nativeTokenContract,
+      fieldName: 'nativeTokenContract',
+    );
 
     final tempKeypair = KeyPair.random();
 
@@ -854,7 +889,9 @@ class OZTransactionOperations {
 
     final funded = await FriendBot.fundTestAccount(tempKeypair.accountId);
     if (!funded) {
-      throw SmartAccountTransactionException.submissionFailed('Friendbot funding failed');
+      throw SmartAccountTransactionException.submissionFailed(
+        'Friendbot funding failed',
+      );
     }
 
     // Wait for RPC visibility of the funded account before the native SAC
@@ -864,7 +901,8 @@ class OZTransactionOperations {
     final tempAccount = await _fetchAccount(tempKeypair.accountId);
 
     final reserveStroops =
-        BigInt.from(OZConstants.friendbotReserveXlm) * BigInt.from(Util.stroopsPerXlm);
+        BigInt.from(OZConstants.friendbotReserveXlm) *
+        BigInt.from(Util.stroopsPerXlm);
 
     final balanceArgs = <XdrSCVal>[
       XdrSCVal.forAddress(Address.forAccountId(tempKeypair.accountId).toXdr()),
@@ -874,8 +912,9 @@ class OZTransactionOperations {
       'balance',
       balanceArgs,
     );
-    final balanceHostFunction =
-        XdrHostFunction.forInvokingContractWithArgs(balanceInvokeArgs);
+    final balanceHostFunction = XdrHostFunction.forInvokingContractWithArgs(
+      balanceInvokeArgs,
+    );
     final balanceResult = await simulateAndExtractResult(balanceHostFunction);
     final BigInt balanceStroops;
     try {
@@ -905,7 +944,9 @@ class OZTransactionOperations {
       'transfer',
       functionArgs,
     );
-    final hostFunction = XdrHostFunction.forInvokingContractWithArgs(invokeArgs);
+    final hostFunction = XdrHostFunction.forInvokingContractWithArgs(
+      invokeArgs,
+    );
 
     final operation = InvokeHostFunctionOperation(
       HostFunction.fromXdr(hostFunction),
@@ -915,7 +956,9 @@ class OZTransactionOperations {
         .setMaxOperationFee(AbstractTransaction.MIN_BASE_FEE)
         .addOperation(operation)
         .addMemo(Memo.none())
-        .addPreconditions(buildTimeoutPreconditions(_kit.config.timeoutInSeconds))
+        .addPreconditions(
+          buildTimeoutPreconditions(_kit.config.timeoutInSeconds),
+        )
         .build();
 
     final SimulateTransactionResponse simulation;
@@ -945,7 +988,9 @@ class OZTransactionOperations {
     final latestLedger = await _kit.sorobanServer.getLatestLedger();
     final ledgerSeq = latestLedger.sequence;
     if (ledgerSeq == null) {
-      throw SmartAccountTransactionException.submissionFailed('Failed to fetch latest ledger sequence');
+      throw SmartAccountTransactionException.submissionFailed(
+        'Failed to fetch latest ledger sequence',
+      );
     }
     final expirationLedger = ledgerSeq + Util.ledgersPerHour;
 
@@ -967,7 +1012,9 @@ class OZTransactionOperations {
         .setMaxOperationFee(AbstractTransaction.MIN_BASE_FEE)
         .addOperation(signedOperation)
         .addMemo(Memo.none())
-        .addPreconditions(buildTimeoutPreconditions(_kit.config.timeoutInSeconds))
+        .addPreconditions(
+          buildTimeoutPreconditions(_kit.config.timeoutInSeconds),
+        )
         .build();
 
     final SimulateTransactionResponse reSimulation;
@@ -986,7 +1033,9 @@ class OZTransactionOperations {
     }
     final reSimError = _errorMessage(reSimulation);
     if (reSimError != null) {
-      throw SmartAccountTransactionException.simulationFailed('Re-simulation error: $reSimError');
+      throw SmartAccountTransactionException.simulationFailed(
+        'Re-simulation error: $reSimError',
+      );
     }
 
     _applySimulationToTransaction(signedTransaction, reSimulation);
@@ -1029,8 +1078,9 @@ class OZTransactionOperations {
     while (DateTime.now().isBefore(end)) {
       _checkCancellation(cancelToken);
       final remaining = end.difference(DateTime.now());
-      final step =
-          remaining < const Duration(milliseconds: 100) ? remaining : const Duration(milliseconds: 100);
+      final step = remaining < const Duration(milliseconds: 100)
+          ? remaining
+          : const Duration(milliseconds: 100);
       await Future<void>.delayed(step);
     }
     _checkCancellation(cancelToken);
@@ -1069,14 +1119,15 @@ class OZTransactionOperations {
         // credentials written below, so both are built from the same arm.
         // Under ADDRESS_V2 that preimage carries the temporary account
         // address, which is why the address must be identical in both places.
-        final payloadHash = await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
-          entry,
-          tempAddress,
-          nonce,
-          expirationLedger,
-          _kit.config.networkPassphrase,
-          useUpgradedAuth: useUpgradedAuth,
-        );
+        final payloadHash =
+            await OZSmartAccountAuth.buildSourceAccountAuthPayloadHash(
+              entry,
+              tempAddress,
+              nonce,
+              expirationLedger,
+              _kit.config.networkPassphrase,
+              useUpgradedAuth: useUpgradedAuth,
+            );
         final signature = tempKeypair.sign(payloadHash);
 
         // Standard Ed25519 format: Vec([Map({public_key, signature})]) — the
@@ -1099,13 +1150,18 @@ class OZTransactionOperations {
           XdrUint32(expirationLedger),
           signatureVec,
         );
-        result.add(XdrSorobanAuthorizationEntry(
-          useUpgradedAuth
-              ? XdrSorobanCredentials.forAddressV2Credentials(
-                  addressCredentials)
-              : XdrSorobanCredentials.forAddressCredentials(addressCredentials),
-          _cloneInvocation(entry.rootInvocation),
-        ));
+        result.add(
+          XdrSorobanAuthorizationEntry(
+            useUpgradedAuth
+                ? XdrSorobanCredentials.forAddressV2Credentials(
+                    addressCredentials,
+                  )
+                : XdrSorobanCredentials.forAddressCredentials(
+                    addressCredentials,
+                  ),
+            _cloneInvocation(entry.rootInvocation),
+          ),
+        );
       } else if (entry.credentials.discriminant ==
               XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS ||
           entry.credentials.discriminant ==
@@ -1147,12 +1203,15 @@ class OZTransactionOperations {
           signatureVec,
         );
         // Preserve the credential arm on write-back.
-        result.add(XdrSorobanAuthorizationEntry(
-          _rebuildCredentialsXdr(entryCopy.credentials, updatedCredentials),
-          entryCopy.rootInvocation,
-        ));
+        result.add(
+          XdrSorobanAuthorizationEntry(
+            _rebuildCredentialsXdr(entryCopy.credentials, updatedCredentials),
+            entryCopy.rootInvocation,
+          ),
+        );
       } else if (entry.credentials.discriminant ==
-          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
+          XdrSorobanCredentialsType
+              .SOROBAN_CREDENTIALS_ADDRESS_WITH_DELEGATES) {
         // ADDRESS_WITH_DELEGATES entries require caller-policy routing.
         // The fundWallet flow cannot determine which delegate node to sign.
         throw SmartAccountTransactionException.signingFailed(
@@ -1193,7 +1252,9 @@ class OZTransactionOperations {
   /// `Vec([Symbol('External'), Address(verifier), Bytes(keyData)])`. The
   /// keyData layout is `publicKey || credentialId`; matching by the
   /// suffix-bytes recovers the full key data.
-  Future<Uint8List> _findKeyDataFromContextRules(Uint8List credentialIdBytes) async {
+  Future<Uint8List> _findKeyDataFromContextRules(
+    Uint8List credentialIdBytes,
+  ) async {
     final allRules = await _kit.contextRuleManager.getAllContextRules();
     const pubKeySize = 65; // secp256r1 uncompressed pubkey size
     for (final ruleScVal in allRules) {
@@ -1210,7 +1271,8 @@ class OZTransactionOperations {
           final tag = parts[0].sym;
           if (tag != 'External' || parts.length < 3) continue;
           final keyDataBytes = parts[2].bytes?.sCBytes;
-          if (keyDataBytes == null || keyDataBytes.length <= pubKeySize) continue;
+          if (keyDataBytes == null || keyDataBytes.length <= pubKeySize)
+            continue;
           final suffix = Uint8List.fromList(
             keyDataBytes.sublist(pubKeySize, keyDataBytes.length),
           );
@@ -1251,7 +1313,9 @@ class OZTransactionOperations {
     if (useRelayer) {
       final relayer = _kit.relayerClient;
       if (relayer == null) {
-        throw SmartAccountTransactionException.submissionFailed('Relayer is not configured');
+        throw SmartAccountTransactionException.submissionFailed(
+          'Relayer is not configured',
+        );
       }
 
       final OZRelayerResponse relayerResponse;
@@ -1269,10 +1333,12 @@ class OZTransactionOperations {
       }
 
       if (emitEvents && relayerResponse.hash != null) {
-        _kit.events.emit(OZSmartAccountEventTransactionSubmitted(
-          hash: relayerResponse.hash!,
-          success: relayerResponse.success,
-        ));
+        _kit.events.emit(
+          OZSmartAccountEventTransactionSubmitted(
+            hash: relayerResponse.hash!,
+            success: relayerResponse.success,
+          ),
+        );
       }
 
       if (relayerResponse.success && relayerResponse.hash != null) {
@@ -1320,10 +1386,9 @@ class OZTransactionOperations {
     }
 
     if (emitEvents) {
-      _kit.events.emit(OZSmartAccountEventTransactionSubmitted(
-        hash: hash,
-        success: true,
-      ));
+      _kit.events.emit(
+        OZSmartAccountEventTransactionSubmitted(hash: hash, success: true),
+      );
     }
     return _pollForConfirmation(hash, cancelToken);
   }
@@ -1433,9 +1498,11 @@ class OZTransactionOperations {
     String accountId,
     dio.CancelToken? cancelToken, {
     Duration pollInterval = const Duration(
-        milliseconds: OZConstants.rpcVisibilityPollIntervalMs),
+      milliseconds: OZConstants.rpcVisibilityPollIntervalMs,
+    ),
     Duration timeout = const Duration(
-        seconds: OZConstants.rpcVisibilityTimeoutSeconds),
+      seconds: OZConstants.rpcVisibilityTimeoutSeconds,
+    ),
   }) async {
     final deadline = DateTime.now().add(timeout);
     Object? lastError;
@@ -1465,7 +1532,8 @@ class OZTransactionOperations {
         ? '${timeout.inSeconds}s'
         : '${timeout.inMilliseconds}ms';
     throw SmartAccountTransactionException.timeout(
-      details: 'Funding account $accountId not visible to the Soroban RPC '
+      details:
+          'Funding account $accountId not visible to the Soroban RPC '
           'within $timeoutLabel after Friendbot funding; testnet propagation '
           'may be delayed. Retry shortly.',
       cause: lastError,
@@ -1544,7 +1612,9 @@ class OZTransactionOperations {
       return simulation.resultError;
     }
     final rpcError = simulation.error;
-    if (rpcError != null && rpcError.message != null && rpcError.message!.isNotEmpty) {
+    if (rpcError != null &&
+        rpcError.message != null &&
+        rpcError.message!.isNotEmpty) {
       return rpcError.message;
     }
     return null;
@@ -1610,7 +1680,9 @@ class OZTransactionOperations {
 
   /// Round-trips an auth entry through XDR so the cloned copy can be safely
   /// mutated without touching the original.
-  XdrSorobanAuthorizationEntry _cloneAuthEntry(XdrSorobanAuthorizationEntry entry) {
+  XdrSorobanAuthorizationEntry _cloneAuthEntry(
+    XdrSorobanAuthorizationEntry entry,
+  ) {
     final stream = XdrDataOutputStream();
     XdrSorobanAuthorizationEntry.encode(stream, entry);
     final bytes = Uint8List.fromList(stream.bytes);
@@ -1771,4 +1843,3 @@ class OZTransactionOperations {
     return value.u32?.uint32;
   }
 }
-

@@ -67,8 +67,9 @@ class ClawbackClaimableBalanceOperation extends Operation {
   @override
   XdrOperationBody toOperationBody() {
     XdrClaimableBalanceID bId = XdrClaimableBalanceID.forId(balanceId);
-    XdrOperationBody body =
-        XdrOperationBody(XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE);
+    XdrOperationBody body = XdrOperationBody(
+      XdrOperationType.CLAWBACK_CLAIMABLE_BALANCE,
+    );
     body.clawbackClaimableBalanceOp = XdrClawbackClaimableBalanceOp(bId);
     return body;
   }
@@ -82,9 +83,11 @@ class ClawbackClaimableBalanceOperation extends Operation {
   ///
   /// Returns: A builder configured with the balance ID from the XDR.
   static ClawbackClaimableBalanceOperationBuilder builder(
-      XdrClawbackClaimableBalanceOp op) {
+    XdrClawbackClaimableBalanceOp op,
+  ) {
     return ClawbackClaimableBalanceOperationBuilder(
-        op.balanceID.paddedBalanceIdHex);
+      op.balanceID.paddedBalanceIdHex,
+    );
   }
 }
 

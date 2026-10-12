@@ -18,7 +18,10 @@ void main() {
       expect(XdrEnvelopeType.ENVELOPE_TYPE_OP_ID.value, equals(6));
       expect(XdrEnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID.value, equals(7));
       expect(XdrEnvelopeType.ENVELOPE_TYPE_CONTRACT_ID.value, equals(8));
-      expect(XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION.value, equals(9));
+      expect(
+        XdrEnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION.value,
+        equals(9),
+      );
     });
 
     test('XdrEnvelopeType decode invalid value throws exception', () {
@@ -36,7 +39,10 @@ void main() {
       expect(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519.value, equals(0));
       expect(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX.value, equals(1));
       expect(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X.value, equals(2));
-      expect(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD.value, equals(3));
+      expect(
+        XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD.value,
+        equals(3),
+      );
     });
   });
 
@@ -45,7 +51,9 @@ void main() {
       final lengths = [32, 48, 64, 128];
 
       for (var length in lengths) {
-        var sigBytes = Uint8List.fromList(List.generate(length, (i) => (i * 3) % 256));
+        var sigBytes = Uint8List.fromList(
+          List.generate(length, (i) => (i * 3) % 256),
+        );
         var original = XdrSignature(sigBytes);
 
         XdrDataOutputStream output = XdrDataOutputStream();
@@ -123,7 +131,9 @@ void main() {
 
       for (var weightValue in weights) {
         var signerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
-        signerKey.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x01)));
+        signerKey.ed25519 = XdrUint256(
+          Uint8List.fromList(List<int>.filled(32, 0x01)),
+        );
         var weight = XdrUint32(weightValue);
 
         var original = XdrSigner(signerKey, weight);
@@ -172,7 +182,10 @@ void main() {
       var decoded = XdrLiabilities.decode(input);
 
       expect(decoded.buying.int64, equals(BigInt.parse('9223372036854775807')));
-      expect(decoded.selling.int64, equals(BigInt.parse('9223372036854775807')));
+      expect(
+        decoded.selling.int64,
+        equals(BigInt.parse('9223372036854775807')),
+      );
     });
 
     test('XdrLiabilities with negative values', () {
@@ -301,8 +314,12 @@ void main() {
       var signatures = <XdrDecoratedSignature>[];
 
       for (var i = 0; i < 5; i++) {
-        var hint = XdrSignatureHint(Uint8List.fromList([i, i + 1, i + 2, i + 3]));
-        var sig = XdrSignature(Uint8List.fromList(List.generate(64, (j) => (i + j) % 256)));
+        var hint = XdrSignatureHint(
+          Uint8List.fromList([i, i + 1, i + 2, i + 3]),
+        );
+        var sig = XdrSignature(
+          Uint8List.fromList(List.generate(64, (j) => (i + j) % 256)),
+        );
         signatures.add(XdrDecoratedSignature(hint, sig));
       }
 
@@ -324,15 +341,23 @@ void main() {
       var signers = <XdrSigner>[];
 
       var ed25519Key = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
-      ed25519Key.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x01)));
+      ed25519Key.ed25519 = XdrUint256(
+        Uint8List.fromList(List<int>.filled(32, 0x01)),
+      );
       signers.add(XdrSigner(ed25519Key, XdrUint32(10)));
 
-      var preAuthKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
-      preAuthKey.preAuthTx = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x02)));
+      var preAuthKey = XdrSignerKey(
+        XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX,
+      );
+      preAuthKey.preAuthTx = XdrUint256(
+        Uint8List.fromList(List<int>.filled(32, 0x02)),
+      );
       signers.add(XdrSigner(preAuthKey, XdrUint32(5)));
 
       var hashXKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X);
-      hashXKey.hashX = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x03)));
+      hashXKey.hashX = XdrUint256(
+        Uint8List.fromList(List<int>.filled(32, 0x03)),
+      );
       signers.add(XdrSigner(hashXKey, XdrUint32(3)));
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -344,15 +369,24 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
 
       var decoded1 = XdrSigner.decode(input);
-      expect(decoded1.key.discriminant.value, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519.value));
+      expect(
+        decoded1.key.discriminant.value,
+        equals(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519.value),
+      );
       expect(decoded1.weight.uint32, equals(10));
 
       var decoded2 = XdrSigner.decode(input);
-      expect(decoded2.key.discriminant.value, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX.value));
+      expect(
+        decoded2.key.discriminant.value,
+        equals(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX.value),
+      );
       expect(decoded2.weight.uint32, equals(5));
 
       var decoded3 = XdrSigner.decode(input);
-      expect(decoded3.key.discriminant.value, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X.value));
+      expect(
+        decoded3.key.discriminant.value,
+        equals(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X.value),
+      );
       expect(decoded3.weight.uint32, equals(3));
     });
 
@@ -388,7 +422,9 @@ void main() {
       keys.add(key2);
 
       var key3 = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
-      key3.preAuthTx = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xCC)));
+      key3.preAuthTx = XdrUint256(
+        Uint8List.fromList(List<int>.filled(32, 0xCC)),
+      );
       keys.add(key3);
 
       XdrDataOutputStream output = XdrDataOutputStream();
@@ -400,15 +436,24 @@ void main() {
       XdrDataInputStream input = XdrDataInputStream(encoded);
 
       var decoded1 = XdrSignerKey.decode(input);
-      expect(decoded1.discriminant.value, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519.value));
+      expect(
+        decoded1.discriminant.value,
+        equals(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519.value),
+      );
       expect(decoded1.ed25519!.uint256[0], equals(0xAA));
 
       var decoded2 = XdrSignerKey.decode(input);
-      expect(decoded2.discriminant.value, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X.value));
+      expect(
+        decoded2.discriminant.value,
+        equals(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X.value),
+      );
       expect(decoded2.hashX!.uint256[0], equals(0xBB));
 
       var decoded3 = XdrSignerKey.decode(input);
-      expect(decoded3.discriminant.value, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX.value));
+      expect(
+        decoded3.discriminant.value,
+        equals(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX.value),
+      );
       expect(decoded3.preAuthTx!.uint256[0], equals(0xCC));
     });
 

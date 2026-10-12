@@ -118,11 +118,7 @@ void main() {
                 'message',
                 contains('not visible to the Soroban RPC'),
               )
-              .having(
-                (e) => e.message,
-                'message',
-                contains('Retry shortly'),
-              )
+              .having((e) => e.message, 'message', contains('Retry shortly'))
               // A pure timeout (no transient errors observed) carries no
               // spurious "last error" cause.
               .having((e) => e.cause, 'cause', isNull),

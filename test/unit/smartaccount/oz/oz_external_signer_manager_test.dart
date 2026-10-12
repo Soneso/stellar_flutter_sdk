@@ -29,7 +29,7 @@ class RecordingWalletAdapter extends OZExternalWalletAdapter {
 
   final List<Object> signAuthEntryResponses = <Object>[];
   final List<({String preimageXdr, OZSignAuthEntryOptions? options})>
-      signAuthEntryCalls =
+  signAuthEntryCalls =
       <({String preimageXdr, OZSignAuthEntryOptions? options})>[];
 
   final List<OZConnectedWallet> connected = <OZConnectedWallet>[];
@@ -148,7 +148,9 @@ class _NeverSignAdapter extends OZExternalEd25519SignerAdapter {
     Uint8List authDigest,
     Uint8List publicKey,
   ) async {
-    throw UnsupportedError('_NeverSignAdapter.signAuthDigest must never be called');
+    throw UnsupportedError(
+      '_NeverSignAdapter.signAuthDigest must never be called',
+    );
   }
 }
 
@@ -206,17 +208,19 @@ void main() {
       );
     });
 
-    test('public key in place of secret throws SmartAccountSignerInvalid', () async {
-      final manager = _createManager();
-      final keypair = KeyPair.random();
-      await expectLater(
-        () => manager.addFromSecret(keypair.accountId),
-        throwsA(isA<SmartAccountSignerInvalid>()),
-      );
-    });
+    test(
+      'public key in place of secret throws SmartAccountSignerInvalid',
+      () async {
+        final manager = _createManager();
+        final keypair = KeyPair.random();
+        await expectLater(
+          () => manager.addFromSecret(keypair.accountId),
+          throwsA(isA<SmartAccountSignerInvalid>()),
+        );
+      },
+    );
 
-    test('same secret added twice yields one signer (overwrite)',
-        () async {
+    test('same secret added twice yields one signer (overwrite)', () async {
       final manager = _createManager();
       final keypair = KeyPair.random();
       final secret = keypair.secretSeed;
@@ -229,8 +233,7 @@ void main() {
       expect(all.length, equals(1));
     });
 
-    test('multiple distinct signers are tracked independently',
-        () async {
+    test('multiple distinct signers are tracked independently', () async {
       final manager = _createManager();
       final k1 = KeyPair.random();
       final k2 = KeyPair.random();
@@ -248,11 +251,9 @@ void main() {
       expect(addresses, contains(k3.accountId));
     });
 
-    test('concurrent addFromSecret calls are serialised via mutex',
-        () async {
+    test('concurrent addFromSecret calls are serialised via mutex', () async {
       final manager = _createManager();
-      final keypairs =
-          List<KeyPair>.generate(8, (_) => KeyPair.random());
+      final keypairs = List<KeyPair>.generate(8, (_) => KeyPair.random());
 
       final futures = keypairs
           .map((k) => manager.addFromSecret(k.secretSeed))
@@ -274,8 +275,7 @@ void main() {
     test('keypair exists returns true', () async {
       final manager = _createManager();
       final keypair = KeyPair.random();
-      final address =
-          await manager.addFromSecret(keypair.secretSeed);
+      final address = await manager.addFromSecret(keypair.secretSeed);
       expect(await manager.canSignFor(address), isTrue);
     });
 
@@ -297,42 +297,41 @@ void main() {
       expect(await manager.canSignFor(_validG1), isFalse);
     });
 
-    test('keypair entry takes precedence over wallet of same address',
-        () async {
-      final adapter = RecordingWalletAdapter();
-      adapter.connected.add(
-        OZConnectedWallet(
-          address: _validG2,
-          walletId: 'w',
-          walletName: 'Test',
-        ),
-      );
-      final manager = _createManager(walletAdapter: adapter);
+    test(
+      'keypair entry takes precedence over wallet of same address',
+      () async {
+        final adapter = RecordingWalletAdapter();
+        adapter.connected.add(
+          OZConnectedWallet(
+            address: _validG2,
+            walletId: 'w',
+            walletName: 'Test',
+          ),
+        );
+        final manager = _createManager(walletAdapter: adapter);
 
-      // canSignFor returns true regardless of which source resolves.
-      expect(await manager.canSignFor(_validG2), isTrue);
+        // canSignFor returns true regardless of which source resolves.
+        expect(await manager.canSignFor(_validG2), isTrue);
 
-      // get() returns the keypair entry once a keypair is added for the
-      // same address, demonstrating precedence.
-      final keypair = KeyPair.random();
-      // addFromSecret only stores by the keypair's own G-address; we
-      // verify precedence by adding a *real* signer for whichever
-      // address its keypair derives.
-      final keypairAddr =
-          await manager.addFromSecret(keypair.secretSeed);
-      // For that keypair address, the wallet adapter reports nothing,
-      // so the keypair entry resolves through get().
-      final info = await manager.get(keypairAddr);
-      expect(info!.type, equals(OZExternalSignerType.keypair));
-    });
+        // get() returns the keypair entry once a keypair is added for the
+        // same address, demonstrating precedence.
+        final keypair = KeyPair.random();
+        // addFromSecret only stores by the keypair's own G-address; we
+        // verify precedence by adding a *real* signer for whichever
+        // address its keypair derives.
+        final keypairAddr = await manager.addFromSecret(keypair.secretSeed);
+        // For that keypair address, the wallet adapter reports nothing,
+        // so the keypair entry resolves through get().
+        final info = await manager.get(keypairAddr);
+        expect(info!.type, equals(OZExternalSignerType.keypair));
+      },
+    );
   });
   group('signAuthEntry', () {
-    test('keypair signs SHA-256 of preimage with Ed25519',
-        () async {
+    test('keypair signs SHA-256 of preimage with Ed25519', () async {
       final manager = _createManager();
       final keypair = KeyPair.random();
-      final address =
-          await manager.addFromSecret(keypair.secretSeed);
+      final address = await manager.addFromSecret(keypair.secretSeed);
 
       // Construct an arbitrary preimage and verify the SDK signs the
       // SHA-256 hash of those bytes. We do this by directly verifying the
@@ -344,18 +343,15 @@ void main() {
       final sig = base64Decode(result.signedAuthEntry);
       expect(sig.length, equals(64));
 
-      final hash =
-          Uint8List.fromList(crypto.sha256.convert(preimage).bytes);
+      final hash = Uint8List.fromList(crypto.sha256.convert(preimage).bytes);
       expect(keypair.verify(hash, sig), isTrue);
       expect(result.signerAddress, equals(address));
     });
 
-    test('keypair: invalid base64 preimage throws SigningFailed',
-        () async {
+    test('keypair: invalid base64 preimage throws SigningFailed', () async {
       final manager = _createManager();
       final keypair = KeyPair.random();
-      final address =
-          await manager.addFromSecret(keypair.secretSeed);
+      final address = await manager.addFromSecret(keypair.secretSeed);
 
       await expectLater(
         () => manager.signAuthEntry(address, '!!!not base64!!!'),
@@ -364,34 +360,35 @@ void main() {
     });
 
     test(
-        'wallet path forwards networkPassphrase and address to adapter',
-        () async {
-      final adapter = RecordingWalletAdapter();
-      adapter.connected.add(
-        OZConnectedWallet(
-          address: _validG1,
-          walletId: 'w',
-          walletName: 'Test',
-        ),
-      );
-      adapter.signAuthEntryResponses.add(
-        OZSignAuthEntryResult(
-          signedAuthEntry: base64Encode(Uint8List(64)),
-          signerAddress: _validG1,
-        ),
-      );
-      final manager = _createManager(walletAdapter: adapter);
+      'wallet path forwards networkPassphrase and address to adapter',
+      () async {
+        final adapter = RecordingWalletAdapter();
+        adapter.connected.add(
+          OZConnectedWallet(
+            address: _validG1,
+            walletId: 'w',
+            walletName: 'Test',
+          ),
+        );
+        adapter.signAuthEntryResponses.add(
+          OZSignAuthEntryResult(
+            signedAuthEntry: base64Encode(Uint8List(64)),
+            signerAddress: _validG1,
+          ),
+        );
+        final manager = _createManager(walletAdapter: adapter);
 
-      final preimageB64 = base64Encode(Uint8List(32));
-      await manager.signAuthEntry(_validG1, preimageB64);
+        final preimageB64 = base64Encode(Uint8List(32));
+        await manager.signAuthEntry(_validG1, preimageB64);
 
-      expect(adapter.signAuthEntryCalls.length, equals(1));
-      final call = adapter.signAuthEntryCalls.single;
-      expect(call.preimageXdr, equals(preimageB64));
-      expect(call.options, isNotNull);
-      expect(call.options!.networkPassphrase, equals(_testNetworkPassphrase));
-      expect(call.options!.address, equals(_validG1));
-    });
+        expect(adapter.signAuthEntryCalls.length, equals(1));
+        final call = adapter.signAuthEntryCalls.single;
+        expect(call.preimageXdr, equals(preimageB64));
+        expect(call.options, isNotNull);
+        expect(call.options!.networkPassphrase, equals(_testNetworkPassphrase));
+        expect(call.options!.address, equals(_validG1));
+      },
+    );
 
     test('no signer registered throws SmartAccountSignerNotFound', () async {
       final manager = _createManager();
@@ -401,8 +398,7 @@ void main() {
       );
     });
 
-    test(
-        'keypair takes precedence: wallet adapter is NOT consulted', () async {
+    test('keypair takes precedence: wallet adapter is NOT consulted', () async {
       final adapter = RecordingWalletAdapter();
       // Provision the wallet adapter so it would also report canSign for
       // a keypair address. We then add a keypair for that same address
@@ -410,8 +406,7 @@ void main() {
       final manager = _createManager(walletAdapter: adapter);
 
       final keypair = KeyPair.random();
-      final address =
-          await manager.addFromSecret(keypair.secretSeed);
+      final address = await manager.addFromSecret(keypair.secretSeed);
 
       adapter.connected.add(
         OZConnectedWallet(
@@ -429,30 +424,30 @@ void main() {
     });
 
     test(
-        'wallet adapter throws: error wrapped as SmartAccountTransactionSigningFailed',
-        () async {
-      final adapter = RecordingWalletAdapter();
-      adapter.connected.add(
-        OZConnectedWallet(
-          address: _validG1,
-          walletId: 'w',
-          walletName: 'Test',
-        ),
-      );
-      adapter.signAuthEntryResponses.add(StateError('bridge error'));
-      final manager = _createManager(walletAdapter: adapter);
+      'wallet adapter throws: error wrapped as SmartAccountTransactionSigningFailed',
+      () async {
+        final adapter = RecordingWalletAdapter();
+        adapter.connected.add(
+          OZConnectedWallet(
+            address: _validG1,
+            walletId: 'w',
+            walletName: 'Test',
+          ),
+        );
+        adapter.signAuthEntryResponses.add(StateError('bridge error'));
+        final manager = _createManager(walletAdapter: adapter);
 
-      await expectLater(
-        () => manager.signAuthEntry(_validG1, base64Encode(Uint8List(32))),
-        throwsA(isA<SmartAccountTransactionSigningFailed>()),
-      );
-    });
+        await expectLater(
+          () => manager.signAuthEntry(_validG1, base64Encode(Uint8List(32))),
+          throwsA(isA<SmartAccountTransactionSigningFailed>()),
+        );
+      },
+    );
 
     test('result carries base64-encoded signature', () async {
       final manager = _createManager();
       final keypair = KeyPair.random();
-      final address =
-          await manager.addFromSecret(keypair.secretSeed);
+      final address = await manager.addFromSecret(keypair.secretSeed);
 
       final result = await manager.signAuthEntry(
         address,
@@ -467,8 +462,7 @@ void main() {
     test('result.signerAddress matches the requested address', () async {
       final manager = _createManager();
       final keypair = KeyPair.random();
-      final address =
-          await manager.addFromSecret(keypair.secretSeed);
+      final address = await manager.addFromSecret(keypair.secretSeed);
 
       final result = await manager.signAuthEntry(
         address,
@@ -479,21 +473,15 @@ void main() {
     });
   });
   group('getAll / get / hasSigners', () {
-    test('getAll returns keypair signers first, then wallets',
-        () async {
+    test('getAll returns keypair signers first, then wallets', () async {
       final adapter = RecordingWalletAdapter();
       adapter.connected.add(
-        OZConnectedWallet(
-          address: _validG1,
-          walletId: 'w1',
-          walletName: 'W1',
-        ),
+        OZConnectedWallet(address: _validG1, walletId: 'w1', walletName: 'W1'),
       );
       final manager = _createManager(walletAdapter: adapter);
 
       final keypair = KeyPair.random();
-      final keypairAddr =
-          await manager.addFromSecret(keypair.secretSeed);
+      final keypairAddr = await manager.addFromSecret(keypair.secretSeed);
 
       final all = await manager.getAll();
       expect(all.length, equals(2));
@@ -505,56 +493,57 @@ void main() {
       expect(all.last.address, equals(_validG1));
     });
 
-    test('getAll skips wallet entries when same address is also keypair',
-        () async {
-      final adapter = RecordingWalletAdapter();
-      final manager = _createManager(walletAdapter: adapter);
+    test(
+      'getAll skips wallet entries when same address is also keypair',
+      () async {
+        final adapter = RecordingWalletAdapter();
+        final manager = _createManager(walletAdapter: adapter);
 
-      final keypair = KeyPair.random();
-      final address =
-          await manager.addFromSecret(keypair.secretSeed);
-      // Adapter also reports a wallet for the same address.
-      adapter.connected.add(
-        OZConnectedWallet(
-          address: address,
-          walletId: 'shadow',
-          walletName: 'Shadow',
-        ),
-      );
+        final keypair = KeyPair.random();
+        final address = await manager.addFromSecret(keypair.secretSeed);
+        // Adapter also reports a wallet for the same address.
+        adapter.connected.add(
+          OZConnectedWallet(
+            address: address,
+            walletId: 'shadow',
+            walletName: 'Shadow',
+          ),
+        );
 
-      final all = await manager.getAll();
-      expect(all.length, equals(1));
-      expect(all.single.type, equals(OZExternalSignerType.keypair));
-    });
+        final all = await manager.getAll();
+        expect(all.length, equals(1));
+        expect(all.single.type, equals(OZExternalSignerType.keypair));
+      },
+    );
 
-    test('get returns keypair entry when both keypair and wallet exist',
-        () async {
-      final adapter = RecordingWalletAdapter();
-      final manager = _createManager(walletAdapter: adapter);
+    test(
+      'get returns keypair entry when both keypair and wallet exist',
+      () async {
+        final adapter = RecordingWalletAdapter();
+        final manager = _createManager(walletAdapter: adapter);
 
-      final keypair = KeyPair.random();
-      final address =
-          await manager.addFromSecret(keypair.secretSeed);
-      adapter.connected.add(
-        OZConnectedWallet(
-          address: address,
-          walletId: 'shadow',
-          walletName: 'Shadow',
-        ),
-      );
+        final keypair = KeyPair.random();
+        final address = await manager.addFromSecret(keypair.secretSeed);
+        adapter.connected.add(
+          OZConnectedWallet(
+            address: address,
+            walletId: 'shadow',
+            walletName: 'Shadow',
+          ),
+        );
 
-      final info = await manager.get(address);
-      expect(info, isNotNull);
-      expect(info!.type, equals(OZExternalSignerType.keypair));
-    });
+        final info = await manager.get(address);
+        expect(info, isNotNull);
+        expect(info!.type, equals(OZExternalSignerType.keypair));
+      },
+    );
 
     test('hasSigners returns false on empty manager', () async {
       final manager = _createManager();
       expect(await manager.hasSigners(), isFalse);
     });
 
-    test('hasSigners returns true with a keypair or wallet present',
-        () async {
+    test('hasSigners returns true with a keypair or wallet present', () async {
       final manager = _createManager();
       final keypair = KeyPair.random();
       await manager.addFromSecret(keypair.secretSeed);
@@ -562,11 +551,7 @@ void main() {
 
       final adapter = RecordingWalletAdapter();
       adapter.connected.add(
-        OZConnectedWallet(
-          address: _validG2,
-          walletId: 'w',
-          walletName: 'W',
-        ),
+        OZConnectedWallet(address: _validG2, walletId: 'w', walletName: 'W'),
       );
       final manager2 = _createManager(walletAdapter: adapter);
       expect(await manager2.hasSigners(), isTrue);
@@ -579,14 +564,9 @@ void main() {
       final manager = _createManager(walletAdapter: adapter);
 
       final keypair = KeyPair.random();
-      final address =
-          await manager.addFromSecret(keypair.secretSeed);
+      final address = await manager.addFromSecret(keypair.secretSeed);
       adapter.connected.add(
-        OZConnectedWallet(
-          address: address,
-          walletId: 'w',
-          walletName: 'W',
-        ),
+        OZConnectedWallet(address: address, walletId: 'w', walletName: 'W'),
       );
 
       await manager.remove(address);
@@ -597,19 +577,20 @@ void main() {
       expect(adapter.disconnectByAddressCalls, contains(address));
     });
 
-    test('remove invokes adapter.disconnectByAddress unconditionally',
-        () async {
-      final adapter = RecordingWalletAdapter();
-      // No keypair, no wallet, but we still expect disconnectByAddress
-      // to be called (the contract is "remove what we can").
-      final manager = _createManager(walletAdapter: adapter);
+    test(
+      'remove invokes adapter.disconnectByAddress unconditionally',
+      () async {
+        final adapter = RecordingWalletAdapter();
+        // No keypair, no wallet, but we still expect disconnectByAddress
+        // to be called (the contract is "remove what we can").
+        final manager = _createManager(walletAdapter: adapter);
 
-      await manager.remove(_validG1);
-      expect(adapter.disconnectByAddressCalls, equals(<String>[_validG1]));
-    });
+        await manager.remove(_validG1);
+        expect(adapter.disconnectByAddressCalls, equals(<String>[_validG1]));
+      },
+    );
 
-    test('removeAll clears every keypair and disconnects adapter',
-        () async {
+    test('removeAll clears every keypair and disconnects adapter', () async {
       final adapter = RecordingWalletAdapter();
       final manager = _createManager(walletAdapter: adapter);
 
@@ -617,11 +598,7 @@ void main() {
       await manager.addFromSecret(KeyPair.random().secretSeed);
       await manager.addFromSecret(KeyPair.random().secretSeed);
       adapter.connected.add(
-        OZConnectedWallet(
-          address: _validG1,
-          walletId: 'w',
-          walletName: 'W',
-        ),
+        OZConnectedWallet(address: _validG1, walletId: 'w', walletName: 'W'),
       );
 
       await manager.removeAll();
@@ -633,29 +610,28 @@ void main() {
   });
   group('addEd25519FromRawKey', () {
     test(
-        'test_addEd25519FromRawKey_validBytes_storesKeypairAndReturnsPublicKey',
-        () {
-      final manager = _createManager();
-      final rawSeed = Uint8List.fromList(List<int>.generate(32, (i) => i));
+      'test_addEd25519FromRawKey_validBytes_storesKeypairAndReturnsPublicKey',
+      () {
+        final manager = _createManager();
+        final rawSeed = Uint8List.fromList(List<int>.generate(32, (i) => i));
 
-      final publicKey = manager.addEd25519FromRawKey(
-        secretKeyBytes: rawSeed,
-        verifierAddress: _validContractVerifier,
-      );
-
-      expect(publicKey.length, equals(32));
-      expect(
-        manager.canSignEd25519For(
+        final publicKey = manager.addEd25519FromRawKey(
+          secretKeyBytes: rawSeed,
           verifierAddress: _validContractVerifier,
-          publicKey: publicKey,
-        ),
-        isTrue,
-      );
-    });
+        );
 
-    test(
-        'test_addEd25519FromRawKey_tooShort_throwsInvalidInput',
-        () {
+        expect(publicKey.length, equals(32));
+        expect(
+          manager.canSignEd25519For(
+            verifierAddress: _validContractVerifier,
+            publicKey: publicKey,
+          ),
+          isTrue,
+        );
+      },
+    );
+
+    test('test_addEd25519FromRawKey_tooShort_throwsInvalidInput', () {
       final manager = _createManager();
 
       expect(
@@ -667,9 +643,7 @@ void main() {
       );
     });
 
-    test(
-        'test_addEd25519FromRawKey_tooLong_throwsInvalidInput',
-        () {
+    test('test_addEd25519FromRawKey_tooLong_throwsInvalidInput', () {
       final manager = _createManager();
 
       expect(
@@ -682,38 +656,39 @@ void main() {
     });
 
     test(
-        'test_addEd25519FromRawKey_sameKeyTwoVerifiers_storedAsDistinctEntries',
-        () {
-      final manager = _createManager();
-      final rawSeed = Uint8List.fromList(List<int>.generate(32, (i) => i));
+      'test_addEd25519FromRawKey_sameKeyTwoVerifiers_storedAsDistinctEntries',
+      () {
+        final manager = _createManager();
+        final rawSeed = Uint8List.fromList(List<int>.generate(32, (i) => i));
 
-      final pk1 = manager.addEd25519FromRawKey(
-        secretKeyBytes: rawSeed,
-        verifierAddress: _validContractVerifier,
-      );
-      final pk2 = manager.addEd25519FromRawKey(
-        secretKeyBytes: rawSeed,
-        verifierAddress: _validContractVerifier2,
-      );
-
-      // Both keys are equal (same keypair), but two distinct registry slots
-      // exist because the verifier addresses differ.
-      expect(pk1, orderedEquals(pk2));
-      expect(
-        manager.canSignEd25519For(
+        final pk1 = manager.addEd25519FromRawKey(
+          secretKeyBytes: rawSeed,
           verifierAddress: _validContractVerifier,
-          publicKey: pk1,
-        ),
-        isTrue,
-      );
-      expect(
-        manager.canSignEd25519For(
+        );
+        final pk2 = manager.addEd25519FromRawKey(
+          secretKeyBytes: rawSeed,
           verifierAddress: _validContractVerifier2,
-          publicKey: pk2,
-        ),
-        isTrue,
-      );
-    });
+        );
+
+        // Both keys are equal (same keypair), but two distinct registry slots
+        // exist because the verifier addresses differ.
+        expect(pk1, orderedEquals(pk2));
+        expect(
+          manager.canSignEd25519For(
+            verifierAddress: _validContractVerifier,
+            publicKey: pk1,
+          ),
+          isTrue,
+        );
+        expect(
+          manager.canSignEd25519For(
+            verifierAddress: _validContractVerifier2,
+            publicKey: pk2,
+          ),
+          isTrue,
+        );
+      },
+    );
   });
   group('canSignEd25519For', () {
     test('test_canSignEd25519For_registered_returnsTrue', () {
@@ -748,36 +723,37 @@ void main() {
   });
   group('signEd25519AuthDigest', () {
     test(
-        'test_signEd25519AuthDigest_registered_returnsValidSignature',
-        () async {
-      final manager = _createManager();
-      final rawSeed = Uint8List.fromList(List<int>.generate(32, (i) => i + 2));
-      final publicKey = manager.addEd25519FromRawKey(
-        secretKeyBytes: rawSeed,
-        verifierAddress: _validContractVerifier,
-      );
+      'test_signEd25519AuthDigest_registered_returnsValidSignature',
+      () async {
+        final manager = _createManager();
+        final rawSeed = Uint8List.fromList(
+          List<int>.generate(32, (i) => i + 2),
+        );
+        final publicKey = manager.addEd25519FromRawKey(
+          secretKeyBytes: rawSeed,
+          verifierAddress: _validContractVerifier,
+        );
 
-      final authDigest = Uint8List.fromList(
-        List<int>.generate(32, (i) => (i * 7) & 0xFF),
-      );
+        final authDigest = Uint8List.fromList(
+          List<int>.generate(32, (i) => (i * 7) & 0xFF),
+        );
 
-      final signature = await manager.signEd25519AuthDigest(
-        verifierAddress: _validContractVerifier,
-        publicKey: publicKey,
-        authDigest: authDigest,
-      );
+        final signature = await manager.signEd25519AuthDigest(
+          verifierAddress: _validContractVerifier,
+          publicKey: publicKey,
+          authDigest: authDigest,
+        );
 
-      expect(signature.length, equals(64));
+        expect(signature.length, equals(64));
 
-      // Verify the signature against the public key and the raw auth digest
-      // (no pre-hashing; Ed25519 signs the message directly).
-      final verifier = KeyPair.fromPublicKey(publicKey);
-      expect(verifier.verify(authDigest, signature), isTrue);
-    });
+        // Verify the signature against the public key and the raw auth digest
+        // (no pre-hashing; Ed25519 signs the message directly).
+        final verifier = KeyPair.fromPublicKey(publicKey);
+        expect(verifier.verify(authDigest, signature), isTrue);
+      },
+    );
 
-    test(
-        'test_signEd25519AuthDigest_unregistered_throwsValidation',
-        () async {
+    test('test_signEd25519AuthDigest_unregistered_throwsValidation', () async {
       final manager = _createManager();
       final randomKey = Uint8List.fromList(KeyPair.random().publicKey);
       final authDigest = Uint8List(32);
@@ -824,9 +800,7 @@ void main() {
     });
   });
   group('Ed25519 adapter precedence', () {
-    test(
-        'test_ed25519Adapter_takesPrecedenceForCanSignForTrue',
-        () async {
+    test('test_ed25519Adapter_takesPrecedenceForCanSignForTrue', () async {
       final keypair = KeyPair.random();
       final publicKey = Uint8List.fromList(keypair.publicKey);
 
@@ -858,81 +832,86 @@ void main() {
     });
 
     test(
-        'test_ed25519Adapter_falsyAdapterFallsBackToInProcessKeypair',
-        () async {
-      // Adapter injected at construction — claims it cannot sign for any key.
-      final manager = OZExternalSignerManager(
-        networkPassphrase: _testNetworkPassphrase,
-        ed25519Adapter: _NeverSignAdapter(),
-      );
-      final rawSeed = Uint8List.fromList(List<int>.generate(32, (i) => i + 4));
-      final publicKey = manager.addEd25519FromRawKey(
-        secretKeyBytes: rawSeed,
-        verifierAddress: _validContractVerifier,
-      );
+      'test_ed25519Adapter_falsyAdapterFallsBackToInProcessKeypair',
+      () async {
+        // Adapter injected at construction — claims it cannot sign for any key.
+        final manager = OZExternalSignerManager(
+          networkPassphrase: _testNetworkPassphrase,
+          ed25519Adapter: _NeverSignAdapter(),
+        );
+        final rawSeed = Uint8List.fromList(
+          List<int>.generate(32, (i) => i + 4),
+        );
+        final publicKey = manager.addEd25519FromRawKey(
+          secretKeyBytes: rawSeed,
+          verifierAddress: _validContractVerifier,
+        );
 
-      // canSignEd25519For still returns true via the in-memory fallback.
-      expect(
-        manager.canSignEd25519For(
+        // canSignEd25519For still returns true via the in-memory fallback.
+        expect(
+          manager.canSignEd25519For(
+            verifierAddress: _validContractVerifier,
+            publicKey: publicKey,
+          ),
+          isTrue,
+        );
+
+        final authDigest = Uint8List.fromList(
+          List<int>.generate(32, (i) => (i + 3) & 0xFF),
+        );
+        final signature = await manager.signEd25519AuthDigest(
           verifierAddress: _validContractVerifier,
           publicKey: publicKey,
-        ),
-        isTrue,
-      );
-
-      final authDigest = Uint8List.fromList(
-        List<int>.generate(32, (i) => (i + 3) & 0xFF),
-      );
-      final signature = await manager.signEd25519AuthDigest(
-        verifierAddress: _validContractVerifier,
-        publicKey: publicKey,
-        authDigest: authDigest,
-      );
-      final verifier = KeyPair.fromPublicKey(publicKey);
-      expect(verifier.verify(authDigest, signature), isTrue);
-    });
+          authDigest: authDigest,
+        );
+        final verifier = KeyPair.fromPublicKey(publicKey);
+        expect(verifier.verify(authDigest, signature), isTrue);
+      },
+    );
   });
   group('removeAll clears Ed25519 registrations', () {
     test(
-        'test_removeAll_clearsEd25519RegistrationsAlongsideWalletSigners',
-        () async {
-      final adapter = RecordingWalletAdapter();
-      final manager = _createManager(walletAdapter: adapter);
+      'test_removeAll_clearsEd25519RegistrationsAlongsideWalletSigners',
+      () async {
+        final adapter = RecordingWalletAdapter();
+        final manager = _createManager(walletAdapter: adapter);
 
-      // Register one wallet signer.
-      final walletKeypair = KeyPair.random();
-      await manager.addFromSecret(walletKeypair.secretSeed);
-      final walletAddress = walletKeypair.accountId;
+        // Register one wallet signer.
+        final walletKeypair = KeyPair.random();
+        await manager.addFromSecret(walletKeypair.secretSeed);
+        final walletAddress = walletKeypair.accountId;
 
-      // Register one Ed25519 signer.
-      final ed25519RawSeed =
-          Uint8List.fromList(List<int>.generate(32, (i) => i + 5));
-      final ed25519PublicKey = manager.addEd25519FromRawKey(
-        secretKeyBytes: ed25519RawSeed,
-        verifierAddress: _validContractVerifier,
-      );
-
-      // Confirm both are reachable before removeAll.
-      expect(await manager.canSignFor(walletAddress), isTrue);
-      expect(
-        manager.canSignEd25519For(
+        // Register one Ed25519 signer.
+        final ed25519RawSeed = Uint8List.fromList(
+          List<int>.generate(32, (i) => i + 5),
+        );
+        final ed25519PublicKey = manager.addEd25519FromRawKey(
+          secretKeyBytes: ed25519RawSeed,
           verifierAddress: _validContractVerifier,
-          publicKey: ed25519PublicKey,
-        ),
-        isTrue,
-      );
+        );
 
-      await manager.removeAll();
+        // Confirm both are reachable before removeAll.
+        expect(await manager.canSignFor(walletAddress), isTrue);
+        expect(
+          manager.canSignEd25519For(
+            verifierAddress: _validContractVerifier,
+            publicKey: ed25519PublicKey,
+          ),
+          isTrue,
+        );
 
-      expect(await manager.canSignFor(walletAddress), isFalse);
-      expect(
-        manager.canSignEd25519For(
-          verifierAddress: _validContractVerifier,
-          publicKey: ed25519PublicKey,
-        ),
-        isFalse,
-      );
-    });
+        await manager.removeAll();
+
+        expect(await manager.canSignFor(walletAddress), isFalse);
+        expect(
+          manager.canSignEd25519For(
+            verifierAddress: _validContractVerifier,
+            publicKey: ed25519PublicKey,
+          ),
+          isFalse,
+        );
+      },
+    );
   });
 
   group('OZExternalSignerInfo equality and hashCode', () {
@@ -989,14 +968,26 @@ void main() {
     });
 
     test('differentAddress_notEqual', () {
-      final a = OZExternalSignerInfo(address: _validG1, type: OZExternalSignerType.keypair);
-      final b = OZExternalSignerInfo(address: _validG2, type: OZExternalSignerType.keypair);
+      final a = OZExternalSignerInfo(
+        address: _validG1,
+        type: OZExternalSignerType.keypair,
+      );
+      final b = OZExternalSignerInfo(
+        address: _validG2,
+        type: OZExternalSignerType.keypair,
+      );
       expect(a == b, isFalse);
     });
 
     test('differentType_notEqual', () {
-      final a = OZExternalSignerInfo(address: _validG1, type: OZExternalSignerType.keypair);
-      final b = OZExternalSignerInfo(address: _validG1, type: OZExternalSignerType.wallet);
+      final a = OZExternalSignerInfo(
+        address: _validG1,
+        type: OZExternalSignerType.keypair,
+      );
+      final b = OZExternalSignerInfo(
+        address: _validG1,
+        type: OZExternalSignerType.wallet,
+      );
       expect(a == b, isFalse);
     });
 
@@ -1010,12 +1001,18 @@ void main() {
     });
 
     test('nonSignerInfoType_notEqual', () {
-      final a = OZExternalSignerInfo(address: _validG1, type: OZExternalSignerType.keypair);
+      final a = OZExternalSignerInfo(
+        address: _validG1,
+        type: OZExternalSignerType.keypair,
+      );
       expect(a == 'not-a-signer-info', isFalse);
     });
 
     test('identical_isEqual', () {
-      final a = OZExternalSignerInfo(address: _validG1, type: OZExternalSignerType.keypair);
+      final a = OZExternalSignerInfo(
+        address: _validG1,
+        type: OZExternalSignerType.keypair,
+      );
       expect(a == a, isTrue);
     });
   });
@@ -1023,7 +1020,9 @@ void main() {
   group('get (getSignerInfo) not-found', () {
     test('unknownAddress_returnsNull', () async {
       final manager = _createManager();
-      final info = await manager.get('GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54');
+      final info = await manager.get(
+        'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+      );
       expect(info, isNull);
     });
 
@@ -1036,5 +1035,4 @@ void main() {
       expect(info!.type, OZExternalSignerType.keypair);
     });
   });
-
 }

@@ -31,13 +31,23 @@ void main() {
       expect(input.offset, equals(encoded.length));
       expect(
         () => input.readInt(),
-        throwsA(isA<RangeError>().having((e) => e.message, 'message',
-            'XDR read of 4 bytes exceeds the 0 remaining bytes')),
+        throwsA(
+          isA<RangeError>().having(
+            (e) => e.message,
+            'message',
+            'XDR read of 4 bytes exceeds the 0 remaining bytes',
+          ),
+        ),
       );
       expect(
         () => input.readBytes(1),
-        throwsA(isA<RangeError>().having((e) => e.message, 'message',
-            'XDR byte count 1 exceeds the 0 remaining bytes')),
+        throwsA(
+          isA<RangeError>().having(
+            (e) => e.message,
+            'message',
+            'XDR byte count 1 exceeds the 0 remaining bytes',
+          ),
+        ),
       );
       expect(input.offset, equals(encoded.length));
     });

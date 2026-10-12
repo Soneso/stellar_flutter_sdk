@@ -11,36 +11,45 @@ void main() {
 
     setUp(() {
       sourceKeyPair = KeyPair.fromSecretSeed(
-          'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
+        'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
+      );
       sourceAccountId = sourceKeyPair.accountId;
       destinationKeyPair = KeyPair.fromSecretSeed(
-          'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY');
+        'SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY',
+      );
       destinationAccountId = destinationKeyPair.accountId;
     });
 
     group('BEGIN_SPONSORING_FUTURE_RESERVES Operation', () {
       test('toTxRep converts BEGIN_SPONSORING_FUTURE_RESERVES', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final sponsoredId = KeyPair.random().accountId;
-        final operation =
-            BeginSponsoringFutureReservesOperation(sponsoredId);
+        final operation = BeginSponsoringFutureReservesOperation(sponsoredId);
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep,
-            contains('tx.operations[0].body.type: BEGIN_SPONSORING_FUTURE_RESERVES'));
+        expect(
+          txRep,
+          contains(
+            'tx.operations[0].body.type: BEGIN_SPONSORING_FUTURE_RESERVES',
+          ),
+        );
         expect(txRep, contains('sponsoredID: $sponsoredId'));
       });
 
       test('fromTxRep parses BEGIN_SPONSORING_FUTURE_RESERVES', () {
         final sponsoredId = KeyPair.random().accountId;
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -66,23 +75,31 @@ signatures.len: 0
 
     group('END_SPONSORING_FUTURE_RESERVES Operation', () {
       test('toTxRep converts END_SPONSORING_FUTURE_RESERVES', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final operation = EndSponsoringFutureReservesOperation();
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep,
-            contains('tx.operations[0].body.type: END_SPONSORING_FUTURE_RESERVES'));
+        expect(
+          txRep,
+          contains(
+            'tx.operations[0].body.type: END_SPONSORING_FUTURE_RESERVES',
+          ),
+        );
       });
 
       test('fromTxRep parses END_SPONSORING_FUTURE_RESERVES', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -106,22 +123,27 @@ signatures.len: 0
 
     group('REVOKE_SPONSORSHIP Operation - Account', () {
       test('toTxRep converts REVOKE_SPONSORSHIP for account', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final accountToRevoke = KeyPair.random().accountId;
-        final operation =
-            RevokeSponsorshipOperationBuilder()
-                .revokeAccountSponsorship(accountToRevoke)
-                .build();
+        final operation = RevokeSponsorshipOperationBuilder()
+            .revokeAccountSponsorship(accountToRevoke)
+            .build();
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep, contains('tx.operations[0].body.type: REVOKE_SPONSORSHIP'));
+        expect(
+          txRep,
+          contains('tx.operations[0].body.type: REVOKE_SPONSORSHIP'),
+        );
         expect(txRep, contains('type: REVOKE_SPONSORSHIP_LEDGER_ENTRY'));
         expect(txRep, contains('ledgerKey.type: ACCOUNT'));
         expect(txRep, contains(accountToRevoke));
@@ -129,7 +151,8 @@ signatures.len: 0
 
       test('fromTxRep parses REVOKE_SPONSORSHIP for account', () {
         final accountToRevoke = KeyPair.random().accountId;
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -157,30 +180,36 @@ signatures.len: 0
 
     group('REVOKE_SPONSORSHIP Operation - Trustline', () {
       test('toTxRep converts REVOKE_SPONSORSHIP for trustline', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
         final asset = AssetTypeCreditAlphaNum4('USD', issuer.accountId);
-        final operation =
-            RevokeSponsorshipOperationBuilder()
-                .revokeTrustlineSponsorship(destinationAccountId, asset)
-                .build();
+        final operation = RevokeSponsorshipOperationBuilder()
+            .revokeTrustlineSponsorship(destinationAccountId, asset)
+            .build();
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep, contains('tx.operations[0].body.type: REVOKE_SPONSORSHIP'));
+        expect(
+          txRep,
+          contains('tx.operations[0].body.type: REVOKE_SPONSORSHIP'),
+        );
         expect(txRep, contains('ledgerKey.type: TRUSTLINE'));
         expect(txRep, contains('USD'));
       });
 
       test('fromTxRep parses REVOKE_SPONSORSHIP for trustline', () {
         final issuer = KeyPair.random();
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -209,29 +238,35 @@ signatures.len: 0
 
     group('REVOKE_SPONSORSHIP Operation - Offer', () {
       test('toTxRep converts REVOKE_SPONSORSHIP for offer', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final sellerId = KeyPair.random().accountId;
-        final operation =
-            RevokeSponsorshipOperationBuilder()
-                .revokeOfferSponsorship(sellerId, 12345)
-                .build();
+        final operation = RevokeSponsorshipOperationBuilder()
+            .revokeOfferSponsorship(sellerId, 12345)
+            .build();
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep, contains('tx.operations[0].body.type: REVOKE_SPONSORSHIP'));
+        expect(
+          txRep,
+          contains('tx.operations[0].body.type: REVOKE_SPONSORSHIP'),
+        );
         expect(txRep, contains('ledgerKey.type: OFFER'));
         expect(txRep, contains('offerID: 12345'));
       });
 
       test('fromTxRep parses REVOKE_SPONSORSHIP for offer', () {
         final sellerId = KeyPair.random().accountId;
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -260,27 +295,33 @@ signatures.len: 0
 
     group('REVOKE_SPONSORSHIP Operation - Data', () {
       test('toTxRep converts REVOKE_SPONSORSHIP for data entry', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
-        final operation =
-            RevokeSponsorshipOperationBuilder()
-                .revokeDataSponsorship(destinationAccountId, 'test_key')
-                .build();
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
+        final operation = RevokeSponsorshipOperationBuilder()
+            .revokeDataSponsorship(destinationAccountId, 'test_key')
+            .build();
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep, contains('tx.operations[0].body.type: REVOKE_SPONSORSHIP'));
+        expect(
+          txRep,
+          contains('tx.operations[0].body.type: REVOKE_SPONSORSHIP'),
+        );
         expect(txRep, contains('ledgerKey.type: DATA'));
         expect(txRep, contains('test_key'));
       });
 
       test('fromTxRep parses REVOKE_SPONSORSHIP for data entry', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -309,29 +350,35 @@ signatures.len: 0
 
     group('REVOKE_SPONSORSHIP Operation - Signer variations', () {
       test('toTxRep converts REVOKE_SPONSORSHIP for ed25519 signer', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final signerKey = KeyPair.random().accountId;
-        final operation =
-            RevokeSponsorshipOperationBuilder()
-                .revokeEd25519Signer(destinationAccountId, signerKey)
-                .build();
+        final operation = RevokeSponsorshipOperationBuilder()
+            .revokeEd25519Signer(destinationAccountId, signerKey)
+            .build();
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep, contains('tx.operations[0].body.type: REVOKE_SPONSORSHIP'));
+        expect(
+          txRep,
+          contains('tx.operations[0].body.type: REVOKE_SPONSORSHIP'),
+        );
         expect(txRep, contains('type: REVOKE_SPONSORSHIP_SIGNER'));
         expect(txRep, contains('signerKey: $signerKey'));
       });
 
       test('fromTxRep parses REVOKE_SPONSORSHIP for ed25519 signer', () {
         final signerKey = KeyPair.random().accountId;
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -359,21 +406,26 @@ signatures.len: 0
 
     group('CLAWBACK_CLAIMABLE_BALANCE Operation', () {
       test('toTxRep converts CLAWBACK_CLAIMABLE_BALANCE', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final balanceId =
             'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
         final operation = ClawbackClaimableBalanceOperation(balanceId);
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep,
-            contains('tx.operations[0].body.type: CLAWBACK_CLAIMABLE_BALANCE'));
+        expect(
+          txRep,
+          contains('tx.operations[0].body.type: CLAWBACK_CLAIMABLE_BALANCE'),
+        );
         expect(txRep, contains('balanceID.type: CLAIMABLE_BALANCE_ID_TYPE_V0'));
         expect(txRep, contains(balanceId));
       });
@@ -381,7 +433,8 @@ signatures.len: 0
       test('fromTxRep parses CLAWBACK_CLAIMABLE_BALANCE', () {
         final balanceId =
             'da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be';
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -407,128 +460,174 @@ signatures.len: 0
 
     group('CREATE_CLAIMABLE_BALANCE with complex predicates', () {
       test('toTxRep converts CREATE_CLAIMABLE_BALANCE with AND predicate', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
         final asset = AssetTypeCreditAlphaNum4('USD', issuer.accountId);
 
-        final pred1 =
-            XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL);
-        final pred2 =
-            XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME);
+        final pred1 = XdrClaimPredicate(
+          XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL,
+        );
+        final pred2 = XdrClaimPredicate(
+          XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME,
+        );
         pred2.absBefore = XdrInt64(BigInt.from(1234567890));
 
-        final andPredicate = XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_AND);
+        final andPredicate = XdrClaimPredicate(
+          XdrClaimPredicateType.CLAIM_PREDICATE_AND,
+        );
         andPredicate.andPredicates = [pred1, pred2];
 
         final claimant = Claimant(destinationAccountId, andPredicate);
 
-        final operation =
-            CreateClaimableBalanceOperation([claimant], asset, '100');
+        final operation = CreateClaimableBalanceOperation(
+          [claimant],
+          asset,
+          '100',
+        );
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep,
-            contains('tx.operations[0].body.type: CREATE_CLAIMABLE_BALANCE'));
+        expect(
+          txRep,
+          contains('tx.operations[0].body.type: CREATE_CLAIMABLE_BALANCE'),
+        );
         expect(txRep, contains('predicate.type: CLAIM_PREDICATE_AND'));
         expect(txRep, contains('andPredicates.len: 2'));
       });
 
       test('toTxRep converts CREATE_CLAIMABLE_BALANCE with OR predicate', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
         final asset = AssetTypeCreditAlphaNum4('USD', issuer.accountId);
 
-        final pred1 =
-            XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL);
-        final pred2 =
-            XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME);
+        final pred1 = XdrClaimPredicate(
+          XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL,
+        );
+        final pred2 = XdrClaimPredicate(
+          XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_RELATIVE_TIME,
+        );
         pred2.relBefore = XdrInt64(BigInt.from(3600));
 
-        final orPredicate = XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_OR);
+        final orPredicate = XdrClaimPredicate(
+          XdrClaimPredicateType.CLAIM_PREDICATE_OR,
+        );
         orPredicate.orPredicates = [pred1, pred2];
 
         final claimant = Claimant(destinationAccountId, orPredicate);
 
-        final operation =
-            CreateClaimableBalanceOperation([claimant], asset, '100');
+        final operation = CreateClaimableBalanceOperation(
+          [claimant],
+          asset,
+          '100',
+        );
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep,
-            contains('tx.operations[0].body.type: CREATE_CLAIMABLE_BALANCE'));
+        expect(
+          txRep,
+          contains('tx.operations[0].body.type: CREATE_CLAIMABLE_BALANCE'),
+        );
         expect(txRep, contains('predicate.type: CLAIM_PREDICATE_OR'));
         expect(txRep, contains('orPredicates.len: 2'));
       });
 
       test('toTxRep converts CREATE_CLAIMABLE_BALANCE with NOT predicate', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
         final asset = AssetTypeCreditAlphaNum4('USD', issuer.accountId);
 
-        final innerPred =
-            XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME);
+        final innerPred = XdrClaimPredicate(
+          XdrClaimPredicateType.CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME,
+        );
         innerPred.absBefore = XdrInt64(BigInt.from(9999999999));
 
-        final notPredicate = XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_NOT);
+        final notPredicate = XdrClaimPredicate(
+          XdrClaimPredicateType.CLAIM_PREDICATE_NOT,
+        );
         notPredicate.notPredicate = innerPred;
 
         final claimant = Claimant(destinationAccountId, notPredicate);
 
-        final operation =
-            CreateClaimableBalanceOperation([claimant], asset, '100');
+        final operation = CreateClaimableBalanceOperation(
+          [claimant],
+          asset,
+          '100',
+        );
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep,
-            contains('tx.operations[0].body.type: CREATE_CLAIMABLE_BALANCE'));
+        expect(
+          txRep,
+          contains('tx.operations[0].body.type: CREATE_CLAIMABLE_BALANCE'),
+        );
         expect(txRep, contains('predicate.type: CLAIM_PREDICATE_NOT'));
       });
     });
 
     group('PATH_PAYMENT_STRICT_SEND Operation', () {
       test('toTxRep converts PATH_PAYMENT_STRICT_SEND', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
         final usd = AssetTypeCreditAlphaNum4('USD', issuer.accountId);
 
         final operation = PathPaymentStrictSendOperationBuilder(
-            Asset.NATIVE, '1000', destinationAccountId, usd, '95').build();
+          Asset.NATIVE,
+          '1000',
+          destinationAccountId,
+          usd,
+          '95',
+        ).build();
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep,
-            contains('tx.operations[0].body.type: PATH_PAYMENT_STRICT_SEND'));
+        expect(
+          txRep,
+          contains('tx.operations[0].body.type: PATH_PAYMENT_STRICT_SEND'),
+        );
         expect(txRep, contains('sendAsset: XLM'));
         expect(txRep, contains('destMin:'));
       });
 
       test('fromTxRep parses PATH_PAYMENT_STRICT_SEND', () {
         final issuer = KeyPair.random();
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -558,20 +657,26 @@ signatures.len: 0
 
     group('SET_OPTIONS with preAuthTx signer', () {
       test('toTxRep converts SET_OPTIONS with preAuthTx signer', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final hash = Uint8List(32);
         for (int i = 0; i < 32; i++) {
           hash[i] = i * 2;
         }
-        final xdrSignerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
+        final xdrSignerKey = XdrSignerKey(
+          XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX,
+        );
         xdrSignerKey.preAuthTx = XdrUint256(hash);
 
-        final operation =
-            SetOptionsOperationBuilder().setSigner(xdrSignerKey, 15).build();
+        final operation = SetOptionsOperationBuilder()
+            .setSigner(xdrSignerKey, 15)
+            .build();
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -584,12 +689,17 @@ signatures.len: 0
 
     group('SET_OPTIONS with all fields populated', () {
       test('toTxRep converts SET_OPTIONS with all fields', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final signerKey = KeyPair.random();
-        final xdrSignerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
-        xdrSignerKey.ed25519 =
-            XdrUint256(KeyPair.fromAccountId(signerKey.accountId).publicKey);
+        final xdrSignerKey = XdrSignerKey(
+          XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519,
+        );
+        xdrSignerKey.ed25519 = XdrUint256(
+          KeyPair.fromAccountId(signerKey.accountId).publicKey,
+        );
 
         final operation = SetOptionsOperationBuilder()
             .setInflationDestination(destinationAccountId)
@@ -603,8 +713,9 @@ signatures.len: 0
             .setSigner(xdrSignerKey, 5)
             .build();
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -624,7 +735,8 @@ signatures.len: 0
 
       test('fromTxRep parses SET_OPTIONS with all fields', () {
         final signerKey = KeyPair.random().accountId;
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -671,11 +783,14 @@ signatures.len: 0
         Account(sourceAccountId, BigInt.from(2908908335136768));
         final payload = Uint8List.fromList([1, 2, 3, 4, 5]);
         final ed25519 = KeyPair.random();
-        final xdrPayload =
-            XdrSignedPayload(XdrUint256(ed25519.publicKey), XdrDataValue(payload));
+        final xdrPayload = XdrSignedPayload(
+          XdrUint256(ed25519.publicKey),
+          XdrDataValue(payload),
+        );
         final payloadStr = StrKey.encodeXdrSignedPayload(xdrPayload);
 
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -708,14 +823,20 @@ signatures.len: 0
       });
 
       test('toTxRep converts transaction with signed payload extra signer', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final payload = Uint8List.fromList([10, 20, 30]);
         final ed25519 = KeyPair.random();
 
-        final xdrSignerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD);
-        xdrSignerKey.signedPayload =
-            XdrSignedPayload(XdrUint256(ed25519.publicKey), XdrDataValue(payload));
+        final xdrSignerKey = XdrSignerKey(
+          XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD,
+        );
+        xdrSignerKey.signedPayload = XdrSignedPayload(
+          XdrUint256(ed25519.publicKey),
+          XdrDataValue(payload),
+        );
 
         final preconditions = TransactionPreconditions();
         preconditions.minSeqAge = 0;
@@ -723,14 +844,14 @@ signatures.len: 0
         preconditions.extraSigners = [xdrSignerKey];
 
         final operation = PaymentOperation(
-            MuxedAccount.fromAccountId(destinationAccountId)!,
-            Asset.NATIVE,
-            '100');
+          MuxedAccount.fromAccountId(destinationAccountId)!,
+          Asset.NATIVE,
+          '100',
+        );
 
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(operation)
-            .addPreconditions(preconditions)
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).addPreconditions(preconditions).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -744,15 +865,19 @@ signatures.len: 0
 
     group('Transaction with V0 envelope', () {
       test('TxRep handles transaction properly', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final operation = PaymentOperation(
-            MuxedAccount.fromAccountId(destinationAccountId)!,
-            Asset.NATIVE,
-            '100');
+          MuxedAccount.fromAccountId(destinationAccountId)!,
+          Asset.NATIVE,
+          '100',
+        );
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
 
@@ -767,15 +892,19 @@ signatures.len: 0
 
     group('Fee bump transaction with signatures', () {
       test('toTxRep converts fee bump with multiple signatures', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final operation = PaymentOperation(
-            MuxedAccount.fromAccountId(destinationAccountId)!,
-            Asset.NATIVE,
-            '100');
+          MuxedAccount.fromAccountId(destinationAccountId)!,
+          Asset.NATIVE,
+          '100',
+        );
 
-        final innerTx =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final innerTx = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         innerTx.sign(sourceKeyPair, Network.TESTNET);
 
@@ -795,7 +924,8 @@ signatures.len: 0
       });
 
       test('fromTxRep parses fee bump with inner and outer signatures', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX_FEE_BUMP
 feeBump.tx.feeSource: $sourceAccountId
 feeBump.tx.fee: 200
@@ -832,25 +962,28 @@ feeBump.signatures[0].signature: 1102030405060708090a0b0c0d0e0f10111213141516171
 
     group('Transaction with muxed fee source in fee bump', () {
       test('toTxRep converts fee bump with muxed fee source', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final muxedId = BigInt.from(9876543210);
         final muxedFeeSource = MuxedAccount(sourceAccountId, muxedId);
 
         final operation = PaymentOperation(
-            MuxedAccount.fromAccountId(destinationAccountId)!,
-            Asset.NATIVE,
-            '100');
+          MuxedAccount.fromAccountId(destinationAccountId)!,
+          Asset.NATIVE,
+          '100',
+        );
 
-        final innerTx =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final innerTx = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         innerTx.sign(sourceKeyPair, Network.TESTNET);
 
-        final feeBumpTx = FeeBumpTransactionBuilder(innerTx)
-            .setBaseFee(200)
-            .setMuxedFeeAccount(muxedFeeSource)
-            .build();
+        final feeBumpTx = FeeBumpTransactionBuilder(
+          innerTx,
+        ).setBaseFee(200).setMuxedFeeAccount(muxedFeeSource).build();
 
         final xdr = feeBumpTx.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
@@ -861,8 +994,11 @@ feeBump.signatures[0].signature: 1102030405060708090a0b0c0d0e0f10111213141516171
     });
 
     group('Error handling - missing fields in parsing', () {
-      test('throws on missing BEGIN_SPONSORING_FUTURE_RESERVES sponsoredID', () {
-        final txRep = '''
+      test(
+        'throws on missing BEGIN_SPONSORING_FUTURE_RESERVES sponsoredID',
+        () {
+          final txRep =
+              '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -876,14 +1012,16 @@ tx.operations[0].body.type: BEGIN_SPONSORING_FUTURE_RESERVES
 signatures.len: 0
 ''';
 
-        expect(
-          () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
-          throwsA(anything),
-        );
-      });
+          expect(
+            () => TxRep.transactionEnvelopeXdrBase64FromTxRep(txRep),
+            throwsA(anything),
+          );
+        },
+      );
 
       test('throws on missing REVOKE_SPONSORSHIP type', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -904,7 +1042,8 @@ signatures.len: 0
       });
 
       test('throws on invalid REVOKE_SPONSORSHIP ledger key type', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -926,7 +1065,8 @@ signatures.len: 0
       });
 
       test('throws on missing CLAWBACK_CLAIMABLE_BALANCE balanceID', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -949,7 +1089,8 @@ signatures.len: 0
 
       test('throws on missing PATH_PAYMENT_STRICT_SEND destMin', () {
         final issuer = KeyPair.random();
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -977,15 +1118,19 @@ signatures.len: 0
 
     group('Amount formatting with comments', () {
       test('_removeComment helper strips amount comments correctly', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final operation = PaymentOperation(
-            MuxedAccount.fromAccountId(destinationAccountId)!,
-            Asset.NATIVE,
-            '123.4567890');
+          MuxedAccount.fromAccountId(destinationAccountId)!,
+          Asset.NATIVE,
+          '123.4567890',
+        );
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
@@ -1009,7 +1154,8 @@ tx.operations[$i].body.bumpSequenceOp.bumpTo: ${BigInt.parse('9999999999999999')
 ''');
         }
 
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 500
@@ -1041,7 +1187,8 @@ tx.operations[$i].body.bumpSequenceOp.bumpTo: ${BigInt.parse('9999999999999999')
 ''');
         }
 
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 10000
@@ -1059,7 +1206,8 @@ signatures.len: 0
       });
 
       test('fromTxRep rejects too many operations', () {
-        final txRep = '''
+        final txRep =
+            '''
 type: ENVELOPE_TYPE_TX
 tx.sourceAccount: $sourceAccountId
 tx.fee: 100
@@ -1080,37 +1228,56 @@ signatures.len: 0
 
     group('Price edge cases', () {
       test('toTxRep converts MANAGE_SELL_OFFER with high precision price', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
         final usd = AssetTypeCreditAlphaNum4('USD', issuer.accountId);
 
         final operation = ManageSellOfferOperation(
-            Asset.NATIVE, usd, '1000', '123456789.1234567', '0');
+          Asset.NATIVE,
+          usd,
+          '1000',
+          '123456789.1234567',
+          '0',
+        );
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();
         final txRep = TxRep.fromTransactionEnvelopeXdrBase64(xdr);
 
-        expect(txRep, contains('tx.operations[0].body.type: MANAGE_SELL_OFFER'));
+        expect(
+          txRep,
+          contains('tx.operations[0].body.type: MANAGE_SELL_OFFER'),
+        );
         expect(txRep, contains('price.n:'));
         expect(txRep, contains('price.d:'));
       });
 
       test('toTxRep converts MANAGE_BUY_OFFER with fractional price', () {
-        final sourceAccount =
-            Account(sourceAccountId, BigInt.from(2908908335136768));
+        final sourceAccount = Account(
+          sourceAccountId,
+          BigInt.from(2908908335136768),
+        );
         final issuer = KeyPair.random();
         final usd = AssetTypeCreditAlphaNum4('USD', issuer.accountId);
 
         final operation = ManageBuyOfferOperation(
-            Asset.NATIVE, usd, '1000', '0.5', '0');
+          Asset.NATIVE,
+          usd,
+          '1000',
+          '0.5',
+          '0',
+        );
 
-        final transaction =
-            TransactionBuilder(sourceAccount).addOperation(operation).build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(operation).build();
 
         transaction.sign(sourceKeyPair, Network.TESTNET);
         final xdr = transaction.toEnvelopeXdrBase64();

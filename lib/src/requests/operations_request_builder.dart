@@ -57,7 +57,7 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// - [httpClient] HTTP client for making requests to Horizon
   /// - [serverURI] Base URI of the Horizon server
   OperationsRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["operations"]);
+    : super(httpClient, serverURI, ["operations"]);
 
   /// Requests specific uri and returns OperationResponse.
   /// This method is helpful for getting the links.
@@ -135,9 +135,13 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// Requests specific `uri` and returns Page of OperationResponse.
   /// This method is helpful for getting the next set of results.
   static Future<Page<OperationResponse>> requestExecute(
-      http.Client httpClient, Uri uri) async {
+    http.Client httpClient,
+    Uri uri,
+  ) async {
     return RequestBuilder.requestExecute<Page<OperationResponse>>(
-        httpClient, uri);
+      httpClient,
+      uri,
+    );
   }
 
   /// Allows to stream SSE events from horizon.
@@ -147,7 +151,8 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<OperationResponse> stream() {
     return streamEvents<OperationResponse>(
-        (json) => OperationResponse.fromJson(json));
+      (json) => OperationResponse.fromJson(json),
+    );
   }
 
   /// Build and execute the request.
@@ -168,7 +173,9 @@ class OperationsRequestBuilder extends RequestBuilder {
   /// ```
   Future<Page<OperationResponse>> execute() {
     return OperationsRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+      this.httpClient,
+      this.buildUri(),
+    );
   }
 
   /// Sets the cursor for pagination to start returning records from a specific point.

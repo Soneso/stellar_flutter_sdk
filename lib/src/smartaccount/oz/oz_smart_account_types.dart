@@ -172,7 +172,7 @@ final class OZExternalSigner extends OZSmartAccountSigner {
   /// the verifier address is invalid, or an [SmartAccountInvalidInput] exception when the
   /// key data is empty.
   OZExternalSigner(this.verifierAddress, Uint8List keyData)
-      : keyData = Uint8List.fromList(keyData) {
+    : keyData = Uint8List.fromList(keyData) {
     if (!StrKey.isValidContractId(verifierAddress)) {
       throw SmartAccountValidationException.invalidAddress(
         'Verifier address must be a valid contract address (C...), got: '
@@ -218,8 +218,9 @@ final class OZExternalSigner extends OZSmartAccountSigner {
       );
     }
     if (publicKey[0] != SmartAccountConstants.uncompressedPubkeyPrefix) {
-      final firstByteHex =
-          Util.bytesToHex(Uint8List.fromList([publicKey[0]])).toLowerCase();
+      final firstByteHex = Util.bytesToHex(
+        Uint8List.fromList([publicKey[0]]),
+      ).toLowerCase();
       throw SmartAccountValidationException.invalidInput(
         'publicKey',
         'WebAuthn public key must start with 0x04 (uncompressed format), '
@@ -234,8 +235,11 @@ final class OZExternalSigner extends OZSmartAccountSigner {
     }
     final keyData = Uint8List(publicKey.length + credentialId.length)
       ..setRange(0, publicKey.length, publicKey)
-      ..setRange(publicKey.length, publicKey.length + credentialId.length,
-          credentialId);
+      ..setRange(
+        publicKey.length,
+        publicKey.length + credentialId.length,
+        credentialId,
+      );
     return OZExternalSigner(verifierAddress, keyData);
   }
 
@@ -366,8 +370,7 @@ class OZConnectedState {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! OZConnectedState) return false;
-    return credentialId == other.credentialId &&
-        contractId == other.contractId;
+    return credentialId == other.credentialId && contractId == other.contractId;
   }
 
   @override

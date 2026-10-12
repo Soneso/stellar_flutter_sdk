@@ -20,7 +20,8 @@ enum AuthContractDataKeyKind {
   factory AuthContractDataKeyKind.fromValue(String value) {
     return AuthContractDataKeyKind.values.firstWhere(
       (e) => e.value == value,
-      orElse: () => throw ArgumentError('Unknown AuthContractDataKeyKind value: $value'),
+      orElse: () =>
+          throw ArgumentError('Unknown AuthContractDataKeyKind value: $value'),
     );
   }
 }
@@ -30,10 +31,7 @@ class AuthContractDataKey {
   final AuthContractDataKeyKind kind;
   final Address? counter;
 
-  const AuthContractDataKey._({
-    required this.kind,
-    this.counter,
-  });
+  const AuthContractDataKey._({required this.kind, this.counter});
   factory AuthContractDataKey.counter(Address value) {
     return AuthContractDataKey._(
       kind: AuthContractDataKeyKind.Counter,
@@ -57,9 +55,7 @@ class AuthContractDataKey {
 
     switch (kind) {
       case AuthContractDataKeyKind.Counter:
-        return AuthContractDataKey.counter(
-          Address.fromXdrSCVal(vec[1])
-        );
+        return AuthContractDataKey.counter(Address.fromXdrSCVal(vec[1]));
     }
   }
 
@@ -131,10 +127,7 @@ class AuthContract {
     bool restore = false,
     bool force = false,
   }) async {
-    final List<XdrSCVal> args = [
-      user.toXdrSCVal(),
-      XdrSCVal.forU32(value),
-    ];
+    final List<XdrSCVal> args = [user.toXdrSCVal(), XdrSCVal.forU32(value)];
 
     final methodOptions = MethodOptions(
       fee: baseFee,
@@ -160,10 +153,7 @@ class AuthContract {
     required int value,
     MethodOptions? methodOptions,
   }) async {
-    final List<XdrSCVal> args = [
-      user.toXdrSCVal(),
-      XdrSCVal.forU32(value),
-    ];
+    final List<XdrSCVal> args = [user.toXdrSCVal(), XdrSCVal.forU32(value)];
 
     return await _client.buildInvokeMethodTx(
       name: 'increment',

@@ -43,7 +43,8 @@ void main() {
 
   group('XdrAccountID factory method', () {
     test('forAccountId static method', () {
-      var accountId = 'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
+      var accountId =
+          'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H';
       var xdrAccountId = XdrAccountID.forAccountId(accountId);
 
       expect(xdrAccountId, isNotNull);
@@ -73,17 +74,22 @@ void main() {
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrAccountEntry.encode(output, original);
       var decoded = XdrAccountEntry.decode(
-        XdrDataInputStream(Uint8List.fromList(output.bytes)));
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
 
       expect(decoded.inflationDest, isNull);
     });
 
     test('with non-null inflationDest roundtrip', () {
       var pk1 = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
-      pk1.setEd25519(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x66))));
+      pk1.setEd25519(
+        XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x66))),
+      );
 
       var pk2 = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
-      pk2.setEd25519(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x77))));
+      pk2.setEd25519(
+        XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x77))),
+      );
 
       var original = XdrAccountEntry(
         XdrAccountID(pk1),
@@ -101,7 +107,8 @@ void main() {
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrAccountEntry.encode(output, original);
       var decoded = XdrAccountEntry.decode(
-        XdrDataInputStream(Uint8List.fromList(output.bytes)));
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
 
       expect(decoded.inflationDest, isNotNull);
     });
@@ -111,11 +118,15 @@ void main() {
       pk.setEd25519(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x88))));
 
       var signerKey1 = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
-      signerKey1.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x99)));
+      signerKey1.ed25519 = XdrUint256(
+        Uint8List.fromList(List<int>.filled(32, 0x99)),
+      );
       var signer1 = XdrSigner(signerKey1, XdrUint32(10));
 
       var signerKey2 = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_HASH_X);
-      signerKey2.hashX = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAA)));
+      signerKey2.hashX = XdrUint256(
+        Uint8List.fromList(List<int>.filled(32, 0xAA)),
+      );
       var signer2 = XdrSigner(signerKey2, XdrUint32(5));
 
       var original = XdrAccountEntry(
@@ -134,7 +145,8 @@ void main() {
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrAccountEntry.encode(output, original);
       var decoded = XdrAccountEntry.decode(
-        XdrDataInputStream(Uint8List.fromList(output.bytes)));
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
 
       expect(decoded.signers.length, equals(2));
       expect(decoded.signers[0].weight.uint32, equals(10));
@@ -161,7 +173,8 @@ void main() {
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrAccountEntry.encode(output, original);
       var decoded = XdrAccountEntry.decode(
-        XdrDataInputStream(Uint8List.fromList(output.bytes)));
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
 
       expect(decoded.homeDomain.string32, equals(''));
     });
@@ -186,25 +199,40 @@ void main() {
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrAccountEntry.encode(output, original);
       var decoded = XdrAccountEntry.decode(
-        XdrDataInputStream(Uint8List.fromList(output.bytes)));
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
 
-      expect(decoded.balance.int64, equals(BigInt.parse('9223372036854775807')));
-      expect(decoded.seqNum.sequenceNumber, equals(BigInt.parse('9223372036854775807')));
+      expect(
+        decoded.balance.int64,
+        equals(BigInt.parse('9223372036854775807')),
+      );
+      expect(
+        decoded.seqNum.sequenceNumber,
+        equals(BigInt.parse('9223372036854775807')),
+      );
     });
 
     test('full extension chain v1 -> v2 -> v3', () {
       var pk = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
       pk.setEd25519(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x13))));
 
-      var v3 = XdrAccountEntryV3(XdrExtensionPoint(0), XdrUint32(500), XdrUint64(BigInt.from(9999999)));
+      var v3 = XdrAccountEntryV3(
+        XdrExtensionPoint(0),
+        XdrUint32(500),
+        XdrUint64(BigInt.from(9999999)),
+      );
       var v2Ext = XdrAccountEntryV2Ext(3);
       v2Ext.v3 = v3;
       var v2 = XdrAccountEntryV2(XdrUint32(7), XdrUint32(4), [], v2Ext);
       var v1Ext = XdrAccountEntryV1Ext(2);
       v1Ext.v2 = v2;
       var v1 = XdrAccountEntryV1(
-        XdrLiabilities(XdrInt64(BigInt.from(500000)), XdrInt64(BigInt.from(300000))),
-        v1Ext);
+        XdrLiabilities(
+          XdrInt64(BigInt.from(500000)),
+          XdrInt64(BigInt.from(300000)),
+        ),
+        v1Ext,
+      );
       var ext = XdrAccountEntryExt(1);
       ext.v1 = v1;
 
@@ -224,7 +252,8 @@ void main() {
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrAccountEntry.encode(output, original);
       var decoded = XdrAccountEntry.decode(
-        XdrDataInputStream(Uint8List.fromList(output.bytes)));
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
 
       expect(decoded.ext.discriminant, equals(1));
       expect(decoded.ext.v1, isNotNull);
@@ -233,7 +262,10 @@ void main() {
       expect(decoded.ext.v1!.ext.v2!.ext.discriminant, equals(3));
       expect(decoded.ext.v1!.ext.v2!.ext.v3, isNotNull);
       expect(decoded.ext.v1!.ext.v2!.ext.v3!.seqLedger.uint32, equals(500));
-      expect(decoded.ext.v1!.ext.v2!.ext.v3!.seqTime.uint64, equals(BigInt.from(9999999)));
+      expect(
+        decoded.ext.v1!.ext.v2!.ext.v3!.seqTime.uint64,
+        equals(BigInt.from(9999999)),
+      );
     });
   });
 
@@ -248,22 +280,32 @@ void main() {
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrAccountEntryV1.encode(output, original);
       var decoded = XdrAccountEntryV1.decode(
-        XdrDataInputStream(Uint8List.fromList(output.bytes)));
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
 
-      expect(decoded.liabilities.buying.int64, equals(BigInt.parse('9223372036854775807')));
-      expect(decoded.liabilities.selling.int64, equals(BigInt.parse('9223372036854775807')));
+      expect(
+        decoded.liabilities.buying.int64,
+        equals(BigInt.parse('9223372036854775807')),
+      );
+      expect(
+        decoded.liabilities.selling.int64,
+        equals(BigInt.parse('9223372036854775807')),
+      );
     });
   });
 
   group('XdrAccountMergeResult edge cases', () {
     test('SUCCESS with zero balance', () {
-      var original = XdrAccountMergeResult(XdrAccountMergeResultCode.ACCOUNT_MERGE_SUCCESS);
+      var original = XdrAccountMergeResult(
+        XdrAccountMergeResultCode.ACCOUNT_MERGE_SUCCESS,
+      );
       original.sourceAccountBalance = XdrInt64(BigInt.zero);
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrAccountMergeResult.encode(output, original);
       var decoded = XdrAccountMergeResult.decode(
-        XdrDataInputStream(Uint8List.fromList(output.bytes)));
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
 
       expect(decoded.sourceAccountBalance!.int64, equals(BigInt.zero));
     });
@@ -271,12 +313,23 @@ void main() {
 
   group('XdrSetOptionsOp optional field combinations', () {
     test('with all fields null', () {
-      var original = XdrSetOptionsOp(null, null, null, null, null, null, null, null, null);
+      var original = XdrSetOptionsOp(
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      );
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSetOptionsOp.encode(output, original);
       var decoded = XdrSetOptionsOp.decode(
-        XdrDataInputStream(Uint8List.fromList(output.bytes)));
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
 
       expect(decoded.inflationDest, isNull);
       expect(decoded.clearFlags, isNull);
@@ -294,9 +347,21 @@ void main() {
       pk.setEd25519(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x55))));
 
       var signerKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519);
-      signerKey.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x66)));
+      signerKey.ed25519 = XdrUint256(
+        Uint8List.fromList(List<int>.filled(32, 0x66)),
+      );
 
-      var original = XdrSetOptionsOp(null, null, null, null, null, null, null, null, null);
+      var original = XdrSetOptionsOp(
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      );
       original.inflationDest = XdrAccountID(pk);
       original.clearFlags = XdrUint32(1);
       original.setFlags = XdrUint32(2);
@@ -310,7 +375,8 @@ void main() {
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSetOptionsOp.encode(output, original);
       var decoded = XdrSetOptionsOp.decode(
-        XdrDataInputStream(Uint8List.fromList(output.bytes)));
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
 
       expect(decoded.inflationDest, isNotNull);
       expect(decoded.clearFlags!.uint32, equals(1));
@@ -327,7 +393,17 @@ void main() {
       var pk = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
       pk.setEd25519(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x11))));
 
-      var original = XdrSetOptionsOp(null, null, null, null, null, null, null, null, null);
+      var original = XdrSetOptionsOp(
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+      );
       original.inflationDest = XdrAccountID(pk);
       original.clearFlags = XdrUint32(2);
       original.lowThreshold = XdrUint32(5);
@@ -335,7 +411,8 @@ void main() {
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrSetOptionsOp.encode(output, original);
       var decoded = XdrSetOptionsOp.decode(
-        XdrDataInputStream(Uint8List.fromList(output.bytes)));
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
 
       expect(decoded.inflationDest, isNotNull);
       expect(decoded.clearFlags!.uint32, equals(2));
@@ -356,7 +433,8 @@ void main() {
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrManageDataOp.encode(output, original);
       var decoded = XdrManageDataOp.decode(
-        XdrDataInputStream(Uint8List.fromList(output.bytes)));
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
 
       expect(decoded.dataName.string64, equals('testkey'));
       expect(decoded.dataValue, isNull);
@@ -366,11 +444,17 @@ void main() {
   group('XdrInflationResult edge cases', () {
     test('SUCCESS with multiple payouts', () {
       var pk1 = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
-      pk1.setEd25519(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xBB))));
+      pk1.setEd25519(
+        XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xBB))),
+      );
       var pk2 = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
-      pk2.setEd25519(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xCC))));
+      pk2.setEd25519(
+        XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xCC))),
+      );
 
-      var original = XdrInflationResult(XdrInflationResultCode.INFLATION_SUCCESS);
+      var original = XdrInflationResult(
+        XdrInflationResultCode.INFLATION_SUCCESS,
+      );
       original.payouts = [
         XdrInflationPayout(XdrAccountID(pk1), XdrInt64(BigInt.from(1000000))),
         XdrInflationPayout(XdrAccountID(pk2), XdrInt64(BigInt.from(2000000))),
@@ -379,7 +463,8 @@ void main() {
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrInflationResult.encode(output, original);
       var decoded = XdrInflationResult.decode(
-        XdrDataInputStream(Uint8List.fromList(output.bytes)));
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
 
       expect(decoded.payouts!.length, equals(2));
       expect(decoded.payouts![0].amount.int64, equals(BigInt.from(1000000)));
@@ -387,12 +472,15 @@ void main() {
     });
 
     test('NOT_TIME has null payouts', () {
-      var original = XdrInflationResult(XdrInflationResultCode.INFLATION_NOT_TIME);
+      var original = XdrInflationResult(
+        XdrInflationResultCode.INFLATION_NOT_TIME,
+      );
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrInflationResult.encode(output, original);
       var decoded = XdrInflationResult.decode(
-        XdrDataInputStream(Uint8List.fromList(output.bytes)));
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
 
       expect(decoded.payouts, isNull);
     });
@@ -401,12 +489,17 @@ void main() {
   group('XdrCreateClaimableBalanceOp edge cases', () {
     test('with empty claimants list', () {
       var asset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
-      var original = XdrCreateClaimableBalanceOp(asset, XdrInt64(BigInt.from(100)), []);
+      var original = XdrCreateClaimableBalanceOp(
+        asset,
+        XdrInt64(BigInt.from(100)),
+        [],
+      );
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrCreateClaimableBalanceOp.encode(output, original);
       var decoded = XdrCreateClaimableBalanceOp.decode(
-        XdrDataInputStream(Uint8List.fromList(output.bytes)));
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
 
       expect(decoded.claimants, isEmpty);
     });
@@ -415,23 +508,36 @@ void main() {
       var asset = XdrAsset(XdrAssetType.ASSET_TYPE_NATIVE);
 
       var pk1 = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
-      pk1.setEd25519(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x66))));
+      pk1.setEd25519(
+        XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x66))),
+      );
       var claimant1 = XdrClaimant(XdrClaimantType.CLAIMANT_TYPE_V0);
-      claimant1.v0 = XdrClaimantV0(XdrAccountID(pk1),
-        XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL));
+      claimant1.v0 = XdrClaimantV0(
+        XdrAccountID(pk1),
+        XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL),
+      );
 
       var pk2 = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
-      pk2.setEd25519(XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x77))));
+      pk2.setEd25519(
+        XdrUint256(Uint8List.fromList(List<int>.filled(32, 0x77))),
+      );
       var claimant2 = XdrClaimant(XdrClaimantType.CLAIMANT_TYPE_V0);
-      claimant2.v0 = XdrClaimantV0(XdrAccountID(pk2),
-        XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL));
+      claimant2.v0 = XdrClaimantV0(
+        XdrAccountID(pk2),
+        XdrClaimPredicate(XdrClaimPredicateType.CLAIM_PREDICATE_UNCONDITIONAL),
+      );
 
-      var original = XdrCreateClaimableBalanceOp(asset, XdrInt64(BigInt.from(1000000)), [claimant1, claimant2]);
+      var original = XdrCreateClaimableBalanceOp(
+        asset,
+        XdrInt64(BigInt.from(1000000)),
+        [claimant1, claimant2],
+      );
 
       XdrDataOutputStream output = XdrDataOutputStream();
       XdrCreateClaimableBalanceOp.encode(output, original);
       var decoded = XdrCreateClaimableBalanceOp.decode(
-        XdrDataInputStream(Uint8List.fromList(output.bytes)));
+        XdrDataInputStream(Uint8List.fromList(output.bytes)),
+      );
 
       expect(decoded.claimants.length, equals(2));
     });
@@ -466,7 +572,10 @@ void main() {
       muxedAccount.ed25519 = XdrUint256(Uint8List(32));
 
       muxedAccount.discriminant = XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519;
-      expect(muxedAccount.discriminant, equals(XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519));
+      expect(
+        muxedAccount.discriminant,
+        equals(XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519),
+      );
     });
 
     test('should set ed25519', () {
@@ -478,7 +587,9 @@ void main() {
     });
 
     test('should set med25519', () {
-      final muxedAccount = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519);
+      final muxedAccount = XdrMuxedAccount(
+        XdrCryptoKeyType.KEY_TYPE_MUXED_ED25519,
+      );
 
       final med25519 = XdrMuxedAccountMed25519(
         XdrUint64(BigInt.from(100)),
@@ -498,7 +609,10 @@ void main() {
 
       final newKey = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
       signer.key = newKey;
-      expect(signer.key.discriminant, equals(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX));
+      expect(
+        signer.key.discriminant,
+        equals(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX),
+      );
     });
 
     test('should set weight', () {

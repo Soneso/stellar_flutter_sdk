@@ -27,8 +27,7 @@ void main() {
       : 'https://rpc-futurenet.stellar.org';
   final sorobanServer = SorobanServer(rpcUrl);
   sorobanServer.enableLogging = true;
-  final sdk =
-      testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
+  final sdk = testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
 
   const authContractPath = 'test/wasm/soroban_auth_contract.wasm';
 
@@ -40,8 +39,12 @@ void main() {
     try {
       await sdk.accounts.account(accountId);
     } catch (_) {
-      await fundTestAccountAndAwaitVisibility(accountId,
-          rpc: sorobanServer, horizon: sdk, useFuturenet: testOn != 'testnet');
+      await fundTestAccountAndAwaitVisibility(
+        accountId,
+        rpc: sorobanServer,
+        horizon: sdk,
+        useFuturenet: testOn != 'testnet',
+      );
     }
   }
 
@@ -73,22 +76,29 @@ void main() {
   /// for [signerAccountId] — proving the useUpgradedAuth flag was sent on the
   /// wire and honored by the server (requires stellar-rpc v27.1.0+).
   void assertSimulationReturnedAddressV2(
-      AssembledTransaction assembled, String signerAccountId) {
+    AssembledTransaction assembled,
+    String signerAccountId,
+  ) {
     final tx = assembled.tx;
     assert(tx != null, 'Expected an assembled transaction');
     final ops = tx!.operations;
-    assert(ops.isNotEmpty && ops.first is InvokeHostFunctionOperation,
-        'Expected an InvokeHostFunctionOperation');
-    final authEntries = (ops.first as InvokeHostFunctionOperation).auth;
-    final hasV2 = authEntries.any((e) =>
-        e.credentials.arm ==
-            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2 &&
-        e.credentials.addressV2Credentials?.address.accountId ==
-            signerAccountId);
     assert(
-        hasV2,
-        'Simulation must return an ADDRESS_V2 auth entry for the invoker when '
-        'useUpgradedAuth is set (requires stellar-rpc v27.1.0+)');
+      ops.isNotEmpty && ops.first is InvokeHostFunctionOperation,
+      'Expected an InvokeHostFunctionOperation',
+    );
+    final authEntries = (ops.first as InvokeHostFunctionOperation).auth;
+    final hasV2 = authEntries.any(
+      (e) =>
+          e.credentials.arm ==
+              XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2 &&
+          e.credentials.addressV2Credentials?.address.accountId ==
+              signerAccountId,
+    );
+    assert(
+      hasV2,
+      'Simulation must return an ADDRESS_V2 auth entry for the invoker when '
+      'useUpgradedAuth is set (requires stellar-rpc v27.1.0+)',
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -100,55 +110,55 @@ void main() {
   // The required signer (the invoker) differs from the transaction source, so
   // simulation with useUpgradedAuth returns an ADDRESS_V2 auth entry for the
   // invoker, which is then signed with the address-bound preimage and submitted.
-  test(
-    'ADDRESS_V2 arm round-trip: build, sign, submit',
-    () async {
-      final sourceKp = KeyPair.random();
-      final invokerKp = KeyPair.random();
-      await fundAccount(sourceKp.accountId);
-      await fundAccount(invokerKp.accountId);
+  test('ADDRESS_V2 arm round-trip: build, sign, submit', () async {
+    final sourceKp = KeyPair.random();
+    final invokerKp = KeyPair.random();
+    await fundAccount(sourceKp.accountId);
+    await fundAccount(invokerKp.accountId);
 
-      final contractId = await deployAuthContract(sourceKp);
+    final contractId = await deployAuthContract(sourceKp);
 
-      final clientOptions = ClientOptions(
-        sourceAccountKeyPair: sourceKp,
-        contractId: contractId,
-        network: network,
-        rpcUrl: rpcUrl,
-        server: sorobanServer,
-        enableServerLogging: true,
-      );
-      final assembled = await AssembledTransaction.build(
-        options: AssembledTransactionOptions(
-          clientOptions: clientOptions,
-          // useUpgradedAuth requests ADDRESS_V2 credential entries; stellar-rpc
-          // v27.1.0+ honors the flag in recording mode.
-          methodOptions: MethodOptions(useUpgradedAuth: true),
-          method: 'increment',
-          arguments: [
-            Address.forAccountId(invokerKp.accountId).toXdrSCVal(),
-            XdrSCVal.forU32(42),
-          ],
-        ),
-      );
+    final clientOptions = ClientOptions(
+      sourceAccountKeyPair: sourceKp,
+      contractId: contractId,
+      network: network,
+      rpcUrl: rpcUrl,
+      server: sorobanServer,
+      enableServerLogging: true,
+    );
+    final assembled = await AssembledTransaction.build(
+      options: AssembledTransactionOptions(
+        clientOptions: clientOptions,
+        // useUpgradedAuth requests ADDRESS_V2 credential entries; stellar-rpc
+        // v27.1.0+ honors the flag in recording mode.
+        methodOptions: MethodOptions(useUpgradedAuth: true),
+        method: 'increment',
+        arguments: [
+          Address.forAccountId(invokerKp.accountId).toXdrSCVal(),
+          XdrSCVal.forU32(42),
+        ],
+      ),
+    );
 
-      // The invoker differs from the source, so simulation must return the
-      // invoker's entry with the ADDRESS_V2 arm already set — this proves the
-      // flag was sent on the wire and honored by the server.
-      assertSimulationReturnedAddressV2(assembled, invokerKp.accountId);
+    // The invoker differs from the source, so simulation must return the
+    // invoker's entry with the ADDRESS_V2 arm already set — this proves the
+    // flag was sent on the wire and honored by the server.
+    assertSimulationReturnedAddressV2(assembled, invokerKp.accountId);
 
-      final needsSigning = assembled.needsNonInvokerSigningBy();
-      assert(needsSigning.isNotEmpty,
-          'The invoker must be required to sign the ADDRESS_V2 auth entry');
-      await assembled.signAuthEntries(signerKeyPair: invokerKp);
+    final needsSigning = assembled.needsNonInvokerSigningBy();
+    assert(
+      needsSigning.isNotEmpty,
+      'The invoker must be required to sign the ADDRESS_V2 auth entry',
+    );
+    await assembled.signAuthEntries(signerKeyPair: invokerKp);
 
-      assembled.sign();
-      final response = await assembled.send();
-      assert(response.status == GetTransactionResponse.STATUS_SUCCESS,
-          'Expected SUCCESS, got ${response.status}');
-    },
-    timeout: const Timeout(Duration(minutes: 5)),
-  );
+    assembled.sign();
+    final response = await assembled.send();
+    assert(
+      response.status == GetTransactionResponse.STATUS_SUCCESS,
+      'Expected SUCCESS, got ${response.status}',
+    );
+  }, timeout: const Timeout(Duration(minutes: 5)));
 
   // Test 2: ADDRESS_V2 entry uses the address-bound preimage envelope type.
   //
@@ -195,8 +205,7 @@ void main() {
       var checkedV2 = false;
       for (final entry in invokeOp.auth) {
         final arm = entry.credentials.arm;
-        if (arm ==
-            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2) {
+        if (arm == XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2) {
           checkedV2 = true;
           final preimage = entry.buildPreimage(network);
           assert(
@@ -215,8 +224,10 @@ void main() {
           );
         }
       }
-      assert(checkedV2,
-          'Expected an ADDRESS_V2 auth entry to verify the address-bound preimage');
+      assert(
+        checkedV2,
+        'Expected an ADDRESS_V2 auth entry to verify the address-bound preimage',
+      );
     },
     timeout: const Timeout(Duration(minutes: 5)),
   );
@@ -226,71 +237,66 @@ void main() {
   // Signs the simulation-returned ADDRESS_V2 entry and verifies that the arm and
   // the non-void signature survive a toBase64EncodedXdrString /
   // fromBase64EncodedXdr cycle.
-  test(
-    'ADDRESS_V2 signed entry survives XDR round-trip',
-    () async {
-      final sourceKp = KeyPair.random();
-      final invokerKp = KeyPair.random();
-      await fundAccount(sourceKp.accountId);
-      await fundAccount(invokerKp.accountId);
+  test('ADDRESS_V2 signed entry survives XDR round-trip', () async {
+    final sourceKp = KeyPair.random();
+    final invokerKp = KeyPair.random();
+    await fundAccount(sourceKp.accountId);
+    await fundAccount(invokerKp.accountId);
 
-      final contractId = await deployAuthContract(sourceKp);
+    final contractId = await deployAuthContract(sourceKp);
 
-      final assembled = await AssembledTransaction.build(
-        options: AssembledTransactionOptions(
-          clientOptions: ClientOptions(
-            sourceAccountKeyPair: sourceKp,
-            contractId: contractId,
-            network: network,
-            rpcUrl: rpcUrl,
-            server: sorobanServer,
-          ),
-          // useUpgradedAuth requests ADDRESS_V2 credential entries; stellar-rpc
-          // v27.1.0+ honors the flag in recording mode.
-          methodOptions: MethodOptions(useUpgradedAuth: true),
-          method: 'increment',
-          arguments: [
-            Address.forAccountId(invokerKp.accountId).toXdrSCVal(),
-            XdrSCVal.forU32(7),
-          ],
+    final assembled = await AssembledTransaction.build(
+      options: AssembledTransactionOptions(
+        clientOptions: ClientOptions(
+          sourceAccountKeyPair: sourceKp,
+          contractId: contractId,
+          network: network,
+          rpcUrl: rpcUrl,
+          server: sorobanServer,
         ),
-      );
+        // useUpgradedAuth requests ADDRESS_V2 credential entries; stellar-rpc
+        // v27.1.0+ honors the flag in recording mode.
+        methodOptions: MethodOptions(useUpgradedAuth: true),
+        method: 'increment',
+        arguments: [
+          Address.forAccountId(invokerKp.accountId).toXdrSCVal(),
+          XdrSCVal.forU32(7),
+        ],
+      ),
+    );
 
-      // Simulation must return the invoker's entry as ADDRESS_V2; sign it with
-      // the address-bound preimage.
-      assertSimulationReturnedAddressV2(assembled, invokerKp.accountId);
-      await assembled.signAuthEntries(signerKeyPair: invokerKp);
+    // Simulation must return the invoker's entry as ADDRESS_V2; sign it with
+    // the address-bound preimage.
+    assertSimulationReturnedAddressV2(assembled, invokerKp.accountId);
+    await assembled.signAuthEntries(signerKeyPair: invokerKp);
 
-      final invokeOp =
-          assembled.tx!.operations.first as InvokeHostFunctionOperation;
-      var roundTripped = false;
-      for (final entry in invokeOp.auth) {
-        if (entry.credentials.arm !=
-            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2) {
-          continue;
-        }
-        roundTripped = true;
-        final b64 = entry.toBase64EncodedXdrString();
-        final restored = SorobanAuthorizationEntry.fromBase64EncodedXdr(b64);
-
-        assert(
-          restored.credentials.arm ==
-              XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
-          'Arm must be preserved through the XDR round-trip',
-        );
-        assert(
-          restored.credentials.addressV2Credentials != null,
-          'addressV2Credentials must be non-null after the round-trip',
-        );
-        assert(
-          restored.credentials.addressV2Credentials!.signature.discriminant !=
-              XdrSCValType.SCV_VOID,
-          'Signature must be non-void after signing and the XDR round-trip',
-        );
+    final invokeOp =
+        assembled.tx!.operations.first as InvokeHostFunctionOperation;
+    var roundTripped = false;
+    for (final entry in invokeOp.auth) {
+      if (entry.credentials.arm !=
+          XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2) {
+        continue;
       }
-      assert(roundTripped,
-          'Expected a signed ADDRESS_V2 entry to round-trip');
-    },
-    timeout: const Timeout(Duration(minutes: 5)),
-  );
+      roundTripped = true;
+      final b64 = entry.toBase64EncodedXdrString();
+      final restored = SorobanAuthorizationEntry.fromBase64EncodedXdr(b64);
+
+      assert(
+        restored.credentials.arm ==
+            XdrSorobanCredentialsType.SOROBAN_CREDENTIALS_ADDRESS_V2,
+        'Arm must be preserved through the XDR round-trip',
+      );
+      assert(
+        restored.credentials.addressV2Credentials != null,
+        'addressV2Credentials must be non-null after the round-trip',
+      );
+      assert(
+        restored.credentials.addressV2Credentials!.signature.discriminant !=
+            XdrSCValType.SCV_VOID,
+        'Signature must be non-void after signing and the XDR round-trip',
+      );
+    }
+    assert(roundTripped, 'Expected a signed ADDRESS_V2 entry to round-trip');
+  }, timeout: const Timeout(Duration(minutes: 5)));
 }

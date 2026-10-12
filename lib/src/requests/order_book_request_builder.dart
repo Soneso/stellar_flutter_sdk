@@ -71,7 +71,7 @@ class OrderBookRequestBuilder extends RequestBuilder {
   /// - [httpClient] HTTP client for making requests to Horizon
   /// - [serverURI] Base URI of the Horizon server
   OrderBookRequestBuilder(http.Client httpClient, Uri serverURI)
-      : super(httpClient, serverURI, ["order_book"]);
+    : super(httpClient, serverURI, ["order_book"]);
 
   /// Sets the asset being sold (base asset).
   ///
@@ -99,8 +99,9 @@ class OrderBookRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"selling_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"selling_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters.addAll({
+        "selling_asset_issuer": creditAlphaNumAsset.issuerId,
+      });
     }
     return this;
   }
@@ -131,8 +132,9 @@ class OrderBookRequestBuilder extends RequestBuilder {
     if (asset is AssetTypeCreditAlphaNum) {
       AssetTypeCreditAlphaNum creditAlphaNumAsset = asset;
       queryParameters.addAll({"buying_asset_code": creditAlphaNumAsset.code});
-      queryParameters
-          .addAll({"buying_asset_issuer": creditAlphaNumAsset.issuerId});
+      queryParameters.addAll({
+        "buying_asset_issuer": creditAlphaNumAsset.issuerId,
+      });
     }
     return this;
   }
@@ -140,7 +142,9 @@ class OrderBookRequestBuilder extends RequestBuilder {
   /// Requests specific `uri` and returns Page of OrderBookResponse.
   /// This method is helpful for getting the next set of results.
   static Future<OrderBookResponse> requestExecute(
-      http.Client httpClient, Uri uri) async {
+    http.Client httpClient,
+    Uri uri,
+  ) async {
     return RequestBuilder.requestExecute<OrderBookResponse>(httpClient, uri);
   }
 
@@ -151,7 +155,8 @@ class OrderBookRequestBuilder extends RequestBuilder {
   /// See: [Stellar developer docs](https://developers.stellar.org)
   Stream<OrderBookResponse> stream() {
     return streamEvents<OrderBookResponse>(
-        (json) => OrderBookResponse.fromJson(json));
+      (json) => OrderBookResponse.fromJson(json),
+    );
   }
 
   /// Builds and executes the request.
@@ -173,7 +178,9 @@ class OrderBookRequestBuilder extends RequestBuilder {
   /// ```
   Future<OrderBookResponse> execute() {
     return OrderBookRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri());
+      this.httpClient,
+      this.buildUri(),
+    );
   }
 
   /// Sets the maximum number of bids and asks to return.

@@ -128,13 +128,16 @@ void main() {
       return transaction.toEnvelopeXdrBase64();
     }
 
-
     group('validateChallenge - Valid Challenges', () {
       test('validates challenge with valid structure', () {
         final challenge = buildValidChallenge();
 
         expect(
-          () => webAuth.validateChallenge(challenge, clientKeyPair.accountId, null),
+          () => webAuth.validateChallenge(
+            challenge,
+            clientKeyPair.accountId,
+            null,
+          ),
           returnsNormally,
         );
       });
@@ -196,29 +199,40 @@ void main() {
 
         expect(
           () => webAuth.validateChallenge(
-              challenge, clientKeyPair.accountId, null),
-          throwsA(isA<ChallengeValidationError>().having(
-            (e) => e.toString(),
-            'message',
-            contains('value is missing'),
-          )),
+            challenge,
+            clientKeyPair.accountId,
+            null,
+          ),
+          throwsA(
+            isA<ChallengeValidationError>().having(
+              (e) => e.toString(),
+              'message',
+              contains('value is missing'),
+            ),
+          ),
         );
       });
 
       test('throws when the data value is not 64 bytes long', () {
-        final shortValue =
-            Uint8List.fromList(base64.encode(Uint8List(24)).codeUnits);
+        final shortValue = Uint8List.fromList(
+          base64.encode(Uint8List(24)).codeUnits,
+        );
         expect(shortValue.length, 32);
         final challenge = buildValidChallenge(nonceValue: shortValue);
 
         expect(
           () => webAuth.validateChallenge(
-              challenge, clientKeyPair.accountId, null),
-          throwsA(isA<ChallengeValidationError>().having(
-            (e) => e.toString(),
-            'message',
-            contains('expected a 64 byte base64-encoded value'),
-          )),
+            challenge,
+            clientKeyPair.accountId,
+            null,
+          ),
+          throwsA(
+            isA<ChallengeValidationError>().having(
+              (e) => e.toString(),
+              'message',
+              contains('expected a 64 byte base64-encoded value'),
+            ),
+          ),
         );
       });
 
@@ -228,43 +242,56 @@ void main() {
 
         expect(
           () => webAuth.validateChallenge(
-              challenge, clientKeyPair.accountId, null),
-          throwsA(isA<ChallengeValidationError>().having(
-            (e) => e.toString(),
-            'message',
-            contains('not base64-encoded'),
-          )),
+            challenge,
+            clientKeyPair.accountId,
+            null,
+          ),
+          throwsA(
+            isA<ChallengeValidationError>().having(
+              (e) => e.toString(),
+              'message',
+              contains('not base64-encoded'),
+            ),
+          ),
         );
       });
 
       test('throws when the decoded nonce is not 48 bytes long', () {
         // 64 base64 characters with two padding characters decode to 46 bytes.
-        final paddedValue =
-            Uint8List.fromList(('A' * 62 + '==').codeUnits);
+        final paddedValue = Uint8List.fromList(('A' * 62 + '==').codeUnits);
         final challenge = buildValidChallenge(nonceValue: paddedValue);
 
         expect(
           () => webAuth.validateChallenge(
-              challenge, clientKeyPair.accountId, null),
-          throwsA(isA<ChallengeValidationError>().having(
-            (e) => e.toString(),
-            'message',
-            contains('expected a 48 byte nonce'),
-          )),
+            challenge,
+            clientKeyPair.accountId,
+            null,
+          ),
+          throwsA(
+            isA<ChallengeValidationError>().having(
+              (e) => e.toString(),
+              'message',
+              contains('expected a 48 byte nonce'),
+            ),
+          ),
         );
       });
 
       test(
-          'throws a validation error when the web_auth_domain operation has no value',
-          () {
-        final challenge = buildValidChallenge(omitWebAuthDomainValue: true);
+        'throws a validation error when the web_auth_domain operation has no value',
+        () {
+          final challenge = buildValidChallenge(omitWebAuthDomainValue: true);
 
-        expect(
-          () => webAuth.validateChallenge(
-              challenge, clientKeyPair.accountId, null),
-          throwsA(isA<ChallengeValidationErrorInvalidWebAuthDomain>()),
-        );
-      });
+          expect(
+            () => webAuth.validateChallenge(
+              challenge,
+              clientKeyPair.accountId,
+              null,
+            ),
+            throwsA(isA<ChallengeValidationErrorInvalidWebAuthDomain>()),
+          );
+        },
+      );
     });
 
     group('validateChallenge - Time Bounds', () {
@@ -277,11 +304,13 @@ void main() {
             clientKeyPair.accountId,
             null,
           ),
-          throwsA(isA<ChallengeValidationErrorInvalidTimeBounds>().having(
-            (e) => e.toString(),
-            'message',
-            contains('missing time bounds'),
-          )),
+          throwsA(
+            isA<ChallengeValidationErrorInvalidTimeBounds>().having(
+              (e) => e.toString(),
+              'message',
+              contains('missing time bounds'),
+            ),
+          ),
         );
       });
 
@@ -295,11 +324,13 @@ void main() {
             clientKeyPair.accountId,
             null,
           ),
-          throwsA(isA<ChallengeValidationErrorInvalidTimeBounds>().having(
-            (e) => e.toString(),
-            'message',
-            contains('non-infinite time bounds'),
-          )),
+          throwsA(
+            isA<ChallengeValidationErrorInvalidTimeBounds>().having(
+              (e) => e.toString(),
+              'message',
+              contains('non-infinite time bounds'),
+            ),
+          ),
         );
       });
 
@@ -315,11 +346,13 @@ void main() {
             clientKeyPair.accountId,
             null,
           ),
-          throwsA(isA<ChallengeValidationErrorInvalidTimeBounds>().having(
-            (e) => e.toString(),
-            'message',
-            contains('invalid time bounds'),
-          )),
+          throwsA(
+            isA<ChallengeValidationErrorInvalidTimeBounds>().having(
+              (e) => e.toString(),
+              'message',
+              contains('invalid time bounds'),
+            ),
+          ),
         );
       });
 
@@ -349,11 +382,13 @@ void main() {
             clientKeyPair.accountId,
             null,
           ),
-          throwsA(isA<ChallengeValidationErrorInvalidTimeBounds>().having(
-            (e) => e.toString(),
-            'message',
-            contains('non-infinite time bounds'),
-          )),
+          throwsA(
+            isA<ChallengeValidationErrorInvalidTimeBounds>().having(
+              (e) => e.toString(),
+              'message',
+              contains('non-infinite time bounds'),
+            ),
+          ),
         );
       });
 
@@ -369,11 +404,13 @@ void main() {
             clientKeyPair.accountId,
             null,
           ),
-          throwsA(isA<ChallengeValidationErrorInvalidTimeBounds>().having(
-            (e) => e.toString(),
-            'message',
-            contains('missing time bounds'),
-          )),
+          throwsA(
+            isA<ChallengeValidationErrorInvalidTimeBounds>().having(
+              (e) => e.toString(),
+              'message',
+              contains('missing time bounds'),
+            ),
+          ),
         );
       });
     });
@@ -383,7 +420,9 @@ void main() {
         final challenge = buildValidChallenge();
         XdrTransactionEnvelope.fromEnvelopeXdrString(challenge);
 
-        final v0Envelope = XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0);
+        final v0Envelope = XdrTransactionEnvelope(
+          XdrEnvelopeType.ENVELOPE_TYPE_TX_V0,
+        );
         v0Envelope.v0 = XdrTransactionV0Envelope(
           XdrTransactionV0(
             XdrUint256(Uint8List(32)),
@@ -412,7 +451,10 @@ void main() {
 
     group('validateChallenge - Sequence Number', () {
       test('throws error for non-zero sequence number', () {
-        final sourceAccount = Account(serverKeyPair.accountId, BigInt.from(100));
+        final sourceAccount = Account(
+          serverKeyPair.accountId,
+          BigInt.from(100),
+        );
         final nonce = _generateNonce();
 
         final op = ManageDataOperationBuilder(
@@ -421,10 +463,9 @@ void main() {
         ).setSourceAccount(clientKeyPair.accountId).build();
 
         final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(op)
-            .addTimeBounds(TimeBounds(now, now + 300))
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(op).addTimeBounds(TimeBounds(now, now + 300)).build();
 
         transaction.sign(serverKeyPair, testNetwork);
         final challenge = transaction.toEnvelopeXdrBase64();
@@ -530,31 +571,31 @@ void main() {
 
         final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-        expect(
-          () {
-            TransactionBuilder(sourceAccount)
-                .addTimeBounds(TimeBounds(now, now + 300))
-                .build();
-          },
-          throwsException,
-        );
+        expect(() {
+          TransactionBuilder(
+            sourceAccount,
+          ).addTimeBounds(TimeBounds(now, now + 300)).build();
+        }, throwsException);
       });
 
-      test('throws error when first operation source account does not match client', () {
-        final wrongClientKeyPair = KeyPair.random();
-        final challenge = buildValidChallenge(
-          clientAccountId: wrongClientKeyPair.accountId,
-        );
+      test(
+        'throws error when first operation source account does not match client',
+        () {
+          final wrongClientKeyPair = KeyPair.random();
+          final challenge = buildValidChallenge(
+            clientAccountId: wrongClientKeyPair.accountId,
+          );
 
-        expect(
-          () => webAuth.validateChallenge(
-            challenge,
-            clientKeyPair.accountId,
-            null,
-          ),
-          throwsA(isA<ChallengeValidationErrorInvalidSourceAccount>()),
-        );
-      });
+          expect(
+            () => webAuth.validateChallenge(
+              challenge,
+              clientKeyPair.accountId,
+              null,
+            ),
+            throwsA(isA<ChallengeValidationErrorInvalidSourceAccount>()),
+          );
+        },
+      );
 
       test('throws error for operation with null source account', () {
         final sourceAccount = Account(serverKeyPair.accountId, BigInt.from(-1));
@@ -563,10 +604,9 @@ void main() {
         final op = ManageDataOperation('$serverHomeDomain auth', nonce);
 
         final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(op)
-            .addTimeBounds(TimeBounds(now, now + 300))
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(op).addTimeBounds(TimeBounds(now, now + 300)).build();
 
         transaction.sign(serverKeyPair, testNetwork);
         final challenge = transaction.toEnvelopeXdrBase64();
@@ -609,55 +649,64 @@ void main() {
         );
       });
 
-      test('throws error when client_domain operation has wrong source account', () {
-        final wrongClientDomainKeyPair = KeyPair.random();
-        final challenge = buildValidChallenge(
-          clientDomainAccountId: wrongClientDomainKeyPair.accountId,
-        );
+      test(
+        'throws error when client_domain operation has wrong source account',
+        () {
+          final wrongClientDomainKeyPair = KeyPair.random();
+          final challenge = buildValidChallenge(
+            clientDomainAccountId: wrongClientDomainKeyPair.accountId,
+          );
 
-        expect(
-          () => webAuth.validateChallenge(
-            challenge,
-            clientKeyPair.accountId,
-            KeyPair.random().accountId,
-          ),
-          throwsA(isA<ChallengeValidationErrorInvalidSourceAccount>()),
-        );
-      });
+          expect(
+            () => webAuth.validateChallenge(
+              challenge,
+              clientKeyPair.accountId,
+              KeyPair.random().accountId,
+            ),
+            throwsA(isA<ChallengeValidationErrorInvalidSourceAccount>()),
+          );
+        },
+      );
 
-      test('throws error when non-client_domain operation has wrong source account', () {
-        final sourceAccount = Account(serverKeyPair.accountId, BigInt.from(-1));
-        final nonce = _generateNonce();
+      test(
+        'throws error when non-client_domain operation has wrong source account',
+        () {
+          final sourceAccount = Account(
+            serverKeyPair.accountId,
+            BigInt.from(-1),
+          );
+          final nonce = _generateNonce();
 
-        final op1 = ManageDataOperationBuilder(
-          '$serverHomeDomain auth',
-          nonce,
-        ).setSourceAccount(clientKeyPair.accountId).build();
+          final op1 = ManageDataOperationBuilder(
+            '$serverHomeDomain auth',
+            nonce,
+          ).setSourceAccount(clientKeyPair.accountId).build();
 
-        final op2 = ManageDataOperationBuilder(
-          'web_auth_domain',
-          Uint8List.fromList('example.com'.codeUnits),
-        ).setSourceAccount(clientKeyPair.accountId).build();
+          final op2 = ManageDataOperationBuilder(
+            'web_auth_domain',
+            Uint8List.fromList('example.com'.codeUnits),
+          ).setSourceAccount(clientKeyPair.accountId).build();
 
-        final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(op1)
-            .addOperation(op2)
-            .addTimeBounds(TimeBounds(now, now + 300))
-            .build();
+          final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+          final transaction = TransactionBuilder(sourceAccount)
+              .addOperation(op1)
+              .addOperation(op2)
+              .addTimeBounds(TimeBounds(now, now + 300))
+              .build();
 
-        transaction.sign(serverKeyPair, testNetwork);
-        final challenge = transaction.toEnvelopeXdrBase64();
+          transaction.sign(serverKeyPair, testNetwork);
+          final challenge = transaction.toEnvelopeXdrBase64();
 
-        expect(
-          () => webAuth.validateChallenge(
-            challenge,
-            clientKeyPair.accountId,
-            null,
-          ),
-          throwsA(isA<ChallengeValidationErrorInvalidSourceAccount>()),
-        );
-      });
+          expect(
+            () => webAuth.validateChallenge(
+              challenge,
+              clientKeyPair.accountId,
+              null,
+            ),
+            throwsA(isA<ChallengeValidationErrorInvalidSourceAccount>()),
+          );
+        },
+      );
     });
 
     group('validateChallenge - Home Domain Validation', () {
@@ -671,10 +720,9 @@ void main() {
         ).setSourceAccount(clientKeyPair.accountId).build();
 
         final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(op)
-            .addTimeBounds(TimeBounds(now, now + 300))
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(op).addTimeBounds(TimeBounds(now, now + 300)).build();
 
         transaction.sign(serverKeyPair, testNetwork);
         final challenge = transaction.toEnvelopeXdrBase64();
@@ -699,10 +747,9 @@ void main() {
         ).setSourceAccount(clientKeyPair.accountId).build();
 
         final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(op)
-            .addTimeBounds(TimeBounds(now, now + 300))
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(op).addTimeBounds(TimeBounds(now, now + 300)).build();
 
         transaction.sign(serverKeyPair, testNetwork);
         final challenge = transaction.toEnvelopeXdrBase64();
@@ -835,10 +882,9 @@ void main() {
         ).setSourceAccount(clientKeyPair.accountId).build();
 
         final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(op)
-            .addTimeBounds(TimeBounds(now, now + 300))
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(op).addTimeBounds(TimeBounds(now, now + 300)).build();
 
         final challenge = transaction.toEnvelopeXdrBase64();
 
@@ -888,19 +934,24 @@ void main() {
         );
       });
 
-      test('validates challenge with multiple signatures (server + client)', () {
-        final challenge = buildValidChallenge();
-        final signedChallenge = webAuth.signTransaction(challenge, [clientKeyPair]);
+      test(
+        'validates challenge with multiple signatures (server + client)',
+        () {
+          final challenge = buildValidChallenge();
+          final signedChallenge = webAuth.signTransaction(challenge, [
+            clientKeyPair,
+          ]);
 
-        expect(
-          () => webAuth.validateChallenge(
-            signedChallenge,
-            clientKeyPair.accountId,
-            null,
-          ),
-          throwsA(isA<ChallengeValidationErrorInvalidSignature>()),
-        );
-      });
+          expect(
+            () => webAuth.validateChallenge(
+              signedChallenge,
+              clientKeyPair.accountId,
+              null,
+            ),
+            throwsA(isA<ChallengeValidationErrorInvalidSignature>()),
+          );
+        },
+      );
     });
 
     group('validateChallenge - Network Passphrase', () {
@@ -915,10 +966,9 @@ void main() {
         ).setSourceAccount(clientKeyPair.accountId).build();
 
         final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-        final transaction = TransactionBuilder(sourceAccount)
-            .addOperation(op)
-            .addTimeBounds(TimeBounds(now, now + 300))
-            .build();
+        final transaction = TransactionBuilder(
+          sourceAccount,
+        ).addOperation(op).addTimeBounds(TimeBounds(now, now + 300)).build();
 
         transaction.sign(serverKeyPair, wrongNetwork);
         final challenge = transaction.toEnvelopeXdrBase64();
@@ -968,17 +1018,20 @@ void main() {
       ).setSourceAccount(clientKeyPair.accountId).build();
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(op)
-          .addTimeBounds(TimeBounds(now, now + 300))
-          .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(op).addTimeBounds(TimeBounds(now, now + 300)).build();
 
       transaction.sign(serverKeyPair, testNetwork);
       final challenge = transaction.toEnvelopeXdrBase64();
 
-      final signedChallenge = webAuth.signTransaction(challenge, [clientKeyPair]);
+      final signedChallenge = webAuth.signTransaction(challenge, [
+        clientKeyPair,
+      ]);
 
-      final envelopeXdr = XdrTransactionEnvelope.fromEnvelopeXdrString(signedChallenge);
+      final envelopeXdr = XdrTransactionEnvelope.fromEnvelopeXdrString(
+        signedChallenge,
+      );
       expect(envelopeXdr.v1!.signatures.length, equals(2));
     });
 
@@ -992,22 +1045,23 @@ void main() {
       ).setSourceAccount(clientKeyPair.accountId).build();
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(op)
-          .addTimeBounds(TimeBounds(now, now + 300))
-          .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(op).addTimeBounds(TimeBounds(now, now + 300)).build();
 
       transaction.sign(serverKeyPair, testNetwork);
       final challenge = transaction.toEnvelopeXdrBase64();
 
       final signer1 = KeyPair.random();
       final signer2 = KeyPair.random();
-      final signedChallenge = webAuth.signTransaction(
-        challenge,
-        [signer1, signer2],
-      );
+      final signedChallenge = webAuth.signTransaction(challenge, [
+        signer1,
+        signer2,
+      ]);
 
-      final envelopeXdr = XdrTransactionEnvelope.fromEnvelopeXdrString(signedChallenge);
+      final envelopeXdr = XdrTransactionEnvelope.fromEnvelopeXdrString(
+        signedChallenge,
+      );
       expect(envelopeXdr.v1!.signatures.length, equals(3));
     });
 
@@ -1021,10 +1075,9 @@ void main() {
       ).setSourceAccount(clientKeyPair.accountId).build();
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(op)
-          .addTimeBounds(TimeBounds(now, now + 300))
-          .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(op).addTimeBounds(TimeBounds(now, now + 300)).build();
 
       transaction.sign(serverKeyPair, testNetwork);
       final challenge = transaction.toEnvelopeXdrBase64();
@@ -1033,14 +1086,20 @@ void main() {
       final challengeWith1Sig = webAuth.signTransaction(challenge, [signer1]);
 
       final signer2 = KeyPair.random();
-      final challengeWith2Sigs = webAuth.signTransaction(challengeWith1Sig, [signer2]);
+      final challengeWith2Sigs = webAuth.signTransaction(challengeWith1Sig, [
+        signer2,
+      ]);
 
-      final envelopeXdr = XdrTransactionEnvelope.fromEnvelopeXdrString(challengeWith2Sigs);
+      final envelopeXdr = XdrTransactionEnvelope.fromEnvelopeXdrString(
+        challengeWith2Sigs,
+      );
       expect(envelopeXdr.v1!.signatures.length, equals(3));
     });
 
     test('signTransaction throws error for invalid transaction type', () {
-      final v0Envelope = XdrTransactionEnvelope(XdrEnvelopeType.ENVELOPE_TYPE_TX_V0);
+      final v0Envelope = XdrTransactionEnvelope(
+        XdrEnvelopeType.ENVELOPE_TYPE_TX_V0,
+      );
       v0Envelope.v0 = XdrTransactionV0Envelope(
         XdrTransactionV0(
           XdrUint256(Uint8List(32)),
@@ -1101,20 +1160,16 @@ void main() {
       ).setSourceAccount(muxedAccount.accountId).build();
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(op)
-          .addTimeBounds(TimeBounds(now, now + 300))
-          .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(op).addTimeBounds(TimeBounds(now, now + 300)).build();
 
       transaction.sign(serverKeyPair, testNetwork);
       final challenge = transaction.toEnvelopeXdrBase64();
 
       expect(
-        () => webAuth.validateChallenge(
-          challenge,
-          muxedAccount.accountId,
-          null,
-        ),
+        () =>
+            webAuth.validateChallenge(challenge, muxedAccount.accountId, null),
         returnsNormally,
       );
     });
@@ -1134,20 +1189,16 @@ void main() {
       ).setSourceAccount(muxedAccount.accountId).build();
 
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      final transaction = TransactionBuilder(sourceAccount)
-          .addOperation(op)
-          .addTimeBounds(TimeBounds(now, now + 300))
-          .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(op).addTimeBounds(TimeBounds(now, now + 300)).build();
 
       transaction.sign(serverKeyPair, testNetwork);
       final challenge = transaction.toEnvelopeXdrBase64();
 
       expect(
-        () => webAuth.validateChallenge(
-          challenge,
-          muxedAccount.accountId,
-          null,
-        ),
+        () =>
+            webAuth.validateChallenge(challenge, muxedAccount.accountId, null),
         returnsNormally,
       );
     });
@@ -1164,19 +1215,16 @@ void main() {
 
     test('MissingClientDomainException has correct message', () {
       final exception = MissingClientDomainException();
-      expect(
-        exception.toString(),
-        contains('clientDomain is required'),
-      );
+      expect(exception.toString(), contains('clientDomain is required'));
     });
 
-    test('MissingTransactionInChallengeResponseException has correct message', () {
-      final exception = MissingTransactionInChallengeResponseException();
-      expect(
-        exception.toString(),
-        contains('Missing transaction'),
-      );
-    });
+    test(
+      'MissingTransactionInChallengeResponseException has correct message',
+      () {
+        final exception = MissingTransactionInChallengeResponseException();
+        expect(exception.toString(), contains('Missing transaction'));
+      },
+    );
 
     test('NoWebAuthEndpointFoundException has correct message', () {
       final exception = NoWebAuthEndpointFoundException('example.com');
@@ -1191,31 +1239,44 @@ void main() {
     });
 
     test('NoClientDomainSigningKeyFoundException has correct message', () {
-      final exception = NoClientDomainSigningKeyFoundException('client.example.com');
+      final exception = NoClientDomainSigningKeyFoundException(
+        'client.example.com',
+      );
       expect(exception.toString(), contains('client.example.com'));
       expect(exception.toString(), contains('SIGNING_KEY'));
     });
 
-    test('SubmitCompletedChallengeTimeoutResponseException has correct message', () {
-      final exception = SubmitCompletedChallengeTimeoutResponseException();
-      expect(exception.toString(), contains('504'));
-    });
+    test(
+      'SubmitCompletedChallengeTimeoutResponseException has correct message',
+      () {
+        final exception = SubmitCompletedChallengeTimeoutResponseException();
+        expect(exception.toString(), contains('504'));
+      },
+    );
 
-    test('SubmitCompletedChallengeUnknownResponseException has correct message', () {
-      final exception = SubmitCompletedChallengeUnknownResponseException(
-        500,
-        'Internal Server Error',
-      );
-      expect(exception.toString(), contains('500'));
-      expect(exception.code, equals(500));
-      expect(exception.body, equals('Internal Server Error'));
-    });
+    test(
+      'SubmitCompletedChallengeUnknownResponseException has correct message',
+      () {
+        final exception = SubmitCompletedChallengeUnknownResponseException(
+          500,
+          'Internal Server Error',
+        );
+        expect(exception.toString(), contains('500'));
+        expect(exception.code, equals(500));
+        expect(exception.body, equals('Internal Server Error'));
+      },
+    );
 
-    test('SubmitCompletedChallengeErrorResponseException has correct message', () {
-      final exception = SubmitCompletedChallengeErrorResponseException('Invalid signature');
-      expect(exception.toString(), contains('Invalid signature'));
-      expect(exception.error, equals('Invalid signature'));
-    });
+    test(
+      'SubmitCompletedChallengeErrorResponseException has correct message',
+      () {
+        final exception = SubmitCompletedChallengeErrorResponseException(
+          'Invalid signature',
+        );
+        expect(exception.toString(), contains('Invalid signature'));
+        expect(exception.error, equals('Invalid signature'));
+      },
+    );
 
     test('ChallengeValidationError has correct message', () {
       final exception = ChallengeValidationError('Test error');
@@ -1223,52 +1284,81 @@ void main() {
     });
 
     test('ChallengeValidationErrorInvalidSeqNr has correct message', () {
-      final exception = ChallengeValidationErrorInvalidSeqNr('Invalid sequence');
+      final exception = ChallengeValidationErrorInvalidSeqNr(
+        'Invalid sequence',
+      );
       expect(exception.toString(), equals('Invalid sequence'));
     });
 
-    test('ChallengeValidationErrorInvalidSourceAccount has correct message', () {
-      final exception = ChallengeValidationErrorInvalidSourceAccount('Invalid source');
-      expect(exception.toString(), equals('Invalid source'));
-    });
+    test(
+      'ChallengeValidationErrorInvalidSourceAccount has correct message',
+      () {
+        final exception = ChallengeValidationErrorInvalidSourceAccount(
+          'Invalid source',
+        );
+        expect(exception.toString(), equals('Invalid source'));
+      },
+    );
 
     test('ChallengeValidationErrorInvalidTimeBounds has correct message', () {
-      final exception = ChallengeValidationErrorInvalidTimeBounds('Invalid time');
+      final exception = ChallengeValidationErrorInvalidTimeBounds(
+        'Invalid time',
+      );
       expect(exception.toString(), equals('Invalid time'));
     });
 
-    test('ChallengeValidationErrorInvalidOperationType has correct message', () {
-      final exception = ChallengeValidationErrorInvalidOperationType('Invalid operation');
-      expect(exception.toString(), equals('Invalid operation'));
-    });
+    test(
+      'ChallengeValidationErrorInvalidOperationType has correct message',
+      () {
+        final exception = ChallengeValidationErrorInvalidOperationType(
+          'Invalid operation',
+        );
+        expect(exception.toString(), equals('Invalid operation'));
+      },
+    );
 
     test('ChallengeValidationErrorInvalidHomeDomain has correct message', () {
-      final exception = ChallengeValidationErrorInvalidHomeDomain('Invalid domain');
+      final exception = ChallengeValidationErrorInvalidHomeDomain(
+        'Invalid domain',
+      );
       expect(exception.toString(), equals('Invalid domain'));
     });
 
-    test('ChallengeValidationErrorInvalidWebAuthDomain has correct message', () {
-      final exception = ChallengeValidationErrorInvalidWebAuthDomain('Invalid web auth');
-      expect(exception.toString(), equals('Invalid web auth'));
-    });
+    test(
+      'ChallengeValidationErrorInvalidWebAuthDomain has correct message',
+      () {
+        final exception = ChallengeValidationErrorInvalidWebAuthDomain(
+          'Invalid web auth',
+        );
+        expect(exception.toString(), equals('Invalid web auth'));
+      },
+    );
 
     test('ChallengeValidationErrorInvalidSignature has correct message', () {
-      final exception = ChallengeValidationErrorInvalidSignature('Invalid signature');
+      final exception = ChallengeValidationErrorInvalidSignature(
+        'Invalid signature',
+      );
       expect(exception.toString(), equals('Invalid signature'));
     });
 
     test('ChallengeValidationErrorMemoAndMuxedAccount has correct message', () {
-      final exception = ChallengeValidationErrorMemoAndMuxedAccount('Memo and muxed');
+      final exception = ChallengeValidationErrorMemoAndMuxedAccount(
+        'Memo and muxed',
+      );
       expect(exception.toString(), equals('Memo and muxed'));
     });
 
     test('ChallengeValidationErrorInvalidMemoType has correct message', () {
-      final exception = ChallengeValidationErrorInvalidMemoType('Invalid memo type');
+      final exception = ChallengeValidationErrorInvalidMemoType(
+        'Invalid memo type',
+      );
       expect(exception.toString(), equals('Invalid memo type'));
     });
 
     test('ChallengeValidationErrorInvalidMemoValue has correct message', () {
-      final exception = ChallengeValidationErrorInvalidMemoValue('Invalid memo value');
+      final exception = ChallengeValidationErrorInvalidMemoValue(
+        'Invalid memo value',
+      );
       expect(exception.toString(), equals('Invalid memo value'));
     });
 
@@ -1276,77 +1366,83 @@ void main() {
       final exception = MissingClientDomainSigningKeyException();
       expect(
         exception.toString(),
-        contains('clientDomainAccountKeyPair or clientDomainSigningDelegate is required'),
+        contains(
+          'clientDomainAccountKeyPair or clientDomainSigningDelegate is required',
+        ),
       );
     });
   });
 
   group('WebAuth - fromDomain httpRequestHeaders', () {
-    test('fromDomain forwards httpRequestHeaders to WebAuth instance', () async {
-      final serverKeyPair = KeyPair.random();
+    test(
+      'fromDomain forwards httpRequestHeaders to WebAuth instance',
+      () async {
+        final serverKeyPair = KeyPair.random();
 
-      final mockClient = MockClient((request) async {
-        expect(request.url.toString(), contains('.well-known/stellar.toml'));
+        final mockClient = MockClient((request) async {
+          expect(request.url.toString(), contains('.well-known/stellar.toml'));
 
-        return http.Response('''
+          return http.Response('''
 WEB_AUTH_ENDPOINT="https://testanchor.stellar.org/auth"
 SIGNING_KEY="${serverKeyPair.accountId}"
         ''', 200);
-      });
+        });
 
-      final webAuth = await WebAuth.fromDomain(
-        'testanchor.stellar.org',
-        Network.TESTNET,
-        httpClient: mockClient,
-        httpRequestHeaders: {'X-Custom': 'test-value'},
-      );
+        final webAuth = await WebAuth.fromDomain(
+          'testanchor.stellar.org',
+          Network.TESTNET,
+          httpClient: mockClient,
+          httpRequestHeaders: {'X-Custom': 'test-value'},
+        );
 
-      expect(webAuth.httpRequestHeaders, equals({'X-Custom': 'test-value'}));
-    });
+        expect(webAuth.httpRequestHeaders, equals({'X-Custom': 'test-value'}));
+      },
+    );
   });
 
   group('WebAuth - clientDomain validation', () {
-    test('jwtToken throws MissingClientDomainSigningKeyException when clientDomain provided without signing key', () async {
-      final serverKeyPair = KeyPair.random();
-      final clientKeyPair = KeyPair.random();
+    test(
+      'jwtToken throws MissingClientDomainSigningKeyException when clientDomain provided without signing key',
+      () async {
+        final serverKeyPair = KeyPair.random();
+        final clientKeyPair = KeyPair.random();
 
-      final webAuth = WebAuth(
-        'https://example.com/auth',
-        Network.TESTNET,
-        serverKeyPair.accountId,
-        'example.com',
-      );
-
-      expect(
-        () => webAuth.jwtToken(
-          clientKeyPair.accountId,
-          [clientKeyPair],
-          clientDomain: 'client.example.com',
-        ),
-        throwsA(isA<MissingClientDomainSigningKeyException>()),
-      );
-    });
-
-    test('jwtToken does not throw MissingClientDomainSigningKeyException when clientDomain is null', () async {
-      final serverKeyPair = KeyPair.random();
-      final clientKeyPair = KeyPair.random();
-
-      final webAuth = WebAuth(
-        'https://example.com/auth',
-        Network.TESTNET,
-        serverKeyPair.accountId,
-        'example.com',
-      );
-
-      try {
-        await webAuth.jwtToken(
-          clientKeyPair.accountId,
-          [clientKeyPair],
+        final webAuth = WebAuth(
+          'https://example.com/auth',
+          Network.TESTNET,
+          serverKeyPair.accountId,
+          'example.com',
         );
-        // If it somehow succeeds (unlikely without a real server), that is fine
-      } catch (e) {
-        expect(e, isNot(isA<MissingClientDomainSigningKeyException>()));
-      }
-    });
+
+        expect(
+          () => webAuth.jwtToken(clientKeyPair.accountId, [
+            clientKeyPair,
+          ], clientDomain: 'client.example.com'),
+          throwsA(isA<MissingClientDomainSigningKeyException>()),
+        );
+      },
+    );
+
+    test(
+      'jwtToken does not throw MissingClientDomainSigningKeyException when clientDomain is null',
+      () async {
+        final serverKeyPair = KeyPair.random();
+        final clientKeyPair = KeyPair.random();
+
+        final webAuth = WebAuth(
+          'https://example.com/auth',
+          Network.TESTNET,
+          serverKeyPair.accountId,
+          'example.com',
+        );
+
+        try {
+          await webAuth.jwtToken(clientKeyPair.accountId, [clientKeyPair]);
+          // If it somehow succeeds (unlikely without a real server), that is fine
+        } catch (e) {
+          expect(e, isNot(isA<MissingClientDomainSigningKeyException>()));
+        }
+      },
+    );
   });
 }

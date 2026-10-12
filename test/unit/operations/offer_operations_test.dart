@@ -10,10 +10,17 @@ void main() {
     late Asset nativeAsset;
 
     setUp(() {
-      sellerKeyPair = KeyPair.fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
-      issuerKeyPair = KeyPair.fromAccountId('GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ');
+      sellerKeyPair = KeyPair.fromAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
+      issuerKeyPair = KeyPair.fromAccountId(
+        'GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ',
+      );
       usdAsset = AssetTypeCreditAlphaNum4('USD', issuerKeyPair.accountId);
-      euroAsset = AssetTypeCreditAlphaNum12('EUROTOKEN', issuerKeyPair.accountId);
+      euroAsset = AssetTypeCreditAlphaNum12(
+        'EUROTOKEN',
+        issuerKeyPair.accountId,
+      );
       nativeAsset = AssetTypeNative();
     });
 
@@ -23,7 +30,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).build();
 
         expect(operation.selling, equals(usdAsset));
@@ -39,7 +46,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '150.0',
-          '2.6'
+          '2.6',
         ).setOfferId('12345').build();
 
         expect(operation.selling, equals(usdAsset));
@@ -54,7 +61,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '0',
-          '2.5'
+          '2.5',
         ).setOfferId('12345').build();
 
         expect(operation.amount, equals('0'));
@@ -66,7 +73,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '1.5'
+          '1.5',
         ).build();
 
         expect(operation.selling, isA<AssetTypeCreditAlphaNum4>());
@@ -80,7 +87,7 @@ void main() {
           euroAsset,
           nativeAsset,
           '100.0',
-          '1.5'
+          '1.5',
         ).build();
 
         expect(operation.selling, isA<AssetTypeCreditAlphaNum12>());
@@ -94,7 +101,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '0.4'
+          '0.4',
         ).build();
 
         expect(operation.selling, isA<AssetTypeNative>());
@@ -106,7 +113,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '0.4'
+          '0.4',
         ).build();
 
         expect(operation.buying, isA<AssetTypeCreditAlphaNum4>());
@@ -119,7 +126,7 @@ void main() {
           nativeAsset,
           euroAsset,
           '100.0',
-          '0.4'
+          '0.4',
         ).build();
 
         expect(operation.buying, isA<AssetTypeCreditAlphaNum12>());
@@ -132,7 +139,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0000001',
-          '2.5'
+          '2.5',
         ).build();
 
         expect(operation.amount, equals('100.0000001'));
@@ -143,7 +150,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5555555'
+          '2.5555555',
         ).build();
 
         expect(operation.price, equals('2.5555555'));
@@ -154,7 +161,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '922337203685.4775807',
-          '1.0'
+          '1.0',
         ).build();
 
         expect(operation.amount, equals('922337203685.4775807'));
@@ -165,7 +172,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '1000.0'
+          '1000.0',
         ).build();
 
         expect(operation.price, equals('1000.0'));
@@ -176,7 +183,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '0.0001'
+          '0.0001',
         ).build();
 
         expect(operation.price, equals('0.0001'));
@@ -187,24 +194,33 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).setSourceAccount(sellerKeyPair.accountId).build();
 
         expect(operation.sourceAccount, isNotNull);
-        expect(operation.sourceAccount!.ed25519AccountId, equals(sellerKeyPair.accountId));
+        expect(
+          operation.sourceAccount!.ed25519AccountId,
+          equals(sellerKeyPair.accountId),
+        );
       });
 
       test('creates with muxed source account', () {
-        final muxedSource = MuxedAccount(sellerKeyPair.accountId, BigInt.from(12345));
+        final muxedSource = MuxedAccount(
+          sellerKeyPair.accountId,
+          BigInt.from(12345),
+        );
         final operation = ManageSellOfferOperationBuilder(
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).setMuxedSourceAccount(muxedSource).build();
 
         expect(operation.sourceAccount, isNotNull);
-        expect(operation.sourceAccount!.ed25519AccountId, equals(sellerKeyPair.accountId));
+        expect(
+          operation.sourceAccount!.ed25519AccountId,
+          equals(sellerKeyPair.accountId),
+        );
         expect(operation.sourceAccount!.id, equals(BigInt.from(12345)));
       });
 
@@ -213,7 +229,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).setOfferId('9223372036854775807').build();
 
         expect(operation.offerId, equals('9223372036854775807'));
@@ -226,14 +242,19 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        expect(xdrBody.discriminant, equals(XdrOperationType.MANAGE_SELL_OFFER));
+        expect(
+          xdrBody.discriminant,
+          equals(XdrOperationType.MANAGE_SELL_OFFER),
+        );
         expect(xdrBody.manageSellOfferOp, isNotNull);
 
-        final restoredBuilder = ManageSellOfferOperation.builder(xdrBody.manageSellOfferOp!);
+        final restoredBuilder = ManageSellOfferOperation.builder(
+          xdrBody.manageSellOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.selling, isA<AssetTypeCreditAlphaNum4>());
@@ -250,11 +271,13 @@ void main() {
           usdAsset,
           nativeAsset,
           '150.0',
-          '2.6'
+          '2.6',
         ).setOfferId('12345').build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = ManageSellOfferOperation.builder(xdrBody.manageSellOfferOp!);
+        final restoredBuilder = ManageSellOfferOperation.builder(
+          xdrBody.manageSellOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.offerId, equals('12345'));
@@ -266,11 +289,13 @@ void main() {
           euroAsset,
           nativeAsset,
           '100.0',
-          '1.5'
+          '1.5',
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = ManageSellOfferOperation.builder(xdrBody.manageSellOfferOp!);
+        final restoredBuilder = ManageSellOfferOperation.builder(
+          xdrBody.manageSellOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.selling, isA<AssetTypeCreditAlphaNum12>());
@@ -283,11 +308,13 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '0.4'
+          '0.4',
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = ManageSellOfferOperation.builder(xdrBody.manageSellOfferOp!);
+        final restoredBuilder = ManageSellOfferOperation.builder(
+          xdrBody.manageSellOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.selling, isA<AssetTypeNative>());
@@ -299,11 +326,13 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0000001',
-          '2.5555555'
+          '2.5555555',
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = ManageSellOfferOperation.builder(xdrBody.manageSellOfferOp!);
+        final restoredBuilder = ManageSellOfferOperation.builder(
+          xdrBody.manageSellOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.amount, equals('100.0000001'));
@@ -314,11 +343,13 @@ void main() {
           usdAsset,
           nativeAsset,
           '0',
-          '2.5'
+          '2.5',
         ).setOfferId('12345').build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = ManageSellOfferOperation.builder(xdrBody.manageSellOfferOp!);
+        final restoredBuilder = ManageSellOfferOperation.builder(
+          xdrBody.manageSellOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.amount, equals('0'));
@@ -330,11 +361,13 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).setOfferId('9223372036854775807').build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = ManageSellOfferOperation.builder(xdrBody.manageSellOfferOp!);
+        final restoredBuilder = ManageSellOfferOperation.builder(
+          xdrBody.manageSellOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.offerId, equals('9223372036854775807'));
@@ -347,28 +380,29 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
-        )
-          .setOfferId('12345')
-          .setSourceAccount(sellerKeyPair.accountId)
-          .build();
+          '2.5',
+        ).setOfferId('12345').setSourceAccount(sellerKeyPair.accountId).build();
 
         expect(operation, isNotNull);
         expect(operation, isA<ManageSellOfferOperation>());
         expect(operation.offerId, equals('12345'));
-        expect(operation.sourceAccount!.ed25519AccountId, equals(sellerKeyPair.accountId));
+        expect(
+          operation.sourceAccount!.ed25519AccountId,
+          equals(sellerKeyPair.accountId),
+        );
       });
 
       test('builder can set muxed source account', () {
-        final muxedSource = MuxedAccount(sellerKeyPair.accountId, BigInt.from(99999));
+        final muxedSource = MuxedAccount(
+          sellerKeyPair.accountId,
+          BigInt.from(99999),
+        );
         final operation = ManageSellOfferOperationBuilder(
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
-        )
-          .setMuxedSourceAccount(muxedSource)
-          .build();
+          '2.5',
+        ).setMuxedSourceAccount(muxedSource).build();
 
         expect(operation.sourceAccount!.id, equals(BigInt.from(99999)));
       });
@@ -378,7 +412,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).build();
 
         expect(operation.offerId, equals('0'));
@@ -391,7 +425,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).build();
 
         final selling = operation.selling;
@@ -404,7 +438,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).build();
 
         expect(operation.buying, isA<AssetTypeNative>());
@@ -415,7 +449,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).build();
 
         expect(operation.amount, equals('100.0'));
@@ -426,7 +460,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).build();
 
         expect(operation.price, equals('2.5'));
@@ -437,7 +471,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).setOfferId('12345').build();
 
         expect(operation.offerId, equals('12345'));
@@ -453,8 +487,12 @@ void main() {
     late Asset nativeAsset;
 
     setUp(() {
-      buyerKeyPair = KeyPair.fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
-      issuerKeyPair = KeyPair.fromAccountId('GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ');
+      buyerKeyPair = KeyPair.fromAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
+      issuerKeyPair = KeyPair.fromAccountId(
+        'GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ',
+      );
       usdAsset = AssetTypeCreditAlphaNum4('USD', issuerKeyPair.accountId);
       eurAsset = AssetTypeCreditAlphaNum4('EUR', issuerKeyPair.accountId);
       nativeAsset = AssetTypeNative();
@@ -466,7 +504,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '1.1'
+          '1.1',
         ).build();
 
         expect(operation.selling, equals(nativeAsset));
@@ -482,7 +520,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '150.0',
-          '1.15'
+          '1.15',
         ).setOfferId('54321').build();
 
         expect(operation.selling, equals(nativeAsset));
@@ -497,7 +535,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '0',
-          '1.1'
+          '1.1',
         ).setOfferId('54321').build();
 
         expect(operation.amount, equals('0'));
@@ -509,7 +547,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '1.1'
+          '1.1',
         ).build();
 
         expect(operation.buying, isA<AssetTypeCreditAlphaNum4>());
@@ -523,7 +561,7 @@ void main() {
           usdAsset,
           eurAsset,
           '100.0',
-          '1.1'
+          '1.1',
         ).build();
 
         expect(operation.selling, isA<AssetTypeCreditAlphaNum4>());
@@ -536,7 +574,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '1.1'
+          '1.1',
         ).build();
 
         expect(operation.selling, isA<AssetTypeNative>());
@@ -548,7 +586,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0000001',
-          '1.1'
+          '1.1',
         ).build();
 
         expect(operation.amount, equals('100.0000001'));
@@ -559,7 +597,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '1.1234567'
+          '1.1234567',
         ).build();
 
         expect(operation.price, equals('1.1234567'));
@@ -570,7 +608,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '922337203685.4775807',
-          '1.0'
+          '1.0',
         ).build();
 
         expect(operation.amount, equals('922337203685.4775807'));
@@ -581,24 +619,33 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '1.1'
+          '1.1',
         ).setSourceAccount(buyerKeyPair.accountId).build();
 
         expect(operation.sourceAccount, isNotNull);
-        expect(operation.sourceAccount!.ed25519AccountId, equals(buyerKeyPair.accountId));
+        expect(
+          operation.sourceAccount!.ed25519AccountId,
+          equals(buyerKeyPair.accountId),
+        );
       });
 
       test('creates with muxed source account', () {
-        final muxedSource = MuxedAccount(buyerKeyPair.accountId, BigInt.from(67890));
+        final muxedSource = MuxedAccount(
+          buyerKeyPair.accountId,
+          BigInt.from(67890),
+        );
         final operation = ManageBuyOfferOperationBuilder(
           nativeAsset,
           usdAsset,
           '100.0',
-          '1.1'
+          '1.1',
         ).setMuxedSourceAccount(muxedSource).build();
 
         expect(operation.sourceAccount, isNotNull);
-        expect(operation.sourceAccount!.ed25519AccountId, equals(buyerKeyPair.accountId));
+        expect(
+          operation.sourceAccount!.ed25519AccountId,
+          equals(buyerKeyPair.accountId),
+        );
         expect(operation.sourceAccount!.id, equals(BigInt.from(67890)));
       });
 
@@ -607,7 +654,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '1.1'
+          '1.1',
         ).setOfferId('9223372036854775807').build();
 
         expect(operation.offerId, equals('9223372036854775807'));
@@ -620,14 +667,16 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '1.1'
+          '1.1',
         ).build();
 
         final xdrBody = operation.toOperationBody();
         expect(xdrBody.discriminant, equals(XdrOperationType.MANAGE_BUY_OFFER));
         expect(xdrBody.manageBuyOfferOp, isNotNull);
 
-        final restoredBuilder = ManageBuyOfferOperation.builder(xdrBody.manageBuyOfferOp!);
+        final restoredBuilder = ManageBuyOfferOperation.builder(
+          xdrBody.manageBuyOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.selling, isA<AssetTypeNative>());
@@ -644,11 +693,13 @@ void main() {
           nativeAsset,
           usdAsset,
           '150.0',
-          '1.15'
+          '1.15',
         ).setOfferId('54321').build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = ManageBuyOfferOperation.builder(xdrBody.manageBuyOfferOp!);
+        final restoredBuilder = ManageBuyOfferOperation.builder(
+          xdrBody.manageBuyOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.offerId, equals('54321'));
@@ -660,11 +711,13 @@ void main() {
           usdAsset,
           eurAsset,
           '100.0',
-          '1.1'
+          '1.1',
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = ManageBuyOfferOperation.builder(xdrBody.manageBuyOfferOp!);
+        final restoredBuilder = ManageBuyOfferOperation.builder(
+          xdrBody.manageBuyOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.selling, isA<AssetTypeCreditAlphaNum4>());
@@ -680,11 +733,13 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0000001',
-          '1.1234567'
+          '1.1234567',
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = ManageBuyOfferOperation.builder(xdrBody.manageBuyOfferOp!);
+        final restoredBuilder = ManageBuyOfferOperation.builder(
+          xdrBody.manageBuyOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.amount, equals('100.0000001'));
@@ -695,11 +750,13 @@ void main() {
           nativeAsset,
           usdAsset,
           '0',
-          '1.1'
+          '1.1',
         ).setOfferId('54321').build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = ManageBuyOfferOperation.builder(xdrBody.manageBuyOfferOp!);
+        final restoredBuilder = ManageBuyOfferOperation.builder(
+          xdrBody.manageBuyOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.amount, equals('0'));
@@ -711,11 +768,13 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '1.1'
+          '1.1',
         ).setOfferId('9223372036854775807').build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = ManageBuyOfferOperation.builder(xdrBody.manageBuyOfferOp!);
+        final restoredBuilder = ManageBuyOfferOperation.builder(
+          xdrBody.manageBuyOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.offerId, equals('9223372036854775807'));
@@ -728,28 +787,29 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '1.1'
-        )
-          .setOfferId('54321')
-          .setSourceAccount(buyerKeyPair.accountId)
-          .build();
+          '1.1',
+        ).setOfferId('54321').setSourceAccount(buyerKeyPair.accountId).build();
 
         expect(operation, isNotNull);
         expect(operation, isA<ManageBuyOfferOperation>());
         expect(operation.offerId, equals('54321'));
-        expect(operation.sourceAccount!.ed25519AccountId, equals(buyerKeyPair.accountId));
+        expect(
+          operation.sourceAccount!.ed25519AccountId,
+          equals(buyerKeyPair.accountId),
+        );
       });
 
       test('builder can set muxed source account', () {
-        final muxedSource = MuxedAccount(buyerKeyPair.accountId, BigInt.from(11111));
+        final muxedSource = MuxedAccount(
+          buyerKeyPair.accountId,
+          BigInt.from(11111),
+        );
         final operation = ManageBuyOfferOperationBuilder(
           nativeAsset,
           usdAsset,
           '100.0',
-          '1.1'
-        )
-          .setMuxedSourceAccount(muxedSource)
-          .build();
+          '1.1',
+        ).setMuxedSourceAccount(muxedSource).build();
 
         expect(operation.sourceAccount!.id, equals(BigInt.from(11111)));
       });
@@ -759,7 +819,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '1.1'
+          '1.1',
         ).build();
 
         expect(operation.offerId, equals('0'));
@@ -772,7 +832,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '1.1'
+          '1.1',
         ).build();
 
         expect(operation.selling, isA<AssetTypeNative>());
@@ -783,7 +843,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '1.1'
+          '1.1',
         ).build();
 
         final buying = operation.buying;
@@ -796,7 +856,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '1.1'
+          '1.1',
         ).build();
 
         expect(operation.amount, equals('100.0'));
@@ -807,7 +867,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '1.1'
+          '1.1',
         ).build();
 
         expect(operation.price, equals('1.1'));
@@ -818,7 +878,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '1.1'
+          '1.1',
         ).setOfferId('54321').build();
 
         expect(operation.offerId, equals('54321'));
@@ -834,10 +894,17 @@ void main() {
     late Asset nativeAsset;
 
     setUp(() {
-      sellerKeyPair = KeyPair.fromAccountId('GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H');
-      issuerKeyPair = KeyPair.fromAccountId('GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ');
+      sellerKeyPair = KeyPair.fromAccountId(
+        'GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H',
+      );
+      issuerKeyPair = KeyPair.fromAccountId(
+        'GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ',
+      );
       usdAsset = AssetTypeCreditAlphaNum4('USD', issuerKeyPair.accountId);
-      euroAsset = AssetTypeCreditAlphaNum12('EUROTOKEN', issuerKeyPair.accountId);
+      euroAsset = AssetTypeCreditAlphaNum12(
+        'EUROTOKEN',
+        issuerKeyPair.accountId,
+      );
       nativeAsset = AssetTypeNative();
     });
 
@@ -847,7 +914,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).build();
 
         expect(operation.selling, equals(usdAsset));
@@ -862,7 +929,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '1.5'
+          '1.5',
         ).build();
 
         expect(operation.selling, isA<AssetTypeCreditAlphaNum4>());
@@ -876,7 +943,7 @@ void main() {
           euroAsset,
           nativeAsset,
           '100.0',
-          '1.5'
+          '1.5',
         ).build();
 
         expect(operation.selling, isA<AssetTypeCreditAlphaNum12>());
@@ -890,7 +957,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '0.4'
+          '0.4',
         ).build();
 
         expect(operation.selling, isA<AssetTypeNative>());
@@ -902,7 +969,7 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '0.4'
+          '0.4',
         ).build();
 
         expect(operation.buying, isA<AssetTypeCreditAlphaNum4>());
@@ -915,7 +982,7 @@ void main() {
           nativeAsset,
           euroAsset,
           '100.0',
-          '0.4'
+          '0.4',
         ).build();
 
         expect(operation.buying, isA<AssetTypeCreditAlphaNum12>());
@@ -928,7 +995,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0000001',
-          '2.5'
+          '2.5',
         ).build();
 
         expect(operation.amount, equals('100.0000001'));
@@ -939,7 +1006,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5555555'
+          '2.5555555',
         ).build();
 
         expect(operation.price, equals('2.5555555'));
@@ -950,7 +1017,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '922337203685.4775807',
-          '1.0'
+          '1.0',
         ).build();
 
         expect(operation.amount, equals('922337203685.4775807'));
@@ -961,7 +1028,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '1000.0'
+          '1000.0',
         ).build();
 
         expect(operation.price, equals('1000.0'));
@@ -972,7 +1039,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '0.0001'
+          '0.0001',
         ).build();
 
         expect(operation.price, equals('0.0001'));
@@ -983,24 +1050,33 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).setSourceAccount(sellerKeyPair.accountId).build();
 
         expect(operation.sourceAccount, isNotNull);
-        expect(operation.sourceAccount!.ed25519AccountId, equals(sellerKeyPair.accountId));
+        expect(
+          operation.sourceAccount!.ed25519AccountId,
+          equals(sellerKeyPair.accountId),
+        );
       });
 
       test('creates with muxed source account', () {
-        final muxedSource = MuxedAccount(sellerKeyPair.accountId, BigInt.from(33333));
+        final muxedSource = MuxedAccount(
+          sellerKeyPair.accountId,
+          BigInt.from(33333),
+        );
         final operation = CreatePassiveSellOfferOperationBuilder(
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).setMuxedSourceAccount(muxedSource).build();
 
         expect(operation.sourceAccount, isNotNull);
-        expect(operation.sourceAccount!.ed25519AccountId, equals(sellerKeyPair.accountId));
+        expect(
+          operation.sourceAccount!.ed25519AccountId,
+          equals(sellerKeyPair.accountId),
+        );
         expect(operation.sourceAccount!.id, equals(BigInt.from(33333)));
       });
     });
@@ -1011,14 +1087,19 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        expect(xdrBody.discriminant, equals(XdrOperationType.CREATE_PASSIVE_SELL_OFFER));
+        expect(
+          xdrBody.discriminant,
+          equals(XdrOperationType.CREATE_PASSIVE_SELL_OFFER),
+        );
         expect(xdrBody.createPassiveSellOfferOp, isNotNull);
 
-        final restoredBuilder = CreatePassiveSellOfferOperation.builder(xdrBody.createPassiveSellOfferOp!);
+        final restoredBuilder = CreatePassiveSellOfferOperation.builder(
+          xdrBody.createPassiveSellOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.selling, isA<AssetTypeCreditAlphaNum4>());
@@ -1034,11 +1115,13 @@ void main() {
           euroAsset,
           nativeAsset,
           '100.0',
-          '1.5'
+          '1.5',
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = CreatePassiveSellOfferOperation.builder(xdrBody.createPassiveSellOfferOp!);
+        final restoredBuilder = CreatePassiveSellOfferOperation.builder(
+          xdrBody.createPassiveSellOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.selling, isA<AssetTypeCreditAlphaNum12>());
@@ -1051,11 +1134,13 @@ void main() {
           nativeAsset,
           usdAsset,
           '100.0',
-          '0.4'
+          '0.4',
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = CreatePassiveSellOfferOperation.builder(xdrBody.createPassiveSellOfferOp!);
+        final restoredBuilder = CreatePassiveSellOfferOperation.builder(
+          xdrBody.createPassiveSellOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.selling, isA<AssetTypeNative>());
@@ -1067,11 +1152,13 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0000001',
-          '2.5555555'
+          '2.5555555',
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = CreatePassiveSellOfferOperation.builder(xdrBody.createPassiveSellOfferOp!);
+        final restoredBuilder = CreatePassiveSellOfferOperation.builder(
+          xdrBody.createPassiveSellOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.amount, equals('100.0000001'));
@@ -1082,11 +1169,13 @@ void main() {
           usdAsset,
           nativeAsset,
           '922337203685.4775807',
-          '1.0'
+          '1.0',
         ).build();
 
         final xdrBody = operation.toOperationBody();
-        final restoredBuilder = CreatePassiveSellOfferOperation.builder(xdrBody.createPassiveSellOfferOp!);
+        final restoredBuilder = CreatePassiveSellOfferOperation.builder(
+          xdrBody.createPassiveSellOfferOp!,
+        );
         final restored = restoredBuilder.build();
 
         expect(restored.amount, equals('922337203685.4775807'));
@@ -1099,26 +1188,28 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
-        )
-          .setSourceAccount(sellerKeyPair.accountId)
-          .build();
+          '2.5',
+        ).setSourceAccount(sellerKeyPair.accountId).build();
 
         expect(operation, isNotNull);
         expect(operation, isA<CreatePassiveSellOfferOperation>());
-        expect(operation.sourceAccount!.ed25519AccountId, equals(sellerKeyPair.accountId));
+        expect(
+          operation.sourceAccount!.ed25519AccountId,
+          equals(sellerKeyPair.accountId),
+        );
       });
 
       test('builder can set muxed source account', () {
-        final muxedSource = MuxedAccount(sellerKeyPair.accountId, BigInt.from(44444));
+        final muxedSource = MuxedAccount(
+          sellerKeyPair.accountId,
+          BigInt.from(44444),
+        );
         final operation = CreatePassiveSellOfferOperationBuilder(
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
-        )
-          .setMuxedSourceAccount(muxedSource)
-          .build();
+          '2.5',
+        ).setMuxedSourceAccount(muxedSource).build();
 
         expect(operation.sourceAccount!.id, equals(BigInt.from(44444)));
       });
@@ -1130,7 +1221,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).build();
 
         final selling = operation.selling;
@@ -1143,7 +1234,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).build();
 
         expect(operation.buying, isA<AssetTypeNative>());
@@ -1154,7 +1245,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).build();
 
         expect(operation.amount, equals('100.0'));
@@ -1165,7 +1256,7 @@ void main() {
           usdAsset,
           nativeAsset,
           '100.0',
-          '2.5'
+          '2.5',
         ).build();
 
         expect(operation.price, equals('2.5'));
@@ -1180,95 +1271,111 @@ void main() {
     late Asset eurAsset;
 
     setUp(() {
-      makerKeyPair = KeyPair.fromSecretSeed('SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE');
-      issuerKeyPair = KeyPair.fromSecretSeed('SCZANGBA5YHTNYVVV4C3U252E2B6P6F5T3U6MM63WBSBZATAQI3EBTQ4');
+      makerKeyPair = KeyPair.fromSecretSeed(
+        'SDJHRQF4GCMIIKAAAQ6IHY42X73FQFLHUULAPSKKD4DFDM7UXWWCRHBE',
+      );
+      issuerKeyPair = KeyPair.fromSecretSeed(
+        'SCZANGBA5YHTNYVVV4C3U252E2B6P6F5T3U6MM63WBSBZATAQI3EBTQ4',
+      );
       usdAsset = AssetTypeCreditAlphaNum4('USD', issuerKeyPair.accountId);
       eurAsset = AssetTypeCreditAlphaNum4('EUR', issuerKeyPair.accountId);
     });
 
     test('manage sell offer operation can be added to transaction', () {
-      final sourceAccount = Account(makerKeyPair.accountId, BigInt.from(2908908335136768));
+      final sourceAccount = Account(
+        makerKeyPair.accountId,
+        BigInt.from(2908908335136768),
+      );
 
       final manageSellOffer = ManageSellOfferOperationBuilder(
         usdAsset,
         AssetTypeNative(),
         '100.0',
-        '2.5'
+        '2.5',
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(manageSellOffer)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(manageSellOffer).build();
 
       expect(transaction.operations.length, equals(1));
       expect(transaction.operations[0], isA<ManageSellOfferOperation>());
     });
 
     test('manage buy offer operation can be added to transaction', () {
-      final sourceAccount = Account(makerKeyPair.accountId, BigInt.from(2908908335136768));
+      final sourceAccount = Account(
+        makerKeyPair.accountId,
+        BigInt.from(2908908335136768),
+      );
 
       final manageBuyOffer = ManageBuyOfferOperationBuilder(
         AssetTypeNative(),
         usdAsset,
         '100.0',
-        '1.1'
+        '1.1',
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(manageBuyOffer)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(manageBuyOffer).build();
 
       expect(transaction.operations.length, equals(1));
       expect(transaction.operations[0], isA<ManageBuyOfferOperation>());
     });
 
     test('create passive sell offer operation can be added to transaction', () {
-      final sourceAccount = Account(makerKeyPair.accountId, BigInt.from(2908908335136768));
+      final sourceAccount = Account(
+        makerKeyPair.accountId,
+        BigInt.from(2908908335136768),
+      );
 
       final passiveOffer = CreatePassiveSellOfferOperationBuilder(
         usdAsset,
         AssetTypeNative(),
         '100.0',
-        '2.5'
+        '2.5',
       ).build();
 
-      final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(passiveOffer)
-        .build();
+      final transaction = TransactionBuilder(
+        sourceAccount,
+      ).addOperation(passiveOffer).build();
 
       expect(transaction.operations.length, equals(1));
       expect(transaction.operations[0], isA<CreatePassiveSellOfferOperation>());
     });
 
     test('multiple offer operations in single transaction', () {
-      final sourceAccount = Account(makerKeyPair.accountId, BigInt.from(2908908335136768));
+      final sourceAccount = Account(
+        makerKeyPair.accountId,
+        BigInt.from(2908908335136768),
+      );
 
       final manageSellOffer = ManageSellOfferOperationBuilder(
         usdAsset,
         AssetTypeNative(),
         '100.0',
-        '2.5'
+        '2.5',
       ).build();
 
       final manageBuyOffer = ManageBuyOfferOperationBuilder(
         AssetTypeNative(),
         eurAsset,
         '50.0',
-        '1.1'
+        '1.1',
       ).build();
 
       final passiveOffer = CreatePassiveSellOfferOperationBuilder(
         eurAsset,
         usdAsset,
         '75.0',
-        '0.9'
+        '0.9',
       ).build();
 
       final transaction = TransactionBuilder(sourceAccount)
-        .addOperation(manageSellOffer)
-        .addOperation(manageBuyOffer)
-        .addOperation(passiveOffer)
-        .build();
+          .addOperation(manageSellOffer)
+          .addOperation(manageBuyOffer)
+          .addOperation(passiveOffer)
+          .build();
 
       expect(transaction.operations.length, equals(3));
       expect(transaction.operations[0], isA<ManageSellOfferOperation>());
@@ -1278,20 +1385,23 @@ void main() {
 
     test('offer operations with different asset types', () {
       final usd4 = AssetTypeCreditAlphaNum4('USD', issuerKeyPair.accountId);
-      final euro12 = AssetTypeCreditAlphaNum12('EUROTOKEN', issuerKeyPair.accountId);
+      final euro12 = AssetTypeCreditAlphaNum12(
+        'EUROTOKEN',
+        issuerKeyPair.accountId,
+      );
 
       final sellOffer = ManageSellOfferOperationBuilder(
         usd4,
         AssetTypeNative(),
         '100.0',
-        '2.5'
+        '2.5',
       ).build();
 
       final buyOffer = ManageBuyOfferOperationBuilder(
         AssetTypeNative(),
         euro12,
         '100.0',
-        '1.1'
+        '1.1',
       ).build();
 
       expect(sellOffer.selling, isA<AssetTypeCreditAlphaNum4>());
@@ -1305,7 +1415,7 @@ void main() {
         usdAsset,
         AssetTypeNative(),
         '100.0',
-        '2.5'
+        '2.5',
       ).build();
 
       expect(createOffer.offerId, equals('0'));
@@ -1314,7 +1424,7 @@ void main() {
         usdAsset,
         AssetTypeNative(),
         '150.0',
-        '2.6'
+        '2.6',
       ).setOfferId('12345').build();
 
       expect(updateOffer.offerId, equals('12345'));
@@ -1326,7 +1436,7 @@ void main() {
         usdAsset,
         AssetTypeNative(),
         '0',
-        '2.5'
+        '2.5',
       ).setOfferId('12345').build();
 
       expect(deleteOffer.amount, equals('0'));
@@ -1338,14 +1448,14 @@ void main() {
         usdAsset,
         AssetTypeNative(),
         '100.0000001',
-        '2.5555555'
+        '2.5555555',
       ).build();
 
       final buyOffer = ManageBuyOfferOperationBuilder(
         AssetTypeNative(),
         usdAsset,
         '100.0000001',
-        '1.1234567'
+        '1.1234567',
       ).build();
 
       expect(sellOffer.amount, equals('100.0000001'));
@@ -1357,7 +1467,9 @@ void main() {
 
   group('Offer prices round trip through the XDR builders', () {
     final usd = AssetTypeCreditAlphaNum4(
-        'USD', 'GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ');
+      'USD',
+      'GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ',
+    );
     final amount = XdrInt64(BigInt.from(1000000000));
     const pairs = [
       [1, 10000000],
@@ -1375,8 +1487,13 @@ void main() {
 
     for (final pair in pairs) {
       test('ManageBuyOffer ${pair[0]}/${pair[1]}', () {
-        final op = XdrManageBuyOfferOp(Asset.NATIVE.toXdr(), usd.toXdr(),
-            amount, xdrPrice(pair), XdrUint64(BigInt.zero));
+        final op = XdrManageBuyOfferOp(
+          Asset.NATIVE.toXdr(),
+          usd.toXdr(),
+          amount,
+          xdrPrice(pair),
+          XdrUint64(BigInt.zero),
+        );
 
         final operation = ManageBuyOfferOperation.builder(op).build();
 
@@ -1384,8 +1501,13 @@ void main() {
       });
 
       test('ManageSellOffer ${pair[0]}/${pair[1]}', () {
-        final op = XdrManageSellOfferOp(Asset.NATIVE.toXdr(), usd.toXdr(),
-            amount, xdrPrice(pair), XdrUint64(BigInt.zero));
+        final op = XdrManageSellOfferOp(
+          Asset.NATIVE.toXdr(),
+          usd.toXdr(),
+          amount,
+          xdrPrice(pair),
+          XdrUint64(BigInt.zero),
+        );
 
         final operation = ManageSellOfferOperation.builder(op).build();
 
@@ -1394,12 +1516,18 @@ void main() {
 
       test('CreatePassiveSellOffer ${pair[0]}/${pair[1]}', () {
         final op = XdrCreatePassiveSellOfferOp(
-            Asset.NATIVE.toXdr(), usd.toXdr(), amount, xdrPrice(pair));
+          Asset.NATIVE.toXdr(),
+          usd.toXdr(),
+          amount,
+          xdrPrice(pair),
+        );
 
         final operation = CreatePassiveSellOfferOperation.builder(op).build();
 
         expectPrice(
-            operation.toXdr().body.createPassiveSellOfferOp!.price, pair);
+          operation.toXdr().body.createPassiveSellOfferOp!.price,
+          pair,
+        );
       });
     }
   });

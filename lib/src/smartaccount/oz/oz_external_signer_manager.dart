@@ -79,10 +79,7 @@ abstract class OZExternalEd25519SignerAdapter {
 /// on-chain `External(verifierAddress, publicKey)` signer entry contains
 /// both fields; this key mirrors that identity.
 class _Ed25519SignerKey {
-  _Ed25519SignerKey({
-    required this.verifierAddress,
-    required this.publicKey,
-  });
+  _Ed25519SignerKey({required this.verifierAddress, required this.publicKey});
 
   final String verifierAddress;
   final Uint8List publicKey;
@@ -96,7 +93,8 @@ class _Ed25519SignerKey {
   }
 
   @override
-  int get hashCode => SmartAccountUtils.hashBytes(verifierAddress.hashCode, publicKey);
+  int get hashCode =>
+      SmartAccountUtils.hashBytes(verifierAddress.hashCode, publicKey);
 }
 
 // OZExternalSignerType / OZExternalSignerInfo
@@ -382,9 +380,7 @@ class OZExternalSignerManager {
   /// Returns `true` when at least one signer (keypair or wallet) is
   /// registered.
   Future<bool> hasSigners() async {
-    final hasKeypairs = await _withLock<bool>(
-      () => _keypairSigners.isNotEmpty,
-    );
+    final hasKeypairs = await _withLock<bool>(() => _keypairSigners.isNotEmpty);
     if (hasKeypairs) return true;
 
     final walletCount = walletAdapter?.getConnectedWallets().length ?? 0;
@@ -614,7 +610,7 @@ class OZExternalSignerManager {
     if (!keypair.canSign()) {
       throw SmartAccountTransactionException.signingFailed(
         'Ed25519 keypair for verifier $verifierAddress is public-only and '
-            'cannot sign',
+        'cannot sign',
       );
     }
 
@@ -659,8 +655,9 @@ class OZExternalSignerManager {
     // Single try/catch covers base64 decode + keypair.sign(); SHA-256 cannot throw.
     try {
       final preimageBytes = base64Decode(preimageXdrBase64);
-      final payload =
-          Uint8List.fromList(crypto.sha256.convert(preimageBytes).bytes);
+      final payload = Uint8List.fromList(
+        crypto.sha256.convert(preimageBytes).bytes,
+      );
       final signature = keypair.sign(payload);
       return OZSignAuthEntryResult(
         signedAuthEntry: base64Encode(signature),

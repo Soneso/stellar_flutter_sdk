@@ -319,8 +319,7 @@ class NaturalPersonKYCFields {
       fields[id_issue_date_field_key] = _formatDateOnly(idIssueDate!);
     }
     if (idExpirationDate != null) {
-      fields[id_expiration_date_field_key] =
-          _formatDateOnly(idExpirationDate!);
+      fields[id_expiration_date_field_key] = _formatDateOnly(idExpirationDate!);
     }
     if (idNumber != null) {
       fields[id_number_field_key] = idNumber!;
@@ -393,7 +392,8 @@ class FinancialAccountKYCFields {
   static const String bank_number_field_key = 'bank_number';
   static const String bank_phone_number_field_key = 'bank_phone_number';
   static const String bank_branch_number_field_key = 'bank_branch_number';
-  static const String external_transfer_memo_field_key = 'external_transfer_memo';
+  static const String external_transfer_memo_field_key =
+      'external_transfer_memo';
   static const String clabe_number_field_key = 'clabe_number';
   static const String cbu_number_field_key = 'cbu_number';
   static const String cbu_alias_field_key = 'cbu_alias';
@@ -471,7 +471,8 @@ class FinancialAccountKYCFields {
       fields[keyPrefix + bank_branch_number_field_key] = bankBranchNumber!;
     }
     if (externalTransferMemo != null) {
-      fields[keyPrefix + external_transfer_memo_field_key] = externalTransferMemo!;
+      fields[keyPrefix + external_transfer_memo_field_key] =
+          externalTransferMemo!;
     }
     if (clabeNumber != null) {
       fields[keyPrefix + clabe_number_field_key] = clabeNumber!;
@@ -486,7 +487,8 @@ class FinancialAccountKYCFields {
       fields[keyPrefix + mobile_money_number_field_key] = mobileMoneyNumber!;
     }
     if (mobileMoneyProvider != null) {
-      fields[keyPrefix + mobile_money_provider_field_key] = mobileMoneyProvider!;
+      fields[keyPrefix + mobile_money_provider_field_key] =
+          mobileMoneyProvider!;
     }
     if (cryptoAddress != null) {
       fields[keyPrefix + crypto_address_field_key] = cryptoAddress!;
@@ -629,8 +631,8 @@ class OrganizationKYCFields {
       fields[registered_address_field_key] = registeredAddress!;
     }
     if (numberOfShareholders != null) {
-      fields[number_of_shareholders_field_key] =
-          numberOfShareholders.toString();
+      fields[number_of_shareholders_field_key] = numberOfShareholders
+          .toString();
     }
     if (shareholderName != null) {
       fields[shareholder_name_field_key] = shareholderName!;
@@ -709,17 +711,13 @@ class CardKYCFields {
   // field keys
   static const String key_prefix = 'card.';
   static const String number_field_key = key_prefix + 'number';
-  static const String expiration_date_field_key  = key_prefix + 'expiration_date';
-  static const String cvc_field_key =
-      key_prefix + 'cvc';
-  static const String holder_name_field_key =
-      key_prefix + 'holder_name';
-  static const String network_field_key =
-      key_prefix + 'network';
-  static const String postal_code_field_key =
-      key_prefix + 'postal_code';
-  static const String country_code_field_key =
-      key_prefix + 'country_code';
+  static const String expiration_date_field_key =
+      key_prefix + 'expiration_date';
+  static const String cvc_field_key = key_prefix + 'cvc';
+  static const String holder_name_field_key = key_prefix + 'holder_name';
+  static const String network_field_key = key_prefix + 'network';
+  static const String postal_code_field_key = key_prefix + 'postal_code';
+  static const String country_code_field_key = key_prefix + 'country_code';
   static const String state_or_province_field_key =
       key_prefix + 'state_or_province';
   static const String city_field_key = key_prefix + 'city';

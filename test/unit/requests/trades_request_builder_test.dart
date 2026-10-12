@@ -39,7 +39,8 @@ void main() {
     });
 
     group('baseAsset', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds base asset parameters for AlphaNum4', () {
         final builder = TradesRequestBuilder(mockClient, serverUri);
@@ -47,9 +48,15 @@ void main() {
         builder.baseAsset(asset);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['base_asset_type'], equals('credit_alphanum4'));
+        expect(
+          uri.queryParameters['base_asset_type'],
+          equals('credit_alphanum4'),
+        );
         expect(uri.queryParameters['base_asset_code'], equals('USD'));
-        expect(uri.queryParameters['base_asset_issuer'], equals(issuerAccountId));
+        expect(
+          uri.queryParameters['base_asset_issuer'],
+          equals(issuerAccountId),
+        );
       });
 
       test('adds base asset parameters for AlphaNum12', () {
@@ -58,9 +65,15 @@ void main() {
         builder.baseAsset(asset);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['base_asset_type'], equals('credit_alphanum12'));
+        expect(
+          uri.queryParameters['base_asset_type'],
+          equals('credit_alphanum12'),
+        );
         expect(uri.queryParameters['base_asset_code'], equals('LONGASSET'));
-        expect(uri.queryParameters['base_asset_issuer'], equals(issuerAccountId));
+        expect(
+          uri.queryParameters['base_asset_issuer'],
+          equals(issuerAccountId),
+        );
       });
 
       test('adds base asset parameters for native asset', () {
@@ -83,7 +96,8 @@ void main() {
     });
 
     group('counterAsset', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('adds counter asset parameters for AlphaNum4', () {
         final builder = TradesRequestBuilder(mockClient, serverUri);
@@ -91,9 +105,15 @@ void main() {
         builder.counterAsset(asset);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['counter_asset_type'], equals('credit_alphanum4'));
+        expect(
+          uri.queryParameters['counter_asset_type'],
+          equals('credit_alphanum4'),
+        );
         expect(uri.queryParameters['counter_asset_code'], equals('EUR'));
-        expect(uri.queryParameters['counter_asset_issuer'], equals(issuerAccountId));
+        expect(
+          uri.queryParameters['counter_asset_issuer'],
+          equals(issuerAccountId),
+        );
       });
 
       test('adds counter asset parameters for native asset', () {
@@ -111,7 +131,10 @@ void main() {
         builder.baseAsset(baseAsset).counterAsset(counterAsset);
         final uri = builder.buildUri();
 
-        expect(uri.queryParameters['base_asset_type'], equals('credit_alphanum4'));
+        expect(
+          uri.queryParameters['base_asset_type'],
+          equals('credit_alphanum4'),
+        );
         expect(uri.queryParameters['base_asset_code'], equals('USD'));
         expect(uri.queryParameters['counter_asset_type'], equals('native'));
       });
@@ -144,7 +167,8 @@ void main() {
     });
 
     group('forAccount', () {
-      final accountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final accountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('sets account segment in URI', () {
         final builder = TradesRequestBuilder(mockClient, serverUri);
@@ -197,7 +221,8 @@ void main() {
     group('liquidityPoolId', () {
       test('adds liquidity_pool_id query parameter with hex ID', () {
         final builder = TradesRequestBuilder(mockClient, serverUri);
-        final poolId = 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890';
+        final poolId =
+            'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890';
         builder.liquidityPoolId(poolId);
         final uri = builder.buildUri();
 
@@ -206,9 +231,11 @@ void main() {
 
       test('converts L-prefixed pool ID to hex', () {
         final builder = TradesRequestBuilder(mockClient, serverUri);
-        final poolId = 'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
-        final lPrefixedId =
-            StrKey.encodeLiquidityPoolId(Util.hexToBytes(poolId));
+        final poolId =
+            'dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7';
+        final lPrefixedId = StrKey.encodeLiquidityPoolId(
+          Util.hexToBytes(poolId),
+        );
         builder.liquidityPoolId(lPrefixedId);
         final uri = builder.buildUri();
 
@@ -218,10 +245,7 @@ void main() {
       test('throws on invalid L-prefixed ID', () {
         final builder = TradesRequestBuilder(mockClient, serverUri);
 
-        expect(
-          () => builder.liquidityPoolId('LINVALID'),
-          throwsArgumentError,
-        );
+        expect(() => builder.liquidityPoolId('LINVALID'), throwsArgumentError);
       });
     });
 
@@ -252,7 +276,8 @@ void main() {
     });
 
     group('buildUri with combinations', () {
-      final issuerAccountId = 'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
+      final issuerAccountId =
+          'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX';
 
       test('builds URI with trading pair and pagination', () {
         final builder = TradesRequestBuilder(mockClient, serverUri);
@@ -381,10 +406,14 @@ void main() {
       });
 
       test('executes request with all filters applied', () async {
-        final mockResponse = '{"_embedded": {"records": []}, "_links": {"self": {"href": "test"}}}';
+        final mockResponse =
+            '{"_embedded": {"records": []}, "_links": {"self": {"href": "test"}}}';
         final client = MockClient((request) async {
           expect(request.url.queryParameters['offer_id'], equals('12345'));
-          expect(request.url.queryParameters['trade_type'], equals('orderbook'));
+          expect(
+            request.url.queryParameters['trade_type'],
+            equals('orderbook'),
+          );
           expect(request.url.queryParameters['limit'], equals('10'));
           return http.Response(mockResponse, 200);
         });
@@ -399,7 +428,10 @@ void main() {
 
       test('handles HTTP errors gracefully', () async {
         final client = MockClient((request) async {
-          return http.Response('{"type": "not_found", "title": "Resource Missing"}', 404);
+          return http.Response(
+            '{"type": "not_found", "title": "Resource Missing"}',
+            404,
+          );
         });
 
         final builder = TradesRequestBuilder(client, serverUri);
@@ -410,28 +442,37 @@ void main() {
 
     group('requestExecute static method', () {
       test('executes request for custom URI', () async {
-        final mockResponse = '{"_embedded": {"records": []}, "_links": {"self": {"href": "test"}}}';
+        final mockResponse =
+            '{"_embedded": {"records": []}, "_links": {"self": {"href": "test"}}}';
         final client = MockClient((request) async {
           expect(request.url.toString(), contains('/trades'));
           return http.Response(mockResponse, 200);
         });
 
-        final customUri = Uri.parse('https://horizon-testnet.stellar.org/trades?cursor=test');
-        final page = await TradesRequestBuilder.requestExecute(client, customUri);
+        final customUri = Uri.parse(
+          'https://horizon-testnet.stellar.org/trades?cursor=test',
+        );
+        final page = await TradesRequestBuilder.requestExecute(
+          client,
+          customUri,
+        );
 
         expect(page, isNotNull);
         expect(page.records, isEmpty);
       });
 
       test('includes proper headers in request', () async {
-        final mockResponse = '{"_embedded": {"records": []}, "_links": {"self": {"href": "test"}}}';
+        final mockResponse =
+            '{"_embedded": {"records": []}, "_links": {"self": {"href": "test"}}}';
         final client = MockClient((request) async {
           expect(request.headers['X-Client-Name'], isNotNull);
           expect(request.headers['X-Client-Version'], isNotNull);
           return http.Response(mockResponse, 200);
         });
 
-        final customUri = Uri.parse('https://horizon-testnet.stellar.org/trades');
+        final customUri = Uri.parse(
+          'https://horizon-testnet.stellar.org/trades',
+        );
         await TradesRequestBuilder.requestExecute(client, customUri);
       });
     });

@@ -23,16 +23,17 @@ abstract class SignerEffectResponse extends EffectResponse {
 
   /// Creates a [SignerEffectResponse] with signer weight, public key and effect details.
   SignerEffectResponse(
-      this.weight,
-      this.publicKey,
-      this.key,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.weight,
+    this.publicKey,
+    this.key,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 }
 
 /// Represents a signer created effect response from Horizon.
@@ -64,16 +65,17 @@ abstract class SignerEffectResponse extends EffectResponse {
 class SignerCreatedEffectResponse extends SignerEffectResponse {
   /// Creates a [SignerCreatedEffectResponse] with signer weight, public key and effect details.
   SignerCreatedEffectResponse(
-      super.weight,
-      super.publicKey,
-      super.key,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    super.weight,
+    super.publicKey,
+    super.key,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a signer created effect from Horizon API JSON response.
   factory SignerCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
@@ -87,7 +89,8 @@ class SignerCreatedEffectResponse extends SignerEffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -121,16 +124,17 @@ class SignerCreatedEffectResponse extends SignerEffectResponse {
 class SignerRemovedEffectResponse extends SignerEffectResponse {
   /// Creates a [SignerRemovedEffectResponse] with signer weight, public key and effect details.
   SignerRemovedEffectResponse(
-      super.weight,
-      super.publicKey,
-      super.key,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    super.weight,
+    super.publicKey,
+    super.key,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a signer removed effect from Horizon API JSON response.
   factory SignerRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
@@ -144,7 +148,8 @@ class SignerRemovedEffectResponse extends SignerEffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -178,16 +183,17 @@ class SignerRemovedEffectResponse extends SignerEffectResponse {
 class SignerUpdatedEffectResponse extends SignerEffectResponse {
   /// Creates a [SignerUpdatedEffectResponse] with signer weight, public key and effect details.
   SignerUpdatedEffectResponse(
-      super.weight,
-      super.publicKey,
-      super.key,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    super.weight,
+    super.publicKey,
+    super.key,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a signer updated effect from Horizon API JSON response.
   factory SignerUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
@@ -201,7 +207,8 @@ class SignerUpdatedEffectResponse extends SignerEffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }

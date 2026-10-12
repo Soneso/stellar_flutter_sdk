@@ -1,5 +1,4 @@
 @Timeout(const Duration(seconds: 600))
-
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
@@ -13,8 +12,7 @@ void main() {
   final String authContractPath = 'test/wasm/soroban_auth_contract.wasm';
   final String eventsContractPath = 'test/wasm/soroban_events_contract.wasm';
   final String tokenContractPath = 'test/wasm/soroban_token_contract.wasm';
-  final String swapContractPath =
-      'test/wasm/soroban_atomic_swap_contract.wasm';
+  final String swapContractPath = 'test/wasm/soroban_atomic_swap_contract.wasm';
 
   group('SorobanServer', () {
     late SorobanServer server;
@@ -258,8 +256,9 @@ void main() {
       );
 
       // Deploy token A
-      XdrSCVal adminAddress =
-          Address.forAccountId(adminKeyPair.accountId).toXdrSCVal();
+      XdrSCVal adminAddress = Address.forAccountId(
+        adminKeyPair.accountId,
+      ).toXdrSCVal();
       tokenAClient = await SorobanClient.deploy(
         deployRequest: DeployRequest(
           rpcUrl: rpcUrl,
@@ -396,8 +395,7 @@ void main() {
       XdrSCVal smallI128 = XdrSCVal.forI128BigInt(BigInt.from(42));
       expect(smallI128.i128, isNotNull);
 
-      XdrSCVal partsVal =
-          XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(1000));
+      XdrSCVal partsVal = XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(1000));
       expect(partsVal.i128, isNotNull);
     });
 
@@ -422,8 +420,7 @@ void main() {
       expect(vec.vec!.length, 2);
 
       XdrSCVal map = XdrSCVal.forMap([
-        XdrSCMapEntry(
-            XdrSCVal.forSymbol('name'), XdrSCVal.forString('Alice')),
+        XdrSCMapEntry(XdrSCVal.forSymbol('name'), XdrSCVal.forString('Alice')),
         XdrSCMapEntry(XdrSCVal.forSymbol('age'), XdrSCVal.forU32(30)),
       ]);
       expect(map.map, isNotNull);
@@ -464,10 +461,7 @@ void main() {
       eventsContractId = client.getContractId();
 
       // Invoke to emit an event
-      XdrSCVal result = await client.invokeMethod(
-        name: 'increment',
-        args: [],
-      );
+      XdrSCVal result = await client.invokeMethod(name: 'increment', args: []);
       expect(result.u32?.uint32, 1);
 
       // Get current ledger for event query
@@ -502,10 +496,7 @@ void main() {
       );
 
       GetEventsResponse response = await server.getEvents(
-        GetEventsRequest(
-          startLedger: eventLedger,
-          filters: [filter],
-        ),
+        GetEventsRequest(startLedger: eventLedger, filters: [filter]),
       );
 
       expect(response.isErrorResponse, false);
@@ -552,10 +543,11 @@ void main() {
       expect(helloFunc!.name, 'hello');
 
       // Use funcArgsToXdrSCValues
-      List<XdrSCVal> args =
-          spec.funcArgsToXdrSCValues('hello', {'to': 'Spec'});
-      XdrSCVal result =
-          await helloClient.invokeMethod(name: 'hello', args: args);
+      List<XdrSCVal> args = spec.funcArgsToXdrSCValues('hello', {'to': 'Spec'});
+      XdrSCVal result = await helloClient.invokeMethod(
+        name: 'hello',
+        args: args,
+      );
       expect(result.vec![0].sym, 'Hello');
       expect(result.vec![1].sym, 'Spec');
     });
@@ -601,8 +593,8 @@ void main() {
         ),
       );
 
-      SorobanContractInfo? contractInfo =
-          await server.loadContractInfoForWasmId(wasmId);
+      SorobanContractInfo? contractInfo = await server
+          .loadContractInfoForWasmId(wasmId);
       expect(contractInfo, isNotNull);
 
       ContractSpec spec = ContractSpec(contractInfo!.specEntries);
@@ -639,8 +631,9 @@ void main() {
 
       Account? account = await server.getAccount(keyPair.accountId);
       expect(account, isNotNull);
-      Transaction tx =
-          TransactionBuilder(account!).addOperation(uploadOp).build();
+      Transaction tx = TransactionBuilder(
+        account!,
+      ).addOperation(uploadOp).build();
 
       SimulateTransactionResponse sim = await server.simulateTransaction(
         SimulateTransactionRequest(tx),
@@ -651,8 +644,7 @@ void main() {
       tx.addResourceFee(sim.minResourceFee!);
       tx.sign(keyPair, network);
 
-      SendTransactionResponse sendResponse =
-          await server.sendTransaction(tx);
+      SendTransactionResponse sendResponse = await server.sendTransaction(tx);
       expect(sendResponse.hash, isNotNull);
 
       // Poll for result
@@ -660,8 +652,7 @@ void main() {
       do {
         await Future.delayed(Duration(seconds: 3));
         txResponse = await server.getTransaction(sendResponse.hash!);
-      } while (
-          txResponse.status == GetTransactionResponse.STATUS_NOT_FOUND);
+      } while (txResponse.status == GetTransactionResponse.STATUS_NOT_FOUND);
 
       expect(txResponse.status, GetTransactionResponse.STATUS_SUCCESS);
       String? wasmHash = txResponse.getWasmId();
@@ -689,13 +680,11 @@ void main() {
     test('soroban: toNative - Maps preserve key order', () {
       // Snippet from soroban.md "Converting to Native Dart Values"
       XdrSCVal mapVal = XdrSCVal.forMap([
-        XdrSCMapEntry(
-            XdrSCVal.forSymbol('name'), XdrSCVal.forString('Alice')),
+        XdrSCMapEntry(XdrSCVal.forSymbol('name'), XdrSCVal.forString('Alice')),
         XdrSCMapEntry(XdrSCVal.forSymbol('age'), XdrSCVal.forU32(30)),
       ]);
 
-      Map<dynamic, dynamic> native =
-          mapVal.toNative() as Map<dynamic, dynamic>;
+      Map<dynamic, dynamic> native = mapVal.toNative() as Map<dynamic, dynamic>;
       expect(native, equals({'name': 'Alice', 'age': 30}));
       expect(native.keys.toList(), equals(['name', 'age']));
     });
@@ -706,7 +695,9 @@ void main() {
       // whole map falls back to the XdrSCVal itself.
       XdrSCVal mapWithVecKey = XdrSCVal.forMap([
         XdrSCMapEntry(
-            XdrSCVal.forVec([XdrSCVal.forBool(true)]), XdrSCVal.forU32(1)),
+          XdrSCVal.forVec([XdrSCVal.forBool(true)]),
+          XdrSCVal.forU32(1),
+        ),
       ]);
 
       dynamic native = mapWithVecKey.toNative();

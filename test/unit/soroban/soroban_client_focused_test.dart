@@ -223,9 +223,9 @@ void main() {
       expect(maxSaltRequest.salt, isNotNull);
 
       // Custom salt
-      final customSalt = XdrUint256(Uint8List.fromList(
-        List.generate(32, (i) => i * 7 % 256),
-      ));
+      final customSalt = XdrUint256(
+        Uint8List.fromList(List.generate(32, (i) => i * 7 % 256)),
+      );
       final customSaltRequest = DeployRequest(
         sourceAccountKeyPair: keyPair,
         network: Network.TESTNET,
@@ -245,8 +245,14 @@ void main() {
         wasmHash: 'abc123',
       );
 
-      expect(request.methodOptions.fee, NetworkConstants.DEFAULT_SOROBAN_BASE_FEE);
-      expect(request.methodOptions.timeoutInSeconds, NetworkConstants.DEFAULT_TIMEOUT_SECONDS);
+      expect(
+        request.methodOptions.fee,
+        NetworkConstants.DEFAULT_SOROBAN_BASE_FEE,
+      );
+      expect(
+        request.methodOptions.timeoutInSeconds,
+        NetworkConstants.DEFAULT_TIMEOUT_SECONDS,
+      );
       expect(request.methodOptions.simulate, true);
       expect(request.methodOptions.restore, false);
     });
@@ -309,8 +315,6 @@ void main() {
 
       final highFee = MethodOptions(fee: 1000000);
       expect(highFee.fee, 1000000);
-
-
     });
 
     test('handles extreme timeout values', () {
@@ -407,8 +411,18 @@ void main() {
         XdrSCVal.forI64(BigInt.parse('-9223372036854775808')), // Min i64
         XdrSCVal.forI128Parts(BigInt.zero, BigInt.from(999)),
         XdrSCVal.forU128Parts(BigInt.zero, BigInt.from(123)),
-        XdrSCVal.forI256Parts(BigInt.zero, BigInt.zero, BigInt.zero, BigInt.from(456)),
-        XdrSCVal.forU256Parts(BigInt.zero, BigInt.zero, BigInt.zero, BigInt.from(789)),
+        XdrSCVal.forI256Parts(
+          BigInt.zero,
+          BigInt.zero,
+          BigInt.zero,
+          BigInt.from(456),
+        ),
+        XdrSCVal.forU256Parts(
+          BigInt.zero,
+          BigInt.zero,
+          BigInt.zero,
+          BigInt.from(789),
+        ),
 
         // Boolean
         XdrSCVal.forBool(true),
@@ -426,7 +440,9 @@ void main() {
         // Bytes
         XdrSCVal.forBytes(Uint8List(0)),
         XdrSCVal.forBytes(Uint8List.fromList([1, 2, 3])),
-        XdrSCVal.forBytes(Uint8List.fromList(List.generate(1000, (i) => i % 256))),
+        XdrSCVal.forBytes(
+          Uint8List.fromList(List.generate(1000, (i) => i % 256)),
+        ),
 
         // Collections
         XdrSCVal.forVec([]),
@@ -458,24 +474,48 @@ void main() {
       );
 
       // Null auth
-      final resultNull = SimulateHostFunctionResult(null, txData, XdrSCVal.forVoid());
+      final resultNull = SimulateHostFunctionResult(
+        null,
+        txData,
+        XdrSCVal.forVoid(),
+      );
       expect(resultNull.auth, isNull);
 
       // Empty auth list
-      final resultEmpty = SimulateHostFunctionResult([], txData, XdrSCVal.forU32(42));
+      final resultEmpty = SimulateHostFunctionResult(
+        [],
+        txData,
+        XdrSCVal.forU32(42),
+      );
       expect(resultEmpty.auth!.length, 0);
 
       // Different return types
-      final resultVoid = SimulateHostFunctionResult(null, txData, XdrSCVal.forVoid());
+      final resultVoid = SimulateHostFunctionResult(
+        null,
+        txData,
+        XdrSCVal.forVoid(),
+      );
       expect(resultVoid.returnedValue.discriminant, XdrSCValType.SCV_VOID);
 
-      final resultU32 = SimulateHostFunctionResult(null, txData, XdrSCVal.forU32(123));
+      final resultU32 = SimulateHostFunctionResult(
+        null,
+        txData,
+        XdrSCVal.forU32(123),
+      );
       expect(resultU32.returnedValue.u32!.uint32, 123);
 
-      final resultBool = SimulateHostFunctionResult(null, txData, XdrSCVal.forBool(false));
+      final resultBool = SimulateHostFunctionResult(
+        null,
+        txData,
+        XdrSCVal.forBool(false),
+      );
       expect(resultBool.returnedValue.b, false);
 
-      final resultString = SimulateHostFunctionResult(null, txData, XdrSCVal.forString('test'));
+      final resultString = SimulateHostFunctionResult(
+        null,
+        txData,
+        XdrSCVal.forString('test'),
+      );
       expect(resultString.returnedValue.str, isNotNull);
     });
 
@@ -501,7 +541,11 @@ void main() {
         XdrInt64(BigInt.from(2000)),
       );
 
-      final result = SimulateHostFunctionResult(null, txData, XdrSCVal.forVoid());
+      final result = SimulateHostFunctionResult(
+        null,
+        txData,
+        XdrSCVal.forVoid(),
+      );
 
       expect(result.transactionData.resources.footprint.readOnly.length, 2);
       expect(result.transactionData.resources.footprint.readWrite.length, 2);
@@ -564,7 +608,8 @@ void main() {
   group('RPC URL Variations', () {
     test('handles various RPC URL formats', () {
       final keyPair = KeyPair.random();
-      final contractId = 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK';
+      final contractId =
+          'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK';
 
       // Standard HTTPS with port
       final https = ClientOptions(

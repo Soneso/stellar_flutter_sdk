@@ -49,8 +49,8 @@ class OZStoredCredential {
     this.transports,
     this.deviceType,
     this.backedUp,
-  })  : publicKey = Uint8List.fromList(publicKey),
-        createdAt = createdAt ?? DateTime.now().millisecondsSinceEpoch;
+  }) : publicKey = Uint8List.fromList(publicKey),
+       createdAt = createdAt ?? DateTime.now().millisecondsSinceEpoch;
 
   /// WebAuthn credential ID (Base64URL-encoded). The unique identifier
   /// returned by the browser during WebAuthn registration.
@@ -137,14 +137,11 @@ class OZStoredCredential {
           ? deploymentError
           : (deploymentError ?? this.deploymentError),
       createdAt: createdAt ?? this.createdAt,
-      lastUsedAt:
-          setLastUsedAt ? lastUsedAt : (lastUsedAt ?? this.lastUsedAt),
+      lastUsedAt: setLastUsedAt ? lastUsedAt : (lastUsedAt ?? this.lastUsedAt),
       nickname: setNickname ? nickname : (nickname ?? this.nickname),
       isPrimary: isPrimary ?? this.isPrimary,
-      transports:
-          setTransports ? transports : (transports ?? this.transports),
-      deviceType:
-          setDeviceType ? deviceType : (deviceType ?? this.deviceType),
+      transports: setTransports ? transports : (transports ?? this.transports),
+      deviceType: setDeviceType ? deviceType : (deviceType ?? this.deviceType),
       backedUp: setBackedUp ? backedUp : (backedUp ?? this.backedUp),
     );
   }
@@ -154,18 +151,17 @@ class OZStoredCredential {
   /// — there is no way to clear a previously-set field via this helper. To
   /// clear a field, save a full replacement [OZStoredCredential] through
   /// [OZStorageAdapter.save].
-  OZStoredCredential applyUpdate(OZStoredCredentialUpdate updates) =>
-      copyWith(
-        deploymentStatus: updates.deploymentStatus,
-        deploymentError: updates.deploymentError,
-        contractId: updates.contractId,
-        lastUsedAt: updates.lastUsedAt,
-        nickname: updates.nickname,
-        isPrimary: updates.isPrimary,
-        transports: updates.transports,
-        deviceType: updates.deviceType,
-        backedUp: updates.backedUp,
-      );
+  OZStoredCredential applyUpdate(OZStoredCredentialUpdate updates) => copyWith(
+    deploymentStatus: updates.deploymentStatus,
+    deploymentError: updates.deploymentError,
+    contractId: updates.contractId,
+    lastUsedAt: updates.lastUsedAt,
+    nickname: updates.nickname,
+    isPrimary: updates.isPrimary,
+    transports: updates.transports,
+    deviceType: updates.deviceType,
+    backedUp: updates.backedUp,
+  );
 
   @override
   bool operator ==(Object other) {
@@ -258,8 +254,7 @@ class OZStoredSession {
   final int expiresAt;
 
   /// Whether the session has expired against wall-clock time.
-  bool get isExpired =>
-      DateTime.now().millisecondsSinceEpoch >= expiresAt;
+  bool get isExpired => DateTime.now().millisecondsSinceEpoch >= expiresAt;
 
   @override
   bool operator ==(Object other) {
@@ -417,15 +412,18 @@ class OZInMemoryStorageAdapter implements OZStorageAdapter {
 
   @override
   Future<List<OZStoredCredential>> getByContract(String contractId) {
-    return _withLock<List<OZStoredCredential>>(() => _credentials.values
-        .where((credential) => credential.contractId == contractId)
-        .toList(growable: false));
+    return _withLock<List<OZStoredCredential>>(
+      () => _credentials.values
+          .where((credential) => credential.contractId == contractId)
+          .toList(growable: false),
+    );
   }
 
   @override
   Future<List<OZStoredCredential>> getAll() {
     return _withLock<List<OZStoredCredential>>(
-        () => _credentials.values.toList(growable: false));
+      () => _credentials.values.toList(growable: false),
+    );
   }
 
   @override
@@ -530,10 +528,7 @@ class OZConnectedWallet {
 class OZSignAuthEntryOptions {
   /// Constructs a sign-auth-entry options record. All fields default to
   /// `null` so callers can omit any combination.
-  const OZSignAuthEntryOptions({
-    this.networkPassphrase,
-    this.address,
-  });
+  const OZSignAuthEntryOptions({this.networkPassphrase, this.address});
 
   /// Network passphrase for signing context.
   final String? networkPassphrase;

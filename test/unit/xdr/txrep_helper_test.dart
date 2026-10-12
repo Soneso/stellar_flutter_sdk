@@ -113,8 +113,7 @@ void main() {
 
   group('TxRepHelper.hexToBytes', () {
     test('decodes hex string', () {
-      expect(TxRepHelper.hexToBytes('abcd'),
-          Uint8List.fromList([0xAB, 0xCD]));
+      expect(TxRepHelper.hexToBytes('abcd'), Uint8List.fromList([0xAB, 0xCD]));
     });
 
     test('returns empty for "0"', () {
@@ -122,8 +121,7 @@ void main() {
     });
 
     test('handles odd-length hex', () {
-      expect(TxRepHelper.hexToBytes('abc'),
-          Uint8List.fromList([0x0A, 0xBC]));
+      expect(TxRepHelper.hexToBytes('abc'), Uint8List.fromList([0x0A, 0xBC]));
     });
   });
 
@@ -290,8 +288,10 @@ void main() {
       var formatted = TxRepHelper.formatAccountId(accountId);
       expect(formatted.startsWith('G'), isTrue);
       var parsed = TxRepHelper.parseAccountId(formatted);
-      expect(parsed.accountID.getEd25519()!.uint256,
-          accountId.accountID.getEd25519()!.uint256);
+      expect(
+        parsed.accountID.getEd25519()!.uint256,
+        accountId.accountID.getEd25519()!.uint256,
+      );
     });
   });
 
@@ -301,8 +301,9 @@ void main() {
   group('TxRepHelper muxed account', () {
     test('formats and parses ed25519 account', () {
       var muxed = XdrMuxedAccount(XdrCryptoKeyType.KEY_TYPE_ED25519);
-      muxed.ed25519 =
-          XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)));
+      muxed.ed25519 = XdrUint256(
+        Uint8List.fromList(List<int>.filled(32, 0xAB)),
+      );
       var formatted = TxRepHelper.formatMuxedAccount(muxed);
       expect(formatted.startsWith('G'), isTrue);
       var parsed = TxRepHelper.parseMuxedAccount(formatted);
@@ -310,10 +311,7 @@ void main() {
     });
 
     test('throws for invalid strkey', () {
-      expect(
-        () => TxRepHelper.parseMuxedAccount('INVALID'),
-        throwsException,
-      );
+      expect(() => TxRepHelper.parseMuxedAccount('INVALID'), throwsException);
     });
   });
 
@@ -343,8 +341,10 @@ void main() {
       pk.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)));
       var asset = XdrAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12);
       asset.alphaNum12 = XdrAssetAlphaNum12(
-        Uint8List.fromList(
-            [...[0x4C, 0x4F, 0x4E, 0x47, 0x43, 0x4F, 0x44, 0x45], ...List<int>.filled(4, 0)]),
+        Uint8List.fromList([
+          ...[0x4C, 0x4F, 0x4E, 0x47, 0x43, 0x4F, 0x44, 0x45],
+          ...List<int>.filled(4, 0),
+        ]),
         XdrAccountID(pk),
       );
       var formatted = TxRepHelper.formatAsset(asset);
@@ -379,8 +379,10 @@ void main() {
       pk.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)));
       var asset = XdrAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12);
       asset.alphaNum12 = XdrAssetAlphaNum12(
-        Uint8List.fromList(
-            [...[0x4C, 0x4F, 0x4E, 0x47, 0x43, 0x4F, 0x44, 0x45], ...List<int>.filled(4, 0)]),
+        Uint8List.fromList([
+          ...[0x4C, 0x4F, 0x4E, 0x47, 0x43, 0x4F, 0x44, 0x45],
+          ...List<int>.filled(4, 0),
+        ]),
         XdrAccountID(pk),
       );
       var formatted = TxRepHelper.formatAsset(asset);
@@ -389,16 +391,20 @@ void main() {
     });
 
     test('parseAsset throws for invalid format', () {
-      expect(() => TxRepHelper.parseAsset('invalid:format:extra'),
-          throwsException);
+      expect(
+        () => TxRepHelper.parseAsset('invalid:format:extra'),
+        throwsException,
+      );
     });
 
     test('parseAsset throws for asset code too long', () {
       var pk = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
       pk.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)));
       var issuer = TxRepHelper.formatAccountId(XdrAccountID(pk));
-      expect(() => TxRepHelper.parseAsset('TOOLONGASSETCODE:$issuer'),
-          throwsException);
+      expect(
+        () => TxRepHelper.parseAsset('TOOLONGASSETCODE:$issuer'),
+        throwsException,
+      );
     });
   });
 
@@ -414,34 +420,38 @@ void main() {
     test('formats alphanum4', () {
       var pk = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
       pk.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)));
-      var asset =
-          XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4);
+      var asset = XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4);
       asset.alphaNum4 = XdrAssetAlphaNum4(
         Uint8List.fromList([0x55, 0x53, 0x44, 0x00]),
         XdrAccountID(pk),
       );
-      expect(TxRepHelper.formatChangeTrustAsset(asset).startsWith('USD:G'),
-          isTrue);
+      expect(
+        TxRepHelper.formatChangeTrustAsset(asset).startsWith('USD:G'),
+        isTrue,
+      );
     });
 
     test('formats alphanum12', () {
       var pk = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
       pk.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)));
-      var asset =
-          XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12);
+      var asset = XdrChangeTrustAsset(
+        XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12,
+      );
       asset.alphaNum12 = XdrAssetAlphaNum12(
-        Uint8List.fromList(
-            [...[0x4C, 0x4F, 0x4E, 0x47, 0x43, 0x4F, 0x44, 0x45], ...List<int>.filled(4, 0)]),
+        Uint8List.fromList([
+          ...[0x4C, 0x4F, 0x4E, 0x47, 0x43, 0x4F, 0x44, 0x45],
+          ...List<int>.filled(4, 0),
+        ]),
         XdrAccountID(pk),
       );
       expect(
-          TxRepHelper.formatChangeTrustAsset(asset).startsWith('LONGCODE:G'),
-          isTrue);
+        TxRepHelper.formatChangeTrustAsset(asset).startsWith('LONGCODE:G'),
+        isTrue,
+      );
     });
 
     test('throws for pool share', () {
-      var asset =
-          XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_POOL_SHARE);
+      var asset = XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_POOL_SHARE);
       expect(() => TxRepHelper.formatChangeTrustAsset(asset), throwsException);
     });
 
@@ -458,8 +468,7 @@ void main() {
     test('parseChangeTrustAsset roundtrips alphanum4', () {
       var pk = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
       pk.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)));
-      var asset =
-          XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4);
+      var asset = XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4);
       asset.alphaNum4 = XdrAssetAlphaNum4(
         Uint8List.fromList([0x55, 0x53, 0x44, 0x00]),
         XdrAccountID(pk),
@@ -472,11 +481,14 @@ void main() {
     test('parseChangeTrustAsset roundtrips alphanum12', () {
       var pk = XdrPublicKey(XdrPublicKeyType.PUBLIC_KEY_TYPE_ED25519);
       pk.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)));
-      var asset =
-          XdrChangeTrustAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12);
+      var asset = XdrChangeTrustAsset(
+        XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12,
+      );
       asset.alphaNum12 = XdrAssetAlphaNum12(
-        Uint8List.fromList(
-            [...[0x4C, 0x4F, 0x4E, 0x47, 0x43, 0x4F, 0x44, 0x45], ...List<int>.filled(4, 0)]),
+        Uint8List.fromList([
+          ...[0x4C, 0x4F, 0x4E, 0x47, 0x43, 0x4F, 0x44, 0x45],
+          ...List<int>.filled(4, 0),
+        ]),
         XdrAccountID(pk),
       );
       var formatted = TxRepHelper.formatChangeTrustAsset(asset);
@@ -485,8 +497,10 @@ void main() {
     });
 
     test('parseChangeTrustAsset throws for invalid format', () {
-      expect(() => TxRepHelper.parseChangeTrustAsset('bad:format:extra'),
-          throwsException);
+      expect(
+        () => TxRepHelper.parseChangeTrustAsset('bad:format:extra'),
+        throwsException,
+      );
     });
 
     test('parseChangeTrustAsset throws for code too long', () {
@@ -494,8 +508,9 @@ void main() {
       pk.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)));
       var issuer = TxRepHelper.formatAccountId(XdrAccountID(pk));
       expect(
-          () => TxRepHelper.parseChangeTrustAsset('TOOLONGASSETCODE:$issuer'),
-          throwsException);
+        () => TxRepHelper.parseChangeTrustAsset('TOOLONGASSETCODE:$issuer'),
+        throwsException,
+      );
     });
   });
 
@@ -516,8 +531,10 @@ void main() {
         Uint8List.fromList([0x55, 0x53, 0x44, 0x00]),
         XdrAccountID(pk),
       );
-      expect(TxRepHelper.formatTrustlineAsset(asset).startsWith('USD:G'),
-          isTrue);
+      expect(
+        TxRepHelper.formatTrustlineAsset(asset).startsWith('USD:G'),
+        isTrue,
+      );
     });
 
     test('formats alphanum12', () {
@@ -525,18 +542,23 @@ void main() {
       pk.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)));
       var asset = XdrTrustlineAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12);
       asset.alphaNum12 = XdrAssetAlphaNum12(
-        Uint8List.fromList(
-            [...[0x4C, 0x4F, 0x4E, 0x47, 0x43, 0x4F, 0x44, 0x45], ...List<int>.filled(4, 0)]),
+        Uint8List.fromList([
+          ...[0x4C, 0x4F, 0x4E, 0x47, 0x43, 0x4F, 0x44, 0x45],
+          ...List<int>.filled(4, 0),
+        ]),
         XdrAccountID(pk),
       );
-      expect(TxRepHelper.formatTrustlineAsset(asset).startsWith('LONGCODE:G'),
-          isTrue);
+      expect(
+        TxRepHelper.formatTrustlineAsset(asset).startsWith('LONGCODE:G'),
+        isTrue,
+      );
     });
 
     test('formats pool share as hex', () {
       var asset = XdrTrustlineAsset(XdrAssetType.ASSET_TYPE_POOL_SHARE);
-      asset.liquidityPoolID =
-          XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)));
+      asset.liquidityPoolID = XdrHash(
+        Uint8List.fromList(List<int>.filled(32, 0xAB)),
+      );
       var formatted = TxRepHelper.formatTrustlineAsset(asset);
       expect(formatted.length, 64); // 32 bytes = 64 hex chars
     });
@@ -553,13 +575,13 @@ void main() {
 
     test('parseTrustlineAsset roundtrips pool share', () {
       var asset = XdrTrustlineAsset(XdrAssetType.ASSET_TYPE_POOL_SHARE);
-      asset.liquidityPoolID =
-          XdrHash(Uint8List.fromList(List<int>.filled(32, 0xAB)));
+      asset.liquidityPoolID = XdrHash(
+        Uint8List.fromList(List<int>.filled(32, 0xAB)),
+      );
       var formatted = TxRepHelper.formatTrustlineAsset(asset);
       var parsed = TxRepHelper.parseTrustlineAsset(formatted);
       expect(parsed.discriminant, XdrAssetType.ASSET_TYPE_POOL_SHARE);
-      expect(parsed.liquidityPoolID!.hash,
-          asset.liquidityPoolID!.hash);
+      expect(parsed.liquidityPoolID!.hash, asset.liquidityPoolID!.hash);
     });
 
     test('parseTrustlineAsset roundtrips alphanum4', () {
@@ -580,8 +602,10 @@ void main() {
       pk.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)));
       var asset = XdrTrustlineAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12);
       asset.alphaNum12 = XdrAssetAlphaNum12(
-        Uint8List.fromList(
-            [...[0x4C, 0x4F, 0x4E, 0x47, 0x43, 0x4F, 0x44, 0x45], ...List<int>.filled(4, 0)]),
+        Uint8List.fromList([
+          ...[0x4C, 0x4F, 0x4E, 0x47, 0x43, 0x4F, 0x44, 0x45],
+          ...List<int>.filled(4, 0),
+        ]),
         XdrAccountID(pk),
       );
       var formatted = TxRepHelper.formatTrustlineAsset(asset);
@@ -590,8 +614,10 @@ void main() {
     });
 
     test('parseTrustlineAsset throws for invalid format', () {
-      expect(() => TxRepHelper.parseTrustlineAsset('bad:format:extra'),
-          throwsException);
+      expect(
+        () => TxRepHelper.parseTrustlineAsset('bad:format:extra'),
+        throwsException,
+      );
     });
 
     test('parseTrustlineAsset throws for code too long', () {
@@ -599,8 +625,9 @@ void main() {
       pk.ed25519 = XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB)));
       var issuer = TxRepHelper.formatAccountId(XdrAccountID(pk));
       expect(
-          () => TxRepHelper.parseTrustlineAsset('TOOLONGASSETCODE:$issuer'),
-          throwsException);
+        () => TxRepHelper.parseTrustlineAsset('TOOLONGASSETCODE:$issuer'),
+        throwsException,
+      );
     });
   });
 
@@ -620,13 +647,13 @@ void main() {
 
     test('formats and parses preAuthTx', () {
       var key = XdrSignerKey(XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
-      key.preAuthTx =
-          XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xCD)));
+      key.preAuthTx = XdrUint256(
+        Uint8List.fromList(List<int>.filled(32, 0xCD)),
+      );
       var formatted = TxRepHelper.formatSignerKey(key);
       expect(formatted.startsWith('T'), isTrue);
       var parsed = TxRepHelper.parseSignerKey(formatted);
-      expect(
-          parsed.discriminant, XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
+      expect(parsed.discriminant, XdrSignerKeyType.SIGNER_KEY_TYPE_PRE_AUTH_TX);
       expect(parsed.preAuthTx!.uint256, key.preAuthTx!.uint256);
     });
 
@@ -642,7 +669,8 @@ void main() {
 
     test('formats and parses signedPayload', () {
       var key = XdrSignerKey(
-          XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD);
+        XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD,
+      );
       key.signedPayload = XdrSignedPayload(
         XdrUint256(Uint8List.fromList(List<int>.filled(32, 0xAB))),
         XdrDataValue(Uint8List.fromList([1, 2, 3, 4])),
@@ -650,8 +678,10 @@ void main() {
       var formatted = TxRepHelper.formatSignerKey(key);
       expect(formatted.startsWith('P'), isTrue);
       var parsed = TxRepHelper.parseSignerKey(formatted);
-      expect(parsed.discriminant,
-          XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD);
+      expect(
+        parsed.discriminant,
+        XdrSignerKeyType.SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD,
+      );
     });
 
     test('parseSignerKey throws for unknown prefix', () {
@@ -664,35 +694,39 @@ void main() {
   // ---------------------------------------------------------------------------
   group('TxRepHelper allowTrustAsset', () {
     test('formats alphanum4', () {
-      var asset =
-          XdrAllowTrustOpAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4);
+      var asset = XdrAllowTrustOpAsset(
+        XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4,
+      );
       asset.assetCode4 = Uint8List.fromList([0x55, 0x53, 0x44, 0x00]);
       expect(TxRepHelper.formatAllowTrustAsset(asset), 'USD');
     });
 
     test('formats alphanum12', () {
-      var asset =
-          XdrAllowTrustOpAsset(XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12);
-      asset.assetCode12 = Uint8List.fromList(
-          [...[0x4C, 0x4F, 0x4E, 0x47, 0x43, 0x4F, 0x44, 0x45], ...List<int>.filled(4, 0)]);
+      var asset = XdrAllowTrustOpAsset(
+        XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12,
+      );
+      asset.assetCode12 = Uint8List.fromList([
+        ...[0x4C, 0x4F, 0x4E, 0x47, 0x43, 0x4F, 0x44, 0x45],
+        ...List<int>.filled(4, 0),
+      ]);
       expect(TxRepHelper.formatAllowTrustAsset(asset), 'LONGCODE');
     });
 
     test('parseAllowTrustAsset alphanum4', () {
       var parsed = TxRepHelper.parseAllowTrustAsset('USD');
-      expect(
-          parsed.discriminant, XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4);
+      expect(parsed.discriminant, XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM4);
     });
 
     test('parseAllowTrustAsset alphanum12', () {
       var parsed = TxRepHelper.parseAllowTrustAsset('LONGASSET');
-      expect(
-          parsed.discriminant, XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12);
+      expect(parsed.discriminant, XdrAssetType.ASSET_TYPE_CREDIT_ALPHANUM12);
     });
 
     test('parseAllowTrustAsset throws for code too long', () {
-      expect(() => TxRepHelper.parseAllowTrustAsset('TOOLONGASSETCODE'),
-          throwsException);
+      expect(
+        () => TxRepHelper.parseAllowTrustAsset('TOOLONGASSETCODE'),
+        throwsException,
+      );
     });
   });
 

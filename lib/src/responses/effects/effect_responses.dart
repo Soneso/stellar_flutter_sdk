@@ -89,8 +89,15 @@ abstract class EffectResponse extends Response {
   /// - [pagingToken] Cursor for pagination
   /// - [account] Account ID affected by this effect
   /// - [links] Links to related resources
-  EffectResponse(this.id, this.type_i, this.type, this.createdAt,
-      this.pagingToken, this.account, this.links);
+  EffectResponse(
+    this.id,
+    this.type_i,
+    this.type,
+    this.createdAt,
+    this.pagingToken,
+    this.account,
+    this.links,
+  );
 
   factory EffectResponse.fromJson(Map<String, dynamic> json) {
     int type = json["type_i"];
@@ -132,7 +139,8 @@ abstract class EffectResponse extends Response {
         return TrustlineDeauthorizedEffectResponse.fromJson(json);
       case 25:
         return TrustlineAuthorizedToMaintainLiabilitiesEffectResponse.fromJson(
-            json);
+          json,
+        );
       case 26:
         return TrustLineFlagsUpdatedEffectResponse.fromJson(json);
       // Trading effects
@@ -248,10 +256,10 @@ class EffectResponseLinks {
   ///
   /// Returns: A map containing operation, precedes, and succeeds link objects
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'operation': operation,
-        'precedes': precedes,
-        'succeeds': succeeds
-      };
+    'operation': operation,
+    'precedes': precedes,
+    'succeeds': succeeds,
+  };
 }
 
 /// Represents an amount of a specific asset.

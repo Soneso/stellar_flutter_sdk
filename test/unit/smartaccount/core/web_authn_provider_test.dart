@@ -16,17 +16,73 @@ import 'mock_webauthn_provider.dart';
 
 // Test constants — secp256r1 generator-point G coordinates (SEC 2).
 final Uint8List _testXCoordinate = Uint8List.fromList(const [
-  0x6B, 0x17, 0xD1, 0xF2, 0xE1, 0x2C, 0x42, 0x47,
-  0xF8, 0xBC, 0xE6, 0xE5, 0x63, 0xA4, 0x40, 0xF2,
-  0x77, 0x03, 0x7D, 0x81, 0x2D, 0xEB, 0x33, 0xA0,
-  0xF4, 0xA1, 0x39, 0x45, 0xD8, 0x98, 0xC2, 0x96,
+  0x6B,
+  0x17,
+  0xD1,
+  0xF2,
+  0xE1,
+  0x2C,
+  0x42,
+  0x47,
+  0xF8,
+  0xBC,
+  0xE6,
+  0xE5,
+  0x63,
+  0xA4,
+  0x40,
+  0xF2,
+  0x77,
+  0x03,
+  0x7D,
+  0x81,
+  0x2D,
+  0xEB,
+  0x33,
+  0xA0,
+  0xF4,
+  0xA1,
+  0x39,
+  0x45,
+  0xD8,
+  0x98,
+  0xC2,
+  0x96,
 ]);
 
 final Uint8List _testYCoordinate = Uint8List.fromList(const [
-  0x4F, 0xE3, 0x42, 0xE2, 0xFE, 0x1A, 0x7F, 0x9B,
-  0x8E, 0xE7, 0xEB, 0x4A, 0x7C, 0x0F, 0x9E, 0x16,
-  0x2B, 0xCE, 0x33, 0x57, 0x6B, 0x31, 0x5E, 0xCE,
-  0xCB, 0xB6, 0x40, 0x68, 0x37, 0xBF, 0x51, 0xF5,
+  0x4F,
+  0xE3,
+  0x42,
+  0xE2,
+  0xFE,
+  0x1A,
+  0x7F,
+  0x9B,
+  0x8E,
+  0xE7,
+  0xEB,
+  0x4A,
+  0x7C,
+  0x0F,
+  0x9E,
+  0x16,
+  0x2B,
+  0xCE,
+  0x33,
+  0x57,
+  0x6B,
+  0x31,
+  0x5E,
+  0xCE,
+  0xCB,
+  0xB6,
+  0x40,
+  0x68,
+  0x37,
+  0xBF,
+  0x51,
+  0xF5,
 ]);
 
 Uint8List _expectedPublicKey() {
@@ -39,7 +95,16 @@ Uint8List _expectedPublicKey() {
 
 Uint8List _buildCoseKey() {
   final prefix = Uint8List.fromList(const [
-    0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
+    0xA5,
+    0x01,
+    0x02,
+    0x03,
+    0x26,
+    0x20,
+    0x01,
+    0x21,
+    0x58,
+    0x20,
   ]);
   final separator = Uint8List.fromList(const [0x22, 0x58, 0x20]);
   final builder = BytesBuilder()
@@ -106,17 +171,27 @@ void main() {
       // BS=0 the credential is not backed up.
       final authData = _buildMinimalAuthenticatorData(0x01);
       final flags = WebAuthnCborParser.parseAuthenticatorFlags(authData);
-      expect(flags.deviceType, equals(WebAuthnCborParser.deviceTypeSingle),
-          reason: 'BE bit clear should yield singleDevice');
-      expect(flags.backedUp, isFalse, reason: 'BS bit clear should yield false');
+      expect(
+        flags.deviceType,
+        equals(WebAuthnCborParser.deviceTypeSingle),
+        reason: 'BE bit clear should yield singleDevice',
+      );
+      expect(
+        flags.backedUp,
+        isFalse,
+        reason: 'BS bit clear should yield false',
+      );
     });
 
     test('test_authenticator_data_flags_backup_eligible_single_device', () {
       // Flags = 0x01 (UP only). BE=0 -> singleDevice, BS=0 -> not backed up.
       final authData = _buildMinimalAuthenticatorData(0x01);
       final flags = WebAuthnCborParser.parseAuthenticatorFlags(authData);
-      expect(flags.deviceType, equals(WebAuthnCborParser.deviceTypeSingle),
-          reason: 'BE clear must yield singleDevice');
+      expect(
+        flags.deviceType,
+        equals(WebAuthnCborParser.deviceTypeSingle),
+        reason: 'BE clear must yield singleDevice',
+      );
       expect(flags.backedUp, isFalse, reason: 'BS clear must yield false');
     });
 
@@ -125,10 +200,16 @@ void main() {
       // yet backed up.
       final authData = _buildMinimalAuthenticatorData(0x09);
       final flags = WebAuthnCborParser.parseAuthenticatorFlags(authData);
-      expect(flags.deviceType, equals(WebAuthnCborParser.deviceTypeMulti),
-          reason: 'BE set must yield multiDevice');
-      expect(flags.backedUp, isFalse,
-          reason: 'BS clear must yield false (eligible but not yet backed up)');
+      expect(
+        flags.deviceType,
+        equals(WebAuthnCborParser.deviceTypeMulti),
+        reason: 'BE set must yield multiDevice',
+      );
+      expect(
+        flags.backedUp,
+        isFalse,
+        reason: 'BS clear must yield false (eligible but not yet backed up)',
+      );
     });
 
     test('test_authenticator_data_flags_backed_up', () {
@@ -144,10 +225,16 @@ void main() {
       // verify the parser ignores it gracefully (BE/BS both clear).
       final authData = _buildMinimalAuthenticatorData(0x41);
       final flags = WebAuthnCborParser.parseAuthenticatorFlags(authData);
-      expect(flags.deviceType, equals(WebAuthnCborParser.deviceTypeSingle),
-          reason: 'AT bit must not influence device-type derivation');
-      expect(flags.backedUp, isFalse,
-          reason: 'AT bit must not influence backup-state derivation');
+      expect(
+        flags.deviceType,
+        equals(WebAuthnCborParser.deviceTypeSingle),
+        reason: 'AT bit must not influence device-type derivation',
+      );
+      expect(
+        flags.backedUp,
+        isFalse,
+        reason: 'AT bit must not influence backup-state derivation',
+      );
     });
 
     test('test_authenticator_data_flags_all_flags_set', () {
@@ -223,32 +310,33 @@ void main() {
     });
 
     test(
-        'test_webauthn_registration_result_inequality_different_credential_id',
-        () {
-      final attestObj = _buildAttestationObject();
-      final cred1 = Uint8List(16);
-      for (var i = 0; i < 16; i++) {
-        cred1[i] = 0x01;
-      }
-      final cred2 = Uint8List(16);
-      for (var i = 0; i < 16; i++) {
-        cred2[i] = 0x02;
-      }
+      'test_webauthn_registration_result_inequality_different_credential_id',
+      () {
+        final attestObj = _buildAttestationObject();
+        final cred1 = Uint8List(16);
+        for (var i = 0; i < 16; i++) {
+          cred1[i] = 0x01;
+        }
+        final cred2 = Uint8List(16);
+        for (var i = 0; i < 16; i++) {
+          cred2[i] = 0x02;
+        }
 
-      final result1 = WebAuthnRegistrationResult(
-        credentialId: cred1,
-        publicKey: _expectedPublicKey(),
-        attestationObject: attestObj,
-      );
+        final result1 = WebAuthnRegistrationResult(
+          credentialId: cred1,
+          publicKey: _expectedPublicKey(),
+          attestationObject: attestObj,
+        );
 
-      final result2 = WebAuthnRegistrationResult(
-        credentialId: cred2,
-        publicKey: _expectedPublicKey(),
-        attestationObject: attestObj,
-      );
+        final result2 = WebAuthnRegistrationResult(
+          credentialId: cred2,
+          publicKey: _expectedPublicKey(),
+          attestationObject: attestObj,
+        );
 
-      expect(result1 == result2, isFalse);
-    });
+        expect(result1 == result2, isFalse);
+      },
+    );
 
     test('test_webauthn_registration_result_optional_fields_defaults', () {
       final result = WebAuthnRegistrationResult(
@@ -262,53 +350,63 @@ void main() {
       expect(result.backedUp, isNull);
     });
 
-    test('test_webauthn_registration_result_different_transport_lists_not_equal',
-        () {
-      // Two results with transport lists of different lengths. This exercises
-      // the `a.length != b.length` branch in _stringListEquals (line 236
-      // of web_authn_provider.dart).
-      final cred = Uint8List(16);
-      final pk = _expectedPublicKey();
-      final attest = _buildAttestationObject();
-      final r1 = WebAuthnRegistrationResult(
-        credentialId: Uint8List.fromList(cred),
-        publicKey: Uint8List.fromList(pk),
-        attestationObject: Uint8List.fromList(attest),
-        transports: const <String>['internal'],
-      );
-      final r2 = WebAuthnRegistrationResult(
-        credentialId: Uint8List.fromList(cred),
-        publicKey: Uint8List.fromList(pk),
-        attestationObject: Uint8List.fromList(attest),
-        transports: const <String>['internal', 'hybrid'],
-      );
-      expect(r1 == r2, isFalse,
-          reason: 'Different transport list lengths must produce inequality');
-    });
+    test(
+      'test_webauthn_registration_result_different_transport_lists_not_equal',
+      () {
+        // Two results with transport lists of different lengths. This exercises
+        // the `a.length != b.length` branch in _stringListEquals (line 236
+        // of web_authn_provider.dart).
+        final cred = Uint8List(16);
+        final pk = _expectedPublicKey();
+        final attest = _buildAttestationObject();
+        final r1 = WebAuthnRegistrationResult(
+          credentialId: Uint8List.fromList(cred),
+          publicKey: Uint8List.fromList(pk),
+          attestationObject: Uint8List.fromList(attest),
+          transports: const <String>['internal'],
+        );
+        final r2 = WebAuthnRegistrationResult(
+          credentialId: Uint8List.fromList(cred),
+          publicKey: Uint8List.fromList(pk),
+          attestationObject: Uint8List.fromList(attest),
+          transports: const <String>['internal', 'hybrid'],
+        );
+        expect(
+          r1 == r2,
+          isFalse,
+          reason: 'Different transport list lengths must produce inequality',
+        );
+      },
+    );
 
-    test('test_webauthn_registration_result_same_length_different_transport_content',
-        () {
-      // Two results with transport lists of equal length but different content.
-      // This exercises the per-element comparison (line 238 of
-      // web_authn_provider.dart).
-      final cred = Uint8List(16);
-      final pk = _expectedPublicKey();
-      final attest = _buildAttestationObject();
-      final r1 = WebAuthnRegistrationResult(
-        credentialId: Uint8List.fromList(cred),
-        publicKey: Uint8List.fromList(pk),
-        attestationObject: Uint8List.fromList(attest),
-        transports: const <String>['internal'],
-      );
-      final r2 = WebAuthnRegistrationResult(
-        credentialId: Uint8List.fromList(cred),
-        publicKey: Uint8List.fromList(pk),
-        attestationObject: Uint8List.fromList(attest),
-        transports: const <String>['hybrid'],
-      );
-      expect(r1 == r2, isFalse,
-          reason: 'Different transport values must produce inequality');
-    });
+    test(
+      'test_webauthn_registration_result_same_length_different_transport_content',
+      () {
+        // Two results with transport lists of equal length but different content.
+        // This exercises the per-element comparison (line 238 of
+        // web_authn_provider.dart).
+        final cred = Uint8List(16);
+        final pk = _expectedPublicKey();
+        final attest = _buildAttestationObject();
+        final r1 = WebAuthnRegistrationResult(
+          credentialId: Uint8List.fromList(cred),
+          publicKey: Uint8List.fromList(pk),
+          attestationObject: Uint8List.fromList(attest),
+          transports: const <String>['internal'],
+        );
+        final r2 = WebAuthnRegistrationResult(
+          credentialId: Uint8List.fromList(cred),
+          publicKey: Uint8List.fromList(pk),
+          attestationObject: Uint8List.fromList(attest),
+          transports: const <String>['hybrid'],
+        );
+        expect(
+          r1 == r2,
+          isFalse,
+          reason: 'Different transport values must produce inequality',
+        );
+      },
+    );
   });
 
   group('WebAuthnAuthenticationResult', () {
@@ -348,53 +446,56 @@ void main() {
     });
 
     test(
-        'test_webauthn_authentication_result_inequality_different_signature',
-        () {
-      final base = WebAuthnAuthenticationResult(
-        credentialId: Uint8List(16),
-        authenticatorData: Uint8List(37),
-        clientDataJSON: Uint8List(100),
-        signature: Uint8List(64)
-          ..fillRange(0, 64, 0x01),
-      );
+      'test_webauthn_authentication_result_inequality_different_signature',
+      () {
+        final base = WebAuthnAuthenticationResult(
+          credentialId: Uint8List(16),
+          authenticatorData: Uint8List(37),
+          clientDataJSON: Uint8List(100),
+          signature: Uint8List(64)..fillRange(0, 64, 0x01),
+        );
 
-      final different = WebAuthnAuthenticationResult(
-        credentialId: Uint8List(16),
-        authenticatorData: Uint8List(37),
-        clientDataJSON: Uint8List(100),
-        signature: Uint8List(64)
-          ..fillRange(0, 64, 0x02),
-      );
+        final different = WebAuthnAuthenticationResult(
+          credentialId: Uint8List(16),
+          authenticatorData: Uint8List(37),
+          clientDataJSON: Uint8List(100),
+          signature: Uint8List(64)..fillRange(0, 64, 0x02),
+        );
 
-      expect(base == different, isFalse);
-    });
+        expect(base == different, isFalse);
+      },
+    );
   });
 
   group('WebAuthnProvider interface (via MockWebAuthnProvider)', () {
     test(
-        'test_mock_provider_register_returns_default_result_when_unconfigured',
-        () async {
-      final mock = MockWebAuthnProvider();
-      final challenge = Uint8List.fromList(const [0x10, 0x20, 0x30]);
-      final userId = Uint8List.fromList(const [0x40, 0x50]);
+      'test_mock_provider_register_returns_default_result_when_unconfigured',
+      () async {
+        final mock = MockWebAuthnProvider();
+        final challenge = Uint8List.fromList(const [0x10, 0x20, 0x30]);
+        final userId = Uint8List.fromList(const [0x40, 0x50]);
 
-      final result = await mock.register(
-        challenge: challenge,
-        userId: userId,
-        userName: 'alice',
-      );
+        final result = await mock.register(
+          challenge: challenge,
+          userId: userId,
+          userName: 'alice',
+        );
 
-      // Default registration result has the synthetic test fixtures.
-      expect(result.credentialId, equals(MockWebAuthnProvider.testCredentialId()));
-      expect(result.publicKey, equals(MockWebAuthnProvider.testPublicKey()));
-      expect(
-        result.attestationObject,
-        equals(MockWebAuthnProvider.testAttestationObject()),
-      );
-      expect(result.transports, equals(const ['internal']));
-      expect(result.deviceType, equals('multiDevice'));
-      expect(result.backedUp, isTrue);
-    });
+        // Default registration result has the synthetic test fixtures.
+        expect(
+          result.credentialId,
+          equals(MockWebAuthnProvider.testCredentialId()),
+        );
+        expect(result.publicKey, equals(MockWebAuthnProvider.testPublicKey()));
+        expect(
+          result.attestationObject,
+          equals(MockWebAuthnProvider.testAttestationObject()),
+        );
+        expect(result.transports, equals(const ['internal']));
+        expect(result.deviceType, equals('multiDevice'));
+        expect(result.backedUp, isTrue);
+      },
+    );
 
     test('test_mock_provider_register_throws_configured_exception', () async {
       final mock = MockWebAuthnProvider();
@@ -424,66 +525,79 @@ void main() {
       );
 
       expect(mock.registerCallCount, equals(2));
-      expect(mock.lastRegisterChallenge,
-          equals(Uint8List.fromList(const [0xAA, 0xBB])));
-      expect(mock.lastRegisterUserId,
-          equals(Uint8List.fromList(const [0xCC, 0xDD])));
+      expect(
+        mock.lastRegisterChallenge,
+        equals(Uint8List.fromList(const [0xAA, 0xBB])),
+      );
+      expect(
+        mock.lastRegisterUserId,
+        equals(Uint8List.fromList(const [0xCC, 0xDD])),
+      );
       expect(mock.lastRegisterUserName, equals('second'));
     });
 
     test(
-        'test_mock_provider_authenticate_returns_default_result_when_unconfigured',
-        () async {
-      final mock = MockWebAuthnProvider();
-      final result = await mock.authenticate(
-        challenge: Uint8List.fromList(const [0x42]),
-      );
+      'test_mock_provider_authenticate_returns_default_result_when_unconfigured',
+      () async {
+        final mock = MockWebAuthnProvider();
+        final result = await mock.authenticate(
+          challenge: Uint8List.fromList(const [0x42]),
+        );
 
-      expect(result.credentialId, equals(MockWebAuthnProvider.testCredentialId()));
-      expect(result.authenticatorData.length, equals(37));
-      expect(result.clientDataJSON.length, greaterThan(0));
-      expect(result.signature.length, equals(64));
-    });
+        expect(
+          result.credentialId,
+          equals(MockWebAuthnProvider.testCredentialId()),
+        );
+        expect(result.authenticatorData.length, equals(37));
+        expect(result.clientDataJSON.length, greaterThan(0));
+        expect(result.signature.length, equals(64));
+      },
+    );
 
-    test('test_mock_provider_authenticate_throws_configured_exception',
-        () async {
-      final mock = MockWebAuthnProvider();
-      mock.authenticationException =
-          WebAuthnException.authenticationFailed('mock failure');
+    test(
+      'test_mock_provider_authenticate_throws_configured_exception',
+      () async {
+        final mock = MockWebAuthnProvider();
+        mock.authenticationException = WebAuthnException.authenticationFailed(
+          'mock failure',
+        );
 
-      await expectLater(
-        mock.authenticate(challenge: Uint8List(32)),
-        throwsA(isA<WebAuthnAuthenticationFailed>()),
-      );
-    });
+        await expectLater(
+          mock.authenticate(challenge: Uint8List(32)),
+          throwsA(isA<WebAuthnAuthenticationFailed>()),
+        );
+      },
+    );
 
-    test('test_mock_provider_authenticate_tracks_call_count_and_args',
-        () async {
-      final mock = MockWebAuthnProvider();
-      final allow1 = <WebAuthnAllowCredential>[
-        WebAuthnAllowCredential.fromId(Uint8List.fromList(const [0x01])),
-      ];
-      final allow2 = <WebAuthnAllowCredential>[
-        WebAuthnAllowCredential.fromId(Uint8List.fromList(const [0x02])),
-        WebAuthnAllowCredential.fromId(Uint8List.fromList(const [0x03])),
-      ];
+    test(
+      'test_mock_provider_authenticate_tracks_call_count_and_args',
+      () async {
+        final mock = MockWebAuthnProvider();
+        final allow1 = <WebAuthnAllowCredential>[
+          WebAuthnAllowCredential.fromId(Uint8List.fromList(const [0x01])),
+        ];
+        final allow2 = <WebAuthnAllowCredential>[
+          WebAuthnAllowCredential.fromId(Uint8List.fromList(const [0x02])),
+          WebAuthnAllowCredential.fromId(Uint8List.fromList(const [0x03])),
+        ];
 
-      await mock.authenticate(
-        challenge: Uint8List.fromList(const [0x01]),
-        allowCredentials: allow1,
-      );
-      await mock.authenticate(
-        challenge: Uint8List.fromList(const [0x02, 0x03]),
-        allowCredentials: allow2,
-      );
+        await mock.authenticate(
+          challenge: Uint8List.fromList(const [0x01]),
+          allowCredentials: allow1,
+        );
+        await mock.authenticate(
+          challenge: Uint8List.fromList(const [0x02, 0x03]),
+          allowCredentials: allow2,
+        );
 
-      expect(mock.authenticateCallCount, equals(2));
-      expect(
-        mock.lastAuthenticateChallenge,
-        equals(Uint8List.fromList(const [0x02, 0x03])),
-      );
-      expect(mock.lastAuthenticateAllowCredentials, equals(allow2));
-    });
+        expect(mock.authenticateCallCount, equals(2));
+        expect(
+          mock.lastAuthenticateChallenge,
+          equals(Uint8List.fromList(const [0x02, 0x03])),
+        );
+        expect(mock.lastAuthenticateAllowCredentials, equals(allow2));
+      },
+    );
 
     test('test_mock_provider_reset_clears_all_state', () async {
       final mock = MockWebAuthnProvider();
@@ -517,20 +631,20 @@ void main() {
     });
 
     test(
-        'test_mock_provider_test_public_key_seed_0_starts_with_0x04_and_is_65_bytes',
-        () {
-      final key = MockWebAuthnProvider.testPublicKey();
-      expect(key.length, equals(65));
-      expect(key[0], equals(0x04));
-    });
+      'test_mock_provider_test_public_key_seed_0_starts_with_0x04_and_is_65_bytes',
+      () {
+        final key = MockWebAuthnProvider.testPublicKey();
+        expect(key.length, equals(65));
+        expect(key[0], equals(0x04));
+      },
+    );
 
     test('test_mock_provider_test_credential_id_seed_0_is_16_bytes', () {
       final id = MockWebAuthnProvider.testCredentialId();
       expect(id.length, equals(16));
     });
 
-    test('test_mock_provider_test_attestation_object_seed_0_is_128_bytes',
-        () {
+    test('test_mock_provider_test_attestation_object_seed_0_is_128_bytes', () {
       final ao = MockWebAuthnProvider.testAttestationObject();
       expect(ao.length, equals(128));
     });

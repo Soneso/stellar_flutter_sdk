@@ -78,7 +78,12 @@ class ManageBuyOfferOperation extends Operation {
   /// - [_price] Price per unit of buying in terms of selling
   /// - [_offerId] Offer ID (0 for new offer, existing ID to update/delete)
   ManageBuyOfferOperation(
-      this._selling, this._buying, this._amount, this._price, this._offerId);
+    this._selling,
+    this._buying,
+    this._amount,
+    this._price,
+    this._offerId,
+  );
 
   /// The asset being sold in this operation
   Asset get selling => _selling;
@@ -100,15 +105,20 @@ class ManageBuyOfferOperation extends Operation {
   /// Returns: XDR OperationBody for this manage buy offer operation.
   @override
   XdrOperationBody toOperationBody() {
-    XdrInt64 amount =
-        new XdrInt64(Util.decimalStringToStroops(this.amount));
+    XdrInt64 amount = new XdrInt64(Util.decimalStringToStroops(this.amount));
     Price price = Price.fromString(this.price);
     XdrUint64 offerId = XdrUint64(BigInt.parse(this.offerId));
     XdrManageBuyOfferOp op = new XdrManageBuyOfferOp(
-        selling.toXdr(), buying.toXdr(), amount, price.toXdr(), offerId);
+      selling.toXdr(),
+      buying.toXdr(),
+      amount,
+      price.toXdr(),
+      offerId,
+    );
 
-    XdrOperationBody body =
-        new XdrOperationBody(XdrOperationType.MANAGE_BUY_OFFER);
+    XdrOperationBody body = new XdrOperationBody(
+      XdrOperationType.MANAGE_BUY_OFFER,
+    );
     body.manageBuyOfferOp = op;
 
     return body;
@@ -174,7 +184,11 @@ class ManageBuyOfferOperationBuilder
   ///
   /// Note: Offer ID defaults to 0 (new offer). Use setOfferId to update existing offers.
   ManageBuyOfferOperationBuilder(
-      this._selling, this._buying, this._amount, this._price);
+    this._selling,
+    this._buying,
+    this._amount,
+    this._price,
+  );
 
   /// Sets the offer ID.
   ///
@@ -192,7 +206,12 @@ class ManageBuyOfferOperationBuilder
   /// Returns: Configured ManageBuyOfferOperation instance
   ManageBuyOfferOperation build() {
     ManageBuyOfferOperation operation = new ManageBuyOfferOperation(
-        _selling, _buying, _amount, _price, _offerId);
+      _selling,
+      _buying,
+      _amount,
+      _price,
+      _offerId,
+    );
     return applySourceAccount(operation);
   }
 }

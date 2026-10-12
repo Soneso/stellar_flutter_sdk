@@ -10,22 +10,25 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 OZSmartAccountSigner _delegated(String address) => OZDelegatedSigner(address);
 
 OZSmartAccountSigner _external() => OZExternalSigner.ed25519(
-      verifierAddress: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
-      publicKey: Uint8List(32),
-    );
+  verifierAddress: 'CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK',
+  publicKey: Uint8List(32),
+);
 
 void main() {
   group('OZSimpleThresholdPolicyParams', () {
-    test('zeroThreshold throws SmartAccountValidationException with correct field', () {
-      const params = OZSimpleThresholdPolicyParams(threshold: 0);
-      try {
-        params.toScVal();
-        fail('Expected SmartAccountValidationException');
-      } on SmartAccountValidationException catch (e) {
-        expect(e, isA<SmartAccountInvalidInput>());
-        expect(e.message, contains('Threshold must be greater than zero'));
-      }
-    });
+    test(
+      'zeroThreshold throws SmartAccountValidationException with correct field',
+      () {
+        const params = OZSimpleThresholdPolicyParams(threshold: 0);
+        try {
+          params.toScVal();
+          fail('Expected SmartAccountValidationException');
+        } on SmartAccountValidationException catch (e) {
+          expect(e, isA<SmartAccountInvalidInput>());
+          expect(e.message, contains('Threshold must be greater than zero'));
+        }
+      },
+    );
 
     test('threshold of one builds ScVal map with single key', () {
       const params = OZSimpleThresholdPolicyParams(threshold: 1);
@@ -62,11 +65,16 @@ void main() {
     test('zero threshold throws SmartAccountValidationException', () {
       final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{
-          _delegated('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'): 1,
+          _delegated(
+            'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
+          ): 1,
         },
         threshold: 0,
       );
-      expect(() => params.toScVal(), throwsA(isA<SmartAccountValidationException>()));
+      expect(
+        () => params.toScVal(),
+        throwsA(isA<SmartAccountValidationException>()),
+      );
     });
 
     test('empty signerWeights throws SmartAccountValidationException', () {
@@ -74,13 +82,18 @@ void main() {
         signerWeights: const <OZSmartAccountSigner, int>{},
         threshold: 1,
       );
-      expect(() => params.toScVal(), throwsA(isA<SmartAccountValidationException>()));
+      expect(
+        () => params.toScVal(),
+        throwsA(isA<SmartAccountValidationException>()),
+      );
     });
 
     test('single signer builds ScVal', () {
       final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{
-          _delegated('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'): 50,
+          _delegated(
+            'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
+          ): 50,
         },
         threshold: 50,
       );
@@ -94,8 +107,12 @@ void main() {
     test('multiple signers builds ScVal', () {
       final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{
-          _delegated('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'): 50,
-          _delegated('GBVRV25F7XA5I2L3ILSA6XW3OCWLKGGLG4OP2EHKTWC5IHQ3EV26FQLS'): 30,
+          _delegated(
+            'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
+          ): 50,
+          _delegated(
+            'GBVRV25F7XA5I2L3ILSA6XW3OCWLKGGLG4OP2EHKTWC5IHQ3EV26FQLS',
+          ): 30,
         },
         threshold: 80,
       );
@@ -111,16 +128,23 @@ void main() {
       // equals the raw byte order of their encodings.
       final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{
-          _delegated('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'): 1,
-          _delegated('GBVRV25F7XA5I2L3ILSA6XW3OCWLKGGLG4OP2EHKTWC5IHQ3EV26FQLS'): 2,
+          _delegated(
+            'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
+          ): 1,
+          _delegated(
+            'GBVRV25F7XA5I2L3ILSA6XW3OCWLKGGLG4OP2EHKTWC5IHQ3EV26FQLS',
+          ): 2,
         },
         threshold: 1,
       );
       final innerEntries = params.toScVal().map![0].val.map!;
       // Verify the entries appear in deterministic order by encoded bytes.
-      final firstKeyBytes = OZPolicyManager.scValToXdrBytes(innerEntries[0].key);
-      final secondKeyBytes =
-          OZPolicyManager.scValToXdrBytes(innerEntries[1].key);
+      final firstKeyBytes = OZPolicyManager.scValToXdrBytes(
+        innerEntries[0].key,
+      );
+      final secondKeyBytes = OZPolicyManager.scValToXdrBytes(
+        innerEntries[1].key,
+      );
       expect(_lexLess(firstKeyBytes, secondKeyBytes), isTrue);
     });
 
@@ -136,7 +160,9 @@ void main() {
     test('signer_weights map shape: address keys, U32 values', () {
       final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{
-          _delegated('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'): 7,
+          _delegated(
+            'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
+          ): 7,
         },
         threshold: 7,
       );
@@ -157,7 +183,9 @@ void main() {
     test('mixed signer types: external and delegated', () {
       final params = OZWeightedThresholdPolicyParams(
         signerWeights: <OZSmartAccountSigner, int>{
-          _delegated('GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'): 30,
+          _delegated(
+            'GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
+          ): 30,
           _external(): 70,
         },
         threshold: 100,
@@ -183,7 +211,10 @@ void main() {
         spendingLimit: BigInt.zero,
         periodLedgers: 1,
       );
-      expect(() => params.toScVal(), throwsA(isA<SmartAccountValidationException>()));
+      expect(
+        () => params.toScVal(),
+        throwsA(isA<SmartAccountValidationException>()),
+      );
     });
 
     test('negative amount throws SmartAccountValidationException', () {
@@ -191,7 +222,10 @@ void main() {
         spendingLimit: BigInt.from(-1),
         periodLedgers: 1,
       );
-      expect(() => params.toScVal(), throwsA(isA<SmartAccountValidationException>()));
+      expect(
+        () => params.toScVal(),
+        throwsA(isA<SmartAccountValidationException>()),
+      );
     });
 
     test('zero periodLedgers throws SmartAccountValidationException', () {
@@ -199,7 +233,10 @@ void main() {
         spendingLimit: BigInt.from(100),
         periodLedgers: 0,
       );
-      expect(() => params.toScVal(), throwsA(isA<SmartAccountValidationException>()));
+      expect(
+        () => params.toScVal(),
+        throwsA(isA<SmartAccountValidationException>()),
+      );
     });
 
     test('valid input builds ScVal', () {
@@ -259,8 +296,10 @@ void main() {
     });
 
     test('base-units value round-trips through the params class', () {
-      final baseUnits =
-          OZTransactionOperations.amountToBaseUnits('123.4567890', decimals: 7);
+      final baseUnits = OZTransactionOperations.amountToBaseUnits(
+        '123.4567890',
+        decimals: 7,
+      );
       final params = OZSpendingLimitPolicyParams(
         spendingLimit: baseUnits,
         periodLedgers: 1,

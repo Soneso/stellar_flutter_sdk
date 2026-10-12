@@ -45,10 +45,7 @@ web.PublicKeyCredential _attestationCredential({
     'attestationObject'.toJS,
     _bytesToBuffer(attestationObject),
   );
-  response.setProperty(
-    'clientDataJSON'.toJS,
-    _bytesToBuffer(const <int>[]),
-  );
+  response.setProperty('clientDataJSON'.toJS, _bytesToBuffer(const <int>[]));
   if (spki != null) {
     response.setProperty(
       'getPublicKey'.toJS,
@@ -78,10 +75,7 @@ web.PublicKeyCredential _assertionCredential({
     'authenticatorData'.toJS,
     _bytesToBuffer(authenticatorData),
   );
-  response.setProperty(
-    'clientDataJSON'.toJS,
-    _bytesToBuffer(clientDataJSON),
-  );
+  response.setProperty('clientDataJSON'.toJS, _bytesToBuffer(clientDataJSON));
   response.setProperty('signature'.toJS, _bytesToBuffer(signature));
   final credential = JSObject();
   credential.setProperty('rawId'.toJS, _bytesToBuffer(rawId));
@@ -146,7 +140,9 @@ JSPromise _rejected(Object error) {
 @JS('Promise')
 external JSFunction _promiseCtor;
 
-JSPromise _newPromise(void Function(JSFunction resolve, JSFunction reject) body) {
+JSPromise _newPromise(
+  void Function(JSFunction resolve, JSFunction reject) body,
+) {
   final executor = body.toJS;
   final promise = _promiseCtor.callAsConstructor<JSPromise>(executor);
   return promise;
@@ -159,16 +155,72 @@ JSPromise _newPromise(void Function(JSFunction resolve, JSFunction reject) body)
 List<int> _validAttestationObject() {
   // secp256r1 base point coordinates (Gx, Gy):
   final gx = <int>[
-    0x6B, 0x17, 0xD1, 0xF2, 0xE1, 0x2C, 0x42, 0x47,
-    0xF8, 0xBC, 0xE6, 0xE5, 0x63, 0xA4, 0x40, 0xF2,
-    0x77, 0x03, 0x7D, 0x81, 0x2D, 0xEB, 0x33, 0xA0,
-    0xF4, 0xA1, 0x39, 0x45, 0xD8, 0x98, 0xC2, 0x96,
+    0x6B,
+    0x17,
+    0xD1,
+    0xF2,
+    0xE1,
+    0x2C,
+    0x42,
+    0x47,
+    0xF8,
+    0xBC,
+    0xE6,
+    0xE5,
+    0x63,
+    0xA4,
+    0x40,
+    0xF2,
+    0x77,
+    0x03,
+    0x7D,
+    0x81,
+    0x2D,
+    0xEB,
+    0x33,
+    0xA0,
+    0xF4,
+    0xA1,
+    0x39,
+    0x45,
+    0xD8,
+    0x98,
+    0xC2,
+    0x96,
   ];
   final gy = <int>[
-    0x4F, 0xE3, 0x42, 0xE2, 0xFE, 0x1A, 0x7F, 0x9B,
-    0x8E, 0xE7, 0xEB, 0x4A, 0x7C, 0x0F, 0x9E, 0x16,
-    0x2B, 0xCE, 0x33, 0x57, 0x6B, 0x31, 0x5E, 0xCE,
-    0xCB, 0xB6, 0x40, 0x68, 0x37, 0xBF, 0x51, 0xF5,
+    0x4F,
+    0xE3,
+    0x42,
+    0xE2,
+    0xFE,
+    0x1A,
+    0x7F,
+    0x9B,
+    0x8E,
+    0xE7,
+    0xEB,
+    0x4A,
+    0x7C,
+    0x0F,
+    0x9E,
+    0x16,
+    0x2B,
+    0xCE,
+    0x33,
+    0x57,
+    0x6B,
+    0x31,
+    0x5E,
+    0xCE,
+    0xCB,
+    0xB6,
+    0x40,
+    0x68,
+    0x37,
+    0xBF,
+    0x51,
+    0xF5,
   ];
   final authData = <int>[];
   // rpIdHash (32 bytes of 0x00).
@@ -185,7 +237,16 @@ List<int> _validAttestationObject() {
   authData.addAll(<int>[1, 2, 3, 4]);
   // COSE prefix.
   authData.addAll(<int>[
-    0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
+    0xA5,
+    0x01,
+    0x02,
+    0x03,
+    0x26,
+    0x20,
+    0x01,
+    0x21,
+    0x58,
+    0x20,
   ]);
   authData.addAll(gx);
   authData.addAll(<int>[0x22, 0x58, 0x20]);
@@ -222,10 +283,32 @@ List<int> _validAttestationObject() {
 List<int> _spkiOf(List<int> uncompressedKey) {
   // 26-byte SPKI header followed by the 65-byte public key.
   final header = <int>[
-    0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2A, 0x86,
-    0x48, 0xCE, 0x3D, 0x02, 0x01, 0x06, 0x08, 0x2A,
-    0x86, 0x48, 0xCE, 0x3D, 0x03, 0x01, 0x07, 0x03,
-    0x42, 0x00,
+    0x30,
+    0x59,
+    0x30,
+    0x13,
+    0x06,
+    0x07,
+    0x2A,
+    0x86,
+    0x48,
+    0xCE,
+    0x3D,
+    0x02,
+    0x01,
+    0x06,
+    0x08,
+    0x2A,
+    0x86,
+    0x48,
+    0xCE,
+    0x3D,
+    0x03,
+    0x01,
+    0x07,
+    0x03,
+    0x42,
+    0x00,
   ];
   return <int>[...header, ...uncompressedKey];
 }
@@ -250,8 +333,7 @@ void main() {
       expect(provider.timeoutMs, 12345);
     });
 
-    test('test_navigator_credentials_undefined_throws_not_supported',
-        () async {
+    test('test_navigator_credentials_undefined_throws_not_supported', () async {
       // Construct via the production constructor, which has no injected
       // container. On Chrome, `window.navigator.credentials` IS defined,
       // so the guard passes. Force the missing-container path by using
@@ -283,46 +365,104 @@ void main() {
       );
     });
 
-    test('test_create_credential_happy_returns_pubkey_and_credential_id',
-        () async {
-      final attestation = _validAttestationObject();
-      final pubkey = <int>[0x04];
-      // Build a 65-byte uncompressed key using secp256r1 generator.
-      pubkey.addAll(<int>[
-        0x6B, 0x17, 0xD1, 0xF2, 0xE1, 0x2C, 0x42, 0x47,
-        0xF8, 0xBC, 0xE6, 0xE5, 0x63, 0xA4, 0x40, 0xF2,
-        0x77, 0x03, 0x7D, 0x81, 0x2D, 0xEB, 0x33, 0xA0,
-        0xF4, 0xA1, 0x39, 0x45, 0xD8, 0x98, 0xC2, 0x96,
-      ]);
-      pubkey.addAll(<int>[
-        0x4F, 0xE3, 0x42, 0xE2, 0xFE, 0x1A, 0x7F, 0x9B,
-        0x8E, 0xE7, 0xEB, 0x4A, 0x7C, 0x0F, 0x9E, 0x16,
-        0x2B, 0xCE, 0x33, 0x57, 0x6B, 0x31, 0x5E, 0xCE,
-        0xCB, 0xB6, 0x40, 0x68, 0x37, 0xBF, 0x51, 0xF5,
-      ]);
-      final fake = _FakeCredentialsContainer(
-        createResult: _attestationCredential(
-          rawId: const <int>[1, 2, 3, 4],
-          attestationObject: attestation,
-          spki: _spkiOf(pubkey),
-          transports: const ['internal'],
-        ),
-      );
-      final provider = BrowserWebAuthnProvider.withCredentialsContainer(
-        rpId: 'example.com',
-        rpName: 'Example',
-        credentialsContainer: fake.toJS(),
-      );
-      final result = await provider.register(
-        challenge: Uint8List.fromList(List<int>.filled(32, 7)),
-        userId: Uint8List.fromList(List<int>.filled(16, 9)),
-        userName: 'alice',
-      );
-      expect(result.credentialId, Uint8List.fromList(<int>[1, 2, 3, 4]));
-      expect(result.publicKey.length, 65);
-      expect(result.publicKey[0], 0x04);
-      expect(result.transports, ['internal']);
-    });
+    test(
+      'test_create_credential_happy_returns_pubkey_and_credential_id',
+      () async {
+        final attestation = _validAttestationObject();
+        final pubkey = <int>[0x04];
+        // Build a 65-byte uncompressed key using secp256r1 generator.
+        pubkey.addAll(<int>[
+          0x6B,
+          0x17,
+          0xD1,
+          0xF2,
+          0xE1,
+          0x2C,
+          0x42,
+          0x47,
+          0xF8,
+          0xBC,
+          0xE6,
+          0xE5,
+          0x63,
+          0xA4,
+          0x40,
+          0xF2,
+          0x77,
+          0x03,
+          0x7D,
+          0x81,
+          0x2D,
+          0xEB,
+          0x33,
+          0xA0,
+          0xF4,
+          0xA1,
+          0x39,
+          0x45,
+          0xD8,
+          0x98,
+          0xC2,
+          0x96,
+        ]);
+        pubkey.addAll(<int>[
+          0x4F,
+          0xE3,
+          0x42,
+          0xE2,
+          0xFE,
+          0x1A,
+          0x7F,
+          0x9B,
+          0x8E,
+          0xE7,
+          0xEB,
+          0x4A,
+          0x7C,
+          0x0F,
+          0x9E,
+          0x16,
+          0x2B,
+          0xCE,
+          0x33,
+          0x57,
+          0x6B,
+          0x31,
+          0x5E,
+          0xCE,
+          0xCB,
+          0xB6,
+          0x40,
+          0x68,
+          0x37,
+          0xBF,
+          0x51,
+          0xF5,
+        ]);
+        final fake = _FakeCredentialsContainer(
+          createResult: _attestationCredential(
+            rawId: const <int>[1, 2, 3, 4],
+            attestationObject: attestation,
+            spki: _spkiOf(pubkey),
+            transports: const ['internal'],
+          ),
+        );
+        final provider = BrowserWebAuthnProvider.withCredentialsContainer(
+          rpId: 'example.com',
+          rpName: 'Example',
+          credentialsContainer: fake.toJS(),
+        );
+        final result = await provider.register(
+          challenge: Uint8List.fromList(List<int>.filled(32, 7)),
+          userId: Uint8List.fromList(List<int>.filled(16, 9)),
+          userName: 'alice',
+        );
+        expect(result.credentialId, Uint8List.fromList(<int>[1, 2, 3, 4]));
+        expect(result.publicKey.length, 65);
+        expect(result.publicKey[0], 0x04);
+        expect(result.transports, ['internal']);
+      },
+    );
 
     test('test_get_assertion_happy_returns_signature', () async {
       final fake = _FakeCredentialsContainer(
@@ -338,12 +478,12 @@ void main() {
         rpName: 'Example',
         credentialsContainer: fake.toJS(),
       );
-      final result = await provider.authenticate(
-        challenge: Uint8List(32),
-      );
+      final result = await provider.authenticate(challenge: Uint8List(32));
       expect(result.credentialId, Uint8List.fromList(<int>[5, 6, 7]));
-      expect(result.signature,
-          Uint8List.fromList(<int>[0xDE, 0xAD, 0xBE, 0xEF]));
+      expect(
+        result.signature,
+        Uint8List.fromList(<int>[0xDE, 0xAD, 0xBE, 0xEF]),
+      );
     });
 
     test('test_authenticate_returns_der_signature_unmodified', () async {
@@ -361,8 +501,10 @@ void main() {
         credentialsContainer: fake.toJS(),
       );
       final result = await provider.authenticate(challenge: Uint8List(32));
-      expect(result.signature,
-          Uint8List.fromList(<int>[0x30, 0x44, 0x02, 0x20]));
+      expect(
+        result.signature,
+        Uint8List.fromList(<int>[0x30, 0x44, 0x02, 0x20]),
+      );
     });
 
     test('test_create_throws_not_allowed_error_maps_to_cancelled', () async {
@@ -409,27 +551,29 @@ void main() {
       );
     });
 
-    test('test_get_throws_security_error_maps_to_authentication_failed',
-        () async {
-      final fake = _FakeCredentialsContainer(
-        getError: _domException('SecurityError', 'rp mismatch'),
-      );
-      final provider = BrowserWebAuthnProvider.withCredentialsContainer(
-        rpId: 'example.com',
-        rpName: 'Example',
-        credentialsContainer: fake.toJS(),
-      );
-      await expectLater(
-        provider.authenticate(challenge: Uint8List(32)),
-        throwsA(
-          isA<WebAuthnAuthenticationFailed>().having(
-            (e) => e.message,
-            'message',
-            contains('Security error'),
+    test(
+      'test_get_throws_security_error_maps_to_authentication_failed',
+      () async {
+        final fake = _FakeCredentialsContainer(
+          getError: _domException('SecurityError', 'rp mismatch'),
+        );
+        final provider = BrowserWebAuthnProvider.withCredentialsContainer(
+          rpId: 'example.com',
+          rpName: 'Example',
+          credentialsContainer: fake.toJS(),
+        );
+        await expectLater(
+          provider.authenticate(challenge: Uint8List(32)),
+          throwsA(
+            isA<WebAuthnAuthenticationFailed>().having(
+              (e) => e.message,
+              'message',
+              contains('Security error'),
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
     test('test_create_returns_null_throws_registration_failed', () async {
       final fake = _FakeCredentialsContainer();
@@ -506,10 +650,7 @@ void main() {
     test('test_rp_id_validation_against_origin', () async {
       // RP-ID/origin mismatch surfaces as SecurityError.
       final fake = _FakeCredentialsContainer(
-        getError: _domException(
-          'SecurityError',
-          'RP ID does not match origin',
-        ),
+        getError: _domException('SecurityError', 'RP ID does not match origin'),
       );
       final provider = BrowserWebAuthnProvider.withCredentialsContainer(
         rpId: 'wrong.example',
@@ -523,248 +664,385 @@ void main() {
     });
 
     test(
-        'test_authenticate_with_allow_credentials_includes_transports_when_present',
-        () async {
-      final fake = _FakeCredentialsContainer(
-        getResult: _assertionCredential(
-          rawId: const <int>[1],
-          authenticatorData: const <int>[],
-          clientDataJSON: const <int>[],
-          signature: const <int>[1, 2, 3, 4],
-        ),
-      );
-      final provider = BrowserWebAuthnProvider.withCredentialsContainer(
-        rpId: 'example.com',
-        rpName: 'Example',
-        credentialsContainer: fake.toJS(),
-      );
-      await provider.authenticate(
-        challenge: Uint8List(32),
-        allowCredentials: [
-          WebAuthnAllowCredential(
-            id: Uint8List.fromList(const <int>[1, 2, 3]),
-            transports: const ['internal', 'hybrid'],
+      'test_authenticate_with_allow_credentials_includes_transports_when_present',
+      () async {
+        final fake = _FakeCredentialsContainer(
+          getResult: _assertionCredential(
+            rawId: const <int>[1],
+            authenticatorData: const <int>[],
+            clientDataJSON: const <int>[],
+            signature: const <int>[1, 2, 3, 4],
           ),
-        ],
-      );
-      final published = fake.lastGetOptions!.publicKey.allowCredentials.toDart;
-      expect(published.length, 1);
-      final descriptor = published.first;
-      // Verify the transports field is present and matches.
-      final transportsAny =
-          (descriptor as JSObject).getProperty<JSAny?>('transports'.toJS);
-      expect(transportsAny, isNotNull);
-      final transports = (transportsAny as JSArray<JSString>)
-          .toDart
-          .map((s) => s.toDart)
-          .toList();
-      expect(transports, ['internal', 'hybrid']);
-    });
+        );
+        final provider = BrowserWebAuthnProvider.withCredentialsContainer(
+          rpId: 'example.com',
+          rpName: 'Example',
+          credentialsContainer: fake.toJS(),
+        );
+        await provider.authenticate(
+          challenge: Uint8List(32),
+          allowCredentials: [
+            WebAuthnAllowCredential(
+              id: Uint8List.fromList(const <int>[1, 2, 3]),
+              transports: const ['internal', 'hybrid'],
+            ),
+          ],
+        );
+        final published =
+            fake.lastGetOptions!.publicKey.allowCredentials.toDart;
+        expect(published.length, 1);
+        final descriptor = published.first;
+        // Verify the transports field is present and matches.
+        final transportsAny = (descriptor as JSObject).getProperty<JSAny?>(
+          'transports'.toJS,
+        );
+        expect(transportsAny, isNotNull);
+        final transports = (transportsAny as JSArray<JSString>).toDart
+            .map((s) => s.toDart)
+            .toList();
+        expect(transports, ['internal', 'hybrid']);
+      },
+    );
 
     test(
-        'test_authenticate_with_allow_credentials_omits_transports_when_empty',
-        () async {
-      final fake = _FakeCredentialsContainer(
-        getResult: _assertionCredential(
-          rawId: const <int>[1],
-          authenticatorData: const <int>[],
-          clientDataJSON: const <int>[],
-          signature: const <int>[1, 2, 3, 4],
-        ),
-      );
-      final provider = BrowserWebAuthnProvider.withCredentialsContainer(
-        rpId: 'example.com',
-        rpName: 'Example',
-        credentialsContainer: fake.toJS(),
-      );
-      await provider.authenticate(
-        challenge: Uint8List(32),
-        allowCredentials: [
-          WebAuthnAllowCredential(
-            id: Uint8List.fromList(const <int>[1, 2, 3]),
-            transports: const <String>[],
+      'test_authenticate_with_allow_credentials_omits_transports_when_empty',
+      () async {
+        final fake = _FakeCredentialsContainer(
+          getResult: _assertionCredential(
+            rawId: const <int>[1],
+            authenticatorData: const <int>[],
+            clientDataJSON: const <int>[],
+            signature: const <int>[1, 2, 3, 4],
           ),
-        ],
-      );
-      final published = fake.lastGetOptions!.publicKey.allowCredentials.toDart;
-      final descriptor = published.first;
-      final transportsAny =
-          (descriptor as JSObject).getProperty<JSAny?>('transports'.toJS);
-      expect(transportsAny, isNull);
-    });
-
-    test('test_authenticate_with_null_allow_credentials_does_not_set_field',
-        () async {
-      final fake = _FakeCredentialsContainer(
-        getResult: _assertionCredential(
-          rawId: const <int>[1],
-          authenticatorData: const <int>[],
-          clientDataJSON: const <int>[],
-          signature: const <int>[1, 2, 3, 4],
-        ),
-      );
-      final provider = BrowserWebAuthnProvider.withCredentialsContainer(
-        rpId: 'example.com',
-        rpName: 'Example',
-        credentialsContainer: fake.toJS(),
-      );
-      await provider.authenticate(challenge: Uint8List(32));
-      final publicKey = fake.lastGetOptions!.publicKey;
-      // The field is unset; reading throws or returns undefined.
-      final raw = (publicKey as JSObject)
-          .getProperty<JSAny?>('allowCredentials'.toJS);
-      expect(raw, isNull);
-    });
-
-    test('test_register_returns_transports_when_get_transports_present',
-        () async {
-      final attestation = _validAttestationObject();
-      final fake = _FakeCredentialsContainer(
-        createResult: _attestationCredential(
-          rawId: const <int>[1, 2, 3],
-          attestationObject: attestation,
-          transports: const ['internal'],
-        ),
-      );
-      final provider = BrowserWebAuthnProvider.withCredentialsContainer(
-        rpId: 'example.com',
-        rpName: 'Example',
-        credentialsContainer: fake.toJS(),
-      );
-      final result = await provider.register(
-        challenge: Uint8List(32),
-        userId: Uint8List(16),
-        userName: 'alice',
-      );
-      expect(result.transports, ['internal']);
-    });
-
-    test('test_register_returns_null_transports_when_get_transports_absent',
-        () async {
-      final attestation = _validAttestationObject();
-      final fake = _FakeCredentialsContainer(
-        createResult: _attestationCredential(
-          rawId: const <int>[1, 2, 3],
-          attestationObject: attestation,
-        ),
-      );
-      final provider = BrowserWebAuthnProvider.withCredentialsContainer(
-        rpId: 'example.com',
-        rpName: 'Example',
-        credentialsContainer: fake.toJS(),
-      );
-      final result = await provider.register(
-        challenge: Uint8List(32),
-        userId: Uint8List(16),
-        userName: 'alice',
-      );
-      expect(result.transports, isNull);
-    });
-
-    test('test_register_extracts_pubkey_via_strategy_1_get_public_key',
-        () async {
-      final pubkey = <int>[0x04];
-      pubkey.addAll(<int>[
-        0x6B, 0x17, 0xD1, 0xF2, 0xE1, 0x2C, 0x42, 0x47,
-        0xF8, 0xBC, 0xE6, 0xE5, 0x63, 0xA4, 0x40, 0xF2,
-        0x77, 0x03, 0x7D, 0x81, 0x2D, 0xEB, 0x33, 0xA0,
-        0xF4, 0xA1, 0x39, 0x45, 0xD8, 0x98, 0xC2, 0x96,
-      ]);
-      pubkey.addAll(<int>[
-        0x4F, 0xE3, 0x42, 0xE2, 0xFE, 0x1A, 0x7F, 0x9B,
-        0x8E, 0xE7, 0xEB, 0x4A, 0x7C, 0x0F, 0x9E, 0x16,
-        0x2B, 0xCE, 0x33, 0x57, 0x6B, 0x31, 0x5E, 0xCE,
-        0xCB, 0xB6, 0x40, 0x68, 0x37, 0xBF, 0x51, 0xF5,
-      ]);
-      final fake = _FakeCredentialsContainer(
-        createResult: _attestationCredential(
-          rawId: const <int>[1, 2, 3],
-          attestationObject: const <int>[0x00], // intentionally invalid
-          spki: _spkiOf(pubkey),
-        ),
-      );
-      final provider = BrowserWebAuthnProvider.withCredentialsContainer(
-        rpId: 'example.com',
-        rpName: 'Example',
-        credentialsContainer: fake.toJS(),
-      );
-      final result = await provider.register(
-        challenge: Uint8List(32),
-        userId: Uint8List(16),
-        userName: 'alice',
-      );
-      expect(result.publicKey.length, 65);
-      expect(result.publicKey[0], 0x04);
-    });
+        );
+        final provider = BrowserWebAuthnProvider.withCredentialsContainer(
+          rpId: 'example.com',
+          rpName: 'Example',
+          credentialsContainer: fake.toJS(),
+        );
+        await provider.authenticate(
+          challenge: Uint8List(32),
+          allowCredentials: [
+            WebAuthnAllowCredential(
+              id: Uint8List.fromList(const <int>[1, 2, 3]),
+              transports: const <String>[],
+            ),
+          ],
+        );
+        final published =
+            fake.lastGetOptions!.publicKey.allowCredentials.toDart;
+        final descriptor = published.first;
+        final transportsAny = (descriptor as JSObject).getProperty<JSAny?>(
+          'transports'.toJS,
+        );
+        expect(transportsAny, isNull);
+      },
+    );
 
     test(
-        'test_register_falls_back_to_strategy_2_when_get_public_key_returns_null',
-        () async {
-      final attestation = _validAttestationObject();
-      final fake = _FakeCredentialsContainer(
-        createResult: _attestationCredential(
-          rawId: const <int>[1],
-          attestationObject: attestation,
-          // No spki — strategy 1 fails, strategy 2 (auth-data CBOR)
-          // succeeds because the attestation object contains a valid
-          // COSE key.
-        ),
-      );
-      final provider = BrowserWebAuthnProvider.withCredentialsContainer(
-        rpId: 'example.com',
-        rpName: 'Example',
-        credentialsContainer: fake.toJS(),
-      );
-      final result = await provider.register(
-        challenge: Uint8List(32),
-        userId: Uint8List(16),
-        userName: 'alice',
-      );
-      expect(result.publicKey.length, 65);
-    });
+      'test_authenticate_with_null_allow_credentials_does_not_set_field',
+      () async {
+        final fake = _FakeCredentialsContainer(
+          getResult: _assertionCredential(
+            rawId: const <int>[1],
+            authenticatorData: const <int>[],
+            clientDataJSON: const <int>[],
+            signature: const <int>[1, 2, 3, 4],
+          ),
+        );
+        final provider = BrowserWebAuthnProvider.withCredentialsContainer(
+          rpId: 'example.com',
+          rpName: 'Example',
+          credentialsContainer: fake.toJS(),
+        );
+        await provider.authenticate(challenge: Uint8List(32));
+        final publicKey = fake.lastGetOptions!.publicKey;
+        // The field is unset; reading throws or returns undefined.
+        final raw = (publicKey as JSObject).getProperty<JSAny?>(
+          'allowCredentials'.toJS,
+        );
+        expect(raw, isNull);
+      },
+    );
 
     test(
-        'test_register_falls_back_to_strategy_3_when_strategies_1_and_2_fail',
-        () async {
-      // Build a malformed attestation object whose CBOR top-level
-      // structure is broken but whose embedded COSE key is still
-      // pattern-matchable by the raw-byte search.
-      final cose = <int>[
-        0xA5, 0x01, 0x02, 0x03, 0x26, 0x20, 0x01, 0x21, 0x58, 0x20,
-      ];
-      cose.addAll(<int>[
-        0x6B, 0x17, 0xD1, 0xF2, 0xE1, 0x2C, 0x42, 0x47,
-        0xF8, 0xBC, 0xE6, 0xE5, 0x63, 0xA4, 0x40, 0xF2,
-        0x77, 0x03, 0x7D, 0x81, 0x2D, 0xEB, 0x33, 0xA0,
-        0xF4, 0xA1, 0x39, 0x45, 0xD8, 0x98, 0xC2, 0x96,
-      ]);
-      cose.addAll(<int>[0x22, 0x58, 0x20]);
-      cose.addAll(<int>[
-        0x4F, 0xE3, 0x42, 0xE2, 0xFE, 0x1A, 0x7F, 0x9B,
-        0x8E, 0xE7, 0xEB, 0x4A, 0x7C, 0x0F, 0x9E, 0x16,
-        0x2B, 0xCE, 0x33, 0x57, 0x6B, 0x31, 0x5E, 0xCE,
-        0xCB, 0xB6, 0x40, 0x68, 0x37, 0xBF, 0x51, 0xF5,
-      ]);
-      // Garbage CBOR header followed by the raw COSE bytes.
-      final attestation = <int>[0x00, 0xFF, 0xFF, ...cose];
-      final fake = _FakeCredentialsContainer(
-        createResult: _attestationCredential(
-          rawId: const <int>[1],
-          attestationObject: attestation,
-        ),
-      );
-      final provider = BrowserWebAuthnProvider.withCredentialsContainer(
-        rpId: 'example.com',
-        rpName: 'Example',
-        credentialsContainer: fake.toJS(),
-      );
-      final result = await provider.register(
-        challenge: Uint8List(32),
-        userId: Uint8List(16),
-        userName: 'alice',
-      );
-      expect(result.publicKey.length, 65);
-    });
+      'test_register_returns_transports_when_get_transports_present',
+      () async {
+        final attestation = _validAttestationObject();
+        final fake = _FakeCredentialsContainer(
+          createResult: _attestationCredential(
+            rawId: const <int>[1, 2, 3],
+            attestationObject: attestation,
+            transports: const ['internal'],
+          ),
+        );
+        final provider = BrowserWebAuthnProvider.withCredentialsContainer(
+          rpId: 'example.com',
+          rpName: 'Example',
+          credentialsContainer: fake.toJS(),
+        );
+        final result = await provider.register(
+          challenge: Uint8List(32),
+          userId: Uint8List(16),
+          userName: 'alice',
+        );
+        expect(result.transports, ['internal']);
+      },
+    );
+
+    test(
+      'test_register_returns_null_transports_when_get_transports_absent',
+      () async {
+        final attestation = _validAttestationObject();
+        final fake = _FakeCredentialsContainer(
+          createResult: _attestationCredential(
+            rawId: const <int>[1, 2, 3],
+            attestationObject: attestation,
+          ),
+        );
+        final provider = BrowserWebAuthnProvider.withCredentialsContainer(
+          rpId: 'example.com',
+          rpName: 'Example',
+          credentialsContainer: fake.toJS(),
+        );
+        final result = await provider.register(
+          challenge: Uint8List(32),
+          userId: Uint8List(16),
+          userName: 'alice',
+        );
+        expect(result.transports, isNull);
+      },
+    );
+
+    test(
+      'test_register_extracts_pubkey_via_strategy_1_get_public_key',
+      () async {
+        final pubkey = <int>[0x04];
+        pubkey.addAll(<int>[
+          0x6B,
+          0x17,
+          0xD1,
+          0xF2,
+          0xE1,
+          0x2C,
+          0x42,
+          0x47,
+          0xF8,
+          0xBC,
+          0xE6,
+          0xE5,
+          0x63,
+          0xA4,
+          0x40,
+          0xF2,
+          0x77,
+          0x03,
+          0x7D,
+          0x81,
+          0x2D,
+          0xEB,
+          0x33,
+          0xA0,
+          0xF4,
+          0xA1,
+          0x39,
+          0x45,
+          0xD8,
+          0x98,
+          0xC2,
+          0x96,
+        ]);
+        pubkey.addAll(<int>[
+          0x4F,
+          0xE3,
+          0x42,
+          0xE2,
+          0xFE,
+          0x1A,
+          0x7F,
+          0x9B,
+          0x8E,
+          0xE7,
+          0xEB,
+          0x4A,
+          0x7C,
+          0x0F,
+          0x9E,
+          0x16,
+          0x2B,
+          0xCE,
+          0x33,
+          0x57,
+          0x6B,
+          0x31,
+          0x5E,
+          0xCE,
+          0xCB,
+          0xB6,
+          0x40,
+          0x68,
+          0x37,
+          0xBF,
+          0x51,
+          0xF5,
+        ]);
+        final fake = _FakeCredentialsContainer(
+          createResult: _attestationCredential(
+            rawId: const <int>[1, 2, 3],
+            attestationObject: const <int>[0x00], // intentionally invalid
+            spki: _spkiOf(pubkey),
+          ),
+        );
+        final provider = BrowserWebAuthnProvider.withCredentialsContainer(
+          rpId: 'example.com',
+          rpName: 'Example',
+          credentialsContainer: fake.toJS(),
+        );
+        final result = await provider.register(
+          challenge: Uint8List(32),
+          userId: Uint8List(16),
+          userName: 'alice',
+        );
+        expect(result.publicKey.length, 65);
+        expect(result.publicKey[0], 0x04);
+      },
+    );
+
+    test(
+      'test_register_falls_back_to_strategy_2_when_get_public_key_returns_null',
+      () async {
+        final attestation = _validAttestationObject();
+        final fake = _FakeCredentialsContainer(
+          createResult: _attestationCredential(
+            rawId: const <int>[1],
+            attestationObject: attestation,
+            // No spki — strategy 1 fails, strategy 2 (auth-data CBOR)
+            // succeeds because the attestation object contains a valid
+            // COSE key.
+          ),
+        );
+        final provider = BrowserWebAuthnProvider.withCredentialsContainer(
+          rpId: 'example.com',
+          rpName: 'Example',
+          credentialsContainer: fake.toJS(),
+        );
+        final result = await provider.register(
+          challenge: Uint8List(32),
+          userId: Uint8List(16),
+          userName: 'alice',
+        );
+        expect(result.publicKey.length, 65);
+      },
+    );
+
+    test(
+      'test_register_falls_back_to_strategy_3_when_strategies_1_and_2_fail',
+      () async {
+        // Build a malformed attestation object whose CBOR top-level
+        // structure is broken but whose embedded COSE key is still
+        // pattern-matchable by the raw-byte search.
+        final cose = <int>[
+          0xA5,
+          0x01,
+          0x02,
+          0x03,
+          0x26,
+          0x20,
+          0x01,
+          0x21,
+          0x58,
+          0x20,
+        ];
+        cose.addAll(<int>[
+          0x6B,
+          0x17,
+          0xD1,
+          0xF2,
+          0xE1,
+          0x2C,
+          0x42,
+          0x47,
+          0xF8,
+          0xBC,
+          0xE6,
+          0xE5,
+          0x63,
+          0xA4,
+          0x40,
+          0xF2,
+          0x77,
+          0x03,
+          0x7D,
+          0x81,
+          0x2D,
+          0xEB,
+          0x33,
+          0xA0,
+          0xF4,
+          0xA1,
+          0x39,
+          0x45,
+          0xD8,
+          0x98,
+          0xC2,
+          0x96,
+        ]);
+        cose.addAll(<int>[0x22, 0x58, 0x20]);
+        cose.addAll(<int>[
+          0x4F,
+          0xE3,
+          0x42,
+          0xE2,
+          0xFE,
+          0x1A,
+          0x7F,
+          0x9B,
+          0x8E,
+          0xE7,
+          0xEB,
+          0x4A,
+          0x7C,
+          0x0F,
+          0x9E,
+          0x16,
+          0x2B,
+          0xCE,
+          0x33,
+          0x57,
+          0x6B,
+          0x31,
+          0x5E,
+          0xCE,
+          0xCB,
+          0xB6,
+          0x40,
+          0x68,
+          0x37,
+          0xBF,
+          0x51,
+          0xF5,
+        ]);
+        // Garbage CBOR header followed by the raw COSE bytes.
+        final attestation = <int>[0x00, 0xFF, 0xFF, ...cose];
+        final fake = _FakeCredentialsContainer(
+          createResult: _attestationCredential(
+            rawId: const <int>[1],
+            attestationObject: attestation,
+          ),
+        );
+        final provider = BrowserWebAuthnProvider.withCredentialsContainer(
+          rpId: 'example.com',
+          rpName: 'Example',
+          credentialsContainer: fake.toJS(),
+        );
+        final result = await provider.register(
+          challenge: Uint8List(32),
+          userId: Uint8List(16),
+          userName: 'alice',
+        );
+        expect(result.publicKey.length, 65);
+      },
+    );
 
     test('test_register_throws_when_all_three_strategies_fail', () async {
       final fake = _FakeCredentialsContainer(
@@ -795,75 +1073,79 @@ void main() {
     });
 
     test(
-        'test_abort_error_maps_to_authentication_failed_with_aborted_message',
-        () async {
-      final fake = _FakeCredentialsContainer(
-        getError: _domException('AbortError', 'timed out'),
-      );
-      final provider = BrowserWebAuthnProvider.withCredentialsContainer(
-        rpId: 'example.com',
-        rpName: 'Example',
-        credentialsContainer: fake.toJS(),
-      );
-      await expectLater(
-        provider.authenticate(challenge: Uint8List(32)),
-        throwsA(
-          isA<WebAuthnAuthenticationFailed>().having(
-            (e) => e.message,
-            'message',
-            contains('aborted'),
+      'test_abort_error_maps_to_authentication_failed_with_aborted_message',
+      () async {
+        final fake = _FakeCredentialsContainer(
+          getError: _domException('AbortError', 'timed out'),
+        );
+        final provider = BrowserWebAuthnProvider.withCredentialsContainer(
+          rpId: 'example.com',
+          rpName: 'Example',
+          credentialsContainer: fake.toJS(),
+        );
+        await expectLater(
+          provider.authenticate(challenge: Uint8List(32)),
+          throwsA(
+            isA<WebAuthnAuthenticationFailed>().having(
+              (e) => e.message,
+              'message',
+              contains('aborted'),
+            ),
           ),
-        ),
-      );
-    });
-
-    test('test_constraint_error_maps_to_constraint_failed_with_message',
-        () async {
-      final fake = _FakeCredentialsContainer(
-        createError: _domException('ConstraintError', 'no UV available'),
-      );
-      final provider = BrowserWebAuthnProvider.withCredentialsContainer(
-        rpId: 'example.com',
-        rpName: 'Example',
-        credentialsContainer: fake.toJS(),
-      );
-      await expectLater(
-        provider.register(
-          challenge: Uint8List(32),
-          userId: Uint8List(16),
-          userName: 'alice',
-        ),
-        throwsA(
-          isA<WebAuthnRegistrationFailed>().having(
-            (e) => e.message,
-            'message',
-            contains('constraint'),
-          ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
     test(
-        'test_unknown_error_falls_through_to_authentication_failed_with_raw_message',
-        () async {
-      final fake = _FakeCredentialsContainer(
-        getError: _domException('SomeUnexpectedError', 'mystery'),
-      );
-      final provider = BrowserWebAuthnProvider.withCredentialsContainer(
-        rpId: 'example.com',
-        rpName: 'Example',
-        credentialsContainer: fake.toJS(),
-      );
-      await expectLater(
-        provider.authenticate(challenge: Uint8List(32)),
-        throwsA(
-          isA<WebAuthnAuthenticationFailed>().having(
-            (e) => e.message,
-            'message',
-            contains('mystery'),
+      'test_constraint_error_maps_to_constraint_failed_with_message',
+      () async {
+        final fake = _FakeCredentialsContainer(
+          createError: _domException('ConstraintError', 'no UV available'),
+        );
+        final provider = BrowserWebAuthnProvider.withCredentialsContainer(
+          rpId: 'example.com',
+          rpName: 'Example',
+          credentialsContainer: fake.toJS(),
+        );
+        await expectLater(
+          provider.register(
+            challenge: Uint8List(32),
+            userId: Uint8List(16),
+            userName: 'alice',
           ),
-        ),
-      );
-    });
+          throwsA(
+            isA<WebAuthnRegistrationFailed>().having(
+              (e) => e.message,
+              'message',
+              contains('constraint'),
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
+      'test_unknown_error_falls_through_to_authentication_failed_with_raw_message',
+      () async {
+        final fake = _FakeCredentialsContainer(
+          getError: _domException('SomeUnexpectedError', 'mystery'),
+        );
+        final provider = BrowserWebAuthnProvider.withCredentialsContainer(
+          rpId: 'example.com',
+          rpName: 'Example',
+          credentialsContainer: fake.toJS(),
+        );
+        await expectLater(
+          provider.authenticate(challenge: Uint8List(32)),
+          throwsA(
+            isA<WebAuthnAuthenticationFailed>().having(
+              (e) => e.message,
+              'message',
+              contains('mystery'),
+            ),
+          ),
+        );
+      },
+    );
   });
 }

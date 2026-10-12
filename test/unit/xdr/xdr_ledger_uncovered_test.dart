@@ -14,8 +14,13 @@ void main() {
       // Act & Assert - Should throw exception for unknown enum value
       expect(
         () => XdrLedgerEntryChangeType.decode(stream),
-        throwsA(predicate((e) =>
-          e is Exception && e.toString().contains("Unknown enum value: 99"))),
+        throwsA(
+          predicate(
+            (e) =>
+                e is Exception &&
+                e.toString().contains("Unknown enum value: 99"),
+          ),
+        ),
       );
     });
 
@@ -43,8 +48,13 @@ void main() {
       // Act & Assert - Should throw for unknown enum value
       expect(
         () => XdrLedgerEntryType.decode(stream),
-        throwsA(predicate((e) =>
-          e is Exception && e.toString().contains("Unknown enum value: 255"))),
+        throwsA(
+          predicate(
+            (e) =>
+                e is Exception &&
+                e.toString().contains("Unknown enum value: 255"),
+          ),
+        ),
       );
     });
   });
@@ -58,8 +68,13 @@ void main() {
       // Act & Assert
       expect(
         () => XdrClaimPredicateType.decode(stream),
-        throwsA(predicate((e) =>
-          e is Exception && e.toString().contains("Unknown enum value: 100"))),
+        throwsA(
+          predicate(
+            (e) =>
+                e is Exception &&
+                e.toString().contains("Unknown enum value: 100"),
+          ),
+        ),
       );
     });
   });
@@ -73,8 +88,13 @@ void main() {
       // Act & Assert
       expect(
         () => XdrLedgerUpgradeType.decode(stream),
-        throwsA(predicate((e) =>
-          e is Exception && e.toString().contains("Unknown enum value: 200"))),
+        throwsA(
+          predicate(
+            (e) =>
+                e is Exception &&
+                e.toString().contains("Unknown enum value: 200"),
+          ),
+        ),
       );
     });
   });

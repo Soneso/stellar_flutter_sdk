@@ -12,15 +12,19 @@ import '../tests_util.dart';
 
 void main() {
   String testOn = 'testnet'; //'futurenet';
-  StellarSDK sdk =
-      testOn == 'testnet' ? StellarSDK.TESTNET : StellarSDK.FUTURENET;
+  StellarSDK sdk = testOn == 'testnet'
+      ? StellarSDK.TESTNET
+      : StellarSDK.FUTURENET;
   Network network = testOn == 'testnet' ? Network.TESTNET : Network.FUTURENET;
 
   test('test set account options', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    await fundTestAccountAndAwaitVisibility(accountAId,
-        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(
+      accountAId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
     BigInt seqNum = accountA.sequenceNumber;
 
@@ -36,22 +40,25 @@ void main() {
     SetOptionsOperationBuilder setOp = SetOptionsOperationBuilder();
 
     Transaction transaction = new TransactionBuilder(accountA)
-        .addOperation(setOp
-            .setHomeDomain(newHomeDomain)
-            .setSigner(bKey, 1)
-            .setHighThreshold(5)
-            .setMasterKeyWeight(5)
-            .setMediumThreshold(3)
-            .setLowThreshold(1)
-            .setSetFlags(2)
-            .build())
+        .addOperation(
+          setOp
+              .setHomeDomain(newHomeDomain)
+              .setSigner(bKey, 1)
+              .setHighThreshold(5)
+              .setMasterKeyWeight(5)
+              .setMediumThreshold(3)
+              .setLowThreshold(1)
+              .setSetFlags(2)
+              .build(),
+        )
         .addMemo(Memo.text("Test create account"))
         .build();
 
     transaction.sign(keyPairA, network);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     assert(response.success);
     assert(response.successfulTransaction != null);
     assert(response.successfulTransaction!.id == response.hash!);
@@ -83,8 +90,9 @@ void main() {
     assert(accountA.flags.authImmutable == false);
 
     // Find account for signer.
-    Page<AccountResponse> accounts =
-        await sdk.accounts.forSigner(keyPairB.accountId).execute();
+    Page<AccountResponse> accounts = await sdk.accounts
+        .forSigner(keyPairB.accountId)
+        .execute();
     aFound = false;
     for (AccountResponse? account in accounts.records) {
       if (account!.accountId == keyPairA.accountId) {
@@ -104,8 +112,11 @@ void main() {
   test('test find accounts for asset', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    await fundTestAccountAndAwaitVisibility(accountAId,
-        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(
+      accountAId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
     AccountResponse accountA = await sdk.accounts.account(keyPairA.accountId);
 
     KeyPair keyPairC = KeyPair.random();
@@ -114,13 +125,15 @@ void main() {
     // fund account C.
     Transaction transaction = new TransactionBuilder(accountA)
         .addOperation(
-            new CreateAccountOperationBuilder(accountCId, "10").build())
+          new CreateAccountOperationBuilder(accountCId, "10").build(),
+        )
         .build();
 
     transaction.sign(keyPairA, network);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
@@ -128,12 +141,14 @@ void main() {
 
     Asset iomAsset = AssetTypeCreditAlphaNum4("IOM", keyPairA.accountId);
 
-    ChangeTrustOperation changeTrustOperation =
-        ChangeTrustOperationBuilder(iomAsset, "200999").build();
+    ChangeTrustOperation changeTrustOperation = ChangeTrustOperationBuilder(
+      iomAsset,
+      "200999",
+    ).build();
 
-    transaction = new TransactionBuilder(accountC)
-        .addOperation(changeTrustOperation)
-        .build();
+    transaction = new TransactionBuilder(
+      accountC,
+    ).addOperation(changeTrustOperation).build();
 
     transaction.sign(keyPairC, network);
 
@@ -170,32 +185,43 @@ void main() {
     String accountXId = keyPairX.accountId;
     String accountYId = keyPairY.accountId;
 
-    await fundTestAccountAndAwaitVisibility(accountXId,
-        horizon: sdk, useFuturenet: testOn != 'testnet');
-    await fundTestAccountAndAwaitVisibility(accountYId,
-        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(
+      accountXId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
+    await fundTestAccountAndAwaitVisibility(
+      accountYId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
 
-    AccountMergeOperation accountMergeOperation =
-        AccountMergeOperationBuilder(accountXId).build();
+    AccountMergeOperation accountMergeOperation = AccountMergeOperationBuilder(
+      accountXId,
+    ).build();
 
     AccountResponse accountY = await sdk.accounts.account(accountYId);
-    Transaction transaction = TransactionBuilder(accountY)
-        .addOperation(accountMergeOperation)
-        .build();
+    Transaction transaction = TransactionBuilder(
+      accountY,
+    ).addOperation(accountMergeOperation).build();
 
     transaction.sign(keyPairY, network);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
-    await sdk.accounts.account(accountYId).then((response) {
-      assert(false);
-    }).catchError((error) {
-      print(error.toString());
-      assert(error is ErrorResponse && error.code == 404);
-    });
+    await sdk.accounts
+        .account(accountYId)
+        .then((response) {
+          assert(false);
+        })
+        .catchError((error) {
+          print(error.toString());
+          assert(error is ErrorResponse && error.code == 404);
+        });
 
     // test operation & effects responses can be parsed
     var operationsPage = await sdk.operations.forAccount(accountXId).execute();
@@ -215,40 +241,55 @@ void main() {
     String accountXId = keyPairX.accountId;
     String accountYId = keyPairY.accountId;
 
-    await fundTestAccountAndAwaitVisibility(accountXId,
-        horizon: sdk, useFuturenet: testOn != 'testnet');
-    await fundTestAccountAndAwaitVisibility(accountYId,
-        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(
+      accountXId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
+    await fundTestAccountAndAwaitVisibility(
+      accountYId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
 
-    MuxedAccount muxedDestinationAccount = MuxedAccount(accountXId, BigInt.from(10120291));
-    MuxedAccount muxedSourceAccount = MuxedAccount(accountYId, BigInt.from(9999999999));
+    MuxedAccount muxedDestinationAccount = MuxedAccount(
+      accountXId,
+      BigInt.from(10120291),
+    );
+    MuxedAccount muxedSourceAccount = MuxedAccount(
+      accountYId,
+      BigInt.from(9999999999),
+    );
 
     AccountMergeOperation accountMergeOperation =
         AccountMergeOperationBuilder.forMuxedDestinationAccount(
-                muxedDestinationAccount)
-            .setMuxedSourceAccount(muxedSourceAccount)
-            .build();
+          muxedDestinationAccount,
+        ).setMuxedSourceAccount(muxedSourceAccount).build();
 
     AccountResponse accountY = await sdk.accounts.account(accountYId);
-    Transaction transaction = TransactionBuilder(accountY)
-        .addOperation(accountMergeOperation)
-        .build();
+    Transaction transaction = TransactionBuilder(
+      accountY,
+    ).addOperation(accountMergeOperation).build();
 
     transaction.sign(keyPairY, network);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
     //print(response.hash);
 
-    await sdk.accounts.account(accountYId).then((response) {
-      assert(false);
-    }).catchError((error) {
-      print(error.toString());
-      assert(error is ErrorResponse && error.code == 404);
-    });
+    await sdk.accounts
+        .account(accountYId)
+        .then((response) {
+          assert(false);
+        })
+        .catchError((error) {
+          print(error.toString());
+          assert(error is ErrorResponse && error.code == 404);
+        });
 
     // test operation & effects responses can be parsed
     var operationsPage = await sdk.operations.forAccount(accountXId).execute();
@@ -265,22 +306,28 @@ void main() {
     KeyPair keyPair = KeyPair.random();
     String accountId = keyPair.accountId;
 
-    await fundTestAccountAndAwaitVisibility(accountId,
-        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(
+      accountId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
 
     AccountResponse account = await sdk.accounts.account(accountId);
     BigInt startSequence = account.sequenceNumber;
 
-    BumpSequenceOperation bumpSequenceOperation =
-        BumpSequenceOperationBuilder(startSequence + BigInt.from(10)).build();
+    BumpSequenceOperation bumpSequenceOperation = BumpSequenceOperationBuilder(
+      startSequence + BigInt.from(10),
+    ).build();
 
-    Transaction transaction =
-        TransactionBuilder(account).addOperation(bumpSequenceOperation).build();
+    Transaction transaction = TransactionBuilder(
+      account,
+    ).addOperation(bumpSequenceOperation).build();
 
     transaction.sign(keyPair, network);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
@@ -299,8 +346,11 @@ void main() {
     KeyPair keyPair = KeyPair.random();
     String accountId = keyPair.accountId;
 
-    await fundTestAccountAndAwaitVisibility(accountId,
-        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(
+      accountId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
 
     AccountResponse account = await sdk.accounts.account(accountId);
 
@@ -310,16 +360,20 @@ void main() {
     List<int> list = value.codeUnits;
     Uint8List valueBytes = Uint8List.fromList(list);
 
-    ManageDataOperation manageDataOperation =
-        ManageDataOperationBuilder(key, valueBytes).build();
+    ManageDataOperation manageDataOperation = ManageDataOperationBuilder(
+      key,
+      valueBytes,
+    ).build();
 
-    Transaction transaction =
-        TransactionBuilder(account).addOperation(manageDataOperation).build();
+    Transaction transaction = TransactionBuilder(
+      account,
+    ).addOperation(manageDataOperation).build();
 
     transaction.sign(keyPair, network);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     assert(response.success);
     TestUtils.resultDeAndEncodingTest(transaction, response);
 
@@ -332,8 +386,9 @@ void main() {
 
     manageDataOperation = ManageDataOperationBuilder(key, null).build();
 
-    transaction =
-        TransactionBuilder(account).addOperation(manageDataOperation).build();
+    transaction = TransactionBuilder(
+      account,
+    ).addOperation(manageDataOperation).build();
     transaction.sign(keyPair, network);
 
     response = await sdk.submitTransaction(transaction);
@@ -354,8 +409,10 @@ void main() {
     String med25519AccountId =
         'MAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSAAAAAAAAAAE2LP26';
     MuxedAccount? mux = MuxedAccount.fromAccountId(med25519AccountId);
-    assert(mux!.ed25519AccountId ==
-        'GAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSTVY');
+    assert(
+      mux!.ed25519AccountId ==
+          'GAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSTVY',
+    );
     assert(mux!.id == BigInt.from(1234));
     assert(mux!.accountId == med25519AccountId);
   });
@@ -363,8 +420,11 @@ void main() {
   test('stream transactions for an account', () async {
     KeyPair keyPairA = KeyPair.random();
     String accountAId = keyPairA.accountId;
-    await fundTestAccountAndAwaitVisibility(accountAId,
-        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(
+      accountAId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
     AccountResponse accountA = await sdk.accounts.account(accountAId);
 
     KeyPair keyPairB = KeyPair.random();
@@ -376,8 +436,9 @@ void main() {
         .build();
     transaction.sign(keyPairA, network);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     assert(response.success);
 
     String amount = "10";
@@ -388,28 +449,33 @@ void main() {
         .cursor("now")
         .stream()
         .listen((response) async {
-      count++;
-      print("account transaction event received " + count.toString());
-      assert(response.operationCount == 1);
+          count++;
+          print("account transaction event received " + count.toString());
+          assert(response.operationCount == 1);
 
-      if (count < 3) {
-        AccountResponse accountB = await sdk.accounts.account(accountBId);
-        transaction = TransactionBuilder(accountB)
-            .addOperation(
-                PaymentOperationBuilder(accountAId, Asset.NATIVE, amount)
-                    .build())
-            .build();
-        transaction.sign(keyPairB, network);
-        SubmitTransactionResponse submitResponse =
-            await sdk.submitTransaction(transaction);
-        assert(submitResponse.success);
-      }
-    });
+          if (count < 3) {
+            AccountResponse accountB = await sdk.accounts.account(accountBId);
+            transaction = TransactionBuilder(accountB)
+                .addOperation(
+                  PaymentOperationBuilder(
+                    accountAId,
+                    Asset.NATIVE,
+                    amount,
+                  ).build(),
+                )
+                .build();
+            transaction.sign(keyPairB, network);
+            SubmitTransactionResponse submitResponse = await sdk
+                .submitTransaction(transaction);
+            assert(submitResponse.success);
+          }
+        });
 
     AccountResponse accountB = await sdk.accounts.account(accountBId);
     transaction = TransactionBuilder(accountB)
         .addOperation(
-            PaymentOperationBuilder(accountAId, Asset.NATIVE, amount).build())
+          PaymentOperationBuilder(accountAId, Asset.NATIVE, amount).build(),
+        )
         .build();
     transaction.sign(keyPairB, network);
     response = await sdk.submitTransaction(transaction);
@@ -426,8 +492,11 @@ void main() {
     KeyPair keyPair = KeyPair.random();
     String accountId = keyPair.accountId;
 
-    await fundTestAccountAndAwaitVisibility(accountId,
-        horizon: sdk, useFuturenet: testOn != 'testnet');
+    await fundTestAccountAndAwaitVisibility(
+      accountId,
+      horizon: sdk,
+      useFuturenet: testOn != 'testnet',
+    );
 
     AccountResponse account = await sdk.accounts.account(accountId);
 
@@ -437,21 +506,27 @@ void main() {
     List<int> list = value.codeUnits;
     Uint8List valueBytes = Uint8List.fromList(list);
 
-    ManageDataOperation manageDataOperation =
-        ManageDataOperationBuilder(key, valueBytes).build();
+    ManageDataOperation manageDataOperation = ManageDataOperationBuilder(
+      key,
+      valueBytes,
+    ).build();
 
-    Transaction transaction =
-        TransactionBuilder(account).addOperation(manageDataOperation).build();
+    Transaction transaction = TransactionBuilder(
+      account,
+    ).addOperation(manageDataOperation).build();
 
     transaction.sign(keyPair, network);
 
-    SubmitTransactionResponse response =
-        await sdk.submitTransaction(transaction);
+    SubmitTransactionResponse response = await sdk.submitTransaction(
+      transaction,
+    );
     assert(response.success);
 
     // Now test the new accountData endpoint
-    AccountDataResponse dataResponse =
-        await sdk.accounts.accountData(accountId, key);
+    AccountDataResponse dataResponse = await sdk.accounts.accountData(
+      accountId,
+      key,
+    );
 
     // Verify the base64 encoded value
     assert(dataResponse.value == base64Encode(valueBytes));
@@ -465,8 +540,9 @@ void main() {
 
     // Clean up - remove the data
     manageDataOperation = ManageDataOperationBuilder(key, null).build();
-    transaction =
-        TransactionBuilder(account).addOperation(manageDataOperation).build();
+    transaction = TransactionBuilder(
+      account,
+    ).addOperation(manageDataOperation).build();
     transaction.sign(keyPair, network);
 
     response = await sdk.submitTransaction(transaction);
@@ -509,7 +585,10 @@ void main() {
     expect(response.value, 'SGVsbG8sIFN0ZWxsYXIh');
     expect(response.decodedString, 'Hello, Stellar!');
     expect(response.decodedStringOrNull, 'Hello, Stellar!');
-    expect(response.decodedValue, equals(Uint8List.fromList('Hello, Stellar!'.codeUnits)));
+    expect(
+      response.decodedValue,
+      equals(Uint8List.fromList('Hello, Stellar!'.codeUnits)),
+    );
   });
 
   test('test account data endpoint with non-UTF8 data', () async {
@@ -517,7 +596,8 @@ void main() {
     final mockClient = MockClient((request) async {
       // Return mock response with binary data
       String base64BinaryData = base64Encode([0xFF, 0xFE, 0x00, 0x01, 0x02]);
-      String jsonData = '''
+      String jsonData =
+          '''
         {
           "value": "$base64BinaryData"
         }
@@ -535,7 +615,10 @@ void main() {
     expect(response.value, base64Encode([0xFF, 0xFE, 0x00, 0x01, 0x02]));
 
     // Verify decoded bytes
-    expect(response.decodedValue, equals(Uint8List.fromList([0xFF, 0xFE, 0x00, 0x01, 0x02])));
+    expect(
+      response.decodedValue,
+      equals(Uint8List.fromList([0xFF, 0xFE, 0x00, 0x01, 0x02])),
+    );
 
     // Verify that decodedStringOrNull returns null for non-UTF8 data
     expect(response.decodedStringOrNull, isNull);
@@ -592,7 +675,10 @@ void main() {
 
   test('test account data URL construction', () async {
     final mockClient = MockClient((request) async {
-      expect(request.url.toString(), contains('/accounts/GDTEST/data/special+key%20with%20spaces'));
+      expect(
+        request.url.toString(),
+        contains('/accounts/GDTEST/data/special+key%20with%20spaces'),
+      );
 
       return http.Response('{"value": "dGVzdA=="}', 200);
     });

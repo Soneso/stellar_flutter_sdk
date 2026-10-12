@@ -84,10 +84,13 @@ class ExtendFootprintTTLOperation extends Operation {
   /// Returns: XDR operation body for the footprint TTL extension.
   @override
   XdrOperationBody toOperationBody() {
-    XdrOperationBody body =
-        XdrOperationBody(XdrOperationType.EXTEND_FOOTPRINT_TTL);
+    XdrOperationBody body = XdrOperationBody(
+      XdrOperationType.EXTEND_FOOTPRINT_TTL,
+    );
     body.extendFootprintTTLOp = XdrExtendFootprintTTLOp(
-        XdrExtensionPoint(0), XdrUint32(this._extendTo));
+      XdrExtensionPoint(0),
+      XdrUint32(this._extendTo),
+    );
     return body;
   }
 
@@ -98,7 +101,8 @@ class ExtendFootprintTTLOperation extends Operation {
   ///
   /// Returns: Builder initialized with operation parameters.
   static ExtendFootprintTTLOperationBuilder builder(
-      XdrExtendFootprintTTLOp op) {
+    XdrExtendFootprintTTLOp op,
+  ) {
     return ExtendFootprintTTLOperationBuilder(op.extendTo.uint32);
   }
 }
@@ -127,8 +131,9 @@ class ExtendFootprintTTLOperationBuilder
   ///
   /// Returns: A configured [ExtendFootprintTTLOperation] instance.
   ExtendFootprintTTLOperation build() {
-    ExtendFootprintTTLOperation operation =
-        ExtendFootprintTTLOperation(_extendTo);
+    ExtendFootprintTTLOperation operation = ExtendFootprintTTLOperation(
+      _extendTo,
+    );
     return applySourceAccount(operation);
   }
 }

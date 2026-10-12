@@ -85,8 +85,11 @@ class PaymentOperation extends Operation {
     // amount
     XdrInt64 amount = XdrInt64(Util.decimalStringToStroops(this.amount));
 
-    XdrPaymentOp op =
-        XdrPaymentOp(this._destination.toXdr(), asset.toXdr(), amount);
+    XdrPaymentOp op = XdrPaymentOp(
+      this._destination.toXdr(),
+      asset.toXdr(),
+      amount,
+    );
 
     XdrOperationBody body = XdrOperationBody(XdrOperationType.PAYMENT);
     body.paymentOp = op;
@@ -101,9 +104,10 @@ class PaymentOperation extends Operation {
   /// Returns: Builder configured with XDR operation data
   static PaymentOperationBuilder builder(XdrPaymentOp op) {
     return PaymentOperationBuilder.forMuxedDestinationAccount(
-        MuxedAccount.fromXdr(op.destination),
-        Asset.fromXdr(op.asset),
-        Util.stroopsToDecimalString(op.amount.int64));
+      MuxedAccount.fromXdr(op.destination),
+      Asset.fromXdr(op.asset),
+      Util.stroopsToDecimalString(op.amount.int64),
+    );
   }
 }
 
@@ -141,7 +145,10 @@ class PaymentOperationBuilder
   /// - [_asset] Asset to be sent
   /// - [_amount] Amount of the asset to send
   PaymentOperationBuilder(
-      String destinationAccountId, this._asset, this._amount) {
+    String destinationAccountId,
+    this._asset,
+    this._amount,
+  ) {
     MuxedAccount? dest = MuxedAccount.fromAccountId(destinationAccountId);
     this._destination = checkNotNull(dest, "invalid destinationAccountId");
   }
@@ -153,7 +160,10 @@ class PaymentOperationBuilder
   /// - [_asset] Asset to be sent
   /// - [_amount] Amount of the asset to send
   PaymentOperationBuilder.forMuxedDestinationAccount(
-      this._destination, this._asset, this._amount);
+    this._destination,
+    this._asset,
+    this._amount,
+  );
 
   /// Builds the Payment operation.
   ///

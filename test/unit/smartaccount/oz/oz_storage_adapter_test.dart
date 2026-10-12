@@ -61,9 +61,7 @@ OZStoredCredential _fullCredential({
   );
 }
 
-OZStoredCredential _minimalCredential({
-  String id = 'cred-minimal-001',
-}) {
+OZStoredCredential _minimalCredential({String id = 'cred-minimal-001'}) {
   return OZStoredCredential(
     credentialId: id,
     publicKey: _testPublicKey(seed: 2),
@@ -173,7 +171,10 @@ void main() {
 
       final retrieved = await adapter.get('cred-upsert');
       expect(retrieved, isNotNull);
-      expect(_bytesEqual(_testPublicKey(seed: 20), retrieved!.publicKey), isTrue);
+      expect(
+        _bytesEqual(_testPublicKey(seed: 20), retrieved!.publicKey),
+        isTrue,
+      );
       expect(retrieved.contractId, 'CONTRACT_B');
       expect(retrieved.deploymentStatus, OZCredentialDeploymentStatus.failed);
       expect(retrieved.nickname, 'Replaced Name');
@@ -479,8 +480,7 @@ void main() {
       const expiresAt = 9007199254740991;
       final session = OZStoredSession(
         credentialId: 'cred-session-001',
-        contractId:
-            'CSESS1234CONT5678RACT9012ADDR3456GOES7890HERE1234ABCD5678',
+        contractId: 'CSESS1234CONT5678RACT9012ADDR3456GOES7890HERE1234ABCD5678',
         connectedAt: now,
         expiresAt: expiresAt,
       );
@@ -533,12 +533,14 @@ void main() {
     test('testClearSession', () async {
       final adapter = _newAdapter();
       const now = 1700000000000;
-      await adapter.saveSession(OZStoredSession(
-        credentialId: 'cred-session',
-        contractId: 'CONTRACT',
-        connectedAt: now,
-        expiresAt: now + 7 * 24 * 60 * 60 * 1000,
-      ));
+      await adapter.saveSession(
+        OZStoredSession(
+          credentialId: 'cred-session',
+          contractId: 'CONTRACT',
+          connectedAt: now,
+          expiresAt: now + 7 * 24 * 60 * 60 * 1000,
+        ),
+      );
 
       await adapter.clearSession();
 
@@ -563,12 +565,18 @@ void main() {
       await adapter.saveSession(session);
 
       final result = await adapter.getSession();
-      expect(result, isNull,
-          reason: 'Expired session should be auto-cleared and return null');
+      expect(
+        result,
+        isNull,
+        reason: 'Expired session should be auto-cleared and return null',
+      );
 
       final secondResult = await adapter.getSession();
-      expect(secondResult, isNull,
-          reason: 'Session should remain cleared after auto-eviction');
+      expect(
+        secondResult,
+        isNull,
+        reason: 'Session should remain cleared after auto-eviction',
+      );
     });
 
     test('testNonExpiredSessionIsReturned', () async {
@@ -589,37 +597,53 @@ void main() {
     test('testClearCredentialsDoesNotAffectSession', () async {
       final adapter = _newAdapter();
       await adapter.save(_fullCredential());
-      await adapter.saveSession(const OZStoredSession(
-        credentialId: 'cred-full-001',
-        contractId: 'CONTRACT',
-        connectedAt: 1700000000000,
-        expiresAt: 9007199254740991,
-      ));
+      await adapter.saveSession(
+        const OZStoredSession(
+          credentialId: 'cred-full-001',
+          contractId: 'CONTRACT',
+          connectedAt: 1700000000000,
+          expiresAt: 9007199254740991,
+        ),
+      );
 
       await adapter.clear();
 
-      expect((await adapter.getAll()), isEmpty,
-          reason: 'Credentials should be cleared');
-      expect(await adapter.getSession(), isNotNull,
-          reason: 'Session should not be affected by clear()');
+      expect(
+        (await adapter.getAll()),
+        isEmpty,
+        reason: 'Credentials should be cleared',
+      );
+      expect(
+        await adapter.getSession(),
+        isNotNull,
+        reason: 'Session should not be affected by clear()',
+      );
     });
 
     test('testClearSessionDoesNotAffectCredentials', () async {
       final adapter = _newAdapter();
       await adapter.save(_fullCredential());
-      await adapter.saveSession(const OZStoredSession(
-        credentialId: 'cred-full-001',
-        contractId: 'CONTRACT',
-        connectedAt: 1700000000000,
-        expiresAt: 9007199254740991,
-      ));
+      await adapter.saveSession(
+        const OZStoredSession(
+          credentialId: 'cred-full-001',
+          contractId: 'CONTRACT',
+          connectedAt: 1700000000000,
+          expiresAt: 9007199254740991,
+        ),
+      );
 
       await adapter.clearSession();
 
-      expect(await adapter.getSession(), isNull,
-          reason: 'Session should be cleared');
-      expect((await adapter.getAll()).length, 1,
-          reason: 'Credentials should not be affected by clearSession()');
+      expect(
+        await adapter.getSession(),
+        isNull,
+        reason: 'Session should be cleared',
+      );
+      expect(
+        (await adapter.getAll()).length,
+        1,
+        reason: 'Credentials should not be affected by clearSession()',
+      );
     });
 
     test('testCredentialIdWithSpecialCharacters', () async {
@@ -638,17 +662,22 @@ void main() {
       ];
 
       for (final id in specialIds) {
-        await adapter.save(OZStoredCredential(
-          credentialId: id,
-          publicKey: _testPublicKey(),
-          createdAt: 1700000000000,
-        ));
+        await adapter.save(
+          OZStoredCredential(
+            credentialId: id,
+            publicKey: _testPublicKey(),
+            createdAt: 1700000000000,
+          ),
+        );
       }
 
       for (final id in specialIds) {
         final retrieved = await adapter.get(id);
-        expect(retrieved, isNotNull,
-            reason: 'Should retrieve credential with ID: $id');
+        expect(
+          retrieved,
+          isNotNull,
+          reason: 'Should retrieve credential with ID: $id',
+        );
         expect(retrieved!.credentialId, id);
       }
 
@@ -672,8 +701,9 @@ void main() {
 
     test('testLargePublicKey', () async {
       final adapter = _newAdapter();
-      final largeKey =
-          Uint8List.fromList(List<int>.generate(1024, (i) => i % 256));
+      final largeKey = Uint8List.fromList(
+        List<int>.generate(1024, (i) => i % 256),
+      );
       final credential = OZStoredCredential(
         credentialId: 'cred-large-key',
         publicKey: largeKey,
@@ -706,8 +736,10 @@ void main() {
 
     test('testLargeTransportsList', () async {
       final adapter = _newAdapter();
-      final manyTransports =
-          List<String>.generate(100, (i) => 'transport-${i + 1}');
+      final manyTransports = List<String>.generate(
+        100,
+        (i) => 'transport-${i + 1}',
+      );
       final credential = OZStoredCredential(
         credentialId: 'cred-many-transports',
         publicKey: _testPublicKey(),
@@ -781,8 +813,11 @@ void main() {
         await adapter.save(credential);
 
         final retrieved = await adapter.get(id);
-        expect(retrieved, isNotNull,
-            reason: 'Should retrieve credential $id immediately after save');
+        expect(
+          retrieved,
+          isNotNull,
+          reason: 'Should retrieve credential $id immediately after save',
+        );
         expect(retrieved!.credentialId, id);
       }
 
@@ -902,8 +937,11 @@ void main() {
         connectedAt: 1000,
         expiresAt: 2000,
       );
-      expect(expired.isExpired, isTrue,
-          reason: 'Session expiring at epoch 2000ms should be expired');
+      expect(
+        expired.isExpired,
+        isTrue,
+        reason: 'Session expiring at epoch 2000ms should be expired',
+      );
 
       const valid = OZStoredSession(
         credentialId: 'cred',
@@ -911,9 +949,11 @@ void main() {
         connectedAt: 1700000000000,
         expiresAt: 9007199254740991,
       );
-      expect(valid.isExpired, isFalse,
-          reason:
-              'Session expiring at Long.MAX_VALUE should not be expired');
+      expect(
+        valid.isExpired,
+        isFalse,
+        reason: 'Session expiring at Long.MAX_VALUE should not be expired',
+      );
     });
 
     test('testStoredCredentialEqualityWithSameData', () {
@@ -933,10 +973,16 @@ void main() {
         nickname: 'Test',
       );
 
-      expect(cred1, equals(cred2),
-          reason: 'Credentials with same content should be equal');
-      expect(cred1.hashCode, cred2.hashCode,
-          reason: 'Equal credentials should have same hashCode');
+      expect(
+        cred1,
+        equals(cred2),
+        reason: 'Credentials with same content should be equal',
+      );
+      expect(
+        cred1.hashCode,
+        cred2.hashCode,
+        reason: 'Equal credentials should have same hashCode',
+      );
     });
 
     test('testStoredCredentialInequalityWithDifferentPublicKey', () {
@@ -951,9 +997,11 @@ void main() {
         createdAt: 1700000000000,
       );
 
-      expect(cred1 == cred2, isFalse,
-          reason:
-              'Credentials with different public keys should not be equal');
+      expect(
+        cred1 == cred2,
+        isFalse,
+        reason: 'Credentials with different public keys should not be equal',
+      );
     });
 
     test('testInMemoryStorageAdapterImplementsStorageAdapterInterface', () {
@@ -963,7 +1011,8 @@ void main() {
   });
 
   group('SessionManager - in-scope cases', () {
-    const contractId = 'CBCD1234AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    const contractId =
+        'CBCD1234AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 
     test('testStoredSession_expiresAtZero_isExpired', () {
       const session = OZStoredSession(
@@ -972,8 +1021,11 @@ void main() {
         connectedAt: 0,
         expiresAt: 0,
       );
-      expect(session.isExpired, isTrue,
-          reason: 'Session with expiresAt=0 should be expired');
+      expect(
+        session.isExpired,
+        isTrue,
+        reason: 'Session with expiresAt=0 should be expired',
+      );
     });
 
     test('testStoredSession_expiresAtMaxValue_notExpired', () {
@@ -983,9 +1035,11 @@ void main() {
         connectedAt: 1700000000000,
         expiresAt: 9007199254740991,
       );
-      expect(session.isExpired, isFalse,
-          reason:
-              'Session with expiresAt=Long.MAX_VALUE should not be expired');
+      expect(
+        session.isExpired,
+        isFalse,
+        reason: 'Session with expiresAt=Long.MAX_VALUE should not be expired',
+      );
     });
 
     test('testStoredSession_expiresAtInPast_isExpired', () {
@@ -1081,12 +1135,14 @@ void main() {
     test('testClearSession_removesSession', () async {
       final storage = OZInMemoryStorageAdapter();
 
-      await storage.saveSession(OZStoredSession(
-        credentialId: 'cred',
-        contractId: contractId,
-        connectedAt: 1700000000000,
-        expiresAt: 9007199254740991,
-      ));
+      await storage.saveSession(
+        OZStoredSession(
+          credentialId: 'cred',
+          contractId: contractId,
+          connectedAt: 1700000000000,
+          expiresAt: 9007199254740991,
+        ),
+      );
 
       await storage.clearSession();
 
@@ -1111,12 +1167,14 @@ void main() {
       await storage.saveSession(expiredSession);
 
       final result = await storage.getSession();
-      expect(result, isNull,
-          reason: 'Expired session should return null');
+      expect(result, isNull, reason: 'Expired session should return null');
 
       final secondResult = await storage.getSession();
-      expect(secondResult, isNull,
-          reason: 'Expired session should remain cleared');
+      expect(
+        secondResult,
+        isNull,
+        reason: 'Expired session should remain cleared',
+      );
     });
 
     test('testConfigSessionExpiryMs_default', () {
@@ -1156,13 +1214,17 @@ void main() {
         final expectedKeys = <int>[];
         for (var i = 0; i < writerCount; i++) {
           expectedKeys.add(i);
-          writes.add(adapter.save(OZStoredCredential(
-            credentialId: id,
-            publicKey: _testPublicKey(seed: i),
-            contractId: 'CONTRACT_$i',
-            createdAt: 1700000000000 + i,
-            nickname: 'writer-$i',
-          )));
+          writes.add(
+            adapter.save(
+              OZStoredCredential(
+                credentialId: id,
+                publicKey: _testPublicKey(seed: i),
+                contractId: 'CONTRACT_$i',
+                createdAt: 1700000000000 + i,
+                nickname: 'writer-$i',
+              ),
+            ),
+          );
         }
         await Future.wait(writes);
 
@@ -1179,16 +1241,28 @@ void main() {
         expect(expectedKeys.contains(winner), isTrue);
 
         final expectedPubKey = _testPublicKey(seed: winner);
-        expect(_bytesEqual(retrieved.publicKey, expectedPubKey), isTrue,
-            reason: 'publicKey must match the winning writer ($winner)');
-        expect(retrieved.contractId, 'CONTRACT_$winner',
-            reason: 'contractId must match the winning writer ($winner)');
-        expect(retrieved.createdAt, 1700000000000 + winner,
-            reason: 'createdAt must match the winning writer ($winner)');
+        expect(
+          _bytesEqual(retrieved.publicKey, expectedPubKey),
+          isTrue,
+          reason: 'publicKey must match the winning writer ($winner)',
+        );
+        expect(
+          retrieved.contractId,
+          'CONTRACT_$winner',
+          reason: 'contractId must match the winning writer ($winner)',
+        );
+        expect(
+          retrieved.createdAt,
+          1700000000000 + winner,
+          reason: 'createdAt must match the winning writer ($winner)',
+        );
 
         final all = await adapter.getAll();
-        expect(all.length, 1,
-            reason: 'concurrent writes to the same key must not duplicate');
+        expect(
+          all.length,
+          1,
+          reason: 'concurrent writes to the same key must not duplicate',
+        );
       }
     });
   });
@@ -1235,14 +1309,20 @@ void main() {
 
       // Sanity check: the session is durable up to the disconnect call.
       final preDisconnect = await storage.getSession();
-      expect(preDisconnect, isNotNull,
-          reason: 'Session must be present before disconnect');
+      expect(
+        preDisconnect,
+        isNotNull,
+        reason: 'Session must be present before disconnect',
+      );
 
       await kit.disconnect();
 
       final postDisconnect = await storage.getSession();
-      expect(postDisconnect, isNull,
-          reason: 'Disconnect must remove the stored session');
+      expect(
+        postDisconnect,
+        isNull,
+        reason: 'Disconnect must remove the stored session',
+      );
     });
 
     test('testSessionIndependentFromCredentials', () async {
@@ -1274,8 +1354,11 @@ void main() {
       // Clearing the session must not delete the credential.
       await storage.clearSession();
       final credentialAfterSessionClear = await storage.get('cred-shared');
-      expect(credentialAfterSessionClear, isNotNull,
-          reason: 'Credential must survive session clear');
+      expect(
+        credentialAfterSessionClear,
+        isNotNull,
+        reason: 'Credential must survive session clear',
+      );
       expect(credentialAfterSessionClear!.contractId, equals(_kitContractId));
       expect(await storage.getSession(), isNull);
 
@@ -1283,8 +1366,11 @@ void main() {
       await storage.saveSession(session);
       await storage.delete('cred-shared');
       final sessionAfterCredentialDelete = await storage.getSession();
-      expect(sessionAfterCredentialDelete, isNotNull,
-          reason: 'Session must survive credential delete');
+      expect(
+        sessionAfterCredentialDelete,
+        isNotNull,
+        reason: 'Session must survive credential delete',
+      );
       expect(sessionAfterCredentialDelete!.credentialId, equals('cred-shared'));
       expect(await storage.get('cred-shared'), isNull);
     });
@@ -1338,23 +1424,36 @@ void main() {
       final secondaryAfter = await storage.get('cred-secondary');
       expect(primaryAfter, isNotNull);
       expect(secondaryAfter, isNotNull);
-      expect(primaryAfter!.deploymentStatus,
-          equals(OZCredentialDeploymentStatus.pending));
+      expect(
+        primaryAfter!.deploymentStatus,
+        equals(OZCredentialDeploymentStatus.pending),
+      );
       expect(primaryAfter.isPrimary, isTrue);
-      expect(secondaryAfter!.deploymentStatus,
-          equals(OZCredentialDeploymentStatus.failed));
+      expect(
+        secondaryAfter!.deploymentStatus,
+        equals(OZCredentialDeploymentStatus.failed),
+      );
       expect(secondaryAfter.contractId, equals(_kitContractId));
     });
 
     test('testKitIsConnected_initiallyFalse', () async {
       final kit = _makeKit();
 
-      expect(kit.isConnected, isFalse,
-          reason: 'Fresh kit must not report a connection');
-      expect(kit.credentialId, isNull,
-          reason: 'Fresh kit must expose null credentialId');
-      expect(kit.contractId, isNull,
-          reason: 'Fresh kit must expose null contractId');
+      expect(
+        kit.isConnected,
+        isFalse,
+        reason: 'Fresh kit must not report a connection',
+      );
+      expect(
+        kit.credentialId,
+        isNull,
+        reason: 'Fresh kit must expose null credentialId',
+      );
+      expect(
+        kit.contractId,
+        isNull,
+        reason: 'Fresh kit must expose null contractId',
+      );
       await expectLater(
         () => kit.requireConnected(),
         throwsA(isA<SmartAccountWalletNotConnected>()),
@@ -1413,9 +1512,11 @@ void main() {
       expect(kit.credentialId, isNull);
       expect(kit.contractId, isNull);
       expect(await storage.getSession(), isNull);
-      expect(disconnectedFired, equals(0),
-          reason:
-              'Disconnect from idle state must not emit walletDisconnected');
+      expect(
+        disconnectedFired,
+        equals(0),
+        reason: 'Disconnect from idle state must not emit walletDisconnected',
+      );
 
       // A second disconnect from the same idle baseline is also a no-op.
       await kit.disconnect();
@@ -1465,7 +1566,9 @@ void main() {
     test('disconnectByAddress_noOpByDefault', () async {
       final adapter = _MinimalWalletAdapter();
       await expectLater(
-        adapter.disconnectByAddress('GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54'),
+        adapter.disconnectByAddress(
+          'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+        ),
         completes,
       );
     });
@@ -1533,7 +1636,11 @@ void main() {
     });
 
     test('identical_isEqual', () {
-      const a = OZConnectedWallet(address: 'G1', walletId: 'w', walletName: 'W');
+      const a = OZConnectedWallet(
+        address: 'G1',
+        walletId: 'w',
+        walletName: 'W',
+      );
       expect(a == a, isTrue);
     });
   });
@@ -1594,11 +1701,13 @@ void main() {
       // Non-const: signedAuthEntry matches, signerAddress differs → line 586.
       final a = OZSignAuthEntryResult(
         signedAuthEntry: 'sig',
-        signerAddress: 'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
+        signerAddress:
+            'GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7',
       );
       final b = OZSignAuthEntryResult(
         signedAuthEntry: 'sig',
-        signerAddress: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+        signerAddress:
+            'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
       );
       expect(a == b, isFalse);
     });
@@ -1606,11 +1715,13 @@ void main() {
     test('equalInstances_areEqual', () {
       const a = OZSignAuthEntryResult(
         signedAuthEntry: 'base64signature==',
-        signerAddress: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+        signerAddress:
+            'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
       );
       const b = OZSignAuthEntryResult(
         signedAuthEntry: 'base64signature==',
-        signerAddress: 'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
+        signerAddress:
+            'GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54',
       );
 
       expect(a, equals(b));
@@ -1624,8 +1735,14 @@ void main() {
     });
 
     test('nullSignerAddress_equalToNullSignerAddress', () {
-      const a = OZSignAuthEntryResult(signedAuthEntry: 'sig', signerAddress: null);
-      const b = OZSignAuthEntryResult(signedAuthEntry: 'sig', signerAddress: null);
+      const a = OZSignAuthEntryResult(
+        signedAuthEntry: 'sig',
+        signerAddress: null,
+      );
+      const b = OZSignAuthEntryResult(
+        signedAuthEntry: 'sig',
+        signerAddress: null,
+      );
       expect(a, equals(b));
     });
 
@@ -1681,12 +1798,14 @@ void main() {
 
     test('getSession_expiredSession_returnsNullAndClears', () async {
       final adapter = OZInMemoryStorageAdapter();
-      await adapter.saveSession(OZStoredSession(
-        credentialId: 'cred',
-        contractId: 'contract',
-        connectedAt: 1000,
-        expiresAt: 1001, // well past
-      ));
+      await adapter.saveSession(
+        OZStoredSession(
+          credentialId: 'cred',
+          contractId: 'contract',
+          connectedAt: 1000,
+          expiresAt: 1001, // well past
+        ),
+      );
       final session = await adapter.getSession();
       expect(session, isNull);
       // Verify session is cleared by second call also returning null.

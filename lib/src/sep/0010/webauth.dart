@@ -145,9 +145,14 @@ class WebAuth {
   ///   'example.com',
   /// );
   /// ```
-  WebAuth(this._authEndpoint, this._network, this._serverSigningKey,
-      this._serverHomeDomain,
-      {http.Client? httpClient, this.httpRequestHeaders}) {
+  WebAuth(
+    this._authEndpoint,
+    this._network,
+    this._serverSigningKey,
+    this._serverHomeDomain, {
+    http.Client? httpClient,
+    this.httpRequestHeaders,
+  }) {
     this.httpClient = httpClient ?? http.Client();
   }
 
@@ -213,9 +218,14 @@ class WebAuth {
       throw NoWebAuthServerSigningKeyFoundException(domain);
     }
 
-    return new WebAuth(toml.generalInformation.webAuthEndpoint!, network,
-        toml.generalInformation.signingKey!, domain,
-        httpClient: httpClient, httpRequestHeaders: httpRequestHeaders);
+    return new WebAuth(
+      toml.generalInformation.webAuthEndpoint!,
+      network,
+      toml.generalInformation.signingKey!,
+      domain,
+      httpClient: httpClient,
+      httpRequestHeaders: httpRequestHeaders,
+    );
   }
 
   /// Performs the complete SEP-0010 authentication flow and returns a JWT token.
@@ -306,13 +316,15 @@ class WebAuth {
   ///   },
   /// );
   /// ```
-  Future<String> jwtToken(String clientAccountId, List<KeyPair> signers,
-      {int? memo,
-      String? homeDomain,
-      String? clientDomain,
-      KeyPair? clientDomainAccountKeyPair,
-      Future<String> Function(String transactionXdr)?
-          clientDomainSigningDelegate}) async {
+  Future<String> jwtToken(
+    String clientAccountId,
+    List<KeyPair> signers, {
+    int? memo,
+    String? homeDomain,
+    String? clientDomain,
+    KeyPair? clientDomainAccountKeyPair,
+    Future<String> Function(String transactionXdr)? clientDomainSigningDelegate,
+  }) async {
     if (clientDomain != null &&
         clientDomainAccountKeyPair == null &&
         clientDomainSigningDelegate == null) {
@@ -320,8 +332,12 @@ class WebAuth {
     }
 
     // get the challenge transaction from the web auth server
-    String transaction =
-        await getChallenge(clientAccountId, memo, homeDomain, clientDomain);
+    String transaction = await getChallenge(
+      clientAccountId,
+      memo,
+      homeDomain,
+      clientDomain,
+    );
 
     String? clientDomainAccountId;
     if (clientDomainAccountKeyPair != null) {
@@ -341,8 +357,13 @@ class WebAuth {
       clientDomainAccountId = clientToml.generalInformation.signingKey;
     }
     // validate the transaction received from the web auth server.
-    validateChallenge(transaction, clientAccountId, clientDomainAccountId,
-        gracePeriod, memo); // throws if not valid
+    validateChallenge(
+      transaction,
+      clientAccountId,
+      clientDomainAccountId,
+      gracePeriod,
+      memo,
+    ); // throws if not valid
 
     if (clientDomainAccountKeyPair != null) {
       transaction = signTransaction(transaction, [clientDomainAccountKeyPair]);
@@ -355,8 +376,9 @@ class WebAuth {
     final signedTransaction = signTransaction(transaction, mSigners);
 
     // request the jwt token by sending back the signed challenge transaction to the web auth server.
-    final String jwtToken =
-        await sendSignedChallengeTransaction(signedTransaction);
+    final String jwtToken = await sendSignedChallengeTransaction(
+      signedTransaction,
+    );
 
     return jwtToken;
   }
@@ -394,10 +416,18 @@ class WebAuth {
   ///
   /// Note: This is a low-level method. Most users should use [jwtToken] instead,
   /// which handles the complete authentication flow automatically.
-  Future<String> getChallenge(String clientAccountId,
-      [int? memo, String? homeDomain, String? clientDomain]) async {
+  Future<String> getChallenge(
+    String clientAccountId, [
+    int? memo,
+    String? homeDomain,
+    String? clientDomain,
+  ]) async {
     ChallengeResponse challengeResponse = await getChallengeResponse(
-        clientAccountId, memo, homeDomain, clientDomain);
+      clientAccountId,
+      memo,
+      homeDomain,
+      clientDomain,
+    );
 
     String? transaction = challengeResponse.transaction;
     if (transaction == null) {
@@ -465,31 +495,39 @@ class WebAuth {
   ///
   /// Security note: Always validate challenges before signing them. This prevents
   /// attacks where a malicious server tries to get you to sign arbitrary transactions.
-  void validateChallenge(String challengeTransaction, String userAccountId,
-      String? clientDomainAccountId,
-      [int? timeBoundsGracePeriod, int? memo]) {
+  void validateChallenge(
+    String challengeTransaction,
+    String userAccountId,
+    String? clientDomainAccountId, [
+    int? timeBoundsGracePeriod,
+    int? memo,
+  ]) {
     XdrTransactionEnvelope envelopeXdr =
         XdrTransactionEnvelope.fromEnvelopeXdrString(challengeTransaction);
 
     if (envelopeXdr.discriminant != XdrEnvelopeType.ENVELOPE_TYPE_TX) {
       throw ChallengeValidationError(
-          "Invalid transaction type received in challenge");
+        "Invalid transaction type received in challenge",
+      );
     }
 
     final transaction = envelopeXdr.v1!.tx;
 
     if (transaction.seqNum.sequenceNumber != BigInt.zero) {
       throw ChallengeValidationErrorInvalidSeqNr(
-          "Invalid transaction, sequence number not 0");
+        "Invalid transaction, sequence number not 0",
+      );
     }
 
     if (transaction.memo.discriminant != XdrMemoType.MEMO_NONE) {
       if (userAccountId.startsWith("M")) {
         throw ChallengeValidationErrorMemoAndMuxedAccount(
-            "Memo and muxed account (M...) found");
+          "Memo and muxed account (M...) found",
+        );
       } else if (transaction.memo.discriminant != XdrMemoType.MEMO_ID) {
         throw ChallengeValidationErrorInvalidMemoType("invalid memo type");
-      } else if (memo != null && transaction.memo.id!.uint64 != BigInt.from(memo)) {
+      } else if (memo != null &&
+          transaction.memo.id!.uint64 != BigInt.from(memo)) {
         throw ChallengeValidationErrorInvalidMemoValue("invalid memo value");
       }
     } else if (memo != null) {
@@ -504,21 +542,25 @@ class WebAuth {
       final op = transaction.operations[i];
       if (op.sourceAccount == null) {
         throw ChallengeValidationErrorInvalidSourceAccount(
-            "invalid source account (is null) in operation[$i]");
+          "invalid source account (is null) in operation[$i]",
+        );
       }
 
-      final opSourceAccountId =
-          MuxedAccount.fromXdr(op.sourceAccount!).accountId;
+      final opSourceAccountId = MuxedAccount.fromXdr(
+        op.sourceAccount!,
+      ).accountId;
       if (i == 0 && opSourceAccountId != userAccountId) {
         throw ChallengeValidationErrorInvalidSourceAccount(
-            "invalid source account in operation[$i]");
+          "invalid source account in operation[$i]",
+        );
       }
 
       // all operations must be manage data operations
       if (op.body.discriminant != XdrOperationType.MANAGE_DATA ||
           op.body.manageDataOp == null) {
         throw ChallengeValidationErrorInvalidOperationType(
-            "invalid type of operation $i");
+          "invalid type of operation $i",
+        );
       }
 
       final dataName = op.body.manageDataOp!.dataName.string64;
@@ -526,17 +568,20 @@ class WebAuth {
         if (dataName == "client_domain") {
           if (opSourceAccountId != clientDomainAccountId) {
             throw ChallengeValidationErrorInvalidSourceAccount(
-                "invalid source account in operation[$i]");
+              "invalid source account in operation[$i]",
+            );
           }
         } else if (opSourceAccountId != _serverSigningKey) {
           throw ChallengeValidationErrorInvalidSourceAccount(
-              "invalid source account in operation[$i]");
+            "invalid source account in operation[$i]",
+          );
         }
       }
 
       if (i == 0 && dataName != _serverHomeDomain + " auth") {
         throw ChallengeValidationErrorInvalidHomeDomain(
-            "invalid home domain in operation $i");
+          "invalid home domain in operation $i",
+        );
       }
       final dataValue = op.body.manageDataOp!.dataValue?.dataValue;
       if (i == 0) {
@@ -544,29 +589,33 @@ class WebAuth {
         // 48-byte cryptographic nonce, as required by SEP-10.
         if (dataValue == null) {
           throw ChallengeValidationError(
-              "invalid data value in operation $i: value is missing");
+            "invalid data value in operation $i: value is missing",
+          );
         }
         if (dataValue.length != 64) {
           throw ChallengeValidationError(
-              "invalid data value in operation $i: expected a 64 byte base64-encoded value, got ${dataValue.length} bytes");
+            "invalid data value in operation $i: expected a 64 byte base64-encoded value, got ${dataValue.length} bytes",
+          );
         }
         List<int> nonce;
         try {
           nonce = base64Decode(String.fromCharCodes(dataValue));
         } on FormatException {
           throw ChallengeValidationError(
-              "invalid data value in operation $i: value is not base64-encoded");
+            "invalid data value in operation $i: value is not base64-encoded",
+          );
         }
         if (nonce.length != 48) {
           throw ChallengeValidationError(
-              "invalid data value in operation $i: expected a 48 byte nonce, got ${nonce.length} bytes");
+            "invalid data value in operation $i: expected a 48 byte nonce, got ${nonce.length} bytes",
+          );
         }
       } else if (dataName == "web_auth_domain") {
         final uri = Uri.parse(_authEndpoint);
-        if (dataValue == null ||
-            uri.host != String.fromCharCodes(dataValue)) {
+        if (dataValue == null || uri.host != String.fromCharCodes(dataValue)) {
           throw ChallengeValidationErrorInvalidWebAuthDomain(
-              "invalid web auth domain in operation $i");
+            "invalid web auth domain in operation $i",
+          );
         }
       }
     }
@@ -576,11 +625,13 @@ class WebAuth {
     // indefinitely, so reject it instead of skipping the check. Resolving the
     // preconditions yields the bounds whether they are carried as a v1 time
     // precondition or inside a v2 precondition.
-    final timeBounds =
-        TransactionPreconditions.fromXdr(transaction.cond).timeBounds;
+    final timeBounds = TransactionPreconditions.fromXdr(
+      transaction.cond,
+    ).timeBounds;
     if (timeBounds == null) {
       throw ChallengeValidationErrorInvalidTimeBounds(
-          "Invalid transaction, missing time bounds");
+        "Invalid transaction, missing time bounds",
+      );
     }
     int grace = 0;
     if (timeBoundsGracePeriod != null) {
@@ -591,29 +642,36 @@ class WebAuth {
     final maxTime = timeBounds.maxTime;
     if (maxTime == 0) {
       throw ChallengeValidationErrorInvalidTimeBounds(
-          "Invalid transaction, requires non-infinite time bounds");
+        "Invalid transaction, requires non-infinite time bounds",
+      );
     }
     if (currentTime < minTime - grace || currentTime > maxTime + grace) {
       throw ChallengeValidationErrorInvalidTimeBounds(
-          "Invalid transaction, invalid time bounds");
+        "Invalid transaction, invalid time bounds",
+      );
     }
 
     // the envelope must have one signature and it must be valid: transaction signed by the server
     final signatures = envelopeXdr.v1!.signatures;
     if (signatures.length != 1) {
       throw ChallengeValidationErrorInvalidSignature(
-          "Invalid transaction envelope, invalid number of signatures");
+        "Invalid transaction envelope, invalid number of signatures",
+      );
     }
     final firstSignature = envelopeXdr.v1!.signatures[0];
     // validate signature
     final serverKeyPair = KeyPair.fromAccountId(_serverSigningKey);
-    final transactionHash =
-        AbstractTransaction.fromEnvelopeXdr(envelopeXdr).hash(_network);
+    final transactionHash = AbstractTransaction.fromEnvelopeXdr(
+      envelopeXdr,
+    ).hash(_network);
     final valid = serverKeyPair.verify(
-        transactionHash, firstSignature.signature.signature);
+      transactionHash,
+      firstSignature.signature.signature,
+    );
     if (!valid) {
       throw ChallengeValidationErrorInvalidSignature(
-          "Invalid transaction envelope, invalid signature");
+        "Invalid transaction envelope, invalid signature",
+      );
     }
   }
 
@@ -640,11 +698,13 @@ class WebAuth {
       throw ChallengeValidationError("Invalid transaction type");
     }
 
-    final txHash =
-        AbstractTransaction.fromEnvelopeXdr(envelopeXdr).hash(_network);
+    final txHash = AbstractTransaction.fromEnvelopeXdr(
+      envelopeXdr,
+    ).hash(_network);
 
-    List<XdrDecoratedSignature> signatures =
-        List<XdrDecoratedSignature>.empty(growable: true);
+    List<XdrDecoratedSignature> signatures = List<XdrDecoratedSignature>.empty(
+      growable: true,
+    );
     signatures.addAll(envelopeXdr.v1!.signatures);
     for (KeyPair signer in signers) {
       signatures.add(signer.signDecorated(txHash));
@@ -672,34 +732,42 @@ class WebAuth {
   /// Note: This is a low-level method. Most users should use [jwtToken] instead,
   /// which handles the complete authentication flow automatically.
   Future<String> sendSignedChallengeTransaction(
-      String base64EnvelopeXDR) async {
+    String base64EnvelopeXDR,
+  ) async {
     Uri serverURI = Uri.parse(_authEndpoint);
 
     Map<String, String> headers = {...(this.httpRequestHeaders ?? {})};
     headers.putIfAbsent("Content-Type", () => "application/json");
 
     SubmitCompletedChallengeResponse result = await httpClient
-        .post(serverURI,
-            body: json.encode({"transaction": base64EnvelopeXDR}),
-            headers: headers)
+        .post(
+          serverURI,
+          body: json.encode({"transaction": base64EnvelopeXDR}),
+          headers: headers,
+        )
         .then((response) {
-      SubmitCompletedChallengeResponse submitTransactionResponse;
-      switch (response.statusCode) {
-        case 200:
-        case 400:
-          submitTransactionResponse = SubmitCompletedChallengeResponse.fromJson(
-              json.decode(response.body));
-          break;
-        case 504:
-          throw new SubmitCompletedChallengeTimeoutResponseException();
-        default:
-          throw new SubmitCompletedChallengeUnknownResponseException(
-              response.statusCode, response.body);
-      }
-      return submitTransactionResponse;
-    }).catchError((onError) {
-      throw onError;
-    });
+          SubmitCompletedChallengeResponse submitTransactionResponse;
+          switch (response.statusCode) {
+            case 200:
+            case 400:
+              submitTransactionResponse =
+                  SubmitCompletedChallengeResponse.fromJson(
+                    json.decode(response.body),
+                  );
+              break;
+            case 504:
+              throw new SubmitCompletedChallengeTimeoutResponseException();
+            default:
+              throw new SubmitCompletedChallengeUnknownResponseException(
+                response.statusCode,
+                response.body,
+              );
+          }
+          return submitTransactionResponse;
+        })
+        .catchError((onError) {
+          throw onError;
+        });
 
     if (result.error != null) {
       throw SubmitCompletedChallengeErrorResponseException(result.error!);
@@ -729,8 +797,12 @@ class WebAuth {
   /// Throws:
   /// - [NoMemoForMuxedAccountsException] If memo is provided for M... address
   /// - [ChallengeRequestErrorResponse] If server returns an error (401/403/400)
-  Future<ChallengeResponse> getChallengeResponse(String accountId,
-      [int? memo, String? homeDomain, String? clientDomain]) async {
+  Future<ChallengeResponse> getChallengeResponse(
+    String accountId, [
+    int? memo,
+    String? homeDomain,
+    String? clientDomain,
+  ]) async {
     if (memo != null && accountId.startsWith("M")) {
       throw NoMemoForMuxedAccountsException();
     }
@@ -738,8 +810,10 @@ class WebAuth {
     Uri serverURI = Uri.parse(_authEndpoint);
     try {
       _ChallengeRequestBuilder requestBuilder = new _ChallengeRequestBuilder(
-          httpClient, serverURI,
-          httpRequestHeaders: this.httpRequestHeaders);
+        httpClient,
+        serverURI,
+        httpRequestHeaders: this.httpRequestHeaders,
+      );
       ChallengeResponse response = await requestBuilder
           .forAccountId(accountId)
           .forHomeDomain(homeDomain)
@@ -760,9 +834,11 @@ class WebAuth {
 // Requests the challenge data.
 class _ChallengeRequestBuilder extends RequestBuilder {
   Map<String, String>? httpRequestHeaders;
-  _ChallengeRequestBuilder(http.Client httpClient, Uri serverURI,
-      {this.httpRequestHeaders})
-      : super(httpClient, serverURI, null);
+  _ChallengeRequestBuilder(
+    http.Client httpClient,
+    Uri serverURI, {
+    this.httpRequestHeaders,
+  }) : super(httpClient, serverURI, null);
 
   /// Requests challenge from the specified URI.
   Future<ChallengeResponse> challengeURI(Uri uri) async {
@@ -770,9 +846,9 @@ class _ChallengeRequestBuilder extends RequestBuilder {
     ResponseHandler<ChallengeResponse> responseHandler =
         ResponseHandler<ChallengeResponse>(type);
 
-    return await httpClient
-        .get(uri, headers: httpRequestHeaders ?? {})
-        .then((response) {
+    return await httpClient.get(uri, headers: httpRequestHeaders ?? {}).then((
+      response,
+    ) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -815,15 +891,17 @@ class _ChallengeRequestBuilder extends RequestBuilder {
 
   /// Executes challenge request to the specified URI.
   static Future<ChallengeResponse> requestExecute(
-      http.Client httpClient, Uri uri,
-      {Map<String, String>? httpRequestHeaders}) async {
+    http.Client httpClient,
+    Uri uri, {
+    Map<String, String>? httpRequestHeaders,
+  }) async {
     TypeToken<ChallengeResponse> type = new TypeToken<ChallengeResponse>();
     ResponseHandler<ChallengeResponse> responseHandler =
         new ResponseHandler<ChallengeResponse>(type);
 
-    return await httpClient
-        .get(uri, headers: httpRequestHeaders ?? {})
-        .then((response) {
+    return await httpClient.get(uri, headers: httpRequestHeaders ?? {}).then((
+      response,
+    ) {
       return responseHandler.handleResponse(response);
     });
   }
@@ -831,8 +909,10 @@ class _ChallengeRequestBuilder extends RequestBuilder {
   /// Executes the challenge request using configured parameters.
   Future<ChallengeResponse> execute() {
     return _ChallengeRequestBuilder.requestExecute(
-        this.httpClient, this.buildUri(),
-        httpRequestHeaders: this.httpRequestHeaders);
+      this.httpClient,
+      this.buildUri(),
+      httpRequestHeaders: this.httpRequestHeaders,
+    );
   }
 }
 

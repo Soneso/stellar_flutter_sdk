@@ -8,35 +8,34 @@ void main() {
         'base': {
           'asset_type': 'credit_alphanum4',
           'asset_code': 'USDC',
-          'asset_issuer': 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'
+          'asset_issuer':
+              'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
         },
-        'counter': {
-          'asset_type': 'native'
-        },
+        'counter': {'asset_type': 'native'},
         'asks': [
           {
             'amount': '100.0000000',
             'price': '2.5000000',
-            'price_r': {'n': 5, 'd': 2}
+            'price_r': {'n': 5, 'd': 2},
           },
           {
             'amount': '200.0000000',
             'price': '2.6000000',
-            'price_r': {'n': 13, 'd': 5}
-          }
+            'price_r': {'n': 13, 'd': 5},
+          },
         ],
         'bids': [
           {
             'amount': '150.0000000',
             'price': '2.4000000',
-            'price_r': {'n': 12, 'd': 5}
+            'price_r': {'n': 12, 'd': 5},
           },
           {
             'amount': '250.0000000',
             'price': '2.3000000',
-            'price_r': {'n': 23, 'd': 10}
-          }
-        ]
+            'price_r': {'n': 23, 'd': 10},
+          },
+        ],
       };
 
       final response = OrderBookResponse.fromJson(json);
@@ -52,17 +51,21 @@ void main() {
         'base': {
           'asset_type': 'credit_alphanum12',
           'asset_code': 'LONGERCODE',
-          'asset_issuer': 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'
+          'asset_issuer':
+              'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
         },
         'counter': {'asset_type': 'native'},
         'asks': [],
-        'bids': []
+        'bids': [],
       };
 
       final response = OrderBookResponse.fromJson(json);
 
       expect(response.base, isA<AssetTypeCreditAlphaNum12>());
-      expect((response.base as AssetTypeCreditAlphaNum12).code, equals('LONGERCODE'));
+      expect(
+        (response.base as AssetTypeCreditAlphaNum12).code,
+        equals('LONGERCODE'),
+      );
     });
 
     test('parses counter asset correctly', () {
@@ -71,16 +74,20 @@ void main() {
         'counter': {
           'asset_type': 'credit_alphanum4',
           'asset_code': 'USD',
-          'asset_issuer': 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5'
+          'asset_issuer':
+              'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
         },
         'asks': [],
-        'bids': []
+        'bids': [],
       };
 
       final response = OrderBookResponse.fromJson(json);
 
       expect(response.counter, isA<AssetTypeCreditAlphaNum4>());
-      expect((response.counter as AssetTypeCreditAlphaNum4).code, equals('USD'));
+      expect(
+        (response.counter as AssetTypeCreditAlphaNum4).code,
+        equals('USD'),
+      );
     });
 
     test('parses asks correctly', () {
@@ -91,20 +98,20 @@ void main() {
           {
             'amount': '100.0',
             'price': '2.5',
-            'price_r': {'n': 5, 'd': 2}
+            'price_r': {'n': 5, 'd': 2},
           },
           {
             'amount': '200.0',
             'price': '2.6',
-            'price_r': {'n': 13, 'd': 5}
+            'price_r': {'n': 13, 'd': 5},
           },
           {
             'amount': '300.0',
             'price': '2.7',
-            'price_r': {'n': 27, 'd': 10}
-          }
+            'price_r': {'n': 27, 'd': 10},
+          },
         ],
-        'bids': []
+        'bids': [],
       };
 
       final response = OrderBookResponse.fromJson(json);
@@ -125,14 +132,14 @@ void main() {
           {
             'amount': '150.0',
             'price': '2.4',
-            'price_r': {'n': 12, 'd': 5}
+            'price_r': {'n': 12, 'd': 5},
           },
           {
             'amount': '250.0',
             'price': '2.3',
-            'price_r': {'n': 23, 'd': 10}
-          }
-        ]
+            'price_r': {'n': 23, 'd': 10},
+          },
+        ],
       };
 
       final response = OrderBookResponse.fromJson(json);
@@ -148,7 +155,7 @@ void main() {
         'base': {'asset_type': 'native'},
         'counter': {'asset_type': 'native'},
         'asks': [],
-        'bids': []
+        'bids': [],
       };
 
       final response = OrderBookResponse.fromJson(json);
@@ -162,7 +169,7 @@ void main() {
         'base': {'asset_type': 'native'},
         'counter': {'asset_type': 'native'},
         'asks': [],
-        'bids': []
+        'bids': [],
       };
 
       final response = OrderBookResponse.fromJson(json);
@@ -177,7 +184,7 @@ void main() {
       final json = {
         'amount': '100.0000000',
         'price': '2.5000000',
-        'price_r': {'n': 5, 'd': 2}
+        'price_r': {'n': 5, 'd': 2},
       };
 
       final row = OrderBookRow.fromJson(json);
@@ -192,7 +199,7 @@ void main() {
       final json = {
         'amount': '500.0',
         'price': '1.5',
-        'price_r': {'n': 3, 'd': 2}
+        'price_r': {'n': 3, 'd': 2},
       };
 
       final row = OrderBookRow.fromJson(json);
@@ -205,7 +212,7 @@ void main() {
       final json = {
         'amount': '9999999.9999999',
         'price': '0.0001',
-        'price_r': {'n': 1, 'd': 10000}
+        'price_r': {'n': 1, 'd': 10000},
       };
 
       final row = OrderBookRow.fromJson(json);
@@ -218,7 +225,7 @@ void main() {
       final json = {
         'amount': '100.0',
         'price': '0.0000001',
-        'price_r': {'n': 1, 'd': 10000000}
+        'price_r': {'n': 1, 'd': 10000000},
       };
 
       final row = OrderBookRow.fromJson(json);
@@ -232,7 +239,7 @@ void main() {
       final json = {
         'amount': '1.0',
         'price': '10000.0',
-        'price_r': {'n': 10000, 'd': 1}
+        'price_r': {'n': 10000, 'd': 1},
       };
 
       final row = OrderBookRow.fromJson(json);

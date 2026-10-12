@@ -12,7 +12,8 @@ class File {
   File.fromUri(Uri uri) : _uri = uri;
 
   Future<List<int>> readAsBytes() => throw UnsupportedError(
-      'File operations not available on web. '
-      'Attempted to read: $_uri. '
-      'Use file picker or fetch from URL instead.');
+    'File operations not available on web. '
+    'Attempted to read: $_uri. '
+    'Use file picker or fetch from URL instead.',
+  );
 }

@@ -122,26 +122,40 @@ class OfferResponse extends Response {
   /// - [lastModifiedLedger] Ledger sequence when last modified
   /// - [lastModifiedTime] Timestamp when last modified
   /// - [links] Hypermedia links to related resources
-  OfferResponse(this.id, this.pagingToken, this.seller, this.selling, this.buying, this.amount,
-      this.price, this.priceR, this.sponsor, this.lastModifiedLedger, this.lastModifiedTime, this.links);
+  OfferResponse(
+    this.id,
+    this.pagingToken,
+    this.seller,
+    this.selling,
+    this.buying,
+    this.amount,
+    this.price,
+    this.priceR,
+    this.sponsor,
+    this.lastModifiedLedger,
+    this.lastModifiedTime,
+    this.links,
+  );
 
   /// Creates an offer response from Horizon API JSON.
-  factory OfferResponse.fromJson(Map<String, dynamic> json) => OfferResponse(
-      json['id'],
-      json['paging_token'],
-      json['seller'],
-      Asset.fromJson(json['selling']),
-      Asset.fromJson(json['buying']),
-      json['amount'],
-      json['price'],
-      Price.fromJson(json['price_r']),
-      json['sponsor'],
-      convertInt(json['last_modified_ledger'])!,
-      json['last_modified_time'],
-      OfferResponseLinks.fromJson(json['_links']))
-    ..rateLimitLimit = convertInt(json['rateLimitLimit'])
-    ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
-    ..rateLimitReset = convertInt(json['rateLimitReset']);
+  factory OfferResponse.fromJson(Map<String, dynamic> json) =>
+      OfferResponse(
+          json['id'],
+          json['paging_token'],
+          json['seller'],
+          Asset.fromJson(json['selling']),
+          Asset.fromJson(json['buying']),
+          json['amount'],
+          json['price'],
+          Price.fromJson(json['price_r']),
+          json['sponsor'],
+          convertInt(json['last_modified_ledger'])!,
+          json['last_modified_time'],
+          OfferResponseLinks.fromJson(json['_links']),
+        )
+        ..rateLimitLimit = convertInt(json['rateLimitLimit'])
+        ..rateLimitRemaining = convertInt(json['rateLimitRemaining'])
+        ..rateLimitReset = convertInt(json['rateLimitReset']);
 }
 
 /// Hypermedia links connected to an offer response.
@@ -165,7 +179,9 @@ class OfferResponseLinks {
   OfferResponseLinks(this.self, this.offerMaker);
 
   /// Creates offer response links from Horizon API JSON.
-  factory OfferResponseLinks.fromJson(Map<String, dynamic> json) => OfferResponseLinks(
-      Link.fromJson(json['self']),
-      Link.fromJson(json['offer_maker']));
+  factory OfferResponseLinks.fromJson(Map<String, dynamic> json) =>
+      OfferResponseLinks(
+        Link.fromJson(json['self']),
+        Link.fromJson(json['offer_maker']),
+      );
 }

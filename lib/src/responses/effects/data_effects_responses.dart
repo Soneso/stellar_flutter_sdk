@@ -35,15 +35,16 @@ class DataCreatedEffectResponse extends EffectResponse {
 
   /// Creates a [DataCreatedEffectResponse] with data name, value and effect details.
   DataCreatedEffectResponse(
-      this.name,
-      this.value,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.name,
+    this.value,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   factory DataCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
       DataCreatedEffectResponse(
@@ -55,7 +56,8 @@ class DataCreatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -91,15 +93,16 @@ class DataUpdatedEffectResponse extends EffectResponse {
 
   /// Creates a [DataUpdatedEffectResponse] with data name, updated value and effect details.
   DataUpdatedEffectResponse(
-      this.name,
-      this.value,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.name,
+    this.value,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   factory DataUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
       DataUpdatedEffectResponse(
@@ -111,7 +114,8 @@ class DataUpdatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -143,8 +147,16 @@ class DataRemovedEffectResponse extends EffectResponse {
   String name;
 
   /// Creates a [DataRemovedEffectResponse] with data name and effect details.
-  DataRemovedEffectResponse(this.name, super.id, super.type_i, super.type,
-      super.createdAt, super.pagingToken, super.account, super.links);
+  DataRemovedEffectResponse(
+    this.name,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   factory DataRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
       DataRemovedEffectResponse(
@@ -155,7 +167,8 @@ class DataRemovedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }

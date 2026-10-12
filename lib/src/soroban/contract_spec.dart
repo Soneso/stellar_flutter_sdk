@@ -251,8 +251,10 @@ class ContractSpec {
     for (final input in func.inputs) {
       final argName = input.name;
       if (!args.containsKey(argName)) {
-        throw ContractSpecException.argumentNotFound(argName,
-            functionName: name);
+        throw ContractSpecException.argumentNotFound(
+          argName,
+          functionName: name,
+        );
       }
 
       final argValue = args[argName];
@@ -332,7 +334,8 @@ class ContractSpec {
         return _handleUDTType(val, ty);
       default:
         throw ContractSpecException.invalidType(
-            'Unsupported type: ${ty.discriminant}');
+          'Unsupported type: ${ty.discriminant}',
+        );
     }
   }
 
@@ -346,28 +349,32 @@ class ContractSpec {
       case XdrSCSpecType.SC_SPEC_TYPE_BOOL:
         if (val is! bool) {
           throw ContractSpecException.invalidType(
-              'Expected bool, got ${val.runtimeType}');
+            'Expected bool, got ${val.runtimeType}',
+          );
         }
         return XdrSCVal.forBool(val);
       case XdrSCSpecType.SC_SPEC_TYPE_U32:
         final intVal = _parseInteger(val, 'u32');
         if (intVal < 0 || intVal > 0xFFFFFFFF) {
           throw ContractSpecException.invalidType(
-              'Value $intVal out of range for u32');
+            'Value $intVal out of range for u32',
+          );
         }
         return XdrSCVal.forU32(intVal);
       case XdrSCSpecType.SC_SPEC_TYPE_I32:
         final intVal = _parseInteger(val, 'i32');
         if (intVal < -0x80000000 || intVal > 0x7FFFFFFF) {
           throw ContractSpecException.invalidType(
-              'Value $intVal out of range for i32');
+            'Value $intVal out of range for i32',
+          );
         }
         return XdrSCVal.forI32(intVal);
       case XdrSCSpecType.SC_SPEC_TYPE_U64:
         final intVal = _parseInteger(val, 'u64');
         if (intVal < 0) {
           throw ContractSpecException.invalidType(
-              'Value $intVal out of range for u64');
+            'Value $intVal out of range for u64',
+          );
         }
         return XdrSCVal.forU64(BigInt.from(intVal));
       case XdrSCSpecType.SC_SPEC_TYPE_I64:
@@ -377,14 +384,16 @@ class ContractSpec {
         final intVal = _parseInteger(val, 'timepoint');
         if (intVal < 0) {
           throw ContractSpecException.invalidType(
-              'Value $intVal out of range for timepoint');
+            'Value $intVal out of range for timepoint',
+          );
         }
         return XdrSCVal.forTimepoint(BigInt.from(intVal));
       case XdrSCSpecType.SC_SPEC_TYPE_DURATION:
         final intVal = _parseInteger(val, 'duration');
         if (intVal < 0) {
           throw ContractSpecException.invalidType(
-              'Value $intVal out of range for duration');
+            'Value $intVal out of range for duration',
+          );
         }
         return XdrSCVal.forDuration(BigInt.from(intVal));
       case XdrSCSpecType.SC_SPEC_TYPE_U128:
@@ -400,13 +409,15 @@ class ContractSpec {
       case XdrSCSpecType.SC_SPEC_TYPE_STRING:
         if (val is! String) {
           throw ContractSpecException.invalidType(
-              'Expected String, got ${val.runtimeType}');
+            'Expected String, got ${val.runtimeType}',
+          );
         }
         return XdrSCVal.forString(val);
       case XdrSCSpecType.SC_SPEC_TYPE_SYMBOL:
         if (val is! String) {
           throw ContractSpecException.invalidType(
-              'Expected String, got ${val.runtimeType}');
+            'Expected String, got ${val.runtimeType}',
+          );
         }
         return XdrSCVal.forSymbol(val);
       case XdrSCSpecType.SC_SPEC_TYPE_ADDRESS:
@@ -414,7 +425,8 @@ class ContractSpec {
         return _handleAddressType(val, ty);
       default:
         throw ContractSpecException.invalidType(
-            'Unsupported value type: ${ty.discriminant}');
+          'Unsupported value type: ${ty.discriminant}',
+        );
     }
   }
 
@@ -446,7 +458,8 @@ class ContractSpec {
       return sortedScMap(entries);
     }
     throw ContractSpecException.invalidType(
-        'Cannot infer type for value: ${val.runtimeType}');
+      'Cannot infer type for value: ${val.runtimeType}',
+    );
   }
 
   /// Parse integer from various input types
@@ -455,7 +468,8 @@ class ContractSpec {
     if (val is double) {
       if (!val.isFinite || val.truncateToDouble() != val) {
         throw ContractSpecException.invalidType(
-            'Cannot convert non-integral double $val to integer for $typeName');
+          'Cannot convert non-integral double $val to integer for $typeName',
+        );
       }
       return val.toInt();
     }
@@ -463,12 +477,14 @@ class ContractSpec {
       final parsed = int.tryParse(val);
       if (parsed == null) {
         throw ContractSpecException.invalidType(
-            'Cannot parse "$val" as integer for $typeName');
+          'Cannot parse "$val" as integer for $typeName',
+        );
       }
       return parsed;
     }
     throw ContractSpecException.invalidType(
-        'Expected int, got ${val.runtimeType} for $typeName');
+      'Expected int, got ${val.runtimeType} for $typeName',
+    );
   }
 
   /// Handle 128-bit unsigned integer conversion
@@ -480,7 +496,8 @@ class ContractSpec {
     if (val is BigInt) {
       if (val < BigInt.zero) {
         throw ContractSpecException.invalidType(
-            'Value $val out of range for u128 (negative)');
+          'Value $val out of range for u128 (negative)',
+        );
       }
       return XdrSCVal.forU128BigInt(val);
     }
@@ -489,7 +506,8 @@ class ContractSpec {
     final intVal = _parseInteger(val, 'u128');
     if (intVal < 0) {
       throw ContractSpecException.invalidType(
-          'Value $intVal out of range for u128');
+        'Value $intVal out of range for u128',
+      );
     }
 
     // Simple conversion for values that fit in int64
@@ -498,7 +516,8 @@ class ContractSpec {
     }
 
     throw ContractSpecException.conversionFailed(
-        'Large u128 values require XdrUInt128Parts or BigInt object');
+      'Large u128 values require XdrUInt128Parts or BigInt object',
+    );
   }
 
   /// Handle 128-bit signed integer conversion
@@ -521,7 +540,8 @@ class ContractSpec {
     }
 
     throw ContractSpecException.conversionFailed(
-        'Large i128 values require XdrInt128Parts or BigInt object');
+      'Large i128 values require XdrInt128Parts or BigInt object',
+    );
   }
 
   /// Handle 256-bit unsigned integer conversion
@@ -533,7 +553,8 @@ class ContractSpec {
     if (val is BigInt) {
       if (val < BigInt.zero) {
         throw ContractSpecException.invalidType(
-            'Value $val out of range for u256 (negative)');
+          'Value $val out of range for u256 (negative)',
+        );
       }
       return XdrSCVal.forU256BigInt(val);
     }
@@ -542,7 +563,8 @@ class ContractSpec {
     final intVal = _parseInteger(val, 'u256');
     if (intVal < 0) {
       throw ContractSpecException.invalidType(
-          'Value $intVal out of range for u256');
+        'Value $intVal out of range for u256',
+      );
     }
 
     return XdrSCVal.forU256BigInt(BigInt.from(intVal));
@@ -578,12 +600,14 @@ class ContractSpec {
         return XdrSCVal.forBytes(bytes);
       } catch (e) {
         throw ContractSpecException.conversionFailed(
-            'Cannot convert string "$val" to bytes: $e');
+          'Cannot convert string "$val" to bytes: $e',
+        );
       }
     }
 
     throw ContractSpecException.invalidType(
-        'Expected Uint8List, List<int>, or hex String, got ${val.runtimeType}');
+      'Expected Uint8List, List<int>, or hex String, got ${val.runtimeType}',
+    );
   }
 
   /// Converts [val] for a parameter of spec type `Address` or `MuxedAddress`.
@@ -601,7 +625,7 @@ class ContractSpec {
         ty.discriminant == XdrSCSpecType.SC_SPEC_TYPE_MUXED_ADDRESS;
     final String expected = muxed
         ? 'MuxedAddress takes an account (G...), muxed account (M...), '
-            'contract (C...) or muxed contract (W...) address'
+              'contract (C...) or muxed contract (W...) address'
         : 'Address takes an account (G...) or contract (C...) address';
 
     final XdrSCVal scVal;
@@ -612,18 +636,21 @@ class ContractSpec {
             : XdrSCVal.forAddressStrKey(val);
       } on Exception {
         throw ContractSpecException.invalidType(
-            'Invalid address format: $val; $expected');
+          'Invalid address format: $val; $expected',
+        );
       }
     } else if (val is Address) {
       try {
         scVal = val.toXdrSCVal();
       } on Exception catch (e) {
         throw ContractSpecException.invalidType(
-            '$expected, got an Address that does not encode: $e');
+          '$expected, got an Address that does not encode: $e',
+        );
       }
     } else {
       throw ContractSpecException.invalidType(
-          '$expected, got ${val.runtimeType}');
+        '$expected, got ${val.runtimeType}',
+      );
     }
 
     final XdrSCAddress address = scVal.address!;
@@ -637,21 +664,25 @@ class ContractSpec {
           return scVal;
         }
         throw ContractSpecException.invalidType(
-            '$expected, got the muxed address ${address.toStrKey()}, which '
-            'needs a MuxedAddress parameter');
+          '$expected, got the muxed address ${address.toStrKey()}, which '
+          'needs a MuxedAddress parameter',
+        );
       case XdrSCAddressType.SC_ADDRESS_TYPE_CLAIMABLE_BALANCE:
         throw ContractSpecException.invalidType(
-            '$expected, got the claimable balance address '
-            '${address.toStrKey()}, which is produced by the host and is not '
-            'a contract input');
+          '$expected, got the claimable balance address '
+          '${address.toStrKey()}, which is produced by the host and is not '
+          'a contract input',
+        );
       case XdrSCAddressType.SC_ADDRESS_TYPE_LIQUIDITY_POOL:
         throw ContractSpecException.invalidType(
-            '$expected, got the liquidity pool address '
-            '${address.toStrKey()}, which is produced by the host and is not '
-            'a contract input');
+          '$expected, got the liquidity pool address '
+          '${address.toStrKey()}, which is produced by the host and is not '
+          'a contract input',
+        );
     }
     throw ContractSpecException.invalidType(
-        '$expected, got an address of type ${address.discriminant.value}');
+      '$expected, got an address of type ${address.discriminant.value}',
+    );
   }
 
   /// Handle option type (nullable values)
@@ -685,14 +716,16 @@ class ContractSpec {
 
     // Result types are handled as unions in practice
     throw ContractSpecException.conversionFailed(
-        'Result type conversion not yet implemented');
+      'Result type conversion not yet implemented',
+    );
   }
 
   /// Handle vector type
   XdrSCVal _handleVecType(dynamic val, XdrSCSpecTypeDef ty) {
     if (val is! List) {
       throw ContractSpecException.invalidType(
-          'Expected List, got ${val.runtimeType}');
+        'Expected List, got ${val.runtimeType}',
+      );
     }
 
     final vecType = ty.vec;
@@ -712,7 +745,8 @@ class ContractSpec {
   XdrSCVal _handleMapType(dynamic val, XdrSCSpecTypeDef ty) {
     if (val is! Map) {
       throw ContractSpecException.invalidType(
-          'Expected Map, got ${val.runtimeType}');
+        'Expected Map, got ${val.runtimeType}',
+      );
     }
 
     final mapType = ty.map;
@@ -734,7 +768,8 @@ class ContractSpec {
   XdrSCVal _handleTupleType(dynamic val, XdrSCSpecTypeDef ty) {
     if (val is! List) {
       throw ContractSpecException.invalidType(
-          'Expected List, got ${val.runtimeType}');
+        'Expected List, got ${val.runtimeType}',
+      );
     }
 
     final tupleType = ty.tuple;
@@ -744,7 +779,8 @@ class ContractSpec {
 
     if (val.length != tupleType.valueTypes.length) {
       throw ContractSpecException.invalidType(
-          'Tuple length mismatch: expected ${tupleType.valueTypes.length}, got ${val.length}');
+        'Tuple length mismatch: expected ${tupleType.valueTypes.length}, got ${val.length}',
+      );
     }
 
     final scValues = <XdrSCVal>[];
@@ -772,16 +808,19 @@ class ContractSpec {
         bytes = Util.hexToBytes(val);
       } catch (e) {
         throw ContractSpecException.conversionFailed(
-            'Cannot convert string "$val" to bytes: $e');
+          'Cannot convert string "$val" to bytes: $e',
+        );
       }
     } else {
       throw ContractSpecException.invalidType(
-          'Expected Uint8List, List<int>, or hex String, got ${val.runtimeType}');
+        'Expected Uint8List, List<int>, or hex String, got ${val.runtimeType}',
+      );
     }
 
     if (bytes.length != bytesNType.n.uint32) {
       throw ContractSpecException.invalidType(
-          'BytesN length mismatch: expected ${bytesNType.n}, got ${bytes.length}');
+        'BytesN length mismatch: expected ${bytesNType.n}, got ${bytes.length}',
+      );
     }
 
     return XdrSCVal.forBytes(bytes);
@@ -808,7 +847,8 @@ class ContractSpec {
         return _handleEnumType(val, entry.udtEnumV0!);
       default:
         throw ContractSpecException.invalidType(
-            'Unsupported UDT type: ${entry.discriminant}');
+          'Unsupported UDT type: ${entry.discriminant}',
+        );
     }
   }
 
@@ -816,12 +856,14 @@ class ContractSpec {
   XdrSCVal _handleStructType(dynamic val, XdrSCSpecUDTStructV0 structDef) {
     if (val is! Map<String, dynamic>) {
       throw ContractSpecException.invalidType(
-          'Expected Map<String, dynamic> for struct ${structDef.name}, got ${val.runtimeType}');
+        'Expected Map<String, dynamic> for struct ${structDef.name}, got ${val.runtimeType}',
+      );
     }
 
     // Determine if this should be a map or vector based on field names
-    final useMap =
-        structDef.fields.any((field) => !_isNumericString(field.name));
+    final useMap = structDef.fields.any(
+      (field) => !_isNumericString(field.name),
+    );
 
     if (useMap) {
       // Use map representation
@@ -855,7 +897,8 @@ class ContractSpec {
   XdrSCVal _handleUnionType(dynamic val, XdrSCSpecUDTUnionV0 unionDef) {
     if (val is! NativeUnionVal) {
       throw ContractSpecException.invalidType(
-          'Expected NativeUnionVal for union ${unionDef.name}, got ${val.runtimeType}');
+        'Expected NativeUnionVal for union ${unionDef.name}, got ${val.runtimeType}',
+      );
     }
 
     // Find the matching union case
@@ -881,7 +924,8 @@ class ContractSpec {
 
     if (matchingCase == null) {
       throw ContractSpecException.invalidEnumValue(
-          'Unknown union case "${val.tag}" for union ${unionDef.name}');
+        'Unknown union case "${val.tag}" for union ${unionDef.name}',
+      );
     }
 
     final scValues = <XdrSCVal>[];
@@ -898,12 +942,14 @@ class ContractSpec {
         final tupleCase = matchingCase.tupleCase;
         if (tupleCase == null) {
           throw ContractSpecException.invalidType(
-              'Tuple case is null for union ${unionDef.name}');
+            'Tuple case is null for union ${unionDef.name}',
+          );
         }
 
         if (val.values == null || val.values!.length != tupleCase.type.length) {
           throw ContractSpecException.invalidType(
-              'Union case "${val.tag}" expects ${tupleCase.type.length} values, got ${val.values?.length ?? 0}');
+            'Union case "${val.tag}" expects ${tupleCase.type.length} values, got ${val.values?.length ?? 0}',
+          );
         }
 
         for (int i = 0; i < val.values!.length; i++) {
@@ -931,18 +977,21 @@ class ContractSpec {
       }
       if (enumValue == null) {
         throw ContractSpecException.invalidEnumValue(
-            'Unknown enum case "$val" for enum ${enumDef.name}');
+          'Unknown enum case "$val" for enum ${enumDef.name}',
+        );
       }
     } else {
       throw ContractSpecException.invalidType(
-          'Expected int or String for enum ${enumDef.name}, got ${val.runtimeType}');
+        'Expected int or String for enum ${enumDef.name}, got ${val.runtimeType}',
+      );
     }
 
     // Validate enum value
     final validValues = enumDef.cases.map((c) => c.value.uint32).toSet();
     if (!validValues.contains(enumValue)) {
       throw ContractSpecException.invalidEnumValue(
-          'Invalid enum value $enumValue for enum ${enumDef.name}');
+        'Invalid enum value $enumValue for enum ${enumDef.name}',
+      );
     }
 
     return XdrSCVal.forU32(enumValue);
@@ -993,8 +1042,10 @@ class ContractSpecException implements Exception {
   }
 
   /// Exception for when a required argument is not provided.
-  factory ContractSpecException.argumentNotFound(String name,
-      {String? functionName}) {
+  factory ContractSpecException.argumentNotFound(
+    String name, {
+    String? functionName,
+  }) {
     return ContractSpecException(
       'Required argument not found: $name',
       argumentName: name,
@@ -1004,10 +1055,7 @@ class ContractSpecException implements Exception {
 
   /// Exception for when a spec entry is not found.
   factory ContractSpecException.entryNotFound(String name) {
-    return ContractSpecException(
-      'Entry not found: $name',
-      entryName: name,
-    );
+    return ContractSpecException('Entry not found: $name', entryName: name);
   }
 
   /// Exception for invalid type conversion.

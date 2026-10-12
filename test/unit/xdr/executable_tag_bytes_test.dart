@@ -13,7 +13,8 @@ import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart';
 void main() {
   const ownerContractIdHex =
       'c5b1f9f0c3a2d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d';
-  const ownerStrKey = 'CDC3D6PQYORNJZPWA4MCSOSLLRWX5D4QUGZMHVHF6YDRQKJ2JNOG3LTZ';
+  const ownerStrKey =
+      'CDC3D6PQYORNJZPWA4MCSOSLLRWX5D4QUGZMHVHF6YDRQKJ2JNOG3LTZ';
 
   XdrSCAddress owner() => XdrSCAddress.forContractId(ownerContractIdHex);
 
@@ -43,8 +44,7 @@ void main() {
   const simpleRefXdr =
       'AAAAAcWx+fDDotTl9gcYKTpLXG1+j5ChssPU5fYHGCk6S1xtAAAACHRva2VuLXYx';
   const simpleValXdr = 'AAAAFgAAAAh0b2tlbi12MQ==';
-  const simpleRefJson =
-      '{"executable_owner":"$ownerStrKey","tag":"token-v1"}';
+  const simpleRefJson = '{"executable_owner":"$ownerStrKey","tag":"token-v1"}';
   const simpleValJson = '{"executable_tag":"token-v1"}';
   const textRefXdr =
       'AAAAAcWx+fDDotTl9gcYKTpLXG1+j5ChssPU5fYHGCk6S1xtAAAAEGHDqeKCrPCfmIAJIlwKf3o=';
@@ -68,8 +68,8 @@ void main() {
         owner(),
         binaryTag,
       ).toBase64EncodedXdrString();
-      final decoded = XdrContractExecutableExternalRef
-          .fromBase64EncodedXdrString(encoded);
+      final decoded =
+          XdrContractExecutableExternalRef.fromBase64EncodedXdrString(encoded);
 
       expect(decoded.tag, binaryTag);
       expect(decoded.toBase64EncodedXdrString(), encoded);
@@ -123,8 +123,10 @@ void main() {
         owner(),
         longTag,
       ).toBase64EncodedXdrString();
-      final refDecoded = XdrContractExecutableExternalRef
-          .fromBase64EncodedXdrString(refEncoded);
+      final refDecoded =
+          XdrContractExecutableExternalRef.fromBase64EncodedXdrString(
+            refEncoded,
+          );
       expect(refDecoded.tag, longTag);
 
       final valEncoded = XdrSCVal.forExecutableTagBytes(
@@ -141,10 +143,7 @@ void main() {
         XdrContractExecutableExternalRef(owner(), textTagBytes).tagString,
         textTag,
       );
-      expect(
-        XdrSCVal.forExecutableTag(textTag).executableTagString,
-        textTag,
-      );
+      expect(XdrSCVal.forExecutableTag(textTag).executableTagString, textTag);
     });
 
     test('throw for a tag that spells no text', () {
@@ -205,10 +204,7 @@ void main() {
         (val.toXdrJsonValue() as Map<String, Object?>)['executable_tag'],
         r'\xc0\0\xff\xfe',
       );
-      expect(
-        XdrSCVal.fromXdrJson(val.toXdrJson()).executableTag,
-        binaryTag,
-      );
+      expect(XdrSCVal.fromXdrJson(val.toXdrJson()).executableTag, binaryTag);
     });
   });
 
@@ -247,7 +243,10 @@ void main() {
       ).toTxRep('tx', refLines);
       expect(refLines, contains(r'tx.tag: "\xc0\x00\xff\xfe"'));
       expect(
-        XdrContractExecutableExternalRef.fromTxRep(txRepMap(refLines), 'tx').tag,
+        XdrContractExecutableExternalRef.fromTxRep(
+          txRepMap(refLines),
+          'tx',
+        ).tag,
         binaryTag,
       );
 
@@ -262,34 +261,36 @@ void main() {
   });
 
   group('executable tag ledger key resolution', () {
-    test('a binary tag read off an instance builds the key of its own entry',
-        () {
-      final directKey = XdrLedgerKey.forContractData(
-        owner(),
-        XdrSCVal.forExecutableTagBytes(binaryTag),
-        XdrContractDataDurability.PERSISTENT,
-      ).toBase64EncodedXdrString();
-
-      final instance = XdrSCVal.forContractInstance(
-        XdrSCContractInstance(
-          XdrContractExecutable.forExternalRefBytes(owner(), binaryTag),
-          null,
-        ),
-      ).toBase64EncodedXdrString();
-      final ref = XdrSCVal.fromBase64EncodedXdrString(
-        instance,
-      ).instance!.executable.externalRef!;
-
-      expect(ref.tag, binaryTag);
-      expect(
-        XdrLedgerKey.forContractData(
-          ref.executableOwner,
-          XdrSCVal.forExecutableTagBytes(ref.tag),
+    test(
+      'a binary tag read off an instance builds the key of its own entry',
+      () {
+        final directKey = XdrLedgerKey.forContractData(
+          owner(),
+          XdrSCVal.forExecutableTagBytes(binaryTag),
           XdrContractDataDurability.PERSISTENT,
-        ).toBase64EncodedXdrString(),
-        directKey,
-      );
-    });
+        ).toBase64EncodedXdrString();
+
+        final instance = XdrSCVal.forContractInstance(
+          XdrSCContractInstance(
+            XdrContractExecutable.forExternalRefBytes(owner(), binaryTag),
+            null,
+          ),
+        ).toBase64EncodedXdrString();
+        final ref = XdrSCVal.fromBase64EncodedXdrString(
+          instance,
+        ).instance!.executable.externalRef!;
+
+        expect(ref.tag, binaryTag);
+        expect(
+          XdrLedgerKey.forContractData(
+            ref.executableOwner,
+            XdrSCVal.forExecutableTagBytes(ref.tag),
+            XdrContractDataDurability.PERSISTENT,
+          ).toBase64EncodedXdrString(),
+          directKey,
+        );
+      },
+    );
   });
 
   group('bytes and text escapes agree', () {
@@ -333,7 +334,10 @@ void main() {
           TxRepHelper.escapeString(text),
           reason: 'escapeBytes disagrees with escapeString for $text',
         );
-        expect(TxRepHelper.unescapeBytes(TxRepHelper.escapeBytes(bytes)), bytes);
+        expect(
+          TxRepHelper.unescapeBytes(TxRepHelper.escapeBytes(bytes)),
+          bytes,
+        );
       }
     });
   });

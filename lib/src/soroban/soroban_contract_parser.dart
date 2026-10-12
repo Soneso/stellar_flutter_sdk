@@ -69,33 +69,44 @@ class SorobanContractParser {
     var xdrEnvMeta = _parseEnvironmentMeta(bytesString);
     if (xdrEnvMeta == null || xdrEnvMeta.interfaceVersion == null) {
       throw SorobanContractParserFailed(
-          'invalid byte code: environment meta not found.');
+        'invalid byte code: environment meta not found.',
+      );
     }
     var specEntries = _parseContractSpec(bytesString);
     if (specEntries == null) {
       throw SorobanContractParserFailed(
-          'invalid byte code: spec entries not found.');
+        'invalid byte code: spec entries not found.',
+      );
     }
     var metaEntries = _parseMeta(bytesString);
 
     return SorobanContractInfo(
-        xdrEnvMeta.interfaceVersion!.protocol.uint32,
-        xdrEnvMeta.interfaceVersion!.preRelease.uint32,
-        specEntries,
-        metaEntries);
+      xdrEnvMeta.interfaceVersion!.protocol.uint32,
+      xdrEnvMeta.interfaceVersion!.preRelease.uint32,
+      specEntries,
+      metaEntries,
+    );
   }
 
   static XdrSCEnvMetaEntry? _parseEnvironmentMeta(String bytesString) {
     try {
       var metaEnvEntryBytes = _extractStringBetween(
-          bytesString, 'contractenvmetav0', 'contractmetav0');
+        bytesString,
+        'contractenvmetav0',
+        'contractmetav0',
+      );
       if (metaEnvEntryBytes == null) {
         metaEnvEntryBytes = _extractStringBetween(
-            bytesString, 'contractenvmetav0', 'contractspecv0');
+          bytesString,
+          'contractenvmetav0',
+          'contractspecv0',
+        );
       }
       if (metaEnvEntryBytes == null) {
-        metaEnvEntryBytes =
-            _extractStringToEnd(bytesString, 'contractenvmetav0');
+        metaEnvEntryBytes = _extractStringToEnd(
+          bytesString,
+          'contractenvmetav0',
+        );
       }
 
       if (metaEnvEntryBytes == null) {
@@ -113,10 +124,16 @@ class SorobanContractParser {
 
   static List<XdrSCSpecEntry>? _parseContractSpec(String bytesString) {
     var specBytesString = _extractStringBetween(
-        bytesString, 'contractspecv0', 'contractenvmetav0');
+      bytesString,
+      'contractspecv0',
+      'contractenvmetav0',
+    );
     if (specBytesString == null) {
       specBytesString = _extractStringBetween(
-          bytesString, 'contractspecv0', 'contractspecv0');
+        bytesString,
+        'contractspecv0',
+        'contractspecv0',
+      );
     }
     if (specBytesString == null) {
       specBytesString = _extractStringToEnd(bytesString, 'contractspecv0');
@@ -147,8 +164,10 @@ class SorobanContractParser {
           XdrSCSpecEntry.encode(xdrOutputStream, entry);
           var entryBytes = xdrOutputStream.bytes;
           var entryBytesString = new String.fromCharCodes(entryBytes);
-          var specBytesStrOrNull =
-              _extractStringToEnd(specBytesString, entryBytesString);
+          var specBytesStrOrNull = _extractStringToEnd(
+            specBytesString,
+            entryBytesString,
+          );
           if (specBytesStrOrNull == null) {
             break;
           }
@@ -167,10 +186,16 @@ class SorobanContractParser {
 
   static Map<String, String> _parseMeta(String bytesString) {
     var metaBytesString = _extractStringBetween(
-        bytesString, 'contractmetav0', 'contractenvmetav0');
+      bytesString,
+      'contractmetav0',
+      'contractenvmetav0',
+    );
     if (metaBytesString == null) {
       metaBytesString = _extractStringBetween(
-          bytesString, 'contractmetav0', 'contractspecv0');
+        bytesString,
+        'contractmetav0',
+        'contractspecv0',
+      );
     }
     if (metaBytesString == null) {
       metaBytesString = _extractStringToEnd(bytesString, 'contractmetav0');
@@ -192,8 +217,10 @@ class SorobanContractParser {
           XdrSCMetaEntry.encode(xdrOutputStream, entry);
           var entryBytes = xdrOutputStream.bytes;
           var entryBytesString = new String.fromCharCodes(entryBytes);
-          var metaBytesStrOrNull =
-              _extractStringToEnd(metaBytesString, entryBytesString);
+          var metaBytesStrOrNull = _extractStringToEnd(
+            metaBytesString,
+            entryBytesString,
+          );
           if (metaBytesStrOrNull == null) {
             break;
           }
@@ -211,7 +238,10 @@ class SorobanContractParser {
   }
 
   static String? _extractStringBetween(
-      String input, String startSymbol, String endSymbol) {
+    String input,
+    String startSymbol,
+    String endSymbol,
+  ) {
     int startIndex = input.indexOf(startSymbol);
     int endIndex = input.indexOf(endSymbol, startIndex + startSymbol.length);
 
@@ -371,14 +401,17 @@ class SorobanContractInfo {
   ///
   /// Automatically extracts and organizes contract elements from spec entries.
   SorobanContractInfo(
-      this.envProtocolVersion, this.envPreReleaseVersion, this.specEntries, this.metaEntries)
-      : supportedSeps = _parseSupportedSeps(metaEntries),
-        funcs = _extractFunctions(specEntries),
-        udtStructs = _extractUdtStructs(specEntries),
-        udtUnions = _extractUdtUnions(specEntries),
-        udtEnums = _extractUdtEnums(specEntries),
-        udtErrorEnums = _extractUdtErrorEnums(specEntries),
-        events = _extractEvents(specEntries);
+    this.envProtocolVersion,
+    this.envPreReleaseVersion,
+    this.specEntries,
+    this.metaEntries,
+  ) : supportedSeps = _parseSupportedSeps(metaEntries),
+      funcs = _extractFunctions(specEntries),
+      udtStructs = _extractUdtStructs(specEntries),
+      udtUnions = _extractUdtUnions(specEntries),
+      udtEnums = _extractUdtEnums(specEntries),
+      udtErrorEnums = _extractUdtErrorEnums(specEntries),
+      events = _extractEvents(specEntries);
 
   /**
    * Parses the supported SEPs from the meta entries.
@@ -403,9 +436,11 @@ class SorobanContractInfo {
    * Iterates through all spec entries and collects those that define functions.
    */
   static List<XdrSCSpecFunctionV0> _extractFunctions(
-      List<XdrSCSpecEntry> specEntries) {
-    List<XdrSCSpecFunctionV0> result =
-        List<XdrSCSpecFunctionV0>.empty(growable: true);
+    List<XdrSCSpecEntry> specEntries,
+  ) {
+    List<XdrSCSpecFunctionV0> result = List<XdrSCSpecFunctionV0>.empty(
+      growable: true,
+    );
 
     for (var entry in specEntries) {
       if (entry.discriminant == XdrSCSpecEntryKind.SC_SPEC_ENTRY_FUNCTION_V0 &&
@@ -422,9 +457,11 @@ class SorobanContractInfo {
    * Iterates through all spec entries and collects those that define user-defined type structs.
    */
   static List<XdrSCSpecUDTStructV0> _extractUdtStructs(
-      List<XdrSCSpecEntry> specEntries) {
-    List<XdrSCSpecUDTStructV0> result =
-        List<XdrSCSpecUDTStructV0>.empty(growable: true);
+    List<XdrSCSpecEntry> specEntries,
+  ) {
+    List<XdrSCSpecUDTStructV0> result = List<XdrSCSpecUDTStructV0>.empty(
+      growable: true,
+    );
 
     for (var entry in specEntries) {
       if (entry.discriminant ==
@@ -442,9 +479,11 @@ class SorobanContractInfo {
    * Iterates through all spec entries and collects those that define user-defined type unions.
    */
   static List<XdrSCSpecUDTUnionV0> _extractUdtUnions(
-      List<XdrSCSpecEntry> specEntries) {
-    List<XdrSCSpecUDTUnionV0> result =
-        List<XdrSCSpecUDTUnionV0>.empty(growable: true);
+    List<XdrSCSpecEntry> specEntries,
+  ) {
+    List<XdrSCSpecUDTUnionV0> result = List<XdrSCSpecUDTUnionV0>.empty(
+      growable: true,
+    );
 
     for (var entry in specEntries) {
       if (entry.discriminant == XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_UNION_V0 &&
@@ -461,9 +500,11 @@ class SorobanContractInfo {
    * Iterates through all spec entries and collects those that define user-defined type enums.
    */
   static List<XdrSCSpecUDTEnumV0> _extractUdtEnums(
-      List<XdrSCSpecEntry> specEntries) {
-    List<XdrSCSpecUDTEnumV0> result =
-        List<XdrSCSpecUDTEnumV0>.empty(growable: true);
+    List<XdrSCSpecEntry> specEntries,
+  ) {
+    List<XdrSCSpecUDTEnumV0> result = List<XdrSCSpecUDTEnumV0>.empty(
+      growable: true,
+    );
 
     for (var entry in specEntries) {
       if (entry.discriminant == XdrSCSpecEntryKind.SC_SPEC_ENTRY_UDT_ENUM_V0 &&
@@ -480,9 +521,11 @@ class SorobanContractInfo {
    * Iterates through all spec entries and collects those that define user-defined type error enums.
    */
   static List<XdrSCSpecUDTErrorEnumV0> _extractUdtErrorEnums(
-      List<XdrSCSpecEntry> specEntries) {
-    List<XdrSCSpecUDTErrorEnumV0> result =
-        List<XdrSCSpecUDTErrorEnumV0>.empty(growable: true);
+    List<XdrSCSpecEntry> specEntries,
+  ) {
+    List<XdrSCSpecUDTErrorEnumV0> result = List<XdrSCSpecUDTErrorEnumV0>.empty(
+      growable: true,
+    );
 
     for (var entry in specEntries) {
       if (entry.discriminant ==
@@ -500,9 +543,11 @@ class SorobanContractInfo {
    * Iterates through all spec entries and collects those that define events.
    */
   static List<XdrSCSpecEventV0> _extractEvents(
-      List<XdrSCSpecEntry> specEntries) {
-    List<XdrSCSpecEventV0> result =
-        List<XdrSCSpecEventV0>.empty(growable: true);
+    List<XdrSCSpecEntry> specEntries,
+  ) {
+    List<XdrSCSpecEventV0> result = List<XdrSCSpecEventV0>.empty(
+      growable: true,
+    );
 
     for (var entry in specEntries) {
       if (entry.discriminant == XdrSCSpecEntryKind.SC_SPEC_ENTRY_EVENT_V0 &&

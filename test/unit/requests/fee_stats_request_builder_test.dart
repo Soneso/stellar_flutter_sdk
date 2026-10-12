@@ -124,7 +124,9 @@ void main() {
       });
 
       test('handles server URI with existing path', () {
-        final uriWithPath = Uri.parse('https://horizon-testnet.stellar.org/api/v1');
+        final uriWithPath = Uri.parse(
+          'https://horizon-testnet.stellar.org/api/v1',
+        );
         final builder = FeeStatsRequestBuilder(mockClient, uriWithPath);
         final uri = builder.buildUri();
 
@@ -182,7 +184,9 @@ void main() {
       });
 
       test('handles URI with multiple path segments', () {
-        final multiPathUri = Uri.parse('https://horizon.stellar.org/api/v2/public');
+        final multiPathUri = Uri.parse(
+          'https://horizon.stellar.org/api/v2/public',
+        );
         final builder = FeeStatsRequestBuilder(mockClient, multiPathUri);
         final uri = builder.buildUri();
 

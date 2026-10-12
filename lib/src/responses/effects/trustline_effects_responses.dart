@@ -21,16 +21,17 @@ abstract class TrustlineAuthorizationResponse extends EffectResponse {
 
   /// Creates a [TrustlineAuthorizationResponse] with trustor, asset details and effect details.
   TrustlineAuthorizationResponse(
-      this.trustor,
-      this.assetType,
-      this.assetCode,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.trustor,
+    this.assetType,
+    this.assetCode,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 }
 
 /// Deprecated: use [TrustLineFlagsUpdatedEffectResponse] instead.
@@ -59,20 +60,22 @@ abstract class TrustlineAuthorizationResponse extends EffectResponse {
 class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
   /// Creates a [TrustlineAuthorizedEffectResponse] with trustor, asset details and effect details.
   TrustlineAuthorizedEffectResponse(
-      super.trustor,
-      super.assetType,
-      super.assetCode,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    super.trustor,
+    super.assetType,
+    super.assetCode,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a trustline authorized effect from Horizon API JSON response.
   factory TrustlineAuthorizedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       TrustlineAuthorizedEffectResponse(
           json['trustor'],
           json['asset_type'],
@@ -83,7 +86,8 @@ class TrustlineAuthorizedEffectResponse extends TrustlineAuthorizationResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -116,20 +120,22 @@ class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
     extends TrustlineAuthorizationResponse {
   /// Creates a [TrustlineAuthorizedToMaintainLiabilitiesEffectResponse] with trustor, asset details and effect details.
   TrustlineAuthorizedToMaintainLiabilitiesEffectResponse(
-      super.trustor,
-      super.assetType,
-      super.assetCode,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    super.trustor,
+    super.assetType,
+    super.assetCode,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a trustline authorized to maintain liabilities effect from Horizon API JSON response.
   factory TrustlineAuthorizedToMaintainLiabilitiesEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       TrustlineAuthorizedToMaintainLiabilitiesEffectResponse(
           json['trustor'],
           json['asset_type'],
@@ -140,7 +146,8 @@ class TrustlineAuthorizedToMaintainLiabilitiesEffectResponse
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -172,20 +179,22 @@ class TrustlineDeauthorizedEffectResponse
     extends TrustlineAuthorizationResponse {
   /// Creates a [TrustlineDeauthorizedEffectResponse] with trustor, asset details and effect details.
   TrustlineDeauthorizedEffectResponse(
-      super.trustor,
-      super.assetType,
-      super.assetCode,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    super.trustor,
+    super.assetType,
+    super.assetCode,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a trustline deauthorized effect from Horizon API JSON response.
   factory TrustlineDeauthorizedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       TrustlineDeauthorizedEffectResponse(
           json['trustor'],
           json['asset_type'],
@@ -196,7 +205,8 @@ class TrustlineDeauthorizedEffectResponse
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -225,18 +235,19 @@ abstract class TrustlineCUDResponse extends EffectResponse {
 
   /// Creates a [TrustlineCUDResponse] with limit, asset or pool details and effect details.
   TrustlineCUDResponse(
-      this.limit,
-      this.assetType,
-      this.assetCode,
-      this.assetIssuer,
-      this.liquidityPoolId,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.limit,
+    this.assetType,
+    this.assetCode,
+    this.assetIssuer,
+    this.liquidityPoolId,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Returns the trustline asset as an Asset object.
   ///
@@ -278,18 +289,19 @@ abstract class TrustlineCUDResponse extends EffectResponse {
 class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
   /// Creates a [TrustlineCreatedEffectResponse] with limit, asset or pool details and effect details.
   TrustlineCreatedEffectResponse(
-      super.limit,
-      super.assetType,
-      super.assetCode,
-      super.assetIssuer,
-      super.liquidityPoolId,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    super.limit,
+    super.assetType,
+    super.assetCode,
+    super.assetIssuer,
+    super.liquidityPoolId,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a trustline created effect from Horizon API JSON response.
   factory TrustlineCreatedEffectResponse.fromJson(Map<String, dynamic> json) =>
@@ -305,7 +317,8 @@ class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -335,18 +348,19 @@ class TrustlineCreatedEffectResponse extends TrustlineCUDResponse {
 class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
   /// Creates a [TrustlineRemovedEffectResponse] with limit, asset or pool details and effect details.
   TrustlineRemovedEffectResponse(
-      super.limit,
-      super.assetType,
-      super.assetCode,
-      super.assetIssuer,
-      super.liquidityPoolId,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    super.limit,
+    super.assetType,
+    super.assetCode,
+    super.assetIssuer,
+    super.liquidityPoolId,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a trustline removed effect from Horizon API JSON response.
   factory TrustlineRemovedEffectResponse.fromJson(Map<String, dynamic> json) =>
@@ -362,7 +376,8 @@ class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -392,18 +407,19 @@ class TrustlineRemovedEffectResponse extends TrustlineCUDResponse {
 class TrustlineUpdatedEffectResponse extends TrustlineCUDResponse {
   /// Creates a [TrustlineUpdatedEffectResponse] with limit, asset or pool details and effect details.
   TrustlineUpdatedEffectResponse(
-      super.limit,
-      super.assetType,
-      super.assetCode,
-      super.assetIssuer,
-      super.liquidityPoolId,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    super.limit,
+    super.assetType,
+    super.assetCode,
+    super.assetIssuer,
+    super.liquidityPoolId,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a trustline updated effect from Horizon API JSON response.
   factory TrustlineUpdatedEffectResponse.fromJson(Map<String, dynamic> json) =>
@@ -419,7 +435,8 @@ class TrustlineUpdatedEffectResponse extends TrustlineCUDResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
@@ -470,24 +487,26 @@ class TrustLineFlagsUpdatedEffectResponse extends EffectResponse {
 
   /// Creates a [TrustLineFlagsUpdatedEffectResponse] with trustor, asset, authorization flags and effect details.
   TrustLineFlagsUpdatedEffectResponse(
-      this.trustor,
-      this.assetType,
-      this.assetCode,
-      this.assetIssuer,
-      this.authorizedFlag,
-      this.authorizedToMaintainLiabilitiesFlag,
-      this.clawbackEnabledFlag,
-      super.id,
-      super.type_i,
-      super.type,
-      super.createdAt,
-      super.pagingToken,
-      super.account,
-      super.links);
+    this.trustor,
+    this.assetType,
+    this.assetCode,
+    this.assetIssuer,
+    this.authorizedFlag,
+    this.authorizedToMaintainLiabilitiesFlag,
+    this.clawbackEnabledFlag,
+    super.id,
+    super.type_i,
+    super.type,
+    super.createdAt,
+    super.pagingToken,
+    super.account,
+    super.links,
+  );
 
   /// Creates a trustline flags updated effect from Horizon API JSON response.
   factory TrustLineFlagsUpdatedEffectResponse.fromJson(
-          Map<String, dynamic> json) =>
+    Map<String, dynamic> json,
+  ) =>
       TrustLineFlagsUpdatedEffectResponse(
           json['trustor'],
           json['asset_type'],
@@ -502,7 +521,8 @@ class TrustLineFlagsUpdatedEffectResponse extends EffectResponse {
           json['created_at'],
           json['paging_token'],
           json['account'],
-          EffectResponseLinks.fromJson(json['_links']))
+          EffectResponseLinks.fromJson(json['_links']),
+        )
         ..accountMuxed = json['account_muxed']
         ..accountMuxedId = json['account_muxed_id'];
 }
