@@ -44,7 +44,10 @@ cd stellar-flutter-sdk && zip -r ../stellar-flutter-sdk.zip . -x "*.DS_Store"
 
 ## When to regenerate
 
-Regenerate whenever the SDK's public API surface changes:
+Regenerate at release preparation, together with the skill version and the
+zip. The skill describes the released SDK, so on `master` the generator output
+differs from the committed file by the unreleased API. A release regenerates
+when its changes touch the public API surface:
 
 - New SEP implementation added
 - New public class, method, field, getter, or setter in any non-XDR source area
@@ -52,12 +55,12 @@ Regenerate whenever the SDK's public API surface changes:
 - Field renamed, type changed, or signature otherwise modified
 - Type deprecated or removed
 
-Stale generation will not break the SDK build, but the agent skill will offer
-out-of-date guidance to consumers.
+A stale reference does not break the SDK build, but the agent skill offers
+out-of-date guidance to consumers until the next release regenerates it.
 
 ## What gets scanned
 
-- **Public-API allowlist (the load-bearing filter)**: a declaration is emitted
+- **Public-API allowlist (the primary filter)**: a declaration is emitted
   only when its declaring file is reachable from the public barrel
   (`lib/stellar_flutter_sdk.dart`) via the transitive `export` graph. This is
   the authority for what counts as public API. Conditional exports select the
@@ -72,7 +75,7 @@ out-of-date guidance to consumers.
   methods, fields, getters, and setters. Only public declarations are emitted.
 - **Captured member kinds**: typed and inferred fields, const/factory/plain
   constructors, getters, setters, methods (including generic methods such as
-  `name<T>(...)`), operators (`operator ==`, `operator []`, etc.), enhanced-enum
+  `name<T>(...)`), operators such as `operator ==` and `operator []`, enhanced-enum
   fields and constructors, extensions, and typedefs.
 
 ## Output format
@@ -123,11 +126,11 @@ After parsing, two diagnostic scans run:
 - **Member-level**: for each emitted type, a broad member-shaped scan counts the
   public, non-underscore member-like lines (methods, constructors, operators,
   getters, setters, fields, enum values) in the type body and diffs that count
-  against the number of members actually emitted. Intentionally suppressed
-  Object overrides (`toString`, `hashCode`, etc.) are excluded.
+  against the number of members actually emitted. The suppressed Object members
+  `toString`, `hashCode`, `noSuchMethod`, and `runtimeType` are excluded.
 
 Anything the scans find but the parser did not emit is printed to stderr as a
-`WARNING:` list. The scans are diagnostic only — they do not change output. The
+`WARNING:` list. The scans are diagnostic only and do not change the output. The
 script exits with a non-zero status when either scan reports unemitted symbols
 or when any file fails to parse, so a regression fails any pipeline that runs
 the generator.
@@ -138,6 +141,6 @@ This is a regex-based parser, not a Dart analyzer frontend. `show` / `hide`
 combinators on `export` statements are not yet honored (currently unused by the
 barrel). If a future SDK change uses a declaration shape the script does not yet
 recognize, the coverage sanity scan above will surface it on stderr; extend the
-declaration matching and regenerate. After any large API change, also
-sanity-check the regenerated `api_reference.md` against the actual source (counts
+declaration matching and regenerate. When a release carries a large API change,
+also check the regenerated `api_reference.md` against the actual source (counts
 and a few spot-checked sections).

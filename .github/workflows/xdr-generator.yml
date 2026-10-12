@@ -13,7 +13,6 @@ on:
       - 'test/unit/sep/sep51_corpus_data.dart'
       - 'Makefile'
   pull_request:
-    branches: [master]
     paths:
       - 'tools/xdr-generator/**'
       - 'tools/sep-51-corpus/**'

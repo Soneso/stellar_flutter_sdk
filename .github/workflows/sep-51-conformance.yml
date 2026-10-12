@@ -32,7 +32,6 @@ on:
       - 'test/unit/sep/sep51_corpus_data.dart'
       - '.github/workflows/sep-51-conformance.yml'
   pull_request:
-    branches: [master]
     paths:
       - 'tools/sep-51-oracle/**'
       - 'tools/sep-51-corpus/**'
