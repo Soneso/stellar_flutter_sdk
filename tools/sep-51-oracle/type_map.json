@@ -1,8 +1,8 @@
 {
   "oracle": {
     "tool": "stellar-xdr",
-    "version": "28.0.1",
-    "xdr_commit": "9c9c145953e80990d6ff1ae3a6a973a0ce6d0694"
+    "version": "30.0.0",
+    "xdr_commit": "4f524bbac80c781c06e4fb5fc93a2d0d331d6705"
   },
   "sdk_xdr_commit": "579a90b2654e3811e8b672e128a5e094c7325b27",
   "description": "Maps the qualified .x type name to the reference CLI's spelling and to this SDK's generated Dart class name. Keyed on the .x name because the Dart name is many-to-one. unknown_to_oracle lists every type the reference build does not resolve, whatever the cause; the expected cause is a type added after the XDR commit that build vendors, and the list is empty while the two pins agree closely enough.",
@@ -927,6 +927,10 @@
       "oracle": "MuxedAccountMed25519",
       "dart": "XdrMuxedAccountMed25519"
     },
+    "MuxedContract": {
+      "oracle": "MuxedContract",
+      "dart": "XdrMuxedContract"
+    },
     "MuxedEd25519Account": {
       "oracle": "MuxedEd25519Account",
       "dart": "XdrMuxedAccountMed25519"
@@ -1487,9 +1491,17 @@
       "oracle": "StellarValueExt",
       "dart": "XdrStellarValueExt"
     },
+    "StellarValueProposedMsValue": {
+      "oracle": "StellarValueProposedMsValue",
+      "dart": "XdrStellarValueProposedMsValue"
+    },
     "StellarValueProposedValue": {
       "oracle": "StellarValueProposedValue",
       "dart": "XdrStellarValueProposedValue"
+    },
+    "StellarValueSignedMsValue": {
+      "oracle": "StellarValueSignedMsValue",
+      "dart": "XdrStellarValueSignedMsValue"
     },
     "StellarValueType": {
       "oracle": "StellarValueType",
@@ -1744,9 +1756,5 @@
       "dart": "XdrUpgradeEntryMeta"
     }
   },
-  "unknown_to_oracle": [
-    "MuxedContract",
-    "StellarValueProposedMsValue",
-    "StellarValueSignedMsValue"
-  ]
+  "unknown_to_oracle": []
 }

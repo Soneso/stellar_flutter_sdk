@@ -2,29 +2,12 @@
   "metadata": {
     "description": "SEP-0051 (XDR-JSON) conformance corpus. Each entry pins the exact JSON text the SDK must emit for one XDR value and the base64 XDR that value encodes to.",
     "reference_tool": "stellar-xdr",
-    "reference_version": "28.0.1",
-    "reference_xdr_commit": "9c9c145953e80990d6ff1ae3a6a973a0ce6d0694",
+    "reference_version": "30.0.0",
+    "reference_xdr_commit": "4f524bbac80c781c06e4fb5fc93a2d0d331d6705",
     "sdk_xdr_commit": "579a90b2654e3811e8b672e128a5e094c7325b27",
     "entry_count": 361,
-    "unresolvable_enum_members": [
-      "ContractCostType.MlDsa44DecodeSignature",
-      "ContractCostType.MlDsa44DecodeVerifyingKey",
-      "ContractCostType.MlDsa65DecodeSignature",
-      "ContractCostType.MlDsa65DecodeVerifyingKey",
-      "ContractCostType.MlDsa87DecodeSignature",
-      "ContractCostType.MlDsa87DecodeVerifyingKey",
-      "ContractCostType.VerifyMlDsa44Sig",
-      "ContractCostType.VerifyMlDsa65Sig",
-      "ContractCostType.VerifyMlDsa87Sig",
-      "SCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT",
-      "StellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS",
-      "StellarValueType.STELLAR_VALUE_SIGNED_MS"
-    ],
-    "unresolvable_struct_types": [
-      "MuxedContract",
-      "StellarValueProposedMsValue",
-      "StellarValueSignedMsValue"
-    ],
+    "unresolvable_enum_members": [],
+    "unresolvable_struct_types": [],
     "type_field_types": [
       "ContractEvent",
       "DontHave",
@@ -35,7 +18,7 @@
       "SerializedBinaryFuseFilter"
     ],
     "type_field_alias": "DontHave renders its XDR `type` field under the key `type` and accepts `type_` as an input alias; both spellings encode to AAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA, and supplying them together is rejected (error: error decoding JSON: duplicate field `type`). This SDK matches, and never emits `type_`.",
-    "excluded_zero_length_signed_payload": "SignerKeyEd25519SignedPayload with a zero-length payload is valid XDR (AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA) that the reference decodes to PAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAED2A and then refuses to encode back. This SDK refuses it in both directions, so no emitted text exists for an entry to pin; it is covered by a hand-written negative test.",
+    "excluded_zero_length_signed_payload": "SignerKeyEd25519SignedPayload with a zero-length payload is valid XDR (AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA) that the reference decodes to <INVALID:GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF:EMPTY_PAYLOAD> and then refuses to encode back. This SDK refuses it in both directions, so no emitted text exists for an entry to pin; it is covered by a hand-written negative test.",
     "excluded_schema_input": "SEP-0051 JSON Schema requires objects to allow a $schema property. The reference rejects it outright (error: unknown fields in JSON input: $schema). This SDK accepts it, strips it and never emits it, so no emitted text differs and there is nothing for an entry to pin; it is covered by a hand-written test."
   },
   "entries": [
@@ -253,7 +236,7 @@
       "xdr": "QUJDAAAAAAAAAAAAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g",
       "json": "{\"asset_code\":\"ABC\\\\0\\\\0\",\"issuer\":\"GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV\"}",
       "oracle": "reference",
-      "note": "Three-character twelve-byte asset code pads back to five bytes. AssetCode12 has no Dart class of its own, so its rendering is pinned here."
+      "note": "Three-character twelve-byte asset code carries two escaped NUL bytes of padding, which bring it to the five-byte minimum. AssetCode12 has no Dart class of its own, so its rendering is pinned here."
     },
     {
       "type": "AlphaNum12",

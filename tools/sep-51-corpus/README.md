@@ -30,7 +30,7 @@ the web platform, which has no file to read.
 ## Installing the reference
 
 ```bash
-cargo install stellar-xdr --features cli --version 28.0.1 --locked
+cargo install stellar-xdr --features cli --version 30.0.0 --locked
 ```
 
 The exact build is pinned in `../sep-51-oracle/oracle-pin.json` by version and by
@@ -120,8 +120,8 @@ every run and recorded in the corpus metadata, so one that quietly disappears
 fails the run:
 
 - A `SignerKeyEd25519SignedPayload` with a zero-length payload is valid XDR that
-  the reference decodes to a strkey it then refuses to encode. The SDK refuses it
-  in both directions.
+  the reference decodes to a rendered string it then refuses to encode. The SDK
+  refuses it in both directions.
 - A document carrying `$schema`, which SEP-0051 requires objects to accept and
   the reference rejects outright. The SDK accepts it, strips it and never emits
   it, so no emitted text differs.

@@ -400,6 +400,80 @@ void main() {
         base64,
       );
     });
+
+    // "AssetCode12 is always 5 encoded characters or more." The count is taken
+    // after unescaping, so escaped NUL bytes count toward the five. The
+    // expected values below are the reference implementation's.
+    const String issuer =
+        'GAAQEAYEAUDAOCAJBIFQYDIOB4IBCEQTCQKRMFYYDENBWHA5DYPSABOV';
+
+    // An `AlphaNum12` document carrying [assetCode] as the body of a JSON
+    // string, so an escape appears with its backslash doubled.
+    String alphaNum12(String assetCode) =>
+        '{"asset_code":"$assetCode","issuer":"$issuer"}';
+
+    Matcher refused(String detail) => throwsA(
+      isA<FormatException>().having(
+        (FormatException e) => e.message,
+        'message',
+        contains('XDR-JSON XdrAssetAlphaNum12 key "asset_code" $detail'),
+      ),
+    );
+
+    test('reads a twelve-byte code that unescapes to five bytes or more', () {
+      const Map<String, String> base64ByCode = <String, String>{
+        r'ABC\\0\\0':
+            'QUJDAAAAAAAAAAAAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g',
+        r'ABCD\\0':
+            'QUJDRAAAAAAAAAAAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g',
+        'ABCDE':
+            'QUJDREUAAAAAAAAAAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g',
+        'ABCDEFGHIJKL':
+            'QUJDREVGR0hJSktMAAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g',
+      };
+      base64ByCode.forEach((String code, String base64) {
+        final String json = alphaNum12(code);
+        expect(
+          XdrAssetAlphaNum12.fromXdrJson(json).toBase64EncodedXdrString(),
+          base64,
+          reason: code,
+        );
+        expect(
+          XdrAssetAlphaNum12.fromBase64EncodedXdrString(base64).toXdrJson(),
+          json,
+          reason: code,
+        );
+      });
+    });
+
+    test(
+      'refuses a twelve-byte code that unescapes to fewer than five bytes',
+      () {
+        for (final (String code, int bytes) in <(String, int)>[
+          ('ABC', 3),
+          ('ABCD', 4),
+          (r'ABC\\0', 4),
+          ('', 0),
+        ]) {
+          expect(
+            () => XdrAssetAlphaNum12.fromXdrJson(alphaNum12(code)),
+            refused('holds $bytes bytes, fewer than the minimum of 5'),
+            reason: code,
+          );
+        }
+      },
+    );
+
+    test('refuses a twelve-byte code that is too long or wrongly escaped', () {
+      expect(
+        () => XdrAssetAlphaNum12.fromXdrJson(alphaNum12('ABCDEFGHIJKLM')),
+        refused('holds 13 bytes, more than the declared maximum of 12'),
+      );
+      expect(
+        () => XdrAssetAlphaNum12.fromXdrJson(alphaNum12(r'ABC\\q\\0')),
+        refused(r'holds the unrecognised escape \q'),
+      );
+    });
   });
 
   group('SEP-0051 §Integer Types', () {

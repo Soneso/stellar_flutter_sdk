@@ -608,21 +608,21 @@ ZERO_LENGTH_SIGNED_PAYLOAD_XDR = "A" * 48
 
 
 def assert_zero_length_signed_payload(cli):
-    """The reference decodes the empty payload to a strkey it then refuses to encode."""
-    strkey = decode(cli, "SignerKeyEd25519SignedPayload",
+    """The reference decodes the empty payload to a string it then refuses to encode."""
+    rendered = decode(cli, "SignerKeyEd25519SignedPayload",
                     ZERO_LENGTH_SIGNED_PAYLOAD_XDR)
-    accepted, output = try_encode(cli, "SignerKeyEd25519SignedPayload", strkey)
+    accepted, output = try_encode(cli, "SignerKeyEd25519SignedPayload", rendered)
     if accepted:
         raise GenerationError(
-            "the reference now encodes the zero-length signed payload strkey %s back "
+            "the reference now encodes the zero-length signed payload rendering %s back "
             "to %s. The divergence is gone; reclassify it as a corpus entry."
-            % (strkey, output))
+            % (rendered, output))
     return (
         "SignerKeyEd25519SignedPayload with a zero-length payload is valid XDR (%s) "
         "that the reference decodes to %s and then refuses to encode back. This SDK "
         "refuses it in both directions, so no emitted text exists for an entry to "
         "pin; it is covered by a hand-written negative test."
-        % (ZERO_LENGTH_SIGNED_PAYLOAD_XDR, strkey.strip('"')))
+        % (ZERO_LENGTH_SIGNED_PAYLOAD_XDR, rendered.strip('"')))
 
 
 def assert_schema_rejected(cli, probe_type):

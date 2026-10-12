@@ -721,10 +721,10 @@ void main() {
   group('SEP-0051 corpus provenance', () {
     test('records the reference build the expected values come from', () {
       expect(sep51CorpusMetadata['reference_tool'], 'stellar-xdr');
-      expect(sep51CorpusMetadata['reference_version'], '28.0.1');
+      expect(sep51CorpusMetadata['reference_version'], '30.0.0');
       expect(
         sep51CorpusMetadata['reference_xdr_commit'],
-        '9c9c145953e80990d6ff1ae3a6a973a0ce6d0694',
+        '4f524bbac80c781c06e4fb5fc93a2d0d331d6705',
       );
       expect(
         sep51CorpusMetadata['sdk_xdr_commit'],
@@ -737,37 +737,14 @@ void main() {
       expect(sep51Corpus, isNotEmpty);
     });
 
-    test('names the types and members the reference build cannot resolve', () {
-      // The reference build vendors an older XDR commit than this SDK
-      // generates from, so these names were never compared against it. Their
-      // renderings are pinned from the specification's rules by the
-      // 'signed ms ext' and 'empty tx set ms ext' round-trip tests in
-      // test/unit/xdr/xdr_ledger_scp_values_test.dart. The generated suites
-      // test/unit/xdr/json_generated/xdr_contract_json_test.dart and
-      // xdr_contract_config_json_test.dart pin the values and names of the
-      // new XdrSCAddressType and XdrContractCostType members, and
-      // test/unit/xdr/xdr_muxed_contract_test.dart pins the W strkey
-      // rendering and the binary layout of XdrMuxedContract and of the
-      // XdrSCAddress arm.
-      expect(
-        sep51CorpusMetadata['unresolvable_enum_members'],
-        'ContractCostType.MlDsa44DecodeSignature, '
-        'ContractCostType.MlDsa44DecodeVerifyingKey, '
-        'ContractCostType.MlDsa65DecodeSignature, '
-        'ContractCostType.MlDsa65DecodeVerifyingKey, '
-        'ContractCostType.MlDsa87DecodeSignature, '
-        'ContractCostType.MlDsa87DecodeVerifyingKey, '
-        'ContractCostType.VerifyMlDsa44Sig, '
-        'ContractCostType.VerifyMlDsa65Sig, '
-        'ContractCostType.VerifyMlDsa87Sig, '
-        'SCAddressType.SC_ADDRESS_TYPE_MUXED_CONTRACT, '
-        'StellarValueType.STELLAR_VALUE_EMPTY_TX_SET_MS, '
-        'StellarValueType.STELLAR_VALUE_SIGNED_MS',
-      );
-      expect(
-        sep51CorpusMetadata['unresolvable_struct_types'],
-        'MuxedContract, StellarValueProposedMsValue, StellarValueSignedMsValue',
-      );
+    test('records that the reference build resolves every type and member', () {
+      // The reference build vendors an XDR commit that declares every type and
+      // enum member this SDK generates, so every name was compared against it.
+      // A type or member that the SDK's XDR pin adds before the reference
+      // vendors it appears in these lists, and the corpus generator then
+      // requires a seed for the enum that member belongs to.
+      expect(sep51CorpusMetadata['unresolvable_enum_members'], isEmpty);
+      expect(sep51CorpusMetadata['unresolvable_struct_types'], isEmpty);
     });
 
     test('holds a live divergence for every incomparable entry', () {
